@@ -22,7 +22,6 @@ package org.broad.igv.ui.panel;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.dev.affective.AffectiveUtils;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.exome.ExomeBlock;
@@ -65,7 +64,6 @@ public class RulerPanel extends JPanel {
     private static Color gene2 = new Color(0, 150, 0, 150);
 
     // TODO -- get from preferences
-    boolean affective = false;
     boolean drawSpan = true;
     boolean drawEllipsis = false;
     private Font tickFont = FontManager.getFont(Font.BOLD, 9);
@@ -89,8 +87,6 @@ public class RulerPanel extends JPanel {
 
     public RulerPanel(ReferenceFrame frame) {
         this.frame = frame;
-        affective = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
-        drawSpan = !affective;
         init();
     }
 
@@ -142,12 +138,9 @@ public class RulerPanel extends JPanel {
             }
 
         } else {
-            // Clear panel
-            if (affective) {
-                drawTimeTicks(g);
-            } else {
+
                 drawTicks(g);
-            }
+
             if (drawSpan) {
                 drawSpan(g);
             }
@@ -722,105 +715,6 @@ public class RulerPanel extends JPanel {
     }
 
 
-    /**
-     * Special renderer for "Affective Computing" timescale,  chromosome => day, units are hours, minutes, seconds.
-     *
-     * @param g
-     */
-    private void drawTimeTicks(Graphics g) {
-
-        double timeStep = 1.0 / AffectiveUtils.POINTS_PER_SECOND;
-
-        int w = getWidth();
-        double start = frame.getOrigin();
-        double end = frame.getEnd();
-        double seconds = (start - end) * timeStep;
-
-        // Determine step sizes
-        double secsPerPixel = frame.getScale() * timeStep;
-        double minsPerPixel = secsPerPixel / 60;
-        double hoursPerPixel = minsPerPixel / 60;
-
-        g.setFont(tickFont);
-        FontMetrics fm = g.getFontMetrics();
-
-        int startHour = (int) ((start * timeStep) / 3600);
-        int endHour = (int) ((end * timeStep) / 3600) + 1;
-
-        double originHour = (start * timeStep) / 3600;
-
-
-        // Rectangle rect = getBounds();
-
-        int height = getHeight();
-
-        for (double h = startHour; h < endHour; h++) {
-            double pixel = (int) ((h - originHour) / hoursPerPixel);
-
-            if (pixel > w) {
-                break;
-            }
-            if (pixel > 0) {
-                g.drawLine((int) pixel, height, (int) pixel, height - 15);
-
-                // Label
-                int absoluteHour = AffectiveUtils.START_TIME_HR + (int) h;
-                String label = absoluteHour + ":00";
-                int labelWidth = fm.stringWidth(label);
-                int labelX = (int) pixel - labelWidth / 2;
-                if (labelX > 0) {
-                    g.drawString(label, labelX, height - 20);
-                }
-            }
-
-            // If room for 1/4 hours
-            if (15 / minsPerPixel > 2) {
-                pixel = (int) ((h - originHour) / hoursPerPixel);
-                for (int mm = 0; mm < 60; mm += 15) {
-                    double dx = mm / minsPerPixel;
-                    int mPixel = (int) (pixel + dx);
-                    if (mPixel > w) {
-                        break;
-                    }
-                    if (mPixel > 0) {
-                        g.drawLine(mPixel, height, mPixel, height - 10);
-                    }
-
-                }
-            }
-
-            // If room for minutes do minutes
-            pixel = (int) ((h - originHour) / hoursPerPixel);
-            if (1 / minsPerPixel > 4) {
-                for (int m = 1; m < 60; m++) {
-                    double dx = m / minsPerPixel;
-                    int mPixel = (int) (pixel + dx);
-                    if (mPixel > w) {
-                        break;
-                    }
-                    if (mPixel > 0) {
-                        g.drawLine(mPixel, height, mPixel, height - 5);
-                    }
-                }
-
-                // Seconds
-                if (1 / secsPerPixel > 4) {
-                    for (int s = 1; s < 60; s++) {
-                        double dx = s / secsPerPixel;
-                        int sPixel = (int) (pixel + dx);
-                        if (sPixel > w) {
-                            break;
-                        }
-                        if (sPixel > 0) {
-                            g.drawLine(sPixel, height, sPixel, height - 5);
-                        }
-                    }
-                }
-            }
-
-
-        }
-    }
 
     static class MouseRect {
         Rectangle bounds;

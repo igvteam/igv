@@ -25,7 +25,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
-import org.broad.igv.feature.ChromosomeImpl;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.ui.util.MessageUtils;
@@ -77,7 +76,7 @@ public class GenomeImpl implements Genome {
             String chr = chromosomeNames.get(i);
             int length = sequence.getChromosomeLength(chr);
             maxLength = Math.max(maxLength, length);
-            Chromosome chromo = new ChromosomeImpl(i, chr, length);
+            Chromosome chromo = new Chromosome(i, chr, length);
             tmpChromos.add(chromo);
 
             if (chromosOrdered) {
@@ -395,7 +394,7 @@ public class GenomeImpl implements Genome {
 
             Chromosome chromosome = chromosomeMap.get(chr);
             if (chromosome != null) {
-                ((ChromosomeImpl) chromosome).setCytobands(cytobands);
+                chromosome.setCytobands(cytobands);
             }
         }
 

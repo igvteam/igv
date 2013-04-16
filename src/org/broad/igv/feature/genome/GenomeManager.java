@@ -22,7 +22,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.dev.affective.AffectiveUtils;
 import org.broad.igv.dev.api.api;
 import org.broad.igv.feature.*;
 import org.broad.igv.track.*;
@@ -610,9 +609,10 @@ public class GenomeManager {
 
     /**
      * Calls {@link #getServerGenomeArchiveList(Set)} with default set of excluded URLs
+     *
      * @return
      */
-    public List<GenomeListItem> getServerGenomeArchiveList(){
+    public List<GenomeListItem> getServerGenomeArchiveList() {
         return getServerGenomeArchiveList(excludedArchivesUrls);
     }
 
@@ -708,7 +708,7 @@ public class GenomeManager {
             }
         }
 
-        if(IGVMenuBar.getInstance() != null){
+        if (IGVMenuBar.getInstance() != null) {
             IGVMenuBar.getInstance().notifyGenomeServerReachable(!serverGenomeListUnreachable);
         }
         return serverGenomeArchiveList;
@@ -775,17 +775,13 @@ public class GenomeManager {
         Collection<GenomeListItem> tmpuserDefinedGenomeList = null;
         Collection<GenomeListItem> tmpArchiveGenomeItemList = null;
 
-        boolean affectiveMode = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
-        if (affectiveMode) {
-            tmpArchiveGenomeItemList = Arrays.asList(AffectiveUtils.GENOME_DESCRIPTOR);
-        } else {
-            tmpArchiveGenomeItemList = getGenomeArchiveList();
-            try {
-                tmpuserDefinedGenomeList = getUserDefinedGenomeArchiveList();
-            } catch (IOException e) {
-                MessageUtils.showErrorMessage("Cannot access user defined genome archive list", e);
-            }
+        tmpArchiveGenomeItemList = getGenomeArchiveList();
+        try {
+            tmpuserDefinedGenomeList = getUserDefinedGenomeArchiveList();
+        } catch (IOException e) {
+            MessageUtils.showErrorMessage("Cannot access user defined genome archive list", e);
         }
+
 
         combineGenomeLists(tmpuserDefinedGenomeList, tmpArchiveGenomeItemList);
 
@@ -1139,6 +1135,7 @@ public class GenomeManager {
     /**
      * IGV always has exactly 1 genome loaded at a time.
      * This returns the currently loaded genome
+     *
      * @return
      */
     @api

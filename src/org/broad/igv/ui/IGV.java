@@ -32,7 +32,6 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
-import org.broad.igv.dev.affective.AffectiveGenome;
 import org.broad.igv.dev.api.IGVPlugin;
 import org.broad.igv.dev.api.api;
 import org.broad.igv.feature.Locus;
@@ -133,14 +132,16 @@ public class IGV {
             Collections.synchronizedCollection(new ArrayList<SoftReference<AlignmentTrackEventListener>>());
 
     private List<JComponent> otherToolMenus = new ArrayList<JComponent>();
+
     /**
      * Add an entry to the "Tools" menu
+     *
      * @param menu
      */
     @api
-    public void addOtherToolMenu(JComponent menu){
+    public void addOtherToolMenu(JComponent menu) {
         otherToolMenus.add(menu);
-        if(menuBar != null) menuBar.refreshToolsMenu();
+        if (menuBar != null) menuBar.refreshToolsMenu();
     }
 
 
@@ -191,6 +192,7 @@ public class IGV {
     /**
      * The IGV GUI has one master frame containing all other elements.
      * This method returns that frame.
+     *
      * @return
      */
     @api
@@ -534,17 +536,17 @@ public class IGV {
         return contentPane.getCommandBar().getGenomeDisplayNames();
     }
 
-    void loadGenomeFromServerAction(){
+    void loadGenomeFromServerAction() {
 
         Runnable showDialog = new Runnable() {
             @Override
             public void run() {
-                if(GenomeManager.getInstance().getServerGenomeArchiveList() == null){
+                if (GenomeManager.getInstance().getServerGenomeArchiveList() == null) {
                     waitForNotify(10000);
                 }
 
                 Collection<GenomeListItem> inputListItems = GenomeManager.getInstance().getServerGenomeArchiveList();
-                if(inputListItems == null){
+                if (inputListItems == null) {
                     IOException exc = new IOException("Unable to reach genome server");
                     MessageUtils.showErrorMessage(exc.getMessage(), exc);
                     return;
@@ -717,12 +719,6 @@ public class IGV {
 
                     contentPane.getMainPanel().invalidate();
                     showLoadedTrackCount();
-
-                    boolean affective = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
-                    if (affective) {
-                        contentPane.getCommandBar().updateChromosomeDropdown();
-                    }
-
 
                 }
 
@@ -961,12 +957,12 @@ public class IGV {
      * Create a snapshot image of {@code target} and save it to {@code file}. The file type of the exported
      * snapshot will be chosen by the extension of {@code file}, which must be a supported type.
      *
-     * @see SnapshotFileChooser.SnapshotFileType
      * @param target
      * @param file
      * @param paintOffscreen Whether to include offScreen data in the snapshot. Components must implement
      *                       the {@link Paintable} interface for this to work
      * @throws IOException
+     * @see SnapshotFileChooser.SnapshotFileType
      */
     @api
     public String createSnapshotNonInteractive(Component target, File file, boolean paintOffscreen) throws IOException {
@@ -1107,6 +1103,7 @@ public class IGV {
      * Set the session to the file specified by {@code sessionPath}
      * If you want to create a new session, consider {@link #newSession()}
      * as that preserves the gene track.
+     *
      * @param sessionPath
      */
     public void resetSession(String sessionPath) {
@@ -1382,16 +1379,17 @@ public class IGV {
     /**
      * Uses either current session.getPersistent, or preferences, depending
      * on if IGV has an instance or not. Generally intended for testing
-     * @see Session#getPersistent(String, String)
-     * @see PreferenceManager#getPersistent(String, String)
+     *
      * @param key
      * @param def
      * @return
+     * @see Session#getPersistent(String, String)
+     * @see PreferenceManager#getPersistent(String, String)
      */
-    public static String getPersistent(String key, String def){
-        if(IGV.hasInstance()){
+    public static String getPersistent(String key, String def) {
+        if (IGV.hasInstance()) {
             return IGV.getInstance().getSession().getPersistent(key, def);
-        }else{
+        } else {
             return PreferenceManager.getInstance().getPersistent(key, def);
         }
     }
@@ -1549,6 +1547,7 @@ public class IGV {
 
     /**
      * Load resources into IGV. Tracks are added to the appropriate panel
+     *
      * @param locators
      */
     public void loadResources(Collection<ResourceLocator> locators) {
@@ -1614,25 +1613,25 @@ public class IGV {
 
     /**
      * Add tracks to the specified panel
+     *
      * @param tracks
      * @param panelName
      */
     @api
-    public void addTracks(List<Track> tracks, PanelName panelName){
+    public void addTracks(List<Track> tracks, PanelName panelName) {
         TrackPanel panel = getTrackPanel(panelName.getName());
         panel.addTracks(tracks);
         doRefresh();
     }
 
     /**
-     *
      * Add the specified tracks to the appropriate panel. Panel
      * is chosen based on characteristics of the {@code locator}.
      *
      * @param tracks
      * @param locator
      */
-    void addTracks(List<Track> tracks, ResourceLocator locator){
+    void addTracks(List<Track> tracks, ResourceLocator locator) {
         if (tracks.size() > 0) {
             String path = locator.getPath();
 
@@ -1653,9 +1652,9 @@ public class IGV {
 
 
     /**
-     *
      * Load a resource and return the tracks.
      * Does not automatically add anything
+     *
      * @param locator
      * @return A list of loaded tracks
      */
@@ -1812,6 +1811,7 @@ public class IGV {
 
     /**
      * Group all alignment tracks by the specified option.
+     *
      * @param option
      */
     @api
@@ -2322,39 +2322,35 @@ public class IGV {
             }
 
             final PreferenceManager preferenceManager = PreferenceManager.getInstance();
-            boolean affectiveMode = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
-            if (affectiveMode) {
-                closeWindow(progressDialog);
-                GenomeManager.getInstance().setCurrentGenome(new AffectiveGenome());
-            } else {
-                try {
-                    contentPane.getCommandBar().initializeGenomeList(monitor);
-                } catch (FileNotFoundException ex) {
-                    JOptionPane.showMessageDialog(mainFrame, "Error initializing genome list: " + ex.getMessage());
-                    log.error("Error initializing genome list: ", ex);
-                } catch (NoRouteToHostException ex) {
-                    JOptionPane.showMessageDialog(mainFrame, "Network error initializing genome list: " + ex.getMessage());
-                    log.error("Network error initializing genome list: ", ex);
-                } finally {
-                    monitor.fireProgressChange(50);
-                    closeWindow(progressDialog);
-                }
 
-                if (igvArgs.getGenomeId() != null) {
-                    if (ParsingUtils.pathExists(igvArgs.getGenomeId())) {
-                        try {
-                            IGV.getInstance().loadGenome(igvArgs.getGenomeId(), null);
-                        } catch (IOException e) {
-                            log.error("Error loading genome file: " + igvArgs.getGenomeId());
-                        }
-                    } else {
-                        contentPane.getCommandBar().selectGenome(igvArgs.getGenomeId());
-                    }
-                } else if (igvArgs.getSessionFile() == null) {
-                    String genomeId = preferenceManager.getDefaultGenome();
-                    contentPane.getCommandBar().selectGenome(genomeId);
-                }
+            try {
+                contentPane.getCommandBar().initializeGenomeList(monitor);
+            } catch (FileNotFoundException ex) {
+                JOptionPane.showMessageDialog(mainFrame, "Error initializing genome list: " + ex.getMessage());
+                log.error("Error initializing genome list: ", ex);
+            } catch (NoRouteToHostException ex) {
+                JOptionPane.showMessageDialog(mainFrame, "Network error initializing genome list: " + ex.getMessage());
+                log.error("Network error initializing genome list: ", ex);
+            } finally {
+                monitor.fireProgressChange(50);
+                closeWindow(progressDialog);
             }
+
+            if (igvArgs.getGenomeId() != null) {
+                if (ParsingUtils.pathExists(igvArgs.getGenomeId())) {
+                    try {
+                        IGV.getInstance().loadGenome(igvArgs.getGenomeId(), null);
+                    } catch (IOException e) {
+                        log.error("Error loading genome file: " + igvArgs.getGenomeId());
+                    }
+                } else {
+                    contentPane.getCommandBar().selectGenome(igvArgs.getGenomeId());
+                }
+            } else if (igvArgs.getSessionFile() == null) {
+                String genomeId = preferenceManager.getDefaultGenome();
+                contentPane.getCommandBar().selectGenome(genomeId);
+            }
+
 
             //If there is an argument assume it is a session file or url
             if (igvArgs.getSessionFile() != null || igvArgs.getDataFileString() != null) {
@@ -2406,7 +2402,7 @@ public class IGV {
                             String name = names[idx];
 
                             // Decode local file paths
-                            if(!FileUtils.isRemote(name)) {
+                            if (!FileUtils.isRemote(name)) {
                                 name = StringUtils.decodeURL(name);
                             }
 
@@ -2476,15 +2472,15 @@ public class IGV {
         }
 
 
-        private void initIGVPlugins(){
+        private void initIGVPlugins() {
             List<String> pluginClassNames = new ArrayList<String>(2);
             InputStream is = IGV.class.getResourceAsStream("resources/builtin_plugin_list.txt");
-            if(is != null){
+            if (is != null) {
                 BufferedReader br = new BufferedReader(new InputStreamReader(is));
                 String line = null;
                 try {
-                    while((line = br.readLine()) != null){
-                        if(line.startsWith("##")) continue;
+                    while ((line = br.readLine()) != null) {
+                        if (line.startsWith("##")) continue;
                         pluginClassNames.add(line);
                     }
                 } catch (IOException e) {
@@ -2492,7 +2488,7 @@ public class IGV {
                 }
             }
             pluginClassNames.addAll(Arrays.asList(PreferenceManager.getInstance().getIGVPluginList()));
-            for(String classname: pluginClassNames){
+            for (String classname : pluginClassNames) {
                 try {
                     Class clazz = Class.forName(classname);
                     IGVPlugin plugin = (IGVPlugin) clazz.newInstance();

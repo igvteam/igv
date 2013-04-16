@@ -1010,7 +1010,6 @@ public class IgvTools {
      */
     private static void validateIsTilable(String typeString) {
 
-        boolean affective = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
         if (!(typeString.endsWith("cn") ||
                 typeString.endsWith("igv") ||
                 typeString.endsWith("wig") ||
@@ -1025,8 +1024,7 @@ public class IgvTools {
                 typeString.endsWith("mage-tab") ||
                 typeString.endsWith("bedgraph") ||
                 typeString.endsWith("ewig.list") ||
-                Preprocessor.isAlignmentFile(typeString) ||
-                affective)) {
+                Preprocessor.isAlignmentFile(typeString))) {
             throw new PreprocessingException("Tile command not supported for files of type: " + typeString);
         }
     }

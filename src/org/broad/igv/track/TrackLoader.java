@@ -29,10 +29,6 @@ import org.broad.igv.data.rnai.RNAIGeneScoreParser;
 import org.broad.igv.data.rnai.RNAIHairpinParser;
 import org.broad.igv.data.seg.*;
 import org.broad.igv.dev.SegmentedReader;
-import org.broad.igv.dev.affective.AffectiveAnnotationParser;
-import org.broad.igv.dev.affective.AffectiveAnnotationTrack;
-import org.broad.igv.dev.affective.AffectiveUtils;
-import org.broad.igv.dev.affective.Annotation;
 import org.broad.igv.dev.db.DBProfile;
 import org.broad.igv.dev.db.SQLCodecSource;
 import org.broad.igv.dev.db.SampleInfoSQLReader;
@@ -247,8 +243,6 @@ public class TrackLoader {
             } else if (typeString.endsWith(".list")) {
                 // This should be deprecated
                 loadListFile(locator, newTracks, genome);
-            } else if (path.contains("Participant") && path.endsWith(".csv")) {
-                loadAffectiveAnnotationTrack(locator, newTracks, genome);
             } else if (AttributeManager.isSampleInfoFile(locator)) {
                 // This might be a sample information file.
                 AttributeManager.getInstance().loadSampleInfo(locator);
@@ -595,15 +589,6 @@ public class TrackLoader {
 
     }
 
-    private void loadAffectiveAnnotationTrack(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-
-        AffectiveAnnotationParser parser = new AffectiveAnnotationParser();
-        Map<String, List<Annotation>> annotMap = parser.parse(locator.getPath());
-        AffectiveAnnotationTrack track = new AffectiveAnnotationTrack("id", "Annotations", annotMap);
-        newTracks.add(track);
-
-    }
-
 
     private boolean checkSize(String file) {
 
@@ -710,11 +695,6 @@ public class TrackLoader {
 
         TDFReader reader = TDFReader.getReader(locator);
         TrackType type = reader.getTrackType();
-
-        if (reader.getTrackType() == TrackType.AFFECTIVE) {
-            AffectiveUtils.loadTDFFile(locator, newTracks, genome, reader);
-            return;
-        }
 
         TrackProperties props = null;
         String trackLine = reader.getTrackLine();
