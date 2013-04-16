@@ -58,7 +58,7 @@ public class Genome {
     /**
      * @param id
      * @param displayName
-     * @param sequence
+     * @param sequence       the reference Sequence object.  Can be null.
      * @param chromosOrdered Whether the chromosomes are already ordered. If false, they will be sorted.
      */
     public Genome(String id, String displayName, Sequence sequence, boolean chromosOrdered) {
@@ -90,6 +90,28 @@ public class Genome {
         }
 
         initializeChromosomeAliases();
+    }
+
+
+    /**
+     * Alternate constructor for defining a minimal genome, usually from parsing a chrom.sizes file.
+     *
+     * @param id
+     * @param chromosomes
+     */
+    public Genome(String id, List<Chromosome> chromosomes) {
+        this.id = id;
+        this.displayName = id;
+        this.chrAliasTable = new HashMap<String, String>();
+        this.sequence = null;
+
+        chromosomeNames = new ArrayList<String>(chromosomes.size());
+        chromosomeMap = new LinkedHashMap<String, Chromosome>(chromosomes.size());
+        for (Chromosome chromosome : chromosomes) {
+            chromosomeNames.add(chromosome.getName());
+            chromosomeMap.put(chromosome.getName(), chromosome);
+        }
+
     }
 
 
@@ -406,8 +428,15 @@ public class Genome {
         return displayName;
     }
 
+    /**
+     * Return the reference base at the given position.  Can return null if reference sequence is unknown
+     *
+     * @param chr
+     * @param pos
+     * @return the reference base, or null if unknown
+     */
     public byte getReference(String chr, int pos) {
-        return sequence.getBase(chr, pos);
+        return sequence == null ? null : sequence.getBase(chr, pos);
     }
 
 

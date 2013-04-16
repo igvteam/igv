@@ -128,4 +128,18 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         assertArrayEquals(chromos, genome.getAllChromosomeNames().toArray());
     }
 
+    /**
+     * Test defining a genome from a chrom.sizes file
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testLoadChromSizes() throws Exception {
+        String testFile = TestUtils.DATA_DIR + "genomes/hg19.chrom.sizes";
+        Genome genome = GenomeManager.getInstance().loadGenome(testFile, null);
+
+        assertEquals(24, genome.getAllChromosomeNames().size());
+        assertEquals(3095677412l, genome.getTotalLength());
+    }
+
 }

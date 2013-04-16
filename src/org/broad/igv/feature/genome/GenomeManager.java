@@ -102,7 +102,7 @@ public class GenomeManager {
     }
 
     /**
-     * Load a genome from the given path.  Could be a .genome, or fasta file
+     * Load a genome from the given path.  Could be a .genome, .gbk, chrom.sizes, or fasta file
      *
      * @param genomePath File, http, or ftp path to the .genome or indexed fasta file
      * @param monitor    ProgressMonitor  Monitor object, can be null
@@ -123,14 +123,17 @@ public class GenomeManager {
                 monitor.fireProgressChange(25);
             }
 
-            if (genomePath.endsWith(Globals.GZIP_FILE_EXTENSION)) {
-                throw new GenomeException("IGV cannot readed gzipped genome files.  Please un-gzip the file and try again.");
-            } else if (genomePath.endsWith(".genome")) {
+            if (genomePath.endsWith(".genome")) {
                 newGenome = loadDotGenomeFile(genomePath);
             } else if (genomePath.endsWith(".gbk")) {
                 newGenome = loadGenbankFile(genomePath);
+            } else if (genomePath.endsWith(".chrom.sizes")) {
+                newGenome = loadChromSizes(genomePath);
             } else {
                 // Assume a fasta file
+                if (genomePath.endsWith(Globals.GZIP_FILE_EXTENSION)) {
+                    throw new GenomeException("IGV cannot readed gzipped fasta files.");
+                }
                 newGenome = loadFastaFile(genomePath);
             }
 
@@ -152,6 +155,25 @@ public class GenomeManager {
         } catch (SocketException e) {
             throw new GenomeServerException("Server connection error", e);
         }
+
+    }
+
+    /**
+     * Define a minimal genome from a chrom.sizes file.  It is assumed (required) that the file follow the
+     * UCSC naming convention  =>  [id].chrom.sizes
+     *
+     * @param genomePath
+     * @return
+     * @throws IOException
+     */
+    private Genome loadChromSizes(String genomePath) throws IOException {
+
+        int firstPeriodIdx = genomePath.indexOf('.');
+        String genomeId = genomePath.substring(0, firstPeriodIdx);
+        List<Chromosome> chromosomes = ChromSizesParser.parse(genomePath);
+        Genome newGenome = new Genome(genomeId, chromosomes);
+        setCurrentGenome(newGenome);
+        return newGenome;
 
     }
 
