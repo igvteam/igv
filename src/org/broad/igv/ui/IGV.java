@@ -668,58 +668,15 @@ public class IGV {
 
             NamedRunnable runnable = new NamedRunnable() {
                 public void run() {
-                    // get current track count per panel.  Needed to detect which panels
-                    // changed.  Also record panel sizes
-                    final HashMap<TrackPanelScrollPane, Integer> trackCountMap = new HashMap();
-                    final HashMap<TrackPanelScrollPane, Integer> panelSizeMap = new HashMap();
-                    for (TrackPanel tp : getTrackPanels()) {
-                        TrackPanelScrollPane sp = tp.getScrollPane();
-                        trackCountMap.put(sp, sp.getDataPanel().getAllTracks().size());
-                        panelSizeMap.put(sp, sp.getDataPanel().getHeight());
-                    }
+
+                    //Collect size statistics before loading
+                    List<Map<TrackPanelScrollPane, Integer>> trackPanelAttrs = getTrackPanelAttrs();
 
                     loadResources(locators);
 
-                    double totalHeight = 0;
-                    for (TrackPanel tp : getTrackPanels()) {
-                        TrackPanelScrollPane sp = tp.getScrollPane();
-                        if (trackCountMap.containsKey(sp)) {
-                            int prevTrackCount = trackCountMap.get(sp).intValue();
-                            if (prevTrackCount != sp.getDataPanel().getAllTracks().size()) {
-                                int scrollPosition = panelSizeMap.get(sp);
-                                if (prevTrackCount != 0 && sp.getVerticalScrollBar().isShowing()) {
-                                    sp.getVerticalScrollBar().setMaximum(sp.getDataPanel().getHeight());
-                                    sp.getVerticalScrollBar().setValue(scrollPosition);
-                                }
-                            }
-                        }
-                        // Give a maximum "weight" of 300 pixels to each panel.  If there are no tracks, give zero
-                        if (sp.getTrackPanel().getTracks().size() > 0)
-                            totalHeight += Math.min(300, sp.getTrackPanel().getPreferredPanelHeight());
-                    }
+                    resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
 
-                    // Adjust dividers for data panel.  The data panel divider can be
-                    // zero if there are no data tracks loaded.
-                    final JideSplitPane centerSplitPane = contentPane.getMainPanel().getCenterSplitPane();
-                    int htotal = centerSplitPane.getHeight();
-                    int y = 0;
-                    int i = 0;
-                    for (Component c : centerSplitPane.getComponents()) {
-                        if (c instanceof TrackPanelScrollPane) {
-                            final TrackPanel trackPanel = ((TrackPanelScrollPane) c).getTrackPanel();
-                            if (trackPanel.getTracks().size() > 0) {
-                                int panelWeight = Math.min(300, trackPanel.getPreferredPanelHeight());
-                                int dh = (int) ((panelWeight / totalHeight) * htotal);
-                                y += dh;
-                            }
-                            centerSplitPane.setDividerLocation(i, y);
-                            i++;
-                        }
-                    }
-
-                    contentPane.getMainPanel().invalidate();
                     showLoadedTrackCount();
-
                 }
 
                 public String getName() {
@@ -734,6 +691,69 @@ public class IGV {
 
     }
 
+    /**
+     * Cet current track count per panel.  Needed to detect which panels
+     * changed.  Also record panel sizes
+     * @return A 2 element list: 0th element is a map from scrollpane -> number of tracks,
+     *                           1st element is a map from scrollpane -> track height (in pixels)
+     */
+    public List<Map<TrackPanelScrollPane, Integer>> getTrackPanelAttrs(){
+        Map<TrackPanelScrollPane, Integer> trackCountMap = new HashMap();
+        Map<TrackPanelScrollPane, Integer> panelSizeMap = new HashMap();
+        for (TrackPanel tp : getTrackPanels()) {
+            TrackPanelScrollPane sp = tp.getScrollPane();
+            trackCountMap.put(sp, sp.getDataPanel().getAllTracks().size());
+            panelSizeMap.put(sp, sp.getDataPanel().getHeight());
+        }
+        return Arrays.asList(trackCountMap, panelSizeMap);
+    }
+
+    /**
+     * Recalculate and set heights of track panels, based on newly loaded tracks
+     * @param trackCountMap scrollpane -> number of tracks
+     * @param panelSizeMap  scrollpane -> height in pixels
+     */
+    public void resetPanelHeights(Map<TrackPanelScrollPane, Integer> trackCountMap, Map<TrackPanelScrollPane, Integer> panelSizeMap){
+
+        double totalHeight = 0;
+        for (TrackPanel tp : getTrackPanels()) {
+            TrackPanelScrollPane sp = tp.getScrollPane();
+            if (trackCountMap.containsKey(sp)) {
+                int prevTrackCount = trackCountMap.get(sp);
+                if (prevTrackCount != sp.getDataPanel().getAllTracks().size()) {
+                    int scrollPosition = panelSizeMap.get(sp);
+                    if (prevTrackCount != 0 && sp.getVerticalScrollBar().isShowing()) {
+                        sp.getVerticalScrollBar().setMaximum(sp.getDataPanel().getHeight());
+                        sp.getVerticalScrollBar().setValue(scrollPosition);
+                    }
+                }
+            }
+            // Give a maximum "weight" of 300 pixels to each panel.  If there are no tracks, give zero
+            if (sp.getTrackPanel().getTracks().size() > 0)
+                totalHeight += Math.min(300, sp.getTrackPanel().getPreferredPanelHeight());
+        }
+
+        // Adjust dividers for data panel.  The data panel divider can be
+        // zero if there are no data tracks loaded.
+        final JideSplitPane centerSplitPane = contentPane.getMainPanel().getCenterSplitPane();
+        int htotal = centerSplitPane.getHeight();
+        int y = 0;
+        int i = 0;
+        for (Component c : centerSplitPane.getComponents()) {
+            if (c instanceof TrackPanelScrollPane) {
+                final TrackPanel trackPanel = ((TrackPanelScrollPane) c).getTrackPanel();
+                if (trackPanel.getTracks().size() > 0) {
+                    int panelWeight = Math.min(300, trackPanel.getPreferredPanelHeight());
+                    int dh = (int) ((panelWeight / totalHeight) * htotal);
+                    y += dh;
+                }
+                centerSplitPane.setDividerLocation(i, y);
+                i++;
+            }
+        }
+
+        contentPane.getMainPanel().invalidate();
+    }
 
     public void setGeneList(GeneList geneList) {
         setGeneList(geneList, true);

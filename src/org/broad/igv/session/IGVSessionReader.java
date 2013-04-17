@@ -30,6 +30,7 @@ import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.TrackPanel;
+import org.broad.igv.ui.panel.TrackPanelScrollPane;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.FilterElement.BooleanOperator;
@@ -402,6 +403,14 @@ public class IGVSessionReader implements SessionReader {
     private void addLeftoverTracks(Collection<List<Track>> tmp) {
         Map<String, TrackPanel> trackPanelCache = new HashMap();
         if (version < 3 || !panelElementPresent) {
+            log.debug("Adding \"leftover\" tracks");
+
+            //For resetting track panels later
+            List<Map<TrackPanelScrollPane, Integer>> trackPanelAttrs = null;
+            if(IGV.hasInstance()){
+                trackPanelAttrs = IGV.getInstance().getTrackPanelAttrs();
+            }
+
             for (List<Track> tracks : tmp) {
                 for (Track track : tracks) {
                     if (track != geneTrack && track != seqTrack && track.getResourceLocator() != null) {
@@ -414,6 +423,10 @@ public class IGVSessionReader implements SessionReader {
                         panel.addTrack(track);
                     }
                 }
+            }
+
+            if(IGV.hasInstance()){
+                IGV.getInstance().resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
             }
         }
 
