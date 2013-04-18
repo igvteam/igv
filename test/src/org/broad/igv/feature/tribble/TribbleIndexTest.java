@@ -16,7 +16,7 @@ import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.AbstractFeatureReader;
-import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
+import org.broadinstitute.variant.vcf.VCFCodec;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -119,10 +119,10 @@ public class TribbleIndexTest extends AbstractHeadlessTest {
 
         // First test query
         AbstractFeatureReader bfr = AbstractFeatureReader.getFeatureReader(file, new VCFCodec());
-        Iterator<org.broadinstitute.sting.utils.variantcontext.VariantContext> iter = bfr.query(chr, 5073767 - 5, 5073767 + 5);
+        Iterator<org.broadinstitute.variant.variantcontext.VariantContext> iter = bfr.query(chr, 5073767 - 5, 5073767 + 5);
         int count = 0;
         while (iter.hasNext()) {
-            org.broadinstitute.sting.utils.variantcontext.VariantContext feat = iter.next();
+            org.broadinstitute.variant.variantcontext.VariantContext feat = iter.next();
             assertEquals("chr9", feat.getChr());
             assertEquals(feat.getStart(), 5073767);
             assertTrue(feat.hasAttribute("MapQs"));
@@ -134,7 +134,7 @@ public class TribbleIndexTest extends AbstractHeadlessTest {
         iter = bfr.iterator();
         count = 0;
         while (iter.hasNext()) {
-            org.broadinstitute.sting.utils.variantcontext.VariantContext feat = iter.next();
+            org.broadinstitute.variant.variantcontext.VariantContext feat = iter.next();
             assertEquals("chr9", feat.getChr());
             assertEquals(feat.getStart(), 5073767);
             assertTrue(feat.hasAttribute("MapQs"));
@@ -152,7 +152,7 @@ public class TribbleIndexTest extends AbstractHeadlessTest {
         iter = bfr.query(chr, 984163 - 5, 984163 + 5);
         count = 0;
         while (iter.hasNext()) {
-            org.broadinstitute.sting.utils.variantcontext.VariantContext feat = iter.next();
+            org.broadinstitute.variant.variantcontext.VariantContext feat = iter.next();
             assertEquals(chr, feat.getChr());
             if (count == 0) {
                 assertEquals(984163, feat.getStart());

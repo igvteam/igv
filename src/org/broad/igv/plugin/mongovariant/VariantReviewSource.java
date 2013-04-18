@@ -23,9 +23,9 @@ import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.vcf.VCFVariant;
 import org.broadinstitute.sting.gatk.walkers.na12878kb.core.*;
 import org.broadinstitute.sting.utils.GenomeLocParser;
-import org.broadinstitute.sting.utils.variantcontext.Allele;
-import org.broadinstitute.sting.utils.variantcontext.Genotype;
-import org.broadinstitute.sting.utils.variantcontext.VariantContext;
+import org.broadinstitute.variant.variantcontext.Allele;
+import org.broadinstitute.variant.variantcontext.Genotype;
+import org.broadinstitute.variant.variantcontext.VariantContext;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -75,8 +75,7 @@ public class VariantReviewSource implements FeatureSource<VCFVariant> {
         SiteSelector criteria = new SiteSelector(parser);
         //Convert from 0-based to 1-based
         criteria.addInterval(chromoNameToStandard(chr), start + 1, end);
-        //TODO DON'T COMMIT THIS
-        SiteIterator<MongoVariantContext> iterator  = kb.getCalls(criteria);//kb.getConsensusSites(criteria);
+        SiteIterator<MongoVariantContext> iterator  = kb.getConsensusSites(criteria);
         List<VCFVariant> variants = new ArrayList<VCFVariant>();
         while(iterator.hasNext()){
             MongoVariantContext mvc = iterator.next();

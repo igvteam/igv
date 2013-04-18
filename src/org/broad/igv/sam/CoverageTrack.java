@@ -690,17 +690,20 @@ public class CoverageTrack extends AbstractTrack {
 
     private void addCopyDetailsItem(IGVPopupMenu popupMenu, TrackClickEvent te) {
         JMenuItem copyDetails = new JMenuItem("Copy Details to Clipboard");
-        final String details = getValueStringAt(te.getFrame().getChrName(), te.getChromosomePosition(), te.getMouseEvent().getY(), te.getFrame());
-        copyDetails.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (details != null) {
-                    String deets = details.replace("<br>", System.getProperty("line.separator"));
-                    StringUtils.copyTextToClipboard(deets);
+        copyDetails.setEnabled(false);
+        if(te.getFrame() != null){
+            final String details = getValueStringAt(te.getFrame().getChrName(), te.getChromosomePosition(), te.getMouseEvent().getY(), te.getFrame());
+            copyDetails.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (details != null) {
+                        String deets = details.replace("<br>", System.getProperty("line.separator"));
+                        StringUtils.copyTextToClipboard(deets);
+                    }
                 }
-            }
-        });
-        copyDetails.setEnabled(details != null);
+            });
+            copyDetails.setEnabled(details != null);
+        }
         popupMenu.add(copyDetails);
     }
 

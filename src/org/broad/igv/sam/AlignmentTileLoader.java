@@ -346,6 +346,10 @@ public class AlignmentTileLoader {
 
             counts.incCounts(alignment);
 
+            if (spliceJunctionHelper != null) {
+                spliceJunctionHelper.addAlignment(alignment);
+            }
+
             if (downsample) {
                 final int alignmentStart = alignment.getAlignmentStart();
                 if (currentSamplingBucket == null || alignmentStart >= currentSamplingBucket.end) {
@@ -355,11 +359,6 @@ public class AlignmentTileLoader {
                     int end = alignmentStart + samplingWindowSize;
                     currentSamplingBucket = new SamplingBucket(alignmentStart, end);
                 }
-
-                if (spliceJunctionHelper != null) {
-                    spliceJunctionHelper.addAlignment(alignment);
-                }
-
                 currentSamplingBucket.add(alignment);
             } else {
                 alignments.add(alignment);

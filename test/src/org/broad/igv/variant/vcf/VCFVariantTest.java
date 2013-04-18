@@ -14,7 +14,7 @@ package org.broad.igv.variant.vcf;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.util.TestUtils;
-import org.broadinstitute.sting.utils.variantcontext.VariantContext;
+import org.broadinstitute.variant.variantcontext.VariantContext;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

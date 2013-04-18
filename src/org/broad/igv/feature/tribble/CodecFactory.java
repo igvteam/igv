@@ -11,14 +11,14 @@
 
 package org.broad.igv.feature.tribble;
 
+import net.sf.samtools.util.BlockCompressedInputStream;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.peaks.PeakCodec;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.AsciiFeatureCodec;
-import org.broad.tribble.util.BlockCompressedInputStream;
-import org.broadinstitute.sting.utils.codecs.vcf.VCF3Codec;
-import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
+import org.broadinstitute.variant.vcf.VCF3Codec;
+import org.broadinstitute.variant.vcf.VCFCodec;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -39,7 +39,7 @@ public class CodecFactory {
 
     static {
         validExtensions.addAll(Arrays.asList("vcf4", "vcf", "bed", "refflat", "genepred", "ensgene", "refgene", "ucscgene",
-                "repmask", "gff3", "gvf", "gff", "gtf", "psl"));
+                "repmask", "gff3", "gvf", "gff", "gtf", "psl", "mut", "maf"));
     }
 
     /**
@@ -84,13 +84,9 @@ public class CodecFactory {
             //return new SAMCodec();
         } else if (fn.endsWith(".psl") || fn.endsWith(".pslx")) {
             return new PSLCodec(genome);
-
-        }
-//   Mutation codec disabled until we deal with the multiple sample problem
-//        else if (fn.endsWith(".mut") || (fn.endsWith(".maf") && MUTCodec.isMutationAnnotationFile(path))) {
-//            return new MUTCodec(path, genome);
-//        }
-        else if (fn.endsWith(".narrowpeak") || fn.endsWith(".broadpeak")) {
+        } else if (MUTCodec.isMutationAnnotationFile(path)) {
+            return new MUTCodec(path, genome);
+        } else if (fn.endsWith(".narrowpeak") || fn.endsWith(".broadpeak")) {
             return new EncodePeakCodec(genome);
         } else if (fn.endsWith(".peak")) {
             return new PeakCodec(genome);

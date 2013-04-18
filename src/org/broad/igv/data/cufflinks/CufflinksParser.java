@@ -1,30 +1,27 @@
 /*
- * Copyright (c) 2007-2013 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.data.cufflinks;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.tribble.AbstractFeatureReader;
+import org.broad.tribble.AsciiFeatureCodec;
+import org.broad.tribble.readers.LineReader;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -40,38 +37,70 @@ public class CufflinksParser {
 
     private static Logger log = Logger.getLogger(CufflinksParser.class);
 
-    public static List<CufflinksValue> parse(String path) throws IOException {
+    public static List<? extends CufflinksValue> parse(String path) throws IOException {
 
         final String s = path.toLowerCase();
         if (s.endsWith("fpkm_tracking")) {
-            return parseFpkmTracking(path);
+            AsciiFeatureCodec<FPKMValue> codec = new FpkmTrackingCodec(path);
+            return parse(codec, path);
         } else if (s.endsWith("gene_exp.diff") || s.endsWith("cds_exp.diff")) {
-            return parseExpDiff(path);
+            AsciiFeatureCodec<ExpDiffValue> codec = new ExpDiffCodec(path);
+            return parse(codec, path);
         } else {
             throw new RuntimeException("Unsupported file type: " + path);
         }
 
-
     }
 
-    private static List<CufflinksValue> parseFpkmTracking(String path) throws IOException {
+    private static <T extends CufflinksValue> List<T> parse(AsciiFeatureCodec<T> codec, String path) throws IOException {
+        List<T> values = new ArrayList<T>();
+        AbstractFeatureReader reader = AbstractFeatureReader.getFeatureReader(path, codec, false);
+        Iterator<T> iter = reader.iterator();
+        while(iter.hasNext()){
+            values.add(iter.next());
+        }
+        return values;
+    }
 
-        BufferedReader br = null;
+    private static abstract class CufflinksCodec<T extends CufflinksValue> extends AsciiFeatureCodec<T>{
 
-        try {
-            br = ParsingUtils.openBufferedReader(path);
+        String path;
 
-            List<CufflinksValue> values = new ArrayList<CufflinksValue>();
+        CufflinksCodec(Class<T> clazz, String path){
+            super(clazz);
+            this.path = path;
+        }
 
-            int geneColumn = 4;
-            int locusColumn  = 6;
-            int fpkmColumn = 6;
-            int confLoColumn = 7;
-            int confHiColumn = 8;
-            int sigColumn = 12;
+        protected abstract Object readHeader(String[] tokens);
 
-            String nextLine = br.readLine(); // Header
-            String [] tokens = ParsingUtils.TAB_PATTERN.split(nextLine);
+        @Override
+        public Object readHeader(LineReader reader){
+            String headerLine = null;
+            try {
+                headerLine = reader.readLine();
+                String[] tokens = ParsingUtils.TAB_PATTERN.split(headerLine);
+                return readHeader(tokens);
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+                throw new DataLoadException("Error reading header: " + e.getMessage(), this.path);
+            }
+        }
+    }
+
+    private static class FpkmTrackingCodec extends CufflinksCodec<FPKMValue>{
+        int geneColumn = 4;
+        int locusColumn  = 6;
+        int fpkmColumn = 6;
+        int confLoColumn = 7;
+        int confHiColumn = 8;
+        int sigColumn = 12;
+
+        FpkmTrackingCodec(String path){
+            super(FPKMValue.class, path);
+        }
+
+        @Override
+        public Object readHeader(String[] tokens) {
             for(int i=0; i<tokens.length; i++) {
                 final String tk = tokens[i];
                 if(tk.equals("locus")) locusColumn = i;
@@ -80,98 +109,106 @@ public class CufflinksParser {
                 else if(tk.equals("FPKM_conf_lo")) confLoColumn = i;
                 else if(tk.startsWith("FPKM_conf_hi")) confHiColumn = i;
             }
+            return tokens;
+        }
 
-            while ((nextLine = br.readLine()) != null) {
-                try {
-                    tokens = ParsingUtils.TAB_PATTERN.split(nextLine);
-                    if (tokens.length >= 12) {
-                        String locusString = tokens[locusColumn];
-                        Locus locus = new Locus(locusString);
-                        if (locus != null) {
-                            if (locus.getChr() == null) {
-                                continue;
-                            }
-                            float fpkm = Float.parseFloat(tokens[fpkmColumn]);
-                            float confLo = Float.parseFloat(tokens[confLoColumn]);
-                            float confHi = Float.parseFloat(tokens[confHiColumn]);
-                            String gene = tokens[geneColumn];
-                            values.add(new FPKMValue(gene, locus.getChr(), locus.getStart() - 1, locus.getEnd(), fpkm, confLo, confHi));
-                        }
-                    } else {
-                        log.info("Unexpected # of columns.  Expected at least 12,  found " + tokens.length);
-                    }
-                } catch (NumberFormatException e) {
-                    log.info("Skipping line: " + nextLine);
-                }
+        @Override
+        public FPKMValue decode(String line) {
+            return decode(ParsingUtils.TAB_PATTERN.split(line));
+        }
+
+        @Override
+        public FPKMValue decode(String[] tokens) {
+            //Skip header line
+            if (tokens[0].equalsIgnoreCase("tracking_id") || tokens[geneColumn].equalsIgnoreCase("gene_short_name")) {
+                return null;
             }
-            return values;
-        } finally {
-            if (br != null) br.close();
+            if (tokens.length >= 12) {
+                String locusString = tokens[locusColumn];
+                if (locusString == null) return null;
+
+                Locus locus = new Locus(locusString);
+                if(locus.getChr() == null) return null;
+
+                float fpkm = Float.parseFloat(tokens[fpkmColumn]);
+                float confLo = Float.parseFloat(tokens[confLoColumn]);
+                float confHi = Float.parseFloat(tokens[confHiColumn]);
+                String gene = tokens[geneColumn];
+                return new FPKMValue(gene, locus.getChr(), locus.getStart() - 1, locus.getEnd(), fpkm, confLo, confHi);
+            } else {
+                log.info("Unexpected # of columns.  Expected at least 12,  found " + tokens.length);
+                return null;
+            }
         }
     }
 
+    private static class ExpDiffCodec extends CufflinksCodec<ExpDiffValue>{
 
-    private static List<CufflinksValue> parseExpDiff(String path) throws IOException {
+        private static Logger log = Logger.getLogger(ExpDiffCodec.class);
 
-        BufferedReader br = null;
+        int geneColumn = 1;
+        int locusColumn = 2;
+        int xColumn = 6;
+        int yColumn = 7;
+        int logRatioColumn = 8;
+        int sigColumn = 12;
 
-        try {
-            br = ParsingUtils.openBufferedReader(path);
-
-            List<CufflinksValue> values = new ArrayList<CufflinksValue>();
-
-            int geneColumn = 1;
-            int locusColumn  = 2;
-            int xColumn = 6;
-            int yColumn = 7;
-            int logRatioColumn = 8;
-            int sigColumn = 12;
-
-            String nextLine = br.readLine(); // Header
-            String [] tokens = ParsingUtils.TAB_PATTERN.split(nextLine);
-            for(int i=0; i<tokens.length; i++) {
-                final String tk = tokens[i];
-                if(tk.equals("locus")) locusColumn = i;
-                else if(tk.equals("gene")) geneColumn = i;
-                else if(tk.equals("value_1")) xColumn = i;
-                else if(tk.equals("value_2")) yColumn = i;
-                else if(tk.startsWith("log2(")) logRatioColumn = i;
-                else if(tk.equals("significant")) sigColumn = i;
-            }
-
-            while ((nextLine = br.readLine()) != null) {
-                try {
-                    tokens = ParsingUtils.TAB_PATTERN.split(nextLine);
-                    if (tokens.length >= sigColumn) {
-                        String locusString = tokens[locusColumn];
-                        Locus locus = new Locus(locusString);
-                        if (locus != null) {
-                            if (locus.getChr() == null) {
-                                continue;
-                            }
-                            float logRatio = Float.parseFloat(tokens[logRatioColumn]);
-
-                            if(Float.isInfinite(logRatio) || Float.isNaN(logRatio)) continue;
-
-                            float fpkmX = Float.parseFloat(tokens[xColumn]);
-                            float fpkmY = Float.parseFloat(tokens[yColumn]);
-                            String gene = tokens[geneColumn] ;
-                            String significant = tokens[sigColumn];
-                            values.add(new ExpDiffValue(gene, locus.getChr(), locus.getStart() - 1, locus.getEnd(),
-                                    logRatio, fpkmX, fpkmY, significant) {
-                            });
-                        }
-                    } else {
-                        log.info("Unexpected # of columns.  Expected at least 12,  found " + tokens.length);
-                    }
-                } catch (NumberFormatException e) {
-                    log.info("Skipping line: " + nextLine);
-                }
-            }
-            return values;
-        } finally {
-            if (br != null) br.close();
+        protected ExpDiffCodec(String path) {
+            super(ExpDiffValue.class, path);
         }
+
+        @Override
+        public Object readHeader(String[] tokens) {
+            for (int i = 0; i < tokens.length; i++) {
+                final String tk = tokens[i];
+                if (tk.equals("locus")) locusColumn = i;
+                else if (tk.equals("gene")) geneColumn = i;
+                else if (tk.equals("value_1")) xColumn = i;
+                else if (tk.equals("value_2")) yColumn = i;
+                else if (tk.startsWith("log2(")) logRatioColumn = i;
+                else if (tk.equals("significant")) sigColumn = i;
+            }
+            return tokens;
+        }
+
+        @Override
+        public ExpDiffValue decode(String[] tokens) {
+            //Skip header line
+            if (tokens[0].equalsIgnoreCase("test_id") || tokens[geneColumn].equalsIgnoreCase("gene_id")) {
+                return null;
+            }
+            if (tokens.length >= sigColumn) {
+                String locusString = tokens[locusColumn];
+                if (locusString == null) return null;
+
+                Locus locus = new Locus(locusString);
+                if (locus.getChr() == null) return null;
+
+                String logRatioStr = tokens[logRatioColumn];
+                float logRatio = Float.parseFloat(logRatioStr);
+
+                if (Float.isInfinite(logRatio) || Float.isNaN(logRatio)) {
+                    log.info("LogRatio " + logRatioStr + " cannot be parsed as a float");
+                    logRatio = Float.NaN;
+                }
+
+                float fpkmX = Float.parseFloat(tokens[xColumn]);
+                float fpkmY = Float.parseFloat(tokens[yColumn]);
+                String gene = tokens[geneColumn];
+                String significant = tokens[sigColumn];
+                return new ExpDiffValue(gene, locus.getChr(), locus.getStart() - 1, locus.getEnd(),
+                        logRatio, fpkmX, fpkmY, significant);
+            } else {
+                log.info("Unexpected # of columns.  Expected at least 12,  found " + tokens.length);
+                return null;
+            }
+        }
+
+        @Override
+        public ExpDiffValue decode(String line) {
+            return decode(ParsingUtils.TAB_PATTERN.split(line));
+        }
+
 
     }
 }

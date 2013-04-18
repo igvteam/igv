@@ -23,6 +23,7 @@ import org.broad.igv.util.TestUtils;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.tribble.Feature;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -37,6 +38,7 @@ import static junit.framework.Assert.*;
  */
 public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
 
+    @Ignore("Data file is missing")
     @Test
     public void testLoadCoverageTrackSession() throws Exception{
         String path = TestUtils.DATA_DIR + "sessions/coverage_snpThreshold.xml";
@@ -203,6 +205,8 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
         IGV.getInstance().doRestoreSession(sessionPath, null, false);
 
         List<Track> tracks = IGV.getInstance().getAllTracks();
+
+        //Positive strand
         FeatureTrack matchTrack = (FeatureTrack) tracks.get(2);
 
         String queryChr = "chr8";
@@ -211,6 +215,11 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
 
         List<Feature> features = matchTrack.getFeatures(queryChr, queryStart, queryEnd);
         assertEquals(2, features.size());
+
+        //Negative strand
+        matchTrack = (FeatureTrack) tracks.get(3);
+        features = matchTrack.getFeatures(queryChr, queryStart, queryEnd);
+        assertEquals(1, features.size());
 
     }
 

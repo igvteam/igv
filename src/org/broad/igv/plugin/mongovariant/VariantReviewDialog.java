@@ -16,18 +16,15 @@
 package org.broad.igv.plugin.mongovariant;
 
 import com.mongodb.WriteResult;
-import org.broad.igv.track.Track;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.variant.VariantTrack;
 import org.broad.tribble.util.ParsingUtils;
 import org.broadinstitute.sting.gatk.walkers.na12878kb.core.MongoVariantContext;
 import org.broadinstitute.sting.gatk.walkers.na12878kb.core.NA12878DBArgumentCollection;
 import org.broadinstitute.sting.gatk.walkers.na12878kb.core.NA12878KnowledgeBase;
 import org.broadinstitute.sting.gatk.walkers.na12878kb.core.TruthStatus;
-import org.broadinstitute.sting.utils.variantcontext.Genotype;
-import org.broadinstitute.sting.utils.variantcontext.GenotypeType;
-import org.broadinstitute.sting.utils.variantcontext.VariantContext;
+import org.broadinstitute.variant.variantcontext.Genotype;
+import org.broadinstitute.variant.variantcontext.GenotypeType;
+import org.broadinstitute.variant.variantcontext.VariantContext;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -36,7 +33,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.io.IOException;
 
 /**
  * Dialog for reviewing a variant from a VCF file.
@@ -107,22 +103,23 @@ public class VariantReviewDialog extends JDialog {
                 break;
         }
 
-
-        MongoVariantContext mvc = VariantReviewSource.createMVC(allele0, allele1, callsetName, variantContext, truthStatus);
-        String errorMessage = addCall(VariantReviewPlugin.getDbSpecPath(), mvc);
-
-        if (errorMessage != null) {
-            MessageUtils.showErrorMessage(errorMessage, new IOException(errorMessage));
-        } else {
-            setVisible(false);
-            //Find the track showing results, clear it to force a refresh
-            for(Track t: IGV.getInstance().getFeatureTracks()){
-                if(t instanceof VariantTrack){
-                    ((VariantTrack) t).clearPackedFeatures();
-                }
-            }
-            IGV.getInstance().repaintDataPanels();
-        }
+        //TODO
+        MessageUtils.showMessage("This functionality is temporarily disabled");
+//        MongoVariantContext mvc = VariantReviewSource.createMVC(allele0, allele1, callsetName, variantContext, truthStatus);
+//        String errorMessage = addCall(VariantReviewPlugin.getDbSpecPath(), mvc);
+//
+//        if (errorMessage != null) {
+//            MessageUtils.showErrorMessage(errorMessage, new IOException(errorMessage));
+//        } else {
+//            setVisible(false);
+//            //Find the track showing results, clear it to force a refresh
+//            for(Track t: IGV.getInstance().getFeatureTracks()){
+//                if(t instanceof VariantTrack){
+//                    ((VariantTrack) t).clearPackedFeatures();
+//                }
+//            }
+//            IGV.getInstance().repaintDataPanels();
+//        }
     }
 
     /**

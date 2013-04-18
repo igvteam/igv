@@ -24,7 +24,6 @@ import com.jidesoft.swing.JideToggleButton;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.dev.affective.AffectiveUtils;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.feature.FeatureDB;
@@ -209,7 +208,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                     final IGV igv = IGV.getInstance();
 
                     //User selected "more", pull up dialog and revert combo box
-                    if(genomeListItem == GenomeListItem.ITEM_MORE){
+                    if (genomeListItem == GenomeListItem.ITEM_MORE) {
                         selectGenome(GenomeManager.getInstance().getGenomeId());
                         IGV.getInstance().loadGenomeFromServerAction();
                         return;
@@ -228,13 +227,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
                         Genome genome;
 
-                        if (genomeListItem == AffectiveUtils.GENOME_DESCRIPTOR) {
-                            genome = AffectiveUtils.getGenome();
-                            igv.getGenomeManager().setCurrentGenome(genome);
-                        } else {
-                            igv.resetSession(null);
-                            genome = igv.getGenomeManager().loadGenome(genomeListItem.getLocation(), null);
-                        }
+                        igv.resetSession(null);
+                        genome = igv.getGenomeManager().loadGenome(genomeListItem.getLocation(), null);
 
                         updateChromosFromGenome(genome);
                         monitor.fireProgressChange(25);
@@ -341,8 +335,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
         UIUtilities.invokeOnEventThread(new Runnable() {
             @Override
             public void run() {
-                roiToggleButton.setEnabled(!chrName.equals(Globals.CHR_ALL));
-                zoomControl.setEnabled(!chrName.equals(Globals.CHR_ALL));
+                roiToggleButton.setEnabled(!Globals.CHR_ALL.equals(chrName));
+                zoomControl.setEnabled(!Globals.CHR_ALL.equals(chrName));
 
                 if (chromosomeComboBox.getSelectedItem() != null) {
                     if (!chromosomeComboBox.getSelectedItem().equals(chrName)) {
@@ -363,7 +357,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         String p = "";
 
         final String chrName = getDefaultReferenceFrame().getChrName();
-        if (!chrName.equals(Globals.CHR_ALL) && !FrameManager.isGeneListMode()) {
+        if (!Globals.CHR_ALL.equals(chrName) && !FrameManager.isGeneListMode()) {
             p = getDefaultReferenceFrame().getFormattedLocusString();
         }
         final String position = p;
@@ -374,6 +368,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
                 searchTextField.setText(position);
                 forwardButton.setEnabled(history.canGoForward());
                 backButton.setEnabled(history.canGoBack());
+                roiToggleButton.setEnabled(!Globals.CHR_ALL.equals(chrName));
+                zoomControl.setEnabled(!Globals.CHR_ALL.equals(chrName));
             }
         });
 
@@ -574,14 +570,12 @@ public class IGVCommandBar extends javax.swing.JPanel {
         locationPanel.setAlignmentY(CENTER_ALIGNMENT);
         locationPanel.add(Box.createRigidArea(new Dimension(10, 36)), JideBoxLayout.FIX);
 
-        boolean affectiveMode = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
-        if (!affectiveMode) {
-            genomeComboBox = new JComboBox();
-            genomeComboBox.setMinimumSize(new Dimension(180, 27));
-            genomeComboBox.setPreferredSize(new Dimension(180, 27));
-            locationPanel.add(genomeComboBox, JideBoxLayout.FIX);
-            locationPanel.add(Box.createHorizontalStrut(5), JideBoxLayout.FIX);
-        }
+        genomeComboBox = new JComboBox();
+        genomeComboBox.setMinimumSize(new Dimension(180, 27));
+        genomeComboBox.setPreferredSize(new Dimension(180, 27));
+        locationPanel.add(genomeComboBox, JideBoxLayout.FIX);
+        locationPanel.add(Box.createHorizontalStrut(5), JideBoxLayout.FIX);
+
 
         chromosomeComboBox = new javax.swing.JComboBox();
         chromosomeComboBox.setToolTipText("Select a chromosome to view");
@@ -752,9 +746,9 @@ public class IGVCommandBar extends javax.swing.JPanel {
         detailsBehaviorButton.setPreferredSize(new java.awt.Dimension(32, 32));
         toolPanel.add(detailsBehaviorButton, JideBoxLayout.FIX);
 
-        boolean showExomeButton =
+        boolean showExomeButton =  //!Globals.isProduction() ||
                 Boolean.parseBoolean(System.getProperty("showExomeButton", "false")) ||
-                PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_EXOME_BUTTON);
+                        PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_EXOME_BUTTON);
         if (showExomeButton) {
             exomeButton = new JideButton();
             exomeButton.setButtonStyle(JideButton.TOOLBAR_STYLE);
@@ -840,7 +834,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     private void chromosomeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
         JComboBox combobox = (JComboBox) evt.getSource();
         final String chrName = (String) combobox.getSelectedItem();
-        if(chrName != null){
+        if (chrName != null) {
             getDefaultReferenceFrame().getEventBus().post(new ViewChange.ChromosomeChangeCause(combobox, chrName));
         }
 //        if (chrName != null) {
@@ -866,7 +860,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     }
 
     @Subscribe
-    public void receiveViewChangeResult(ViewChange.Result e){
+    public void receiveViewChangeResult(ViewChange.Result e) {
         String chrName = getDefaultReferenceFrame().getChrName();
         chromosomeComboBox.setSelectedItem(chrName);
         updateCurrentCoordinates();

@@ -101,7 +101,7 @@ public class DMUtilsTest {
     @Test
     public void testUploadDeleteFile() throws Exception {
 
-        String locName = "test.bed";
+        String locName = "test2.bed";
         File localFile = new File(TestUtils.DATA_DIR + "bed", locName);
         String remPath = IGV_TEST_DIR + locName;
 

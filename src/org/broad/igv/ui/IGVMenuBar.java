@@ -59,8 +59,10 @@ import java.util.List;
 
 import static org.broad.igv.ui.UIConstants.*;
 
-/** Main menu bar at top of window. File / genomes / view / etc.
+/**
+ * Main menu bar at top of window. File / genomes / view / etc.
  * Singleton
+ *
  * @author jrobinso
  * @date Apr 4, 2011
  */
@@ -89,8 +91,8 @@ public class IGVMenuBar extends JMenuBar {
 
     private static IGVMenuBar instance;
 
-    public void notifyGenomeServerReachable(boolean reachable){
-        if(loadFromServerMenuItem != null){
+    public void notifyGenomeServerReachable(boolean reachable) {
+        if (loadFromServerMenuItem != null) {
             loadFromServerMenuItem.setEnabled(reachable);
             String tooltip = reachable ? LOAD_GENOME_SERVER_TOOLTIP : CANNOT_LOAD_GENOME_SERVER_TOOLTIP;
             loadFromServerMenuItem.setToolTipText(tooltip);
@@ -101,9 +103,9 @@ public class IGVMenuBar extends JMenuBar {
         (new AboutDialog(IGV.getMainFrame(), true)).setVisible(true);
     }
 
-    static IGVMenuBar createInstance(IGV igv){
-        if(instance != null){
-            if(igv == instance.igv){
+    static IGVMenuBar createInstance(IGV igv) {
+        if (instance != null) {
+            if (igv == instance.igv) {
                 return instance;
             }
             throw new IllegalStateException("Cannot create another IGVMenuBar, use getInstance");
@@ -112,7 +114,7 @@ public class IGVMenuBar extends JMenuBar {
         return instance;
     }
 
-    public static IGVMenuBar getInstance(){
+    public static IGVMenuBar getInstance() {
         return instance;
     }
 
@@ -143,12 +145,7 @@ public class IGVMenuBar extends JMenuBar {
         List<AbstractButton> menus = new ArrayList<AbstractButton>();
         createFileMenu();
         menus.add(fileMenu);
-
-        boolean affectiveMode = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
-        if (!affectiveMode) {
-            menus.add(createGenomesMenu());
-        }
-
+        menus.add(createGenomesMenu());
         menus.add(createViewMenu());
         menus.add(createTracksMenu());
         menus.add(createRegionsMenu());
@@ -182,7 +179,7 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // igvtools
-        menuItems.add(new JSeparator());
+        //menuItems.add(new JSeparator());
         menuAction = new SortTracksMenuAction("Run igvtools...", KeyEvent.VK_T, igv) {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -192,12 +189,12 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         List<JComponent> otherToolMenus = igv.getOtherToolMenus();
-        if(otherToolMenus.size() > 0){
-            for(JComponent entry: otherToolMenus){
+        if (otherToolMenus.size() > 0) {
+            for (JComponent entry : otherToolMenus) {
                 menuItems.add(entry);
             }
         }
-        menuItems.add(new JSeparator());
+        //menuItems.add(new JSeparator());
 
 
         //-------------------------------------//
@@ -300,7 +297,7 @@ public class IGVMenuBar extends JMenuBar {
 
         //-----------SQL DB Tools--------------//
         boolean showDBEditor = Boolean.parseBoolean(System.getProperty(DBProfileEditor.ENABLE_EDITOR_PROPERTY, "false"));
-        if(showDBEditor){
+        if (showDBEditor) {
             JMenu sqlDBProfileEditor = new JMenu("SQL DB Profile Editor");
             JMenuItem createNewProfile = new JMenuItem("Create New Profile");
             createNewProfile.addActionListener(new ActionListener() {
@@ -376,8 +373,8 @@ public class IGVMenuBar extends JMenuBar {
         }
 
         //Disable loading if no genome loaded. Something of an edge case
-        if(!genomeLoaded){
-            for(JComponent menuItem: menuItems){
+        if (!genomeLoaded) {
+            for (JComponent menuItem : menuItems) {
                 menuItem.setEnabled(false);
             }
         }
@@ -848,8 +845,8 @@ public class IGVMenuBar extends JMenuBar {
         menuAction.setToolTipText(ABOUT_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        MenuAction toolMenuAction = new MenuAction("Help");
-        return MenuAndToolbarUtils.createMenu(menuItems, toolMenuAction);
+        MenuAction helpMenuAction = new MenuAction("Help");
+        return MenuAndToolbarUtils.createMenu(menuItems, helpMenuAction);
     }
 
     private JMenu createGenomeSpaceMenu() {

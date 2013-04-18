@@ -12,6 +12,9 @@ package org.broad.igv.util;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import net.sf.samtools.util.ftp.FTPClient;
+import net.sf.samtools.util.ftp.FTPReply;
+import net.sf.samtools.util.ftp.FTPUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.renderer.*;
@@ -21,9 +24,6 @@ import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.tribble.readers.AsciiLineReader;
-import org.broad.tribble.util.ftp.FTPClient;
-import org.broad.tribble.util.ftp.FTPReply;
-import org.broad.tribble.util.ftp.FTPUtils;
 
 import java.awt.*;
 import java.io.*;
@@ -473,5 +473,29 @@ public class ParsingUtils {
             // todo -- log
             return false;
         }
+    }
+
+    /**
+     * Return the "IGV extension" (basically the extension after strippin trailing qualifiers) for the input path.
+     * his is the string IGV uses to identify the format and data type of the file.
+     *
+     * @param path
+     * @return
+     */
+    public static String getIGVExtension(String path) {
+
+        // _sorted.txt is an old alignment format.
+        if(path.endsWith("_sorted.txt")) {
+            return "_sorted.txt";
+        }
+
+        // String off gzip first
+        if(path.endsWith(".gz")) path = path.substring(0, path.length()-3);
+
+        // Now common qualifiers
+        if(path.endsWith(".txt") || path.endsWith(".xls"))  path = path.substring(0, path.length()-4);
+
+        int idx = path.lastIndexOf('.');
+        return idx < 0 ? path : path.substring(idx+1, path.length());
     }
 }

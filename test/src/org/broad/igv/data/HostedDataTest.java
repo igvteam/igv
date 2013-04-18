@@ -92,7 +92,13 @@ public class HostedDataTest extends AbstractHeadlessTest {
             String genomeURL = LoadFromServerAction.getGenomeDataURL(genomeItem.getId());
 
             TrackLoader loader = new TrackLoader();
-            Genome curGenome = GenomeManager.getInstance().loadGenome(genomeItem.getLocation(), null);
+            Genome curGenome = null;
+            try {
+                curGenome = GenomeManager.getInstance().loadGenome(genomeItem.getLocation(), null);
+            } catch (IOException e) {
+                recordError(new ResourceLocator(genomeItem.getLocation()), e, failedFiles);
+                continue;
+            }
 
             errorWriter.println("Genome: " + curGenome.getId());
 

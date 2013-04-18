@@ -13,6 +13,7 @@ package org.broad.igv.util;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
+import net.sf.samtools.util.ftp.FTPClient;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
@@ -20,7 +21,6 @@ import org.broad.igv.tools.IgvTools;
 import org.broad.igv.ui.IGV;
 import org.broad.tribble.Feature;
 import org.broad.tribble.readers.AsciiLineReader;
-import org.broad.tribble.util.ftp.FTPClient;
 import org.junit.Ignore;
 import org.w3c.dom.Document;
 
@@ -40,7 +40,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author jrobinso
@@ -184,6 +186,24 @@ public class TestUtils {
         assertEquals(exp.getChr(), act.getChr());
         assertEquals(exp.getStart(), act.getStart());
         assertEquals(exp.getEnd(), act.getEnd());
+    }
+
+    /**
+     *
+     * @param featureIterator
+     * @return Number of features in the iterator
+     * @throws Exception
+     */
+    public static int assertFeatureIteratorSorted(Iterator<? extends Feature> featureIterator){
+        int lastStart = -1;
+        int count = 0;
+        while (featureIterator.hasNext()) {
+            Feature f0 = featureIterator.next();
+            assertTrue(f0.getStart() >= lastStart);
+            lastStart = f0.getStart();
+            count++;
+        }
+        return count;
     }
 
     /*

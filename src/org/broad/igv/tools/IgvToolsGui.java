@@ -11,7 +11,6 @@
 package org.broad.igv.tools;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.WindowFunction;
 
 import javax.swing.*;
@@ -32,7 +31,7 @@ public class IgvToolsGui extends JDialog {
 
     static JFileChooser fileDialog;
 
-    public enum Tool{
+    public enum Tool {
         COUNT("Count"),
         SORT("Sort"),
         INDEX("Index"),
@@ -40,7 +39,7 @@ public class IgvToolsGui extends JDialog {
 
         private String displayName;
 
-        Tool(String displayName){
+        Tool(String displayName) {
             this.displayName = displayName;
         }
 
@@ -349,7 +348,7 @@ public class IgvToolsGui extends JDialog {
         }
 
         //Check that parent directory exists
-        if(!outputFile.getParentFile().exists()){
+        if (!outputFile.getParentFile().exists()) {
             showMessage("Directory " + outputFile.getParent() + " does not exist. Output must use an existing directory");
             return false;
         }
@@ -372,7 +371,7 @@ public class IgvToolsGui extends JDialog {
             return;
         }
         try {
-            switch (tool){
+            switch (tool) {
                 case COUNT:
                     doCount();
                     break;
@@ -590,18 +589,13 @@ public class IgvToolsGui extends JDialog {
         fileDialog = new JFileChooser();
         // }
 
-        if(lastDirectory != null)  {
+        if (lastDirectory != null) {
             fileDialog.setCurrentDirectory(lastDirectory);
         }
 
         fileDialog.setMultiSelectionEnabled(false);
 
-        boolean affective = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
-        if (!affective) {
-            fileDialog.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        } else {
-            fileDialog.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        }
+        fileDialog.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
         int returnVal = fileDialog.showDialog(this, "Select File");
         if (returnVal == JFileChooser.CANCEL_OPTION) {
@@ -653,14 +647,15 @@ public class IgvToolsGui extends JDialog {
     /**
      * Return what the defaultOutputText should be. {@code null} implies
      * there should be no change
+     *
      * @param inputFieldText
      * @param tool
      * @return
      */
-    static String getDefaultOutputText(String inputFieldText, Tool tool){
+    static String getDefaultOutputText(String inputFieldText, Tool tool) {
         String defaultOutputText = null;
         if (inputFieldText.length() > 0) {
-            switch(tool){
+            switch (tool) {
                 case COUNT:
                 case TILE:
                     defaultOutputText = inputFieldText + ".tdf";
@@ -681,7 +676,7 @@ public class IgvToolsGui extends JDialog {
 
     private void setDefaultOutputText() {
         String defaultOutputText = getDefaultOutputText(inputField.getText(), (Tool) toolCombo.getSelectedItem());
-        if(defaultOutputText != null) outputField.setText(defaultOutputText);
+        if (defaultOutputText != null) outputField.setText(defaultOutputText);
     }
 
     private void toolComboActionPerformed(ActionEvent e) {

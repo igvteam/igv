@@ -63,6 +63,7 @@
     <property name="com.apple.mrj.application.growbox.intrudes" value="false"/>
     <property name="com.apple.mrj.application.live-resize" value="true"/>
     <property name="com.apple.macos.smallTabs" value="true"/>
+    <property name="production" value="true"/>
   </resources>
   <application-desc main-class="org.broad.igv.ui.Main">
 <?php

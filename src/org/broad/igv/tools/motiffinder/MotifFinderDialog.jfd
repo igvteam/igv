@@ -15,29 +15,9 @@ new FormModel {
 				} ) {
 					name: "contentPanel"
 					"alignmentX": 0.0f
-					add( new FormComponent( "javax.swing.JTextArea" ) {
-						name: "textArea1"
-						"text": "Enter the pattern for which to search. Matches in the current genome sequence will be displayed in a new track. "
-						"editable": false
-						"background": new java.awt.Color( 238, 238, 238, 255 )
-						"lineWrap": true
-					} )
-					add( new FormComponent( "javax.swing.JLabel" ) {
-						name: "label1"
-						"text": "Track Name:"
-						"labelFor": new FormReference( "nameField" )
-						"horizontalTextPosition": 2
-						"horizontalAlignment": 2
-						"maximumSize": new java.awt.Dimension( 374, 16 )
-						"preferredSize": new java.awt.Dimension( 374, 16 )
-						"alignmentX": 1.0f
-					} )
-					add( new FormComponent( "javax.swing.JTextField" ) {
-						name: "nameField"
-					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "label2"
-						"text": "Pattern:"
+						"text": "Search Pattern:"
 						"labelFor": new FormReference( "patternField" )
 						"horizontalTextPosition": 2
 						"horizontalAlignment": 2
@@ -51,25 +31,59 @@ new FormModel {
 					add( new FormComponent( "javax.swing.JTextField" ) {
 						name: "patternField"
 					} )
+					add( new FormComponent( "javax.swing.JTextArea" ) {
+						name: "textArea1"
+						"text": "Enter nucleotide sequence (e.g. ACCGCT), \nor nucleotide sequence with IUPAC ambiguity codes (e.g. AAARNR), \nor regular expression of nucleotides (e.g. TATAAA(A){3,}). "
+						"editable": false
+						"background": new java.awt.Color( 238, 238, 238, 255 )
+						"lineWrap": true
+						"wrapStyleWord": true
+						"font": new com.jformdesigner.model.SwingDerivedFont( null, 2, -2, false )
+						"margin": new java.awt.Insets( 0, 25, 0, 0 )
+						"focusable": false
+					} )
+					add( new FormComponent( "com.jformdesigner.designer.wrapper.VSpacer" ) {
+						name: "vSpacer1"
+						"minimumSize": new java.awt.Dimension( 12, 20 )
+						"preferredSize": new java.awt.Dimension( 10, 20 )
+					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
-						"axis": 1
+						"axis": 0
 					} ) {
-						name: "radioButtonPanel"
-						"alignmentX": 1.0f
-						"maximumSize": new java.awt.Dimension( 200, 46 )
-						"preferredSize": new java.awt.Dimension( 200, 46 )
-						add( new FormComponent( "javax.swing.JRadioButton" ) {
-							name: "ambiguityCodeButton"
-							"text": "IUPAC Ambiguity Codes"
-							"$buttonGroup": new FormReference( "buttonGroup1" )
-							"selected": true
-							"toolTipText": "Use IUPAC ambiguity codes"
+						name: "panel1"
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label1"
+							"text": "Positive Strand Result Track:"
+							"labelFor": new FormReference( "posNameField" )
+							"horizontalTextPosition": 2
+							"horizontalAlignment": 2
+							"maximumSize": &Dimension0 new java.awt.Dimension( 374, 16 )
+							"preferredSize": &Dimension1 new java.awt.Dimension( 200, 16 )
+							"alignmentX": 1.0f
 						} )
-						add( new FormComponent( "javax.swing.JRadioButton" ) {
-							name: "regexButton"
-							"text": "Regular Expressions"
-							"$buttonGroup": new FormReference( "buttonGroup1" )
-							"toolTipText": "Use java regular expression syntax"
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "posNameField"
+							addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "posNameFieldFocusLost", true ) )
+							addEvent( new FormEvent( "java.awt.event.InputMethodListener", "inputMethodTextChanged", "posNameFieldInputMethodTextChanged", true ) )
+							addEvent( new FormEvent( "java.awt.event.KeyListener", "keyReleased", "posNameFieldKeyReleased", true ) )
+						} )
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+						"axis": 0
+					} ) {
+						name: "panel2"
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label3"
+							"text": "Negative Strand Result Track:"
+							"labelFor": new FormReference( "negNameField" )
+							"horizontalTextPosition": 2
+							"horizontalAlignment": 2
+							"maximumSize": #Dimension0
+							"preferredSize": #Dimension1
+							"alignmentX": 1.0f
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "negNameField"
 						} )
 					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
@@ -107,7 +121,7 @@ new FormModel {
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
-			"size": new java.awt.Dimension( 400, 300 )
+			"size": new java.awt.Dimension( 450, 300 )
 		} )
 		add( new FormNonVisual( "javax.swing.ButtonGroup" ) {
 			name: "buttonGroup1"

@@ -22,7 +22,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.dev.affective.AffectiveUtils;
 import org.broad.igv.feature.*;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
@@ -102,7 +101,7 @@ public class GenomeManager {
     }
 
     /**
-     * Load a genome from the given path.  Could be a .genome, or fasta file
+     * Load a genome from the given path.  Could be a .genome, .gbk, chrom.sizes, or fasta file
      *
      * @param genomePath File, http, or ftp path to the .genome or indexed fasta file
      * @param monitor    ProgressMonitor  Monitor object, can be null
@@ -117,20 +116,23 @@ public class GenomeManager {
         try {
             log.info("Loading genome: " + genomePath);
 
-            GenomeImpl newGenome = null;
+            Genome newGenome = null;
 
             if (monitor != null) {
                 monitor.fireProgressChange(25);
             }
 
-            if (genomePath.endsWith(Globals.GZIP_FILE_EXTENSION)) {
-                throw new GenomeException("IGV cannot readed gzipped genome files.  Please un-gzip the file and try again.");
-            } else if (genomePath.endsWith(".genome")) {
+            if (genomePath.endsWith(".genome")) {
                 newGenome = loadDotGenomeFile(genomePath);
             } else if (genomePath.endsWith(".gbk")) {
                 newGenome = loadGenbankFile(genomePath);
+            } else if (genomePath.endsWith(".chrom.sizes")) {
+                newGenome = loadChromSizes(genomePath);
             } else {
                 // Assume a fasta file
+                if (genomePath.endsWith(Globals.GZIP_FILE_EXTENSION)) {
+                    throw new GenomeException("IGV cannot readed gzipped fasta files.");
+                }
                 newGenome = loadFastaFile(genomePath);
             }
 
@@ -155,8 +157,27 @@ public class GenomeManager {
 
     }
 
-    private GenomeImpl loadGenbankFile(String genomePath) throws IOException {
-        GenomeImpl newGenome;
+    /**
+     * Define a minimal genome from a chrom.sizes file.  It is assumed (required) that the file follow the
+     * UCSC naming convention  =>  [id].chrom.sizes
+     *
+     * @param genomePath
+     * @return
+     * @throws IOException
+     */
+    private Genome loadChromSizes(String genomePath) throws IOException {
+
+        int firstPeriodIdx = genomePath.indexOf('.');
+        String genomeId = genomePath.substring(0, firstPeriodIdx);
+        List<Chromosome> chromosomes = ChromSizesParser.parse(genomePath);
+        Genome newGenome = new Genome(genomeId, chromosomes);
+        setCurrentGenome(newGenome);
+        return newGenome;
+
+    }
+
+    private Genome loadGenbankFile(String genomePath) throws IOException {
+        Genome newGenome;
         GenbankParser genbankParser = new GenbankParser(genomePath);
 
         String chr = genbankParser.getAccession();
@@ -167,7 +188,7 @@ public class GenomeManager {
 
         byte[] seq = genbankParser.getSequence();
         Sequence sequence = new InMemorySequence(chr, seq);
-        newGenome = new GenomeImpl(chr, name, sequence, true);
+        newGenome = new Genome(chr, name, sequence, true);
         newGenome.loadUserDefinedAliases();
         setCurrentGenome(newGenome);
 
@@ -186,8 +207,8 @@ public class GenomeManager {
      * @return
      * @throws IOException
      */
-    private GenomeImpl loadFastaFile(String genomePath) throws IOException {
-        GenomeImpl newGenome;// Assume its a fasta
+    private Genome loadFastaFile(String genomePath) throws IOException {
+        Genome newGenome;// Assume its a fasta
         String fastaPath = null;
         String fastaIndexPath = null;
         if (genomePath.endsWith(".fai")) {
@@ -218,7 +239,7 @@ public class GenomeManager {
 
         FastaIndexedSequence fastaSequence = new FastaIndexedSequence(fastaPath);
         Sequence sequence = new SequenceWrapper(fastaSequence);
-        newGenome = new GenomeImpl(item.getId(), item.getDisplayableName(), sequence, true);
+        newGenome = new Genome(item.getId(), item.getDisplayableName(), sequence, true);
         newGenome.loadUserDefinedAliases();
         setCurrentGenome(newGenome);
         return newGenome;
@@ -254,8 +275,8 @@ public class GenomeManager {
      * @return
      * @throws IOException
      */
-    private GenomeImpl loadDotGenomeFile(String genomePath) throws IOException {
-        GenomeImpl newGenome;
+    private Genome loadDotGenomeFile(String genomePath) throws IOException {
+        Genome newGenome;
         File archiveFile = getArchiveFile(genomePath);
 
         GenomeDescriptor genomeDescriptor = parseGenomeArchiveFile(archiveFile);
@@ -294,7 +315,7 @@ public class GenomeManager {
             chromosOrdered = true;
         }
 
-        newGenome = new GenomeImpl(id, displayName, sequence, chromosOrdered);
+        newGenome = new Genome(id, displayName, sequence, chromosOrdered);
         if (cytobandMap != null) {
             newGenome.setCytobands(cytobandMap);
         }
@@ -609,9 +630,10 @@ public class GenomeManager {
 
     /**
      * Calls {@link #getServerGenomeArchiveList(Set)} with default set of excluded URLs
+     *
      * @return
      */
-    public List<GenomeListItem> getServerGenomeArchiveList(){
+    public List<GenomeListItem> getServerGenomeArchiveList() {
         return getServerGenomeArchiveList(excludedArchivesUrls);
     }
 
@@ -707,7 +729,9 @@ public class GenomeManager {
             }
         }
 
-        IGVMenuBar.getInstance().notifyGenomeServerReachable(!serverGenomeListUnreachable);
+        if (IGVMenuBar.getInstance() != null) {
+            IGVMenuBar.getInstance().notifyGenomeServerReachable(!serverGenomeListUnreachable);
+        }
         return serverGenomeArchiveList;
     }
 
@@ -772,17 +796,13 @@ public class GenomeManager {
         Collection<GenomeListItem> tmpuserDefinedGenomeList = null;
         Collection<GenomeListItem> tmpArchiveGenomeItemList = null;
 
-        boolean affectiveMode = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
-        if (affectiveMode) {
-            tmpArchiveGenomeItemList = Arrays.asList(AffectiveUtils.GENOME_DESCRIPTOR);
-        } else {
-            tmpArchiveGenomeItemList = getGenomeArchiveList();
-            try {
-                tmpuserDefinedGenomeList = getUserDefinedGenomeArchiveList();
-            } catch (IOException e) {
-                MessageUtils.showErrorMessage("Cannot access user defined genome archive list", e);
-            }
+        tmpArchiveGenomeItemList = getGenomeArchiveList();
+        try {
+            tmpuserDefinedGenomeList = getUserDefinedGenomeArchiveList();
+        } catch (IOException e) {
+            MessageUtils.showErrorMessage("Cannot access user defined genome archive list", e);
         }
+
 
         combineGenomeLists(tmpuserDefinedGenomeList, tmpArchiveGenomeItemList);
 
@@ -1136,6 +1156,7 @@ public class GenomeManager {
     /**
      * IGV always has exactly 1 genome loaded at a time.
      * This returns the currently loaded genome
+     *
      * @return
      * @api
      */

@@ -414,7 +414,7 @@ public class CommandExecutor {
                 unload = MessageUtils.confirm("Unload current session before loading new tracks?");
             }
             if (unload) {
-                igv.resetSession(null);
+                igv.newSession();
             }
         }
 

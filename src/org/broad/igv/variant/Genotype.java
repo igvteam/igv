@@ -11,7 +11,7 @@
 
 package org.broad.igv.variant;
 
-import org.broadinstitute.sting.utils.variantcontext.GenotypeType;
+import org.broadinstitute.variant.variantcontext.GenotypeType;
 
 import java.util.List;
 import java.util.Map;
@@ -33,7 +33,7 @@ public interface Genotype {
     /**
      * @return The GenotypeType.
      *         Should be GenotypeType.UNAVAILABLE if not known, never null
-     *         See {@link org.broadinstitute.sting.utils.variantcontext.GenotypeType}
+     *         See {@link org.broadinstitute.variant.variantcontext.GenotypeType}
      */
     GenotypeType getType();
 

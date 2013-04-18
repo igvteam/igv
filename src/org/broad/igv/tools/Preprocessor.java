@@ -17,8 +17,6 @@ package org.broad.igv.tools;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
-import org.broad.igv.dev.affective.AffectiveLogParser;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tdf.*;
@@ -291,7 +289,7 @@ public class Preprocessor implements DataConsumer {
         Iterator<String> iter = genome.getAllChromosomeNames().iterator();
         while (iter.hasNext()) {
             String chromoName = iter.next();
-            if(!chromosomes.contains(chromoName)){
+            if (!chromosomes.contains(chromoName)) {
                 continue;
             }
             chrString.append(chromoName);
@@ -739,14 +737,9 @@ public class Preprocessor implements DataConsumer {
             CNParser cnParser = new CNParser(iFile.getAbsolutePath(), this, genome);
             cnParser.parse();
         } else {
-            boolean affective = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
-            if (affective && (iFile.isDirectory() || tmp.endsWith(".csv"))) {
-                AffectiveLogParser parser = new AffectiveLogParser(iFile.getAbsolutePath(), this);
-                parser.parse();
-            } else {
-                out.println("Error: cannot convert files of type '" + tmp + "' to TDF format.");
-                out.println("Try specifying the file type with the --fileType parameter.");
-            }
+            out.println("Error: cannot convert files of type '" + tmp + "' to TDF format.");
+            out.println("Try specifying the file type with the --fileType parameter.");
+
         }
     }
 

@@ -29,10 +29,6 @@ import org.broad.igv.data.rnai.RNAIGeneScoreParser;
 import org.broad.igv.data.rnai.RNAIHairpinParser;
 import org.broad.igv.data.seg.*;
 import org.broad.igv.dev.SegmentedReader;
-import org.broad.igv.dev.affective.AffectiveAnnotationParser;
-import org.broad.igv.dev.affective.AffectiveAnnotationTrack;
-import org.broad.igv.dev.affective.AffectiveUtils;
-import org.broad.igv.dev.affective.Annotation;
 import org.broad.igv.dev.db.DBProfile;
 import org.broad.igv.dev.db.SQLCodecSource;
 import org.broad.igv.dev.db.SampleInfoSQLReader;
@@ -73,7 +69,7 @@ import org.broad.igv.variant.util.PedigreeUtils;
 import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
-import org.broadinstitute.sting.utils.codecs.vcf.VCFHeader;
+import org.broadinstitute.variant.vcf.VCFHeader;
 
 import java.io.File;
 import java.io.IOException;
@@ -82,7 +78,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * User: jrobinso
@@ -161,6 +156,8 @@ public class TrackLoader {
                 loadGMT(locator);
             } else if (typeString.equals("das")) {
                 loadDASResource(locator, newTracks);
+            } else if (MutationTrackLoader.isMutationAnnotationFile(locator)) {
+                this.loadMutFile(locator, newTracks, genome); // Must be tried before generic "loadIndexed" below
             } else if (isIndexed(path, genome)) {
                 loadIndexed(locator, newTracks, genome);
             } else if (typeString.endsWith(".vcf.list")) {
@@ -208,11 +205,10 @@ public class TrackLoader {
             } else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) ||
                     typeString.endsWith("cpg.txt") || typeString.endsWith(".expr")) {
                 loadWigFile(locator, newTracks, genome);
-            }  else if(typeString.endsWith("fpkm_tracking") || typeString.endsWith("gene_exp.diff") ||
+            } else if (typeString.endsWith("fpkm_tracking") || typeString.endsWith("gene_exp.diff") ||
                     typeString.endsWith("cds_exp.diff")) {
                 loadCufflinksFile(locator, newTracks, genome);
-            }
-            else if (typeString.contains(".dranger")) {
+            } else if (typeString.contains(".dranger")) {
                 loadDRangerFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".ewig.tdf") || (typeString.endsWith(".ewig.ibf"))) {
                 loadEwigIBFFile(locator, newTracks, genome);
@@ -227,16 +223,11 @@ public class TrackLoader {
                 loadGFFfile(locator, newTracks, genome);
             } else if (AbstractFeatureParser.canParse(locator.getPath())) {
                 loadFeatureFile(locator, newTracks, genome);
-            } else if (typeString.endsWith(".mut")) { //  MutationParser.isMutationAnnotationFile(locator)) {
-                this.loadMutFile(locator, newTracks, genome);
             } else if (WiggleParser.isWiggle(locator)) {
                 loadWigFile(locator, newTracks, genome);
-            } else if (typeString.endsWith(".maf") || typeString.endsWith(".maf.annotated")) {
-                if (MutationTrackLoader.isMutationAnnotationFile(locator)) {
-                    loadMutFile(locator, newTracks, genome);
-                } else {
-                    loadMultipleAlignmentTrack(locator, newTracks, genome);
-                }
+            } else if (typeString.endsWith(".maf")) {
+                loadMultipleAlignmentTrack(locator, newTracks, genome);
+
             } else if (typeString.endsWith(".maf.dict")) {
                 loadMultipleAlignmentTrack(locator, newTracks, genome);
             } else if (path.toLowerCase().contains(".peak.bin")) {
@@ -251,8 +242,6 @@ public class TrackLoader {
             } else if (typeString.endsWith(".list")) {
                 // This should be deprecated
                 loadListFile(locator, newTracks, genome);
-            } else if (path.contains("Participant") && path.endsWith(".csv")) {
-                loadAffectiveAnnotationTrack(locator, newTracks, genome);
             } else if (AttributeManager.isSampleInfoFile(locator)) {
                 // This might be a sample information file.
                 AttributeManager.getInstance().loadSampleInfo(locator);
@@ -592,18 +581,9 @@ public class TrackLoader {
 
     private void loadCufflinksFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
-        List<CufflinksValue> values = CufflinksParser.parse(locator.getPath());
+        List<? extends CufflinksValue> values = CufflinksParser.parse(locator.getPath());
         CufflinksDataSource ds = new CufflinksDataSource(values, genome);
         Track track = new CufflinksTrack(locator, locator.getName(), locator.getPath(), ds);
-        newTracks.add(track);
-
-    }
-
-    private void loadAffectiveAnnotationTrack(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-
-        AffectiveAnnotationParser parser = new AffectiveAnnotationParser();
-        Map<String, List<Annotation>> annotMap = parser.parse(locator.getPath());
-        AffectiveAnnotationTrack track = new AffectiveAnnotationTrack("id", "Annotations", annotMap);
         newTracks.add(track);
 
     }
@@ -714,11 +694,6 @@ public class TrackLoader {
 
         TDFReader reader = TDFReader.getReader(locator);
         TrackType type = reader.getTrackType();
-
-        if (reader.getTrackType() == TrackType.AFFECTIVE) {
-            AffectiveUtils.loadTDFFile(locator, newTracks, genome, reader);
-            return;
-        }
 
         TrackProperties props = null;
         String trackLine = reader.getTrackLine();
@@ -966,6 +941,7 @@ public class TrackLoader {
                 try {
                     if ((new File(covPath)).exists() || (HttpUtils.isRemoteURL(covPath) &&
                             HttpUtils.getInstance().resourceAvailable(new URL(covPath)))) {
+                        log.debug("Loading TDF for coverage: " + covPath);
                         TDFReader reader = TDFReader.getReader(covPath);
                         TDFDataSource ds = new TDFDataSource(reader, 0, alignmentTrack.getName() + " coverage", genome);
                         covTrack.setDataSource(ds);
@@ -986,7 +962,7 @@ public class TrackLoader {
                 newTracks.add(spliceJunctionTrack);
                 alignmentTrack.setSpliceJunctionTrack(spliceJunctionTrack);
             }
-
+            log.debug("Alignment track loaded");
             newTracks.add(alignmentTrack);
 
         } catch (IndexNotFoundException e) {
@@ -1050,8 +1026,8 @@ public class TrackLoader {
      */
     private void loadMutFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
-        MutationTrackLoader parser = new MutationTrackLoader();
-        List<FeatureTrack> mutationTracks = parser.loadMutationTracks(locator, genome);
+        MutationTrackLoader loader = new MutationTrackLoader();
+        List<FeatureTrack> mutationTracks = loader.loadMutationTracks(locator, genome);
         for (FeatureTrack track : mutationTracks) {
             track.setTrackType(TrackType.MUTATION);
             track.setRendererClass(MutationRenderer.class);

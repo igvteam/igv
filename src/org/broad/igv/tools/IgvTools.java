@@ -23,7 +23,6 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.RollingFileAppender;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.GFFParser;
 import org.broad.igv.feature.genome.FastaUtils;
@@ -1010,7 +1009,6 @@ public class IgvTools {
      */
     private static void validateIsTilable(String typeString) {
 
-        boolean affective = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
         if (!(typeString.endsWith("cn") ||
                 typeString.endsWith("igv") ||
                 typeString.endsWith("wig") ||
@@ -1025,8 +1023,7 @@ public class IgvTools {
                 typeString.endsWith("mage-tab") ||
                 typeString.endsWith("bedgraph") ||
                 typeString.endsWith("ewig.list") ||
-                Preprocessor.isAlignmentFile(typeString) ||
-                affective)) {
+                Preprocessor.isAlignmentFile(typeString))) {
             throw new PreprocessingException("Tile command not supported for files of type: " + typeString);
         }
     }

@@ -15,6 +15,7 @@ import jargs.gnu.CmdLineParser;
 import net.sf.samtools.util.CloseableIterator;
 import net.sf.samtools.util.SortingCollection;
 import org.broad.igv.feature.genome.ChromosomeNameComparator;
+import org.broad.igv.feature.tribble.MUTCodec;
 import org.broad.igv.gwas.GWASParser;
 import org.broad.igv.track.GFFFeatureSource;
 import org.broad.tribble.readers.AsciiLineReader;
@@ -118,6 +119,8 @@ public abstract class Sorter {
             return new BedSorter(inputFile, outputFile);
         } else if (GWASParser.isGWASFile(shortFN)) {
             return new GWASSorter(inputFile, outputFile);
+        } else if (MUTCodec.isMutationAnnotationFile(inputFile.getAbsolutePath())) {
+            return new MUTSorter(inputFile, outputFile);
         } else {
             System.out.println("Unknown file type or sorting not supported for: " + inputFile.getName());
             return null;

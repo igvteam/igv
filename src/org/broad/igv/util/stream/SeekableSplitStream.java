@@ -12,9 +12,9 @@
 package org.broad.igv.util.stream;
 
 
+import net.sf.samtools.seekablestream.SeekableStream;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.tribble.util.SeekableStream;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -39,7 +39,10 @@ public class SeekableSplitStream extends SeekableStream {
     List<PartDescriptor> descriptors;
     int currentStreamIndex = 0;
 
+    private String path;
+
     public SeekableSplitStream(String path) throws IOException {
+        this.path = path;
         parseDescriptors(path);
     }
 
@@ -168,5 +171,10 @@ public class SeekableSplitStream extends SeekableStream {
     @Override
     public boolean eof() throws IOException {
         return false;  //TODO -- punting on this for the moment
+    }
+
+    @Override
+    public String getSource() {
+        return this.path;
     }
 }

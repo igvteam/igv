@@ -24,6 +24,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.eventbus.Subscribe;
 import com.jidesoft.swing.JideSplitPane;
+import net.sf.samtools.seekablestream.SeekableFileStream;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
@@ -31,7 +32,6 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
-import org.broad.igv.dev.affective.AffectiveGenome;
 import org.broad.igv.dev.api.IGVPlugin;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.MaximumContigGenomeException;
@@ -55,7 +55,6 @@ import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.*;
 import org.broad.igv.util.collections.LRUCache;
 import org.broad.igv.variant.VariantTrack;
-import org.broad.tribble.util.SeekableFileStream;
 
 import javax.swing.*;
 import java.awt.*;
@@ -132,14 +131,16 @@ public class IGV {
             Collections.synchronizedCollection(new ArrayList<SoftReference<AlignmentTrackEventListener>>());
 
     private List<JComponent> otherToolMenus = new ArrayList<JComponent>();
+
     /**
      * Add an entry to the "Tools" menu
+     *
      * @param menu
      * @api
      */
     public void addOtherToolMenu(JComponent menu){
         otherToolMenus.add(menu);
-        if(menuBar != null) menuBar.refreshToolsMenu();
+        if (menuBar != null) menuBar.refreshToolsMenu();
     }
 
 
@@ -190,6 +191,7 @@ public class IGV {
     /**
      * The IGV GUI has one master frame containing all other elements.
      * This method returns that frame.
+     *
      * @return
      * @api
      */
@@ -533,17 +535,17 @@ public class IGV {
         return contentPane.getCommandBar().getGenomeDisplayNames();
     }
 
-    void loadGenomeFromServerAction(){
+    void loadGenomeFromServerAction() {
 
         Runnable showDialog = new Runnable() {
             @Override
             public void run() {
-                if(GenomeManager.getInstance().getServerGenomeArchiveList() == null){
+                if (GenomeManager.getInstance().getServerGenomeArchiveList() == null) {
                     waitForNotify(10000);
                 }
 
                 Collection<GenomeListItem> inputListItems = GenomeManager.getInstance().getServerGenomeArchiveList();
-                if(inputListItems == null){
+                if (inputListItems == null) {
                     IOException exc = new IOException("Unable to reach genome server");
                     MessageUtils.showErrorMessage(exc.getMessage(), exc);
                     return;
@@ -665,64 +667,15 @@ public class IGV {
 
             NamedRunnable runnable = new NamedRunnable() {
                 public void run() {
-                    // get current track count per panel.  Needed to detect which panels
-                    // changed.  Also record panel sizes
-                    final HashMap<TrackPanelScrollPane, Integer> trackCountMap = new HashMap();
-                    final HashMap<TrackPanelScrollPane, Integer> panelSizeMap = new HashMap();
-                    for (TrackPanel tp : getTrackPanels()) {
-                        TrackPanelScrollPane sp = tp.getScrollPane();
-                        trackCountMap.put(sp, sp.getDataPanel().getAllTracks().size());
-                        panelSizeMap.put(sp, sp.getDataPanel().getHeight());
-                    }
+
+                    //Collect size statistics before loading
+                    List<Map<TrackPanelScrollPane, Integer>> trackPanelAttrs = getTrackPanelAttrs();
 
                     loadResources(locators);
 
-                    double totalHeight = 0;
-                    for (TrackPanel tp : getTrackPanels()) {
-                        TrackPanelScrollPane sp = tp.getScrollPane();
-                        if (trackCountMap.containsKey(sp)) {
-                            int prevTrackCount = trackCountMap.get(sp).intValue();
-                            if (prevTrackCount != sp.getDataPanel().getAllTracks().size()) {
-                                int scrollPosition = panelSizeMap.get(sp);
-                                if (prevTrackCount != 0 && sp.getVerticalScrollBar().isShowing()) {
-                                    sp.getVerticalScrollBar().setMaximum(sp.getDataPanel().getHeight());
-                                    sp.getVerticalScrollBar().setValue(scrollPosition);
-                                }
-                            }
-                        }
-                        // Give a maximum "weight" of 300 pixels to each panel.  If there are no tracks, give zero
-                        if (sp.getTrackPanel().getTracks().size() > 0)
-                            totalHeight += Math.min(300, sp.getTrackPanel().getPreferredPanelHeight());
-                    }
+                    resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
 
-                    // Adjust dividers for data panel.  The data panel divider can be
-                    // zero if there are no data tracks loaded.
-                    final JideSplitPane centerSplitPane = contentPane.getMainPanel().getCenterSplitPane();
-                    int htotal = centerSplitPane.getHeight();
-                    int y = 0;
-                    int i = 0;
-                    for (Component c : centerSplitPane.getComponents()) {
-                        if (c instanceof TrackPanelScrollPane) {
-                            final TrackPanel trackPanel = ((TrackPanelScrollPane) c).getTrackPanel();
-                            if (trackPanel.getTracks().size() > 0) {
-                                int panelWeight = Math.min(300, trackPanel.getPreferredPanelHeight());
-                                int dh = (int) ((panelWeight / totalHeight) * htotal);
-                                y += dh;
-                            }
-                            centerSplitPane.setDividerLocation(i, y);
-                            i++;
-                        }
-                    }
-
-                    contentPane.getMainPanel().invalidate();
                     showLoadedTrackCount();
-
-                    boolean affective = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
-                    if (affective) {
-                        contentPane.getCommandBar().updateChromosomeDropdown();
-                    }
-
-
                 }
 
                 public String getName() {
@@ -737,6 +690,69 @@ public class IGV {
 
     }
 
+    /**
+     * Cet current track count per panel.  Needed to detect which panels
+     * changed.  Also record panel sizes
+     * @return A 2 element list: 0th element is a map from scrollpane -> number of tracks,
+     *                           1st element is a map from scrollpane -> track height (in pixels)
+     */
+    public List<Map<TrackPanelScrollPane, Integer>> getTrackPanelAttrs(){
+        Map<TrackPanelScrollPane, Integer> trackCountMap = new HashMap();
+        Map<TrackPanelScrollPane, Integer> panelSizeMap = new HashMap();
+        for (TrackPanel tp : getTrackPanels()) {
+            TrackPanelScrollPane sp = tp.getScrollPane();
+            trackCountMap.put(sp, sp.getDataPanel().getAllTracks().size());
+            panelSizeMap.put(sp, sp.getDataPanel().getHeight());
+        }
+        return Arrays.asList(trackCountMap, panelSizeMap);
+    }
+
+    /**
+     * Recalculate and set heights of track panels, based on newly loaded tracks
+     * @param trackCountMap scrollpane -> number of tracks
+     * @param panelSizeMap  scrollpane -> height in pixels
+     */
+    public void resetPanelHeights(Map<TrackPanelScrollPane, Integer> trackCountMap, Map<TrackPanelScrollPane, Integer> panelSizeMap){
+
+        double totalHeight = 0;
+        for (TrackPanel tp : getTrackPanels()) {
+            TrackPanelScrollPane sp = tp.getScrollPane();
+            if (trackCountMap.containsKey(sp)) {
+                int prevTrackCount = trackCountMap.get(sp);
+                if (prevTrackCount != sp.getDataPanel().getAllTracks().size()) {
+                    int scrollPosition = panelSizeMap.get(sp);
+                    if (prevTrackCount != 0 && sp.getVerticalScrollBar().isShowing()) {
+                        sp.getVerticalScrollBar().setMaximum(sp.getDataPanel().getHeight());
+                        sp.getVerticalScrollBar().setValue(scrollPosition);
+                    }
+                }
+            }
+            // Give a maximum "weight" of 300 pixels to each panel.  If there are no tracks, give zero
+            if (sp.getTrackPanel().getTracks().size() > 0)
+                totalHeight += Math.min(300, sp.getTrackPanel().getPreferredPanelHeight());
+        }
+
+        // Adjust dividers for data panel.  The data panel divider can be
+        // zero if there are no data tracks loaded.
+        final JideSplitPane centerSplitPane = contentPane.getMainPanel().getCenterSplitPane();
+        int htotal = centerSplitPane.getHeight();
+        int y = 0;
+        int i = 0;
+        for (Component c : centerSplitPane.getComponents()) {
+            if (c instanceof TrackPanelScrollPane) {
+                final TrackPanel trackPanel = ((TrackPanelScrollPane) c).getTrackPanel();
+                if (trackPanel.getTracks().size() > 0) {
+                    int panelWeight = Math.min(300, trackPanel.getPreferredPanelHeight());
+                    int dh = (int) ((panelWeight / totalHeight) * htotal);
+                    y += dh;
+                }
+                centerSplitPane.setDividerLocation(i, y);
+                i++;
+            }
+        }
+
+        contentPane.getMainPanel().invalidate();
+    }
 
     public void setGeneList(GeneList geneList) {
         setGeneList(geneList, true);
@@ -960,13 +976,16 @@ public class IGV {
      * Create a snapshot image of {@code target} and save it to {@code file}. The file type of the exported
      * snapshot will be chosen by the extension of {@code file}, which must be a supported type.
      *
-     * @see SnapshotFileChooser.SnapshotFileType
      * @param target
      * @param file
      * @param paintOffscreen Whether to include offScreen data in the snapshot. Components must implement
      *                       the {@link Paintable} interface for this to work
      * @throws IOException
+<<<<<<< HEAD
      * @api
+=======
+     * @see SnapshotFileChooser.SnapshotFileType
+>>>>>>> master
      */
     public String createSnapshotNonInteractive(Component target, File file, boolean paintOffscreen) throws IOException {
 
@@ -1102,6 +1121,13 @@ public class IGV {
 
     }
 
+    /**
+     * Set the session to the file specified by {@code sessionPath}
+     * If you want to create a new session, consider {@link #newSession()}
+     * as that preserves the gene track.
+     *
+     * @param sessionPath
+     */
     public void resetSession(String sessionPath) {
 
         LRUCache.clearCaches();
@@ -1133,6 +1159,11 @@ public class IGV {
 
     }
 
+    /**
+     * Creates a new IGV session, and restores the gene track afterwards.
+     * For that reason, if one wishes to keep the default gene track, this method
+     * should be used, rather than resetSession
+     */
     public void newSession() {
         resetSession(null);
         setGenomeTracks(GenomeManager.getInstance().getCurrentGenome().getGeneTrack());
@@ -1370,16 +1401,17 @@ public class IGV {
     /**
      * Uses either current session.getPersistent, or preferences, depending
      * on if IGV has an instance or not. Generally intended for testing
-     * @see Session#getPersistent(String, String)
-     * @see PreferenceManager#getPersistent(String, String)
+     *
      * @param key
      * @param def
      * @return
+     * @see Session#getPersistent(String, String)
+     * @see PreferenceManager#getPersistent(String, String)
      */
-    public static String getPersistent(String key, String def){
-        if(IGV.hasInstance()){
+    public static String getPersistent(String key, String def) {
+        if (IGV.hasInstance()) {
             return IGV.getInstance().getSession().getPersistent(key, def);
-        }else{
+        } else {
             return PreferenceManager.getInstance().getPersistent(key, def);
         }
     }
@@ -1537,6 +1569,7 @@ public class IGV {
 
     /**
      * Load resources into IGV. Tracks are added to the appropriate panel
+     *
      * @param locators
      */
     public void loadResources(Collection<ResourceLocator> locators) {
@@ -1565,6 +1598,7 @@ public class IGV {
                 public void run() {
                     try {
                         List<Track> tracks = load(locator);
+                        log.debug(tracks.size() + " new tracks loaded");
                         addTracks(tracks, locator);
                     } catch (Exception e) {
                         log.error("Error loading track", e);
@@ -1584,6 +1618,8 @@ public class IGV {
             try {
                 t.join();
             } catch (InterruptedException ignore) {
+                log.error(ignore.getMessage(), ignore);
+                messages.append("Thread interrupted: " + ignore.getMessage());
             }
         }
 
@@ -1599,6 +1635,7 @@ public class IGV {
 
     /**
      * Add tracks to the specified panel
+     *
      * @param tracks
      * @param panelName
      * @api
@@ -1610,14 +1647,13 @@ public class IGV {
     }
 
     /**
-     *
      * Add the specified tracks to the appropriate panel. Panel
      * is chosen based on characteristics of the {@code locator}.
      *
      * @param tracks
      * @param locator
      */
-    void addTracks(List<Track> tracks, ResourceLocator locator){
+    void addTracks(List<Track> tracks, ResourceLocator locator) {
         if (tracks.size() > 0) {
             String path = locator.getPath();
 
@@ -1638,9 +1674,9 @@ public class IGV {
 
 
     /**
-     *
      * Load a resource and return the tracks.
      * Does not automatically add anything
+     *
      * @param locator
      * @return A list of loaded tracks
      */
@@ -1797,6 +1833,7 @@ public class IGV {
 
     /**
      * Group all alignment tracks by the specified option.
+     *
      * @param option
      * @api
      */
@@ -1858,6 +1895,7 @@ public class IGV {
      * for linking tracks for overlay.
      */
     public void resetOverlayTracks() {
+        log.debug("Resetting Overlay Tracks");
         overlayTracksMap.clear();
         overlaidTracks.clear();
 
@@ -2213,6 +2251,7 @@ public class IGV {
 
 
     private void resetGroups() {
+        log.debug("Resetting Groups");
         for (TrackPanel trackPanel : getTrackPanels()) {
             trackPanel.groupTracksByAttribute(groupByAttribute);
         }
@@ -2305,39 +2344,35 @@ public class IGV {
             }
 
             final PreferenceManager preferenceManager = PreferenceManager.getInstance();
-            boolean affectiveMode = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
-            if (affectiveMode) {
-                closeWindow(progressDialog);
-                GenomeManager.getInstance().setCurrentGenome(new AffectiveGenome());
-            } else {
-                try {
-                    contentPane.getCommandBar().initializeGenomeList(monitor);
-                } catch (FileNotFoundException ex) {
-                    JOptionPane.showMessageDialog(mainFrame, "Error initializing genome list: " + ex.getMessage());
-                    log.error("Error initializing genome list: ", ex);
-                } catch (NoRouteToHostException ex) {
-                    JOptionPane.showMessageDialog(mainFrame, "Network error initializing genome list: " + ex.getMessage());
-                    log.error("Network error initializing genome list: ", ex);
-                } finally {
-                    monitor.fireProgressChange(50);
-                    closeWindow(progressDialog);
-                }
 
-                if (igvArgs.getGenomeId() != null) {
-                    if (ParsingUtils.pathExists(igvArgs.getGenomeId())) {
-                        try {
-                            IGV.getInstance().loadGenome(igvArgs.getGenomeId(), null);
-                        } catch (IOException e) {
-                            log.error("Error loading genome file: " + igvArgs.getGenomeId());
-                        }
-                    } else {
-                        contentPane.getCommandBar().selectGenome(igvArgs.getGenomeId());
-                    }
-                } else if (igvArgs.getSessionFile() == null) {
-                    String genomeId = preferenceManager.getDefaultGenome();
-                    contentPane.getCommandBar().selectGenome(genomeId);
-                }
+            try {
+                contentPane.getCommandBar().initializeGenomeList(monitor);
+            } catch (FileNotFoundException ex) {
+                JOptionPane.showMessageDialog(mainFrame, "Error initializing genome list: " + ex.getMessage());
+                log.error("Error initializing genome list: ", ex);
+            } catch (NoRouteToHostException ex) {
+                JOptionPane.showMessageDialog(mainFrame, "Network error initializing genome list: " + ex.getMessage());
+                log.error("Network error initializing genome list: ", ex);
+            } finally {
+                monitor.fireProgressChange(50);
+                closeWindow(progressDialog);
             }
+
+            if (igvArgs.getGenomeId() != null) {
+                if (ParsingUtils.pathExists(igvArgs.getGenomeId())) {
+                    try {
+                        IGV.getInstance().loadGenome(igvArgs.getGenomeId(), null);
+                    } catch (IOException e) {
+                        log.error("Error loading genome file: " + igvArgs.getGenomeId());
+                    }
+                } else {
+                    contentPane.getCommandBar().selectGenome(igvArgs.getGenomeId());
+                }
+            } else if (igvArgs.getSessionFile() == null) {
+                String genomeId = preferenceManager.getDefaultGenome();
+                contentPane.getCommandBar().selectGenome(genomeId);
+            }
+
 
             //If there is an argument assume it is a session file or url
             if (igvArgs.getSessionFile() != null || igvArgs.getDataFileString() != null) {
@@ -2389,7 +2424,7 @@ public class IGV {
                             String name = names[idx];
 
                             // Decode local file paths
-                            if(!FileUtils.isRemote(name)) {
+                            if (!FileUtils.isRemote(name)) {
                                 name = StringUtils.decodeURL(name);
                             }
 
@@ -2459,14 +2494,15 @@ public class IGV {
         }
 
 
-        private void initIGVPlugins(){
+        private void initIGVPlugins() {
             List<String> pluginClassNames = new ArrayList<String>(2);
             InputStream is = IGV.class.getResourceAsStream("resources/builtin_plugin_list.txt");
-            if(is != null){
+            if (is != null) {
                 BufferedReader br = new BufferedReader(new InputStreamReader(is));
                 String line = null;
                 try {
-                    while((line = br.readLine()) != null){
+                    while ((line = br.readLine()) != null) {
+                        if (line.startsWith("##")) continue;
                         pluginClassNames.add(line);
                     }
                 } catch (IOException e) {
@@ -2474,7 +2510,7 @@ public class IGV {
                 }
             }
             pluginClassNames.addAll(Arrays.asList(PreferenceManager.getInstance().getIGVPluginList()));
-            for(String classname: pluginClassNames){
+            for (String classname : pluginClassNames) {
                 try {
                     Class clazz = Class.forName(classname);
                     IGVPlugin plugin = (IGVPlugin) clazz.newInstance();

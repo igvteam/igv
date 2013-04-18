@@ -33,7 +33,6 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.List;
 
 /**
  * Manages user preferences.
@@ -212,7 +211,6 @@ public class PreferenceManager implements PropertyManager {
     public static final String GENOME_SPACE_ATM_SERVER = "GENOME_SPACE_ATM_SERVER";
     public static final String GENOME_SPACE_IDENTITY_SERVER = "GENOME_SPACE_IDENTITY_SERVER";
 
-    public static final String AFFECTIVE_ENABLE = "AFFECTIVE_ENABLE";
     public static final String ENABLE_EXOME_BUTTON = "ENABLE_EXOME_BUTTON";
 
     public static final String CBIO_MUTATION_THRESHOLD = "CBIO_MUTATION_THRESHOLD";
@@ -1036,7 +1034,6 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(GENOME_SPACE_IDENTITY_SERVER, "https://identitydev.genomespace.org:8444/identityServer/basic");
 
         // Affective computing mode
-        defaultValues.put(AFFECTIVE_ENABLE, "false");
         defaultValues.put(ENABLE_EXOME_BUTTON, "false");
 
         defaultValues.put(DB_ENABLED, "false");

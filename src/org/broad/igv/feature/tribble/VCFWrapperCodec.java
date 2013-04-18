@@ -16,7 +16,7 @@ import org.broad.igv.variant.vcf.VCFVariant;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
 import org.broad.tribble.readers.LineReader;
-import org.broadinstitute.sting.utils.variantcontext.VariantContext;
+import org.broadinstitute.variant.variantcontext.VariantContext;
 
 /**
  * @author Jim Robinson

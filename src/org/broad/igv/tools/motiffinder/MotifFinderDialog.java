@@ -15,11 +15,13 @@
 
 package org.broad.igv.tools.motiffinder;
 
+import net.sf.samtools.util.SequenceUtil;
+import org.broad.igv.ui.util.MessageUtils;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +30,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Dialog so the user can enter a pattern that can be used
@@ -38,7 +42,7 @@ import java.util.Set;
 public class MotifFinderDialog extends JDialog {
 
     private static Map<String, String> letterToRegex;
-    private static Set<String> validInputStrings;
+    private static Set<String> validIUPACInputStrings;
 
     static{
         initLetterToRegex();
@@ -47,14 +51,19 @@ public class MotifFinderDialog extends JDialog {
     private static final String codeFilePath = "resources/iupac_regex_table.txt";
     private static void initLetterToRegex() {
         letterToRegex = loadMap(MotifFinderSource.class.getResourceAsStream(codeFilePath));
-        validInputStrings = new HashSet<String>(letterToRegex.size());
+        validIUPACInputStrings = new HashSet<String>(letterToRegex.size());
         for(String key: letterToRegex.keySet()){
-            validInputStrings.add(key.toUpperCase());
+            validIUPACInputStrings.add(key.toUpperCase());
         }
     }
 
-    public static boolean isValidString(String c) {
-        return validInputStrings.contains(c);
+    /**
+     * Returns true if character c is a valid IUPAC Ambiguity code
+     * @param c Single character
+     * @return
+     */
+    public static boolean isIUPACChar(String c) {
+        return validIUPACInputStrings.contains(c);
     }
 
     /**
@@ -93,7 +102,9 @@ public class MotifFinderDialog extends JDialog {
         return map;
     }
 
-    private String trackName;
+    private String posTrackName;
+    private String negTrackName;
+
     private String inputPattern;
 
     public MotifFinderDialog(Frame owner) {
@@ -105,8 +116,12 @@ public class MotifFinderDialog extends JDialog {
         return inputPattern;
     }
 
-    public String getTrackName() {
-        return trackName;
+    public String getPosTrackName() {
+        return posTrackName;
+    }
+
+    public String getNegTrackName() {
+        return negTrackName;
     }
 
     /**
@@ -135,37 +150,95 @@ public class MotifFinderDialog extends JDialog {
 
     private void okButtonActionPerformed(ActionEvent e) {
 
-        this.trackName = null;
+        this.posTrackName = null;
         this.inputPattern = null;
 
         String strPattern = patternField.getText().toUpperCase();
 
-        //Don't validate regex here, too hard
-        boolean patternIsValid = true;
-        if(ambiguityCodeButton.isSelected()){
-            patternIsValid = checkPatternValid(strPattern);
-            if(patternIsValid){
-                strPattern = convertMotifToRegex(strPattern);
-            }
-        }
+        boolean isIUPAC = checkIUPACPatternValid(strPattern);
+        boolean isRegex = checkNucleotideRegex(strPattern);
+        boolean patternIsValid = isIUPAC || isRegex;
 
         if(!patternIsValid){
-            // TODO warn user
-        }else{
-            this.trackName = nameField.getText();
-            this.inputPattern = strPattern;
-            this.setVisible(false);
+            MessageUtils.showMessage("Please enter a valid pattern.\n" +
+                    "Patterns using IUPAC ambiguity codes should contain no special characters.\n" +
+                    "Regular expressions should contain only 'ACTGN' in addition to special characters");
+            return;
         }
+
+        if (isIUPAC) {
+            strPattern = convertMotifToRegex(strPattern);
+        }
+
+        this.posTrackName = posNameField.getText();
+        this.negTrackName = negNameField.getText();
+        if(this.posTrackName.equalsIgnoreCase(negTrackName)){
+            MessageUtils.showMessage("Track names must be different");
+            return;
+        }
+        this.inputPattern = strPattern;
+        this.setVisible(false);
+
     }
 
-    private boolean checkPatternValid(String strPattern) {
+    /**
+     * Determines whether this string pattern is interpretable as
+     * a set of IUPAC nucleotide characters
+     * @param strPattern Upper case string pattern
+     * @return
+     */
+    static boolean checkIUPACPatternValid(String strPattern) {
         for(int ii=0; ii < strPattern.length(); ii++){
             String c = strPattern.substring(ii, ii + 1);
-            if(!isValidString(c)){
+            if(!isIUPACChar(c)){
                 return false;
             }
         }
         return true;
+    }
+
+    /**
+     * Determine whether it's a valid regex.
+     * Also, any letters should be one of AGCTN (case insensitive)
+     * @param strPattern
+     * @return
+     */
+    static boolean checkNucleotideRegex(String strPattern){
+        try {
+            //First check if it's valid regex
+            Pattern pattern = Pattern.compile(strPattern);
+            byte[] bytes = strPattern.getBytes();
+            for(byte c: bytes){
+                if(Character.isLetter(c)){
+                    boolean validBase = SequenceUtil.isValidBase(c);
+                    validBase |= c == 'N';
+                    if(!validBase) return false;
+                }
+            }
+        } catch (PatternSyntaxException e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private void posNameFieldFocusLost(FocusEvent e) {
+        updateNegNameFieldFromPos();
+    }
+
+    private void updateNegNameFieldFromPos(){
+        String posText = this.posNameField.getText();
+        this.negNameField.setText(posText + " Negative");
+    }
+
+    private void posNameFieldInputMethodTextChanged(InputMethodEvent e) {
+        updateNegNameFieldFromPos();
+    }
+
+    private void posNameFieldKeyReleased(KeyEvent e) {
+        if(e.getKeyCode() == KeyEvent.VK_ENTER){
+            updateNegNameFieldFromPos();
+        }
     }
 
     private void initComponents() {
@@ -173,15 +246,17 @@ public class MotifFinderDialog extends JDialog {
         // Generated using JFormDesigner non-commercial license
         dialogPane = new JPanel();
         contentPanel = new JPanel();
-        textArea1 = new JTextArea();
-        label1 = new JLabel();
-        nameField = new JTextField();
         label2 = new JLabel();
         label4 = new JLabel();
         patternField = new JTextField();
-        radioButtonPanel = new JPanel();
-        ambiguityCodeButton = new JRadioButton();
-        regexButton = new JRadioButton();
+        textArea1 = new JTextArea();
+        vSpacer1 = new JPanel(null);
+        panel1 = new JPanel();
+        label1 = new JLabel();
+        posNameField = new JTextField();
+        panel2 = new JPanel();
+        label3 = new JLabel();
+        negNameField = new JTextField();
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -201,26 +276,8 @@ public class MotifFinderDialog extends JDialog {
                 contentPanel.setAlignmentX(0.0F);
                 contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
-                //---- textArea1 ----
-                textArea1.setText("Enter the pattern for which to search. Matches in the current genome sequence will be displayed in a new track. ");
-                textArea1.setEditable(false);
-                textArea1.setBackground(new Color(238, 238, 238));
-                textArea1.setLineWrap(true);
-                contentPanel.add(textArea1);
-
-                //---- label1 ----
-                label1.setText("Track Name:");
-                label1.setLabelFor(nameField);
-                label1.setHorizontalTextPosition(SwingConstants.LEFT);
-                label1.setHorizontalAlignment(SwingConstants.LEFT);
-                label1.setMaximumSize(new Dimension(374, 16));
-                label1.setPreferredSize(new Dimension(374, 16));
-                label1.setAlignmentX(1.0F);
-                contentPanel.add(label1);
-                contentPanel.add(nameField);
-
                 //---- label2 ----
-                label2.setText("Pattern:");
+                label2.setText("Search Pattern:");
                 label2.setLabelFor(patternField);
                 label2.setHorizontalTextPosition(SwingConstants.LEFT);
                 label2.setHorizontalAlignment(SwingConstants.LEFT);
@@ -231,25 +288,77 @@ public class MotifFinderDialog extends JDialog {
                 contentPanel.add(label4);
                 contentPanel.add(patternField);
 
-                //======== radioButtonPanel ========
+                //---- textArea1 ----
+                textArea1.setText("Enter nucleotide sequence (e.g. ACCGCT), \nor nucleotide sequence with IUPAC ambiguity codes (e.g. AAARNR), \nor regular expression of nucleotides (e.g. TATAAA(A){3,}). ");
+                textArea1.setEditable(false);
+                textArea1.setBackground(new Color(238, 238, 238));
+                textArea1.setLineWrap(true);
+                textArea1.setWrapStyleWord(true);
+                textArea1.setFont(textArea1.getFont().deriveFont(textArea1.getFont().getStyle() | Font.ITALIC, textArea1.getFont().getSize() - 2f));
+                textArea1.setMargin(new Insets(0, 25, 0, 0));
+                textArea1.setFocusable(false);
+                contentPanel.add(textArea1);
+
+                //---- vSpacer1 ----
+                vSpacer1.setMinimumSize(new Dimension(12, 20));
+                vSpacer1.setPreferredSize(new Dimension(10, 20));
+                contentPanel.add(vSpacer1);
+
+                //======== panel1 ========
                 {
-                    radioButtonPanel.setAlignmentX(1.0F);
-                    radioButtonPanel.setMaximumSize(new Dimension(200, 46));
-                    radioButtonPanel.setPreferredSize(new Dimension(200, 46));
-                    radioButtonPanel.setLayout(new BoxLayout(radioButtonPanel, BoxLayout.Y_AXIS));
+                    panel1.setLayout(new BoxLayout(panel1, BoxLayout.X_AXIS));
 
-                    //---- ambiguityCodeButton ----
-                    ambiguityCodeButton.setText("IUPAC Ambiguity Codes");
-                    ambiguityCodeButton.setSelected(true);
-                    ambiguityCodeButton.setToolTipText("Use IUPAC ambiguity codes");
-                    radioButtonPanel.add(ambiguityCodeButton);
+                    //---- label1 ----
+                    label1.setText("Positive Strand Result Track:");
+                    label1.setLabelFor(posNameField);
+                    label1.setHorizontalTextPosition(SwingConstants.LEFT);
+                    label1.setHorizontalAlignment(SwingConstants.LEFT);
+                    label1.setMaximumSize(new Dimension(374, 16));
+                    label1.setPreferredSize(new Dimension(200, 16));
+                    label1.setAlignmentX(1.0F);
+                    panel1.add(label1);
 
-                    //---- regexButton ----
-                    regexButton.setText("Regular Expressions");
-                    regexButton.setToolTipText("Use java regular expression syntax");
-                    radioButtonPanel.add(regexButton);
+                    //---- posNameField ----
+                    posNameField.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            posNameFieldFocusLost(e);
+                        }
+                    });
+                    posNameField.addInputMethodListener(new InputMethodListener() {
+                        @Override
+                        public void inputMethodTextChanged(InputMethodEvent e) {
+                            posNameFieldInputMethodTextChanged(e);
+                        }
+                        @Override
+                        public void caretPositionChanged(InputMethodEvent e) {}
+                    });
+                    posNameField.addKeyListener(new KeyAdapter() {
+                        @Override
+                        public void keyReleased(KeyEvent e) {
+                            posNameFieldKeyReleased(e);
+                        }
+                    });
+                    panel1.add(posNameField);
                 }
-                contentPanel.add(radioButtonPanel);
+                contentPanel.add(panel1);
+
+                //======== panel2 ========
+                {
+                    panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
+
+                    //---- label3 ----
+                    label3.setText("Negative Strand Result Track:");
+                    label3.setLabelFor(negNameField);
+                    label3.setHorizontalTextPosition(SwingConstants.LEFT);
+                    label3.setHorizontalAlignment(SwingConstants.LEFT);
+                    label3.setMaximumSize(new Dimension(374, 16));
+                    label3.setPreferredSize(new Dimension(200, 16));
+                    label3.setAlignmentX(1.0F);
+                    panel2.add(label3);
+                    panel2.add(negNameField);
+                }
+                contentPanel.add(panel2);
             }
             dialogPane.add(contentPanel, BorderLayout.NORTH);
 
@@ -287,13 +396,8 @@ public class MotifFinderDialog extends JDialog {
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
         contentPane.add(dialogPane, BorderLayout.CENTER);
-        setSize(400, 300);
+        setSize(450, 300);
         setLocationRelativeTo(getOwner());
-
-        //---- buttonGroup1 ----
-        ButtonGroup buttonGroup1 = new ButtonGroup();
-        buttonGroup1.add(ambiguityCodeButton);
-        buttonGroup1.add(regexButton);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
@@ -301,15 +405,17 @@ public class MotifFinderDialog extends JDialog {
     // Generated using JFormDesigner non-commercial license
     private JPanel dialogPane;
     private JPanel contentPanel;
-    private JTextArea textArea1;
-    private JLabel label1;
-    private JTextField nameField;
     private JLabel label2;
     private JLabel label4;
     private JTextField patternField;
-    private JPanel radioButtonPanel;
-    private JRadioButton ambiguityCodeButton;
-    private JRadioButton regexButton;
+    private JTextArea textArea1;
+    private JPanel vSpacer1;
+    private JPanel panel1;
+    private JLabel label1;
+    private JTextField posNameField;
+    private JPanel panel2;
+    private JLabel label3;
+    private JTextField negNameField;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;

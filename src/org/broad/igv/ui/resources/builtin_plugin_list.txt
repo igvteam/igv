@@ -1,3 +1,4 @@
 org.broad.igv.plugin.mongovariant.VariantReviewPlugin
-org.broad.igv.gitools.Gitools
 org.broad.igv.tools.motiffinder.MotifFinderSource$MotifFinderPlugin
+org.broad.igv.plugin.AddMenuSeparator
+org.broad.igv.gitools.Gitools

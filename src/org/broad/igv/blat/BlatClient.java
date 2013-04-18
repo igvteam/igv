@@ -1,5 +1,17 @@
+/*
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.blat;
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.PSLRecord;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -7,9 +19,12 @@ import org.broad.igv.feature.tribble.PSLCodec;
 import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.LongRunningTask;
+import org.broad.igv.util.NamedRunnable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,10 +32,6 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.broad.igv.Globals;
-import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.NamedRunnable;
 
 /**
  * Port of perl script blatPlot.pl   http://genomewiki.cse.ucsc.edu/index.php/Blat_Scripts
@@ -233,6 +244,7 @@ public class BlatClient {
                         FeatureSource<PSLRecord> source = new FeatureCollectionSource(features, genome);
                         FeatureTrack newTrack = new FeatureTrack("Blat", "Blat", source);
                         newTrack.setUseScore(true);
+                        newTrack.setDisplayMode(Track.DisplayMode.SQUISHED);
                         IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
 
                         BlatQueryWindow win = new BlatQueryWindow(userSeq, features);

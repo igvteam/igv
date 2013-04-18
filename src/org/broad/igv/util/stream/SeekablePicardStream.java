@@ -1,7 +1,18 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.util.stream;
 
 
-import net.sf.samtools.util.SeekableStream;
+import net.sf.samtools.seekablestream.SeekableStream;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -14,18 +25,18 @@ import java.io.IOException;
  * @date Dec 23, 2011
  */
 
-public class SeekablePicardStream extends net.sf.samtools.util.SeekableStream {
+public class SeekablePicardStream extends net.sf.samtools.seekablestream.SeekableStream {
 
     public static final int DEFAULT_BUFFER_SIZE = 1024000;
 
     final private int bufferSize;
-    org.broad.tribble.util.SeekableStream wrappedStream;
+    SeekableStream wrappedStream;
     String source;
     BufferedInputStream bufferedStream;
     long position;
 
 
-    public SeekablePicardStream(org.broad.tribble.util.SeekableStream tribbleStream, String source) {
+    public SeekablePicardStream(SeekableStream tribbleStream, String source) {
 
         this.wrappedStream = tribbleStream;
         this.source = source;
@@ -37,6 +48,11 @@ public class SeekablePicardStream extends net.sf.samtools.util.SeekableStream {
     @Override
     public long length() {
         return wrappedStream.length();
+    }
+
+    @Override
+    public long position() throws IOException {
+        return this.position;
     }
 
     @Override

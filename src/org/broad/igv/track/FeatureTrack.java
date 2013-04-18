@@ -726,8 +726,8 @@ public class FeatureTrack extends AbstractTrack {
             return;
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("renderFeatures: " + getName());
+        if (log.isTraceEnabled()) {
+            log.trace("renderFeatures: " + getName());
         }
 
         String chr = context.getChr();

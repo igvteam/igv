@@ -34,10 +34,11 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
 
     private static Logger log = Logger.getLogger(MUTCodec.class);
 
-    String path;  // for error messages
-    boolean isMAF;
-    String[] headers;
-    Genome genome;
+    private String path;  // for error messages
+    private boolean isMAF;
+    private String[] headers;
+    private String[] samples;
+    private Genome genome;
     private int chrColumn;
     private int startColumn;
     private int endColumn;
@@ -46,6 +47,7 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
     private int refAlleleColumn;
     private int tumorAllele1Column;
     private int tumorAllele2Column;
+
 
     public MUTCodec(String path, Genome genome) {
         super(Mutation.class);
@@ -63,7 +65,20 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
 
             reader = ParsingUtils.openBufferedReader(path);
             while ((nextLine = reader.readLine()) != null) {
-                if (nextLine.startsWith("#")) continue;
+                if (nextLine.startsWith("#")) {
+                    if (nextLine.startsWith("#samples")) {
+                        String[] tokens = Globals.whitespacePattern.split(nextLine, 2);
+                        if (tokens.length < 2) {
+                            log.error("Error parsing sample header in mutation file: " + path);
+                        } else {
+                            samples = Globals.commaPattern.split(tokens[1]);
+                            for (int i = 0; i < samples.length; i++) {
+                                samples[i] = samples[i].trim();
+                            }
+                        }
+                    }
+                    continue;
+                }
 
                 String[] tokens = nextLine.split("\t");
                 if (tokens.length > 4) {
@@ -88,12 +103,26 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
         throw new RuntimeException("Unexpected end-of-file (no header line): " + path);
     }
 
+    public String[] getSamples() {
+        return samples;
+    }
+
+    public int getChrColumn() {
+        return chrColumn;
+    }
+
+    public int getStartColumn() {
+        return startColumn;
+    }
+
     @Override
     public Mutation decode(String line) {
 
+        if(line.startsWith("#") || line.startsWith("Hugo_Symbol")) return null;
+
         String[] tokens = Globals.tabPattern.split(line);
 
-        String chr = genome.getChromosomeAlias(tokens[chrColumn].trim());
+        String chr = genome == null ? tokens[chrColumn].trim() : genome.getChromosomeAlias(tokens[chrColumn].trim());
 
         int start;
         try {
@@ -178,34 +207,43 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
      * @throws IOException
      */
     public static boolean isMutationAnnotationFile(String path) {
-        BufferedReader reader = null;
-        try {
-            reader = ParsingUtils.openBufferedReader(path);
-            if (reader == null) {
+
+        String ext = ParsingUtils.getIGVExtension(path);
+        if (ext.equals("mut")) {
+            return true;
+        } else if(ext.equals("maf")) {
+
+            BufferedReader reader = null;
+            try {
+                reader = ParsingUtils.openBufferedReader(path);
+                if (reader == null) {
+                    return false;
+                }
+
+                String nextLine;
+                while ((nextLine = reader.readLine()) != null && nextLine.startsWith("#")) {
+                    if (nextLine.startsWith("#")) {
+                        continue;
+                    }
+                }
+
+                String[] tokens = nextLine.split("\t");
+                return tokens.length > 15 && tokens[0].equalsIgnoreCase("Hugo_Symbol");
+            } catch (IOException e) {
+                log.error("Error reading: " + path, e);
                 return false;
-            }
-
-            String nextLine;
-            while ((nextLine = reader.readLine()) != null && nextLine.startsWith("#")) {
-                if (nextLine.startsWith("#version")) {
-                    return true;
+            } finally {
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        log.error("Error closing: " + path, e);
+                    }
                 }
             }
-            if (nextLine == null) return false;
-
-            String[] tokens = nextLine.split("\t");
-            return tokens.length > 15 && tokens[0].equalsIgnoreCase("Hugo_Symbol");
-        } catch (IOException e) {
-            log.error("Error reading: " + path, e);
+        }
+        else {
             return false;
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    log.error("Error closing: " + path, e);
-                }
-            }
         }
 
 

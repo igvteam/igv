@@ -81,6 +81,10 @@ public class MessageUtils {
     }
 
     public static synchronized boolean confirm(final String message) {
+        if(Globals.isHeadless()){
+            log.error("Attempted to confirm while running headless with the following message:\n" + message);
+            return false;
+        }
 
         final Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
         return confirm(parent, message);

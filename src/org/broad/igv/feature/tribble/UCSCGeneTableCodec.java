@@ -210,7 +210,7 @@ public class UCSCGeneTableCodec extends UCSCCodec<BasicFeature> {
                     if (exonFrame == -1) {
                         exons.get(i).setUTR(true);
                     } else {
-                        int phase = (exonFrame == 0) ? 0 : strandColumn - exonFrame;
+                        int phase = (exonFrame == 0) ? 0 : 3 - exonFrame;
                         exons.get(i).setPhase(phase);
                     }
                 }
