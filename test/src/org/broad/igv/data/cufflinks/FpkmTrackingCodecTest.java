@@ -11,7 +11,6 @@
 
 package org.broad.igv.data.cufflinks;
 
-import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
@@ -22,13 +21,14 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * @author jacob
- * @date 2013-Apr-11
+ * @date 2013-Apr-18
  */
-public class CufflinksParserTest extends AbstractHeadlessTest {
+public class FpkmTrackingCodecTest {
 
     @Test
     public void testsample_genesFPKM() throws Exception{
         String path = TestUtils.DATA_DIR + "cufflinks/sample_genes.fpkm_tracking";
+
         List<? extends CufflinksValue> values = CufflinksParser.parse(path);
 
         String[] expGenes = new String[]{"STPG1", "HS3ST1","CFLAR","TFPI", "NDUFAF7"};
@@ -37,21 +37,6 @@ public class CufflinksParserTest extends AbstractHeadlessTest {
         for(String expGene: expGenes){
             CufflinksValue value = values.get(index++);
             assertTrue(value instanceof FPKMValue);
-            assertEquals(expGene, value.getGene());
-        }
-    }
-
-    @Test
-    public void testsamplegene_expdiff() throws Exception{
-        String path = TestUtils.DATA_DIR + "cufflinks/sample_gene_exp.diff";
-        List<? extends CufflinksValue> values = CufflinksParser.parse(path);
-
-        String[] expGenes = new String[]{"TSPAN6", "TNMD", "DPM1", "SCYL3"};
-        int index = 0;
-
-        for(String expGene: expGenes){
-            CufflinksValue value = values.get(index++);
-            assertTrue(value instanceof ExpDiffValue);
             assertEquals(expGene, value.getGene());
         }
     }

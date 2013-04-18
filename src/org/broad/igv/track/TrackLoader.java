@@ -585,7 +585,6 @@ public class TrackLoader {
         CufflinksDataSource ds = new CufflinksDataSource(values, genome);
         Track track = new CufflinksTrack(locator, locator.getName(), locator.getPath(), ds);
         newTracks.add(track);
-
     }
 
 

@@ -90,8 +90,11 @@ public class CodecFactory {
             return new EncodePeakCodec(genome);
         } else if (fn.endsWith(".peak")) {
             return new PeakCodec(genome);
-
-        } else {
+//        } else if (fn.endsWith("fpkm_tracking")) {
+//            return new FpkmTrackingCodec(path);
+//        } else if (fn.endsWith("gene_exp.diff") || fn.endsWith("cds_exp.diff")) {
+//            return new ExpDiffCodec(path);
+        }else {
             return null;
         }
 

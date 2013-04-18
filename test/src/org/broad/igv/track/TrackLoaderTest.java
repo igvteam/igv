@@ -187,7 +187,7 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
 
     }
 
-    static String[] filenames = new String[]{"/bb/chr21.refseq.bb", "/bed/MT_test.bed", "/bed/Unigene.sample.bed",
+    static String[] filenames = new String[]{"cufflinks/sample_genes.fpkm_tracking", "cufflinks/sample_gene_exp.diff", "/bb/chr21.refseq.bb", "/bed/MT_test.bed", "/bed/Unigene.sample.bed",
             "/bed/test.bed", "/cn/HindForGISTIC.hg16.cn", "/folder with spaces/test.wig",
             "/gct/igv_test2.gct", "/gct/affy_human_mod.gct", "/gff/gene.unsorted.gff3", "/igv/MIP_44.cn",//"/gc/chr1.txt",
             "/maf/TCGA_GBM_Level3_Somatic_Mutations_08.28.2008.maf.gz", "/psl/fishBlat.psl", "/sam/test_2.sam",

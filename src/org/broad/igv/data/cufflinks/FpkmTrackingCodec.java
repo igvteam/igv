@@ -1,0 +1,80 @@
+/*
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
+package org.broad.igv.data.cufflinks;
+
+import org.apache.log4j.Logger;
+import org.broad.igv.feature.Locus;
+import org.broad.igv.util.ParsingUtils;
+
+/**
+ * Codec for Cufflinks FPKM files, extension fpkm_tracking
+ *
+* @author jacob
+* @date 2013-Apr-18
+*/
+public class FpkmTrackingCodec extends CufflinksCodec<FPKMValue>{
+
+    private static Logger log = Logger.getLogger(FpkmTrackingCodec.class);
+
+    int geneColumn = 4;
+    int locusColumn  = 6;
+    int fpkmColumn = 6;
+    int confLoColumn = 7;
+    int confHiColumn = 8;
+    int sigColumn = 12;
+
+    public FpkmTrackingCodec(String path){
+        super(FPKMValue.class, path);
+    }
+
+    @Override
+    public Object readHeader(String[] tokens) {
+        for(int i=0; i<tokens.length; i++) {
+            final String tk = tokens[i];
+            if(tk.equals("locus")) locusColumn = i;
+            else if(tk.equals("gene_short_name")) geneColumn = i;
+            else if(tk.equals("FPKM")) fpkmColumn = i;
+            else if(tk.equals("FPKM_conf_lo")) confLoColumn = i;
+            else if(tk.startsWith("FPKM_conf_hi")) confHiColumn = i;
+        }
+        return tokens;
+    }
+
+    @Override
+    public FPKMValue decode(String line) {
+        return decode(ParsingUtils.TAB_PATTERN.split(line));
+    }
+
+    @Override
+    public FPKMValue decode(String[] tokens) {
+        //Skip header line
+        if (tokens[0].equalsIgnoreCase("tracking_id") || tokens[geneColumn].equalsIgnoreCase("gene_short_name")) {
+            return null;
+        }
+        if (tokens.length >= 12) {
+            String locusString = tokens[locusColumn];
+            if (locusString == null) return null;
+
+            Locus locus = new Locus(locusString);
+            if(locus.getChr() == null) return null;
+
+            float fpkm = Float.parseFloat(tokens[fpkmColumn]);
+            float confLo = Float.parseFloat(tokens[confLoColumn]);
+            float confHi = Float.parseFloat(tokens[confHiColumn]);
+            String gene = tokens[geneColumn];
+            return new FPKMValue(gene, locus.getChr(), locus.getStart() - 1, locus.getEnd(), fpkm, confLo, confHi);
+        } else {
+            log.info("Unexpected # of columns.  Expected at least 12,  found " + tokens.length);
+            return null;
+        }
+    }
+}
