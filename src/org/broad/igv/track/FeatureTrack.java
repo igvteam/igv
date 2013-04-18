@@ -143,8 +143,8 @@ public class FeatureTrack extends AbstractTrack {
      * @param id
      * @param name
      * @param source
+     * @api
      */
-    @api
     public FeatureTrack(String id, String name, FeatureSource source) {
         super(id, name);
         init(source);

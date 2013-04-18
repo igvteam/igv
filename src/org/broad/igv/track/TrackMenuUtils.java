@@ -17,7 +17,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.blat.BlatClient;
-import org.broad.igv.dev.api.api;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.genome.Genome;
@@ -68,8 +67,8 @@ public class TrackMenuUtils {
      * Called by plugins to add a listener, which is then called when TrackMenus are created
      * to generate menu entries.
      * @param builder
+     * @api
      */
-    @api
     public static void addTrackMenuItemBuilder(TrackMenuItemBuilder builder){
         trackMenuItems.add(builder);
     }

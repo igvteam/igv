@@ -18,7 +18,6 @@ package org.broad.igv.lists;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.cbio.FilterGeneNetworkUI;
-import org.broad.igv.dev.api.api;
 import org.broad.igv.gitools.Gitools;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
@@ -913,10 +912,10 @@ public class GeneListManagerUI extends JDialog {
      * and taking some action based on that. Listeners
      * implementing this interface can be used as callbacks
      * once a GeneList is selected from GeneListManagerUI
-     * User: jacob
-     * Date: 2013-Jan-04
+     * @author jacob
+     * @date 2013-Jan-04
+     * @api
      */
-    @api
     public interface GeneListListener {
 
         void actionPerformed(JDialog dialog, GeneList geneList);

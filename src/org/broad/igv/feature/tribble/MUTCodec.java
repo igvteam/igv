@@ -22,7 +22,6 @@ import org.broad.tribble.AsciiFeatureCodec;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Codec for .mut and .maf mutation files

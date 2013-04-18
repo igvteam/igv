@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Extension-Name: de.kruis.padoclet.PublishedApiDoclet
+Implementation-Title: PublishApiDoclet
+Implementation-Vendor: Anselm Kruis
+Implementation-Vendor-Id: anselm.kruis.de
+Specification-Version: 1
+Specification-Vendor: Anselm Kruis
+Sealed: false
+Main-Class: de.kruis.padoclet.PublishedApiDoclet

@@ -1,0 +1,56 @@
+<!--
+  ~ Copyright (c) 2007-2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  ~
+  ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+  ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+  -->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+</head>
+<body>
+<p>You probably know the difference between the <def>public API</def>
+and the <def>published API</def>. The former is the set of classes,
+interfaces, methods, fields etc., that can be used from a technical
+point of view. The later is the set of classes, interfaces, methods,
+fields etc., that is intended to be used by a third party. While you
+can change the public API using the refactorings provided by your IDE,
+you can't change the published API without breaking third party
+code. Therefore the published API will be a (somethimes rather small)
+subset of the public API. There is an elaborate paper about all that
+from Martin Fowler: "Public versus Published Interfaces" 
+(IEEE Software, March/April 2002, p.18f, online available at 
+<a href="http://martinfowler.com/ieeeSoftware/published.pdf">
+http://martinfowler.com/ieeeSoftware/published.pdf</a>)</p>
+<p>Unfortunately javadoc doesn't support the concept of a published
+API. The PublishedApiDoclet tries to leverage this deficiency. It acts
+as a filtering proxy or decorator for another doclet, that formats the
+output. The PublishedApiDoclet hides anything, that doesn't belong to
+the published API from the formating doclet.</p>
+<h3>Usage:</h3>
+<p> The PublishedApiDoclet follows the javadoc doclet
+conventions. That is, you need to add the parameters <code>-doclet
+de.kruis.padoclet.PublishedApiDoclet</code> and <code>-docletpath
+/path/to/PublishedApiDoclet.jar</code> to your javadoc command
+line. Then you have to set the system property
+<code>PublishedApiDoclet.delegate</code> to the name of the formating
+doclet, unless you use the javadoc standard doclet. (A system property
+is used, because the PublishedApiDoclet needs the name of the formating
+doclet to parse the command line.) Several command line options
+controll the behaviour of the PublishedApiDoclet. Use the option <code>-padHelp</code>
+to get an overview over the options.
+</p>
+<p>
+Unfortunately, I didn't write a more complete documentation yet. But have 
+a look at the example subpackage.
+</p>
+
+@pad.include src
+@pad.exclude sample9
+</body>
+</html>

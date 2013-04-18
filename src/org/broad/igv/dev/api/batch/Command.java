@@ -11,18 +11,17 @@
 
 package org.broad.igv.dev.api.batch;
 
-import org.broad.igv.dev.api.api;
-
 import java.util.List;
 
 /**
  * Interface which must be implemented by
  * any class which is a custom batch script command
  * <p/>
- * User: jacob
- * Date: 2012-Nov-30
+ * @author jacob
+ * @date 2012-Nov-30
+ * @api
  */
-@api
+
 public interface Command {
 
     /**

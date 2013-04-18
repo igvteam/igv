@@ -20,11 +20,9 @@
 */
 package org.broad.igv.feature.genome;
 
-
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
-import org.broad.igv.dev.api.api;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.track.FeatureTrack;
@@ -158,7 +156,7 @@ public class Genome {
     }
 
     /**
-     * Pouplate the chr alias table.  The input is a collection of chromosome synonym lists.  The
+     * Populate the chr alias table.  The input is a collection of chromosome synonym lists.  The
      * directionality is determined by the "true" chromosome names.
      *
      * @param synonymsList
@@ -167,7 +165,6 @@ public class Genome {
 
         // Convert names to a set for fast "contains" testing.
         Set<String> chrNameSet = new HashSet<String>(chromosomeNames);
-
 
         for (Collection<String> synonyms : synonymsList) {
 
@@ -405,8 +402,8 @@ public class Genome {
      * @param start start position in "zero-based" coordinates
      * @param end   end position
      * @return sequence, or null if not available
+     * @api
      */
-    @api
     public byte[] getSequence(String chr, int start, int end) {
 
         if (sequence == null) {

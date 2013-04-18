@@ -16,7 +16,6 @@ package org.broad.igv.variant;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.broad.igv.dev.api.api;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.renderer.GraphicUtils;
@@ -1154,8 +1153,8 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      * Return the {@code Variant} object closest to the specified event
      * @param te
      * @return
+     * @api
      */
-    @api
     public Variant getSelectedVariant(final TrackClickEvent te){
         final ReferenceFrame referenceFrame = te.getFrame();
         Variant selVariant = null;
@@ -1396,8 +1395,8 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     /**
      * Features are packed upon loading, effectively a cache.
      * This clears that cache. Used to force a refresh
+     * @api
      */
-    @api
     public void clearPackedFeatures(){
         this.packedFeaturesMap.clear();
     }
