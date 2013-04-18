@@ -20,7 +20,10 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Parses a ".mut" file

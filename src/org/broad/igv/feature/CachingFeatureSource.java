@@ -11,7 +11,6 @@
 
 package org.broad.igv.feature;
 
-import org.broad.igv.dev.api.api;
 import org.broad.igv.track.FeatureSource;
 import org.broad.tribble.Feature;
 
@@ -23,10 +22,9 @@ import java.util.List;
  * A FeatureSource wrapper which provides caching.
  * The cache is only cleared when the source is closed.
  *
- * User: jacob
- * Date: 2012/05/15
+ * @author jacob
+ * @date 2012/05/15
  */
-@api
 public class CachingFeatureSource extends AbstractCacher implements FeatureSource {
 
     private static final int maxBinCount = 1000;
@@ -39,8 +37,8 @@ public class CachingFeatureSource extends AbstractCacher implements FeatureSourc
      * Wraps the provided {@code source} with a caching version,
      * using default parameters.
      * @param source
+     * @api
      */
-    @api
     public CachingFeatureSource(FeatureSource source) {
         this(source, maxBinCount, defaultBinSize);
     }

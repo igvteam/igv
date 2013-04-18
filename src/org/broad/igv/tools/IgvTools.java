@@ -23,7 +23,6 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.RollingFileAppender;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.GFFParser;
 import org.broad.igv.feature.genome.FastaUtils;

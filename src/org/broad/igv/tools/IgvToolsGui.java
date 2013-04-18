@@ -11,7 +11,6 @@
 package org.broad.igv.tools;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.WindowFunction;
 
 import javax.swing.*;

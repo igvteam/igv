@@ -11,18 +11,16 @@
 
 package org.broad.igv.track;
 
-import org.broad.igv.dev.api.api;
-
 import javax.swing.*;
 import java.util.Collection;
 
 /**
  * Interface to implement when adding a context menu item for track context menus
  *
- * User: jacob
- * Date: 2012-Dec-21
+ * @author jacob
+ * @date 2012-Dec-21
+ * @api
  */
-@api
 public interface TrackMenuItemBuilder {
 
     /**
