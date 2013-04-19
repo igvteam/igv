@@ -691,7 +691,7 @@ public class TrackLoader {
 
     public void loadTDFFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
-
+        log.info("Loading TDF file");
         TDFReader reader = TDFReader.getReader(locator);
         TrackType type = reader.getTrackType();
 
