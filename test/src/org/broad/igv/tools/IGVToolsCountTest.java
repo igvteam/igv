@@ -170,7 +170,7 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
                 assertTrue(outFile.canRead());
 
                 ResourceLocator locator = new ResourceLocator(fullout);
-                WiggleDataset ds = (new WiggleParser(locator, IgvTools.loadGenome(hg18id, true))).parse();
+                WiggleDataset ds = (new WiggleParser(locator, IgvTools.loadGenome(hg18id))).parse();
 
                 //We miss a few alignments with this option sometimes,
                 //so it doesn't total up the same
@@ -412,7 +412,7 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
         assertTrue(idxFi.exists());
         idxFi.deleteOnExit();
 
-        Genome genome = IgvTools.loadGenome(fasta_file, true);
+        Genome genome = IgvTools.loadGenome(fasta_file);
         FeatureCodec codec = CodecFactory.getCodec(infile, genome);
         AbstractFeatureReader<Feature> reader = AbstractFeatureReader.getFeatureReader(infile, codec, true);
         String chr = "NC_000913_bb";

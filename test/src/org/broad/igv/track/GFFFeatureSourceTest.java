@@ -89,7 +89,7 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
 
     @Test
     public void testQuery_01() throws Exception {
-        genome = IgvTools.loadGenome(TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased.genome", true);
+        genome = IgvTools.loadGenome(TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased.genome");
         String filepath = org.broad.igv.util.TestUtils.DATA_DIR + "gff/aliased.sorted.gff";
 
         String chr = "chr5";

@@ -127,7 +127,7 @@ public class TestUtils {
      */
     public static Genome loadGenome() throws IOException {
         final String genomeFile = defaultGenome;
-        return IgvTools.loadGenome(genomeFile, true);
+        return IgvTools.loadGenome(genomeFile);
     }
 
     public static void clearOutputDir() throws IOException {

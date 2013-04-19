@@ -349,7 +349,7 @@ public class IgvTools {
                     ofile = ofile + ".igv";
                 }
                 String genomeId = nonOptionArgs[3];
-                Genome genome = loadGenome(genomeId, true);
+                Genome genome = loadGenome(genomeId);
                 if (genome == null) {
                     throw new PreprocessingException("Genome could not be loaded: " + genomeId);
                 }
@@ -525,7 +525,7 @@ public class IgvTools {
         System.out.println();
 
         boolean isGCT = isGCT(typeString);
-        Genome genome = loadGenome(genomeId, isGCT);
+        Genome genome = loadGenome(genomeId);
         if (genome == null) {
             throw new PreprocessingException("Genome could not be loaded: " + genomeId);
         }
@@ -692,7 +692,7 @@ public class IgvTools {
         System.out.println("Ext factor = " + extFactorValue);
 
 
-        Genome genome = loadGenome(genomeId, false);
+        Genome genome = loadGenome(genomeId);
         if (genome == null) {
             throw new PreprocessingException("Genome could not be loaded: " + genomeId);
         }
@@ -941,7 +941,7 @@ public class IgvTools {
     }
 
 
-    public static Genome loadGenome(String genomeFileOrID, boolean loadGenes) throws IOException {
+    public static Genome loadGenome(String genomeFileOrID) throws IOException {
 
         String rootDir = FileUtils.getInstallDirectory();
 
@@ -956,12 +956,12 @@ public class IgvTools {
             genomeFile = new File(rootDir, "genomes" + File.separator + genomeFileOrID + ".genome");
 
         }
+        if(!genomeFile.exists()) {
+            genomeFile = new File(rootDir, "genomes" + File.separator + genomeFileOrID + ".chrom.sizes");
+        }
         if (!genomeFile.exists()) {
             genomeFile = new File(rootDir, "genomes" + File.separator + genomeFileOrID);
 
-        }
-        if (!genomeFile.exists()) {
-            genomeFile = new File(genomeFileOrID);
         }
         if (!genomeFile.exists()) {
             throw new PreprocessingException("Genome definition file not found for: " + genomeFileOrID);

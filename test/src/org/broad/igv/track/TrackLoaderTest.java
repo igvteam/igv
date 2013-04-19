@@ -122,7 +122,7 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
     public void testLoadGFFAliasedChrs() throws Exception {
         String filepath = TestUtils.DATA_DIR + "gff/aliased.unsorted.gff";
         TrackLoader loader = new TrackLoader();
-        Genome genome = IgvTools.loadGenome(TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased.genome", true);
+        Genome genome = IgvTools.loadGenome(TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased.genome");
         List<Track> tracks = loader.load(new ResourceLocator(filepath), genome);
         assertEquals(1, tracks.size());
         FeatureTrack track = (FeatureTrack) tracks.get(0);

@@ -37,7 +37,7 @@ public class MainWindow extends JFrame {
     public MainWindow() throws IOException {
 
         Globals.setHeadless(true);
-        Genome genome = IgvTools.loadGenome("test/data/genomes/hg18.unittest.genome", true);
+        Genome genome = IgvTools.loadGenome("test/data/genomes/hg18.unittest.genome");
 
         // Create a test graph and graph panel
         //Graph graph =  GeneUtils.getGraphFor("ARF1"); // createGraph();
