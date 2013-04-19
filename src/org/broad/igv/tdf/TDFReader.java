@@ -79,9 +79,9 @@ public class TDFReader {
         try {
             log.info("Getting stream");
             seekableStream = IGVSeekableStreamFactory.getStreamFor(locator.getPath());
-            log.info("Reading header");
+            log.debug("Reading header");
             readHeader();
-            log.info("Done reading header");
+            log.debug("Done reading header");
 
         } catch (IOException ex) {
             log.error("Error loading file: " + locator.getPath(), ex);
