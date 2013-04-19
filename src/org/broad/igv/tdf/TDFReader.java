@@ -134,6 +134,7 @@ public class TDFReader {
 
         if (version >= 2) {
             int nWFs = byteBuffer.getInt();
+            log.debug("nWFs: " + nWFs);
             this.windowFunctions = new ArrayList(nWFs);
             for (int i = 0; i < nWFs; i++) {
                 String wfName = StringUtils.readString(byteBuffer);
@@ -420,7 +421,7 @@ public class TDFReader {
     public synchronized byte[] readBytes(long position, int nBytes) throws IOException {
         seekableStream.seek(position);
         byte[] buffer = new byte[nBytes];
-        seekableStream.read(buffer, 0, nBytes);
+        int read = seekableStream.read(buffer, 0, nBytes);
         return buffer;
     }
 

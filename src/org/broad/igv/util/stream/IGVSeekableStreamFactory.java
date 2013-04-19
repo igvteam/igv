@@ -12,7 +12,6 @@
 package org.broad.igv.util.stream;
 
 import net.sf.samtools.seekablestream.SeekableFileStream;
-import net.sf.samtools.seekablestream.SeekableHTTPStream;
 import net.sf.samtools.seekablestream.SeekableStream;
 import org.broad.igv.util.HttpUtils;
 
@@ -36,7 +35,7 @@ public class IGVSeekableStreamFactory {
                 final URL url = new URL(path);
                 boolean useByteRange = HttpUtils.getInstance().useByteRange(url);
                 if (useByteRange) {
-                    is = new SeekableHTTPStream(url);
+                    is = new IGVSeekableHTTPStream(url);
                 } else {
                     is = new SeekableServiceStream(url);
                 }
