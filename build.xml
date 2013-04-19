@@ -118,9 +118,11 @@
                target="${javac.target}" source="${javac.target}">
             <classpath refid="@jars"/>
         </javac>
+        <!--
         <copy todir="${tmp.dir}/META-INF/services" overwrite="true">
             <fileset dir="${basedir}/services"/>
         </copy>
+        -->
     </target>
 
     <target name="build-runtime-utils" description="Create RuntimeUtils.jar in testlib directory. Necessary for profiling"
