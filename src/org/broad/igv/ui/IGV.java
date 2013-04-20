@@ -1857,34 +1857,14 @@ public class IGV {
         }
     }
 
-    public void collapseTracks() {
-        for (Track t : getAllTracks()) {
-            t.setDisplayMode(Track.DisplayMode.COLLAPSED);
-        }
-    }
 
-
-    public void expandTracks() {
+    public void setTrackDisplayMode(Track.DisplayMode mode, String trackName) {
         for (Track t : getAllTracks()) {
-            t.setDisplayMode(Track.DisplayMode.EXPANDED);
-        }
-    }
-
-    public void collapseTrack(String trackName) {
-        for (Track t : getAllTracks()) {
-            if (t.getName().equals(trackName)) {
-                t.setDisplayMode(Track.DisplayMode.COLLAPSED);
+            if (trackName == null || t.getName().equals(trackName)) {
+                t.setDisplayMode(mode);
             }
         }
-    }
 
-
-    public void expandTrack(String trackName) {
-        for (Track t : getAllTracks()) {
-            if (t.getName().equals(trackName)) {
-                t.setDisplayMode(Track.DisplayMode.EXPANDED);
-            }
-        }
     }
 
 

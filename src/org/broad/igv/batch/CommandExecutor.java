@@ -137,10 +137,13 @@ public class CommandExecutor {
                     group(param1);
                 } else if (cmd.equalsIgnoreCase("collapse")) {
                     String trackName = param1 == null ? null : param1.replace("\"", "").replace("'", "");
-                    collapse(trackName);
+                    igv.setTrackDisplayMode(Track.DisplayMode.COLLAPSED, trackName);
                 } else if (cmd.equalsIgnoreCase("expand")) {
                     String trackName = param1 == null ? null : param1.replace("\"", "").replace("'", "");
-                    expand(trackName);
+                    igv.setTrackDisplayMode(Track.DisplayMode.EXPANDED, trackName);
+                } else if (cmd.equalsIgnoreCase("squish")) {
+                    String trackName = param1 == null ? null : param1.replace("\"", "").replace("'", "");
+                    igv.setTrackDisplayMode(Track.DisplayMode.SQUISHED, trackName);
                 } else if (cmd.equalsIgnoreCase("tweakdivider")) {
                     igv.tweakPanelDivider();
                 } else if (cmd.equalsIgnoreCase("setDataRange")) {
@@ -543,24 +546,6 @@ public class CommandExecutor {
         return "OK";
     }
 
-    private void collapse(String trackName) {
-        if (trackName == null) {
-            igv.collapseTracks();
-        } else {
-            igv.collapseTrack(trackName);
-        }
-        igv.repaintDataPanels();
-    }
-
-
-    private void expand(String trackName) {
-        if (trackName == null) {
-            igv.expandTracks();
-        } else {
-            igv.expandTrack(trackName);
-        }
-        igv.repaintDataPanels();
-    }
 
     private void defineRegion(String param1, String param2, String param3) {
 
