@@ -10,7 +10,7 @@
   ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
   -->
 
-<project name="igvtools" basedir="../." default="create-both-zips">
+<project name="igvtools" basedir="../." default="deploy">
     <property name="scripts.dir" value="${basedir}/scripts"/>
     <property name="docs.dir" value="${basedir}/docs"/>
     <property name="tmp.dir" value="tmp"/>
@@ -18,7 +18,7 @@
     <property name="title" value="IGVTools"/>
     <property name="jarname" value="igvtools"/>
     <property name="deploy.dir" value="igvtools-dist"/>
-    <property name="genome.dir" value="../server/web/resources/prod/"/>
+    <property name="genome.dir" value="resources/chromSizes/"/>
     <property name="version" value="v0.0"/>
     <property name="build-number" value="0.0"/>
 
@@ -95,27 +95,17 @@
         <include name="igvtools_gui.bat"/>
     </fileset>
 
-    <target name="create-genomes-zip" depends="cleanup, compile, package-jar">
+    <target name="create-zip" depends="cleanup, compile, package-jar">
         <zip destfile="${deploy.dir}/igvtools_${version}.zip" whenempty="fail" defaultexcludes="true">
             <zipfileset dir="${ant.project.name}-dist" includes="${jarname}.jar" prefix="${title}"/>
             <zipfileset refid="scripts" prefix="${title}" filemode="755"/>
             <zipfileset dir="${docs.dir}" includes="igvtools_readme.txt" prefix="${title}"/>
-            <zipfileset dir="${genome.dir}" includes="genomes/*.genome" prefix="${title}"/>
-        </zip>
-    </target>
-
-    <target name="create-nogenomes-zip" depends="cleanup, compile, package-jar">
-        <zip destfile="${deploy.dir}/igvtools_nogenomes_${version}.zip" whenempty="fail" defaultexcludes="true">
-            <zipfileset dir="${ant.project.name}-dist" includes="${jarname}.jar" prefix="${title}"/>
-            <zipfileset refid="scripts" prefix="${title}" filemode="755"/>
-            <zipfileset dir="${docs.dir}" includes="igvtools_readme.txt" prefix="${title}"/>
+            <zipfileset dir="${genome.dir}" includes="genomes/*.chrom.sizes" prefix="${title}"/>
         </zip>
     </target>
 
 
-    <target name="create-both-zips" depends="create-genomes-zip, create-nogenomes-zip"/>
-
-    <target name="deploy" depends="create-both-zips">
+    <target name="deploy" depends="create-zip">
         <copy todir="${deploy.dir}" overwrite="true">
             <fileset dir="${ant.project.name}-dist" includes="*.zip"/>
         </copy>
