@@ -237,7 +237,7 @@ public class PackedFeatures<T extends Feature>{
         return maxFeatureLength;
     }
 
-    class FeatureRow {
+    public class FeatureRow {
         int start;
         int end;
         List<T> features;

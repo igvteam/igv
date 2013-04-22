@@ -336,10 +336,17 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         } else {
             final int groupCount = samplesByGroups.size();
             int margins = groupCount * 3;
-            return variantBandHeight + margins + (sampleCount * getGenotypeBandHeight());
+            return variantBandHeight*getNumberOfFeatureLevels() + margins + (sampleCount * getGenotypeBandHeight());
         }
     }
 
+    /**
+     * Return the height of the variant section only (no samples/genotypes)
+     * @return
+     */
+    private int getVariantsHeight(){
+        return variantBandHeight*getNumberOfFeatureLevels();
+    }
 
     /**
      * Set the height of the track.
@@ -390,127 +397,145 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         Rectangle visibleRectangle = context.getVisibleRect();
 
         // A disposable rect -- note this gets modified all over the place, bad practice
-        Rectangle rect = new Rectangle(trackRectangle);
-        rect.height = getGenotypeBandHeight();
-        rect.y = trackRectangle.y + variantBandHeight;
-        drawBackground(g2D, rect, visibleRectangle, BackgroundType.DATA);
+        Rectangle tmpRect = new Rectangle(trackRectangle);
+        tmpRect.height = getGenotypeBandHeight();
+        tmpRect.y = trackRectangle.y;
+        drawBackground(g2D, tmpRect, visibleRectangle, BackgroundType.DATA);
 
-        if (top > visibleRectangle.y && top < visibleRectangle.getMaxY()) {
-            g2D.drawLine(left, top + 1, right, top + 1);
-        }
+        //List<Feature> features = packedFeatures.getFeatures();
+        List<PackedFeatures.FeatureRow> rows = packedFeatures.getRows();
 
-        List<Feature> features = packedFeatures.getFeatures();
-        if (features.size() > 0) {
+        int overallFeatureRectHeight = getVariantsHeight();
+        int overallSampleRectHeight = trackRectangle.height - overallFeatureRectHeight;
+        Rectangle overallSampleRect = new Rectangle(trackRectangle.x, top + overallFeatureRectHeight, trackRectangle.width,
+                overallSampleRectHeight);
 
+        int curRowTop = top;
+
+        if (rows.size() > 0) {
             final double locScale = context.getScale();
             final double origin = context.getOrigin();
 
-            int lastPX = -1;
-            final double pXMin = rect.getMinX();
-            final double pXMax = rect.getMaxX();
+            final double pXMin = tmpRect.getMinX();
+            final double pXMax = tmpRect.getMaxX();
+            tmpRect.height = variantBandHeight;
 
-            for (Feature feature : features) {
+            for(PackedFeatures.FeatureRow row: rows){
+                List<Feature> features = row.getFeatures();
+                for (Feature feature : features) {
+                    Variant variant = (Variant) feature;
 
-                Variant variant = (Variant) feature;
-
-                //char ref = getReference(variant, windowStart, reference);
-
-                if (hideFiltered && variant.isFiltered()) {
-                    continue;
-                }
-
-                int start = variant.getStart();
-                int end = variant.getEnd();
-                int pX = (int) ((start - origin) / locScale);
-                int dX = (int) Math.max(2, (end - start) / locScale);
-
-                if (pX + dX < pXMin) {
-                    continue;
-                }
-                if (pX > pXMax) {
-                    break;
-                }
-                int w = dX;
-                int x = pX;
-                if (w < 3) {
-                    w = 3;
-                    x--;
-                }
-
-
-                if (pX + dX > lastPX) {
-
-                    rect.y = top;
-                    rect.height = variantBandHeight;
-                    if (rect.intersects(visibleRectangle)) {
-                        renderer.renderSiteBand(variant, rect, x, w, context);
+                    if (hideFiltered && variant.isFiltered()) {
+                        continue;
                     }
 
-                    if (getDisplayMode() != DisplayMode.COLLAPSED) {
-                        rect.y += rect.height;
-                        rect.height = getGenotypeBandHeight();
+                    int start = variant.getStart();
+                    int end = variant.getEnd();
+                    int pX = (int) ((start - origin) / locScale);
+                    int dX = (int) Math.max(2, (end - start) / locScale);
 
-                        // Loop through groups
-                        if (grouped) {
-                            for (Map.Entry<String, List<String>> entry : samplesByGroups.entrySet()) {
-                                for (String sample : entry.getValue()) {
-                                    if (rect.intersects(visibleRectangle)) {
-                                        renderer.renderGenotypeBandSNP(variant, context, rect, x, w, sample, coloring,
-                                                hideFiltered);
-                                    }
-                                    rect.y += rect.height;
-                                }
-                                g2D.setColor(OFF_WHITE);
-                                g2D.fillRect(rect.x, rect.y, rect.width, GROUP_BORDER_WIDTH);
-                                rect.y += GROUP_BORDER_WIDTH;
-                            }
-                        } else {
-                            for (String sample : allSamples) {
-                                if (rect.intersects(visibleRectangle)) {
-                                    renderer.renderGenotypeBandSNP(variant, context, rect, x, w, sample, coloring,
-                                            hideFiltered);
-                                }
-                                rect.y += rect.height;
-                            }
-
-                        }
+                    if (pX + dX < pXMin) {
+                        continue;
+                    }
+                    if (pX > pXMax) {
+                        break;
+                    }
+                    int w = dX;
+                    int x = pX;
+                    if (w < 3) {
+                        w = 3;
+                        x--;
                     }
 
+                    tmpRect.y = curRowTop;
+                    if (tmpRect.intersects(visibleRectangle)) {
+                        renderer.renderSiteBand(variant, tmpRect, x, w, context);
+
+                        renderSamples(g2D, visibleRectangle, variant, context, overallSampleRect, x, w);
+                    }
 
                     boolean isSelected = selectedVariant != null && selectedVariant == variant;
                     if (isSelected) {
                         Graphics2D selectionGraphics = context.getGraphic2DForColor(Color.black);
-                        selectionGraphics.drawRect(x, top, w, getHeight());
+                        selectionGraphics.drawRect(x, curRowTop, w, getHeight());
                     }
 
-                    lastPX = pX + dX;
-
                 }
-
+                if(areFeaturesStacked()){
+                    curRowTop += variantBandHeight;
+                }
             }
-        } else {
-            rect.height = variantBandHeight;
-            rect.y = trackRectangle.y;
+        }else {
+            tmpRect.height = variantBandHeight;
+            tmpRect.y = trackRectangle.y;
             g2D.setColor(Color.gray);
             GraphicUtils.drawCenteredText("No Variants Found", trackRectangle, g2D);
         }
 
-        // Variant band border
+        renderBoundaryLines(g2D, trackRectangle, visibleRectangle);
+
+    }
+
+    private void drawLineIfVisible(Graphics2D g2D, Rectangle visibleRectangle, Color color, int yLoc, int left, int right){
+        if (yLoc >= visibleRectangle.y && yLoc <= visibleRectangle.getMaxY()) {
+            if(color != null) g2D.setColor(color);
+            g2D.drawLine(left, yLoc, right, yLoc);
+        }
+    }
+
+    private void drawVariantBandBorder(Graphics2D g2D, Rectangle visibleRectangle, int variantBandY, int left, int right){
         if (allSamples.size() > 0) {
-            int variantBandY = trackRectangle.y + variantBandHeight;
-            if (variantBandY >= visibleRectangle.y && variantBandY <= visibleRectangle.getMaxY()) {
-                Graphics2D borderGraphics = context.getGraphic2DForColor(Color.black);
-                borderGraphics.drawLine(left, variantBandY, right, variantBandY);
+            drawLineIfVisible(g2D, visibleRectangle, Color.black, variantBandY, left, right);
+        }
+    }
+
+    private void renderSamples(Graphics2D g2D, Rectangle visibleRectangle, Variant variant, RenderContext context, Rectangle overallSampleRect, int x, int w) {
+        Rectangle tmpRect = new Rectangle(overallSampleRect);
+        tmpRect.height = getGenotypeBandHeight();
+        if (grouped) {
+            for (Map.Entry<String, List<String>> entry : samplesByGroups.entrySet()) {
+                for (String sample : entry.getValue()) {
+                    if (overallSampleRect.intersects(visibleRectangle)) {
+                        renderer.renderGenotypeBandSNP(variant, context, tmpRect, x, w, sample, coloring,
+                                hideFiltered);
+                        tmpRect.y += tmpRect.height;
+                    }
+                }
+                g2D.setColor(OFF_WHITE);
+                g2D.fillRect(tmpRect.x, tmpRect.y, tmpRect.width, GROUP_BORDER_WIDTH);
+            }
+        } else {
+            for (String sample : allSamples) {
+                if (tmpRect.intersects(visibleRectangle)) {
+                    renderer.renderGenotypeBandSNP(variant, context, tmpRect, x, w, sample, coloring,
+                            hideFiltered);
+                    tmpRect.y += tmpRect.height;
+                }
             }
         }
+    }
+
+    /**
+     * Renderes the top line, bottom track line, and border between variants / genotypes
+     * @param g2D
+     * @param trackRectangle
+     * @param visibleRectangle
+     */
+    private void renderBoundaryLines(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle){
+        top = trackRectangle.y;
+        final int left = trackRectangle.x;
+        final int right = (int) trackRectangle.getMaxX();
+
+        //Top line
+        drawLineIfVisible(g2D, visibleRectangle, Color.black, top + 1, left, right);
 
         // Bottom border
         int bottomY = trackRectangle.y + trackRectangle.height;
-        if (bottomY >= visibleRectangle.y && bottomY <= visibleRectangle.getMaxY()) {
-            g2D.drawLine(left, bottomY, right, bottomY);
-        }
+        drawLineIfVisible(g2D, visibleRectangle, borderGray, bottomY, left, right);
 
-
+        // Variant / Genotype border
+        int variantGenotypeBorderY = trackRectangle.y + getVariantsHeight();
+        drawVariantBandBorder(g2D, visibleRectangle, variantGenotypeBorderY, left, right);
     }
 
 
@@ -527,48 +552,28 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
 
         top = trackRectangle.y;
-        final int left = trackRectangle.x;
-        final int right = (int) trackRectangle.getMaxX();
 
         Rectangle rect = new Rectangle(trackRectangle);
         g2D.setFont(FontManager.getFont(fontSize));
         g2D.setColor(BAND2_COLOR);
 
-        if (top > visibleRectangle.y && top < visibleRectangle.getMaxY()) {
-            g2D.setColor(Color.black);
-            g2D.drawLine(left, top + 1, right, top + 1);
-        }
 
         g2D.setColor(Color.black);
-        rect.height = variantBandHeight;
+        rect.height = getVariantsHeight();
         if (rect.intersects(visibleRectangle)) {
             GraphicUtils.drawWrappedText(getName(), rect, g2D, false);
         }
 
         rect.y += rect.height;
         rect.height = getGenotypeBandHeight();
-        if (getDisplayMode() != DisplayMode.COLLAPSED) {
+        if (areFeaturesStacked()) {
             // The sample bounds list will get reset when  the names are drawn.
             sampleBounds.clear();
             drawBackground(g2D, rect, visibleRectangle, BackgroundType.NAME);
 
         }
 
-        // Bottom border
-        int bottomY = trackRectangle.y + trackRectangle.height;
-        if (bottomY >= visibleRectangle.y && bottomY <= visibleRectangle.getMaxY()) {
-            g2D.setColor(borderGray);
-            g2D.drawLine(left, bottomY, right, bottomY);
-        }
-
-        // Variant / Genotype border
-        if (allSamples.size() > 0) {
-            int variantBandY = trackRectangle.y + variantBandHeight;
-            if (variantBandY >= visibleRectangle.y && variantBandY <= visibleRectangle.getMaxY()) {
-                g2D.setColor(Color.black);
-                g2D.drawLine(left, variantBandY, right, variantBandY);
-            }
-        }
+        renderBoundaryLines(g2D, trackRectangle, visibleRectangle);
 
     }
 
@@ -585,16 +590,9 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                                  List<String> attributeNames, List<MouseableRegion> mouseRegions) {
 
         top = trackRectangle.y;
-        final int left = trackRectangle.x;
-        final int right = (int) trackRectangle.getMaxX();
         Rectangle rect = new Rectangle(trackRectangle);
 
-        g2D.setColor(Color.black);
-        if (top > visibleRectangle.y && top < visibleRectangle.getMaxY()) {
-            g2D.drawLine(left, top + 1, right, top + 1);
-        }
-
-        rect.height = variantBandHeight;
+        rect.height = getVariantsHeight();
         if (rect.intersects(visibleRectangle)) {
             super.renderAttributes(g2D, rect, visibleRectangle, attributeNames, mouseRegions);
         }
@@ -606,6 +604,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         rect.y += rect.height;
         rect.height = getGenotypeBandHeight();
         Rectangle bandRectangle = new Rectangle(rect);  // Make copy for later use
+
 
         drawBackground(g2D, rect, visibleRectangle, BackgroundType.ATTRIBUTE);
 
@@ -620,21 +619,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
         }
 
-        // Bottom border
-        int bottomY = trackRectangle.y + trackRectangle.height;
-        if (bottomY >= visibleRectangle.y && bottomY <= visibleRectangle.getMaxY()) {
-            g2D.setColor(borderGray);
-            g2D.drawLine(left, bottomY, right, bottomY);
-        }
-
-        // Variant / Genotype border
-        if (allSamples.size() > 0) {
-            int variantBandY = trackRectangle.y + variantBandHeight;
-            if (variantBandY >= visibleRectangle.y && variantBandY <= visibleRectangle.getMaxY()) {
-                g2D.setColor(Color.black);
-                g2D.drawLine(left, variantBandY, right, variantBandY);
-            }
-        }
+        renderBoundaryLines(g2D, trackRectangle, visibleRectangle);
 
     }
 
@@ -681,7 +666,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     }
 
     /**
-     * Draws the "greenbar" type background.  Also, rather bizzarely, draws the sample names.
+     * Draws the "greenbar" type background.  Also, rather bizarrely, draws the sample names.
      *
      * @param g2D
      * @param bandRectangle
@@ -819,25 +804,22 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
         try {
             double maxDistance = 10 * frame.getScale();
-            Variant variant = getFeatureClosest(position, maxDistance, frame);
-            if (variant == null) {
-                return null;
-            } else {
-                if (y < top + variantBandHeight) {
-                    return getVariantToolTip(variant);
-                } else {
-                    if (sampleBounds == null && sampleBounds.isEmpty()) return null;
-                    String sample = getSampleAtPosition(y);
-                    if (sample != null) {
-                        return getSampleToolTip(sample, variant);
-                    } else {
-                        return null;
-                    }
-                }
-            }
+            if (y < top + getVariantsHeight()) {
+                int modY = areFeaturesStacked() ? y : -1;
+                Variant variant = getFeatureClosest(position, modY, frame.getName(), maxDistance);
+                if (variant == null) return null;
 
+                return getVariantToolTip(variant);
+            } else {
+                if (sampleBounds == null || sampleBounds.isEmpty()) return null;
+                String sample = getSampleAtPosition(y);
+                if(sample == null) return null;
+
+                Variant variant = getFeatureClosest(position, -1, frame.getName(), maxDistance);
+                return getSampleToolTip(sample, variant);
+            }
         } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            log.error("Error getting value string", e);
             return null;
         }
     }
@@ -888,22 +870,31 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      * Return the variant closest to the genomic position in the given reference frame, within the prescribed tolerance
      *
      * @param position
-     * @param frame
+     * @param y         y position, in pixels. Only the relevant feature row will be search
+     * @param frameName
+     * @param maxDistance
      * @return
      */
-    protected Variant getFeatureClosest(double position, double maxDistance, ReferenceFrame frame) {
+    protected Variant getFeatureClosest(double position, int y, String frameName, double maxDistance) {
 
-        PackedFeatures<IGVFeature> packedFeatures = packedFeaturesMap.get(frame.getName());
+        PackedFeatures<IGVFeature> packedFeatures = packedFeaturesMap.get(frameName);
 
         if (packedFeatures == null) {
             return null;
         }
 
         Feature feature = null;
+        List<IGVFeature> features;
 
-        // Note that we use the full features to search here because (1) we expect to retrieve one element at most
-        // (2) searching packed features would miss the features we are looking for despite them being in the full set.
-        List<IGVFeature> features = packedFeatures.getFeatures();
+        //We search only the specified row if y is a meaningful value.
+        //Otherwise we search everything
+        int row = (y / variantBandHeight);
+        if(y < 0 || row >= getNumberOfFeatureLevels()){
+            features = packedFeatures.getFeatures();
+        }else{
+            features = packedFeatures.getRows().get(row).getFeatures();
+        }
+
         if (features != null) {
             feature = FeatureUtils.getFeatureClosest(position, features);
         }
@@ -913,8 +904,9 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         } else {
             return (Variant) feature;
         }
-    }
 
+
+    }
 
     private String getVariantToolTip(Variant variant) {
         String id = variant.getID();
@@ -1075,6 +1067,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
 
     private String getSampleToolTip(String sample, Variant variant) {
+        if(variant == null) return null;
         double goodBaseCount = variant.getGenotype(sample).getAttributeAsDouble("GB");
         if (Double.isNaN(goodBaseCount)) goodBaseCount = 0;
         if (isEnableMethylationRateSupport() && goodBaseCount < 10) {
@@ -1161,7 +1154,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         if (referenceFrame != null && referenceFrame.getName() != null) {
             final double position = te.getChromosomePosition();
             double maxDistance = 10 * referenceFrame.getScale();
-            selVariant = getFeatureClosest(position, maxDistance, referenceFrame);
+            selVariant = getFeatureClosest(position, te.getMouseEvent().getY(), referenceFrame.getName(), maxDistance);
         }
         return selVariant;
     }
@@ -1255,7 +1248,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             final double position = te.getChromosomePosition();
             double maxDistance = 10 * referenceFrame.getScale();
 
-            Variant f = getFeatureClosest(position, maxDistance, te.getFrame());
+            Variant f = getFeatureClosest(position, te.getMouseEvent().getY(), te.getFrame().getName(), maxDistance);
             selectedSamples.clear();
             if (f != null) {
                 String selectedSample = getSampleAtPosition(te.getMouseEvent().getY());

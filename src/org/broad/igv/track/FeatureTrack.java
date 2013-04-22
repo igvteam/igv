@@ -270,7 +270,7 @@ public class FeatureTrack extends AbstractTrack {
      * @return
      */
     public int getNumberOfFeatureLevels() {
-        if (getDisplayMode() != DisplayMode.COLLAPSED && packedFeaturesMap.size() > 0) {
+        if (areFeaturesStacked() && packedFeaturesMap.size() > 0) {
             int n = 0;
             for (PackedFeatures pf : packedFeaturesMap.values()) {
                 //dhmay adding null check.  To my mind this shouldn't be necessary, but we're encountering
@@ -281,6 +281,14 @@ public class FeatureTrack extends AbstractTrack {
             return n;
         }
         return 1;
+    }
+
+
+    /**
+     * @return Whether features are displayed stacked on top of one another, rather than overlapping
+     */
+    protected boolean areFeaturesStacked(){
+        return getDisplayMode() != DisplayMode.COLLAPSED;
     }
 
     /**
@@ -542,7 +550,7 @@ public class FeatureTrack extends AbstractTrack {
         MouseEvent e = te.getMouseEvent();
 
         //Selection of an expanded feature row
-        if (getDisplayMode() != DisplayMode.COLLAPSED) {
+        if (areFeaturesStacked()) {
             if (levelRects != null) {
                 for (int i = 0; i < levelRects.size(); i++) {
                     Rectangle rect = levelRects.get(i);
@@ -669,6 +677,7 @@ public class FeatureTrack extends AbstractTrack {
         if (FeatureTrack.drawBorder) {
             Graphics2D borderGraphics = context.getGraphic2DForColor(UIConstants.TRACK_BORDER_GRAY);
             borderGraphics.drawLine(rect.x, rect.y, rect.x + rect.width, rect.y);
+            //TODO Fix height for variant track
             borderGraphics.drawLine(rect.x, rect.y + rect.height, rect.x + rect.width, rect.y + rect.height);
         }
 
@@ -770,7 +779,7 @@ public class FeatureTrack extends AbstractTrack {
 
 
         FeatureRenderer renderer = getRenderer();
-        if (getDisplayMode() != DisplayMode.COLLAPSED) {
+        if (areFeaturesStacked()) {
             List<PackedFeatures.FeatureRow> rows = packedFeatures.getRows();
             if (rows != null && rows.size() > 0) {
 
