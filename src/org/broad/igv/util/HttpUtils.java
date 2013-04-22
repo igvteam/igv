@@ -73,9 +73,6 @@ public class HttpUtils {
         return instance;
     }
 
-    /**
-     * Constructor
-     */
     private HttpUtils() {
 
         org.broad.tribble.util.ParsingUtils.registerHelperClass(IGVUrlHelper.class);
@@ -543,10 +540,17 @@ public class HttpUtils {
             conn.setRequestProperty("Accept", "text/plain");
         }
 
+        //------//
         //We sometimes load very large files, trying to cache those can crash the server
         //This is essentially a server bug, however through experience it has been found
         //that setting useCaches to false works around it.
-        conn.setUseCaches(false);  // <= very important!
+
+        //This default is persistent, really should be available statically but isn't
+        conn.setDefaultUseCaches(false);
+        conn.setUseCaches(false);
+        //------//
+
+
         conn.setConnectTimeout(Globals.CONNECT_TIMEOUT);
         conn.setReadTimeout(Globals.READ_TIMEOUT);
         conn.setRequestMethod(method);
