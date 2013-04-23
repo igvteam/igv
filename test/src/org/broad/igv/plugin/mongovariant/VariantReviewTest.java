@@ -106,6 +106,7 @@ public class VariantReviewTest extends AbstractHeadlessTest{
     //TODO Separate into add/get methods, but that requires prepopulation of data
     @Test
     public void testAddGetFeature() throws Exception{
+        source.consensusOnly = false;
         Assume.assumeTrue(checkFeatureNotPresent());
 
         String errorMessage = VariantReviewDialog.addCall(dbSpecPath, mvc);

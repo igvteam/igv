@@ -13,6 +13,7 @@ package org.broad.igv.plugin.mongovariant;
 
 import net.sf.samtools.SAMSequenceDictionary;
 import net.sf.samtools.SAMSequenceRecord;
+import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -43,6 +44,12 @@ public class VariantReviewSource implements FeatureSource<VCFVariant> {
     private NA12878DBArgumentCollection args;
     private NA12878KnowledgeBase kb;
     private GenomeLocParser parser;
+
+    /**
+     * Whether to return consensus sites only, as opposed to all sites
+     */
+    @ForTesting
+    boolean consensusOnly = true;
 
     public VariantReviewSource(ResourceLocator locator){
         this.args = new NA12878DBArgumentCollection(locator.getPath());
@@ -75,7 +82,12 @@ public class VariantReviewSource implements FeatureSource<VCFVariant> {
         SiteSelector criteria = new SiteSelector(parser);
         //Convert from 0-based to 1-based
         criteria.addInterval(chromoNameToStandard(chr), start + 1, end);
-        SiteIterator<MongoVariantContext> iterator  = kb.getConsensusSites(criteria);
+        SiteIterator<MongoVariantContext> iterator;
+        if(consensusOnly){
+            iterator = kb.getConsensusSites(criteria);
+        }else{
+            iterator = kb.getCalls(criteria);
+        }
         List<VCFVariant> variants = new ArrayList<VCFVariant>();
         while(iterator.hasNext()){
             MongoVariantContext mvc = iterator.next();
@@ -140,6 +152,5 @@ public class VariantReviewSource implements FeatureSource<VCFVariant> {
         track.setMargin(0);
         return track;
     }
-
 
 }
