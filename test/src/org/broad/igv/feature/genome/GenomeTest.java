@@ -27,12 +27,30 @@ import static junit.framework.Assert.*;
  * @date 10/31/11
  */
 public class GenomeTest {
+
+
+    /**
+     * Test some aliases, both manually entered and automatic.
+     * @throws Exception
+     */
+    @Test
+    public void testAliases() throws Exception {
+        String genomeURL = "http://igv.broadinstitute.org/genomes/hg19.genome";
+        Genome genome = GenomeManager.getInstance().loadGenome(genomeURL, null);
+        assertEquals("chrUn_gl000229", genome.getChromosomeAlias("GL000229.1"));
+        assertEquals("chr14", genome.getChromosomeAlias("14"));
+
+        // NCBI genome, test an auto-generated alias
+        genomeURL = "http://igvdata.broadinstitute.org/genomes/NC_000964.genome";
+        genome = GenomeManager.getInstance().loadGenome(genomeURL, null);
+        assertEquals("gi|255767013|ref|NC_000964.3|", genome.getChromosomeAlias("NC_000964.3"));
+    }
+
     @Test
     public void testGetNCBIName() throws Exception {
 
         String ncbiID = "gi|125745044|ref|NC_002229.3|";
         String ncbiName = "NC_002229.3";
-
         assertEquals(ncbiName, Genome.getNCBIName(ncbiID));
 
     }
@@ -61,7 +79,7 @@ public class GenomeTest {
 
 
     @Test
-    public void testGetLongChromosomeNames_manySmall() throws Exception{
+    public void testGetLongChromosomeNames_manySmall() throws Exception {
         String mockIndexPath = TestUtils.DATA_DIR + "fasta/mock_many_small.fa.fai";
         Sequence sequence = new MockSequence(mockIndexPath);
         Genome genome = new Genome("mock_many_small", "mock_many_small", sequence, true);
@@ -103,7 +121,7 @@ public class GenomeTest {
         }
     }
 
-    public static void generateJunkIndex() throws Exception{
+    public static void generateJunkIndex() throws Exception {
         //Generate index file with many small contigs
         int numContigs = 10000;
         int contigMeanSize = 3000;
@@ -113,7 +131,7 @@ public class GenomeTest {
         int position = -1;
         int basesPerLine = 80;
         int bytesPerLine = 81;
-        for(int ci = 0; ci < numContigs; ci++){
+        for (int ci = 0; ci < numContigs; ci++) {
             String chr = "" + ci;
             int size = contigMeanSize + (int) (contigSizeRange * (Math.random() - 0.5));
 
@@ -124,7 +142,7 @@ public class GenomeTest {
         writer.close();
     }
 
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args) throws Exception {
         //generateJunkIndex();
     }
 }

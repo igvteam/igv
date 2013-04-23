@@ -504,6 +504,12 @@ public class FileUtils {
         return absolutePath;
     }
 
+    /**
+     * Return the path path.  The trailing "/" is not included.
+     *
+     * @param path
+     * @return
+     */
     public static String getParent(String path) {
         String piPath = getPlatformIndependentPath(path);
         int lastSlashIdx = piPath.lastIndexOf("/");

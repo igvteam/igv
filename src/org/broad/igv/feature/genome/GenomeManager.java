@@ -136,6 +136,17 @@ public class GenomeManager {
                 newGenome = loadFastaFile(genomePath);
             }
 
+            // Load alias files from genome source directory, if any
+            String aliasPath = FileUtils.getParent(genomePath) + "/" + newGenome.getId() + "_alias.tab";
+            Collection<Collection<String>> aliases = loadChrAliases(aliasPath);
+            if(aliases != null) newGenome.addChrAliases(aliases);
+
+
+            // Load user-defined chr aliases, if any.  This is done last so they have priority
+            aliasPath = (new File(DirectoryManager.getGenomeCacheDirectory(), newGenome.getId() + "_alias.tab")).getAbsolutePath();
+            aliases = loadChrAliases(aliasPath);
+            if(aliases != null) newGenome.addChrAliases(aliases);
+
             if (monitor != null) {
                 monitor.fireProgressChange(25);
             }
@@ -171,6 +182,9 @@ public class GenomeManager {
         String genomeId = genomePath.substring(0, firstPeriodIdx);
         List<Chromosome> chromosomes = ChromSizesParser.parse(genomePath);
         Genome newGenome = new Genome(genomeId, chromosomes);
+
+        // Search for chr aliases
+
         setCurrentGenome(newGenome);
         return newGenome;
 
@@ -189,7 +203,6 @@ public class GenomeManager {
         byte[] seq = genbankParser.getSequence();
         Sequence sequence = new InMemorySequence(chr, seq);
         newGenome = new Genome(chr, name, sequence, true);
-        newGenome.loadUserDefinedAliases();
         setCurrentGenome(newGenome);
 
         if (IGV.hasInstance() && !Globals.isHeadless()) {
@@ -240,9 +253,39 @@ public class GenomeManager {
         FastaIndexedSequence fastaSequence = new FastaIndexedSequence(fastaPath);
         Sequence sequence = new SequenceWrapper(fastaSequence);
         newGenome = new Genome(item.getId(), item.getDisplayableName(), sequence, true);
-        newGenome.loadUserDefinedAliases();
         setCurrentGenome(newGenome);
         return newGenome;
+    }
+
+    private Collection<Collection<String>> loadChrAliases(String path) {
+
+       // String id = genome.getId();
+       // File aliasFile = new File(DirectoryManager.getGenomeCacheDirectory(), id + "_alias.tab");
+        File aliasFile = new File(path);
+
+        if (aliasFile.exists()) {
+
+            BufferedReader br = null;
+
+            try {
+                br = new BufferedReader(new FileReader(aliasFile));
+                return loadChrAliases(br);
+            } catch (IOException e) {
+                log.error("Error loading chr alias table", e);
+                if (!Globals.isHeadless())
+                    MessageUtils.showMessage("<html>Error loading chromosome alias table.  Aliases will not be avaliable<br>" +
+                            e.toString());
+            } finally {
+                if (br != null) {
+                    try {
+                        br.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -324,10 +367,6 @@ public class GenomeManager {
         if (aliases != null) {
             newGenome.addChrAliases(aliases);
         }
-        // Do this last so that user defined aliases have preference.
-        newGenome.loadUserDefinedAliases();
-        setCurrentGenome(newGenome);
-
 
         InputStream geneStream = null;
         if (genomeDescriptor.getGeneFileName() != null) {
@@ -404,7 +443,7 @@ public class GenomeManager {
         }
     }
 
-    static Collection<Collection<String>> loadChrAliases(BufferedReader br) throws IOException {
+    private static Collection<Collection<String>> loadChrAliases(BufferedReader br) throws IOException {
         String nextLine = "";
         Collection<Collection<String>> synonymList = new ArrayList<Collection<String>>();
         while ((nextLine = br.readLine()) != null) {
@@ -425,7 +464,7 @@ public class GenomeManager {
      * Load the chromosome alias file, if any, specified in the genome descriptor.
      *
      * @param genomeDescriptor
-     * @return The chromosome alias map, or null if none is defined.
+     * @return The chromosome alias table, or null if none is defined.
      */
     private Collection<Collection<String>> loadChrAliases(GenomeDescriptor genomeDescriptor) {
         InputStream aliasStream = null;

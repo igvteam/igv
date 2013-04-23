@@ -126,34 +126,10 @@ public class Genome {
         }
     }
 
-    public void loadUserDefinedAliases() {
-
-        File aliasFile = new File(DirectoryManager.getGenomeCacheDirectory(), id + "_alias.tab");
-
-        if (aliasFile.exists()) {
-            if (chrAliasTable == null) chrAliasTable = new HashMap();
-
-            BufferedReader br = null;
-
-            try {
-                br = new BufferedReader(new FileReader(aliasFile));
-                addChrAliases(GenomeManager.loadChrAliases(br));
-            } catch (IOException e) {
-                log.error("Error loading chr alias table", e);
-                if (!Globals.isHeadless())
-                    MessageUtils.showMessage("<html>Error loading chromosome alias table.  Aliases will not be avaliable<br>" +
-                            e.toString());
-            } finally {
-                if (br != null) {
-                    try {
-                        br.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                    }
-                }
-            }
-        }
+    public Map<String, String> getChrAliasTable() {
+        return chrAliasTable;
     }
+
 
     /**
      * Populate the chr alias table.  The input is a collection of chromosome synonym lists.  The
@@ -162,6 +138,8 @@ public class Genome {
      * @param synonymsList
      */
     public void addChrAliases(Collection<Collection<String>> synonymsList) {
+
+        if(chrAliasTable == null) chrAliasTable = new HashMap<String, String>();
 
         // Convert names to a set for fast "contains" testing.
         Set<String> chrNameSet = new HashSet<String>(chromosomeNames);
@@ -193,12 +171,20 @@ public class Genome {
      * Update the chromosome alias table with common variations
      */
     void initializeChromosomeAliases() {
+        chrAliasTable.putAll(getAutoAliases());
+
+    }
+
+
+    Map<String, String> getAutoAliases() {
+
+        Map<String, String> autoAliases = new HashMap<String, String>();
 
         for (String name : chromosomeNames) {
             if (name.startsWith("gi|")) {
                 // NCBI
                 String alias = getNCBIName(name);
-                chrAliasTable.put(alias, name);
+                autoAliases.put(alias, name);
             }
         }
 
@@ -207,9 +193,9 @@ public class Genome {
 
                 // UCSC Conventions
                 if (name.toLowerCase().startsWith("chr")) {
-                    chrAliasTable.put(name.substring(3), name);
+                    autoAliases.put(name.substring(3), name);
                 } else {
-                    chrAliasTable.put("chr" + name, name);
+                    autoAliases.put("chr" + name, name);
                 }
             }
 
@@ -218,41 +204,41 @@ public class Genome {
             if (id.startsWith("hg") || id.equalsIgnoreCase("1kg_ref"))
 
             {
-                chrAliasTable.put("23", "chrX");
-                chrAliasTable.put("24", "chrY");
-                chrAliasTable.put("MT", "chrM");
+                autoAliases.put("23", "chrX");
+                autoAliases.put("24", "chrY");
+                autoAliases.put("MT", "chrM");
             } else if (id.startsWith("mm"))
 
             {
-                chrAliasTable.put("21", "chrX");
-                chrAliasTable.put("22", "chrY");
-                chrAliasTable.put("MT", "chrM");
+                autoAliases.put("21", "chrX");
+                autoAliases.put("22", "chrY");
+                autoAliases.put("MT", "chrM");
             } else if (id.equals("b37"))
 
             {
-                chrAliasTable.put("chrM", "MT");
-                chrAliasTable.put("chrX", "23");
-                chrAliasTable.put("chrY", "24");
+                autoAliases.put("chrM", "MT");
+                autoAliases.put("chrX", "23");
+                autoAliases.put("chrY", "24");
 
             }
 
-            Collection<Map.Entry<String, String>> aliasEntries = new ArrayList(chrAliasTable.entrySet());
+            Collection<Map.Entry<String, String>> aliasEntries = new ArrayList(autoAliases.entrySet());
             for (Map.Entry<String, String> aliasEntry : aliasEntries) {
                 // Illumina conventions
                 String alias = aliasEntry.getKey();
                 String chr = aliasEntry.getValue();
                 if (!alias.endsWith(".fa")) {
                     String illuminaName = alias + ".fa";
-                    chrAliasTable.put(illuminaName, chr);
+                    autoAliases.put(illuminaName, chr);
                 }
                 if (!chr.endsWith(".fa")) {
                     String illuminaName = chr + ".fa";
-                    chrAliasTable.put(illuminaName, chr);
+                    autoAliases.put(illuminaName, chr);
                 }
             }
         }
+        return autoAliases;
     }
-
     /**
      * Extract the user friendly name from an NCBI accession
      * example: gi|125745044|ref|NC_002229.3|  =>  NC_002229.3

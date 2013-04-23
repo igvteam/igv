@@ -98,6 +98,17 @@ public class FileUtilsTest {
         assertEquals(expected, relPath);
     }
 
+    @Test
+    public void testGetParent() throws Exception {
 
+        String windowsPath = "C:\\ path with spaces\\subdir\\foo.txt";
+        assertEquals("C:\\ path with spaces\\subdir", FileUtils.getParent(windowsPath));
+
+        String unixPath = "/path with spaces/subdir/foo.txt";
+        assertEquals("/path with spaces/subdir", FileUtils.getParent(unixPath));
+
+        String httpPath = "http://host:port/subdir/foo.txt";
+        assertEquals("http://host:port/subdir", FileUtils.getParent(httpPath));
+    }
 
 }
