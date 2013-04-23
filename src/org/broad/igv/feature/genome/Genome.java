@@ -109,6 +109,7 @@ public class Genome {
             chromosomeNames.add(chromosome.getName());
             chromosomeMap.put(chromosome.getName(), chromosome);
         }
+        initializeChromosomeAliases();
 
     }
 
