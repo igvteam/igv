@@ -25,9 +25,12 @@ package org.broad.igv.ui.panel;
 import com.jidesoft.swing.JideBoxLayout;
 import com.jidesoft.swing.JideButton;
 import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 /**
  * Name header panel.  Displayed in upper left corner
@@ -36,6 +39,17 @@ import java.awt.*;
  */
 public class NameHeaderPanel extends JPanel  implements Paintable {
 
+
+    public NameHeaderPanel() {
+
+        this.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent mouseEvent) {
+                IGV.getInstance().clearSelections();
+                IGV.getInstance().repaint();
+            }
+        });
+    }
 
     public void paintOffscreen(Graphics2D g, Rectangle rect) {
         paintComponent(g);

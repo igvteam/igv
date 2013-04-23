@@ -186,21 +186,6 @@ abstract public class TrackPanelComponent extends JPanel {
 
 
         if (menu != null) {
-            menu.addPopupMenuListener(new PopupMenuListener() {
-                public void popupMenuWillBecomeVisible(PopupMenuEvent popupMenuEvent) {
-
-                }
-
-                public void popupMenuWillBecomeInvisible(PopupMenuEvent popupMenuEvent) {
-                    clearTrackSelections();
-
-                }
-
-                public void popupMenuCanceled(PopupMenuEvent popupMenuEvent) {
-                    clearTrackSelections();
-                }
-
-            });
             menu.show(e.getComponent(), e.getX(), e.getY());
         }
 

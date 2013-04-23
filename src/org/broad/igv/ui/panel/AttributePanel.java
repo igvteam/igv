@@ -328,11 +328,9 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
 
         public void mouseReleased(MouseEvent e) {
             // Show Popup Menu.  The track selection is cleared afterwards.
-            // Note: clearing after this operation is "non standard", at least on the mac
             if (e.isPopupTrigger()) {
                 TrackClickEvent te = new TrackClickEvent(e, null);
                 openPopupMenu(te);
-                clearTrackSelections();
             }
 
         }
