@@ -625,7 +625,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                 String chr = mate.getChr();
                 int start = mate.start - 1;
-                te.getFrame().centerOnLocation(chr, start);
+
+                // Don't change scale
+                double range = te.getFrame().getEnd() - te.getFrame().getOrigin();
+                int newStart = (int) Math.max(0, (start + (alignment.getEnd() - alignment.getStart()) / 2 - range/2));
+                int newEnd = newStart + (int) range;
+                te.getFrame().jumpTo  (chr, newStart, newEnd);
                 te.getFrame().recordHistory();
             } else {
                 MessageUtils.showMessage("Alignment does not have mate, or it is not mapped.");
