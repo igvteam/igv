@@ -210,12 +210,18 @@ public class RuntimeUtils {
 
 
     public static String executeShellCommand(String cmd[], String[] envp, File dir) throws IOException {
+        return executeShellCommand(cmd, envp, dir, true);
+    }
+
+    public static String executeShellCommand(String cmd[], String[] envp, File dir, boolean waitFor) throws IOException {
         Process pr = startExternalProcess(cmd, envp, dir);
 
-        try {
-            pr.waitFor();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        if(waitFor){
+            try {
+                pr.waitFor();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
         InputStream inputStream = null;

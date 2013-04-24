@@ -34,6 +34,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.awt.*;
 import java.io.*;
 import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Field;
@@ -470,6 +471,31 @@ public class TestUtils {
         writer.flush();
         writer.close();
         return outputFile;
+    }
+
+    /**
+     * Note: THIS METHOD IS VERY FRAGILE, NOT GUARANTEED TO WORK ON ALL JVMs
+     * @return
+     */
+    static long getProcessID(){
+        RuntimeMXBean bean = ManagementFactory.getRuntimeMXBean();
+
+        // The name representing the running Java virtual machine.
+        // It returns something like 12345@blah. The value
+        // before the @ symbol is the PID.
+        String jvmName = bean.getName();
+        return Long.valueOf(jvmName.split("@")[0]);
+    }
+
+    /**
+     * Uses lsof, only works on *nix systems
+     *
+     * @return
+     */
+    public static int getNumberOpenFileHandles() throws IOException{
+        long pid = getProcessID();
+        String result = RuntimeUtils.executeShellCommand(new String[]{"lsof", "-p", "" + pid}, null, null, false);
+        return result.split("\n").length;
     }
 
 }
