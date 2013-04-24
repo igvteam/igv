@@ -234,7 +234,10 @@ public class RuntimeUtils {
         } finally {
             if (inputStream != null) {
                 inputStream.close();
-
+            }
+            OutputStream os = pr.getOutputStream();
+            if(os != null){
+                os.close();
             }
         }
     }
