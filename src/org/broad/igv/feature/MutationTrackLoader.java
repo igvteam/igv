@@ -17,6 +17,7 @@ import org.broad.igv.feature.tribble.MUTCodec;
 import org.broad.igv.track.*;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.tribble.Feature;
 import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.IOException;
@@ -26,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Parses a ".mut" file
+ * Parses a mutation file, such as ".mut" or ".maf" (mutation annotation file)
  *
  * @author jrobinso
  */
@@ -48,7 +49,7 @@ public class MutationTrackLoader {
 
         boolean indexed = isIndexed(locator.getPath(), genome);
 
-        List<FeatureTrack> tracks = new ArrayList();
+        List<FeatureTrack> tracks = new ArrayList<FeatureTrack>();
 
         if (indexed) {
             String[] samples = getCodec().getSamples();
@@ -91,7 +92,7 @@ public class MutationTrackLoader {
     }
 
     /**
-     * Test to see if a usable index exists.  In addition to the index, mutaion files have an additional requirement
+     * Test to see if a usable index exists.  In addition to the index, mutation files have an additional requirement
      * that samples be specified in a header directive.
      *
      * @param path
@@ -143,7 +144,7 @@ public class MutationTrackLoader {
                     String sampleId = mut.getSampleId();
                     List<org.broad.tribble.Feature> features = mutationMap.get(sampleId);
                     if (features == null) {
-                        features = new ArrayList();
+                        features = new ArrayList<Feature>();
                         mutationMap.put(sampleId, features);
                     }
 

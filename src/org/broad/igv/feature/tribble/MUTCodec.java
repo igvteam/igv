@@ -208,20 +208,24 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
      */
     public static boolean isMutationAnnotationFile(String path) {
 
-        String pathLC = path.toLowerCase();
-        if(pathLC.endsWith(".maf.annotated")) {
-            // TCGA extension
-            return true;
-        }
+        String ext;
+        {
+            //Only want pathLC when checking extension, so we limit its scope
+            String pathLC = path.toLowerCase();
+            if(pathLC.endsWith(".maf.annotated")) {
+                // TCGA extension
+                return true;
+            }
 
-        String ext = ParsingUtils.getIGVExtension(pathLC);
+            ext = ParsingUtils.getIGVExtension(pathLC);
+        }
         if (ext.equals("mut")) {
             return true;
         } else if(ext.equals("maf")) {
 
             BufferedReader reader = null;
             try {
-                reader = ParsingUtils.openBufferedReader(pathLC);
+                reader = ParsingUtils.openBufferedReader(path);
                 if (reader == null) {
                     return false;
                 }
@@ -236,14 +240,14 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
                 String[] tokens = nextLine.split("\t");
                 return tokens.length > 15 && tokens[0].equalsIgnoreCase("Hugo_Symbol");
             } catch (IOException e) {
-                log.error("Error reading: " + pathLC, e);
+                log.error("Error reading: " + path, e);
                 return false;
             } finally {
                 if (reader != null) {
                     try {
                         reader.close();
                     } catch (IOException e) {
-                        log.error("Error closing: " + pathLC, e);
+                        log.error("Error closing: " + path, e);
                     }
                 }
             }
