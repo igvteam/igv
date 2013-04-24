@@ -67,16 +67,20 @@ public class DBProfileEditor extends JDialog {
     }
 
     private void postInit(String initProfilePath) {
+        tableFields = new JComponent[]{chromField, posStartField, posEndField, startColField, endColField, binColField, dataType};
+
         //TODO Remember to add "." before extension when calling CodecFactory.getCodec
         DefaultComboBoxModel model = new DefaultComboBoxModel(CodecFactory.validExtensions.toArray(new String[0]));
         dataType.setModel(model);
 
         this.profilePath = initProfilePath;
+        DBProfile.DBTable initTable = null;
 
         if (initProfilePath != null) {
             //Editing existing profile
             profile = DBProfile.parseProfile(initProfilePath);
 
+            DBSubprotocol.setSelectedItem(profile.getSubprotocol());
             DBName.setText(profile.getName());
             DBHost.setText(profile.getHost());
             DBPath.setText(profile.getPath());
@@ -85,24 +89,34 @@ public class DBProfileEditor extends JDialog {
             username.setText(profile.getUsername());
             password.setText(profile.getPassword());
 
-            //Initialize table settings
-            List<DBProfile.DBTable> tableList = profile.getTableList();
-            for(DBProfile.DBTable table: tableList){
-                allTableNames.put(table.getName(), table);
-            }
+            initTableNameList();
+            initTable = profile.getTableList().get(0);
 
-            tableName.setModel(new DefaultComboBoxModel(allTableNames.keySet().toArray(new String[tableList.size()])));
-
-            populateTableFieldValues(tableList.get(0));
         }else{
             //Creating new profile
             profile = new DBProfile();
 
             File profileFile = FileDialogUtils.chooseFile("Save DB Profile", DirectoryManager.getUserDirectory(), FileDialogUtils.SAVE);
             this.profilePath = profileFile.getAbsolutePath();
+            initTable = null;
         }
 
+
+        populateTableFieldValues(initTable);
+
         attachTableFieldListeners();
+    }
+
+    /**
+     * Fill in the combo box of table names
+     */
+    private void initTableNameList() {
+        List<DBProfile.DBTable> tableList = profile.getTableList();
+        for(DBProfile.DBTable table: tableList){
+            allTableNames.put(table.getName(), table);
+        }
+
+        tableName.setModel(new DefaultComboBoxModel(allTableNames.keySet().toArray(new String[tableList.size()])));
     }
 
     /**
@@ -110,6 +124,7 @@ public class DBProfileEditor extends JDialog {
      * Doesn't write to disk
      */
     private void saveDBInputs(){
+        profile.setSubprotocol(DBSubprotocol.getSelectedItem().toString());
         profile.setName(DBName.getText());
         profile.setHost(DBHost.getText());
         profile.setPath(DBPath.getText());
@@ -132,7 +147,15 @@ public class DBProfileEditor extends JDialog {
         return allTableNames.get(selectedTableName);
     }
 
+    /**
+     * Save text inputs to the appropriate table
+     * Doesn't write to disk
+     * @param table
+     * @return
+     */
     private boolean saveTableInput(DBProfile.DBTable table){
+
+        if(table == null) return false;
 
         int startColIndex = -1;
         int endColIndex = -1;
@@ -179,7 +202,6 @@ public class DBProfileEditor extends JDialog {
             }
         };
 
-        JComponent[] tableFields = new JComponent[]{chromField, posStartField, posEndField, startColField, endColField, binColField, dataType};
         for(JComponent tableField: tableFields){
             tableField.addFocusListener(tableFocusListener);
         }
@@ -187,6 +209,15 @@ public class DBProfileEditor extends JDialog {
     }
 
     private void populateTableFieldValues(DBProfile.DBTable table){
+
+        boolean enabled = table != null;
+        for(JComponent tableField: tableFields){
+            tableField.setEnabled(enabled);
+        }
+
+        if(table == null) return;
+
+
         chromField.setText(table.getChromoColName());
 
         posStartField.setText(table.getPosStartColName());
@@ -243,11 +274,26 @@ public class DBProfileEditor extends JDialog {
 
     }
 
+    private void addNewTableButtonActionPerformed(ActionEvent e) {
+        saveDBInputs();
+
+        String strTableName = newTableNameField.getText();
+        DBProfile.DBTable newTable = new DBProfile.DBTable(profile.getDBLocator(), strTableName);
+
+        profile.addTable(newTable);
+        initTableNameList();
+
+        tableName.setSelectedItem(strTableName);
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
         dialogPane = new JPanel();
         contentPanel = new JPanel();
+        panel16 = new JPanel();
+        label16 = new JLabel();
+        DBSubprotocol = new JComboBox();
         panel4 = new JPanel();
         label4 = new JLabel();
         DBName = new JTextField();
@@ -268,6 +314,11 @@ public class DBProfileEditor extends JDialog {
         password = new JPasswordField();
         checkBox1 = new JCheckBox();
         separator1 = new JSeparator();
+        panel15 = new JPanel();
+        label15 = new JLabel();
+        newTableNameField = new JTextField();
+        addNewTableButton = new JButton();
+        separator2 = new JSeparator();
         panel7 = new JPanel();
         label7 = new JLabel();
         tableName = new JComboBox();
@@ -304,12 +355,39 @@ public class DBProfileEditor extends JDialog {
         //======== dialogPane ========
         {
             dialogPane.setBorder(new EmptyBorder(12, 12, 12, 12));
-            dialogPane.setPreferredSize(new Dimension(367, 500));
+            dialogPane.setPreferredSize(new Dimension(367, 550));
             dialogPane.setLayout(new BorderLayout());
 
             //======== contentPanel ========
             {
                 contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+
+                //======== panel16 ========
+                {
+                    panel16.setLayout(new BoxLayout(panel16, BoxLayout.X_AXIS));
+
+                    //---- label16 ----
+                    label16.setText("Subprotocol:");
+                    label16.setHorizontalAlignment(SwingConstants.LEFT);
+                    label16.setMaximumSize(new Dimension(80, 16));
+                    panel16.add(label16);
+
+                    //---- DBSubprotocol ----
+                    DBSubprotocol.setMaximumSize(new Dimension(250, 28));
+                    DBSubprotocol.setPreferredSize(new Dimension(250, 28));
+                    DBSubprotocol.setModel(new DefaultComboBoxModel(new String[] {
+                        "mysql",
+                        "sqlite"
+                    }));
+                    DBSubprotocol.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            tableNameActionPerformed(e);
+                        }
+                    });
+                    panel16.add(DBSubprotocol);
+                }
+                contentPanel.add(panel16);
 
                 //======== panel4 ========
                 {
@@ -359,7 +437,7 @@ public class DBProfileEditor extends JDialog {
                     //---- DBPath ----
                     DBPath.setMaximumSize(new Dimension(250, 28));
                     DBPath.setPreferredSize(new Dimension(250, 28));
-                    DBPath.setToolTipText("my.awesomedb.com");
+                    DBPath.setToolTipText("myfolder");
                     panel6.add(DBPath);
                 }
                 contentPanel.add(panel6);
@@ -429,6 +507,35 @@ public class DBProfileEditor extends JDialog {
                 //---- separator1 ----
                 separator1.setPreferredSize(new Dimension(0, 1));
                 contentPanel.add(separator1);
+
+                //======== panel15 ========
+                {
+                    panel15.setLayout(new BoxLayout(panel15, BoxLayout.X_AXIS));
+
+                    //---- label15 ----
+                    label15.setText("New Table Name:");
+                    panel15.add(label15);
+
+                    //---- newTableNameField ----
+                    newTableNameField.setToolTipText("Name for new table");
+                    newTableNameField.setMaximumSize(new Dimension(250, 28));
+                    panel15.add(newTableNameField);
+
+                    //---- addNewTableButton ----
+                    addNewTableButton.setText("Add");
+                    addNewTableButton.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            addNewTableButtonActionPerformed(e);
+                        }
+                    });
+                    panel15.add(addNewTableButton);
+                }
+                contentPanel.add(panel15);
+
+                //---- separator2 ----
+                separator2.setPreferredSize(new Dimension(0, 1));
+                contentPanel.add(separator2);
 
                 //======== panel7 ========
                 {
@@ -629,6 +736,9 @@ public class DBProfileEditor extends JDialog {
     // Generated using JFormDesigner non-commercial license
     private JPanel dialogPane;
     private JPanel contentPanel;
+    private JPanel panel16;
+    private JLabel label16;
+    private JComboBox DBSubprotocol;
     private JPanel panel4;
     private JLabel label4;
     private JTextField DBName;
@@ -649,6 +759,11 @@ public class DBProfileEditor extends JDialog {
     private JPasswordField password;
     private JCheckBox checkBox1;
     private JSeparator separator1;
+    private JPanel panel15;
+    private JLabel label15;
+    private JTextField newTableNameField;
+    private JButton addNewTableButton;
+    private JSeparator separator2;
     private JPanel panel7;
     private JLabel label7;
     private JComboBox tableName;
@@ -678,4 +793,8 @@ public class DBProfileEditor extends JDialog {
     private JButton okButton;
     private JButton cancelButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
+
+
+    private JComponent[] tableFields;
+
 }

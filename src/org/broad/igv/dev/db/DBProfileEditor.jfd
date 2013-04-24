@@ -8,11 +8,33 @@ new FormModel {
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 				name: "dialogPane"
 				"border": new javax.swing.border.EmptyBorder( 12, 12, 12, 12 )
-				"preferredSize": new java.awt.Dimension( 367, 500 )
+				"preferredSize": new java.awt.Dimension( 367, 550 )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
 					"axis": 1
 				} ) {
 					name: "contentPanel"
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+						"axis": 0
+					} ) {
+						name: "panel16"
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label16"
+							"text": "Subprotocol:"
+							"horizontalAlignment": 2
+							"maximumSize": &Dimension0 new java.awt.Dimension( 80, 16 )
+						} )
+						add( new FormComponent( "javax.swing.JComboBox" ) {
+							name: "DBSubprotocol"
+							"maximumSize": &Dimension1 new java.awt.Dimension( 250, 28 )
+							"preferredSize": &Dimension2 new java.awt.Dimension( 250, 28 )
+							"model": new javax.swing.DefaultComboBoxModel {
+								selectedItem: "mysql"
+								addElement( "mysql" )
+								addElement( "sqlite" )
+							}
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "tableNameActionPerformed", true ) )
+						} )
+					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
 						"axis": 0
 					} ) {
@@ -22,7 +44,7 @@ new FormModel {
 							name: "label4"
 							"text": "Name:"
 							"horizontalAlignment": 2
-							"maximumSize": &Dimension0 new java.awt.Dimension( 80, 16 )
+							"maximumSize": #Dimension0
 						} )
 						add( new FormComponent( "javax.swing.JTextField" ) {
 							name: "DBName"
@@ -41,8 +63,8 @@ new FormModel {
 						} )
 						add( new FormComponent( "javax.swing.JTextField" ) {
 							name: "DBHost"
-							"maximumSize": &Dimension1 new java.awt.Dimension( 250, 28 )
-							"preferredSize": &Dimension2 new java.awt.Dimension( 250, 28 )
+							"maximumSize": #Dimension1
+							"preferredSize": #Dimension2
 							"toolTipText": "my.awesomedb.com"
 						} )
 					} )
@@ -60,7 +82,7 @@ new FormModel {
 							name: "DBPath"
 							"maximumSize": #Dimension1
 							"preferredSize": #Dimension2
-							"toolTipText": "my.awesomedb.com"
+							"toolTipText": "myfolder"
 						} )
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
@@ -124,7 +146,30 @@ new FormModel {
 					} )
 					add( new FormComponent( "javax.swing.JSeparator" ) {
 						name: "separator1"
-						"preferredSize": new java.awt.Dimension( 0, 1 )
+						"preferredSize": &Dimension7 new java.awt.Dimension( 0, 1 )
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+						"axis": 0
+					} ) {
+						name: "panel15"
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label15"
+							"text": "New Table Name:"
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "newTableNameField"
+							"toolTipText": "Name for new table"
+							"maximumSize": new java.awt.Dimension( 250, 28 )
+						} )
+						add( new FormComponent( "javax.swing.JButton" ) {
+							name: "addNewTableButton"
+							"text": "Add"
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "addNewTableButtonActionPerformed", true ) )
+						} )
+					} )
+					add( new FormComponent( "javax.swing.JSeparator" ) {
+						name: "separator2"
+						"preferredSize": #Dimension7
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
 						"axis": 0
@@ -298,7 +343,7 @@ new FormModel {
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
-			"size": new java.awt.Dimension( 400, 500 )
+			"size": new java.awt.Dimension( 400, 560 )
 		} )
 	}
 }

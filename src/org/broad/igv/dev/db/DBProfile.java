@@ -179,6 +179,12 @@ public class DBProfile {
         this.username = username;
     }
 
+    void addTable(DBTable newTable) {
+        if(tableList == null){
+            tableList = new ArrayList<DBTable>();
+        }
+        tableList.add(newTable);
+    }
 
 
     /**
@@ -228,6 +234,11 @@ public class DBProfile {
         }
 
         private DBTable(){}
+
+        DBTable(ResourceLocator dbLocator, String name){
+            this.dbLocator = dbLocator;
+            this.name = name;
+        }
 
         public DBTable(ResourceLocator dbLocator, String name, String format, String binColName,
                        String chromoColName, String posStartColName, String posEndColName, int startColIndex, int endColIndex,
