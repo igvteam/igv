@@ -981,11 +981,8 @@ public class IGV {
      * @param paintOffscreen Whether to include offScreen data in the snapshot. Components must implement
      *                       the {@link Paintable} interface for this to work
      * @throws IOException
-<<<<<<< HEAD
-     * @api
-=======
      * @see SnapshotFileChooser.SnapshotFileType
->>>>>>> master
+     * @api
      */
     public String createSnapshotNonInteractive(Component target, File file, boolean paintOffscreen) throws IOException {
 
