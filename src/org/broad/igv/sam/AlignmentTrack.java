@@ -226,16 +226,16 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         this.coverageTrack.setRenderOptions(this.renderOptions);
     }
 
-    @XmlElement(name=RenderOptions.NAME)
-    private void setRenderOptions(RenderOptions renderOptions){
+    @XmlElement(name = RenderOptions.NAME)
+    private void setRenderOptions(RenderOptions renderOptions) {
         this.renderOptions = renderOptions;
-        if(this.coverageTrack != null){
+        if (this.coverageTrack != null) {
             this.coverageTrack.setRenderOptions(this.renderOptions);
         }
     }
 
     @SubtlyImportant
-    private RenderOptions getRenderOptions(){
+    private RenderOptions getRenderOptions() {
         return this.renderOptions;
     }
 
@@ -440,9 +440,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     /**
      * Visually regroup alignments by the provided {@code GroupOption}.
-     * @see AlignmentDataManager#repackAlignments(String, org.broad.igv.sam.AlignmentTrack.RenderOptions)
+     *
      * @param option
      * @param referenceFrame
+     * @see AlignmentDataManager#repackAlignments(String, org.broad.igv.sam.AlignmentTrack.RenderOptions)
      */
     public void groupAlignments(GroupOption option, ReferenceFrame referenceFrame) {
         if (renderOptions.groupByOption != option) {
@@ -628,9 +629,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                 // Don't change scale
                 double range = te.getFrame().getEnd() - te.getFrame().getOrigin();
-                int newStart = (int) Math.max(0, (start + (alignment.getEnd() - alignment.getStart()) / 2 - range/2));
+                int newStart = (int) Math.max(0, (start + (alignment.getEnd() - alignment.getStart()) / 2 - range / 2));
                 int newEnd = newStart + (int) range;
-                te.getFrame().jumpTo  (chr, newStart, newEnd);
+                te.getFrame().jumpTo(chr, newStart, newEnd);
                 te.getFrame().recordHistory();
             } else {
                 MessageUtils.showMessage("Alignment does not have mate, or it is not mapped.");
@@ -709,12 +710,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     //Public only for testing
     @XmlAttribute
-    public boolean isShowSpliceJunctions(){
+    public boolean isShowSpliceJunctions() {
         return dataManager.isShowSpliceJunctions();
     }
 
     @SubtlyImportant
-    private void setShowSpliceJunctions(boolean showSpliceJunctions){
+    private void setShowSpliceJunctions(boolean showSpliceJunctions) {
         dataManager.setShowSpliceJunctions(showSpliceJunctions);
     }
 
@@ -727,7 +728,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             } else {
                 List<DownsampledInterval> intervals = loadedInterval.getDownsampledIntervals();
                 DownsampledInterval interval = (DownsampledInterval) FeatureUtils.getFeatureAt(position, 0, intervals);
-                if (interval != null){
+                if (interval != null) {
                     return interval.getValueString();
                 }
                 return null;
@@ -887,24 +888,24 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     @Override
-    public void restorePersistentState(Node node) throws JAXBException{
+    public void restorePersistentState(Node node) throws JAXBException {
         super.restorePersistentState(node);
 
         //For legacy sessions (<= v4. RenderOptions used to be stuffed in
         //with Track tag, now it's a sub element
         boolean hasRenderSubTag = false;
         try {
-            if(node.hasChildNodes()){
+            if (node.hasChildNodes()) {
                 NodeList list = node.getChildNodes();
-                for(int ii=0; ii < list.getLength(); ii++){
+                for (int ii = 0; ii < list.getLength(); ii++) {
                     Node item = list.item(ii);
-                    if(item.getNodeName().equals(RenderOptions.NAME)){
+                    if (item.getNodeName().equals(RenderOptions.NAME)) {
                         hasRenderSubTag = true;
                         break;
                     }
                 }
             }
-            if(hasRenderSubTag) return;
+            if (hasRenderSubTag) return;
             RenderOptions ro = IGVSessionReader.getJAXBContext().createUnmarshaller().unmarshal(node, RenderOptions.class).getValue();
 
             String shadeBasesKey = "shadeBases";
@@ -962,31 +963,42 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     @XmlType(name = RenderOptions.NAME)
     @XmlAccessorType(XmlAccessType.NONE)
-    public static class RenderOptions{
+    public static class RenderOptions {
 
         public static final String NAME = "RenderOptions";
 
-        @XmlAttribute ShadeBasesOption shadeBasesOption;
-        @XmlAttribute boolean shadeCenters;
-        @XmlAttribute boolean flagUnmappedPairs;
-        @XmlAttribute boolean showAllBases;
+        @XmlAttribute
+        ShadeBasesOption shadeBasesOption;
+        @XmlAttribute
+        boolean shadeCenters;
+        @XmlAttribute
+        boolean flagUnmappedPairs;
+        @XmlAttribute
+        boolean showAllBases;
         boolean showMismatches = true;
         private boolean computeIsizes;
-        @XmlAttribute private int minInsertSize;
-        @XmlAttribute private int maxInsertSize;
+        @XmlAttribute
+        private int minInsertSize;
+        @XmlAttribute
+        private int maxInsertSize;
         private double minInsertSizePercentile;
         private double maxInsertSizePercentile;
-        @XmlAttribute private ColorOption colorOption;
-        @XmlAttribute GroupOption groupByOption = null;
+        @XmlAttribute
+        private ColorOption colorOption;
+        @XmlAttribute
+        GroupOption groupByOption = null;
         BisulfiteContext bisulfiteContext;
         //ContinuousColorScale insertSizeColorScale;
         private boolean viewPairs = false;
         private boolean pairedArcView = false;
         public boolean flagZeroQualityAlignments = true;
         Map<String, PEStats> peStats;
-        @XmlAttribute private String colorByTag;
-        @XmlAttribute private String groupByTag;
-        @XmlAttribute private String sortByTag;
+        @XmlAttribute
+        private String colorByTag;
+        @XmlAttribute
+        private String groupByTag;
+        @XmlAttribute
+        private String sortByTag;
 
         RenderOptions() {
             PreferenceManager prefs = PreferenceManager.getInstance();
@@ -1183,7 +1195,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             addPackMenuItem();
             //addCoverageDepthMenuItem();
             addShowCoverageItem();
-            if(spliceJunctionTrack != null) {
+            if (spliceJunctionTrack != null) {
                 addShowSpliceJuntionItem();
             }
             addLoadCoverageDataItem();
@@ -1195,12 +1207,14 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             addSelecteByNameItem();
             addClearSelectionsMenuItem();
 
-            // addSeparator();
-           // addBlatItem(e);
+            if (!Globals.isProduction()) {
+                addSeparator();
+                addBlatItem(e);
+            }
 
             boolean showSashimi = !Globals.isProduction();
 
-            if(showSashimi){
+            if (showSashimi) {
                 addSeparator();
                 JMenuItem sashimi = new JMenuItem("Sashimi Plot");
                 sashimi.addActionListener(new ActionListener() {
@@ -1892,17 +1906,17 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             final JMenuItem item = new JMenuItem("Blat read sequence");
             MouseEvent e = te.getMouseEvent();
             final ReferenceFrame frame = te.getFrame();
-            if(frame == null) return;
+            if (frame == null) return;
             final double location = frame.getChromosomePosition(e.getX());
             final Alignment alignment = getAlignmentAt(location, e.getY(), frame);
-            if(alignment == null) return;
+            if (alignment == null) return;
             item.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
                     if (frame == null) {
                         item.setEnabled(false);
                     } else {
-                         String sequence;
+                        String sequence;
                         if (alignment != null) {
                             sequence = alignment.getReadSequence();
                         } else {
@@ -2034,7 +2048,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     @SubtlyImportant
-    private static AlignmentTrack getNextTrack(){
+    private static AlignmentTrack getNextTrack() {
         return (AlignmentTrack) IGVSessionReader.getNextTrack();
     }
 }

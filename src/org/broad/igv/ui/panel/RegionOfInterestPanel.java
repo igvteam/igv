@@ -16,6 +16,7 @@
 package org.broad.igv.ui.panel;
 
 import org.broad.igv.Globals;
+import org.broad.igv.blat.BlatClient;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -175,22 +176,24 @@ public class RegionOfInterestPanel extends JPanel {
         popupMenu.add(item);
 
 
-//        item = new JMenuItem("Blat sequence");
-//        item.addActionListener(new ActionListener() {
-//
-//            public void actionPerformed(ActionEvent e) {
-//
-//                BlatClient.doBlatQuery(roi.getChr(), roi.getStart(), roi.getEnd());
-//
-//            }
-//        });
-//
-//
-//        // Disable copySequence if region exceeds a MB
-//        if (roi.getEnd() - roi.getStart() > 1000000) {
-//            item.setEnabled(false);
-//        }
-//        popupMenu.add(item);
+        if (!Globals.isProduction()) {
+            item = new JMenuItem("Blat sequence");
+            item.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+
+                    BlatClient.doBlatQuery(roi.getChr(), roi.getStart(), roi.getEnd());
+
+                }
+            });
+        }
+
+
+        // Disable copySequence if region exceeds a MB
+        if (roi.getEnd() - roi.getStart() > 1000000) {
+            item.setEnabled(false);
+        }
+        popupMenu.add(item);
 
 
         popupMenu.add(new JSeparator());
