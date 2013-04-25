@@ -26,12 +26,12 @@ import java.util.Arrays;
  */
 public class LoadFromGSMenuAction extends MenuAction {
 
-    static Logger log = Logger.getLogger(LoadFilesMenuAction.class);
-    private IGV mainFrame;
+    static Logger log = Logger.getLogger(LoadFromGSMenuAction.class);
+    private IGV igv;
 
-    public LoadFromGSMenuAction(String label, int mnemonic, IGV mainFrame) {
+    public LoadFromGSMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
-        this.mainFrame = mainFrame;
+        this.igv = igv;
         setToolTipText("Load from GenomeSpace");
     }
 
@@ -45,40 +45,13 @@ public class LoadFromGSMenuAction extends MenuAction {
 
             String url = dlg.getFileURL();
             if (url != null) {
-                IGV.getInstance().loadTracks(Arrays.asList(new ResourceLocator(url)));
+                igv.loadTracks(Arrays.asList(new ResourceLocator(url)));
             }
         } catch (Exception e1) {
             log.error("Error fetching directory listing on GenomeSpace server.", e1);
             MessageUtils.showMessage("Error fetching directory listing on GenomeSpace server: " + e1.getMessage());
         }
 
-        /*JPanel ta = new JPanel();
-        ta.setPreferredSize(new Dimension(600, 20));
-        if (e.getActionCommand().equalsIgnoreCase(LOAD_FROM_URL)) {
-            String url = JOptionPane.showInputDialog(IGV.getMainFrame(), ta, "Enter URL (http or ftp)", JOptionPane.QUESTION_MESSAGE);
-            if (url != null && url.trim().length() > 0) {
-                if (url.endsWith(".xml")) {
-                    try {
-                        mainFrame.doRestoreSession(new URL(url), null);
-                    } catch (Exception ex) {
-                        MessageUtils.showMessage("Error loading url: " + url + " (" + ex.toString() + ")");
-                    }
-                } else {
-                    ResourceLocator rl = new ResourceLocator(url.trim());
-                    mainFrame.loadTracks(Arrays.asList(rl));
-
-                }
-            }
-        } else if ((e.getActionCommand().equalsIgnoreCase(LOAD_FROM_DAS))) {
-            String url = JOptionPane.showInputDialog(IGV.getMainFrame(), ta, "Enter DAS feature source URL",
-                    JOptionPane.QUESTION_MESSAGE);
-            if (url != null && url.trim().length() > 0) {
-                ResourceLocator rl = new ResourceLocator(url.trim());
-                rl.setType("das");
-                mainFrame.loadTracks(Arrays.asList(rl));
-            }
-        }
-        */
     }
 
 }

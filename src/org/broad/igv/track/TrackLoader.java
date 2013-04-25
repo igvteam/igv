@@ -246,7 +246,7 @@ public class TrackLoader {
                 // This might be a sample information file.
                 AttributeManager.getInstance().loadSampleInfo(locator);
             } else {
-                MessageUtils.showMessage("<html>Unknown file type: " + path + "<br>Check file extenstion");
+                MessageUtils.showMessage("<html>Unknown file type: " + path + "<br>Check file extension");
             }
 
             // Track line

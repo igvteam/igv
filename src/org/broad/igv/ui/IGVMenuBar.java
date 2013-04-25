@@ -854,15 +854,19 @@ public class IGVMenuBar extends JMenuBar {
         JMenu menu = new JMenu("GenomeSpace");
 
         MenuAction menuAction = null;
-        menuAction = new LoadFromGSMenuAction("Load from GenomeSpace...", KeyEvent.VK_U, IGV.getInstance());
+        menuAction = new LoadFromGSMenuAction("Load File from GenomeSpace...", KeyEvent.VK_U, igv);
+        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menu.addSeparator();
+        menuAction = new LoadGenomeFromGSMenuAction("Load Genome from GenomeSpace...", KeyEvent.VK_Z, igv);
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menu.addSeparator();
 
-        menuAction = new GSSaveSessionMenuAction("Save session to GenomeSpace...", IGV.getInstance());
+        menuAction = new GSSaveSessionMenuAction("Save Session to GenomeSpace...", igv);
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new GSOpenSessionMenuAction("Load session from GenomeSpace...", IGV.getInstance());
+        menuAction = new GSOpenSessionMenuAction("Load Session from GenomeSpace...", igv);
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menu.add(new JSeparator());
