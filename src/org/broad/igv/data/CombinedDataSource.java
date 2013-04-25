@@ -45,10 +45,16 @@ public class CombinedDataSource implements DataSource {
 
     Operation operation = Operation.ADD;
 
+    CombinedDataSource(DataSource source1, DataSource source2, Operation operation){
+        this.source1 = source1;
+        this.source2 = source2;
+        this.operation = operation;
+    }
+
     public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom){
 
-        List<LocusScore> outerScores = getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
-        List<LocusScore> innerScores = getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
+        List<LocusScore> outerScores = this.source1.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
+        List<LocusScore> innerScores = this.source2.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
 
         List<LocusScore> combinedScores = new ArrayList<LocusScore>(outerScores.size() + innerScores.size());
 
