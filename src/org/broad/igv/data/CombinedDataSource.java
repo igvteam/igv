@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.data;
@@ -28,30 +21,129 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * @author jrobinso
- * @date Jan 18, 2011
+ * Data source which combines two other DataSources
+ *
+ * TODO Multiple DataSources. There is no 2
+ * @author jrobinso, jacob
  */
 public class CombinedDataSource implements DataSource {
 
+    enum Operation{
+        ADD("+"),
+        SUBTRACT("-");
+
+        private String stringRep;
+
+        private Operation(String stringrep){
+            this.stringRep = stringrep;
+        }
+
+    }
+
     DataSource source1;
     DataSource source2;
-    String operator = "-";   // + or -
+
+    Operation operation = Operation.ADD;
+
+    public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom){
+
+        List<LocusScore> outerScores = getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
+        List<LocusScore> innerScores = getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
+
+        List<LocusScore> combinedScores = new ArrayList<LocusScore>(outerScores.size() + innerScores.size());
+
+        if(combinedScores.size() == 0) return combinedScores;
+
+        //TODO We assume that having no data from one source is the identity operation, that may not be true
+        if(innerScores.size() == 0) return outerScores;
+        if(outerScores.size() == 0) return innerScores;
+
+        /**
+         * Pretty simple algorithm.  Maybe not super-efficient
+         * TODO Check efficiency
+         * Assume the following tiles (no breaks)
+         * outerScores: |----|--------|--------------|-------|-----------|
+         * innerScores:           |-----|-----|--------|-----------|-----------|---------|
+         * combined:    |----|----|---|-|-----|------|-|-----|-----|-----|-----|---------|
+         *
+         * We loop through outerScores, and on each loop through innerScores
+         * The overlap region between each is identified, and the scores combined
+         */
 
 
+        //We must have the outerScores variable to start not later than innerScores
+        if(outerScores.get(0).getStart() > innerScores.get(0).getStart()){
+            List<LocusScore> tmp = innerScores;
+            innerScores = outerScores;
+            outerScores = tmp;
+        }
+
+        int firstInnerStart = innerScores.get(0).getStart();
+        int firstInnerEnd = innerScores.get(0).getEnd();
+
+        int maxCoord = 0, highestInnerIdx = -1;
+
+        for(LocusScore outerScore: outerScores){
+
+            int outerStart = outerScore.getStart();
+            int outerEnd = outerScore.getEnd();
+            highestInnerIdx = -1;
+
+            //Add in regions where outerScores has data but innerScores doesn't
+            if(firstInnerStart > outerEnd){
+                combinedScores.add(outerScore);
+                continue;
+            }
+
+            for(LocusScore innerScore: innerScores){
+                //Past the overlapping region
+                if(innerScore.getStart() >= outerEnd) break;
+
+                highestInnerIdx++;
+
+                //Have not yet reached overlapping region
+                if(innerScore.getEnd() < outerStart) continue;
+
+
+                int combinedEnd = Math.min(outerEnd, innerScore.getEnd());
+                float combinedVal = combineScores(outerScore, innerScore);
+                BasicScore newScore = new BasicScore(outerStart, combinedEnd, combinedVal);
+
+                combinedScores.add(newScore);
+                maxCoord = combinedEnd;
+
+            }
+        }
+
+        //Get the remaining innerScores
+        LocusScore innerTail = innerScores.get(highestInnerIdx);
+        int combinedStart = Math.min(maxCoord, innerTail.getEnd());
+        BasicScore newTail = new BasicScore(combinedStart, innerTail.getEnd(), innerTail.getScore());
+        combinedScores.add(newTail);
+        combinedScores.addAll(innerScores.subList(highestInnerIdx+1, innerScores.size()));
+
+        return combinedScores;
+    }
+
+    /**
     public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom) {
 
         List<LocusScore> scores1 = getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
         List<LocusScore> scores2 = getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
 
-        List<LocusScore> pendingScores = new ArrayList();
-        List<LocusScore> scoresToClose = new ArrayList();
-        List<LocusScore> mergedScores = new ArrayList(scores1.size() + scores2.size());
+        List<LocusScore> pendingScores = new ArrayList<LocusScore>();
+        List<LocusScore> scoresToClose = new ArrayList<LocusScore>();
+        List<LocusScore> mergedScores = new ArrayList<LocusScore>(scores1.size() + scores2.size());
 
-        Iterator<ScoreWrapper> iter = new MergedIterator(scores1.iterator(), scores2.iterator());
+        Iterator<LocusScore> iter = new MergedIterator(scores1.iterator(), scores2.iterator());
         while (iter.hasNext()) {
 
-            ScoreWrapper score = iter.next();
+            LocusScore score = iter.next();
             int start = score.getStart();
+
+
+
+
 
             // Loop through the scores that are left cutting them at "score" boundary
             for (LocusScore ps : pendingScores) {
@@ -87,29 +179,40 @@ public class CombinedDataSource implements DataSource {
 
         return null;
     }
+     **/
 
-    private float combineScores(LocusScore score1, ScoreWrapper score2) {
-        return score1.getScore() + score2.getScaledScore();
+    private float combineScores(LocusScore score1, LocusScore score2) {
+        switch(operation){
+            case ADD:
+                return score1.getScore() + score2.getScore();
+            case SUBTRACT:
+                return score1.getScore() - score2.getScore();
+            default:
+                throw new IllegalStateException("Operation not recognized: " + operation);
+        }
     }
 
-
-    static class MergedIterator implements Iterator<ScoreWrapper> {
+    /**
+     * Iterator which returns combined iterators sorted by start position.
+     * i1 comes first in case of ties
+     */
+    static class MergedIterator implements Iterator<LocusScore> {
 
         Iterator i1;
         Iterator i2;
-        ScoreWrapper next1;
-        ScoreWrapper next2;
+        LocusScore next1;
+        LocusScore next2;
 
         MergedIterator(Iterator<LocusScore> i1, Iterator<LocusScore> i2) {
             this.i1 = i1;
             this.i2 = i2;
 
             if (i1.hasNext()) {
-                next1 = new ScoreWrapper(i1.next(), 1);
+                next1 = i1.next();
             }
 
             if (i2.hasNext()) {
-                next2 = new ScoreWrapper(i1.next(), -1);   // <= subtraction operation
+                next2 = i2.next();
             }
         }
 
@@ -117,7 +220,7 @@ public class CombinedDataSource implements DataSource {
             return next1 != null || next2 != null;
         }
 
-        public ScoreWrapper next() {
+        public LocusScore next() {
             if (next1 == null) {
                 return next2;
             } else if (next2 == null) {
@@ -133,29 +236,6 @@ public class CombinedDataSource implements DataSource {
             //ignore
         }
     }
-
-    static class ScoreWrapper {
-        int operator; // 1 or -1
-        LocusScore score;
-
-        ScoreWrapper(LocusScore score, int operator) {
-            this.operator = operator;
-            this.score = score;
-        }
-
-        int getStart() {
-            return score.getStart();
-        }
-
-        int getEnd() {
-            return score.getEnd();
-        }
-
-        float getScaledScore() {
-            return operator * score.getScore();
-        }
-    }
-
 
     public double getDataMax() {
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
