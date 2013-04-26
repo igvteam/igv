@@ -418,10 +418,7 @@ public class AlignmentTileLoader {
         private void finalizeSpliceJunctions() {
             if (spliceJunctionHelper != null) {
                 spliceJunctionHelper.finish();
-                List<SpliceJunctionFeature> features = spliceJunctionHelper.getFeatures();
-                for (SpliceJunctionFeature f : features) {
-                    spliceJunctionFeatures.add(f);
-                }
+                spliceJunctionFeatures.addAll(spliceJunctionHelper.getFeatures());
             }
             spliceJunctionHelper = null;
         }

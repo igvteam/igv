@@ -20,7 +20,9 @@ package org.broad.igv.renderer;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import com.google.common.collect.HashBasedTable;
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.feature.IExon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.SpliceJunctionFeature;
@@ -76,7 +78,12 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
      * between window openings, don't care.
      */
     private Map<Feature, Boolean> drawFeatureAbove = null;
-    private Map<Integer, Integer> yOffsetMap = new HashMap<Integer, Integer>();
+
+    /**
+     * If there are multiple arcs with the same start/end positions (e.g. different strands)
+     * want to make sure they don't overlap
+     */
+    private HashBasedTable<Integer, Integer, Feature> featureStartEndTable = null;
 
     public void setSelectedExons(Set<IExon> selectedExons) {
         this.selectedExons = selectedExons;
@@ -194,24 +201,27 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
             Set<IExon> locselectedExons = selectedExons;
 
             if(drawFeatureAbove == null) drawFeatureAbove = new HashMap<Feature, Boolean>(featureList.size());
+            if(featureStartEndTable == null) featureStartEndTable = HashBasedTable.create();
             boolean lastDrawAbove = true;
             for (IGVFeature feature : featureList) {
                 SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
-                Boolean drawAbove = drawFeatureAbove.get(junctionFeature);
-                if(drawAbove == null) {
-                    drawAbove = !lastDrawAbove;
-                    drawFeatureAbove.put(junctionFeature, drawAbove);
-                }
-
-                // Get the pStart and pEnd of the entire feature.  at extreme zoom levels the
-                // virtual pixel value can be too large for an int, so the computation is
-                // done in double precision and cast to an int only when its confirmed its
-                // within the field of view.
-                //int flankingStart = junctionFeature.getStart();
-                //int flankingEnd = junctionFeature.getEnd();
-
                 int junctionStart = junctionFeature.getJunctionStart();
                 int junctionEnd = junctionFeature.getJunctionEnd();
+
+                //Make sure we flip features already drawn. This is for pos/neg strand
+                Feature otherFeature = featureStartEndTable.get(junctionStart, junctionEnd);
+                Boolean drawAbove;
+                if(otherFeature != null){
+                    drawAbove = !drawFeatureAbove.get(otherFeature);
+                }else{
+                    drawAbove = drawFeatureAbove.get(junctionFeature);
+                    featureStartEndTable.put(junctionStart, junctionEnd, junctionFeature);
+                }
+
+                if(drawAbove == null) {
+                    drawAbove = !lastDrawAbove;
+                }
+                drawFeatureAbove.put(junctionFeature, drawAbove);
 
                 //Only show arcs for the selected feature, if applicable
                 if (locselectedExons != null && locselectedExons.size() > 0) {
@@ -340,14 +350,17 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
             color = this.color;
         }
 
-        //Height of top of an arc of maximum depth
-        int maxPossibleArcHeight = (trackRectangle.height - 1) / 8;
-        int arcHeight = maxPossibleArcHeight;
+        int length = pixelJunctionEnd - pixelJunctionStart;
+        int minArcHeight = (trackRectangle.height - 1) / 8;
+        //We adjust the height slightly by length of junction, just so arcs don't overlap as much
+        int arcHeight = minArcHeight + (int) (Math.log(length) / Globals.log2);
+
         int minY = (int) trackRectangle.getCenterY() + Math.min(pixelYStartOffset - arcHeight, pixelYEndOffset - arcHeight);
         //Check if arc goes too high. All arcs going below have the same height,
         //so no need to check case-by-case
         if (drawAbove && minY < trackRectangle.getMinY()) {
-            drawAbove = false;
+            pixelYStartOffset = 0;
+            pixelYEndOffset = 0;
         }
 
         //float depthProportionOfMax = Math.min(1, depth / maxDepth);
@@ -397,9 +410,6 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 //        strGraphics.drawString("" + depth, midX, arcPeakY);
 
         double actArcPeakY = arcBeginY + yPosModifier * Math.pow(0.5, 3) * (6) * arcHeight;
-
-        //Draw shape to indicate depth
-        float maxPossibleShapeHeight = maxPossibleArcHeight / 2;
 
         Shape shape = null;
         switch(shapeType){
