@@ -393,7 +393,11 @@ public class SashimiPlot extends JFrame{
 
         @Override
         public void mouseReleased(MouseEvent e) {
-            currentTool.mouseReleased(e);
+            if (e.isPopupTrigger()) {
+                doPopupMenu(e);
+            } else {
+                currentTool.mouseReleased(e);
+            }
         }
 
         @Override
