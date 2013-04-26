@@ -69,12 +69,14 @@ public class SpliceJunctionHelper {
         }
 
         //there may be other ways in which this is indicated. May have to code for them later
-        boolean isNegativeStrand;
+        boolean isNegativeStrand = false;
         Object strandAttr = alignment.getAttribute("XS");
-        if (strandAttr != null) {
-            isNegativeStrand = strandAttr.toString().charAt(0) == '-';
-        } else {
-            isNegativeStrand = alignment.isNegativeStrand(); // <= TODO -- this isn't correct for all libraries.
+        if(!loadOptions.ignoreStrandedness){
+            if (strandAttr != null) {
+                isNegativeStrand = strandAttr.toString().charAt(0) == '-';
+            } else {
+                isNegativeStrand = alignment.isNegativeStrand(); // <= TODO -- this isn't correct for all libraries.
+            }
         }
 
         Table<Integer, Integer, SpliceJunctionFeature> startEndJunctionsTableThisStrand =
@@ -144,15 +146,21 @@ public class SpliceJunctionHelper {
         public final int minJunctionCoverage;
         public final int minReadFlankingWidth;
 
-        public LoadOptions(boolean showSpliceJunctions){
+        /**
+         * Whether to ignore the stranded properties of reads
+         */
+        public boolean ignoreStrandedness = false;
+
+        public LoadOptions(boolean showSpliceJunctions, boolean ignoreStrandedness){
             this(showSpliceJunctions, prefs.getAsInt(PreferenceManager.SAM_JUNCTION_MIN_COVERAGE),
-                    prefs.getAsInt(PreferenceManager.SAM_JUNCTION_MIN_FLANKING_WIDTH));
+                    prefs.getAsInt(PreferenceManager.SAM_JUNCTION_MIN_FLANKING_WIDTH), ignoreStrandedness);
         }
 
-        public LoadOptions(boolean showSpliceJunctions, int minJunctionCoverage, int minReadFlankingWidth){
+        public LoadOptions(boolean showSpliceJunctions, int minJunctionCoverage, int minReadFlankingWidth, boolean ignoreStrandedness){
             this.showSpliceJunctions = showSpliceJunctions;
             this.minJunctionCoverage = minJunctionCoverage;
             this.minReadFlankingWidth = minReadFlankingWidth;
+            this.ignoreStrandedness = ignoreStrandedness;
         }
     }
 

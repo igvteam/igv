@@ -180,8 +180,9 @@ public class SashimiPlot extends JFrame{
     }
 
     private void setDataManager(SpliceJunctionFinderTrack spliceJunctionTrack, AlignmentDataManager dataManager) {
-        if(!dataManager.isShowSpliceJunctions()){
-            dataManager.setShowSpliceJunctions(true);
+        if(!dataManager.isShowSpliceJunctions() || !dataManager.getSpliceJunctionLoadOptions().ignoreStrandedness){
+            SpliceJunctionHelper.LoadOptions loadOptions = new SpliceJunctionHelper.LoadOptions(true, true);
+            dataManager.setSpliceJunctionLoadOptions(loadOptions);
             dataManager.clear();
             dataManager.getEventBus().register(this);
         }
@@ -275,7 +276,7 @@ public class SashimiPlot extends JFrame{
                     try {
                         int newMinJunctionCoverage = Integer.parseInt(input);
                         SpliceJunctionHelper.LoadOptions newLoadOptions = new SpliceJunctionHelper.LoadOptions(true,
-                                newMinJunctionCoverage, loadOptions.minJunctionCoverage);
+                                newMinJunctionCoverage, loadOptions.minJunctionCoverage, true);
                         dataManager.setSpliceJunctionLoadOptions(newLoadOptions);
                         dataManager.clear();
                         //TODO Change to event bus

@@ -51,7 +51,7 @@ public class AlignmentDataManager {
 
     private AlignmentTrack.ExperimentType experimentType;
 
-    private SpliceJunctionHelper.LoadOptions loadOptions = new SpliceJunctionHelper.LoadOptions(false);
+    private SpliceJunctionHelper.LoadOptions loadOptions = new SpliceJunctionHelper.LoadOptions(false, false);
 
     /**
      * This {@code EventBus} is typically used to notify listeners when new data
@@ -66,7 +66,7 @@ public class AlignmentDataManager {
         reader = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator));
         peStats = new HashMap();
         boolean showSpliceJunctions = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
-        this.loadOptions = new SpliceJunctionHelper.LoadOptions(showSpliceJunctions);
+        this.loadOptions = new SpliceJunctionHelper.LoadOptions(showSpliceJunctions, false);
         initChrMap(genome);
     }
 
@@ -99,7 +99,7 @@ public class AlignmentDataManager {
         } else {
             showSpliceJunctions = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
         }
-        this.loadOptions = new SpliceJunctionHelper.LoadOptions(showSpliceJunctions, loadOptions.minJunctionCoverage, loadOptions.minReadFlankingWidth);
+        this.loadOptions = new SpliceJunctionHelper.LoadOptions(showSpliceJunctions, loadOptions.minJunctionCoverage, loadOptions.minReadFlankingWidth, loadOptions.ignoreStrandedness);
     }
 
     public AlignmentTrack.ExperimentType getExperimentType() {
@@ -485,7 +485,7 @@ public class AlignmentDataManager {
     }
 
     public void setShowSpliceJunctions(boolean showSpliceJunctions) {
-        this.loadOptions = new SpliceJunctionHelper.LoadOptions(showSpliceJunctions, loadOptions.minJunctionCoverage, loadOptions.minReadFlankingWidth);
+        this.loadOptions = new SpliceJunctionHelper.LoadOptions(showSpliceJunctions, loadOptions.minJunctionCoverage, loadOptions.minReadFlankingWidth, loadOptions.ignoreStrandedness);
     }
 
     public static class DownsampleOptions {

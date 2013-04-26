@@ -20,7 +20,6 @@ package org.broad.igv.renderer;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import com.google.common.collect.HashBasedTable;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.IExon;
@@ -83,7 +82,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
      * If there are multiple arcs with the same start/end positions (e.g. different strands)
      * want to make sure they don't overlap
      */
-    private HashBasedTable<Integer, Integer, Feature> featureStartEndTable = null;
+    //private HashBasedTable<Integer, Integer, Feature> featureStartEndTable = null;
 
     public void setSelectedExons(Set<IExon> selectedExons) {
         this.selectedExons = selectedExons;
@@ -201,27 +200,28 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
             Set<IExon> locselectedExons = selectedExons;
 
             if(drawFeatureAbove == null) drawFeatureAbove = new HashMap<Feature, Boolean>(featureList.size());
-            if(featureStartEndTable == null) featureStartEndTable = HashBasedTable.create();
+            //if(featureStartEndTable == null) featureStartEndTable = HashBasedTable.create();
             boolean lastDrawAbove = true;
             for (IGVFeature feature : featureList) {
                 SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
                 int junctionStart = junctionFeature.getJunctionStart();
                 int junctionEnd = junctionFeature.getJunctionEnd();
 
-                //Make sure we flip features already drawn. This is for pos/neg strand
-                Feature otherFeature = featureStartEndTable.get(junctionStart, junctionEnd);
-                Boolean drawAbove;
-                if(otherFeature != null){
-                    drawAbove = !drawFeatureAbove.get(otherFeature);
-                }else{
-                    drawAbove = drawFeatureAbove.get(junctionFeature);
-                    featureStartEndTable.put(junctionStart, junctionEnd, junctionFeature);
-                }
+//                //Make sure we flip features already drawn. This is for pos/neg strand
+//                Feature otherFeature = featureStartEndTable.get(junctionStart, junctionEnd);
+//                Boolean drawAbove;
+//                if(otherFeature != null){
+//                    drawAbove = !drawFeatureAbove.get(otherFeature);
+//                }else{
+//                    drawAbove = drawFeatureAbove.get(junctionFeature);
+//                    featureStartEndTable.put(junctionStart, junctionEnd, junctionFeature);
+//                }
 
+                Boolean drawAbove = drawFeatureAbove.get(junctionFeature);
                 if(drawAbove == null) {
                     drawAbove = !lastDrawAbove;
+                    drawFeatureAbove.put(junctionFeature, drawAbove);
                 }
-                drawFeatureAbove.put(junctionFeature, drawAbove);
 
                 //Only show arcs for the selected feature, if applicable
                 if (locselectedExons != null && locselectedExons.size() > 0) {
