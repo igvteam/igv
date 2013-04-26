@@ -2,6 +2,8 @@ package org.broad.igv.gwas;
 
 import org.broad.tribble.Feature;
 
+import java.util.Map;
+
 /**
  * Represents an eQTL value
  * <p/>
@@ -10,27 +12,21 @@ import org.broad.tribble.Feature;
  */
 public class EQTLFeature implements Feature {
 
-    String snp;
+    private String snp;
     String chr;
     int position;
-    String geneId;
-    String geneName;
-    int genePosition;
-    double tStat;
-    double pValue;
-    double qValue;
+    private String geneId;
+    private String geneName;
+    Map<String, String> attributes;
 
     public EQTLFeature(String snp, String chr, int position, String geneId, String geneName,
-                       int genePosition, double tStat, double pValue, double qValue) {
+                       Map<String, String> attributes) {
         this.snp = snp;
         this.chr = chr;
         this.position = position;
         this.geneId = geneId;
         this.geneName = geneName;
-        this.genePosition = genePosition;
-        this.tStat = tStat;
-        this.pValue = pValue;
-        this.qValue = qValue;
+        this.attributes = attributes;
     }
 
     @Override
@@ -46,5 +42,22 @@ public class EQTLFeature implements Feature {
     @Override
     public int getEnd() {
         return position + 1;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+
+    public String getSnp() {
+        return snp;
+    }
+
+    public String getGeneId() {
+        return geneId;
+    }
+
+    public String getGeneName() {
+        return geneName;
+    }
+
+    public Map<String, String> getAttributes() {
+        return attributes;
     }
 }

@@ -5,6 +5,9 @@ import org.broad.igv.feature.BasicFeature;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * CODEC for GTex project eQTL files
  *
@@ -14,6 +17,7 @@ import org.broad.tribble.Feature;
  */
 public class EQTLCodec  extends AsciiFeatureCodec<EQTLFeature> {
 
+    String [] columnNames;
 
     protected EQTLCodec(Class myClass) {
         super(myClass);
@@ -28,22 +32,35 @@ public class EQTLCodec  extends AsciiFeatureCodec<EQTLFeature> {
         return new BasicFeature(chr, position, position+1);
     }
 
+
+
     @Override
     public EQTLFeature decode(String s) {
 
         String [] tokens = Globals.tabPattern.split(s);
-        if(tokens[0].equals("SNP")) return null;
+        if(tokens[0].equals("SNP")) {
+                        // This is the header
+            columnNames = tokens;
+            return null;
+        }
 
         String snp = tokens[0];
         String chr = tokens[1];
         int position = Integer.parseInt(tokens[2]) - 1;
         String geneId = tokens[3];
         String geneName = tokens[4];
-        int genePosition = Integer.parseInt(tokens[5]);
-        double tStat = Double.parseDouble(tokens[6]);
-        double pValue = Double.parseDouble(tokens[7]);
-        double qValue = Double.parseDouble(tokens[8]);
 
-        return new EQTLFeature(snp, chr, position, geneId, geneName, genePosition, tStat, pValue, qValue);
+        Map<String, String> attributes = null;
+        if(columnNames != null) {
+           attributes = new HashMap<String, String>();
+           for(int i=5; i<tokens.length; i++) {
+               if(columnNames.length < i) {
+                   attributes.put(columnNames[i], tokens[i]);
+               }
+           }
+        }
+
+
+        return new EQTLFeature(snp, chr, position, geneId, geneName, attributes);
     }
 }
