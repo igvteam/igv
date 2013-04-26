@@ -97,7 +97,7 @@ public class CombinedDataSource implements DataSource {
 
             //Add in regions where outerScores has data but innerScores doesn't
             if(firstInnerStart > outerEnd){
-                combinedScores.add(outerScore);
+                combinedScores.add(new BasicScore(outerStart, outerEnd, combineScores(outerScore, null)));
                 continue;
             }
 
@@ -126,7 +126,10 @@ public class CombinedDataSource implements DataSource {
         int combinedStart = Math.min(maxCoord, innerTail.getEnd());
         BasicScore newTail = new BasicScore(combinedStart, innerTail.getEnd(), innerTail.getScore());
         combinedScores.add(newTail);
-        combinedScores.addAll(innerScores.subList(highestInnerIdx+1, innerScores.size()));
+        for(LocusScore innerScore: innerScores.subList(highestInnerIdx+1, innerScores.size())){
+            float newVal = combineScores(null, innerScore);
+            combinedScores.add(new BasicScore(innerScore.getStart(), innerScore.getEnd(), newVal));
+        }
 
         return combinedScores;
     }
@@ -187,7 +190,22 @@ public class CombinedDataSource implements DataSource {
     }
      **/
 
+    /**
+     * Combine the scores using this sources operation. Either can be null,
+     * in which case it is given the coordinates of the other and a score of 0.
+     * Both inputs cannot be null
+     * @param score1
+     * @param score2
+     * @return
+     */
     private float combineScores(LocusScore score1, LocusScore score2) {
+        if(score1 == null && score2 == null) throw new IllegalArgumentException("Both inputs cannot be null");
+        if(score1 == null){
+            score1 = new BasicScore(score2.getStart(), score2.getEnd(), 0.0f);
+        }else if(score2 == null){
+            score2 = new BasicScore(score1.getStart(), score1.getEnd(), 0.0f);
+        }
+
         switch(operation){
             case ADD:
                 return score1.getScore() + score2.getScore();

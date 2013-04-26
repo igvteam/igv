@@ -29,7 +29,9 @@ import java.util.*;
  * Currently uses bedtools to combine results
  * User: jacob
  * Date: 2012/05/01
+ * @deprecated Use {@link org.broad.igv.cli_plugin.PluginFeatureSource}
  */
+@Deprecated
 public class CombinedFeatureSource implements FeatureSource {
 
     private static Logger log = Logger.getLogger(CombinedFeatureSource.class);

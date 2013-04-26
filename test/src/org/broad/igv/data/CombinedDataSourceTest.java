@@ -23,6 +23,7 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 
 /**
@@ -31,18 +32,51 @@ import static junit.framework.Assert.assertNotNull;
  */
 public class CombinedDataSourceTest extends AbstractHeadlessTest {
 
-
     /**
      * Just test that nothing crashes
      * @throws Exception
      */
     @Test
-    public void basicTest() throws Exception{
-
+    public void testNoExceptions() throws Exception{
         String chr = "chr1";
         int start = 0;
         int end = (int) 100e6;
         int zoom = 0;
+
+        CombinedDataSource combinedSource = getDataSource(CombinedDataSource.Operation.ADD);
+        List<LocusScore> combinedScores = combinedSource.getSummaryScoresForRange(chr, start, end, zoom);
+        for(LocusScore score: combinedScores){
+            assertNotNull(score);
+        }
+    }
+
+    /**
+     * Test combination when the two data sources have the same tiling boundaries
+     * shouldn't need to split anything up, easy case
+     * @throws Exception
+     */
+    @Test
+    public void testSameBoundaries() throws Exception{
+        String chr = "chr1";
+        int start = 0;
+        int end = 1000;
+        int zoom = 0;
+
+        CombinedDataSource combinedSource = getDataSource(CombinedDataSource.Operation.ADD);
+        List<LocusScore> combinedScores = combinedSource.getSummaryScoresForRange(chr, start, end, zoom);
+
+        int[] expStarts = new int[]{0,100,200,300};
+        int expCount = expStarts.length;
+
+        assertEquals(expCount, combinedScores.size());
+
+        int idx = 0;
+        for(LocusScore score: combinedScores){
+            assertEquals(expStarts[idx++], score.getStart());
+        }
+    }
+
+    private CombinedDataSource getDataSource(CombinedDataSource.Operation operation){
 
         String pathA = TestUtils.DATA_DIR + "seg/toCombine_a.seg";
         String pathB = TestUtils.DATA_DIR + "seg/toCombine_b.seg";
@@ -53,14 +87,7 @@ public class CombinedDataSourceTest extends AbstractHeadlessTest {
         SegmentedDataSource sourceA = new SegmentedDataSource("0123-A", dsA);
         SegmentedDataSource sourceB = new SegmentedDataSource("0123-B-1", dsB);
 
-        CombinedDataSource combinedSource = new CombinedDataSource(sourceA, sourceB, CombinedDataSource.Operation.ADD);
-
-        List<LocusScore> combinedScores = combinedSource.getSummaryScoresForRange(chr, start, end, zoom);
-        for(LocusScore score: combinedScores){
-            assertNotNull(score);
-        }
-
-
+        return new CombinedDataSource(sourceA, sourceB, operation);
     }
 
     private SegmentedAsciiDataSet getSegDataSet(String path){
