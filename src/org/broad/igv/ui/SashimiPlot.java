@@ -325,7 +325,7 @@ public class SashimiPlot extends JFrame{
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     File defaultFile = new File("Sashimi.png");
-                    IGV.getInstance().createSnapshot(SashimiPlot.this, defaultFile);
+                    IGV.getInstance().createSnapshot(SashimiPlot.this.getContentPane(), defaultFile);
                 }
             });
 
