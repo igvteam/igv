@@ -20,13 +20,18 @@
 
 package org.broad.igv.sam;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.Strand;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * A helper class for computing splice junctions from alignments.
@@ -41,8 +46,9 @@ public class SpliceJunctionHelper {
     static Logger log = Logger.getLogger(SpliceJunctionHelper.class);
 
     List<SpliceJunctionFeature> spliceJunctionFeatures = new ArrayList();
-    Map<Integer, Map<Integer, SpliceJunctionFeature>> posStartEndJunctionsMap = new HashMap<Integer, Map<Integer, SpliceJunctionFeature>>();
-    Map<Integer, Map<Integer, SpliceJunctionFeature>> negStartEndJunctionsMap = new HashMap<Integer, Map<Integer, SpliceJunctionFeature>>();
+
+    Table<Integer, Integer, SpliceJunctionFeature> posStartEndJunctionsMap = HashBasedTable.create();
+    Table<Integer, Integer, SpliceJunctionFeature> negStartEndJunctionsMap = HashBasedTable.create();
 
     private final LoadOptions loadOptions;
 
@@ -71,7 +77,7 @@ public class SpliceJunctionHelper {
             isNegativeStrand = alignment.isNegativeStrand(); // <= TODO -- this isn't correct for all libraries.
         }
 
-        Map<Integer, Map<Integer, SpliceJunctionFeature>> startEndJunctionsMapThisStrand =
+        Table<Integer, Integer, SpliceJunctionFeature> startEndJunctionsTableThisStrand =
                 isNegativeStrand ? negStartEndJunctionsMap : posStartEndJunctionsMap;
 
         int flankingStart = -1;
@@ -83,25 +89,25 @@ public class SpliceJunctionHelper {
             int flankingEnd = block.getEnd();
             int junctionEnd = block.getStart();
             if (junctionStart != -1 && gapCount < gapTypes.length && gapTypes[gapCount] == SamAlignment.SKIPPED_REGION) {
+
                 //only proceed if the flanking regions are both bigger than the minimum
                 if (loadOptions.minReadFlankingWidth == 0 ||
                         ((junctionStart - flankingStart >= loadOptions.minReadFlankingWidth) &&
                                 (flankingEnd - junctionEnd >= loadOptions.minReadFlankingWidth))) {
-                    Map<Integer, SpliceJunctionFeature> endJunctionsMap =
-                            startEndJunctionsMapThisStrand.get(junctionStart);
-                    if (endJunctionsMap == null) {
-                        endJunctionsMap = new HashMap<Integer, SpliceJunctionFeature>();
-                        startEndJunctionsMapThisStrand.put(junctionStart, endJunctionsMap);
-                    }
-                    SpliceJunctionFeature junction = endJunctionsMap.get(junctionEnd);
+
+                    SpliceJunctionFeature junction = startEndJunctionsTableThisStrand.get(junctionStart, junctionEnd);
+
                     if (junction == null) {
                         junction = new SpliceJunctionFeature(alignment.getChr(), junctionStart, junctionEnd,
                                 isNegativeStrand ? Strand.NEGATIVE : Strand.POSITIVE);
-                        endJunctionsMap.put(junctionEnd, junction);
+                        startEndJunctionsTableThisStrand.put(junctionStart, junctionEnd, junction);
                         spliceJunctionFeatures.add(junction);
                     }
+
                     junction.addRead(flankingStart, flankingEnd);
+
                 }
+
             }
             flankingStart = junctionEnd;
             junctionStart = flankingEnd;
