@@ -56,9 +56,10 @@ public class CombinedDataSource implements DataSource {
         List<LocusScore> outerScores = this.source1.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
         List<LocusScore> innerScores = this.source2.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
 
-        List<LocusScore> combinedScores = new ArrayList<LocusScore>(outerScores.size() + innerScores.size());
+        int initialSize = outerScores.size() + innerScores.size();
+        List<LocusScore> combinedScores = new ArrayList<LocusScore>(initialSize);
 
-        if(combinedScores.size() == 0) return combinedScores;
+        if(initialSize == 0) return combinedScores;
 
         //TODO We assume that having no data from one source is the identity operation, that may not be true
         if(innerScores.size() == 0) return outerScores;
@@ -72,8 +73,10 @@ public class CombinedDataSource implements DataSource {
          * innerScores:           |-----|-----|--------|-----------|-----------|---------|
          * combined:    |----|----|---|-|-----|------|-|-----|-----|-----|-----|---------|
          *
-         * We loop through outerScores, and on each loop through innerScores
-         * The overlap region between each is identified, and the scores combined
+         * for each outerScore in outerScores:
+         *      for each innerScore in innerScores:
+         *          identify overlap between innerScore and outerScore
+         *          split into common building blocks
          */
 
 
@@ -85,9 +88,9 @@ public class CombinedDataSource implements DataSource {
         }
 
         int firstInnerStart = innerScores.get(0).getStart();
-        int firstInnerEnd = innerScores.get(0).getEnd();
 
-        int maxCoord = 0, highestInnerIdx = -1;
+        LocusScore lastScoreAdded = null;
+        int highestInnerIdx = -1;
 
         for(LocusScore outerScore: outerScores){
 
@@ -97,38 +100,50 @@ public class CombinedDataSource implements DataSource {
 
             //Add in regions where outerScores has data but innerScores doesn't
             if(firstInnerStart > outerEnd){
-                combinedScores.add(new BasicScore(outerStart, outerEnd, combineScores(outerScore, null)));
+                lastScoreAdded = new BasicScore(outerStart, outerEnd, combineScores(outerScore, null));
+                combinedScores.add(lastScoreAdded);
                 continue;
             }
 
             for(LocusScore innerScore: innerScores){
-                //Past the overlapping region
+                //Past the overlapping region, stop
                 if(innerScore.getStart() >= outerEnd) break;
 
                 highestInnerIdx++;
 
-                //Have not yet reached overlapping region
-                if(innerScore.getEnd() < outerStart) continue;
+                //Have not yet reached overlapping region, keep going
+                if(innerScore.getEnd() <= outerStart) continue;
 
 
-                int combinedEnd = Math.min(outerEnd, innerScore.getEnd());
-                float combinedVal = combineScores(outerScore, innerScore);
-                BasicScore newScore = new BasicScore(outerStart, combinedEnd, combinedVal);
+                //Divide outer score into boundary
 
-                combinedScores.add(newScore);
-                maxCoord = combinedEnd;
+                int nextStart = Math.min(outerStart, innerScore.getStart());
+                int nextEnd = Math.min(outerEnd, innerScore.getEnd());
+
+                if(lastScoreAdded != null){
+                    nextStart = Math.max(nextStart, lastScoreAdded.getEnd());
+                }
+
+
+                float nextVal = combineScores(outerScore, innerScore);
+
+                lastScoreAdded = new BasicScore(nextStart, nextEnd, nextVal);
+                combinedScores.add(lastScoreAdded);
 
             }
         }
 
-        //Get the remaining innerScores
+        //Get the remaining innerScores.
+        //Only do this if there is a section at the end which was not included
         LocusScore innerTail = innerScores.get(highestInnerIdx);
-        int combinedStart = Math.min(maxCoord, innerTail.getEnd());
-        BasicScore newTail = new BasicScore(combinedStart, innerTail.getEnd(), innerTail.getScore());
-        combinedScores.add(newTail);
-        for(LocusScore innerScore: innerScores.subList(highestInnerIdx+1, innerScores.size())){
-            float newVal = combineScores(null, innerScore);
-            combinedScores.add(new BasicScore(innerScore.getStart(), innerScore.getEnd(), newVal));
+        if(lastScoreAdded != null && lastScoreAdded.getEnd() < innerTail.getEnd()){
+            int combinedStart = Math.min(lastScoreAdded.getEnd(), innerTail.getEnd());
+            BasicScore newTail = new BasicScore(combinedStart, innerTail.getEnd(), innerTail.getScore());
+            combinedScores.add(newTail);
+            for(LocusScore innerScore: innerScores.subList(highestInnerIdx + 1, innerScores.size())){
+                float newVal = combineScores(null, innerScore);
+                combinedScores.add(new BasicScore(innerScore.getStart(), innerScore.getEnd(), newVal));
+            }
         }
 
         return combinedScores;

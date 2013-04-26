@@ -66,13 +66,42 @@ public class CombinedDataSourceTest extends AbstractHeadlessTest {
         List<LocusScore> combinedScores = combinedSource.getSummaryScoresForRange(chr, start, end, zoom);
 
         int[] expStarts = new int[]{0,100,200,300};
+        int[] expEnds = new int[]{100,200,300,400};
+        float[] expScores = new float[]{1,2,3,4};
         int expCount = expStarts.length;
 
         assertEquals(expCount, combinedScores.size());
 
         int idx = 0;
         for(LocusScore score: combinedScores){
-            assertEquals(expStarts[idx++], score.getStart());
+            assertEquals(expStarts[idx], score.getStart());
+            assertEquals(expEnds[idx], score.getEnd());
+            assertEquals(expScores[idx++], score.getScore());
+        }
+    }
+
+    @Test
+    public void testDifferentBoundaries() throws Exception{
+        String chr = "chr2";
+        int start = 0;
+        int end = 1000;
+        int zoom = 0;
+
+        CombinedDataSource combinedSource = getDataSource(CombinedDataSource.Operation.ADD);
+        List<LocusScore> combinedScores = combinedSource.getSummaryScoresForRange(chr, start, end, zoom);
+
+        int[] expStarts =   new int[]{100,150,200,250,300,350,400,450,500,550};
+        int[] expEnds =     new int[]{150,200,250,300,350,400,450,500,550,650};
+        float[] expScores = new float[]{2,  2,  3,  3,  4,  4,  5,  5,  1,  1};
+        int expCount = expStarts.length;
+
+        assertEquals(expCount, combinedScores.size());
+
+        int idx = 0;
+        for(LocusScore score: combinedScores){
+            assertEquals(expStarts[idx], score.getStart());
+            assertEquals(expEnds[idx], score.getEnd());
+            assertEquals(expScores[idx++], score.getScore());
         }
     }
 
