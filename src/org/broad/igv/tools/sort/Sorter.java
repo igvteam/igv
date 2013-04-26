@@ -117,6 +117,8 @@ public abstract class Sorter {
             return new VCFSorter(inputFile, outputFile);
         } else if (shortFN.endsWith(".psl") || shortFN.endsWith(".pslx")) {
             return new BedSorter(inputFile, outputFile);
+        } else if (shortFN.endsWith(".eqtl")) {
+            return new EQTLSorter(inputFile, outputFile);
         } else if (GWASParser.isGWASFile(shortFN)) {
             return new GWASSorter(inputFile, outputFile);
         } else if (MUTCodec.isMutationAnnotationFile(inputFile.getAbsolutePath())) {
