@@ -57,9 +57,9 @@ public class CombinedDataSource implements DataSource {
         List<LocusScore> innerScores = this.source2.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
 
         int initialSize = outerScores.size() + innerScores.size();
-        List<LocusScore> combinedScores = new ArrayList<LocusScore>(initialSize);
+        List<LocusScore> combinedScoresList = new ArrayList<LocusScore>(initialSize);
 
-        if(initialSize == 0) return combinedScores;
+        if(initialSize == 0) return combinedScoresList;
 
         //TODO We assume that having no data from one source is the identity operation, that may not be true
         if(innerScores.size() == 0) return outerScores;
@@ -70,13 +70,15 @@ public class CombinedDataSource implements DataSource {
          * TODO Check efficiency
          * Assume the following tiles (no breaks)
          * outerScores: |----|--------|--------------|-------|-----------|
-         * innerScores:           |-----|-----|--------|-----------|-----------|---------|
+         * innerScores: yyyyyxxxx|-----|-----|--------|-----------|-----------|---------|
          * combined:    |----|----|---|-|-----|------|-|-----|-----|-----|-----|---------|
          *
          * for each outerScore in outerScores:
+         *      add in regions which come before innerScores.first
          *      for each innerScore in innerScores:
          *          identify overlap between innerScore and outerScore
-         *          split into common building blocks
+         *          combine that score
+         *          add to overall list
          */
 
 
@@ -99,10 +101,15 @@ public class CombinedDataSource implements DataSource {
             highestInnerIdx = -1;
 
             //Add in regions where outerScores has data but innerScores doesn't
-            if(firstInnerStart > outerEnd){
-                lastScoreAdded = new BasicScore(outerStart, outerEnd, combineScores(outerScore, null));
-                combinedScores.add(lastScoreAdded);
-                continue;
+            if(firstInnerStart > outerStart){
+                int newEnd = Math.min(outerEnd, firstInnerStart);
+                float newVal = combineScores(outerScore, null);
+                lastScoreAdded = new BasicScore(outerStart, newEnd, newVal);
+                combinedScoresList.add(lastScoreAdded);
+                if(firstInnerStart >= outerEnd){
+                    //No overlap; region marked "y" in above diagram
+                    continue;
+                }
             }
 
             for(LocusScore innerScore: innerScores){
@@ -114,21 +121,12 @@ public class CombinedDataSource implements DataSource {
                 //Have not yet reached overlapping region, keep going
                 if(innerScore.getEnd() <= outerStart) continue;
 
-
-                //Divide outer score into boundary
-
-                int nextStart = Math.min(outerStart, innerScore.getStart());
+                int nextStart = Math.max(outerStart, innerScore.getStart());
                 int nextEnd = Math.min(outerEnd, innerScore.getEnd());
-
-                if(lastScoreAdded != null){
-                    nextStart = Math.max(nextStart, lastScoreAdded.getEnd());
-                }
-
-
                 float nextVal = combineScores(outerScore, innerScore);
 
                 lastScoreAdded = new BasicScore(nextStart, nextEnd, nextVal);
-                combinedScores.add(lastScoreAdded);
+                combinedScoresList.add(lastScoreAdded);
 
             }
         }
@@ -139,14 +137,14 @@ public class CombinedDataSource implements DataSource {
         if(lastScoreAdded != null && lastScoreAdded.getEnd() < innerTail.getEnd()){
             int combinedStart = Math.min(lastScoreAdded.getEnd(), innerTail.getEnd());
             BasicScore newTail = new BasicScore(combinedStart, innerTail.getEnd(), innerTail.getScore());
-            combinedScores.add(newTail);
+            combinedScoresList.add(newTail);
             for(LocusScore innerScore: innerScores.subList(highestInnerIdx + 1, innerScores.size())){
                 float newVal = combineScores(null, innerScore);
-                combinedScores.add(new BasicScore(innerScore.getStart(), innerScore.getEnd(), newVal));
+                combinedScoresList.add(new BasicScore(innerScore.getStart(), innerScore.getEnd(), newVal));
             }
         }
 
-        return combinedScores;
+        return combinedScoresList;
     }
 
     /**

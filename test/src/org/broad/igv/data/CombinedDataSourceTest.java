@@ -92,7 +92,7 @@ public class CombinedDataSourceTest extends AbstractHeadlessTest {
 
         int[] expStarts =   new int[]{100,150,200,250,300,350,400,450,500,550};
         int[] expEnds =     new int[]{150,200,250,300,350,400,450,500,550,650};
-        float[] expScores = new float[]{2,  2,  3,  3,  4,  4,  5,  5,  1,  1};
+        float[] expScores = new float[]{1,  2,  3,  3,  4,  4,  5,  5,  1,  1};
         int expCount = expStarts.length;
 
         assertEquals(expCount, combinedScores.size());
