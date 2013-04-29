@@ -23,7 +23,7 @@
             <arg name="Other arguments" cmd_arg="" type="LONGTEXT" defaultValue=""/>
             <arg name="Track" cmd_arg="" type="ALIGNMENT_TRACK"/>
             <output name="Transcripts Track">
-                <parser source="$outdir/transcripts.gtf" format="gtf"/>
+                <parser source="$outdir/transcripts.gtf" decodingCodec="org.broad.igv.cli_plugin.CufflinksTranscriptDecoder"/>
             </output>
         </command>
 
