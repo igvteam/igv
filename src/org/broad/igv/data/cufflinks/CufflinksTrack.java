@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2013 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.data.cufflinks;
@@ -21,9 +14,8 @@ package org.broad.igv.data.cufflinks;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.DataRange;
-import org.broad.igv.renderer.HeatmapRenderer;
 import org.broad.igv.track.DataTrack;
-import org.broad.igv.track.TrackType;
+import org.broad.igv.track.Track;
 import org.broad.igv.util.ResourceLocator;
 
 import java.awt.*;
@@ -41,20 +33,20 @@ public class CufflinksTrack extends DataTrack {
     public CufflinksTrack(ResourceLocator locator, String id, String name, CufflinksDataSource dataSource) {
         super(locator, id, name);
         this.dataSource = dataSource;
-        setTrackType(TrackType.FPKM);
+//        setTrackType(TrackType.FPKM);
 
-        if(isExpDiff(locator.getPath())) {
-            // Make +/- scale symmetic
-            float range = (float) Math.min(5, Math.abs(Math.max(dataSource.getDataMin(), dataSource.getDataMax())));
-            setDataRange(new DataRange(-range, 0, range));
-            setColor(Color.RED);
-            setAltColor(Color.BLUE);
-            setColorScale(new ContinuousColorScale(-range, 0, range, Color.RED, Color.WHITE,  Color.BLUE));
-        }
-
-        else {
-            setDataRange(new DataRange((float) dataSource.getDataMin(), 0, (float) dataSource.getDataMax()));
-        }
+//        if(isExpDiff(locator.getPath())) {
+//            // Make +/- scale symmetic
+//            float range = (float) Math.min(5, Math.abs(Math.max(dataSource.getDataMin(), dataSource.getDataMax())));
+//            setDataRange(new DataRange(-range, 0, range));
+//            setColor(Color.RED);
+//            setAltColor(Color.BLUE);
+//            setColorScale(new ContinuousColorScale(-range, 0, range, Color.RED, Color.WHITE,  Color.BLUE));
+//        }
+//
+//        else {
+//            setDataRange(new DataRange((float) dataSource.getDataMin(), 0, (float) dataSource.getDataMax()));
+//        }
 
     }
 
@@ -65,8 +57,24 @@ public class CufflinksTrack extends DataTrack {
 
 
     // Bit of a hack
-    boolean isExpDiff(String path) {
-        return path.toLowerCase().endsWith("_exp.diff");
+    static boolean isExpDiff(String path) {
+        return path != null && path.toLowerCase().endsWith("_exp.diff");
+    }
+
+    public static void setCufflinksScale(Track inputTrack){
+        String path = inputTrack.getResourceLocator() != null ? inputTrack.getResourceLocator().getPath() : null;
+        if(isExpDiff(path)) {
+            // Make +/- scale symmetic
+            float range = Math.min(5, Math.abs(Math.max(inputTrack.getDataRange().getMinimum(), inputTrack.getDataRange().getMaximum())));
+            inputTrack.setDataRange(new DataRange(-range, 0, range));
+            inputTrack.setColor(Color.RED);
+            inputTrack.setAltColor(Color.BLUE);
+            inputTrack.setColorScale(new ContinuousColorScale(-range, 0, range, Color.RED, Color.WHITE, Color.BLUE));
+        }
+
+        else {
+            inputTrack.setDataRange(new DataRange(inputTrack.getDataRange().getMinimum(), 0, inputTrack.getDataRange().getMaximum()));
+        }
     }
 
 

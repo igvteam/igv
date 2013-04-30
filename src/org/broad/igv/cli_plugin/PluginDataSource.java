@@ -14,6 +14,8 @@ package org.broad.igv.cli_plugin;
 import org.apache.log4j.Logger;
 import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.sam.Alignment;
+import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.DataTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackType;
@@ -23,12 +25,15 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * A feature source which derives its information
- * from a command line cli_plugin
+ * A data source which derives its information
+ * from a command line cli_plugin.
+ * Supported input track types:
+ *  AlignmentTrack
+ *  DataTrack
  * User: jacob
  * Date: 2012/05/01
  */
-public class PluginDataSource extends PluginSource<LocusScore, LocusScore> implements DataSource {
+public class PluginDataSource extends PluginSource implements DataSource {
 
     private static Logger log = Logger.getLogger(PluginDataSource.class);
 
@@ -41,9 +46,15 @@ public class PluginDataSource extends PluginSource<LocusScore, LocusScore> imple
     }
 
     protected String createTempFile(Track track, Argument argument, String chr, int start, int end, int zoom) throws IOException {
-        DataTrack dataTrack = (DataTrack) track;
-        List<LocusScore> features = dataTrack.getSummaryScores(chr, start, end, zoom);
-        return super.createTempFile(features, argument);
+        if(track instanceof DataTrack){
+            DataTrack dataTrack = (DataTrack) track;
+            List<LocusScore> features = dataTrack.getSummaryScores(chr, start, end, zoom);
+            return super.createTempFile(features, argument);
+        } else if (track instanceof AlignmentTrack) {
+            List<Alignment> alignments = getAlignmentsForRange((AlignmentTrack) track, chr, start, end, zoom);
+            return super.createTempFile(alignments, argument);
+        }
+        throw new IllegalArgumentException("Unsupported track type: " + track.getClass());
     }
 
     @Override
@@ -100,6 +111,6 @@ public class PluginDataSource extends PluginSource<LocusScore, LocusScore> imple
 
     @Override
     public Collection<WindowFunction> getAvailableWindowFunctions() {
-        return null; //TODO
+        return Arrays.asList(WindowFunction.none); //TODO
     }
 }

@@ -16,8 +16,10 @@
 package org.broad.igv.cli_plugin.ui;
 
 import org.broad.igv.cli_plugin.Argument;
+import org.broad.igv.cli_plugin.PluginDataSource;
 import org.broad.igv.cli_plugin.PluginFeatureSource;
 import org.broad.igv.cli_plugin.PluginSpecReader;
+import org.broad.igv.track.DataSourceTrack;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
@@ -132,13 +134,22 @@ public class RunPlugin extends JDialog {
             argumentValues.put(argComp.getKey(), value);
         }
 
-        //TODO PluginDataSource is already written, just need to know when to use it
         List<Track> newTracks = new ArrayList<Track>(outputAttrs.size());
         for(PluginSpecReader.Output outputAttr: outputAttrs){
             //TODO Hacky, only works for output components being TextArgument, which they are as of this comment writing
             String name = (String) outputComponents.get(outputAttr).getValue();
-            PluginFeatureSource source = new PluginFeatureSource(cmd, argumentValues, outputAttr, specPath);
-            FeatureTrack newTrack = new FeatureTrack(UUID.randomUUID().toString(), name, source);
+
+            Track newTrack = null;
+            switch (outputAttr.type){
+                case FEATURE_TRACK:
+                    PluginFeatureSource featSource = new PluginFeatureSource(cmd, argumentValues, outputAttr, specPath);
+                    newTrack = new FeatureTrack(UUID.randomUUID().toString(), name, featSource);
+                    break;
+                case DATA_SOURCE_TRACK:
+                    PluginDataSource dataSource = new PluginDataSource(cmd, argumentValues, outputAttr, specPath);
+                    newTrack = new DataSourceTrack(null, UUID.randomUUID().toString(), name, dataSource);
+                    break;
+            }
             newTracks.add(newTrack);
         }
         return newTracks;

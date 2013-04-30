@@ -14,7 +14,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.cli_plugin.PluginFeatureSource;
 import org.broad.igv.cli_plugin.PluginSource;
-import org.broad.igv.dev.api.api;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -57,7 +56,6 @@ import java.util.List;
  */
 @XmlType(factoryMethod = "getNextTrack")
 @XmlSeeAlso({VariantTrack.class, PluginFeatureSource.class, MotifFinderSource.class})
-@api
 public class FeatureTrack extends AbstractTrack {
 
     private static Logger log = Logger.getLogger(FeatureTrack.class);

@@ -27,10 +27,9 @@ public class FpkmTrackingCodec extends CufflinksCodec<FPKMValue>{
 
     int geneColumn = 4;
     int locusColumn  = 6;
-    int fpkmColumn = 6;
-    int confLoColumn = 7;
-    int confHiColumn = 8;
-    int sigColumn = 12;
+    int fpkmColumn = 9;
+    int confLoColumn = 10;
+    int confHiColumn = 11;
 
     public FpkmTrackingCodec(String path){
         super(FPKMValue.class, path);

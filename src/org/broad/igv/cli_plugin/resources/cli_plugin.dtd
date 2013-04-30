@@ -103,7 +103,7 @@ Right now we only accept outputs of type "track"
 -->
 <!ELEMENT output (parser?)>
 <!ATTLIST output name CDATA "Output Track"
-    type (track) #IMPLIED
+    type (FeatureTrack|DataSourceTrack) #IMPLIED
     defaultValue CDATA #IMPLIED>
 
 

@@ -375,7 +375,7 @@ public class PluginSpecReader {
     public static class Output {
         @XmlAttribute public String name;
         @XmlAttribute public String defaultValue;
-        @XmlAttribute OutputType type = OutputType.TRACK;
+        @XmlAttribute public OutputType type = OutputType.FEATURE_TRACK;
         @XmlElement public Parser parser;
     }
 
@@ -385,8 +385,11 @@ public class PluginSpecReader {
     @XmlEnum
     @XmlAccessorType(XmlAccessType.NONE)
     public static enum OutputType{
-        @XmlEnumValue("track")
-        TRACK
+        @XmlEnumValue("FeatureTrack")
+        FEATURE_TRACK,
+        @XmlEnumValue("DataSourceTrack")
+        DATA_SOURCE_TRACK,
+
     }
 
 

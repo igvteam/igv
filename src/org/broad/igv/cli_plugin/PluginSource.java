@@ -15,6 +15,8 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
+import org.broad.igv.sam.Alignment;
+import org.broad.igv.sam.AlignmentInterval;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.SubtlyImportant;
@@ -238,6 +240,25 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
         String path = outFile.getAbsolutePath();
         this.attributes.add(attributes);
         return path;
+    }
+
+    protected List<Alignment> getAlignmentsForRange(AlignmentTrack track, String chr, int start, int end, int zoom) throws IOException {
+
+        Collection<AlignmentInterval> loadedIntervals = track.getDataManager().getAllLoadedIntervals();
+        List<Alignment> alignments = new ArrayList<Alignment>();
+        for(AlignmentInterval interval: loadedIntervals){
+            if(interval.overlaps(chr, start, end, zoom)){
+                Iterator<Alignment> iter = interval.getAlignmentIterator();
+                while(iter.hasNext()){
+                    Alignment al = iter.next();
+                    if(al.getStart() <= end && al.getEnd() >= start){
+                        alignments.add(al);
+                    }
+                }
+            }
+        }
+
+        return alignments;
     }
 
     /**
