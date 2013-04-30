@@ -61,12 +61,9 @@ public class AlignmentDataManager {
 
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
-
-        PreferenceManager prefs = PreferenceManager.getInstance();
         reader = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator));
         peStats = new HashMap();
-        boolean showSpliceJunctions = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
-        this.loadOptions = new SpliceJunctionHelper.LoadOptions(showSpliceJunctions, false);
+        initLoadOptions();
         initChrMap(genome);
     }
 
@@ -75,6 +72,12 @@ public class AlignmentDataManager {
         initChrMap(genome);
     }
 
+
+    void initLoadOptions(){
+        PreferenceManager prefs = PreferenceManager.getInstance();
+        boolean showSpliceJunctions = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
+        this.loadOptions = new SpliceJunctionHelper.LoadOptions(showSpliceJunctions, false);
+    }
     /**
      * Create an alias -> chromosome lookup map.  Enable loading BAM files that use alternative names for chromosomes,
      * provided the alias has been defined  (e.g. 1 -> chr1,  etc).

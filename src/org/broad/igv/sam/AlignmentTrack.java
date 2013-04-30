@@ -806,8 +806,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 break;
             case RELOAD:
             case SPLICE_JUNCTION:
-                final boolean showJunctions = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
-                dataManager.setShowSpliceJunctions(showJunctions);
+                dataManager.initLoadOptions();
                 clearCaches();
                 break;
         }
