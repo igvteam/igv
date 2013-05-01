@@ -45,12 +45,12 @@ public class EQTLFeature extends AbstractFeature {
 
     @Override
     public int getStart() {
-        return position;  //To change body of implemented methods use File | Settings | File Templates.
+        return position;
     }
 
     @Override
     public int getEnd() {
-        return position + 1;  //To change body of implemented methods use File | Settings | File Templates.
+        return position + 1;
     }
 
 
@@ -69,7 +69,7 @@ public class EQTLFeature extends AbstractFeature {
     @Override
     public String getValueString(double position, WindowFunction windowFunction) {
         StringBuilder sb = new StringBuilder();
-        sb.append("<br>" + snp);
+        sb.append(snp);
         sb.append("<br>" + geneId);
         sb.append("<br>" + geneName);
         for(Map.Entry<String, String> entry : attributes.entrySet()) {
