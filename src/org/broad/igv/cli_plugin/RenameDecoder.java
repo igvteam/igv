@@ -38,11 +38,11 @@ public class RenameDecoder<T extends BasicFeature> extends AsciiDecoder<T>{
 
     /**
      * Create a new name for this feature.
-     * Intended to be overridden, default implementation uses start position.
+     * Intended to be overridden, default implementation uses (1-based) start position.
      * @param bf
      * @return
      */
     protected String createName(BasicFeature bf) {
-        return String.format("%d", bf.getStart());
+        return String.format("%d", bf.getStart() + 1);
     }
 }

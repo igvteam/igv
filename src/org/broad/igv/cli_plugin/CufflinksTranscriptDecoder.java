@@ -13,6 +13,11 @@ package org.broad.igv.cli_plugin;
 
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.GFFCodec;
+import org.broad.igv.track.GFFFeatureSource;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Iterator;
 
 /**
  * @author jacob
@@ -21,5 +26,13 @@ import org.broad.igv.feature.tribble.GFFCodec;
 public class CufflinksTranscriptDecoder extends RenameDecoder{
     public CufflinksTranscriptDecoder() {
         super(new GFFCodec(GenomeManager.getInstance().getCurrentGenome()));
+    }
+
+    @Override
+    public Iterator decodeAll(InputStream is, boolean strictParsing) throws IOException {
+        Iterator iter = super.decodeAll(is, strictParsing);
+        GFFFeatureSource.GFFCombiner combiner = new GFFFeatureSource.GFFCombiner();
+        combiner.addFeatures(iter);
+        return combiner.combineFeatures().iterator();
     }
 }

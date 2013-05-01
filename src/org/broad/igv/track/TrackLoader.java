@@ -582,7 +582,7 @@ public class TrackLoader {
     private void loadCufflinksFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
         List<? extends CufflinksValue> values = CufflinksParser.parse(locator.getPath());
         CufflinksDataSource ds = new CufflinksDataSource(values, genome);
-        DataTrack track = new DataSourceTrack(locator, locator.getName(), locator.getPath(), ds);
+        DataTrack track = new DataSourceTrack(locator, locator.getTrackName(), locator.getPath(), ds);
         track.setTrackType(TrackType.FPKM);
         CufflinksTrack.setCufflinksScale(track);
         newTracks.add(track);

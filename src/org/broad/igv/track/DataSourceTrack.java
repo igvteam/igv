@@ -47,6 +47,11 @@ public class DataSourceTrack extends DataTrack {
         setTrackType(dataSource.getTrackType());
         List<LocusScore> scores = this.dataSource.getSummaryScoresForRange(Globals.CHR_ALL, -1, -1, 0);
 
+        initScale(dataSource, scores);
+    }
+
+    void initScale(DataSource dataSource, List<LocusScore> scores){
+
         float min = (float) dataSource.getDataMin();
         float max = (float) dataSource.getDataMax();
         float baseline = 0;
@@ -60,7 +65,6 @@ public class DataSourceTrack extends DataTrack {
         }
 
         setDataRange(new DataRange(min, baseline, max));
-
     }
 
     public List<LocusScore> getSummaryScores(String chr, int startLocation, int endLocation, int zoom) {
