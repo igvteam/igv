@@ -56,7 +56,7 @@ public abstract class AbstractDataSource implements DataSource {
 
     /**
      * Return the precomputed summary tiles for the given locus and zoom level.  If
-     * there are non return null.
+     * there are none return null.
      *
      * @param chr
      * @param startLocation
@@ -83,7 +83,6 @@ public abstract class AbstractDataSource implements DataSource {
      * @param timestamp
      */
     public void refreshData(long timestamp) {
-
         // ignore --
     }
 
@@ -91,7 +90,6 @@ public abstract class AbstractDataSource implements DataSource {
      * Return the longest feature in the dataset for the given chromosome.  This
      * is needed when computing summary data for a region.
      * <p/>
-     * TODO - This default implementaiton is crude and should be overriden by subclasses.
      *
      * @param chr
      * @return

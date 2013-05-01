@@ -19,7 +19,11 @@ import org.broad.igv.cli_plugin.Argument;
 import org.broad.igv.cli_plugin.PluginDataSource;
 import org.broad.igv.cli_plugin.PluginFeatureSource;
 import org.broad.igv.cli_plugin.PluginSpecReader;
+import org.broad.igv.data.DataSource;
+import org.broad.igv.feature.CachingFeatureSource;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.DataSourceTrack;
+import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
@@ -142,11 +146,12 @@ public class RunPlugin extends JDialog {
             Track newTrack = null;
             switch (outputAttr.type){
                 case FEATURE_TRACK:
-                    PluginFeatureSource featSource = new PluginFeatureSource(cmd, argumentValues, outputAttr, specPath);
+                    FeatureSource featSource = new PluginFeatureSource(cmd, argumentValues, outputAttr, specPath);
+                    featSource = new CachingFeatureSource(featSource);
                     newTrack = new FeatureTrack(UUID.randomUUID().toString(), name, featSource);
                     break;
                 case DATA_SOURCE_TRACK:
-                    PluginDataSource dataSource = new PluginDataSource(cmd, argumentValues, outputAttr, specPath);
+                    DataSource dataSource = new PluginDataSource(GenomeManager.getInstance().getCurrentGenome(), cmd, argumentValues, outputAttr, specPath);
                     newTrack = new DataSourceTrack(null, UUID.randomUUID().toString(), name, dataSource);
                     break;
             }

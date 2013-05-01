@@ -32,7 +32,7 @@ import java.util.List;
  * User: jacob
  * Date: 2012/05/01
  */
-public class PluginFeatureSource extends PluginSource implements FeatureSource<Feature>{
+public class PluginFeatureSource<E extends Feature, D extends Feature> extends PluginSource implements FeatureSource{
 
     private static Logger log = Logger.getLogger(PluginFeatureSource.class);
 
@@ -66,7 +66,7 @@ public class PluginFeatureSource extends PluginSource implements FeatureSource<F
      * @throws java.io.IOException
      */
     @Override
-    public final Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
+    public final Iterator<D> getFeatures(String chr, int start, int end) throws IOException {
         return super.getFeatures(chr, start, end, -1);
     }
 
