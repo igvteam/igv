@@ -14,6 +14,7 @@ package org.broad.igv.feature.tribble;
 import net.sf.samtools.util.BlockCompressedInputStream;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.gwas.EQTLCodec;
 import org.broad.igv.peaks.PeakCodec;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.AsciiFeatureCodec;
@@ -94,7 +95,10 @@ public class CodecFactory {
 //            return new FpkmTrackingCodec(path);
 //        } else if (fn.endsWith("gene_exp.diff") || fn.endsWith("cds_exp.diff")) {
 //            return new ExpDiffCodec(path);
-        }else {
+        } else if(fn.endsWith(".eqtl")) {
+            return new EQTLCodec(genome);
+        }
+        else {
             return null;
         }
 

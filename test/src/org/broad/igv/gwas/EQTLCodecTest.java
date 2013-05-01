@@ -1,5 +1,6 @@
 package org.broad.igv.gwas;
 
+import org.broad.igv.feature.genome.Genome;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
@@ -13,7 +14,9 @@ public class EQTLCodecTest {
     @Test
     public void testDecode() throws Exception {
 
-        EQTLCodec codec = new EQTLCodec(EQTLFeature.class);
+        Genome genome = null;  // Genome not needed for this test
+
+        EQTLCodec codec = new EQTLCodec(genome);
 
         String line = "rs4700772\t5\t180341845\tENSG00000168903.7\tBTNL3\t180415845\t129.858921455635\t1.61918925670937e-27";
 

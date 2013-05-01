@@ -1,7 +1,15 @@
 package org.broad.igv.gwas;
 
+import org.broad.igv.feature.AbstractFeature;
+import org.broad.igv.feature.Exon;
+import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.feature.Strand;
+import org.broad.igv.track.WindowFunction;
+import org.broad.igv.util.collections.MultiMap;
 import org.broad.tribble.Feature;
 
+import java.awt.*;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -10,7 +18,7 @@ import java.util.Map;
  * SNP	SNP_Chr	SNP_Pos	Gen_ID	Gene_Name	Gene_Pos	T_Stat	P_Val	Q_Val
  * rs1569471	1	169564130	ENSG00000000460.11	C1orf112	169631245	-4.187361378	7.79E-05	0.04794564
  */
-public class EQTLFeature implements Feature {
+public class EQTLFeature extends AbstractFeature {
 
     private String snp;
     String chr;
@@ -26,6 +34,7 @@ public class EQTLFeature implements Feature {
         this.position = position;
         this.geneId = geneId;
         this.geneName = geneName;
+
         this.attributes = attributes;
     }
 
@@ -57,7 +66,21 @@ public class EQTLFeature implements Feature {
         return geneName;
     }
 
-    public Map<String, String> getAttributes() {
-        return attributes;
+    @Override
+    public String getValueString(double position, WindowFunction windowFunction) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<br>" + snp);
+        sb.append("<br>" + geneId);
+        sb.append("<br>" + geneName);
+        for(Map.Entry<String, String> entry : attributes.entrySet()) {
+            sb.append("<br>" + entry.getKey() + " = " + entry.getValue());
+        }
+        return sb.toString();
+
+    }
+
+    @Override
+    public String getURL() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

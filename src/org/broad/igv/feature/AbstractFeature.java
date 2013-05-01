@@ -58,7 +58,7 @@ abstract public class AbstractFeature implements IGVFeature, org.broad.tribble.F
     }
 
     public String getIdentifier() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
     public void setType(String type) {
