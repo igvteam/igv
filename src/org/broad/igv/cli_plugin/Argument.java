@@ -51,6 +51,14 @@ public class Argument{
     private boolean output = false;
 
     /**
+     * Whether this argument is displayed to the user.
+     * If we just want to have a value in the XML spec
+     * that the user can't change, set this to false
+     */
+    @XmlAttribute
+    private boolean visible = true;
+
+    /**
      * id used by spec by which this argument can be referred.
      * Does not need to be human readable, must be unique
      * within a command
@@ -149,6 +157,10 @@ public class Argument{
 
     public String getEncodingCodec() {
         return encodingCodec;
+    }
+
+    public boolean isVisible() {
+        return visible;
     }
 
     @SubtlyImportant

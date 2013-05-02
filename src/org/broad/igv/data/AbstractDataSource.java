@@ -209,14 +209,15 @@ public abstract class AbstractDataSource implements DataSource {
         DataTile rawTile = getRawData(chr, adjustedStart, endLocation);
         SummaryTile tile = null;
 
+        if(rawTile != null){
+            tile = new SummaryTile();
+        }
 
-        if ((rawTile != null) && !rawTile.isEmpty() && nBins > 0) {
+        if (rawTile != null && !rawTile.isEmpty() && nBins > 0) {
             int[] starts = rawTile.getStartLocations();
             int[] ends = rawTile.getEndLocations();
             float[] values = rawTile.getValues();
             String[] features = rawTile.getFeatureNames();
-
-            tile = new SummaryTile();
 
             if (windowFunction == WindowFunction.none) {
 

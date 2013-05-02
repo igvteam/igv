@@ -184,5 +184,6 @@ encodingCodec
     defaultValue CDATA #IMPLIED
     id ID #IMPLIED
     output (true|false|TRUE|FALSE) "true"
+    visible (true|false) "true"
     encodingCodec CDATA #IMPLIED>
 

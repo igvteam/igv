@@ -80,6 +80,15 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
      */
     protected List<Map<String, Object>> attributes = new ArrayList<Map<String, Object>>(2);
 
+    /**
+     * Each time we output data, we give it a unique ID.
+     * As yet
+     */
+    protected String lastRunId;
+    private static final String RUN_ID_ATTR = "RUN_ID";
+
+    //private QueryTracker queryTracker = new QueryTracker();
+
     @SubtlyImportant
     protected PluginSource(){}
 
@@ -129,7 +138,10 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
 
         attributes.clear();
 
-        Map<String, String[]> argValsById = new HashMap<String, String[]>(arguments.size());
+        String runId = createNewRunId();
+
+        Map<String, String> idVariables = new HashMap<String, String>(arguments.size());
+        idVariables.put(RUN_ID_ATTR, runId);
 
         for (Map.Entry<Argument, Object> entry : arguments.entrySet()) {
             Argument arg = entry.getKey();
@@ -171,17 +183,14 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
                     break;
             }
 
-            if (arg.getId() != null) {
-                argValsById.put(arg.getId(), sVal);
+            if (arg.getId() != null && sVal != null) {
+                idVariables.put(arg.getId(), sVal[0]);
             }
 
             if (arg.isOutput()) {
                 String cmdArg = arg.getCmdArg();
                 if (cmdArg.trim().length() > 0) {
-                    for (String argId : argValsById.keySet()) {
-                        cmdArg = cmdArg.replace("$" + argId, argValsById.get(argId)[0]);
-                    }
-
+                    cmdArg = replaceStringsFromIds(cmdArg, idVariables);
                     fullCmd.add(cmdArg);
                 }
                 if(sVal != null){
@@ -190,12 +199,39 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
             }
         }
 
-        for(String argId: argValsById.keySet()){
-            String repStr = "$" + argId;
-            parser.source = parser.source.replace(repStr, argValsById.get(argId)[0]);
-        }
+        parser.source = replaceStringsFromIds(parser.source, idVariables);
 
         return fullCmd.toArray(new String[0]);
+    }
+
+    /**
+     * Replace strings of form $"variablename", similar
+     * to how the unix shell deals with variables.
+     *
+     * This is best demonstrated by example.
+     * inputString = "My name is $myname"
+     * idVariables = {"myname" -> "bob", "othervariable" -> ted}
+     * replaceStringsFromIds(inputString, idVariables) returns
+     * "My name is bob"
+     *
+     * @param inputString String in which to perform replacement
+     * @param idVariables May from string -> string, from to.
+     * @return
+     */
+    private String replaceStringsFromIds(String inputString, Map<String, String> idVariables){
+        for (String argId : idVariables.keySet()) {
+            inputString = inputString.replace("$" + argId, idVariables.get(argId));
+        }
+        return inputString;
+    }
+
+    protected String createNewRunId() {
+        lastRunId = "" + System.currentTimeMillis();
+        return lastRunId;
+    }
+
+    String getLastRunId(){
+        return lastRunId;
     }
 
     /**
@@ -263,7 +299,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
 
     /**
      * Perform the actual combination operation between the constituent data
-     * sources. This implementation re-runs the operation each call.
+     * sources.
      *
      * @param chr
      * @param start
@@ -272,33 +308,60 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
      * @throws java.io.IOException
      */
     protected final Iterator<D> getFeatures(String chr, int start, int end, int zoom) throws IOException {
+        if(parser.source == null){
+            throw new IllegalStateException("Null value for source");
+        }
 
-        String[] fullCmd = genFullCommand(chr, start, end, zoom);
+        boolean rerun = true;
+        //synchronized (this.queryTracker){
+        //    rerun = !this.queryTracker.isQuerySame(chr, start, end, zoom);
+        //}
 
-        //Start cli_plugin process
-        Process pr = RuntimeUtils.startExternalProcess(fullCmd, null, null);
+        /**
+         * A process might generate multiple output files, we only want to run it once.
+         * e.g. Cufflinks generates transcripts.gtf, genes.fpkm_tracking, isoforms.fpkm_tracking
+         * If the file exists we just read from it
+         */
 
+        InputStream dataStream = null;
+        if(!rerun){
+            File inFile = new File(parser.source);
+            if(inFile.canRead()){
+                //Use the existing file
+                dataStream = new FileInputStream(parser.source);
+            }
+        }
+
+        if(dataStream == null){
+            //synchronized (this.queryTracker){
+                String[] fullCmd = genFullCommand(chr, start, end, zoom);
+                //log.debug("interval: " + Locus.getFormattedLocusString(chr, start, end));
+                //log.debug(StringUtils.join(fullCmd, " "));
+
+                //Start cli_plugin process
+                Process pr = RuntimeUtils.startExternalProcess(fullCmd, null, null);
+
+                if(parser.source.equals(PluginSpecReader.Parser.SOURCE_STDOUT)){
+                    dataStream = pr.getInputStream();
+                }else{
+                    try {
+                        pr.waitFor();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    dataStream = new FileInputStream(parser.source);
+                }
+                //this.queryTracker.setLastQuery(chr, start, end, zoom);
+            //}
+        }
         //Read back in the data which cli_plugin output
         FeatureDecoder<D> codec = getDecodingCodec();
 
-        InputStream dataStream = null;
-        if(parser.source.equals(PluginSpecReader.Parser.SOURCE_STDOUT)){
-            dataStream = pr.getInputStream();
-        }else if(parser.source == null){
-            throw new IllegalArgumentException("Null value for source");
-        }else{
-            try {
-                pr.waitFor();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            dataStream = new FileInputStream(parser.source);
-        }
         return codec.decodeAll(dataStream, parser.strict);
     }
 
     /**
-     * Create ncoding codec, and apply inputs
+     * Create encoding codec, and apply inputs
      *
      * @param argument
      * @return
@@ -499,6 +562,10 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
     public void updateTrackReferences(List<Track> allTracks){
         MyMapAdapter.updateTrackReferences(arguments, allTracks);
     }
+
+//    public void setQueryTracker(QueryTracker queryTracker){
+//        this.queryTracker = queryTracker;
+//    }
 
     static class XmlMap{
         public List<Argument> arg =

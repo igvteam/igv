@@ -11,9 +11,8 @@
 <!DOCTYPE cli_plugin SYSTEM "cli_plugin.dtd">
 <cli_plugin api_version="alpha" plugin_version="0.1" name="cufflinks"
             id="org.broad.igv.plugin.cufflinks">
-    <tool name="cufflinks" defaultPath="/Users/jacob/Software/cufflinks/cufflinks" visible="true">
-
-        <command name="Arbitrary Input" cmd="">
+    <tool name="cufflinks" defaultPath="cufflinks" visible="false">
+        <command name="cufflinks" cmd="">
             <arg name="Output Dir" id="outdir" cmd_arg="-o" type="LONGTEXT" defaultValue="./"/>
             <arg name="Max Intron Length" cmd_arg="--max-intron-length" type="TEXT" defaultValue="300000"/>
             <arg name="Min Isoform Fraction" cmd_arg="--min-isoform-fraction" type="TEXT" defaultValue="0.00001"/>

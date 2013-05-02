@@ -148,6 +148,6 @@ public class CufflinksDataSource implements DataSource {
 
     @Override
     public Collection<WindowFunction> getAvailableWindowFunctions() {
-        return null;
+        return Arrays.asList(WindowFunction.none);
     }
 }

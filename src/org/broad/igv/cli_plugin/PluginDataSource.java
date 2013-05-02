@@ -36,7 +36,7 @@ public class PluginDataSource extends AbstractDataSource {
     private double dataMin;
     private double dataMax;
 
-    private PluginFeatureSource<Feature, LocusScore> pluginFeatureSource;
+    private PluginSource<Feature, LocusScore> pluginFeatureSource;
 
     private Map<String, Integer> longestFeatureMap = new HashMap<String, Integer>();
 
@@ -59,13 +59,23 @@ public class PluginDataSource extends AbstractDataSource {
 
     @Override
     protected DataTile getRawData(String chr, int startLocation, int endLocation) {
+
+        int queryLength = endLocation - startLocation;
+        int longestFeature = getLongestFeature(chr);
+        int adjustedStart = startLocation;
+        int adjustedEnd = endLocation;
+        if(queryLength < longestFeature){
+            int halfDiff = (longestFeature - queryLength)/2;
+            adjustedStart = startLocation - halfDiff - 1;
+            adjustedEnd = endLocation + halfDiff;
+        }
+
         try {
-            Iterator<LocusScore> iter = pluginFeatureSource.getFeatures(chr, startLocation, endLocation);
+            Iterator<LocusScore> iter = pluginFeatureSource.getFeatures(chr, adjustedStart, adjustedEnd, -1);
             List<LocusScore> list = new ArrayList<LocusScore>(1000);
             LocusScore score;
             dataMin = Double.MAX_VALUE;
             dataMax = -Double.MAX_VALUE;
-            int longestFeature = getLongestFeature(chr);
 
             while (iter.hasNext()) {
                 score = iter.next();
@@ -103,7 +113,7 @@ public class PluginDataSource extends AbstractDataSource {
 
     @Override
     public int getLongestFeature(String chr) {
-        return longestFeatureMap.containsKey(chr) ? longestFeatureMap.get(chr) : 0;
+        return longestFeatureMap.containsKey(chr) ? longestFeatureMap.get(chr) : 1000;
     }
 
     @Override
@@ -131,4 +141,7 @@ public class PluginDataSource extends AbstractDataSource {
         return Arrays.asList(WindowFunction.none); //TODO
     }
 
+//    public void setQueryTracker(QueryTracker queryTracker) {
+//        this.pluginFeatureSource.setQueryTracker(queryTracker);
+//    }
 }

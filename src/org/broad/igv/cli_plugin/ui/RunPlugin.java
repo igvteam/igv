@@ -19,7 +19,6 @@ import org.broad.igv.cli_plugin.Argument;
 import org.broad.igv.cli_plugin.PluginDataSource;
 import org.broad.igv.cli_plugin.PluginFeatureSource;
 import org.broad.igv.cli_plugin.PluginSpecReader;
-import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.CachingFeatureSource;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.DataSourceTrack;
@@ -96,8 +95,10 @@ public class RunPlugin extends JDialog {
         for (Argument argument : argumentList) {
             ArgumentPanel panel = ArgumentPanel.create(argument);
             if (panel != null) {
-                this.contentPanel.add(panel);
                 argumentComponents.put(argument, panel);
+                if(argument.isVisible()){
+                    this.contentPanel.add(panel);
+                }
             }
         }
 
@@ -139,6 +140,9 @@ public class RunPlugin extends JDialog {
         }
 
         List<Track> newTracks = new ArrayList<Track>(outputAttrs.size());
+
+        //QueryTracker queryTracker = QueryTracker.get();
+
         for(PluginSpecReader.Output outputAttr: outputAttrs){
             //TODO Hacky, only works for output components being TextArgument, which they are as of this comment writing
             String name = (String) outputComponents.get(outputAttr).getValue();
@@ -146,12 +150,14 @@ public class RunPlugin extends JDialog {
             Track newTrack = null;
             switch (outputAttr.type){
                 case FEATURE_TRACK:
-                    FeatureSource featSource = new PluginFeatureSource(cmd, argumentValues, outputAttr, specPath);
-                    featSource = new CachingFeatureSource(featSource);
+                    PluginFeatureSource featSource1 = new PluginFeatureSource(cmd, argumentValues, outputAttr, specPath);
+                    //featSource1.setQueryTracker(queryTracker);
+                    FeatureSource featSource = new CachingFeatureSource(featSource1);
                     newTrack = new FeatureTrack(UUID.randomUUID().toString(), name, featSource);
                     break;
                 case DATA_SOURCE_TRACK:
-                    DataSource dataSource = new PluginDataSource(GenomeManager.getInstance().getCurrentGenome(), cmd, argumentValues, outputAttr, specPath);
+                    PluginDataSource dataSource = new PluginDataSource(GenomeManager.getInstance().getCurrentGenome(), cmd, argumentValues, outputAttr, specPath);
+                    //dataSource.setQueryTracker(queryTracker);
                     newTrack = new DataSourceTrack(null, UUID.randomUUID().toString(), name, dataSource);
                     break;
             }
