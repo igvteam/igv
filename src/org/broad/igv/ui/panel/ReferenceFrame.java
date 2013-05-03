@@ -112,7 +112,6 @@ public class ReferenceFrame {
      * later zoom/origin/etc. calculations are made
      */
     //protected int setEnd = 0;
-
     public ReferenceFrame(String name) {
         this.name = name;
         Genome genome = getGenome();
@@ -136,17 +135,20 @@ public class ReferenceFrame {
     }
 
     private EventBus eventBus;
-    public EventBus getEventBus(){
-        if(eventBus == null){
+
+    public EventBus getEventBus() {
+        if (eventBus == null) {
             eventBus = new AsyncEventBus(LongRunningTask.getThreadExecutor());
             eventBus.register(this);
         }
         //if(eventBus == null) eventBus = new EventBus("IGV");
         return eventBus;
     }
+
     /**
      * Set the position and width of the frame, in pixels
      * The origin/end positions are kept fixed iff valid
+     *
      * @param pixelX
      * @param widthInPixels
      */
@@ -156,10 +158,10 @@ public class ReferenceFrame {
         if (this.widthInPixels != widthInPixels) {
 
             //If we have what looks like a valid end position we keep it
-            if(this.widthInPixels > 0 && this.initialLocus == null){
+            if (this.widthInPixels > 0 && this.initialLocus == null) {
                 int start = (int) getOrigin();
                 int end = (int) getEnd();
-                if(start >= 0 && end >= 1){
+                if (start >= 0 && end >= 1) {
                     this.initialLocus = new Locus(getChrName(), start, end);
                 }
             }
@@ -175,11 +177,12 @@ public class ReferenceFrame {
      * Sets zoom level and recomputes scale, iff newZoom != oldZoom
      * min/maxZoom are recalculated and respected,
      * and the locationScale is recomputed
+     *
      * @param newZoom
      */
-    protected void setZoom(int newZoom){
-        if(zoom != newZoom){
-            synchronized (this){
+    protected void setZoom(int newZoom) {
+        if (zoom != newZoom) {
+            synchronized (this) {
                 setZoomWithinLimits(newZoom);
                 computeLocationScale();
             }
@@ -204,7 +207,7 @@ public class ReferenceFrame {
     }
 
 
-    private synchronized void setZoomWithinLimits(int newZoom){
+    private synchronized void setZoomWithinLimits(int newZoom) {
         computeMinZoom();
         computeMaxZoom();
         zoom = Math.max(minZoom, Math.min(maxZoom, newZoom));
@@ -214,6 +217,7 @@ public class ReferenceFrame {
     /**
      * Increment the zoom level by {@code zoomIncrement}, leaving
      * the center the same
+     *
      * @param zoomIncrement
      */
     public void doZoomIncrement(int zoomIncrement) {
@@ -224,6 +228,7 @@ public class ReferenceFrame {
     /**
      * Set the zoom level to {@code newZoom}, leaving
      * the center the same
+     *
      * @param newZoom
      */
     public void doSetZoom(int newZoom) {
@@ -240,20 +245,21 @@ public class ReferenceFrame {
     }
 
     @Subscribe
-    public void receiveDragStopped(DragStoppedEvent e){
+    public void receiveDragStopped(DragStoppedEvent e) {
         this.snapToGrid();
         getEventBus().post(new ViewChange.Result());
     }
 
 
     public void doIncrementZoom(final int zoomIncrement, final double newCenter) {
-          doSetZoomCenter(getZoom() + zoomIncrement, newCenter);
+        doSetZoomCenter(getZoom() + zoomIncrement, newCenter);
     }
 
     /**
      * Intended to be called by UI elements, this method
      * performs all actions necessary to set a new zoom
      * and center location
+     *
      * @param newZoom
      * @param newCenter
      */
@@ -265,7 +271,7 @@ public class ReferenceFrame {
 
         if (chrName.equals(Globals.CHR_ALL)) {
             // Translate the location to chromosome number
-            synchronized (this){
+            synchronized (this) {
                 jumpToChromosomeForGenomeLocation(newCenter);
             }
             //IGV.getInstance().chromosomeChangeEvent(chrName);
@@ -296,6 +302,7 @@ public class ReferenceFrame {
      * Calls {@link #setChromosomeName(String, boolean)} with force = false
      * It is preferred that you post an event to the EventBus instead, this is public
      * as an implementation side effect
+     *
      * @param name
      */
     public void setChromosomeName(String name) {
@@ -306,7 +313,7 @@ public class ReferenceFrame {
      * Change the frame to the specified chromosome, clearing all
      * view parameters (zoom, locationScale) in the process
      *
-     * @param name Name of the new chromosome
+     * @param name  Name of the new chromosome
      * @param force Whether to force a change to the new chromosome, even if it's
      *              the same name as the old one
      */
@@ -328,7 +335,6 @@ public class ReferenceFrame {
      * Recalculate the locationScale, based on {@link #initialLocus}, {@link #origin}, and
      * {@link #widthInPixels}
      * DOES NOT alter zoom value
-     *
      */
     private synchronized void computeLocationScale() {
         Genome genome = getGenome();
@@ -340,7 +346,7 @@ public class ReferenceFrame {
             // The end location, in base pairs.
             // If negative, we use the whole chromosome
             int setEnd = -1;
-            if(this.initialLocus != null) setEnd = this.initialLocus.getEnd();
+            if (this.initialLocus != null) setEnd = this.initialLocus.getEnd();
 
             if (setEnd > 0 && widthInPixels > 0) {
                 this.locationScale = ((setEnd - origin) / widthInPixels);
@@ -356,7 +362,6 @@ public class ReferenceFrame {
     /**
      * Recalculate the zoom value based on current start/end
      * locationScale is not altered
-     *
      */
     private void computeZoom() {
         int newZoom = calculateZoom(getOrigin(), getEnd());
@@ -383,8 +388,8 @@ public class ReferenceFrame {
      * Record the current state of the frame in history.
      * It is recommended that this NOT be called from within ReferenceFrame,
      * and callers use it after making all changes
-     *
-     //TODO Should we save history by receiving events in History?
+     * <p/>
+     * //TODO Should we save history by receiving events in History?
      */
     public void recordHistory() {
         IGV.getInstance().getSession().getHistory().push(getFormattedLocusString(), zoom);
@@ -409,6 +414,10 @@ public class ReferenceFrame {
         double shiftBP = delta * getScale();
         setOrigin(origin + shiftBP);
         getEventBus().post(new ViewChange.Result());
+
+        // The event bus is not having the desired affect when in multi-locus view (no repaint).  Adding explicit repaint
+        // as a workaround.
+        IGV.getInstance().repaintDataAndHeaderPanels();
     }
 
     public void snapToGrid() {
@@ -506,6 +515,7 @@ public class ReferenceFrame {
     /**
      * Calculate the zoom level given start/end in bp.
      * Doesn't change anything
+     *
      * @param start
      * @param end
      * @return
@@ -556,8 +566,8 @@ public class ReferenceFrame {
     }
 
     @Subscribe
-    public void receiveChromosomeChange(ViewChange.ChromosomeChangeCause chromoChangeCause){
-        if(!chromoChangeCause.chrName.equals(chrName)){
+    public void receiveChromosomeChange(ViewChange.ChromosomeChangeCause chromoChangeCause) {
+        if (!chromoChangeCause.chrName.equals(chrName)) {
             setChromosomeName(chromoChangeCause.chrName, false);
             ViewChange.ChromosomeChangeResult resultEvent = new ViewChange.ChromosomeChangeResult(chromoChangeCause.source,
                     chrName);
