@@ -69,7 +69,11 @@ public class CodecFactory {
         } else if (fn.endsWith(".vcf")) {
             return new VCFWrapperCodec(getVCFCodec(path), genome);
         } else if (fn.endsWith(".bed")) {
-            return new IGVBEDCodec(genome);
+            final IGVBEDCodec codec = new IGVBEDCodec(genome);
+            if(fn.endsWith("junctions.bed")) {
+                codec.setSpliceJunctions(true);
+            }
+            return codec;
         } else if (fn.contains("refflat")) {
             return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.REFFLAT, genome);
         } else if (fn.contains("genepred") || fn.contains("ensgene") || fn.contains("refgene")) {

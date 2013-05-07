@@ -52,6 +52,7 @@ import java.util.List;
  * Track which displays features, typically showing regions of the genome
  * in a qualitative way. Features are rendered using the specified FeatureRenderer.
  * The gene track is an example of a feature track.
+ *
  * @author jrobinso
  */
 @XmlType(factoryMethod = "getNextTrack")
@@ -88,7 +89,7 @@ public class FeatureTrack extends AbstractTrack {
      */
     protected Map<String, PackedFeatures<IGVFeature>> packedFeaturesMap = new HashMap();
 
-    private FeatureRenderer renderer = new IGVFeatureRenderer();
+    private FeatureRenderer renderer;
 
     private DataRenderer coverageRenderer;
 
@@ -145,7 +146,7 @@ public class FeatureTrack extends AbstractTrack {
      */
     public FeatureTrack(String id, String name, FeatureSource source) {
         super(id, name);
-        init(source);
+        init(source, null);
         setSortable(false);
     }
 
@@ -160,33 +161,33 @@ public class FeatureTrack extends AbstractTrack {
      */
     public FeatureTrack(ResourceLocator locator, String id, String name, FeatureSource source) {
         super(locator, id, name);
-        init(source);
+        init(source, locator.getPath());
         setSortable(false);
     }
 
 
     public FeatureTrack(ResourceLocator locator, FeatureSource source) {
         super(locator);
-        init(source);
-        this.getMinimumHeight();
+        init(source, locator.getPath());
         setSortable(false);
     }
 
 
     public FeatureTrack(ResourceLocator locator, String id, FeatureSource source) {
         super(locator, id);
-        init(source);
+        init(source, locator.getPath());
     }
 
     /**
      * Create a new track which is a shallow copy of this one
+     *
      * @param featureTrack
      */
     public FeatureTrack(FeatureTrack featureTrack) {
         this(featureTrack.getId(), featureTrack.getName(), featureTrack.source);
     }
 
-    protected void init(FeatureSource source) {
+    protected void init(FeatureSource source, String path) {
 
         this.source = source;
         setMinimumHeight(10);
@@ -196,6 +197,10 @@ public class FeatureTrack extends AbstractTrack {
         if (source.getFeatureWindowSize() > 0) {
             visibilityWindow = source.getFeatureWindowSize();
         }
+
+        this.renderer = path != null && path.endsWith("junctions.bed") ?
+                new SpliceJunctionRenderer() : new IGVFeatureRenderer();
+
     }
 
     @Override
@@ -285,7 +290,7 @@ public class FeatureTrack extends AbstractTrack {
     /**
      * @return Whether features are displayed stacked on top of one another, rather than overlapping
      */
-    protected boolean areFeaturesStacked(){
+    protected boolean areFeaturesStacked() {
         return getDisplayMode() != DisplayMode.COLLAPSED;
     }
 
@@ -574,12 +579,12 @@ public class FeatureTrack extends AbstractTrack {
         Feature f = getFeatureAtMousePosition(te);
         if (f != null && f instanceof IGVFeature) {
             IGVFeature igvFeature = (IGVFeature) f;
-            if (selectedFeature != null && igvFeature.contains(selectedFeature) && (selectedFeature.contains(igvFeature))){
+            if (selectedFeature != null && igvFeature.contains(selectedFeature) && (selectedFeature.contains(igvFeature))) {
                 //If something already selected, then if it's the same as this feature, deselect, otherwise, select
                 //this feature.
                 //todo: contains() might not do everything I want it to.
                 selectedFeature = null;
-            }else{
+            } else {
                 //if nothing already selected, or something else selected,
                 // select this feature
                 selectedFeature = igvFeature;
@@ -913,13 +918,13 @@ public class FeatureTrack extends AbstractTrack {
 
             if (f == null) {
                 FeatureSource rawSource = source;
-                if(source instanceof CachingFeatureSource){
+                if (source instanceof CachingFeatureSource) {
                     rawSource = ((CachingFeatureSource) source).getSource();
                 }
-                if(rawSource instanceof MotifFinderSource || rawSource instanceof PluginFeatureSource){
+                if (rawSource instanceof MotifFinderSource || rawSource instanceof PluginFeatureSource) {
                     FeatureTrackUtils.nextFeatureSearch(source, chr, packedFeatures.getStart(), packedFeatures.getEnd(),
                             forward, new FeatureSearcher.GotoFeatureHandler());
-                }else{
+                } else {
                     f = FeatureTrackUtils.nextFeature(source, chr, packedFeatures.getStart(), packedFeatures.getEnd(), forward);
                 }
 
@@ -960,32 +965,32 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     @SubtlyImportant
-    private static FeatureTrack getNextTrack(){
+    private static FeatureTrack getNextTrack() {
         FeatureTrack out = (FeatureTrack) IGVSessionReader.getNextTrack();
         if (out == null) out = new FeatureTrack((String) null, null);
         return out;
     }
 
     @Override
-    public void restorePersistentState(Node node) throws JAXBException{
+    public void restorePersistentState(Node node) throws JAXBException {
         super.restorePersistentState(node);
-        if(node.hasChildNodes()){
+        if (node.hasChildNodes()) {
             NodeList childNodes = node.getChildNodes();
-            for(int ii= 0; ii < childNodes.getLength(); ii++){
+            for (int ii = 0; ii < childNodes.getLength(); ii++) {
                 Node child = childNodes.item(ii);
                 String nodeName = child.getNodeName();
-                if(nodeName.contains("#text"))continue;
+                if (nodeName.contains("#text")) continue;
 
-                if(nodeName.equalsIgnoreCase(PLUGIN_SOURCE)){
+                if (nodeName.equalsIgnoreCase(PLUGIN_SOURCE)) {
                     source = IGVSessionReader.getJAXBContext().createUnmarshaller().unmarshal(child, PluginFeatureSource.class).getValue();
-                }else if(nodeName.equalsIgnoreCase(SEQUENCE_MATCH_SOURCE)){
+                } else if (nodeName.equalsIgnoreCase(SEQUENCE_MATCH_SOURCE)) {
                     FeatureSource rawSource = IGVSessionReader.getJAXBContext().createUnmarshaller().unmarshal(child, MotifFinderSource.class).getValue();
                     source = new CachingFeatureSource(rawSource);
-                }else{
-                    try{
+                } else {
+                    try {
                         FeatureSource newSource = (FeatureSource) IGVSessionReader.getJAXBContext().createUnmarshaller().unmarshal(child, Class.forName(nodeName)).getValue();
                         source = newSource;
-                    }catch(Exception e){
+                    } catch (Exception e) {
                         //Lots can go wrong, it just means this isn't a FeatureSource
                         //Probably not an error
                     }
@@ -995,35 +1000,34 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     /**
-     *
      * @param m
      * @param trackElement
      * @throws JAXBException
      */
-    public void marshalSource(Marshaller m, Element trackElement) throws JAXBException{
-        if(source == null) return;
+    public void marshalSource(Marshaller m, Element trackElement) throws JAXBException {
+        if (source == null) return;
         FeatureSource rawSource = source;
-        if(rawSource instanceof CachingFeatureSource){
+        if (rawSource instanceof CachingFeatureSource) {
             rawSource = ((CachingFeatureSource) rawSource).getSource();
         }
 
 
         //We apply special treatment for a few classes
-        if(rawSource instanceof PluginSource){
+        if (rawSource instanceof PluginSource) {
             JAXBElement element = new JAXBElement<PluginSource>(new QName("", PLUGIN_SOURCE), PluginSource.class,
                     (PluginSource) rawSource);
             m.marshal(element, trackElement);
-        }else if(rawSource instanceof MotifFinderSource){
+        } else if (rawSource instanceof MotifFinderSource) {
             JAXBElement element = new JAXBElement<MotifFinderSource>(new QName("", SEQUENCE_MATCH_SOURCE), MotifFinderSource.class,
                     (MotifFinderSource) rawSource);
             m.marshal(element, trackElement);
-        }else{
+        } else {
             //Users can write their own FeatureSources, we tag with the fully qualified class name
             Class<? extends FeatureSource> srcClazz = rawSource.getClass();
             JAXBElement element = new JAXBElement(new QName("", srcClazz.getName()), srcClazz, rawSource);
-            try{
+            try {
                 m.marshal(element, trackElement);
-            }catch(MarshalException e){
+            } catch (MarshalException e) {
                 //This happens if the source is not marshallable
                 //Many of our classes can't, and that's not an error
             }
@@ -1034,10 +1038,11 @@ public class FeatureTrack extends AbstractTrack {
      * This method exists for Plugin tracks. When restoring a session there is no guarantee of track
      * order, so arguments referring to other tracks may fail to resolve. We update those references
      * here after all tracks have been processed
+     *
      * @param allTracks
      */
     public void updateTrackReferences(List<Track> allTracks) {
-        if(source instanceof PluginSource){
+        if (source instanceof PluginSource) {
             ((PluginSource) source).updateTrackReferences(allTracks);
         }
     }

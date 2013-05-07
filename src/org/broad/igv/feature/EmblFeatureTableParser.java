@@ -89,7 +89,6 @@ public class EmblFeatureTableParser implements FeatureParser {
             } else {
                 FeatureTrack track = new FeatureTrack(locator, new FeatureCollectionSource(features, genome));
                 track.setName(locator.getTrackName());
-                track.setRendererClass(IGVFeatureRenderer.class);
                 track.setMinimumHeight(35);
                 track.setHeight(45);
                 track.setRendererClass(GeneTrackRenderer.class);

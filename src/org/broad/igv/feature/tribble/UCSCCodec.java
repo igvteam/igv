@@ -105,4 +105,8 @@ public abstract class UCSCCodec<T extends Feature> extends AsciiFeatureCodec<T> 
         return decode(line);
     }
 
+    public void setSpliceJunctions(boolean b) {
+        spliceJunctions = true;
+
+    }
 }
