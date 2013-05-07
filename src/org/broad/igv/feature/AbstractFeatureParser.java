@@ -140,7 +140,6 @@ public abstract class AbstractFeatureParser implements FeatureParser {
 
         FeatureTrack track = new FeatureTrack(locator, source);
         track.setName(locator.getTrackName());
-        track.setRendererClass(IGVFeatureRenderer.class);
         track.setHeight(45);
 
         if (trackProperties != null) {
