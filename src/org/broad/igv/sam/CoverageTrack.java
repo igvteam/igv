@@ -667,10 +667,10 @@ public class CoverageTrack extends AbstractTrack {
 
         ArrayList<Track> tmp = new ArrayList();
         tmp.add(this);
+
+        popupMenu.add(TrackMenuUtils.getChangeTrackHeightItem(tmp));
         popupMenu.add(TrackMenuUtils.getTrackRenameItem(tmp));
         addCopyDetailsItem(popupMenu, te);
-
-
 
         addAutoscaleItem(popupMenu);
         addLogScaleItem(popupMenu);

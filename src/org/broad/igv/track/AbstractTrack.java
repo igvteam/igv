@@ -82,8 +82,10 @@ public abstract class AbstractTrack implements Track {
     }
 
 
-    @XmlAttribute private String id;
-    @XmlAttribute private String name;
+    @XmlAttribute
+    private String id;
+    @XmlAttribute
+    private String name;
     private String url;
     private boolean itemRGB = true;
 
@@ -92,7 +94,8 @@ public abstract class AbstractTrack implements Track {
     private float viewLimitMax = Float.NaN;  // From UCSC track line
 
 
-    @XmlAttribute protected int fontSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
+    @XmlAttribute
+    protected int fontSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
     private boolean showDataRange = true;
     private String sampleId;
 
@@ -106,8 +109,10 @@ public abstract class AbstractTrack implements Track {
 
     private boolean selected = false;
 
-    @XmlAttribute private boolean visible = true;
-    @XmlAttribute private boolean sortable = true;
+    @XmlAttribute
+    private boolean visible = true;
+    @XmlAttribute
+    private boolean sortable = true;
 
     boolean overlaid;
 
@@ -119,29 +124,37 @@ public abstract class AbstractTrack implements Track {
 
     // Scale for heatmaps
     @XmlJavaTypeAdapter(SessionXmlAdapters.ContinuousColorScale.class)
-    @XmlAttribute private ContinuousColorScale colorScale;
+    @XmlAttribute
+    private ContinuousColorScale colorScale;
 
     //TODO Only write it out for applicable tracks
     //Not applicable to all tracks.
-    @XmlAttribute protected boolean autoScale;
+    @XmlAttribute
+    protected boolean autoScale;
 
     @XmlJavaTypeAdapter(SessionXmlAdapters.Color.class)
-    @XmlAttribute(name = "color") private Color posColor = Color.blue.darker();
+    @XmlAttribute(name = "color")
+    private Color posColor = Color.blue.darker();
 
     @XmlJavaTypeAdapter(SessionXmlAdapters.Color.class)
-    @XmlAttribute private Color altColor = Color.blue.darker();
+    @XmlAttribute
+    private Color altColor = Color.blue.darker();
 
-    @XmlAttribute(name = "featureVisibilityWindow") protected int visibilityWindow = -1;
-    @XmlAttribute private DisplayMode displayMode = DisplayMode.COLLAPSED;
+    @XmlAttribute(name = "featureVisibilityWindow")
+    protected int visibilityWindow = -1;
+    @XmlAttribute
+    private DisplayMode displayMode = DisplayMode.COLLAPSED;
 
     @XmlJavaTypeAdapter(SessionXmlAdapters.Height.class)
-    @XmlAttribute protected Integer height = -1;
+    @XmlAttribute
+    protected Integer height = -1;
 
     @XmlElement(name = "DataRange")
     private DataRange dataRange;
 
     @SubtlyImportant
-    private AbstractTrack(){}
+    private AbstractTrack() {
+    }
 
     public AbstractTrack(
             ResourceLocator dataResourceLocator,
@@ -341,11 +354,12 @@ public abstract class AbstractTrack implements Track {
 
     /**
      * Return the attribute value.  Attribute lookup occurs in the following order, if all fail null is returned.
+     * <p/>
+     * (1) the track attribute table
+     * (2) by sampleId, as set in the Resource element of a session or load-from-server menu
+     * (3) by track name, the visibile display name
+     * (4) by full path to the file associated with this track
      *
-     *    (1) the track attribute table
-     *    (2) by sampleId, as set in the Resource element of a session or load-from-server menu
-     *    (3) by track name, the visibile display name
-     *    (4) by full path to the file associated with this track
      * @param attributeName
      * @return
      */
@@ -359,7 +373,7 @@ public abstract class AbstractTrack implements Track {
         if (value == null) {
             value = attributeManager.getAttribute(getName(), key);
         }
-        if(value == null && getResourceLocator() != null && getResourceLocator().getPath() != null) {
+        if (value == null && getResourceLocator() != null && getResourceLocator().getPath() != null) {
             value = attributeManager.getAttribute(getResourceLocator().getPath(), key);
         }
         return value;
@@ -490,14 +504,22 @@ public abstract class AbstractTrack implements Track {
 
 
     public void setHeight(int height) {
+        setHeight(height, false);
+    }
 
+    @Override
+    public void setHeight(int preferredHeight, boolean force) {
         if (height < getHeight()) {
             if ((this.getDisplayMode() == DisplayMode.EXPANDED) && (getTrackType() != TrackType.GENE)) {
                 this.setDisplayMode(DisplayMode.SQUISHED);
             }
         }
 
-        this.height = Math.min(Math.max(getMinimumHeight(), height), getMaximumHeight());
+        if (force) {
+            this.height = preferredHeight;
+        } else {
+            this.height = Math.min(Math.max(getMinimumHeight(), height), getMaximumHeight());
+        }
     }
 
     public int getHeight() {
@@ -745,9 +767,9 @@ public abstract class AbstractTrack implements Track {
     /**
      * Return the current state of this object as map of key-value pairs.  Used to store session state.
      * Only those attributes not already annotated in AbstractTrack need to be included here
-     * @see #restorePersistentState
      *
      * @return
+     * @see #restorePersistentState
      */
     public Map<String, String> getPersistentState() {
         return new HashMap<String, String>();
@@ -757,18 +779,21 @@ public abstract class AbstractTrack implements Track {
     /**
      * Restore from XML node. Default implementation just turns attributes
      * into a map
+     *
      * @param node
      */
-    public void restorePersistentState(Node node) throws JAXBException{
+    public void restorePersistentState(Node node) throws JAXBException {
         Map<String, String> attributes = Utilities.getAttributes(node);
         restorePersistentState(attributes);
     }
+
     /**
      * Restore attributes from track tag, no children
      * Only those attributes not unmarshalled (meaning not part of AbstractTrack)
      * need to be restored
-     * @see #getPersistentState
+     *
      * @param attributes
+     * @see #getPersistentState
      */
     public void restorePersistentState(Map<String, String> attributes) {
 

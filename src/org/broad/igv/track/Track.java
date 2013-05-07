@@ -119,6 +119,8 @@ public interface Track extends Persistable{
 
     void setHeight(int preferredHeight);
 
+    void setHeight(int preferredHeight, boolean force);
+
     void setY(int top);
 
     int getY();

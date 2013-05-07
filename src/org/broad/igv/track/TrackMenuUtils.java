@@ -766,7 +766,7 @@ public class TrackMenuUtils {
 
         for (Track track : selectedTracks) {
 
-            track.setHeight(value);
+            track.setHeight(value, true);
 
         }
 

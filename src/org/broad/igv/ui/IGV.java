@@ -2040,7 +2040,7 @@ public class IGV {
 
     public void setAllTrackHeights(int newHeight) {
         for (Track track : getAllTracks()) {
-            track.setHeight(newHeight);
+            track.setHeight(newHeight, true);
         }
 
     }
