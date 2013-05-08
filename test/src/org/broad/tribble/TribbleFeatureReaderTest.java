@@ -115,29 +115,4 @@ public class TribbleFeatureReaderTest {
 
     }
 
-    @Ignore("Waiting on IGV-1927 to be fixed")
-    @Test
-    public void testNotTooManyFilesHandles() throws Exception{
-        int trials = 50000;
-        for(int tri=0; tri < trials; tri++){
-            testQuery();
-        }
-    }
-
-    @Ignore("Waiting on IGV-1927 to be fixed")
-    @Test
-    public void testFileHandleNumberNonincreasing() throws Exception{
-        int trials = 5000;
-        int maxDiff = 50;
-        Assume.assumeTrue(Globals.IS_LINUX || Globals.IS_MAC);
-        int baseFileHandles = TestUtils.getNumberOpenFileHandles();
-        for(int tri=0; tri < trials; tri++){
-            testQuery();
-
-            int curFileHandles = TestUtils.getNumberOpenFileHandles();
-            String msg = "Number of open file handles deviates too much from base:\n";
-            msg += "base: " + baseFileHandles + " current: " + curFileHandles + " trial number: " + tri;
-            Assert.assertTrue(msg, curFileHandles - baseFileHandles <= maxDiff);
-        }
-    }
 }
