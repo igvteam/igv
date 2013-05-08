@@ -999,6 +999,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         @XmlAttribute
         private String sortByTag;
 
+        private boolean flagLargeInsertions;
+        private int largeInsertionsThreshold;
+
         RenderOptions() {
             PreferenceManager prefs = PreferenceManager.getInstance();
 
@@ -1031,6 +1034,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             //updateColorScale();
 
             peStats = new HashMap<String, PEStats>();
+
+            flagLargeInsertions = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_LARGE_INSERTIONS);
+            largeInsertionsThreshold = prefs.getAsInt(PreferenceManager.SAM_LARGE_INSERTIONS_THRESHOLD);
         }
 
         private <T extends Enum<T>> T getFromMap(Map<String, String> attributes, String key, Class<T> clazz, T defaultValue) {
@@ -1142,6 +1148,14 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         public GroupOption getGroupByOption() {
             return groupByOption;
+        }
+
+        public boolean isFlagLargeInsertions() {
+            return flagLargeInsertions;
+        }
+
+        public int getLargeInsertionsThreshold() {
+            return largeInsertionsThreshold;
         }
     }
 

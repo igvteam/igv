@@ -160,6 +160,18 @@ public class PreferencesEditor extends javax.swing.JDialog {
         extractBinSize();
     }
 
+    private void filterSecondaryAlignmentsCBActionPerformed(ActionEvent e) {
+        // TODO add your code here
+    }
+
+    private void antialiasingCBActionPerformed(ActionEvent e) {
+        updatedPreferenceMap.put(
+                PreferenceManager.ENABLE_ANTIALISING,
+                String.valueOf(antialiasingCB.isSelected()));
+
+    }
+
+
     public PreferencesEditor(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -284,6 +296,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
         zeroQualityAlignmentCB = new JCheckBox();
         jLabel15 = new JLabel();
         mappingQualityThresholdField = new JTextField();
+        filterSecondaryAlignmentsCB = new JCheckBox();
+        samFlagInsertionsCB = new JCheckBox();
+        filterURL2 = new JTextField();
+        samFlagInsertionsThresholdField = new JTextField();
+        label31 = new JLabel();
         panel2 = new JPanel();
         isizeComputeCB = new JCheckBox();
         jLabel17 = new JLabel();
@@ -303,19 +320,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         label15 = new JLabel();
         label16 = new JLabel();
         junctionCoverageTextField = new JTextField();
-        panel5 = new JPanel();
-        panel6 = new JPanel();
-        hideFirstHP = new JCheckBox();
-        binSizeText = new JTextField();
-        label28 = new JLabel();
-        label29 = new JLabel();
-        radioLine = new JRadioButton();
-        radioArea = new JRadioButton();
-        radioBar = new JRadioButton();
-        radioStacked = new JRadioButton();
-        panel7 = new JPanel();
-        label30 = new JLabel();
-        textServer = new JTextField();
         expressionPane = new JPanel();
         jPanel8 = new JPanel();
         expMapToGeneCB = new JRadioButton();
@@ -374,7 +378,20 @@ public class PreferencesEditor extends javax.swing.JDialog {
         toolTipInitialDelayField = new JTextField();
         tooltipReshowDelayField = new JTextField();
         tooltipDismissDelayField = new JTextField();
-        antialisingCB = new JCheckBox();
+        antialiasingCB = new JCheckBox();
+        ionTorrentPanel = new JPanel();
+        panel6 = new JPanel();
+        hideFirstHP = new JCheckBox();
+        binSizeText = new JTextField();
+        label28 = new JLabel();
+        label29 = new JLabel();
+        radioLine = new JRadioButton();
+        radioArea = new JRadioButton();
+        radioBar = new JRadioButton();
+        radioStacked = new JRadioButton();
+        panel7 = new JPanel();
+        label30 = new JLabel();
+        textServer = new JTextField();
         okCancelButtonPanel = new ButtonPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -1142,7 +1159,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                 //======== panel4 ========
                 {
-                    panel4.setBorder(new TitledBorder("Downsampling"));
+                    panel4.setBorder(new TitledBorder(""));
                     panel4.setLayout(null);
 
                     //---- downsampleReadsCB ----
@@ -1154,12 +1171,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     panel4.add(downsampleReadsCB);
-                    downsampleReadsCB.setBounds(new Rectangle(new Point(5, 25), downsampleReadsCB.getPreferredSize()));
+                    downsampleReadsCB.setBounds(new Rectangle(new Point(5, 13), downsampleReadsCB.getPreferredSize()));
 
                     //---- label23 ----
                     label23.setText("Max read count:");
                     panel4.add(label23);
-                    label23.setBounds(new Rectangle(new Point(195, 28), label23.getPreferredSize()));
+                    label23.setBounds(new Rectangle(new Point(195, 16), label23.getPreferredSize()));
 
                     //---- samDownsampleCountField ----
                     samDownsampleCountField.addActionListener(new ActionListener() {
@@ -1175,12 +1192,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     panel4.add(samDownsampleCountField);
-                    samDownsampleCountField.setBounds(300, 22, 80, 28);
+                    samDownsampleCountField.setBounds(300, 10, 80, 28);
 
                     //---- jLabel13 ----
                     jLabel13.setText("per window size (bases):");
                     panel4.add(jLabel13);
-                    jLabel13.setBounds(new Rectangle(new Point(420, 28), jLabel13.getPreferredSize()));
+                    jLabel13.setBounds(new Rectangle(new Point(420, 16), jLabel13.getPreferredSize()));
 
                     //---- samSamplingWindowField ----
                     samSamplingWindowField.setText("jTextField1");
@@ -1197,7 +1214,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     panel4.add(samSamplingWindowField);
-                    samSamplingWindowField.setBounds(580, 22, 80, 28);
+                    samSamplingWindowField.setBounds(580, 10, 80, 28);
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
@@ -1214,7 +1231,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     }
                 }
                 alignmentPanel.add(panel4);
-                panel4.setBounds(10, 62, 755, 60);
+                panel4.setBounds(10, 62, 755, 48);
 
                 //======== jPanel12 ========
                 {
@@ -1258,10 +1275,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(samMinBaseQualityField);
-                    samMinBaseQualityField.setBounds(605, 140, 50, samMinBaseQualityField.getPreferredSize().height);
+                    samMinBaseQualityField.setBounds(265, 160, 55, samMinBaseQualityField.getPreferredSize().height);
 
                     //---- samShadeMismatchedBaseCB ----
-                    samShadeMismatchedBaseCB.setText("Shade mismatched bases by quality. ");
+                    samShadeMismatchedBaseCB.setText("Shade mismatched bases by quality:");
                     samShadeMismatchedBaseCB.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -1269,7 +1286,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(samShadeMismatchedBaseCB);
-                    samShadeMismatchedBaseCB.setBounds(340, 142, 264, samShadeMismatchedBaseCB.getPreferredSize().height);
+                    samShadeMismatchedBaseCB.setBounds(5, 160, 264, samShadeMismatchedBaseCB.getPreferredSize().height);
 
                     //---- samMaxBaseQualityField ----
                     samMaxBaseQualityField.setText("0");
@@ -1286,7 +1303,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(samMaxBaseQualityField);
-                    samMaxBaseQualityField.setBounds(675, 140, 50, samMaxBaseQualityField.getPreferredSize().height);
+                    samMaxBaseQualityField.setBounds(370, 160, 55, samMaxBaseQualityField.getPreferredSize().height);
 
                     //---- showCovTrackCB ----
                     showCovTrackCB.setText("Show coverage track");
@@ -1297,7 +1314,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(showCovTrackCB);
-                    showCovTrackCB.setBounds(340, 49, 270, showCovTrackCB.getPreferredSize().height);
+                    showCovTrackCB.setBounds(360, 78, 270, showCovTrackCB.getPreferredSize().height);
 
                     //---- samFilterDuplicatesCB ----
                     samFilterDuplicatesCB.setText("Filter duplicate reads");
@@ -1308,7 +1325,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(samFilterDuplicatesCB);
-                    samFilterDuplicatesCB.setBounds(5, 49, 290, samFilterDuplicatesCB.getPreferredSize().height);
+                    samFilterDuplicatesCB.setBounds(5, 50, 290, samFilterDuplicatesCB.getPreferredSize().height);
 
                     //---- filterCB ----
                     filterCB.setText("Filter alignments by read group");
@@ -1319,7 +1336,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(filterCB);
-                    filterCB.setBounds(5, 173, 244, filterCB.getPreferredSize().height);
+                    filterCB.setBounds(5, 215, 244, filterCB.getPreferredSize().height);
 
                     //---- filterURL ----
                     filterURL.setText("URL or path to filter file");
@@ -1337,7 +1354,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(filterURL);
-                    filterURL.setBounds(265, 173, 440, filterURL.getPreferredSize().height);
+                    filterURL.setBounds(265, 216, 440, filterURL.getPreferredSize().height);
 
                     //---- samFlagUnmappedPairCB ----
                     samFlagUnmappedPairCB.setText("Flag unmapped pairs");
@@ -1348,7 +1365,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(samFlagUnmappedPairCB);
-                    samFlagUnmappedPairCB.setBounds(5, 111, 310, samFlagUnmappedPairCB.getPreferredSize().height);
+                    samFlagUnmappedPairCB.setBounds(5, 134, 310, samFlagUnmappedPairCB.getPreferredSize().height);
 
                     //---- filterFailedReadsCB ----
                     filterFailedReadsCB.setText("Filter vendor failed reads");
@@ -1359,12 +1376,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(filterFailedReadsCB);
-                    filterFailedReadsCB.setBounds(new Rectangle(new Point(5, 80), filterFailedReadsCB.getPreferredSize()));
+                    filterFailedReadsCB.setBounds(new Rectangle(new Point(5, 78), filterFailedReadsCB.getPreferredSize()));
 
                     //---- label2 ----
                     label2.setText("to");
                     jPanel12.add(label2);
-                    label2.setBounds(new Rectangle(new Point(660, 145), label2.getPreferredSize()));
+                    label2.setBounds(330, 166, 25, label2.getPreferredSize().height);
 
                     //---- showSoftClippedCB ----
                     showSoftClippedCB.setText("Show soft-clipped bases");
@@ -1375,7 +1392,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(showSoftClippedCB);
-                    showSoftClippedCB.setBounds(new Rectangle(new Point(340, 80), showSoftClippedCB.getPreferredSize()));
+                    showSoftClippedCB.setBounds(new Rectangle(new Point(360, 106), showSoftClippedCB.getPreferredSize()));
 
                     //---- showCenterLineCB ----
                     showCenterLineCB.setText("Show center line");
@@ -1386,7 +1403,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(showCenterLineCB);
-                    showCenterLineCB.setBounds(5, 142, 199, showCenterLineCB.getPreferredSize().height);
+                    showCenterLineCB.setBounds(360, 50, 199, showCenterLineCB.getPreferredSize().height);
 
                     //---- zeroQualityAlignmentCB ----
                     zeroQualityAlignmentCB.setText("Flag zero-quality alignments");
@@ -1397,7 +1414,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(zeroQualityAlignmentCB);
-                    zeroQualityAlignmentCB.setBounds(new Rectangle(new Point(340, 111), zeroQualityAlignmentCB.getPreferredSize()));
+                    zeroQualityAlignmentCB.setBounds(new Rectangle(new Point(360, 134), zeroQualityAlignmentCB.getPreferredSize()));
 
                     //---- jLabel15 ----
                     jLabel15.setText("Mapping quality threshold:");
@@ -1421,6 +1438,67 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     jPanel12.add(mappingQualityThresholdField);
                     mappingQualityThresholdField.setBounds(550, 20, 80, mappingQualityThresholdField.getPreferredSize().height);
 
+                    //---- filterSecondaryAlignmentsCB ----
+                    filterSecondaryAlignmentsCB.setText("Filter secondary alignments");
+                    filterSecondaryAlignmentsCB.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            filterSecondaryAlignmentsCBActionPerformed(e);
+                        }
+                    });
+                    jPanel12.add(filterSecondaryAlignmentsCB);
+                    filterSecondaryAlignmentsCB.setBounds(new Rectangle(new Point(5, 106), filterSecondaryAlignmentsCB.getPreferredSize()));
+
+                    //---- samFlagInsertionsCB ----
+                    samFlagInsertionsCB.setText("Flag insertions larger than: ");
+                    samFlagInsertionsCB.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            samFlagInsertionsCBActionPerformed(e);
+                        }
+                    });
+                    jPanel12.add(samFlagInsertionsCB);
+                    samFlagInsertionsCB.setBounds(new Rectangle(new Point(5, 188), samFlagInsertionsCB.getPreferredSize()));
+
+                    //---- filterURL2 ----
+                    filterURL2.setText("URL or path to filter file");
+                    filterURL2.setEnabled(false);
+                    filterURL2.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            filterURLActionPerformed(e);
+                        }
+                    });
+                    filterURL2.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            filterURLFocusLost(e);
+                        }
+                    });
+                    jPanel12.add(filterURL2);
+                    filterURL2.setBounds(0, 248, 440, 28);
+
+                    //---- samFlagInsertionsThresholdField ----
+                    samFlagInsertionsThresholdField.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            samFlagInsertionsThresholdFieldActionPerformed(e);
+                        }
+                    });
+                    samFlagInsertionsThresholdField.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            samFlagInsertionsThresholdFieldFocusLost(e);
+                        }
+                    });
+                    jPanel12.add(samFlagInsertionsThresholdField);
+                    samFlagInsertionsThresholdField.setBounds(265, 188, 165, samFlagInsertionsThresholdField.getPreferredSize().height);
+
+                    //---- label31 ----
+                    label31.setText("bases");
+                    jPanel12.add(label31);
+                    label31.setBounds(450, 195, 60, label31.getPreferredSize().height);
+
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
                         for(int i = 0; i < jPanel12.getComponentCount(); i++) {
@@ -1436,7 +1514,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     }
                 }
                 alignmentPanel.add(jPanel12);
-                jPanel12.setBounds(10, 134, 755, 215);
+                jPanel12.setBounds(10, 120, 755, 250);
 
                 //======== panel2 ========
                 {
@@ -1583,7 +1661,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     }
                 }
                 alignmentPanel.add(panel2);
-                panel2.setBounds(10, 442, 755, 145);
+                panel2.setBounds(10, 470, 755, 145);
 
                 //======== panel3 ========
                 {
@@ -1669,7 +1747,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     }
                 }
                 alignmentPanel.add(panel3);
-                panel3.setBounds(10, 355, 755, 85);
+                panel3.setBounds(10, 380, 755, 85);
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
@@ -1686,162 +1764,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 }
             }
             tabbedPane.addTab("Alignments", alignmentPanel);
-
-
-            //======== panel5 ========
-            {
-                panel5.setLayout(new BoxLayout(panel5, BoxLayout.Y_AXIS));
-
-                //======== panel6 ========
-                {
-                    panel6.setBorder(new TitledBorder("Flow signal distribution chart options"));
-                    panel6.setLayout(null);
-
-                    //---- hideFirstHP ----
-                    hideFirstHP.setText("skip flow signals for homo polymers at start or end of read (including HP of size 1)");
-                    hideFirstHP.setToolTipText("discards flow signals from HP at beginning or end of reads (including HP of size 1), in order to not skew the results due to short reads");
-                    hideFirstHP.setSelected(true);
-                    hideFirstHP.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            showJunctionTrackCBActionPerformed(e);
-                            hideFirstHPActionPerformed(e);
-                        }
-                    });
-                    panel6.add(hideFirstHP);
-                    hideFirstHP.setBounds(new Rectangle(new Point(5, 25), hideFirstHP.getPreferredSize()));
-
-                    //---- binSizeText ----
-                    binSizeText.setToolTipText("The size of the bins by which the data in the chart is grouped. Small bin size means small granularity, large bin size means smoother chart");
-                    binSizeText.setText("15");
-                    binSizeText.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            junctionFlankingTextFieldActionPerformed(e);
-                            binSizeTextActionPerformed(e);
-                            binSizeTextActionPerformed(e);
-                        }
-                    });
-                    binSizeText.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            junctionFlankingTextFieldFocusLost(e);
-                            binSizeTextFocusLost(e);
-                        }
-                    });
-                    panel6.add(binSizeText);
-                    binSizeText.setBounds(135, 55, 95, 25);
-
-                    //---- label28 ----
-                    label28.setText("Bin size in chart:");
-                    panel6.add(label28);
-                    label28.setBounds(10, 55, 125, label28.getPreferredSize().height);
-
-                    //---- label29 ----
-                    label29.setText("Default chart type:");
-                    panel6.add(label29);
-                    label29.setBounds(new Rectangle(new Point(10, 90), label29.getPreferredSize()));
-
-                    //---- radioLine ----
-                    radioLine.setText("line chart");
-                    radioLine.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            radioButton1ActionPerformed(e);
-                            radioLineActionPerformed(e);
-                        }
-                    });
-                    panel6.add(radioLine);
-                    radioLine.setBounds(new Rectangle(new Point(135, 90), radioLine.getPreferredSize()));
-
-                    //---- radioArea ----
-                    radioArea.setText("area chart");
-                    radioArea.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            radioAreaActionPerformed(e);
-                        }
-                    });
-                    panel6.add(radioArea);
-                    radioArea.setBounds(new Rectangle(new Point(135, 115), radioArea.getPreferredSize()));
-
-                    //---- radioBar ----
-                    radioBar.setText("bar chart");
-                    radioBar.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            radioBarActionPerformed(e);
-                        }
-                    });
-                    panel6.add(radioBar);
-                    radioBar.setBounds(new Rectangle(new Point(135, 140), radioBar.getPreferredSize()));
-
-                    //---- radioStacked ----
-                    radioStacked.setText("(stacked bar chart)");
-                    radioStacked.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            radioStackedActionPerformed(e);
-                        }
-                    });
-                    panel6.add(radioStacked);
-                    radioStacked.setBounds(new Rectangle(new Point(135, 165), radioStacked.getPreferredSize()));
-
-                    { // compute preferred size
-                        Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < panel6.getComponentCount(); i++) {
-                            Rectangle bounds = panel6.getComponent(i).getBounds();
-                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                        }
-                        Insets insets = panel6.getInsets();
-                        preferredSize.width += insets.right;
-                        preferredSize.height += insets.bottom;
-                        panel6.setMinimumSize(preferredSize);
-                        panel6.setPreferredSize(preferredSize);
-                    }
-                }
-                panel5.add(panel6);
-
-                //======== panel7 ========
-                {
-                    panel7.setBorder(new TitledBorder("Server settings"));
-                    panel7.setLayout(null);
-
-                    //---- label30 ----
-                    label30.setText("Default Ion Torrent Server:");
-                    panel7.add(label30);
-                    label30.setBounds(new Rectangle(new Point(15, 25), label30.getPreferredSize()));
-
-                    //---- textServer ----
-                    textServer.setText("ioneast.ite");
-                    textServer.setToolTipText("Used to launch other applications (such as Torrent Scout Light)");
-                    textServer.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            textServerActionPerformed(e);
-                        }
-                    });
-                    panel7.add(textServer);
-                    textServer.setBounds(220, 20, 475, textServer.getPreferredSize().height);
-
-                    { // compute preferred size
-                        Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < panel7.getComponentCount(); i++) {
-                            Rectangle bounds = panel7.getComponent(i).getBounds();
-                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                        }
-                        Insets insets = panel7.getInsets();
-                        preferredSize.width += insets.right;
-                        preferredSize.height += insets.bottom;
-                        panel7.setMinimumSize(preferredSize);
-                        panel7.setPreferredSize(preferredSize);
-                    }
-                }
-                panel5.add(panel7);
-            }
-            tabbedPane.addTab("IonTorrent", panel5);
 
 
             //======== expressionPane ========
@@ -2103,8 +2025,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         //---- proxyTypeCB ----
                         proxyTypeCB.setModel(new DefaultComboBoxModel(new String[] {
-                                "HTTP",
-                                "SOCKS"
+                            "HTTP",
+                            "SOCKS"
                         }));
                         proxyTypeCB.addActionListener(new ActionListener() {
                             @Override
@@ -2493,18 +2415,18 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     }
                 }
                 advancedPanel.add(tooltipOptionsPanel);
-                tooltipOptionsPanel.setBounds(new Rectangle(new Point(45, 335), tooltipOptionsPanel.getPreferredSize()));
+                tooltipOptionsPanel.setBounds(new Rectangle(new Point(45, 320), tooltipOptionsPanel.getPreferredSize()));
 
-                //---- antialisingCB ----
-                antialisingCB.setText("Enable antialising.  ");
-                antialisingCB.addActionListener(new ActionListener() {
+                //---- antialiasingCB ----
+                antialiasingCB.setText("Enable antialiasing");
+                antialiasingCB.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        antialisingCBActionPerformed(e);
+                        antialiasingCBActionPerformed(e);
                     }
                 });
-                advancedPanel.add(antialisingCB);
-                antialisingCB.setBounds(new Rectangle(new Point(35, 260), antialisingCB.getPreferredSize()));
+                advancedPanel.add(antialiasingCB);
+                antialiasingCB.setBounds(new Rectangle(new Point(35, 250), antialiasingCB.getPreferredSize()));
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
@@ -2521,6 +2443,162 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 }
             }
             tabbedPane.addTab("Advanced", advancedPanel);
+
+
+            //======== ionTorrentPanel ========
+            {
+                ionTorrentPanel.setLayout(new BoxLayout(ionTorrentPanel, BoxLayout.Y_AXIS));
+
+                //======== panel6 ========
+                {
+                    panel6.setBorder(new TitledBorder("Flow signal distribution chart options"));
+                    panel6.setLayout(null);
+
+                    //---- hideFirstHP ----
+                    hideFirstHP.setText("skip flow signals for homo polymers at start or end of read (including HP of size 1)");
+                    hideFirstHP.setToolTipText("discards flow signals from HP at beginning or end of reads (including HP of size 1), in order to not skew the results due to short reads");
+                    hideFirstHP.setSelected(true);
+                    hideFirstHP.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            showJunctionTrackCBActionPerformed(e);
+                            hideFirstHPActionPerformed(e);
+                        }
+                    });
+                    panel6.add(hideFirstHP);
+                    hideFirstHP.setBounds(new Rectangle(new Point(5, 25), hideFirstHP.getPreferredSize()));
+
+                    //---- binSizeText ----
+                    binSizeText.setToolTipText("The size of the bins by which the data in the chart is grouped. Small bin size means small granularity, large bin size means smoother chart");
+                    binSizeText.setText("15");
+                    binSizeText.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            junctionFlankingTextFieldActionPerformed(e);
+                            binSizeTextActionPerformed(e);
+                            binSizeTextActionPerformed(e);
+                        }
+                    });
+                    binSizeText.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            junctionFlankingTextFieldFocusLost(e);
+                            binSizeTextFocusLost(e);
+                        }
+                    });
+                    panel6.add(binSizeText);
+                    binSizeText.setBounds(135, 55, 95, 25);
+
+                    //---- label28 ----
+                    label28.setText("Bin size in chart:");
+                    panel6.add(label28);
+                    label28.setBounds(10, 55, 125, label28.getPreferredSize().height);
+
+                    //---- label29 ----
+                    label29.setText("Default chart type:");
+                    panel6.add(label29);
+                    label29.setBounds(new Rectangle(new Point(10, 90), label29.getPreferredSize()));
+
+                    //---- radioLine ----
+                    radioLine.setText("line chart");
+                    radioLine.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            radioButton1ActionPerformed(e);
+                            radioLineActionPerformed(e);
+                        }
+                    });
+                    panel6.add(radioLine);
+                    radioLine.setBounds(new Rectangle(new Point(135, 90), radioLine.getPreferredSize()));
+
+                    //---- radioArea ----
+                    radioArea.setText("area chart");
+                    radioArea.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            radioAreaActionPerformed(e);
+                        }
+                    });
+                    panel6.add(radioArea);
+                    radioArea.setBounds(new Rectangle(new Point(135, 115), radioArea.getPreferredSize()));
+
+                    //---- radioBar ----
+                    radioBar.setText("bar chart");
+                    radioBar.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            radioBarActionPerformed(e);
+                        }
+                    });
+                    panel6.add(radioBar);
+                    radioBar.setBounds(new Rectangle(new Point(135, 140), radioBar.getPreferredSize()));
+
+                    //---- radioStacked ----
+                    radioStacked.setText("(stacked bar chart)");
+                    radioStacked.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            radioStackedActionPerformed(e);
+                        }
+                    });
+                    panel6.add(radioStacked);
+                    radioStacked.setBounds(new Rectangle(new Point(135, 165), radioStacked.getPreferredSize()));
+
+                    { // compute preferred size
+                        Dimension preferredSize = new Dimension();
+                        for(int i = 0; i < panel6.getComponentCount(); i++) {
+                            Rectangle bounds = panel6.getComponent(i).getBounds();
+                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                        }
+                        Insets insets = panel6.getInsets();
+                        preferredSize.width += insets.right;
+                        preferredSize.height += insets.bottom;
+                        panel6.setMinimumSize(preferredSize);
+                        panel6.setPreferredSize(preferredSize);
+                    }
+                }
+                ionTorrentPanel.add(panel6);
+
+                //======== panel7 ========
+                {
+                    panel7.setBorder(new TitledBorder("Server settings"));
+                    panel7.setLayout(null);
+
+                    //---- label30 ----
+                    label30.setText("Default Ion Torrent Server:");
+                    panel7.add(label30);
+                    label30.setBounds(new Rectangle(new Point(15, 25), label30.getPreferredSize()));
+
+                    //---- textServer ----
+                    textServer.setText("ioneast.ite");
+                    textServer.setToolTipText("Used to launch other applications (such as Torrent Scout Light)");
+                    textServer.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            textServerActionPerformed(e);
+                        }
+                    });
+                    panel7.add(textServer);
+                    textServer.setBounds(220, 20, 475, textServer.getPreferredSize().height);
+
+                    { // compute preferred size
+                        Dimension preferredSize = new Dimension();
+                        for(int i = 0; i < panel7.getComponentCount(); i++) {
+                            Rectangle bounds = panel7.getComponent(i).getBounds();
+                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                        }
+                        Insets insets = panel7.getInsets();
+                        preferredSize.width += insets.right;
+                        preferredSize.height += insets.bottom;
+                        panel7.setMinimumSize(preferredSize);
+                        panel7.setPreferredSize(preferredSize);
+                    }
+                }
+                ionTorrentPanel.add(panel7);
+            }
+            tabbedPane.addTab("IonTorrent", ionTorrentPanel);
 
         }
         contentPane.add(tabbedPane, BorderLayout.CENTER);
@@ -2549,17 +2627,17 @@ public class PreferencesEditor extends javax.swing.JDialog {
             okCancelButtonPanel.add(cancelButton);
         }
         contentPane.add(okCancelButtonPanel, BorderLayout.SOUTH);
-        pack();
+        setSize(830, 720);
         setLocationRelativeTo(getOwner());
 
         //---- buttonGroup1 ----
         ButtonGroup buttonGroup1 = new ButtonGroup();
+        buttonGroup1.add(expMapToGeneCB);
+        buttonGroup1.add(expMapToLociCB);
         buttonGroup1.add(radioLine);
         buttonGroup1.add(radioArea);
         buttonGroup1.add(radioBar);
         buttonGroup1.add(radioStacked);
-        buttonGroup1.add(expMapToGeneCB);
-        buttonGroup1.add(expMapToLociCB);
     }// </editor-fold>//GEN-END:initComponents
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
@@ -2812,7 +2890,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         }
     }
 
-
     private void insertSizeMinThresholdFieldFocusLost(FocusEvent e) {
         insertSizeMinThresholdFieldActionPerformed(null);
     }
@@ -2845,6 +2922,32 @@ public class PreferencesEditor extends javax.swing.JDialog {
         }
     }
 
+    private void samFlagInsertionsCBActionPerformed(ActionEvent e) {
+        final boolean flagInsertions = samFlagInsertionsCB.isSelected();
+        updatedPreferenceMap.put(PreferenceManager.SAM_FLAG_LARGE_INSERTIONS, String.valueOf(flagInsertions));
+        samFlagInsertionsThresholdField.setEnabled(flagInsertions);
+    }
+
+
+    private void samFlagInsertionsThresholdFieldActionPerformed(ActionEvent e) {
+        String insertionThreshold = samFlagInsertionsThresholdField.getText().trim();
+        try {
+            int tmp = Integer.parseInt(insertionThreshold);
+            if (tmp <= 0) {
+                inputValidated = false;
+                MessageUtils.showMessage("Insertion threshold must be a positive integer.");
+            } else {
+                updatedPreferenceMap.put(PreferenceManager.SAM_LARGE_INSERTIONS_THRESHOLD, insertionThreshold);
+            }
+        } catch (NumberFormatException numberFormatException) {
+            inputValidated = false;
+            MessageUtils.showMessage("Insertion threshold must be a positive integer.");
+        }
+    }
+
+    private void samFlagInsertionsThresholdFieldFocusLost(FocusEvent e) {
+        samFlagInsertionsThresholdFieldActionPerformed(null);
+    }
 
     private void downsampleReadsCBActionPerformed(ActionEvent e) {
         final boolean downsample = downsampleReadsCB.isSelected();
@@ -2934,14 +3037,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         updatedPreferenceMap.put(
                 PreferenceManager.AUTO_UPDATE_GENOMES,
                 String.valueOf(this.genomeUpdateCB.isSelected()));
-    }
-
-
-    private void antialisingCBActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(
-                PreferenceManager.ENABLE_ANTIALISING,
-                String.valueOf(this.antialisingCB.isSelected()));
-
     }
 
 
@@ -3732,7 +3827,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         junctionCoverageTextField.setEnabled(junctionTrackEnabled);
 
         genomeUpdateCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.AUTO_UPDATE_GENOMES));
-        antialisingCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.ENABLE_ANTIALISING));
+        antialiasingCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.ENABLE_ANTIALISING));
 
         final boolean mapProbesToGenes = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.PROBE_MAPPING_KEY);
         expMapToGeneCB.setSelected(mapProbesToGenes);
@@ -3980,6 +4075,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox zeroQualityAlignmentCB;
     private JLabel jLabel15;
     private JTextField mappingQualityThresholdField;
+    private JCheckBox filterSecondaryAlignmentsCB;
+    private JCheckBox samFlagInsertionsCB;
+    private JTextField filterURL2;
+    private JTextField samFlagInsertionsThresholdField;
+    private JLabel label31;
     private JPanel panel2;
     private JCheckBox isizeComputeCB;
     private JLabel jLabel17;
@@ -3999,19 +4099,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JLabel label15;
     private JLabel label16;
     private JTextField junctionCoverageTextField;
-    private JPanel panel5;
-    private JPanel panel6;
-    private JCheckBox hideFirstHP;
-    private JTextField binSizeText;
-    private JLabel label28;
-    private JLabel label29;
-    private JRadioButton radioLine;
-    private JRadioButton radioArea;
-    private JRadioButton radioBar;
-    private JRadioButton radioStacked;
-    private JPanel panel7;
-    private JLabel label30;
-    private JTextField textServer;
     private JPanel expressionPane;
     private JPanel jPanel8;
     private JRadioButton expMapToGeneCB;
@@ -4070,7 +4157,20 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JTextField toolTipInitialDelayField;
     private JTextField tooltipReshowDelayField;
     private JTextField tooltipDismissDelayField;
-    private JCheckBox antialisingCB;
+    private JCheckBox antialiasingCB;
+    private JPanel ionTorrentPanel;
+    private JPanel panel6;
+    private JCheckBox hideFirstHP;
+    private JTextField binSizeText;
+    private JLabel label28;
+    private JLabel label29;
+    private JRadioButton radioLine;
+    private JRadioButton radioArea;
+    private JRadioButton radioBar;
+    private JRadioButton radioStacked;
+    private JPanel panel7;
+    private JLabel label30;
+    private JTextField textServer;
     private ButtonPanel okCancelButtonPanel;
     private JButton okButton;
     private JButton cancelButton;

@@ -112,6 +112,9 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_NOMESEQ_ENABLED = "SAM.NOMESEQ_ENABLED";
     public static final String SAM_COUNT_DELETED_BASES_COVERED = "SAM.COUNT_DELETED_BASES_COVERED";
 
+    public static final String SAM_FLAG_LARGE_INSERTIONS = "SAM.FLAG_LARGE_INSERTIONS";
+    public static final String SAM_LARGE_INSERTIONS_THRESHOLD = "SAM.LARGE_INSERTIONS_THRESOLD";
+
 
     public static final String EXPAND_FEAUTRE_TRACKS = "EXPAND_FEATURE_TRACKS";
     public static final String PORT_ENABLED = "PORT_ENABLED";
@@ -986,6 +989,8 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_SHOW_JUNCTION_FLANKINGREGIONS, "true");
         defaultValues.put(SAM_NOMESEQ_ENABLED, "false");
         defaultValues.put(SAM_COUNT_DELETED_BASES_COVERED, "false");
+        defaultValues.put(SAM_FLAG_LARGE_INSERTIONS, "false");
+        defaultValues.put(SAM_LARGE_INSERTIONS_THRESHOLD , "1");
 
         defaultValues.put(NORMALIZE_COVERAGE, "false");
 

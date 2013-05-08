@@ -650,7 +650,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         // Render insertions if locScale < 1 bp / pixel (base level)
         if (locScale < 1) {
-            drawInsertions(origin, rowRect, locScale, alignment, context);
+            drawInsertions(origin, rowRect, locScale, alignment, context, renderOptions);
         }
 
 
@@ -786,13 +786,14 @@ public class AlignmentRenderer implements FeatureRenderer {
     /**
      * Note '=' means indicates a match by definition
      * If we do not have a valid reference we assume a match.
+     *
      * @param reference
      * @param read
      * @param isSoftClipped
      * @param idx
      * @return
      */
-    private boolean isMisMatch(byte[] reference, byte[] read, boolean isSoftClipped, int idx ){
+    private boolean isMisMatch(byte[] reference, byte[] read, boolean isSoftClipped, int idx) {
         boolean misMatch = false;
         if (isSoftClipped) {
             // Goby will return '=' characters when the soft-clip happens to match the reference.
@@ -814,8 +815,9 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     /**
      * NB: this may estimate the reference homopolymer length incorrect in some cases, especially when we have
-       an overcall/undercall situation.  Proper estimation of the reads observed versus expected homopolymer
-       length should use flow signal alignment (SamToFlowspace): https://github.com/iontorrent/Ion-Variant-Hunter
+     * an overcall/undercall situation.  Proper estimation of the reads observed versus expected homopolymer
+     * length should use flow signal alignment (SamToFlowspace): https://github.com/iontorrent/Ion-Variant-Hunter
+     *
      * @param reference
      * @param read
      * @param misMatch
@@ -833,7 +835,7 @@ public class AlignmentRenderer implements FeatureRenderer {
     private Color getFlowSignalColor(byte[] reference, byte[] read, boolean misMatch, Genome genome,
                                      AlignmentBlock block, String chr, int start, int loc, int idx,
                                      ShadeBasesOption shadeBasesOption,
-                                     Color alignmentColor, Color color){
+                                     Color alignmentColor, Color color) {
         int flowSignal = (int) block.getFlowSignalSubContext(loc - start).getCurrentSignal();
         int expectedFlowSignal;
         if (ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ == shadeBasesOption) {
@@ -890,6 +892,7 @@ public class AlignmentRenderer implements FeatureRenderer {
     /**
      * Draw the base using either a letter or character, using the given color,
      * depending on size and bisulfite status
+     *
      * @param g
      * @param color
      * @param c
@@ -901,7 +904,7 @@ public class AlignmentRenderer implements FeatureRenderer {
      * @param bisstatus
      */
     private void drawBase(Graphics2D g, Color color, char c, int pX, int pY, int dX, int dY, boolean bisulfiteMode,
-                          DisplayStatus bisstatus){
+                          DisplayStatus bisstatus) {
         if (((dY >= 12) && (dX >= 8)) && (!bisulfiteMode || (bisulfiteMode && bisstatus.equals(DisplayStatus.CHARACTER)))) {
             g.setColor(color);
             GraphicUtils.drawCenteredText(new char[]{c}, pX, pY + 1, dX, dY - 2, g);
@@ -950,9 +953,8 @@ public class AlignmentRenderer implements FeatureRenderer {
         return color;
     }
 
-    private void drawInsertions(double origin, Rectangle rect, double locScale, Alignment alignment, RenderContext context) {
+    private void drawInsertions(double origin, Rectangle rect, double locScale, Alignment alignment, RenderContext context, RenderOptions renderOptions) {
 
-        Graphics2D gInsertion = context.getGraphic2DForColor(purple);
         AlignmentBlock[] insertions = alignment.getInsertions();
         if (insertions != null) {
             for (AlignmentBlock aBlock : insertions) {
@@ -967,10 +969,18 @@ public class AlignmentRenderer implements FeatureRenderer {
                     continue;
                 }
 
-
-                gInsertion.fillRect(x - 2, y, 4, 2);
-                gInsertion.fillRect(x - 1, y, 2, h);
-                gInsertion.fillRect(x - 2, y + h - 2, 4, 2);
+                if (renderOptions.isFlagLargeInsertions() &&
+                        aBlock.getBases().length > renderOptions.getLargeInsertionsThreshold()) {
+                    Graphics2D gInsertion = context.getGraphic2DForColor(Color.red);
+                    gInsertion.fillRect(x - 5, y, 10, 2);
+                    gInsertion.fillRect(x - 3, y, 6, h);
+                    gInsertion.fillRect(x - 5, y + h - 2, 10, 2);
+                } else {
+                    Graphics2D gInsertion = context.getGraphic2DForColor(purple);
+                    gInsertion.fillRect(x - 2, y, 4, 2);
+                    gInsertion.fillRect(x - 1, y, 2, h);
+                    gInsertion.fillRect(x - 2, y + h - 2, 4, 2);
+                }
             }
         }
     }
