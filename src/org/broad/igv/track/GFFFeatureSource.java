@@ -51,9 +51,9 @@ public class GFFFeatureSource extends TribbleFeatureSource {
     }
 
     @Override
-    public CloseableTribbleIterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
+    public Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
 
-        CloseableTribbleIterator<Feature> rawIter = super.getFeatures(chr, start, end);
+        Iterator<Feature> rawIter = super.getFeatures(chr, start, end);
         GFFCombiner combiner = (new GFFCombiner()).addFeatures(rawIter);
 
         return new WrappedIterator(combiner.combineFeatures().iterator());

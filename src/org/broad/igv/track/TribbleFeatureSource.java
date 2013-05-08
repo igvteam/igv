@@ -14,9 +14,7 @@ package org.broad.igv.track;
 import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.tribble.CachingFeatureReader;
-import org.broad.igv.feature.tribble.CodecFactory;
-import org.broad.igv.feature.tribble.VCFWrapperCodec;
+import org.broad.igv.feature.tribble.*;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.util.ParsingUtils;
@@ -24,10 +22,7 @@ import org.broad.igv.util.RuntimeUtils;
 import org.broad.tribble.*;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -35,10 +30,11 @@ import java.util.Map;
  */
 public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
 
-    CachingFeatureReader reader;
+    IGVFeatureReader reader;
     DataSource coverageSource;
     boolean isVCF;
     Genome genome;
+    boolean useCache;
 
     /**
      * Map of IGV chromosome name -> source name
@@ -49,9 +45,14 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
     Class featureClass;
 
     public TribbleFeatureSource(String path, Genome genome) throws IOException {
-        this.genome = genome;
-        init(path);
+        this(path, genome, true);
+    }
 
+
+    public TribbleFeatureSource(String path, Genome genome, boolean useCache) throws IOException {
+        this.genome = genome;
+        this.useCache = useCache;
+        init(path);
     }
 
     private void initCoverageSource(String covPath) {
@@ -69,7 +70,9 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
         AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(path, codec, true);
         header = basicReader.getHeader();
         initFeatureWindowSize(basicReader);
-        reader = new CachingFeatureReader(basicReader, 5, getFeatureWindowSize());
+        reader = useCache ?
+                new CachingFeatureReader(basicReader, 5, getFeatureWindowSize()) :
+                new TribbleReaderWrapper(basicReader);
 
         if (genome != null) {
             Collection<String> seqNames = reader.getSequenceNames();
@@ -89,10 +92,11 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
         return featureClass;
     }
 
-    public CloseableTribbleIterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
+    public Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
 
         String seqName = chrNameMap.get(chr);
         if (seqName == null) seqName = chr;
+
         return reader.query(seqName, start, end);
     }
 
@@ -117,7 +121,9 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
 
     public void setFeatureWindowSize(int size) {
         this.featureWindowSize = size;
-        reader.setBinSize(size);
+        if (reader instanceof CachingFeatureReader) {
+            ((CachingFeatureReader) reader).setBinSize(size);
+        }
     }
 
     public Object getHeader() {
@@ -175,6 +181,8 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
             }
         } catch (IOException e) {
             featureWindowSize = 1000000;
+        } finally {
+            if (iter != null) iter.close();
         }
     }
 

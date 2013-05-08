@@ -14,12 +14,12 @@ package org.broad.igv.feature.tribble;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.AbstractCacher;
-import org.broad.igv.feature.WrappedIterator;
 import org.broad.tribble.CloseableTribbleIterator;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureReader;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -28,44 +28,64 @@ import java.util.List;
  * @author jrobinso
  * @date Jun 24, 2010
  */
-public class CachingFeatureReader extends AbstractCacher implements FeatureReader {
+public class CachingFeatureReader extends AbstractCacher implements IGVFeatureReader {
 
     private static Logger log = Logger.getLogger(CachingFeatureReader.class);
     private static int maxBinCount = 1000;
     private static int defaultBinSize = 16000; // <= 16 kb
 
-    private FeatureReader reader;
+    private FeatureReader tribbleFeatureReader;
 
 
-    public CachingFeatureReader(FeatureReader reader) {
-        this(reader, maxBinCount, defaultBinSize);
+    public CachingFeatureReader(FeatureReader tribbleFeatureReader) {
+        this(tribbleFeatureReader, maxBinCount, defaultBinSize);
     }
 
 
-    public CachingFeatureReader(FeatureReader reader, int binCount, int binSize) {
+    public CachingFeatureReader(FeatureReader tribbleFeatureReader, int binCount, int binSize) {
         super(binCount, binSize);
-        this.reader = reader;
+        this.tribbleFeatureReader = tribbleFeatureReader;
     }
 
 
     @Override
     protected Iterator<Feature> queryRaw(String chr, int start, int end) throws IOException {
-        return reader.query(chr, start, end);
+
+        // Tribble iterators must be closed, so we need to copy the features and insure closure before exiting.
+        CloseableTribbleIterator<Feature> iter = null;
+        try {
+            iter = tribbleFeatureReader.query(chr, start, end);
+            List<Feature> featureList = new ArrayList<Feature>();
+            while (iter.hasNext()) {
+                Feature f = iter.next();
+                if (f.getStart() > end) {
+                    break;
+                } else if (f.getEnd() < start) {
+                    continue;
+                } else {
+                    featureList.add(f);
+                }
+            }
+            return featureList.iterator();
+        } finally {
+            if (iter != null) iter.close();
+        }
     }
+
 
     @Override
     public List<String> getSequenceNames() {
-        return reader.getSequenceNames();
+        return tribbleFeatureReader.getSequenceNames();
     }
 
     @Override
     public Object getHeader() {
-        return reader.getHeader();
+        return tribbleFeatureReader.getHeader();
     }
 
     @Override
-    public CloseableTribbleIterator query(String chr, int start, int end) throws IOException {
-        return new WrappedIterator(queryCached(chr, start, end));
+    public Iterator query(String chr, int start, int end) throws IOException {
+        return queryCached(chr, start, end);
     }
 
     /**
@@ -74,15 +94,10 @@ public class CachingFeatureReader extends AbstractCacher implements FeatureReade
      * @throws java.io.IOException
      */
     @Override
-    public CloseableTribbleIterator iterator() throws IOException {
-        return reader.iterator();
+    public Iterator iterator() throws IOException {
+        return tribbleFeatureReader.iterator();
     }
 
-    @Override
-    public void close() throws IOException {
-        super.close();
-        reader.close();
-    }
 
 }
 

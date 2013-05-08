@@ -19,26 +19,11 @@
 package org.broad.igv.util.index;
 
 import junit.framework.Assert;
-import org.broad.tribble.AbstractFeatureReader;
-import org.broad.tribble.CloseableTribbleIterator;
-import org.broad.tribble.FeatureReader;
-import org.broad.tribble.bed.BEDCodec;
-import org.broad.tribble.bed.BEDFeature;
-import org.broad.tribble.index.Index;
-import org.broad.tribble.index.IndexFactory;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * User: jrobinso
