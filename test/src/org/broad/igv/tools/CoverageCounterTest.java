@@ -18,6 +18,7 @@ import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.TestUtils;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -61,6 +62,7 @@ public class CoverageCounterTest extends AbstractHeadlessTest {
         assertEquals("7", totalCount);
     }
 
+    @Ignore    // The test file no longer exists
     @Test
     public void testPairFlag() throws Exception{
         String bamURL = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.SLX.bam";
