@@ -518,7 +518,7 @@ public abstract class AbstractTrack implements Track {
         if (force) {
             this.height = preferredHeight;
         } else {
-            this.height = Math.min(Math.max(getMinimumHeight(), height), getMaximumHeight());
+            this.height = Math.min(Math.max(getMinimumHeight(), preferredHeight), getMaximumHeight());
         }
     }
 
