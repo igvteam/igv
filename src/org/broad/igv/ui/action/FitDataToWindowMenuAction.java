@@ -112,7 +112,7 @@ public class FitDataToWindowMenuAction extends MenuAction {
                 for (Track track : tracks) {
                     target += delta;
                     int height = (int) (target - iTotal);
-                    track.setHeight(height);
+                    track.setHeight(height, true);
                     iTotal += height;
                 }
             }
