@@ -675,7 +675,6 @@ public class CoverageTrack extends AbstractTrack {
         addAutoscaleItem(popupMenu);
         addLogScaleItem(popupMenu);
         dataRangeItem = addDataRangeItem(popupMenu, tmp);
-        dataRangeItem.setEnabled(!autoScale);
 
         this.addSnpTresholdItem(popupMenu);
 

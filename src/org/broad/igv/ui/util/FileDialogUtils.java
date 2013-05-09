@@ -68,7 +68,8 @@ public class FileDialogUtils {
         if (initialFile != null) initialFile = new File(initialFile.getName());
 
         // TODO -- use native dialogs for windows as well?
-        if (Globals.IS_MAC && directoriesMode != JFileChooser.FILES_AND_DIRECTORIES) {
+        if (Globals.IS_MAC && !Globals.IS_JWS && directoriesMode != JFileChooser.FILES_AND_DIRECTORIES) {
+
             return chooseNative(title, initialDirectory, initialFile, filter, directoriesMode, mode);
         } else {
             return chooseSwing(title, initialDirectory, initialFile, filter, directoriesMode, mode);
@@ -93,7 +94,7 @@ public class FileDialogUtils {
     }
 
     public static File chooseDirectory(String title, File initialDirectory) {
-        if (Globals.IS_MAC) {
+        if (Globals.IS_MAC && !Globals.IS_JWS) {
             return chooseNative(title, initialDirectory, null, null, JFileChooser.DIRECTORIES_ONLY, LOAD);
         } else {
             return chooseSwing(title, initialDirectory, null, null, JFileChooser.DIRECTORIES_ONLY, LOAD);

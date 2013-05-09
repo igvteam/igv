@@ -89,6 +89,9 @@ public class Globals {
     final public static boolean IS_LINUX =
             System.getProperty("os.name").toLowerCase().startsWith("linux");
 
+    final public static boolean IS_JWS =
+            System.getProperty("webstart.version") != null;
+
     public static final String JAVA_VERSION_STRING = "java.version";
     public static Map<Character, Color> nucleotideColors;
 
