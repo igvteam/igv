@@ -178,15 +178,20 @@ public class UCSC_SQL_Test extends AbstractHeadlessTest {
     }
 
     public void tstQueryWithBins(String profilePath, String tableName, String chr, int start, int end) throws Exception {
+        int featWindowSize = (end - start) * 2;
         SQLCodecSource binSource = SQLCodecSource.getFromProfile(profilePath, tableName);
+        binSource.setFeatureWindowSize(featWindowSize);
         assertNotNull(binSource.binColName);
 
         SQLCodecSource noBinSource = SQLCodecSource.getFromProfile(profilePath, tableName);
+        noBinSource.setFeatureWindowSize(featWindowSize);
         binSource.binColName = null;
 
 
         Iterator<Feature> binFeats = binSource.getFeatures(chr, start, end);
         Iterator<Feature> noBinFeats = noBinSource.getFeatures(chr, start, end);
+        assertNotNull(binFeats);
+        assertNotNull(noBinFeats);
 
         int count = 0;
         while (binFeats.hasNext()) {

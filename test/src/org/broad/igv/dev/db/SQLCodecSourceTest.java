@@ -48,7 +48,9 @@ public class SQLCodecSourceTest {
     public void testQueryBEDUnsorted() throws Exception {
         String path = "sql/Unigene.unsorted.db";
         SQLCodecSource reader = getUnigene(path);
+        reader.setFeatureWindowSize(Integer.MAX_VALUE / 2);
         Iterator<Feature> features = reader.getFeatures("chr2", 0, Integer.MAX_VALUE / 4);
+        assertNotNull(features);
         int count = TestUtils.assertFeatureIteratorSorted(features);
         assertEquals(71, count);
     }
