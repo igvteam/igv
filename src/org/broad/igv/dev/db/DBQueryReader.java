@@ -14,7 +14,9 @@ package org.broad.igv.dev.db;
 import org.apache.log4j.Logger;
 import org.broad.tribble.CloseableTribbleIterator;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Iterator;
 
 /**
@@ -32,21 +34,6 @@ public abstract class DBQueryReader<T> extends DBReader {
     public DBQueryReader(DBProfile.DBTable table) {
         super(table);
         this.table = table;
-    }
-
-    protected ResultSet executeQuery(String queryString) {
-
-        try {
-            Connection conn = DBManager.getConnection(locator);
-            Statement st = conn.createStatement();
-            ResultSet rs = st.executeQuery(queryString);
-
-            return rs;
-
-        } catch (SQLException e) {
-            log.error("Database error", e);
-            throw new RuntimeException("Database error", e);
-        }
     }
 
     protected CloseableTribbleIterator loadIterator(PreparedStatement st) {

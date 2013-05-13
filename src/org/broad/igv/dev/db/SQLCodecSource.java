@@ -398,6 +398,14 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
         }
     }
 
+    protected void finalize() throws Throwable {
+        try {
+            close();
+        } finally {
+            super.finalize();
+        }
+    }
+
     public List<String> getSequenceNames() {
         String queryString = String.format("SELECT DISTINCT %s FROM %s", chromoColName, this.getTableName());
 
@@ -417,7 +425,7 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
 
     @Override
     public Iterator getFeatures(String chr, int start, int end) throws IOException {
-        if (start - end > featureWindowSize) {
+        if (end - start > featureWindowSize) {
             return null;
         }
         return query(chr, start, end);
