@@ -516,6 +516,13 @@ public class HttpUtils {
         boolean useProxy = proxySettings != null && proxySettings.useProxy && proxySettings.proxyHost != null &&
                 proxySettings.proxyPort > 0;
 
+        //TODO This is a hack and doesn't work for all characters which need it
+        //If there are spaces we need to URL encode them
+        if(StringUtils.countChar(url.toExternalForm(), ' ') > 0){
+            String newPath = url.toExternalForm().replaceAll(" ", "%20");
+            url = new URL(newPath);
+        }
+
         HttpURLConnection conn;
         if (useProxy) {
             Proxy proxy = new Proxy(proxySettings.type, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
