@@ -903,18 +903,21 @@ public class HttpUtils {
 
         @Override
         public void put(URI uri, Map<String, List<String>> stringListMap) throws IOException {
-            if (uri.toString().startsWith(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_IDENTITY_SERVER))) {
+            //String gsIDServer = PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_IDENTITY_SERVER);
+            String urilc = uri.toString().toLowerCase();
+            if (urilc.contains("identity") && urilc.contains("genomespace")) {
                 List<String> cookies = stringListMap.get("Set-Cookie");
                 if (cookies != null) {
                     for (String cstring : cookies) {
-                        String[] tokens = Globals.equalPattern.split(cstring);
-                        if (tokens.length >= 2) {
-                            String cookieName = tokens[0];
-                            String[] vTokens = Globals.semicolonPattern.split(tokens[1]);
-                            String value = vTokens[0];
+                        List<HttpCookie> cookieList= HttpCookie.parse(cstring);
+                        for(HttpCookie cookie: cookieList){
+                            String cookieName = cookie.getName();
+                            String value = cookie.getValue();
                             if (cookieName.equals("gs-token")) {
+                                //log.debug("gs-token: " + value);
                                 GSUtils.setGSToken(value);
                             } else if (cookieName.equals("gs-username")) {
+                                //log.debug("gs-username: " + value);
                                 GSUtils.setGSUser(value);
                             }
                         }
