@@ -541,9 +541,8 @@ public class HttpUtils {
         }
 
         //------//
-        //We sometimes load very large files, trying to cache those can crash the server
-        //This is essentially a server bug, however through experience it has been found
-        //that setting useCaches to false works around it.
+        //There seems to be a bug with JWS caches
+        //So we avoid caching
 
         //This default is persistent, really should be available statically but isn't
         conn.setDefaultUseCaches(false);
