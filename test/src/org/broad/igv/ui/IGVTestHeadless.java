@@ -13,21 +13,18 @@ package org.broad.igv.ui;
 
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.RegionOfInterest;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
-import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.igv.util.Utilities;
-import org.fest.swing.fixture.ComponentFixture;
-import org.fest.swing.fixture.FrameFixture;
-import org.fest.swing.fixture.JComboBoxFixture;
-import org.fest.swing.fixture.JPanelFixture;
-import org.junit.*;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.rules.Timeout;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -36,7 +33,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -44,6 +40,10 @@ import static org.junit.Assert.assertTrue;
  * Date: 2012/02/08
  */
 public class IGVTestHeadless extends AbstractHeadlessTest{
+
+
+    @Rule
+    public TestRule testTimeout = new Timeout((int) 60e3);
 
     public IGVTestHeadless() {
     }
