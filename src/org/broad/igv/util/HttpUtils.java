@@ -905,11 +905,10 @@ public class HttpUtils {
 
 
         @Override
-        public void put(URI uri, Map<String, List<String>> stringListMap) throws IOException {
-            //String gsIDServer = PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_IDENTITY_SERVER);
+        public void put(URI uri, Map<String, List<String>> responseHeaders) throws IOException {
             String urilc = uri.toString().toLowerCase();
             if (urilc.contains("identity") && urilc.contains("genomespace")) {
-                List<String> cookies = stringListMap.get("Set-Cookie");
+                List<String> cookies = responseHeaders.get("Set-Cookie");
                 if (cookies != null) {
                     for (String cstring : cookies) {
                         List<HttpCookie> cookieList= HttpCookie.parse(cstring);
@@ -927,7 +926,7 @@ public class HttpUtils {
                     }
                 }
             }
-            super.put(uri, stringListMap);
+            super.put(uri, responseHeaders);
         }
     }
 

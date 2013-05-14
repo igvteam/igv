@@ -58,13 +58,14 @@ public class GSUtils {
     }
 
     public static void setGSToken(String newToken) {
-        if (Globals.isTesting()) {
-            return;
-        }
         if (gsToken == null || !gsToken.equals(newToken)) {
             gsToken = newToken;
-            BufferedWriter bw = null;
 
+            if (Globals.isTesting()) {
+                return;
+            }
+
+            BufferedWriter bw = null;
             File gsDir = getTokenSaveDir();
             if (!gsDir.isDirectory()) {
                 log.error("Could not store token for SSO.  File " + gsDir.getAbsolutePath() + "exists and is not a directory.");
@@ -77,10 +78,7 @@ public class GSUtils {
     }
 
     public static String getGSToken() {
-        if (Globals.isTesting()) {
-            return null;
-        }
-        if (gsToken == null) {
+        if (gsToken == null && !Globals.isTesting()) {
             File file = GSUtils.getTokenFile();
             if (file.exists()) {
                 BufferedReader br = null;
@@ -103,11 +101,12 @@ public class GSUtils {
 
 
     public static void setGSUser(String newUser) {
-        if (Globals.isTesting()) {
-            return;
-        }
         if (gsUser == null || !gsUser.equals(newUser)) {
             gsUser = newUser;
+
+            if (Globals.isTesting()) {
+                return;
+            }
 
             File gsDir = getTokenSaveDir();
             if (!gsDir.isDirectory()) {
@@ -122,10 +121,7 @@ public class GSUtils {
 
 
     public static String getGSUser() throws IOException {
-        if (Globals.isTesting()) {
-            return null;
-        }
-        if (gsUser == null) {
+        if (gsUser == null && !Globals.isTesting()) {
             BufferedReader br = null;
             try {
                 File tokenFile = getUsernameFile();
@@ -139,7 +135,6 @@ public class GSUtils {
                 } catch (Exception e) {
                 }
             }
-            return gsUser;
         }
         return gsUser;
     }

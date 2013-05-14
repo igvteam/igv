@@ -11,22 +11,27 @@
 
 package org.broad.igv.gs.dm;
 
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.gs.GSUtils;
+import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackLoader;
 import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.junit.After;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.rules.TestRule;
+import org.junit.rules.Timeout;
 
 import java.io.File;
 import java.net.Authenticator;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static junit.framework.Assert.*;
 
@@ -34,7 +39,10 @@ import static junit.framework.Assert.*;
  * @author Jim Robinson
  * @date 1/16/12
  */
-public class DMUtilsTest {
+public class DMUtilsTest extends AbstractHeadlessTest{
+
+    @Rule
+    public TestRule testTimeout = new Timeout((int) 30e6);
 
 
     private static final String IGV_TEST_DIR = "/Home/igvtest/";
@@ -139,6 +147,47 @@ public class DMUtilsTest {
         }else{
             assertEquals("Object exists, but it shouldn't: " + objName, expExists, found);
         }
+    }
+
+    /**
+     * Test that we can actually load files. More of an functional test than unit test.
+     * We also make sure to use token authentication
+     * @throws Exception
+     */
+    @Test
+    public void testLoadFilesTokenAuth() throws Exception{
+
+        HttpUtils.getInstance().setAuthenticator(null);
+        assertNull(GSUtils.getGSToken());
+        GSUtils.setGSUser("igvtest");
+        GSUtils.setGSToken("HnR9rBShNO4dTXk8cKXVJT98Oe0jWVY+");
+        GSDirectoryListing dirListing = DMUtils.getDirectoryListing(personaldirectoryURL);
+
+        TrackLoader loader = new TrackLoader();
+        Map<String, Exception> exceptions = new HashMap<String, Exception>();
+
+        for(GSFileMetadata md: dirListing.getContents()){
+            String mdurl = md.getUrl();
+            if(!md.isDirectory() && (mdurl.endsWith(".bed") || mdurl.endsWith(".bam"))){
+                System.out.println("Loading file " + mdurl);
+                try{
+                    List<Track> tracks = loader.load(new ResourceLocator(mdurl), genome);
+                    assertNotNull(tracks);
+                    assertNotSame(0, tracks.size());
+                }catch(Exception e){
+                    exceptions.put(mdurl, e);
+                }
+            }
+        }
+
+        for(Map.Entry<String, Exception> entry: exceptions.entrySet()){
+            System.out.println("Exception loading Path: " + entry.getKey());
+            System.out.println("StackTrace: ");
+            for (StackTraceElement el : entry.getValue().getStackTrace()) {
+                System.out.println(el);
+            }
+        }
+        assertEquals(0, exceptions.size());
     }
 
 
