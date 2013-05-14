@@ -13,6 +13,7 @@ package org.broad.igv.util;
 
 import biz.source_code.base64Coder.Base64Coder;
 import net.sf.samtools.seekablestream.SeekableHTTPStream;
+import net.sf.samtools.seekablestream.SeekableStream;
 import net.sf.samtools.util.ftp.FTPClient;
 import net.sf.samtools.util.ftp.FTPStream;
 import net.sf.samtools.util.ftp.FTPUtils;
@@ -23,6 +24,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.util.stream.IGVSeekableHTTPStream;
 import org.broad.igv.util.stream.IGVUrlHelper;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -660,7 +662,7 @@ public class HttpUtils {
                     if (firstBytes.length > 1000) {
                         int end = firstBytes.length;
                         int start = end - 100;
-                        SeekableHTTPStream str = new SeekableHTTPStream(url);
+                        SeekableStream str = new IGVSeekableHTTPStream(url);
                         str.seek(start);
                         int len = end - start;
                         byte[] buffer = new byte[len];
@@ -675,6 +677,7 @@ public class HttpUtils {
                         for (int i = 0; i < len; i++) {
                             if (buffer[i] != firstBytes[i + start]) {
                                 byteRangeTestSuccess = false;
+                                break;
                             }
                         }
                     } else {
@@ -745,7 +748,7 @@ public class HttpUtils {
 
         InputStream is = null;
         try {
-            is = url.openStream();
+            is = HttpUtils.getInstance().openConnectionStream(url);
             BufferedInputStream bis = new BufferedInputStream(is);
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             int b;
