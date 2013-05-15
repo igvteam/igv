@@ -87,7 +87,7 @@ public class FeatureTrack extends AbstractTrack {
     /**
      * Map of reference frame name -> packed features
      */
-    protected Map<String, PackedFeatures<IGVFeature>> packedFeaturesMap = new HashMap();
+    protected Map<String, PackedFeatures<IGVFeature>> packedFeaturesMap = Collections.synchronizedMap(new HashMap<String, PackedFeatures<IGVFeature>>());
 
     private FeatureRenderer renderer;
 
@@ -275,11 +275,14 @@ public class FeatureTrack extends AbstractTrack {
     public int getNumberOfFeatureLevels() {
         if (areFeaturesStacked() && packedFeaturesMap.size() > 0) {
             int n = 0;
-            for (PackedFeatures pf : packedFeaturesMap.values()) {
-                //dhmay adding null check.  To my mind this shouldn't be necessary, but we're encountering
-                //it intermittently.  Food for future thought
-                if (pf != null)
-                    n = Math.max(n, pf.getRowCount());
+            synchronized (packedFeaturesMap){
+                for (PackedFeatures pf : packedFeaturesMap.values()) {
+                    //dhmay adding null check.  To my mind this shouldn't be necessary, but we're encountering
+                    //it intermittently.  Food for future thought
+                    if (pf != null){
+                        n = Math.max(n, pf.getRowCount());
+                    }
+                }
             }
             return n;
         }
