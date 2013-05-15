@@ -116,6 +116,7 @@ public class ReferenceFrame {
         this.name = name;
         Genome genome = getGenome();
         this.chrName = genome == null ? "" : genome.getHomeChromosome();
+        registerEventBuses();
     }
 
 
@@ -132,8 +133,16 @@ public class ReferenceFrame {
         //this.setEnd = otherFrame.setEnd;
         this.widthInPixels = otherFrame.widthInPixels;
         this.zoom = otherFrame.zoom;
+        registerEventBuses();
     }
 
+    private void registerEventBuses(){
+        //TODO Would rather put this in IGV.createFrame, but since frame get
+        //changed we do it here
+        if(IGV.hasInstance()){
+            getEventBus().register(IGV.getInstance());
+        }
+    }
     private EventBus eventBus;
 
     public EventBus getEventBus() {
@@ -141,7 +150,6 @@ public class ReferenceFrame {
             eventBus = new AsyncEventBus(LongRunningTask.getThreadExecutor());
             eventBus.register(this);
         }
-        //if(eventBus == null) eventBus = new EventBus("IGV");
         return eventBus;
     }
 
@@ -414,10 +422,6 @@ public class ReferenceFrame {
         double shiftBP = delta * getScale();
         setOrigin(origin + shiftBP);
         getEventBus().post(new ViewChange.Result());
-
-        // The event bus is not having the desired affect when in multi-locus view (no repaint).  Adding explicit repaint
-        // as a workaround.
-        IGV.getInstance().repaintDataAndHeaderPanels();
     }
 
     public void snapToGrid() {

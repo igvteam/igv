@@ -43,11 +43,6 @@ public class FrameManager {
     public synchronized static ReferenceFrame getDefaultFrame() {
         if (defaultFrame == null) {
             defaultFrame = new ReferenceFrame(DEFAULT_FRAME_NAME);
-            //TODO Would rather put this in IGV.createFrame, but since defaultFrame gets
-            //changed we do it here
-            if(IGV.hasInstance()){
-                defaultFrame.getEventBus().register(IGV.getInstance());
-            }
         }
         return defaultFrame;
     }
