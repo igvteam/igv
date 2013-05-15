@@ -35,6 +35,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -285,7 +286,8 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                                     "feature row is selected.");
                     return;
                 }
-                Feature feature = ft.getFeatureAtPositionInFeatureRow(center, ft.getSelectedFeatureRowIndex(), vc);
+                List<Feature> featureList = ft.getFeaturesAtPositionInFeatureRow(center, ft.getSelectedFeatureRowIndex(), vc);
+                Feature feature = featureList != null && featureList.size() > 0 ? featureList.get(0) : null;
 
                 if (feature == null)
                     return;

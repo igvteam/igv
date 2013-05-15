@@ -441,58 +441,19 @@ public class FeatureTrack extends AbstractTrack {
      * @return
      */
     private List<Feature> getAllFeatureAt(double position, int y, ReferenceFrame frame) {
-
-        PackedFeatures<IGVFeature> packedFeatures = packedFeaturesMap.get(frame.getName());
-
-        if (packedFeatures == null) {
-            return null;
-        }
-
-        List<Feature> feature = null;
-
-        // Determine the level number (for expanded tracks.
-        int levelNumber = 0;
-        if (levelRects != null) {
-            for (int i = 0; i < levelRects.size(); i++) {
-                Rectangle r = levelRects.get(i);
-                if ((y >= r.y) && (y <= r.getMaxY())) {
-                    levelNumber = i;
-                    break;
-                }
-            }
-        }
-
-        int nLevels = this.getNumberOfFeatureLevels();
-        List<IGVFeature> features = null;
-        if ((nLevels > 1) && (levelNumber < nLevels)) {
-            features = packedFeatures.getRows().get(levelNumber).getFeatures();
-        } else {
-            features = packedFeatures.getFeatures();
-        }
-        if (features != null) {
-
-            // give a 2 pixel window, otherwise very narrow features will be missed.
-            double bpPerPixel = frame.getScale();
-            double minWidth = MINIMUM_FEATURE_SPACING * bpPerPixel;
-            // The maximum length of all features in this collection. Used to insure we consider all features that
-            // might overlap the position (feature are sorted by start position, but length is variable)
-            int maxFeatureLength = packedFeatures.getMaxFeatureLength();
-            feature = FeatureUtils.getAllFeaturesAt(position, maxFeatureLength, minWidth, features);
-        }
-        return feature;
+        // Determine the level number (for expanded tracks)
+        int featureRow = getFeatureRow(y);
+        return getFeaturesAtPositionInFeatureRow(position, featureRow, frame);
     }
 
     /**
      * Determine which row the user clicked in and return the appropriate feature
      *
-     * @param chr
-     * @param position
      * @param y
-     * @param frame
      * @return
      */
-    public Feature getFeatureAt(String chr, double position, int y, ReferenceFrame frame) {
-        // Determine the level number (for expanded tracks.
+    private int getFeatureRow(int y) {
+        // Determine the level number (for expanded tracks).
         int featureRow = 0;
         if (levelRects != null) {
             for (int i = 0; i < levelRects.size(); i++) {
@@ -503,7 +464,7 @@ public class FeatureTrack extends AbstractTrack {
                 }
             }
         }
-        return getFeatureAtPositionInFeatureRow(position, featureRow, frame);
+        return featureRow;
     }
 
     /**
@@ -515,7 +476,7 @@ public class FeatureTrack extends AbstractTrack {
      * @param frame
      * @return
      */
-    public Feature getFeatureAtPositionInFeatureRow(double position, int featureRow, ReferenceFrame frame) {
+    public List<Feature> getFeaturesAtPositionInFeatureRow(double position, int featureRow, ReferenceFrame frame) {
 
         PackedFeatures<IGVFeature> packedFeatures = packedFeaturesMap.get(frame.getName());
 
@@ -523,23 +484,23 @@ public class FeatureTrack extends AbstractTrack {
             return null;
         }
 
-        Feature feature = null;
-
-        int nLevels = this.getNumberOfFeatureLevels();
-        List<IGVFeature> features = null;
+        int nLevels = packedFeatures.getRowCount();
+        List<IGVFeature> possFeatures = null;
         if ((nLevels > 1) && (featureRow < nLevels)) {
-            features = packedFeatures.getRows().get(featureRow).getFeatures();
+            possFeatures = packedFeatures.getRows().get(featureRow).getFeatures();
         } else {
-            features = packedFeatures.getFeatures();
+            possFeatures = packedFeatures.getFeatures();
         }
-        if (features != null) {
 
-            // give a +/- 2 pixel window, otherwise very narrow features will be missed.
+        List<Feature> featureList = null;
+        if (possFeatures != null) {
+            // give a 2 pixel window, otherwise very narrow features will be missed.
             double bpPerPixel = frame.getScale();
-            int minWidth = (int) (2 * bpPerPixel);
-            feature = FeatureUtils.getFeatureAt(position, minWidth, features);
+            double minWidth = MINIMUM_FEATURE_SPACING * bpPerPixel;
+            int maxFeatureLength = packedFeatures.getMaxFeatureLength();
+            featureList = FeatureUtils.getAllFeaturesAt(position, maxFeatureLength, minWidth, possFeatures);
         }
-        return feature;
+        return featureList;
     }
 
 
@@ -614,8 +575,8 @@ public class FeatureTrack extends AbstractTrack {
         final ReferenceFrame referenceFrame = te.getFrame();
         if (referenceFrame != null) {
             double location = referenceFrame.getChromosomePosition(e.getX());
-            Feature f = getFeatureAt(referenceFrame.getChrName(), location, e.getY(), referenceFrame);
-            return f;
+            List<Feature> features = getAllFeatureAt(location, e.getY(), referenceFrame);
+            return (features != null && features.size() > 0) ? features.get(0) : null;
         } else {
             return null;
         }
