@@ -11,16 +11,16 @@
 
 package org.broad.igv.gs.atm;
 
-import org.broad.igv.Globals;
+import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.gs.GSUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.StringUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
-import java.net.Authenticator;
-import java.net.PasswordAuthentication;
 import java.util.*;
 
 import static junit.framework.Assert.*;
@@ -30,20 +30,28 @@ import static junit.framework.Assert.*;
  * User: jrobinso
  * Date: 8/8/11
  * Time: 9:16 PM
- * To change this template use File | Settings | File Templates.
  */
-public class ATMUtilsTest {
+@Ignore
+public abstract class AbstractATMUtilsTest extends AbstractHeadlessTest{
 
     @Before
-    public void setUp() {
-        Globals.setTesting(true);
-        HttpUtils.getInstance().setAuthenticator(new GSTestAuthenticator());
+    public void setUp() throws Exception{
+        super.setUp();
+        //This is pretty dumb. The reason is that initializing HttpUtils sets the authenticator,
+        //and we need to overwrite it in initAuth. It's not actually important which method we call,
+        //as long as HttpUtils is initialized so it doesn't get initialized later
+        HttpUtils.getInstance().resetAuthenticator();
+        GSUtils.logout();
+        initAuth();
     }
 
     @After
     public void tearDown() {
+        GSUtils.logout();
         HttpUtils.getInstance().resetAuthenticator();
     }
+
+    protected abstract void initAuth();
 
     @Test
     public void testGetWebTools() throws Exception {
@@ -138,14 +146,5 @@ public class ATMUtilsTest {
         }
 
     }
-
-    static class GSTestAuthenticator extends Authenticator {
-
-        @Override
-        protected PasswordAuthentication getPasswordAuthentication() {
-            return new PasswordAuthentication("igvtest", "igvtest".toCharArray());
-        }
-    }
-
 
 }

@@ -12,7 +12,6 @@
 package org.broad.igv.gs.dm;
 
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.track.Track;
@@ -25,9 +24,7 @@ import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
 import java.io.File;
-import java.net.Authenticator;
 import java.net.MalformedURLException;
-import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -39,10 +36,11 @@ import static junit.framework.Assert.*;
  * @author Jim Robinson
  * @date 1/16/12
  */
-public class DMUtilsTest extends AbstractHeadlessTest{
+@Ignore
+public abstract class AbstractDMUtilsTest extends AbstractHeadlessTest{
 
     @Rule
-    public TestRule testTimeout = new Timeout((int) 30e6);
+    public TestRule testTimeout = new Timeout((int) 30e4);
 
 
     private static final String IGV_TEST_DIR = "/Home/igvtest/";
@@ -50,11 +48,20 @@ public class DMUtilsTest extends AbstractHeadlessTest{
     private URL personaldirectoryURL;
     private URL fileURL;
 
+    @BeforeClass
+    public static void setUpClass(){
+    }
+
     @Before
-    public void setUp() {
-        Globals.setTesting(true);
+    public void setUp() throws Exception{
+        super.setUp();
         GSUtils.logout();
-        HttpUtils.getInstance().setAuthenticator(new GSTestAuthenticator());
+        //This is pretty dumb. The reason is that initializing HttpUtils sets the authenticator,
+        //and we need to overwrite it in initAuth. It's not actually important which method we call,
+        //as long as HttpUtils is initialized so it doesn't get initialized later
+        HttpUtils.getInstance().resetAuthenticator();
+
+        initAuth();
 
         try {
             String defaultURLStr = PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER);
@@ -68,8 +75,11 @@ public class DMUtilsTest extends AbstractHeadlessTest{
         }
     }
 
+    protected abstract void initAuth();
+
     @After
     public void tearDown() {
+        GSUtils.logout();
         HttpUtils.getInstance().resetAuthenticator();
     }
 
@@ -81,7 +91,7 @@ public class DMUtilsTest extends AbstractHeadlessTest{
 
     }
 
-    private boolean dirContainsFile(URL dirURL, String testFileName) throws Exception{
+    protected boolean dirContainsFile(URL dirURL, String testFileName) throws Exception{
         GSDirectoryListing dirListing = DMUtils.getDirectoryListing(dirURL);
 
         assertNotNull("Directory listing", dirListing);
@@ -140,7 +150,7 @@ public class DMUtilsTest extends AbstractHeadlessTest{
         assertFileStatus(dirname, false);
     }
 
-    private void assertFileStatus(String objName, boolean expExists) throws Exception{
+    protected void assertFileStatus(String objName, boolean expExists) throws Exception{
         boolean found = dirContainsFile(personaldirectoryURL, objName);
         if(expExists){
             assertEquals("Object not found: " + objName, expExists, found);
@@ -155,12 +165,8 @@ public class DMUtilsTest extends AbstractHeadlessTest{
      * @throws Exception
      */
     @Test
-    public void testLoadFilesTokenAuth() throws Exception{
+    public void testLoadFiles() throws Exception{
 
-        HttpUtils.getInstance().setAuthenticator(null);
-        assertNull(GSUtils.getGSToken());
-        GSUtils.setGSUser("igvtest");
-        GSUtils.setGSToken("HnR9rBShNO4dTXk8cKXVJT98Oe0jWVY+");
         GSDirectoryListing dirListing = DMUtils.getDirectoryListing(personaldirectoryURL);
 
         TrackLoader loader = new TrackLoader();
@@ -190,13 +196,5 @@ public class DMUtilsTest extends AbstractHeadlessTest{
         assertEquals(0, exceptions.size());
     }
 
-
-    static class GSTestAuthenticator extends Authenticator {
-
-        @Override
-        protected PasswordAuthentication getPasswordAuthentication() {
-            return new PasswordAuthentication("igvtest", "igvtest".toCharArray());
-        }
-    }
 
 }
