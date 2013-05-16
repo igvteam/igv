@@ -99,8 +99,8 @@ public class ZoomDataBlock {
             }
 
         } catch (IOException ex) {
-            log.error("Error reading Zoom level " + this.zoomLevel + " data for leaf item ",  ex);
-            String error = String.format("Error reading zoom level %d data for leaf item %d\n", this.zoomLevel);
+            String error = String.format("Error reading zoom level %d data for leaf item\n", this.zoomLevel);
+            log.error(error,  ex);
             throw new RuntimeException(error, ex);
         }
 
