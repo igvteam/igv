@@ -48,10 +48,6 @@ public abstract class AbstractDMUtilsTest extends AbstractHeadlessTest{
     private URL personaldirectoryURL;
     private URL fileURL;
 
-    @BeforeClass
-    public static void setUpClass(){
-    }
-
     @Before
     public void setUp() throws Exception{
         super.setUp();
