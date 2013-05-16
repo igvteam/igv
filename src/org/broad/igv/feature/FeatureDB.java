@@ -38,36 +38,36 @@ public class FeatureDB {
     private static Map<String, List<NamedFeature>> featureMap = Collections.synchronizedSortedMap(new TreeMap<String, List<NamedFeature>>());
     private static final int MAX_DUPLICATE_COUNT = 20;
 
-    public static void addFeature(NamedFeature feature) {
+    public static void addFeature(NamedFeature feature, Genome genome) {
 
         final String name = feature.getName();
         if (name != null && name.length() > 0 && !name.equals(".")) {
-            put(name, feature);
+            put(name, feature, genome);
         }
         if (feature instanceof IGVFeature) {
             final IGVFeature igvFeature = (IGVFeature) feature;
             final String id = igvFeature.getIdentifier();
             if (id != null && id.length() > 0) {
-                put(id, feature);
+                put(id, feature, genome);
             }
 
-            addByAttributes(igvFeature);
+            addByAttributes(igvFeature, genome);
 
             List<Exon> exons = igvFeature.getExons();
             if (exons != null) {
                 for (Exon exon : exons) {
-                    addByAttributes(exon);
+                    addByAttributes(exon, genome);
                 }
             }
         }
     }
 
-    private static void addByAttributes(IGVFeature igvFeature) {
+    private static void addByAttributes(IGVFeature igvFeature, Genome genome) {
         MultiMap<String, String> attributes = igvFeature.getAttributes();
         if (attributes != null) {
             for (String value : attributes.values()) {
                 if (value.length() < 20) {
-                    put(value, igvFeature);
+                    put(value, igvFeature, genome);
                 }
             }
         }
@@ -79,12 +79,13 @@ public class FeatureDB {
      *
      * @param name
      * @param feature
+     * @param genome The genome which these features belong to. Used for checking chromosomes
      * @return true if successfully added, false if not
      */
-    static boolean put(String name, NamedFeature feature) {
+    static boolean put(String name, NamedFeature feature, Genome genome) {
         String key = name.toUpperCase();
         if (!Globals.isHeadless()) {
-            Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
+            Genome currentGenome = genome != null ? genome : GenomeManager.getInstance().getCurrentGenome();
             if (currentGenome != null && currentGenome.getChromosome(feature.getChr()) == null) {
                 return false;
             }
@@ -147,8 +148,8 @@ public class FeatureDB {
      */
 
 
-    public static void addFeature(String name, NamedFeature feature) {
-        put(name.toUpperCase(), feature);
+    public static void addFeature(String name, NamedFeature feature, Genome genome) {
+        put(name.toUpperCase(), feature, genome);
     }
 
 
@@ -156,10 +157,10 @@ public class FeatureDB {
     }
 
 
-    public static void addFeatures(List<org.broad.tribble.Feature> features) {
+    public static void addFeatures(List<org.broad.tribble.Feature> features, Genome genome) {
         for (org.broad.tribble.Feature feature : features) {
             if (feature instanceof IGVFeature)
-                addFeature((IGVFeature) feature);
+                addFeature((IGVFeature) feature, genome);
         }
     }
 

@@ -516,7 +516,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
             final List<Cytoband> cytobands = chr.getCytobands();
             if (cytobands != null) {
                 for (Cytoband cyto : cytobands) {
-                    FeatureDB.addFeature(cyto.getLongName(), cyto);
+                    FeatureDB.addFeature(cyto.getLongName(), cyto, genome);
                 }
             }
         }

@@ -20,7 +20,6 @@ import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
-import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.TrackProperties;
@@ -132,7 +131,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
                 List<Feature> feats = source.getFeatures(chr);
                 for (Feature f : feats) {
                     if (f instanceof NamedFeature) {
-                        FeatureDB.addFeature((NamedFeature) f);
+                        FeatureDB.addFeature((NamedFeature) f, genome);
                     }
                 }
             }
@@ -158,17 +157,18 @@ public abstract class AbstractFeatureParser implements FeatureParser {
      * @return
      */
     public List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome) {
-        return loadFeatures(reader, -1);
+        return loadFeatures(reader, genome, -1);
     }
 
     /**
      * Load all features in this file.
      *
      * @param reader
+     * @param genome
      * @param maxLines
      * @return
      */
-    public List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader, int maxLines) {
+    public List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome, int maxLines) {
 
         List<org.broad.tribble.Feature> features = new ArrayList<org.broad.tribble.Feature>();
         String nextLine = null;
@@ -245,7 +245,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
 
         // TODO -- why is this test here?  This will break igvtools processing of expression files
         //if (IGV.hasInstance() || Globals.isTesting()) {
-        FeatureDB.addFeatures(features);
+        FeatureDB.addFeatures(features, genome);
         //}
         return features;
     }

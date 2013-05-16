@@ -123,7 +123,7 @@ public class GFFParser implements FeatureParser {
         List<Feature> iFeatures = combiner.combineFeatures();
 
         if (IGV.hasInstance()) {
-            FeatureDB.addFeatures(iFeatures);
+            FeatureDB.addFeatures(iFeatures, genome);
         }
 
         return iFeatures;

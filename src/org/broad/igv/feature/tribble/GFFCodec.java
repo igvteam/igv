@@ -299,7 +299,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         }
 
         if (featuresToHide.contains(featureType)) {
-            if (IGV.hasInstance()) FeatureDB.addFeature(f);
+            if (IGV.hasInstance()) FeatureDB.addFeature(f, genome);
             return null;
         }
 

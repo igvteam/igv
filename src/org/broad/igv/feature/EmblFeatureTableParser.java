@@ -14,7 +14,6 @@ package org.broad.igv.feature;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.renderer.GeneTrackRenderer;
 import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureTrack;
@@ -97,7 +96,7 @@ public class EmblFeatureTableParser implements FeatureParser {
 
                 newTracks.add(track);
 
-                FeatureDB.addFeatures(features);
+                FeatureDB.addFeatures(features, genome);
                 return newTracks;
             }
         } catch (IOException ex) {
