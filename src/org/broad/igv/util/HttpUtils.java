@@ -541,8 +541,6 @@ public class HttpUtils {
         }
 
         if (GSUtils.isGenomeSpace(url)) {
-            String token = GSUtils.getGSToken();
-            if (token != null) conn.setRequestProperty("Cookie", "gs-token=" + token);
             conn.setRequestProperty("Accept", "application/json,text/plain");
         }
         else {
@@ -609,10 +607,9 @@ public class HttpUtils {
                     message = conn.getResponseMessage();
                 }
                 String details = readErrorStream(conn);
-                log.debug("error stream: " + details);
-                log.debug(message);
+                log.error("error stream: " + details);
+                log.error(message);
                 HttpResponseException exc = new HttpResponseException(code);
-
                 throw exc;
             }
         }
@@ -903,6 +900,36 @@ public class HttpUtils {
 
     static class IGVCookieManager extends CookieManager {
 
+        @Override
+        public Map<String, List<String>> get(URI uri, Map<String, List<String>> requestHeaders) throws IOException {
+            Map<String, List<String>> headers = new HashMap<String, List<String>>();
+            headers.putAll(super.get(uri, requestHeaders));
+
+
+            if (GSUtils.isGenomeSpace(uri.toURL())) {
+                String token = GSUtils.getGSToken();
+                if (token != null){
+                    List<String> cookieList = headers.get("Cookie");
+                    boolean needsTokenCookie = true;
+                    if(cookieList == null){
+                        cookieList = new ArrayList<String>(1);
+                        headers.put("Cookie", cookieList);
+                    }
+
+                    for(String cookie: cookieList){
+                        if(cookie.startsWith("gs-token")){
+                            needsTokenCookie = false;
+                            break;
+                        }
+                    }
+                    if(needsTokenCookie){
+                        cookieList.add("gs-token=" + token);
+                    }
+                }
+            }
+
+            return Collections.unmodifiableMap(headers);
+        }
 
         @Override
         public void put(URI uri, Map<String, List<String>> responseHeaders) throws IOException {

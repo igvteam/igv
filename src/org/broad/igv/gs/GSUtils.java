@@ -161,12 +161,10 @@ public class GSUtils {
             if (manager == null) return;
             final CookieStore cookieStore = manager.getCookieStore();
             List<HttpCookie> cookies = new ArrayList<HttpCookie>(cookieStore.get(gsURI));
-            if (cookies != null) {
-                for (HttpCookie cookie : cookies) {
-                    final String name = cookie.getName();
-                    if (name.equals("gs-token") || name.equals("gs-username")) {
-                        cookieStore.remove(gsURI, cookie);
-                    }
+            for (HttpCookie cookie : cookies) {
+                final String name = cookie.getName();
+                if (name.equals("gs-token") || name.equals("gs-username")) {
+                    cookieStore.remove(gsURI, cookie);
                 }
             }
         } catch (URISyntaxException e) {
