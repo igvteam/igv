@@ -24,6 +24,7 @@ import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -46,7 +47,10 @@ public abstract class AbstractDMUtilsTest extends AbstractHeadlessTest{
     private static final String IGV_TEST_DIR = "/Home/igvtest/";
     private URL defaultURL;
     private URL personaldirectoryURL;
-    private URL fileURL;
+    private static URL fileURL;
+
+    private static String delDirName = "testdir_deleteme";
+    private static String fullPath = IGV_TEST_DIR + delDirName;
 
     @Before
     public void setUp() throws Exception{
@@ -68,6 +72,13 @@ public abstract class AbstractDMUtilsTest extends AbstractHeadlessTest{
         } catch (MalformedURLException e) {
             e.printStackTrace();
             Assume.assumeTrue(false);
+        }
+
+        //We test creating this directory later
+        try{
+            DMUtils.deleteFileOrDirectory(fileURL + fullPath);
+        }catch(FileNotFoundException e){
+            //totally fine, in fact expected
         }
     }
 
@@ -132,18 +143,16 @@ public abstract class AbstractDMUtilsTest extends AbstractHeadlessTest{
 
     @Test
     public void testCreateDeleteDirectory() throws Exception {
-        String dirname = "testdir_deleteme";
-        String fullPath = IGV_TEST_DIR + dirname;
 
-        assertFileStatus(dirname, false);
+        assertFileStatus(delDirName, false);
 
         DMUtils.createDirectory(fileURL + fullPath);
 
-        assertFileStatus(dirname, true);
+        assertFileStatus(delDirName, true);
 
         DMUtils.deleteFileOrDirectory(fileURL + fullPath);
 
-        assertFileStatus(dirname, false);
+        assertFileStatus(delDirName, false);
     }
 
     protected void assertFileStatus(String objName, boolean expExists) throws Exception{
