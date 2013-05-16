@@ -445,7 +445,7 @@ public class CommandExecutor {
                 }
 
                 if (rl.isLocal()) {
-                    File file = new File(f);
+                    File file = new File(rl.getPath());
                     if (!file.exists()) {
                         return "Error: " + f + " does not exist.";
                     }
