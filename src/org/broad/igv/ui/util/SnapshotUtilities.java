@@ -162,6 +162,7 @@ public class SnapshotUtilities {
     }
 
     private static void choosePaint(Component target, Graphics2D g, boolean paintOffscreen){
+        log.debug("Painting to target " + target + " , offscreen " + paintOffscreen);
         if(paintOffscreen){
             ((Paintable) target).paintOffscreen(g, target.getBounds());
         }else{
@@ -190,6 +191,7 @@ public class SnapshotUtilities {
 
         selectedFile = fixFileExt(selectedFile, allowedExts, format);
         if (selectedFile != null) {
+            log.debug("Writing image to " + selectedFile.toPath());
             ImageIO.write(image, format, selectedFile);
         }
     }

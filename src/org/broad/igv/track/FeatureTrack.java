@@ -10,6 +10,7 @@
  */
 package org.broad.igv.track;
 
+import com.google.common.eventbus.Subscribe;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.cli_plugin.PluginFeatureSource;
@@ -24,6 +25,7 @@ import org.broad.igv.tools.FeatureSearcher;
 import org.broad.igv.tools.motiffinder.MotifFinderSource;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.event.DataLoadedEvent;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
@@ -34,6 +36,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.swing.*;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.MarshalException;
@@ -612,6 +615,7 @@ public class FeatureTrack extends AbstractTrack {
         int start = (int) context.getOrigin();
         int end = (int) context.getEndLocation();
         if (packedFeatures == null || !packedFeatures.containsInterval(chr, start, end)) {
+            context.getReferenceFrame().getEventBus().unregister(FeatureTrack.this);
             loadFeatures(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd(), context);
         }
     }
@@ -694,8 +698,11 @@ public class FeatureTrack extends AbstractTrack {
         return max;
     }
 
-    // Render features in the given input rectangle.
-
+    /**
+     * Render features in the given input rectangle.
+     * @param context
+     * @param inputRect
+     */
     protected void renderFeatures(RenderContext context, Rectangle inputRect) {
 
         if (featuresLoading || fatalLoadError) {
@@ -703,21 +710,17 @@ public class FeatureTrack extends AbstractTrack {
         }
 
         if (log.isTraceEnabled()) {
-            log.trace("renderFeatures: " + getName());
+            String msg = String.format("renderFeatures: %s frame: %s", getName(), context.getReferenceFrame().getName());
+            log.trace(msg);
         }
 
-        String chr = context.getChr();
-        int start = (int) context.getOrigin();
-        int end = (int) context.getEndLocation() + 1;
-
+        //Attempt to load the relevant data. Note that there is no guarantee
+        //the data will be loaded once preload exits, as loading may be asynchronous
+        preload(context);
         PackedFeatures packedFeatures = packedFeaturesMap.get(context.getReferenceFrame().getName());
 
-        if (packedFeatures == null || !packedFeatures.containsInterval(chr, start, end)) {
-            loadFeatures(chr, start, end, context);
-            if (!IGV.hasInstance() || !IGV.getInstance().isExportingSnapshot()) {
-                // DONT CALL REPAINT HERE!!! FEATURES ARE LOADING ASYNCHRONOUSLY, REPAINT CALLED WHEN LOADING IS DONE
-                return;
-            }
+        if (packedFeatures == null || !packedFeatures.containsInterval(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation() + 1)) {
+            if(packedFeatures == null) return;
         }
 
         try {
@@ -792,8 +795,6 @@ public class FeatureTrack extends AbstractTrack {
      */
     protected synchronized void loadFeatures(final String chr, final int start, final int end, final RenderContext context) {
 
-        featuresLoading = true;
-
         // TODO -- improve or remove the need for this test.  We know that FeatureCollectionSource has all the data
         // in memory, and can by run synchronously
         boolean aSync = !(source instanceof FeatureCollectionSource);
@@ -803,6 +804,9 @@ public class FeatureTrack extends AbstractTrack {
             public void run() {
                 try {
                     featuresLoading = true;
+                    if(log.isTraceEnabled()){
+                        log.trace(String.format("Loading features: %s:%d-%d", chr, start, end));
+                    }
 
                     int maxEnd = end;
                     Genome genome = GenomeManager.getInstance().getCurrentGenome();
@@ -825,12 +829,9 @@ public class FeatureTrack extends AbstractTrack {
                         packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
                     }
 
-
-                    if (IGV.hasInstance()) {
-                        // TODO -- WHY IS THIS HERE????
-                        IGV.getInstance().layoutMainPanel();
-                    }
-                    if (context.getPanel() != null) context.getPanel().repaint();
+                    //Now that features are loaded, we may need to repaint
+                    //to accommodate.
+                    context.getReferenceFrame().getEventBus().post(new DataLoadedEvent(context));
                 } catch (Exception e) {
                     // Mark the interval with an empty feature list to prevent an endless loop of load
                     // attempts.
@@ -850,6 +851,7 @@ public class FeatureTrack extends AbstractTrack {
         };
 
         if (aSync) {
+            context.getReferenceFrame().getEventBus().register(FeatureTrack.this);
             LongRunningTask.submit(runnable);
         } else {
             runnable.run();
@@ -857,6 +859,21 @@ public class FeatureTrack extends AbstractTrack {
 
     }
 
+    /**
+     * Called after features are finished loading, which can be asynchronous
+     * @param event
+     */
+    @Subscribe
+    private void receiveDataLoaded(DataLoadedEvent event){
+        if (IGV.hasInstance()) {
+            // TODO -- WHY IS THIS HERE????
+            //TODO Assuming this is necessary, there can be many data loaded events in succession,
+            //don't want to layout for each one
+            IGV.getInstance().layoutMainPanel();
+        }
+        JComponent panel = event.context.getPanel();
+        if(panel != null) panel.repaint();
+    }
 
     /**
      * Return the nextLine or previous feature relative to the center location.
