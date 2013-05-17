@@ -191,7 +191,7 @@ public class GSUtils {
 
 
     public static boolean isGenomeSpace(URL url) {
-        return url.getHost().contains("genomespace");
+        return url.getHost().contains(".genomespace.org");
     }
 
 }
