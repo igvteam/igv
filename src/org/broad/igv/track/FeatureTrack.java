@@ -615,7 +615,11 @@ public class FeatureTrack extends AbstractTrack {
         int start = (int) context.getOrigin();
         int end = (int) context.getEndLocation();
         if (packedFeatures == null || !packedFeatures.containsInterval(chr, start, end)) {
-            context.getReferenceFrame().getEventBus().unregister(FeatureTrack.this);
+            try {
+                context.getReferenceFrame().getEventBus().unregister(FeatureTrack.this);
+            } catch (IllegalArgumentException e) {
+                //Don't care
+            }
             loadFeatures(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd(), context);
         }
     }
