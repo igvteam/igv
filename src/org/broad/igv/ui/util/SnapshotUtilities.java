@@ -191,7 +191,7 @@ public class SnapshotUtilities {
 
         selectedFile = fixFileExt(selectedFile, allowedExts, format);
         if (selectedFile != null) {
-            log.debug("Writing image to " + selectedFile.toPath());
+            log.debug("Writing image to " + selectedFile.getAbsolutePath());
             ImageIO.write(image, format, selectedFile);
         }
     }
