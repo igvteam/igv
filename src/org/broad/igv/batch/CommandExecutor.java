@@ -556,8 +556,8 @@ public class CommandExecutor {
             roi = new RegionOfInterest(param1, start, end, "");
         }
         if (param1 != null) {
-            Locus locus = new Locus(param1);
-            if (locus.isValid()) {
+            Locus locus = Locus.fromString(param1);
+            if (locus != null) {
                 int start = Math.max(0, locus.getStart() - 1);
                 roi = new RegionOfInterest(locus.getChr(), start, locus.getEnd(), "");
 
@@ -575,8 +575,8 @@ public class CommandExecutor {
         if (regionSortOption != null) {
             RegionOfInterest roi = null;
             if (locusString != null) {
-                Locus locus = new Locus(locusString);
-                if (locus.isValid()) {
+                Locus locus = Locus.fromString(locusString);
+                if (locus != null) {
                     int start = Math.max(0, locus.getStart() - 1);
                     roi = new RegionOfInterest(locus.getChr(), start, locus.getEnd(), "");
                 }
