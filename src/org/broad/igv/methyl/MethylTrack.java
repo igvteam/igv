@@ -17,8 +17,8 @@ import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.GraphicUtils;
-import org.broad.igv.renderer.Renderer;
 import org.broad.igv.renderer.PointsRenderer;
+import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.AbstractTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.util.LongRunningTask;
@@ -127,26 +127,15 @@ public class MethylTrack extends AbstractTrack {
     }
 
     public Renderer getRenderer() {
-        return renderer;  //To change body of implemented methods use File | Settings | File Templates.
+        return renderer;
     }
 
-
-    static class Interval {
-        String chr;
-        int start;
-        int end;
+    static class Interval extends org.broad.igv.data.Interval{
         List<MethylScore> scores;
 
         Interval(String chr, int start, int end, List<MethylScore> scores) {
-            this.chr = chr;
-            this.end = end;
+            super(chr, start, end);
             this.scores = scores;
-            this.start = start;
         }
-
-        boolean contains(String chr, int start, int end) {
-            return this.chr.equals(chr) && this.start <= start && this.end >= end;
-        }
-
     }
 }

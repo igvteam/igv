@@ -11,6 +11,7 @@
 
 package org.broad.igv.track;
 
+import org.broad.igv.data.Interval;
 import org.broad.igv.feature.Mutation;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.tribble.Feature;
@@ -58,25 +59,4 @@ public class MutationDataManager {
 
     }
 
-
-    // TODO -- variants of this class exist elsewhere, centralize
-
-    static class Interval {
-
-        String chr;
-        int start;
-        int end;
-
-        Interval(String chr, int start, int end) {
-            this.chr = chr;
-            this.start = start;
-            this.end = end;
-        }
-
-        boolean contains(String chr, int start, int end) {
-            return this.chr.equals(chr) &&
-                    this.start <= start &&
-                    this.end >= end;
-        }
-    }
 }
