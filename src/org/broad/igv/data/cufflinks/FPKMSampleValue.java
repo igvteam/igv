@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
  * SOFTWARE COPYRIGHT NOTICE
  * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
  *
@@ -11,33 +11,29 @@
 
 package org.broad.igv.data.cufflinks;
 
-import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.WindowFunction;
 
 /**
- * @author jrobinso
- *         Date: 3/8/13
- *         Time: 9:33 PM
+ * Represents a value from a cufflinks file for a single sample
+ * @see FPKMValue
+ * @author jrobinso, jacob
  */
-public class ExpDiffValue extends CufflinksValue implements LocusScore {
+public class FPKMSampleValue extends CufflinksValue{
 
+    float fpkm;
+    float fpkmLo;
+    float fpkmHi;
 
-    float log2Ratio;
-    float fpkmX;
-    float fpkmY;
-    String significant;
-
-    public ExpDiffValue(String chr, int start, int end, String gene, float log2Ratio, float fpkmX, float fpkmY, String significant) {
+    public FPKMSampleValue(String chr, int start, int end, String gene, float fpkm, float fpkmLo, float fpkmHi) {
         super(chr, start, end, gene);
-        this.log2Ratio = log2Ratio;
-        this.fpkmX = fpkmX;
-        this.fpkmY = fpkmY;
-        this.significant = significant;
+        this.fpkm = fpkm;
+        this.fpkmLo = fpkmLo;
+        this.fpkmHi = fpkmHi;
     }
 
     @Override
     public float getScore() {
-       return log2Ratio;
+        return fpkm;
     }
 
     @Override
@@ -45,10 +41,11 @@ public class ExpDiffValue extends CufflinksValue implements LocusScore {
 
         StringBuilder sb = new StringBuilder();
         sb.append(getChr() + ":" + (getStart() + 1) + "-" + getEnd());
-        sb.append("<br>gene = " + gene);
-        sb.append("<br>log2(y/x) = " + log2Ratio);
-        sb.append("<br>FPKM X = " + fpkmX);
-        sb.append("<br>FPKM Y = " + fpkmY);
-        sb.append("<br>Significant? " + significant);
-        return sb.toString();   }
+        sb.append("<br>Gene = " + gene);
+        sb.append("<br>FPKM = " + fpkm);
+        sb.append("<br>FPKM_LO = " + fpkmLo);
+        sb.append("<br>FPKM_HI = " + fpkmHi);
+        return sb.toString();
+    }
+
 }

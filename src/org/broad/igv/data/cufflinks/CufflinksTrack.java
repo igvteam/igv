@@ -33,21 +33,6 @@ public class CufflinksTrack extends DataTrack {
     public CufflinksTrack(ResourceLocator locator, String id, String name, CufflinksDataSource dataSource) {
         super(locator, id, name);
         this.dataSource = dataSource;
-//        setTrackType(TrackType.FPKM);
-
-//        if(isExpDiff(locator.getPath())) {
-//            // Make +/- scale symmetic
-//            float range = (float) Math.min(5, Math.abs(Math.max(dataSource.getDataMin(), dataSource.getDataMax())));
-//            setDataRange(new DataRange(-range, 0, range));
-//            setColor(Color.RED);
-//            setAltColor(Color.BLUE);
-//            setColorScale(new ContinuousColorScale(-range, 0, range, Color.RED, Color.WHITE,  Color.BLUE));
-//        }
-//
-//        else {
-//            setDataRange(new DataRange((float) dataSource.getDataMin(), 0, (float) dataSource.getDataMax()));
-//        }
-
     }
 
     @Override

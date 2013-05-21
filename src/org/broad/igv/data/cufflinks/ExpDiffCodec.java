@@ -74,7 +74,7 @@ public class ExpDiffCodec extends CufflinksCodec<ExpDiffValue>{
             float fpkmY = Float.parseFloat(tokens[yColumn]);
             String gene = tokens[geneColumn];
             String significant = tokens[sigColumn];
-            return new ExpDiffValue(gene, locus.getChr(), locus.getStart() - 1, locus.getEnd(),
+            return new ExpDiffValue(locus.getChr(), locus.getStart() - 1, locus.getEnd(), gene,
                     logRatio, fpkmX, fpkmY, significant);
         } else {
             log.info("Unexpected # of columns.  Expected at least 12,  found " + tokens.length);

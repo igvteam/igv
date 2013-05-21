@@ -38,31 +38,33 @@ public class CufflinksDataSource implements DataSource {
     Map<String, String> chrAliasMap;
     List<LocusScore> wholeGenomeScores;
 
-    public CufflinksDataSource(List<? extends CufflinksValue> valueList, Genome genome) {
+    private int sampleIndex = 0;
+
+    /** Constructor for files with multiple samples. Cufflinks files have multiple
+     * columns at end (just FPKM files as of this writing) representing each sample
+     * @param sampleIndex
+     * @param allValues
+     * @param genome
+     */
+    public CufflinksDataSource(int sampleIndex, List<FPKMValue> allValues, Genome genome){
+        this(getSampleValues(sampleIndex, allValues), genome);
+        this.sampleIndex = sampleIndex;
+    }
+
+    private static List<? extends LocusScore> getSampleValues(int sampleIndex, List<FPKMValue> allValues) {
+        List<FPKMSampleValue> sampleValueList = new ArrayList<FPKMSampleValue>(allValues.size());
+        for(FPKMValue value: allValues){
+            sampleValueList.add(value.getSampleValue(sampleIndex));
+        }
+        return sampleValueList;
+    }
+
+    public CufflinksDataSource(List<? extends LocusScore> valueList, Genome genome) {
 
         chrAliasMap = new HashMap<String, String>();
-        // Sample the first 10,000 values to set scale
-        DownsampledDoubleArrayList sampledData = new DownsampledDoubleArrayList(5000, 10000);
         values = new HashMap<String, List<LocusScore>>();
 
-        for (CufflinksValue val : valueList) {
-            String chr = val.getChr();
-
-            List<LocusScore> chrValues = values.get(chr);
-            if (chrValues == null) {
-                chrValues = new ArrayList<LocusScore>();
-                values.put(chr, chrValues);
-                if (genome != null) {
-                    String alias = genome.getChromosomeAlias(chr);
-                    chrAliasMap.put(alias, chr);
-                }
-
-
-            }
-            sampledData.add(val.getScore());
-            chrValues.add(val);
-
-        }
+        DownsampledDoubleArrayList sampledData = sampleValues(valueList, genome);
 
         // Sort
         for (List<LocusScore> chrValues : values.values()) {
@@ -78,6 +80,10 @@ public class CufflinksDataSource implements DataSource {
             dataMax = 100;
         }
 
+        calculateWholeGenomeScores(genome);
+    }
+
+    private void calculateWholeGenomeScores(Genome genome){
         GenomeSummaryData genomeSummaryData = new GenomeSummaryData(genome, new String[]{"*"});
         for (Map.Entry<String, List<LocusScore>> entry : values.entrySet()) {
             String chr = entry.getKey();
@@ -102,6 +108,33 @@ public class CufflinksDataSource implements DataSource {
 
     }
 
+    /**
+     * Sample the first 10,000 values to set scale
+     * Also separate data into chromosomes
+     * @param valueList
+     * @param genome
+     */
+    private DownsampledDoubleArrayList sampleValues(List<? extends LocusScore> valueList, Genome genome){
+        DownsampledDoubleArrayList sampledData = new DownsampledDoubleArrayList(5000, 10000);
+        for (LocusScore val : valueList) {
+            String chr = val.getChr();
+
+            List<LocusScore> chrValues = values.get(chr);
+            if (chrValues == null) {
+                chrValues = new ArrayList<LocusScore>();
+                values.put(chr, chrValues);
+                if (genome != null) {
+                    String alias = genome.getChromosomeAlias(chr);
+                    chrAliasMap.put(alias, chr);
+                }
+
+
+            }
+            sampledData.add(val.getScore());
+            chrValues.add(val);
+        }
+        return sampledData;
+    }
     @Override
     public double getDataMax() {
         return dataMax;

@@ -28,7 +28,6 @@ public class MutationDataManagerTest extends AbstractHeadlessTest {
 
     String path = org.broad.igv.util.TestUtils.DATA_DIR + "maf/TCGA_GBM_Level3_Somatic_Mutations_08.28.2008.maf";
 
-
     @Test
     public void testGetFeatures() throws Exception {
 
@@ -52,7 +51,6 @@ public class MutationDataManagerTest extends AbstractHeadlessTest {
 
         // There are 2 mutations for this sample in this interval
         assertEquals(2, mutationCount);
-
     }
 
 

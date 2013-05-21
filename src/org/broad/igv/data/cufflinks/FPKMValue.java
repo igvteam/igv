@@ -11,46 +11,44 @@
 
 package org.broad.igv.data.cufflinks;
 
-import org.broad.igv.track.WindowFunction;
+import org.broad.igv.data.Interval;
 
 /**
  * Represents a cufflinks value from any of a fpkm tracking file as described here
- *    http://cufflinks.cbcb.umd.edu/manual.html#fpkm_track
+ *    http://cufflinks.cbcb.umd.edu/manual.html#fpkm_tracking_format
  * @author jrobinso
  *         Date: 3/8/13
  *         Time: 2:37 PM
  */
-public class FPKMValue extends CufflinksValue {
+public class FPKMValue extends Interval {
 
-    float fpkm;
-    float fpkmLo;
-    float fpkmHi;
+    float[] fpkm;
+    float[] fpkmLo;
+    float[] fpkmHi;
 
-    public FPKMValue(String gene, String chr, int start, int end, float fpkm, float fpkmLo, float fpkmHi) {
-        super(gene, chr, start, end);
+    String gene;
+
+    public FPKMValue(String chr, int start, int end, String gene, float[] fpkm, float[] fpkmLo, float[] fpkmHi) {
+        super(chr, start, end);
+        this.gene = gene;
+        assert fpkm.length == fpkmLo.length && fpkm.length == fpkmHi.length;
         this.fpkm = fpkm;
         this.fpkmLo = fpkmLo;
         this.fpkmHi = fpkmHi;
     }
 
-    @Override
-    public float getScore() {
-        return fpkm;
+    public FPKMSampleValue getSampleValue(int sampleIndex){
+        return new FPKMSampleValue(chr, start, end, chr, fpkm[sampleIndex], fpkmLo[sampleIndex], fpkmHi[sampleIndex]);
     }
 
-    @Override
-    public String getValueString(double position, WindowFunction windowFunction) {
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(getChr() + ":" + (getStart() + 1) + "-" + getEnd());
-        sb.append("<br>Gene = " + gene);
-        sb.append("<br>FPKM = " + fpkm);
-        sb.append("<br>FPKM_LO = " + fpkmLo);
-        sb.append("<br>FPKM_HI = " + fpkmHi);
-        return sb.toString();
+    public String getGene(){
+        return this.gene;
     }
 
-    public String getGene() {
-        return gene;
+    public int getNumSamples(){
+        return this.fpkm.length;
     }
+
+
+
 }

@@ -17,10 +17,7 @@ import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.bigwig.BigWigDataSource;
 import org.broad.igv.das.DASFeatureSource;
 import org.broad.igv.data.*;
-import org.broad.igv.data.cufflinks.CufflinksDataSource;
-import org.broad.igv.data.cufflinks.CufflinksParser;
-import org.broad.igv.data.cufflinks.CufflinksTrack;
-import org.broad.igv.data.cufflinks.CufflinksValue;
+import org.broad.igv.data.cufflinks.*;
 import org.broad.igv.data.expression.ExpressionDataset;
 import org.broad.igv.data.expression.ExpressionFileParser;
 import org.broad.igv.data.rnai.RNAIDataSource;
@@ -67,6 +64,7 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.util.PedigreeUtils;
 import org.broad.tribble.AbstractFeatureReader;
+import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
 import org.broadinstitute.variant.vcf.VCFHeader;
@@ -580,12 +578,33 @@ public class TrackLoader {
 
 
     private void loadCufflinksFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-        List<? extends CufflinksValue> values = CufflinksParser.parse(locator.getPath());
-        CufflinksDataSource ds = new CufflinksDataSource(values, genome);
-        DataTrack track = new DataSourceTrack(locator, locator.getTrackName(), locator.getPath(), ds);
-        track.setTrackType(TrackType.FPKM);
-        CufflinksTrack.setCufflinksScale(track);
-        newTracks.add(track);
+
+        final String path = locator.getPath();
+        final String s = path.toLowerCase();
+        List<DataTrack> cuffTracks = new ArrayList<DataTrack>();
+        if (s.endsWith("fpkm_tracking")) {
+            FpkmTrackingCodec codec = new FpkmTrackingCodec(path);
+            List<FPKMValue> values = CufflinksParser.parse(codec, path);
+            for(int sampleIndex = 0; sampleIndex < codec.getNumSamples(); sampleIndex++){
+                CufflinksDataSource ds = new CufflinksDataSource(sampleIndex, values, genome);
+                DataTrack track = new DataSourceTrack(locator, locator.getTrackName(), locator.getPath(), ds);
+                cuffTracks.add(track);
+            }
+        } else if (s.endsWith("gene_exp.diff") || s.endsWith("cds_exp.diff")) {
+            AsciiFeatureCodec<ExpDiffValue> codec = new ExpDiffCodec(path);
+            List<ExpDiffValue> values = CufflinksParser.parse(codec, path);
+            CufflinksDataSource ds = new CufflinksDataSource(values, genome);
+            DataTrack track = new DataSourceTrack(locator, locator.getTrackName(), locator.getPath(), ds);
+            cuffTracks.add(track);
+        } else {
+            throw new RuntimeException("Unsupported file type: " + path);
+        }
+
+        for(DataTrack track: cuffTracks){
+            track.setTrackType(TrackType.FPKM);
+            CufflinksTrack.setCufflinksScale(track);
+            newTracks.add(track);
+        }
     }
 
 

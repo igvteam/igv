@@ -11,6 +11,7 @@
 
 package org.broad.igv.data.cufflinks;
 
+import org.broad.igv.data.Interval;
 import org.broad.igv.feature.LocusScore;
 
 /**
@@ -18,41 +19,18 @@ import org.broad.igv.feature.LocusScore;
  *         Date: 3/8/13
  *         Time: 9:32 PM
  */
-abstract public class CufflinksValue implements LocusScore {
-    String chr;
-    int start;
-    int end;
-
+abstract public class CufflinksValue extends Interval implements LocusScore {
     String gene;
 
-    public CufflinksValue(String gene, String chr, int start, int end) {
+    public CufflinksValue(String chr, int start, int end, String gene) {
+        super(chr, start, end);
         this.gene = gene;
-        this.chr = chr;
-        this.start = start;
-        this.end = end;
     }
 
-    @Override
-    public String getChr() {
-        return chr;
-    }
-
-    @Override
-    public int getStart() {
-        return start;
-    }
-
-    @Override
-    public int getEnd() {
-        return end;
-    }
-
-    @Override
     public void setStart(int start) {
         this.start = start;
     }
 
-    @Override
     public void setEnd(int end) {
         this.end = end;
     }

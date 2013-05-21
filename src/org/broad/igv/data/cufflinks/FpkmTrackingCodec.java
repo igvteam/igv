@@ -27,9 +27,11 @@ public class FpkmTrackingCodec extends CufflinksCodec<FPKMValue>{
 
     int geneColumn = 4;
     int locusColumn  = 6;
-    int fpkmColumn = 9;
-    int confLoColumn = 10;
-    int confHiColumn = 11;
+
+    static final int startfpkmCol = 9;
+    static final int colsPerSample = 4;
+
+    private int numSamples = 1;
 
     public FpkmTrackingCodec(String path){
         super(FPKMValue.class, path);
@@ -41,10 +43,8 @@ public class FpkmTrackingCodec extends CufflinksCodec<FPKMValue>{
             final String tk = tokens[i];
             if(tk.equals("locus")) locusColumn = i;
             else if(tk.equals("gene_short_name")) geneColumn = i;
-            else if(tk.equals("FPKM")) fpkmColumn = i;
-            else if(tk.equals("FPKM_conf_lo")) confLoColumn = i;
-            else if(tk.startsWith("FPKM_conf_hi")) confHiColumn = i;
         }
+        numSamples = (tokens.length - startfpkmCol) / colsPerSample;
         return tokens;
     }
 
@@ -59,21 +59,34 @@ public class FpkmTrackingCodec extends CufflinksCodec<FPKMValue>{
         if (tokens[0].equalsIgnoreCase("tracking_id") || tokens[geneColumn].equalsIgnoreCase("gene_short_name")) {
             return null;
         }
-        if (tokens.length >= 12) {
+        if (tokens.length >= (startfpkmCol + numSamples*colsPerSample)) {
             String locusString = tokens[locusColumn];
             if (locusString == null) return null;
 
             Locus locus = Locus.fromString(locusString);
             if(locus == null || locus.getChr() == null) return null;
 
-            float fpkm = Float.parseFloat(tokens[fpkmColumn]);
-            float confLo = Float.parseFloat(tokens[confLoColumn]);
-            float confHi = Float.parseFloat(tokens[confHiColumn]);
             String gene = tokens[geneColumn];
-            return new FPKMValue(gene, locus.getChr(), locus.getStart() - 1, locus.getEnd(), fpkm, confLo, confHi);
+            float[] fpkm = new float[numSamples];
+            float[] confLo = new float[numSamples];
+            float[] confHi = new float[numSamples];
+
+            for(int sampNum = 0; sampNum < numSamples; sampNum++){
+                int startCol = startfpkmCol + sampNum*colsPerSample;
+                fpkm[sampNum] = Float.parseFloat(tokens[startCol]);
+                confLo[sampNum] = Float.parseFloat(tokens[startCol+1]);
+                confHi[sampNum] = Float.parseFloat(tokens[startCol+2]);
+            }
+
+            return new FPKMValue(locus.getChr(), locus.getStart() - 1, locus.getEnd(), gene,
+                    fpkm, confLo, confHi);
         } else {
             log.info("Unexpected # of columns.  Expected at least 12,  found " + tokens.length);
             return null;
         }
+    }
+
+    public int getNumSamples() {
+        return numSamples;
     }
 }

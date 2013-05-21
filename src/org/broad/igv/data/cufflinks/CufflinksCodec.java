@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.AsciiFeatureCodec;
+import org.broad.tribble.Feature;
 import org.broad.tribble.readers.LineReader;
 
 import java.io.IOException;
@@ -23,7 +24,7 @@ import java.io.IOException;
  * @author jacob
  * @date 2013-Apr-18
  */
-public abstract class CufflinksCodec<T extends CufflinksValue> extends AsciiFeatureCodec<T> {
+public abstract class CufflinksCodec<T extends Feature> extends AsciiFeatureCodec<T> {
 
     private static Logger log = Logger.getLogger(CufflinksCodec.class);
 
