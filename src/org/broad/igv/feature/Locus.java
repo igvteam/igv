@@ -15,7 +15,7 @@
  */
 package org.broad.igv.feature;
 
-import org.broad.tribble.Feature;
+import org.broad.igv.data.Interval;
 
 import java.text.NumberFormat;
 import java.util.Locale;
@@ -23,27 +23,27 @@ import java.util.Locale;
 /**
  * @author jrobinso
  */
-public class Locus implements NamedFeature {
-
-    protected String chr = null;
-    protected int start = -1;
-    protected int end = -1;
+public class Locus extends Interval implements NamedFeature {
 
     private static NumberFormat NUMBER_FORMAT = NumberFormat.getInstance(Locale.US);
 
     public Locus(String chr, int start, int end) {
-        this.chr = chr;
-        this.start = start;
-        this.end = end;
+        super(chr, start, end);
     }
 
+    /**
+     * Generate Locus from locusString of form [chr]:[start]-[end]
+     * Returns null if invalid string
+     * @param locusString
+     * @return
+     */
     public static Locus fromString(String locusString) {
         Locus l = new Locus(locusString);
         return l.isValid() ? l : null;
     }
 
-    // TODO -- really the factory method above should be used and this constructor made private or removed
-    public Locus(String locusString) {
+    private Locus(String locusString) {
+        this(null, -1, -1);
         parseLocusString(locusString);
 
     }
@@ -79,18 +79,6 @@ public class Locus implements NamedFeature {
         }
     }
 
-    public String getChr() {
-        return chr;
-    }
-
-    public int getStart() {
-        return start;
-    }
-
-    public int getEnd() {
-        return end;
-    }
-
     public String toString() {
         return chr + ":" + start + "-" + end;
     }
@@ -107,22 +95,5 @@ public class Locus implements NamedFeature {
 
         return position;
     }
-
-    /**
-     * Weak version of contains, does not check genome
-     *
-     * @param chr
-     * @param start
-     * @param end
-     * @return
-     */
-    public boolean contains(String chr, int start, int end) {
-        return this.chr.equals(chr) && this.start <= start && this.end >= end;
-    }
-
-    public boolean overlaps(String chr, int start, int end) {
-        return this.chr.equals(chr) && this.start <= end && this.end >= start;
-    }
-
 
 }

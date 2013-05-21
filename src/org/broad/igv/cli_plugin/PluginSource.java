@@ -283,7 +283,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
         Collection<AlignmentInterval> loadedIntervals = track.getDataManager().getAllLoadedIntervals();
         List<Alignment> alignments = new ArrayList<Alignment>();
         for(AlignmentInterval interval: loadedIntervals){
-            if(interval.overlaps(chr, start, end, zoom)){
+            if(interval.overlaps(chr, start, end)){
                 Iterator<Alignment> iter = interval.getAlignmentIterator();
                 while(iter.hasNext()){
                     Alignment al = iter.next();

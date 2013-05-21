@@ -11,18 +11,40 @@
 
 package org.broad.igv.data;
 
+import com.google.java.contract.util.Objects;
 import org.broad.tribble.Feature;
 
 
 /**
- * Interface used to represent data which spans an interval,
- * including the zoom level. If data is different for different
- * zoom levels, merging may not be possible
- * <p/>
+ * Basic class to specify a genomic interval.
+ *
  * User: jacob
- * Date: 2012-Jul-05
+ * Date: 2013-May-20
  */
-public interface Interval extends Feature {
+public class Interval implements Feature {
+
+    protected String chr = null;
+    protected int start = -1;
+    protected int end = -1;
+
+    public Interval(String chr, int start, int end){
+        this.chr = chr;
+        this.start = start;
+        this.end = end;
+    }
+
+
+    public String getChr() {
+        return chr;
+    }
+
+    public int getStart() {
+        return start;
+    }
+
+    public int getEnd() {
+        return end;
+    }
 
     /**
      * Determine whether this interval fully contains the specified
@@ -31,56 +53,23 @@ public interface Interval extends Feature {
      * @param chr
      * @param start
      * @param end
-     * @param zoom
      * @return
      */
-    boolean contains(String chr, int start, int end, int zoom);
+    public boolean contains(String chr, int start, int end) {
+        return Objects.equal(this.chr, chr) && this.start <= start && this.end >= end;
+    }
 
     /**
-     * Determine whether this interval overlaps the specified
-     * interval at all
-     *
+     * Determine whether there is any overlap between this interval and the specified interval
      * @param chr
      * @param start
      * @param end
-     * @param zoom
      * @return
      */
-    boolean overlaps(String chr, int start, int end, int zoom);
+    public boolean overlaps(String chr, int start, int end) {
+        return Objects.equal(this.chr, chr) && this.start <= end && this.end >= start;
+    }
 
 
-    /**
-     * Merge another interval with this one
-     *
-     * @param i
-     * @return True if the interval was merged, false
-     *         if not. Cannot necessarily merge an interval if there
-     *         is no overlap; if the Interval contains data
-     *         that data would be missing
-     */
-    boolean merge(Interval i);
-
-
-    /**
-     * Whether the provided interval can be merged with this one
-     *
-     * @param addingInterval
-     * @return
-     */
-    boolean canMerge(Interval addingInterval);
-
-    /**
-     * Remove data outside the specified interval.
-     * This interval must contain the specified interval.
-     *
-     * @param chr
-     * @param start
-     * @param end
-     * @param zoom
-     * @return true if any trimming was performed, false if not
-     */
-    boolean trimTo(final String chr, final int start, final int end, int zoom);
-
-    int getZoom();
 
 }

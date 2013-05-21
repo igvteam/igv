@@ -67,10 +67,10 @@ public class CoverageTrackTest extends AbstractHeadedTest {
         String startLocString = "chr1:151666494-151666594";
 
         String midLocString = "chr1:153148479-153148579";
-        Locus midLocus = new Locus(midLocString);
+        Locus midLocus = Locus.fromString(midLocString);
 
         String destLocString = "chr1:155232055-155232155";
-        Locus destLocus = new Locus(destLocString);
+        Locus destLocus = Locus.fromString(destLocString);
 
 
         AlignmentTrack alTrack = (AlignmentTrack) tracks.get(1);

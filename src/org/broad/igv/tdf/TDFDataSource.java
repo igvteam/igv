@@ -146,48 +146,6 @@ public class TDFDataSource implements CoverageDataSource {
         return reader.getLowerLimit() * normalizationFactor;
     }
 
-    class Interval {
-
-        String chr;
-        private int start;
-        private int end;
-        private int zoom;
-        private List<LocusScore> scores;
-
-        public Interval(String chr, int start, int end, int zoom, List<LocusScore> scores) {
-            this.chr = chr;
-            this.start = start;
-            this.end = end;
-            this.zoom = zoom;
-            this.scores = scores;
-        }
-
-        public boolean contains(String chr, int s, int e, int zoom) {
-            return chr.equals(this.chr) && zoom == this.zoom && s >= getStart() && e <= getEnd();
-        }
-
-        /**
-         * @return the start
-         */
-        public int getStart() {
-            return start;
-        }
-
-        /**
-         * @return the end
-         */
-        public int getEnd() {
-            return end;
-        }
-
-        /**
-         * @return the scores
-         */
-        public List<LocusScore> getScores() {
-            return scores;
-        }
-    }
-
     private List<LocusScore> getCachedSummaryScores(String querySeq, int zoom, int tileNumber, double tileWidth) {
 
         String key = querySeq + "_" + zoom + "_" + tileNumber + "_" + windowFunction;

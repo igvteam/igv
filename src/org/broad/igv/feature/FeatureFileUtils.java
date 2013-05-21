@@ -13,11 +13,9 @@ package org.broad.igv.feature;
 
 
 import org.broad.igv.Globals;
-import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureCodec;
 
 import java.io.*;
 import java.util.*;
@@ -217,7 +215,7 @@ public class FeatureFileUtils {
         String nextLine;
         while ((nextLine = br.readLine()) != null) {
             String[] tokens = nextLine.split("\t");
-            Locus locus = new Locus(tokens[1].trim());
+            Locus locus = Locus.fromString(tokens[1].trim());
             pw.println(
                     locus.getChr() + "\t" + locus.getStart() + "\t" + locus.getEnd() + "\t" + tokens[0].trim());
         }

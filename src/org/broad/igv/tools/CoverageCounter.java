@@ -211,7 +211,8 @@ public class CoverageCounter {
      */
     private void parseOptions(String queryString, int minMapQual, int countFlags) {
         if (queryString != null) {
-            this.queryInterval = new Locus(queryString);
+            this.queryInterval = Locus.fromString(queryString);
+            if(this.queryInterval == null) throw new IllegalArgumentException("Error parsing queryString: " + queryString);
         }
         this.minMappingQuality = minMapQual;
         outputSeparate = (countFlags & STRANDS_BY_READ) > 0;

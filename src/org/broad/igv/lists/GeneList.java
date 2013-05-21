@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.lists;
@@ -141,13 +134,15 @@ public class GeneList {
     private static synchronized void initComparator() {
         POSITION_COMPARATOR = new Comparator<String>() {
             public int compare(String s1, String s2) {
-                Locus l1 = new Locus(s1);
-                Locus l2 = new Locus(s2);
-                if (!l1.isValid() && !l2.isValid()) {
+                Locus l1 = Locus.fromString(s1);
+                Locus l2 = Locus.fromString(s2);
+                boolean l1Valid = l1 != null;
+                boolean l2Valid = l2 != null;
+                if (l1Valid && l2Valid) {
                     return 0;
-                } else if (!l1.isValid()) {
+                } else if (!l1Valid) {
                     return -1;
-                } else if (!l2.isValid()) {
+                } else if (!l2Valid) {
                     return 1;
                 } else if (!l1.getChr().equals(l2.getChr())) {
                     return l1.getChr().compareTo(l2.getChr());
