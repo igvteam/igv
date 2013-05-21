@@ -63,8 +63,8 @@ public class FpkmTrackingCodec extends CufflinksCodec<FPKMValue>{
             String locusString = tokens[locusColumn];
             if (locusString == null) return null;
 
-            Locus locus = new Locus(locusString);
-            if(locus.getChr() == null) return null;
+            Locus locus = Locus.fromString(locusString);
+            if(locus == null || locus.getChr() == null) return null;
 
             float fpkm = Float.parseFloat(tokens[fpkmColumn]);
             float confLo = Float.parseFloat(tokens[confLoColumn]);

@@ -15,25 +15,20 @@
  */
 package org.broad.igv.sam;
 
-import com.google.common.base.Predicate;
 import org.apache.log4j.Logger;
-import org.broad.igv.data.Interval;
-import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.util.collections.CollUtils;
-import org.broad.tribble.Feature;
 
 import java.util.*;
 
 /**
  * @author jrobinso
  */
-public class AlignmentInterval extends Locus implements Interval {
+public class AlignmentInterval extends Locus{
 
     private static Logger log = Logger.getLogger(AlignmentInterval.class);
 
@@ -238,122 +233,6 @@ public class AlignmentInterval extends Locus implements Interval {
 
     public List<DownsampledInterval> getDownsampledIntervals() {
         return downsampledIntervals;
-    }
-
-    @Override
-    public boolean contains(String chr, int start, int end, int zoom) {
-        return super.contains(chr, start, end);
-    }
-
-    @Override
-    public boolean overlaps(String chr, int start, int end, int zoom) {
-        return super.overlaps(chr, start, end);
-    }
-
-    @Override
-    public boolean canMerge(Interval i) {
-        if (!super.overlaps(i.getChr(), i.getStart(), i.getEnd())
-                || !(i instanceof AlignmentInterval)) {
-            return false;
-        }
-        return getCounts().getClass().equals(((AlignmentInterval) i).getCounts().getClass());
-    }
-
-    @Override
-    public boolean merge(Interval i) {
-        boolean canMerge = this.canMerge(i);
-        if (!canMerge) return false;
-
-        AlignmentInterval other = (AlignmentInterval) i;
-
-        List<Alignment> allAlignments = (List<Alignment>) FeatureUtils.combineSortedFeatureListsNoDups(
-                getAlignmentIterator(), other.getAlignmentIterator(), start, end);
-
-        this.counts = counts.merge(other.getCounts(), renderOptions.bisulfiteContext);
-        this.spliceJunctions = FeatureUtils.combineSortedFeatureListsNoDups(this.spliceJunctions, other.getSpliceJunctions(), start, end);
-        this.downsampledIntervals = FeatureUtils.combineSortedFeatureListsNoDups(this.downsampledIntervals, other.getDownsampledIntervals(), start, end);
-
-        //This must be done AFTER calling combineSortedFeatureListsNoDups for the last time,
-        //because we rely on the original start/end
-        this.start = Math.min(getStart(), i.getStart());
-        this.end = Math.max(getEnd(), i.getEnd());
-        this.maxCount = Math.max(this.getMaxCount(), other.getMaxCount());
-
-
-        AlignmentPacker packer = new AlignmentPacker();
-        this.groupedAlignmentRows = packer.packAlignments(allAlignments.iterator(), this.end, renderOptions);
-
-
-        return true;
-    }
-
-    /**
-     * Remove data outside the specified interval.
-     * This interval must contain the specified interval.
-     *
-     * @param chr
-     * @param start
-     * @param end
-     * @param zoom
-     * @return true if any trimming was performed, false if not
-     */
-    public boolean trimTo(final String chr, final int start, final int end, int zoom) {
-        boolean toRet = false;
-        if (!this.contains(chr, start, end, zoom)) {
-            return false;
-        }
-
-        for (String groupKey : groupedAlignmentRows.keySet()) {
-            for (AlignmentInterval.Row row : groupedAlignmentRows.get(groupKey)) {
-                Iterator<Alignment> alIter = row.alignments.iterator();
-                Alignment al;
-                while (alIter.hasNext()) {
-                    al = alIter.next();
-                    if (al.getEnd() < start || al.getStart() > end) {
-                        alIter.remove();
-                        toRet |= true;
-                    }
-                }
-
-            }
-        }
-
-        Predicate<Feature> overlapPredicate = FeatureUtils.getOverlapPredicate(chr, start, end);
-
-        if (getDownsampledIntervals() != null) {
-            downsampledIntervals = CollUtils.filter(this.getDownsampledIntervals(), overlapPredicate);
-        }
-        if (getSpliceJunctions() != null) {
-            spliceJunctions = CollUtils.filter(this.getSpliceJunctions(), overlapPredicate);
-        }
-
-        this.start = Math.max(this.start, start);
-        this.end = Math.min(this.end, end);
-
-
-        return toRet;
-    }
-
-    private List addToListNoDups(List self, List other) {
-        if (self == null) self = new ArrayList();
-        if (other != null) {
-            Set selfSet = new HashSet(self);
-            selfSet.addAll(other);
-
-            self = new ArrayList(selfSet);
-            FeatureUtils.sortFeatureList(self);
-        }
-        return self;
-    }
-
-    /**
-     * AlignmentInterval data is independent of zoom
-     *
-     * @return
-     */
-    @Override
-    public int getZoom() {
-        return -1;
     }
 
     public static class Row implements Comparable<Row> {

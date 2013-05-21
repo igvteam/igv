@@ -59,8 +59,8 @@ public class ExpDiffCodec extends CufflinksCodec<ExpDiffValue>{
             String locusString = tokens[locusColumn];
             if (locusString == null) return null;
 
-            Locus locus = new Locus(locusString);
-            if (locus.getChr() == null) return null;
+            Locus locus = Locus.fromString(locusString);
+            if (locus == null || locus.getChr() == null) return null;
 
             String logRatioStr = tokens[logRatioColumn];
             float logRatio = Float.parseFloat(logRatioStr);
