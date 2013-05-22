@@ -587,14 +587,15 @@ public class TrackLoader {
             List<FPKMValue> values = CufflinksParser.parse(codec, path);
             for(int sampleIndex = 0; sampleIndex < codec.getNumSamples(); sampleIndex++){
                 CufflinksDataSource ds = new CufflinksDataSource(sampleIndex, values, genome);
-                DataTrack track = new DataSourceTrack(locator, locator.getTrackName(), locator.getPath(), ds);
+                String supId = String.format("q%02d", sampleIndex);
+                DataTrack track = new DataSourceTrack(locator, locator.getPath() + " " + supId, locator.getTrackName() + " " + supId, ds);
                 cuffTracks.add(track);
             }
         } else if (s.endsWith("gene_exp.diff") || s.endsWith("cds_exp.diff")) {
             AsciiFeatureCodec<ExpDiffValue> codec = new ExpDiffCodec(path);
             List<ExpDiffValue> values = CufflinksParser.parse(codec, path);
             CufflinksDataSource ds = new CufflinksDataSource(values, genome);
-            DataTrack track = new DataSourceTrack(locator, locator.getTrackName(), locator.getPath(), ds);
+            DataTrack track = new DataSourceTrack(locator, locator.getPath(), locator.getTrackName(), ds);
             cuffTracks.add(track);
         } else {
             throw new RuntimeException("Unsupported file type: " + path);
