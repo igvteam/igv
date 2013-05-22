@@ -336,7 +336,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         } else {
             final int groupCount = samplesByGroups.size();
             int margins = groupCount * 3;
-            return variantBandHeight*getNumberOfFeatureLevels() + margins + (sampleCount * getGenotypeBandHeight());
+            return getVariantsHeight() + margins + (sampleCount * getGenotypeBandHeight());
         }
     }
 
@@ -345,7 +345,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      * @return
      */
     private int getVariantsHeight(){
-        return variantBandHeight*getNumberOfFeatureLevels();
+        return variantBandHeight*Math.max(1, getNumberOfFeatureLevels());
     }
 
     /**
