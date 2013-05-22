@@ -870,7 +870,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      * Return the variant closest to the genomic position in the given reference frame, within the prescribed tolerance
      *
      * @param position
-     * @param y         y position, in pixels. Only the relevant feature row will be search
+     * @param y         pixel position in panel coordinates (i.e. not track coordinates)
      * @param frameName
      * @param maxDistance
      * @return
@@ -888,7 +888,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
         //We search only the specified row if y is a meaningful value.
         //Otherwise we search everything
-        int row = (y / variantBandHeight);
+        int row = ( (y - top) / variantBandHeight);
         if(y < 0 || row >= getNumberOfFeatureLevels()){
             features = packedFeatures.getFeatures();
         }else{
