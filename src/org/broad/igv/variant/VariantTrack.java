@@ -332,7 +332,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     public int getHeight() {
         int sampleCount = allSamples.size();
         if (getDisplayMode() == DisplayMode.COLLAPSED || sampleCount == 0) {
-            return variantBandHeight;
+            return getVariantsHeight();
         } else {
             final int groupCount = samplesByGroups.size();
             int margins = groupCount * 3;
@@ -516,7 +516,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     }
 
     /**
-     * Renderes the top line, bottom track line, and border between variants / genotypes
+     * Renders the top line, bottom track line, and border between variants / genotypes
      * @param g2D
      * @param trackRectangle
      * @param visibleRectangle
