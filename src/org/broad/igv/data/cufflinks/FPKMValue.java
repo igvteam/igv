@@ -38,7 +38,7 @@ public class FPKMValue extends Interval {
     }
 
     public FPKMSampleValue getSampleValue(int sampleIndex){
-        return new FPKMSampleValue(chr, start, end, chr, fpkm[sampleIndex], fpkmLo[sampleIndex], fpkmHi[sampleIndex]);
+        return new FPKMSampleValue(chr, start, end, gene, fpkm[sampleIndex], fpkmLo[sampleIndex], fpkmHi[sampleIndex]);
     }
 
     public String getGene(){
