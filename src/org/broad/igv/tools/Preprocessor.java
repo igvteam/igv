@@ -31,7 +31,6 @@ import org.broad.igv.util.collections.IntArrayList;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.*;
 
 /**
@@ -40,6 +39,7 @@ import java.util.*;
 public class Preprocessor implements DataConsumer {
 
     private static Logger log = Logger.getLogger(Preprocessor.class);
+
     boolean compressed = true;
     private boolean skipZeroes = false;
     private int nZoom = 7;
@@ -64,8 +64,6 @@ public class Preprocessor implements DataConsumer {
     List<String> chromosomes = new ArrayList();
     Set<String> visitedChromosomes = new HashSet();
     Map<String, String> attributes = new HashMap();
-    PrintStream out = System.out;
-
 
     List<WindowFunction> allDataFunctions = Arrays.asList(
             WindowFunction.mean,
@@ -98,7 +96,7 @@ public class Preprocessor implements DataConsumer {
     }
 
     /**
-     * Called to set inital parameters.  It is required that this be called
+     * Called to set initial parameters.  It is required that this be called
      * prior to writing the file
      */
     public void setTrackParameters(TrackType trackType, String trackLine, String[] trackNames) {
@@ -106,13 +104,13 @@ public class Preprocessor implements DataConsumer {
     }
 
     /**
-     * Called to set inital parameters.  It is required that this be called
+     * Called to set initial parameters.  It is required that this be called
      * prior to writing the file
      */
     public void setTrackParameters(TrackType trackType, String trackLine, String[] trackNames, boolean computeWholeGenome) {
 
         if (trackLine != null) {
-            System.out.println(trackLine);
+            log.info(trackLine);
         }
 
         if (outputFile != null && writer == null) {
@@ -170,8 +168,9 @@ public class Preprocessor implements DataConsumer {
                 String msg = "Error: Data is not sorted @ " + chr + " " + start +
                         "  (last position = " + lastStartPosition +
                         "   max ext factor = " + maxExtFactor + ")";
-                out.println(msg);
-                throw new UnsortedException(msg);
+                UnsortedException e = new UnsortedException(msg);
+                log.error(msg, e);
+                throw e;
             }
         } else {
             newChromosome(chr);
@@ -185,7 +184,7 @@ public class Preprocessor implements DataConsumer {
         // Is this data in range for the chromosome?
         int chrLength = genome.getChromosome(chr).getLength();
         if (start > chrLength) {
-            log.debug("Ignoring data from non-existent locus.  Probe = " + name +
+            log.warn("Ignoring data from non-existent locus.  Probe = " + name +
                     "  Locus = " + chr + ":" + start + "-" + end + ". " + chr + " length = " + chrLength);
             return;
         }
@@ -226,23 +225,22 @@ public class Preprocessor implements DataConsumer {
         if (visitedChromosomes.contains(chr)) {
             String msg = "Error: Data is not ordered by start position. Chromosome " + chr +
                     " appears in multiple blocks";
-            out.println(msg);
-            throw new PreprocessingException(msg);
-
+            PreprocessingException e = new PreprocessingException(msg);
+            log.error(msg, e);
+            throw e;
         }
         visitedChromosomes.add(chr);
 
 
         Chromosome c = genome.getChromosome(chr);
         if (c == null) {
-            out.println("Chromosome: " + chr + " not found in .genome file.  Skipping.");
+            log.warn("Chromosome: " + chr + " not found in .genome file.  Skipping.");
             skippedChromosomes.add(chr);
         } else {
 
             chromosomes.add(chr);
 
-            out.println();
-            out.println("Processing chromosome " + chr);
+            log.info("Processing chromosome " + chr);
             if (zoomLevels != null) {
                 for (Zoom zl : zoomLevels) {
                     zl.close();
@@ -315,8 +313,7 @@ public class Preprocessor implements DataConsumer {
 
         if (rawData == null) {
             // TODO -- delete .tdf file?
-            out.println("No features were found that matched chromosomes in genome: " + genome.getId());
-
+            log.warn("No features were found that matched chromosomes in genome: " + genome.getId());
         } else {
             rawData.close();
 
@@ -332,8 +329,6 @@ public class Preprocessor implements DataConsumer {
 
         if (statusMonitor != null) {
             statusMonitor.setPercentComplete(100);
-        } else {
-            out.println("Done");
         }
     }
 
@@ -447,7 +442,7 @@ public class Preprocessor implements DataConsumer {
                     }
                 }
             } catch (IOException ex) {
-                ex.printStackTrace();
+                log.error(ex.getMessage(), ex);
             }
         }
     }
@@ -492,7 +487,6 @@ public class Preprocessor implements DataConsumer {
                     RawTile t = activeTiles.get(tileNumber);
                     t.close();
                     activeTiles.remove(tileNumber);
-                    //out.println("(-) " + level + "_" + tileNumber);
                 } else {
                     break;
                 }
@@ -582,7 +576,6 @@ public class Preprocessor implements DataConsumer {
         }
 
         // Close all active tiles
-
         public void close() {
             for (Tile t : activeTiles.values()) {
                 t.close();
@@ -706,10 +699,9 @@ public class Preprocessor implements DataConsumer {
                 String dsName = datasets.get(wf).getName();
                 try {
                     writer.writeTile(dsName, tileNumber, tile);
-                } catch (IOException iOException) {
-                    log.error("Error writing tile: " + dsName + " [" + tileNumber + "]", iOException);
-                    //TODO -- replace with PreprocessorException
-                    throw new RuntimeException(iOException);
+                } catch (IOException exc) {
+                    log.error("Error writing tile: " + dsName + " [" + tileNumber + "]", exc);
+                    throw new PreprocessingException(exc.getMessage());
                 }
             }
         }
@@ -737,9 +729,9 @@ public class Preprocessor implements DataConsumer {
             CNParser cnParser = new CNParser(iFile.getAbsolutePath(), this, genome);
             cnParser.parse();
         } else {
-            out.println("Error: cannot convert files of type '" + tmp + "' to TDF format.");
-            out.println("Try specifying the file type with the --fileType parameter.");
-
+            String msg = "Error: cannot convert files of type '" + tmp + "' to TDF format.";
+            msg += "\nTry specifying the file type with the --fileType parameter.";
+            throw new RuntimeException(msg);
         }
     }
 

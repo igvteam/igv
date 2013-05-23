@@ -1,25 +1,19 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.tools;
 
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.commons.math.stat.StatUtils;
+import org.apache.log4j.Logger;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.ReadMate;
 import org.broad.igv.sam.reader.AlignmentReader;
@@ -34,6 +28,8 @@ import java.util.Iterator;
  * @date Jan 14, 2011
  */
 public class PairedEndStats {
+
+    static private Logger log = Logger.getLogger(PairedEndStats.class);
 
     private double minPercentileInsertSize;
     private double maxPercentileInsertSize;
@@ -53,12 +49,10 @@ public class PairedEndStats {
 
         System.out.println(args[0] + "\t" + stats.averageInsertSize + "\t" + stats.medianInsertSize +
                 "\t" + stats.stddevInsertSize + "\t" + stats.madInsertSize);
-
     }
 
 
-    public PairedEndStats(double averageInsertSize, double medianInsertSize, double insertSizeStdev, double madInsertSize,
-                          double secondPercentileSize, double maxPercentileInsertSize) {
+    public PairedEndStats(double averageInsertSize, double medianInsertSize, double insertSizeStdev, double madInsertSize, double secondPercentileSize, double maxPercentileInsertSize) {
         this.averageInsertSize = averageInsertSize;
         this.medianInsertSize = medianInsertSize;
         this.stddevInsertSize = insertSizeStdev;
@@ -77,8 +71,7 @@ public class PairedEndStats {
             return stats;
 
         } catch (IOException e) {
-            System.out.println("Error reading sam file");
-            e.printStackTrace();
+            log.error("Error reading sam file: " + e.getMessage(), e);
             return null;
         }
         finally {
@@ -86,18 +79,17 @@ public class PairedEndStats {
                 if (reader != null)
                     reader.close();
             } catch (IOException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                log.error(e.getMessage(), e);
             }
         }
     }
 
     public static PairedEndStats compute(AlignmentReader reader, String chr, int start, int end) {
         try {
-
             PairedEndStats stats = compute(reader.query(chr, start, end, false), .1, 99.9);
             return stats;
         } catch (IOException e) {
-            System.out.println("Error computing alignment stats");
+            log.error("Error computing alignment stats: " + e.getMessage(), e);
             return null;
         }
     }
@@ -126,7 +118,7 @@ public class PairedEndStats {
         }
 
         if(nPairs == 0) {
-            System.out.println("Error computing insert size distribution. No alignments in sample interval.");
+            log.error("Error computing insert size distribution. No alignments in sample interval.");
             return null;
         }
 
@@ -148,8 +140,6 @@ public class PairedEndStats {
         PairedEndStats stats = new PairedEndStats(mean, median, stdDev, mad, sec, max);
 
         return stats;
-
-
     }
 
 

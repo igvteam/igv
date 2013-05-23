@@ -16,6 +16,7 @@
 package org.broad.igv.tools;
 
 import net.sf.samtools.util.CloseableIterator;
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Strand;
@@ -38,6 +39,8 @@ import java.util.*;
  * from a single thread.
  */
 public class CoverageCounter {
+
+    static private Logger log = Logger.getLogger(CoverageCounter.class);
 
     /**
      * The path to the alignment file being counted.
@@ -244,7 +247,7 @@ public class CoverageCounter {
                 return false;
             }
             if (Math.abs(alignment.getInferredInsertSize()) > 10000) {
-                System.out.println("Very large insert size: " + Math.abs(alignment.getInferredInsertSize()) +
+                log.warn("Very large insert size: " + Math.abs(alignment.getInferredInsertSize()) +
                         " for read " + alignment.getReadName() + ".  Skipped.");
                 return false;
             }

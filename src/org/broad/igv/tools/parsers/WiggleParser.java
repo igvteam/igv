@@ -1,25 +1,17 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 package org.broad.igv.tools.parsers;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import com.iontorrent.utils.StringTools;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackProperties;
@@ -37,15 +29,15 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class description
- *
- * @author Enter your name here...
- * @version Enter version here..., 08/10/31
+ * Parses a wiggle file, as described by UCSC
+ * See http://genome.ucsc.edu/goldenPath/help/wiggle.html
+ * The data read in is added to a {@link DataConsumer}
  */
 public class WiggleParser {
 
-    private enum Type {
+    //static private Logger log = Logger.getLogger(WiggleParser.class);
 
+    private enum Type {
         fixedStep, variableStep, bed, cpg
     }
 
@@ -71,9 +63,6 @@ public class WiggleParser {
     Set<String> unsortedChromosomes;
     Genome genome;
 
-    /**
-     *
-     */
     public WiggleParser(String file, DataConsumer dataConsumer, Genome genome) {
         this.resourceLocator = new ResourceLocator(file);
         this.dataConsumer = dataConsumer;
@@ -189,9 +178,6 @@ public class WiggleParser {
         }
     }
 
-    /**
-     * @return
-     */
     public void parse() throws IOException {
 
         lastPosition = 0;
@@ -239,7 +225,7 @@ public class WiggleParser {
 
         // The DataConsumer interface takes an array of data per position, however wig
         // files contain a single data point.  Create an "array" once that can
-        // be resused
+        // be reused
         float[] dataArray = null;
 
         try {
@@ -259,7 +245,6 @@ public class WiggleParser {
                     // BED by default
                     type = Type.bed;
                     dataConsumer.setType("bed");
-                    //DatasetParserUtils.parseTrackLine(nextLine, dataset.getTrackProperties());
 
                 } else if (nextLine.startsWith("fixedStep")) {
                     type = Type.fixedStep;
@@ -306,13 +291,7 @@ public class WiggleParser {
                                 lastChr = chr;
 
                                 int endPosition = -1;
-                                try {
-                                    endPosition = Integer.parseInt(tokens[2].trim());
-                                } catch (NumberFormatException numberFormatException) {
-                                    System.err.println("Column 2  is not a number");
-
-                                    throw new RuntimeException("Column 2 must be numeric." + " Found: " + tokens[1]);
-                                }
+                                endPosition = Integer.parseInt(tokens[2].trim());
                                 int startPosition = endPosition - 1;
 
                                 if (startPosition < lastPosition) {
@@ -402,7 +381,7 @@ public class WiggleParser {
                         }
 
                     } catch (NumberFormatException e) {
-                        System.out.println("Cannot parse: " + nextLine);
+                        throw new RuntimeException("Error parsing number in line: " + nextLine, e);
                     }
                 }
             }
@@ -445,24 +424,6 @@ public class WiggleParser {
 
             }
         }
-    }
-
-    /**
-     * Method description
-     *
-     * @return
-     */
-    public double getMinValue() {
-        return minValue;
-    }
-
-    /**
-     * Method description
-     *
-     * @return
-     */
-    public double getMaxValue() {
-        return maxValue;
     }
 
     private void newChromosome() {
