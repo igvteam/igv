@@ -69,6 +69,8 @@ public class SashimiPlot extends JFrame{
 
 
     public SashimiPlot(ReferenceFrame iframe, Collection<? extends AlignmentTrack> alignmentTracks, FeatureTrack geneTrack){
+        getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
         this.frame = new ReferenceFrame(iframe);
         this.frame.getEventBus().register(this);
 
@@ -172,29 +174,49 @@ public class SashimiPlot extends JFrame{
         trackComponent.addMouseListener(ad1);
         trackComponent.addMouseMotionListener(ad1);
 
-        setDataManager(trackComponent.track, alignmentTrack.getDataManager());
+        setDataManager(trackComponent, alignmentTrack.getDataManager());
         getRenderer(trackComponent.track).setBackground(getBackground());
     }
 
-    private void setDataManager(SpliceJunctionFinderTrack spliceJunctionTrack, AlignmentDataManager dataManager) {
+    private void setDataManager(TrackComponent<SpliceJunctionFinderTrack> spliceJunctionTrackComponent, AlignmentDataManager dataManager) {
         if(!dataManager.isShowSpliceJunctions() || !dataManager.getSpliceJunctionLoadOptions().ignoreStrandedness){
             SpliceJunctionHelper.LoadOptions loadOptions = new SpliceJunctionHelper.LoadOptions(true, true);
             dataManager.setSpliceJunctionLoadOptions(loadOptions);
-            dataManager.clear();
             dataManager.getEventBus().register(this);
+            dataManager.clear();
         }
-        getRenderer(spliceJunctionTrack).setDataManager(dataManager);
+        getRenderer(spliceJunctionTrackComponent.track).setDataManager(dataManager);
+        reloadAlignments(spliceJunctionTrackComponent);
+    }
+
+    //TODO Refactor WaitCursorManager so we can use it here too
+    private int numWaitCursors = 0;
+    private void addWaitCursor(){
+        numWaitCursors++;
+        if(numWaitCursors >= 1){
+            getGlassPane().setVisible(true);
+        }
+    }
+
+    private void removeWaitCursor(){
+        numWaitCursors--;
+        if(numWaitCursors <= 0){
+            numWaitCursors = 0;
+            getGlassPane().setVisible(false);
+        }
     }
 
     private void reloadAlignments(TrackComponent<SpliceJunctionFinderTrack> spliceJunctionTrackComponent){
         AlignmentDataManager dataManager = getRenderer(spliceJunctionTrackComponent.track).getDataManager();
         RenderContext context = new RenderContextImpl(spliceJunctionTrackComponent, null, frame, spliceJunctionTrackComponent.getVisibleRect());
+        addWaitCursor();
         dataManager.preload(context);
     }
 
     @Subscribe
     public void receiveDataLoaded(DataLoadedEvent event){
         repaint();
+        removeWaitCursor();
     }
 
 
