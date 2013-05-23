@@ -91,7 +91,7 @@ public class Preprocessor implements DataConsumer {
         allDataStats = new ListAccumulator(allDataFunctions);
 
         if (statusMonitor == null) {
-            statusMonitor = new CommandLineStatusMonitor();
+            statusMonitor = new CommandLineStatusMonitor(System.out);
         }
     }
 
