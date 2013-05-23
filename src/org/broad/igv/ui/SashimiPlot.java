@@ -14,10 +14,7 @@ package org.broad.igv.ui;
 import com.google.common.eventbus.Subscribe;
 import org.broad.igv.feature.IExon;
 import org.broad.igv.renderer.SashimiJunctionRenderer;
-import org.broad.igv.sam.AlignmentDataManager;
-import org.broad.igv.sam.AlignmentTrack;
-import org.broad.igv.sam.SpliceJunctionFinderTrack;
-import org.broad.igv.sam.SpliceJunctionHelper;
+import org.broad.igv.sam.*;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.color.ColorPalette;
 import org.broad.igv.ui.color.ColorUtilities;
@@ -254,6 +251,11 @@ public class SashimiPlot extends JFrame{
         @Override
         protected IGVPopupMenu getPopupMenu(MouseEvent e) {
             IGVPopupMenu menu = new IGVPopupMenu();
+
+            CoverageTrack covTrack = getRenderer(this.trackComponent.track).getCoverageTrack();
+            JMenuItem setCoverageDataRange = CoverageTrack.addDataRangeItem(SashimiPlot.this, null, Arrays.asList(covTrack));
+            setCoverageDataRange.setText("Set Coverage Data Range");
+            menu.add(setCoverageDataRange);
 
             JMenuItem minJunctionCoverage = new JMenuItem("Set Min Junction Coverage");
             minJunctionCoverage.setToolTipText("Junctions below this threshold will be removed from view");

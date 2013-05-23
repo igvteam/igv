@@ -241,4 +241,8 @@ public class DataRangeDialog extends javax.swing.JDialog {
         return isLog;
     }
 
+    public DataRange.Type getDataRangeType(){
+        return isLog() ? DataRange.Type.LOG : DataRange.Type.LINEAR;
+    }
+
 }

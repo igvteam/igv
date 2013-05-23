@@ -106,6 +106,10 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         this.background = background;
     }
 
+    public CoverageTrack getCoverageTrack() {
+        return coverageTrack;
+    }
+
     public enum ShapeType{
         CIRCLE,
         ELLIPSE,

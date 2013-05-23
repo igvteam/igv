@@ -674,7 +674,7 @@ public class CoverageTrack extends AbstractTrack {
 
         addAutoscaleItem(popupMenu);
         addLogScaleItem(popupMenu);
-        dataRangeItem = addDataRangeItem(popupMenu, tmp);
+        dataRangeItem = addDataRangeItem(IGV.getMainFrame(), popupMenu, tmp);
 
         this.addSnpTresholdItem(popupMenu);
 
@@ -707,7 +707,7 @@ public class CoverageTrack extends AbstractTrack {
     }
 
 
-    public JMenuItem addDataRangeItem(JPopupMenu menu, final Collection<Track> selectedTracks) {
+    public static JMenuItem addDataRangeItem(final Frame parentFrame, JPopupMenu menu, final Collection<? extends Track> selectedTracks) {
         JMenuItem maxValItem = new JMenuItem("Set Data Range");
 
         maxValItem.addActionListener(new ActionListener() {
@@ -716,7 +716,7 @@ public class CoverageTrack extends AbstractTrack {
                 if (selectedTracks.size() > 0) {
 
                     DataRange prevAxisDefinition = selectedTracks.iterator().next().getDataRange();
-                    DataRangeDialog dlg = new DataRangeDialog(IGV.getMainFrame(), prevAxisDefinition);
+                    DataRangeDialog dlg = new DataRangeDialog(parentFrame, prevAxisDefinition);
                     dlg.setHideMid(true);
                     dlg.setVisible(true);
                     if (!dlg.isCanceled()) {
@@ -726,19 +726,18 @@ public class CoverageTrack extends AbstractTrack {
                         if (mid < min) mid = min;
                         else if (mid > max) mid = max;
                         DataRange dataRange = new DataRange(min, mid, max);
-                        dataRange.setType(getDataRange().getType());
+                        dataRange.setType(dlg.getDataRangeType());
 
-                        // dlg.isFlipAxis());
                         for (Track track : selectedTracks) {
                             track.setDataRange(dataRange);
                         }
-                        IGV.getMainFrame().repaint();
+                        parentFrame.repaint();
                     }
                 }
 
             }
         });
-        menu.add(maxValItem);
+        if(menu != null) menu.add(maxValItem);
 
         return maxValItem;
     }
