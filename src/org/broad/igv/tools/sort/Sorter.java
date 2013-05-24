@@ -34,8 +34,10 @@ public abstract class Sorter {
     static private Logger log = Logger.getLogger(Sorter.class);
 
     static int MAX_RECORDS_IN_RAM = 500000;
-    File inputFile;
-    File outputFile;
+    protected File inputFile;
+
+    private File outputFile;
+    private boolean writeStdOut = false;
     private int maxRecords = MAX_RECORDS_IN_RAM;
 
     /**
@@ -133,9 +135,15 @@ public abstract class Sorter {
         }
     }
 
+    /**
+     *
+     * @param inputFile
+     * @param outputFile If null, we write to stdout
+     */
     public Sorter(File inputFile, File outputFile) {
         this.inputFile = inputFile;
         this.outputFile = outputFile;
+        this.writeStdOut = outputFile == null;
         this.tmpDir = new File(System.getProperty("java.io.tmpdir"), System.getProperty("user.name"));
 
         System.setProperty("snappy.disable", "true");
@@ -151,7 +159,13 @@ public abstract class Sorter {
 
         try {
             fis = new FileInputStream(inputFile);
-            writer = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
+            Writer rawWriter;
+            if(writeStdOut){
+                rawWriter = new OutputStreamWriter(System.out);
+            }else{
+                rawWriter = new FileWriter(this.outputFile);
+            }
+            writer = new PrintWriter(new BufferedWriter(rawWriter));
 
             SortableRecordCodec codec = new SortableRecordCodec();
 
@@ -215,5 +229,9 @@ public abstract class Sorter {
 
     public void setMaxRecords(int maxRecords) {
         this.maxRecords = maxRecords;
+    }
+
+    public void setWriteStdOut(boolean writeStdOut) {
+        this.writeStdOut = writeStdOut;
     }
 }

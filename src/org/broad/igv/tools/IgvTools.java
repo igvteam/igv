@@ -937,7 +937,8 @@ public class IgvTools {
 
         userMessageWriter.println("Sorting " + ifile + "  -> " + ofile);
         File inputFile = new File(ifile);
-        File outputFile = new File(ofile);
+        boolean writeStdOut = ofile.equals(STDOUT_FILE_STR);
+        File outputFile = writeStdOut ? null : new File(ofile);
         Sorter sorter = Sorter.getSorter(inputFile, outputFile);
         if (tmpDirName != null && tmpDirName.trim().length() > 0) {
             File tmpDir = new File(tmpDirName);
@@ -949,12 +950,13 @@ public class IgvTools {
         }
 
         sorter.setMaxRecords(maxRecords);
+
         try {
             sorter.run();
         } catch (Exception e) {
             e.printStackTrace();
             // Delete output file as its probably corrupt
-            if (outputFile.exists()) {
+            if (writeStdOut && outputFile.exists()) {
                 outputFile.delete();
             }
         }

@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 import util.IGVTestRunner;
 
 import java.io.IOException;
+import java.io.PrintStream;
 
 
 /**
@@ -33,6 +34,8 @@ import java.io.IOException;
 public class AbstractHeadlessTest {
 
     protected static Genome genome;
+
+    protected PrintStream oldOut;
 
     @Rule
     public TestRule testTimeout = new Timeout((int) 30e3);
@@ -52,12 +55,13 @@ public class AbstractHeadlessTest {
 
     @Before
     public void setUp() throws Exception {
-
+        oldOut = System.out;
     }
 
     @After
     public void tearDown() throws Exception {
         TestUtils.clearOutputDir();
+        System.setOut(oldOut);
     }
 
 
