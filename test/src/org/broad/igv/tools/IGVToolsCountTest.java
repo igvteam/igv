@@ -34,9 +34,7 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.*;
 import java.util.*;
 
 import static junit.framework.Assert.*;
@@ -65,20 +63,60 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testCountTDF() throws Exception {
+    public void testCountBEDoutTDF() throws Exception {
         String inputFile = TestUtils.DATA_DIR + "bed/Unigene.sample.sorted.bed";
         tstCountStrandOpts(inputFile, "testtdf", "tdf", null, -1, -1);
     }
 
     @Test
-    public void testCountWIG() throws Exception {
+    public void testCountBEDoutWig() throws Exception {
         String inputFile = TestUtils.DATA_DIR + "bed/Unigene.sample.sorted.bed";
         tstCountStrandOpts(inputFile, "testwig", "wig", null, -1, -1);
         tstCountStrandMapOpts(inputFile, "testwig", "wig", null, -1, -1);
     }
 
     @Test
-    public void testCountWIG_region() throws Exception {
+    public void testCountBEDstdoutWig() throws Exception {
+        String inputFile = TestUtils.DATA_DIR + "bed/Unigene.sample.sorted.bed";
+
+        //Write to a file
+        String fileOutArg = TestUtils.DATA_DIR + "out/testfilewig.wig";
+        String input = "count " + inputFile + " " + fileOutArg + " " + hg18id;
+        String[] args = input.split("\\s+");
+        igvTools.run(args);
+
+        //Write to stdout. We redirect
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        PrintStream oldOut = System.out;
+        System.setOut(new PrintStream(os));
+
+        input = "count " + inputFile + " " + IgvTools.STDOUT_FILE_STR + " " + hg18id;
+        args = input.split("\\s+");
+        (new IgvTools()).run(args);
+
+        System.setOut(oldOut);
+
+        BufferedReader fiReader = new BufferedReader(new FileReader(fileOutArg));
+        BufferedReader strReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(os.toByteArray())));
+
+        String fiLine = null;
+        String strLine = null;
+        int lineCount = 0;
+        while(true){
+            fiLine = fiReader.readLine();
+            strLine = strReader.readLine();
+
+            assertEquals(fiLine, strLine);
+            lineCount++;
+
+            if(fiLine == null || strLine == null) break;
+        }
+
+        assertTrue(lineCount > 10);
+    }
+
+    @Test
+    public void testCountBED_region() throws Exception {
         String inputFile = TestUtils.DATA_DIR + "bed/Unigene.sample.sorted.bed";
         tstCountStrandOpts(inputFile, "testwig", "wig", "chr2", 178709699, 179008373);
         tstCountStrandMapOpts(inputFile, "testwig", "wig", "chr2", 178709699, 179008373);
@@ -143,7 +181,7 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
                 opt += " --windowSize " + winsize + " --query " + chr + ":" + start + "-" + end;
             }
 
-            //In case me modify the option for querying as above
+            //In case we modify the option for querying as above
             if (ind == 0) refOpt = opt;
 
             String fullout = outputFile + ind + "." + outputExt;

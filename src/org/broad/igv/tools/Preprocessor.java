@@ -9,10 +9,6 @@
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.broad.igv.tools;
 
 import org.apache.log4j.Logger;
@@ -31,6 +27,7 @@ import org.broad.igv.util.collections.IntArrayList;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.*;
 
 /**
@@ -82,16 +79,17 @@ public class Preprocessor implements DataConsumer {
                         int sizeEstimate,
                         StatusMonitor monitor) {
 
-        this.statusMonitor = monitor;
         this.outputFile = outputFile;
         this.genome = genome;
         this.windowFunctions = windowFunctions;
         this.sizeEstimate = sizeEstimate;
         this.genome = genome;
-        allDataStats = new ListAccumulator(allDataFunctions);
+        this.statusMonitor = monitor;
 
+        allDataStats = new ListAccumulator(allDataFunctions);
         if (statusMonitor == null) {
-            statusMonitor = new CommandLineStatusMonitor(System.out);
+            PrintStream monStream = this.outputFile == null ? System.err : System.out;
+            statusMonitor = new CommandLineStatusMonitor(monStream);
         }
     }
 
@@ -395,12 +393,12 @@ public class Preprocessor implements DataConsumer {
 
 
             if (start > tileEnd) {
-                log.info("Warning: start position > tile end");
+                log.warn("Warning: start position > tile end");
 
             }
 
             if (end < tileStart) {
-                log.info("Warning: end position > tile end");
+                log.warn("Warning: end position > tile end");
             }
 
 

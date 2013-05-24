@@ -8,11 +8,6 @@
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  */
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.broad.igv.tools;
 
 import net.sf.samtools.util.CloseableIterator;
@@ -28,10 +23,7 @@ import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.tools.parsers.DataConsumer;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -153,6 +145,11 @@ public class CoverageCounter {
 
     private final static Set<Byte> nucleotidesKeep = new HashSet<Byte>();
     private final static byte[] nucleotides = new byte[]{'A', 'C', 'G', 'T', 'N'};
+
+    /**
+     * Whether to write wig data to stdout
+     */
+    private boolean writeStdOut;
 
     static {
         for (byte b : nucleotides) {
@@ -281,7 +278,7 @@ public class CoverageCounter {
         ReadCounter counter = null;
 
         WigWriter wigWriter = null;
-        if (wigFile != null) {
+        if (wigFile != null || writeStdOut) {
             wigWriter = new WigWriter(wigFile, windowSize);
         }
 
@@ -475,6 +472,10 @@ public class CoverageCounter {
             }
         }
         return trackNames;
+    }
+
+    public void setWriteStdOut(boolean writeStdOut) {
+        this.writeStdOut = writeStdOut;
     }
 
     class ReadCounter {
@@ -712,7 +713,13 @@ public class CoverageCounter {
         WigWriter(File file, int step) throws IOException {
             this.step = step;
             this.span = step;
-            pw = new PrintWriter(new FileWriter(file));
+            Writer writer;
+            if(file != null){
+                writer = new FileWriter(file);
+            }else{
+                writer = new OutputStreamWriter(System.out);
+            }
+            pw = new PrintWriter(writer);
         }
 
         public void addData(String chr, int start, int end, float[] data) {

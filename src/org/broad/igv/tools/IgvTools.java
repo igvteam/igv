@@ -78,6 +78,13 @@ public class IgvTools {
      * permanently log should use {@link #log}
      */
     static PrintStream userMessageWriter = System.out;
+    private static final String CONSOLE_APPENDER_NAME = "console";
+
+    /**
+     * String used in place of output file path to indicate output
+     * should be to stdout
+     */
+    static final String STDOUT_FILE_STR = "stdout";
 
     public static String getVersionString() {
         return Globals.applicationString();
@@ -169,30 +176,33 @@ public class IgvTools {
     }
 
     private static void initLogger() {
-        RollingFileAppender fileAppender = new RollingFileAppender();
-        PatternLayout fileLayout = new PatternLayout();
-        fileLayout.setConversionPattern("%p [%d{ISO8601}] [%F:%L]  %m%n");
-        fileAppender.setName("R");
-        fileAppender.setFile("igv.log");
-        fileAppender.setThreshold(Level.ALL);
-        fileAppender.setMaxFileSize("10KB");
-        fileAppender.setMaxBackupIndex(1);
-        fileAppender.setAppend(true);
-        fileAppender.activateOptions();
-        fileAppender.setLayout(fileLayout);
+        if(Logger.getRootLogger().getAppender("R") == null){
+            RollingFileAppender fileAppender = new RollingFileAppender();
+            PatternLayout fileLayout = new PatternLayout();
+            fileLayout.setConversionPattern("%p [%d{ISO8601}] [%F:%L]  %m%n");
+            fileAppender.setName("R");
+            fileAppender.setFile("igv.log");
+            fileAppender.setThreshold(Level.ALL);
+            fileAppender.setMaxFileSize("10KB");
+            fileAppender.setMaxBackupIndex(1);
+            fileAppender.setAppend(true);
+            fileAppender.activateOptions();
+            fileAppender.setLayout(fileLayout);
 
-        Logger.getRootLogger().addAppender(fileAppender);
+            Logger.getRootLogger().addAppender(fileAppender);
+        }
 
-        PatternLayout consoleLayout = new PatternLayout();
-        consoleLayout.setConversionPattern("m%n");
-        ConsoleAppender consoleAppender = new ConsoleAppender();
-        consoleAppender.setThreshold(Level.INFO);
-        //TODO Allow user to direct output to system.err, so file output can be to stdout
-        //consoleAppender.setTarget("System.err");
-        consoleAppender.activateOptions();
-        consoleAppender.setLayout(consoleLayout);
+        if(Logger.getRootLogger().getAppender(CONSOLE_APPENDER_NAME) == null){
+            PatternLayout consoleLayout = new PatternLayout();
+            consoleLayout.setConversionPattern("%m%n");
+            ConsoleAppender consoleAppender = new ConsoleAppender();
+            consoleAppender.setThreshold(Level.INFO);
+            consoleAppender.setName(CONSOLE_APPENDER_NAME);
+            consoleAppender.activateOptions();
+            consoleAppender.setLayout(consoleLayout);
 
-        Logger.getRootLogger().addAppender(consoleAppender);
+            Logger.getRootLogger().addAppender(consoleAppender);
+        }
     }
 
 
@@ -206,7 +216,6 @@ public class IgvTools {
     public static void main(String[] argv) {
 
         try {
-            initLogger();
             Globals.setHeadless(true);
 
             (new IgvTools()).run(argv);
@@ -214,12 +223,13 @@ public class IgvTools {
             userMessageWriter.println("Done");
             System.exit(0);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             System.exit(-1);
         }
     }
 
     void run(String[] argv) {
+        initLogger();
 
         if (argv.length == 0) {
             userMessageWriter.println(usageString());
@@ -298,6 +308,14 @@ public class IgvTools {
                 validateArgsLength(nonOptionArgs, 4, basic_syntax);
                 int maxZoomValue = (Integer) parser.getOptionValue(maxZoomOption, MAX_ZOOM);
                 String ofile = nonOptionArgs[2];
+
+                //Output will be written to stdout instead of file,
+                //need to redirect user messages
+                if(ofile.equals(STDOUT_FILE_STR)){
+                    userMessageWriter = System.err;
+                    ((ConsoleAppender) Logger.getRootLogger().getAppender(CONSOLE_APPENDER_NAME)).setTarget("System.err");
+                }
+
                 String genomeId = nonOptionArgs[3];
 
                 boolean isGCT = typeString.endsWith("gct") || typeString.equals("mage-tab");
@@ -711,17 +729,16 @@ public class IgvTools {
         // Multiple files allowed for count command (a tdf and a wig)
         File tdfFile = null;
         File wigFile = null;
+        boolean wigStdOut = false;
         String[] files = ofile.split(",");
-        if (files[0].endsWith("wig")) {
-            wigFile = new File(files[0]);
-        } else {
-            tdfFile = new File(files[0]);
-        }
-        if (files.length > 1) {
-            if (files[1].endsWith("wig")) {
-                wigFile = new File(files[1]);
-            } else if (files[1].endsWith("tdf")) {
-                tdfFile = new File(files[1]);
+        
+        for(String fileTok: files){
+            if (fileTok.endsWith("wig")) {
+                wigFile = new File(fileTok);
+            } else if (fileTok.endsWith("tdf")) {
+                tdfFile = new File(fileTok);
+            }else if (fileTok.equals(STDOUT_FILE_STR)){
+                wigStdOut = true;
             }
         }
 
@@ -737,6 +754,7 @@ public class IgvTools {
 
             CoverageCounter counter = new CoverageCounter(ifile, p, windowSizeValue, extFactorValue, wigFile,
                     genome, queryString, minMapQuality, countFlags);
+            counter.setWriteStdOut(wigStdOut);
             counter.setPreExtFactor(preExtFactorValue);
             counter.setPosExtFactor(postExtFactorValue);
 
@@ -752,11 +770,11 @@ public class IgvTools {
 
         } catch (Exception e) {
             // Delete the output file(s) as they are probably corrupt
-            e.printStackTrace();
-            if (tdfFile.exists()) {
+            log.error(e.getMessage(), e);
+            if (tdfFile != null && tdfFile.exists()) {
                 tdfFile.delete();
             }
-            if (wigFile.exists()) {
+            if (tdfFile != null && wigFile.exists()) {
                 wigFile.delete();
             }
         }

@@ -418,12 +418,6 @@ public class IgvToolsGui extends JDialog {
         swingWorker.execute();
     }
 
-
-    /*
-    public static void doCount(String ifile, String ofile, String genomeId, int maxZoomValue, String wfsString,
-                               int windowSizeValue, int extFactorValue, int strandOption) throws IOException {
-
-     */
     private void doCount() {
 
         SwingWorker swingWorker = new IgvToolsSwingWorker() {
@@ -451,6 +445,7 @@ public class IgvToolsGui extends JDialog {
                     igvTools.doCount(ifile, ofile, genomeId, maxZoomValue, wfs, windowSize, extFactor,
                             preExtFactor, postExtFactor, null, null, 0, 0);
                 } catch (Exception e) {
+                    log.error(e.getMessage(), e);
                     showMessage("Error: " + e.getMessage());
                 }
 
