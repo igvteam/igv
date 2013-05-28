@@ -11,6 +11,7 @@
 
 package org.broad.igv.cli_plugin;
 
+import org.broad.igv.data.DataTile;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.sam.AlignmentDataManager;
@@ -51,7 +52,7 @@ public class CufflinksPluginTest extends AbstractPluginTest{
      * @param inFile
      * @return The transcripts.gtf file cufflinks calculated
      */
-    private Iterator<Feature> basicRunCufflinks(String chr, int start, int end, File inFile) throws Exception{
+    private List<Object> basicRunCufflinks(String chr, int start, int end, File inFile) throws Exception{
 
         //Load some alignment data
         ResourceLocator locator = new ResourceLocator(inFile.getAbsolutePath());
@@ -85,9 +86,11 @@ public class CufflinksPluginTest extends AbstractPluginTest{
 
         List<String> commands = Arrays.asList(toolPath);
 
-        PluginFeatureSource combinedFeatureSource = new PluginFeatureSource(commands, arguments, command.outputList.get(0), pluginPath);
+        PluginFeatureSource featureSource = new PluginFeatureSource(commands, arguments, command.outputList.get(0), pluginPath);
 
-        return combinedFeatureSource.getFeatures(chr, start, end);
+        PluginDataSource geneTrackingSource = new PluginDataSource(genome, commands, arguments, command.outputList.get(1), pluginPath);
+
+        return Arrays.asList(featureSource, geneTrackingSource);
     }
 
     @Test
@@ -97,11 +100,18 @@ public class CufflinksPluginTest extends AbstractPluginTest{
         int start = 151666493 - 1;
         int end = start + 10000;
         File inFile = new File(TestUtils.LARGE_DATA_DIR, "HG00171.hg18.bam");
+        List sources = basicRunCufflinks(chr, start, end, inFile);
+        PluginFeatureSource featureSource = (PluginFeatureSource) sources.get(0);
+        PluginDataSource geneTrackingSource = (PluginDataSource) sources.get(1);
 
-        Iterator<Feature> features = basicRunCufflinks(chr, start, end, inFile);
-
+        Iterator<Feature> features = featureSource.getFeatures(chr, start, end);
         int count = countNonNullFeatures(features);
         assertTrue("No features read" , count > 0);
+
+        assertTrue("No longest feature", geneTrackingSource.getLongestFeature(chr) > 0);
+        DataTile dataTile = geneTrackingSource.getRawData(chr, start, end);
+        assertNotNull("No fpkm data returned", dataTile);
+        assertFalse(dataTile.isEmpty());
 
     }
 
@@ -124,7 +134,7 @@ public class CufflinksPluginTest extends AbstractPluginTest{
         File inFile = new File(TestUtils.DATA_DIR + "sam", "cufflinks_test_data.sam");
         TestUtils.createIndex(inFile.getAbsolutePath());
 
-        Iterator<Feature> features = basicRunCufflinks(chr, start, end, inFile);
+        Iterator<Feature> features = ((PluginFeatureSource) basicRunCufflinks(chr, start, end, inFile).get(0)).getFeatures(chr, start, end);
 
         List<Feature> combinedFeatures = new GFFFeatureSource.GFFCombiner().addFeatures(features).combineFeatures();
 

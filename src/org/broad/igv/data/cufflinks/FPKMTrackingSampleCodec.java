@@ -35,6 +35,11 @@ public class FPKMTrackingSampleCodec extends CufflinksCodec<FPKMSampleValue>  im
 
     @Override
     public FPKMSampleValue decode(String line) {
-        return trackingCodec.decode(line).getSampleValue(0);
+        FPKMValue val = trackingCodec.decode(line);
+        if(val != null){
+            return val.getSampleValue(0);
+        }else{
+            return null;
+        }
     }
 }
