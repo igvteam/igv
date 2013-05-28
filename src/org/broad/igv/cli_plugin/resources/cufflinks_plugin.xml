@@ -23,9 +23,9 @@
             <output name="Transcripts Track">
                 <parser source="$outdir/transcripts.gtf" decodingCodec="org.broad.igv.cli_plugin.CufflinksTranscriptDecoder"/>
             </output>
-            <!--output name="Gene FPKM Track" type="DataSourceTrack">
-                <parser source="$outdir/genes.fpkm_tracking" format="fpkm_tracking"/>
-            </output-->
+            <output name="Gene FPKM Track" type="DataSourceTrack">
+                <parser source="$outdir/genes.fpkm_tracking" decodingCodec="org.broad.igv.data.cufflinks.FPKMTrackingSampleCodec"/>
+            </output>
         </command>
 
     </tool>
