@@ -583,7 +583,7 @@ public class TrackLoader {
         final String s = path.toLowerCase();
         List<DataTrack> cuffTracks = new ArrayList<DataTrack>();
         if (s.endsWith("fpkm_tracking")) {
-            FpkmTrackingCodec codec = new FpkmTrackingCodec(path);
+            FPKMTrackingCodec_tmp codec = new FPKMTrackingCodec_tmp(path);
             List<FPKMValue> values = CufflinksParser.parse(codec, path);
             for(int sampleIndex = 0; sampleIndex < codec.getNumSamples(); sampleIndex++){
                 CufflinksDataSource ds = new CufflinksDataSource(sampleIndex, values, genome);

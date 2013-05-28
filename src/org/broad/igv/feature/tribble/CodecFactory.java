@@ -13,7 +13,7 @@ package org.broad.igv.feature.tribble;
 
 import net.sf.samtools.util.BlockCompressedInputStream;
 import org.apache.log4j.Logger;
-import org.broad.igv.data.cufflinks.FpkmTrackingCodec;
+import org.broad.igv.data.cufflinks.FPKMTrackingCodec_tmp;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.gwas.EQTLCodec;
 import org.broad.igv.peaks.PeakCodec;
@@ -99,7 +99,7 @@ public class CodecFactory {
         } else if(fn.endsWith(".eqtl")) {
             return new EQTLCodec(genome);
         } else if (fn.endsWith("fpkm_tracking")) {
-            return new FpkmTrackingCodec(path);
+            return new FPKMTrackingCodec_tmp(path);
         //} else if (fn.endsWith("gene_exp.diff") || fn.endsWith("cds_exp.diff")) {
         //    return new ExpDiffCodec(path);
         }else {

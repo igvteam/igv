@@ -21,9 +21,9 @@ import org.broad.igv.util.ParsingUtils;
 * @author jacob
 * @date 2013-Apr-18
 */
-public class FpkmTrackingCodec extends CufflinksCodec<FPKMValue>{
+public class FPKMTrackingCodec_tmp extends CufflinksCodec<FPKMValue>{
 
-    private static Logger log = Logger.getLogger(FpkmTrackingCodec.class);
+    private static Logger log = Logger.getLogger(FPKMTrackingCodec_tmp.class);
 
     int geneColumn = 4;
     int locusColumn  = 6;
@@ -33,7 +33,7 @@ public class FpkmTrackingCodec extends CufflinksCodec<FPKMValue>{
 
     private int numSamples = 1;
 
-    public FpkmTrackingCodec(String path){
+    public FPKMTrackingCodec_tmp(String path){
         super(FPKMValue.class, path);
     }
 
