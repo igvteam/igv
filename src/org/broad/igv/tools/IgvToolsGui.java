@@ -396,9 +396,8 @@ public class IgvToolsGui extends JDialog {
 
     private void doSort() {
         // Sort is not interruptible, and there is no provision for progress.  So use a thread & wait cursor
-
         runButton.setEnabled(false);
-        SwingWorker swingWorker = new SwingWorker() {
+        SwingWorker swingWorker = new IgvToolsSwingWorker() {
 
             @Override
             protected Object doInBackground() {
@@ -414,26 +413,14 @@ public class IgvToolsGui extends JDialog {
 
                 return null;
             }
-
-            @Override
-            protected void done() {
-                runButton.setEnabled(true);
-                setCursor(Cursor.getDefaultCursor());
-            }
         };
 
         swingWorker.execute();
     }
 
-
-    /*
-    public static void doCount(String ifile, String ofile, String genomeId, int maxZoomValue, String wfsString,
-                               int windowSizeValue, int extFactorValue, int strandOption) throws IOException {
-
-     */
     private void doCount() {
 
-        SwingWorker swingWorker = new SwingWorker() {
+        SwingWorker swingWorker = new IgvToolsSwingWorker() {
 
             @Override
             protected Object doInBackground() {
@@ -458,16 +445,11 @@ public class IgvToolsGui extends JDialog {
                     igvTools.doCount(ifile, ofile, genomeId, maxZoomValue, wfs, windowSize, extFactor,
                             preExtFactor, postExtFactor, null, null, 0, 0);
                 } catch (Exception e) {
+                    log.error(e.getMessage(), e);
                     showMessage("Error: " + e.getMessage());
                 }
 
                 return null;
-            }
-
-            @Override
-            protected void done() {
-                runButton.setEnabled(true);
-                setCursor(Cursor.getDefaultCursor());
             }
         };
 
@@ -476,7 +458,7 @@ public class IgvToolsGui extends JDialog {
 
     private void doTile() {
 
-        SwingWorker swingWorker = new SwingWorker() {
+        SwingWorker swingWorker = new IgvToolsSwingWorker() {
 
             @Override
             protected Object doInBackground() {
@@ -499,14 +481,7 @@ public class IgvToolsGui extends JDialog {
 
                 return null;
             }
-
-            @Override
-            protected void done() {
-                runButton.setEnabled(true);
-                setCursor(Cursor.getDefaultCursor());
-            }
         };
-
         swingWorker.execute();
     }
 
@@ -514,7 +489,7 @@ public class IgvToolsGui extends JDialog {
 
     private void doIndex() {
 
-        SwingWorker swingWorker = new SwingWorker() {
+        SwingWorker swingWorker = new IgvToolsSwingWorker() {
 
             @Override
             protected Object doInBackground() {
@@ -532,12 +507,6 @@ public class IgvToolsGui extends JDialog {
                 }
 
                 return null;
-            }
-
-            @Override
-            protected void done() {
-                runButton.setEnabled(true);
-                setCursor(Cursor.getDefaultCursor());
             }
         };
 
@@ -1072,5 +1041,15 @@ public class IgvToolsGui extends JDialog {
     private JTextArea outputText;
     private JProgressBar progressBar;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
+
+    private abstract class IgvToolsSwingWorker extends SwingWorker{
+
+        @Override
+        protected void done() {
+            runButton.setEnabled(true);
+            setCursor(Cursor.getDefaultCursor());
+            updateTextArea("Done");
+        }
+    }
 
 }

@@ -68,8 +68,15 @@ public class TDFWriter {
         }
         this.compressed = compressed;
 
-
         try {
+//            OutputStream os;
+//            if(file != null){
+//                os = new FileOutputStream(file);
+//            }else{
+//                //TODO be able to write TDF to output stream. Would need to buffer because
+//                //index position is at the beginning.
+//                os = System.out;
+//            }
             fos = new BufferedOutputStream(new FileOutputStream(file));
             writeHeader(genomeId, trackType, trackLine, trackNames, windowFunctions);
 
@@ -77,8 +84,8 @@ public class TDFWriter {
             groupCache.put(rootGroup.getName(), rootGroup);
 
         } catch (IOException ex) {
-            log.error("Error creating file: " + file.getAbsolutePath(), ex);
-            throw new DataLoadException("Error creating file", file.getAbsolutePath());
+            log.error("Error opening output stream to file: " + file, ex);
+            throw new DataLoadException("Error creating file", "" + file);
         }
 
         compressionUtils = new CompressionUtils();
@@ -161,7 +168,7 @@ public class TDFWriter {
             writeIndexPosition(indexPosition, nbytes);
 
         } catch (IOException ex) {
-            log.error("Error closing file");
+            log.error("Error closing file", ex);
         }
     }
 
@@ -242,9 +249,6 @@ public class TDFWriter {
             write(bytes);
             int nBytes = bytes.length;
 
-            //tile.writeTo(fos);
-            //int nBytes = (int) (fos.bytesWritten() - pos); // bytes.length;
-
             dataset.tileSizes[tileNumber] = nBytes;
         } else {
             // The occasional tile number == tile array size is expected, but tile
@@ -297,7 +301,7 @@ public class TDFWriter {
         }
 
         // group index
-        System.out.println("Group idx: " + groupIndex.size());
+        log.info("Group idx: " + groupIndex.size());
         buffer.putInt(groupIndex.size());
         for (Map.Entry<String, IndexEntry> entry : groupIndex.entrySet()) {
             buffer.putNullTerminatedString(entry.getKey());

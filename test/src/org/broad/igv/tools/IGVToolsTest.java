@@ -330,17 +330,36 @@ public class IGVToolsTest extends AbstractHeadlessTest {
 
     @Test
     public void testSort() throws Exception {
+        tstSort(false);
+    }
+
+    @Test
+    public void testSortStdout() throws Exception {
+        tstSort(true);
+    }
+
+    public void tstSort(boolean writeToStdOut) throws Exception {
         String inputFiname = "Unigene.unsorted.bed";
         String inputFile = TestUtils.DATA_DIR + "bed/" + inputFiname;
         String outputFile = TestUtils.TMP_OUTPUT_DIR + inputFiname + ".sorted";
         File oFile = new File(outputFile);
         oFile.deleteOnExit();
+        String outputArg = outputFile;
 
-        String input = "sort --tmpDir=./ --maxRecords=50 " + inputFile + " " + outputFile;
+        //This looks a bit funny, but for ease of testing we redirect stdout to a file
+        //Mostly just concerned about spurious log statements getting into the file
+        if(writeToStdOut){
+            System.setOut(new PrintStream(new FileOutputStream(oFile)));
+            outputArg = IgvTools.STDOUT_FILE_STR;
+        }
+
+        String input = "sort --tmpDir=./ --maxRecords=50 " + inputFile + " " + outputArg;
         igvTools.run(input.split("\\s+"));
+
         int numlines = SorterTest.checkFileSorted(oFile, 0, 1);
         assertEquals(71, numlines);
     }
+
 
     /**
      * This test could stand to be improved, but it's difficult to test math.

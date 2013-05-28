@@ -14,6 +14,7 @@ package org.broad.igv.tools.sort;
 import jargs.gnu.CmdLineParser;
 import net.sf.samtools.util.CloseableIterator;
 import net.sf.samtools.util.SortingCollection;
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.feature.tribble.MUTCodec;
 import org.broad.igv.gwas.GWASParser;
@@ -30,9 +31,13 @@ import java.util.Comparator;
  */
 public abstract class Sorter {
 
+    static private Logger log = Logger.getLogger(Sorter.class);
+
     static int MAX_RECORDS_IN_RAM = 500000;
-    File inputFile;
-    File outputFile;
+    protected File inputFile;
+
+    private File outputFile;
+    private boolean writeStdOut = false;
     private int maxRecords = MAX_RECORDS_IN_RAM;
 
     /**
@@ -44,12 +49,10 @@ public abstract class Sorter {
 
     public static Sorter getSorter(String[] argv) {
 
-
         if (argv.length < 2) {
             System.out.println(usageString);
             System.exit(-1);
         }
-
 
         CmdLineParser parser = new CmdLineParser();
         CmdLineParser.Option tmpDirOption = parser.addStringOption('t', "tmpDir");
@@ -58,14 +61,16 @@ public abstract class Sorter {
         try {
             parser.parse(argv);
         } catch (CmdLineParser.OptionException e) {
-            System.err.println("Error parsing command line " + e.getMessage());
+            String msg = "Error parsing command line " + e.getMessage();
+            log.error(msg, e);
         }
         String[] nonOptionArgs = parser.getRemainingArgs();
 
         File inputFile = new File(nonOptionArgs[0]);
         if (!inputFile.exists()) {
-            System.out.println("Error: " + inputFile.getAbsolutePath() + " does not exist.  Exiting");
-            System.exit(-1);
+            String msg = "Error: " + inputFile.getAbsolutePath() + " does not exist.";
+            log.error(msg);
+            throw new RuntimeException(msg);
         }
 
         File outputFile = new File(nonOptionArgs[1]);
@@ -76,8 +81,9 @@ public abstract class Sorter {
         if (tmpDirName != null) {
             File tmpDir = new File(tmpDirName);
             if (!tmpDir.exists()) {
-                System.err.println("Error: tmp directory: " + tmpDir.getAbsolutePath() + " does not exist.");
-                System.exit(-1);
+                String msg = "Error: tmp directory: " + tmpDir.getAbsolutePath() + " does not exist.";
+                log.error(msg);
+                throw new RuntimeException(msg);
             }
             sorter.setTmpDir(tmpDir);
         }
@@ -88,7 +94,7 @@ public abstract class Sorter {
             try {
                 mr = Integer.parseInt(maxRecordsString);
             } catch (NumberFormatException e) {
-                System.out.println("Warning: max records is not an integer: (" + maxRecordsString + ").  Setting" +
+                log.warn("Warning: max records is not an integer: (" + maxRecordsString + ").  Setting" +
                         "max records to " + MAX_RECORDS_IN_RAM);
                 mr = MAX_RECORDS_IN_RAM;
             }
@@ -124,14 +130,20 @@ public abstract class Sorter {
         } else if (MUTCodec.isMutationAnnotationFile(inputFile.getAbsolutePath())) {
             return new MUTSorter(inputFile, outputFile);
         } else {
-            System.out.println("Unknown file type or sorting not supported for: " + inputFile.getName());
+            log.error("Unknown file type or sorting not supported for: " + inputFile.getName());
             return null;
         }
     }
 
+    /**
+     *
+     * @param inputFile
+     * @param outputFile If null, we write to stdout
+     */
     public Sorter(File inputFile, File outputFile) {
         this.inputFile = inputFile;
         this.outputFile = outputFile;
+        this.writeStdOut = outputFile == null;
         this.tmpDir = new File(System.getProperty("java.io.tmpdir"), System.getProperty("user.name"));
 
         System.setProperty("snappy.disable", "true");
@@ -147,7 +159,13 @@ public abstract class Sorter {
 
         try {
             fis = new FileInputStream(inputFile);
-            writer = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
+            Writer rawWriter;
+            if(writeStdOut){
+                rawWriter = new OutputStreamWriter(System.out);
+            }else{
+                rawWriter = new FileWriter(this.outputFile);
+            }
+            writer = new PrintWriter(new BufferedWriter(rawWriter));
 
             SortableRecordCodec codec = new SortableRecordCodec();
 
@@ -211,5 +229,9 @@ public abstract class Sorter {
 
     public void setMaxRecords(int maxRecords) {
         this.maxRecords = maxRecords;
+    }
+
+    public void setWriteStdOut(boolean writeStdOut) {
+        this.writeStdOut = writeStdOut;
     }
 }
