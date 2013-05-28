@@ -76,7 +76,7 @@ public class TestUtils {
         FTPClient.READ_TIMEOUT = 60 * 1000;
 
         //Create output directory if it doesn't exist
-        File outDir = new File(DATA_DIR, "out");
+        File outDir = new File(TestUtils.TMP_OUTPUT_DIR);
         if (!outDir.exists()) {
             outDir.mkdir();
         }

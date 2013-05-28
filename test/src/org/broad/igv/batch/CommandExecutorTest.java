@@ -100,18 +100,21 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     @Test
     public void stressTestSnapshots() throws Exception{
 
-        File outFile = new File(TestUtils.TMP_OUTPUT_DIR, outFileBase + ".png");
+        String outFileName = outFileBase + ".png";
+        File outFile = new File(snapshotDir, outFileName);
         long expSize = -1;
         long margin = 0;
-        int numTrials = 100;
+        int numTrials = 10;
         for(int tri=0; tri < numTrials; tri++){
-            tstSnapshot(outFile.getAbsolutePath());
+            if(outFile.exists()) outFile.delete();
+            tstSnapshot(outFileName);
             long size = outFile.length();
             if(expSize < 0){
                 expSize = size;
                 margin = expSize / 10;
             }
-            assertTrue("File size much different than expected", Math.abs(size - expSize) < margin);
+            long sizeDiff = Math.abs(size - expSize);
+            assertTrue(String.format("File size much different than expected. Trial %d, Diff = %d, margin = %d", tri, sizeDiff, margin),  sizeDiff < margin);
         }
 
     }
