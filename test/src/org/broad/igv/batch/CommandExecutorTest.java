@@ -26,10 +26,7 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.SnapshotUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
@@ -63,14 +60,24 @@ public class CommandExecutorTest extends AbstractHeadedTest {
 
     @After
     public void tearDown() throws Exception {
-        Globals.setBatch(false);
+        super.tearDown();
     }
 
     @Test
-    public void testRegion() throws Exception {
+    public void testRegionNoname() throws Exception{
+        tstRegion(null);
+    }
+
+    @Test
+    public void testRegionName() throws Exception{
+        tstRegion("myregion");
+    }
+
+    public void tstRegion(String desc) throws Exception {
 
         String regionStr = "chr1:50-1000";
-        exec.execute("region " + regionStr);
+        String descstr = desc != null ? desc : "";
+        exec.execute("region " + regionStr + " " + descstr);
 
         Collection<RegionOfInterest> regions = IGV.getInstance().getSession().getAllRegionsOfInterest();
         assertEquals(1, regions.size());
@@ -80,6 +87,32 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         assertEquals("chr1", region.getChr());
         assertEquals(49, region.getStart());
         assertEquals(1000, region.getEnd());
+        assertEquals(descstr, region.getDescription());
+
+    }
+
+    /**
+     * Take a large number of snapshots, make sure they all
+     * actually show data.
+     * @throws Exception
+     */
+    @Ignore
+    @Test
+    public void stressTestSnapshots() throws Exception{
+
+        File outFile = new File(TestUtils.TMP_OUTPUT_DIR, outFileBase + ".png");
+        long expSize = -1;
+        long margin = 0;
+        int numTrials = 100;
+        for(int tri=0; tri < numTrials; tri++){
+            tstSnapshot(outFile.getAbsolutePath());
+            long size = outFile.length();
+            if(expSize < 0){
+                expSize = size;
+                margin = expSize / 10;
+            }
+            assertTrue("File size much different than expected", Math.abs(size - expSize) < margin);
+        }
 
     }
 

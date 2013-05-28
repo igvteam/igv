@@ -130,7 +130,7 @@ public class CommandExecutor {
                 } else if (cmd.equalsIgnoreCase("new") || cmd.equalsIgnoreCase("reset") || cmd.equalsIgnoreCase("clear")) {
                     igv.newSession();
                 } else if (cmd.equalsIgnoreCase("region")) {
-                    defineRegion(param1, param2, param3);
+                    defineRegion(param1, param2, param3, param4);
                 } else if (cmd.equalsIgnoreCase("sort")) {
                     sort(param1, param2, param3, param4);
                 } else if (cmd.equalsIgnoreCase("group")) {
@@ -547,19 +547,21 @@ public class CommandExecutor {
     }
 
 
-    private void defineRegion(String param1, String param2, String param3) {
+    private void defineRegion(String param1, String param2, String param3, String param4) {
 
         RegionOfInterest roi = null;
         if (param1 != null && param2 != null && param3 != null) {
             int start = Math.max(0, Integer.parseInt(param2) - 1);
             int end = Integer.parseInt(param3);
-            roi = new RegionOfInterest(param1, start, end, "");
+            String desc = param4 != null ? param4 : "";
+            roi = new RegionOfInterest(param1, start, end, desc);
         }
         if (param1 != null) {
             Locus locus = Locus.fromString(param1);
             if (locus != null) {
                 int start = Math.max(0, locus.getStart() - 1);
-                roi = new RegionOfInterest(locus.getChr(), start, locus.getEnd(), "");
+                String desc = param2 != null ? param2 : "";
+                roi = new RegionOfInterest(locus.getChr(), start, locus.getEnd(), desc);
 
             }
         }
