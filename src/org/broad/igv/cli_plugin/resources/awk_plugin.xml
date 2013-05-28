@@ -8,6 +8,7 @@
   ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
   ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
   -->
+<!DOCTYPE cli_plugin SYSTEM "cli_plugin.dtd">
 <cli_plugin api_version="alpha" plugin_version="0.1" name="awk"
             id="org.broad.igv.plugin.awk">
     <tool name="awk" defaultPath="awk" visible="false">
