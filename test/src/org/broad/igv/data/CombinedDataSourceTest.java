@@ -17,6 +17,7 @@ import org.broad.igv.data.seg.SegmentedAsciiDataSet;
 import org.broad.igv.data.seg.SegmentedDataSet;
 import org.broad.igv.data.seg.SegmentedDataSource;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.track.DataSourceTrack;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
@@ -116,7 +117,10 @@ public class CombinedDataSourceTest extends AbstractHeadlessTest {
         SegmentedDataSource sourceA = new SegmentedDataSource("0123-A", dsA);
         SegmentedDataSource sourceB = new SegmentedDataSource("0123-B-1", dsB);
 
-        return new CombinedDataSource(sourceA, sourceB, operation);
+        DataSourceTrack trackA = new DataSourceTrack(null, sourceA.getTrackIdentifier(), sourceA.getTrackIdentifier(), sourceA);
+        DataSourceTrack trackB = new DataSourceTrack(null, sourceB.getTrackIdentifier(), sourceB.getTrackIdentifier(), sourceB);
+
+        return new CombinedDataSource(trackA, trackB, operation);
     }
 
     private SegmentedAsciiDataSet getSegDataSet(String path){

@@ -12,6 +12,7 @@
 package org.broad.igv.data;
 
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.track.DataTrack;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
 
@@ -28,7 +29,7 @@ import java.util.List;
  */
 public class CombinedDataSource implements DataSource {
 
-    enum Operation{
+    public enum Operation{
         ADD("+"),
         SUBTRACT("-");
 
@@ -40,21 +41,21 @@ public class CombinedDataSource implements DataSource {
 
     }
 
-    DataSource source1;
-    DataSource source2;
+    DataTrack source0;
+    DataTrack source1;
 
     Operation operation = Operation.ADD;
 
-    CombinedDataSource(DataSource source1, DataSource source2, Operation operation){
+    public CombinedDataSource(DataTrack source0, DataTrack source1, Operation operation){
+        this.source0 = source0;
         this.source1 = source1;
-        this.source2 = source2;
         this.operation = operation;
     }
 
     public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom){
 
-        List<LocusScore> outerScores = this.source1.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
-        List<LocusScore> innerScores = this.source2.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
+        List<LocusScore> outerScores = this.source0.getSummaryScores(chr, startLocation, endLocation, zoom);
+        List<LocusScore> innerScores = this.source1.getSummaryScores(chr, startLocation, endLocation, zoom);
 
         int initialSize = outerScores.size() + innerScores.size();
         List<LocusScore> combinedScoresList = new ArrayList<LocusScore>(initialSize);
@@ -70,7 +71,7 @@ public class CombinedDataSource implements DataSource {
          * TODO Check efficiency
          * Assume the following tiles (no breaks)
          * outerScores: |----|--------|--------------|-------|-----------|
-         * innerScores: yyyyyxxxx|-----|-----|--------|-----------|-----------|---------|
+         * innerScores: yyyyyxxxxx|-----|-----|--------|-----------|-----------|---------|
          * combined:    |----|----|---|-|-----|------|-|-----|-----|-----|-----|---------|
          *
          * for each outerScore in outerScores:
@@ -282,28 +283,23 @@ public class CombinedDataSource implements DataSource {
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-
     public TrackType getTrackType() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return TrackType.PLUGIN;
     }
 
     public void setWindowFunction(WindowFunction statType) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        //TODO
     }
 
     public boolean isLogNormalized() {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void refreshData(long timestamp) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     public WindowFunction getWindowFunction() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return WindowFunction.none;
     }
 
     public Collection<WindowFunction> getAvailableWindowFunctions() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return new ArrayList<WindowFunction>();
     }
 }

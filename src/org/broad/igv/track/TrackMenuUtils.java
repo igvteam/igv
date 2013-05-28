@@ -11,21 +11,20 @@
 
 package org.broad.igv.track;
 
-
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import org.apache.commons.math.stat.StatUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.blat.BlatClient;
+import org.broad.igv.data.CombinedDataSource;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.*;
-import org.broad.igv.ui.DataRangeDialog;
-import org.broad.igv.ui.HeatmapScaleDialog;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.*;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -301,6 +300,61 @@ public class TrackMenuUtils {
         menu.addSeparator();
         menu.add(getChangeKMPlotItem(tracks));
 
+        if(!Globals.isProduction()){
+            for(JMenuItem item: getCombinedDataSourceItems(tracks)){
+                menu.add(item);
+            }
+        }
+
+    }
+
+    private static List<JMenuItem> getCombinedDataSourceItems(final Collection<Track> tracks) {
+
+        Iterable<DataTrack> dataTracksIter = Iterables.filter(tracks, DataTrack.class);
+        final List<DataTrack> dataTracks = Lists.newArrayList(dataTracksIter);
+        JMenuItem addItem = new JMenuItem("Sum Tracks");
+        JMenuItem subItem = new JMenuItem("Subtract Tracks");
+        boolean enableComb = dataTracks.size() == 2;
+
+        addItem.setEnabled(enableComb);
+        addItem.setEnabled(enableComb);
+
+        addItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                addCombinedDataTrack(dataTracks, CombinedDataSource.Operation.ADD);
+            }
+        });
+
+        subItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                addCombinedDataTrack(dataTracks, CombinedDataSource.Operation.SUBTRACT);
+            }
+        });
+
+        return Arrays.asList(addItem, subItem);
+    }
+
+    private static void addCombinedDataTrack(List<DataTrack> dataTracks, CombinedDataSource.Operation op){
+        String text = "";
+        switch (op){
+            case ADD:
+                text = "Sum";
+                break;
+            case SUBTRACT:
+                text = "Difference";
+                break;
+        }
+        DataTrack track0 = dataTracks.get(0);
+        DataTrack track1 = dataTracks.get(1);
+        CombinedDataSource source = new CombinedDataSource(track0, track1, op);
+
+        DataSourceTrack newTrack = new DataSourceTrack(null, track0.getId() + track1.getId() + text, text, source);
+        changeRenderer(Arrays.<Track>asList(newTrack), track0.getRenderer().getClass());
+        newTrack.setDataRange(track0.getDataRange());
+        newTrack.setColorScale(track0.getColorScale());
+        IGV.getInstance().addTracks(Arrays.<Track>asList(newTrack), PanelName.DATA_PANEL);
     }
 
     /**
