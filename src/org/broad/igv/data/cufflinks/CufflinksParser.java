@@ -35,7 +35,7 @@ public class CufflinksParser {
 
         final String s = path.toLowerCase();
         if (s.endsWith("fpkm_tracking")) {
-            AsciiFeatureCodec<FPKMValue> codec = new FPKMTrackingCodec_tmp(path);
+            AsciiFeatureCodec<FPKMValue> codec = new FPKMTrackingCodec(path);
             return parse(codec, path);
         } else if (s.endsWith("gene_exp.diff") || s.endsWith("cds_exp.diff")) {
             AsciiFeatureCodec<ExpDiffValue> codec = new ExpDiffCodec(path);

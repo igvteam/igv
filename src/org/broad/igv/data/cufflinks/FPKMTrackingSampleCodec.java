@@ -21,11 +21,11 @@ import org.broad.igv.cli_plugin.LineFeatureDecoder;
  */
 public class FPKMTrackingSampleCodec extends CufflinksCodec<FPKMSampleValue>  implements LineFeatureDecoder<FPKMSampleValue> {
 
-    private FPKMTrackingCodec_tmp trackingCodec;
+    private FPKMTrackingCodec trackingCodec;
 
     public FPKMTrackingSampleCodec() {
         super(FPKMSampleValue.class, "Plugin");
-        this.trackingCodec = new FPKMTrackingCodec_tmp(this.path);
+        this.trackingCodec = new FPKMTrackingCodec(this.path);
     }
 
     @Override
