@@ -15,6 +15,7 @@
  */
 package org.broad.igv.tools;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.util.HttpUtils;
 import org.broad.tribble.readers.AsciiLineReader;
 
@@ -30,17 +31,15 @@ import java.util.zip.GZIPInputStream;
  */
 public class TestFileGenerator {
 
-    public static void main(String[] args) {
+    static private Logger log = Logger.getLogger(TestFileGenerator.class);
 
+    public static void main(String[] args) {
         generateTestFile("/Users/jrobinso/IGV/test_25thousand.gct", true, 25000, 100);
     }
 
     enum FileType {
-
         CN, IGV, GCT, WIG
     }
-
-    ;
 
     public static void generateTestFile(
             String outputFile,
@@ -59,12 +58,11 @@ public class TestFileGenerator {
             type = FileType.IGV;
         } else if (outputFile.endsWith(".gct")) {
             type = FileType.GCT;
-
         } else if (outputFile.endsWith(".wig")) {
             type = FileType.WIG;
 
         } else {
-            System.out.println("Unsupported file type: " + outputFile);
+            log.error("Unsupported file type: " + outputFile);
         }
 
         try {
@@ -125,10 +123,8 @@ public class TestFileGenerator {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Error: " + e.getMessage());
-        } finally
-
-        {
+            log.error("Error: " + e.getMessage());
+        } finally{
             pw.close();
         }
 

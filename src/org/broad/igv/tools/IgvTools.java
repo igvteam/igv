@@ -18,10 +18,7 @@ package org.broad.igv.tools;
 
 import jargs.gnu.CmdLineParser;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.RollingFileAppender;
+import org.apache.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.GFFParser;
@@ -62,6 +59,8 @@ import java.util.*;
  */
 public class IgvTools {
 
+    static private Logger log = Logger.getLogger(IgvTools.class);
+
     static final String CMD_TILE = "tile";
     static final String CMD_TOTDF = "totdf";
     static final String CMD_COUNT = "count";
@@ -73,7 +72,19 @@ public class IgvTools {
     static final String CMD_HELP = "help";
     static final String CMD_BAMTOBED = "bamtobed";
 
-    //static Map<String, String> commandList = new HashMap<String, String>(9);
+    /**
+     * Stream for writing messages to the user, which we
+     * DO NOT want to permanently log. Anything we want to
+     * permanently log should use {@link #log}
+     */
+    static PrintStream userMessageWriter = System.out;
+    private static final String CONSOLE_APPENDER_NAME = "console";
+
+    /**
+     * String used in place of output file path to indicate output
+     * should be to stdout
+     */
+    static final String STDOUT_FILE_STR = "stdout";
 
     public static String getVersionString() {
         return Globals.applicationString();
@@ -165,18 +176,33 @@ public class IgvTools {
     }
 
     private static void initLogger() {
-        RollingFileAppender appender = new RollingFileAppender();
-        PatternLayout layout = new PatternLayout();
-        layout.setConversionPattern("%p [%d{ISO8601}] [%F:%L]  %m%n");
-        appender.setName("R");
-        appender.setFile("igv.log");
-        appender.setThreshold(Level.ALL);
-        appender.setMaxFileSize("10KB");
-        appender.setMaxBackupIndex(1);
-        appender.setAppend(true);
-        appender.activateOptions();
-        appender.setLayout(layout);
-        Logger.getRootLogger().addAppender(appender);
+        if(Logger.getRootLogger().getAppender("R") == null){
+            RollingFileAppender fileAppender = new RollingFileAppender();
+            PatternLayout fileLayout = new PatternLayout();
+            fileLayout.setConversionPattern("%p [%d{ISO8601}] [%F:%L]  %m%n");
+            fileAppender.setName("R");
+            fileAppender.setFile("igv.log");
+            fileAppender.setThreshold(Level.ALL);
+            fileAppender.setMaxFileSize("10KB");
+            fileAppender.setMaxBackupIndex(1);
+            fileAppender.setAppend(true);
+            fileAppender.activateOptions();
+            fileAppender.setLayout(fileLayout);
+
+            Logger.getRootLogger().addAppender(fileAppender);
+        }
+
+        if(Logger.getRootLogger().getAppender(CONSOLE_APPENDER_NAME) == null){
+            PatternLayout consoleLayout = new PatternLayout();
+            consoleLayout.setConversionPattern("%m%n");
+            ConsoleAppender consoleAppender = new ConsoleAppender();
+            consoleAppender.setThreshold(Level.INFO);
+            consoleAppender.setName(CONSOLE_APPENDER_NAME);
+            consoleAppender.activateOptions();
+            consoleAppender.setLayout(consoleLayout);
+
+            Logger.getRootLogger().addAppender(consoleAppender);
+        }
     }
 
 
@@ -190,24 +216,24 @@ public class IgvTools {
     public static void main(String[] argv) {
 
         try {
-            initLogger();
             Globals.setHeadless(true);
 
             (new IgvTools()).run(argv);
 
-            System.out.println("Done");
+            userMessageWriter.println("Done");
             System.exit(0);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             System.exit(-1);
         }
     }
 
     void run(String[] argv) {
+        initLogger();
 
         if (argv.length == 0) {
-            System.out.println(usageString());
-            System.out.println("Error: No arguments provided");
+            userMessageWriter.println(usageString());
+            userMessageWriter.println("Error: No arguments provided");
             return;
         }
 
@@ -215,9 +241,9 @@ public class IgvTools {
 
         if (command.equals(CMD_HELP)) {
             if (argv.length > 1) {
-                System.out.println(usageString(argv[1]));
+                userMessageWriter.println(usageString(argv[1]));
             } else {
-                System.out.println(usageString());
+                userMessageWriter.println(usageString());
             }
             return;
         }
@@ -229,7 +255,7 @@ public class IgvTools {
 
         // Do "version" now, its the only command with no arguments
         if (command.equals(CMD_VERSION)) {
-            System.out.println(getVersionString());
+            userMessageWriter.println(getVersionString());
             return;
         }
 
@@ -239,8 +265,8 @@ public class IgvTools {
         try {
             parser.parse(argv);
         } catch (CmdLineParser.OptionException e) {
-            System.err.println(e.getMessage());
-            System.out.println("Enter igvtools help " + command + " for help on this command");
+            userMessageWriter.println(e.getMessage());
+            userMessageWriter.println("Enter igvtools help " + command + " for help on this command");
             return;
         }
 
@@ -282,6 +308,14 @@ public class IgvTools {
                 validateArgsLength(nonOptionArgs, 4, basic_syntax);
                 int maxZoomValue = (Integer) parser.getOptionValue(maxZoomOption, MAX_ZOOM);
                 String ofile = nonOptionArgs[2];
+
+                //Output will be written to stdout instead of file,
+                //need to redirect user messages
+                if(ofile.equals(STDOUT_FILE_STR)){
+                    userMessageWriter = System.err;
+                    ((ConsoleAppender) Logger.getRootLogger().getAppender(CONSOLE_APPENDER_NAME)).setTarget("System.err");
+                }
+
                 String genomeId = nonOptionArgs[3];
 
                 boolean isGCT = typeString.endsWith("gct") || typeString.equals("mage-tab");
@@ -403,7 +437,7 @@ public class IgvTools {
                 throw new PreprocessingException("Unknown command: " + argv[EXT_FACTOR]);
             }
         } catch (PreprocessingException e) {
-            System.err.println(e.getMessage());
+            log.error(e.getMessage(), e);
         } catch (IOException e) {
             throw new PreprocessingException("Unexpected IO error: ", e);
         }
@@ -469,7 +503,7 @@ public class IgvTools {
         } else if (strandopt.equals("first")) {
             countFlags += CoverageCounter.STRANDS_BY_FIRST_IN_PAIR;
         } else if (strandopt.equals("second")) {
-            System.out.println("Warning: 'second' Option undocumented and may be removed in the future. BE WARNED!");
+            log.warn("Warning: 'second' Option undocumented and may be removed in the future. BE WARNED!");
             countFlags += CoverageCounter.STRANDS_BY_SECOND_IN_PAIR;
         }
         return countFlags;
@@ -490,13 +524,12 @@ public class IgvTools {
 
     private void doGCTtoIGV(String typeString, String ifile, File ofile, String probefile, int maxRecords, String tmpDirName, Genome genome) throws IOException {
 
-        System.out.println("gct -> igv: " + ifile + " -> " + ofile.getAbsolutePath());
+        userMessageWriter.println("gct -> igv: " + ifile + " -> " + ofile.getAbsolutePath());
 
         File tmpDir = null;
         if (tmpDirName != null && tmpDirName.trim().length() > 0) {
             tmpDir = new File(tmpDirName);
             if (!tmpDir.exists()) {
-                System.err.println("Error: tmp directory: " + tmpDir.getAbsolutePath() + " does not exist.");
                 throw new PreprocessingException("Error: tmp directory: " + tmpDir.getAbsolutePath() + " does not exist.");
             }
         }
@@ -513,16 +546,16 @@ public class IgvTools {
 
         if (!ifile.endsWith(".affective.csv")) validateIsTilable(typeString);
 
-        System.out.println("toTDF.  File = " + ifile);
-        System.out.println("Max zoom = " + maxZoomValue);
+        log.info("toTDF.  File = " + ifile);
+        log.info("Max zoom = " + maxZoomValue);
         if (probeFile != null && probeFile.trim().length() > 0) {
-            System.out.println("Probe file = " + probeFile);
+            log.info("Probe file = " + probeFile);
         }
-        System.out.print("Window functions: ");
+        String wfString = "Window functions: ";
         for (WindowFunction wf : windowFunctions) {
-            System.out.print(wf.toString() + " ");
+            wfString += wf.toString() + " ";
         }
-        System.out.println();
+        log.info(wfString);
 
         boolean isGCT = isGCT(typeString);
         Genome genome = loadGenome(genomeId);
@@ -531,11 +564,11 @@ public class IgvTools {
         }
         File inputFileOrDir = new File(ifile);
 
-        // Estimae the total number of lines to be parsed, for progress updates
+        // Estimate the total number of lines to be parsed, for progress updates
         int nLines = estimateLineCount(inputFileOrDir);
 
         // TODO -- move this block of code out of here, this should be done before calling this method
-        // Convert  gct files to igv format first
+        // Convert gct files to igv format first
         File deleteme = null;
         if (isGCT(typeString)) {
             File tmpDir = null;
@@ -559,7 +592,6 @@ public class IgvTools {
             inputFileOrDir = igvFile;
             deleteme = igvFile;
             typeString = ".igv";
-
         }
 
         // Convert to tdf
@@ -577,7 +609,7 @@ public class IgvTools {
             }
             p.finish();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             // Delete output file as its probably corrupt
             if (outputFile.exists()) {
                 outputFile.delete();
@@ -587,9 +619,7 @@ public class IgvTools {
                 deleteme.delete();
             }
         }
-
-        System.out.flush();
-
+        userMessageWriter.flush();
     }
 
 
@@ -631,14 +661,13 @@ public class IgvTools {
                         if (f.exists()) {
                             files.add(f);
                         } else {
-                            System.out.println("File not found: " + nextLine);
+                            log.error("File not found: " + nextLine);
                         }
                     }
                 }
                 return files;
-            } catch (Exception e) {
-                // todo -- someday create reasonable excpetion classes.  Althought, this one works
-                e.printStackTrace();
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
                 throw new RuntimeException("Error parsing input file: " + inputFileOrDir.getAbsolutePath() + " " +
                         e.getMessage());
             } finally {
@@ -646,7 +675,7 @@ public class IgvTools {
                     try {
                         br.close();
                     } catch (IOException e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                        log.error(e.getMessage(), e);
                     }
             }
         }
@@ -681,15 +710,15 @@ public class IgvTools {
                         String trackLine, String queryString, int minMapQuality, int countFlags) throws IOException {
 
 
-        System.out.println("Computing coverage.  File = " + ifile);
-        System.out.println("Max zoom = " + maxZoomValue);
-        System.out.println("Window size = " + windowSizeValue);
-        System.out.print("Window functions: ");
+        log.info("Computing coverage.  File = " + ifile);
+        log.info("Max zoom = " + maxZoomValue);
+        log.info("Window size = " + windowSizeValue);
+        String wfString = "Window functions: ";
         for (WindowFunction wf : windowFunctions) {
-            System.out.print(wf.toString() + " ");
+            wfString += wf.toString() + " ";
         }
-        System.out.println();
-        System.out.println("Ext factor = " + extFactorValue);
+        log.info(wfString);
+        log.info("Ext factor = " + extFactorValue);
 
 
         Genome genome = loadGenome(genomeId);
@@ -700,17 +729,16 @@ public class IgvTools {
         // Multiple files allowed for count command (a tdf and a wig)
         File tdfFile = null;
         File wigFile = null;
+        boolean wigStdOut = false;
         String[] files = ofile.split(",");
-        if (files[0].endsWith("wig")) {
-            wigFile = new File(files[0]);
-        } else {
-            tdfFile = new File(files[0]);
-        }
-        if (files.length > 1) {
-            if (files[1].endsWith("wig")) {
-                wigFile = new File(files[1]);
-            } else if (files[1].endsWith("tdf")) {
-                tdfFile = new File(files[1]);
+        
+        for(String fileTok: files){
+            if (fileTok.endsWith("wig")) {
+                wigFile = new File(fileTok);
+            } else if (fileTok.endsWith("tdf")) {
+                tdfFile = new File(fileTok);
+            }else if (fileTok.equals(STDOUT_FILE_STR)){
+                wigStdOut = true;
             }
         }
 
@@ -726,6 +754,7 @@ public class IgvTools {
 
             CoverageCounter counter = new CoverageCounter(ifile, p, windowSizeValue, extFactorValue, wigFile,
                     genome, queryString, minMapQuality, countFlags);
+            counter.setWriteStdOut(wigStdOut);
             counter.setPreExtFactor(preExtFactorValue);
             counter.setPosExtFactor(postExtFactorValue);
 
@@ -741,16 +770,16 @@ public class IgvTools {
 
         } catch (Exception e) {
             // Delete the output file(s) as they are probably corrupt
-            e.printStackTrace();
-            if (tdfFile.exists()) {
+            log.error(e.getMessage(), e);
+            if (tdfFile != null && tdfFile.exists()) {
                 tdfFile.delete();
             }
-            if (wigFile.exists()) {
+            if (tdfFile != null && wigFile.exists()) {
                 wigFile.delete();
             }
         }
 
-        System.out.flush();
+        userMessageWriter.flush();
     }
 
 
@@ -785,13 +814,13 @@ public class IgvTools {
         String outputFileName = (new File(outputDir, inputFile.getName())).getAbsolutePath();
 
         if (typeString.endsWith("gz")) {
-            System.out.println("Cannot index a gzipped file");
+            log.error("Cannot index a gzipped file");
             throw new PreprocessingException("Cannot index a gzipped file");
         }
 
         if (typeString.endsWith("bam")) {
             String msg = "Cannot index a BAM file. Use the samtools package for sorting and indexing BAM files.";
-            System.out.println(msg);
+            log.error(msg);
             throw new PreprocessingException(msg);
         }
 
@@ -855,7 +884,7 @@ public class IgvTools {
         } else {
             throw new DataLoadException("Unknown File Type", ifile);
         }
-        System.out.flush();
+        userMessageWriter.flush();
         return outputFileName;
 
     }
@@ -906,31 +935,32 @@ public class IgvTools {
 
     public void doSort(String ifile, String ofile, String tmpDirName, int maxRecords) {
 
-        System.out.println("Sorting " + ifile + "  -> " + ofile);
+        userMessageWriter.println("Sorting " + ifile + "  -> " + ofile);
         File inputFile = new File(ifile);
-        File outputFile = new File(ofile);
+        boolean writeStdOut = ofile.equals(STDOUT_FILE_STR);
+        File outputFile = writeStdOut ? null : new File(ofile);
         Sorter sorter = Sorter.getSorter(inputFile, outputFile);
         if (tmpDirName != null && tmpDirName.trim().length() > 0) {
             File tmpDir = new File(tmpDirName);
             if (!tmpDir.exists()) {
-                System.err.println("Error: tmp directory: " + tmpDir.getAbsolutePath() + " does not exist.");
+                log.error("Error: tmp directory: " + tmpDir.getAbsolutePath() + " does not exist.");
                 throw new PreprocessingException("Error: tmp directory: " + tmpDir.getAbsolutePath() + " does not exist.");
             }
             sorter.setTmpDir(tmpDir);
         }
 
         sorter.setMaxRecords(maxRecords);
+
         try {
             sorter.run();
         } catch (Exception e) {
             e.printStackTrace();
             // Delete output file as its probably corrupt
-            if (outputFile.exists()) {
+            if (writeStdOut && outputFile.exists()) {
                 outputFile.delete();
             }
         }
-        System.out.println("Done");
-        System.out.flush();
+        userMessageWriter.flush();
     }
 
 
@@ -981,25 +1011,6 @@ public class IgvTools {
         if (genome == null) {
             throw new PreprocessingException("Error loading: " + genomeFileOrID);
         }
-
-        // If this is a .genome file optionally file load genes
-        // GenomeManager.createGeneTrack adds features to FeatureDB, may want to refactor that
-        // but it makes more sense than here
-//        if (loadGenes && genomeFile.getAbsolutePath().endsWith(".genome")) {
-//            GenomeDescriptor descriptor = genomeManager.parseGenomeArchiveFile(genomeFile);
-//            String geneFileName = descriptor.getGeneFileName();
-//            if (geneFileName != null && geneFileName.trim().length() > 0) {
-//                FeatureParser parser = AbstractFeatureParser.getInstanceFor(geneFileName, genome);
-//                InputStream is = descriptor.getGeneStream();
-//                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-//                //Right now the parser adds these to the FeatureDB map
-//                //May want to move that someplace else
-//                List<Feature> features = parser.loadFeatures(reader, genome);
-//                is.close();
-//            }
-//        }
-
-
         return genome;
     }
 
@@ -1051,7 +1062,7 @@ public class IgvTools {
                 try {
                     funcs.add(WindowFunction.valueOf(wf));
                 } catch (Exception e) {
-                    System.err.println("Unrecognized window function: " + tokens[i]);
+                    log.error("Unrecognized window function: " + tokens[i]);
                 }
             }
             return funcs;
@@ -1090,7 +1101,7 @@ public class IgvTools {
                 return nLines;
 
             } catch (Exception e) {
-                System.err.println("Error estimating line count: " + e.getMessage());
+                userMessageWriter.println("Error estimating line count: " + e.getMessage());
                 nLines = 0;
             } finally {
                 if (reader != null) reader.close();

@@ -1,7 +1,17 @@
+/*
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.tools.converters;
 
 import net.sf.samtools.util.CloseableIterator;
-import org.broad.igv.feature.Strand;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.ReadMate;
 import org.broad.igv.sam.reader.AlignmentReader;
@@ -22,7 +32,6 @@ public class BamToBed {
 
     public static void convert(File inputBam, File outputBed, boolean properPairs) throws IOException {
 
-        System.out.println("BamToBed.  Pairs=" + properPairs);
         AlignmentReader reader = null;
         CloseableIterator<Alignment> iter = null;
         PrintWriter bedWriter = null;
@@ -54,8 +63,6 @@ public class BamToBed {
                 }
 
             }
-
-            System.out.println("Max insert size = " + maxInsertSize);
         } finally {
             if(bedWriter != null) bedWriter.close();
             if(iter != null) iter.close();
