@@ -118,11 +118,11 @@ public class BEDToolsPluginSourceTest extends AbstractPluginTest {
     public void testOperationsBED3() throws Exception {
         Map<String, Integer> expectedNumFeatures = new HashMap(6);
         expectedNumFeatures.put("intersect", 4);
-//        expectedNumFeatures.put("subtract", 2);
-//        expectedNumFeatures.put("closest", 6);
-//        expectedNumFeatures.put("window", 9);
-//        expectedNumFeatures.put("coverage", 3);
-//        expectedNumFeatures.put("multiinter", 3);
+        expectedNumFeatures.put("subtract", 2);
+        expectedNumFeatures.put("closest", 6);
+        expectedNumFeatures.put("window", 9);
+        expectedNumFeatures.put("coverage", 3);
+        expectedNumFeatures.put("multiinter", 3);
 
         for (Map.Entry<String, Integer> entry : expectedNumFeatures.entrySet()) {
             tstOperationBED3(entry.getKey(), entry.getValue());

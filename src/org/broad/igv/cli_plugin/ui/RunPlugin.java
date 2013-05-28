@@ -131,7 +131,7 @@ public class RunPlugin extends JDialog {
         this.validate();
     }
 
-    private List<Track> genNewTrack() {
+    private List<Track> genNewTracks() {
         //Retrieve the actual argument values
         LinkedHashMap<Argument, Object> argumentValues = new LinkedHashMap<Argument, Object>(argumentComponents.size());
         for (Map.Entry<Argument, ArgumentPanel> argComp : argumentComponents.entrySet()) {
@@ -171,7 +171,7 @@ public class RunPlugin extends JDialog {
     }
 
     void okButtonActionPerformed(ActionEvent e) {
-        List<Track> newTrack = genNewTrack();
+        List<Track> newTrack = genNewTracks();
         IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTracks(newTrack);
 
         this.setVisible(false);

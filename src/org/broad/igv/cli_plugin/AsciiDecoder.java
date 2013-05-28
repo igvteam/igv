@@ -55,7 +55,7 @@ public class AsciiDecoder<D extends Feature> implements FeatureDecoder<D> {
                     featuresList.add(feat);
                 }
             } catch (Exception e) {
-                log.error(e);
+                log.error(e.getMessage(), e);
                 if (strictParsing) {
                     throw new RuntimeException(e);
                 }
