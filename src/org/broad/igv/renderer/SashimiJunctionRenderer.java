@@ -432,9 +432,14 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
                 //Clear background so we aren't drawing numbers over arcs
                 int rectHeight = (int) textBounds.getHeight();
-                g2D.clearRect((int) floatX,(int) floatY - rectHeight,(int) textBounds.getWidth(), rectHeight);
 
-                g2D.drawString(text, floatX , floatY);
+                int intX = (int) floatX;
+                int intY = (int) floatY - rectHeight;
+                int w = (int) textBounds.getWidth();
+                int h = rectHeight;
+                g2D.clearRect(intX, intY, w, h);
+                GraphicUtils.drawCenteredText(text, intX, intY, w, h, g2D);
+                //g2D.drawString(text, floatX , floatY);
 
                 break;
         }
