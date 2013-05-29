@@ -35,7 +35,7 @@ public class AbstractHeadlessTest {
 
     protected static Genome genome;
 
-    protected PrintStream oldOut;
+    protected PrintStream oldOut = System.out;
 
     @Rule
     public TestRule testTimeout = new Timeout((int) 30e3);
