@@ -391,9 +391,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         Graphics2D g2D = context.getGraphics();
 
         top = trackRectangle.y;
-        final int left = trackRectangle.x;
-        final int right = (int) trackRectangle.getMaxX();
-
         Rectangle visibleRectangle = context.getVisibleRect();
 
         // A disposable rect -- note this gets modified all over the place, bad practice
@@ -402,13 +399,11 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         tmpRect.y = trackRectangle.y;
         drawBackground(g2D, tmpRect, visibleRectangle, BackgroundType.DATA);
 
-        //List<Feature> features = packedFeatures.getFeatures();
         List<PackedFeatures.FeatureRow> rows = packedFeatures.getRows();
 
         int overallFeatureRectHeight = getVariantsHeight();
         int overallSampleRectHeight = trackRectangle.height - overallFeatureRectHeight;
-        Rectangle overallSampleRect = new Rectangle(trackRectangle.x, top + overallFeatureRectHeight, trackRectangle.width,
-                overallSampleRectHeight);
+        Rectangle overallSampleRect = new Rectangle(trackRectangle.x, top + overallFeatureRectHeight, trackRectangle.width, overallSampleRectHeight);
 
         int curRowTop = top;
 
@@ -450,10 +445,9 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                     tmpRect.y = curRowTop;
                     if (tmpRect.intersects(visibleRectangle)) {
                         renderer.renderSiteBand(variant, tmpRect, x, w, context);
-
-                        renderSamples(g2D, visibleRectangle, variant, context, overallSampleRect, x, w);
                     }
 
+                    renderSamples(g2D, visibleRectangle, variant, context, overallSampleRect, x, w);
                     boolean isSelected = selectedVariant != null && selectedVariant == variant;
                     if (isSelected) {
                         Graphics2D selectionGraphics = context.getGraphic2DForColor(Color.black);
@@ -498,8 +492,8 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                     if (overallSampleRect.intersects(visibleRectangle)) {
                         renderer.renderGenotypeBandSNP(variant, context, tmpRect, x, w, sample, coloring,
                                 hideFiltered);
-                        tmpRect.y += tmpRect.height;
                     }
+                    tmpRect.y += tmpRect.height;
                 }
                 g2D.setColor(OFF_WHITE);
                 g2D.fillRect(tmpRect.x, tmpRect.y, tmpRect.width, GROUP_BORDER_WIDTH);
@@ -509,8 +503,8 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                 if (tmpRect.intersects(visibleRectangle)) {
                     renderer.renderGenotypeBandSNP(variant, context, tmpRect, x, w, sample, coloring,
                             hideFiltered);
-                    tmpRect.y += tmpRect.height;
                 }
+                tmpRect.y += tmpRect.height;
             }
         }
     }
@@ -570,7 +564,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             // The sample bounds list will get reset when  the names are drawn.
             sampleBounds.clear();
             drawBackground(g2D, rect, visibleRectangle, BackgroundType.NAME);
-
         }
 
         renderBoundaryLines(g2D, trackRectangle, visibleRectangle);
