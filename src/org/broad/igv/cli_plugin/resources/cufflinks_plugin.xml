@@ -12,7 +12,7 @@
 <cli_plugin api_version="alpha" plugin_version="0.1" name="cufflinks"
             id="org.broad.igv.plugin.cufflinks">
     <tool name="cufflinks" defaultPath="cufflinks" visible="false">
-        <command name="cufflinks" cmd="">
+        <command name="cufflinks" cmd="--quiet">
             <arg name="Output Dir" id="outdir" cmd_arg="-o" type="LONGTEXT" defaultValue="./"/>
             <arg name="Max Intron Length" cmd_arg="--max-intron-length" type="TEXT" defaultValue="300000"/>
             <arg name="Min Isoform Fraction" cmd_arg="--min-isoform-fraction" type="TEXT" defaultValue="0.00001"/>
@@ -21,10 +21,10 @@
             <arg name="Use multi-read correct" cmd_arg="--multi-read-correct" defaultValue="false" type="BOOL"/>
             <arg name="Other arguments" cmd_arg="" type="LONGTEXT" defaultValue=""/>
             <arg name="Track" cmd_arg="" type="ALIGNMENT_TRACK"/>
-            <output name="Transcripts Track">
+            <output name="Transcripts Track" defaultValue="Transcripts">
                 <parser source="$outdir/transcripts.gtf" decodingCodec="org.broad.igv.cli_plugin.CufflinksTranscriptDecoder"/>
             </output>
-            <output name="Gene FPKM Track" type="DataSourceTrack">
+            <output name="Gene FPKM Track" type="DataSourceTrack" defaultValue="Gene FPKM">
                 <parser source="$outdir/genes.fpkm_tracking" decodingCodec="org.broad.igv.data.cufflinks.FPKMTrackingSampleCodec"/>
             </output>
         </command>
