@@ -12,7 +12,6 @@
 package org.broad.igv.util;
 
 import biz.source_code.base64Coder.Base64Coder;
-import net.sf.samtools.seekablestream.SeekableHTTPStream;
 import net.sf.samtools.seekablestream.SeekableStream;
 import net.sf.samtools.util.ftp.FTPClient;
 import net.sf.samtools.util.ftp.FTPStream;
@@ -719,7 +718,7 @@ public class HttpUtils {
 
         byte[] expectedBytes = {'T', 'C', 'G', 'C', 'T', 'T', 'G', 'A', 'A', 'C', 'C', 'C', 'G', 'G',
                 'G', 'A', 'G', 'A', 'G', 'G'};
-        SeekableHTTPStream str = new SeekableHTTPStream(new URL(testURL));
+        IGVSeekableHTTPStream str = new IGVSeekableHTTPStream(new URL(testURL));
         str.seek(25350000);
         byte[] buffer = new byte[80000];
         str.read(buffer);

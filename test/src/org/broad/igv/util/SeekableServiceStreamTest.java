@@ -13,6 +13,7 @@ package org.broad.igv.util;
 
 import junit.framework.TestCase;
 import net.sf.samtools.seekablestream.SeekableHTTPStream;
+import org.broad.igv.util.stream.IGVSeekableHTTPStream;
 import org.broad.igv.util.stream.SeekableServiceStream;
 import org.junit.Test;
 
@@ -35,7 +36,7 @@ public class SeekableServiceStreamTest extends TestCase {
 
         String tdfFile = "http://www.broadinstitute.org/igvdata/annotations/hg18/conservation/omega.12mer.tdf";
 
-        SeekableHTTPStream hs = new SeekableHTTPStream(new URL(tdfFile));
+        IGVSeekableHTTPStream hs = new IGVSeekableHTTPStream(new URL(tdfFile));
         final int position = 100;
         hs.seek(position);
         final int range = 1000;
