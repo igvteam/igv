@@ -312,9 +312,10 @@ public class ReferenceFrame {
      * as an implementation side effect
      *
      * @param name
+     * @return boolean indicating whether the chromosome actually changed
      */
-    public void setChromosomeName(String name) {
-        setChromosomeName(name, false);
+    public boolean setChromosomeName(String name) {
+        return setChromosomeName(name, false);
     }
 
     /**
@@ -324,10 +325,11 @@ public class ReferenceFrame {
      * @param name  Name of the new chromosome
      * @param force Whether to force a change to the new chromosome, even if it's
      *              the same name as the old one
+     * @return boolean indicating whether the chromosome actually changed
      */
-    public synchronized void setChromosomeName(String name, boolean force) {
+    public synchronized boolean setChromosomeName(String name, boolean force) {
 
-        if ((chrName == null) || !name.equals(chrName) || force) {
+        if (shouldChangeChromosome(name) || force) {
             chrName = name;
             origin = 0;
             this.locationScale = -1;
@@ -336,7 +338,10 @@ public class ReferenceFrame {
             setZoom(0);
 
             //chromoObservable.setChangedAndNotify();
+            return true;
         }
+
+        return false;
     }
 
     /**
@@ -569,10 +574,21 @@ public class ReferenceFrame {
         return getTilesTimesBinsPerTile();
     }
 
+    /**
+     * Determine if this view will change at all based on the {@code newChrName}
+     * The view changes if newChrName != {@code #this.chr} or if we are not
+     * at full chromosome view
+     * @param newChrName
+     * @return
+     */
+    private boolean shouldChangeChromosome(String newChrName){
+        return chrName == null || !chrName.equals(newChrName);
+    }
+
     @Subscribe
     public void receiveChromosomeChange(ViewChange.ChromosomeChangeCause chromoChangeCause) {
-        if (!chromoChangeCause.chrName.equals(chrName)) {
-            setChromosomeName(chromoChangeCause.chrName, false);
+        boolean changed = setChromosomeName(chromoChangeCause.chrName, false);
+        if (changed) {
             ViewChange.ChromosomeChangeResult resultEvent = new ViewChange.ChromosomeChangeResult(chromoChangeCause.source,
                     chrName);
             resultEvent.setRecordHistory(chromoChangeCause.recordHistory());

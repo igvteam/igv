@@ -176,6 +176,7 @@ public class SearchCommand {
                     break;
                 case CHROMOSOME:
                     referenceFrame.getEventBus().post(new ViewChange.ChromosomeChangeCause(this, result.chr));
+                    referenceFrame.getEventBus().post(new ViewChange.ZoomCause(0));
                     break;
                 case ERROR:
                 default: {

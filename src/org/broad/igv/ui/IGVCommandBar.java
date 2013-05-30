@@ -331,6 +331,12 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     }
 
+    /**
+     * Update the command bar properties for the new chromosome name.
+     * Will not cause a chromosome change, intended to be called in RESPONSE
+     * to the chromosome changing
+     * @param chrName
+     */
     protected void chromosomeChanged(final String chrName) {
         UIUtilities.invokeOnEventThread(new Runnable() {
             @Override
@@ -340,15 +346,11 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
                 if (chromosomeComboBox.getSelectedItem() != null) {
                     if (!chromosomeComboBox.getSelectedItem().equals(chrName)) {
-                        chromosomeComboBox.setSelectedItem(chrName);
+                        setChromosomeComboBoxNoActionListeners(chrName);
                     }
                 }
-
-                //Uncomment this line to change translation table automatically
-                //AminoAcidManager.getInstance().loadDefaultCodonTable(GenomeManager.getInstance().getCurrentGenome(), chrName);
             }
         });
-
     }
 
 
@@ -815,12 +817,11 @@ public class IGVCommandBar extends javax.swing.JPanel {
         }
         if (genome != null) {
             String chrName = genome.getHomeChromosome();
-            //getDefaultReferenceFrame().setChromosomeName(chrName);
-            IGV.getInstance().getSession().getHistory().push(chrName, getDefaultReferenceFrame().getZoom());
-            //chromosomeComboBox.setSelectedItem(chrName);
-            //updateCurrentCoordinates();
-            chromosomeChanged(chrName);
-            IGV.getMainFrame().repaint();
+            if(chrName != null && !chrName.equals(chromosomeComboBox.getSelectedItem())){
+                ViewChange.ChromosomeChangeCause cause = new ViewChange.ChromosomeChangeCause(evt.getSource(), chrName);
+                cause.setRecordHistory(true);
+                getDefaultReferenceFrame().getEventBus().post(cause);
+            }
         }
     }
 
@@ -835,32 +836,25 @@ public class IGVCommandBar extends javax.swing.JPanel {
         if (chrName != null) {
             getDefaultReferenceFrame().getEventBus().post(new ViewChange.ChromosomeChangeCause(combobox, chrName));
         }
-//        if (chrName != null) {
-//            if (!chrName.equals(getDefaultReferenceFrame().getChrName())) {
-//                NamedRunnable runnable = new NamedRunnable() {
-//                    public void run() {
-//                        getDefaultReferenceFrame().setChromosomeName(chrName);
-//                        getDefaultReferenceFrame().recordHistory();
-//                        updateCurrentCoordinates();
-//                        IGV.getInstance().chromosomeChangeEvent(chrName);
-//                        IGV.getMainFrame().repaint();
-//                        PreferenceManager.getInstance().setLastChromosomeViewed(chrName);
-//                    }
-//
-//                    public String getName() {
-//                        return "Changed chromosome to: " + chrName;
-//                    }
-//                };
-//
-//                LongRunningTask.submit(runnable);
-//            }
-//        }
+    }
+
+    private void setChromosomeComboBoxNoActionListeners(String chrName){
+        ActionListener[] listeners = chromosomeComboBox.getActionListeners();
+        for(ActionListener l: listeners){
+            chromosomeComboBox.removeActionListener(l);
+        }
+
+        chromosomeComboBox.setSelectedItem(chrName);
+
+        for(ActionListener l: listeners){
+            chromosomeComboBox.addActionListener(l);
+        }
     }
 
     @Subscribe
     public void receiveViewChangeResult(ViewChange.Result e) {
         String chrName = getDefaultReferenceFrame().getChrName();
-        chromosomeComboBox.setSelectedItem(chrName);
+        setChromosomeComboBoxNoActionListeners(chrName);
         updateCurrentCoordinates();
     }
 
