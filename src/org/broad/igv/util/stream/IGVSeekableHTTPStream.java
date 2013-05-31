@@ -19,17 +19,10 @@ public class IGVSeekableHTTPStream extends SeekableStream {
     private long position = 0;
     private long contentLength = -1;
 
-    private final Proxy proxy;
     private URLHelper helper;
 
     public IGVSeekableHTTPStream(final URL url) {
-        this(url, null);
 
-    }
-
-    public IGVSeekableHTTPStream(final URL url, Proxy proxy) {
-
-        this.proxy = proxy;
         this.helper = new IGVUrlHelper(url);
         try {
             this.contentLength = this.helper.getContentLength();
