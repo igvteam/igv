@@ -82,6 +82,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     static final int DOWNAMPLED_ROW_HEIGHT = 3;
     static final int DS_MARGIN_2 = 5;
 
+    private boolean showSpliceJunctions;
+
     public enum ShadeBasesOption {
         NONE, QUALITY, FLOW_SIGNAL_DEVIATION_READ, FLOW_SIGNAL_DEVIATION_REFERENCE
     }
@@ -179,7 +181,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         PreferenceManager prefs = PreferenceManager.getInstance();
 
-        dataManager.setShowSpliceJunctions(prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK));
+        setShowSpliceJunctions(prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK));
 
         float maxRange = prefs.getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
         minVisibleScale = (maxRange * 1000) / 700;
@@ -425,10 +427,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         final int bottom = inputRect.y + inputRect.height;
         groupBorderGraphics.drawLine(inputRect.x, bottom, inputRect.width, bottom);
-    }
-
-    public void clearCaches() {
-        dataManager.clear();
     }
 
     /**
@@ -711,12 +709,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     //Public only for testing
     @XmlAttribute
     public boolean isShowSpliceJunctions() {
-        return dataManager.isShowSpliceJunctions();
+        return showSpliceJunctions;
     }
 
     @SubtlyImportant
     private void setShowSpliceJunctions(boolean showSpliceJunctions) {
-        dataManager.setShowSpliceJunctions(showSpliceJunctions);
+        this.showSpliceJunctions = showSpliceJunctions;
     }
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
@@ -806,9 +804,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 break;
             case RELOAD:
             case SPLICE_JUNCTION:
-                dataManager.initLoadOptions();
-                clearCaches();
-                break;
         }
 
     }

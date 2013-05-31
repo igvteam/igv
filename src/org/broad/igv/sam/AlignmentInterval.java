@@ -17,7 +17,6 @@ package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.Locus;
-import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -36,14 +35,14 @@ public class AlignmentInterval extends Locus{
     private int maxCount = 0;
     private AlignmentCounts counts;
     private LinkedHashMap<String, List<Row>> groupedAlignmentRows;  // The alignments
-    private List<SpliceJunctionFeature> spliceJunctions;
+    private SpliceJunctionHelper spliceJunctionHelper;
     private List<DownsampledInterval> downsampledIntervals;
     private AlignmentTrack.RenderOptions renderOptions;
 
     public AlignmentInterval(String chr, int start, int end,
                              LinkedHashMap<String, List<Row>> groupedAlignmentRows,
                              AlignmentCounts counts,
-                             List<SpliceJunctionFeature> spliceJunctions,
+                             SpliceJunctionHelper spliceJunctionHelper,
                              List<DownsampledInterval> downsampledIntervals,
                              AlignmentTrack.RenderOptions renderOptions) {
 
@@ -55,7 +54,7 @@ public class AlignmentInterval extends Locus{
         this.counts = counts;
         this.maxCount = counts.getMaxCount();
 
-        this.spliceJunctions = spliceJunctions;
+        this.spliceJunctionHelper = spliceJunctionHelper;
         this.downsampledIntervals = downsampledIntervals;
         this.renderOptions = renderOptions;
     }
@@ -225,10 +224,6 @@ public class AlignmentInterval extends Locus{
 
     public Iterator<Alignment> getAlignmentIterator() {
         return new AlignmentIterator();
-    }
-
-    public List<SpliceJunctionFeature> getSpliceJunctions() {
-        return spliceJunctions;
     }
 
     public List<DownsampledInterval> getDownsampledIntervals() {

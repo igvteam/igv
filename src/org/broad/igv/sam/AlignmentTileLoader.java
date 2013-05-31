@@ -89,12 +89,12 @@ public class AlignmentTileLoader {
 
 
     AlignmentTile loadTile(String chr, int start, int end,
-                           SpliceJunctionHelper.LoadOptions loadOptions,
+                           SpliceJunctionHelper spliceJunctionHelper,
                            AlignmentDataManager.DownsampleOptions downsampleOptions,
                            Map<String, PEStats> peStats,
                            AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
-        AlignmentTile t = new AlignmentTile(start, end, loadOptions, downsampleOptions, bisulfiteContext);
+        AlignmentTile t = new AlignmentTile(start, end, spliceJunctionHelper, downsampleOptions, bisulfiteContext);
 
 
         //assert (tiles.size() > 0);
@@ -284,7 +284,6 @@ public class AlignmentTileLoader {
         private AlignmentCounts counts;
         private List<Alignment> alignments;
         private List<DownsampledInterval> downsampledIntervals;
-        private List<SpliceJunctionFeature> spliceJunctionFeatures;
         private SpliceJunctionHelper spliceJunctionHelper;
 
         private boolean downsample;
@@ -296,7 +295,7 @@ public class AlignmentTileLoader {
 
 
         AlignmentTile(int start, int end,
-                      SpliceJunctionHelper.LoadOptions loadOptions,
+                      SpliceJunctionHelper spliceJunctionHelper,
                       AlignmentDataManager.DownsampleOptions downsampleOptions,
                       AlignmentTrack.BisulfiteContext bisulfiteContext) {
             this.start = start;
@@ -320,11 +319,7 @@ public class AlignmentTileLoader {
             this.samplingWindowSize = downsampleOptions.getSampleWindowSize();
             this.samplingDepth = Math.max(1, downsampleOptions.getMaxReadCount());
 
-            if (loadOptions != null && loadOptions.showSpliceJunctions) {
-                spliceJunctionFeatures = new ArrayList<SpliceJunctionFeature>(100);
-                spliceJunctionHelper = new SpliceJunctionHelper(loadOptions);
-            }
-
+            this.spliceJunctionHelper = spliceJunctionHelper;
         }
 
         public int getStart() {
@@ -418,14 +413,16 @@ public class AlignmentTileLoader {
         private void finalizeSpliceJunctions() {
             if (spliceJunctionHelper != null) {
                 spliceJunctionHelper.finish();
-                spliceJunctionFeatures.addAll(spliceJunctionHelper.getFeatures());
             }
-            spliceJunctionHelper = null;
         }
 
-
         public List<SpliceJunctionFeature> getSpliceJunctionFeatures() {
-            return spliceJunctionFeatures;
+            if(spliceJunctionHelper == null) return null;
+            return spliceJunctionHelper.getFilteredJunctions();
+        }
+
+        public SpliceJunctionHelper getSpliceJunctionHelper() {
+            return spliceJunctionHelper;
         }
 
 
