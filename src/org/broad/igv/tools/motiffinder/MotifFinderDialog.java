@@ -17,11 +17,15 @@ package org.broad.igv.tools.motiffinder;
 
 import net.sf.samtools.util.SequenceUtil;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -222,23 +226,37 @@ public class MotifFinderDialog extends JDialog {
         return true;
     }
 
-    private void posNameFieldFocusLost(FocusEvent e) {
-        updateNegNameFieldFromPos();
+    private void updateNegNameFieldFromPattern(){
+        UIUtilities.invokeOnEventThread(new Runnable() {
+            @Override
+            public void run() {
+                String posText = MotifFinderDialog.this.patternField.getText();
+                MotifFinderDialog.this.negNameField.setText(posText + " Negative");
+            }
+        });
     }
 
-    private void updateNegNameFieldFromPos(){
-        String posText = this.posNameField.getText();
-        this.negNameField.setText(posText + " Negative");
+    private void updatePosNameFieldFromPattern(){
+        UIUtilities.invokeOnEventThread(new Runnable() {
+            @Override
+            public void run() {
+                MotifFinderDialog.this.posNameField.setText(getAbbrevPatternText());
+            }
+        });
     }
 
-    private void posNameFieldInputMethodTextChanged(InputMethodEvent e) {
-        updateNegNameFieldFromPos();
-    }
-
-    private void posNameFieldKeyReleased(KeyEvent e) {
-        if(e.getKeyCode() == KeyEvent.VK_ENTER){
-            updateNegNameFieldFromPos();
+    private static final int maxLength = 100;
+    private String getAbbrevPatternText() {
+        String patternText = MotifFinderDialog.this.patternField.getText();
+        if(patternText.length() > maxLength){
+            patternText = patternText.substring(0, maxLength - 3) + "...";
         }
+        return patternText;
+    }
+
+    private void patternFieldCaretUpdate(CaretEvent e) {
+        updatePosNameFieldFromPattern();
+        updateNegNameFieldFromPattern();
     }
 
     private void initComponents() {
@@ -286,6 +304,14 @@ public class MotifFinderDialog extends JDialog {
                 label2.setPreferredSize(new Dimension(374, 16));
                 contentPanel.add(label2);
                 contentPanel.add(label4);
+
+                //---- patternField ----
+                patternField.addCaretListener(new CaretListener() {
+                    @Override
+                    public void caretUpdate(CaretEvent e) {
+                        patternFieldCaretUpdate(e);
+                    }
+                });
                 contentPanel.add(patternField);
 
                 //---- textArea1 ----
@@ -309,7 +335,7 @@ public class MotifFinderDialog extends JDialog {
                     panel1.setLayout(new BoxLayout(panel1, BoxLayout.X_AXIS));
 
                     //---- label1 ----
-                    label1.setText("Positive Strand Result Track:");
+                    label1.setText("Positive Strand Track Name:");
                     label1.setLabelFor(posNameField);
                     label1.setHorizontalTextPosition(SwingConstants.LEFT);
                     label1.setHorizontalAlignment(SwingConstants.LEFT);
@@ -317,28 +343,6 @@ public class MotifFinderDialog extends JDialog {
                     label1.setPreferredSize(new Dimension(200, 16));
                     label1.setAlignmentX(1.0F);
                     panel1.add(label1);
-
-                    //---- posNameField ----
-                    posNameField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            posNameFieldFocusLost(e);
-                        }
-                    });
-                    posNameField.addInputMethodListener(new InputMethodListener() {
-                        @Override
-                        public void inputMethodTextChanged(InputMethodEvent e) {
-                            posNameFieldInputMethodTextChanged(e);
-                        }
-                        @Override
-                        public void caretPositionChanged(InputMethodEvent e) {}
-                    });
-                    posNameField.addKeyListener(new KeyAdapter() {
-                        @Override
-                        public void keyReleased(KeyEvent e) {
-                            posNameFieldKeyReleased(e);
-                        }
-                    });
                     panel1.add(posNameField);
                 }
                 contentPanel.add(panel1);
@@ -348,7 +352,7 @@ public class MotifFinderDialog extends JDialog {
                     panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
 
                     //---- label3 ----
-                    label3.setText("Negative Strand Result Track:");
+                    label3.setText("Negative Strand Track Name:");
                     label3.setLabelFor(negNameField);
                     label3.setHorizontalTextPosition(SwingConstants.LEFT);
                     label3.setHorizontalAlignment(SwingConstants.LEFT);

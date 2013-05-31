@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "5.1.0.2.64" Java: "1.6.0_37" encoding: "UTF-8"
+JFDML JFormDesigner: "5.2.0.0.54" Java: "1.6.0_37" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -30,6 +30,7 @@ new FormModel {
 					} )
 					add( new FormComponent( "javax.swing.JTextField" ) {
 						name: "patternField"
+						addEvent( new FormEvent( "javax.swing.event.CaretListener", "caretUpdate", "patternFieldCaretUpdate", true ) )
 					} )
 					add( new FormComponent( "javax.swing.JTextArea" ) {
 						name: "textArea1"
@@ -53,7 +54,7 @@ new FormModel {
 						name: "panel1"
 						add( new FormComponent( "javax.swing.JLabel" ) {
 							name: "label1"
-							"text": "Positive Strand Result Track:"
+							"text": "Positive Strand Track Name:"
 							"labelFor": new FormReference( "posNameField" )
 							"horizontalTextPosition": 2
 							"horizontalAlignment": 2
@@ -63,9 +64,6 @@ new FormModel {
 						} )
 						add( new FormComponent( "javax.swing.JTextField" ) {
 							name: "posNameField"
-							addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "posNameFieldFocusLost", true ) )
-							addEvent( new FormEvent( "java.awt.event.InputMethodListener", "inputMethodTextChanged", "posNameFieldInputMethodTextChanged", true ) )
-							addEvent( new FormEvent( "java.awt.event.KeyListener", "keyReleased", "posNameFieldKeyReleased", true ) )
 						} )
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
@@ -74,7 +72,7 @@ new FormModel {
 						name: "panel2"
 						add( new FormComponent( "javax.swing.JLabel" ) {
 							name: "label3"
-							"text": "Negative Strand Result Track:"
+							"text": "Negative Strand Track Name:"
 							"labelFor": new FormReference( "negNameField" )
 							"horizontalTextPosition": 2
 							"horizontalAlignment": 2
