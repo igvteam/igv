@@ -18,7 +18,6 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.track.FeatureSource;
 import org.broad.tribble.AsciiFeatureCodec;
-import org.broad.tribble.CloseableTribbleIterator;
 import org.broad.tribble.Feature;
 import org.broad.tribble.readers.AsciiLineReader;
 
@@ -47,11 +46,7 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
     public static String UCSC_START_COL = "txStart";
     public static String UCSC_END_COL = "txEnd";
 
-
     protected AsciiFeatureCodec codec;
-
-    protected PreparedStatement queryStatement;
-    protected PreparedStatement binnedQueryStatement;
 
     /**
      * The name of the column with chromosome names
@@ -149,9 +144,9 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
                 log.error("Error reading column labels", e);
                 columnLabels = null;
             }
-
-
+            DBManager.closeAll(rs);
         }
+
         if (columnLabels != null) {
             if (headerLines == null) headerLines = new ArrayList<String>(1);
             String columnLine = StringUtils.join(columnLabels, "\t");
@@ -221,14 +216,13 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
     }
 
     /**
-     * Create the prepared statement. Idempotent.
      *
+     * @param useBinning Whether to query using bin column, for efficiency
      * @throws IOException
      */
-    private void initQueryStatement() throws IOException {
-        if (queryStatement != null) {
-            return;
-        }
+    private PreparedStatement generateQueryStatement(boolean useBinning) throws IOException {
+        PreparedStatement queryStatement;
+
         String prependWord = baseQueryString.contains("WHERE") ? " AND " : " WHERE ";
         String queryString = baseQueryString + prependWord + String.format("%s = ? AND ( (%s >= ? AND %s < ?)",
                 chromoColName, posStartColName, posStartColName);
@@ -241,16 +235,15 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
         String orderClause = "ORDER BY " + posStartColName;
 
         try {
-            queryStatement = DBManager.getConnection(locator).prepareStatement(queryString + " " + orderClause);
-
-            if (binColName != null) {
+            if (useBinning) {
                 String[] qs = new String[MAX_BINS];
                 Arrays.fill(qs, "?");
                 String binnedQueryString = queryString + String.format(" AND %s IN (%s) %s", binColName, StringUtils.join(qs, ','), orderClause);
-                binnedQueryStatement = DBManager.getConnection(locator).prepareStatement(binnedQueryString);
+                queryStatement = DBManager.getConnection(locator).prepareStatement(binnedQueryString);
+            }else{
+                queryStatement = DBManager.getConnection(locator).prepareStatement(queryString + " " + orderClause);
             }
-
-
+            return queryStatement;
         } catch (SQLException e) {
             log.error("Error initializing query statement", e);
             throw new IOException(e);
@@ -258,14 +251,15 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
 
     }
 
-    private CloseableTribbleIterator query(String chr, int start, int end) throws IOException {
-        initQueryStatement();
-        PreparedStatement statement = queryStatement;
-        Set<Integer> bins = calculateBins(start, end);
-        //System.out.println("number of bins: " + bins.size());
-        if (bins.size() < MAX_BINS && binnedQueryStatement != null) {
-            statement = binnedQueryStatement;
+    private Iterator query(String chr, int start, int end) throws IOException {
+
+        Set<Integer> bins = null;
+        boolean useBinning = false;
+        if(binColName != null){
+            bins = calculateBins(start, end);
+            useBinning = bins.size() < MAX_BINS;
         }
+        PreparedStatement statement = generateQueryStatement(useBinning);
 
         try {
             statement.clearParameters();
@@ -281,7 +275,7 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
                 statement.setInt(cc, start);
             }
 
-            if (statement == binnedQueryStatement) {
+            if (useBinning) {
                 int qnum = 6;
                 for (Integer bin : bins) {
                     statement.setInt(qnum, bin);
@@ -382,28 +376,9 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
     }
 
 
-    CloseableTribbleIterator iterator() throws IOException {
+    Iterator iterator() throws IOException {
         String queryString = String.format("%s ORDER BY %s LIMIT %s", baseQueryString, posStartColName, featureWindowSize);
-        return loadIterator(queryString);
-    }
-
-    private void close() throws IOException {
-        try {
-            queryStatement.close();
-            queryStatement = null;
-            DBManager.closeConnection(locator);
-        } catch (SQLException e) {
-            log.error(e);
-            throw new IOException(e);
-        }
-    }
-
-    protected void finalize() throws Throwable {
-        try {
-            close();
-        } finally {
-            super.finalize();
-        }
+        return loadIterator(executeQuery(queryString));
     }
 
     public List<String> getSequenceNames() {
@@ -417,8 +392,10 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
             }
             return names;
         } catch (SQLException e) {
-            log.error(e);
-            throw new RuntimeException("Error getting sequence names: " + e);
+            log.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }finally{
+            DBManager.closeAll(results);
         }
 
     }

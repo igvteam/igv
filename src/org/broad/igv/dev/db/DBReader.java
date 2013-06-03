@@ -73,10 +73,7 @@ public class DBReader {
         try {
             Connection conn = DBManager.getConnection(locator);
             Statement st = conn.createStatement();
-            ResultSet rs = st.executeQuery(queryString);
-
-            return rs;
-
+            return st.executeQuery(queryString);
         } catch (SQLException e) {
             log.error("Database error", e);
             throw new RuntimeException("Database error", e);

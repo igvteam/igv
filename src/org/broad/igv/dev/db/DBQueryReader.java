@@ -12,12 +12,13 @@
 package org.broad.igv.dev.db;
 
 import org.apache.log4j.Logger;
-import org.broad.tribble.CloseableTribbleIterator;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Class for reading only portions of a table (queries) repeatedly.
@@ -36,92 +37,44 @@ public abstract class DBQueryReader<T> extends DBReader {
         this.table = table;
     }
 
-    protected CloseableTribbleIterator loadIterator(PreparedStatement st) {
+    protected Iterator loadIterator(PreparedStatement st) {
         try {
             ResultSet rs = st.executeQuery();
-
-            return new ResultIterator(rs, false);
-
+            return loadIterator(rs);
         } catch (SQLException e) {
             log.error("Database error", e);
             throw new RuntimeException("Database error", e);
         }
     }
 
-    protected CloseableTribbleIterator loadIterator(String queryString) {
-        return new ResultIterator(executeQuery(queryString));
+    /**
+     * Load all results from the provided {@code ResultSet}
+     * so we can close it quickly
+     * @param rs
+     * @return
+     */
+    protected Iterator loadIterator(ResultSet rs) {
+        List<T> results = new ArrayList<T>();
+        try {
+            while (rs.next()) {
+                results.add(processResult(rs));
+            }
+        } catch (SQLException e) {
+            log.error("Database error", e);
+            throw new RuntimeException("Database error", e);
+        } finally {
+            DBManager.closeAll(rs);
+        }
+        return results.iterator();
     }
 
+    /**
+     * Read a single line from the {@code ResultSet} and return the object
+     * based on it.
+     * @param rs
+     * @return
+     * @throws SQLException
+     */
     protected abstract T processResult(ResultSet rs) throws SQLException;
-
-    private class ResultIterator implements CloseableTribbleIterator {
-
-        private ResultSet rs;
-        /**
-         * Whether the statement will be closed when iteration
-         * is complete. The ResultSet is always closed
-         */
-        private boolean closeStatement;
-
-        private boolean hasNext;
-        private T next;
-
-        public ResultIterator(ResultSet rs) {
-            this(rs, true);
-        }
-
-        public ResultIterator(ResultSet rs, boolean closeStatement) {
-            this.rs = rs;
-            this.closeStatement = closeStatement;
-            try {
-                hasNext = rs.next();
-            } catch (SQLException e) {
-                log.error("Database error", e);
-                throw new RuntimeException("Database error", e);
-            }
-        }
-
-        @Override
-        public boolean hasNext() {
-            return hasNext;
-        }
-
-        @Override
-        public T next() {
-            try {
-                next = processResult(rs);
-                hasNext = rs.next();
-                if (!hasNext) {
-                    DBManager.closeResources(rs, closeStatement ? rs.getStatement() : null, null);
-                }
-
-                return next;
-            } catch (SQLException e) {
-                log.error(e);
-                throw new RuntimeException("Error processing SQL Results: " + e);
-            }
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("Cannot remove");
-        }
-
-        @Override
-        public Iterator<T> iterator() {
-            return this;
-        }
-
-        @Override
-        public void close() {
-            try {
-                DBManager.closeResources(rs, rs.getStatement(), null);
-            } catch (SQLException e) {
-                log.error(e);
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
 
 }

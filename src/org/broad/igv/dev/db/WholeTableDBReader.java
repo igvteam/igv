@@ -59,13 +59,19 @@ public abstract class WholeTableDBReader<T> extends DBReader {
             log.error("Database error", e);
             throw new RuntimeException("Database error", e);
         } finally {
-            DBManager.closeResources(rs, null, DBManager.getConnection(locator));
+            DBManager.closeAll(rs);
         }
 
         return obj;
     }
 
-
+    /**
+     * Read off all relevant information from the ResultSet.
+     * Closing the ResultSet is not necessary
+     * @param rs
+     * @return
+     * @throws SQLException
+     */
     protected abstract T processResultSet(ResultSet rs) throws SQLException;
 
 }

@@ -48,6 +48,8 @@ public class SQLInputStreamTest extends AbstractHeadlessTest {
             count++;
         }
         assertEquals(72, count);
+
+        DBManager.closeAll(rs);
     }
 
     @Test
@@ -64,6 +66,8 @@ public class SQLInputStreamTest extends AbstractHeadlessTest {
             totalLines += 1;
         }
         assertEquals(72, totalLines);
+
+        DBManager.closeAll(rs);
     }
 
     private void checkFeatureIntegrity(Feature feat, String expChr) throws Exception {

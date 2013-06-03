@@ -151,19 +151,6 @@ public class UCSC_SQL_Test extends AbstractHeadlessTest {
 
         assertTrue("No data retrieved", count > 0);
 
-//        for(int att=0; att < 10; att++){
-//            source.queryStatement.setString(1, "fake");
-//            source.queryStatement.setInt(3, 93);
-//            Iterator<Feature> feats2 = source.getFeatures("chr1", start, end);
-//            int tCount = 0;
-//            while(feats2.hasNext()){
-//                tCount++;
-//            }
-//            assertEquals(count, tCount);
-//        }
-
-        assertNotNull(source.queryStatement);
-
         return source;
 
     }

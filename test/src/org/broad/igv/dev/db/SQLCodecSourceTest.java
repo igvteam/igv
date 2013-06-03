@@ -18,7 +18,6 @@ import org.broad.igv.util.TestUtils;
 import org.broad.igv.variant.vcf.VCFVariant;
 import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.AsciiFeatureCodec;
-import org.broad.tribble.CloseableTribbleIterator;
 import org.broad.tribble.Feature;
 import org.junit.Test;
 
@@ -60,7 +59,7 @@ public class SQLCodecSourceTest {
     public void testIterateBEDUnsorted() throws Exception {
         String path = "sql/Unigene.unsorted.db";
         SQLCodecSource reader = getUnigene(path);
-        CloseableTribbleIterator<Feature> features = reader.iterator();
+        Iterator<Feature> features = reader.iterator();
         int count = TestUtils.assertFeatureIteratorSorted(features);
         assertEquals(71, count);
     }
@@ -72,7 +71,7 @@ public class SQLCodecSourceTest {
         String path = "sql/unigene.db";
 
         SQLCodecSource reader = getUnigene(path);
-        CloseableTribbleIterator<Feature> SQLFeatures = reader.iterator();
+        Iterator<Feature> SQLFeatures = reader.iterator();
 
         String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.sample.bed";
         AbstractFeatureReader bfr = AbstractFeatureReader.getFeatureReader(bedFile, codec, false);
@@ -108,8 +107,8 @@ public class SQLCodecSourceTest {
 
         SQLCodecSource source1 = getUnigene("sql/Unigene.unsorted.db");
 
-        CloseableTribbleIterator<Feature> features0 = source0.iterator();
-        CloseableTribbleIterator<Feature> features1 = source1.iterator();
+        Iterator<Feature> features0 = source0.iterator();
+        Iterator<Feature> features1 = source1.iterator();
 
         while (features0.hasNext()) {
             Feature act_feat = features0.next();
@@ -130,7 +129,7 @@ public class SQLCodecSourceTest {
     public void testIterateVCF() throws Exception {
 
         int featCount = 0;
-        CloseableTribbleIterator<Feature> iterator = getVCFsrc().iterator();
+        Iterator<Feature> iterator = getVCFsrc().iterator();
         while (iterator.hasNext()) {
             iterator.next();
             featCount++;

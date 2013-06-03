@@ -61,7 +61,6 @@ public class DBManager {
             }
         }
 
-
         // No valid connections
         Connection conn = connect(locator);
         if (conn != null) {
@@ -71,7 +70,6 @@ public class DBManager {
         return conn;
 
     }
-
 
     public static void closeConnection(ResourceLocator locator) {
         String url = locator.getPath();
@@ -83,7 +81,7 @@ public class DBManager {
                     connectionPool.remove(url);
                 }
             } catch (SQLException e) {
-                log.error(e);
+                log.error(e.getMessage(), e);
             }
         }
     }
@@ -180,6 +178,27 @@ public class DBManager {
     }
 
     /**
+     * Close all resources associated with the ResultSet,
+     * including the statement and connection
+     * @param rs
+     */
+    public static void closeAll(ResultSet rs){
+        Statement st = null;
+        Connection conn = null;
+
+        if (rs != null) {
+            try {
+                st = rs.getStatement();
+                conn = st.getConnection();
+            } catch (SQLException e) {
+                log.error("Error getting statement and connection from result set", e);
+            }
+        }
+
+        DBManager.closeResources(rs, st, conn);
+    }
+
+    /**
      * Close the specified resources
      *
      * @param rs
@@ -191,24 +210,41 @@ public class DBManager {
             try {
                 rs.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                log.error("Error closing resultset", e);
             }
         }
         if (st != null) {
             try {
                 st.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                log.error("Error closing statement", e);
             }
         }
         if (conn != null) {
             try {
                 conn.close();
+                pruneConnectionPool();
             } catch (SQLException e) {
                 log.error("Error closing sql connection", e);
             }
         }
 
+    }
+
+    /**
+     * Remove all closed connection objects from the connection pool.
+     * @throws SQLException
+     */
+    private static void pruneConnectionPool() throws SQLException{
+        Set<String> toRemove = new HashSet<String>();
+        for(Map.Entry<String, Connection> entry: connectionPool.entrySet()){
+            if(entry.getValue().isClosed()){
+                toRemove.add(entry.getKey());
+            }
+        }
+        for(String url: toRemove){
+            connectionPool.remove(url);
+        }
     }
 
     /**

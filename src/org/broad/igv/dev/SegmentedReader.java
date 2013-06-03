@@ -14,6 +14,7 @@ package org.broad.igv.dev;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.data.seg.SegmentedAsciiDataSet;
+import org.broad.igv.dev.db.DBManager;
 import org.broad.igv.dev.db.DBProfile;
 import org.broad.igv.dev.db.WholeTableDBReader;
 import org.broad.igv.exceptions.ParserException;
@@ -69,6 +70,7 @@ public class SegmentedReader {
             while (rs.next()) {
                 parseLine(parser, rs);
             }
+            DBManager.closeAll(rs);
 
             dataset.sortLists();
             return dataset;
