@@ -49,11 +49,6 @@ public class AlignmentTileLoader {
     private boolean cancel = false;
     private boolean pairedEnd = false;
 
-
-    // Map of read group -> paired end stats
-
-    //private PairedEndStats peStats;
-
     private static void cancelReaders() {
         for (WeakReference<AlignmentTileLoader> readerRef : activeLoaders) {
             AlignmentTileLoader reader = readerRef.get();
@@ -177,7 +172,7 @@ public class AlignmentTileLoader {
                 if (alignmentCount % interval == 0) {
                     if (cancel) return null;
                     MessageUtils.setStatusBarMessage("Reads loaded: " + alignmentCount);
-                    if (checkMemory() == false) {
+                    if (memoryTooLow()) {
                         cancelReaders();
                         return t;        // <=  TODO need to cancel all readers
                     }
@@ -246,18 +241,18 @@ public class AlignmentTileLoader {
     }
 
 
-    private static synchronized boolean checkMemory() {
+    private static synchronized boolean memoryTooLow() {
         if (RuntimeUtils.getAvailableMemoryFraction() < 0.2) {
             LRUCache.clearCaches();
             System.gc();
             if (RuntimeUtils.getAvailableMemoryFraction() < 0.2) {
                 String msg = "Memory is low, reading terminating.";
                 MessageUtils.showMessage(msg);
-                return false;
+                return true;
             }
 
         }
-        return true;
+        return false;
     }
 
 
