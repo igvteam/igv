@@ -99,15 +99,32 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     @Ignore
     @Test
     public void stressTestSnapshots() throws Exception{
+        PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "1000");
 
         String outFileName = outFileBase + ".png";
+
+        String interv0 = "chr1:151666000-152666000";
+        String interv1 = "chr1:154666000-155666000";
+        String[] intervals = {interv0, interv1};
+
+        String filePath = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.bam";
+        exec.execute("load " + filePath);
+        exec.execute("goto " + interv0);
+
+
         File outFile = new File(snapshotDir, outFileName);
         long expSize = -1;
         long margin = 0;
         int numTrials = 10;
         for(int tri=0; tri < numTrials; tri++){
             if(outFile.exists()) outFile.delete();
+
+            int intInd = tri % intervals.length;
+            String interval = intervals[intInd];
+
+            exec.execute("goto " + interval);
             tstSnapshot(outFileName);
+
             long size = outFile.length();
             if(expSize < 0){
                 expSize = size;
