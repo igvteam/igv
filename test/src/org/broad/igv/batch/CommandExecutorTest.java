@@ -108,7 +108,8 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     @Test
     @Ignore
     public void stressTestSnapshotsBodymap() throws Exception{
-        PreferenceManager.getInstance().put(PreferenceManager.SAM_DOWNSAMPLE_READS, "false");
+        PreferenceManager.getInstance().put(PreferenceManager.SAM_DOWNSAMPLE_READS, "true");
+        PreferenceManager.getInstance().put(PreferenceManager.SAM_SAMPLING_COUNT, "100");
         PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "1000");
 
         String interv0 = "chr12:97,509,534-97,521,909"; //SLC25A3
@@ -130,6 +131,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     public void stressTstSnapshots(String filePath, String[] intervals) throws Exception{
 
         exec.execute("load " + filePath);
+        //exec.execute(("setSleepInterval 10000"));
 
         //For each interval we base our expected size on the first snapshot
         Map<String, Long> intervalSizeMap = new HashMap<String, Long>(intervals.length);
