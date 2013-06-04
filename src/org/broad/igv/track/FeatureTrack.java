@@ -67,7 +67,7 @@ public class FeatureTrack extends AbstractTrack {
     //All tracks have label "Track", we need to specify the type sometimes
     //but still preserve backwards compatibility
     @XmlAttribute
-    private Class clazz = FeatureTrack.class;
+    protected Class clazz = FeatureTrack.class;
 
     public static final int MINIMUM_FEATURE_SPACING = 5;
     public static final int DEFAULT_MARGIN = 5;

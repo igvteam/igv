@@ -12,7 +12,6 @@ package org.broad.igv.session;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.cli_plugin.PluginSource;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
@@ -48,6 +47,7 @@ import javax.xml.bind.Unmarshaller;
 import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.List;
 
@@ -68,6 +68,8 @@ public class IGVSessionReader implements SessionReader {
     private int version;
 
     private IGV igv;
+
+    private static WeakReference<IGVSessionReader> currentReader;
 
 
     /**
@@ -261,7 +263,7 @@ public class IGVSessionReader implements SessionReader {
 
     public IGVSessionReader(IGV igv) {
         this.igv = igv;
-        PluginSource.MyMapAdapter.setSessionReader(this);
+        currentReader = new WeakReference<IGVSessionReader>(this);
     }
 
 
@@ -915,6 +917,9 @@ public class IGVSessionReader implements SessionReader {
             if(track instanceof FeatureTrack){
                 FeatureTrack featureTrack = (FeatureTrack) track;
                 featureTrack.updateTrackReferences(panelTracks);
+            }else if(track instanceof DataSourceTrack){
+                DataSourceTrack dataTrack = (DataSourceTrack) track;
+                dataTrack.updateTrackReferences(panelTracks);
             }
         }
 
@@ -972,7 +977,7 @@ public class IGVSessionReader implements SessionReader {
             //We try anyway, some tracks can be reconstructed without a resource element
             //They must have a source, though
             try{
-                if(className != null && className.contains("FeatureTrack") && element.hasChildNodes()){
+                if(className != null && ( className.contains("FeatureTrack") || className.contains("DataSourceTrack") ) && element.hasChildNodes()){
                     Class clazz = Class.forName(className);
                     Unmarshaller u = getJAXBContext().createUnmarshaller();
                     Track track = unmarshalTrackElement(u, element, null, clazz);
@@ -1159,7 +1164,7 @@ public class IGVSessionReader implements SessionReader {
      *
      * @return
      */
-    public static AbstractTrack unmarshalTrack(Unmarshaller u, Node node, Class unmarshalClass,Class firstClass) throws JAXBException{
+    public static AbstractTrack unmarshalTrack(Unmarshaller u, Node node, Class unmarshalClass, Class firstClass) throws JAXBException{
 
         if(unmarshalClass == null || unmarshalClass.equals(Object.class)){
             throw new JAXBException(firstClass + " and none of its superclasses are known");
@@ -1177,6 +1182,37 @@ public class IGVSessionReader implements SessionReader {
             return unmarshalTrack(u, node, firstClass, unmarshalClass.getSuperclass());
         }
         return (AbstractTrack) el.getValue();
+    }
+
+    /**
+     * Uses #sessionReader to lookup matching tracks by id, or
+     * searches allTracks if sessionReader is null
+     * @param trackId
+     * @param allTracks
+     * @return
+     */
+    public static Track getMatchingTrack(String trackId, List<Track> allTracks){
+        IGVSessionReader reader = currentReader.get();
+        List<Track> matchingTracks;
+        if(reader != null){
+            matchingTracks = reader.getTracksById(trackId);
+        }else{
+            if(allTracks == null) throw new IllegalStateException("No session reader and no tracks to search to resolve Track references");
+            matchingTracks = new ArrayList<Track>();
+            for(Track track: allTracks){
+                if(trackId.equals(track.getId())){
+                    matchingTracks.add(track);
+                    break;
+                }
+            }
+        }
+        if (matchingTracks == null || matchingTracks.size() == 0) {
+            //Either the session file is corrupted, or we just haven't loaded the relevant track yet
+            return null;
+        }else if (matchingTracks.size() >= 2) {
+            log.debug("Found multiple tracks with id  " + trackId + ", using the first");
+        }
+        return matchingTracks.get(0);
     }
 
 }

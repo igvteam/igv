@@ -1375,12 +1375,10 @@ public class IGV {
             return true;
 
         } catch (Exception e) {
-            log.error("Error loading session", e);
             String message = "Error loading session session : <br>&nbsp;&nbsp;" + sessionPath + "<br>" +
-                    e.getMessage();
-            MessageUtils.showMessage(message);
-            return false;
-
+                     e.getMessage();
+            log.error(message, e);
+            throw new RuntimeException(e);
         } finally {
             if (inputStream != null) {
                 try {

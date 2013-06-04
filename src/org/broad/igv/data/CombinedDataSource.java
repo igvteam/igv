@@ -12,10 +12,18 @@
 package org.broad.igv.data;
 
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.session.IGVSessionReader;
+import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.track.DataTrack;
+import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -27,6 +35,7 @@ import java.util.List;
  * TODO Multiple DataSources. There is no 2
  * @author jrobinso, jacob
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public class CombinedDataSource implements DataSource {
 
     public enum Operation{
@@ -41,15 +50,31 @@ public class CombinedDataSource implements DataSource {
 
     }
 
+    private String source0Id;
+    private String source1Id;
+
+    @XmlJavaTypeAdapter(DataTrackAdapter.class)
+    @XmlAttribute(name = "source0")
     DataTrack source0;
+
+    @XmlJavaTypeAdapter(DataTrackAdapter.class)
+    @XmlAttribute(name = "source1")
     DataTrack source1;
 
+    @XmlAttribute
     Operation operation = Operation.ADD;
+
+    @SubtlyImportant
+    private CombinedDataSource(){}
 
     public CombinedDataSource(DataTrack source0, DataTrack source1, Operation operation){
         this.source0 = source0;
         this.source1 = source1;
         this.operation = operation;
+    }
+
+    public void updateTrackReferences(List<Track> allTracks) {
+        //TODO If source0 and source1 weren't resolved on first pass, need to resolve here
     }
 
     public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom){
@@ -301,5 +326,23 @@ public class CombinedDataSource implements DataSource {
 
     public Collection<WindowFunction> getAvailableWindowFunctions() {
         return new ArrayList<WindowFunction>();
+    }
+
+    private static class DataTrackAdapter extends XmlAdapter<String, org.broad.igv.track.DataTrack> {
+
+        @Override
+        public String marshal(DataTrack dataTrack) throws Exception {
+            return dataTrack.getId();
+        }
+
+        @Override
+        public DataTrack unmarshal(String trackId) throws Exception {
+            DataTrack dataTrack = (DataTrack) IGVSessionReader.getMatchingTrack(trackId, null);
+            if(dataTrack == null){
+                //Matching track not found
+            }
+            return dataTrack;
+        }
+
     }
 }

@@ -31,7 +31,6 @@ import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.*;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -574,12 +573,6 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
 
     public final static class MyMapAdapter extends XmlAdapter<XmlMap, LinkedHashMap<Argument, Object>> {
 
-        public static WeakReference<IGVSessionReader> sessionReader;
-
-        public static void setSessionReader(IGVSessionReader igvSessionReader) {
-            sessionReader = new WeakReference<IGVSessionReader>(igvSessionReader);
-        }
-
         @Override
         public LinkedHashMap<Argument, Object> unmarshal(XmlMap v) throws Exception {
             LinkedHashMap<Argument, Object> argumentMap = new LinkedHashMap(v.arg.size());
@@ -602,37 +595,6 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
             return argumentMap;
         }
 
-        /**
-         * Uses #sessionReader to lookup matching tracks by id, or
-         * searches allTracks if sessionReader is null
-         * @param trackId
-         * @param allTracks
-         * @return
-         */
-        private static Track getMatchingTrack(String trackId, List<Track> allTracks){
-            IGVSessionReader reader = sessionReader.get();
-            List<Track> matchingTracks;
-            if(reader != null){
-                matchingTracks = reader.getTracksById(trackId);
-            }else{
-                if(allTracks == null) throw new IllegalStateException("No session reader and no tracks to search to resolve Track references");
-                matchingTracks = new ArrayList<Track>();
-                for(Track track: allTracks){
-                    if(trackId.equals(track.getId())){
-                        matchingTracks.add(track);
-                        break;
-                    }
-                }
-            }
-            if (matchingTracks == null || matchingTracks.size() == 0) {
-                //Either the session file is corrupted, or we just haven't loaded the relevant track yet
-                return null;
-            }else if (matchingTracks.size() >= 2) {
-                log.debug("Found multiple tracks with id  " + trackId + ", using the first");
-            }
-            return matchingTracks.get(0);
-        }
-
         private static Object findTrackReference(Argument argument, List<Track> allTracks){
             Object oVal = null;
             switch (argument.getType()){
@@ -640,7 +602,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
                     List<FeatureTrack> inputTracks = new ArrayList<FeatureTrack>(argument.value.size());
 
                     for(String trackId: argument.value){
-                        inputTracks.add((FeatureTrack) getMatchingTrack(trackId, allTracks));
+                        inputTracks.add((FeatureTrack) IGVSessionReader.getMatchingTrack(trackId, allTracks));
                     }
                     oVal = inputTracks;
                     break;
@@ -648,7 +610,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
                 case DATA_TRACK:
                 case ALIGNMENT_TRACK:
                     String trackId = argument.value.get(0);
-                    oVal = getMatchingTrack(trackId, allTracks);
+                    oVal = IGVSessionReader.getMatchingTrack(trackId, allTracks);
                     break;
             }
             return oVal;
@@ -698,5 +660,6 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
         }
 
     }
+
 
 }
