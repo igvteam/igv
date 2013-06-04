@@ -170,6 +170,8 @@ Required arguments:
   outputFile   Either a binary tdf file, a text wig file, or both.  The output file type is determined
                by file extension, for example "output.tdf".  To output both formats supply two file names
                separated by a commas,  for example  "outputBinary.tdf,outputText.wig".
+               The special string "stdout" can be used in either position, in which case the output will
+               be written to standard output in wig format.
 
   genome       A genome id or filename. See details below. Default is hg18.
 
@@ -245,6 +247,9 @@ Usage:
 
   igvtools  sort [options] [inputFile]  [outputFile]
 
+
+The special string "stdout" can be used as [outputFile], in which case the output will
+be written to standard output instead of a file.
 
 Options:
 
