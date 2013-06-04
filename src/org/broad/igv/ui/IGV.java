@@ -1942,6 +1942,12 @@ public class IGV {
         return featureTracks;
     }
 
+    public List<DataTrack> getDataTracks() {
+        Iterable<DataTrack> dataTracksIter = Iterables.filter(getAllTracks(), DataTrack.class);
+        List<DataTrack> dataTracks = Lists.newArrayList(dataTracksIter);
+        return dataTracks;
+    }
+
     public void clearSelections() {
         for (Track t : getAllTracks()) {
             if (t != null)

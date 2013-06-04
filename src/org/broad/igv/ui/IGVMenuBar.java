@@ -30,6 +30,7 @@ import org.broad.igv.gs.GSUtils;
 import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.lists.VariantListManager;
 import org.broad.igv.tools.IgvToolsGui;
+import org.broad.igv.track.CombinedDataSourceDialog;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.action.*;
@@ -321,6 +322,22 @@ public class IGVMenuBar extends JMenuBar {
             menuItems.add(sqlDBProfileEditor);
         }
 
+
+        //-------------------------------------//
+
+
+        //DataTrack Math------------------------//
+        if(!Globals.isProduction()){
+            JMenuItem combineDataItem = new JMenuItem("Combine Data Tracks");
+            combineDataItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    CombinedDataSourceDialog dialog = new CombinedDataSourceDialog(IGV.getMainFrame());
+                    dialog.setVisible(true);
+                }
+            });
+            menuItems.add(combineDataItem);
+        }
 
         //-------------------------------------//
 

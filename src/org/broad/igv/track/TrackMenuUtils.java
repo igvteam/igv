@@ -300,11 +300,11 @@ public class TrackMenuUtils {
         menu.addSeparator();
         menu.add(getChangeKMPlotItem(tracks));
 
-        if(!Globals.isProduction()){
-            for(JMenuItem item: getCombinedDataSourceItems(tracks)){
-                menu.add(item);
-            }
-        }
+//        if(!Globals.isProduction()){
+//            for(JMenuItem item: getCombinedDataSourceItems(tracks)){
+//                menu.add(item);
+//            }
+//        }
 
     }
 

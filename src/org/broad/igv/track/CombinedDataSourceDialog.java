@@ -15,10 +15,14 @@
 
 package org.broad.igv.track;
 
+import com.google.common.base.Predicate;
 import org.apache.log4j.Logger;
 import org.broad.igv.cli_plugin.ui.TrackArgument;
+import org.broad.igv.data.CombinedDataSource;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.PanelName;
 import org.broad.igv.util.StringUtils;
+import org.broad.igv.util.collections.CollUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -34,42 +38,45 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 /**
- * @author User #2
+ * @author jacob
  */
-public class AnalysisDialog extends JDialog {
+public class CombinedDataSourceDialog extends JDialog {
 
-    private static Logger log = Logger.getLogger(AnalysisDialog.class);
+    private static Logger log = Logger.getLogger(CombinedDataSourceDialog.class);
 
 
-    public AnalysisDialog(Frame owner) {
+    public CombinedDataSourceDialog(Frame owner) {
         super(owner);
         initComponents();
 
-        ArrayList<CombinedFeatureSource.Operation> dialogOperations = new ArrayList<CombinedFeatureSource.Operation>(
-                Arrays.asList(CombinedFeatureSource.Operation.values()));
-        dialogOperations.remove(CombinedFeatureSource.Operation.MULTIINTER);
+        ArrayList<CombinedDataSource.Operation> dialogOperations = new ArrayList<CombinedDataSource.Operation>(
+                Arrays.asList(CombinedDataSource.Operation.values()));
 
         operation.setModel(new DefaultComboBoxModel(dialogOperations.toArray()));
-        trackABox.setModel(new DefaultComboBoxModel((IGV.getInstance().getFeatureTracks()).toArray()));
-        trackBBox.setModel(new DefaultComboBoxModel((IGV.getInstance().getFeatureTracks()).toArray()));
+
+        List<DataTrack> visibleTracks = CollUtils.filter(IGV.getInstance().getDataTracks(), new Predicate<DataTrack>() {
+            @Override
+            public boolean apply(DataTrack input) {
+                return input.isVisible();
+            }
+        });
+
+        trackABox.setModel(new DefaultComboBoxModel(visibleTracks.toArray()));
+        trackBBox.setModel(new DefaultComboBoxModel(visibleTracks.toArray()));
 
         operation.setRenderer(new OperationComboBoxRenderer());
 
         trackABox.setRenderer(new TrackArgument.TrackComboBoxRenderer());
         trackBBox.setRenderer(new TrackArgument.TrackComboBoxRenderer());
 
-        ItemListener listener = new SetOutputTrackNameListener();
-        trackABox.addItemListener(listener);
-        trackBBox.addItemListener(listener);
-        operation.addItemListener(listener);
-
         setOutputTrackName();
-
+        operation.addItemListener(new SetOutputTrackNameListener());
     }
 
-    public AnalysisDialog(Frame owner, Iterator<Track> tracks) {
+    public CombinedDataSourceDialog(Frame owner, Iterator<Track> tracks) {
         this(owner);
 
         trackABox.setSelectedItem(tracks.next());
@@ -82,12 +89,18 @@ public class AnalysisDialog extends JDialog {
 
     private void okButtonActionPerformed(ActionEvent e) {
 
-        FeatureTrack track1 = (FeatureTrack) trackABox.getSelectedItem();
-        FeatureTrack track2 = (FeatureTrack) trackBBox.getSelectedItem();
-        CombinedFeatureSource source = new CombinedFeatureSource(new FeatureSource[]{track1.source, track2.source},
-                (CombinedFeatureSource.Operation) operation.getSelectedItem());
-        Track newTrack = new FeatureTrack(track1.getId() + track2.getId(), resultName.getText(), source);
-        IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
+        DataTrack track0 = (DataTrack) trackABox.getSelectedItem();
+        DataTrack track1 = (DataTrack) trackBBox.getSelectedItem();
+        CombinedDataSource.Operation op = (CombinedDataSource.Operation) operation.getSelectedItem();
+        String text = resultName.getText();
+
+        CombinedDataSource source = new CombinedDataSource(track0, track1, op);
+
+        DataSourceTrack newTrack = new DataSourceTrack(null, track0.getId() + track1.getId() + text, text, source);
+        TrackMenuUtils.changeRenderer(Arrays.<Track>asList(newTrack), track0.getRenderer().getClass());
+        newTrack.setDataRange(track0.getDataRange());
+        newTrack.setColorScale(track0.getColorScale());
+        IGV.getInstance().addTracks(Arrays.<Track>asList(newTrack), PanelName.DATA_PANEL);
 
         this.setVisible(false);
 
@@ -198,7 +211,7 @@ public class AnalysisDialog extends JDialog {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for (int i = 0; i < contentPanel.getComponentCount(); i++) {
+                    for(int i = 0; i < contentPanel.getComponentCount(); i++) {
                         Rectangle bounds = contentPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -216,8 +229,8 @@ public class AnalysisDialog extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 80, 80};
-                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
+                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 80, 80};
+                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("  OK  ");
@@ -228,11 +241,12 @@ public class AnalysisDialog extends JDialog {
                     }
                 });
                 buttonBar.add(okButton, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
+                    new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- helpButton ----
                 helpButton.setText("Help");
+                helpButton.setVisible(false);
                 helpButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -240,8 +254,8 @@ public class AnalysisDialog extends JDialog {
                     }
                 });
                 buttonBar.add(helpButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
+                    new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -252,8 +266,8 @@ public class AnalysisDialog extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
+                    new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
@@ -285,7 +299,7 @@ public class AnalysisDialog extends JDialog {
     private class OperationComboBoxRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            CombinedFeatureSource.Operation op = (CombinedFeatureSource.Operation) value;
+            CombinedDataSource.Operation op = (CombinedDataSource.Operation) value;
             String toShow = StringUtils.capWords(op.name());
             return super.getListCellRendererComponent(list, toShow, index, isSelected, cellHasFocus);
         }
@@ -301,10 +315,21 @@ public class AnalysisDialog extends JDialog {
     }
 
     private void setOutputTrackName() {
-        String name = ((Track) trackABox.getSelectedItem()).getName();
-        name += " " + operation.getSelectedItem() + " ";
-        name += ((Track) trackBBox.getSelectedItem()).getName();
+        String name = "Sum";
+        CombinedDataSource.Operation op = (CombinedDataSource.Operation) operation.getSelectedItem();
+        switch (op){
+            case ADD:
+                break;
+            case SUBTRACT:
+                name = "Difference";
+                break;
+        }
         resultName.setText(name);
+
+//        String name = ((Track) trackABox.getSelectedItem()).getName();
+//        name += " " + operation.getSelectedItem() + " ";
+//        name += ((Track) trackBBox.getSelectedItem()).getName();
+
     }
 
 }
