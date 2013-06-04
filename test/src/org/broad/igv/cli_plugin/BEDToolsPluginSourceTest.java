@@ -83,8 +83,25 @@ public class BEDToolsPluginSourceTest extends AbstractPluginTest {
         List<Argument> argumentList = command.argumentList;
         LinkedHashMap<Argument, Object> arguments = new LinkedHashMap<Argument, Object>(argumentList.size());
         int argnum = 0;
-        arguments.put(argumentList.get(argnum), argumentList.get(argnum).getDefaultValue());
-        argnum++;
+        int numArgsSet = 1;
+        if(cmd.equalsIgnoreCase("intersect")){
+            numArgsSet = 3;
+        }else if(cmd.equalsIgnoreCase("coverage")){
+            numArgsSet = 2;
+        }
+        for(; argnum < numArgsSet; argnum++){
+
+            Argument argument = argumentList.get(argnum);
+
+            Object value = argumentList.get(argnum).getDefaultValue();
+
+            if(argument.getType() == Argument.InputType.BOOL){
+                value = Boolean.parseBoolean((String) value);
+            }
+
+            arguments.put(argument, value);
+        }
+
 
         List<FeatureTrack> trackList = new ArrayList<FeatureTrack>(paths.length);
         TrackLoader loader = new TrackLoader();

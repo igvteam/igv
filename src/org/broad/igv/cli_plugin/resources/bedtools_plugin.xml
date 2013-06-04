@@ -30,7 +30,9 @@
         </default_output>
 
         <command name="Intersect" cmd="intersect">
-            <arg name="Arguments" cmd_arg="" type="TEXT" defaultValue="-bed -split"/>
+            <arg name="Arguments" cmd_arg="" type="TEXT"/>
+            <arg name="Split by Exons" cmd_arg="-split" type="BOOL" defaultValue="true"/>
+            <arg name="Output bed" cmd_arg="-bed" type="BOOL" defaultValue="true" visible="false"/>
             <arg name="Track A" cmd_arg="-a" type="FEATURE_TRACK"/>
             <arg name="Track B" cmd_arg="-b" type="FEATURE_TRACK"/>
         </command>
@@ -40,13 +42,14 @@
         <command name="Closest" cmd="closest"/>
 
         <command name="Window" cmd="window">
-            <arg name="Arguments" cmd_arg="-bed" type="TEXT" defaultValue=""/>
+            <arg name="Arguments" cmd_arg="" type="TEXT"/>
             <arg name="Track A" cmd_arg="-a" type="FEATURE_TRACK"/>
             <arg name="Track B" cmd_arg="-b" type="FEATURE_TRACK"/>
         </command>
 
         <command name="Coverage" cmd="coverage">
-            <arg name="Arguments" cmd_arg="" type="TEXT" defaultValue="-split"/>
+            <arg name="Arguments" cmd_arg="" type="TEXT"/>
+            <arg name="Split by Exons" cmd_arg="-split" type="BOOL" defaultValue="true"/>
             <arg name="Track A" cmd_arg="-a" type="FEATURE_TRACK"/>
             <arg name="Track B" cmd_arg="-b" type="FEATURE_TRACK"/>
         </command>

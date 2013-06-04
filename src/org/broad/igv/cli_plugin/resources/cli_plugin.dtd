@@ -170,6 +170,11 @@ output
     If true this argument is written to the command line
     If false it isn't. This is so we can feed inputs to a different command
 
+visible
+    optional, default true
+    Whether the argument is visible to the user.
+    Useful if we just want to pass an argument on the command line always
+
 encodingCodec
     Optional; default is BED format
     Fully qualified class name to use for encoding features to strings.
