@@ -189,7 +189,7 @@ public class IgvTools {
             fileAppender.activateOptions();
             fileAppender.setLayout(fileLayout);
 
-            Logger.getRootLogger().addAppender(fileAppender);
+            //Logger.getRootLogger().addAppender(fileAppender);
         }
 
         if(Logger.getRootLogger().getAppender(CONSOLE_APPENDER_NAME) == null){
@@ -198,6 +198,7 @@ public class IgvTools {
             ConsoleAppender consoleAppender = new ConsoleAppender();
             consoleAppender.setThreshold(Level.INFO);
             consoleAppender.setName(CONSOLE_APPENDER_NAME);
+            consoleAppender.setFollow(true);
             consoleAppender.activateOptions();
             consoleAppender.setLayout(consoleLayout);
 
@@ -313,7 +314,13 @@ public class IgvTools {
                 //need to redirect user messages
                 if(ofile.equals(STDOUT_FILE_STR)){
                     userMessageWriter = System.err;
-                    ((ConsoleAppender) Logger.getRootLogger().getAppender(CONSOLE_APPENDER_NAME)).setTarget("System.err");
+
+                    ConsoleAppender appender = (ConsoleAppender) Logger.getRootLogger().getAppender(CONSOLE_APPENDER_NAME);
+                    appender.setTarget(ConsoleAppender.SYSTEM_ERR);
+                    appender.activateOptions();
+
+                    //See log4j.properties file
+                    Logger.getRootLogger().removeAppender("stdout");
                 }
 
                 String genomeId = nonOptionArgs[3];
