@@ -134,7 +134,7 @@ public class DataSourceTrack extends DataTrack {
 
     @Override
     public Collection<WindowFunction> getAvailableWindowFunctions() {
-        return dataSource.getAvailableWindowFunctions();
+        return dataSource != null ? dataSource.getAvailableWindowFunctions() : null;
     }
 
     @Override

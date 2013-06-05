@@ -1007,6 +1007,10 @@ public abstract class AbstractTrack implements Track {
         // Default is to do nothing
     }
 
+    protected void setRenderer(Renderer renderer) {
+        //Here as setter for corresponding getter, subclasses should override
+    }
+
     @XmlJavaTypeAdapter(SessionXmlAdapters.Renderer.class)
     @XmlAttribute(name = "renderer")
     @Override

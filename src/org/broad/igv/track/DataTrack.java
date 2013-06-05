@@ -26,18 +26,18 @@ import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.renderer.DataRange;
-import org.broad.igv.renderer.DataRenderer;
-import org.broad.igv.renderer.GraphicUtils;
-import org.broad.igv.renderer.XYPlotRenderer;
+import org.broad.igv.renderer.*;
 import org.broad.igv.session.IGVSessionReader;
+import org.broad.igv.session.SessionXmlAdapters;
 import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.awt.*;
 import java.util.Collection;
 import java.util.HashMap;
@@ -52,6 +52,7 @@ import java.util.List;
 public abstract class DataTrack extends AbstractTrack {
 
     private static Logger log = Logger.getLogger(DataTrack.class);
+
     private DataRenderer renderer;
 
     // TODO -- memory leak.  This needs to get cleared when the gene list changes
@@ -194,7 +195,6 @@ public abstract class DataTrack extends AbstractTrack {
         loadedIntervalCache.clear();
     }
 
-
     public void setRendererClass(Class rc) {
         try {
             renderer = (DataRenderer) rc.newInstance();
@@ -203,7 +203,15 @@ public abstract class DataTrack extends AbstractTrack {
         }
     }
 
+    @Override
+    protected void setRenderer(Renderer renderer) {
+        this.renderer = (DataRenderer) renderer;
+    }
 
+
+    @XmlJavaTypeAdapter(SessionXmlAdapters.Renderer.class)
+    @XmlAttribute(name = "renderer")
+    @Override
     public DataRenderer getRenderer() {
         if (renderer == null) {
             setRendererClass(getDefaultRendererClass());
