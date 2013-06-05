@@ -284,12 +284,15 @@ public class LoadFromServerAction extends MenuAction {
             throws IOException {
 
         LinkedHashSet<String> xmlFileUrls = new LinkedHashSet();
-        while (true) {
-            String xmlFileUrl = bufferedReader.readLine();
-            if ((xmlFileUrl == null) || (xmlFileUrl.trim().length() == 0)) {
-                break;
-            }
+        String xmlFileUrl;
+        while ((xmlFileUrl = bufferedReader.readLine()) != null) {
+
             xmlFileUrl = xmlFileUrl.trim();
+
+            if(xmlFileUrl.length() == 0 || xmlFileUrl.startsWith("#")){
+                continue;
+            }
+
             xmlFileUrls.add(xmlFileUrl);
         }
 
