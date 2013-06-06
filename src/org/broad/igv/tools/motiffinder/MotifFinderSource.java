@@ -60,7 +60,7 @@ public class MotifFinderSource implements FeatureSource<Feature> {
     @XmlJavaTypeAdapter(SessionXmlAdapters.Genome.class)
     @XmlAttribute private Genome genome;
 
-    @XmlAttribute private int featureWindowSize = (int) 100e3;
+    @XmlAttribute private int featureWindowSize = -1;
 
     @XmlAttribute private Strand strand;
 
@@ -126,7 +126,6 @@ public class MotifFinderSource implements FeatureSource<Feature> {
      * @return
      */
     public static Iterator<Feature> search(String pattern, Strand strand, String chr, int posStart, byte[] sequence){
-
         switch(strand){
             case POSITIVE:
                 return searchSingleStrand(pattern, strand, chr, posStart, sequence);

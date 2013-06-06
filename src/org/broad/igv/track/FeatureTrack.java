@@ -812,15 +812,27 @@ public class FeatureTrack extends AbstractTrack {
                         log.trace(String.format("Loading features: %s:%d-%d", chr, start, end));
                     }
 
-                    int maxEnd = end;
-                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                    if (genome != null) {
-                        Chromosome c = genome.getChromosome(chr);
-                        if (c != null) maxEnd = Math.max(c.getLength(), end);
-                    }
+
                     int delta = (end - start) / 2;
                     int expandedStart = start - delta;
                     int expandedEnd = end + delta;
+
+                    //Make sure we are only querying within the chromosome
+                    //we allow for somewhat pathological cases of start
+                    //being negative and end being outside, but
+                    //only if directly queried. Our expansion should not
+                    //set start < 0 or end > chromosomeLength
+                    if(start >= 0){
+                        expandedStart = Math.max(0, expandedStart);
+                    }
+
+
+                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                    if (genome != null) {
+                        Chromosome c = genome.getChromosome(chr);
+                        int cLength = c.getLength();
+                        if (c != null && end < cLength) expandedEnd = Math.min(cLength, expandedEnd);
+                    }
 
                     Iterator<Feature> iter = source.getFeatures(chr, expandedStart, expandedEnd);
                     if (iter == null) {
