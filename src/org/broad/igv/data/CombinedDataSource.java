@@ -11,13 +11,11 @@
 
 package org.broad.igv.data;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.SubtlyImportant;
-import org.broad.igv.track.DataTrack;
-import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackType;
-import org.broad.igv.track.WindowFunction;
+import org.broad.igv.track.*;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -38,6 +36,8 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.NONE)
 public class CombinedDataSource implements DataSource {
 
+    private static Logger log = Logger.getLogger(CombinedDataSource.class);
+
     public enum Operation{
         ADD("+"),
         SUBTRACT("-");
@@ -49,9 +49,6 @@ public class CombinedDataSource implements DataSource {
         }
 
     }
-
-    private String source0Id;
-    private String source1Id;
 
     @XmlJavaTypeAdapter(DataTrackAdapter.class)
     @XmlAttribute(name = "source0")
@@ -74,7 +71,21 @@ public class CombinedDataSource implements DataSource {
     }
 
     public void updateTrackReferences(List<Track> allTracks) {
-        //TODO If source0 and source1 weren't resolved on first pass, need to resolve here
+        //We filled in sources with placeholder tracks if not found, now find the real ones
+        source0 = updateTrackReference(source0, allTracks);
+        source1 = updateTrackReference(source1, allTracks);
+    }
+
+    private DataTrack updateTrackReference(DataTrack memberTrack, List<Track> allTracks){
+
+        if(memberTrack.getName() == null && memberTrack.getResourceLocator() == null){
+            DataTrack matchingTrack = (DataTrack) IGVSessionReader.getMatchingTrack(memberTrack.getId(), allTracks);
+            if(matchingTrack == null) throw new IllegalStateException("Could not find track with ID " + memberTrack.getId());
+            return matchingTrack;
+        }else{
+            return memberTrack;
+        }
+
     }
 
     public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom){
@@ -339,7 +350,7 @@ public class CombinedDataSource implements DataSource {
         public DataTrack unmarshal(String trackId) throws Exception {
             DataTrack dataTrack = (DataTrack) IGVSessionReader.getMatchingTrack(trackId, null);
             if(dataTrack == null){
-                //Matching track not found
+                dataTrack = new DataSourceTrack(null, trackId, null, null);
             }
             return dataTrack;
         }

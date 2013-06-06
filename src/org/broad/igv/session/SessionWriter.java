@@ -18,10 +18,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.session.IGVSessionReader.SessionAttribute;
 import org.broad.igv.session.IGVSessionReader.SessionElement;
-import org.broad.igv.track.AbstractTrack;
-import org.broad.igv.track.AttributeManager;
-import org.broad.igv.track.FeatureTrack;
-import org.broad.igv.track.Track;
+import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
 import org.broad.igv.ui.TrackFilterElement;
@@ -418,6 +415,9 @@ public class SessionWriter {
         if(track instanceof FeatureTrack){
             FeatureTrack featureTrack = (FeatureTrack) track;
             featureTrack.marshalSource(m, trackElement);
+        }else if(track instanceof DataSourceTrack){
+            DataSourceTrack dataSourceTrack = (DataSourceTrack) track;
+            dataSourceTrack.marshalSource(m, trackElement);
         }
     }
 

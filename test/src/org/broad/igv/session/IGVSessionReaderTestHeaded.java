@@ -11,10 +11,15 @@
 
 package org.broad.igv.session;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import org.broad.igv.cli_plugin.PluginSpecReader;
+import org.broad.igv.feature.LocusScore;
+import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.CoverageTrack;
 import org.broad.igv.track.DataSourceTrack;
+import org.broad.igv.track.DataTrack;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.AbstractHeadedTest;
@@ -140,6 +145,62 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
         assertEquals("", ro.getColorByTag());
     }
 
+    private static class ContIdPredicate implements Predicate<Track>{
+
+        private String[] contIds;
+
+        ContIdPredicate(String contId){
+            this.contIds = new String[]{contId};
+        }
+
+        ContIdPredicate(String[] contIds){
+            this.contIds = contIds;
+        }
+
+        @Override
+        public boolean apply(Track input) {
+            boolean contains = true;
+            for(String contId: contIds){
+                contains &= input.getId().contains(contId);
+                if(!contains) break;
+            }
+            return contains;
+        }
+
+    }
+
+    @Test
+    public void testLoadCombinedDataSourceSession() throws Exception{
+        String sessionpath = TestUtils.DATA_DIR + "sessions/subtypes_wdiff.xml";
+        rewriteRestoreSession(sessionpath);
+
+        String combPart0 = "TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_E11_155884";
+        String combPart1 = "TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D05_223156";
+
+        DataTrack track0 = Iterables.find(IGV.getInstance().getDataTracks(), new ContIdPredicate(combPart0));
+        DataTrack track1 = Iterables.find(IGV.getInstance().getDataTracks(), new ContIdPredicate(combPart1));
+
+        DataSourceTrack combTrack = (DataSourceTrack) Iterables.find(IGV.getInstance().getDataTracks(), new ContIdPredicate(new String[]{combPart0, combPart1}));
+
+        assertTrue(combTrack.getRenderer() instanceof BarChartRenderer);
+        assertEquals("Difference", combTrack.getName());
+
+
+        String chr = "chr1";
+        int start = 0;
+        int end = 1000;
+
+        LocusScore sumScore0 = track0.getSummaryScores(chr, start, end, 0).get(0);
+        LocusScore sumScore1 = track1.getSummaryScores(chr, start, end, 0).get(0);
+        LocusScore sumScoreComb = combTrack.getSummaryScores(chr, start, end, 0).get(0);
+
+        assertEquals(sumScore0.getStart(), sumScore1.getStart());
+        assertEquals(sumScore0.getStart(), sumScoreComb.getStart());
+        assertEquals(sumScore1.getEnd(), sumScoreComb.getEnd());
+
+        assertEquals(sumScore0.getScore() - sumScore1.getScore(), sumScoreComb.getScore(), 1e-10);
+
+    }
 
 
     /**
