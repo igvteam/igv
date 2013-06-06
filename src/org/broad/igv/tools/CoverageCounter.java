@@ -139,15 +139,11 @@ public class CoverageCounter {
      */
     private float[] buffer;
 
-
-    private boolean computeTDF = true;
-
-
     private final static Set<Byte> nucleotidesKeep = new HashSet<Byte>();
     private final static byte[] nucleotides = new byte[]{'A', 'C', 'G', 'T', 'N'};
 
     /**
-     * Whether to write wig data to stdout
+     * Whether to write wig data to standard out (stdout)
      */
     private boolean writeStdOut;
 
@@ -332,7 +328,6 @@ public class CoverageCounter {
                     AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
 
                     if (blocks != null && !pairedCoverage) {
-                        int lastBlockEnd = -1;
                         for (AlignmentBlock block : blocks) {
 
                             if (!block.isSoftClipped()) {
@@ -383,13 +378,11 @@ public class CoverageCounter {
                                     if (bases != null && baseIdx >= 0 && baseIdx < bases.length) {
                                         base = bases[baseIdx];
                                     }
-                                    int idx = pos - blockStart;
-                                    byte quality = (idx >= 0 && idx < block.qualities.length) ?
-                                            block.qualities[pos - blockStart] : (byte) 0;
-                                    counter.incrementCount(pos, base, quality, strand);
+                                    //int idx = pos - blockStart;
+                                    //byte quality = (idx >= 0 && idx < block.qualities.length) ?
+                                            //block.qualities[pos - blockStart] : (byte) 0;
+                                    counter.incrementCount(pos, base, strand);
                                 }
-
-                                lastBlockEnd = block.getEnd();
                             }
                         }
                     } else {
@@ -411,7 +404,7 @@ public class CoverageCounter {
 
 
                         for (int pos = adjustedStart; pos < adjustedEnd; pos++) {
-                            counter.incrementCount(pos, (byte) 'N', (byte) 0, strand);
+                            counter.incrementCount(pos, (byte) 'N', strand);
                         }
                     }
 
@@ -484,7 +477,7 @@ public class CoverageCounter {
         /**
          * Map of window index -> counter
          */
-        TreeMap<Integer, Counter> counts = new TreeMap();
+        TreeMap<Integer, Counter> counts = new TreeMap<Integer, Counter>();
 
         ReadCounter(String chr) {
             this.chr = chr;
@@ -493,13 +486,12 @@ public class CoverageCounter {
         /**
          * @param position - genomic position
          * @param base     - nucleotide
-         * @param quality  - base quality of call
          * @param strand   - which strand to increment count. Should be POSITIVE or NEGATIVE
          */
-        void incrementCount(int position, byte base, byte quality, Strand strand) {
+        void incrementCount(int position, byte base, Strand strand) {
             final Counter counter = getCounterForPosition(position);
             int strandNum = strand.equals(Strand.POSITIVE) ? 0 : 1;
-            counter.increment(base, quality, strandNum);
+            counter.increment(base, strandNum);
         }
 
 
@@ -512,8 +504,7 @@ public class CoverageCounter {
             if (!counts.containsKey(idx)) {
                 counts.put(idx, new Counter());
             }
-            final Counter counter = counts.get(idx);
-            return counter;
+            return counts.get(idx);
         }
 
 
@@ -524,7 +515,7 @@ public class CoverageCounter {
          * @param position - genomic position
          */
         void closeBucketsBefore(int position, WigWriter wigWriter) {
-            List<Integer> bucketsToClose = new ArrayList();
+            List<Integer> bucketsToClose = new ArrayList<Integer>();
 
             int bucket = position / windowSize;
             for (Map.Entry<Integer, Counter> entry : counts.entrySet()) {
@@ -649,7 +640,7 @@ public class CoverageCounter {
             return totalCount;
         }
 
-        void increment(byte base, byte quality, int strand) {
+        void increment(byte base, int strand) {
 
             if (outputBases) {
                 incrementNucleotide(base, strand);
@@ -660,7 +651,6 @@ public class CoverageCounter {
             }
 
             this.totalCount++;
-            //this.qualityCount += quality;
         }
 
         /**
@@ -724,8 +714,8 @@ public class CoverageCounter {
 
         public void addData(String chr, int start, int end, float[] data) {
 
-            for (int i = 0; i < data.length; i++) {
-                if (Float.isNaN(data[i])) {
+            for (float di: data) {
+                if (Float.isNaN(di)) {
                     return;
                 }
             }
