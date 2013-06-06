@@ -15,7 +15,7 @@
           description="bedtools: a flexible suite of utilities for comparing genomic features.">
 
         <default_arg>
-            <arg name="Arguments" cmd_arg="" type="TEXT" defaultValue=""/>
+            <arg name="Optional Arguments" cmd_arg="" type="TEXT" defaultValue=""/>
             <arg name="Track A" cmd_arg="-a" type="FEATURE_TRACK"/>
             <arg name="Track B" cmd_arg="-b" type="FEATURE_TRACK"
                  encodingCodec="org.broad.igv.feature.tribble.IGVBEDCodec"/>
@@ -30,7 +30,7 @@
         </default_output>
 
         <command name="Intersect" cmd="intersect">
-            <arg name="Arguments" cmd_arg="" type="TEXT"/>
+            <arg name="Optional Arguments" cmd_arg="" type="TEXT"/>
             <arg name="Split by Exons" cmd_arg="-split" type="BOOL" defaultValue="true"/>
             <arg name="Output bed" cmd_arg="-bed" type="BOOL" defaultValue="true" visible="false"/>
             <arg name="Track A" cmd_arg="-a" type="FEATURE_TRACK"/>
@@ -42,13 +42,13 @@
         <command name="Closest" cmd="closest"/>
 
         <command name="Window" cmd="window">
-            <arg name="Arguments" cmd_arg="" type="TEXT"/>
+            <arg name="Optional Arguments" cmd_arg="" type="TEXT"/>
             <arg name="Track A" cmd_arg="-a" type="FEATURE_TRACK"/>
             <arg name="Track B" cmd_arg="-b" type="FEATURE_TRACK"/>
         </command>
 
         <command name="Coverage" cmd="coverage">
-            <arg name="Arguments" cmd_arg="" type="TEXT"/>
+            <arg name="Optional Arguments" cmd_arg="" type="TEXT"/>
             <arg name="Split by Exons" cmd_arg="-split" type="BOOL" defaultValue="true"/>
             <arg name="Track A" cmd_arg="-a" type="FEATURE_TRACK"/>
             <arg name="Track B" cmd_arg="-b" type="FEATURE_TRACK"/>
