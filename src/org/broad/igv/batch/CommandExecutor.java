@@ -179,6 +179,7 @@ public class CommandExecutor {
             if (RuntimeUtils.getAvailableMemoryFraction() < 0.5) {
                 log.debug("Clearing caches");
                 LRUCache.clearCaches();
+                System.gc();
             }
             log.debug("Finished execution: " + command + "  sleeping ....");
             if (sleepInterval > 0) try {

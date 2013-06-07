@@ -10,7 +10,6 @@
  */
 package org.broad.igv.sam;
 
-import com.google.common.collect.MapMaker;
 import com.google.common.eventbus.EventBus;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
@@ -39,7 +38,8 @@ public class AlignmentDataManager {
     /**
      * Map of reference frame name -> alignment interval
      */
-    private Map<String, AlignmentInterval> loadedIntervalMap = (new MapMaker()).softValues().makeMap();
+    private Map<String, AlignmentInterval> loadedIntervalMap = new HashMap<String, AlignmentInterval>();//new MapMaker()).softValues().makeMap();
+    //private Cache<String, AlignmentInterval> loadedIntervalMap = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).initialCapacity(1).build();
 
     private HashMap<String, String> chrMappings = new HashMap();
     private volatile boolean isLoading = false;
@@ -285,7 +285,7 @@ public class AlignmentDataManager {
         if (loadedInterval != null) {
             // First see if we have a loaded interval that fully contain the requested interval.  If yes we're done
             if (loadedInterval.contains(chr, start, end)) {
-                // Requested interval is fully contained in an existing on, we're done
+                // Requested interval is fully contained in the existing one, we're done
                 return;
 
             }
@@ -295,10 +295,7 @@ public class AlignmentDataManager {
             adjustedStart = Math.max(0, Math.min(start, center - expand));
             adjustedEnd = Math.max(end, center + expand);
         }
-
-
         loadAlignments(chr, adjustedStart, adjustedEnd, renderOptions, context);
-
     }
 
     public synchronized LinkedHashMap<String, List<AlignmentInterval.Row>> getGroups(RenderContext context,
@@ -339,7 +336,7 @@ public class AlignmentDataManager {
 
             public void run() {
 
-                log.debug("Loading alignments: " + chr + ":" + start + "-" + end);
+                log.debug("Loading alignments: " + chr + ":" + start + "-" + end + " for " + AlignmentDataManager.this);
 
                 AlignmentInterval loadedInterval = loadInterval(chr, start, end, renderOptions);
                 ReferenceFrame frame = context != null ? context.getReferenceFrame() : null;

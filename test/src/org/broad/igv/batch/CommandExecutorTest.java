@@ -47,7 +47,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     private final String snapshotDir = TestUtils.TMP_OUTPUT_DIR;
 
     @Rule
-    public TestRule testTimeout = new Timeout((int) 180000);
+    public TestRule testTimeout = new Timeout((int) 1800000);
 
     @Before
     public void setUp() throws Exception {
@@ -91,46 +91,75 @@ public class CommandExecutorTest extends AbstractHeadedTest {
 
     }
 
-    /**
-     * Take a large number of snapshots, make sure they all
-     * actually show data.
-     * @throws Exception
-     */
-    @Ignore
     @Test
-    public void stressTestSnapshots() throws Exception{
+    @Ignore
+    public void stressTestSnapshotsHG00171() throws Exception{
         PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "1000");
-
-        String outFileName = outFileBase + ".png";
 
         String interv0 = "chr1:151666000-152666000";
         String interv1 = "chr1:154666000-155666000";
         String[] intervals = {interv0, interv1};
 
         String filePath = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.bam";
+
+        stressTstSnapshots(filePath, intervals);
+    }
+
+    @Test
+    @Ignore
+    public void stressTestSnapshotsBodymap() throws Exception{
+        PreferenceManager.getInstance().put(PreferenceManager.SAM_DOWNSAMPLE_READS, "true");
+        PreferenceManager.getInstance().put(PreferenceManager.SAM_SAMPLING_COUNT, "100");
+        PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "1000");
+
+        String interv0 = "chr12:97,509,534-97,521,909"; //SLC25A3
+        String interv1 = "chrX:153,366,844-153,374,196"; //SLC10A3
+        String[] intervals = {interv0, interv1};
+
+        String filePath = TestUtils.DATA_DIR + "sessions/bodymap_3tissue.xml";
+
+        stressTstSnapshots(filePath, intervals);
+    }
+
+
+
+    /**
+     * Take a large number of snapshots, make sure they all
+     * actually show data.
+     * @throws Exception
+     */
+    public void stressTstSnapshots(String filePath, String[] intervals) throws Exception{
+
         exec.execute("load " + filePath);
-        exec.execute("goto " + interv0);
+        //exec.execute(("setSleepInterval 10000"));
 
+        //For each interval we base our expected size on the first snapshot
+        Map<String, Long> intervalSizeMap = new HashMap<String, Long>(intervals.length);
 
-        File outFile = new File(snapshotDir, outFileName);
-        long expSize = -1;
-        long margin = 0;
-        int numTrials = 10;
+        Long expSize;
+        long margin;
+        int numTrials = 50;
         for(int tri=0; tri < numTrials; tri++){
-            if(outFile.exists()) outFile.delete();
 
             int intInd = tri % intervals.length;
             String interval = intervals[intInd];
+            expSize = intervalSizeMap.get(interval);
 
             exec.execute("goto " + interval);
+
+            String outFileName = outFileBase + tri + ".png";
+            File outFile = new File(snapshotDir, outFileName);
+            if(outFile.exists()) outFile.delete();
             tstSnapshot(outFileName);
 
             long size = outFile.length();
-            if(expSize < 0){
+            if(expSize == null){
                 expSize = size;
-                margin = expSize / 10;
+                intervalSizeMap.put(interval, expSize);
             }
+            margin = expSize / 10;
             long sizeDiff = Math.abs(size - expSize);
+            //break;
             assertTrue(String.format("File size much different than expected. Trial %d, Diff = %d, margin = %d", tri, sizeDiff, margin),  sizeDiff < margin);
         }
 
