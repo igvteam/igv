@@ -28,7 +28,6 @@ import org.broad.igv.util.TestUtils;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.tribble.Feature;
 import org.junit.Assume;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -43,10 +42,9 @@ import static junit.framework.Assert.*;
  */
 public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
 
-    @Ignore("Data file is missing")
     @Test
     public void testLoadCoverageTrackSession() throws Exception{
-        String path = TestUtils.DATA_DIR + "sessions/coverage_snpThreshold.xml";
+        String path = TestUtils.DATA_DIR + "sessions/coverage_snpThreshold_NA06984.xml";
         rewriteRestoreSession(path);
 
         //We should have 1 coverage track
