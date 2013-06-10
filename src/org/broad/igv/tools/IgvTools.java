@@ -443,8 +443,6 @@ public class IgvTools {
             } else {
                 throw new PreprocessingException("Unknown command: " + argv[EXT_FACTOR]);
             }
-        } catch (PreprocessingException e) {
-            log.error(e.getMessage(), e);
         } catch (IOException e) {
             throw new PreprocessingException("Unexpected IO error: ", e);
         }
