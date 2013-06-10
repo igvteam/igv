@@ -385,6 +385,7 @@ public class IGVToolsTest extends AbstractHeadlessTest {
         assertEquals(10, ds.getChromosomes().length);
     }
 
+    @Ignore("Missing data file")
     @Test
     public void testTileMageTab() throws Exception {
         String mageTabFile = TestUtils.DATA_DIR + "mage-tab/test.data.txt";
@@ -393,8 +394,6 @@ public class IGVToolsTest extends AbstractHeadlessTest {
         String command = "tile -z 1 --fileType mage-tab " + mageTabFile + " " + outputFile + " " + genfile;
 
         igvTools.run(command.split("\\s+"));
-
-
     }
 
 
