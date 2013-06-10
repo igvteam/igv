@@ -57,13 +57,16 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
     // directory,  so this field might be null at any given time.  It is updated each repaint.
     JComponent parent;
 
-    public SpliceJunctionFinderTrack(ResourceLocator locator, String name, AlignmentDataManager dataManager) {
+    boolean ignoreStrand;
+
+    public SpliceJunctionFinderTrack(ResourceLocator locator, String name, AlignmentDataManager dataManager, boolean ignoreStrand) {
         super(locator, locator.getPath() + "_junctions", name);
 
         super.setDataRange(new DataRange(0, 0, 60));
         setRendererClass(SpliceJunctionRenderer.class);
         this.dataManager = dataManager;
         prefs = PreferenceManager.getInstance();
+        this.ignoreStrand = ignoreStrand;
         // Register track
         IGV.getInstance().addAlignmentTrackEventListener(this);
     }
@@ -124,7 +127,8 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame().getName());
         if (loadedInterval == null) return;
 
-        List<SpliceJunctionFeature> features = loadedInterval.getSpliceJunctions();
+        SpliceJunctionHelper helper = dataManager.getSpliceJunctionHelper();
+        List<SpliceJunctionFeature> features =  ignoreStrand ? helper.getFilteredJunctionsIgnoreStrand() : helper.getFilteredJunctions();
         if (features == null) {
             features = Collections.emptyList();
         }

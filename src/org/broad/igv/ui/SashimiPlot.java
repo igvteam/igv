@@ -12,6 +12,7 @@
 package org.broad.igv.ui;
 
 import com.google.common.eventbus.Subscribe;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.IExon;
 import org.broad.igv.renderer.SashimiJunctionRenderer;
 import org.broad.igv.sam.*;
@@ -70,6 +71,7 @@ public class SashimiPlot extends JFrame{
 
     public SashimiPlot(ReferenceFrame iframe, Collection<? extends AlignmentTrack> alignmentTracks, FeatureTrack geneTrack){
         getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        int minJunctionCoverage = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_JUNCTION_MIN_COVERAGE);
 
         this.frame = new ReferenceFrame(iframe);
         this.frame.getEventBus().register(this);
@@ -103,7 +105,7 @@ public class SashimiPlot extends JFrame{
         spliceJunctionTracks = new ArrayList<SpliceJunctionFinderTrack>(alignmentTracks.size());
         int colorInd = 0;
         for(AlignmentTrack alignmentTrack: alignmentTracks){
-            SpliceJunctionFinderTrack spliceJunctionTrack = new SpliceJunctionFinderTrack(alignmentTrack.getResourceLocator(), alignmentTrack.getName(), alignmentTrack.getDataManager());
+            SpliceJunctionFinderTrack spliceJunctionTrack = new SpliceJunctionFinderTrack(alignmentTrack.getResourceLocator(), alignmentTrack.getName(), alignmentTrack.getDataManager(), true);
 
             spliceJunctionTrack.setRendererClass(SashimiJunctionRenderer.class);
 
@@ -113,7 +115,7 @@ public class SashimiPlot extends JFrame{
 
             TrackComponent<SpliceJunctionFinderTrack> trackComponent = new TrackComponent<SpliceJunctionFinderTrack>(frame, spliceJunctionTrack);
 
-            initSpliceJunctionComponent(trackComponent, alignmentTrack);
+            initSpliceJunctionComponent(trackComponent, alignmentTrack, minJunctionCoverage);
 
             getContentPane().add(trackComponent);
             spliceJunctionTracks.add(spliceJunctionTrack);
@@ -169,51 +171,24 @@ public class SashimiPlot extends JFrame{
         geneComponent.addMouseMotionListener(ad2);
     }
 
-    private void initSpliceJunctionComponent(TrackComponent<SpliceJunctionFinderTrack> trackComponent, AlignmentTrack alignmentTrack) {
+    private void initSpliceJunctionComponent(TrackComponent<SpliceJunctionFinderTrack> trackComponent, AlignmentTrack alignmentTrack, int minJunctionCoverage) {
         JunctionTrackMouseAdapter ad1 = new JunctionTrackMouseAdapter(trackComponent);
         trackComponent.addMouseListener(ad1);
         trackComponent.addMouseMotionListener(ad1);
 
-        setDataManager(trackComponent, alignmentTrack.getDataManager());
+        setDataManager(trackComponent, alignmentTrack.getDataManager(), minJunctionCoverage);
         getRenderer(trackComponent.track).setBackground(getBackground());
     }
 
-    private void setDataManager(TrackComponent<SpliceJunctionFinderTrack> spliceJunctionTrackComponent, AlignmentDataManager dataManager) {
+    private void setDataManager(TrackComponent<SpliceJunctionFinderTrack> spliceJunctionTrackComponent, AlignmentDataManager dataManager, int minJunctionCoverage) {
         getRenderer(spliceJunctionTrackComponent.track).setDataManager(dataManager);
-        if(!dataManager.isShowSpliceJunctions() || !dataManager.getSpliceJunctionLoadOptions().ignoreStrandedness){
-            SpliceJunctionHelper.LoadOptions loadOptions = new SpliceJunctionHelper.LoadOptions(true, true);
-            dataManager.setSpliceJunctionLoadOptions(loadOptions);
-            dataManager.getEventBus().register(this);
-            dataManager.clear();
-            reloadAlignments(spliceJunctionTrackComponent);
-        }
-    }
-
-    private Set<JComponent> waitingTracks = new HashSet<JComponent>();
-
-    private void addWaitCursor(JComponent waitingTrack) {
-        waitingTracks.add(waitingTrack);
-        getGlassPane().setVisible(true);
-    }
-
-    private void removeWaitCursor(JComponent waitingTrack){
-        waitingTracks.remove(waitingTrack);
-        if(waitingTracks.size() == 0){
-            getGlassPane().setVisible(false);
-        }
-    }
-
-    private void reloadAlignments(TrackComponent<SpliceJunctionFinderTrack> spliceJunctionTrackComponent){
-        AlignmentDataManager dataManager = getRenderer(spliceJunctionTrackComponent.track).getDataManager();
-        RenderContext context = new RenderContextImpl(spliceJunctionTrackComponent, null, frame, spliceJunctionTrackComponent.getVisibleRect());
-        addWaitCursor(spliceJunctionTrackComponent);
-        dataManager.preload(context);
+        dataManager.getEventBus().register(this);
+        dataManager.getSpliceJunctionHelper().setMinJunctionCoverage(minJunctionCoverage);
     }
 
     @Subscribe
     public void receiveDataLoaded(DataLoadedEvent event){
         repaint();
-        removeWaitCursor(event.context.getPanel());
     }
 
     @Subscribe
@@ -285,18 +260,16 @@ public class SashimiPlot extends JFrame{
                      * things.
                      */
                     AlignmentDataManager dataManager = getRenderer(trackComponent.track).getDataManager();
-                    SpliceJunctionHelper.LoadOptions loadOptions = dataManager.getSpliceJunctionLoadOptions();
+                    SpliceJunctionHelper.LoadOptions loadOptions = dataManager.getSpliceJunctionHelper().getLoadOptions();
                     String input = JOptionPane.showInputDialog("Set Minimum Junction Coverage", loadOptions.minJunctionCoverage);
                     if (input == null || input.length() == 0) return;
                     try {
                         int newMinJunctionCoverage = Integer.parseInt(input);
-                        SpliceJunctionHelper.LoadOptions newLoadOptions = new SpliceJunctionHelper.LoadOptions(true,
-                                newMinJunctionCoverage, loadOptions.minJunctionCoverage, true);
-                        dataManager.setSpliceJunctionLoadOptions(newLoadOptions);
-                        dataManager.clear();
+                        dataManager.getSpliceJunctionHelper().setMinJunctionCoverage(newMinJunctionCoverage);
+
                         //TODO Change to event bus
                         trackComponent.track.onAlignmentTrackEvent(new AlignmentTrackEvent(this, AlignmentTrackEvent.Type.SPLICE_JUNCTION));
-                        reloadAlignments(trackComponent);
+                        trackComponent.repaint();
                     } catch (NumberFormatException ex) {
                         JOptionPane.showMessageDialog(SashimiPlot.this, input + " is not an integer");
                     }

@@ -14,7 +14,6 @@ import com.google.common.eventbus.EventBus;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.AlignmentTrack.SortOption;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
@@ -51,7 +50,7 @@ public class AlignmentDataManager {
 
     private AlignmentTrack.ExperimentType experimentType;
 
-    private SpliceJunctionHelper.LoadOptions loadOptions = new SpliceJunctionHelper.LoadOptions(false, false);
+    private SpliceJunctionHelper spliceJunctionHelper;
 
     /**
      * This {@code EventBus} is typically used to notify listeners when new data
@@ -63,7 +62,7 @@ public class AlignmentDataManager {
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
         reader = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator));
         peStats = new HashMap();
-        initLoadOptions();
+        this.spliceJunctionHelper = new SpliceJunctionHelper(new SpliceJunctionHelper.LoadOptions());
         initChrMap(genome);
     }
 
@@ -72,12 +71,6 @@ public class AlignmentDataManager {
         initChrMap(genome);
     }
 
-
-    void initLoadOptions(){
-        PreferenceManager prefs = PreferenceManager.getInstance();
-        boolean showSpliceJunctions = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
-        this.loadOptions = new SpliceJunctionHelper.LoadOptions(showSpliceJunctions, false);
-    }
     /**
      * Create an alias -> chromosome lookup map.  Enable loading BAM files that use alternative names for chromosomes,
      * provided the alias has been defined  (e.g. 1 -> chr1,  etc).
@@ -96,13 +89,6 @@ public class AlignmentDataManager {
 
     public void setExperimentType(AlignmentTrack.ExperimentType experimentType) {
         this.experimentType = experimentType;
-        boolean showSpliceJunctions = false;
-        if (experimentType == AlignmentTrack.ExperimentType.BISULFITE) {
-            showSpliceJunctions = false;
-        } else {
-            showSpliceJunctions = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
-        }
-        this.loadOptions = new SpliceJunctionHelper.LoadOptions(showSpliceJunctions, loadOptions.minJunctionCoverage, loadOptions.minReadFlankingWidth, loadOptions.ignoreStrandedness);
     }
 
     public AlignmentTrack.ExperimentType getExperimentType() {
@@ -311,12 +297,6 @@ public class AlignmentDataManager {
         }
     }
 
-
-    public void clear() {
-        // reader.clearCache();
-        loadedIntervalMap.clear();
-    }
-
     public synchronized void loadAlignments(final String chr, final int start, final int end,
                                             final AlignmentTrack.RenderOptions renderOptions,
                                             final RenderContext context) {
@@ -368,13 +348,11 @@ public class AlignmentDataManager {
                 renderOptions != null ? renderOptions.bisulfiteContext : null;
 
 
-        AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, loadOptions,
+        AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, this.spliceJunctionHelper,
                 downsampleOptions, peStats, bisulfiteContext);
         //System.out.println(chr + "\t" + start + "\t" + end + "\t" + (n++) + "   (" + format.format(delta) + ")");
 
         List<Alignment> alignments = t.getAlignments();
-
-        List<SpliceJunctionFeature> spliceJunctions = t.getSpliceJunctionFeatures();
 
         List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();
 
@@ -392,7 +370,7 @@ public class AlignmentDataManager {
 
         LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = alignmentPacker.packAlignments(iter, end, renderOptions);
 
-        return new AlignmentInterval(chr, start, end, alignmentRows, t.getCounts(), spliceJunctions, downsampledIntervals, renderOptions);
+        return new AlignmentInterval(chr, start, end, alignmentRows, t.getCounts(), spliceJunctionHelper, downsampledIntervals, renderOptions);
     }
 
     private void addLoadedInterval(ReferenceFrame frame, AlignmentInterval interval) {
@@ -468,24 +446,12 @@ public class AlignmentDataManager {
         }
     }
 
-    public boolean isShowSpliceJunctions() {
-        return loadOptions.showSpliceJunctions;
-    }
-
     public EventBus getEventBus() {
         return eventBus;
     }
 
-    public SpliceJunctionHelper.LoadOptions getSpliceJunctionLoadOptions() {
-        return loadOptions;
-    }
-
-    public void setSpliceJunctionLoadOptions(SpliceJunctionHelper.LoadOptions spliceJunctionLoadOptions) {
-        this.loadOptions = spliceJunctionLoadOptions;
-    }
-
-    public void setShowSpliceJunctions(boolean showSpliceJunctions) {
-        this.loadOptions = new SpliceJunctionHelper.LoadOptions(showSpliceJunctions, loadOptions.minJunctionCoverage, loadOptions.minReadFlankingWidth, loadOptions.ignoreStrandedness);
+    public SpliceJunctionHelper getSpliceJunctionHelper() {
+        return spliceJunctionHelper;
     }
 
     public static class DownsampleOptions {
