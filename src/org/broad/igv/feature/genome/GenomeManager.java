@@ -100,17 +100,20 @@ public class GenomeManager {
         return serverGenomeListUnreachable;
     }
 
+    public Genome loadGenome(String genomePath, ProgressMonitor monitor) throws IOException{
+        return loadGenome(genomePath, monitor, true);
+    }
+
     /**
      * Load a genome from the given path.  Could be a .genome, .gbk, chrom.sizes, or fasta file
      *
      * @param genomePath File, http, or ftp path to the .genome or indexed fasta file
      * @param monitor    ProgressMonitor  Monitor object, can be null
+     * @param addGenomeTrack Whether to add the genomeTrack to IGV
      * @return Genome
      * @throws FileNotFoundException
      */
-    public Genome loadGenome(
-            String genomePath,
-            ProgressMonitor monitor)
+    public Genome loadGenome(String genomePath, ProgressMonitor monitor, boolean addGenomeTrack)
             throws IOException {
 
         try {
@@ -153,7 +156,7 @@ public class GenomeManager {
 
             setCurrentGenome(newGenome);
 
-            if (IGV.hasInstance() && !Globals.isHeadless()) {
+            if (IGV.hasInstance() && !Globals.isHeadless() && addGenomeTrack) {
                 FeatureTrack geneFeatureTrack = newGenome.getGeneTrack();
                 IGV.getInstance().setGenomeTracks(geneFeatureTrack);
             }
