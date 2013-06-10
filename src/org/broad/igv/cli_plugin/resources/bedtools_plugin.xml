@@ -15,10 +15,10 @@
           description="bedtools: a flexible suite of utilities for comparing genomic features.">
 
         <default_arg>
-            <arg name="Optional Arguments" cmd_arg="" type="TEXT" defaultValue=""/>
             <arg name="Track A" cmd_arg="-a" type="FEATURE_TRACK"/>
             <arg name="Track B" cmd_arg="-b" type="FEATURE_TRACK"
                  encodingCodec="org.broad.igv.feature.tribble.IGVBEDCodec"/>
+            <arg name="Optional Arguments" cmd_arg="" type="TEXT" defaultValue=""/>
         </default_arg>
 
         <default_output>
@@ -30,11 +30,11 @@
         </default_output>
 
         <command name="Intersect" cmd="intersect">
-            <arg name="Optional Arguments" cmd_arg="" type="TEXT"/>
             <arg name="Split by Exons" cmd_arg="-split" type="BOOL" defaultValue="true"/>
             <arg name="Output bed" cmd_arg="-bed" type="BOOL" defaultValue="true" visible="false"/>
             <arg name="Track A" cmd_arg="-a" type="FEATURE_TRACK"/>
             <arg name="Track B" cmd_arg="-b" type="FEATURE_TRACK"/>
+            <arg name="Optional Arguments" cmd_arg="" type="TEXT"/>
         </command>
 
         <command name="Remove/Subtract" cmd="subtract"/>
@@ -42,7 +42,6 @@
         <command name="Closest" cmd="closest"/>
 
         <command name="Window" cmd="window">
-            <arg name="Optional Arguments" cmd_arg="" type="TEXT"/>
             <arg name="Track A" cmd_arg="-a" type="FEATURE_TRACK"/>
             <arg name="Track B" cmd_arg="-b" type="FEATURE_TRACK"/>
         </command>
@@ -52,11 +51,12 @@
             <arg name="Split by Exons" cmd_arg="-split" type="BOOL" defaultValue="true"/>
             <arg name="Track A" cmd_arg="-a" type="FEATURE_TRACK"/>
             <arg name="Track B" cmd_arg="-b" type="FEATURE_TRACK"/>
+            <arg name="Optional Arguments" cmd_arg="" type="TEXT"/>
         </command>
 
         <command name="Multi-intersect" cmd="multiinter">
-            <arg name="Arguments" type="TEXT"/>
             <arg name="Tracks" cmd_arg="-i" type="MULTI_FEATURE_TRACK"/>
+            <arg name="Optional Arguments" type="TEXT"/>
         </command>
     </tool>
 </cli_plugin>
