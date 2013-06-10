@@ -975,7 +975,7 @@ public class TrackLoader {
             boolean showSpliceJunctionTrack = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
             if (showSpliceJunctionTrack) {
                 SpliceJunctionFinderTrack spliceJunctionTrack = new SpliceJunctionFinderTrack(locator,
-                        alignmentTrack.getName() + " Junctions", dataManager);
+                        alignmentTrack.getName() + " Junctions", dataManager, false);
                 spliceJunctionTrack.setHeight(60);
 
                 spliceJunctionTrack.setVisible(showSpliceJunctionTrack);
