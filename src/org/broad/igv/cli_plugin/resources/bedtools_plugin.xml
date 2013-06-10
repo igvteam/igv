@@ -44,10 +44,10 @@
         <command name="Window" cmd="window">
             <arg name="Track A" cmd_arg="-a" type="FEATURE_TRACK"/>
             <arg name="Track B" cmd_arg="-b" type="FEATURE_TRACK"/>
+            <arg name="Optional Arguments" cmd_arg="" type="TEXT" defaultValue=""/>
         </command>
 
         <command name="Coverage" cmd="coverage">
-            <arg name="Optional Arguments" cmd_arg="" type="TEXT"/>
             <arg name="Split by Exons" cmd_arg="-split" type="BOOL" defaultValue="true"/>
             <arg name="Track A" cmd_arg="-a" type="FEATURE_TRACK"/>
             <arg name="Track B" cmd_arg="-b" type="FEATURE_TRACK"/>

@@ -145,7 +145,11 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
         for (Map.Entry<Argument, Object> entry : arguments.entrySet()) {
             Argument arg = entry.getKey();
 
-            assert arg.isValidValue(entry.getValue());
+            if(!arg.isValidValue(entry.getValue())){
+                String msg = "Type: " + arg.getType() + " value: " + entry.getValue();
+                throw new IllegalArgumentException(msg);
+            }
+
             String[] sVal = null;
             String ts = null;
             switch (arg.getType()) {

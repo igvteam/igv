@@ -83,16 +83,15 @@ public class BEDToolsPluginSourceTest extends AbstractPluginTest {
         List<Argument> argumentList = command.argumentList;
         LinkedHashMap<Argument, Object> arguments = new LinkedHashMap<Argument, Object>(argumentList.size());
         int argnum = 0;
-        int numArgsSet = 1;
+        int numArgsSet = 0;
         if(cmd.equalsIgnoreCase("intersect")){
-            numArgsSet = 3;
-        }else if(cmd.equalsIgnoreCase("coverage")){
             numArgsSet = 2;
+        }else if(cmd.equalsIgnoreCase("coverage")){
+            numArgsSet = 1;
         }
         for(; argnum < numArgsSet; argnum++){
 
             Argument argument = argumentList.get(argnum);
-
             Object value = argumentList.get(argnum).getDefaultValue();
 
             if(argument.getType() == Argument.InputType.BOOL){
@@ -118,6 +117,9 @@ public class BEDToolsPluginSourceTest extends AbstractPluginTest {
                 arguments.put(argumentList.get(argnum++), ft);
             }
         }
+
+        //Optional arguments
+        arguments.put(argumentList.get(argnum), argumentList.get(argnum).getDefaultValue());
 
         List<String> commands = Arrays.asList(toolPath, cmd);
         PluginFeatureSource combinedFeatureSource = new PluginFeatureSource(commands, arguments, command.outputList.get(0), pluginPath);
