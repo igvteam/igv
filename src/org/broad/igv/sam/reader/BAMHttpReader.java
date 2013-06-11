@@ -21,8 +21,10 @@ import net.sf.samtools.seekablestream.SeekableStream;
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
+import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.sam.Alignment;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -63,6 +65,10 @@ public class BAMHttpReader implements AlignmentReader {
         if (requireIndex) {
             indexFile = getIndexFile(url, locator.getIndexPath());
             if (indexFile == null) {
+                // Let user locate the index file
+                String defaultURL = url.getPath() + ".bai";
+                MessageUtils.showInputDialog("Enter URL to the index (.bai) file", defaultURL);
+
                 throw new RuntimeException("Could not load index file for file: " + url.getPath());
             }
             //SeekableStream ss = new SeekableBufferedStream(getSeekableStream(url));
@@ -221,19 +227,37 @@ public class BAMHttpReader implements AlignmentReader {
             String idx = (indexPath != null && indexPath.length() > 0) ? indexPath : path + ".bai";
             URL indexURL = new URL(idx);
             os = new FileOutputStream(indexFile);
+            boolean foundIndex = true;
             try {
                 is = HttpUtils.getInstance().openConnectionStream(indexURL);
             } catch (FileNotFoundException e) {
                 // Try other index convention
                 String baseName = path.substring(0, path.length() - 4);
                 indexURL = new URL(baseName + ".bai");
-
                 try {
                     is = org.broad.igv.util.HttpUtils.getInstance().openConnectionStream(indexURL);
                 } catch (FileNotFoundException e1) {
-                    MessageUtils.showMessage("Index file not found for file: " + path);
-                    throw new DataLoadException("Index file not found for file: " + path, path);
+
+                    if (!Globals.isHeadless() && IGV.hasInstance()) {
+                        String tmp = MessageUtils.showInputDialog("Enter path to index file", indexURL.getPath());
+                        if (tmp != null) {
+                            try {
+                                indexURL = new URL(tmp);
+                                is = org.broad.igv.util.HttpUtils.getInstance().openConnectionStream(indexURL);
+                            } catch (FileNotFoundException e2) {
+                                foundIndex = false;
+                            }
+                        } else {
+                            foundIndex = false;
+                        }
+                    }
                 }
+            }
+            if (!foundIndex) {
+
+                MessageUtils.showMessage("Index file not found for file: " + path);
+                throw new DataLoadException("Index file not found for file: " + path, path);
+
             }
             byte[] buf = new byte[512000];
             int bytesRead;
