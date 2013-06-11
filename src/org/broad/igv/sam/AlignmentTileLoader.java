@@ -21,6 +21,7 @@ import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.ReadGroupFilter;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.ObjectCache;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.collections.LRUCache;
@@ -49,7 +50,7 @@ public class AlignmentTileLoader {
     private boolean cancel = false;
     private boolean pairedEnd = false;
 
-    private static void cancelReaders() {
+    static void cancelReaders() {
         for (WeakReference<AlignmentTileLoader> readerRef : activeLoaders) {
             AlignmentTileLoader reader = readerRef.get();
             if (reader != null) {
@@ -87,7 +88,8 @@ public class AlignmentTileLoader {
                            SpliceJunctionHelper spliceJunctionHelper,
                            AlignmentDataManager.DownsampleOptions downsampleOptions,
                            Map<String, PEStats> peStats,
-                           AlignmentTrack.BisulfiteContext bisulfiteContext) {
+                           AlignmentTrack.BisulfiteContext bisulfiteContext,
+                           ProgressMonitor monitor) {
 
         AlignmentTile t = new AlignmentTile(start, end, spliceJunctionHelper, downsampleOptions, bisulfiteContext);
 
@@ -171,8 +173,13 @@ public class AlignmentTileLoader {
                 int interval = Globals.isTesting() ? 100000 : 1000;
                 if (alignmentCount % interval == 0) {
                     if (cancel) return null;
-                    MessageUtils.setStatusBarMessage("Reads loaded: " + alignmentCount);
+                    String msg = "Reads loaded: " + alignmentCount;
+                    MessageUtils.setStatusBarMessage(msg);
+                    if(monitor != null){
+                        monitor.updateStatus(msg);
+                    }
                     if (memoryTooLow()) {
+                        if(monitor != null) monitor.fireProgressChange(100);
                         cancelReaders();
                         return t;        // <=  TODO need to cancel all readers
                     }
@@ -231,6 +238,11 @@ public class AlignmentTileLoader {
             // for the next time
             cancel = false;
             activeLoaders.remove(ref);
+
+            if(monitor != null){
+                monitor.fireProgressChange(100);
+            }
+
             if (iter != null) {
                 iter.close();
             }
