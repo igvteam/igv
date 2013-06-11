@@ -25,13 +25,14 @@ public class LRUCache<K, V> {
 
     Logger log = Logger.getLogger(LRUCache.class);
 
-
-    private static Map<Object, LRUCache> instances = Collections.synchronizedMap(new WeakHashMap<Object, LRUCache>());
+    private final static Map<Object, LRUCache> instances = Collections.synchronizedMap(new WeakHashMap<Object, LRUCache>());
 
     public static void clearCaches() {
-        for (LRUCache cache : instances.values()) {
-            if (cache != null) {
-                cache.clear();
+        synchronized (instances) {
+            for (LRUCache cache : instances.values()) {
+                if (cache != null) {
+                    cache.clear();
+                }
             }
         }
     }
