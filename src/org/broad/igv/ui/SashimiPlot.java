@@ -29,10 +29,7 @@ import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.util.*;
@@ -180,10 +177,17 @@ public class SashimiPlot extends JFrame{
         getRenderer(trackComponent.track).setBackground(getBackground());
     }
 
-    private void setDataManager(TrackComponent<SpliceJunctionFinderTrack> spliceJunctionTrackComponent, AlignmentDataManager dataManager, int minJunctionCoverage) {
+    private void setDataManager(TrackComponent<SpliceJunctionFinderTrack> spliceJunctionTrackComponent,final AlignmentDataManager dataManager, int minJunctionCoverage) {
         getRenderer(spliceJunctionTrackComponent.track).setDataManager(dataManager);
         dataManager.getEventBus().register(this);
         dataManager.getSpliceJunctionHelper().setMinJunctionCoverage(minJunctionCoverage);
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                dataManager.getEventBus().unregister(SashimiPlot.this);
+            }
+        });
     }
 
     @Subscribe
