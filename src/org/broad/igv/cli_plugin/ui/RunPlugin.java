@@ -26,12 +26,15 @@ import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.BrowserLauncher;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
@@ -50,7 +53,7 @@ public class RunPlugin extends JDialog {
     private String specPath;
 
 
-    public RunPlugin(Frame owner, PluginSpecReader pluginSpecReader, PluginSpecReader.Tool tool, PluginSpecReader.Command command) {
+    public RunPlugin(Frame owner, PluginSpecReader pluginSpecReader, final PluginSpecReader.Tool tool, PluginSpecReader.Command command) {
         super(owner);
         initComponents();
 
@@ -63,6 +66,20 @@ public class RunPlugin extends JDialog {
         argumentList = command.argumentList;
         outputAttrs = command.outputList;
         initArgumentComponents(toolName, toolPath, cmdName, cmdVal);
+
+        if(tool.helpUrl != null){
+            helpButton.setEnabled(true);
+            helpButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        BrowserLauncher.openURL(tool.helpUrl);
+                    } catch (IOException e1) {
+                        MessageUtils.showErrorMessage(e1.getMessage(), e1);
+                    }
+                }
+            });
+        }
     }
 
     /**
@@ -186,6 +203,8 @@ public class RunPlugin extends JDialog {
         contentPanel = new JPanel();
         vSpacer1 = new JPanel(null);
         buttonBar = new JPanel();
+        helpButton = new JButton();
+        hSpacer1 = new JPanel(null);
         okButton = new JButton();
         cancelButton = new JButton();
 
@@ -213,8 +232,18 @@ public class RunPlugin extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
+                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 0, 85, 80};
+                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {0.0, 1.0, 0.0, 0.0};
+
+                //---- helpButton ----
+                helpButton.setText("Help");
+                helpButton.setEnabled(false);
+                buttonBar.add(helpButton, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 5), 0, 0));
+                buttonBar.add(hSpacer1, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- okButton ----
                 okButton.setText("OK");
@@ -224,7 +253,7 @@ public class RunPlugin extends JDialog {
                         okButtonActionPerformed(e);
                     }
                 });
-                buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                buttonBar.add(okButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 0, 5), 0, 0));
 
@@ -236,7 +265,7 @@ public class RunPlugin extends JDialog {
                         cancelButtonActionPerformed(e);
                     }
                 });
-                buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
+                buttonBar.add(cancelButton, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 0, 0), 0, 0));
             }
@@ -254,6 +283,8 @@ public class RunPlugin extends JDialog {
     private JPanel contentPanel;
     private JPanel vSpacer1;
     private JPanel buttonBar;
+    private JButton helpButton;
+    private JPanel hSpacer1;
     private JButton okButton;
     private JButton cancelButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables

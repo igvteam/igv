@@ -351,6 +351,7 @@ public class PluginSpecReader {
         @XmlAttribute public String defaultPath;
         @XmlAttribute public boolean visible;
         @XmlAttribute public String toolUrl;
+        @XmlAttribute public String helpUrl;
 
         /**
          * Contains the default settings for input arguments

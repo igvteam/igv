@@ -12,6 +12,7 @@
 <cli_plugin api_version="alpha" plugin_version="1.0" name="BEDTools"
             id="org.broad.igv.plugin.bedtools">
     <tool name="BEDTools" defaultPath="bedtools" toolUrl="http://code.google.com/p/bedtools/" visible="true"
+          helpUrl="http://bedtools.readthedocs.org/en/latest/"
           description="bedtools: a flexible suite of utilities for comparing genomic features.">
 
         <default_arg>

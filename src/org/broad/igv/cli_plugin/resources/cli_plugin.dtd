@@ -72,7 +72,8 @@ toolUrl:
     defaultPath CDATA #IMPLIED
     description CDATA #IMPLIED
     visible (true|false) "true"
-    toolUrl CDATA #IMPLIED>
+    toolUrl CDATA #IMPLIED
+    helpUrl CDATA #IMPLIED>
 
 <!-- default_arg element
 Default properties for each command.
