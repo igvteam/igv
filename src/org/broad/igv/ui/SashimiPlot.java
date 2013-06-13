@@ -73,6 +73,20 @@ public class SashimiPlot extends JFrame{
         this.frame = new ReferenceFrame(iframe);
         this.frame.getEventBus().register(this);
 
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                try{
+                    SashimiPlot.this.frame.getEventBus().unregister(SashimiPlot.this);
+                }catch(NullPointerException ex0){
+                    //pass, don't care, if no frame/eventbus then no need to unregister
+                }catch(IllegalArgumentException ex0){
+                    //somehow we're already unregistered. Don't care
+                }
+
+            }
+        });
+
         minOrigin = this.frame.getOrigin();
         maxEnd = this.frame.getEnd();
         int minZoom = this.frame.getZoom();
