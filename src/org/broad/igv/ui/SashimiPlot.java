@@ -35,16 +35,18 @@ import java.io.File;
 import java.util.*;
 import java.util.List;
 
-/** Window for displaying sashimi style junction plot
+/**
+ * Window for displaying sashimi style junction plot
  * See http://genes.mit.edu/burgelab/miso/docs/sashimi.html
- *
+ * <p/>
  * User: jacob
  * Date: 2013-Jan-11
  */
-public class SashimiPlot extends JFrame{
+public class SashimiPlot extends JFrame {
 
     private List<SpliceJunctionFinderTrack> spliceJunctionTracks;
     private ReferenceFrame frame;
+    private AlignmentDataManager dataManager;  // <= retained to release self from event bus
 
     /**
      * The minimum allowed origin of the frame. We set scrolling
@@ -58,15 +60,17 @@ public class SashimiPlot extends JFrame{
      */
     private final double maxEnd;
 
+
+
     private static final List<Color> plotColors;
 
-    static{
+    static {
         ColorPalette palette = ColorUtilities.getDefaultPalette();
         plotColors = Arrays.asList(palette.getColors());
     }
 
 
-    public SashimiPlot(ReferenceFrame iframe, Collection<? extends AlignmentTrack> alignmentTracks, FeatureTrack geneTrack){
+    public SashimiPlot(ReferenceFrame iframe, Collection<? extends AlignmentTrack> alignmentTracks, FeatureTrack geneTrack) {
         getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         int minJunctionCoverage = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_JUNCTION_MIN_COVERAGE);
 
@@ -113,9 +117,17 @@ public class SashimiPlot extends JFrame{
             }
         });
 
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent windowEvent) {
+                frame.getEventBus().unregister(SashimiPlot.this);
+                if(dataManager != null) dataManager.getEventBus().unregister(SashimiPlot.this);
+            }
+        });
+
         spliceJunctionTracks = new ArrayList<SpliceJunctionFinderTrack>(alignmentTracks.size());
         int colorInd = 0;
-        for(AlignmentTrack alignmentTrack: alignmentTracks){
+        for (AlignmentTrack alignmentTrack : alignmentTracks) {
             SpliceJunctionFinderTrack spliceJunctionTrack = new SpliceJunctionFinderTrack(alignmentTrack.getResourceLocator(), alignmentTrack.getName(), alignmentTrack.getDataManager(), true);
 
             spliceJunctionTrack.setRendererClass(SashimiJunctionRenderer.class);
@@ -149,7 +161,7 @@ public class SashimiPlot extends JFrame{
         setSize(width, 500);
     }
 
-    private Axis createAxis(ReferenceFrame frame){
+    private Axis createAxis(ReferenceFrame frame) {
         Axis axis = new Axis(frame);
 
         Dimension maxDim = new Dimension(Integer.MAX_VALUE, 25);
@@ -161,7 +173,7 @@ public class SashimiPlot extends JFrame{
         return axis;
     }
 
-    private void initGeneComponent(int prefWidth, TrackComponent<SelectableFeatureTrack> geneComponent, FeatureTrack geneTrack){
+    private void initGeneComponent(int prefWidth, TrackComponent<SelectableFeatureTrack> geneComponent, FeatureTrack geneTrack) {
 
         geneTrack.setDisplayMode(Track.DisplayMode.SQUISHED);
 
@@ -191,21 +203,15 @@ public class SashimiPlot extends JFrame{
         getRenderer(trackComponent.track).setBackground(getBackground());
     }
 
-    private void setDataManager(TrackComponent<SpliceJunctionFinderTrack> spliceJunctionTrackComponent,final AlignmentDataManager dataManager, int minJunctionCoverage) {
+    private void setDataManager(TrackComponent<SpliceJunctionFinderTrack> spliceJunctionTrackComponent, AlignmentDataManager dataManager, int minJunctionCoverage) {
+        this.dataManager = dataManager;
         getRenderer(spliceJunctionTrackComponent.track).setDataManager(dataManager);
         dataManager.getEventBus().register(this);
         dataManager.getSpliceJunctionHelper().setMinJunctionCoverage(minJunctionCoverage);
-
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                dataManager.getEventBus().unregister(SashimiPlot.this);
-            }
-        });
     }
 
     @Subscribe
-    public void receiveDataLoaded(DataLoadedEvent event){
+    public void receiveDataLoaded(DataLoadedEvent event) {
         repaint();
     }
 
@@ -214,7 +220,7 @@ public class SashimiPlot extends JFrame{
         repaint();
     }
 
-    private SashimiJunctionRenderer getRenderer(SpliceJunctionFinderTrack spliceJunctionTrack){
+    private SashimiJunctionRenderer getRenderer(SpliceJunctionFinderTrack spliceJunctionTrack) {
         return (SashimiJunctionRenderer) spliceJunctionTrack.getRenderer();
     }
 
@@ -222,12 +228,12 @@ public class SashimiPlot extends JFrame{
      * Should consider using this elsewhere. Single component
      * which contains a single track
      */
-    private static class TrackComponent<T extends Track> extends JComponent{
+    private static class TrackComponent<T extends Track> extends JComponent {
 
         private T track;
         private ReferenceFrame frame;
 
-        public TrackComponent(ReferenceFrame frame, T track){
+        public TrackComponent(ReferenceFrame frame, T track) {
             this.frame = frame;
             this.track = track;
         }
@@ -243,9 +249,9 @@ public class SashimiPlot extends JFrame{
 
     }
 
-    private class JunctionTrackMouseAdapter extends TrackComponentMouseAdapter<SpliceJunctionFinderTrack>{
+    private class JunctionTrackMouseAdapter extends TrackComponentMouseAdapter<SpliceJunctionFinderTrack> {
 
-        JunctionTrackMouseAdapter(TrackComponent<SpliceJunctionFinderTrack> trackComponent){
+        JunctionTrackMouseAdapter(TrackComponent<SpliceJunctionFinderTrack> trackComponent) {
             super(trackComponent);
         }
 
@@ -321,7 +327,7 @@ public class SashimiPlot extends JFrame{
                     Color color = UIUtilities.showColorChooserDialog(
                             "Select Track Color", trackComponent.track.getColor());
                     SashimiPlot.this.toFront();
-                    if(color == null) return;
+                    if (color == null) return;
                     trackComponent.track.setColor(color);
                     trackComponent.repaint();
                 }
@@ -345,9 +351,9 @@ public class SashimiPlot extends JFrame{
         }
     }
 
-    private class GeneTrackMouseAdapter extends TrackComponentMouseAdapter<SelectableFeatureTrack>{
+    private class GeneTrackMouseAdapter extends TrackComponentMouseAdapter<SelectableFeatureTrack> {
 
-        GeneTrackMouseAdapter(TrackComponent<SelectableFeatureTrack> trackComponent){
+        GeneTrackMouseAdapter(TrackComponent<SelectableFeatureTrack> trackComponent) {
             super(trackComponent);
         }
 
@@ -355,7 +361,7 @@ public class SashimiPlot extends JFrame{
         protected void handleDataClick(MouseEvent e) {
             trackComponent.track.handleDataClick(createTrackClickEvent(e));
             Set<IExon> selectedExon = trackComponent.track.getSelectedExons();
-            for(SpliceJunctionFinderTrack spliceTrack: spliceJunctionTracks){
+            for (SpliceJunctionFinderTrack spliceTrack : spliceJunctionTracks) {
                 getRenderer(spliceTrack).setSelectedExons(selectedExon);
             }
             repaint();
@@ -370,12 +376,12 @@ public class SashimiPlot extends JFrame{
         }
     }
 
-    private abstract class TrackComponentMouseAdapter<T extends Track> extends MouseAdapter{
+    private abstract class TrackComponentMouseAdapter<T extends Track> extends MouseAdapter {
 
         protected TrackComponent<T> trackComponent;
         protected PanTool currentTool;
 
-        TrackComponentMouseAdapter(TrackComponent<T> trackComponent){
+        TrackComponentMouseAdapter(TrackComponent<T> trackComponent) {
             this.trackComponent = trackComponent;
             currentTool = new PanTool(null);
             currentTool.setReferenceFrame(this.trackComponent.frame);
@@ -384,7 +390,7 @@ public class SashimiPlot extends JFrame{
 
         @Override
         public void mouseDragged(MouseEvent e) {
-            if(currentTool.getLastMousePoint() == null){
+            if (currentTool.getLastMousePoint() == null) {
                 //This shouldn't happen, but does occasionally
                 return;
             }
@@ -392,7 +398,7 @@ public class SashimiPlot extends JFrame{
             // diff > 0 means moving mouse to the right, which drags the frame towards the negative direction
             boolean hitBounds = SashimiPlot.this.frame.getOrigin() <= minOrigin && diff > 0;
             hitBounds |= SashimiPlot.this.frame.getEnd() >= maxEnd && diff < 0;
-            if(!hitBounds){
+            if (!hitBounds) {
                 currentTool.mouseDragged(e);
                 repaint();
             }
@@ -409,18 +415,18 @@ public class SashimiPlot extends JFrame{
 
         @Override
         public void mousePressed(MouseEvent e) {
-            if(e.isPopupTrigger()){
+            if (e.isPopupTrigger()) {
                 doPopupMenu(e);
-            }else{
+            } else {
                 currentTool.mousePressed(e);
                 super.mousePressed(e);
             }
 
         }
 
-        protected void doPopupMenu(MouseEvent e){
+        protected void doPopupMenu(MouseEvent e) {
             IGVPopupMenu menu = getPopupMenu(e);
-            if(menu != null) menu.show(trackComponent, e.getX(), e.getY());
+            if (menu != null) menu.show(trackComponent, e.getX(), e.getY());
         }
 
         protected TrackClickEvent createTrackClickEvent(MouseEvent e) {
@@ -429,7 +435,7 @@ public class SashimiPlot extends JFrame{
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            if(e.isPopupTrigger()){
+            if (e.isPopupTrigger()) {
                 doPopupMenu(e);
                 return;
             }
@@ -440,12 +446,14 @@ public class SashimiPlot extends JFrame{
 
         /**
          * Essentially left click
+         *
          * @param e
          */
         protected abstract void handleDataClick(MouseEvent e);
 
         /**
          * Essentially right click
+         *
          * @param e
          * @return
          */
@@ -454,14 +462,15 @@ public class SashimiPlot extends JFrame{
 
     /**
      * Show SashimiPlot window, or change settings of {@code currentWindow}
+     *
      * @param sashimiPlot
      */
     public static void getSashimiPlot(SashimiPlot sashimiPlot) {
-        if(sashimiPlot == null){
+        if (sashimiPlot == null) {
             FeatureTrack geneTrack = null;
-            if(IGV.getInstance().getFeatureTracks().size() == 1){
+            if (IGV.getInstance().getFeatureTracks().size() == 1) {
                 geneTrack = IGV.getInstance().getFeatureTracks().get(0);
-            }else{
+            } else {
                 FeatureTrackSelectionDialog dlg = new FeatureTrackSelectionDialog(IGV.getMainFrame());
                 dlg.setTitle("Select Gene Track");
                 dlg.setVisible(true);
@@ -470,17 +479,17 @@ public class SashimiPlot extends JFrame{
             }
 
             Collection<AlignmentTrack> alignmentTracks = new ArrayList<AlignmentTrack>();
-            for(Track track: IGV.getInstance().getAllTracks()){
-                if(track instanceof AlignmentTrack){
+            for (Track track : IGV.getInstance().getAllTracks()) {
+                if (track instanceof AlignmentTrack) {
                     alignmentTracks.add((AlignmentTrack) track);
                 }
             }
 
-            if(alignmentTracks.size() > 1){
+            if (alignmentTracks.size() > 1) {
                 TrackSelectionDialog<AlignmentTrack> alDlg = new TrackSelectionDialog<AlignmentTrack>(IGV.getMainFrame(), TrackSelectionDialog.SelectionMode.MULTIPLE, alignmentTracks);
                 alDlg.setTitle("Select Alignment Tracks");
                 alDlg.setVisible(true);
-                if(alDlg.getIsCancelled()) return;
+                if (alDlg.getIsCancelled()) return;
 
                 alignmentTracks = alDlg.getSelectedTracks();
             }
@@ -488,18 +497,18 @@ public class SashimiPlot extends JFrame{
             sashimiPlot = new SashimiPlot(FrameManager.getDefaultFrame(), alignmentTracks, geneTrack);
             //sashimiPlot.setShapeType(shapeType);
             sashimiPlot.setVisible(true);
-        }else{
+        } else {
             //sashimiPlot.setShapeType(shapeType);
         }
 
 
     }
 
-    private static class RepaintPopupMenuListener implements PopupMenuListener{
+    private static class RepaintPopupMenuListener implements PopupMenuListener {
 
         Component component;
 
-        RepaintPopupMenuListener(Component component){
+        RepaintPopupMenuListener(Component component) {
             this.component = component;
         }
 
@@ -519,11 +528,11 @@ public class SashimiPlot extends JFrame{
         }
     }
 
-    private static class Axis extends JComponent{
+    private static class Axis extends JComponent {
 
         private ReferenceFrame frame;
 
-        Axis(ReferenceFrame frame){
+        Axis(ReferenceFrame frame) {
             this.frame = frame;
         }
 
@@ -537,10 +546,11 @@ public class SashimiPlot extends JFrame{
 
         /**
          * Draw axis displaying genomic coordinates
+         *
          * @param context
          * @param trackRectangle
          */
-        private void drawGenomicAxis(RenderContext context, Rectangle trackRectangle){
+        private void drawGenomicAxis(RenderContext context, Rectangle trackRectangle) {
             int numTicks = 4;
             int ticHeight = 5;
 
@@ -554,7 +564,7 @@ public class SashimiPlot extends JFrame{
             double startPix = trackRectangle.getX() + pixelPadding;
             double endPix = trackRectangle.getMaxX() - pixelPadding;
 
-            double ticIntervalPix = (endPix - startPix)/(numTicks - 1);
+            double ticIntervalPix = (endPix - startPix) / (numTicks - 1);
             double ticIntervalCoord = locScale * ticIntervalPix;
 
             int startCoord = (int) (origin + (locScale * startPix));
@@ -563,14 +573,14 @@ public class SashimiPlot extends JFrame{
 
             g2D.drawLine((int) startPix, yLoc, (int) endPix, yLoc);
 
-            for(int tic = 0; tic < numTicks; tic++){
+            for (int tic = 0; tic < numTicks; tic++) {
                 int xLoc = (int) (startPix + tic * ticIntervalPix);
                 g2D.drawLine(xLoc, yLoc, xLoc, yLoc - ticHeight);
 
                 int ticCoord = (int) (startCoord + tic * ticIntervalCoord);
                 String text = "" + ticCoord;
                 Rectangle2D textBounds = g2D.getFontMetrics().getStringBounds(text, g2D);
-                g2D.drawString(text,(int) (xLoc - textBounds.getWidth() / 2),(int) (yLoc + textBounds.getHeight()));
+                g2D.drawString(text, (int) (xLoc - textBounds.getWidth() / 2), (int) (yLoc + textBounds.getHeight()));
             }
 
 
