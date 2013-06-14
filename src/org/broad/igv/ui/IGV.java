@@ -137,7 +137,7 @@ public class IGV {
      * @param menu
      * @api
      */
-    public void addOtherToolMenu(JComponent menu){
+    public void addOtherToolMenu(JComponent menu) {
         otherToolMenus.add(menu);
         if (menuBar != null) menuBar.refreshToolsMenu();
     }
@@ -692,10 +692,11 @@ public class IGV {
     /**
      * Cet current track count per panel.  Needed to detect which panels
      * changed.  Also record panel sizes
+     *
      * @return A 2 element list: 0th element is a map from scrollpane -> number of tracks,
-     *                           1st element is a map from scrollpane -> track height (in pixels)
+     *         1st element is a map from scrollpane -> track height (in pixels)
      */
-    public List<Map<TrackPanelScrollPane, Integer>> getTrackPanelAttrs(){
+    public List<Map<TrackPanelScrollPane, Integer>> getTrackPanelAttrs() {
         Map<TrackPanelScrollPane, Integer> trackCountMap = new HashMap();
         Map<TrackPanelScrollPane, Integer> panelSizeMap = new HashMap();
         for (TrackPanel tp : getTrackPanels()) {
@@ -708,10 +709,11 @@ public class IGV {
 
     /**
      * Recalculate and set heights of track panels, based on newly loaded tracks
+     *
      * @param trackCountMap scrollpane -> number of tracks
      * @param panelSizeMap  scrollpane -> height in pixels
      */
-    public void resetPanelHeights(Map<TrackPanelScrollPane, Integer> trackCountMap, Map<TrackPanelScrollPane, Integer> panelSizeMap){
+    public void resetPanelHeights(Map<TrackPanelScrollPane, Integer> trackCountMap, Map<TrackPanelScrollPane, Integer> panelSizeMap) {
 
         double totalHeight = 0;
         for (TrackPanel tp : getTrackPanels()) {
@@ -980,8 +982,8 @@ public class IGV {
      * @param paintOffscreen Whether to include offScreen data in the snapshot. Components must implement
      *                       the {@link Paintable} interface for this to work
      * @throws IOException
-     * @see SnapshotFileChooser.SnapshotFileType
      * @api
+     * @see SnapshotFileChooser.SnapshotFileType
      */
     public String createSnapshotNonInteractive(Component target, File file, boolean paintOffscreen) throws IOException {
 
@@ -1376,7 +1378,7 @@ public class IGV {
 
         } catch (Exception e) {
             String message = "Error loading session session : <br>&nbsp;&nbsp;" + sessionPath + "<br>" +
-                     e.getMessage();
+                    e.getMessage();
             log.error(message, e);
             throw new RuntimeException(e);
         } finally {
@@ -1612,7 +1614,7 @@ public class IGV {
      * @param panelName
      * @api
      */
-    public void addTracks(List<Track> tracks, PanelName panelName){
+    public void addTracks(List<Track> tracks, PanelName panelName) {
         TrackPanel panel = getTrackPanel(panelName.getName());
         panel.addTracks(tracks);
         doRefresh();

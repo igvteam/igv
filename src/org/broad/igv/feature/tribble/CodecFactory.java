@@ -70,7 +70,7 @@ public class CodecFactory {
             return new VCFWrapperCodec(getVCFCodec(path), genome);
         } else if (fn.endsWith(".bed")) {
             final IGVBEDCodec codec = new IGVBEDCodec(genome);
-            if(fn.endsWith("junctions.bed")) {
+            if (fn.endsWith("junctions.bed")) {
                 codec.setSpliceJunctions(true);
             }
             return codec;
@@ -96,13 +96,13 @@ public class CodecFactory {
             return new EncodePeakCodec(genome);
         } else if (fn.endsWith(".peak")) {
             return new PeakCodec(genome);
-        } else if(fn.endsWith(".eqtl")) {
+        } else if (fn.endsWith(".eqtl")) {
             return new EQTLCodec(genome);
         } else if (fn.endsWith("fpkm_tracking")) {
             return new FPKMTrackingCodec(path);
-        //} else if (fn.endsWith("gene_exp.diff") || fn.endsWith("cds_exp.diff")) {
-        //    return new ExpDiffCodec(path);
-        }else {
+            //} else if (fn.endsWith("gene_exp.diff") || fn.endsWith("cds_exp.diff")) {
+            //    return new ExpDiffCodec(path);
+        } else {
             return null;
         }
 
