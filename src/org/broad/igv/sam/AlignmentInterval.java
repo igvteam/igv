@@ -27,7 +27,7 @@ import java.util.*;
 /**
  * @author jrobinso
  */
-public class AlignmentInterval extends Locus{
+public class AlignmentInterval extends Locus {
 
     private static Logger log = Logger.getLogger(AlignmentInterval.class);
 
@@ -230,6 +230,10 @@ public class AlignmentInterval extends Locus{
         return downsampledIntervals;
     }
 
+    public SpliceJunctionHelper getSpliceJunctionHelper() {
+        return this.spliceJunctionHelper;
+    }
+
     public static class Row implements Comparable<Row> {
         int nextIdx;
         private double score = 0;
@@ -298,7 +302,7 @@ public class AlignmentInterval extends Locus{
                         AlignmentBlock[] insertions = centerAlignment.getInsertions();
                         for (AlignmentBlock ins : insertions) {
                             int s = ins.getStart();
-                            if (s == adjustedCenter || (s-1) == adjustedCenter) {
+                            if (s == adjustedCenter || (s - 1) == adjustedCenter) {
                                 insertionScore += ins.getBases().length;
                             }
                         }

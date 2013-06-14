@@ -127,8 +127,8 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame().getName());
         if (loadedInterval == null) return;
 
-        SpliceJunctionHelper helper = dataManager.getSpliceJunctionHelper();
-        List<SpliceJunctionFeature> features =  ignoreStrand ? helper.getFilteredJunctionsIgnoreStrand() : helper.getFilteredJunctions();
+        SpliceJunctionHelper helper = loadedInterval.getSpliceJunctionHelper();
+        List<SpliceJunctionFeature> features = ignoreStrand ? helper.getFilteredJunctionsIgnoreStrand() : helper.getFilteredJunctions();
         if (features == null) {
             features = Collections.emptyList();
         }
