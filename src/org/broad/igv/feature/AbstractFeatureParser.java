@@ -69,15 +69,15 @@ public abstract class AbstractFeatureParser implements FeatureParser {
 
 
     public static FeatureParser getInstanceFor(String path, Genome genome) {
-        AsciiFeatureCodec codec = getCodec(path, genome);
-        if (codec != null) {
-            return new FeatureCodecParser(codec, genome);
+        FeatureCodec codec = getCodec(path, genome);
+        if (codec != null && codec instanceof AsciiFeatureCodec) {
+            return new FeatureCodecParser((AsciiFeatureCodec) codec, genome);
         } else {
             return null;
         }
     }
 
-    private static AsciiFeatureCodec getCodec(String path, Genome genome) {
+    private static FeatureCodec getCodec(String path, Genome genome) {
         String tmp = getStrippedFilename(path);
         return CodecFactory.getCodec(tmp, genome);
     }

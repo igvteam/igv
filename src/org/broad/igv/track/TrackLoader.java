@@ -296,9 +296,8 @@ public class TrackLoader {
                 new GFFFeatureSource(locator.getPath(), genome) :
                 new TribbleFeatureSource(locator.getPath(), genome);
         String typeString = locator.getPath();
-        //Track t;
 
-        if (typeString.endsWith("vcf") || typeString.endsWith("vcf.gz")) {
+        if (typeString.endsWith("vcf") || typeString.endsWith("vcf.gz") || typeString.endsWith("bcf")) {
 
             VCFHeader header = (VCFHeader) src.getHeader();
 
@@ -1252,7 +1251,7 @@ public class TrackLoader {
         }
         // The vcf extension is for performance, it doesn't matter which codec is returned all vcf files
         // are indexable.
-        return path.endsWith(".vcf") || CodecFactory.getCodec(path, genome) != null;
+        return fn.endsWith(".vcf") || fn.endsWith(".bcf") || CodecFactory.getCodec(path, genome) != null;
     }
 
     public static TrackProperties getTrackProperties(Object header) {
