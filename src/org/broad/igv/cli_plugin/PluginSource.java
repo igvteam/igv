@@ -26,6 +26,7 @@ import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
+import org.broad.tribble.FeatureCodec;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
@@ -44,7 +45,7 @@ import java.util.*;
  * Date: 2012/05/01
  */
 @XmlAccessorType(XmlAccessType.NONE)
-public abstract class PluginSource<E extends Feature, D extends Feature>{
+public abstract class PluginSource<E extends Feature, D extends Feature> {
 
     private static Logger log = Logger.getLogger(PluginSource.class);
 
@@ -89,7 +90,8 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
     //private QueryTracker queryTracker = new QueryTracker();
 
     @SubtlyImportant
-    protected PluginSource(){}
+    protected PluginSource() {
+    }
 
     public PluginSource(List<String> commands, LinkedHashMap<Argument, Object> arguments, PluginSpecReader.Output outputAttrs, String specPath) {
         this.commands = commands;
@@ -145,7 +147,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
         for (Map.Entry<Argument, Object> entry : arguments.entrySet()) {
             Argument arg = entry.getKey();
 
-            if(!arg.isValidValue(entry.getValue())){
+            if (!arg.isValidValue(entry.getValue())) {
                 String msg = "Type: " + arg.getType() + " value: " + entry.getValue();
                 throw new IllegalArgumentException(msg);
             }
@@ -155,9 +157,9 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
             switch (arg.getType()) {
                 case BOOL:
                     boolean selected = (Boolean) entry.getValue();
-                    if(selected){
+                    if (selected) {
                         //Output the cmd_arg, but it doesn't take an argument
-                    }else{
+                    } else {
                         continue;
                     }
                     break;
@@ -196,7 +198,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
                     cmdArg = replaceStringsFromIds(cmdArg, idVariables);
                     fullCmd.add(cmdArg);
                 }
-                if(sVal != null){
+                if (sVal != null) {
                     fullCmd.addAll(Arrays.asList(sVal));
                 }
             }
@@ -210,7 +212,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
     /**
      * Replace strings of form $"variablename", similar
      * to how the unix shell deals with variables.
-     *
+     * <p/>
      * This is best demonstrated by example.
      * inputString = "My name is $myname"
      * idVariables = {"myname" -> "bob", "othervariable" -> ted}
@@ -221,7 +223,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
      * @param idVariables May from string -> string, from to.
      * @return
      */
-    private String replaceStringsFromIds(String inputString, Map<String, String> idVariables){
+    private String replaceStringsFromIds(String inputString, Map<String, String> idVariables) {
         for (String argId : idVariables.keySet()) {
             inputString = inputString.replace("$" + argId, idVariables.get(argId));
         }
@@ -233,7 +235,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
         return lastRunId;
     }
 
-    String getLastRunId(){
+    String getLastRunId() {
         return lastRunId;
     }
 
@@ -285,12 +287,12 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
 
         Collection<AlignmentInterval> loadedIntervals = track.getDataManager().getAllLoadedIntervals();
         List<Alignment> alignments = new ArrayList<Alignment>();
-        for(AlignmentInterval interval: loadedIntervals){
-            if(interval.overlaps(chr, start, end)){
+        for (AlignmentInterval interval : loadedIntervals) {
+            if (interval.overlaps(chr, start, end)) {
                 Iterator<Alignment> iter = interval.getAlignmentIterator();
-                while(iter.hasNext()){
+                while (iter.hasNext()) {
                     Alignment al = iter.next();
-                    if(al.getStart() <= end && al.getEnd() >= start){
+                    if (al.getStart() <= end && al.getEnd() >= start) {
                         alignments.add(al);
                     }
                 }
@@ -311,7 +313,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
      * @throws java.io.IOException
      */
     protected final Iterator<D> getFeatures(String chr, int start, int end, int zoom) throws IOException {
-        if(parser.source == null){
+        if (parser.source == null) {
             throw new IllegalStateException("Null value for source");
         }
 
@@ -327,34 +329,34 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
          */
 
         InputStream dataStream = null;
-        if(!rerun){
+        if (!rerun) {
             File inFile = new File(parser.source);
-            if(inFile.canRead()){
+            if (inFile.canRead()) {
                 //Use the existing file
                 dataStream = new FileInputStream(parser.source);
             }
         }
 
-        if(dataStream == null){
+        if (dataStream == null) {
             //synchronized (this.queryTracker){
-                String[] fullCmd = genFullCommand(chr, start, end, zoom);
-                //log.debug("interval: " + Locus.getFormattedLocusString(chr, start, end));
-                //log.debug(StringUtils.join(fullCmd, " "));
+            String[] fullCmd = genFullCommand(chr, start, end, zoom);
+            //log.debug("interval: " + Locus.getFormattedLocusString(chr, start, end));
+            //log.debug(StringUtils.join(fullCmd, " "));
 
-                //Start cli_plugin process
-                Process pr = RuntimeUtils.startExternalProcess(fullCmd, null, null);
+            //Start cli_plugin process
+            Process pr = RuntimeUtils.startExternalProcess(fullCmd, null, null);
 
-                if(parser.source.equals(PluginSpecReader.Parser.SOURCE_STDOUT)){
-                    dataStream = pr.getInputStream();
-                }else{
-                    try {
-                        pr.waitFor();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    dataStream = new FileInputStream(parser.source);
+            if (parser.source.equals(PluginSpecReader.Parser.SOURCE_STDOUT)) {
+                dataStream = pr.getInputStream();
+            } else {
+                try {
+                    pr.waitFor();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-                //this.queryTracker.setLastQuery(chr, start, end, zoom);
+                dataStream = new FileInputStream(parser.source);
+            }
+            //this.queryTracker.setLastQuery(chr, start, end, zoom);
             //}
         }
         //Read back in the data which cli_plugin output
@@ -388,19 +390,19 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
     private final FeatureEncoder instantiateEncodingCodec(Argument argument) {
         String encodingCodec = argument.getEncodingCodec();
 
-        if (encodingCodec == null){
-            if(argument.getType() == Argument.InputType.FEATURE_TRACK || argument.getType() == Argument.InputType.MULTI_FEATURE_TRACK){
+        if (encodingCodec == null) {
+            if (argument.getType() == Argument.InputType.FEATURE_TRACK || argument.getType() == Argument.InputType.MULTI_FEATURE_TRACK) {
                 return new AsciiEncoder(new IGVBEDCodec());
-            }else if(argument.getType() == Argument.InputType.ALIGNMENT_TRACK){
+            } else if (argument.getType() == Argument.InputType.ALIGNMENT_TRACK) {
                 return new SamAlignmentEncoder();
-            }else{
+            } else {
                 throw new IllegalArgumentException("No encoding codec provided and default not available");
             }
         }
 
         try {
             URL[] libURLs = PluginSpecReader.getLibURLs(argument.getLibPaths(), FileUtils.getParent(specPath));
-            if(libURLs == null) libURLs = new URL[0];
+            if (libURLs == null) libURLs = new URL[0];
             ClassLoader loader = URLClassLoader.newInstance(
                     libURLs, getClass().getClassLoader()
             );
@@ -418,7 +420,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
         } catch (ClassNotFoundException e) {
             log.error("Could not find class " + encodingCodec, e);
             throw new IllegalArgumentException(e);
-        } catch (MalformedURLException e){
+        } catch (MalformedURLException e) {
             log.error("Malformed library URL", e);
             throw new RuntimeException(e);
         } catch (Exception e) {
@@ -449,16 +451,19 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
      */
     protected final FeatureDecoder<D> instantiateDecodingCodec(String decodingCodec, URL[] libURLs) {
         if (decodingCodec == null) {
-            AsciiFeatureCodec<D> asciiCodec = CodecFactory.getCodec("." + parser.format, GenomeManager.getInstance().getCurrentGenome());
-            if (asciiCodec == null) {
+            FeatureCodec<D> knownCodec = CodecFactory.getCodec("." + parser.format, GenomeManager.getInstance().getCurrentGenome());
+            if (knownCodec == null) {
                 throw new IllegalArgumentException("Unable to find codec for format " + parser.format);
+            } else if (knownCodec instanceof AsciiFeatureCodec) {
+                return new AsciiDecoder.DecoderWrapper<D>((AsciiFeatureCodec) knownCodec);
+            } else {
+                return new FeatureCodecDecoder<D>(knownCodec);
             }
-            return new AsciiDecoder.DecoderWrapper<D>(asciiCodec);
         }
 
         try {
 
-            if(libURLs == null) libURLs = new URL[0];
+            if (libURLs == null) libURLs = new URL[0];
             ClassLoader loader = URLClassLoader.newInstance(libURLs,
                     getClass().getClassLoader());
 
@@ -562,7 +567,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
 //        return overall;
     }
 
-    public void updateTrackReferences(List<Track> allTracks){
+    public void updateTrackReferences(List<Track> allTracks) {
         MyMapAdapter.updateTrackReferences(arguments, allTracks);
     }
 
@@ -570,7 +575,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
 //        this.queryTracker = queryTracker;
 //    }
 
-    static class XmlMap{
+    static class XmlMap {
         public List<Argument> arg =
                 new ArrayList<Argument>();
     }
@@ -580,9 +585,9 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
         @Override
         public LinkedHashMap<Argument, Object> unmarshal(XmlMap v) throws Exception {
             LinkedHashMap<Argument, Object> argumentMap = new LinkedHashMap(v.arg.size());
-            for(Argument argument: v.arg){
+            for (Argument argument : v.arg) {
                 Object oVal = null;
-                switch (argument.getType()){
+                switch (argument.getType()) {
                     case LONGTEXT:
                     case TEXT:
                         oVal = argument.value.get(0);
@@ -599,13 +604,13 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
             return argumentMap;
         }
 
-        private static Object findTrackReference(Argument argument, List<Track> allTracks){
+        private static Object findTrackReference(Argument argument, List<Track> allTracks) {
             Object oVal = null;
-            switch (argument.getType()){
+            switch (argument.getType()) {
                 case MULTI_FEATURE_TRACK:
                     List<FeatureTrack> inputTracks = new ArrayList<FeatureTrack>(argument.value.size());
 
-                    for(String trackId: argument.value){
+                    for (String trackId : argument.value) {
                         inputTracks.add((FeatureTrack) IGVSessionReader.getMatchingTrack(trackId, allTracks));
                     }
                     oVal = inputTracks;
@@ -621,9 +626,9 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
         }
 
         public static void updateTrackReferences(Map<Argument, Object> argumentMap, List<Track> allTracks) {
-            for(Argument argument: argumentMap.keySet()){
+            for (Argument argument : argumentMap.keySet()) {
                 //Reference already resolved
-                if(argumentMap.get(argument) != null) continue;
+                if (argumentMap.get(argument) != null) continue;
                 Object oVal = findTrackReference(argument, allTracks);
                 argumentMap.put(argument, oVal);
             }
@@ -632,7 +637,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
         @Override
         public XmlMap marshal(LinkedHashMap<Argument, Object> v) throws Exception {
             XmlMap outMap = new XmlMap();
-            for(Map.Entry<Argument, Object> loopEntry: v.entrySet()){
+            for (Map.Entry<Argument, Object> loopEntry : v.entrySet()) {
                 Argument argument = loopEntry.getKey();
                 List<String> values = null;
                 String sval;
@@ -640,7 +645,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
                     case MULTI_FEATURE_TRACK:
                         List<FeatureTrack> lVal = (List<FeatureTrack>) loopEntry.getValue();
                         values = new ArrayList<String>(lVal.size());
-                        for(FeatureTrack fTrack: lVal){
+                        for (FeatureTrack fTrack : lVal) {
                             values.add(fTrack.getId());
                         }
                         break;

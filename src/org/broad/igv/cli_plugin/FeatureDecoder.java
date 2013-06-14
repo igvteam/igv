@@ -31,7 +31,6 @@ public interface FeatureDecoder<T extends Feature> extends FeatureIO {
 
     /**
      * Decode all features from the specified input stream
-     * Stream is closed afterwards
      *
      * @param is
      * @param strictParsing If true, errors are thrown if we cannot parse a given line.
