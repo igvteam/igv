@@ -19,6 +19,7 @@ import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.track.FeatureSource;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
+import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.ByteArrayInputStream;
@@ -170,10 +171,9 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
      * @return a SQLCodecSource, or null if no appropriate codec found
      */
     public static SQLCodecSource getFromTable(DBProfile.DBTable table) {
-        AsciiFeatureCodec codec = CodecFactory.getCodec("." + table.getFormat(), GenomeManager.getInstance().getCurrentGenome());
-        if (codec != null) {
-            SQLCodecSource source = new SQLCodecSource(table, codec);
-            return source;
+        FeatureCodec codec = CodecFactory.getCodec("." + table.getFormat(), GenomeManager.getInstance().getCurrentGenome());
+        if (codec != null && codec instanceof AsciiFeatureCodec) {
+            return new SQLCodecSource(table, (AsciiFeatureCodec) codec);
         }
         return null;
     }
@@ -216,7 +216,6 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
     }
 
     /**
-     *
      * @param useBinning Whether to query using bin column, for efficiency
      * @throws IOException
      */
@@ -240,7 +239,7 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
                 Arrays.fill(qs, "?");
                 String binnedQueryString = queryString + String.format(" AND %s IN (%s) %s", binColName, StringUtils.join(qs, ','), orderClause);
                 queryStatement = DBManager.getConnection(locator).prepareStatement(binnedQueryString);
-            }else{
+            } else {
                 queryStatement = DBManager.getConnection(locator).prepareStatement(queryString + " " + orderClause);
             }
             return queryStatement;
@@ -255,7 +254,7 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
 
         Set<Integer> bins = null;
         boolean useBinning = false;
-        if(binColName != null){
+        if (binColName != null) {
             bins = calculateBins(start, end);
             useBinning = bins.size() < MAX_BINS;
         }
@@ -394,7 +393,7 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
         } catch (SQLException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
-        }finally{
+        } finally {
             DBManager.closeAll(results);
         }
 

@@ -19,6 +19,8 @@ import org.broad.igv.gwas.EQTLCodec;
 import org.broad.igv.peaks.PeakCodec;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.AsciiFeatureCodec;
+import org.broad.tribble.FeatureCodec;
+import org.broadinstitute.variant.bcf2.BCF2Codec;
 import org.broadinstitute.variant.vcf.VCF3Codec;
 import org.broadinstitute.variant.vcf.VCFCodec;
 
@@ -49,7 +51,7 @@ public class CodecFactory {
      *
      * @param path the path (file or URL) to the feature file
      */
-    public static AsciiFeatureCodec getCodec(String path, Genome genome) {
+    public static FeatureCodec getCodec(String path, Genome genome) {
 
         String fn = path.toLowerCase();
         if (fn.endsWith(".gz")) {
@@ -68,6 +70,8 @@ public class CodecFactory {
             return new VCFWrapperCodec(new VCFCodec(), genome);
         } else if (fn.endsWith(".vcf")) {
             return new VCFWrapperCodec(getVCFCodec(path), genome);
+        } else if (fn.endsWith(".bcf")) {
+            return new BCF2WrapperCodec(new BCF2Codec(), genome);
         } else if (fn.endsWith(".bed")) {
             final IGVBEDCodec codec = new IGVBEDCodec(genome);
             if (fn.endsWith("junctions.bed")) {
