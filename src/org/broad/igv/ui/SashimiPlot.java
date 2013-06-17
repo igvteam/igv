@@ -11,7 +11,6 @@
 
 package org.broad.igv.ui;
 
-import com.google.common.eventbus.Subscribe;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.IExon;
 import org.broad.igv.renderer.SashimiJunctionRenderer;
@@ -20,8 +19,6 @@ import org.broad.igv.track.*;
 import org.broad.igv.ui.color.ColorPalette;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
-import org.broad.igv.ui.event.DataLoadedEvent;
-import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.UIUtilities;
 
@@ -29,7 +26,10 @@ import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.util.*;
@@ -72,21 +72,6 @@ public class SashimiPlot extends JFrame {
         int minJunctionCoverage = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_JUNCTION_MIN_COVERAGE);
 
         this.frame = new ReferenceFrame(iframe);
-        this.frame.getEventBus().register(this);
-
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                try {
-                    SashimiPlot.this.frame.getEventBus().unregister(SashimiPlot.this);
-                } catch (NullPointerException ex0) {
-                    //pass, don't care, if no frame/eventbus then no need to unregister
-                } catch (IllegalArgumentException ex0) {
-                    //somehow we're already unregistered. Don't care
-                }
-
-            }
-        });
 
         minOrigin = this.frame.getOrigin();
         maxEnd = this.frame.getEnd();
@@ -202,16 +187,6 @@ public class SashimiPlot extends JFrame {
         getRenderer(trackComponent.track).setBackground(getBackground());
     }
 
-    @Subscribe
-    public void receiveDataLoaded(DataLoadedEvent event) {
-        repaint();
-    }
-
-    @Subscribe
-    public void respondViewResult(ViewChange.Result e) {
-        repaint();
-    }
-
     private SashimiJunctionRenderer getRenderer(SpliceJunctionFinderTrack spliceJunctionTrack) {
         return (SashimiJunctionRenderer) spliceJunctionTrack.getRenderer();
     }
@@ -266,7 +241,7 @@ public class SashimiPlot extends JFrame {
             minJunctionCoverage.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    /** TODO Right now this is a global preference, the popup implies sets it per track and is not persistent
+                    /** The popup sets it per track and is not persistent
                      *
                      * On top of this, our "Set Max Junction Coverage Range" just changes the view scaling, it doesn't
                      * filter anything, which is different behavior than the minimum. This might be confusing.

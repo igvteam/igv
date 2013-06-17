@@ -52,13 +52,39 @@ public class SpliceJunctionHelper {
 
     private LoadOptions loadOptions;
 
+    /**
+     * Create a new SpliceJunctionHelper from the raw data of the old one. New filtered
+     * lists are created based on the raw (data)
+     * @param spliceJunctionHelper
+     */
+    SpliceJunctionHelper(SpliceJunctionHelper spliceJunctionHelper){
+        this(spliceJunctionHelper.getLoadOptions());
+        this.allSpliceJunctionFeatures = spliceJunctionHelper.allSpliceJunctionFeatures;
+        this.posStartEndJunctionsMap = spliceJunctionHelper.posStartEndJunctionsMap;
+        this.negStartEndJunctionsMap = spliceJunctionHelper.negStartEndJunctionsMap;
+
+        this.filteredSpliceJunctionFeatures = null;
+        this.filteredCombinedFeatures = null;
+    }
+
     public SpliceJunctionHelper(LoadOptions loadOptions){
         this.loadOptions = loadOptions;
     }
 
     public List<SpliceJunctionFeature> getFilteredJunctions() {
+        if(filteredSpliceJunctionFeatures == null){
+            filteredSpliceJunctionFeatures = filterJunctionList(this.loadOptions, allSpliceJunctionFeatures);
+        }
         return filteredSpliceJunctionFeatures;
 
+    }
+
+    public List<SpliceJunctionFeature> getFilteredJunctionsIgnoreStrand() {
+        if(filteredCombinedFeatures == null){
+            combineStrandJunctionsMaps();
+            filteredCombinedFeatures = filterJunctionList(this.loadOptions, filteredCombinedFeatures);
+        }
+        return filteredCombinedFeatures;
     }
 
     public void addAlignment(Alignment alignment) {
@@ -112,20 +138,39 @@ public class SpliceJunctionHelper {
         }
     }
 
-    private void filterJunctionsByCoverage(boolean checkFilteredOnly){
-        filteredCombinedFeatures = null;
-        //get rid of any features without enough coverage
+    private static List<SpliceJunctionFeature> filterJunctionList(LoadOptions loadOptions, List<SpliceJunctionFeature> unfiltered){
         if (loadOptions.minJunctionCoverage > 1) {
-            List<SpliceJunctionFeature> coveredFeatures = new ArrayList<SpliceJunctionFeature>(filteredSpliceJunctionFeatures.size());
-            List<SpliceJunctionFeature> toFilter = checkFilteredOnly ? filteredSpliceJunctionFeatures : allSpliceJunctionFeatures;
-            for (SpliceJunctionFeature feature : toFilter) {
+            List<SpliceJunctionFeature> coveredFeatures = new ArrayList<SpliceJunctionFeature>(unfiltered.size());
+            for (SpliceJunctionFeature feature : unfiltered) {
                 if (feature.getJunctionDepth() >= loadOptions.minJunctionCoverage) {
                     coveredFeatures.add(feature);
                 }
             }
-            filteredSpliceJunctionFeatures = coveredFeatures;
+            return coveredFeatures;
         }else{
-            filteredSpliceJunctionFeatures = allSpliceJunctionFeatures;
+            return unfiltered;
+        }
+    }
+
+    /**
+     * Apply filters to any currently non-null filtered lists.
+     * It may not be necessary to create a given filtered list, we use it being non-null as an indicator
+     * of usefulness. If a filtered list is null, it will be generated and properly filtered later by
+     * the appropriate getter.
+     * @param checkFilteredOnly
+     */
+    private void filterJunctionsByCoverage(boolean checkFilteredOnly){
+
+        if(filteredSpliceJunctionFeatures != null){
+            List<SpliceJunctionFeature> unfiltered = checkFilteredOnly ? filteredSpliceJunctionFeatures : allSpliceJunctionFeatures;
+            filteredSpliceJunctionFeatures = filterJunctionList(this.loadOptions, unfiltered);
+        }
+
+        if(filteredCombinedFeatures != null){
+            if(!checkFilteredOnly){
+                combineStrandJunctionsMaps();
+            }
+            filteredCombinedFeatures = filterJunctionList(this.loadOptions, filteredCombinedFeatures);
         }
     }
 
@@ -146,8 +191,6 @@ public class SpliceJunctionHelper {
         //Sort by increasing beginning of start flanking region, as required by the renderer
         //We sort first so filteredSpliceJunctionFeatures will also be sorted
         FeatureUtils.sortFeatureList(allSpliceJunctionFeatures);
-
-        filterJunctionsByCoverage(false);
     }
 
     /**
@@ -176,13 +219,6 @@ public class SpliceJunctionHelper {
 
         filteredCombinedFeatures = new ArrayList<SpliceJunctionFeature>(combinedStartEndJunctionsMap.values());
         FeatureUtils.sortFeatureList(filteredCombinedFeatures);
-    }
-
-    public List<SpliceJunctionFeature> getFilteredJunctionsIgnoreStrand() {
-        if(filteredCombinedFeatures == null){
-            combineStrandJunctionsMaps();
-        }
-        return filteredCombinedFeatures;
     }
 
     public LoadOptions getLoadOptions() {

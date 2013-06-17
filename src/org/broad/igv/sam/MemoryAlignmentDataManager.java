@@ -32,7 +32,7 @@ public class MemoryAlignmentDataManager implements IAlignmentDataManager {
     public MemoryAlignmentDataManager(AlignmentDataManager alignmentDataManager, SpliceJunctionHelper.LoadOptions loadOptions) {
         this.loadOptions = loadOptions;
         for(String intervalName: alignmentDataManager.getLoadedIntervalNames()){
-            this.loadedIntervalMap.put(intervalName, alignmentDataManager.getLoadedInterval(intervalName));
+            this.loadedIntervalMap.put(intervalName, new AlignmentInterval(alignmentDataManager.getLoadedInterval(intervalName)));
         }
 
     }

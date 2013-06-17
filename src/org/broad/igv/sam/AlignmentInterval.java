@@ -39,6 +39,11 @@ public class AlignmentInterval extends Locus {
     private List<DownsampledInterval> downsampledIntervals;
     private AlignmentTrack.RenderOptions renderOptions;
 
+    AlignmentInterval(AlignmentInterval interval){
+        this(interval.getChr(), interval.getStart(), interval.getEnd(),
+                interval.getGroupedAlignments(), interval.getCounts(),
+                new SpliceJunctionHelper(interval.getSpliceJunctionHelper()), interval.getDownsampledIntervals(), interval.renderOptions);
+    }
     public AlignmentInterval(String chr, int start, int end,
                              LinkedHashMap<String, List<Row>> groupedAlignmentRows,
                              AlignmentCounts counts,
