@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.*;
 
-public class AlignmentDataManager {
+public class AlignmentDataManager implements IAlignmentDataManager{
 
     private static Logger log = Logger.getLogger(AlignmentDataManager.class);
 
@@ -140,6 +140,10 @@ public class AlignmentDataManager {
 
     public Collection<AlignmentInterval> getAllLoadedIntervals(){
         return loadedIntervalMap.values();
+    }
+
+    Collection<String> getLoadedIntervalNames() {
+        return loadedIntervalMap.keySet();
     }
 
     /**

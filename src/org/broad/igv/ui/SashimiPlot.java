@@ -116,7 +116,12 @@ public class SashimiPlot extends JFrame{
         spliceJunctionTracks = new ArrayList<SpliceJunctionFinderTrack>(alignmentTracks.size());
         int colorInd = 0;
         for(AlignmentTrack alignmentTrack: alignmentTracks){
-            SpliceJunctionFinderTrack spliceJunctionTrack = new SpliceJunctionFinderTrack(alignmentTrack.getResourceLocator(), alignmentTrack.getName(), alignmentTrack.getDataManager(), true);
+
+
+            AlignmentDataManager oldDataManager = alignmentTrack.getDataManager();
+            MemoryAlignmentDataManager dataManager = new MemoryAlignmentDataManager(oldDataManager, oldDataManager.getSpliceJunctionHelper().getLoadOptions());
+
+            SpliceJunctionFinderTrack spliceJunctionTrack = new SpliceJunctionFinderTrack(alignmentTrack.getResourceLocator(), alignmentTrack.getName(), dataManager, true);
 
             spliceJunctionTrack.setRendererClass(SashimiJunctionRenderer.class);
 
@@ -126,7 +131,7 @@ public class SashimiPlot extends JFrame{
 
             TrackComponent<SpliceJunctionFinderTrack> trackComponent = new TrackComponent<SpliceJunctionFinderTrack>(frame, spliceJunctionTrack);
 
-            initSpliceJunctionComponent(trackComponent, alignmentTrack, minJunctionCoverage);
+            initSpliceJunctionComponent(trackComponent, dataManager, oldDataManager.getCoverageTrack(), minJunctionCoverage);
 
             getContentPane().add(trackComponent);
             spliceJunctionTracks.add(spliceJunctionTrack);
@@ -182,26 +187,17 @@ public class SashimiPlot extends JFrame{
         geneComponent.addMouseMotionListener(ad2);
     }
 
-    private void initSpliceJunctionComponent(TrackComponent<SpliceJunctionFinderTrack> trackComponent, AlignmentTrack alignmentTrack, int minJunctionCoverage) {
+    private void initSpliceJunctionComponent(TrackComponent<SpliceJunctionFinderTrack> trackComponent, IAlignmentDataManager dataManager, CoverageTrack coverageTrack, int minJunctionCoverage) {
         JunctionTrackMouseAdapter ad1 = new JunctionTrackMouseAdapter(trackComponent);
         trackComponent.addMouseListener(ad1);
         trackComponent.addMouseMotionListener(ad1);
 
-        setDataManager(trackComponent, alignmentTrack.getDataManager(), minJunctionCoverage);
-        getRenderer(trackComponent.track).setBackground(getBackground());
-    }
+        getRenderer(trackComponent.track).setDataManager(dataManager);
+        getRenderer(trackComponent.track).setCoverageTrack(coverageTrack);
 
-    private void setDataManager(TrackComponent<SpliceJunctionFinderTrack> spliceJunctionTrackComponent,final AlignmentDataManager dataManager, int minJunctionCoverage) {
-        getRenderer(spliceJunctionTrackComponent.track).setDataManager(dataManager);
-        dataManager.getEventBus().register(this);
         dataManager.getSpliceJunctionHelper().setMinJunctionCoverage(minJunctionCoverage);
 
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                dataManager.getEventBus().unregister(SashimiPlot.this);
-            }
-        });
+        getRenderer(trackComponent.track).setBackground(getBackground());
     }
 
     @Subscribe
@@ -277,7 +273,7 @@ public class SashimiPlot extends JFrame{
                      * will not persist at all. May be weird for users. Still has the problem that max/min do very different
                      * things.
                      */
-                    AlignmentDataManager dataManager = getRenderer(trackComponent.track).getDataManager();
+                    IAlignmentDataManager dataManager = getRenderer(trackComponent.track).getDataManager();
                     SpliceJunctionHelper.LoadOptions loadOptions = dataManager.getSpliceJunctionHelper().getLoadOptions();
                     String input = JOptionPane.showInputDialog("Set Minimum Junction Coverage", loadOptions.minJunctionCoverage);
                     if (input == null || input.length() == 0) return;
