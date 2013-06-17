@@ -129,10 +129,15 @@ public class SpliceJunctionHelper {
         }
     }
 
-    public void setMinJunctionCoverage(int minJunctionCoverage){
-        if(minJunctionCoverage == loadOptions.minJunctionCoverage) return;
-        boolean increasing = minJunctionCoverage > loadOptions.minJunctionCoverage;
-        loadOptions = new LoadOptions(minJunctionCoverage, loadOptions.minReadFlankingWidth);
+    void setLoadOptions(LoadOptions loadOptions){
+        int oldMinJunctionCoverage = this.loadOptions.minJunctionCoverage;
+        //Can't change this, need to reload everything
+        assert this.loadOptions.minReadFlankingWidth == loadOptions.minReadFlankingWidth;
+        this.loadOptions = loadOptions;
+
+
+        if(oldMinJunctionCoverage == loadOptions.minJunctionCoverage) return;
+        boolean increasing = oldMinJunctionCoverage < loadOptions.minJunctionCoverage;
         filterJunctionsByCoverage(increasing);
     }
 

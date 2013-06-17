@@ -28,7 +28,9 @@ public interface IAlignmentDataManager {
      */
     public AlignmentInterval getLoadedInterval(String frameName);
 
-    SpliceJunctionHelper getSpliceJunctionHelper();
+    SpliceJunctionHelper.LoadOptions getSpliceJunctionLoadOptions();
 
     Collection<AlignmentInterval> getAllLoadedIntervals();
+
+    void setMinJunctionCoverage(int newMinJunctionCoverage);
 }

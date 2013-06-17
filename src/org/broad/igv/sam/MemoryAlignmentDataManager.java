@@ -43,12 +43,22 @@ public class MemoryAlignmentDataManager implements IAlignmentDataManager {
     }
 
     @Override
+    public SpliceJunctionHelper.LoadOptions getSpliceJunctionLoadOptions() {
+        return loadOptions;
+    }
+
+    @Override
+    public void setMinJunctionCoverage(int minJunctionCoverage) {
+        this.loadOptions = new SpliceJunctionHelper.LoadOptions(minJunctionCoverage, this.loadOptions.minReadFlankingWidth);
+        for (AlignmentInterval interval : getAllLoadedIntervals()) {
+            interval.getSpliceJunctionHelper().setLoadOptions(this.loadOptions);
+        }
+    }
+
+    @Override
     public Collection<AlignmentInterval> getAllLoadedIntervals() {
         return loadedIntervalMap.values();
     }
 
-    @Override
-    public SpliceJunctionHelper getSpliceJunctionHelper() {
-        return null; //TODO
-    }
+
 }
