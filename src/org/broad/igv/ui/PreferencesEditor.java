@@ -4172,7 +4172,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JLabel label30;
     private JTextField textServer;
     private ButtonPanel okCancelButtonPanel;
-    private JButton okButton;
+    JButton okButton;
     private JButton cancelButton;
     // End of variables declaration//GEN-END:variables
 
