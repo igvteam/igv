@@ -62,13 +62,17 @@ public class AlignmentDataManager implements IAlignmentDataManager{
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
         reader = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator));
         peStats = new HashMap();
-        this.loadOptions = new SpliceJunctionHelper.LoadOptions();
+        initLoadOptions();
         initChrMap(genome);
     }
 
     public void updateGenome(Genome genome) {
         chrMappings.clear();
         initChrMap(genome);
+    }
+
+    void initLoadOptions(){
+        this.loadOptions = new SpliceJunctionHelper.LoadOptions();
     }
 
     /**
@@ -299,6 +303,11 @@ public class AlignmentDataManager implements IAlignmentDataManager{
         } else {
             return null;
         }
+    }
+
+    public void clear() {
+        // reader.clearCache();
+        loadedIntervalMap.clear();
     }
 
     public synchronized void loadAlignments(final String chr, final int start, final int end,

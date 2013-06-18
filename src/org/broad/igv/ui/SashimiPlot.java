@@ -260,7 +260,6 @@ public class SashimiPlot extends JFrame {
                         int newMinJunctionCoverage = Integer.parseInt(input);
                         dataManager.setMinJunctionCoverage(newMinJunctionCoverage);
 
-                        //TODO Change to event bus
                         trackComponent.track.onAlignmentTrackEvent(new AlignmentTrackEvent(this, AlignmentTrackEvent.Type.SPLICE_JUNCTION));
                         trackComponent.repaint();
                     } catch (NumberFormatException ex) {

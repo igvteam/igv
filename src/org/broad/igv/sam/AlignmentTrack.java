@@ -804,6 +804,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 break;
             case RELOAD:
             case SPLICE_JUNCTION:
+                dataManager.initLoadOptions();
+                clearCaches();
+                break;
         }
 
     }
@@ -856,6 +859,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         Color c = alignment.isPaired() && alignment.getMate() != null && alignment.getMate().isMapped()
                 ? ColorUtilities.randomColor(selectionColorIndex++) : Color.black;
         selectedReadNames.put(alignment.getReadName(), c);
+    }
+
+    public void clearCaches() {
+        dataManager.clear();
     }
 
     private void refresh() {
