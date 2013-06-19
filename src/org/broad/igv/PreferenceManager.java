@@ -640,7 +640,7 @@ public class PreferenceManager implements PropertyManager {
     }
 
     /**
-     * Temporarily overide a preference.   This override will persist for
+     * Temporarily override a preference.   This override will persist for
      * the duration of the session, or until the user explicitly changes it.
      *
      * @param key

@@ -919,7 +919,7 @@ public class IGV {
     }
 
 
-    // TODO -- move all of this attribute stuf out of IGV,  perhaps to
+    // TODO -- move all of this attribute stuff out of IGV,  perhaps to
     // some Attribute helper class.
 
     final public void doSelectDisplayableAttribute() {
