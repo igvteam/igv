@@ -23,17 +23,21 @@ import org.broad.igv.ui.AbstractHeadedTest;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.IGVTestHeadless;
 import org.broad.igv.ui.panel.FrameManager;
-import org.broad.igv.ui.util.SnapshotUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.*;
+import java.util.List;
 
 import static junit.framework.Assert.*;
 
@@ -56,11 +60,6 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         igv.loadGenome(TestUtils.defaultGenome, null);
         igv.newSession();
         exec.setSnapshotDirectory(snapshotDir);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        super.tearDown();
     }
 
     @Test
@@ -349,7 +348,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     }
 
     @Test
-    public void testMaxPanelHeight() throws Exception{
+    public void testSnapshotsize() throws Exception{
         String filePath = TestUtils.DATA_DIR + "bam/NA12878.SLX.sample.bam";
         int numLoads = 1;
 
@@ -359,16 +358,17 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         exec.execute("goto chr1:9,713,386-9,733,865");
 
 
-        int mpHeight = SnapshotUtilities.DEFAULT_MAX_PANEL_HEIGHT + 100;
-        String outFileName = mpHeight + ".png";
-        exec.execute("maxpanelheight " + mpHeight);
+        int minHeight = (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight() - 10;
+
+        String outFileName =  minHeight + ".png";
+
+        exec.execute("maxpanelheight " + minHeight);
         exec.execute("snapshot " + outFileName);
 
         File outputFile = new File(snapshotDir, outFileName);
         BufferedImage image = ImageIO.read(outputFile);
 
-        int minHeight = mpHeight;
-        assertTrue("Output image height " + image.getHeight() + " is not at least maxpanelheight " + minHeight, image.getHeight() > minHeight);
+        assertTrue("Output image height " + image.getHeight() + " is not at least " + minHeight, image.getHeight() > minHeight);
 
         int remAlphaMask = 0x00ffffff;
 
