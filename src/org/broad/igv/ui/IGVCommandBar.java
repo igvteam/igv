@@ -254,7 +254,13 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
                         if (choice == JOptionPane.OK_OPTION) {
                             GenomeManager.getInstance().excludedUrl(genomeListItem.getLocation());
+                            List<GenomeListItem> genomes = GenomeManager.getInstance().getGenomes();
+                            genomes.remove(genomeListItem);
+                            PreferenceManager.getInstance().saveGenomeIdDisplayList(genomes);
+
                             GenomeManager.getInstance().buildGenomeItemList();
+                            GenomeManager.getInstance().updateImportedGenomePropertyFile();
+                            refreshGenomeListComboBox();
                         }
                     } catch (Exception e) {
                         log.error("Error initializing genome", e);
@@ -335,6 +341,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
      * Update the command bar properties for the new chromosome name.
      * Will not cause a chromosome change, intended to be called in RESPONSE
      * to the chromosome changing
+     *
      * @param chrName
      */
     protected void chromosomeChanged(final String chrName) {
@@ -748,7 +755,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         detailsBehaviorButton.setPreferredSize(new java.awt.Dimension(32, 32));
         toolPanel.add(detailsBehaviorButton, JideBoxLayout.FIX);
 
-        boolean showExomeButton =  !Globals.isProduction();
+        boolean showExomeButton = !Globals.isProduction();
         if (showExomeButton) {
             exomeButton = new JideButton();
             exomeButton.setButtonStyle(JideButton.TOOLBAR_STYLE);
@@ -817,7 +824,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         }
         if (genome != null) {
             String chrName = genome.getHomeChromosome();
-            if(chrName != null && !chrName.equals(chromosomeComboBox.getSelectedItem())){
+            if (chrName != null && !chrName.equals(chromosomeComboBox.getSelectedItem())) {
                 ViewChange.ChromosomeChangeCause cause = new ViewChange.ChromosomeChangeCause(evt.getSource(), chrName);
                 cause.setRecordHistory(true);
                 getDefaultReferenceFrame().getEventBus().post(cause);
@@ -838,15 +845,15 @@ public class IGVCommandBar extends javax.swing.JPanel {
         }
     }
 
-    private void setChromosomeComboBoxNoActionListeners(String chrName){
+    private void setChromosomeComboBoxNoActionListeners(String chrName) {
         ActionListener[] listeners = chromosomeComboBox.getActionListeners();
-        for(ActionListener l: listeners){
+        for (ActionListener l : listeners) {
             chromosomeComboBox.removeActionListener(l);
         }
 
         chromosomeComboBox.setSelectedItem(chrName);
 
-        for(ActionListener l: listeners){
+        for (ActionListener l : listeners) {
             chromosomeComboBox.addActionListener(l);
         }
     }
