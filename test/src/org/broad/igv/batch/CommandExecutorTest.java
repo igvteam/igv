@@ -348,6 +348,18 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     }
 
     @Test
+    public void testPreference() throws Exception{
+        String key = PreferenceManager.DATA_SERVER_URL_KEY;
+        String val = "myDataServerURL";
+
+        assertNotSame(val, PreferenceManager.getInstance().getDataServerURL());
+
+        exec.execute(String.format("preference %s %s", key, val));
+
+        assertEquals(val, PreferenceManager.getInstance().getDataServerURL());
+    }
+
+    @Test
     public void testSnapshotsize() throws Exception{
         String filePath = TestUtils.DATA_DIR + "bam/NA12878.SLX.sample.bam";
         int numLoads = 1;
