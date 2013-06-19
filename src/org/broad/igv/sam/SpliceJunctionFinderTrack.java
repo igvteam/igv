@@ -49,7 +49,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
     private static Logger log = Logger.getLogger(SpliceJunctionFinderTrack.class);
 
 
-    AlignmentDataManager dataManager;
+    IAlignmentDataManager dataManager;
     PreferenceManager prefs;
     RenderContext context;
 
@@ -59,7 +59,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
 
     boolean ignoreStrand;
 
-    public SpliceJunctionFinderTrack(ResourceLocator locator, String name, AlignmentDataManager dataManager, boolean ignoreStrand) {
+    public SpliceJunctionFinderTrack(ResourceLocator locator, String name, IAlignmentDataManager dataManager, boolean ignoreStrand) {
         super(locator, locator.getPath() + "_junctions", name);
 
         super.setDataRange(new DataRange(0, 0, 60));
@@ -127,8 +127,8 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame().getName());
         if (loadedInterval == null) return;
 
-        SpliceJunctionHelper helper = dataManager.getSpliceJunctionHelper();
-        List<SpliceJunctionFeature> features =  ignoreStrand ? helper.getFilteredJunctionsIgnoreStrand() : helper.getFilteredJunctions();
+        SpliceJunctionHelper helper = loadedInterval.getSpliceJunctionHelper();
+        List<SpliceJunctionFeature> features = ignoreStrand ? helper.getFilteredJunctionsIgnoreStrand() : helper.getFilteredJunctions();
         if (features == null) {
             features = Collections.emptyList();
         }

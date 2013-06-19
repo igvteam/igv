@@ -25,9 +25,9 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.IExon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.SpliceJunctionFeature;
-import org.broad.igv.sam.AlignmentDataManager;
 import org.broad.igv.sam.AlignmentInterval;
 import org.broad.igv.sam.CoverageTrack;
+import org.broad.igv.sam.IAlignmentDataManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
@@ -66,7 +66,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
     private Set<IExon> selectedExons;
 
     private CoverageTrack coverageTrack = null;
-    private AlignmentDataManager dataManager = null;
+    private IAlignmentDataManager dataManager = null;
 
     private Color background;
 
@@ -89,16 +89,14 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
     }
 
     /**
-     * Set the data manager and coverage track. This is so we can render
-     * coverage
+     * Set the data manager and coverage track.
      * @param dataManager
      */
-    public void setDataManager(AlignmentDataManager dataManager) {
+    public void setDataManager(IAlignmentDataManager dataManager) {
         this.dataManager = dataManager;
-        this.setCoverageTrack(dataManager.getCoverageTrack());
     }
 
-    public AlignmentDataManager getDataManager(){
+    public IAlignmentDataManager getDataManager(){
         return this.dataManager;
     }
 
@@ -141,7 +139,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         if(this.coverageTrack != null) this.coverageTrack.setColor(color);
     }
 
-    private void setCoverageTrack(CoverageTrack covTrack) {
+    public void setCoverageTrack(CoverageTrack covTrack) {
         this.coverageTrack = new CoverageTrack(covTrack);
         this.coverageTrack.setColor(color);
         //Don't want to color SNPs

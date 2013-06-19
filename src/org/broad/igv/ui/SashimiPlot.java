@@ -11,7 +11,6 @@
 
 package org.broad.igv.ui;
 
-import com.google.common.eventbus.Subscribe;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.IExon;
 import org.broad.igv.renderer.SashimiJunctionRenderer;
@@ -20,8 +19,6 @@ import org.broad.igv.track.*;
 import org.broad.igv.ui.color.ColorPalette;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
-import org.broad.igv.ui.event.DataLoadedEvent;
-import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.UIUtilities;
 
@@ -29,7 +26,10 @@ import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.util.*;
@@ -75,21 +75,6 @@ public class SashimiPlot extends JFrame {
         int minJunctionCoverage = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_JUNCTION_MIN_COVERAGE);
 
         this.frame = new ReferenceFrame(iframe);
-        this.frame.getEventBus().register(this);
-
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                try{
-                    SashimiPlot.this.frame.getEventBus().unregister(SashimiPlot.this);
-                }catch(NullPointerException ex0){
-                    //pass, don't care, if no frame/eventbus then no need to unregister
-                }catch(IllegalArgumentException ex0){
-                    //somehow we're already unregistered. Don't care
-                }
-
-            }
-        });
 
         minOrigin = this.frame.getOrigin();
         maxEnd = this.frame.getEnd();
@@ -117,18 +102,16 @@ public class SashimiPlot extends JFrame {
             }
         });
 
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosed(WindowEvent windowEvent) {
-                frame.getEventBus().unregister(SashimiPlot.this);
-                if(dataManager != null) dataManager.getEventBus().unregister(SashimiPlot.this);
-            }
-        });
-
         spliceJunctionTracks = new ArrayList<SpliceJunctionFinderTrack>(alignmentTracks.size());
         int colorInd = 0;
-        for (AlignmentTrack alignmentTrack : alignmentTracks) {
-            SpliceJunctionFinderTrack spliceJunctionTrack = new SpliceJunctionFinderTrack(alignmentTrack.getResourceLocator(), alignmentTrack.getName(), alignmentTrack.getDataManager(), true);
+
+        for(AlignmentTrack alignmentTrack: alignmentTracks){
+
+
+            AlignmentDataManager oldDataManager = alignmentTrack.getDataManager();
+            MemoryAlignmentDataManager dataManager = new MemoryAlignmentDataManager(oldDataManager, oldDataManager.getSpliceJunctionLoadOptions());
+
+            SpliceJunctionFinderTrack spliceJunctionTrack = new SpliceJunctionFinderTrack(alignmentTrack.getResourceLocator(), alignmentTrack.getName(), dataManager, true);
 
             spliceJunctionTrack.setRendererClass(SashimiJunctionRenderer.class);
 
@@ -138,7 +121,7 @@ public class SashimiPlot extends JFrame {
 
             TrackComponent<SpliceJunctionFinderTrack> trackComponent = new TrackComponent<SpliceJunctionFinderTrack>(frame, spliceJunctionTrack);
 
-            initSpliceJunctionComponent(trackComponent, alignmentTrack, minJunctionCoverage);
+            initSpliceJunctionComponent(trackComponent, dataManager, oldDataManager.getCoverageTrack(), minJunctionCoverage);
 
             getContentPane().add(trackComponent);
             spliceJunctionTracks.add(spliceJunctionTrack);
@@ -194,30 +177,17 @@ public class SashimiPlot extends JFrame {
         geneComponent.addMouseMotionListener(ad2);
     }
 
-    private void initSpliceJunctionComponent(TrackComponent<SpliceJunctionFinderTrack> trackComponent, AlignmentTrack alignmentTrack, int minJunctionCoverage) {
+    private void initSpliceJunctionComponent(TrackComponent<SpliceJunctionFinderTrack> trackComponent, IAlignmentDataManager dataManager, CoverageTrack coverageTrack, int minJunctionCoverage) {
         JunctionTrackMouseAdapter ad1 = new JunctionTrackMouseAdapter(trackComponent);
         trackComponent.addMouseListener(ad1);
         trackComponent.addMouseMotionListener(ad1);
 
-        setDataManager(trackComponent, alignmentTrack.getDataManager(), minJunctionCoverage);
+        getRenderer(trackComponent.track).setDataManager(dataManager);
+        getRenderer(trackComponent.track).setCoverageTrack(coverageTrack);
+
+        dataManager.setMinJunctionCoverage(minJunctionCoverage);
+
         getRenderer(trackComponent.track).setBackground(getBackground());
-    }
-
-    private void setDataManager(TrackComponent<SpliceJunctionFinderTrack> spliceJunctionTrackComponent, AlignmentDataManager dataManager, int minJunctionCoverage) {
-        this.dataManager = dataManager;
-        getRenderer(spliceJunctionTrackComponent.track).setDataManager(dataManager);
-        dataManager.getEventBus().register(this);
-        dataManager.getSpliceJunctionHelper().setMinJunctionCoverage(minJunctionCoverage);
-    }
-
-    @Subscribe
-    public void receiveDataLoaded(DataLoadedEvent event) {
-        repaint();
-    }
-
-    @Subscribe
-    public void respondViewResult(ViewChange.Result e) {
-        repaint();
     }
 
     private SashimiJunctionRenderer getRenderer(SpliceJunctionFinderTrack spliceJunctionTrack) {
@@ -274,7 +244,7 @@ public class SashimiPlot extends JFrame {
             minJunctionCoverage.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    /** TODO Right now this is a global preference, the popup implies sets it per track and is not persistent
+                    /** The popup sets it per track and is not persistent
                      *
                      * On top of this, our "Set Max Junction Coverage Range" just changes the view scaling, it doesn't
                      * filter anything, which is different behavior than the minimum. This might be confusing.
@@ -283,15 +253,16 @@ public class SashimiPlot extends JFrame {
                      * will not persist at all. May be weird for users. Still has the problem that max/min do very different
                      * things.
                      */
-                    AlignmentDataManager dataManager = getRenderer(trackComponent.track).getDataManager();
-                    SpliceJunctionHelper.LoadOptions loadOptions = dataManager.getSpliceJunctionHelper().getLoadOptions();
+
+                    IAlignmentDataManager dataManager = getRenderer(trackComponent.track).getDataManager();
+                    SpliceJunctionHelper.LoadOptions loadOptions = dataManager.getSpliceJunctionLoadOptions();
+
                     String input = JOptionPane.showInputDialog("Set Minimum Junction Coverage", loadOptions.minJunctionCoverage);
                     if (input == null || input.length() == 0) return;
                     try {
                         int newMinJunctionCoverage = Integer.parseInt(input);
-                        dataManager.getSpliceJunctionHelper().setMinJunctionCoverage(newMinJunctionCoverage);
+                        dataManager.setMinJunctionCoverage(newMinJunctionCoverage);
 
-                        //TODO Change to event bus
                         trackComponent.track.onAlignmentTrackEvent(new AlignmentTrackEvent(this, AlignmentTrackEvent.Type.SPLICE_JUNCTION));
                         trackComponent.repaint();
                     } catch (NumberFormatException ex) {

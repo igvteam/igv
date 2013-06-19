@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.*;
 
-public class AlignmentDataManager {
+public class AlignmentDataManager implements IAlignmentDataManager{
 
     private static Logger log = Logger.getLogger(AlignmentDataManager.class);
 
@@ -50,7 +50,7 @@ public class AlignmentDataManager {
 
     private AlignmentTrack.ExperimentType experimentType;
 
-    private SpliceJunctionHelper spliceJunctionHelper;
+    private SpliceJunctionHelper.LoadOptions loadOptions;
 
     /**
      * This {@code EventBus} is typically used to notify listeners when new data
@@ -62,13 +62,17 @@ public class AlignmentDataManager {
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
         reader = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator));
         peStats = new HashMap();
-        this.spliceJunctionHelper = new SpliceJunctionHelper(new SpliceJunctionHelper.LoadOptions());
+        initLoadOptions();
         initChrMap(genome);
     }
 
     public void updateGenome(Genome genome) {
         chrMappings.clear();
         initChrMap(genome);
+    }
+
+    void initLoadOptions(){
+        this.loadOptions = new SpliceJunctionHelper.LoadOptions();
     }
 
     /**
@@ -138,8 +142,12 @@ public class AlignmentDataManager {
         return false;
     }
 
-    public Collection<AlignmentInterval> getAllLoadedIntervals(){
+    public Collection<AlignmentInterval> getAllLoadedIntervals() {
         return loadedIntervalMap.values();
+    }
+
+    Collection<String> getLoadedIntervalNames() {
+        return loadedIntervalMap.keySet();
     }
 
     /**
@@ -182,41 +190,41 @@ public class AlignmentDataManager {
             }
 
 
-                Map<String, List<AlignmentInterval.Row>> groupedAlignments = loadedInterval.getGroupedAlignments();
-                List<Alignment> alignments = new ArrayList(Math.min(50000, groupedAlignments.size() * 10000));
-                for (List<AlignmentInterval.Row> alignmentRows : groupedAlignments.values()) {
-                    for (AlignmentInterval.Row row : alignmentRows) {
-                        for (Alignment al : row.alignments) {
-                            if (al instanceof PairedAlignment) {
-                                PairedAlignment pair = (PairedAlignment) al;
-                                alignments.add(pair.firstAlignment);
-                                if (pair.secondAlignment != null) {
-                                    alignments.add(pair.secondAlignment);
-                                }
-                            } else {
-                                alignments.add(al);
+            Map<String, List<AlignmentInterval.Row>> groupedAlignments = loadedInterval.getGroupedAlignments();
+            List<Alignment> alignments = new ArrayList(Math.min(50000, groupedAlignments.size() * 10000));
+            for (List<AlignmentInterval.Row> alignmentRows : groupedAlignments.values()) {
+                for (AlignmentInterval.Row row : alignmentRows) {
+                    for (Alignment al : row.alignments) {
+                        if (al instanceof PairedAlignment) {
+                            PairedAlignment pair = (PairedAlignment) al;
+                            alignments.add(pair.firstAlignment);
+                            if (pair.secondAlignment != null) {
+                                alignments.add(pair.secondAlignment);
                             }
+                        } else {
+                            alignments.add(al);
                         }
                     }
                 }
+            }
 
 
-                // ArrayHeapObjectSorter sorts in place (no additional memory required).
-                ArrayHeapObjectSorter<Alignment> heapSorter = new ArrayHeapObjectSorter();
-                heapSorter.sort(alignments, new Comparator<Alignment>() {
-                    public int compare(Alignment alignment, Alignment alignment1) {
-                        return alignment.getStart() - alignment1.getStart();
-                    }
-                });
+            // ArrayHeapObjectSorter sorts in place (no additional memory required).
+            ArrayHeapObjectSorter<Alignment> heapSorter = new ArrayHeapObjectSorter();
+            heapSorter.sort(alignments, new Comparator<Alignment>() {
+                public int compare(Alignment alignment, Alignment alignment1) {
+                    return alignment.getStart() - alignment1.getStart();
+                }
+            });
 
-                // When repacking keep all currently loaded alignments (don't limit to levels)
-                int max = Integer.MAX_VALUE;
-                LinkedHashMap<String, List<AlignmentInterval.Row>> tmp = (new AlignmentPacker()).packAlignments(
-                        alignments.iterator(),
-                        loadedInterval.getEnd(),
-                        renderOptions);
+            // When repacking keep all currently loaded alignments (don't limit to levels)
+            int max = Integer.MAX_VALUE;
+            LinkedHashMap<String, List<AlignmentInterval.Row>> tmp = (new AlignmentPacker()).packAlignments(
+                    alignments.iterator(),
+                    loadedInterval.getEnd(),
+                    renderOptions);
 
-                loadedInterval.setAlignmentRows(tmp, renderOptions);
+            loadedInterval.setAlignmentRows(tmp, renderOptions);
         } else {
             repackAlignments(frameName, renderOptions);
         }
@@ -224,10 +232,10 @@ public class AlignmentDataManager {
 
     /**
      * Repack currently loaded alignments of the provided reference frame
-     * @see AlignmentPacker#packAlignments(java.util.Iterator, int, org.broad.igv.sam.AlignmentTrack.RenderOptions)
      *
      * @param frameName
      * @param renderOptions
+     * @see AlignmentPacker#packAlignments(java.util.Iterator, int, org.broad.igv.sam.AlignmentTrack.RenderOptions)
      */
     public void repackAlignments(String frameName, AlignmentTrack.RenderOptions renderOptions) {
 
@@ -248,7 +256,7 @@ public class AlignmentDataManager {
         loadedInterval.setAlignmentRows(alignmentRows, renderOptions);
     }
 
-    public void preload(RenderContext context){
+    public void preload(RenderContext context) {
         AlignmentTrack.RenderOptions renderOptions = getCoverageTrack() != null ? getCoverageTrack().getRenderOptions() : null;
         preload(context, renderOptions, true);
     }
@@ -266,7 +274,7 @@ public class AlignmentDataManager {
         int adjustedEnd = end;
         int windowSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MAX_VISIBLE_RANGE) * 1000;
         int center = (end + start) / 2;
-        int expand = Math.max(end - start, windowSize/2);
+        int expand = Math.max(end - start, windowSize / 2);
 
         if (loadedInterval != null) {
             // First see if we have a loaded interval that fully contain the requested interval.  If yes we're done
@@ -295,6 +303,11 @@ public class AlignmentDataManager {
         } else {
             return null;
         }
+    }
+
+    public void clear() {
+        // reader.clearCache();
+        loadedIntervalMap.clear();
     }
 
     public synchronized void loadAlignments(final String chr, final int start, final int end,
@@ -347,8 +360,8 @@ public class AlignmentDataManager {
         final AlignmentTrack.BisulfiteContext bisulfiteContext =
                 renderOptions != null ? renderOptions.bisulfiteContext : null;
 
-
-        AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, this.spliceJunctionHelper,
+        SpliceJunctionHelper spliceJunctionHelper = new SpliceJunctionHelper(this.loadOptions);
+        AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, spliceJunctionHelper,
                 downsampleOptions, peStats, bisulfiteContext);
         //System.out.println(chr + "\t" + start + "\t" + end + "\t" + (n++) + "   (" + format.format(delta) + ")");
 
@@ -393,7 +406,7 @@ public class AlignmentDataManager {
         AlignmentInterval loadedInterval = loadedIntervalMap.get(referenceFrame.getName());
         if (loadedInterval == null) return null;
 
-        if (loadedInterval.getGroupedAlignments() != null && loadedInterval.contains(chr, start, end)){
+        if (loadedInterval.getGroupedAlignments() != null && loadedInterval.contains(chr, start, end)) {
             return loadedInterval.getGroupedAlignments();
         }
         return null;
@@ -450,8 +463,15 @@ public class AlignmentDataManager {
         return eventBus;
     }
 
-    public SpliceJunctionHelper getSpliceJunctionHelper() {
-        return spliceJunctionHelper;
+    public SpliceJunctionHelper.LoadOptions getSpliceJunctionLoadOptions() {
+        return loadOptions;
+    }
+
+    public void setMinJunctionCoverage(int minJunctionCoverage) {
+        this.loadOptions = new SpliceJunctionHelper.LoadOptions(minJunctionCoverage, this.loadOptions.minReadFlankingWidth);
+        for (AlignmentInterval interval : getAllLoadedIntervals()) {
+            interval.getSpliceJunctionHelper().setLoadOptions(this.loadOptions);
+        }
     }
 
     public static class DownsampleOptions {
