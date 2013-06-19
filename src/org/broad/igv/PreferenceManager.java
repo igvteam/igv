@@ -640,7 +640,7 @@ public class PreferenceManager implements PropertyManager {
     }
 
     /**
-     * Temporaily overide a preference.   This override will persist for
+     * Temporarily overide a preference.   This override will persist for
      * the duration of the session, or until the user explicitly changes it.
      *
      * @param key
@@ -895,7 +895,6 @@ public class PreferenceManager implements PropertyManager {
     }
 
 
-
     private void initDefaultValues() {
 
         defaultValues = new HashMap();
@@ -990,7 +989,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_NOMESEQ_ENABLED, "false");
         defaultValues.put(SAM_COUNT_DELETED_BASES_COVERED, "false");
         defaultValues.put(SAM_FLAG_LARGE_INSERTIONS, "false");
-        defaultValues.put(SAM_LARGE_INSERTIONS_THRESHOLD , "1");
+        defaultValues.put(SAM_LARGE_INSERTIONS_THRESHOLD, "1");
 
         defaultValues.put(NORMALIZE_COVERAGE, "false");
 

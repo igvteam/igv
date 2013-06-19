@@ -164,6 +164,8 @@ public class CommandExecutor {
                     return this.setCredentials(param1, param2);
                 } else if (cmd.equalsIgnoreCase("clearCredentials")) {
                     return this.clearCredentials();
+                } else if (cmd.equals("preference")) {
+                    return this.overridePreference(param1, param2);
                 } else if (cmd.equalsIgnoreCase("version")) {
                     return Globals.VERSION;
                 } else if (cmd.equals("exit")) {
@@ -196,6 +198,11 @@ public class CommandExecutor {
         log.info(result);
 
         return result;
+    }
+
+    private String overridePreference(String prefKey, String prefVal) {
+        PreferenceManager.getInstance().override(prefKey, prefVal);
+        return "OK";
     }
 
     private String setDataRange(String dataRangeString, String trackName) {
