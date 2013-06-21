@@ -39,12 +39,12 @@ import static org.junit.Assert.*;
  * Test retrieving variants from mongo database.
  * This test requires that the relevant mongo db be running,
  * so we ignore it because we can't be sure about foreign conditions.
- *
+ * <p/>
  * User: jacob
  * Date: 2012-Dec-14
  */
-@Ignore("Still working out library dependencies of vcf, have to remove this functionality for now")
-public class VariantReviewTest extends AbstractHeadlessTest{
+@Ignore("Test only intended to be run manually")
+public class VariantReviewTest extends AbstractHeadlessTest {
 
     String dbSpecPath = "resources/NA12878kb_local.json";
 
@@ -63,7 +63,7 @@ public class VariantReviewTest extends AbstractHeadlessTest{
     private VariantReviewSource source;
 
     @Before
-    public void setUp() throws Exception{
+    public void setUp() throws Exception {
         super.setUp();
         VariantContextBuilder builder = new VariantContextBuilder();
         //Convert from exclusive end to inclusive end
@@ -72,9 +72,9 @@ public class VariantReviewTest extends AbstractHeadlessTest{
         mvc = VariantReviewSource.createMVC(allele0, allele1, callsetName, vc, truthStatus);
 
         int errorsResetting = 0;
-        try{
+        try {
             errorsResetting = resetDB();
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e);
             Assume.assumeNoException(e);
         }
@@ -83,7 +83,17 @@ public class VariantReviewTest extends AbstractHeadlessTest{
         source = new VariantReviewSource(new ResourceLocator(dbSpecPath));
     }
 
-    private boolean checkFeatureNotPresent() throws Exception{
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+        try {
+            resetDB();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean checkFeatureNotPresent() throws Exception {
         Iterator<VCFVariant> result = getFeature();
         return !result.hasNext();
     }
@@ -92,11 +102,11 @@ public class VariantReviewTest extends AbstractHeadlessTest{
      * Basically here to check the remove call
      */
     @Test
-    public void testFeatureNotPresent() throws Exception{
+    public void testFeatureNotPresent() throws Exception {
         boolean featNotPresent = checkFeatureNotPresent();
-        if(!featNotPresent){
+        if (!featNotPresent) {
             Iterator<VCFVariant> result = getFeature();
-            while(result.hasNext()){
+            while (result.hasNext()) {
                 System.out.println(result.next());
             }
         }
@@ -105,12 +115,12 @@ public class VariantReviewTest extends AbstractHeadlessTest{
 
     //TODO Separate into add/get methods, but that requires prepopulation of data
     @Test
-    public void testAddGetFeature() throws Exception{
+    public void testAddGetFeature() throws Exception {
         source.consensusOnly = false;
         Assume.assumeTrue(checkFeatureNotPresent());
 
         String errorMessage = VariantReviewDialog.addCall(dbSpecPath, mvc);
-        if(errorMessage != null) System.out.println(errorMessage);
+        if (errorMessage != null) System.out.println(errorMessage);
         assertNull(errorMessage);
 
         Iterator<VCFVariant> result = getFeature();
@@ -123,26 +133,26 @@ public class VariantReviewTest extends AbstractHeadlessTest{
         assertEquals(end, variant.getEnd());
         assertEquals(alleles.get(0), variant.getReference().replace("*", ""));
         int index = 1;
-        for(Allele al: variant.getAlternateAlleles()){
+        for (Allele al : variant.getAlternateAlleles()) {
             assertEquals(alleles.get(index++), al.toString());
         }
         assertTrue(variant.getSource().equals(callsetName));
 
     }
 
-    private Iterator<VCFVariant> getFeature() throws IOException{
+    private Iterator<VCFVariant> getFeature() throws IOException {
         return source.getFeatures(chr, start, end);
     }
 
-    private int resetDB() throws Exception{
+    private int resetDB() throws Exception {
         NA12878DBArgumentCollection args = new NA12878DBArgumentCollection(dbSpecPath);
         NA12878KnowledgeBase kb = new NA12878KnowledgeBase(null, args);
 
         List<WriteResult> writeResults = kb.removeCall(mvc);
         kb.close();
         int errCount = 0;
-        for(WriteResult wr: writeResults){
-            if(wr.getError() != null){
+        for (WriteResult wr : writeResults) {
+            if (wr.getError() != null) {
                 System.out.println(wr.getError());
                 errCount++;
             }
