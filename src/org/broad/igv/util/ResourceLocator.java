@@ -10,8 +10,12 @@
  */
 package org.broad.igv.util;
 
+import org.apache.log4j.Logger;
+
 import java.awt.*;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * Represents a data file or other resource, which might be local file or remote resource.
@@ -19,6 +23,8 @@ import java.io.File;
  * @author jrobinso
  */
 public class ResourceLocator {
+
+    private static Logger log = Logger.getLogger(ResourceLocator.class);
 
     /**
      * Display name
@@ -138,6 +144,47 @@ public class ResourceLocator {
 
     public String getType() {
         return type;
+    }
+
+    public String getTypeString() {
+        if (type != null) {
+            return type;
+        } else {
+
+            String typeString = path;
+            if (path.startsWith("http://") || path.startsWith("https://")) {
+                try {
+                    URL url = new URL(path);
+                    typeString = url.getPath().toLowerCase();
+                    String query = url.getQuery();
+
+                    // Genome space hack -- check for explicit type converter
+                    //  https://dmtest.genomespace.org:8444/datamanager/files/users/SAGDemo/Step1/TF.data.tab
+                    //   ?dataformat=http://www.genomespace.org/datamanager/dataformat/gct/0.0.0
+                    if (query.contains("dataformat/gct")) {
+                        typeString = ".gct";
+                    } else if (query.contains("dataformat/bed")) {
+                        typeString = ".bed";
+                    } else if (query.contains("dataformat/cn")) {
+                        typeString = ".cn";
+                    }
+
+                } catch (MalformedURLException e) {
+                    log.error("Error interpreting url: " + path, e);
+                    typeString = path;
+                }
+            }
+
+            // Strip .txt, .gz, and .xls extensions.  (So  foo.cn.gz => a .cn file)
+            if (!typeString.endsWith("_sorted.txt") &&
+                    (typeString.endsWith(".txt") || typeString.endsWith(
+                            ".xls") || typeString.endsWith(".gz"))) {
+                typeString = typeString.substring(0, typeString.lastIndexOf("."));
+            }
+
+            return typeString;
+
+        }
     }
 
     public String toString() {

@@ -52,23 +52,24 @@ public class AlignmentReaderFactory {
         AlignmentReader reader = null;
 
         String samFile = locator.getPath();
+        String typeString = locator.getTypeString();
 
         if ("alist".equals(locator.getType())) {
             reader = getMergedReader(locator.getPath(), true);
         } else if (pathLowerCase.startsWith("http") && pathLowerCase.contains("/query.cgi?")) {
             reader = new CGIAlignmentReader(samFile);
-        } else if (pathLowerCase.endsWith(".sam")) {
+        } else if (typeString.endsWith(".sam")) {
             reader = new SAMReader(samFile, requireIndex);
 
-        } else if (pathLowerCase.endsWith("sorted.txt")
-                || pathLowerCase.endsWith(".aligned")
-                || pathLowerCase.endsWith(".aligned.txt")
-                || pathLowerCase.endsWith("bedz")
-                || pathLowerCase.endsWith("bed")
-                || pathLowerCase.endsWith("psl")
-                || pathLowerCase.endsWith("pslx")) {
+        } else if (typeString.endsWith("sorted.txt")
+                || typeString.endsWith(".aligned")
+                || typeString.endsWith(".aligned.txt")
+                || typeString.endsWith("bedz")
+                || typeString.endsWith("bed")
+                || typeString.endsWith("psl")
+                || typeString.endsWith("pslx")) {
             reader = new GeraldReader(samFile, requireIndex);
-        } else if (pathLowerCase.endsWith(".bam")) {
+        } else if (typeString.endsWith(".bam")) {
             if (locator.isLocal()) {
                 reader = new BAMFileReader(new File(samFile));
             } else if (HttpUtils.isRemoteURL(locator.getPath().toLowerCase())) {
@@ -84,7 +85,7 @@ public class AlignmentReaderFactory {
                     reader = new BAMWebserviceReader(locator);
                 }
             }
-        } else if (pathLowerCase.endsWith(".bam.list") || pathLowerCase.endsWith(".sam.list")) {
+        } else if (typeString.endsWith(".bam.list") || pathLowerCase.endsWith(".sam.list")) {
             if (locator.getServerURL() != null) {
                 reader = new BAMWebserviceReader(locator);
             } else {

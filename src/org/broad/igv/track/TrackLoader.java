@@ -111,31 +111,7 @@ public class TrackLoader {
         final String path = locator.getPath();
         log.info("Loading resource, path " + path);
         try {
-            String typeString = locator.getType();
-            if (typeString == null) {
-
-                // Genome space hack -- check for explicit type converter
-                //https://dmtest.genomespace.org:8444/datamanager/files/users/SAGDemo/Step1/TF.data.tab
-                //   ?dataformat=http://www.genomespace.org/datamanager/dataformat/gct/0.0.0
-                if (path.contains("?dataformat")) {
-                    if (path.contains("dataformat/gct")) {
-                        typeString = ".gct";
-                    } else if (path.contains("dataformat/bed")) {
-                        typeString = ".bed";
-                    } else if (path.contains("dataformat/cn")) {
-                        typeString = ".cn";
-                    }
-
-                } else {
-                    typeString = path.toLowerCase();
-                    if (!typeString.endsWith("_sorted.txt") &&
-                            (typeString.endsWith(".txt") || typeString.endsWith(
-                                    ".xls") || typeString.endsWith(".gz"))) {
-                        typeString = typeString.substring(0, typeString.lastIndexOf("."));
-                    }
-                }
-            }
-            typeString = typeString.toLowerCase();
+            String typeString = locator.getTypeString();
 
             if (typeString.endsWith(".tbi")) {
                 MessageUtils.showMessage("<html><b>Error:</b>File type '.tbi' is not recognized.  If this is a 'tabix' index <br>" +
