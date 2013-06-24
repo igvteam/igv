@@ -148,6 +148,8 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
 
     public String getValueStringAt(int pos) {
 
+        if (pos < getStart() || pos >= getEnd()) return null;
+
         StringBuffer buf = new StringBuffer();
         int totalCount = getTotalCount(pos);
         buf.append("Total count: " + totalCount);

@@ -269,10 +269,9 @@ public class CoverageTrack extends AbstractTrack {
             if (interval == null) return null;
 
             if (interval.contains(chr, (int) position, (int) position)) {
-                final int pos = (int) position;
-                AlignmentCounts counts = interval.getAlignmentCounts(pos);
+                AlignmentCounts counts = interval.getCounts();
                 if (counts != null) {
-                    return counts.getValueStringAt(pos);
+                    return counts.getValueStringAt((int) position);
                 }
             }
         } else {
