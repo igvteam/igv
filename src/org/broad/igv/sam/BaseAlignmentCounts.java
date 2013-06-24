@@ -34,7 +34,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
 
     private static Logger log = Logger.getLogger(BaseAlignmentCounts.class);
 
-    private static char[] nucleotides = {'a', 'c', 'g', 't', 'n'};
+    public static final char[] nucleotides = {'a', 'c', 'g', 't', 'n'};
     private static Map<String, Set<Integer>> knownSnps;
     int start;
     int end;
@@ -239,7 +239,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
 
     protected abstract void incrementDeletion(int pos, boolean negativeStrand);
 
-    protected abstract void incBlockCounts(AlignmentBlock b, boolean b1);
+    protected abstract void incBlockCounts(AlignmentBlock b, boolean isNegativeStrand);
 
 
 }
