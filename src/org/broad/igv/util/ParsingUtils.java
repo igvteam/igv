@@ -34,7 +34,9 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
@@ -82,7 +84,7 @@ public class ParsingUtils {
     }
 
     /**
-     * Open an InputStream on the resource.  Wrap it in a GZIPInputStream if neccessary.
+     * Open an InputStream on the resource.  Wrap it in a GZIPInputStream if necessary.
      *
      * @param locator
      * @return
@@ -139,12 +141,62 @@ public class ParsingUtils {
         return (int) Double.parseDouble(string);
     }
 
+    /**
+     * Load a text file of format
+     * {@code key}={@code value}
+     * <p/>
+     * Lines beginning with a "#" are skipped
+     * <p/>
+     * The {@code value} field must not contain any "=", no allowance is made for quoting or escaping
+     * or anything like that.
+     *
+     * @param inputStream
+     * @return
+     */
+    public static Map<String, String> loadMap(InputStream inputStream) {
+        BufferedReader reader = null;
+        Map<String, String> map = new HashMap<String, String>();
+        try {
+            reader = new BufferedReader(new InputStreamReader(inputStream));
+            String nextLine = null;
+            while ((nextLine = reader.readLine()) != null) {
+                if (nextLine.startsWith("#")) continue;
+
+                String[] tokens = nextLine.split("=");
+                if (tokens.length == 2) {
+                    map.put(tokens[0], tokens[1]);
+                } else {
+                    throw new IllegalArgumentException("Incorrect number of tokens at line: " + nextLine);
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                if (reader != null) {
+                    reader.close();
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        return map;
+    }
+
+    private static final String codeFilePath = "resources/iupac_regex_table.txt";
+
+    public static Map<String, String> loadIUPACMap() {
+        return loadMap(ParsingUtils.class.getResourceAsStream(codeFilePath));
+    }
+
 
     private static final DateFormat ftpDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 
     /**
      * Returns the number of milliseconds since January 1, 1970, 00:00:00 GMT
      * since the specified resource was modified, or 0 if not known/error
+     *
      * @param path
      * @return
      */
@@ -153,14 +205,14 @@ public class ParsingUtils {
             String resp = null;
             try {
                 URL url = new URL(path);
-                if(path.startsWith("ftp:")){
+                if (path.startsWith("ftp:")) {
                     String host = url.getHost();
                     FTPClient ftp = FTPUtils.connect(host, url.getUserInfo(), new UserPasswordInputImpl());
                     ftp.pasv();
                     FTPReply reply = ftp.executeCommand("MDTM " + url.getPath());
                     resp = reply.getReplyString();
                     return ftpDateFormat.parse(resp).getTime();
-                }else{
+                } else {
                     return HttpUtils.getInstance().getLastModified(url);
                 }
 
@@ -168,14 +220,14 @@ public class ParsingUtils {
                 log.error("Malformed url " + path, e);
             } catch (IOException e) {
                 log.error("Error getting modified date for " + path, e);
-            }catch(ParseException e){
+            } catch (ParseException e) {
                 log.error("Error parsing Last-Modified " + resp, e);
-            }catch(NumberFormatException e){
+            } catch (NumberFormatException e) {
                 log.error("Error parsing Last-Modified " + resp, e);
             }
             return 0;
 
-        }else {
+        } else {
             File f = new File(path);
             return f.exists() ? f.lastModified() : 0;
         }
@@ -476,7 +528,7 @@ public class ParsingUtils {
     }
 
     /**
-     * Return the "IGV extension" (basically the extension after strippin trailing qualifiers) for the input path.
+     * Return the "IGV extension" (basically the extension after stripping trailing qualifiers) for the input path.
      * his is the string IGV uses to identify the format and data type of the file.
      *
      * @param path
@@ -485,17 +537,17 @@ public class ParsingUtils {
     public static String getIGVExtension(String path) {
 
         // _sorted.txt is an old alignment format.
-        if(path.endsWith("_sorted.txt")) {
+        if (path.endsWith("_sorted.txt")) {
             return "_sorted.txt";
         }
 
         // String off gzip first
-        if(path.endsWith(".gz")) path = path.substring(0, path.length()-3);
+        if (path.endsWith(".gz")) path = path.substring(0, path.length() - 3);
 
         // Now common qualifiers
-        if(path.endsWith(".txt") || path.endsWith(".xls"))  path = path.substring(0, path.length()-4);
+        if (path.endsWith(".txt") || path.endsWith(".xls")) path = path.substring(0, path.length() - 4);
 
         int idx = path.lastIndexOf('.');
-        return idx < 0 ? path : path.substring(idx+1, path.length());
+        return idx < 0 ? path : path.substring(idx + 1, path.length());
     }
 }

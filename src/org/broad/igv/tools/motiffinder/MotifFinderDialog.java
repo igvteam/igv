@@ -18,6 +18,7 @@ package org.broad.igv.tools.motiffinder;
 import net.sf.samtools.util.SequenceUtil;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
+import org.broad.igv.util.ParsingUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -26,11 +27,6 @@ import javax.swing.event.CaretListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -48,62 +44,27 @@ public class MotifFinderDialog extends JDialog {
     private static Map<String, String> letterToRegex;
     private static Set<String> validIUPACInputStrings;
 
-    static{
+    static {
         initLetterToRegex();
     }
 
-    private static final String codeFilePath = "resources/iupac_regex_table.txt";
+
     private static void initLetterToRegex() {
-        letterToRegex = loadMap(MotifFinderSource.class.getResourceAsStream(codeFilePath));
+        letterToRegex = ParsingUtils.loadIUPACMap();
         validIUPACInputStrings = new HashSet<String>(letterToRegex.size());
-        for(String key: letterToRegex.keySet()){
+        for (String key : letterToRegex.keySet()) {
             validIUPACInputStrings.add(key.toUpperCase());
         }
     }
 
     /**
      * Returns true if character c is a valid IUPAC Ambiguity code
+     *
      * @param c Single character
      * @return
      */
     public static boolean isIUPACChar(String c) {
         return validIUPACInputStrings.contains(c);
-    }
-
-    /**
-     * TODO Move this to someplace more general, use it wherever we store lots of this kind of data
-     * @param inputStream
-     * @return
-     */
-    public static Map<String, String> loadMap(InputStream inputStream){
-        BufferedReader reader = null;
-        Map<String, String> map = new HashMap<String, String>();
-        try {
-            reader = new BufferedReader(new InputStreamReader(inputStream));
-            String nextLine = null;
-            while ((nextLine = reader.readLine()) != null) {
-                if(nextLine.startsWith("#")) continue;
-
-                String[] tokens = nextLine.split("=");
-                if (tokens.length == 2) {
-                    map.put(tokens[0], tokens[1]);
-                }else{
-                    throw new IllegalArgumentException("Incorrect number of tokens at line: " + nextLine);
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-
-        return map;
     }
 
     private String posTrackName;
@@ -131,13 +92,14 @@ public class MotifFinderDialog extends JDialog {
     /**
      * Replace the ambiguity codes in the motif
      * with regular expression equivalents
+     *
      * @param motif
      * @return
      */
-    static String convertMotifToRegex(String motif){
+    static String convertMotifToRegex(String motif) {
         String output = motif;
         int outloc = 0;
-        for(int inloc=0; inloc < motif.length(); inloc++){
+        for (int inloc = 0; inloc < motif.length(); inloc++) {
 
             String inchar = motif.substring(inloc, inloc + 1);
             String rep = letterToRegex.get(inchar);
@@ -163,7 +125,7 @@ public class MotifFinderDialog extends JDialog {
         boolean isRegex = checkNucleotideRegex(strPattern);
         boolean patternIsValid = isIUPAC || isRegex;
 
-        if(!patternIsValid){
+        if (!patternIsValid) {
             MessageUtils.showMessage("Please enter a valid pattern.\n" +
                     "Patterns using IUPAC ambiguity codes should contain no special characters.\n" +
                     "Regular expressions should contain only 'ACTGN' in addition to special characters");
@@ -176,7 +138,7 @@ public class MotifFinderDialog extends JDialog {
 
         this.posTrackName = posNameField.getText();
         this.negTrackName = negNameField.getText();
-        if(this.posTrackName.equalsIgnoreCase(negTrackName)){
+        if (this.posTrackName.equalsIgnoreCase(negTrackName)) {
             MessageUtils.showMessage("Track names must be different");
             return;
         }
@@ -188,13 +150,14 @@ public class MotifFinderDialog extends JDialog {
     /**
      * Determines whether this string pattern is interpretable as
      * a set of IUPAC nucleotide characters
+     *
      * @param strPattern Upper case string pattern
      * @return
      */
     static boolean checkIUPACPatternValid(String strPattern) {
-        for(int ii=0; ii < strPattern.length(); ii++){
+        for (int ii = 0; ii < strPattern.length(); ii++) {
             String c = strPattern.substring(ii, ii + 1);
-            if(!isIUPACChar(c)){
+            if (!isIUPACChar(c)) {
                 return false;
             }
         }
@@ -204,19 +167,20 @@ public class MotifFinderDialog extends JDialog {
     /**
      * Determine whether it's a valid regex.
      * Also, any letters should be one of AGCTN (case insensitive)
+     *
      * @param strPattern
      * @return
      */
-    static boolean checkNucleotideRegex(String strPattern){
+    static boolean checkNucleotideRegex(String strPattern) {
         try {
             //First check if it's valid regex
             Pattern pattern = Pattern.compile(strPattern);
             byte[] bytes = strPattern.getBytes();
-            for(byte c: bytes){
-                if(Character.isLetter(c)){
+            for (byte c : bytes) {
+                if (Character.isLetter(c)) {
                     boolean validBase = SequenceUtil.isValidBase(c);
                     validBase |= c == 'N';
-                    if(!validBase) return false;
+                    if (!validBase) return false;
                 }
             }
         } catch (PatternSyntaxException e) {
@@ -226,7 +190,7 @@ public class MotifFinderDialog extends JDialog {
         return true;
     }
 
-    private void updateNegNameFieldFromPattern(){
+    private void updateNegNameFieldFromPattern() {
         UIUtilities.invokeOnEventThread(new Runnable() {
             @Override
             public void run() {
@@ -236,7 +200,7 @@ public class MotifFinderDialog extends JDialog {
         });
     }
 
-    private void updatePosNameFieldFromPattern(){
+    private void updatePosNameFieldFromPattern() {
         UIUtilities.invokeOnEventThread(new Runnable() {
             @Override
             public void run() {
@@ -246,9 +210,10 @@ public class MotifFinderDialog extends JDialog {
     }
 
     private static final int maxLength = 100;
+
     private String getAbbrevPatternText() {
         String patternText = MotifFinderDialog.this.patternField.getText();
-        if(patternText.length() > maxLength){
+        if (patternText.length() > maxLength) {
             patternText = patternText.substring(0, maxLength - 3) + "...";
         }
         return patternText;
@@ -370,8 +335,8 @@ public class MotifFinderDialog extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("OK");
@@ -382,8 +347,8 @@ public class MotifFinderDialog extends JDialog {
                     }
                 });
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -394,8 +359,8 @@ public class MotifFinderDialog extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }

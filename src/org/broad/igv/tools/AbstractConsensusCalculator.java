@@ -15,8 +15,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import org.broad.igv.sam.AlignmentCounts;
 import org.broad.igv.sam.BaseAlignmentCounts;
-import org.broad.igv.tools.motiffinder.MotifFinderDialog;
-import org.broad.igv.tools.motiffinder.MotifFinderSource;
+import org.broad.igv.util.ParsingUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -73,8 +72,7 @@ public abstract class AbstractConsensusCalculator {
     protected static Table<Character, Character, Character> getDegeneracyTable() {
         if (degeneracyTable == null) {
             degeneracyTable = HashBasedTable.create(5, 5);
-            //TODO Move the IUPAC loading stuff someplace else, these things shouldn't depend on each other
-            Map<String, String> iupacMap = MotifFinderDialog.loadMap(MotifFinderSource.class.getResourceAsStream("resources/iupac_regex_table.txt"));
+            Map<String, String> iupacMap = ParsingUtils.loadIUPACMap();
             for (String s : iupacMap.values()) {
                 s = s.replace("[", "").replace("]", "").toLowerCase();
                 //System.out.println(s);
