@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "5.1.0.2.64" Java: "1.6.0_37" encoding: "UTF-8"
+JFDML JFormDesigner: "5.2.0.0.54" Java: "1.6.0_37" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -9,7 +9,7 @@ new FormModel {
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 				name: "dialogPane"
 				"border": new javax.swing.border.EmptyBorder( 12, 12, 12, 12 )
-				"preferredSize": new java.awt.Dimension( 600, 115 )
+				"preferredSize": new java.awt.Dimension( 600, 150 )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
 					name: "contentPanel"
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
@@ -166,6 +166,25 @@ new FormModel {
 						} )
 					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "North"
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+					"axis": 0
+				} ) {
+					name: "panel8"
+					add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
+						name: "hSpacer6"
+						"maximumSize": new java.awt.Dimension( 300, 32767 )
+						"preferredSize": new java.awt.Dimension( 115, 10 )
+					} )
+					add( new FormComponent( "javax.swing.JCheckBox" ) {
+						name: "isComplexEventCB"
+						"text": "Complex Event"
+					} )
+					add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
+						name: "hSpacer7"
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
 					"value": "Center"
 				} )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
@@ -193,14 +212,14 @@ new FormModel {
 						"gridy": 0
 					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
-					"value": "Last"
+					"value": "South"
 				} )
 			}, new FormLayoutConstraints( class java.lang.String ) {
 				"value": "Center"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
-			"size": new java.awt.Dimension( 700, 135 )
+			"size": new java.awt.Dimension( 700, 160 )
 		} )
 	}
 }

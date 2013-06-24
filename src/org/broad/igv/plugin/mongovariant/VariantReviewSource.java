@@ -51,7 +51,7 @@ public class VariantReviewSource implements FeatureSource<VCFVariant> {
     @ForTesting
     boolean consensusOnly = true;
 
-    public VariantReviewSource(ResourceLocator locator){
+    public VariantReviewSource(ResourceLocator locator) {
         this.args = new NA12878DBArgumentCollection(locator.getPath());
         parser = createGenomeLocParser();
     }
@@ -75,7 +75,7 @@ public class VariantReviewSource implements FeatureSource<VCFVariant> {
 
     @Override
     public Iterator<VCFVariant> getFeatures(String chr, int start, int end) throws IOException {
-        if(kb == null){
+        if (kb == null) {
             initKB();
         }
 
@@ -83,13 +83,13 @@ public class VariantReviewSource implements FeatureSource<VCFVariant> {
         //Convert from 0-based to 1-based
         criteria.addInterval(chromoNameToStandard(chr), start + 1, end);
         SiteIterator<MongoVariantContext> iterator;
-        if(consensusOnly){
+        if (consensusOnly) {
             iterator = kb.getConsensusSites(criteria);
-        }else{
+        } else {
             iterator = kb.getCalls(criteria);
         }
         List<VCFVariant> variants = new ArrayList<VCFVariant>();
-        while(iterator.hasNext()){
+        while (iterator.hasNext()) {
             MongoVariantContext mvc = iterator.next();
             MongoVCFVariant vcf = new MongoVCFVariant(mvc, mvc.getChr());
             variants.add(vcf);
@@ -116,22 +116,23 @@ public class VariantReviewSource implements FeatureSource<VCFVariant> {
     /**
      * TODO This chromosome replacement is a hack
      * The db uses digits, IGV uses "chr#"
+     *
      * @param chromoName
      * @return
      */
-    static String chromoNameToStandard(String chromoName){
+    static String chromoNameToStandard(String chromoName) {
         return chromoName.toLowerCase().replace("chr", "");
     }
 
-    private GenomeLocParser createGenomeLocParser(){
+    private GenomeLocParser createGenomeLocParser() {
         SAMSequenceDictionary dict = new SAMSequenceDictionary();
-        for(Chromosome chr: GenomeManager.getInstance().getCurrentGenome().getChromosomes()){
+        for (Chromosome chr : GenomeManager.getInstance().getCurrentGenome().getChromosomes()) {
             dict.addSequence(new SAMSequenceRecord(chromoNameToStandard(chr.getName()), chr.getLength()));
         }
         return new GenomeLocParser(dict);
     }
 
-    static MongoVariantContext createMVC(int allele0, int allele1, String callsetName, VariantContext variantContext, TruthStatus truthStatus){
+    static MongoVariantContext createMVC(int allele0, int allele1, String callsetName, VariantContext variantContext, TruthStatus truthStatus, boolean isComplexEvent) {
         List<Allele> alleleList = variantContext.getAlleles();
 
         MongoGenotype mgt = new MongoGenotype(allele0, allele1);
@@ -139,10 +140,11 @@ public class VariantReviewSource implements FeatureSource<VCFVariant> {
         MongoVariantContext mvc = MongoVariantContext.create(callsetName, variantContext, truthStatus, gt);
         mvc.setReviewed(true);
         mvc.setChr(chromoNameToStandard(mvc.getChr()));
+        mvc.setIsComplexEvent(isComplexEvent);
         return mvc;
     }
 
-    public static VariantTrack loadVariantReview(ResourceLocator locator, List<Track> newTracks){
+    public static VariantTrack loadVariantReview(ResourceLocator locator, List<Track> newTracks) {
         //TODO Figure out how to name the samples properly
         List<String> allSamples = Collections.emptyList();
         VariantReviewSource source = new VariantReviewSource(locator);

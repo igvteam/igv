@@ -89,6 +89,7 @@ public class VariantReviewDialog extends JDialog {
 
         String callsetName = callsetField.getText();
         TruthStatus truthStatus = (TruthStatus) truthField.getSelectedItem();
+        boolean isComplexEvent = isComplexEventCB.isSelected();
 
         int allele0 = -1;
         int allele1 = -1;
@@ -107,7 +108,7 @@ public class VariantReviewDialog extends JDialog {
                 break;
         }
 
-        MongoVariantContext mvc = VariantReviewSource.createMVC(allele0, allele1, callsetName, variantContext, truthStatus);
+        MongoVariantContext mvc = VariantReviewSource.createMVC(allele0, allele1, callsetName, variantContext, truthStatus, isComplexEvent);
         String errorMessage = addCall(VariantReviewPlugin.getDbSpecPath(), mvc);
 
         if (errorMessage != null) {
@@ -115,8 +116,8 @@ public class VariantReviewDialog extends JDialog {
         } else {
             setVisible(false);
             //Find the track showing results, clear it to force a refresh
-            for(Track t: IGV.getInstance().getFeatureTracks()){
-                if(t instanceof VariantTrack){
+            for (Track t : IGV.getInstance().getFeatureTracks()) {
+                if (t instanceof VariantTrack) {
                     ((VariantTrack) t).clearPackedFeatures();
                 }
             }
@@ -126,11 +127,12 @@ public class VariantReviewDialog extends JDialog {
 
     /**
      * Add the specified mvc to the specified database
+     *
      * @param dbSpecPath
      * @param mvc
      * @return
      */
-    static String addCall(String dbSpecPath, MongoVariantContext mvc){
+    static String addCall(String dbSpecPath, MongoVariantContext mvc) {
 
         NA12878DBArgumentCollection args = new NA12878DBArgumentCollection(dbSpecPath);
 
@@ -142,7 +144,7 @@ public class VariantReviewDialog extends JDialog {
             errorMessage = wr.getError();
         } catch (Exception ex) {
             errorMessage = ex.getMessage();
-            if(errorMessage == null) errorMessage = "" + ex;
+            if (errorMessage == null) errorMessage = "" + ex;
         } finally {
             if (kb != null) kb.close();
         }
@@ -221,6 +223,10 @@ public class VariantReviewDialog extends JDialog {
         panel6 = new JPanel();
         label9 = new JLabel();
         stopField = new JLabel();
+        panel8 = new JPanel();
+        hSpacer6 = new JPanel(null);
+        isComplexEventCB = new JCheckBox();
+        hSpacer7 = new JPanel(null);
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -232,7 +238,7 @@ public class VariantReviewDialog extends JDialog {
         //======== dialogPane ========
         {
             dialogPane.setBorder(new EmptyBorder(12, 12, 12, 12));
-            dialogPane.setPreferredSize(new Dimension(600, 115));
+            dialogPane.setPreferredSize(new Dimension(600, 150));
             dialogPane.setLayout(new BorderLayout());
 
             //======== contentPanel ========
@@ -400,14 +406,30 @@ public class VariantReviewDialog extends JDialog {
                 }
                 contentPanel.add(panel6);
             }
-            dialogPane.add(contentPanel, BorderLayout.CENTER);
+            dialogPane.add(contentPanel, BorderLayout.NORTH);
+
+            //======== panel8 ========
+            {
+                panel8.setLayout(new BoxLayout(panel8, BoxLayout.X_AXIS));
+
+                //---- hSpacer6 ----
+                hSpacer6.setMaximumSize(new Dimension(300, 32767));
+                hSpacer6.setPreferredSize(new Dimension(115, 10));
+                panel8.add(hSpacer6);
+
+                //---- isComplexEventCB ----
+                isComplexEventCB.setText("Complex Event");
+                panel8.add(isComplexEventCB);
+                panel8.add(hSpacer7);
+            }
+            dialogPane.add(panel8, BorderLayout.CENTER);
 
             //======== buttonBar ========
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("Save");
@@ -418,8 +440,8 @@ public class VariantReviewDialog extends JDialog {
                     }
                 });
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -430,13 +452,13 @@ public class VariantReviewDialog extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
-            dialogPane.add(buttonBar, BorderLayout.PAGE_END);
+            dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
         contentPane.add(dialogPane, BorderLayout.CENTER);
-        setSize(700, 135);
+        setSize(700, 160);
         setLocationRelativeTo(getOwner());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
@@ -471,6 +493,10 @@ public class VariantReviewDialog extends JDialog {
     private JPanel panel6;
     private JLabel label9;
     private JLabel stopField;
+    private JPanel panel8;
+    private JPanel hSpacer6;
+    private JCheckBox isComplexEventCB;
+    private JPanel hSpacer7;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;
