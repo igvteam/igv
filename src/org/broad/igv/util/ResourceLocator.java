@@ -161,12 +161,14 @@ public class ResourceLocator {
                     // Genome space hack -- check for explicit type converter
                     //  https://dmtest.genomespace.org:8444/datamanager/files/users/SAGDemo/Step1/TF.data.tab
                     //   ?dataformat=http://www.genomespace.org/datamanager/dataformat/gct/0.0.0
-                    if (query.contains("dataformat/gct")) {
-                        typeString = ".gct";
-                    } else if (query.contains("dataformat/bed")) {
-                        typeString = ".bed";
-                    } else if (query.contains("dataformat/cn")) {
-                        typeString = ".cn";
+                    if (query != null) {
+                        if (query.contains("dataformat/gct")) {
+                            typeString = ".gct";
+                        } else if (query.contains("dataformat/bed")) {
+                            typeString = ".bed";
+                        } else if (query.contains("dataformat/cn")) {
+                            typeString = ".cn";
+                        }
                     }
 
                 } catch (MalformedURLException e) {
