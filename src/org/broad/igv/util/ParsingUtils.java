@@ -177,7 +177,7 @@ public class ParsingUtils {
                     reader.close();
                 }
             } catch (IOException ex) {
-                ex.printStackTrace();
+                log.error(ex.getMessage(), ex);
             }
         }
 
