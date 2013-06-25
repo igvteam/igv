@@ -278,11 +278,11 @@ public class FeatureTrack extends AbstractTrack {
     public int getNumberOfFeatureLevels() {
         if (areFeaturesStacked() && packedFeaturesMap.size() > 0) {
             int n = 0;
-            synchronized (packedFeaturesMap){
+            synchronized (packedFeaturesMap) {
                 for (PackedFeatures pf : packedFeaturesMap.values()) {
                     //dhmay adding null check.  To my mind this shouldn't be necessary, but we're encountering
                     //it intermittently.  Food for future thought
-                    if (pf != null){
+                    if (pf != null) {
                         n = Math.max(n, pf.getRowCount());
                     }
                 }
@@ -704,6 +704,7 @@ public class FeatureTrack extends AbstractTrack {
 
     /**
      * Render features in the given input rectangle.
+     *
      * @param context
      * @param inputRect
      */
@@ -808,7 +809,7 @@ public class FeatureTrack extends AbstractTrack {
             public void run() {
                 try {
                     featuresLoading = true;
-                    if(log.isTraceEnabled()){
+                    if (log.isTraceEnabled()) {
                         log.trace(String.format("Loading features: %s:%d-%d", chr, start, end));
                     }
 
@@ -822,7 +823,7 @@ public class FeatureTrack extends AbstractTrack {
                     //being negative and end being outside, but
                     //only if directly queried. Our expansion should not
                     //set start < 0 or end > chromosomeLength
-                    if(start >= 0){
+                    if (start >= 0) {
                         expandedStart = Math.max(0, expandedStart);
                     }
 
@@ -877,10 +878,11 @@ public class FeatureTrack extends AbstractTrack {
 
     /**
      * Called after features are finished loading, which can be asynchronous
+     *
      * @param event
      */
     @Subscribe
-    private void receiveDataLoaded(DataLoadedEvent event){
+    private void receiveDataLoaded(DataLoadedEvent event) {
         if (IGV.hasInstance()) {
             // TODO -- WHY IS THIS HERE????
             //TODO Assuming this is necessary, there can be many data loaded events in succession,
@@ -888,7 +890,7 @@ public class FeatureTrack extends AbstractTrack {
             IGV.getInstance().layoutMainPanel();
         }
         JComponent panel = event.context.getPanel();
-        if(panel != null) panel.repaint();
+        if (panel != null) panel.repaint();
     }
 
     /**

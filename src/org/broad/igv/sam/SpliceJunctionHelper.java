@@ -55,9 +55,10 @@ public class SpliceJunctionHelper {
     /**
      * Create a new SpliceJunctionHelper from the raw data of the old one. New filtered
      * lists are created based on the raw (data)
+     *
      * @param spliceJunctionHelper
      */
-    SpliceJunctionHelper(SpliceJunctionHelper spliceJunctionHelper){
+    SpliceJunctionHelper(SpliceJunctionHelper spliceJunctionHelper) {
         this(spliceJunctionHelper.getLoadOptions());
         this.allSpliceJunctionFeatures = spliceJunctionHelper.allSpliceJunctionFeatures;
         this.posStartEndJunctionsMap = spliceJunctionHelper.posStartEndJunctionsMap;
@@ -67,12 +68,12 @@ public class SpliceJunctionHelper {
         this.filteredCombinedFeatures = null;
     }
 
-    public SpliceJunctionHelper(LoadOptions loadOptions){
+    public SpliceJunctionHelper(LoadOptions loadOptions) {
         this.loadOptions = loadOptions;
     }
 
     public List<SpliceJunctionFeature> getFilteredJunctions() {
-        if(filteredSpliceJunctionFeatures == null){
+        if (filteredSpliceJunctionFeatures == null) {
             filteredSpliceJunctionFeatures = filterJunctionList(this.loadOptions, allSpliceJunctionFeatures);
         }
         return filteredSpliceJunctionFeatures;
@@ -80,7 +81,7 @@ public class SpliceJunctionHelper {
     }
 
     public List<SpliceJunctionFeature> getFilteredJunctionsIgnoreStrand() {
-        if(filteredCombinedFeatures == null){
+        if (filteredCombinedFeatures == null) {
             combineStrandJunctionsMaps();
             filteredCombinedFeatures = filterJunctionList(this.loadOptions, filteredCombinedFeatures);
         }
@@ -95,7 +96,7 @@ public class SpliceJunctionHelper {
         }
 
         //there may be other ways in which this is indicated. May have to code for them later
-        boolean isNegativeStrand = false;
+        boolean isNegativeStrand;
         Object strandAttr = alignment.getAttribute("XS");
         if (strandAttr != null) {
             isNegativeStrand = strandAttr.toString().charAt(0) == '-';
@@ -138,7 +139,7 @@ public class SpliceJunctionHelper {
         }
     }
 
-    private static List<SpliceJunctionFeature> filterJunctionList(LoadOptions loadOptions, List<SpliceJunctionFeature> unfiltered){
+    private static List<SpliceJunctionFeature> filterJunctionList(LoadOptions loadOptions, List<SpliceJunctionFeature> unfiltered) {
         if (loadOptions.minJunctionCoverage > 1) {
             List<SpliceJunctionFeature> coveredFeatures = new ArrayList<SpliceJunctionFeature>(unfiltered.size());
             for (SpliceJunctionFeature feature : unfiltered) {
@@ -147,7 +148,7 @@ public class SpliceJunctionHelper {
                 }
             }
             return coveredFeatures;
-        }else{
+        } else {
             return unfiltered;
         }
     }
@@ -157,31 +158,32 @@ public class SpliceJunctionHelper {
      * It may not be necessary to create a given filtered list, we use it being non-null as an indicator
      * of usefulness. If a filtered list is null, it will be generated and properly filtered later by
      * the appropriate getter.
+     *
      * @param checkFilteredOnly
      */
-    private void filterJunctionsByCoverage(boolean checkFilteredOnly){
+    private void filterJunctionsByCoverage(boolean checkFilteredOnly) {
 
-        if(filteredSpliceJunctionFeatures != null){
+        if (filteredSpliceJunctionFeatures != null) {
             List<SpliceJunctionFeature> unfiltered = checkFilteredOnly ? filteredSpliceJunctionFeatures : allSpliceJunctionFeatures;
             filteredSpliceJunctionFeatures = filterJunctionList(this.loadOptions, unfiltered);
         }
 
-        if(filteredCombinedFeatures != null){
-            if(!checkFilteredOnly){
+        if (filteredCombinedFeatures != null) {
+            if (!checkFilteredOnly) {
                 combineStrandJunctionsMaps();
             }
             filteredCombinedFeatures = filterJunctionList(this.loadOptions, filteredCombinedFeatures);
         }
     }
 
-    void setLoadOptions(LoadOptions loadOptions){
+    void setLoadOptions(LoadOptions loadOptions) {
         int oldMinJunctionCoverage = this.loadOptions.minJunctionCoverage;
         //Can't change this, need to reload everything
         assert this.loadOptions.minReadFlankingWidth == loadOptions.minReadFlankingWidth;
         this.loadOptions = loadOptions;
 
 
-        if(oldMinJunctionCoverage == loadOptions.minJunctionCoverage) return;
+        if (oldMinJunctionCoverage == loadOptions.minJunctionCoverage) return;
         boolean increasing = oldMinJunctionCoverage < loadOptions.minJunctionCoverage;
         filterJunctionsByCoverage(increasing);
     }
@@ -197,10 +199,10 @@ public class SpliceJunctionHelper {
      * We keep separate splice junction information by strand.
      * This combines both strand information
      */
-    private void combineStrandJunctionsMaps(){
+    private void combineStrandJunctionsMaps() {
         Table<Integer, Integer, SpliceJunctionFeature> combinedStartEndJunctionsMap = HashBasedTable.create(posStartEndJunctionsMap);
 
-        for(Table.Cell<Integer, Integer, SpliceJunctionFeature> negJunctionCell: negStartEndJunctionsMap.cellSet()){
+        for (Table.Cell<Integer, Integer, SpliceJunctionFeature> negJunctionCell : negStartEndJunctionsMap.cellSet()) {
             int junctionStart = negJunctionCell.getRowKey();
             int junctionEnd = negJunctionCell.getColumnKey();
             SpliceJunctionFeature negFeat = negJunctionCell.getValue();
@@ -232,12 +234,12 @@ public class SpliceJunctionHelper {
         public final int minJunctionCoverage;
         public final int minReadFlankingWidth;
 
-        public LoadOptions(){
+        public LoadOptions() {
             this(prefs.getAsInt(PreferenceManager.SAM_JUNCTION_MIN_COVERAGE),
                     prefs.getAsInt(PreferenceManager.SAM_JUNCTION_MIN_FLANKING_WIDTH));
         }
 
-        public LoadOptions(int minJunctionCoverage, int minReadFlankingWidth){
+        public LoadOptions(int minJunctionCoverage, int minReadFlankingWidth) {
             this.minJunctionCoverage = minJunctionCoverage;
             this.minReadFlankingWidth = minReadFlankingWidth;
         }
