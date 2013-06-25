@@ -724,7 +724,7 @@ public class FeatureTrack extends AbstractTrack {
         PackedFeatures packedFeatures = packedFeaturesMap.get(context.getReferenceFrame().getName());
 
         if (packedFeatures == null || !packedFeatures.containsInterval(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation() + 1)) {
-            if(packedFeatures == null) return;
+            return;
         }
 
         try {

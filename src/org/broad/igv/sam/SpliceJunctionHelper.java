@@ -43,8 +43,8 @@ public class SpliceJunctionHelper {
 
     static Logger log = Logger.getLogger(SpliceJunctionHelper.class);
 
-    List<SpliceJunctionFeature> allSpliceJunctionFeatures = new ArrayList();
-    List<SpliceJunctionFeature> filteredSpliceJunctionFeatures = new ArrayList();
+    List<SpliceJunctionFeature> allSpliceJunctionFeatures = new ArrayList<SpliceJunctionFeature>();
+    List<SpliceJunctionFeature> filteredSpliceJunctionFeatures = null;
     List<SpliceJunctionFeature> filteredCombinedFeatures = null;
 
     Table<Integer, Integer, SpliceJunctionFeature> posStartEndJunctionsMap = HashBasedTable.create();
