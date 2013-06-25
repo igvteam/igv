@@ -734,6 +734,13 @@ public class ReferenceFrame {
         return this.getChrName().equals(interval.getChr()) && this.getOrigin() <= interval.getEnd() && this.getEnd() >= interval.getStart();
     }
 
+    /**
+     * Return the current range as a locus string.
+     */
+    public String getLocusString() {
+        return Locus.getFormattedLocusString( chrName , (int) origin, (int) this.getEnd());
+    }
+
     public static class Range {
         private String chr;
         private int start;

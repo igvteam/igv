@@ -672,7 +672,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 if (FrameManager.isGeneListMode()) {
                     loci = new ArrayList(FrameManager.getFrames().size());
                     for (ReferenceFrame ref : FrameManager.getFrames()) {
-                        loci.add(ref.getInitialLocus().toString());
+                        loci.add(ref.getLocusString());
                     }
                     loci.add(mateLocus);
                 } else {
