@@ -16,8 +16,12 @@ import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
+import org.broad.tribble.readers.PositionalBufferedStream;
+import org.broadinstitute.variant.bcf2.BCF2Codec;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -82,6 +86,18 @@ public class BCFReaderTest extends AbstractHeadlessTest {
         }
 
         TestUtils.assertFeatureListsEqual(VCFList.iterator(), BCF2List.iterator());
+    }
+
+    //Quick method for checking if a bcf file has the magic header
+    @Ignore
+    //@Test
+    public void rawTestFile() throws Exception {
+        String path = "/path/to/myfile.bcf";
+        PositionalBufferedStream ps = new PositionalBufferedStream(new FileInputStream(path));
+
+        BCF2Codec codec = new BCF2Codec();
+        codec.readHeader(ps);
+
     }
 
 
