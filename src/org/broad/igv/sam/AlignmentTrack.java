@@ -1227,7 +1227,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 addBlatItem(e);
             }
 
-            boolean showSashimi = !Globals.isProduction();
+            boolean showSashimi = true;//!Globals.isProduction();
 
             if (showSashimi) {
                 addSeparator();
