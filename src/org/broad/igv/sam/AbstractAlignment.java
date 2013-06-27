@@ -19,6 +19,8 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 
 /**
  * @author jrobinso
@@ -34,6 +36,7 @@ public abstract class AbstractAlignment implements Alignment {
     AlignmentBlock[] insertions;
     char[] gapTypes;
     private boolean negativeStrand;
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
 
     public AbstractAlignment() {
     }
@@ -219,7 +222,8 @@ public abstract class AbstractAlignment implements Alignment {
 
         int basePosition = (int) position;
         buf.append("Read name = " + getReadName() + "<br>");
-        buf.append("Alignment start = " + (getAlignmentStart() + 1) + " (" + (isNegativeStrand() ? "-" : "+") + ")<br>");
+        buf.append("Location = " + getChr() + ":" + DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
+        buf.append("Alignment start = " + DECIMAL_FORMAT.format(getAlignmentStart() + 1) + " (" + (isNegativeStrand() ? "-" : "+") + ")<br>");
         buf.append("Cigar = " + getCigarString() + "<br>");
         buf.append("Mapped = " + (isMapped() ? "yes" : "no") + "<br>");
         buf.append("Mapping quality = " + getMappingQuality() + "<br>");
