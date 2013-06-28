@@ -113,9 +113,7 @@ public class FeatureIndex {
     }
 
     /**
-     * Store a SamIndex to a stream.
-     * <p/>
-     * It is the responsibility of the caller  to close the stream.
+     * Store a SamIndex to a File.
      *
      * @param f
      * @throws IOException
@@ -147,7 +145,7 @@ public class FeatureIndex {
                 }
             }
         } finally {
-            dos.close();
+            if(dos != null) dos.close();
         }
 
     }
