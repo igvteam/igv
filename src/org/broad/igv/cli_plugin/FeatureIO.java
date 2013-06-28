@@ -16,8 +16,9 @@ import java.util.Map;
 
 /**
  * Interface common for writing Features out and in
- * User: jacob
- * Date: 2012-Oct-18
+ *
+ * @author jacob
+ * @since 2012-Oct-18
  */
 interface FeatureIO {
 

@@ -19,12 +19,12 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Interface for creating a string from a feature.
- * User: jacob
- * Date: 2012-Aug-02
+ * Interface for writing features to a file
  *
+ * @author jacob
  * @see PluginCodec
  * @see FeatureDecoder
+ * @since 2012-Aug-02
  */
 public interface FeatureEncoder<T extends Feature> extends FeatureIO {
 
