@@ -4,3 +4,4 @@ awk_plugin.xml
 bedtools_plugin.xml
 gen_plugin.xml
 cufflinks_plugin.xml
+gatk_plugin.xml

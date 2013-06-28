@@ -27,6 +27,7 @@ import org.broad.igv.util.RuntimeUtils;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
+import org.broad.tribble.bed.SimpleBEDFeature;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
@@ -118,7 +119,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
      * @param argument
      * @return
      */
-    protected final Map<String, Object> writeFeaturesToStream(OutputStream outputStream, Iterator<E> features, Argument argument)
+    protected final Map<String, Object> writeFeaturesToStream(OutputStream outputStream, Iterator features, Argument argument)
             throws IOException {
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream));
 
@@ -186,6 +187,10 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
                 case MULTI_FEATURE_TRACK:
                     sVal = createTempFiles((List<FeatureTrack>) entry.getValue(), arg, chr, start, end, zoom);
                     break;
+                case LOCUS:
+                    ts = writeLocus(arg, chr, start, end);
+                    sVal = new String[]{ts};
+                    break;
             }
 
             if (arg.getId() != null && sVal != null) {
@@ -207,6 +212,11 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
         parser.source = replaceStringsFromIds(parser.source, idVariables);
 
         return fullCmd.toArray(new String[0]);
+    }
+
+    protected String writeLocus(Argument arg, String chr, int start, int end) throws IOException{
+        Feature feat = new SimpleBEDFeature(start, end, chr);
+        return createTempFile(Arrays.asList(feat), arg);
     }
 
     /**
@@ -273,8 +283,17 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
      */
     protected abstract String createTempFile(Track track, Argument argument, String chr, int start, int end, int zoom) throws IOException;
 
-    protected final String createTempFile(List<E> features, Argument argument) throws IOException {
-        File outFile = File.createTempFile("features", ".tmp", null);
+    protected final String createTempFile(List features, Argument argument) throws IOException {
+        String ext = ".tmp";
+        switch(argument.getType()){
+            case ALIGNMENT_TRACK:
+                ext += ".sam";
+                break;
+            case LOCUS:
+                ext += ".bed";
+                break;
+        }
+        File outFile = File.createTempFile("features", ext, null);
         outFile.deleteOnExit();
 
         Map<String, Object> attributes = writeFeaturesToStream(new FileOutputStream(outFile), features.iterator(), argument);
@@ -391,11 +410,14 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
         String encodingCodec = argument.getEncodingCodec();
 
         if (encodingCodec == null) {
-            if (argument.getType() == Argument.InputType.FEATURE_TRACK || argument.getType() == Argument.InputType.MULTI_FEATURE_TRACK) {
-                return new AsciiEncoder(new IGVBEDCodec());
-            } else if (argument.getType() == Argument.InputType.ALIGNMENT_TRACK) {
-                return new SamAlignmentEncoder();
-            } else {
+            switch(argument.getType()){
+                case LOCUS:
+                case FEATURE_TRACK:
+                case MULTI_FEATURE_TRACK:
+                    return new AsciiEncoder(new IGVBEDCodec());
+                case ALIGNMENT_TRACK:
+                    return new SamAlignmentEncoder();
+            default:
                 throw new IllegalArgumentException("No encoding codec provided and default not available");
             }
         }

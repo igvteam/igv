@@ -55,6 +55,8 @@ public class ArgumentPanel extends JPanel {
     public static ArgumentPanel create(Argument argument) {
         ArgumentPanel panel = null;
         switch (argument.getType()) {
+            case LOCUS:
+                break;
             case BOOL:
                 panel = new BoolArgument(argument);
                 break;

@@ -96,8 +96,7 @@ public class PluginSpecReader {
         File execFile = new File(execPath);
         boolean pathValid = execFile.isFile();
         if (pathValid && !execFile.canExecute()) {
-            log.error(execPath + " exists but is not executable. ");
-            pathValid = false;
+            log.warn(execPath + " exists but is not executable. ");
         }
 
         return pathValid;

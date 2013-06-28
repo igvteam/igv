@@ -16,8 +16,9 @@
         <command name="Unified Genotyper" cmd="-T UnifiedGenotyper">
             <arg name="Reference Sequence" id="refseq" cmd_arg="-R" type="LONGTEXT"/>
             <arg name="Track" cmd_arg="-I" id="track" type="ALIGNMENT_TRACK"/>
+            <arg name="Intervals" cmd_arg="-L" id="intervals" type="LOCUS" visible="false"/>
             <arg name="Output File" cmd_arg="-o" id="out" type="LONGTEXT" defaultValue="out.vcf"/>
-            <output name="Variants Track" defaultValue="$track Variants">
+            <output name="Variants Track" defaultValue="Variants">
                 <parser source="$out" format="vcf"/>
             </output>
         </command>

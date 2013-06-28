@@ -94,6 +94,10 @@ public class RunPlugin extends JDialog {
         for (String cmdEl : cmdEls) {
             if (cmdEl != null && cmdEl.length() > 0) {
                 this.cmdList.add(cmdEl);
+                //Necessary to separate tokens, e.g. java -jar
+                //But this screws up paths with spaces in them
+                //String[] toks = cmdEl.split("\\s+");
+                //this.cmdList.addAll(Arrays.asList(toks));
             }
         }
 

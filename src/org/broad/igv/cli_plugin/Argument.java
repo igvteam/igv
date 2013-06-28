@@ -89,7 +89,8 @@ public class Argument{
         FEATURE_TRACK,
         DATA_TRACK,
         MULTI_FEATURE_TRACK,
-        ALIGNMENT_TRACK
+        ALIGNMENT_TRACK,
+        LOCUS
     }
 
     /**
