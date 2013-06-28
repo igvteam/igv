@@ -1,0 +1,26 @@
+<!--
+  ~ Copyright (c) 2007-2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  ~
+  ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+  ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+  -->
+<!DOCTYPE cli_plugin SYSTEM "cli_plugin.dtd">
+<cli_plugin api_version="alpha" plugin_version="0.1" name="GATK"
+            id="org.broad.igv.plugin.gatk">
+    <tool name="GATK" cmd="java -jar" defaultPath="GenomeAnalysisTK.jar" visible="false"
+          helpUrl="http://www.broadinstitute.org/gatk/gatkdocs/" toolUrl="http://www.broadinstitute.org/gatk/">
+        <command name="Unified Genotyper" cmd="-T UnifiedGenotyper">
+            <arg name="Reference Sequence" id="refseq" cmd_arg="-R" type="LONGTEXT"/>
+            <arg name="Track" cmd_arg="-I" id="track" type="ALIGNMENT_TRACK"/>
+            <arg name="Output File" cmd_arg="-o" id="out" type="LONGTEXT" defaultValue="out.vcf"/>
+            <output name="Variants Track" defaultValue="$track Variants">
+                <parser source="$out" format="vcf"/>
+            </output>
+        </command>
+
+    </tool>
+</cli_plugin>

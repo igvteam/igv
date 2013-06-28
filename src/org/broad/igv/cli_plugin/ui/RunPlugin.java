@@ -44,7 +44,7 @@ import java.util.List;
 public class RunPlugin extends JDialog {
 
     private List<Argument> argumentList;
-    private List<String> cmd = new ArrayList<String>();
+    private List<String> cmdList = new ArrayList<String>();
     private Map<Argument, ArgumentPanel> argumentComponents;
 
     private List<PluginSpecReader.Output> outputAttrs;
@@ -57,17 +57,12 @@ public class RunPlugin extends JDialog {
         super(owner);
         initComponents();
 
-        final String toolPath = pluginSpecReader.getToolPath(tool);
-        final String toolName = tool.name;
-        final String cmdName = command.name;
-        final String cmdVal = command.cmd;
-
         specPath = pluginSpecReader.getSpecPath();
         argumentList = command.argumentList;
         outputAttrs = command.outputList;
-        initArgumentComponents(toolName, toolPath, cmdName, cmdVal);
+        initArgumentComponents(pluginSpecReader, tool, command);
 
-        if(tool.helpUrl != null){
+        if (tool.helpUrl != null) {
             helpButton.setEnabled(true);
             helpButton.addActionListener(new ActionListener() {
                 @Override
@@ -85,23 +80,27 @@ public class RunPlugin extends JDialog {
     /**
      * Initialize the components based on the input arguments. Text inputs become text boxes,
      * track inputs become dropdown boxes, etc.
-     * @param toolName
-     * @param toolPath
-     * @param cmdName
-     * @param cmdVal
+     *
+     * @param pluginSpecReader
+     * @param tool
+     * @param command
      */
-    private void initArgumentComponents(String toolName, String toolPath, String cmdName, String cmdVal) {
+    private void initArgumentComponents(PluginSpecReader pluginSpecReader, PluginSpecReader.Tool tool, PluginSpecReader.Command command) {
 
-        if (toolPath != null && toolPath.length() > 0) {
-            this.cmd.add(toolPath);
+        final String toolPath = pluginSpecReader.getToolPath(tool);
+        final String cmdName = command.name;
+
+        String[] cmdEls = new String[]{tool.cmd, toolPath, command.cmd};
+        for (String cmdEl : cmdEls) {
+            if (cmdEl != null && cmdEl.length() > 0) {
+                this.cmdList.add(cmdEl);
+            }
         }
-        if (cmdVal != null && cmdVal.trim().length() > 0) {
-            this.cmd.add(cmdVal);
-        }
+
         argumentComponents = new LinkedHashMap<Argument, ArgumentPanel>(this.argumentList.size());
         outputComponents = new LinkedHashMap<PluginSpecReader.Output, ArgumentPanel>(this.outputAttrs.size());
 
-        String titleText = toolName;
+        String titleText = tool.name;
         if (cmdName.length() > 0) {
             titleText += ": " + cmdName;
         }
@@ -113,7 +112,7 @@ public class RunPlugin extends JDialog {
             ArgumentPanel panel = ArgumentPanel.create(argument);
             if (panel != null) {
                 argumentComponents.put(argument, panel);
-                if(argument.isVisible()){
+                if (argument.isVisible()) {
                     this.contentPanel.add(panel);
                 }
             }
@@ -122,10 +121,10 @@ public class RunPlugin extends JDialog {
         //Outputs
         //This is somewhat hacky now, because we expect only one type of output
         //That being a track, where the user just needs to give a name
-        for(PluginSpecReader.Output output: outputAttrs){
+        for (PluginSpecReader.Output output : outputAttrs) {
             TextArgument panel = new TextArgument();
             panel.setArgName(output.name);
-            String defValue = output.defaultValue != null ? output.defaultValue : toolName + " " + cmdName;
+            String defValue = output.defaultValue != null ? output.defaultValue : tool.name + " " + cmdName;
             panel.setValue(defValue);
             this.contentPanel.add(panel);
             outputComponents.put(output, panel);
@@ -160,20 +159,20 @@ public class RunPlugin extends JDialog {
 
         //QueryTracker queryTracker = QueryTracker.get();
 
-        for(PluginSpecReader.Output outputAttr: outputAttrs){
+        for (PluginSpecReader.Output outputAttr : outputAttrs) {
             //TODO Hacky, only works for output components being TextArgument, which they are as of this comment writing
             String name = (String) outputComponents.get(outputAttr).getValue();
 
             Track newTrack = null;
-            switch (outputAttr.type){
+            switch (outputAttr.type) {
                 case FEATURE_TRACK:
-                    PluginFeatureSource featSource1 = new PluginFeatureSource(cmd, argumentValues, outputAttr, specPath);
+                    PluginFeatureSource featSource1 = new PluginFeatureSource(cmdList, argumentValues, outputAttr, specPath);
                     //featSource1.setQueryTracker(queryTracker);
                     FeatureSource featSource = new CachingFeatureSource(featSource1);
                     newTrack = new FeatureTrack(UUID.randomUUID().toString(), name, featSource);
                     break;
                 case DATA_SOURCE_TRACK:
-                    PluginDataSource dataSource = new PluginDataSource(GenomeManager.getInstance().getCurrentGenome(), cmd, argumentValues, outputAttr, specPath);
+                    PluginDataSource dataSource = new PluginDataSource(GenomeManager.getInstance().getCurrentGenome(), cmdList, argumentValues, outputAttr, specPath);
                     //dataSource.setQueryTracker(queryTracker);
                     newTrack = new DataSourceTrack(null, UUID.randomUUID().toString(), name, dataSource);
                     break;
@@ -232,18 +231,18 @@ public class RunPlugin extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 0, 85, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {0.0, 1.0, 0.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 0, 85, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{0.0, 1.0, 0.0, 0.0};
 
                 //---- helpButton ----
                 helpButton.setText("Help");
                 helpButton.setEnabled(false);
                 buttonBar.add(helpButton, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
                 buttonBar.add(hSpacer1, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- okButton ----
                 okButton.setText("OK");
@@ -254,8 +253,8 @@ public class RunPlugin extends JDialog {
                     }
                 });
                 buttonBar.add(okButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -266,8 +265,8 @@ public class RunPlugin extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }

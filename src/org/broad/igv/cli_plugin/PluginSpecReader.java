@@ -86,11 +86,12 @@ public class PluginSpecReader {
 
     /**
      * True if the path exists and is executable, false if not (or null)
+     *
      * @param execPath
      * @return
      */
     public static boolean isToolPathValid(String execPath) {
-        if(execPath == null) return false;
+        if (execPath == null) return false;
         execPath = FileUtils.findExecutableOnPath(execPath);
         File execFile = new File(execPath);
         boolean pathValid = execFile.isFile();
@@ -137,13 +138,13 @@ public class PluginSpecReader {
     }
 
     public List<Tool> getTools() {
-        if(tools == null){
+        if (tools == null) {
             tools = PluginSpecReader.<Tool>unmarshalElementsByTag(document.getDocumentElement(), "tool");
         }
         return tools;
     }
 
-    private static <T> List<T> unmarshalElementsByTag(Element topElement, String tag){
+    private static <T> List<T> unmarshalElementsByTag(Element topElement, String tag) {
         NodeList nodes = topElement.getElementsByTagName(tag);
         List<T> outNodes = new ArrayList<T>(nodes.getLength());
         for (int nn = 0; nn < nodes.getLength(); nn++) {
@@ -282,8 +283,9 @@ public class PluginSpecReader {
 
 
     private static JAXBContext jc = null;
+
     static JAXBContext getJAXBContext() throws JAXBException {
-        if(jc == null){
+        if (jc == null) {
             jc = JAXBContext.newInstance(Tool.class, Command.class, Argument.class, Parser.class);
         }
         return jc;
@@ -306,13 +308,13 @@ public class PluginSpecReader {
      * Each tool may contain default settings for each constituent command, we write
      * those settings into each command after unmarshalling
      */
-    private static class ToolListener extends Unmarshaller.Listener{
+    private static class ToolListener extends Unmarshaller.Listener {
         private static ToolListener instance;
 
         @Override
         public void afterUnmarshal(Object target, Object parent) {
             super.afterUnmarshal(target, parent);
-            if(target instanceof Tool){
+            if (target instanceof Tool) {
 
                 Tool tool = (Tool) target;
 
@@ -324,11 +326,13 @@ public class PluginSpecReader {
                 boolean hasDefaultArgs = tool.defaultArgs != null;
                 boolean hasDefaultOutputs = tool.defaultOutputs != null;
 
-                if(!hasDefaultArgs && !hasDefaultOutputs) return;
+                if (!hasDefaultArgs && !hasDefaultOutputs) return;
 
                 for (Command command : ((Tool) target).commandList) {
-                    if (hasDefaultArgs && command.argumentList == null) command.argumentList = tool.defaultArgs.argumentList;
-                    if (hasDefaultOutputs && command.outputList == null) command.outputList = tool.defaultOutputs.outputList;
+                    if (hasDefaultArgs && command.argumentList == null)
+                        command.argumentList = tool.defaultArgs.argumentList;
+                    if (hasDefaultOutputs && command.outputList == null)
+                        command.outputList = tool.defaultOutputs.outputList;
                 }
 
             }
@@ -336,7 +340,7 @@ public class PluginSpecReader {
         }
 
         public static Unmarshaller.Listener getInstance() {
-            if(instance == null) instance = new ToolListener();
+            if (instance == null) instance = new ToolListener();
             return instance;
         }
     }
@@ -346,24 +350,34 @@ public class PluginSpecReader {
      */
     @XmlRootElement
     @XmlAccessorType(XmlAccessType.NONE)
-    public static class Tool{
-        @XmlAttribute public String name;
-        @XmlAttribute public String defaultPath;
-        @XmlAttribute public boolean visible;
-        @XmlAttribute public String toolUrl;
-        @XmlAttribute public String helpUrl;
+    public static class Tool {
+        @XmlAttribute
+        public String name;
+        @XmlAttribute
+        public String cmd;
+        @XmlAttribute
+        public String defaultPath;
+        @XmlAttribute
+        public boolean visible;
+        @XmlAttribute
+        public String toolUrl;
+        @XmlAttribute
+        public String helpUrl;
 
         /**
          * Contains the default settings for input arguments
          */
-        @XmlElement(name = "default_arg") private Command defaultArgs;
+        @XmlElement(name = "default_arg")
+        private Command defaultArgs;
 
         /**
          * Contains the default settings for parsing output
          */
-        @XmlElement(name = "default_output") private Command defaultOutputs;
+        @XmlElement(name = "default_output")
+        private Command defaultOutputs;
 
-        @XmlElement(name = "command") public List<Command> commandList;
+        @XmlElement(name = "command")
+        public List<Command> commandList;
     }
 
 
@@ -374,10 +388,14 @@ public class PluginSpecReader {
      */
     @XmlAccessorType(XmlAccessType.NONE)
     public static class Output {
-        @XmlAttribute public String name;
-        @XmlAttribute public String defaultValue;
-        @XmlAttribute public OutputType type = OutputType.FEATURE_TRACK;
-        @XmlElement public Parser parser;
+        @XmlAttribute
+        public String name;
+        @XmlAttribute
+        public String defaultValue;
+        @XmlAttribute
+        public OutputType type = OutputType.FEATURE_TRACK;
+        @XmlElement
+        public Parser parser;
     }
 
     /**
@@ -385,7 +403,7 @@ public class PluginSpecReader {
      */
     @XmlEnum
     @XmlAccessorType(XmlAccessType.NONE)
-    public static enum OutputType{
+    public static enum OutputType {
         @XmlEnumValue("FeatureTrack")
         FEATURE_TRACK,
         @XmlEnumValue("DataSourceTrack")
@@ -403,12 +421,17 @@ public class PluginSpecReader {
     public static class Parser {
         public static String SOURCE_STDOUT = "stdout";
 
-        @XmlAttribute boolean strict;
-        @XmlAttribute String format;
-        @XmlAttribute String decodingCodec;
-        @XmlAttribute String source = SOURCE_STDOUT;
+        @XmlAttribute
+        boolean strict;
+        @XmlAttribute
+        String format;
+        @XmlAttribute
+        String decodingCodec;
+        @XmlAttribute
+        String source = SOURCE_STDOUT;
 
-        @XmlElement String[] libs;
+        @XmlElement
+        String[] libs;
 
     }
 
@@ -416,27 +439,31 @@ public class PluginSpecReader {
      * Represents a single command to be applied to a tool. e.g. intersect
      */
     @XmlAccessorType(XmlAccessType.NONE)
-    public static class Command{
-        @XmlAttribute public String name;
-        @XmlAttribute public String cmd = "";
+    public static class Command {
+        @XmlAttribute
+        public String name;
+        @XmlAttribute
+        public String cmd = "";
 
-        @XmlElement(name = "arg") public List<Argument> argumentList;
-        @XmlElement(name = "output") public List<Output> outputList;
+        @XmlElement(name = "arg")
+        public List<Argument> argumentList;
+        @XmlElement(name = "output")
+        public List<Output> outputList;
 
     }
 
     public static URL[] getLibURLs(String[] libPaths, String absRoot) throws MalformedURLException {
-        if(libPaths == null) return null;
+        if (libPaths == null) return null;
         List<URL> urls = new ArrayList<URL>(libPaths.length);
-        for(String libPath: libPaths){
+        for (String libPath : libPaths) {
 
             String urlPath = libPath;
 
-            if(HttpUtils.isRemoteURL(urlPath) || urlPath.startsWith("file://")){
+            if (HttpUtils.isRemoteURL(urlPath) || urlPath.startsWith("file://")) {
                 //do nothing
-            }else if((new File(urlPath)).isAbsolute()){
+            } else if ((new File(urlPath)).isAbsolute()) {
                 urlPath = "file://" + urlPath;
-            }else{
+            } else {
                 //Relative path
                 urlPath = "file://" + absRoot + "/" + urlPath;
             }
