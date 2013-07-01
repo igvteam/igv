@@ -39,7 +39,9 @@ public class CavenerConsensusCalculator extends AbstractConsensusCalculator{
 
         if (highestFrac >= 0.5f && highestFrac >= 2.0 * secondMost.fraction) {
             return most.base;
-        }else if(highestFrac + secondMost.fraction >= 0.75f){
+        }else if(most.base == 'n' || secondMost.base == 'n'){
+            return 'n';
+        } else if(highestFrac + secondMost.fraction >= 0.75f){
             return getDegenerateCode(most.base, secondMost.base);
         }
 

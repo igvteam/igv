@@ -24,6 +24,7 @@ import org.broad.igv.blat.BlatClient;
 import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Locus;
+import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.lists.GeneList;
@@ -33,6 +34,7 @@ import org.broad.igv.session.Session;
 import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
+import org.broad.igv.tools.PFMExporter;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.InsertSizeSettingsDialog;
@@ -49,6 +51,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.Utilities;
 import org.broad.igv.util.collections.CollUtils;
 import org.w3c.dom.Node;
@@ -1225,6 +1228,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             if (!Globals.isProduction()) {
                 addSeparator();
                 addBlatItem(e);
+
+                addConsensusSequence(e);
             }
 
             boolean showSashimi = true;//!Globals.isProduction();
@@ -1244,6 +1249,54 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             addSeparator();
             add(TrackMenuUtils.getRemoveMenuItem(tracks));
+        }
+
+        /**
+         * Item for exporting "consensus" sequence of region, based
+         * on loaded alignments.
+         *
+         * TODO Move to region of interest popup?
+         * @param e
+         */
+        private void addConsensusSequence(TrackClickEvent e) {
+            //Export consensus sequence
+            final ReferenceFrame frame = e.getFrame();
+            int chromoLoc = (int) e.getChromosomePosition();
+            int foundStart = -1;
+            int foundEnd = -1;
+            //Use ROI to select coordinates
+            Collection<RegionOfInterest> rois = IGV.getInstance().getSession().getRegionsOfInterest(frame.getChrName());
+            if (rois != null) {
+                for (RegionOfInterest roi : rois) {
+                    if (chromoLoc >= roi.getStart() && chromoLoc < roi.getEnd()) {
+                        foundStart = roi.getStart();
+                        foundEnd = roi.getEnd();
+                        break;
+                    }
+                }
+            }
+
+            final int start = foundStart;
+            final int end = foundEnd;
+
+            JMenuItem item = new JMenuItem("Copy consensus sequence");
+            item.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+                    if(start < 0){
+                        MessageUtils.showMessage("Please define a region of interest for export");
+                        return;
+                    }else if((end - start) > 1000000){
+                        MessageUtils.showMessage("Cannot export region more than 1 Megabase");
+                        return;
+                    }
+                    AlignmentInterval interval = dataManager.getLoadedInterval(frame.getName());
+                    AlignmentCounts counts = interval.getCounts();
+                    String text = PFMExporter.createPFMText(counts, frame.getChrName(), start, end);
+                    StringUtils.copyTextToClipboard(text);
+                }
+            });
+            add(item);
         }
 
         private JMenu getBisulfiteContextMenuItem(ButtonGroup group) {
