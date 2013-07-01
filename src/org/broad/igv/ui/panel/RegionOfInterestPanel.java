@@ -174,6 +174,11 @@ public class RegionOfInterestPanel extends JPanel {
             }
         });
         popupMenu.add(item);
+        // Disable copySequence if region exceeds 1 MB
+        if (roi.getEnd() - roi.getStart() > 1000000) {
+            item.setEnabled(false);
+        }
+        popupMenu.add(item);
 
 
         if (!Globals.isProduction()) {
@@ -186,15 +191,8 @@ public class RegionOfInterestPanel extends JPanel {
 
                 }
             });
+            popupMenu.add(item);
         }
-
-
-        // Disable copySequence if region exceeds a MB
-        if (roi.getEnd() - roi.getStart() > 1000000) {
-            item.setEnabled(false);
-        }
-        popupMenu.add(item);
-
 
         popupMenu.add(new JSeparator());
 
