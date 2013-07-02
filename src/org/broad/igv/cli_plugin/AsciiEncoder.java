@@ -74,7 +74,7 @@ public class AsciiEncoder<E extends Feature> implements FeatureEncoder<E> {
     }
 
     @Override
-    public void setInputs(List<String> commands, Map<Argument, Object> argumentMap) {
-        lineFeatureEncoder.setInputs(commands, argumentMap);
+    public void setInputs(List<String> commands, Map<Argument, Object> argumentMap, Argument argument) {
+        lineFeatureEncoder.setInputs(commands, argumentMap, argument);
     }
 }

@@ -66,22 +66,6 @@ public class VCFWriterTest extends AbstractHeadlessTest {
         assertHeadersEquals(header0, header1);
     }
 
-    private void assertHeadersEquals(VCFHeader header0, VCFHeader header1) {
-
-
-        assertEquals(header0.getColumnCount(), header1.getColumnCount());
-        assertEquals(header0.getGenotypeSamples(), header1.getGenotypeSamples());
-        assertEquals(header0.getContigLines(), header1.getContigLines());
-
-        for (VCFInfoHeaderLine line0 : header0.getInfoHeaderLines()) {
-            VCFInfoHeaderLine line1 = header1.getInfoHeaderLine(line0.getID());
-            assertEquals(line0.getCount(), line1.getCount());
-            assertEquals(line0.getType(), line1.getType());
-            assertEquals(line0.getDescription(), line1.getDescription());
-            assertEquals(0, line0.compareTo(line1));
-        }
-    }
-
     @Test
     public void testWriteRecords() throws Exception {
 
@@ -110,13 +94,34 @@ public class VCFWriterTest extends AbstractHeadlessTest {
 
         for (VCFVariant var1 : iter1) {
             VCFVariant var0 = list0.get(n++);
-            TestUtils.assertFeaturesEqual(var0, var1);
 
-            assertEquals(var0.getType(), var1.getType());
-            assertEquals(var0.getID(), var1.getID());
-            assertEquals(var0.getSampleNames(), var1.getSampleNames());
-            assertEquals(var0.getAttributes(), var1.getAttributes());
+            assertVCFVariantsEqual(var0, var1);
         }
 
+    }
+
+    public static void assertVCFVariantsEqual(VCFVariant var0, VCFVariant var1){
+        TestUtils.assertFeaturesEqual(var0, var1);
+
+        assertEquals(var0.getType(), var1.getType());
+        assertEquals(var0.getID(), var1.getID());
+        assertEquals(var0.getSampleNames(), var1.getSampleNames());
+        assertEquals(var0.getAttributes(), var1.getAttributes());
+    }
+
+    public static void assertHeadersEquals(VCFHeader header0, VCFHeader header1) {
+
+
+        assertEquals(header0.getColumnCount(), header1.getColumnCount());
+        assertEquals(header0.getGenotypeSamples(), header1.getGenotypeSamples());
+        assertEquals(header0.getContigLines(), header1.getContigLines());
+
+        for (VCFInfoHeaderLine line0 : header0.getInfoHeaderLines()) {
+            VCFInfoHeaderLine line1 = header1.getInfoHeaderLine(line0.getID());
+            assertEquals(line0.getCount(), line1.getCount());
+            assertEquals(line0.getType(), line1.getType());
+            assertEquals(line0.getDescription(), line1.getDescription());
+            assertEquals(0, line0.compareTo(line1));
+        }
     }
 }

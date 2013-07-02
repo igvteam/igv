@@ -26,7 +26,7 @@ import java.util.Map;
  * @see FeatureDecoder
  * @since 2012-Aug-02
  */
-public interface FeatureEncoder<T extends Feature> extends FeatureIO {
+public interface FeatureEncoder<T extends Feature> extends PluginArguments {
 
 
     /**
@@ -38,4 +38,5 @@ public interface FeatureEncoder<T extends Feature> extends FeatureIO {
      *         to the {@link FeatureDecoder}. It may be null
      */
     Map<String, Object> encodeAll(OutputStream outputStream, Iterator<T> features) throws IOException;
+
 }

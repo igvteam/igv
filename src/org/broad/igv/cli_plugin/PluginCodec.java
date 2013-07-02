@@ -63,8 +63,8 @@ public abstract class PluginCodec<E extends Feature, D extends Feature> implemen
     }
 
     @Override
-    public void setInputs(List<String> commands, Map<Argument, Object> argumentMap) {
-        this.encoder.setInputs(commands, argumentMap);
+    public void setInputs(List<String> commands, Map<Argument, Object> argumentMap, Argument argument) {
+        this.encoder.setInputs(commands, argumentMap, argument);
         this.decoder.setInputs(commands, argumentMap);
     }
 

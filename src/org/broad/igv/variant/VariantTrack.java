@@ -340,6 +340,13 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         }
     }
 
+    public Object getHeader(){
+        if(source instanceof TribbleFeatureSource){
+            return ((TribbleFeatureSource) source).getHeader();
+        }
+        return null;
+    }
+
     /**
      * Return the height of the variant section only (no samples/genotypes)
      * @return

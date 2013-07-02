@@ -90,6 +90,7 @@ public class Argument{
         DATA_TRACK,
         MULTI_FEATURE_TRACK,
         ALIGNMENT_TRACK,
+        VARIANT_TRACK,
         LOCUS
     }
 

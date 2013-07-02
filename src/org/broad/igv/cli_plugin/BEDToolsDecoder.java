@@ -54,10 +54,10 @@ public final class BEDToolsDecoder extends AsciiDecoder<BasicFeature> implements
         closestOrSim = commands.contains("window") || commands.contains("closest");
 
         for (Map.Entry<Argument, Object> entry : argumentMap.entrySet()) {
-            Argument argument = entry.getKey();
-            hasSplit |= argument.getCmdArg().contains("-split");
+            Argument curArg = entry.getKey();
+            hasSplit |= curArg.getCmdArg().contains("-split");
 
-            switch (argument.getType()) {
+            switch (curArg.getType()) {
                 case TEXT:
                     String sVal = (String) entry.getValue();
                     if (sVal == null) continue;

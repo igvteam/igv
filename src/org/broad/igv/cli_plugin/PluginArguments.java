@@ -20,7 +20,7 @@ import java.util.Map;
  * @author jacob
  * @since 2012-Oct-18
  */
-interface FeatureIO {
+interface PluginArguments {
 
     /**
      * It may be the case that the output is processed differently, depending on the input.
@@ -29,6 +29,9 @@ interface FeatureIO {
      *
      * @param commands    Command portions of the input, e.g. {"find", "."}
      * @param argumentMap Arguments with their values. e.g. "-name", "myFile"
+     * @param argument    Argument for which this instance was instantiated. For example,
+     *                    this might be a FEATURE_TRACK argument. The track could be retrieved
+     *                    with argumentMap.get(argument)
      */
-    void setInputs(List<String> commands, Map<Argument, Object> argumentMap);
+    void setInputs(List<String> commands, Map<Argument, Object> argumentMap, Argument argument);
 }

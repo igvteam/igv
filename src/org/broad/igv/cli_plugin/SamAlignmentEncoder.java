@@ -66,7 +66,7 @@ public class SamAlignmentEncoder implements FeatureEncoder<Alignment> {
     }
 
     @Override
-    public void setInputs(List<String> commands, Map<Argument, Object> argumentMap) {
+    public void setInputs(List<String> commands, Map<Argument, Object> argumentMap, Argument argument) {
         //pass
     }
 }

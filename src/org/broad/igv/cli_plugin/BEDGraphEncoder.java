@@ -66,7 +66,7 @@ public class BEDGraphEncoder implements LineFeatureEncoder {
      *
      */
     @Override
-    public void setInputs(List<String> commands, Map<Argument, Object> argumentMap) {
+    public void setInputs(List<String> commands, Map<Argument, Object> argumentMap, Argument argument) {
         //pass
     }
 }

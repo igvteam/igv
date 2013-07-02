@@ -121,15 +121,14 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
      */
     protected final Map<String, Object> writeFeaturesToStream(OutputStream outputStream, Iterator features, Argument argument)
             throws IOException {
-        PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream));
 
         Map<String, Object> attributes = null;
         if (features != null) {
             FeatureEncoder codec = getEncodingCodec(argument);
             attributes = codec.encodeAll(outputStream, features);
         }
-        writer.flush();
-        writer.close();
+        outputStream.flush();
+        outputStream.close();
 
         return attributes;
     }
@@ -392,7 +391,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
      */
     protected final FeatureEncoder<E> getEncodingCodec(Argument argument) {
         FeatureEncoder<E> codec = instantiateEncodingCodec(argument);
-        codec.setInputs(Collections.unmodifiableList(commands), Collections.unmodifiableMap(arguments));
+        codec.setInputs(Collections.unmodifiableList(commands), Collections.unmodifiableMap(arguments), argument);
         return codec;
     }
 
@@ -417,6 +416,8 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
                     return new AsciiEncoder(new IGVBEDCodec());
                 case ALIGNMENT_TRACK:
                     return new SamAlignmentEncoder();
+                case VARIANT_TRACK:
+                    return new VCFEncoder();
             default:
                 throw new IllegalArgumentException("No encoding codec provided and default not available");
             }

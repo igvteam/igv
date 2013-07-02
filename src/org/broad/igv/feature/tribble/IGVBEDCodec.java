@@ -399,7 +399,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
     }
 
     @Override
-    public void setInputs(List<String> commands, Map<Argument, Object> argumentMap) {
+    public void setInputs(List<String> commands, Map<Argument, Object> argumentMap, Argument argument) {
         //pass
     }
 }
