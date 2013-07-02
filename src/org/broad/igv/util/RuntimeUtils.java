@@ -18,6 +18,7 @@ package org.broad.igv.util;
 import com.google.common.primitives.Primitives;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
+import org.broad.igv.ui.util.MessageUtils;
 
 import java.io.*;
 import java.lang.instrument.Instrumentation;
@@ -176,12 +177,19 @@ public class RuntimeUtils {
 
         //Supposed to read error stream on separate thread to prevent blocking
         Thread runnable = new Thread() {
+
+            private boolean messageDisplayed = false;
+
             @Override
             public void run() {
                 String line;
                 try {
                     while ((line = err.readLine()) != null) {
                         log.error(line);
+                        if (!messageDisplayed && line.toLowerCase().contains("error")) {
+                            MessageUtils.showMessage(line + "<br>See igv.log for more details");
+                            messageDisplayed = true;
+                        }
                     }
                     err.close();
                 } catch (IOException e) {
