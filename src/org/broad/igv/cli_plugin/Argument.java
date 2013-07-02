@@ -87,6 +87,13 @@ public class Argument{
      */
     public static final CharSequence TOOL_DIR_KEY = "$toolDir";
 
+    @XmlAttribute
+    private boolean remembered;
+
+    public boolean isRemembered() {
+        return remembered;
+    }
+
     @XmlEnum
     public enum InputType {
         BOOL,

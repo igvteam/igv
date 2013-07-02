@@ -198,5 +198,6 @@ encodingCodec
     id ID #IMPLIED
     output (true|false|TRUE|FALSE) "true"
     visible (true|false) "true"
-    encodingCodec CDATA #IMPLIED>
+    encodingCodec CDATA #IMPLIED
+    remembered CDATA #IMPLIED>
 

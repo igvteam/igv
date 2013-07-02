@@ -15,6 +15,7 @@
 
 package org.broad.igv.cli_plugin.ui;
 
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.cli_plugin.Argument;
 import org.broad.igv.cli_plugin.PluginDataSource;
 import org.broad.igv.cli_plugin.PluginFeatureSource;
@@ -54,6 +55,10 @@ public class RunPlugin extends JDialog {
 
     private String specPath;
 
+    private String pluginId;
+    private String toolName;
+    private String commandName;
+
 
     public RunPlugin(Frame owner, PluginSpecReader pluginSpecReader, final PluginSpecReader.Tool tool, PluginSpecReader.Command command) {
         super(owner);
@@ -90,7 +95,10 @@ public class RunPlugin extends JDialog {
     private void initArgumentComponents(PluginSpecReader pluginSpecReader, PluginSpecReader.Tool tool, PluginSpecReader.Command command) {
 
         final String toolPath = pluginSpecReader.getToolPath(tool);
-        final String cmdName = command.name;
+
+        this.pluginId = pluginSpecReader.getId();
+        this.toolName = tool.name;
+        this.commandName = command.name;
 
         String[] cmdEls = new String[]{toolPath, command.cmd};
         if(tool.msgList != null && tool.msgList.size() > 0){
@@ -106,8 +114,8 @@ public class RunPlugin extends JDialog {
         outputComponents = new LinkedHashMap<PluginSpecReader.Output, ArgumentPanel>(this.outputAttrs.size());
 
         String titleText = tool.name;
-        if (cmdName.length() > 0) {
-            titleText += ": " + cmdName;
+        if (commandName.length() > 0) {
+            titleText += ": " + commandName;
         }
         setTitle(titleText);
 
@@ -115,13 +123,20 @@ public class RunPlugin extends JDialog {
         Dimension minSize = getMinimumSize();
         for (Argument argument : argumentList) {
 
-            if(argument.getType() == Argument.InputType.TEXT){
+            if(argument.getType() == Argument.InputType.TEXT || argument.getType() == Argument.InputType.LONGTEXT){
+
                 String defValue = argument.getDefaultValue();
+                if(argument.isRemembered()){
+                    String lastValue = PreferenceManager.getInstance().getArgumentValue(pluginId, toolName, commandName, argument.getId());
+                    defValue = lastValue != null ? lastValue : defValue;
+                }
+
                 if(defValue != null && defValue.contains(Argument.TOOL_DIR_KEY)){
                     String toolDir = FileUtils.getParent(toolPath);
                     defValue = defValue.replace(Argument.TOOL_DIR_KEY, toolDir);
-                    argument.setDefaultValue(defValue);
                 }
+
+                argument.setDefaultValue(defValue);
             }
 
             ArgumentPanel panel = ArgumentPanel.create(argument);
@@ -139,7 +154,7 @@ public class RunPlugin extends JDialog {
         for (PluginSpecReader.Output output : outputAttrs) {
             TextArgument panel = new TextArgument();
             panel.setArgName(output.name);
-            String defValue = output.defaultValue != null ? output.defaultValue : tool.name + " " + cmdName;
+            String defValue = output.defaultValue != null ? output.defaultValue : tool.name + " " + commandName;
             panel.setValue(defValue);
             this.contentPanel.add(panel);
             outputComponents.put(output, panel);
@@ -168,6 +183,11 @@ public class RunPlugin extends JDialog {
         for (Map.Entry<Argument, ArgumentPanel> argComp : argumentComponents.entrySet()) {
             Object value = argComp.getValue().getValue();
             argumentValues.put(argComp.getKey(), value);
+
+            //Save to preferences
+            if(value instanceof String && argComp.getKey().isRemembered()){
+                PreferenceManager.getInstance().putArgumentValue(pluginId, toolName, commandName, argComp.getKey().getId(), (String) value);
+            }
         }
 
         List<Track> newTracks = new ArrayList<Track>(outputAttrs.size());

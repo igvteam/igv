@@ -1163,7 +1163,20 @@ public class PreferenceManager implements PropertyManager {
      * @return
      */
     private String genToolKey(String pluginId, String toolName, String key) {
-        return String.format("%s:%s:%s", pluginId, toolName, key);
+        return String.format("%s:%s:%s", pluginId, toolName.replace(' ', '_'), key.replace(' ', '_'));
+    }
+
+    public void putArgumentValue(String pluginId, String toolName, String command, String argName, String argValue){
+        String key = genArgKey(pluginId, toolName, command, argName);
+        put(key, argValue);
+    }
+
+    public String getArgumentValue(String pluginId, String toolName, String commandName, String argId) {
+        return get(genArgKey(pluginId, toolName, commandName, argId));
+    }
+
+    private String genArgKey(String pluginId, String toolName, String command, String argId){
+        return genToolKey(pluginId, toolName, String.format("%s:%s", command, argId));
     }
 
     public String[] getIGVPluginList() {
@@ -1200,4 +1213,5 @@ public class PreferenceManager implements PropertyManager {
             return get(key, def);
         }
     }
+
 }
