@@ -1,0 +1,32 @@
+<!--
+  ~ Copyright (c) 2007-2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  ~
+  ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+  ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+  -->
+<!DOCTYPE cli_plugin SYSTEM "cli_plugin.dtd">
+<cli_plugin api_version="alpha" plugin_version="0.1" name="snpEff"
+            id="org.broad.igv.plugin.snpeff">
+    <tool name="snpEff" defaultPath="snpEff.jar" visible="false"
+          helpUrl="http://snpeff.sourceforge.net/SnpEff_manual.html" toolUrl="http://snpeff.sourceforge.net">
+
+        <msg>java</msg>
+        <msg>-jar</msg>
+        <msg>-Xmx2g</msg>
+
+        <command name="Effects" cmd="eff">
+            <arg name="Config file path" type="TEXT" cmd_arg="-c" defaultValue="$toolDir/snpEff.config" visible="true"/>
+            <arg name="No statistics" type="BOOL" cmd_arg="-noStats" defaultValue="false" visible="false"/>
+            <arg name="Genome Version" type="TEXT" defaultValue="hg19"/>
+            <arg name="Track" id="track" type="VARIANT_TRACK"/>
+            <output name="Variants Track" defaultValue="Variants" type="VariantTrack">
+                <parser source="stdout" format="vcf"/>
+            </output>
+        </command>
+
+    </tool>
+</cli_plugin>

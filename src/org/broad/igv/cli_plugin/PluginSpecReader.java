@@ -409,6 +409,8 @@ public class PluginSpecReader {
         FEATURE_TRACK,
         @XmlEnumValue("DataSourceTrack")
         DATA_SOURCE_TRACK,
+        @XmlEnumValue("VariantTrack")
+        VARIANT_TRACK
 
     }
 

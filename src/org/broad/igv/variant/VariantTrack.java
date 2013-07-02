@@ -160,9 +160,15 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         this.renderer = renderer;
     }
 
+    public VariantTrack(String name, FeatureSource source){
+        this(null, source, Collections.<String>emptyList(), false);
+        this.setName(name);
+    }
+
     public VariantTrack(ResourceLocator locator, FeatureSource source, List<String> samples,
                         boolean enableMethylationRateSupport) {
         super(locator, source);
+        String path = locator != null ? locator.getPath() : null;
         this.renderer = new VariantRenderer(this);
 
         this.enableMethylationRateSupport = enableMethylationRateSupport;
@@ -193,7 +199,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         }
 
         // If sample->bam list file is supplied enable vcfToBamMode.
-        String bamListPath = locator.getPath() + ".mapping";
+        String bamListPath = path != null ? path + ".mapping" : null;
         if (ParsingUtils.pathExists(bamListPath)) {
             loadAlignmentMappings(bamListPath);
         }

@@ -64,6 +64,7 @@ public class ArgumentPanel extends JPanel {
             case TEXT:
                 panel = new TextArgument(argument);
                 break;
+            case VARIANT_TRACK:
             case DATA_TRACK:
             case ALIGNMENT_TRACK:
             case FEATURE_TRACK:

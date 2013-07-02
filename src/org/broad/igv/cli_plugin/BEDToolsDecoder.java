@@ -14,7 +14,9 @@ package org.broad.igv.cli_plugin;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
+import org.broad.tribble.readers.PositionalBufferedStream;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -77,6 +79,11 @@ public final class BEDToolsDecoder extends AsciiDecoder<BasicFeature> implements
     @Override
     public BasicFeature decode(String line) {
         return this.decode(Globals.singleTabMultiSpacePattern.split(line));
+    }
+
+    @Override
+    public Object readHeader(PositionalBufferedStream stream) throws IOException {
+        return null;
     }
 
     public BasicFeature decode(String[] tokens) {

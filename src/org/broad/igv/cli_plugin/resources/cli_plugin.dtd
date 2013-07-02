@@ -111,7 +111,7 @@ Right now we only accept outputs of type "track"
 -->
 <!ELEMENT output (parser?)>
 <!ATTLIST output name CDATA "Output Track"
-    type (FeatureTrack|DataSourceTrack) #IMPLIED
+    type (FeatureTrack|DataSourceTrack|VariantTrack) #IMPLIED
     defaultValue CDATA #IMPLIED>
 
 
@@ -193,7 +193,7 @@ encodingCodec
 <!ATTLIST arg
     name CDATA #REQUIRED
     cmd_arg CDATA ""
-    type (BOOL|TEXT|LONGTEXT|FEATURE_TRACK|MULTI_FEATURE_TRACK|ALIGNMENT_TRACK|LOCUS) #REQUIRED
+    type (BOOL|TEXT|LONGTEXT|FEATURE_TRACK|MULTI_FEATURE_TRACK|ALIGNMENT_TRACK|VARIANT_TRACK|LOCUS) #REQUIRED
     defaultValue CDATA #IMPLIED
     id ID #IMPLIED
     output (true|false|TRUE|FALSE) "true"

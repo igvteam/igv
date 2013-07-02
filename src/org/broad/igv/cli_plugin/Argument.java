@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.variant.VariantTrack;
 
 import javax.xml.bind.annotation.*;
 import java.util.List;
@@ -81,6 +82,11 @@ public class Argument{
     @XmlElement(name = LIBS)
     private String[] libPaths;
 
+    /**
+     * Key used in paths to indicate same directory as tool
+     */
+    public static final CharSequence TOOL_DIR_KEY = "$toolDir";
+
     @XmlEnum
     public enum InputType {
         BOOL,
@@ -107,6 +113,8 @@ public class Argument{
             case TEXT:
             case LONGTEXT:
                 return value instanceof String || value == null;
+            case VARIANT_TRACK:
+                return value instanceof VariantTrack;
             case ALIGNMENT_TRACK:
                 return value instanceof AlignmentTrack;
             case FEATURE_TRACK:
@@ -139,6 +147,10 @@ public class Argument{
 
     public String getDefaultValue() {
         return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue){
+        this.defaultValue = defaultValue;
     }
 
     public String[] getLibPaths(){

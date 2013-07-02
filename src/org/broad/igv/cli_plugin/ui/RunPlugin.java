@@ -28,6 +28,8 @@ import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.BrowserLauncher;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.variant.VariantTrack;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -112,6 +114,16 @@ public class RunPlugin extends JDialog {
         //Inputs
         Dimension minSize = getMinimumSize();
         for (Argument argument : argumentList) {
+
+            if(argument.getType() == Argument.InputType.TEXT){
+                String defValue = argument.getDefaultValue();
+                if(defValue != null && defValue.contains(Argument.TOOL_DIR_KEY)){
+                    String toolDir = FileUtils.getParent(toolPath);
+                    defValue = defValue.replace(Argument.TOOL_DIR_KEY, toolDir);
+                    argument.setDefaultValue(defValue);
+                }
+            }
+
             ArgumentPanel panel = ArgumentPanel.create(argument);
             if (panel != null) {
                 argumentComponents.put(argument, panel);
@@ -178,6 +190,11 @@ public class RunPlugin extends JDialog {
                     PluginDataSource dataSource = new PluginDataSource(GenomeManager.getInstance().getCurrentGenome(), cmdList, argumentValues, outputAttr, specPath);
                     //dataSource.setQueryTracker(queryTracker);
                     newTrack = new DataSourceTrack(null, UUID.randomUUID().toString(), name, dataSource);
+                    break;
+                case VARIANT_TRACK:
+                    PluginFeatureSource VfeatSource1 = new PluginFeatureSource(cmdList, argumentValues, outputAttr, specPath);
+                    FeatureSource VfeatSource = new CachingFeatureSource(VfeatSource1);
+                    newTrack = new VariantTrack(name, VfeatSource);
                     break;
             }
             newTracks.add(newTrack);

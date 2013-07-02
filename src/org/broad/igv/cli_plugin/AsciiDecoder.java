@@ -14,6 +14,7 @@ package org.broad.igv.cli_plugin;
 import org.apache.log4j.Logger;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
+import org.broad.tribble.readers.PositionalBufferedStream;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -47,6 +48,8 @@ public class AsciiDecoder<D extends Feature> implements FeatureDecoder<D> {
         BufferedReader bis = new BufferedReader(new InputStreamReader(is));
         String line;
         D feat;
+
+        lineFeatureDecoder.readHeader(new PositionalBufferedStream(is));
 
         while ((line = bis.readLine()) != null) {
             try {
@@ -95,6 +98,11 @@ public class AsciiDecoder<D extends Feature> implements FeatureDecoder<D> {
         @Override
         public T decode(String line) {
             return wrappedCodec.decode(line);
+        }
+
+        @Override
+        public Object readHeader(PositionalBufferedStream stream) throws IOException{
+            return wrappedCodec.readHeader(stream);
         }
 
     }

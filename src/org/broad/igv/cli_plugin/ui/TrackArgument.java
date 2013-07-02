@@ -23,6 +23,7 @@ import org.broad.igv.track.DataTrack;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.variant.VariantTrack;
 
 import javax.swing.*;
 import java.awt.*;
@@ -79,6 +80,8 @@ public class TrackArgument extends ArgumentPanel {
 
     public Class getTrackClass(Argument argument) {
         switch (argument.getType()) {
+            case VARIANT_TRACK:
+                return VariantTrack.class;
             case FEATURE_TRACK:
                 return FeatureTrack.class;
             case ALIGNMENT_TRACK:

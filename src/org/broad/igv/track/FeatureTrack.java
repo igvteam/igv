@@ -171,7 +171,7 @@ public class FeatureTrack extends AbstractTrack {
 
     public FeatureTrack(ResourceLocator locator, FeatureSource source) {
         super(locator);
-        init(source, locator.getPath());
+        init(source, locator != null ? locator.getPath() : null);
         setSortable(false);
     }
 

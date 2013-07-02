@@ -170,8 +170,8 @@ public abstract class AbstractTrack implements Track {
         this(dataResourceLocator, id, dataResourceLocator.getTrackName());
     }
 
-    public AbstractTrack(ResourceLocator dataResourceLocator) {
-        this(dataResourceLocator, dataResourceLocator.getPath(), dataResourceLocator.getTrackName());
+    public AbstractTrack(ResourceLocator locator) {
+        this(locator, locator != null ? locator.getPath() : null, locator != null ? locator.getTrackName() : null);
     }
 
     public AbstractTrack(String id) {

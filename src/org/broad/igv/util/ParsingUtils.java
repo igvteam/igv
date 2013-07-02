@@ -518,11 +518,12 @@ public class ParsingUtils {
 
 
     public static boolean pathExists(String covPath) {
+        if(covPath == null) return false;
         try {
             return (new File(covPath)).exists() ||
                     (HttpUtils.isRemoteURL(covPath) && HttpUtils.getInstance().resourceAvailable(new URL(covPath)));
         } catch (MalformedURLException e) {
-            // todo -- log
+            log.error(e.getMessage(), e);
             return false;
         }
     }

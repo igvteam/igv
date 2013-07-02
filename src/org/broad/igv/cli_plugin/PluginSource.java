@@ -178,6 +178,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
                     ts = createTempFile((AlignmentTrack) entry.getValue(), arg, chr, start, end, zoom);
                     sVal = new String[]{ts};
                     break;
+                case VARIANT_TRACK:
                 case FEATURE_TRACK:
                 case DATA_TRACK:
                     ts = createTempFile((Track) entry.getValue(), arg, chr, start, end, zoom);
