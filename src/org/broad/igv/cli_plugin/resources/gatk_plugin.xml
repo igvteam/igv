@@ -11,8 +11,12 @@
 <!DOCTYPE cli_plugin SYSTEM "cli_plugin.dtd">
 <cli_plugin api_version="alpha" plugin_version="0.1" name="GATK"
             id="org.broad.igv.plugin.gatk">
-    <tool name="GATK" cmd="java -jar" defaultPath="GenomeAnalysisTK.jar" visible="false"
+    <tool name="GATK" defaultPath="GenomeAnalysisTK.jar" visible="false"
           helpUrl="http://www.broadinstitute.org/gatk/gatkdocs/" toolUrl="http://www.broadinstitute.org/gatk/">
+
+        <msg>java</msg>
+        <msg>-jar</msg>
+
         <command name="Unified Genotyper" cmd="-T UnifiedGenotyper">
             <arg name="Reference Sequence" id="refseq" cmd_arg="-R" type="LONGTEXT"/>
             <arg name="Track" cmd_arg="-I" id="track" type="ALIGNMENT_TRACK"/>

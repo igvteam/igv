@@ -353,8 +353,6 @@ public class PluginSpecReader {
         @XmlAttribute
         public String name;
         @XmlAttribute
-        public String cmd;
-        @XmlAttribute
         public String defaultPath;
         @XmlAttribute
         public boolean visible;
@@ -374,6 +372,10 @@ public class PluginSpecReader {
          */
         @XmlElement(name = "default_output")
         private Command defaultOutputs;
+
+
+        @XmlElement(name = "msg")
+        public List<String> msgList;
 
         @XmlElement(name = "command")
         public List<Command> commandList;

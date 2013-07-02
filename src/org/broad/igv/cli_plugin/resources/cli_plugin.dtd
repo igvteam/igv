@@ -49,9 +49,6 @@ Each tool represents a command line executable.
 Attributes
 name
     The name of the tool as it appears to the user
-cmd
-    The command used to launch the tool. For instance,
-    if it's a jar file, "java -jar".
 defaultPath
     Default path to the executable. This can be an absolute path, if it
     is a relative path the users PATH environment variable
@@ -70,14 +67,20 @@ visible
 toolUrl:
     url where the user can go for help on this command line tool.
 -->
-<!ELEMENT tool (default_arg?, default_output?, command+)>
+<!ELEMENT tool (default_arg?, default_output?, msg*, command+)>
 <!ATTLIST tool name CDATA #REQUIRED
-    cmd CDATA #IMPLIED
     defaultPath CDATA #IMPLIED
     description CDATA #IMPLIED
     visible (true|false) "true"
     toolUrl CDATA #IMPLIED
     helpUrl CDATA #IMPLIED>
+
+<!--
+msg
+    Commands used to launch the tool. For instance,
+    if it's a jar file, "java -jar".
+    -->
+<!ELEMENT msg (#PCDATA)>
 
 <!-- default_arg element
 Default properties for each command.
