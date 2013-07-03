@@ -35,7 +35,7 @@ public class IgvToolsGui extends JDialog {
         COUNT("Count"),
         SORT("Sort"),
         INDEX("Index"),
-        TILE("Tile");
+        TILE("toTDF");
 
         private String displayName;
 
