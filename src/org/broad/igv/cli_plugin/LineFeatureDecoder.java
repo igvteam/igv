@@ -12,7 +12,7 @@
 package org.broad.igv.cli_plugin;
 
 import org.broad.tribble.Feature;
-import org.broad.tribble.readers.PositionalBufferedStream;
+import org.broad.tribble.readers.LineReader;
 
 import java.io.IOException;
 
@@ -23,5 +23,5 @@ import java.io.IOException;
 public interface LineFeatureDecoder<T extends Feature> {
     T decode(String line);
 
-    Object readHeader(PositionalBufferedStream stream) throws IOException;
+    Object readHeader(LineReader reader) throws IOException;
 }

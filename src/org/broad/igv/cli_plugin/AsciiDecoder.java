@@ -14,16 +14,13 @@ package org.broad.igv.cli_plugin;
 import org.apache.log4j.Logger;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
-import org.broad.tribble.readers.PositionalBufferedStream;
+import org.broad.tribble.readers.LineReader;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * User: jacob
@@ -45,13 +42,18 @@ public class AsciiDecoder<D extends Feature> implements FeatureDecoder<D> {
     public Iterator<D> decodeAll(InputStream is, boolean strictParsing) throws IOException {
 
         List<D> featuresList = new ArrayList<D>();
-        BufferedReader bis = new BufferedReader(new InputStreamReader(is));
         String line;
         D feat;
 
-        lineFeatureDecoder.readHeader(new PositionalBufferedStream(is));
 
-        while ((line = bis.readLine()) != null) {
+        BufferedReader bis = new BufferedReader(new InputStreamReader(is));
+        QueuingLineReader lrw = new QueuingLineReader(bis);
+
+        lrw.setQueueing(true);
+        lineFeatureDecoder.readHeader(lrw);
+        lrw.setQueueing(false);
+
+        while ((line = lrw.readLine()) != null) {
             try {
                 feat = decode(line);
                 if (feat != null) {
@@ -101,9 +103,60 @@ public class AsciiDecoder<D extends Feature> implements FeatureDecoder<D> {
         }
 
         @Override
-        public Object readHeader(PositionalBufferedStream stream) throws IOException{
-            return wrappedCodec.readHeader(stream);
+        public Object readHeader(LineReader reader) throws IOException{
+            return wrappedCodec.readHeader(reader);
         }
 
+    }
+
+    /**
+     * The purpose of this class is 2-fold:
+     * 0. Wrap a BufferedReader in a LineReader so the interface works
+     * 1. Keep track of read lines so reading the header doesn't throw away potential data
+     * When the QueuingLineReader is set to {@code queueing}, it queues each readLine.
+     * Once {@code queueing} is turned off the queued lines are returned. The queue is
+     * cleared when {@code queueing} is toggled on the theory that only blocks
+     * will want to be read.
+     * @author jacob
+     * @since 3 Jul 2013
+     */
+    private static class QueuingLineReader implements org.broad.tribble.readers.LineReader{
+
+        private BufferedReader wrappedReader;
+
+        private Queue<String> lineBuffer = new ArrayDeque<String>();
+        private boolean queueing = false;
+
+        QueuingLineReader(BufferedReader lineReader){
+            this.wrappedReader = lineReader;
+        }
+
+        void setQueueing(boolean queueing){
+            this.queueing = queueing;
+            if(this.queueing) lineBuffer.clear();
+        }
+
+        @Override
+        public String readLine() throws IOException {
+            String line;
+            if(queueing){
+                line = this.wrappedReader.readLine();
+                if(line != null) lineBuffer.add(line);
+            }else{
+                line = lineBuffer.poll();
+                if(line == null) line = this.wrappedReader.readLine();
+            }
+            return line;
+        }
+
+        @Override
+        public void close() {
+            this.lineBuffer = null;
+            try {
+                this.wrappedReader.close();
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+            }
+        }
     }
 }
