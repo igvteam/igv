@@ -13,6 +13,7 @@ package org.broad.igv.bbfile;
 
 import net.sf.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
+import org.broad.igv.util.stream.IGVSeekableBufferedStream;
 
 import java.util.ArrayList;
 
@@ -68,7 +69,7 @@ public class BBZoomLevels {
    *      uncompressBufSize - byte size of the buffer to use for decompression
    * */
 
-    public BBZoomLevels(SeekableStream fis, long fileOffset, int zoomLevels,
+    public BBZoomLevels(SeekableStream is, long fileOffset, int zoomLevels,
                         boolean isLowToHigh, int uncompressBufSize){
         int zoomLevel;
         int zoomHeadersRead;
@@ -79,6 +80,9 @@ public class BBZoomLevels {
         //this.fis = fis;
         zoomHeadersOffset = fileOffset;
         zoomLevelsCount = zoomLevels;
+
+        // We don't know the exact size of the header fields, so use a buffered stream
+        IGVSeekableBufferedStream fis = new IGVSeekableBufferedStream(is, 512000);
         
         // Note: a bad zoom header will result in a 0 count returned
         zoomHeadersRead =  readZoomHeaders(fis, zoomHeadersOffset, zoomLevels, isLowToHigh);

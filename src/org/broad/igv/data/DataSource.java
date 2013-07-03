@@ -55,5 +55,8 @@ public interface DataSource {
 
     public Collection<WindowFunction> getAvailableWindowFunctions();
 
-
+    /**
+     * Release any resources (file handles, etc)
+     */
+    void dispose();
 }

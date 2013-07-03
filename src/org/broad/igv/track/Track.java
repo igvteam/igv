@@ -37,6 +37,7 @@ import java.util.List;
 public interface Track extends Persistable{
 
 
+
     enum DisplayMode {
         COLLAPSED, SQUISHED, EXPANDED, ALTERNATIVE_SPLICE
     }
@@ -211,6 +212,6 @@ public interface Track extends Persistable{
 
     float getYLine();
 
-    void updateGenome(Genome genome);
+    void dispose();
 
 }

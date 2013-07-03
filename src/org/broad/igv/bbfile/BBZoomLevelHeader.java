@@ -68,19 +68,7 @@ public class BBZoomLevelHeader {
 
         readZoomLevelHeader(zoomLevelHeaderOffset, this.zoomLevel, isLowToHigh);
     }
-    /*
-    *   Constructor loads zoom level header according to parameter specification.
-    *
-    *   Parameters: (as defined above)
-    * */
-    public BBZoomLevelHeader(int zoomLevel, int reductionLevel, int reserved,
-                             long dataOffset, long indexOffset){
-        this.zoomLevel = zoomLevel;
-        this.reductionLevel = reductionLevel;
-        this.reserved = reserved;
-        this.dataOffset = dataOffset;
-        this.indexOffset = indexOffset;
-    }
+
 
     /*
     *   Method returns the zoom level.

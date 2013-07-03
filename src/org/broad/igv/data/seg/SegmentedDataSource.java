@@ -104,7 +104,12 @@ public class SegmentedDataSource implements DataSource {
         return new ArrayList();
     }
 
-    
+    @Override
+    public void dispose() {
+
+    }
+
+
     public WindowFunction getWindowFunction() {
         return null;
     }

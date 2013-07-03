@@ -209,11 +209,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     }
 
-    @Override
-    public void updateGenome(Genome genome) {
-        dataManager.updateGenome(genome);
-    }
-
     /**
      * Set the experiment type (RNA, Bisulfite, or OTHER)
      *

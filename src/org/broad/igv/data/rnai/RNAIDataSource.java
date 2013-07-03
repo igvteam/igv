@@ -210,4 +210,9 @@ public class RNAIDataSource implements DataSource {
     public Collection<WindowFunction> getAvailableWindowFunctions() {
         return emptyList;
     }
+
+    @Override
+    public void dispose() {
+
+    }
 }

@@ -339,6 +339,12 @@ public class CombinedDataSource implements DataSource {
         return new ArrayList<WindowFunction>();
     }
 
+    @Override
+    public void dispose() {
+        if(source0 != null) source0.dispose();
+        if(source1 != null) source1.dispose();
+    }
+
     private static class DataTrackAdapter extends XmlAdapter<String, org.broad.igv.track.DataTrack> {
 
         @Override

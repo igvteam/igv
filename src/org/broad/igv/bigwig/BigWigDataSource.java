@@ -348,6 +348,13 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
     }
 
+    @Override
+    public void dispose() {
+        super.dispose();
+        if(reader != null) {
+            reader.close();
+        }
+    }
 
     // Feature interface follows ------------------------------------------------------------------------
 

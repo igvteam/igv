@@ -1003,9 +1003,11 @@ public abstract class AbstractTrack implements Track {
     }
 
     @Override
-    public void updateGenome(Genome genome) {
-        // Default is to do nothing
+    public void dispose() {
+        // Default is to do nothing.  Override in subclasses
+
     }
+
 
     protected void setRenderer(Renderer renderer) {
         //Here as setter for corresponding getter, subclasses should override

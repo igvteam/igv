@@ -171,6 +171,14 @@ public class DataSourceTrack extends DataTrack {
         }
     }
 
+    @Override
+    public void dispose() {
+        super.dispose();
+        if(dataSource != null) {
+            dataSource.dispose();
+        }
+    }
+
     @SubtlyImportant
     @XmlAttribute
     private void setNormalize(boolean normalize){

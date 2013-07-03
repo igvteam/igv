@@ -234,6 +234,11 @@ public class GobyCountArchiveDataSource implements CoverageDataSource {
         return availableFunctions;
     }
 
+    @Override
+    public void dispose() {
+
+    }
+
     public String getPath() {
         return filename;
     }

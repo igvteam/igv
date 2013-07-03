@@ -15,8 +15,8 @@ import net.sf.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
 import org.broad.igv.util.CompressionUtils;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.io.IOException;
 import java.util.HashMap;
 
 /**
@@ -63,8 +63,7 @@ public class BigWigDataBlock {
     *
     * */
     public BigWigDataBlock(SeekableStream fis, RPTreeLeafNodeItem leafHitItem,
-            HashMap<Integer, String> chromosomeMap, boolean isLowToHigh, int uncompressBufSize,
-            CompressionUtils compressionUtils){
+                           HashMap<Integer, String> chromosomeMap, boolean isLowToHigh, int uncompressBufSize){
         this.leafHitItem = leafHitItem;
         this.chromosomeMap = chromosomeMap;
         this.isLowToHigh = isLowToHigh;
@@ -81,13 +80,13 @@ public class BigWigDataBlock {
             // decompress if necessary - the buffer size is 0 for uncompressed data
             // Note:  BBFile Table C specifies a decompression buffer size
             if(uncompressBufSize > 0)
-                wigBuffer = compressionUtils.decompress(buffer, uncompressBufSize);
+                wigBuffer = (new CompressionUtils()).decompress(buffer, uncompressBufSize);
             else
                 wigBuffer = buffer;    // use uncompressed read buffer directly
         }catch(IOException ex) {
-             log.error("Error reading Wig section for leaf item ", ex);
-             String error = String.format("Error reading Wig section for leaf item %d\n");
-             throw new RuntimeException(error, ex);
+            log.error("Error reading Wig section for leaf item ", ex);
+            String error = String.format("Error reading Wig section for leaf item %d\n");
+            throw new RuntimeException(error, ex);
         }
 
         // initialize unread data size
@@ -110,10 +109,10 @@ public class BigWigDataBlock {
     *
     * */
     public ArrayList<WigItem> getWigData(RPChromosomeRegion selectionRegion,
-                                                boolean contained){
+                                         boolean contained){
 
         wigItemList = new ArrayList<WigItem>();
-        
+
         for(int index = 0; remDataSize > 0; ++index) {
 
             // extract items in the Wig data section
@@ -130,14 +129,14 @@ public class BigWigDataBlock {
         return wigItemList;
     }
 
-     public void print() {
+    public void print() {
 
         log.debug("Wig section data referenced by leaf item ");
 
         for(int index = 0; index <= wigItemList.size(); ++index) {
             // BigWig sections print themselves
             wigItemList.get(index).print();
-         }
+        }
     }
 
 

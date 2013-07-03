@@ -18,6 +18,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.dev.db.DBManager;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.track.Track;
 import org.broad.igv.util.FileUtils;
 
 import java.io.File;
@@ -41,8 +42,12 @@ public class ShutdownThread extends Thread {
         DBManager.shutdown();
         CommandListener.halt();
         cleanupBamIndexCache();
-        if (IGV.hasInstance())
+        if (IGV.hasInstance()) {
             IGV.getInstance().saveStateForExit();
+            for(Track t : IGV.getInstance().getAllTracks()) {
+                t.dispose();
+            }
+        }
     }
 
     @Override

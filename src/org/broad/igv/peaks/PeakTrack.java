@@ -140,15 +140,6 @@ public class PeakTrack extends AbstractTrack {
         }
     }
 
-    @Override
-    public void updateGenome(Genome genome) {
-        this.genome = genome;
-        signalSource.updateGenome(genome) ;
-        for(WrappedDataSource ds : timeSignalSources) {
-            ds.updateGenome(genome);
-        }
-
-    }
 
     /**
      * timePoints=0,30,60,120
@@ -654,6 +645,11 @@ public class PeakTrack extends AbstractTrack {
 
         public Collection<WindowFunction> getAvailableWindowFunctions() {
             return source.getAvailableWindowFunctions();
+        }
+
+        @Override
+        public void dispose() {
+            source.dispose();
         }
 
         public void setNormalizeCounts(boolean b, float v) {

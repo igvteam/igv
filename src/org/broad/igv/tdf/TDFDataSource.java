@@ -425,6 +425,11 @@ public class TDFDataSource implements CoverageDataSource {
         return availableFunctions;
     }
 
+    @Override
+    public void dispose() {
+
+    }
+
     /**
      * We changed how chromosomes were sorted in v2.2
      * This had the unintended side effect of introducing

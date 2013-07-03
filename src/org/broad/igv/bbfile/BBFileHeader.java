@@ -25,13 +25,10 @@ package org.broad.igv.bbfile;
 
 import net.sf.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
-import org.broad.tribble.util.LittleEndianInputStream;
-
+import org.broad.tribble.util.*;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-
-//import net.sf.samtools.util.SeekableStream;
 
 /*
 *   Container class for holding the BBFile header information, Table C .
@@ -51,7 +48,7 @@ public class BBFileHeader {
 
     // defines the bigBed/bigWig source file access
     private String path;               // bigBed file/pathname
-    //private SeekableStream fis;      // BBFile I/O stream handle
+    private SeekableStream fis;      // BBFile I/O stream handle
     private long fileHeaderOffset;     // file offset for file header
 
     private boolean isHeaderOK;        // File header read correctly?
@@ -82,52 +79,14 @@ public class BBFileHeader {
 
         // save the path and seekable file handle
         this.path = path;
-        //this.fis = fis;
+        this.fis = fis;
         fileHeaderOffset = fileOffset;
 
         // read in BBFile header
-        isHeaderOK = readBBFileHeader(fileHeaderOffset, fis);
+        isHeaderOK = readBBFileHeader(fileHeaderOffset);
 
     }
 
-    /*
-    *   Constructor loads BBFile header class from parameter specifications.
-    *
-    *   Parameters: (as defined above)
-    * */
-    public BBFileHeader(
-            int magic,
-            short version,
-            short zoomLevels,
-            long chromTreeOffset,
-            long fullDataOffset,
-            long fullIndexOffset,
-            short fieldCount,
-            short definedFieldCount,
-            long autoSqlOffset,
-            long totalSummaryOffset,
-            int uncompressBuffSize,
-            long reserved) {
-
-        this.magic = magic;
-
-        // Note: may want to validate the rest of the fields as well
-        if (isBigWig() || isBigBed())
-            this.isHeaderOK = true;
-
-        this.version = version;
-        this.nZoomLevels = zoomLevels;
-        this.chromTreeOffset = chromTreeOffset;
-        this.fullDataOffset = fullDataOffset;
-        this.fullIndexOffset = fullIndexOffset;
-        this.fieldCount = fieldCount;
-        this.definedFieldCount = definedFieldCount;
-        this.autoSqlOffset = autoSqlOffset;
-        this.totalSummaryOffset = totalSummaryOffset;
-        this.uncompressBuffSize = uncompressBuffSize;
-        this.uncompressBuffSize = uncompressBuffSize;
-        this.reserved = reserved;
-    }
 
     public String getPath() {
         return path;
@@ -238,7 +197,7 @@ public class BBFileHeader {
      *      Success status flag is true for successfully read header,
      *      or is false for a read error.
     **/
-    private boolean readBBFileHeader(long fileOffset, SeekableStream fis) {
+    private boolean readBBFileHeader(long fileOffset) {
 
         BBFileHeader bbHeader = null;
         LittleEndianInputStream lbdis = null;

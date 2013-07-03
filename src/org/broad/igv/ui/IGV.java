@@ -2049,6 +2049,10 @@ public class IGV {
                 removeAlignmentTrackEvent((AlignmentTrackEventListener) t);
             }
         }
+
+        for(Track t : tracksToRemove) {
+            t.dispose();
+        }
     }
 
     /**

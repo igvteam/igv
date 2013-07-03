@@ -361,4 +361,9 @@ public abstract class AbstractDataSource implements DataSource {
         return wfs;
     }
 
+    @Override
+    public void dispose() {
+        // default is to do nothing
+    }
+
 }

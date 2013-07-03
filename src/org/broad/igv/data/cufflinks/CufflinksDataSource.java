@@ -183,4 +183,9 @@ public class CufflinksDataSource implements DataSource {
     public Collection<WindowFunction> getAvailableWindowFunctions() {
         return Arrays.asList(WindowFunction.none);
     }
+
+    @Override
+    public void dispose() {
+
+    }
 }

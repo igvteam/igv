@@ -13,18 +13,10 @@ package org.broad.igv.bbfile;
 
 import net.sf.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
-import org.broad.igv.util.CompressionUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-/**
- * Created by IntelliJ IDEA.
- * User: martind
- * Date: Apr 16, 2010
- * Time: 4:19:29 PM
- * To change this template use File | Settings | File Templates.
- */
 public class ZoomLevelIterator {
 
     private static Logger log = Logger.getLogger(ZoomDataBlock.class);
@@ -57,8 +49,6 @@ public class ZoomLevelIterator {
     ArrayList<ZoomDataRecord> zoomRecordList; // array of selected zoom data records
     private int zoomRecordIndex;    // index of next zoom data record from the list
 
-    CompressionUtils compressionUtils;
-
     /**
      * Default constructor.  This is provided to support return of a subclassed  "empty" iterator
      */
@@ -84,15 +74,13 @@ public class ZoomLevelIterator {
      * else return any intersecting region features
      */
     public ZoomLevelIterator(SeekableStream fis, BPTree chromIDTree, RPTree zoomDataTree,
-                             int zoomLevel, RPChromosomeRegion selectionRegion, boolean contained,
-                             CompressionUtils compressionUtils) {
+                             int zoomLevel, RPChromosomeRegion selectionRegion, boolean contained) {
 
         // check for valid selection region
         if (selectionRegion == null)
             throw new RuntimeException("Error: ZoomLevelIterator selection region is null\n");
 
         this.fis = fis;
-        this.compressionUtils = compressionUtils;
         this.chromIDTree = chromIDTree;
         this.zoomDataTree = zoomDataTree;
         this.zoomLevel = zoomLevel;
@@ -388,7 +376,7 @@ public class ZoomLevelIterator {
 
         // decompress leaf item data block for feature extraction
         zoomDataBlock = new ZoomDataBlock(zoomLevel, fis, leafHitItem, chromosomeMap,
-                isLowToHigh, uncompressBufSize, compressionUtils);
+                isLowToHigh, uncompressBufSize);
 
         // get data block zoom data record list and set next index to first item
         zoomRecordList = zoomDataBlock.getZoomData(selectionRegion, isContained);
