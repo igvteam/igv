@@ -62,7 +62,7 @@ public class HttpUtils {
     private static Pattern URLmatcher = Pattern.compile(".{1,8}://.*");
 
     // static provided to support unit testing
-    private static boolean  BYTE_RANGE_DISABLED = false;
+    private static boolean BYTE_RANGE_DISABLED = false;
 
     /**
      * @return the single instance
@@ -92,12 +92,12 @@ public class HttpUtils {
 
     /**
      * Provided to support unit testing (force disable byte range requests)
+     *
      * @return
      */
     public static void disableByteRange(boolean b) {
-         BYTE_RANGE_DISABLED = b;
+        BYTE_RANGE_DISABLED = b;
     }
-
 
 
     /**
@@ -225,7 +225,7 @@ public class HttpUtils {
         return conn.getHeaderField(key);
     }
 
-    public long getLastModified(URL url) throws IOException{
+    public long getLastModified(URL url) throws IOException {
         HttpURLConnection conn = openConnection(url, null, "HEAD");
         if (conn == null) return 0;
         return conn.getLastModified();
@@ -490,7 +490,7 @@ public class HttpUtils {
 
     }
 
-    public HttpURLConnection delete(URL url) throws IOException{
+    public HttpURLConnection delete(URL url) throws IOException {
         return openConnection(url, Collections.<String, String>emptyMap(), "DELETE");
     }
 
@@ -519,7 +519,7 @@ public class HttpUtils {
 
         //TODO This is a hack and doesn't work for all characters which need it
         //If there are spaces we need to URL encode them
-        if(StringUtils.countChar(url.toExternalForm(), ' ') > 0){
+        if (StringUtils.countChar(url.toExternalForm(), ' ') > 0) {
             String newPath = url.toExternalForm().replaceAll(" ", "%20");
             url = new URL(newPath);
         }
@@ -541,8 +541,7 @@ public class HttpUtils {
 
         if (GSUtils.isGenomeSpace(url)) {
             conn.setRequestProperty("Accept", "application/json,text/plain");
-        }
-        else {
+        } else {
             conn.setRequestProperty("Accept", "text/plain");
         }
 
@@ -571,7 +570,7 @@ public class HttpUtils {
             return conn;
         } else {
 
-             int code = conn.getResponseCode();
+            int code = conn.getResponseCode();
 
             // Redirects.  These can occur even if followRedirects == true if there is a change in protocol,
             // for example http -> https.
@@ -594,15 +593,13 @@ public class HttpUtils {
                 if (code == 404) {
                     message = "File not found: " + url.toString();
                     throw new FileNotFoundException(message);
-                }
-                else if (code == 401) {
+                } else if (code == 401) {
                     // Looks like this only happens when user hits "Cancel".
-                   // message = "Not authorized to view this file";
-                   // JOptionPane.showMessageDialog(null, message, "HTTP error", JOptionPane.ERROR_MESSAGE);
+                    // message = "Not authorized to view this file";
+                    // JOptionPane.showMessageDialog(null, message, "HTTP error", JOptionPane.ERROR_MESSAGE);
                     redirectCount = MAX_REDIRECTS + 1;
                     return null;
-                }
-                else {
+                } else {
                     message = conn.getResponseMessage();
                 }
                 String details = readErrorStream(conn);
@@ -638,7 +635,7 @@ public class HttpUtils {
      */
     public boolean useByteRange(URL url) {
 
-        if(BYTE_RANGE_DISABLED) return false;
+        if (BYTE_RANGE_DISABLED) return false;
 
         // We can test byte-range success for hosts we can reach.
 
@@ -647,6 +644,7 @@ public class HttpUtils {
         if (byteRangeTestMap.containsKey(host)) {
             return byteRangeTestMap.get(host);
         } else {
+            SeekableStream str = null;
             try {
                 boolean byteRangeTestSuccess = true;
 
@@ -654,11 +652,15 @@ public class HttpUtils {
                     byteRangeTestSuccess = testBroadHost(host);
                 } else {
                     // Non-broad URL
-                    byte[] firstBytes = getFirstBytes(url, 10000);
-                    if (firstBytes.length > 1000) {
+                    int l = (int) Math.min(1000, HttpUtils.getInstance().getContentLength(url));
+                    if (l > 1000) {
+
+                        byte[] firstBytes = new byte[l];
+                        str = new IGVSeekableHTTPStream(url);
+                        str.readFully(firstBytes);
+
                         int end = firstBytes.length;
                         int start = end - 100;
-                        SeekableStream str = new IGVSeekableHTTPStream(url);
                         str.seek(start);
                         int len = end - start;
                         byte[] buffer = new byte[len];
@@ -697,6 +699,14 @@ public class HttpUtils {
                 // not.  Take the "optimistic" view.
                 return true;
             }
+            finally {
+                if(str != null) try {
+                    str.close();
+                } catch (IOException e) {
+                    log.error("Error closing stream (" + url.toExternalForm() + ")", e);
+                }
+            }
+
         }
     }
 
@@ -718,45 +728,23 @@ public class HttpUtils {
 
         byte[] expectedBytes = {'T', 'C', 'G', 'C', 'T', 'T', 'G', 'A', 'A', 'C', 'C', 'C', 'G', 'G',
                 'G', 'A', 'G', 'A', 'G', 'G'};
-        IGVSeekableHTTPStream str = new IGVSeekableHTTPStream(new URL(testURL));
-        str.seek(25350000);
-        byte[] buffer = new byte[80000];
-        str.read(buffer);
-        String result = new String(buffer);
-        for (int i = 0; i < expectedBytes.length; i++) {
-            if (buffer[i] != expectedBytes[i]) {
-                return false;
-            }
-        }
-        return true;
-    }
+        IGVSeekableHTTPStream str = null;
 
-
-    /**
-     * Return the first bytes of content from the URL.  The number of bytes returned is ~ nominalLength.
-     *
-     * @param url
-     * @param nominalLength
-     * @return
-     * @throws IOException
-     */
-    private byte[] getFirstBytes(URL url, int nominalLength) throws IOException {
-
-        InputStream is = null;
         try {
-            is = HttpUtils.getInstance().openConnectionStream(url);
-            BufferedInputStream bis = new BufferedInputStream(is);
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            int b;
-            while ((b = bis.read()) >= 0) {
-                bos.write(b);
-                if (bos.size() >= nominalLength) {
-                    break;
+            str = new IGVSeekableHTTPStream(new URL(testURL));
+
+            str.seek(25350000);
+            byte[] buffer = new byte[80000];
+            str.read(buffer);
+            String result = new String(buffer);
+            for (int i = 0; i < expectedBytes.length; i++) {
+                if (buffer[i] != expectedBytes[i]) {
+                    return false;
                 }
             }
-            return bos.toByteArray();
+            return true;
         } finally {
-            if (is != null) is.close();
+            if (str != null) str.close();
         }
     }
 
@@ -907,21 +895,21 @@ public class HttpUtils {
 
             if (GSUtils.isGenomeSpace(uri.toURL())) {
                 String token = GSUtils.getGSToken();
-                if (token != null){
+                if (token != null) {
                     List<String> cookieList = headers.get("Cookie");
                     boolean needsTokenCookie = true;
-                    if(cookieList == null){
+                    if (cookieList == null) {
                         cookieList = new ArrayList<String>(1);
                         headers.put("Cookie", cookieList);
                     }
 
-                    for(String cookie: cookieList){
-                        if(cookie.startsWith("gs-token")){
+                    for (String cookie : cookieList) {
+                        if (cookie.startsWith("gs-token")) {
                             needsTokenCookie = false;
                             break;
                         }
                     }
-                    if(needsTokenCookie){
+                    if (needsTokenCookie) {
                         cookieList.add("gs-token=" + token);
                     }
                 }
@@ -937,8 +925,8 @@ public class HttpUtils {
                 List<String> cookies = responseHeaders.get("Set-Cookie");
                 if (cookies != null) {
                     for (String cstring : cookies) {
-                        List<HttpCookie> cookieList= HttpCookie.parse(cstring);
-                        for(HttpCookie cookie: cookieList){
+                        List<HttpCookie> cookieList = HttpCookie.parse(cstring);
+                        for (HttpCookie cookie : cookieList) {
                             String cookieName = cookie.getName();
                             String value = cookie.getValue();
                             if (cookieName.equals("gs-token")) {

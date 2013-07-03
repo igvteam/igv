@@ -20,13 +20,13 @@ import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMFileReader.ValidationStringency;
 import net.sf.samtools.SAMRecord;
 import net.sf.samtools.seekablestream.SeekableStream;
-import net.sf.samtools.seekablestream.SeekableStreamFactory;
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.EmptyAlignmentIterator;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -168,7 +168,7 @@ public class SAMReader implements AlignmentReader {
 
     private SAMFileReader getSAMFileReader(String samFile, long startPosition) {
         try {
-            SeekableStream stream = SeekableStreamFactory.getStreamFor(samFile);
+            SeekableStream stream = IGVSeekableStreamFactory.getStreamFor(samFile);
             if (startPosition >= 0) {
                 stream.seek(startPosition);
             }

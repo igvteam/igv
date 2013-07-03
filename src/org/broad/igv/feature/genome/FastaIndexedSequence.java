@@ -12,9 +12,9 @@
 package org.broad.igv.feature.genome;
 
 import net.sf.samtools.seekablestream.SeekableStream;
-import net.sf.samtools.seekablestream.SeekableStreamFactory;
 import org.apache.log4j.Logger;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -158,7 +158,7 @@ public class FastaIndexedSequence implements Sequence {
 
         SeekableStream ss = null;
         try {
-            ss = SeekableStreamFactory.getStreamFor(path);
+            ss = IGVSeekableStreamFactory.getStreamFor(path);
             int nBytes = (int) (posEnd - posStart);
             byte[] bytes = new byte[nBytes];
             ss.seek(posStart);

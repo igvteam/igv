@@ -11,8 +11,8 @@
 
 package org.broad.tribble.util;
 
-import net.sf.samtools.seekablestream.SeekableBufferedStream;
 import net.sf.samtools.seekablestream.SeekableFileStream;
+import org.broad.igv.util.stream.IGVSeekableBufferedStream;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -51,7 +51,7 @@ public class SeekableBufferedStreamTest {
 
         final int fileSize = expectedBytes.length;
 
-        SeekableBufferedStream bufferedStream = new SeekableBufferedStream(new SeekableFileStream(testFile), 50);
+        IGVSeekableBufferedStream bufferedStream = new IGVSeekableBufferedStream(new SeekableFileStream(testFile), 50);
 
         // Somewhere in the middle
         int pos = 700;
@@ -87,7 +87,7 @@ public class SeekableBufferedStreamTest {
         final int fileSize = expectedBytes.length;
 
         final int streamBufferSize = 50;
-        SeekableBufferedStream bufferedStream = new SeekableBufferedStream(new SeekableFileStream(testFile), streamBufferSize);
+        IGVSeekableBufferedStream bufferedStream = new IGVSeekableBufferedStream(new SeekableFileStream(testFile), streamBufferSize);
 
 
         // At the end

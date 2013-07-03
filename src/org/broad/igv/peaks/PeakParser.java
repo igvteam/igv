@@ -12,10 +12,10 @@
 package org.broad.igv.peaks;
 
 
-import net.sf.samtools.seekablestream.SeekableBufferedStream;
 import net.sf.samtools.seekablestream.SeekableStream;
-import net.sf.samtools.seekablestream.SeekableStreamFactory;
 import org.broad.igv.util.CompressionUtils;
+import org.broad.igv.util.stream.IGVSeekableBufferedStream;
+import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.tribble.util.LittleEndianInputStream;
 
 import java.io.BufferedInputStream;
@@ -50,7 +50,7 @@ public class PeakParser {
     private void loadHeader() throws IOException {
         SeekableStream ss = null;
         try {
-            ss = SeekableStreamFactory.getStreamFor(path);
+            ss = IGVSeekableStreamFactory.getStreamFor(path);
             LittleEndianInputStream is = new LittleEndianInputStream(new BufferedInputStream(ss));
 
             long indexPosition = is.readLong();
@@ -96,14 +96,14 @@ public class PeakParser {
             SeekableStream ss = null;
             try {
 
-                ss = SeekableStreamFactory.getStreamFor(path);
+                ss = IGVSeekableStreamFactory.getStreamFor(path);
                 int bufferSize = 512000;
                 long contentLength = ss.length();
                 if(contentLength > 0) {
                     bufferSize = (int) Math.min(contentLength, bufferSize);
                 }
 
-                SeekableBufferedStream bufferedStream = new SeekableBufferedStream(ss, bufferSize);
+                IGVSeekableBufferedStream bufferedStream = new IGVSeekableBufferedStream(ss, bufferSize);
                 bufferedStream.seek(chrPos);
 
                 reader = new LittleEndianInputStream(bufferedStream);

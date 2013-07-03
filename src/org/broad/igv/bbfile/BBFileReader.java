@@ -18,11 +18,11 @@
  */
 package org.broad.igv.bbfile;
 
-import net.sf.samtools.seekablestream.SeekableBufferedStream;
 import net.sf.samtools.seekablestream.SeekableStream;
-import net.sf.samtools.seekablestream.SeekableStreamFactory;
 import org.apache.log4j.Logger;
 import org.broad.igv.util.CompressionUtils;
+import org.broad.igv.util.stream.IGVSeekableBufferedStream;
+import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -119,7 +119,8 @@ public class BBFileReader {
     CompressionUtils compressionUtils;
 
     static SeekableStream getStream(String path) throws IOException{
-        return new SeekableBufferedStream(SeekableStreamFactory.getStreamFor(path), 128000);
+        //return new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getStreamFor(path), 128000);
+        return IGVSeekableStreamFactory.getStreamFor(path);
     }
 
     public BBFileReader(String path) throws IOException {

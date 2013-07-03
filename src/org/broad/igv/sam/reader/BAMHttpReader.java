@@ -15,7 +15,6 @@ import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
 import net.sf.samtools.SAMSequenceRecord;
-import net.sf.samtools.seekablestream.SeekableBufferedStream;
 import net.sf.samtools.seekablestream.SeekableFTPStream;
 import net.sf.samtools.seekablestream.SeekableStream;
 import net.sf.samtools.util.CloseableIterator;
@@ -28,6 +27,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.stream.IGVSeekableBufferedStream;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.igv.util.stream.SeekablePicardStream;
 
@@ -138,7 +138,7 @@ public class BAMHttpReader implements AlignmentReader {
     public CloseableIterator<Alignment> query(String sequence, int start, int end, boolean contained) {
         try {
             if (reader == null) {
-                SeekableStream ss = new SeekableBufferedStream(getSeekableStream(url));
+                SeekableStream ss = new IGVSeekableBufferedStream(getSeekableStream(url));
                 reader = new SAMFileReader(ss, indexFile, false);
             }
             CloseableIterator<SAMRecord> iter = reader.query(sequence, start + 1, end, contained);
