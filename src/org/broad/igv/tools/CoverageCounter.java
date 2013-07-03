@@ -729,9 +729,13 @@ public class CoverageCounter {
 
             int dataSpan = end - start;
 
-            if (chr == null || !chr.equals(lastChr) || dataSpan != span) {
-                span = dataSpan;
+            //Start of file
+            if(lastChr == null){
                 outputHeader(chr);
+            }else if (!chr.equals(lastChr) || dataSpan != span) {
+                //Changing chromosomes
+                span = dataSpan;
+                outputStepLine(chr);
             }
 
             pw.print(start + 1);
@@ -750,15 +754,33 @@ public class CoverageCounter {
 
         }
 
-        private void outputHeader(String chr) {
-            //Write label column
-            String labels = "Pos";
-            for (String s : getTrackNames("")) {
-                labels += "," + s;
-            }
+        private void outputTrackLine(){
             pw.println("track type=wiggle_0");
-            pw.println("#Columns: " + labels);
+        }
+
+        /**
+         * If column labels non-standard we output what they are
+         * If they are standard WIG, we output nothing
+         */
+        private void outputColumnLabelLine(){
+            String[] trackNames = getTrackNames("");
+            if(trackNames.length != 1){
+                String labels = "Pos";
+                for (String s : trackNames) {
+                    labels += "," + s;
+                }
+                pw.println("#Columns: " + labels);
+            }
+        }
+
+        private void outputStepLine(String chr){
             pw.println("variableStep chrom=" + chr + " span=" + span);
+        }
+
+        private void outputHeader(String chr) {
+            outputTrackLine();
+            outputColumnLabelLine();
+            outputStepLine(chr);
         }
 
     }

@@ -76,6 +76,37 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
     }
 
     @Test
+    public void testCountBEDoutWigCheckBW() throws Exception {
+        String inputFile = TestUtils.DATA_DIR + "bed/test2.bed";
+        String fullout = TestUtils.TMP_OUTPUT_DIR + "twig.wig";
+        String input = "count " + inputFile + " " + fullout + " " + hg18id;
+        String[] args = input.split("\\s+");
+        igvTools.run(args);
+
+        //Check file
+        File outFile = new File(fullout);
+        assertTrue(outFile.exists());
+        assertTrue(outFile.canRead());
+
+        WiggleParser parser = new WiggleParser(new ResourceLocator(fullout));
+        WiggleDataset wgs = parser.parse();
+        assertEquals(3, wgs.getChromosomes().length);
+        for(String chr: new String[]{"chr1", "chr3", "chr7"}){
+            assertNotNull(wgs.getData(null, chr));
+        }
+
+        BufferedReader reader = new BufferedReader(new FileReader(outFile));
+        String line = reader.readLine();
+        assertTrue(line.contains("wiggle_0"));
+        //These shouldn't be present in the rest of the file
+        while((line = reader.readLine()) != null){
+            assertFalse(line.startsWith("#"));
+            assertFalse(line.contains("wiggle_0"));
+        }
+
+    }
+
+    @Test
     public void testCountBEDstdoutWig() throws Exception {
         String inputFile = TestUtils.DATA_DIR + "bed/Unigene.sample.sorted.bed";
 
@@ -263,6 +294,8 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
         float tmpsum;
         List<Float> sums = new ArrayList<Float>();
         while ((line = reader.readLine()) != null && sums.size() < MAX_LINES_CHECK) {
+            //Skip header lines
+            if(line.startsWith("#") || line.contains("Step") || line.contains("wiggle_0")) continue;
             try {
                 String[] tokens = line.split("\\t");
                 tmpsum = 0;
