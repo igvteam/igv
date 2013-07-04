@@ -117,7 +117,7 @@ public class BBFileReader {
 
         log.debug("Opening BBFile source  " + path);
 
-        fis = new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getStreamFor(path), 64000);
+        fis = new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getStreamFor(path), 128000);
 
         // read in file header
         fileOffset = BBFILE_HEADER_OFFSET;

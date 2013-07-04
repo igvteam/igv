@@ -172,9 +172,10 @@ public class IGVSeekableBufferedStream extends SeekableStream {
             }
 
             int bufferOffset = (int) (position - bufferStartPosition);
-            arraycopy(buffer, bufferOffset, b, 0, len);
-            position += len;
-            return len;
+            int bytesCopied = Math.min(len, bufferSize - bufferOffset);
+            arraycopy(buffer, bufferOffset, b, 0, bytesCopied);
+            position += bytesCopied;
+            return bytesCopied;
         }
     }
 
