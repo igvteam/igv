@@ -974,6 +974,17 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         boolean flagUnmappedPairs;
         @XmlAttribute
         boolean showAllBases;
+
+        public void setShowAllBases(boolean showAllBases) {
+            this.showAllBases = showAllBases;
+            if(showAllBases) this.showMismatches = false;
+        }
+
+        public void setShowMismatches(boolean showMismatches) {
+            this.showMismatches = showMismatches;
+            if(showMismatches) this.showAllBases = false;
+        }
+
         boolean showMismatches = true;
         private boolean computeIsizes;
         @XmlAttribute
@@ -1189,8 +1200,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             addSeparator();
             addShadeBaseByMenuItem();
-            addShowMismatchesMenuItem();
-            addShowAllBasesMenuItem();
+            JMenuItem misMatchesItem = addShowMismatchesMenuItem();
+            JMenuItem showAllItem = addShowAllBasesMenuItem();
+
+            misMatchesItem.addActionListener(new Deselector(misMatchesItem, showAllItem));
+            showAllItem.addActionListener(new Deselector(showAllItem, misMatchesItem));
 
             addSeparator();
             addViewAsPairsMenuItem();
@@ -1719,7 +1733,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             add(item);
         }
 
-        public void addShowAllBasesMenuItem() {
+        public JMenuItem addShowAllBasesMenuItem() {
             // Change track height by attribute
             final JMenuItem item = new JCheckBoxMenuItem("Show all bases");
 
@@ -1731,14 +1745,15 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             item.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
-                    renderOptions.showAllBases = item.isSelected();
+                    renderOptions.setShowAllBases(item.isSelected());
                     refresh();
                 }
             });
             add(item);
+            return item;
         }
 
-        public void addShowMismatchesMenuItem() {
+        public JMenuItem addShowMismatchesMenuItem() {
             // Change track height by attribute
             final JMenuItem item = new JCheckBoxMenuItem("Show mismatched bases");
 
@@ -1747,14 +1762,15 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             item.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
-                    renderOptions.showMismatches = item.isSelected();
+                    renderOptions.setShowMismatches(item.isSelected());
                     refresh();
                 }
             });
             add(item);
+            return item;
         }
 
-        //        public void addCoverageDepthMenuItem() {
+//        public void addCoverageDepthMenuItem() {
 //            // Change track height by attribute
 //            final JMenuItem item = new JCheckBoxMenuItem("Set maximum coverage depth ...");
 //            item.addActionListener(new ActionListener() {
@@ -2061,6 +2077,26 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
     }
 
+    /**
+     * Listener for deselecting one component when another is selected
+     */
+    private static class Deselector implements ActionListener{
+
+        private JMenuItem toDeselect;
+        private JMenuItem parent;
+
+        Deselector(JMenuItem parent, JMenuItem toDeselect){
+            this.parent = parent;
+            this.toDeselect = toDeselect;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if(this.parent.isSelected()){
+                this.toDeselect.setSelected(false);
+            }
+        }
+    }
     /**
      * if neither forward nor reverse, create 2 charts in one
      */
