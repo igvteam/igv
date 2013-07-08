@@ -151,7 +151,7 @@ public class ResourceLocator {
             return type;
         } else {
 
-            String typeString = path;
+            String typeString = path.toLowerCase();
             if (path.startsWith("http://") || path.startsWith("https://")) {
                 try {
                     URL url = new URL(path);
