@@ -40,6 +40,8 @@ public class IGVSeekableFTPStream extends SeekableStream {
     FTPClient ftp = null;
     private String source;
 
+    private long length = -1;
+
     public IGVSeekableFTPStream(URL url) throws IOException {
         this.source = url.toExternalForm();
         this.userInfo = url.getUserInfo();
@@ -57,7 +59,7 @@ public class IGVSeekableFTPStream extends SeekableStream {
     }
 
     public boolean eof() throws IOException {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return this.position() >= this.length();
     }
 
     @Override
@@ -66,7 +68,22 @@ public class IGVSeekableFTPStream extends SeekableStream {
     }
 
     public long length() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        if(this.length < 0){
+            this.length = getLength();
+        }
+        return this.length;
+    }
+
+    private long getLength(){
+        try {
+            FTPReply reply = ftp.size(path);
+            if (reply.isSuccess()) {
+                return Long.parseLong(reply.getReplyString());
+            }
+        } catch (IOException e) {
+            log.error("Error getting length. " + e.getMessage(), e);
+        }
+        return -1;
     }
 
 

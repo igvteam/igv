@@ -36,7 +36,7 @@ public class BigWigIteratorTest extends AbstractHeadlessTest{
     @Test
     public void iterateSpeedTestRemote() throws Exception{
         String path = "ftp://ftp.broadinstitute.org/pub/igv/TEST/dummy_var_sample.bigwig";
-        int nTrials = 10;
+        int nTrials = 50;
         iterateSpeedTst(path, nTrials, 2, 5);
     }
 
