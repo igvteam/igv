@@ -11,7 +11,7 @@
 
 package org.broad.igv.feature.tribble;
 
-import com.google.common.base.Predicate;
+import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import org.apache.commons.lang.StringUtils;
 import org.broad.igv.AbstractHeadlessTest;
@@ -41,18 +41,18 @@ public class IGVBEDCodecTest extends AbstractHeadlessTest {
         BEDStringSupplier supplier = new BEDStringSupplier(nTrials);
         final IGVBEDCodec codec = new IGVBEDCodec();
 
-        Predicate<String> decodePredicate = new Predicate<String>() {
+        Function<String, Void> decodeFunc = new Function<String, Void>(){
             @Override
-            public boolean apply(String input) {
+            public Void apply(String input) {
                 BasicFeature feat = codec.decode(input);
-                return true;
+                return null;
             }
         };
 
         supplier.reset();
         String jVersion = System.getProperty(Globals.JAVA_VERSION_STRING);
         System.out.println("\nIGVBEDCodec.decode. java version " + jVersion);
-        long[] times = TestUtils.timeMethod(supplier, decodePredicate, nTrials);
+        long[] times = TestUtils.timeMethod(supplier, decodeFunc, nTrials);
         //Calculate average (in nanoseconds)
         double average = TestUtils.average(times);
         long median = times[times.length / 2];
@@ -79,15 +79,15 @@ public class IGVBEDCodecTest extends AbstractHeadlessTest {
 
         final TrackLoader loader = new TrackLoader();
 
-        Predicate<String> loadFile = new Predicate<String>() {
+        Function<String, Void> loadFileFunc = new Function<String, Void>() {
             @Override
-            public boolean apply(String input) {
+            public Void apply(String input) {
                 List<Track> newTrack = loader.load(new ResourceLocator(path), genome);
-                return true;
+                return null;
             }
         };
 
-        TestUtils.timeMethod(supplier, loadFile, 1);
+        TestUtils.timeMethod(supplier, loadFileFunc, 1);
     }
 
     private class BEDStringSupplier implements Supplier<String> {

@@ -11,7 +11,7 @@
 
 package org.broad.igv.tools.sort;
 
-import com.google.common.base.Predicate;
+import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.genome.ChromosomeNameComparator;
@@ -146,19 +146,19 @@ public class SorterTest extends AbstractHeadlessTest {
             }
         };
 
-        Predicate<Sorter> predicate = new Predicate<Sorter>() {
+        Function<Sorter, Void> func = new Function<Sorter, Void>() {
             @Override
-            public boolean apply(Sorter input) {
+            public Void apply(Sorter input) {
                 try {
                     input.run();
                 } catch (IOException e) {
-                    return false;
+                    e.printStackTrace();
                 }
-                return true;
+                return null;
             }
         };
 
-        long[] times = TestUtils.timeMethod(supplier, predicate, nTrials);
+        long[] times = TestUtils.timeMethod(supplier, func, nTrials);
     }
 
 }

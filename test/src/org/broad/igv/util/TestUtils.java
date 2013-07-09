@@ -11,7 +11,7 @@
 
 package org.broad.igv.util;
 
-import com.google.common.base.Predicate;
+import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import net.sf.samtools.util.ftp.FTPClient;
 import org.broad.igv.Globals;
@@ -294,7 +294,7 @@ public class TestUtils {
      * @return The runtime, in nanoseconds, of each call of predicate with input of supplier.
      *         Array is sorted ascending
      */
-    public static <T> long[] timeMethod(Supplier<T> supplier, Predicate<T> predicate, int nTrials) {
+    public static <T> long[] timeMethod(Supplier<T> supplier, Function<T, Void> predicate, int nTrials) {
         long total = 0;
         long[] times = new long[nTrials];
         System.gc();
@@ -320,7 +320,7 @@ public class TestUtils {
         double average = (total * 1.0 / nTrials);
         double stdev = -1;
         try {
-            stdev(times, (long) average);
+            stdev = stdev(times, (long) average);
         } catch (ArithmeticException e) {
             //pass
         }
@@ -367,7 +367,7 @@ public class TestUtils {
 
             long endTime = System.nanoTime();
             benchmarkTime = endTime - startTime;
-            System.out.println("Benchmark Time (ns): " + benchmarkTime);
+            System.out.println("Benchmark Time (s): " + ((double) benchmarkTime)/1e9d);
         }
         return benchmarkTime;
     }

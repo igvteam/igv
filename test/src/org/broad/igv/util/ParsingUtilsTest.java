@@ -11,7 +11,7 @@
 
 package org.broad.igv.util;
 
-import com.google.common.base.Predicate;
+import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import junit.framework.Assert;
 import org.broad.igv.AbstractHeadlessTest;
@@ -208,23 +208,23 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
         final char cdelim = '\t';
         final String sdelim = String.valueOf(cdelim);
 
-        Predicate<String> patternSplitPredicate = new Predicate<String>() {
+        Function<String, Void> patternSplitPredicate = new Function<String, Void>() {
             @Override
-            public boolean apply(String input) {
+            public Void apply(String input) {
                 String[] tokens = Globals.tabPattern.split(input);
-                return true;
+                return null;
             }
         };
 
         //ParsingUtils.split seems to be about 2x as fast, that is
         //takes 1/2 the time
-        Predicate<String> parsingUtilsPredicate = new Predicate<String>() {
+        Function<String, Void> parsingUtilsPredicate = new Function<String, Void>() {
             String[] buffer = new String[20];
 
             @Override
-            public boolean apply(String input) {
+            public Void apply(String input) {
                 int count = org.broad.tribble.util.ParsingUtils.split(input, buffer, cdelim);
-                return true;
+                return null;
             }
         };
 
@@ -245,9 +245,9 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
         final char cdelim = '\t';
         final String sdelim = String.valueOf(cdelim);
 
-        Predicate<String[]> stringBuilderPredicate = new Predicate<String[]>() {
+        Function<String[], Void> stringBuilderFunc = new Function<String[], Void>() {
             @Override
-            public boolean apply(String[] input) {
+            public Void apply(String[] input) {
                 StringBuilder stringBuilder = new StringBuilder();
                 for (int el = 0; el < input.length; el++) {
                     stringBuilder.append(input[el]);
@@ -255,15 +255,15 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
                         stringBuilder.append(sdelim);
                     }
                 }
-                return true;
+                return null;
             }
         };
 
         //ParsingUtils.split seems to be about 2x as fast, that is
         //takes 1/2 the time
-        Predicate<String[]> stringAddPred = new Predicate<String[]>() {
+        Function<String[], Void> stringAddFunc = new Function<String[], Void>() {
             @Override
-            public boolean apply(String[] input) {
+            public Void apply(String[] input) {
                 String result = "";
 
                 for (int el = 0; el < input.length; el++) {
@@ -273,7 +273,7 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
                     }
                 }
 
-                return true;
+                return null;
 
                 //String res = org.broad.tribble.util.ParsingUtils.join(sdelim, input);
                 //return true;
@@ -282,11 +282,11 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
 
         supplier.reset();
         System.out.println("\nStringBuilder");
-        TestUtils.timeMethod(supplier, stringBuilderPredicate, nTrials);
+        TestUtils.timeMethod(supplier, stringBuilderFunc, nTrials);
 
         supplier.reset();
         System.out.println("\nStringAdd");
-        TestUtils.timeMethod(supplier, stringAddPred, nTrials);
+        TestUtils.timeMethod(supplier, stringAddFunc, nTrials);
     }
 
     private class TestStringArraySupplier implements Supplier<String[]> {
