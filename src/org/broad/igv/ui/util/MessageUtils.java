@@ -69,6 +69,7 @@ public class MessageUtils {
             content.setContentType("text/html");
             content.setText(message);
             content.setBackground(background);
+            content.setEditable(false);
             JOptionPane.showMessageDialog(parent, content);
         }
     }

@@ -90,8 +90,8 @@ public class ResourceLocator {
     /**
      * Constructor for remote files
      * <p/>
-     * Catch references to broadinstitute.org here.  The "broadinstitute" substition
-     * is neccessary for stored session files with the old url.
+     * Catch references to broadinstitute.org here.  The "broadinstitute" substitution
+     * is necessary for stored session files with the old url.
      *
      * @param serverURL
      * @param path
