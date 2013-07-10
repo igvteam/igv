@@ -185,88 +185,31 @@ public class TrackGroup {
      * @param ascending
      */
 
-    public void sortByAttributes(final String attributeNames[],
+    public void sortByAttributes(final String[] attributeNames,
                                  final boolean[] ascending) {
         if ((tracks != null) && !tracks.isEmpty()) {
-            Comparator comparator = new Comparator() {
+            Comparator<Track> comparator = new AttributeComparator(attributeNames, ascending);
 
-                public int compare(Object arg0, Object arg1) {
-                    Track t1 = (Track) arg0;
-                    Track t2 = (Track) arg1;
-
-                    // Loop through the attributes in order (primary, secondary, tertiary, ...).  The
-                    // first attribute to yield a non-zero comparison wins
-                    for (int i = 0; i < attributeNames.length; i++) {
-                        String attName = attributeNames[i];
-
-                        if (attName != null) {
-                            String value1 = t1.getAttributeValue(attName);
-
-                            if (value1 == null) {
-                                value1 = "";
-                            }
-
-                            value1 = value1.toLowerCase();
-                            String value2 = t2.getAttributeValue(attName);
-
-                            if (value2 == null) {
-                                value2 = "";
-                            }
-                            value2 = value2.toLowerCase();
-
-                            boolean isNumeric = AttributeManager.getInstance().isNumeric(attName);
-
-                            int c = 0;
-                            if (isNumeric) {
-                                double d1;
-                                try {
-                                    d1 = Double.parseDouble(value1);
-                                } catch (NumberFormatException e) {
-                                    d1 = Double.MIN_VALUE;
-                                }
-                                double d2;
-                                try {
-                                    d2 = Double.parseDouble(value2);
-                                } catch (NumberFormatException e) {
-                                    d2 = Double.MIN_VALUE;
-                                }
-                                c = Double.compare(d1, d2);
-                            } else {
-                                c = value1.compareTo(value2);
-                            }
-
-                            if (c != 0) {
-                                return ascending[i] ? c : -c;
-                            }
-
-                        }
-                    }
-
-                    // All compares are equal
-                    return 0;
-                }
-            };
-
-            // Step 1,  remove non-sortable tracks and remember position
-            List<Track> unsortableTracks = new ArrayList();
-            Map<Track, Integer> trackIndeces = new HashMap();
+            // Step 1, remove non-sortable tracks and remember position
+            List<Track> nonsortableTracks = new ArrayList<Track>();
+            Map<Track, Integer> trackIndices = new HashMap<Track, Integer>();
             for (int i = tracks.size() - 1; i >= 0; i--) {
                 if (!tracks.get(i).isSortable()) {
                     Track t = tracks.remove(i);
-                    unsortableTracks.add(t);
-                    trackIndeces.put(t, i);
+                    nonsortableTracks.add(t);
+                    trackIndices.put(t, i);
 
                 }
             }
 
-            // Step 2,  sort "sortable" tracks
+            // Step 2, sort "sortable" tracks
             Collections.sort(tracks, comparator);
 
-            // Step 3, put unortable tracks back in original order
-            if (unsortableTracks.size() > 0) {
-                for (int i = unsortableTracks.size() - 1; i >= 0; i--) {
-                    Track t = unsortableTracks.get(i);
-                    int index = trackIndeces.get(t);
+            // Step 3, put non-sortable tracks back in original order
+            if (nonsortableTracks.size() > 0) {
+                for (int i = nonsortableTracks.size() - 1; i >= 0; i--) {
+                    Track t = nonsortableTracks.get(i);
+                    int index = trackIndices.get(t);
                     tracks.add(index, t);
                 }
             }
@@ -436,5 +379,72 @@ public class TrackGroup {
         igv.clearSelections();
         igv.setTrackSelections(new HashSet(tracks));
 
+    }
+
+    /**
+     * Sort tracks by attribute value
+     */
+    private class AttributeComparator implements Comparator<Track> {
+
+        private final String[] attributeNames;
+        private final boolean[] ascending;
+
+        private AttributeComparator(String[] attributeNames, boolean[] ascending) {
+            assert attributeNames.length == ascending.length;
+            this.attributeNames = attributeNames;
+            this.ascending = ascending;
+        }
+
+        private String getAttributeValue(Track track, String attName) {
+            String value = track.getAttributeValue(attName);
+
+            if (value == null) {
+                value = "";
+            }
+
+            return value.toLowerCase();
+        }
+
+        public int compare(Track t1, Track t2) {
+            // Loop through the attributes in order (primary, secondary, tertiary, ...).  The
+            // first attribute to yield a non-zero comparison wins
+            for (int i = 0; i < attributeNames.length; i++) {
+                String attName = attributeNames[i];
+
+                if (attName != null) {
+                    String value1 = getAttributeValue(t1, attName);
+                    String value2 = getAttributeValue(t2, attName);
+
+                    boolean isNumeric = AttributeManager.getInstance().isNumeric(attName);
+
+                    int c = 0;
+                    if (isNumeric) {
+                        double d1;
+                        try {
+                            d1 = Double.parseDouble(value1);
+                        } catch (NumberFormatException e) {
+                            d1 = Double.MIN_VALUE;
+                        }
+                        double d2;
+                        try {
+                            d2 = Double.parseDouble(value2);
+                        } catch (NumberFormatException e) {
+                            d2 = Double.MIN_VALUE;
+                        }
+                        c = Double.compare(d1, d2);
+                    } else {
+                        c = value1.compareTo(value2);
+                    }
+
+                    if (c != 0) {
+                        return ascending[i] ? c : -c;
+                    }
+
+                }
+            }
+
+            // All compares are equal
+            return 0;
+        }
     }
 }
