@@ -37,7 +37,6 @@ import org.broad.igv.util.collections.LRUCache;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.net.URLDecoder;
 import java.util.*;
 import java.util.List;
 
@@ -409,7 +408,7 @@ public class CommandExecutor {
         // Must decode remote file paths, but leave local paths as is
         for (int i = 0; i < files.length; i++) {
             if (FileUtils.isRemote(files[i])) {
-                files[i] = URLDecoder.decode(files[i], "UTF-8");
+                files[i] = StringUtils.decodeURL(files[i]);
             }
         }
 
@@ -444,13 +443,7 @@ public class CommandExecutor {
             if (f.endsWith(".xml") || f.endsWith(".php") || f.endsWith(".php3") || f.endsWith(".session")) {
                 sessionPaths.add(f);
             } else {
-                ResourceLocator rl;
-                if (HttpUtils.isURL(f)) {
-                    String fDecoded = StringUtils.decodeURL(f);
-                    rl = new ResourceLocator(fDecoded);
-                } else {
-                    rl = new ResourceLocator(f);
-                }
+                ResourceLocator rl = new ResourceLocator(f);
 
                 if (rl.isLocal()) {
                     File file = new File(rl.getPath());

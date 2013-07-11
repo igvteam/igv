@@ -17,6 +17,8 @@ import java.awt.datatransfer.StringSelection;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
@@ -170,6 +172,35 @@ public class StringUtils {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Attempts to encode only the query portion of a URL,
+     * ignoring delimiter characters. If it looks like it's already
+     * URL-encoded, does nothing
+     * @param url
+     * @return
+     */
+    public static URL encodeURLQueryString(URL url) throws MalformedURLException{
+
+        String[] parts = url.toExternalForm().split("\\?", 2);
+        //If there are percent signs we assume it's already url encoded
+        if (parts.length > 1 && !parts[1].contains("%")) {
+            String queryPart = parts[1];
+            String[] params = queryPart.split("&");
+            String[] encParms = new String[params.length];
+            int ii = 0;
+            for (String kv : params) {
+                String[] kvs = kv.split("\\=", 2);
+                String encString = String.format("%s=%s", StringUtils.encodeURL(kvs[0]), StringUtils.encodeURL(kvs[1]));
+                encParms[ii++] = encString;
+            }
+            String encQuery = org.apache.commons.lang.StringUtils.join(encParms, "&");
+            String newPath = parts[0] + "?" + encQuery;
+            url = new URL(newPath);
+        }
+
+        return url;
     }
 
     /**
