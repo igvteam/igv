@@ -13,8 +13,11 @@ package org.broad.igv.batch;
 
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.AbstractHeadedTest;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.StringUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -26,6 +29,7 @@ import java.net.Socket;
 import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author jacob
@@ -80,6 +84,24 @@ public class CommandListenerTest extends AbstractHeadedTest {
         //BufferedReader in = new BufferedReader(new InputStreamReader(is));
 
         assertEquals(genId, GenomeManager.getInstance().getGenomeId());
+    }
+
+    @Test
+    public void testLoadURLLink() throws Exception{
+        String urlPath = StringUtils.decodeURL(CommandExecutorTest.urlPathSpaces);
+        String name = "mytestfile";
+        String cmd = buildRootURL() + "load?file=" + urlPath + "&name=" + name;
+        HttpUtils.getInstance().openConnectionStream(new URL(cmd));
+
+        boolean found = false;
+        for(Track t: IGV.getInstance().getAllTracks()){
+            if(t.getName().equals(name)){
+                found = true;
+                break;
+            }
+        }
+        assertTrue("Track not loaded", found);
+
     }
 
 
