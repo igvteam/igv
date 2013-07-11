@@ -90,7 +90,7 @@ public class BAMFileReader implements AlignmentReader {
     }
 
     public boolean hasIndex() {
-        return reader.getIndex() != null;
+        return reader.hasIndex();
     }
 
     public CloseableIterator<Alignment> query(String sequence, int start, int end, boolean contained) {
