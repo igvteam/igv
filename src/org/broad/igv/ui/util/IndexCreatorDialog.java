@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 /*
@@ -26,10 +19,18 @@
  *
  * Created on Feb 11, 2009, 1:45:19 PM
  */
-package org.broad.igv.sam.reader;
+package org.broad.igv.ui.util;
 
-import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.ui.util.UIUtilities;
+import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.tribble.CodecFactory;
+import org.broad.igv.sam.reader.AlignmentIndexer;
+import org.broad.igv.sam.reader.FeatureIndex;
+import org.broad.igv.tools.IgvTools;
+import org.broad.tribble.FeatureCodec;
+import org.broad.tribble.TribbleException;
+import org.broad.tribble.index.Index;
+import org.broad.tribble.index.IndexFactory;
 
 import javax.swing.*;
 import java.beans.PropertyChangeEvent;
@@ -37,36 +38,68 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 
 /**
- * @author jrobinso
+ * Dialog for asking the user if they want to create an index, and
+ * displaying progress if they do.
+ * @author jacob
  */
-public class SamIndexCreatorDialog extends javax.swing.JDialog {
+public class IndexCreatorDialog extends JDialog {
 
-    File samFile;
+    File file;
     File idxFile;
     IndexWorker worker;
 
+    FileType fileType;
+    private enum FileType{
+        SAM,
+        VCF
+    }
+
+    static String introText = "An index file for @filename could not " +
+            "be located. An index is required to view @filetype files in IGV.  " +
+            "Click \"Go\" to create one now.";
+
     /**
-     * Creates new form SamIndexCreatorDialog
+     * Creates new form IndexCreatorDialog
      */
-    public SamIndexCreatorDialog(java.awt.Frame parent, boolean modal,
-                                 File samFile,
-                                 File idxFile) {
+    public IndexCreatorDialog(java.awt.Frame parent, boolean modal,
+                              File file,
+                              File idxFile) {
         super(parent, modal);
         initComponents();
 
-        this.samFile = samFile;
+        this.file = file;
         this.idxFile = idxFile;
-        int timeEst = 1 + (int) Math.ceil(samFile.length() / 1000000000.0);
-        String txt = introText.replace("@filename", samFile.getName()).replace(
-                "@time", String.valueOf(timeEst));
+        this.determineFileType(file);
+        if(this.fileType == null) throw new IllegalArgumentException("Cannot determine file type for " + file.getAbsolutePath());
+
+        int timeEst = 1 + (int) Math.ceil(file.length() / 1000000000.0);
+
+        String txt = introText.replace("@filename", file.getName()).replace(
+                "@time", String.valueOf(timeEst)).replace("@filetype", this.fileType.name());
+
         this.introTextPane.setText(txt);
 
         this.introTextPane.setBorder(BorderFactory.createEmptyBorder());
 
-        worker = new IndexWorker();
+        switch (this.fileType){
+            case SAM:
+                worker = new SamIndexWorker();
+                break;
+            case VCF:
+                worker = new VCFIndexWorker();
+                break;
+        }
     }
 
-    public FeatureIndex getIndex() {
+    private void determineFileType(File file){
+        for(FileType ft: FileType.values()){
+            if(file.getName().toLowerCase().endsWith(ft.name().toLowerCase())){
+                this.fileType = ft;
+            }
+        }
+    }
+
+    public Object getIndex() {
         if (worker == null || !worker.isDone()) {
             return null;
         } else {
@@ -79,13 +112,37 @@ public class SamIndexCreatorDialog extends javax.swing.JDialog {
         }
     }
 
-    public class IndexWorker extends SwingWorker<FeatureIndex, Void> {
-
+    public class SamIndexWorker extends IndexWorker<FeatureIndex>{
         @Override
         protected FeatureIndex doInBackground() throws Exception {
-            AlignmentIndexer indexer = AlignmentIndexer.getInstance(samFile, progressBar, this);
+            AlignmentIndexer indexer = AlignmentIndexer.getInstance(file, progressBar, this);
             return indexer.createSamIndex(idxFile, 16000);
         }
+    }
+
+    private class VCFIndexWorker extends IndexWorker<Index>{
+        @Override
+        protected Index doInBackground() throws Exception {
+            int binSize = IgvTools.LINEAR_BIN_SIZE;
+            FeatureCodec codec = CodecFactory.getCodec(file.getAbsolutePath(), GenomeManager.getInstance().getCurrentGenome());
+            if (codec != null) {
+                try {
+                    return IndexFactory.createLinearIndex(file, codec, binSize);
+                } catch (TribbleException.MalformedFeatureFile e) {
+                    StringBuffer buf = new StringBuffer();
+                    buf.append("<html>Files must be sorted by start position prior to indexing.<br>");
+                    buf.append(e.getMessage());
+                    buf.append("<br><br>Note: igvtools can be used to sort the file, select \"File > Run igvtools...\".");
+                    MessageUtils.showMessage(buf.toString());
+                }
+            } else {
+                throw new DataLoadException("Unknown File Type", file.getAbsolutePath());
+            }
+            return null;
+        }
+    }
+
+    public abstract class IndexWorker<I> extends SwingWorker<I, Void> {
 
         @Override
         protected void done() {
@@ -147,15 +204,15 @@ public class SamIndexCreatorDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        progressBar = new javax.swing.JProgressBar();
-        timeRemainingLabel = new javax.swing.JLabel();
-        goButton = new javax.swing.JButton();
-        cancelButton = new javax.swing.JButton();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        introTextPane = new javax.swing.JTextPane();
+        jLabel1 = new JLabel();
+        progressBar = new JProgressBar();
+        timeRemainingLabel = new JLabel();
+        goButton = new JButton();
+        cancelButton = new JButton();
+        jScrollPane2 = new JScrollPane();
+        introTextPane = new JTextPane();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         jLabel1.setText("Estimated time remaining: ");
 
@@ -174,7 +231,7 @@ public class SamIndexCreatorDialog extends javax.swing.JDialog {
         });
 
         introTextPane.setBackground(getParent().getBackground());
-        introTextPane.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        introTextPane.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
         introTextPane.setEditable(false);
         introTextPane.setText("An index file for [filename goes here] could not be located.  An index is required to view alignments in IGV.  Click \"Go\" to create one now.  This will take approximately [time goes here] to complete.");
         introTextPane.setFocusable(false);
@@ -248,8 +305,8 @@ public class SamIndexCreatorDialog extends javax.swing.JDialog {
             public void run() {
                 File samFile = new File("/Users/jrobinso/IGV/Sam/30DWM.7.sam");
                 File idxFile = new File("/Users/jrobinso/IGV/Sam/30DWM.7.sai");
-                SamIndexCreatorDialog dialog = new SamIndexCreatorDialog(
-                        new javax.swing.JFrame(), true,
+                IndexCreatorDialog dialog = new IndexCreatorDialog(
+                        new JFrame(), true,
                         samFile, idxFile);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
 
@@ -264,15 +321,14 @@ public class SamIndexCreatorDialog extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton cancelButton;
-    private javax.swing.JButton goButton;
-    private javax.swing.JTextPane introTextPane;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JProgressBar progressBar;
-    private javax.swing.JLabel timeRemainingLabel;
+    private JButton cancelButton;
+    private JButton goButton;
+    private JTextPane introTextPane;
+    private JLabel jLabel1;
+    private JScrollPane jScrollPane2;
+    private JProgressBar progressBar;
+    private JLabel timeRemainingLabel;
     // End of variables declaration//GEN-END:variables
-    static String introText = "An index file for @filename could not " +
-            "be located. An index is required to view alignments in IGV.  " +
-            "Click \"Go\" to create one now.";
+
+
 }

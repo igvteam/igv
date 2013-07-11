@@ -13,23 +13,22 @@ package org.broad.igv.sam.reader;
 
 import net.sf.picard.sam.BuildBamIndex;
 import net.sf.samtools.SAMFileReader;
+import org.broad.igv.ui.util.IndexCreatorDialog;
 
 import javax.swing.*;
 import java.io.File;
 
 /**
  * Created by IntelliJ IDEA.
- * User: jrobinso
- * Date: Dec 6, 2009
- * Time: 7:42:01 PM
- * To change this template use File | Settings | File Templates.
+ * @author jrobinso
+ * @since: Dec 6, 2009
  */
 public class SamIndexer extends AlignmentIndexer {
 
     final static int FLAG_COL = 1;
     final static int READ_UNMAPPED_FLAG = 0x4;
 
-    public SamIndexer(File samFile, JProgressBar progressBar, SamIndexCreatorDialog.IndexWorker worker) {
+    public SamIndexer(File samFile, JProgressBar progressBar, IndexCreatorDialog.SamIndexWorker worker) {
         super(samFile, progressBar, worker);
     }
 

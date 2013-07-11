@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.IndexCreatorDialog;
 import org.broad.igv.util.FileUtils;
 
 import java.io.File;
@@ -67,10 +68,10 @@ public class SamUtils {
         }
 
         if (!Globals.isHeadless()) {
-            SamIndexCreatorDialog dialog = new SamIndexCreatorDialog(IGV.getMainFrame(), true, samFile, newIdxFile);
+            IndexCreatorDialog dialog = new IndexCreatorDialog(IGV.getMainFrame(), true, samFile, newIdxFile);
             dialog.setLocationRelativeTo(IGV.getMainFrame());
             dialog.setVisible(true);
-            return dialog.getIndex();
+            return (FeatureIndex) dialog.getIndex();
         } else {
             AlignmentIndexer indexer = AlignmentIndexer.getInstance(samFile, null, null);
             FeatureIndex index = null;
