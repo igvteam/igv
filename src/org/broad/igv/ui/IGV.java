@@ -2412,7 +2412,7 @@ public class IGV {
             boolean portEnabled = preferenceManager.getAsBoolean(PreferenceManager.PORT_ENABLED);
             String portString = igvArgs.getPort();
             if (portEnabled || portString != null) {
-                // Command listner thread
+                // Command listener thread
                 int port = preferenceManager.getAsInt(PreferenceManager.PORT_NUMBER);
                 if (portString != null) {
                     port = Integer.parseInt(portString);
