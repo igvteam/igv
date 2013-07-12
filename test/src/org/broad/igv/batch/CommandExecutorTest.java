@@ -280,6 +280,17 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     }
 
     @Test
+    public void testLoadFileSpacesPerc() throws Exception{
+        tstLoadFileSpaces(fileNamePerc);
+    }
+
+    @Test
+    public void testLoadFileSpacesPlus() throws Exception{
+        tstLoadFileSpaces(fileNamePlus);
+    }
+
+
+    @Test
     public void testLoadFileURLSpaces() throws Exception{
         tstLoadFileURLSpaces(fileName01);
     }
@@ -292,11 +303,6 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     @Test
     public void testLoadFileURLSpacesPlus() throws Exception{
         tstLoadFileURLSpaces(fileNamePlus);
-    }
-
-    @Test
-    public void testLoadFileSpacesPerc() throws Exception{
-        tstLoadFileSpaces(fileNamePerc);
     }
 
     private void tstLoadFileURLSpaces(String filename) throws Exception{

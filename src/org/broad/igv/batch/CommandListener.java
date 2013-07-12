@@ -25,8 +25,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
 import java.nio.channels.ClosedByInterruptException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class CommandListener implements Runnable {
 
@@ -39,6 +38,16 @@ public class CommandListener implements Runnable {
     private Socket clientSocket = null;
     private Thread listenerThread;
     boolean halt = false;
+
+    /**
+     * Different keys which can be used to specify a file to load
+     */
+    public static Set<String> fileParams;
+    static{
+        String[] fps = new String[]{"file", "bigDataURL", "sessionURL", "dataURL"};
+        fileParams = new LinkedHashSet<String>(Arrays.asList(fps));
+        fileParams = Collections.unmodifiableSet(fileParams);
+    }
 
     public static synchronized void start(int port) {
         listener = new CommandListener(port);
@@ -246,15 +255,10 @@ public class CommandListener implements Runnable {
             PreferenceManager.getInstance().put(PreferenceManager.IONTORRENT_SERVER, server);
         }
         if (command.equals("/load")) {
-            String file = params.get("file");
-            if (file == null) {
-                file = params.get("bigDataURL"); // <- UCSC track line
-            }
-            if (file == null) {
-                file = params.get("sessionURL");  // <- older IGV option
-            }
-            if (file == null) {
-                file = params.get("dataURL"); // <- Another UCSC option
+            String file = null;
+            for(String fp: fileParams){
+                file = params.get(fp);
+                if(file != null) break;
             }
 
             String genome = params.get("genome");
@@ -263,7 +267,6 @@ public class CommandListener implements Runnable {
             }
 
             if (genome != null) {
-                genome = URLDecoder.decode(genome, "UTF-8");
                 if (IGV.getInstance().getSelectableGenomeIDs().contains(genome)) {
                     IGV.getInstance().selectGenomeFromList(genome);
                 }
@@ -294,11 +297,8 @@ public class CommandListener implements Runnable {
                 }
 
                 String name = params.get("name");
-
                 String locus = params.get("locus");
-                if (locus != null) {
-                    locus = URLDecoder.decode(locus, "UTF-8");
-                }
+
                 result = cmdExe.loadFiles(file, locus, merge, name, params);
             } else {
                 return ("ERROR Parameter \"file\" is required");
@@ -334,8 +334,13 @@ public class CommandListener implements Runnable {
                 params.put(kv[0], null);
             } else {
                 String key = StringUtils.decodeURL(kv[0]);
-                // Special treatment of locus string, need to preserve encoding of spaces
-                String value = key.equals("locus") ? kv[1] : StringUtils.decodeURL(kv[1]);
+
+                //This might look backwards, but it isn't.
+                //Parameters must be URL encoded, including the file parameter
+                //CommandExecutor URL-decodes the file parameter sometimes, but not always
+                //So we URL-decode iff CommandExecutor doesn't
+                boolean cmdExeWillDecode = fileParams.contains(key) && CommandExecutor.needsDecode(kv[1]);
+                String value = cmdExeWillDecode ? kv[1] : StringUtils.decodeURL(kv[1]);
                 params.put(kv[0], value);
             }
         }

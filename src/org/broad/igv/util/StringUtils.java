@@ -146,8 +146,8 @@ public class StringUtils {
     /**
      * Decode according to UTF-8. In the extremely unlikely
      * event that we are running on a platform which does not
-     * support UTF-8 (it's part of the Java spec), URLDecoder.decode
-     * is used.
+     * support UTF-8 (it's part of the Java spec), a runtime
+     * exception is thrown
      *
      * @param s
      * @return

@@ -405,11 +405,9 @@ public class CommandExecutor {
             return "Error: If files is a comma-separated list, names must also be a comma-separated list of the same length";
         }
 
-        // Must decode remote file paths, but leave local paths as is
-        for (int i = 0; i < files.length; i++) {
-            if (FileUtils.isRemote(files[i])) {
-                files[i] = StringUtils.decodeURL(files[i]);
-            }
+        // Must decode URLs (local or remote), but leave local file paths only
+        for (int ii = 0; ii < files.length; ii++) {
+            files[ii] = decodeFileString(files[ii]);
         }
 
         List<ResourceLocator> fileLocators = new ArrayList<ResourceLocator>();
@@ -475,6 +473,35 @@ public class CommandExecutor {
         }
 
         return "OK";
+    }
+
+    /**
+     * If {@code fileString} is a URL and can be decoded,
+     * return the decoded version. Otherwise return the original.
+     * @param fileString
+     * @return
+     */
+    static String decodeFileString(String fileString){
+        if (needsDecode(fileString)) {
+            return StringUtils.decodeURL(fileString);
+        }else{
+            return fileString;
+        }
+    }
+
+    static boolean needsDecode(String fileString){
+        String decodedString = decodeSafe(fileString);
+        return (decodedString != null && (HttpUtils.isURL(fileString) || HttpUtils.isURL(decodedString)));
+    }
+
+    private static String decodeSafe(String string){
+        String tmp = null;
+        try{
+            tmp = StringUtils.decodeURL(string);
+        }catch (Exception e){
+            log.warn(e.getMessage());
+        }
+        return tmp;
     }
 
     /**
