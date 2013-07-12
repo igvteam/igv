@@ -11,9 +11,13 @@
 
 package org.broad.igv.util;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -70,6 +74,32 @@ public class HttpUtilsTest {
         String acceptsRangesValue = HttpUtils.getInstance().getHeaderField(url, "Accept-Ranges");
         boolean acceptsRanges = acceptsRangesValue != null && acceptsRangesValue.contains("bytes");
         assertEquals(acceptsRanges, HttpUtils.getInstance().useByteRange(url));
+    }
+
+    @Ignore
+    @Test
+    public void testReadByBlob() throws Exception{
+        String serverURL = "serverURLhere";
+
+//        String bamURL =  serverURL + "?file=CDNLtx0vjHKW19PP9E7A1zpmzSg1mrg/rw7ZkE+b8FPuoNLNNLNKyL/94CsspYExn2SAJ5Y0wgL9L2mwf/HsP4IwqsQbtAqVBLxtd2CVclTOkute7VHhzqFPJ2KCzWxUjM+Ecb5XfdGTpKAzya1dq/fAtJuIw8+NHQCPmMVbJWreQx1+6z3VKDT17Fy3RbXxL6X/CfQ/HlTcWFpQVe1p+5LgkojOVagWCImYNk/ErPzi8J2oEYPSm6ilOwDM6rGwHcO47qW8DncaPdf8ohpm/XZwAd+aAJwsqkBR689R+X175QCzmpOI07dHxuvzJ4HPlMwu2h2290QxVAJ8Ix5fVA==.bam";
+//
+//        InputStream is = HttpUtils.getInstance().openConnectionStream(new URL(bamURL));
+
+        String bedblob = StringUtils.decodeURL("c44z7H5E1gDMSm49T7NyGix051qDS7AbgCqicZ%2FpFkLobpmCim95byvYICc5VT%2Bv8Z%2FzE2gHWZkboBuME9eLxjEsfiO4bwnqZGP9fwoWXooK1LC8e3R5%2F6B9KyP9X3PR102PIApQASPfQGnYHqpBLifFPUbeRMqN%2BSxYi3h7udQJ8pli2QPEappIiOVWQ77cjJ6c0h12me6dT81fVrYT1E5CGHpnfUarIWCADRySVUfxqrwADKpnpaozMiWebh4OaWr5QfWHuG%2F%2F%2FhwVs7YxJaAR9S6pMqqfk213JofydHJjUimkv2V8tM3RJk3Q2y7CZ3Dk8X8wLiAJLfTIaXyreQ%3D%3D");
+
+        String bedURL = serverURL + "?file=" + bedblob + ".bed";
+        InputStream is = HttpUtils.getInstance().openConnectionStream(new URL(bedURL));
+
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+
+        String line = null;
+        int count = 0;
+        while((line = br.readLine()) != null){
+            System.out.println(line);
+            count++;
+        }
+        System.out.println(count + " lines read");
+
     }
 
 }
