@@ -268,6 +268,49 @@ public class CommandExecutorTest extends AbstractHeadedTest {
 
     public static final String urlPathSpaces = "ftp://ftp.broadinstitute.org/distribution/igv/TEST/cpgIslands%20with%20spaces.hg18.bed";
 
+    public static final String dirPathSpaces = TestUtils.DATA_DIR + "folder with spaces";
+    public static final String fileName01 = "test.wig";
+    public static final String fileNamePerc = "%test%2D.wig";
+    public static final String fileNamePlus = "test+wp.wig";
+
+
+    @Test
+    public void testLoadFileSpaces() throws Exception{
+        tstLoadFileSpaces(fileName01);
+    }
+
+    @Test
+    public void testLoadFileURLSpaces() throws Exception{
+        tstLoadFileURLSpaces(fileName01);
+    }
+
+    @Test
+    public void testLoadFileURLSpacesPerc() throws Exception{
+        tstLoadFileURLSpaces(fileNamePerc);
+    }
+
+    @Test
+    public void testLoadFileURLSpacesPlus() throws Exception{
+        tstLoadFileURLSpaces(fileNamePlus);
+    }
+
+    @Test
+    public void testLoadFileSpacesPerc() throws Exception{
+        tstLoadFileSpaces(fileNamePerc);
+    }
+
+    private void tstLoadFileURLSpaces(String filename) throws Exception{
+        String fileURL = "file://" + org.broad.igv.util.StringUtils.encodeURL(new File(dirPathSpaces, filename).getAbsolutePath());
+        exec.execute("load " + fileURL);
+        TestUtils.assertTrackLoaded(IGV.getInstance(), filename);
+    }
+
+    private void tstLoadFileSpaces(String filename) throws Exception{
+        File file = new File(dirPathSpaces, filename);
+        exec.execute("load \"" + file.getPath() + "\"");
+        TestUtils.assertTrackLoaded(IGV.getInstance(), filename);
+    }
+
     @Test
     public void testLoadURL() throws Exception {
         //This is mostly to ruggedize test setup. The setup may load

@@ -153,7 +153,7 @@ public class CommandListener implements Runnable {
                         sendHTTPResponse(out, null);
                     }
 
-                    // http sockets are used for one request onle
+                    // http sockets are used for one request only
                     return;
 
                 } else {

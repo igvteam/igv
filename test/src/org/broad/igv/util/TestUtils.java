@@ -18,9 +18,11 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.IgvTools;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.tribble.Feature;
 import org.broad.tribble.readers.AsciiLineReader;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.w3c.dom.Document;
 
@@ -187,6 +189,17 @@ public class TestUtils {
         assertEquals(exp.getChr(), act.getChr());
         assertEquals(exp.getStart(), act.getStart());
         assertEquals(exp.getEnd(), act.getEnd());
+    }
+
+    public static void assertTrackLoaded(IGV igv, String trackName){
+        boolean found = false;
+        for(Track t: igv.getAllTracks()){
+            if(t.getName().equals(trackName)){
+                found = true;
+                break;
+            }
+        }
+        Assert.assertTrue("Track not loaded", found);
     }
 
     /**

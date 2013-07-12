@@ -13,23 +13,24 @@ package org.broad.igv.batch;
 
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.track.Track;
 import org.broad.igv.ui.AbstractHeadedTest;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.StringUtils;
+import org.broad.igv.util.TestUtils;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author jacob
@@ -46,6 +47,19 @@ public class CommandListenerTest extends AbstractHeadedTest {
         AbstractHeadedTest.setUpClass();
     }
 
+    @Before
+    public void setUp() throws Exception{
+        super.setUp();
+        CommandListener.halt();
+        CommandListener.start(port);
+    }
+
+    @After
+    public void tearDown() throws Exception{
+        super.tearDown();
+        CommandListener.halt();
+    }
+
     private static String buildRootURL(){
         return String.format("http://localhost:%d/", port);
     }
@@ -56,12 +70,6 @@ public class CommandListenerTest extends AbstractHeadedTest {
     @Test
     public void testGenomeSocket() throws Exception{
         String locus = "chr1:1-100";
-        String gotoCmd = buildRootURL() + "goto?locus=" + locus;
-
-        //This will URLencode
-
-        //InputStream is = HttpUtils.getInstance().openConnectionStream(new URL(gotoCmd));
-        //BufferedReader in = new BufferedReader(new InputStreamReader(is));
 
         Socket socket = new Socket("localhost", port);
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
@@ -78,30 +86,93 @@ public class CommandListenerTest extends AbstractHeadedTest {
     @Test
     public void testGenomeLink() throws Exception{
         String cmd = buildRootURL() + "load?genome=" + genId;
-
-        //This will URLencode
-        InputStream is = HttpUtils.getInstance().openConnectionStream(new URL(cmd));
-        //BufferedReader in = new BufferedReader(new InputStreamReader(is));
+        connect(cmd);
 
         assertEquals(genId, GenomeManager.getInstance().getGenomeId());
     }
 
     @Test
     public void testLoadURLLink() throws Exception{
-        String urlPath = StringUtils.decodeURL(CommandExecutorTest.urlPathSpaces);
+
+        String urlPath = CommandExecutorTest.urlPathSpaces;
         String name = "mytestfile";
         String cmd = buildRootURL() + "load?file=" + urlPath + "&name=" + name;
-        HttpUtils.getInstance().openConnectionStream(new URL(cmd));
+        connect(cmd);
 
-        boolean found = false;
-        for(Track t: IGV.getInstance().getAllTracks()){
-            if(t.getName().equals(name)){
-                found = true;
-                break;
-            }
-        }
-        assertTrue("Track not loaded", found);
+        TestUtils.assertTrackLoaded(igv, name);
+    }
 
+    @Test
+    public void testLoadURLSocket() throws Exception{
+
+        String urlPath = CommandExecutorTest.urlPathSpaces;
+        String name = "mytestfile";
+
+        Socket socket = new Socket("localhost", port);
+        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+        out.println("load " + urlPath + " name=" + name);
+
+        String response = in.readLine();
+        System.out.println(response);
+
+        TestUtils.assertTrackLoaded(igv, name);
+    }
+
+    @Test
+    public void testLoadFileSpacesSocket() throws Exception{
+        tstLoadFileSocket(CommandExecutorTest.dirPathSpaces, CommandExecutorTest.fileName01);
+    }
+
+    @Test
+    public void testLoadFileSpacesPercSocket() throws Exception{
+        tstLoadFileSocket(CommandExecutorTest.dirPathSpaces, CommandExecutorTest.fileNamePerc);
+    }
+
+    private void tstLoadFileSocket(String fidir, String finame) throws Exception{
+        Socket socket = new Socket("localhost", port);
+        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+        String fileString = String.format("\"%s\"", (new File(fidir, finame)).getPath());
+        out.println("load " + fileString);
+
+        String response = in.readLine();
+        System.out.println(response);
+
+        TestUtils.assertTrackLoaded(IGV.getInstance(), finame);
+    }
+
+    @Test
+    public void testLoadFileSpacesLink() throws Exception{
+        tstLoadFileLink(CommandExecutorTest.dirPathSpaces, CommandExecutorTest.fileName01);
+    }
+
+    @Test
+    public void testLoadFileSpacesPercLink() throws Exception{
+        tstLoadFileLink(CommandExecutorTest.dirPathSpaces, CommandExecutorTest.fileNamePerc);
+    }
+
+    private void tstLoadFileLink(String fidir, String finame) throws Exception{
+        String fileString = (new File(fidir, finame)).getPath();
+        String urlPath = StringUtils.encodeURL(fileString);
+        String name = "mytestfile";
+
+        String cmd = buildRootURL() + "load?file=" + urlPath + "&name=" + name;
+        connect(cmd);
+
+        TestUtils.assertTrackLoaded(IGV.getInstance(), name);
+    }
+
+    private HttpURLConnection connect(String urlStr) throws Exception{
+        URL url = new URL(urlStr);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Connection", "Keep-Alive");
+        conn.connect();
+        System.out.println(conn.getResponseCode() + ":" + conn.getResponseMessage());
+        return conn;
     }
 
 
