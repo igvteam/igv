@@ -77,7 +77,7 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
 //            BASE_URL = TEST_URL;
 //        }
 //    }
-    private static final String common_parms = "format=gml&gzip=off";
+    private static final String common_parms = "format=gml&gzip=on";
     private static final String GENE_LIST = "gene_list";
 
     private List<Node> schema = new ArrayList<Node>();
@@ -311,8 +311,13 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
         return cachedFile;
     }
 
+    /**
+     * Create URL for {@code geneList}. Note that parameters are NOT url-encoded
+     * @param geneList
+     * @return
+     */
     static String getURLForGeneList(Iterable<String> geneList) {
-        String query = HttpUtils.buildURLString(geneList, "+");
+        String query = org.apache.commons.lang.StringUtils.join(geneList.iterator(), ",");
         String url = BASE_URL + "?" + GENE_LIST + "=" + query + "&" + common_parms;
         return url;
     }

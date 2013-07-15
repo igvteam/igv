@@ -24,7 +24,6 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.util.BrowserLauncher;
-import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.LongRunningTask;
 import org.w3c.dom.Node;
 
@@ -140,7 +139,7 @@ public class FilterGeneNetworkUI extends JDialog {
                     token = WaitCursorManager.showWaitCursor();
                     network = GeneNetwork.getFromCBIO(geneLoci);
                     if (network.vertexSet().size() == 0) {
-                        MessageUtils.showMessage("No results found for " + HttpUtils.buildURLString(geneLoci, ", "));
+                        MessageUtils.showMessage("No results found for " + org.apache.commons.lang.StringUtils.join(geneLoci, ", "));
                     } else {
                         network.annotateAll(IGV.getInstance().getAllTracks());
                         UIUtilities.invokeOnEventThread(updateUI);

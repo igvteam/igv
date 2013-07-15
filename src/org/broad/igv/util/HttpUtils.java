@@ -101,6 +101,8 @@ public class HttpUtils {
 
 
     /**
+     * @deprecated HttpUtils.openConnection does URL encoding itself
+     *
      * Join the {@code elements} with the character {@code joiner},
      * URLencoding the {@code elements} along the way. {@code joiner}
      * is NOT URLEncoded
@@ -114,6 +116,7 @@ public class HttpUtils {
      * @param joiner
      * @return
      */
+    @Deprecated
     public static String buildURLString(Iterable<String> elements, String joiner) {
 
         Iterator<String> iter = elements.iterator();
@@ -519,6 +522,9 @@ public class HttpUtils {
 
         //Encode query string portions
         url = StringUtils.encodeURLQueryString(url);
+        if(log.isTraceEnabled()){
+            log.trace(url);
+        }
 
         //Encode base portions. Right now just spaces, most common case
         //TODO This is a hack and doesn't work for all characters which need it

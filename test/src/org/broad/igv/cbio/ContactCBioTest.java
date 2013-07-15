@@ -61,7 +61,7 @@ public class ContactCBioTest extends AbstractHeadlessTest {
     }
 
     /**
-     * Load some data from cbio.
+     * Load some data from cBio.
      * Checks that we are looking at the right urls
      *
      * @throws Exception
