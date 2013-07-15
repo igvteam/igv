@@ -24,12 +24,10 @@
 
 package org.broad.igv.util.stream;
 
+import com.google.common.primitives.Ints;
 import net.sf.samtools.seekablestream.SeekableStream;
 
-import java.io.BufferedInputStream;
-import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
 
 import static java.lang.System.arraycopy;
 
@@ -52,7 +50,7 @@ public class IGVSeekableBufferedStream extends SeekableStream {
 
     byte[] buffer;
     long bufferStartPosition; // Position in file corresponding to start of buffer
-    int bufferSize;        //
+    int bufferSize;
 
     public IGVSeekableBufferedStream(final SeekableStream stream, final int bsize) {
         this.maxBufferSize = bsize;
@@ -123,10 +121,20 @@ public class IGVSeekableBufferedStream extends SeekableStream {
         return position;
     }
 
+    /**
+     * Return true iff the buffer needs to be refilled for the given
+     * amount of data requested
+     * @param len Number of bytes from {@code position} one plans on reading
+     * @return
+     */
+    private boolean needFillBuffer(int len){
+        return bufferSize == 0 || position < bufferStartPosition || (position + len) > bufferStartPosition + bufferSize;
+    }
+
 
     public int read() throws IOException {
 
-        if (bufferSize == 0 || position < bufferStartPosition || position >= bufferStartPosition + bufferSize) {
+        if (needFillBuffer(1)) {
             fillBuffer();
         }
 
@@ -138,17 +146,6 @@ public class IGVSeekableBufferedStream extends SeekableStream {
 
     /**
      * This method implements the general contract of the corresponding read method of the InputStream class.
-     * It attempts to read as many bytes as possible by repeatedly invoking
-     * the read method of the underlying stream. This iterated read continues until one of the following conditions
-     * becomes true: <ul>
-     * <p/>
-     * <li> The specified number of bytes have been read,
-     * <li> The read method of the underlying stream returns -1, indicating end-of-file, or
-     * <li> The available method of the underlying stream returns zero, indicating that further input requests would block.
-     * <p/>
-     * </ul>
-     * If the first read on the underlying stream returns -1 to indicate end-of-file then this method returns -1. Otherwise this method returns the number of bytes actually read.
-     *
      * @param b   destination buffer;
      * @param off offset at which to start storing bytes.
      * @param len maximum number of bytes to read.
@@ -167,13 +164,13 @@ public class IGVSeekableBufferedStream extends SeekableStream {
             return nBytes;
         } else {
             // Requested range is not contained within buffer.
-            if (!(position >= bufferStartPosition && (position + len) < (bufferStartPosition + bufferSize))) {
+            if (needFillBuffer(len)) {
                 fillBuffer();
             }
 
             int bufferOffset = (int) (position - bufferStartPosition);
             int bytesCopied = Math.min(len, bufferSize - bufferOffset);
-            arraycopy(buffer, bufferOffset, b, 0, bytesCopied);
+            arraycopy(buffer, bufferOffset, b, off, bytesCopied);
             position += bytesCopied;
             return bytesCopied;
         }
@@ -182,10 +179,14 @@ public class IGVSeekableBufferedStream extends SeekableStream {
     private void fillBuffer() throws IOException {
 
         int n = 0;
-        int len = Math.min(maxBufferSize, (int) (length - position));
+        long longLen = Math.min((long) maxBufferSize, (length - position));
+        //This shouldn't actually be necessary as long as maxBufferSize is
+        //an int, but we leave it here to stress the fact that
+        //we need to watch for overflow
+        int len = Ints.saturatedCast(longLen);
 
-//        long bufferEnd = bufferStartPosition + bufferSize;
         int offset = 0;
+//        long bufferEnd = bufferStartPosition + bufferSize;
 //        if(position + len > bufferStartPosition && position < bufferStartPosition) {
 //           // There is some overlap
 //            int sz = (int) (position + len - bufferStartPosition);

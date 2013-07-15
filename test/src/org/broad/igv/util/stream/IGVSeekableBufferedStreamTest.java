@@ -25,11 +25,11 @@
 package org.broad.igv.util.stream;
 
 
+import com.google.common.primitives.Ints;
 import net.sf.samtools.seekablestream.SeekableFileStream;
 import net.sf.samtools.seekablestream.SeekableHTTPStream;
 import net.sf.samtools.seekablestream.SeekableStream;
 import org.broad.igv.util.TestUtils;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -37,6 +37,7 @@ import java.io.*;
 import java.net.URL;
 
 import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class IGVSeekableBufferedStreamTest {
 
@@ -335,6 +336,97 @@ public class IGVSeekableBufferedStreamTest {
         assertEquals(a1.length, a2.length);
         for(int i=0; i<a1.length; i++) {
             assertEquals(a1[i], a2[i]);
+        }
+    }
+
+    /**
+     * Test that we can read from files larger than Integer.MAX_VALUE in length
+     * @throws Exception
+     */
+    @Test
+    public void testReadVeryLargeFile() throws Exception{
+        long fileLength = ((long) Integer.MAX_VALUE) * (8);
+        //long fileLength = Integer.MAX_VALUE / 2;
+        long bytesToRead = fileLength;
+
+        String path = "/dev/zero";
+        SeekableStream ss = new MaxLengthSeekableStream(path, fileLength);
+        IGVSeekableBufferedStream bufferedStream = new IGVSeekableBufferedStream(ss);
+
+        long bytesRead = 0;
+        byte[] buf = new byte[IGVSeekableBufferedStream.DEFAULT_BUFFER_SIZE];
+        while(!bufferedStream.eof() && bytesRead < bytesToRead){
+            bytesRead += bufferedStream.read(buf, 0, buf.length);
+            assertTrue("Could not read from source", bytesRead >= 0);
+        }
+        assertTrue(bytesRead >= bytesToRead);
+    }
+
+    /**
+     * Class which reads from a FileInputStream, with an artificially
+     * imposed length on it.  This could act funny if {@code length} is larger
+     * than the length of the actual file. Intended to be used for /dev/* classes
+     * which have no actual length
+     */
+    private static class MaxLengthSeekableStream extends SeekableStream{
+
+        private FileInputStream fis;
+        private long position = 0;
+        private long length = -1;
+
+        /**
+         *
+         * @param devPath
+         * @param length The /dev/* paths are unlimited, we impose a fake length
+         * @throws FileNotFoundException
+         */
+        MaxLengthSeekableStream(String devPath, long length) throws FileNotFoundException{
+            fis = new FileInputStream(devPath);
+            this.length = length;
+        }
+
+        @Override
+        public long length() {
+            return length;
+        }
+
+        @Override
+        public long position() throws IOException {
+            return position;
+        }
+
+        @Override
+        public void seek(long position) throws IOException {
+            this.position = position;
+        }
+
+        @Override
+        public int read() throws IOException {
+            return fis.read();
+        }
+
+        @Override
+        public int read(byte[] buffer, int offset, int length) throws IOException {
+            long maxToRead = Math.min(this.length() - this.position(), (long) length);
+            int iMaxToRead = Ints.saturatedCast(maxToRead);
+            int bytesRead = this.fis.read(buffer, offset, iMaxToRead);
+            this.position += bytesRead;
+            return bytesRead;
+        }
+
+        @Override
+        public void close() throws IOException {
+            this.fis.close();
+        }
+
+        @Override
+        public boolean eof() throws IOException {
+            return position() >= length() - 1;
+        }
+
+        @Override
+        public String getSource() {
+            return this.fis.toString();
         }
     }
 
