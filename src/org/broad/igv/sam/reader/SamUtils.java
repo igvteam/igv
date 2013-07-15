@@ -68,9 +68,7 @@ public class SamUtils {
         }
 
         if (!Globals.isHeadless()) {
-            IndexCreatorDialog dialog = new IndexCreatorDialog(IGV.getMainFrame(), true, samFile, newIdxFile);
-            dialog.setLocationRelativeTo(IGV.getMainFrame());
-            dialog.setVisible(true);
+            IndexCreatorDialog dialog = IndexCreatorDialog.createShowDialog(IGV.getMainFrame(), samFile, newIdxFile);
             return (FeatureIndex) dialog.getIndex();
         } else {
             AlignmentIndexer indexer = AlignmentIndexer.getInstance(samFile, null, null);

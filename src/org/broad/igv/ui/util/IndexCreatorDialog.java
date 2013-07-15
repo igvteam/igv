@@ -33,6 +33,7 @@ import org.broad.tribble.index.Index;
 import org.broad.tribble.index.IndexFactory;
 
 import javax.swing.*;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -42,6 +43,7 @@ import java.io.File;
  * displaying progress if they do.
  * @author jacob
  */
+
 public class IndexCreatorDialog extends JDialog {
 
     File file;
@@ -58,6 +60,12 @@ public class IndexCreatorDialog extends JDialog {
             "be located. An index is required to view @filetype files in IGV.  " +
             "Click \"Go\" to create one now.";
 
+    public static IndexCreatorDialog createShowDialog(Frame parent, File baseFile, File newIdxFile){
+        IndexCreatorDialog dialog = new IndexCreatorDialog(parent, true, baseFile, newIdxFile);
+        dialog.setLocationRelativeTo(parent);
+        dialog.setVisible(true);
+        return dialog;
+    }
     /**
      * Creates new form IndexCreatorDialog
      */
@@ -66,6 +74,7 @@ public class IndexCreatorDialog extends JDialog {
                               File idxFile) {
         super(parent, modal);
         initComponents();
+        jLabel1.setVisible(false);
 
         this.file = file;
         this.idxFile = idxFile;
@@ -127,7 +136,11 @@ public class IndexCreatorDialog extends JDialog {
             FeatureCodec codec = CodecFactory.getCodec(file.getAbsolutePath(), GenomeManager.getInstance().getCurrentGenome());
             if (codec != null) {
                 try {
-                    return IndexFactory.createLinearIndex(file, codec, binSize);
+                    Index index = IndexFactory.createLinearIndex(file, codec, binSize);
+                    if(index != null){
+                        IgvTools.writeTribbleIndex(index, idxFile.getAbsolutePath());
+                    }
+                    return index;
                 } catch (TribbleException.MalformedFeatureFile e) {
                     StringBuffer buf = new StringBuffer();
                     buf.append("<html>Files must be sorted by start position prior to indexing.<br>");
@@ -285,6 +298,12 @@ public class IndexCreatorDialog extends JDialog {
         } else {
             goButton.setEnabled(false);
             worker.execute();
+            jLabel1.setVisible(true);
+            //Haven't worked out how to publish progress yet, just going to set it to indeterminate
+            if(fileType == FileType.VCF){
+                IndexCreatorDialog.this.progressBar.setIndeterminate(true);
+                jLabel1.setText("Creating index...");
+            }
         }
 
     }//GEN-LAST:event_goButtonActionPerformed
