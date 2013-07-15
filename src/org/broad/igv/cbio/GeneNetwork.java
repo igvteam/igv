@@ -77,7 +77,7 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
 //            BASE_URL = TEST_URL;
 //        }
 //    }
-    private static final String common_parms = "format=gml&gzip=on";
+    private static final String common_parms = "format=gml&gzip=off";
     private static final String GENE_LIST = "gene_list";
 
     private List<Node> schema = new ArrayList<Node>();
