@@ -11,7 +11,6 @@
 
 package org.broad.igv.track;
 
-import net.sf.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.bbfile.BBFileReader;
@@ -58,12 +57,11 @@ import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.ConfirmDialog;
+import org.broad.igv.ui.util.IndexCreatorDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.stream.IGVSeekableBufferedStream;
-import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.util.PedigreeUtils;
 import org.broad.tribble.AbstractFeatureReader;
@@ -135,13 +133,24 @@ public class TrackLoader {
                 loadDASResource(locator, newTracks);
             } else if (MutationTrackLoader.isMutationAnnotationFile(locator)) {
                 this.loadMutFile(locator, newTracks, genome); // Must be tried before generic "loadIndexed" below
+            } else if ((typeString.endsWith(".vcf") || typeString.endsWith(".vcf4")) && !HttpUtils.isRemoteURL(locator.getPath())) {
+                //Prompt user to see if they want to create an index file for VCFs
+                if(!isIndexed(path, genome)){
+                    File baseFile = new File(locator.getPath());
+                    File newIdxFile = new File(locator.getPath() + ".idx");
+                    IndexCreatorDialog dialog = IndexCreatorDialog.createShowDialog(IGV.getMainFrame(), baseFile, newIdxFile);
+                    Object index = dialog.getIndex();
+                    //If user hits cancel or if there's a problem indexing we do nothing
+                    if(index == null) {
+                        log.warn("No index created, loading cancelled");
+                        return newTracks;
+                    }
+                }
+                loadIndexed(locator, newTracks, genome);
             } else if (isIndexed(path, genome)) {
                 loadIndexed(locator, newTracks, genome);
             } else if (typeString.endsWith(".vcf.list")) {
                 loadVCFListFile(locator, newTracks, genome);
-            } else if (typeString.endsWith(".vcf") || typeString.endsWith(".vcf4")) {
-                // VCF files must be indexed.
-                throw new IndexNotFoundException(path);
             } else if (typeString.endsWith(".trio")) {
                 loadTrioData(locator);
             } else if (typeString.endsWith("varlist")) {

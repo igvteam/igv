@@ -894,6 +894,25 @@ public class IgvTools {
 
     }
 
+    public static void writeTribbleIndex(Index idx, String idxFile) throws IOException{
+        LittleEndianOutputStream stream = null;
+        try {
+            stream = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(idxFile)));
+            idx.write(stream);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            // Delete output file as its probably corrupt
+            File tmp = new File(idxFile);
+            if (tmp.exists()) {
+                tmp.delete();
+            }
+        } finally {
+            if (stream != null) {
+                stream.close();
+            }
+        }
+    }
+
     /**
      * Create a tribble style index.
      *
@@ -918,22 +937,7 @@ public class IgvTools {
             } else {
                 idxFile = ifile + ".idx";
             }
-            LittleEndianOutputStream stream = null;
-            try {
-                stream = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(idxFile)));
-                idx.write(stream);
-            } catch (Exception e) {
-                e.printStackTrace();
-                // Delete output file as its probably corrupt
-                File tmp = new File(idxFile);
-                if (tmp.exists()) {
-                    tmp.delete();
-                }
-            } finally {
-                if (stream != null) {
-                    stream.close();
-                }
-            }
+            writeTribbleIndex(idx, idxFile);
         }
     }
 
