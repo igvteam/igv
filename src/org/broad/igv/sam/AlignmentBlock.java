@@ -33,10 +33,6 @@ public class AlignmentBlock {
 
     private boolean softClipped = false;
 
-//    private Reference<byte[]> softBases;
-//    private Reference<byte[]> softQualities;
-//    private Reference<byte[]> softRefSeq;
-
     /**
      * We save space by only storing the mismatches to the reference
      */
@@ -83,19 +79,12 @@ public class AlignmentBlock {
             for(MismatchBlock mismatchBlock: this.mismatches){
                 System.arraycopy(mismatchBlock.bases, 0, sbases, mismatchBlock.start - start, mismatchBlock.bases.length);
             }
-            //softBases = new SoftReference<byte[]>(sbases);
         }
         return sbases;
     }
 
     private byte[] getReferenceSequence() {
         return genome.getSequence(this.chr, getStart(), getEnd());
-//        byte[] refSeq = softRefSeq.get();
-//        if(refSeq == null){
-//            refSeq = genome.getSequence(this.chr, getStart(), getEnd());
-//            softRefSeq = new WeakReference<byte[]>(refSeq);
-//        }
-//        return refSeq;
     }
 
     public int getLength() {
@@ -248,9 +237,6 @@ public class AlignmentBlock {
         MismatchBlock[] tmpmismatches = AlignmentBlock.createMismatchBlocks(getStart(), refBases, bases, qualities);
         if(tmpmismatches.length < (length / 5)) mismatches = tmpmismatches;
         if(mismatches != null){
-//            this.softBases = new WeakReference<byte[]>(this.bases);
-//            this.softQualities = new WeakReference<byte[]>(this.qualities);
-//            this.softRefSeq = new WeakReference<byte[]>(refBases);
             this.bases = null;
             this.qualities = null;
         }

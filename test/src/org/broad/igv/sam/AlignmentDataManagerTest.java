@@ -372,7 +372,7 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
      * @throws Exception
      */
     @Test
-    public void testLazyLoadSequence() throws Exception {
+    public void testGetReadSequence() throws Exception {
         System.out.println("Lazy loading: " + SamAlignment.DEFAULT_LAZY_LOAD);
         AlignmentDataManager manager = getManager171();
         final String chr = "chr1";
@@ -391,11 +391,13 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
 //            readSeqs.add(readSeq);
 //            al.finish();
 
-            if (SamAlignment.DEFAULT_LAZY_LOAD) {
-                assertNull(sal.getReadSequenceField());
-            } else {
-                assertNotNull(sal.getReadSequenceField());
-            }
+            //TODO Haven't decided what we're doing here
+//            if (SamAlignment.DEFAULT_LAZY_LOAD) {
+//                assertNull(sal.getReadSequenceField());
+//            } else {
+//                assertNotNull(sal.getReadSequenceField());
+//            }
+
         }
 
         int counter = 0;

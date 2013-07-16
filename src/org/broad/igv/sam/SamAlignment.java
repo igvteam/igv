@@ -23,9 +23,6 @@ import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -67,15 +64,16 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
      * USE {@link #getRecord}.
      */
     private SAMRecord record;
-    private Reference<SAMRecord> softRecord;
+    //private Reference<SAMRecord> softRecord;
 
     /**
      * DO NOT ACCESS THIS FIELD DIRECTLY, EVEN WITHIN THIS CLASS
      * USE {@link #getReadSequence}
+     *
+     * {@code readSequence} may be used frequently when loading alignments so we hold on to it then,
+     * but afterwards used very rarely. So we null it out
      */
     private String readSequence;
-    private Reference<String> softReadSequence;
-
 
     private String cigarString;
     private boolean firstRead = false;
@@ -134,7 +132,6 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         String keySequence = null;
 
         this.record = record;
-        this.softRecord = new WeakReference<SAMRecord>(record);
         this.fileSource = record.getFileSource();
 
         String refName = record.getReferenceName();
@@ -156,8 +153,6 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         this.setInferredInsertSize(record.getInferredInsertSize());
 
         this.readSequence = record.getReadString();
-        this.softReadSequence = new SoftReference<String>(record.getReadString());
-
         this.readLength = record.getReadLength();
         this.firstInPair = record.getReadPairedFlag() ? record.getFirstOfPairFlag() : true;
 
@@ -568,12 +563,14 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     }
 
     public String getReadSequence() {
-        String readSequence = this.readSequence != null ? this.readSequence : softReadSequence.get();
-        if (readSequence == null) {
-            readSequence = getRecord().getReadString();
-            this.softReadSequence = new SoftReference<String>(readSequence);
-        }
-        return readSequence;
+        if(this.readSequence != null) return this.readSequence;
+        return getRecord().getReadString();
+//        String readSequence = this.readSequence != null ? this.readSequence : softReadSequence.get();
+//        if (readSequence == null) {
+//            readSequence = getRecord().getReadString();
+//            this.softReadSequence = new SoftReference<String>(readSequence);
+//        }
+//        return readSequence;
     }
 
     @Override
@@ -626,26 +623,28 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
      *
      * @return The SAMRecord which created this SamAlignment
      */
+
     public SAMRecord getRecord() {
-        SAMRecord record = this.record != null ? this.record : this.softRecord.get();
-        if (record == null) {
-            SAMFileSource source = this.getFileSource();
-            if(source == null){
-                throw new IllegalStateException("SAMRecord is null but we don't have a file pointer to reload it");
-            }
-            SAMFileSpan span = source.getFilePointer();
-            SAMRecordIterator iter = source.getReader().iterator(span);
-
-            //In theory there should only be one
-            record = iter.next();
-
-            if (iter.hasNext()) {
-                log.error("Found multiple records during query of file span:" + span);
-            }
-            iter.close();
-            this.softRecord = new WeakReference<SAMRecord>(record);
-        }
-        return record;
+        return this.record;
+//        SAMRecord record = this.record != null ? this.record : this.softRecord.get();
+//        if (record == null) {
+//            SAMFileSource source = this.getFileSource();
+//            if(source == null){
+//                throw new IllegalStateException("SAMRecord is null but we don't have a file pointer to reload it");
+//            }
+//            SAMFileSpan span = source.getFilePointer();
+//            SAMRecordIterator iter = source.getReader().iterator(span);
+//
+//            //In theory there should only be one
+//            record = iter.next();
+//
+//            if (iter.hasNext()) {
+//                log.error("Found multiple records during query of file span:" + span);
+//            }
+//            iter.close();
+//            this.softRecord = new WeakReference<SAMRecord>(record);
+//        }
+//        return record;
     }
 
     @Override
@@ -763,10 +762,12 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         return mateSequence;
     }
 
+    @Override
     public void setMateSequence(String mateSequence) {
         this.mateSequence = mateSequence;
     }
 
+    @Override
     public String getPairOrientation() {
         return pairOrientation;
     }
@@ -774,8 +775,11 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     @Override
     public void finish() {
         super.finish();
-        SAMFileSource source = this.getFileSource();
-        if (DEFAULT_LAZY_LOAD) {
+        if(this.mateSequence == null){
+            this.readSequence = null;
+        }
+        if (false && DEFAULT_LAZY_LOAD) {
+            SAMFileSource source = this.fileSource;
 
             if(source != null){
                 //Check that we can reload the record before getting rid of it.
