@@ -13,13 +13,14 @@ package org.broad.igv.ui;
 
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.TestUtils;
 import org.junit.*;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
+import java.io.File;
 import java.util.Collection;
 
 import static org.junit.Assert.*;
@@ -81,15 +82,50 @@ public class MainTest {
         //System.out.println(IGV.getInstance());
 
         assertEquals(genome, igv.getGenomeManager().getGenomeId());
-        boolean trackFound = false;
-        for (Track track : igv.getAllTracks()) {
-            trackFound |= track.getName().equals(trackName);
-        }
-
-        assertTrue("Expected " + trackName + " to be loaded, but it wasn't", trackFound);
+        TestUtils.assertTrackLoaded(igv, trackName);
 
         String actLocus = FrameManager.getDefaultFrame().getFormattedLocusString();
         assertEquals(actLocus, locus);
+    }
+
+    @Test
+    public void testFileWithSpaces() throws Exception{
+        String trackName = "test.wig";
+        String filePath = TestUtils.DATA_DIR + "folder with spaces/" + trackName;
+        String[] args = new String[]{filePath};
+
+        //Need to wait for IGV to start and load file
+        IGV igv = startMain(args, 10000);
+
+        TestUtils.assertTrackLoaded(igv, trackName);
+    }
+
+    @Test
+    public void testFileURLWithSpaces() throws Exception{
+        String trackName = "test.wig";
+        String dir = StringUtils.encodeURL("folder with spaces");
+        String absFilePath = (new File(TestUtils.DATA_DIR)).getAbsolutePath();
+        String filePath = String.format("file://%s/%s/%s", absFilePath, dir, trackName);
+        String[] args = new String[]{filePath};
+
+        //Need to wait for IGV to start and load file
+        IGV igv = startMain(args, 10000);
+
+        TestUtils.assertTrackLoaded(igv, trackName);
+    }
+
+    @Test
+    public void testRemoteURLWithSpaces() throws Exception{
+        String trackName = "test.wig";
+        String dir = StringUtils.encodeURL("folder with spaces");
+        String absFilePath = "www.broadinstitute.org/igvdata/unit_test_files";
+        String filePath = String.format("http://%s/%s/%s", absFilePath, dir, trackName);
+        String[] args = new String[]{filePath};
+
+        //Need to wait for IGV to start and load file
+        IGV igv = startMain(args, 10000);
+
+        TestUtils.assertTrackLoaded(igv, trackName);
     }
 
     /**

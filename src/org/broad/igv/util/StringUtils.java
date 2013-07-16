@@ -163,12 +163,21 @@ public class StringUtils {
         }
     }
 
+    /**
+     * Encode according to UTF-8. We encode
+     * spaces as "%20" rather than "+", seems
+     * to work better with others.
+     * @param s
+     * @return
+     */
     public static String encodeURL(String s) {
         if (s == null) {
             return null;
         }
         try {
-            return URLEncoder.encode(s, "UTF-8");
+            s = URLEncoder.encode(s, "UTF-8");
+            s = s.replace("+", "%20");
+            return s;
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
