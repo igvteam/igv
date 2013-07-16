@@ -176,4 +176,19 @@ public class Globals {
         Globals.batch = batch;
     }
 
+
+    /**
+     * Checks whether the current JVM is the minimum specified version
+     * or higher. Only compares up to as many characters as
+     * in {@code minVersion}
+     * @param minVersion
+     * @return
+     */
+    public static boolean isVersionOrHigher(String minVersion){
+        String curVersion = System.getProperty(JAVA_VERSION_STRING);
+        if(curVersion.length() >= minVersion.length()){
+            curVersion = curVersion.substring(0, minVersion.length());
+        }
+        return curVersion.compareTo(minVersion) >= 0;
+    }
 }

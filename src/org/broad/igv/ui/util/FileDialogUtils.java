@@ -1,23 +1,17 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.ui.util;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
@@ -29,6 +23,7 @@ import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.lang.reflect.Method;
 
 /**
  * @author jrobinso
@@ -38,6 +33,8 @@ public class FileDialogUtils {
 
     public static int LOAD = FileDialog.LOAD;
     public static int SAVE = FileDialog.SAVE;
+
+    private static Logger log = Logger.getLogger(FileDialogUtils.class);
 
 
     public static File chooseFile(String title, File initialDirectory, int mode) {
@@ -69,14 +66,42 @@ public class FileDialogUtils {
 
         // TODO -- use native dialogs for windows as well?
         if (Globals.IS_MAC && !Globals.IS_JWS && directoriesMode != JFileChooser.FILES_AND_DIRECTORIES) {
-
             return chooseNative(title, initialDirectory, initialFile, filter, directoriesMode, mode);
         } else {
             return chooseSwing(title, initialDirectory, initialFile, filter, directoriesMode, mode);
         }
     }
 
+    public static File chooseDirectory(String title, File initialDirectory) {
+        if (Globals.IS_MAC && !Globals.IS_JWS) {
+            return chooseNative(title, initialDirectory, null, null, JFileChooser.DIRECTORIES_ONLY, LOAD);
+        } else {
+            return chooseSwing(title, initialDirectory, null, null, JFileChooser.DIRECTORIES_ONLY, LOAD);
+        }
+    }
+
     public static File[] chooseMultiple(String title, File initialDirectory, final FilenameFilter filter) {
+        File[] files = null;
+
+        if (Globals.IS_MAC && !Globals.IS_JWS && Globals.isVersionOrHigher("1.7")) {
+            try{
+                files = chooseMultipleNative(title, initialDirectory, filter);
+            }catch (UnsupportedOperationException e){
+                //This should never happen
+                log.error(e.getMessage(), e);
+            }
+        }
+
+        //Files will be an empty array if user cancelled dialog,
+        //null if there was a problem with the native dialog
+        if(files == null){
+            files = chooseMultipleSwing(title, initialDirectory, filter);
+        }
+
+        return files;
+    }
+
+    private static File[] chooseMultipleSwing(String title, File initialDirectory, final FilenameFilter filter) {
         JFileChooser fileChooser = getJFileChooser(title, initialDirectory, null, filter, JFileChooser.FILES_ONLY);
         fileChooser.setMultiSelectionEnabled(true);
         fileChooser.addChoosableFileFilter(new AlignmentFileFilter());
@@ -90,21 +115,19 @@ public class FileDialogUtils {
         } else {
             return null;
         }
+    }
+
+    private static File[] chooseMultipleNative(String title, File initialDirectory, final FilenameFilter filter) throws UnsupportedOperationException{
+        FileDialog fd = getNativeChooser(title, initialDirectory, null, filter, JFileChooser.FILES_ONLY, LOAD);
+        if(!isMultipleMode(fd)) throw new UnsupportedOperationException("Cannot choose multiple files with native dialog on this platform");
+
+        fd.setVisible(true);
+
+        return getFiles(fd);
 
     }
 
-    public static File chooseDirectory(String title, File initialDirectory) {
-        if (Globals.IS_MAC && !Globals.IS_JWS) {
-            return chooseNative(title, initialDirectory, null, null, JFileChooser.DIRECTORIES_ONLY, LOAD);
-        } else {
-            return chooseSwing(title, initialDirectory, null, null, JFileChooser.DIRECTORIES_ONLY, LOAD);
-        }
-    }
-
-
-    private static File chooseNative(String title, File initialDirectory, File initialFile, FilenameFilter filter,
-                                     int directoryMode, int mode) {
-
+    private static FileDialog getNativeChooser(String title, File initialDirectory, File initialFile, FilenameFilter filter, int directoryMode, int mode){
         boolean directories = JFileChooser.DIRECTORIES_ONLY == directoryMode;
         System.setProperty("apple.awt.fileDialogForDirectories", String.valueOf(directories));
         Frame parentFrame = getParentFrame();
@@ -120,6 +143,18 @@ public class FileDialogUtils {
         }
         fd.setModal(true);
         fd.setMode(mode);
+
+        if(mode == LOAD && !directories){
+            setMultipleMode(fd, true);
+        }
+        return fd;
+    }
+
+
+    private static File chooseNative(String title, File initialDirectory, File initialFile, FilenameFilter filter,
+                                     int directoryMode, int mode) {
+
+        FileDialog fd = getNativeChooser(title, initialDirectory, initialFile, filter, directoryMode, mode);
         fd.setVisible(true);
 
         String file = fd.getFile();
@@ -134,6 +169,48 @@ public class FileDialogUtils {
             return null;
         }
     }
+
+    /**
+     * Reflectively call FileDialog.setMultipleMode.
+     * Does nothing if method not available
+     * @param fd
+     * @param b
+     * @return true if call was successful, false if not
+     */
+    private static boolean setMultipleMode(FileDialog fd, boolean b) {
+        try{
+            Method method = FileDialog.class.getMethod("setMultipleMode", boolean.class);
+            method.invoke(fd, b);
+            return true;
+        }catch(Exception e){
+            return false;
+        }
+    }
+
+    /**
+     * Reflectively call FileDialog.getMultipleMode.
+     * Does nothing if method not available
+     * @param fd
+     * @return Value of fd.getMultipleMode if available, otherwise false
+     */
+    private static boolean isMultipleMode(FileDialog fd) {
+        try{
+            Method method = FileDialog.class.getMethod("isMultipleMode");
+            return (Boolean) method.invoke(fd);
+        }catch(Exception e){
+            return false;
+        }
+    }
+
+    private static File[] getFiles(FileDialog fd){
+        try{
+            Method method = FileDialog.class.getMethod("getFiles");
+            return (File[]) method.invoke(fd);
+        }catch(Exception e){
+            return null;
+        }
+    }
+
 
     private static File chooseSwing(String title, File initialDirectory, File initialFile, final FilenameFilter filter,
                                     int directoryMode, int mode) {
