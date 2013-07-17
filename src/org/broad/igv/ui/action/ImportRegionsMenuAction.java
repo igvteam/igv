@@ -24,16 +24,22 @@ package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
+import org.broad.igv.variant.vcf.VCFVariant;
+import org.broad.tribble.AbstractFeatureReader;
+import org.broad.tribble.FeatureCodec;
 
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.Iterator;
 
 /**
  * @author jrobinso
@@ -78,40 +84,62 @@ public class ImportRegionsMenuAction extends MenuAction {
         try {
             BufferedReader reader = null;
             int coordConvention = 0;
-
+            AbstractFeatureReader basicReader =null;
             try {
-                reader = new BufferedReader(new FileReader(roiFile));
-                while (true) {
-                    String dataRecord = reader.readLine();
-                    if (dataRecord == null) {
-                        return;
-                    } else if (dataRecord.startsWith("track")) {
-                        // Skip track line
-                        continue;
-                    } else if (dataRecord.startsWith("#coords")) {
-                        String[] tmp = dataRecord.split("=");
-                        if (tmp.length > 1) {
-                            try {
-                                coordConvention = Integer.parseInt(tmp[1]);
-                            } catch (NumberFormatException e) {
-                                log.error("Error parsing coordinate convention direction for file: " + roiFile);
-                            }
-                        }
-                    }
-                    String[] data = dataRecord.split("\t");
-                    if (data.length >= 3) {
-                        try {
-                            String name = data.length > 3 ? data[3] : null;
-                            int start = Integer.parseInt(data[1]) - coordConvention;
-                            int end = Integer.parseInt(data[2]);
-                            RegionOfInterest regionOfInterest = new RegionOfInterest(data[0], start, end, name);
-                            mainFrame.addRegionOfInterest(regionOfInterest);
-                        } catch (NumberFormatException numberFormatException) {
-                        }
-                    }
-                }
-            } finally {
+		if (roiFile.getName().toLowerCase().endsWith(".vcf")) {
+		    FeatureCodec codec = CodecFactory.getCodec(roiFile.getCanonicalPath(), null);
+		    basicReader = AbstractFeatureReader.getFeatureReader(
+			    roiFile.getCanonicalPath(), codec, true);
+		    Iterator<VCFVariant> iter = basicReader.iterator();
+		    while (iter.hasNext()) {
+			VCFVariant vc = iter.next();
+			String chr = vc.getChr();
+			if (!chr.startsWith("chr")) {
+			    chr = "chr" + chr;
+			}
 
+			int start = vc.getStart();
+			int end = vc.getEnd();
+			String id = vc.getID();
+			RegionOfInterest regionOfInterest = new RegionOfInterest(chr, start, end, id);
+			mainFrame.addRegionOfInterest(regionOfInterest);
+		    }
+		} else {
+		    reader = new BufferedReader(new FileReader(roiFile));
+		    while (true) {
+			String dataRecord = reader.readLine();
+			if (dataRecord == null) {
+			    return;
+			} else if (dataRecord.startsWith("track")) {
+			    // Skip track line
+			    continue;
+			} else if (dataRecord.startsWith("#coords")) {
+			    String[] tmp = dataRecord.split("=");
+			    if (tmp.length > 1) {
+				try {
+				    coordConvention = Integer.parseInt(tmp[1]);
+				} catch (NumberFormatException e) {
+				    log.error("Error parsing coordinate convention direction for file: " + roiFile);
+				}
+			    }
+			}
+			String[] data = dataRecord.split("\t");
+			if (data.length >= 3) {
+			    try {
+				String name = data.length > 3 ? data[3] : null;
+				int start = Integer.parseInt(data[1]) - coordConvention;
+				int end = Integer.parseInt(data[2]);
+				RegionOfInterest regionOfInterest = new RegionOfInterest(data[0], start, end, name);
+				mainFrame.addRegionOfInterest(regionOfInterest);
+			    } catch (NumberFormatException numberFormatException) {
+			    }
+			}
+		    }
+		}
+            } finally {
+        	if(basicReader != null) {
+        	    basicReader.close();
+        	}
                 if (reader != null) {
                     reader.close();
                 }
