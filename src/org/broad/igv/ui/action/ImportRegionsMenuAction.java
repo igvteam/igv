@@ -34,6 +34,8 @@ import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.variant.vcf.VCFVariant;
 import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.FeatureCodec;
+import org.broadinstitute.variant.variantcontext.VariantContext;
+import org.broadinstitute.variant.vcf.VCFCodec;
 
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
