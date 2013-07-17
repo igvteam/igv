@@ -458,7 +458,7 @@ public class DataPanel extends JComponent implements Paintable {
                 int shiftOriginPixels = Integer.MIN_VALUE;
                 int zoomIncr = Integer.MIN_VALUE;
                 boolean showWaitCursor = false;
-
+                
                 if (e.getKeyChar() == '+' || e.getKeyCode() == KeyEvent.VK_PLUS) {
                     zoomIncr = +1;
                     showWaitCursor = true;
@@ -477,6 +477,10 @@ public class DataPanel extends JComponent implements Paintable {
                     showWaitCursor = true;
                 } else if (e.getKeyCode() == KeyEvent.VK_PLUS) {
                 } else if (e.getKeyCode() == KeyEvent.VK_MINUS) {
+                } else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_PAGE_DOWN) {
+                    shiftOriginPixels = frame. getWidthInPixels();
+                } else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_PAGE_UP) {
+                    shiftOriginPixels = -frame. getWidthInPixels();
                 }
 
                 WaitCursorManager.CursorToken token = null;
