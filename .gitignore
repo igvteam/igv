@@ -1,6 +1,6 @@
 #Subversion files
 .svn
-bin
+
 #Class/TMP files
 .class
 *.tmp

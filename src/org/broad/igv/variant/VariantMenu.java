@@ -111,22 +111,8 @@ public class VariantMenu extends IGVPopupMenu {
             addSeparator();
             add(getLoadBamsItem());
         }
-        addSeparator();
-        JMenuItem viewAsTableItem = new JMenuItem("View in table...");
-        	
-        viewAsTableItem.addActionListener(new ActionListener() {
-            JDialog dialog;
-	    
-	    @Override
-	    public void actionPerformed(ActionEvent e) {
-		if(dialog==null){
-		    dialog = new JDialog();
-		    dialog.setTitle(variantTrack.getName());
-		    dialog.pack();
-		}
-		dialog.setVisible(true);
-	    }
-	});
+
+
         addSeparator();
         add(TrackMenuUtils.getRemoveMenuItem(Arrays.asList(new Track[]{this.track})));
     }
