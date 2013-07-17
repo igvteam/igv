@@ -18,16 +18,21 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.AlignmentTrack.SortOption;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.track.RenderContext;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.event.DataLoadedEvent;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.util.CancellableProgressDialog;
+import org.broad.igv.ui.util.IndefiniteProgressMonitor;
+import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.ArrayHeapObjectSorter;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ResourceLocator;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.text.NumberFormat;
 import java.util.*;
 
 public class AlignmentDataManager implements IAlignmentDataManager{
@@ -350,9 +355,6 @@ public class AlignmentDataManager implements IAlignmentDataManager{
 
     AlignmentInterval loadInterval(String chr, int start, int end, AlignmentTrack.RenderOptions renderOptions) {
 
-        NumberFormat format = NumberFormat.getInstance();
-        int delta = end - start;
-
         String sequence = chrMappings.containsKey(chr) ? chrMappings.get(chr) : chr;
 
         DownsampleOptions downsampleOptions = new DownsampleOptions();
@@ -360,10 +362,28 @@ public class AlignmentDataManager implements IAlignmentDataManager{
         final AlignmentTrack.BisulfiteContext bisulfiteContext =
                 renderOptions != null ? renderOptions.bisulfiteContext : null;
 
+        //Show cancellable dialog if one doesn't already exist
+        ProgressMonitor monitor = null;
+
+        if(IGV.hasInstance() && !Globals.isBatch() && !Globals.isHeadless()){
+            synchronized (CancellableProgressDialog.class) {
+                if (!CancellableProgressDialog.hasCancellableProgressDialog()) {
+                    monitor = new IndefiniteProgressMonitor();
+
+                    ActionListener cancelListener = new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            AlignmentTileLoader.cancelReaders();
+                        }
+                    };
+                    CancellableProgressDialog.showCancellableProgressDialog(IGV.getMainFrame(), "Loading...", cancelListener, monitor);
+                }
+            }
+        }
+
         SpliceJunctionHelper spliceJunctionHelper = new SpliceJunctionHelper(this.loadOptions);
         AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, spliceJunctionHelper,
-                downsampleOptions, peStats, bisulfiteContext);
-        //System.out.println(chr + "\t" + start + "\t" + end + "\t" + (n++) + "   (" + format.format(delta) + ")");
+                downsampleOptions, peStats, bisulfiteContext, monitor);
 
         List<Alignment> alignments = t.getAlignments();
 

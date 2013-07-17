@@ -20,6 +20,11 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Jacob Silterra
@@ -129,4 +134,57 @@ public class CancellableProgressDialog extends JDialog {
         };
         UIUtilities.invokeOnEventThread(updater);
     }
+
+
+    /**
+     * Create a show a progress dialog which is cancellable
+     * @param dialogsParent
+     * @param title
+     * @param cancelActionListener The {@code ActionListener} to be called when the cancel button is pressed. Closing the
+     *                             dialog is not necessary and is performed automatically.
+     * @param monitor Optional (may be null). Status text is updated based on monitor.updateStatus
+     * @return
+     */
+    public static CancellableProgressDialog showCancellableProgressDialog(Frame dialogsParent, String title, final ActionListener cancelActionListener, ProgressMonitor monitor){
+        final CancellableProgressDialog progressDialog = new CancellableProgressDialog(dialogsParent);
+        cancellableDialogs.add(progressDialog);
+
+        progressDialog.setTitle(title);
+        progressDialog.addCancelActionListener(cancelActionListener);
+        progressDialog.addCancelActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cancellableDialogs.remove(progressDialog);
+            }
+        });
+
+
+        if(monitor != null && monitor instanceof IndefiniteProgressMonitor) progressDialog.getProgressBar().setIndeterminate(true);
+
+        if(monitor != null){
+            monitor.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName().equals(ProgressMonitor.STATUS_PROPERTY)) {
+                        progressDialog.setStatus("" + evt.getNewValue());
+                    } else if (evt.getPropertyName().equals(ProgressMonitor.PROGRESS_PROPERTY) && (Integer) evt.getNewValue() >= 100) {
+                        progressDialog.cancelButton.doClick(1);
+                    }
+                }
+            });
+        }
+
+        progressDialog.setVisible(true);
+        progressDialog.toFront();
+
+        return progressDialog;
+    }
+
+
+    private static Set<CancellableProgressDialog> cancellableDialogs = Collections.synchronizedSet(new HashSet<CancellableProgressDialog>());
+
+    public static boolean hasCancellableProgressDialog() {
+        return !cancellableDialogs.isEmpty();
+    }
+
 }

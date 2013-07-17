@@ -177,7 +177,7 @@ public class FeatureSearcher implements Runnable {
             try {
                 if(this.monitor != null){
                     if(counter == 0){
-                        String status = String.format("%s:%d-%d", chr, start, end);
+                        String status = String.format("Searching: %s:%d-%d", chr, start, end);
                         this.monitor.updateStatus(status);
                     }
                     counter = (counter + 1) % updateInterval;
