@@ -347,7 +347,7 @@ public class IGVSessionReader implements SessionReader {
         // Load the genome, which can be an ID, or a path or URL to a .genome or indexed fasta file.
         String genomeId = getAttribute(element, SessionAttribute.GENOME.getText());
         String hasGeneTrackStr = getAttribute(element, SessionAttribute.HAS_GENE_TRACK.getText());
-        boolean hasGeneTrack = version <= 5 ? true : false;
+        boolean hasGeneTrack = true;
         if(hasGeneTrackStr != null){
             hasGeneTrack = Boolean.parseBoolean(hasGeneTrackStr);
         }
