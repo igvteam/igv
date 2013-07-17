@@ -282,6 +282,22 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
 
     }
 
+    @Test
+    public void testLoadNoGeneTrack() throws Exception{
+
+        assertTrue(IGV.getInstance().hasGeneTrack());
+
+        String sessionPath = TestUtils.DATA_DIR + "sessions/no_gene_track.xml";
+        IGV.getInstance().doRestoreSession(sessionPath, null, false);
+
+        assertFalse("Gene track exists but it shouldn't", IGV.getInstance().hasGeneTrack());
+
+        sessionPath = TestUtils.DATA_DIR + "sessions/has_gene_track.xml";
+        IGV.getInstance().doRestoreSession(sessionPath, null, false);
+
+        assertTrue("No gene track found but one should exist", IGV.getInstance().hasGeneTrack());
+    }
+
     private boolean listContainsFeature(List<Feature> featureList, Feature feature){
         for (Feature listFeature : featureList) {
             if ((feature.getChr().equals(listFeature.getChr())) &&

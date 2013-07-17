@@ -52,7 +52,7 @@ public class SessionWriter {
     static Logger log = Logger.getLogger(SessionWriter.class);
 
     Session session;
-    private static int CURRENT_VERSION = 5;
+    private static int CURRENT_VERSION = 6;
 
     private static final String TRACK_TAG = SessionElement.TRACK.getText();
 
@@ -107,17 +107,15 @@ public class SessionWriter {
 
             globalElement.setAttribute(SessionAttribute.VERSION.getText(), String.valueOf(CURRENT_VERSION));
 
-            String genome = GenomeManager.getInstance().getGenomeId();
-            if (genome != null) {
-                globalElement.setAttribute(SessionAttribute.GENOME.getText(), genome);
+            String genomeId = GenomeManager.getInstance().getGenomeId();
+            if (genomeId != null) {
+                globalElement.setAttribute(SessionAttribute.GENOME.getText(), genomeId);
             }
 
-            //if (!FrameManager.isGeneListMode()) {
             String locus = session.getLocusString();
             if (locus != null && !FrameManager.isGeneListMode()) {
                 globalElement.setAttribute(SessionAttribute.LOCUS.getText(), locus);
             }
-            //}
 
             String groupBy = IGV.getInstance().getGroupByAttribute();
             if (groupBy != null) {
@@ -128,6 +126,7 @@ public class SessionWriter {
                 globalElement.setAttribute("removeEmptyTracks", "true");
             }
 
+            globalElement.setAttribute(SessionAttribute.HAS_GENE_TRACK.getText(), "" + IGV.getInstance().hasGeneTrack());
 
             // Resource Files
             writeResources(outputFile, globalElement, document);
