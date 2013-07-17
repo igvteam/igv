@@ -608,7 +608,17 @@ public class IGV {
 
     }
 
-    public void loadGenome(String path, ProgressMonitor monitor) throws IOException {
+    public void loadGenome(String path, ProgressMonitor monitor) throws IOException{
+        loadGenome(path, monitor, true);
+    }
+
+    /**
+     * @param path
+     * @param monitor
+     * @param addGenomeTrack Whether to display the gene track as well
+     * @throws IOException
+     */
+    public void loadGenome(String path, ProgressMonitor monitor, boolean addGenomeTrack) throws IOException {
 
         File file = new File(path);
         if (file.exists()) {
@@ -618,7 +628,7 @@ public class IGV {
 
         resetSession(null);
 
-        Genome genome = getGenomeManager().loadGenome(path, monitor);
+        Genome genome = getGenomeManager().loadGenome(path, monitor, addGenomeTrack);
         //If genome loading cancelled
         if (genome == null) return;
 
@@ -2075,6 +2085,14 @@ public class IGV {
 
     }
 
+    public boolean hasGeneTrack(){
+        FeatureTrack geneTrack = GenomeManager.getInstance().getCurrentGenome().getGeneTrack();
+        if(geneTrack == null) return false;
+        for(FeatureTrack ft: getFeatureTracks()){
+            if(geneTrack == ft) return true;
+        }
+        return false;
+    }
 
     /////////////////////////////////////////////////////////////////////////////////////////
     // Sorting

@@ -214,6 +214,7 @@ public class IGVSessionReader implements SessionReader {
         FEATURE_WINDOW("featureVisibilityWindow"),
         DISPLAY_NAME("displayName"),
         COLOR_SCALE("colorScale"),
+        HAS_GENE_TRACK("hasGeneTrack"),
 
         //RESOURCE ATTRIBUTES
         PATH("path"),
@@ -330,18 +331,34 @@ public class IGVSessionReader implements SessionReader {
         String nodeName = node.getNodeName();
         if (!(nodeName.equalsIgnoreCase(SessionElement.GLOBAL.getText()) || nodeName.equalsIgnoreCase(SessionElement.SESSION.getText()))) {
             MessageUtils.showMessage("Session files must begin with a \"Global\" or \"Session\" element.  Found: " + nodeName);
+            return;
         }
         process(session, node, additionalInformation, rootPath);
 
         Element element = (Element) node;
 
+        String versionString = getAttribute(element, SessionAttribute.VERSION.getText());
+        try {
+            version = Integer.parseInt(versionString);
+        } catch (NumberFormatException e) {
+            log.error("Non integer version number in session file: " + versionString);
+        }
+
         // Load the genome, which can be an ID, or a path or URL to a .genome or indexed fasta file.
         String genomeId = getAttribute(element, SessionAttribute.GENOME.getText());
+        String hasGeneTrackStr = getAttribute(element, SessionAttribute.HAS_GENE_TRACK.getText());
+        boolean hasGeneTrack = true;
+        if(hasGeneTrackStr != null){
+            hasGeneTrack = Boolean.parseBoolean(hasGeneTrackStr);
+        }
+
         if (genomeId != null && genomeId.length() > 0) {
             if (genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
                 // We don't have to reload the genome, but the gene track for the current genome should be restored.
-                Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                IGV.getInstance().setGenomeTracks(genome.getGeneTrack());
+                if(hasGeneTrack){
+                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                    IGV.getInstance().setGenomeTracks(genome.getGeneTrack());
+                }
             } else {
                 // Selecting a genome will actually "reset" the session so we have to
                 // save the path and restore it.
@@ -355,7 +372,7 @@ public class IGVSessionReader implements SessionReader {
                     }
                     if (ParsingUtils.pathExists(genomePath)) {
                         try {
-                            IGV.getInstance().loadGenome(genomePath, null);
+                            IGV.getInstance().loadGenome(genomePath, null, hasGeneTrack);
                         } catch (IOException e) {
                             throw new RuntimeException("Error loading genome: " + genomeId);
                         }
@@ -365,12 +382,18 @@ public class IGVSessionReader implements SessionReader {
                 }
                 session.setPath(sessionPath);
             }
-
         }
-        //For later lookup and to prevent dual adding, we keep a reference to the gene track
-        geneTrack = GenomeManager.getInstance().getCurrentGenome().getGeneTrack();
-        if(geneTrack != null){
-            allTracks.put(geneTrack.getId(), Arrays.asList(geneTrack));
+
+        if(!hasGeneTrack && igv.hasGeneTrack()){
+            //Need to remove gene track if it was loaded because it's not supposed to be in the session
+            igv.removeTracks(Arrays.<Track>asList(GenomeManager.getInstance().getCurrentGenome().getGeneTrack()));
+            geneTrack = null;
+        }else{
+            //For later lookup and to prevent dual adding, we keep a reference to the gene track
+            geneTrack = GenomeManager.getInstance().getCurrentGenome().getGeneTrack();
+            if(geneTrack != null){
+                allTracks.put(geneTrack.getId(), Arrays.asList(geneTrack));
+            }
         }
 
         session.setLocus(getAttribute(element, SessionAttribute.LOCUS.getText()));
@@ -386,12 +409,6 @@ public class IGVSessionReader implements SessionReader {
             }
         }
 
-        String versionString = getAttribute(element, SessionAttribute.VERSION.getText());
-        try {
-            version = Integer.parseInt(versionString);
-        } catch (NumberFormatException e) {
-            log.error("Non integer version number in session file: " + versionString);
-        }
         session.setVersion(version);
 
         NodeList elements = element.getChildNodes();
@@ -997,7 +1014,7 @@ public class IGVSessionReader implements SessionReader {
                 Unmarshaller u = getJAXBContext().createUnmarshaller();
                 for (final Track track : matchedTracks) {
 
-                    // Special case for sequence & gene tracks,  they need to be removed before being placed.
+                    // Special case for sequence & gene tracks, they need to be removed before being placed.
                     if (igv != null && version >= 4 && (track == geneTrack || track == seqTrack)) {
                         igv.removeTracks(Arrays.asList(track));
                     }
