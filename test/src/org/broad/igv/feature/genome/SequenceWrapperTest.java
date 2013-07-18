@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 /*
@@ -23,22 +16,24 @@
 
 package org.broad.igv.feature.genome;
 
-import org.broad.igv.Globals;
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.util.HttpUtils;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author jrobinso
  */
-public class SequenceWrapperTest {
+public class SequenceWrapperTest extends AbstractHeadlessTest{
 
     static String seqPath = "http://igvdata.broadinstitute.org/genomes/seq/hg18/";
     static PreferenceManager preferenceManager;
@@ -49,19 +44,16 @@ public class SequenceWrapperTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        Globals.setHeadless(true);
+        AbstractHeadlessTest.setUpClass();
+
         preferenceManager = PreferenceManager.getInstance();
         String tmp = SequenceWrapper.checkSequenceURL(seqPath);
         helper = new SequenceWrapper(new IGVSequence(tmp));
     }
 
-    @Before
-    public void setUp() {
-        //Web requests don't seem to work with this false
-    }
-
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception{
+        super.tearDown();
         SequenceWrapper.setCacheSequences(true);
     }
 
@@ -143,6 +135,25 @@ public class SequenceWrapperTest {
         } finally {
             HttpUtils.disableByteRange(false);
         }
+    }
+
+    @Test
+    public void testGetKeyUniqueness() throws Exception{
+        int count = 0;
+        int maxNumTiles = 100;
+        Set<String> keys = new HashSet<String>();
+
+        for(String chr: genome.getAllChromosomeNames()){
+            for(int tNo=0; tNo < maxNumTiles; tNo++){
+                String key = SequenceWrapper.getKey(chr, tNo);
+                assertFalse("Key not unique: " + key, keys.contains(key));
+                keys.add(key);
+                count++;
+            }
+        }
+
+        assertEquals(count, keys.size());
+
     }
 
 }
