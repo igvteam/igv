@@ -30,6 +30,7 @@ import net.sf.samtools.seekablestream.SeekableFileStream;
 import net.sf.samtools.seekablestream.SeekableHTTPStream;
 import net.sf.samtools.seekablestream.SeekableStream;
 import org.broad.igv.util.TestUtils;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -350,7 +351,15 @@ public class IGVSeekableBufferedStreamTest {
         long bytesToRead = fileLength;
 
         String path = "/dev/zero";
-        SeekableStream ss = new MaxLengthSeekableStream(path, fileLength);
+
+        SeekableStream ss = null;
+        //Path doesn't exist on windows
+        try{
+            ss = new MaxLengthSeekableStream(path, fileLength);
+        }catch(FileNotFoundException e){
+            Assume.assumeNoException(e);
+        }
+
         IGVSeekableBufferedStream bufferedStream = new IGVSeekableBufferedStream(ss);
 
         long bytesRead = 0;
