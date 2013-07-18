@@ -15,7 +15,6 @@ package org.broad.igv.track;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.gwas.GWASTrack;
 import org.broad.igv.renderer.*;
 import org.broad.igv.sam.AlignmentTrack;
@@ -357,7 +356,7 @@ public abstract class AbstractTrack implements Track {
      * <p/>
      * (1) the track attribute table
      * (2) by sampleId, as set in the Resource element of a session or load-from-server menu
-     * (3) by track name, the visibile display name
+     * (3) by track name, the visible display name
      * (4) by full path to the file associated with this track
      *
      * @param attributeName

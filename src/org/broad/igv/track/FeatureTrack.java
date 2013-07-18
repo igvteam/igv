@@ -831,8 +831,7 @@ public class FeatureTrack extends AbstractTrack {
                     Genome genome = GenomeManager.getInstance().getCurrentGenome();
                     if (genome != null) {
                         Chromosome c = genome.getChromosome(chr);
-                        int cLength = c.getLength();
-                        if (c != null && end < cLength) expandedEnd = Math.min(cLength, expandedEnd);
+                        if (c != null && end < c.getLength()) expandedEnd = Math.min(c.getLength(), expandedEnd);
                     }
 
                     Iterator<Feature> iter = source.getFeatures(chr, expandedStart, expandedEnd);
