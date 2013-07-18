@@ -22,8 +22,6 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.event.DataLoadedEvent;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.ui.util.CancellableProgressDialog;
-import org.broad.igv.ui.util.IndefiniteProgressMonitor;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.ArrayHeapObjectSorter;
 import org.broad.igv.util.LongRunningTask;
@@ -362,23 +360,16 @@ public class AlignmentDataManager implements IAlignmentDataManager{
         final AlignmentTrack.BisulfiteContext bisulfiteContext =
                 renderOptions != null ? renderOptions.bisulfiteContext : null;
 
-        //Show cancellable dialog if one doesn't already exist
         ProgressMonitor monitor = null;
-
+        //Show cancel button
         if(IGV.hasInstance() && !Globals.isBatch() && !Globals.isHeadless()){
-            synchronized (CancellableProgressDialog.class) {
-                if (!CancellableProgressDialog.hasCancellableProgressDialog()) {
-                    monitor = new IndefiniteProgressMonitor();
-
-                    ActionListener cancelListener = new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            AlignmentTileLoader.cancelReaders();
-                        }
-                    };
-                    CancellableProgressDialog.showCancellableProgressDialog(IGV.getMainFrame(), "Loading...", cancelListener, monitor);
+            ActionListener cancelListener = new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    AlignmentTileLoader.cancelReaders();
                 }
-            }
+            };
+            IGV.getInstance().getContentPane().getStatusBar().activateCancelButton(cancelListener);
         }
 
         SpliceJunctionHelper spliceJunctionHelper = new SpliceJunctionHelper(this.loadOptions);

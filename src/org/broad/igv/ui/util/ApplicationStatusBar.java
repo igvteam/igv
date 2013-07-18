@@ -1,31 +1,27 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 
 package org.broad.igv.ui.util;
 
 import com.jidesoft.swing.JideBoxLayout;
+import com.jidesoft.swing.JideButton;
 import org.apache.log4j.Logger;
 import org.broad.igv.ui.FontManager;
 
 import javax.swing.*;
-import java.text.NumberFormat;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.NumberFormat;
 import java.util.TimerTask;
 
 
@@ -39,6 +35,8 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
     private JLabel messageBox2;
     private JLabel messageBox3;
     private JLabel memoryStatus;
+    
+    private JButton cancelButton;
 
     java.util.Timer timer;
 
@@ -60,9 +58,14 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
         setLayout(layout);
 
         messageBox = createMessageField(messageBG, messageFont);
-        messageBox.setMinimumSize(new Dimension(165, 10));
-        messageBox.setPreferredSize(new Dimension(165, 20));
+        messageBox.setMinimumSize(new Dimension(135, 10));
+        messageBox.setPreferredSize(new Dimension(135, 20));
         add(messageBox, JideBoxLayout.FIX);
+
+        cancelButton = new JideButton(IconFactory.getInstance().getIcon(IconFactory.IconID.CLOSE));
+        cancelButton.setMinimumSize(new Dimension(20, 10));
+        cancelButton.setPreferredSize(new Dimension(20, 20));
+        add(cancelButton, JideBoxLayout.FIX);
 
         messageBox2 = createMessageField(messageBG, messageFont);
         messageBox2.setMinimumSize(new Dimension(150, 10));
@@ -114,6 +117,36 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
         return messageField;
 
     }
+
+    /**
+     * Set the cancel button
+     */
+    public void activateCancelButton(ActionListener listener){
+        this.cancelButton.addActionListener(listener);
+        this.cancelButton.addActionListener(new CancelButtonActionListener());
+        this.cancelButton.setEnabled(true);
+
+    }
+
+    public void deactivateCancelButton(){
+        for(ActionListener l: this.cancelButton.getActionListeners()){
+            this.cancelButton.removeActionListener(l);
+        }
+        this.cancelButton.setEnabled(false);
+    }
+
+    public JButton getCancelButton() {
+        return cancelButton;
+    }
+
+    class CancelButtonActionListener implements ActionListener{
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            deactivateCancelButton();
+        }
+    }
+
+
 
 
     class MemoryUpdateTask extends TimerTask {
