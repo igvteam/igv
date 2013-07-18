@@ -322,6 +322,27 @@ public class HttpUtils {
         proxySettings = new ProxySettings(useProxy, user, pw, auth, proxyHost, proxyPort, type);
     }
 
+    /**
+     * Get the system defined proxy defined for the URI, or null if
+     * not available. May also return a {@code Proxy} object which
+     * represents a direct connection
+     * @param uri
+     * @return
+     */
+    private Proxy getSystemProxy(String uri){
+        try {
+            ProxySelector selector = ProxySelector.getDefault();
+            List<Proxy> proxyList = selector.select(new URI(uri));
+            return proxyList.get(0);
+        } catch (URISyntaxException e) {
+            log.error(e.getMessage(), e);
+            return null;
+        } catch (NullPointerException e){
+            return null;
+        }
+
+    }
+
     public boolean downloadFile(String url, File outputFile) throws IOException {
 
         log.info("Downloading " + url + " to " + outputFile.getAbsolutePath());
@@ -517,9 +538,6 @@ public class HttpUtils {
     private HttpURLConnection openConnection(
             URL url, Map<String, String> requestProperties, String method, int redirectCount) throws IOException {
 
-        boolean useProxy = proxySettings != null && proxySettings.useProxy && proxySettings.proxyHost != null &&
-                proxySettings.proxyPort > 0;
-
         //Encode query string portions
         url = StringUtils.encodeURLQueryString(url);
         if(log.isTraceEnabled()){
@@ -533,12 +551,19 @@ public class HttpUtils {
             url = new URL(newPath);
         }
 
+        Proxy sysProxy = getSystemProxy(url.toExternalForm());
+        boolean igvProxySettingsExist = proxySettings != null && proxySettings.useProxy && proxySettings.proxyHost != null && proxySettings.proxyPort > 0;
+        boolean useProxy = sysProxy != null || igvProxySettingsExist;
+
         HttpURLConnection conn;
         if (useProxy) {
-            Proxy proxy = new Proxy(proxySettings.type, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
+            Proxy proxy = sysProxy;
+            if(igvProxySettingsExist){
+                proxy = new Proxy(proxySettings.type, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
+            }
             conn = (HttpURLConnection) url.openConnection(proxy);
 
-            if (proxySettings.auth && proxySettings.user != null && proxySettings.pw != null) {
+            if (igvProxySettingsExist && proxySettings.auth && proxySettings.user != null && proxySettings.pw != null) {
                 byte[] bytes = (proxySettings.user + ":" + proxySettings.pw).getBytes();
 
                 String encodedUserPwd = String.valueOf(Base64Coder.encode(bytes));
