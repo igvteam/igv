@@ -12,6 +12,7 @@
 package org.broad.igv.sam;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Iterator;
@@ -46,7 +47,7 @@ public class AlignmentBlockTest extends AbstractHeadlessTest{
                 int end = block.getEnd();
                 byte[] refSeq = genome.getSequence(chr, start, end);
 
-                AlignmentBlock.MismatchBlock[] mismatchBlocks = AlignmentBlock.createMismatchBlocks(start, refSeq, block.getBases(), block.getQualities());
+                AlignmentBlock.MismatchBlock[] mismatchBlocks = AlignmentBlock.createMismatchBlocks(start, refSeq, block.getBases());
                 AlignmentBlock.MismatchBlock nextBlock = null;
                 int blockInd = 0;
                 int nextBlockStart = Integer.MAX_VALUE;
@@ -87,12 +88,14 @@ public class AlignmentBlockTest extends AbstractHeadlessTest{
 
     }
 
+    @Ignore
     @Test
     public void testMemoryUsageNonLazy() throws Exception{
         System.out.println("Non lazy load");
         tstMemoryUsage(false);
     }
 
+    @Ignore
     @Test
     public void testMemoryUsageLazy() throws Exception{
         System.out.println("Lazy load");

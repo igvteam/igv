@@ -740,12 +740,14 @@ public class AlignmentRenderer implements FeatureRenderer {
             bisinfo = new BisulfiteBaseInfo(reference, baseAlignment, block, renderOptions.bisulfiteContext);
         }
 
-        if(!haveMismatches){
-            //If we don't have the mismatches, we create a dummy mismatch block to loop over.
-            //Same as looping over overall block
+
+        //If we don't have the mismatches, we create a dummy mismatch block to loop over.
+        //Same as looping over overall block
+        //Ditto for if we want to show all the bases
+        if(!haveMismatches || showAllBases){
             mismatchBlocks = new AlignmentBlock.MismatchBlock[1];
             byte[] read = block.getBases();
-            mismatchBlocks[0] = new AlignmentBlock.MismatchBlock(start, read, block.getQualities());
+            mismatchBlocks[0] = new AlignmentBlock.MismatchBlock(start, read);
         }
 
         for(AlignmentBlock.MismatchBlock mismatchBlock: mismatchBlocks){

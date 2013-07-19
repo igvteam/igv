@@ -759,16 +759,15 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                 try{
                     SAMRecordIterator iter = source.getReader().iterator(span);
                     this.record = null;
-
                 }catch(Exception e){
                     this.fileSource = null;
                 }
             }
+        }
 
-            Genome genome = GenomeManager.getInstance().getCurrentGenome();
-            for(AlignmentBlock block: alignmentBlocks){
-                block.reduce(genome);
-            }
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        for(AlignmentBlock block: alignmentBlocks){
+            block.reduce(genome);
         }
     }
 

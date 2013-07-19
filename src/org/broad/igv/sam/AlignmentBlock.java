@@ -72,15 +72,14 @@ public class AlignmentBlock {
 
     public byte[] getBases() {
         if(bases != null) return bases;
-        byte[] sbases = null;//softBases.get();
-        if(sbases == null){
-            byte[] reference = getReferenceSequence();
-            sbases = Arrays.copyOf(reference, reference.length);
-            for(MismatchBlock mismatchBlock: this.mismatches){
-                System.arraycopy(mismatchBlock.bases, 0, sbases, mismatchBlock.start - start, mismatchBlock.bases.length);
-            }
+
+        byte[] reference = getReferenceSequence();
+        byte[] mbases = Arrays.copyOf(reference, reference.length);
+        for (MismatchBlock mismatchBlock : this.mismatches) {
+            System.arraycopy(mismatchBlock.bases, 0, mbases, mismatchBlock.start - start, mismatchBlock.bases.length);
         }
-        return sbases;
+
+        return mbases;
     }
 
     private byte[] getReferenceSequence() {
@@ -105,17 +104,7 @@ public class AlignmentBlock {
     }
 
     public byte[] getQualities() {
-        if(qualities != null) return qualities;
-        byte[] squals = null;//softQualities.get();
-        if(squals == null){
-            squals = new byte[getLength()];
-            Arrays.fill(squals, (byte) 126);
-            for(MismatchBlock mismatchBlock: this.mismatches){
-                System.arraycopy(mismatchBlock.qualities, 0, squals, mismatchBlock.start - start, mismatchBlock.qualities.length);
-            }
-            //softQualities = new SoftReference<byte[]>(squals);
-        }
-        return squals;
+        return qualities;
     }
 
     public short[] getCounts() {
@@ -176,13 +165,11 @@ public class AlignmentBlock {
      * @param start
      * @param refBases
      * @param readBases
-     * @param readQualities
      * @return
      */
-    static MismatchBlock[] createMismatchBlocks(int start, byte[] refBases, byte[] readBases, byte[] readQualities){
+    static MismatchBlock[] createMismatchBlocks(int start, byte[] refBases, byte[] readBases){
         List<MismatchBlock> mismatchBlocks = new ArrayList<MismatchBlock>();
         List<Byte> mismatches = null;
-        List<Byte> qualities = null;
         int lastMMBlockStart = -1;
         for(int ii = 0; ii <= readBases.length; ii++){
 
@@ -202,21 +189,17 @@ public class AlignmentBlock {
                 //Finish off last mismatch
                 if(mismatches != null){
                     byte[] seq = ArrayUtils.toPrimitive(mismatches.toArray(new Byte[mismatches.size()]));
-                    byte[] quals = ArrayUtils.toPrimitive(qualities.toArray(new Byte[qualities.size()]));
-                    MismatchBlock curMMBlock = new MismatchBlock(lastMMBlockStart, seq, quals);
+                    MismatchBlock curMMBlock = new MismatchBlock(lastMMBlockStart, seq);
                     mismatchBlocks.add(curMMBlock);
                     mismatches = null;
-                    qualities = null;
                     lastMMBlockStart = -1;
                 }
             }else{
                 if(mismatches == null){
                     lastMMBlockStart = start + ii;
                     mismatches = new ArrayList<Byte>();
-                    qualities = new ArrayList<Byte>();
                 }
                 mismatches.add(readBase);
-                qualities.add(readQualities[ii]);
             }
         }
         return mismatchBlocks.toArray(new MismatchBlock[mismatchBlocks.size()]);
@@ -234,11 +217,10 @@ public class AlignmentBlock {
     public void reduce(Genome genome){
         this.genome = genome;
         byte[] refBases = genome.getSequence(this.chr, getStart(), getEnd());
-        MismatchBlock[] tmpmismatches = AlignmentBlock.createMismatchBlocks(getStart(), refBases, bases, qualities);
+        MismatchBlock[] tmpmismatches = AlignmentBlock.createMismatchBlocks(getStart(), refBases, bases);
         if(tmpmismatches.length < (length / 5)) mismatches = tmpmismatches;
         if(mismatches != null){
             this.bases = null;
-            this.qualities = null;
         }
     }
 
@@ -255,12 +237,10 @@ public class AlignmentBlock {
 
         public final int start;
         public final byte[] bases;
-        public final byte[] qualities;
 
-        public MismatchBlock(int start, byte[] bases, byte[] qualities){
+        public MismatchBlock(int start, byte[] bases){
             this.start = start;
             this.bases = bases;
-            this.qualities = qualities;
         }
 
     }
