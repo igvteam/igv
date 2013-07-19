@@ -15,6 +15,7 @@ package org.broad.igv.sam;
 import net.sf.samtools.*;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -609,6 +610,16 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         return fileSource;
     }
 
+    @ForTesting
+    SAMRecord getRecordField() {
+        return this.record;
+    }
+
+    @ForTesting
+    SAMRecord getReferenceRecordField() {
+        return this.referenceRecord.get();
+    }
+
     /**
      * Retrieves the SAMRecord corresponding to this alignment.
      * May be loaded from the file if not in memory
@@ -634,6 +645,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
             }
             iter.close();
             this.referenceRecord = new WeakReference<SAMRecord>(record);
+            //log.trace("Reloaded alignment from file: " + record.getReadName());
         }
         return record;
     }
