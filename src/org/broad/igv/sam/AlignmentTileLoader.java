@@ -209,7 +209,20 @@ public class AlignmentTileLoader {
             if (!Globals.isHeadless()) {
                 IGV.getInstance().resetStatusMessage();
             }
+
+            //Need to wait until iteration is done for our
+            //checking of reloading to work properly,
+            //see SamAlignment.sourceSupportsReload
+            if(t != null && t.isLoaded()){
+                for(Alignment al: t.getAlignments()){
+                    if(al instanceof SamAlignment){
+                        ((SamAlignment) al).optionallyPurgeSAMRecord();
+                    }
+                }
+            }
         }
+
+
     }
 
 

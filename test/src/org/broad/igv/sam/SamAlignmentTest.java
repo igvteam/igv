@@ -157,4 +157,15 @@ public class SamAlignmentTest extends AbstractHeadlessTest {
         Assert.assertNull(SamAlignment.decodeReduceCounts(record));
     }
 
+    @Ignore("Don't store hard clipped bases in blocks")
+    @Test
+    public void testBuildReadSequenceFromBlocks() throws Exception{
+        AlignmentDataManager dataManager = AlignmentDataManagerTest.getManager171();
+        Iterator<Alignment> iter = dataManager.getReader().iterator();
+
+        while(iter.hasNext()){
+            SamAlignment al = (SamAlignment) iter.next();
+            assertEquals(al.getRecord().getReadString(), al.buildReadSequenceFromBlocks());
+        }
+    }
 }

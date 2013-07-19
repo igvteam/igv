@@ -22,8 +22,9 @@ import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -63,7 +64,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
      * USE {@link #getRecord}.
      */
     private SAMRecord record;
-    //private Reference<SAMRecord> softRecord;
+    private Reference<SAMRecord> referenceRecord;
 
     private String cigarString;
     private boolean firstRead = false;
@@ -548,12 +549,20 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
     public String getReadSequence() {
         return getRecord().getReadString();
-//        String readSequence = this.readSequence != null ? this.readSequence : softReadSequence.get();
-//        if (readSequence == null) {
-//            readSequence = getRecord().getReadString();
-//            this.softReadSequence = new SoftReference<String>(readSequence);
-//        }
-//        return readSequence;
+    }
+
+    /**
+     * Use blocks to recreate read sequence.
+     * As of this comment writing, we don't keep a block
+     * for hard-clipped bases, so this won't match what's in the file
+     * @return
+     */
+    String buildReadSequenceFromBlocks(){
+        String readSeq = "";
+        for(AlignmentBlock block: getAlignmentBlocks()){
+            readSeq += new String(block.getBases());
+        }
+        return readSeq;
     }
 
     @Override
@@ -608,26 +617,25 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
      */
 
     public SAMRecord getRecord() {
-        return this.record;
-//        SAMRecord record = this.record != null ? this.record : this.softRecord.get();
-//        if (record == null) {
-//            SAMFileSource source = this.getFileSource();
-//            if(source == null){
-//                throw new IllegalStateException("SAMRecord is null but we don't have a file pointer to reload it");
-//            }
-//            SAMFileSpan span = source.getFilePointer();
-//            SAMRecordIterator iter = source.getReader().iterator(span);
-//
-//            //In theory there should only be one
-//            record = iter.next();
-//
-//            if (iter.hasNext()) {
-//                log.error("Found multiple records during query of file span:" + span);
-//            }
-//            iter.close();
-//            this.softRecord = new WeakReference<SAMRecord>(record);
-//        }
-//        return record;
+        SAMRecord record = this.record != null ? this.record : this.referenceRecord.get();
+        if (record == null) {
+            SAMFileSource source = this.getFileSource();
+            if(source == null){
+                throw new IllegalStateException("SAMRecord is null but we don't have a file pointer to reload it");
+            }
+            SAMFileSpan span = source.getFilePointer();
+            SAMRecordIterator iter = source.getReader().iterator(span);
+
+            //In theory there should only be one
+            record = iter.next();
+
+            if (iter.hasNext()) {
+                log.error("Found multiple records during query of file span:" + span);
+            }
+            iter.close();
+            this.referenceRecord = new WeakReference<SAMRecord>(record);
+        }
+        return record;
     }
 
     @Override
@@ -749,27 +757,57 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     public void finish() {
         super.finish();
 
-        if (false && DEFAULT_LAZY_LOAD) {
-            SAMFileSource source = this.fileSource;
-
-            if(source != null){
-                //Check that we can reload the record before getting rid of it.
-                //SAMTextReader doesn't support this, for instance
-                SAMFileSpan span = source.getFilePointer();
-                try{
-                    SAMRecordIterator iter = source.getReader().iterator(span);
-                    this.record = null;
-                }catch(Exception e){
-                    this.fileSource = null;
-                }
-            }
-        }
-
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
         for(AlignmentBlock block: alignmentBlocks){
             block.reduce(genome);
         }
     }
+
+    void optionallyPurgeSAMRecord() {
+        if(sourceSupportsReload(getFileSource()) && DEFAULT_LAZY_LOAD){
+            this.referenceRecord = new WeakReference<SAMRecord>(this.record);
+            this.record = null;
+        }
+    }
+
+    private static Map<SAMFileReader, Boolean> readerSupportsReload = new HashMap<SAMFileReader, Boolean>();
+
+    /**
+     * Check that the SAMFileSource in question can support reloading the
+     * record at any time. We store the results in a static map so we don't need
+     * to check the same source more than once
+     * @param source
+     * @return
+     */
+    private static boolean sourceSupportsReload(SAMFileSource source){
+        boolean supports = false;
+        if(source != null){
+            SAMFileReader reader = source.getReader();
+            if(readerSupportsReload.containsKey(reader)){
+                return readerSupportsReload.get(reader);
+            }
+            //Check that we can reload the record before getting rid of it.
+            //SAMTextReader doesn't support this, for instance
+            SAMRecordIterator iter = null;
+            SAMFileSpan span = source.getFilePointer();
+            try{
+                log.debug("test opening file " + source.getReader().toString());
+                iter = reader.iterator(span);
+                supports = true;
+            }catch(Exception e){
+                //Couldn't retrieve, no biggy
+                //Sometimes this happens because iteration is in progress, which means
+                //the source COULD support reloading, but iterators need to be closed better
+                supports = false;
+            }finally{
+                if(iter != null) iter.close();
+            }
+            readerSupportsReload.put(reader, supports);
+        }
+        return supports;
+    }
+
+
 
     public boolean isVendorFailedRead() {
         return getRecord().getReadFailsVendorQualityCheckFlag();
