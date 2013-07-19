@@ -48,7 +48,7 @@ public class GFFtoBedTest {
         try {
             Genome genome = null; // Not needed for this test
             gffReader = new BufferedReader(new FileReader(inputFile));
-            GFFParser parser = new GFFParser(inputFile.getPath());
+            GFFParser parser = new GFFParser();
             List<Feature> gffFeatures = parser.loadFeatures(gffReader, genome);
 
             bedReader = new BufferedReader(new FileReader(outputFile));

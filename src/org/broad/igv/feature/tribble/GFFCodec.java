@@ -54,51 +54,46 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
     private static Logger log = Logger.getLogger(GFFCodec.class);
 
-    public static Set<String> exonTerms = new HashSet();
-    public static Set<String> utrTerms = new HashSet();
+    public static Set<String> transcriptParts = new HashSet();
+    public static Set<String> mrnaParts = new HashSet();
+
+
+    static {
+        mrnaParts.add("five_prime_UTR");
+        mrnaParts.add("three_prime_UTR");
+        mrnaParts.add("5'-utr");
+        mrnaParts.add("3'-utr");
+        mrnaParts.add("3'-UTR");
+        mrnaParts.add("5'-UTR");
+        mrnaParts.add("5utr");
+        mrnaParts.add("3utr");
+        mrnaParts.add("CDS");
+        mrnaParts.add("cds");
+        mrnaParts.add("CDS_parts");
+
+        transcriptParts.addAll(mrnaParts);
+        transcriptParts.add("exon");
+        transcriptParts.add("coding_exon");
+        transcriptParts.add("intron");
+    }
+
+
     public static Set<String> geneParts = new HashSet();
-    static HashSet<String> ignoredTypes = new HashSet();
-
-
     static {
-        utrTerms.add("five_prime_UTR");
-        utrTerms.add("three_prime_UTR");
-        utrTerms.add("5'-utr");
-        utrTerms.add("3'-utr");
-        utrTerms.add("3'-UTR");
-        utrTerms.add("5'-UTR");
-        utrTerms.add("5utr");
-        utrTerms.add("3utr");
-    }
-
-    static {
-        exonTerms.addAll(utrTerms);
-        exonTerms.add("exon");
-        exonTerms.add("coding_exon");
-        exonTerms.add("CDS");
-        exonTerms.add("cds");
-
-    }
-
-
-    static {
-        geneParts.addAll(exonTerms);
+        geneParts.addAll(transcriptParts);
         geneParts.add("transcript");
         geneParts.add("processed_transcript");
         geneParts.add("mrna");
         geneParts.add("mRNA");
-        geneParts.add("promoter");
-        geneParts.add("intron");
-        geneParts.add("CDS_parts");
 
     }
 
+    static HashSet<String> ignoredTypes = new HashSet();
     static {
         ignoredTypes.add("start_codon");
         ignoredTypes.add("stop_codon");
         ignoredTypes.add("Contig");
         ignoredTypes.add("RealContig");
-        ignoredTypes.add("intron");
     }
 
 

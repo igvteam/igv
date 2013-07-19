@@ -11,10 +11,7 @@
 
 package org.broad.igv.util.collections;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A "map-like" class that supports multiple values for a given key.
@@ -82,6 +79,10 @@ public class MultiMap<K, V> {
         return map.containsKey(key);
     }
 
+    public Set<K> keys() {
+        return map.keySet();
+    }
+
     private static final int MAX_CHARS_PER_LINE = 50;
 
     public void printHtml(StringBuffer buffer, int max) {
@@ -143,5 +144,11 @@ public class MultiMap<K, V> {
 
         }
         return allValues;
+    }
+
+    public void addAll(MultiMap<K, V> attributes) {
+        for(K key : attributes.keys())  {
+             map.put(key, attributes.get(key));
+        }
     }
 }

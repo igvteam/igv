@@ -31,7 +31,7 @@ public class GFFTest{//} extends AbstractHeadlessTest{
 
 
     private List<Feature> getFeatures(String filePath) throws Exception{
-        GFFParser parser = new GFFParser(filePath);
+        GFFParser parser = new GFFParser();
         BufferedReader br = new BufferedReader(new FileReader(filePath));
         List<Feature> features = parser.loadFeatures(br, null);
         br.close();

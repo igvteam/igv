@@ -41,15 +41,12 @@ public class GFFParser implements FeatureParser {
 
     private TrackProperties trackProperties = null;
 
-    public GFFParser(String path) {
-    }
 
     public List<FeatureTrack> loadTracks(ResourceLocator locator, Genome genome) {
 
         BufferedReader reader = null;
         try {
             reader = ParsingUtils.openBufferedReader(locator);
-            GFFCodec.Version version = locator.getPath().endsWith(".gff3") ? GFFCodec.Version.GFF3 : GFFCodec.Version.GFF2;
             List<org.broad.tribble.Feature> features = loadFeatures(reader, genome);
 
             FeatureTrack track = new FeatureTrack(locator, new FeatureCollectionSource(features, genome));

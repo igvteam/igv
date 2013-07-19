@@ -396,7 +396,7 @@ public class TrackLoader {
      */
     private void loadGFFfile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
-        GFFParser featureParser = new GFFParser(locator.getPath());
+        GFFParser featureParser = new GFFParser();
         List<FeatureTrack> tracks = featureParser.loadTracks(locator, genome);
         newTracks.addAll(tracks);
     }

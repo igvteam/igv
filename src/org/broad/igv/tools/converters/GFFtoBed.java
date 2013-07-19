@@ -32,7 +32,7 @@ public class GFFtoBed {
 
     public static void convert(File inputFile, File outputFile) {
 
-        GFFParser parser = new GFFParser(inputFile.getPath());
+        GFFParser parser = new GFFParser();
 
         BufferedReader reader = null;
         PrintWriter pw = null;
