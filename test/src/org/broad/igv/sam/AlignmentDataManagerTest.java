@@ -390,14 +390,6 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
 //            String readSeq = sal.getReadSequenceField();
 //            readSeqs.add(readSeq);
 //            al.finish();
-
-            //TODO Haven't decided what we're doing here
-//            if (SamAlignment.DEFAULT_LAZY_LOAD) {
-//                assertNull(sal.getReadSequenceField());
-//            } else {
-//                assertNotNull(sal.getReadSequenceField());
-//            }
-
         }
 
         int counter = 0;

@@ -20,7 +20,6 @@ import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 
 /**
  * @author jrobinso
@@ -55,10 +54,6 @@ public abstract class AbstractAlignment implements Alignment {
 
     public ReadMate getMate() {
         return mate;
-    }
-
-    public String getMateSequence() {
-        return null;
     }
 
     public String getReadName() {
@@ -308,10 +303,6 @@ public abstract class AbstractAlignment implements Alignment {
 
     public Object getAttribute(String key) {
         return null;
-    }
-
-    public void setMateSequence(String sequence) {
-        // ignore by default
     }
 
     public String getPairOrientation() {

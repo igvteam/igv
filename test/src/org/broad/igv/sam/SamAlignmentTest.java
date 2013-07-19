@@ -40,15 +40,6 @@ import static junit.framework.Assert.assertEquals;
  */
 public class SamAlignmentTest extends AbstractHeadlessTest {
 
-    /**
-     * Constructs ...
-     */
-    public SamAlignmentTest() {
-    }
-
-    /**
-     * Test of adjustReads method, of class SamAlignment.
-     */
 
     @Ignore
     @Test
@@ -165,6 +156,5 @@ public class SamAlignmentTest extends AbstractHeadlessTest {
         record.setAttribute(SamAlignment.REDUCE_READS_TAG, "not meaningful");
         Assert.assertNull(SamAlignment.decodeReduceCounts(record));
     }
-
 
 }

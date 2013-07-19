@@ -15,7 +15,6 @@ package org.broad.igv.sam;
 import net.sf.samtools.*;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -65,15 +64,6 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
      */
     private SAMRecord record;
     //private Reference<SAMRecord> softRecord;
-
-    /**
-     * DO NOT ACCESS THIS FIELD DIRECTLY, EVEN WITHIN THIS CLASS
-     * USE {@link #getReadSequence}
-     *
-     * {@code readSequence} may be used frequently when loading alignments so we hold on to it then,
-     * but afterwards used very rarely. So we null it out
-     */
-    private String readSequence;
 
     private String cigarString;
     private boolean firstRead = false;
@@ -152,7 +142,6 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         this.readPairedFlag = record.getReadPairedFlag();
         this.setInferredInsertSize(record.getInferredInsertSize());
 
-        this.readSequence = record.getReadString();
         this.readLength = record.getReadLength();
         this.firstInPair = record.getReadPairedFlag() ? record.getFirstOfPairFlag() : true;
 
@@ -557,13 +546,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         return cigarString;
     }
 
-    @ForTesting
-    String getReadSequenceField() {
-        return readSequence;
-    }
-
     public String getReadSequence() {
-        if(this.readSequence != null) return this.readSequence;
         return getRecord().getReadString();
 //        String readSequence = this.readSequence != null ? this.readSequence : softReadSequence.get();
 //        if (readSequence == null) {
@@ -758,16 +741,6 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     }
 
     @Override
-    public String getMateSequence() {
-        return mateSequence;
-    }
-
-    @Override
-    public void setMateSequence(String mateSequence) {
-        this.mateSequence = mateSequence;
-    }
-
-    @Override
     public String getPairOrientation() {
         return pairOrientation;
     }
@@ -775,9 +748,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     @Override
     public void finish() {
         super.finish();
-        if(this.mateSequence == null){
-            this.readSequence = null;
-        }
+
         if (false && DEFAULT_LAZY_LOAD) {
             SAMFileSource source = this.fileSource;
 
