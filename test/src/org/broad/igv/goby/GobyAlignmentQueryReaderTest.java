@@ -26,6 +26,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.lang.MutableString;
 import junit.framework.Assert;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.AbstractHeadlessTest;
@@ -202,7 +203,7 @@ public class GobyAlignmentQueryReaderTest extends AbstractHeadlessTest{
                 setQueryLength(50).setPosition(1000).setMatchingReverseStrand(false).
                 setQueryIndex(0).setTargetIndex(1).
                 setQueryAlignedLength(50).addSequenceVariations(mutation).build();
-        GobyAlignment gAlignment = new GobyAlignment(null, entry);
+        GobyAlignment gAlignment = new MockGobyAlignment(entry);
         gAlignment.buildBlocks(entry);
         assertEquals(1, gAlignment.block.length);
         assertEquals(50, gAlignment.block[0].getBases().length);
@@ -217,7 +218,7 @@ public class GobyAlignmentQueryReaderTest extends AbstractHeadlessTest{
                 setQueryIndex(0).setTargetIndex(1).
                 setQueryAlignedLength(30).setQueryPosition(20).build();
         GobyAlignment
-                gAlignment = new GobyAlignment(null, entry);
+                gAlignment = new MockGobyAlignment(entry);
         gAlignment.buildBlocks(entry);
         assertEquals(1, gAlignment.block.length);
         assertEquals(30, gAlignment.block[0].getBases().length);
@@ -231,7 +232,7 @@ public class GobyAlignmentQueryReaderTest extends AbstractHeadlessTest{
                 setQueryIndex(0).setTargetIndex(1).
                 setQueryAlignedLength(30).setQueryPosition(0).build();
         GobyAlignment
-                gAlignment = new GobyAlignment(null, entry);
+                gAlignment = new MockGobyAlignment(entry);
         gAlignment.buildBlocks(entry);
         assertEquals(1, gAlignment.block.length);
         assertEquals(30, gAlignment.block[0].getBases().length);
@@ -247,7 +248,7 @@ public class GobyAlignmentQueryReaderTest extends AbstractHeadlessTest{
                 setQueryLength(50).setQueryIndex(0).setTargetIndex(1).
                 setQueryAlignedLength(50).addSequenceVariations(mutation).build();
         GobyAlignment
-                gAlignment = new GobyAlignment(null, entry);
+                gAlignment = new MockGobyAlignment(entry);
         gAlignment.buildBlocks(entry);
         assertEquals(1, gAlignment.block.length);
         assertEquals(1, gAlignment.insertionBlock.length);
@@ -266,7 +267,7 @@ public class GobyAlignmentQueryReaderTest extends AbstractHeadlessTest{
                 setQueryLength(50).setQueryIndex(0).setTargetIndex(1).
                 setQueryAlignedLength(50).addSequenceVariations(mutation).build();
         GobyAlignment
-                gAlignment = new GobyAlignment(null, entry);
+                gAlignment = new MockGobyAlignment(entry);
         gAlignment.buildBlocks(entry);
         assertEquals(2, gAlignment.block.length);
         assertEquals(9, gAlignment.block[0].getBases().length);
@@ -314,7 +315,7 @@ public class GobyAlignmentQueryReaderTest extends AbstractHeadlessTest{
                 setQueryAlignedLength(40).setNumberOfMismatches(2).setNumberOfIndels(3).addSequenceVariations(mutation1).
                 addSequenceVariations(mutation2).build();
         GobyAlignment
-                gAlignment = new GobyAlignment(null, entry);
+                gAlignment = new MockGobyAlignment(entry);
         gAlignment.buildBlocks(entry);
         assertEquals(2, gAlignment.block.length);
         assertEquals(24, gAlignment.block[0].getBases().length);
@@ -353,6 +354,12 @@ public class GobyAlignmentQueryReaderTest extends AbstractHeadlessTest{
             public Alignment next() {
                 return new GobyAlignment(this, iterator.next());
             }
+
+            @Override
+            public MutableString getId(int targetIndex){
+                return new MutableString("chrMock");
+            }
+
         };
 
         ObjectArrayList<GobyAlignment> visitedEntries = new ObjectArrayList<GobyAlignment>();
@@ -420,5 +427,18 @@ public class GobyAlignmentQueryReaderTest extends AbstractHeadlessTest{
             sb.append((char) bases[i]);
         }
         return sb.toString();
+    }
+
+    private static class MockGobyAlignment extends GobyAlignment{
+
+        @Override
+        public String getChromosome() {
+            return "chrMock";
+        }
+
+        MockGobyAlignment(final Alignments.AlignmentEntry entry){
+            super(null, entry);
+        }
+
     }
 }
