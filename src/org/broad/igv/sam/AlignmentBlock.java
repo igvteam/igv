@@ -179,8 +179,11 @@ public class AlignmentBlock {
             if(ii < readBases.length){
                 readBase = readBases[ii];
                 //If reference is cutoff, just fill in with read
-                if(ii < refBases.length) refBase = refBases[ii];
-                else refBase = readBase;
+                if(ii < refBases.length){
+                    refBase = refBases[ii];
+                }else{
+                    refBase = readBase;
+                }
             }else{
                 atEnd = true;
             }
@@ -217,10 +220,13 @@ public class AlignmentBlock {
     public void reduce(Genome genome){
         this.genome = genome;
         byte[] refBases = genome.getSequence(this.chr, getStart(), getEnd());
-        MismatchBlock[] tmpmismatches = AlignmentBlock.createMismatchBlocks(getStart(), refBases, bases);
-        if(tmpmismatches.length < (length / 5)) mismatches = tmpmismatches;
-        if(mismatches != null){
-            this.bases = null;
+        //This mostly happens in testing, but if we have no reference can't create mismatch
+        if(refBases != null){
+            MismatchBlock[] tmpmismatches = AlignmentBlock.createMismatchBlocks(getStart(), refBases, bases);
+            if(tmpmismatches.length < (length / 5)) mismatches = tmpmismatches;
+            if(mismatches != null){
+                this.bases = null;
+            }
         }
     }
 
