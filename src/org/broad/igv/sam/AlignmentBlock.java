@@ -218,16 +218,17 @@ public class AlignmentBlock {
      * @param genome
      */
     public void reduce(Genome genome){
-        this.genome = genome;
-        byte[] refBases = genome.getSequence(this.chr, getStart(), getEnd());
-        //This mostly happens in testing, but if we have no reference can't create mismatch
-        if(refBases != null){
-            MismatchBlock[] tmpmismatches = AlignmentBlock.createMismatchBlocks(getStart(), refBases, bases);
-            if(tmpmismatches.length < (length / 5)) mismatches = tmpmismatches;
-            if(mismatches != null){
-                this.bases = null;
-            }
-        }
+        //TODO Come back to this and figure out if we want to store mismatches only
+//        this.genome = genome;
+//        byte[] refBases = genome.getSequence(this.chr, getStart(), getEnd());
+//        //This mostly happens in testing, but if we have no reference can't create mismatch
+//        if(refBases != null){
+//            MismatchBlock[] tmpmismatches = AlignmentBlock.createMismatchBlocks(getStart(), refBases, bases);
+//            if(tmpmismatches.length < (length / 5)) mismatches = tmpmismatches;
+//            if(mismatches != null){
+//                this.bases = null;
+//            }
+//        }
     }
 
     /**
@@ -235,7 +236,7 @@ public class AlignmentBlock {
      * @return
      */
     public boolean hasBases() {
-        return this.bases != null;// || this.softBases != null;
+        return this.bases != null;
     }
 
 
