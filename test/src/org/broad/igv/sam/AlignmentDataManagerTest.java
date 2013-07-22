@@ -11,7 +11,6 @@
 
 package org.broad.igv.sam;
 
-import net.sf.samtools.SAMRecord;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.PreferenceManager;
@@ -30,7 +29,8 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.*;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * User: jacob
@@ -370,72 +370,6 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
         }
 
         Assert.assertTrue(count > 0);
-    }
-
-    /**
-     * Test that we can load portions of alignment into memory, and only
-     * look up the rest when we need it.
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testLazyLoading() throws Exception {
-        SamAlignment.DEFAULT_LAZY_LOAD = true;
-
-        AlignmentDataManager manager = getManager171();
-        final String chr = "chr1";
-        final int start = 151666494;
-        final int end = start + 1000;
-
-        //Load once to get alignments
-        Iterator<Alignment> iter = loadInterval(manager, chr, start, end).getAlignmentIterator();
-        List<SamAlignment> alignmentList = new ArrayList<SamAlignment>(100);
-        while (iter.hasNext()) {
-            Alignment al = iter.next();
-            SamAlignment sal = (SamAlignment) al;
-            alignmentList.add(sal);
-        }
-        iter = null;
-
-        //Load again. This is so the SAMRecords are not the same instance, so the
-        //previous ones can get garbage collected
-        Iterator<Alignment> iter1 = loadInterval(manager, chr, start, end).getAlignmentIterator();
-        List<SAMRecord> recordList = new ArrayList<SAMRecord>(100);
-        while (iter1.hasNext()) {
-            Alignment al = iter1.next();
-            SamAlignment sal = (SamAlignment) al;
-            recordList.add(sal.getRecord());
-        }
-        iter1 = null;
-
-        System.gc();
-
-        int count = 0;
-        int nullRecordsCounter = 0;
-        for (SamAlignment al : alignmentList) {
-
-            //Check that we can access fields
-            assertNull(al.getRecordField());
-            if(al.getReferenceRecordField() == null) nullRecordsCounter++;
-
-            assertNotNull(al.getRecord());
-
-            String readSeq = al.getReadSequence();
-            assertNotNull(readSeq);
-            assertTrue(readSeq.length() > 0);
-            String rem = readSeq.toUpperCase().replaceAll("[ACGTN]", "");
-            assertEquals("", rem);
-
-            //Check that we are recovering the correct data;
-            assertEquals(recordList.get(count).getReadString(), readSeq);
-            assertEquals(recordList.get(count).getReadName(), al.getReadName());
-
-            count++;
-        }
-
-        assertTrue("Bad test run, all alignments kept in memory", nullRecordsCounter > 0);
-        System.out.println("Total records reloaded: " + nullRecordsCounter + " out of " + alignmentList.size());
-
     }
 
     /**

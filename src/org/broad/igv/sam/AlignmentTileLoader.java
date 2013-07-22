@@ -210,16 +210,6 @@ public class AlignmentTileLoader {
                 IGV.getInstance().resetStatusMessage();
             }
 
-            //Need to wait until iteration is done for our
-            //checking of reloading to work properly,
-            //see SamAlignment.sourceSupportsReload
-            if(t != null && t.isLoaded()){
-                for(Alignment al: t.getAlignments()){
-                    if(al instanceof SamAlignment){
-                        ((SamAlignment) al).optionallyPurgeSAMRecord();
-                    }
-                }
-            }
         }
 
 
@@ -310,7 +300,7 @@ public class AlignmentTileLoader {
             this.start = start;
         }
 
-        int ignoredCount = 0;    // <= just for debugging
+        //int ignoredCount = 0;    // <= just for debugging
 
         /**
          * Add an alignment record to this tile.  This record is not necessarily retained after down-sampling.

@@ -12,10 +12,11 @@ package org.broad.igv.sam;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import net.sf.samtools.*;
+import net.sf.samtools.SAMFileHeader;
+import net.sf.samtools.SAMReadGroupRecord;
+import net.sf.samtools.SAMRecord;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -23,9 +24,8 @@ import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -53,23 +53,12 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     private int end;    // ditto
     private int alignmentStart;
     private int alignmentEnd;
-    private int readLength;
-    private boolean readNegativeStrandFlag;
-    private boolean duplicateReadFlag;
-    private boolean readUnmappedFlag;
-    private boolean readPairedFlag;
-    private boolean properPairFlag;
 
     /**
-     * DO NOT ACCESS THIS FIELD DIRECTLY, EVEN WITHIN THIS CLASS.
-     * USE {@link #getRecord}.
+     * Picard object upon which this SamAlignment is based
      */
     private SAMRecord record;
-    private Reference<SAMRecord> referenceRecord;
 
-    private String cigarString;
-    private boolean firstRead = false;
-    private boolean secondRead = false;
     private String mateSequence = null;
     private String pairOrientation = "";
     private Color defaultColor = AlignmentRenderer.grey1;
@@ -77,17 +66,8 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     private String library;
     private String sample;
 
-    /**
-     * Pointer to the reader and location in the file
-     * where this file was derived from
-     */
-    private SAMFileSource fileSource;
-
-    private boolean firstInPair;
     private Strand firstOfPairStrand;
     private Strand secondOfPairStrand;
-
-    private String flowOrder;
 
     /**
      * Converts a DNA integer value to its reverse compliment integer value.
@@ -120,11 +100,9 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     public static boolean DEFAULT_LAZY_LOAD = Boolean.parseBoolean(System.getProperty("DEFAULT_LAZY_LOAD", "false"));
 
     public SamAlignment(SAMRecord record) {
-        flowOrder = null;
         String keySequence = null;
 
         this.record = record;
-        this.fileSource = record.getFileSource();
 
         String refName = record.getReferenceName();
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
@@ -135,29 +113,21 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         this.start = this.alignmentStart;   // might be modified later for soft clipping
         this.alignmentEnd = Math.max(alignmentStart, record.getAlignmentEnd());
         this.end = alignmentEnd;   // might be modified later for soft clipping
-        this.cigarString = record.getCigarString();
         this.setMappingQuality(record.getMappingQuality());
         this.readName = record.getReadName().trim();
-        this.readNegativeStrandFlag = record.getReadNegativeStrandFlag();
-        this.duplicateReadFlag = record.getDuplicateReadFlag();
-        this.readUnmappedFlag = record.getReadUnmappedFlag();
-        this.readPairedFlag = record.getReadPairedFlag();
         this.setInferredInsertSize(record.getInferredInsertSize());
-
-        this.readLength = record.getReadLength();
-        this.firstInPair = record.getReadPairedFlag() ? record.getFirstOfPairFlag() : true;
 
         setMatePair(genome);
         setPairOrientation();
         setPairStrands();
 
         SAMFileHeader header = record.getHeader();
+        String flowOrder = null;
         if (header != null) {
             readGroup = (String) record.getAttribute("RG");
             if (readGroup != null) {
                 SAMReadGroupRecord rgRec = header.getReadGroup(readGroup);
                 if (rgRec != null) {
-                    String platform = rgRec.getPlatform();
                     this.sample = rgRec.getSample();
                     this.library = rgRec.getLibrary();
                     flowOrder = rgRec.getFlowOrder();
@@ -180,22 +150,15 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         }
     }      // End constructor
 
-    public String getFlowOrder() {
-        return flowOrder;
-    }
-
     private void setMatePair(Genome genome) {
         SAMRecord record = getRecord();
         if (record.getReadPairedFlag()) {
             String mateReferenceName = record.getMateReferenceName();
             String mateChr = genome == null ? mateReferenceName : genome.getChromosomeAlias(mateReferenceName);
-            this.properPairFlag = record.getProperPairFlag();
             this.setMate(new ReadMate(mateChr,
                     record.getMateAlignmentStart(),
                     record.getMateNegativeStrandFlag(),
                     record.getMateUnmappedFlag()));
-            this.firstRead = record.getFirstOfPairFlag();
-            this.secondRead = record.getSecondOfPairFlag();
         }
 
     }
@@ -203,7 +166,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     private void setPairOrientation() {
         SAMRecord record = getRecord();
         if (record.getReadPairedFlag() &&
-                !readUnmappedFlag &&
+                !record.getReadUnmappedFlag() &&
                 !record.getMateUnmappedFlag() &&
                 record.getReferenceName().equals(record.getMateReferenceName())) {
 
@@ -388,7 +351,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         FlowSignalContextBuilder fBlockBuilder = null;
         if (null != flowSignals) {
             if (0 < readBases.length) {
-                fBlockBuilder = new FlowSignalContextBuilder(flowSignals, flowOrder, flowOrderStart, readBases, fromIdx, this.readNegativeStrandFlag);
+                fBlockBuilder = new FlowSignalContextBuilder(flowSignals, flowOrder, flowOrderStart, readBases, fromIdx, this.isNegativeStrand());
             }
         }
         prevOp = 0;
@@ -500,41 +463,37 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                 || (showSoftClipped && operator == SOFT_CLIP);
     }
 
-    public boolean isFirstInPair() {
-        return firstInPair;
-    }
-
     public boolean isNegativeStrand() {
-        return readNegativeStrandFlag;
+        return record.getReadNegativeStrandFlag();
     }
 
     public boolean isDuplicate() {
-        return duplicateReadFlag;
+        return this.record.getDuplicateReadFlag();
     }
 
     public boolean isMapped() {
-        return !readUnmappedFlag;
+        return !this.record.getReadUnmappedFlag();
     }
 
     @Override
     public int getReadLength() {
-        return this.readLength;
+        return this.record.getReadLength();
     }
 
     public boolean isPaired() {
-        return readPairedFlag;
+        return this.record.getReadPairedFlag();
     }
 
     public boolean isProperPair() {
-        return properPairFlag;
+        return isPaired() && this.record.getProperPairFlag();
     }
 
     public boolean isFirstOfPair() {
-        return this.firstRead;
+        return isPaired() && this.record.getFirstOfPairFlag();
     }
 
     public boolean isSecondOfPair() {
-        return this.secondRead;
+        return isPaired() && this.record.getSecondOfPairFlag();
     }
 
     /**
@@ -545,11 +504,11 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     }
 
     public String getCigarString() {
-        return cigarString;
+        return this.record.getCigarString();
     }
 
     public String getReadSequence() {
-        return getRecord().getReadString();
+        return this.record.getReadString();
     }
 
     /**
@@ -568,7 +527,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
     @Override
     public boolean isPrimary() {
-        return !getRecord().getNotPrimaryAlignmentFlag();
+        return !this.record.getNotPrimaryAlignmentFlag();
     }
 
     /**
@@ -606,48 +565,11 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         return library;
     }
 
-    private SAMFileSource getFileSource() {
-        return fileSource;
-    }
-
-    @ForTesting
-    SAMRecord getRecordField() {
-        return this.record;
-    }
-
-    @ForTesting
-    SAMRecord getReferenceRecordField() {
-        return this.referenceRecord.get();
-    }
-
     /**
-     * Retrieves the SAMRecord corresponding to this alignment.
-     * May be loaded from the file if not in memory
-     *
      * @return The SAMRecord which created this SamAlignment
      */
-
     public SAMRecord getRecord() {
-        SAMRecord record = this.record != null ? this.record : this.referenceRecord.get();
-        if (record == null) {
-            SAMFileSource source = this.getFileSource();
-            if(source == null){
-                throw new IllegalStateException("SAMRecord is null but we don't have a file pointer to reload it");
-            }
-            SAMFileSpan span = source.getFilePointer();
-            SAMRecordIterator iter = source.getReader().iterator(span);
-
-            //In theory there should only be one
-            record = iter.next();
-
-            if (iter.hasNext()) {
-                log.error("Found multiple records during query of file span:" + span);
-            }
-            iter.close();
-            this.referenceRecord = new WeakReference<SAMRecord>(record);
-            //log.trace("Reloaded alignment from file: " + record.getReadName());
-        }
-        return record;
+        return this.record;
     }
 
     @Override
@@ -775,52 +697,6 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         }
     }
 
-    void optionallyPurgeSAMRecord() {
-        if(sourceSupportsReload(getFileSource()) && DEFAULT_LAZY_LOAD){
-            this.referenceRecord = new WeakReference<SAMRecord>(this.record);
-            this.record = null;
-        }
-    }
-
-    private static Map<SAMFileReader, Boolean> readerSupportsReload = new HashMap<SAMFileReader, Boolean>();
-
-    /**
-     * Check that the SAMFileSource in question can support reloading the
-     * record at any time. We store the results in a static map so we don't need
-     * to check the same source more than once
-     * @param source
-     * @return
-     */
-    private static boolean sourceSupportsReload(SAMFileSource source){
-        boolean supports = false;
-        if(source != null){
-            SAMFileReader reader = source.getReader();
-            if(readerSupportsReload.containsKey(reader)){
-                return readerSupportsReload.get(reader);
-            }
-            //Check that we can reload the record before getting rid of it.
-            //SAMTextReader doesn't support this, for instance
-            SAMRecordIterator iter = null;
-            SAMFileSpan span = source.getFilePointer();
-            try{
-                log.debug("test opening file " + source.getReader().toString());
-                iter = reader.iterator(span);
-                supports = true;
-            }catch(Exception e){
-                //Couldn't retrieve, no biggy
-                //Sometimes this happens because iteration is in progress, which means
-                //the source COULD support reloading, but iterators need to be closed better
-                supports = false;
-            }finally{
-                if(iter != null) iter.close();
-            }
-            readerSupportsReload.put(reader, supports);
-        }
-        return supports;
-    }
-
-
-
     public boolean isVendorFailedRead() {
         return getRecord().getReadFailsVendorQualityCheckFlag();
     }
@@ -904,7 +780,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
         // get the # of bases that the first base in the read overlaps with the last base(s) in the key
         SAMRecord record = getRecord();
-        if (this.readNegativeStrandFlag) {
+        if (this.isNegativeStrand()) {
             firstBase = (char) NT2COMP[record.getReadBases()[record.getReadLength() - 1]];
         } else {
             firstBase = (char) record.getReadBases()[0];
