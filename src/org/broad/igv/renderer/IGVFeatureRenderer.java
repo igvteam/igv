@@ -428,7 +428,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                                 exon.getCdEnd(), theOrigin, locationScale)));
 
                 // Entire exon is UTR
-                if (exon.isUTR()) {
+                if (exon.isNonCoding()) {
                     int pClippedStart = (int) Math.max(pStart, trackRectangle.getX());
                     int pClippedEnd = (int) Math.min(pEnd, trackRectangle.getMaxX());
                     int pClippedWidth = pClippedEnd - pClippedStart;

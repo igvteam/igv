@@ -208,7 +208,7 @@ public class UCSCGeneTableCodec extends UCSCCodec<BasicFeature> {
                 for (int i = 0; i < frameBuffer.length; i++) {
                     int exonFrame = Integer.parseInt(frameBuffer[i].trim());
                     if (exonFrame == -1) {
-                        exons.get(i).setUTR(true);
+                        exons.get(i).setNonCoding(true);
                     } else {
                         int phase = (exonFrame == 0) ? 0 : 3 - exonFrame;
                         exons.get(i).setPhase(phase);

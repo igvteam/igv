@@ -210,7 +210,7 @@ public class EmblFeatureTableParser implements FeatureParser {
                 String geneId = feature.getIdentifier();
                 BasicFeature gene = genes.get(geneId);
                 if (gene == null) {
-                    gene = feature.copy();
+                    gene = new BasicFeature(feature);
                     gene.setType("transcript");
                     newFeatureList.add(gene);
                     genes.put(geneId, gene);
@@ -232,7 +232,18 @@ public class EmblFeatureTableParser implements FeatureParser {
                 if (gene != null) {
                     Exon exon = new Exon(feature.getChr(), feature.getStart(),
                             feature.getEnd(), feature.getStrand());
-                    exon.setUTR(true);
+                    exon.setNonCoding(true);
+                    boolean plus = (type.equals("5'UTR") && feature.getStrand() == Strand.POSITIVE) ||
+                            (type.equals("3'UTR") && feature.getStrand() == Strand.NEGATIVE);
+                    if(plus) {
+                        exon.setCodingStart(feature.getEnd());
+                        exon.setCodingEnd(feature.getEnd());
+                    }
+                    else {
+                        exon.setCodingStart(feature.getStart());
+                        exon.setCodingEnd(feature.getStart());
+                    }
+
                     gene.addExon(exon);
                 }
 

@@ -178,6 +178,17 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
         List<String> expUniquemRNAIDs = Arrays.asList("mRNA00001", "mRNA00002", "mRNA00003");
         Set<String> mRNAIds = new HashSet<String>(expUniquemRNAIDs.size());
 
+        /*
+chr1	.	mRNA	1300	9000	.	+	.	 ID=mRNA00003;Parent=gene00001;Name=EDEN.3
+chr1	.	exon	1300	1500	.	+	.	 ID=exon00001;Parent=mRNA00003
+chr1	.	exon	3000	3902	.	+	.	 ID=exon00003;Parent=mRNA00001,mRNA00003
+chr1	.	CDS	3301	3902	.	+	0	ID=cds00003;Parent=mRNA00003;Name=edenprotein.3
+chr1	.	CDS	3391	3902	.	+	0	ID=cds00004;Parent=mRNA00003;Name=edenprotein.4
+chr1	.	CDS	5000	5500	.	+	1	ID=cds00003;Parent=mRNA00003;Name=edenprotein.3
+chr1	.	CDS	5000	5500	.	+	1	ID=cds00004;Parent=mRNA00003;Name=edenprotein.4
+chr1	.	CDS	7000	7600	.	+	1	ID=cds00003;Parent=mRNA00003;Name=edenprotein.3
+chr1	.	CDS	7000	7600	.	+	1	ID=cds00004;Parent=mRNA00003;Name=edenprotein.4
+         */
         Set<Integer> mRNA3CdStarts = new HashSet<Integer>(Arrays.asList(3300, 3390));
 
         for (Feature feature : features) {
@@ -222,7 +233,7 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
                 assertEquals(4, bf.getExonCount());
                 boolean passedCdStart = false;
                 for (Exon exon : exons) {
-                    if (exon.isUTR()) {
+                    if (exon.isNonCoding()) {
                         assertEquals("Entire exon is UTR but has coding region: " + exon.getName(), 0, exon.getCodingLength());
                         assertEquals("Entire exon is UTR but has coding region: " + exon.getName(), 0, exon.getCdEnd() - exon.getCdEnd());
                     } else {
@@ -365,12 +376,14 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
             assertEquals(2, exons.size());
 
             Exon firstExon = exons.get(0);
-            assertTrue(firstExon.isUTR());
+            assertTrue(firstExon.isNonCoding());
             assertEquals(11783, firstExon.getStart());
             assertEquals(12157, firstExon.getEnd());
+            assertEquals(12157, firstExon.getCdStart());
 
             Exon secondExon = exons.get(1);
-            assertFalse(secondExon.isUTR());
+            assertFalse(secondExon.isNonCoding());
+            assertEquals(12157, secondExon.getCdStart());
             assertEquals(12157, secondExon.getStart());
             assertEquals(12994, secondExon.getEnd());
 
@@ -384,12 +397,12 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
     private void assertWholeExonCoding(Exon exon) {
         assertEquals(exon.getCdStart(), exon.getStart());
         assertEquals(exon.getCdEnd(), exon.getEnd());
-        assertFalse(exon.isUTR());
+        assertFalse(exon.isNonCoding());
     }
 
     private void assertWholeExonNonCoding(Exon exon) {
         assertEquals(exon.getEnd(), exon.getCdStart());
         assertEquals(0, exon.getCodingLength());
-        assertTrue(exon.isUTR());
+        assertTrue(exon.isNonCoding());
     }
 }

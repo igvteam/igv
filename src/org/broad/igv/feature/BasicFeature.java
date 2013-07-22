@@ -75,14 +75,6 @@ public class BasicFeature extends AbstractFeature {
         this.thickEnd = feature.thickEnd;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
-    public BasicFeature copy() {
-        return new BasicFeature(this);
-    }
 
     /**
      * @param identifier
@@ -207,6 +199,67 @@ public class BasicFeature extends AbstractFeature {
         setStart(Math.min(getStart(), region.getStart()));
         setEnd(Math.max(getEnd(), region.getEnd()));
         exons.add(region);
+    }
+
+    /**
+     * Add a UTR or CDS feature from a GFF or EMBL/NCBI type format.  If the feature overlaps an existing exon merge
+     * the two, otherwise create a new one.
+     *
+     * @param bf
+     */
+    public void addUTRorCDS(BasicFeature bf) {
+        boolean found = false;
+        if (exons == null) {
+            exons = new ArrayList();
+        }
+
+        final String exonType = bf.getType();
+        for (Exon exon : exons) {
+            if (exon.contains(bf)) {
+                if (SequenceOntology.cdsTypes.contains(exonType)) {
+                    exon.setNonCoding(false);
+                    exon.setCodingStart(bf.getStart());
+                    exon.setCodingEnd(bf.getEnd());
+                    thickStart = Math.min(thickStart, bf.getStart());
+                    thickEnd = Math.max(thickEnd, bf.getEnd());
+
+                } else if (SequenceOntology.utrTypes.contains(exonType)) {
+                    exon.setNonCoding(true);
+                    boolean rhs =
+                            (SequenceOntology.fivePrimeUTRTypes.contains(exonType) && bf.getStrand() == Strand.POSITIVE) ||
+                                    (SequenceOntology.threePrimeUTRTypes.contains(exonType) && bf.getStrand() == Strand.NEGATIVE);
+                    if (rhs) {
+                        exon.setCodingStart(bf.getEnd());
+                        exon.setCodingEnd(bf.getEnd());
+                        thickStart = bf.getEnd();
+                    } else {
+                        exon.setCodingEnd(bf.getStart());
+                        exon.setCodingStart(bf.getStart());
+                        thickEnd = bf.getStart();
+                    }
+                }
+
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            // No match
+            Exon exon = new Exon(bf);
+            if (exon.isNonCoding()) {
+                boolean rhs =
+                        (SequenceOntology.fivePrimeUTRTypes.contains(exonType) && bf.getStrand() == Strand.POSITIVE) ||
+                                (SequenceOntology.threePrimeUTRTypes.contains(exonType) && bf.getStrand() == Strand.NEGATIVE);
+                if (rhs) {
+                    thickStart = bf.getEnd();
+                } else {
+                    thickEnd = bf.getStart();
+                }
+            }
+            addExon(new Exon(bf));
+        }
+
     }
 
 

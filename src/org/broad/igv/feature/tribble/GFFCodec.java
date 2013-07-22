@@ -16,6 +16,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.SequenceOntology;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackProperties;
@@ -54,41 +55,10 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
     private static Logger log = Logger.getLogger(GFFCodec.class);
 
-    public static Set<String> transcriptParts = new HashSet();
-    public static Set<String> mrnaParts = new HashSet();
 
-
-    static {
-        mrnaParts.add("five_prime_UTR");
-        mrnaParts.add("three_prime_UTR");
-        mrnaParts.add("5'-utr");
-        mrnaParts.add("3'-utr");
-        mrnaParts.add("3'-UTR");
-        mrnaParts.add("5'-UTR");
-        mrnaParts.add("5utr");
-        mrnaParts.add("3utr");
-        mrnaParts.add("CDS");
-        mrnaParts.add("cds");
-        mrnaParts.add("CDS_parts");
-
-        transcriptParts.addAll(mrnaParts);
-        transcriptParts.add("exon");
-        transcriptParts.add("coding_exon");
-        transcriptParts.add("intron");
-    }
-
-
-    public static Set<String> geneParts = new HashSet();
-    static {
-        geneParts.addAll(transcriptParts);
-        geneParts.add("transcript");
-        geneParts.add("processed_transcript");
-        geneParts.add("mrna");
-        geneParts.add("mRNA");
-
-    }
 
     static HashSet<String> ignoredTypes = new HashSet();
+
     static {
         ignoredTypes.add("start_codon");
         ignoredTypes.add("stop_codon");
@@ -139,7 +109,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
     }
 
     public void readHeaderLine(String line) {
-        if(header == null) {
+        if (header == null) {
             header = new FeatureFileHeader();
         }
         if (line.startsWith("#track") || line.startsWith("##track")) {
@@ -168,7 +138,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
     public Object readHeader(LineReader reader) {
 
-        if(header == null) {
+        if (header == null) {
             header = new FeatureFileHeader();
         }
         String line;
@@ -246,15 +216,15 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         int col = 3;
         try {
             start = Integer.parseInt(tokens[col]) - 1;
-            if(start < 0) throw new ParserException("Start index must be 1 or larger; GFF is 1-based", -1, line);
+            if (start < 0) throw new ParserException("Start index must be 1 or larger; GFF is 1-based", -1, line);
             col++;
             end = Integer.parseInt(tokens[col]);
         } catch (NumberFormatException ne) {
             String msg = String.format("Column %d must contain a numeric value. %s", col + 1, ne.getMessage());
             throw new ParserException(msg, -1, line);
         }
-
         Strand strand = convertStrand(tokens[6]);
+
         String attributeString = tokens[8];
 
         //CI.CILinkedHashMap<String> attributes = new CI.CILinkedHashMap();
@@ -269,8 +239,19 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         BasicFeature f = new BasicFeature(chromosome, start, end, strand);
 
 
+        // Set "thick start/end" => corresponds to coding start & end, for UTRs
+        if (SequenceOntology.utrTypes.contains(featureType)) {
+            boolean plus = (SequenceOntology.fivePrimeUTRTypes.contains(featureType) && strand == Strand.POSITIVE) ||
+                    (SequenceOntology.threePrimeUTRTypes.contains(featureType) && strand == Strand.NEGATIVE);
+            if (plus) {
+                f.setThickStart(end);
+            } else {
+                f.setThickEnd(end);
+            }
+        }
+
         String phaseString = tokens[7].trim();
-        if(!phaseString.equals(".")){
+        if (!phaseString.equals(".")) {
             int phaseNum = Integer.parseInt(phaseString);
             f.setReadingFrame(phaseNum);
         }
@@ -286,7 +267,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         f.setAttributes(attributes);
 
         String[] colorNames = new String[]{"color", "Color", "colour", "Colour"};
-        for(String colorName: colorNames){
+        for (String colorName : colorNames) {
             if (attributes.containsKey(colorName)) {
                 f.setColor(ColorUtilities.stringToColor(attributes.get(colorName)));
                 break;
@@ -349,9 +330,11 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         //TODO Almost identical
         static String[] DEFAULT_NAME_FIELDS = {"alias", "gene", "ID", "Locus", "locus", "Name", "name", "primary_name", "systematic_id", "transcript_id"};
         static List<String> idFields = new ArrayList<String>(Arrays.asList(DEFAULT_NAME_FIELDS));
-        static{
+
+        static {
             idFields.add("transcript_id");
         }
+
         static String[] possParentNames = new String[]{"id", "mRNA", "systematic_id", "transcript_id", "gene", "transcriptId", "Parent", "proteinId"};
 
         private String[] nameFields;
@@ -390,7 +373,6 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         }
 
         /**
-         *
          * @param attributes
          * @param attributeString
          * @return

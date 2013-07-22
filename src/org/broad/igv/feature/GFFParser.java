@@ -25,10 +25,7 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * User: jrobinso
@@ -127,9 +124,33 @@ public class GFFParser implements FeatureParser {
     }
 
 
+
+    public static Set<String> geneParts = new HashSet();
+    static {
+        geneParts.add("five_prime_UTR");
+        geneParts.add("three_prime_UTR");
+        geneParts.add("5'-utr");
+        geneParts.add("3'-utr");
+        geneParts.add("3'-UTR");
+        geneParts.add("5'-UTR");
+        geneParts.add("5utr");
+        geneParts.add("3utr");
+        geneParts.add("CDS");
+        geneParts.add("cds");
+        geneParts.add("CDS_parts");
+        geneParts.add("exon");
+        geneParts.add("coding_exon");
+        geneParts.add("intron");
+        geneParts.add("transcript");
+        geneParts.add("processed_transcript");
+        geneParts.add("mrna");
+        geneParts.add("mRNA");
+
+    }
+
     /**
      * Given a GFF File, creates a new GFF file for each type. Any feature type
-     * which is part of a "gene" ( {@link GFFCodec#geneParts} ) are put in the same file,
+     * which is part of a "gene" ( {@link SequenceOntology#geneParts} ) are put in the same file,
      * others are put in different files. So features of type "gene", "exon", and "mrna"
      * would go in gene.gff, but features of type "myFeature" would go in myFeature.gff.
      *
@@ -151,7 +172,7 @@ public class GFFParser implements FeatureParser {
                 String[] tokens = Globals.tabPattern.split(nextLine.trim().replaceAll("\"", ""), -1);
 
                 String type = tokens[2];
-                if (GFFCodec.geneParts.contains(type)) {
+                if (SequenceOntology.geneParts.contains(type)) {
                     type = "gene";
                 }
                 if (!writers.containsKey(type)) {
@@ -173,7 +194,7 @@ public class GFFParser implements FeatureParser {
             } else {
                 String[] tokens = Globals.tabPattern.split(nextLine.trim().replaceAll("\"", ""), -1);
                 String type = tokens[2];
-                if (GFFCodec.geneParts.contains(type)) {
+                if (SequenceOntology.geneParts.contains(type)) {
                     type = "gene";
                 }
                 currentWriter = writers.get(type);

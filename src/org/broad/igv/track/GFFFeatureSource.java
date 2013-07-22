@@ -14,9 +14,6 @@ package org.broad.igv.track;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.tribble.GFFCodec;
-import org.broad.igv.feature.tribble.IGVFeatureReader;
-import org.broad.igv.util.collections.MultiMap;
 import org.broad.tribble.Feature;
 
 import java.io.IOException;
@@ -29,36 +26,6 @@ import java.util.*;
 public class GFFFeatureSource extends TribbleFeatureSource {
 
     private static Logger log = Logger.getLogger(GFFFeatureSource.class);
-
-    static Set<String> fivePrimeUTRTypes = new HashSet<String>();
-    static Set<String> threePrimeUTRTypes = new HashSet<String>();
-    static Set<String> utrTypes = new HashSet<String>();
-    static Set<String> cdsTypes = new HashSet<String>();
-    static Set<String> transcriptTypes = new HashSet<String>();
-    static Set<String> transcriptPartTypes = new HashSet<String>();
-
-    static {
-        fivePrimeUTRTypes.add("five_prime_UTR");
-        fivePrimeUTRTypes.add("5'-UTR");
-        fivePrimeUTRTypes.add("5'-utr");
-        fivePrimeUTRTypes.add("5UTR");
-        threePrimeUTRTypes.add("three_prime_UTR");
-        threePrimeUTRTypes.add("3'-utr");
-        threePrimeUTRTypes.add("3'-UTR");
-        threePrimeUTRTypes.add("3UTR");
-        utrTypes.addAll(fivePrimeUTRTypes);
-        utrTypes.addAll(threePrimeUTRTypes);
-        cdsTypes.add("CDS");
-        cdsTypes.add("cds");
-        transcriptPartTypes.addAll(utrTypes);
-        transcriptPartTypes.addAll(cdsTypes);
-
-        transcriptTypes.add("transcript");
-        transcriptTypes.add("mature_transcript");
-        transcriptTypes.add("processed_transcript");
-        transcriptTypes.add("mrna");
-        transcriptTypes.add("mRNA");
-    }
 
 
     public static boolean isGFF(String path) {
@@ -101,14 +68,20 @@ public class GFFFeatureSource extends TribbleFeatureSource {
      */
     public static class GFFCombiner {
 
-
-        Map<String, GFFTranscript> gffTranscripts;
         List<Feature> igvFeatures;
+        Map<String, BasicFeature> gffFeatures;
+        List<BasicFeature> gffExons;
+        Map<String, GFFCdsCltn> gffCdss;
+        List<BasicFeature> gffUtrs;
 
         public GFFCombiner() {
-            int numElements = 50000;
-            gffTranscripts = new HashMap(numElements / 2);
-            igvFeatures = new ArrayList(numElements);
+            int numElements = 10000;
+            igvFeatures = new ArrayList<Feature>(numElements);
+            gffFeatures = new HashMap<String, BasicFeature>(numElements);
+            gffExons = new ArrayList<BasicFeature>(numElements);
+            gffCdss = new LinkedHashMap<String, GFFCdsCltn>(numElements);
+            gffUtrs = new ArrayList<BasicFeature>(numElements);
+
         }
 
         /**
@@ -129,186 +102,191 @@ public class GFFFeatureSource extends TribbleFeatureSource {
         public void addFeature(BasicFeature bf) {
 
             String featureType = bf.getType();
-
-            if (transcriptTypes.contains(featureType)) {
-                GFFTranscript gffTranscript = getGFFTranscript(bf.getIdentifier());
-                gffTranscript.setTranscript(bf);
-            } else if (transcriptPartTypes.contains(featureType)){
-                for (String parentID : bf.getParentIds()) {
-                    GFFTranscript gffTranscript = getGFFTranscript(parentID);
-                    gffTranscript.addSubpart(bf);
+            String[] parentIDs = bf.getParentIds();
+            String id = bf.getIdentifier();
+            if (SequenceOntology.exonTypes.contains(featureType) && parentIDs != null) {
+                gffExons.add(bf);
+            } else if (SequenceOntology.utrTypes.contains(featureType) && parentIDs != null) {
+                gffUtrs.add(bf);
+            } else if (SequenceOntology.cdsTypes.contains(featureType) && parentIDs != null) {
+                for (String pid : parentIDs) {
+                    GFFCdsCltn cds = gffCdss.get(pid);
+                    if (cds == null) {
+                        cds = new GFFCdsCltn(pid);
+                        gffCdss.put(pid, cds);
+                    }
+                    cds.addPart(bf);
                 }
+            } else if (id != null) {
+                gffFeatures.put(id, bf);
+            } else {
+                igvFeatures.add(bf); // Just use this feature  as is.
             }
-            else {
-                igvFeatures.add(bf);
-            }
-        }
-
-
-        private GFFTranscript getGFFTranscript(String id) {
-//            return transcriptCache.get(id);
-            GFFTranscript transcript = gffTranscripts.get(id);
-            if (transcript == null) {
-                transcript = new GFFTranscript(id);
-                gffTranscripts.put(id, transcript);
-            }
-            return transcript;
         }
 
 
         public List<Feature> combineFeatures() {
-            for (GFFTranscript gffTranscript : gffTranscripts.values()) {
-                igvFeatures.add(gffTranscript.createIGVFeature());
-            }
-            FeatureUtils.sortFeatureList(igvFeatures);
-            return igvFeatures;
-        }
-    }
-
-    private static class GFFTranscript {
 
 
-
-        static String[] nameFields = {"Name", "name", "Alias", "gene", "primary_name", "locus", "alias", "systematic_id", "ID", "transcript_id"};
-
-
-        /**
-         * We store certain objects under a map, by their ID.
-         * This is the special key used when no ID field is present.
-         * Normally, all objects which have the same ID represent the same feature.
-         * However, that is not true
-         */
-        private static final String ID_ABSENT = "SPECIALIDFOROBJECTSWITHNOID";
-
-        private String id;
-        private String name;
-        private Set<BasicFeature> soExons = new HashSet<BasicFeature>();
-        private List<BasicFeature> subFeatures = new ArrayList<BasicFeature>();
-
-        String chr = null;
-        int start = Integer.MAX_VALUE;
-        int end = Integer.MIN_VALUE;
-        Strand strand;
-        String description;
-        MultiMap<String, String> attributes;
-
-        GFFTranscript(String id) {
-            this.id = id;
-        }
-
-        void setTranscript(BasicFeature transcript) {
-
-            chr = transcript.getChr();
-            start = transcript.getStart();
-            end = transcript.getEnd();
-            strand = transcript.getStrand();
-            final MultiMap<String, String> transcriptAttributes = transcript.getAttributes();
-            if (attributes == null) {
-                attributes = transcriptAttributes;
-            } else {
-                for (String key : transcriptAttributes.keys()) {
-                    attributes.put(key, transcriptAttributes.get(key));
-                }
-            }
-
-            if (transcript.getName() != null) {
-                name = transcript.getName();
-            } else {
-                for (String nm : nameFields) {
-                    if (attributes.containsKey(nm)) {
-                        name = attributes.get(nm);
-                        break;
+            for (BasicFeature gffExon : gffExons) {
+                final String[] parentIds = gffExon.getParentIds();
+                for (String parentId : parentIds) {
+                    BasicFeature parent = gffFeatures.get(parentId);
+                    if (parent == null) {
+                        igvFeatures.add(gffExon);
+                    } else {
+                        final Exon exon = new Exon(gffExon);
+                        exon.setNonCoding(!SequenceOntology.isCoding(gffExon.getType()));
+                        parent.addExon(exon);
                     }
                 }
             }
 
-        }
-
-
-        public void addSubpart(BasicFeature bf) {
-            this.chr = bf.getChr();
-            this.start = Math.min(bf.getStart(), start);
-            this.end = Math.max(bf.getEnd(), end);
-            this.strand = bf.getStrand();
-            String type = bf.getType();
-
-            if (type.equals("exon")) {
-                soExons.add(bf);
-            } else if (type.equals("intron")) {
-                // IGV does not explicitly represent introns
-            } else {
-                subFeatures.add(bf);
+            // Now process utrs.  Modify exon if its already defined, create a new one if not.
+            for (BasicFeature utr : gffUtrs) {
+                for (String parentId : utr.getParentIds()) {
+                    BasicFeature parent = gffFeatures.get(parentId);
+                    if (parent == null) {
+                        igvFeatures.add(utr);
+                    } else {
+                        parent.addUTRorCDS(utr);
+                    }
+                }
             }
 
+            // Finally overlay cdss
+            for (GFFCdsCltn gffCdsCltn : gffCdss.values()) {
 
-        }
+                // Get the parent.
+                String parentId = gffCdsCltn.getParentId();
+                BasicFeature parent = gffFeatures.get(parentId);
+                if (parent == null) {
+                    // Create a "dummy" transcript for the orphaned cds records
+                    parent = new BasicFeature(gffCdsCltn.chr, gffCdsCltn.start, gffCdsCltn.end, gffCdsCltn.strand);
+                    igvFeatures.add(parent);
+                }
 
+                // Now add the cds objects.  There are 2 conventions in use for describing the coding section of mRNAs
+                // (1) All cds records for the same isoform get the same id.  CDS objects with different ids then
+                // imply different isoforms.  In IGV we need to create a parent object for each.  (2) each CDS has
+                // a unique ID, and all cds records with the same parent id belong to the same isoform.
 
-        BasicFeature createIGVFeature() {
+                if (gffCdsCltn.isUniqueIds()) {
+                    for (BasicFeature cdsPart : gffCdsCltn.getParts()) {
+                        parent.addUTRorCDS(cdsPart);
+                    }
 
-            // First add explicit 'exon' types
-            List<Exon> exons = new ArrayList<Exon>();
-            for (BasicFeature bf : soExons) {
-                Exon exon = new Exon(bf.getChr(), bf.getStart(), bf.getEnd(), bf.getStrand());
-                exon.setAttributes(bf.getAttributes());
-                exons.add(exon);
-            }
-
-            // Now create exons for UTRs and CDS types, or modify existing exons
-            for (BasicFeature bf : subFeatures) {
-                Exon exon = findMatchingExon(exons, bf);
-                if (exon == null) {
-                    exon = new Exon(bf.getChr(), bf.getStart(), bf.getEnd(), bf.getStrand());
-                    exon.setAttributes(bf.getAttributes());
                 } else {
-                    exon.getAttributes().addAll(bf.getAttributes());
+                    Map<String, List<BasicFeature>> cdsPartsMap = gffCdsCltn.getPartsById();
+                    boolean first = true;
+                    for (Map.Entry<String, List<BasicFeature>> entry : cdsPartsMap.entrySet()) {
+                        String cdsId = entry.getKey();
+                        List<BasicFeature> cdsParts = entry.getValue();
+
+                        BasicFeature isoform;
+                        if(first) {
+                            isoform = parent;
+                        }
+                        else {
+                            isoform = copyForCDS(parent);
+                            igvFeatures.add(isoform);
+                        }
+                        for (BasicFeature cds : cdsParts) {
+                            isoform.addUTRorCDS(cds);
+                        }
+                        first = false;
+                    }
                 }
-                adjustCodingPositions(exon, bf);
-                exons.add(exon);
             }
 
-            FeatureUtils.sortFeatureList(exons);
+            igvFeatures.addAll(gffFeatures.values());
 
-            BasicFeature bf = new BasicFeature(chr, start, end, strand);
-            bf.setName(name);
-            bf.setIdentifier(id);
-            bf.setAttributes(attributes);
-            for (Exon exon : exons) {
-                bf.addExon(exon);
+            for (Feature bf : igvFeatures) {
+                ((BasicFeature) bf).sortExons();
             }
-            return bf;
+
+            FeatureUtils.sortFeatureList(igvFeatures);
+            return igvFeatures;
+
         }
 
 
-        private void adjustCodingPositions(Exon exon, BasicFeature sf) {
+        private static BasicFeature copyForCDS(BasicFeature bf) {
 
-            final String type = sf.getType();
-            if (cdsTypes.contains(type)) {
-                // Don't do this for "CDS_parts" for now.  I'm not sure what this type really means
-                if (!type.equals("CDS_parts")) {
-                    exon.setCodingStart(sf.getStart());
-                    exon.setCodingEnd(sf.getEnd());
-                }
-            } else if (utrTypes.contains(type)) {
-                exon.setUTR(true);
-                boolean rhs =
-                        (fivePrimeUTRTypes.contains(type) && sf.getStrand() == Strand.POSITIVE) ||
-                                (threePrimeUTRTypes.contains(type) && sf.getStrand() == Strand.NEGATIVE);
-                if (rhs) {
-                    exon.setCodingStart(sf.getEnd());
-                } else {
-                    exon.setCodingEnd(sf.getStart());
-                }
+            BasicFeature copy = new BasicFeature(bf.getChr(), bf.getStart(), bf.getEnd(), bf.getStrand());
+            copy.setName(bf.getName());
+            copy.setColor(bf.getColor());
+            copy.setIdentifier(bf.getIdentifier());
+            copy.setURL(bf.getURL());
+            copy.setType(bf.getType());
+            for (Exon ex : bf.getExons()) {
+                Exon newExon = new Exon(ex);
+                newExon.setNonCoding(true);
+                copy.addExon(newExon);
+
             }
+
+            return copy;
         }
 
-        Exon findMatchingExon(List<Exon> exons, BasicFeature bf) {
-            for (Exon exon : exons) {
-                if (exon.contains(bf)) {
-                    return exon;
-                }
+        /**
+         * Container to hold all the cds records for a given parent (usually an mRNA).
+         */
+        public static class GFFCdsCltn {
+            String parentId;
+            List<BasicFeature> cdsParts;
+            String chr;
+            int start = Integer.MAX_VALUE;
+            int end = Integer.MIN_VALUE;
+            Strand strand;
+
+            public GFFCdsCltn(String parentId) {
+                this.parentId = parentId;
+                cdsParts = new ArrayList(5);
             }
-            return null;
+
+            public void addPart(BasicFeature bf) {
+                cdsParts.add(bf);
+                this.chr = bf.getChr();
+                this.start = Math.min(this.start, bf.getStart());
+                this.end = Math.max(this.end, bf.getEnd());
+                this.strand = bf.getStrand();
+            }
+
+            public String getParentId() {
+                return parentId;
+            }
+
+            public List<BasicFeature> getParts() {
+                return cdsParts;
+            }
+
+            public Map<String, List<BasicFeature>> getPartsById() {
+
+                Map<String, List<BasicFeature>> map = new HashMap<String, List<BasicFeature>>();
+                for (BasicFeature bf : cdsParts) {
+                    String id = bf.getIdentifier();
+                    List<BasicFeature> parts = map.get(id);
+                    if (parts == null) {
+                        parts = new ArrayList<BasicFeature>();
+                        map.put(id, parts);
+                    }
+                    parts.add(bf);
+
+                }
+                return map;
+            }
+
+            public boolean isUniqueIds() {
+                if (cdsParts.isEmpty()) return true;
+                Iterator<BasicFeature> iter = cdsParts.iterator();
+                String firstId = iter.next().getIdentifier();
+                while (iter.hasNext()) {
+                    BasicFeature bf = iter.next();
+                    if (firstId.equals(bf.getIdentifier())) return false;
+                }
+                return true;
+            }
         }
 
     }

@@ -49,7 +49,7 @@ public class Exon extends AbstractFeature implements IExon {
     //when we change translation tables
     private byte[] seqBytes;
 
-    private boolean utr = false;
+    private boolean noncoding = false;
 
     // The position of the first base of this exon relative to the start of the mRNA.  This will correspond
     // to either the beginning or end of the exon, depending on the strand
@@ -97,14 +97,51 @@ public class Exon extends AbstractFeature implements IExon {
         this.codingEnd = end;
     }
 
+
+    public Exon(Exon bf) {
+        this.start = bf.getStart();
+        this.end = bf.getEnd();
+        this.strand = bf.getStrand();
+        this.codingStart = bf.getCdStart();
+        this.codingEnd = bf.getCdEnd();
+        this.chromosome = bf.getChr();
+        this.type = bf.getType();
+        this.color = bf.getColor();
+        this.description = bf.getDescription();
+        this.attributes = bf.getAttributes();
+        this.name = bf.getName();
+        this.readingFrame = bf.getReadingFrame();
+
+        this.noncoding = (type != null && SequenceOntology.utrTypes.contains(type));
+    }
+
+
+
+    public Exon(BasicFeature bf) {
+        this.start = bf.getStart();
+        this.end = bf.getEnd();
+        this.strand = bf.getStrand();
+        this.codingStart = bf.getThickStart();
+        this.codingEnd = bf.getThickEnd();
+        this.chromosome = bf.getChr();
+        this.type = bf.getType();
+        this.color = bf.getColor();
+        this.description = bf.getDescription();
+        this.attributes = bf.getAttributes();
+        this.name = bf.getName();
+        this.readingFrame = bf.getReadingFrame();
+
+        this.noncoding = (type != null && SequenceOntology.utrTypes.contains(type));
+    }
+
     /**
-     * Flag indicating that the entire exon is the UTR.
+     * Flag indicating that the entire exon is non-coding.
      *
-     * @param utr
+     * @param bool
      */
-    public void setUTR(boolean utr) {
-        this.utr = utr;
-        if (utr) {
+    public void setNonCoding(boolean bool) {
+        this.noncoding = bool;
+        if (bool) {
             if (getStrand() == Strand.POSITIVE) {
                 codingStart = codingEnd = getEnd();
             } else {
@@ -113,13 +150,8 @@ public class Exon extends AbstractFeature implements IExon {
         }
     }
 
-    public boolean isUTR() {
-        return utr;
-    }
-
-
-    public boolean isUTR(int position) {
-        return utr || (position < codingStart || position > codingEnd);
+    public boolean isNonCoding() {
+        return noncoding;
     }
 
     public void setCodingStart(int codingStart) {
@@ -152,7 +184,7 @@ public class Exon extends AbstractFeature implements IExon {
 
 
     public int getCodingLength() {
-        return utr ? 0 : Math.max(0, codingEnd - codingStart);
+        return noncoding ? 0 : Math.max(0, codingEnd - codingStart);
     }
 
     public AminoAcidSequence getAminoAcidSequence(Genome genome) {
@@ -165,7 +197,7 @@ public class Exon extends AbstractFeature implements IExon {
     }
 
     private void computeAminoAcidSequence(Genome genome) {
-        if (utr) {
+        if (noncoding) {
             return;
         }
         int start = getStart();
@@ -192,7 +224,7 @@ public class Exon extends AbstractFeature implements IExon {
         copy.codingEnd = this.codingEnd;
         copy.codingStart = this.codingStart;
         copy.name = this.name;
-        copy.utr = this.utr;
+        copy.noncoding = this.noncoding;
         copy.mrnaBase = this.mrnaBase;
         return copy;
     }

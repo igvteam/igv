@@ -93,7 +93,7 @@ public class GFFTest{//} extends AbstractHeadlessTest{
         assertEquals(numExons, bf.getExons().size());
         Exon lastExon = bf.getExons().get(numExons - 1);
 
-        assertTrue(lastExon.isUTR());
+        assertTrue(lastExon.isNonCoding());
         assertEquals(3807030 - 1, lastExon.getStart());
     }
 }

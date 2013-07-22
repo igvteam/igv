@@ -23,5 +23,5 @@ public interface IExon extends IGVFeature {
 
     public int getCdEnd();
 
-    boolean isUTR();
+    boolean isNonCoding();
 }
