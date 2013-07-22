@@ -12,9 +12,11 @@
 package org.broad.igv.sam;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.util.RuntimeUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.HashSet;
 import java.util.Iterator;
 
 import static junit.framework.Assert.assertEquals;
@@ -126,6 +128,26 @@ public class AlignmentBlockTest extends AbstractHeadlessTest{
 //        System.out.println(String.format("Real Memory footprint: %f kb", realIntervalMem / 1000.0));
 //        System.out.println(String.format("Difference: %f kb", (realIntervalMem - baseIntervalMem) / 1000.0));
 
+    }
+
+    @Ignore
+    @Test
+    public void testMemoryFootprintMismatchBlock() throws Exception{
+        System.gc();
+        int numMis = 1000000;
+        long before = RuntimeUtils.getAvailableMemory();
+
+        AlignmentBlock.MismatchBlock[] blocks = new AlignmentBlock.MismatchBlock[numMis];
+        for(int ii=0; ii < numMis; ii++){
+            blocks[ii] = new AlignmentBlock.MismatchBlock(0, "thisismaoeuystring".getBytes());
+        }
+        System.gc();
+        long after = RuntimeUtils.getAvailableMemory();
+        float measMem = (float) RuntimeUtils.getObjectSizeRecursive(blocks, new HashSet<Object>());
+
+        float diff = (float) (before - after);
+        System.out.println(String.format("Difference before/after: %f kb. %d objects. %f bytes each", (before - after) / 1000.0, numMis, diff/numMis));
+        System.out.println(String.format("Measured memory: %f kb. %d objects. %f bytes each", measMem / 1000.0, numMis, measMem / numMis));
     }
 
 
