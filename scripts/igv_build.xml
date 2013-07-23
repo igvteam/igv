@@ -15,6 +15,7 @@
     <property name="dist.dir" value="${basedir}/${ant.project.name}-dist/"/>
     <property name="jar.path" value="${dist.dir}${jar.name}"/>
     <property name="dist.lib.dir" value="${dist.dir}lib/"/>
+    <property name="download.dir" value="${basedir}"/>
 
     <property name="include.libs" value="true"/>
 
@@ -29,11 +30,10 @@
 
     <!-- Src/binary archive file settings -->
     <property name="src.archive.name" value="IGVDistribution_${version}"/>
-    <property name="src.archive.dest.dir" value="${basedir}"/>
-    <property name="src.archive.zip" value="${src.archive.dest.dir}/${src.archive.name}.zip"/>
+    <property name="src.archive.zip" value="${download.dir}/${src.archive.name}.zip"/>
 
     <property name="bin.archive.name" value="IGV_${version}"/>
-    <property name="bin.archive.zip" value="${bin.archive.name}.zip"/>
+    <property name="bin.archive.zip" value="${download.dir}/${bin.archive.name}.zip"/>
 
     <!-- Sign all jars if a keystore is defined -->
     <target name="sign-jars" if="keystore">

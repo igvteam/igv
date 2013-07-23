@@ -30,6 +30,7 @@
     <property name="dist.dir" value="${basedir}/"/>
     <property name="jar.path" value="${dist.dir}${jar.name}"/>
     <property name="dist.lib.dir" value="${dist.dir}lib/"/>
+    <property name="download.dir" value="${basedir}"/>
 
     <property name="scripts.dir" value="${basedir}/scripts"/>
     <property name="docs.dir" value="${basedir}/docs"/>
@@ -412,14 +413,14 @@
     <target name="bundle" depends="build-all">
         <!-- Define the appbundler task -->
         <taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask" classpath="${basedir}/ant/appbundler-1.0.jar"/>
-        <bundleapp outputdirectory="${dist.dir}"
+        <bundleapp outputdirectory="${download.dir}"
                    name="IGV_${version}"
                    displayname="${ant.project.name}"
                    identifier="${main-class}"
                    shortversion="${version}"
                    applicationCategory="public.app-category.developer-tools"
                    mainclassname="${main-class}">
-            <classpath dir="${dist.dir}">
+            <classpath dir="${download.dir}">
                 <include name="${jar.name}"/>
                 <include name="batik-codec.jar"/>
                 <include name="goby-io-igv.jar"/>
