@@ -141,6 +141,7 @@ public class VariantReviewSource implements FeatureSource<VCFVariant> {
         mvc.setReviewed(true);
         mvc.setChr(chromoNameToStandard(mvc.getChr()));
         mvc.setIsComplexEvent(isComplexEvent);
+        mvc.setConfidence(NA12878KnowledgeBase.InputCallsetConfidence.REVIEW.confidence);
         return mvc;
     }
 
