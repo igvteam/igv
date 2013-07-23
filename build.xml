@@ -420,7 +420,7 @@
                    shortversion="${version}"
                    applicationCategory="public.app-category.developer-tools"
                    mainclassname="${main-class}">
-            <classpath dir="${download.dir}">
+            <classpath dir="${dist.dir}">
                 <include name="${jar.name}"/>
                 <include name="batik-codec.jar"/>
                 <include name="goby-io-igv.jar"/>
