@@ -413,7 +413,7 @@
         <!-- Define the appbundler task -->
         <taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask" classpath="${basedir}/ant/appbundler-1.0.jar"/>
         <bundleapp outputdirectory="${dist.dir}"
-                   name="${ant.project.name}"
+                   name="IGV_${version}"
                    displayname="${ant.project.name}"
                    identifier="${main-class}"
                    shortversion="${version}"
