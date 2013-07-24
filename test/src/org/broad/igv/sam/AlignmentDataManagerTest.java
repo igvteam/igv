@@ -372,6 +372,25 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
     }
 
     /**
+     * Very basic test that nothing crashes when loading an alignment
+     * which is padded
+     * @throws Exception
+     */
+    @Test
+    public void testWithPadding() throws Exception{
+        String filepath = TestUtils.DATA_DIR + "sam/has_padding.sam";
+        TestUtils.createIndex(filepath);
+
+        AlignmentDataManager manager = new AlignmentDataManager(new ResourceLocator(filepath), genome);
+        AlignmentInterval interval = manager.loadInterval("chr22", 0, Integer.MAX_VALUE, null);
+        Iterator<Alignment> iter = interval.getAlignmentIterator();
+        while(iter.hasNext()){
+            Alignment al = iter.next();
+            assertNotNull(al);
+        }
+    }
+
+    /**
      * Load alignment interval. Here for other tests, so we don't need to expose
      * {@link AlignmentDataManager#loadInterval(String, int, int, AlignmentTrack.RenderOptions)}
      */

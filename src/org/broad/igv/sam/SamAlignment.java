@@ -312,7 +312,11 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                 } else if (op == INSERTION) {
                     nInsertions++;
                     nGaps++; // "virtual" gap, account for artificial block split @ insertion
+                } else if (op == PADDING) {
+                    nGaps++;
                 }
+
+
                 if (firstOperator && op == SOFT_CLIP) {
                     softClippedBaseCount += nBases;
                 }
@@ -372,21 +376,22 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                         gapTypes[gapIdx++] = ZERO_GAP;
                     }
 
-                } else if (op.operator == DELETION || op.operator == SKIPPED_REGION) {
+                } else if (op.operator == DELETION || op.operator == SKIPPED_REGION ) {
                     blockStart += op.nBases;
                     gapTypes[gapIdx++] = op.operator;
                 } else if (op.operator == INSERTION) {
                     // This gap is between blocks split by insertion.   It is a zero
                     // length gap but must be accounted for.
                     gapTypes[gapIdx++] = ZERO_GAP;
-
                     AlignmentBlock block = buildAlignmentBlock(fBlockBuilder, readBases, readBaseQualities,
                             readRepresentativeCounts, getChr(), blockStart, fromIdx, op.nBases, false);
 
                     insertions[insertionIdx++] = block;
-
                     fromIdx += op.nBases;
-
+                } else if (op.operator == PADDING){
+                    //Padding represents a deletion against the padded reference
+                    //But we don't have the padded reference
+                    gapTypes[gapIdx++] = ZERO_GAP;
                 }
             } catch (Exception e) {
                 log.error("Error processing CIGAR string", e);
