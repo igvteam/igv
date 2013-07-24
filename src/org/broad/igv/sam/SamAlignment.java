@@ -93,12 +93,6 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
     public static final String REDUCE_READS_TAG = "RR";
 
-    /**
-     * Whether to load read sequence / record / other data lazily.
-     * Eventually we will likely remove this flag, here for easy testing
-     */
-    public static boolean DEFAULT_LAZY_LOAD = Boolean.parseBoolean(System.getProperty("DEFAULT_LAZY_LOAD", "false"));
-
     public SamAlignment(SAMRecord record) {
         String keySequence = null;
 

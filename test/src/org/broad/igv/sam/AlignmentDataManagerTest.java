@@ -43,7 +43,6 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
     @Override
     public void tearDown() throws Exception {
         super.tearDown();
-        SamAlignment.DEFAULT_LAZY_LOAD = false;
     }
 
     @Test

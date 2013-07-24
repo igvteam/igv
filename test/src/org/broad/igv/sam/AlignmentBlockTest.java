@@ -92,46 +92,6 @@ public class AlignmentBlockTest extends AbstractHeadlessTest{
 
     @Ignore
     @Test
-    public void testMemoryUsageNonLazy() throws Exception{
-        System.out.println("Non lazy load");
-        tstMemoryUsage(false);
-    }
-
-    @Ignore
-    @Test
-    public void testMemoryUsageLazy() throws Exception{
-        System.out.println("Lazy load");
-        tstMemoryUsage(true);
-    }
-
-    public void tstMemoryUsage(boolean lazyLoad) throws Exception{
-        SamAlignment.DEFAULT_LAZY_LOAD = lazyLoad;
-        AlignmentDataManager manager = AlignmentDataManagerTest.getManager171();
-
-        final String chr = "chr1";
-        final int queryStart = 151666494;
-        final int halfwidth = 500000;
-        final int queryEnd = queryStart + 2 * halfwidth;
-
-        //long bef = RuntimeUtils.getAvailableMemory();
-        //AlignmentInterval baseInterval = manager.loadInterval("doesntexist", queryStart, queryEnd, new AlignmentTrack.RenderOptions());
-        //long baseIntervalMem = bef - RuntimeUtils.getAvailableMemory();
-        //long baseIntervalMem = RuntimeUtils.getObjectSizeRecursive(baseInterval, new HashSet<Object>());
-
-
-        //bef = RuntimeUtils.getAvailableMemory();
-        AlignmentInterval realInterval = manager.loadInterval(chr, queryStart, queryEnd, new AlignmentTrack.RenderOptions());
-        //long realIntervalMem = bef - RuntimeUtils.getAvailableMemory();
-        //long realIntervalMem = RuntimeUtils.getObjectSizeRecursive(realInterval, new HashSet<Object>());
-
-//        System.out.println(String.format("Base Memory footprint: %f kb", baseIntervalMem / 1000.0));
-//        System.out.println(String.format("Real Memory footprint: %f kb", realIntervalMem / 1000.0));
-//        System.out.println(String.format("Difference: %f kb", (realIntervalMem - baseIntervalMem) / 1000.0));
-
-    }
-
-    @Ignore
-    @Test
     public void testMemoryFootprintMismatchBlock() throws Exception{
         System.gc();
         int numMis = 1000000;
