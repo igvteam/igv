@@ -16,6 +16,7 @@ import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.GFFParser;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -353,7 +354,7 @@ chr1	.	CDS	7000	7600	.	+	1	ID=cds00004;Parent=mRNA00003;Name=edenprotein.4
     }
 
     /**
-     * Test a simple description of an mRNA containing a 5'utr and cds.  This was submitted with a bug report,
+     * Test a simple description of an mRNA containing a 5'utr and cds in GFF-2.  This was submitted with a bug report,
      * the utr was being excluded
      *
      * @throws Exception
@@ -390,7 +391,31 @@ chr1	.	CDS	7000	7600	.	+	1	ID=cds00004;Parent=mRNA00003;Name=edenprotein.4
         } finally {
             if (reader != null) reader.close();
         }
+    }
 
+    /**
+     * Test reconstructions of a simple mRNA from a gff3 file.  This test added for a bug caused by using a GFF2
+     * codec with the gff3 file.  IGV allows specification of gff3 by either the directive, or file extension.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testRNA() throws Exception {
+        String file = TestUtils.DATA_DIR + "gff/rna1.gff3";
+        BufferedReader reader = null;
+        Genome genome = null;
+        try {
+            GFFParser parser = new GFFParser();
+            reader = ParsingUtils.openBufferedReader(file);
+            GFFCodec codec = new GFFCodec(GFFCodec.Version.GFF3, genome);
+            List<org.broad.tribble.Feature> features = parser.loadFeatures(reader, genome, codec);
+            assertEquals(1, features.size());
+
+
+
+        } finally {
+            if (reader != null) reader.close();
+        }
 
     }
 

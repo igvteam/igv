@@ -23,6 +23,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
+import org.broad.tribble.FeatureCodec;
 
 import java.io.*;
 import java.util.*;
@@ -44,7 +45,10 @@ public class GFFParser implements FeatureParser {
         BufferedReader reader = null;
         try {
             reader = ParsingUtils.openBufferedReader(locator);
-            List<org.broad.tribble.Feature> features = loadFeatures(reader, genome);
+
+            GFFCodec.Version version = locator.getTypeString().endsWith(".gff3") ? GFFCodec.Version.GFF3 : GFFCodec.Version.GFF2;
+            GFFCodec codec = new GFFCodec(version, genome);
+            List<org.broad.tribble.Feature> features = loadFeatures(reader, genome, codec);
 
             FeatureTrack track = new FeatureTrack(locator, new FeatureCollectionSource(features, genome));
             track.setName(locator.getTrackName());
@@ -79,9 +83,12 @@ public class GFFParser implements FeatureParser {
     }
 
     public List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome) {
+          return loadFeatures(reader, genome, new GFFCodec(genome));
+    }
+
+    public List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome, GFFCodec codec) {
         String line = null;
         int lineNumber = 0;
-        GFFCodec codec = new GFFCodec(genome);
         GFFFeatureSource.GFFCombiner combiner = new GFFFeatureSource.GFFCombiner();
         try {
             while ((line = reader.readLine()) != null) {
@@ -124,8 +131,8 @@ public class GFFParser implements FeatureParser {
     }
 
 
-
     public static Set<String> geneParts = new HashSet();
+
     static {
         geneParts.add("five_prime_UTR");
         geneParts.add("three_prime_UTR");

@@ -13,6 +13,7 @@ package org.broad.igv.tools.converters;
 
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.GFFParser;
+import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -37,8 +38,10 @@ public class GFFtoBed {
         BufferedReader reader = null;
         PrintWriter pw = null;
         try {
+            GFFCodec.Version version = inputFile.getPath().endsWith(".gff3") ? GFFCodec.Version.GFF3 : GFFCodec.Version.GFF2;
+            GFFCodec gffCodec = new GFFCodec(version, null);
             reader = ParsingUtils.openBufferedReader(new ResourceLocator(inputFile.getAbsolutePath()));
-            List<Feature> features = parser.loadFeatures(reader, null);
+            List<Feature> features = parser.loadFeatures(reader, null, gffCodec);
 
             IGVBEDCodec codec = new IGVBEDCodec();
             codec.setGffTags(true);

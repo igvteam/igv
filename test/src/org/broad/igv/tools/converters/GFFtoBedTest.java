@@ -13,6 +13,7 @@ package org.broad.igv.tools.converters;
 
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
 import org.junit.Test;
@@ -49,7 +50,9 @@ public class GFFtoBedTest {
             Genome genome = null; // Not needed for this test
             gffReader = new BufferedReader(new FileReader(inputFile));
             GFFParser parser = new GFFParser();
-            List<Feature> gffFeatures = parser.loadFeatures(gffReader, genome);
+            GFFCodec.Version version = inputFile.getPath().endsWith(".gff3") ? GFFCodec.Version.GFF3 : GFFCodec.Version.GFF2;
+            GFFCodec codec = new GFFCodec(version, null);
+            List<Feature> gffFeatures = parser.loadFeatures(gffReader, genome, codec);
 
             bedReader = new BufferedReader(new FileReader(outputFile));
             FeatureParser bedParser = AbstractFeatureParser.getInstanceFor(outputFile.getAbsolutePath(), null);

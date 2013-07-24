@@ -12,6 +12,7 @@
 
 package org.broad.igv.feature;
 
+import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
 import org.junit.Test;
@@ -32,8 +33,10 @@ public class GFFTest{//} extends AbstractHeadlessTest{
 
     private List<Feature> getFeatures(String filePath) throws Exception{
         GFFParser parser = new GFFParser();
+        GFFCodec.Version version = filePath.endsWith(".gff3") ? GFFCodec.Version.GFF3 : GFFCodec.Version.GFF2;
+        GFFCodec codec = new GFFCodec(version, null);
         BufferedReader br = new BufferedReader(new FileReader(filePath));
-        List<Feature> features = parser.loadFeatures(br, null);
+        List<Feature> features = parser.loadFeatures(br, null, codec);
         br.close();
         return features;
     }

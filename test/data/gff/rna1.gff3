@@ -1,0 +1,13 @@
+chr1	RefSeq	mRNA	102427	158259	.	-	.	ID=rna1;Name=XM_583818.6;Parent=gene7;Dbxref=GeneID:507243,Genbank:XM_583818.6,BGD:BT17749;gbkey=mRNA;gene=CLIC6;product=chloride intracellular channel 6;transcript_id=XM_583818.6
+chr1	RefSeq	exon	156979	158259	.	-	.	ID=id8;Parent=rna1;Dbxref=GeneID:507243,Genbank:XM_583818.6,BGD:BT17749;gbkey=mRNA;gene=CLIC6;product=chloride intracellular channel 6;transcript_id=XM_583818.6
+chr1	RefSeq	exon	117419	117528	.	-	.	ID=id9;Parent=rna1;Dbxref=GeneID:507243,Genbank:XM_583818.6,BGD:BT17749;gbkey=mRNA;gene=CLIC6;product=chloride intracellular channel 6;transcript_id=XM_583818.6
+chr1	RefSeq	exon	116378	116503	.	-	.	ID=id10;Parent=rna1;Dbxref=GeneID:507243,Genbank:XM_583818.6,BGD:BT17749;gbkey=mRNA;gene=CLIC6;product=chloride intracellular channel 6;transcript_id=XM_583818.6
+chr1	RefSeq	exon	115701	115807	.	-	.	ID=id11;Parent=rna1;Dbxref=GeneID:507243,Genbank:XM_583818.6,BGD:BT17749;gbkey=mRNA;gene=CLIC6;product=chloride intracellular channel 6;transcript_id=XM_583818.6
+chr1	RefSeq	exon	114363	114544	.	-	.	ID=id12;Parent=rna1;Dbxref=GeneID:507243,Genbank:XM_583818.6,BGD:BT17749;gbkey=mRNA;gene=CLIC6;product=chloride intracellular channel 6;transcript_id=XM_583818.6
+chr1	RefSeq	exon	102427	103557	.	-	.	ID=id13;Parent=rna1;Dbxref=GeneID:507243,Genbank:XM_583818.6,BGD:BT17749;gbkey=mRNA;gene=CLIC6;product=chloride intracellular channel 6;transcript_id=XM_583818.6
+chr1	RefSeq	CDS	156979	158259	.	-	0	ID=cds1;Name=XP_583818.3;Parent=rna1;Dbxref=GeneID:507243,Genbank:XP_583818.3,BGD:BT17749;gbkey=CDS;product=chloride intracellular channel protein 6;protein_id=XP_583818.3
+chr1	RefSeq	CDS	117419	117528	.	-	0	ID=cds1;Name=XP_583818.3;Parent=rna1;Dbxref=GeneID:507243,Genbank:XP_583818.3,BGD:BT17749;gbkey=CDS;product=chloride intracellular channel protein 6;protein_id=XP_583818.3
+chr1	RefSeq	CDS	116378	116503	.	-	1	ID=cds1;Name=XP_583818.3;Parent=rna1;Dbxref=GeneID:507243,Genbank:XP_583818.3,BGD:BT17749;gbkey=CDS;product=chloride intracellular channel protein 6;protein_id=XP_583818.3
+chr1	RefSeq	CDS	115701	115807	.	-	1	ID=cds1;Name=XP_583818.3;Parent=rna1;Dbxref=GeneID:507243,Genbank:XP_583818.3,BGD:BT17749;gbkey=CDS;product=chloride intracellular channel protein 6;protein_id=XP_583818.3
+chr1	RefSeq	CDS	114363	114544	.	-	2	ID=cds1;Name=XP_583818.3;Parent=rna1;Dbxref=GeneID:507243,Genbank:XP_583818.3,BGD:BT17749;gbkey=CDS;product=chloride intracellular channel protein 6;protein_id=XP_583818.3
+chr1	RefSeq	CDS	103396	103557	.	-	0	ID=cds1;Name=XP_583818.3;Parent=rna1;Dbxref=GeneID:507243,Genbank:XP_583818.3,BGD:BT17749;gbkey=CDS;product=chloride intracellular channel protein 6;protein_id=XP_583818.3
