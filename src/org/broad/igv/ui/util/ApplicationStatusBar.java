@@ -67,6 +67,7 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
             cancelButton = new JideButton(IconFactory.getInstance().getIcon(IconFactory.IconID.CLOSE));
             cancelButton.setMinimumSize(new Dimension(20, 10));
             cancelButton.setPreferredSize(new Dimension(20, 20));
+            cancelButton.setBorder(BorderFactory.createLineBorder(Color.black));
             add(cancelButton, JideBoxLayout.FIX);
         }
 
