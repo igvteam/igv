@@ -183,10 +183,9 @@ public class GFFFeatureSource extends TribbleFeatureSource {
                         List<BasicFeature> cdsParts = entry.getValue();
 
                         BasicFeature isoform;
-                        if(first) {
+                        if (first) {
                             isoform = parent;
-                        }
-                        else {
+                        } else {
                             isoform = copyForCDS(parent);
                             igvFeatures.add(isoform);
                         }
@@ -200,16 +199,19 @@ public class GFFFeatureSource extends TribbleFeatureSource {
 
             igvFeatures.addAll(gffFeatures.values());
 
-            for (Feature bf : igvFeatures) {
-                ((BasicFeature) bf).sortExons();
-                List<Exon> exons = ((BasicFeature) bf).getExons();
-                int exonNumber = (((BasicFeature) bf).getStrand() == Strand.NEGATIVE ? exons.size() : 1);
-                int increment =   (((BasicFeature) bf).getStrand() == Strand.NEGATIVE ? -1 : 1);
-                for(Exon ex : exons) {
-                    ex.setNumber(exonNumber);
-                    exonNumber += increment;
-                }
 
+            for (Feature f : igvFeatures) {
+                BasicFeature bf = (BasicFeature) f;
+                if (bf.hasExons()) {
+                    bf.sortExons();
+                    List<Exon> exons = bf.getExons();
+                    int exonNumber = bf.getStrand() == Strand.NEGATIVE ? exons.size() : 1;
+                    int increment = bf.getStrand() == Strand.NEGATIVE ? -1 : 1;
+                    for (Exon ex : exons) {
+                        ex.setNumber(exonNumber);
+                        exonNumber += increment;
+                    }
+                }
             }
 
             FeatureUtils.sortFeatureList(igvFeatures);
