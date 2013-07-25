@@ -105,6 +105,7 @@ public class MainTest {
         String trackName = "test.wig";
         String dir = StringUtils.encodeURL("folder with spaces");
         String absFilePath = (new File(TestUtils.DATA_DIR)).getAbsolutePath();
+        absFilePath = absFilePath.replace("\\", "/");
         String filePath = String.format("file://%s/%s/%s", absFilePath, dir, trackName);
         String[] args = new String[]{filePath};
 
