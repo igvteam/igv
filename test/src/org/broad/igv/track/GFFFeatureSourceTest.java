@@ -395,7 +395,7 @@ chr1	.	CDS	7000	7600	.	+	1	ID=cds00004;Parent=mRNA00003;Name=edenprotein.4
 
     /**
      * Test reconstructions of a simple mRNA from a gff3 file.  This test added for a bug caused by using a GFF2
-     * codec with the gff3 file.  IGV allows specification of gff3 by either the directive, or file extension.
+     * codec with a gff3 file.  IGV allows specification of gff3 by either the directive, or file extension.
      *
      * @throws Exception
      */
@@ -410,6 +410,9 @@ chr1	.	CDS	7000	7600	.	+	1	ID=cds00004;Parent=mRNA00003;Name=edenprotein.4
             GFFCodec codec = new GFFCodec(GFFCodec.Version.GFF3, genome);
             List<org.broad.tribble.Feature> features = parser.loadFeatures(reader, genome, codec);
             assertEquals(1, features.size());
+
+           List<Exon> exons = ((BasicFeature) features.get(0)).getExons();
+           assertEquals(6, exons.size());
 
 
 

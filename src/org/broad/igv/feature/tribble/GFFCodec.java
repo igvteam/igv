@@ -227,12 +227,10 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
         String attributeString = tokens[8];
 
-        //CI.CILinkedHashMap<String> attributes = new CI.CILinkedHashMap();
         MultiMap<String, String> attributes = new MultiMap<String, String>();
 
         helper.parseAttributes(attributeString, attributes);
 
-        String description = getDescription(attributes, featureType);
         String id = helper.getID(attributes);
         String[] parentIds = helper.getParentIds(attributes, attributeString);
 
@@ -258,7 +256,6 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
         f.setName(helper.getName(attributes));
         f.setType(featureType);
-        f.setDescription(description);
 
         id = id != null ? id : "igv_" + UUID.randomUUID().toString();
         f.setIdentifier(id);

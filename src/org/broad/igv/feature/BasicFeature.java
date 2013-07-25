@@ -112,12 +112,15 @@ public class BasicFeature extends AbstractFeature {
 
         String name = getName();
         if (name != null) {
-            valueString.append("<b>" + name + "</b>");
+            valueString.append("<b>" + name + "</b><br>");
+        }
+        valueString.append(getLocusString());
+        if (type != null) {
+            valueString.append("<br>Type = " + type);
         }
         if ((identifier != null) && ((name == null) || !name.equals(identifier))) {
-            valueString.append("<br>" + identifier);
+            valueString.append("<br>id = " + identifier);
         }
-
 
         if (!Float.isNaN(score)) {
             valueString.append("<br>Score = " + score);
@@ -125,20 +128,8 @@ public class BasicFeature extends AbstractFeature {
         if (description != null) {
             valueString.append("<br>" + description);
         }
-        if (type != null) {
-            valueString.append(type);
-            valueString.append("<br>");
-        }
         if (attributes != null) {
             valueString.append(getAttributeString());
-        }
-
-        valueString.append("<br>" + getLocusString());
-
-
-        // Display attributes, if any
-        if (attributes != null && attributes.size() > 0) {
-
         }
 
 
@@ -216,12 +207,12 @@ public class BasicFeature extends AbstractFeature {
         final String exonType = bf.getType();
         for (Exon exon : exons) {
             if (exon.contains(bf)) {
+                // Replace exon attributes with coding features.  Perhaps in the future we will merge them.
+                exon.setAttributes(bf.getAttributes());
                 if (SequenceOntology.cdsTypes.contains(exonType)) {
                     exon.setNonCoding(false);
                     exon.setCodingStart(bf.getStart());
                     exon.setCodingEnd(bf.getEnd());
-                    thickStart = Math.min(thickStart, bf.getStart());
-                    thickEnd = Math.max(thickEnd, bf.getEnd());
 
                 } else if (SequenceOntology.utrTypes.contains(exonType)) {
                     exon.setNonCoding(true);
@@ -231,11 +222,9 @@ public class BasicFeature extends AbstractFeature {
                     if (rhs) {
                         exon.setCodingStart(bf.getEnd());
                         exon.setCodingEnd(bf.getEnd());
-                        thickStart = bf.getEnd();
                     } else {
                         exon.setCodingEnd(bf.getStart());
                         exon.setCodingStart(bf.getStart());
-                        thickEnd = bf.getStart();
                     }
                 }
 
@@ -246,18 +235,9 @@ public class BasicFeature extends AbstractFeature {
 
         if (!found) {
             // No match
-            Exon exon = new Exon(bf);
-            if (exon.isNonCoding()) {
-                boolean rhs =
-                        (SequenceOntology.fivePrimeUTRTypes.contains(exonType) && bf.getStrand() == Strand.POSITIVE) ||
-                                (SequenceOntology.threePrimeUTRTypes.contains(exonType) && bf.getStrand() == Strand.NEGATIVE);
-                if (rhs) {
-                    thickStart = bf.getEnd();
-                } else {
-                    thickEnd = bf.getStart();
-                }
-            }
-            addExon(new Exon(bf));
+            final Exon exon = new Exon(bf);
+            exon.setNonCoding(!SequenceOntology.cdsTypes.contains(bf.getType()));
+            addExon(exon);
         }
 
     }

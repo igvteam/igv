@@ -180,7 +180,6 @@ public class GFFFeatureSource extends TribbleFeatureSource {
                     Map<String, List<BasicFeature>> cdsPartsMap = gffCdsCltn.getPartsById();
                     boolean first = true;
                     for (Map.Entry<String, List<BasicFeature>> entry : cdsPartsMap.entrySet()) {
-                        String cdsId = entry.getKey();
                         List<BasicFeature> cdsParts = entry.getValue();
 
                         BasicFeature isoform;
@@ -203,6 +202,14 @@ public class GFFFeatureSource extends TribbleFeatureSource {
 
             for (Feature bf : igvFeatures) {
                 ((BasicFeature) bf).sortExons();
+                List<Exon> exons = ((BasicFeature) bf).getExons();
+                int exonNumber = (((BasicFeature) bf).getStrand() == Strand.NEGATIVE ? exons.size() : 1);
+                int increment =   (((BasicFeature) bf).getStrand() == Strand.NEGATIVE ? -1 : 1);
+                for(Exon ex : exons) {
+                    ex.setNumber(exonNumber);
+                    exonNumber += increment;
+                }
+
             }
 
             FeatureUtils.sortFeatureList(igvFeatures);
