@@ -15,6 +15,7 @@ package org.broad.igv.ui.util;
 import com.jidesoft.swing.JideBoxLayout;
 import com.jidesoft.swing.JideButton;
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.ui.FontManager;
 
 import javax.swing.*;
@@ -35,7 +36,7 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
     private JLabel messageBox2;
     private JLabel messageBox3;
     private JLabel memoryStatus;
-    
+
     private JButton cancelButton;
 
     java.util.Timer timer;
@@ -62,10 +63,12 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
         messageBox.setPreferredSize(new Dimension(135, 20));
         add(messageBox, JideBoxLayout.FIX);
 
-        cancelButton = new JideButton(IconFactory.getInstance().getIcon(IconFactory.IconID.CLOSE));
-        cancelButton.setMinimumSize(new Dimension(20, 10));
-        cancelButton.setPreferredSize(new Dimension(20, 20));
-        add(cancelButton, JideBoxLayout.FIX);
+        if (!Globals.isProduction()) {
+            cancelButton = new JideButton(IconFactory.getInstance().getIcon(IconFactory.IconID.CLOSE));
+            cancelButton.setMinimumSize(new Dimension(20, 10));
+            cancelButton.setPreferredSize(new Dimension(20, 20));
+            add(cancelButton, JideBoxLayout.FIX);
+        }
 
         messageBox2 = createMessageField(messageBG, messageFont);
         messageBox2.setMinimumSize(new Dimension(150, 10));
@@ -121,32 +124,35 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
     /**
      * Set the cancel button
      */
-    public void activateCancelButton(ActionListener listener){
-        this.cancelButton.addActionListener(listener);
-        this.cancelButton.addActionListener(new CancelButtonActionListener());
-        this.cancelButton.setEnabled(true);
+    public void activateCancelButton(ActionListener listener) {
+
+        if (!Globals.isProduction()) {
+            this.cancelButton.addActionListener(listener);
+            this.cancelButton.addActionListener(new CancelButtonActionListener());
+            this.cancelButton.setEnabled(true);
+        }
 
     }
 
-    public void deactivateCancelButton(){
-        for(ActionListener l: this.cancelButton.getActionListeners()){
-            this.cancelButton.removeActionListener(l);
+    public void deactivateCancelButton() {
+        if (!Globals.isProduction()) {
+            for (ActionListener l : this.cancelButton.getActionListeners()) {
+                this.cancelButton.removeActionListener(l);
+            }
+            this.cancelButton.setEnabled(false);
         }
-        this.cancelButton.setEnabled(false);
     }
 
     public JButton getCancelButton() {
         return cancelButton;
     }
 
-    class CancelButtonActionListener implements ActionListener{
+    class CancelButtonActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             deactivateCancelButton();
         }
     }
-
-
 
 
     class MemoryUpdateTask extends TimerTask {

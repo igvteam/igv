@@ -282,12 +282,14 @@ public class IGV {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                Component cButton = contentPane.getStatusBar().getCancelButton();
-                int tX = -(contentPane.getStatusBar().getX() + cButton.getX());
-                int tY = -(contentPane.getY() + contentPane.getStatusBar().getY());
-                e.translatePoint(tX,  tY);
-                if(cButton.contains(e.getPoint())){
-                    contentPane.getStatusBar().getCancelButton().doClick();
+                if (!Globals.isProduction()) {
+                    Component cButton = contentPane.getStatusBar().getCancelButton();
+                    int tX = -(contentPane.getStatusBar().getX() + cButton.getX());
+                    int tY = -(contentPane.getY() + contentPane.getStatusBar().getY());
+                    e.translatePoint(tX, tY);
+                    if (cButton.contains(e.getPoint())) {
+                        contentPane.getStatusBar().getCancelButton().doClick();
+                    }
                 }
             }
         });
@@ -619,7 +621,7 @@ public class IGV {
 
     }
 
-    public void loadGenome(String path, ProgressMonitor monitor) throws IOException{
+    public void loadGenome(String path, ProgressMonitor monitor) throws IOException {
         loadGenome(path, monitor, true);
     }
 
@@ -2071,7 +2073,7 @@ public class IGV {
             }
         }
 
-        for(Track t : tracksToRemove) {
+        for (Track t : tracksToRemove) {
             t.dispose();
         }
     }
@@ -2096,11 +2098,11 @@ public class IGV {
 
     }
 
-    public boolean hasGeneTrack(){
+    public boolean hasGeneTrack() {
         FeatureTrack geneTrack = GenomeManager.getInstance().getCurrentGenome().getGeneTrack();
-        if(geneTrack == null) return false;
-        for(FeatureTrack ft: getFeatureTracks()){
-            if(geneTrack == ft) return true;
+        if (geneTrack == null) return false;
+        for (FeatureTrack ft : getFeatureTracks()) {
+            if (geneTrack == ft) return true;
         }
         return false;
     }
