@@ -898,7 +898,7 @@ public class TrackLoader {
             String dsName = locator.getTrackName();
 
             // If the user tried to load the index,  look for the file (this is a common mistake)
-            if (locator.getPath().endsWith(".sai") || locator.getPath().endsWith(".bai")) {
+            if (locator.getTypeString().endsWith(".sai") || locator.getTypeString().endsWith(".bai")) {
                 MessageUtils.showMessage("<html><b>ERROR:</b> Loading SAM/BAM index files are not supported:  " + locator.getPath() +
                         "<br>Load the SAM or BAM file directly. ");
                 return;
