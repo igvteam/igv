@@ -512,13 +512,13 @@ public class IGVSessionReader implements SessionReader {
             StringBuffer message = new StringBuffer();
             message.append("<html>The following data file(s) could not be located.<ul>");
             for (ResourceLocator file : missingDataFiles) {
-                if (file.isLocal()) {
+                if (file.getDBUrl() == null) {
                     message.append("<li>");
                     message.append(file.getPath());
                     message.append("</li>");
                 } else {
                     message.append("<li>Server: ");
-                    message.append(file.getServerURL());
+                    message.append(file.getDBUrl());
                     message.append("  Path: ");
                     message.append(file.getPath());
                     message.append("</li>");
@@ -686,13 +686,13 @@ public class IGVSessionReader implements SessionReader {
         if (url == null) {
             url = getAttribute(element, SessionAttribute.FEATURE_URL.getText());
         }
-        resourceLocator.setUrl(url);
+        resourceLocator.setFeatureInfoURL(url);
 
         String infolink = getAttribute(element, SessionAttribute.HYPERLINK.getText());
         if (infolink == null) {
             infolink = getAttribute(element, SessionAttribute.INFOLINK.getText());
         }
-        resourceLocator.setInfolink(infolink);
+        resourceLocator.setTrackInforURL(infolink);
 
 
         // Label is deprecated in favor of name.

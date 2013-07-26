@@ -92,41 +92,23 @@ public class ParsingUtils {
      */
     public static InputStream openInputStreamGZ(ResourceLocator locator) throws IOException {
 
-        if (locator.getServerURL() != null) {
-            // Use IGV webservice to fetch content
-            URL url = new URL(locator.getServerURL() + "?method=getContents&file=" + locator.getPath());
-            InputStream is = HttpUtils.getInstance().openConnectionStream(url);
-            // Note -- assumption that url stream is compressed!
-            try {
-                return new GZIPInputStream(is);
-            } catch (Exception ex) {
-                log.error("Error with gzip stream", ex);
-                throw new RuntimeException(
-                        "There was a server error loading file: " + locator.getTrackName() +
-                                ". Please report to igv-team@broadinstitute.org");
-
-            }
-
+        InputStream inputStream = null;
+        if (HttpUtils.isRemoteURL(locator.getPath())) {
+            URL url = new URL(locator.getPath());
+            inputStream = HttpUtils.getInstance().openConnectionStream(url);
         } else {
-
-            InputStream inputStream = null;
-            if (HttpUtils.isRemoteURL(locator.getPath())) {
-                URL url = new URL(locator.getPath());
-                inputStream = HttpUtils.getInstance().openConnectionStream(url);
-            } else {
-                String path = locator.getPath();
-                if (path.startsWith("file://")) {
-                    path = path.substring(7);
-                }
-                File file = new File(path);
-                inputStream = new FileInputStream(file);
+            String path = locator.getPath();
+            if (path.startsWith("file://")) {
+                path = path.substring(7);
             }
+            File file = new File(path);
+            inputStream = new FileInputStream(file);
+        }
 
-            if (locator.getPath().endsWith("gz")) {
-                return new GZIPInputStream(inputStream);
-            } else {
-                return inputStream;
-            }
+        if (locator.getPath().endsWith("gz")) {
+            return new GZIPInputStream(inputStream);
+        } else {
+            return inputStream;
         }
     }
 
@@ -518,7 +500,7 @@ public class ParsingUtils {
 
 
     public static boolean pathExists(String covPath) {
-        if(covPath == null) return false;
+        if (covPath == null) return false;
         try {
             return (new File(covPath)).exists() ||
                     (HttpUtils.isRemoteURL(covPath) && HttpUtils.getInstance().resourceAvailable(new URL(covPath)));

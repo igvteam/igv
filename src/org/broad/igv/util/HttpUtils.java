@@ -101,20 +101,19 @@ public class HttpUtils {
 
 
     /**
-     * @deprecated HttpUtils.openConnection does URL encoding itself
-     *
-     * Join the {@code elements} with the character {@code joiner},
-     * URLencoding the {@code elements} along the way. {@code joiner}
-     * is NOT URLEncoded
-     * Example:
-     * String[] parm_list = new String[]{"app les", "oranges", "bananas"};
-     * String formatted = buildURLString(Arrays.asList(parm_list), "+");
-     * <p/>
-     * formatted will be "app%20les+oranges+bananas"
-     *
      * @param elements
      * @param joiner
      * @return
+     * @deprecated HttpUtils.openConnection does URL encoding itself
+     *             <p/>
+     *             Join the {@code elements} with the character {@code joiner},
+     *             URLencoding the {@code elements} along the way. {@code joiner}
+     *             is NOT URLEncoded
+     *             Example:
+     *             String[] parm_list = new String[]{"app les", "oranges", "bananas"};
+     *             String formatted = buildURLString(Arrays.asList(parm_list), "+");
+     *             <p/>
+     *             formatted will be "app%20les+oranges+bananas"
      */
     @Deprecated
     public static String buildURLString(Iterable<String> elements, String joiner) {
@@ -326,10 +325,11 @@ public class HttpUtils {
      * Get the system defined proxy defined for the URI, or null if
      * not available. May also return a {@code Proxy} object which
      * represents a direct connection
+     *
      * @param uri
      * @return
      */
-    private Proxy getSystemProxy(String uri){
+    private Proxy getSystemProxy(String uri) {
         try {
             ProxySelector selector = ProxySelector.getDefault();
             List<Proxy> proxyList = selector.select(new URI(uri));
@@ -337,7 +337,7 @@ public class HttpUtils {
         } catch (URISyntaxException e) {
             log.error(e.getMessage(), e);
             return null;
-        } catch (NullPointerException e){
+        } catch (NullPointerException e) {
             return null;
         }
 
@@ -540,7 +540,7 @@ public class HttpUtils {
 
         //Encode query string portions
         url = StringUtils.encodeURLQueryString(url);
-        if(log.isTraceEnabled()){
+        if (log.isTraceEnabled()) {
             log.trace(url);
         }
 
@@ -558,7 +558,7 @@ public class HttpUtils {
         HttpURLConnection conn;
         if (useProxy) {
             Proxy proxy = sysProxy;
-            if(igvProxySettingsExist){
+            if (igvProxySettingsExist) {
                 proxy = new Proxy(proxySettings.type, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
             }
             conn = (HttpURLConnection) url.openConnection(proxy);
@@ -732,9 +732,8 @@ public class HttpUtils {
                 // We could not reach the test server, so we can't know if this client can do byte-range tests or
                 // not.  Take the "optimistic" view.
                 return true;
-            }
-            finally {
-                if(str != null) try {
+            } finally {
+                if (str != null) try {
                     str.close();
                 } catch (IOException e) {
                     log.error("Error closing stream (" + url.toExternalForm() + ")", e);
@@ -796,6 +795,18 @@ public class HttpUtils {
     public static boolean isURL(String f) {
         return f.startsWith("http:") || f.startsWith("ftp:") || f.startsWith("https:") || URLmatcher.matcher(f).matches();
     }
+
+    public static Map<String, String> parseQueryString(String query) {
+        String[] params = query.split("&");
+        Map<String, String> map = new HashMap<String, String>();
+        for (String param : params) {
+            String name = param.split("=")[0];
+            String value = param.split("=")[1];
+            map.put(name, value);
+        }
+        return map;
+    }
+
 
     public static class ProxySettings {
         boolean auth = false;

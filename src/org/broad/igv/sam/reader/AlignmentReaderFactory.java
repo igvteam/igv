@@ -72,7 +72,7 @@ public class AlignmentReaderFactory {
         } else if (typeString.endsWith(".bam")) {
             if (locator.isLocal()) {
                 reader = new BAMFileReader(new File(samFile));
-            } else if (HttpUtils.isRemoteURL(locator.getPath().toLowerCase())) {
+            } else {
                 try {
                     reader = new BAMHttpReader(locator, requireIndex);
                 } catch (MalformedURLException e) {
@@ -80,17 +80,9 @@ public class AlignmentReaderFactory {
                     throw new DataLoadException("Error loading BAM file: " + e.toString(), locator.getPath());
                 }
 
-            } else {
-                if (locator.getServerURL() != null) {
-                    reader = new BAMWebserviceReader(locator);
-                }
             }
         } else if (typeString.endsWith(".bam.list") || pathLowerCase.endsWith(".sam.list")) {
-            if (locator.getServerURL() != null) {
-                reader = new BAMWebserviceReader(locator);
-            } else {
-                reader = getBamListReader(locator.getPath(), requireIndex);
-            }
+            reader = getBamListReader(locator.getPath(), requireIndex);
         } else if (GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
             try {
                 reader = new GobyAlignmentQueryReader(locator.getPath());

@@ -302,14 +302,14 @@ public class SessionWriter {
                     if (resourceLocator.getName() != null) {
                         dataFileElement.setAttribute(SessionAttribute.NAME.getText(), resourceLocator.getName());
                     }
-                    if (resourceLocator.getServerURL() != null) {
-                        dataFileElement.setAttribute(SessionAttribute.SERVER_URL.getText(), resourceLocator.getServerURL());
+                    if (resourceLocator.getDBUrl() != null) {
+                        dataFileElement.setAttribute(SessionAttribute.SERVER_URL.getText(), resourceLocator.getDBUrl());
                     }
-                    if (resourceLocator.getInfolink() != null) {
-                        dataFileElement.setAttribute(SessionAttribute.HYPERLINK.getText(), resourceLocator.getInfolink());
+                    if (resourceLocator.getTrackInforURL() != null) {
+                        dataFileElement.setAttribute(SessionAttribute.HYPERLINK.getText(), resourceLocator.getTrackInforURL());
                     }
-                    if (resourceLocator.getUrl() != null) {
-                        dataFileElement.setAttribute(SessionAttribute.FEATURE_URL.getText(), resourceLocator.getUrl());
+                    if (resourceLocator.getFeatureInfoURL() != null) {
+                        dataFileElement.setAttribute(SessionAttribute.FEATURE_URL.getText(), resourceLocator.getFeatureInfoURL());
                     }
                     if (resourceLocator.getDescription() != null) {
                         dataFileElement.setAttribute(SessionAttribute.DESCRIPTION.getText(), resourceLocator.getDescription());

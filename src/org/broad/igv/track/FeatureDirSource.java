@@ -76,7 +76,7 @@ public class FeatureDirSource implements FeatureSource {
                 try {
                     log.info("Loading " + path);
                     // Load features here
-                    ResourceLocator loc = new ResourceLocator(rootLocator.getServerURL(), path);
+                    ResourceLocator loc = new ResourceLocator(path);
 
                     FeatureParser fp = AbstractFeatureParser.getInstanceFor(loc, genome);
                     reader = ParsingUtils.openBufferedReader(loc);

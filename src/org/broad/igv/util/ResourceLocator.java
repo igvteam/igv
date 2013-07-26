@@ -11,11 +11,13 @@
 package org.broad.igv.util;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.gs.GSUtils;
 
 import java.awt.*;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Map;
 
 /**
  * Represents a data file or other resource, which might be local file or remote resource.
@@ -32,9 +34,15 @@ public class ResourceLocator {
     String name;
 
     /**
-     * The path for the file or resource, either local file path, http, https, ftp, or a database URL
+     * The local path or url (http, https, or ftp) for the resource.
      */
     String path;
+
+    /**
+     * URL to a database server
+     */
+    String dbURL;
+
 
     /**
      * Optional path to an associated index file
@@ -42,17 +50,19 @@ public class ResourceLocator {
     String indexPath;
 
 
-    String infolink; // A hyperlink to general information about the track.
-    String url; //A URL pattern (UCSC convention) to a specific URL applicable to each feature
+    String trackInforURL; // A hyperlink to general information about the track.
+
+    String featureInfoURL; //A URL pattern (UCSC convention) to a specific URL applicable to each feature
+
     String description; //Descriptive text
 
     /**
-     * The type of resource
+     * The type of resource (generally this refers to the file format)
      */
     String type;
 
     /**
-     * Path to an assocated density file.  This is used primarily for sequence alignments
+     * Path to an associated density file.  This is used primarily for sequence alignments
      */
     String coverage;
 
@@ -66,16 +76,11 @@ public class ResourceLocator {
      */
     Color color;
 
-    /**
-     * URL to a web service that provides this resource.  This is obsolete, kept for backward compatibility.
-     *
-     * @deprecated
-     */
-    String serverURL; // URL for the remote data server.  Null for local files
 
-    private String sampleId;
+    String sampleId;
 
     String username;
+
     String password;
 
     /**
@@ -84,22 +89,17 @@ public class ResourceLocator {
      * @param path
      */
     public ResourceLocator(String path) {
-        this(null, path);
+        this.setPath(path);
     }
 
     /**
-     * Constructor for remote files
-     * <p/>
-     * Catch references to broadinstitute.org here.  The "broadinstitute" substitution
-     * is necessary for stored session files with the old url.
+     * Constructor for database resources
      *
-     * @param serverURL
+     * @param dbURL
      * @param path
      */
-    public ResourceLocator(String serverURL, String path) {
-        if (serverURL != null) {
-            this.serverURL = serverURL.replace("broad.mit.edu", "broadinstitute.org");
-        }
+    public ResourceLocator(String dbURL, String path) {
+        this.dbURL = dbURL;
         this.setPath(path);
     }
 
@@ -112,31 +112,6 @@ public class ResourceLocator {
         return ParsingUtils.pathExists(path);
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final ResourceLocator other = (ResourceLocator) obj;
-        if (this.serverURL != other.serverURL && (this.serverURL == null || !this.serverURL.equals(other.serverURL))) {
-            return false;
-        }
-        if (this.path != other.path && (this.path == null || !this.path.equals(other.path))) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 29 * hash + (this.serverURL != null ? this.serverURL.hashCode() : 0);
-        hash = 29 * hash + (this.path != null ? this.path.hashCode() : 0);
-        return hash;
-    }
 
     public void setType(String type) {
         this.type = type;
@@ -155,19 +130,19 @@ public class ResourceLocator {
             if (path.startsWith("http://") || path.startsWith("https://")) {
                 try {
                     URL url = new URL(path);
+
                     typeString = url.getPath().toLowerCase();
                     String query = url.getQuery();
-
-                    // Genome space hack -- check for explicit type converter
-                    //  https://dmtest.genomespace.org:8444/datamanager/files/users/SAGDemo/Step1/TF.data.tab
-                    //   ?dataformat=http://www.genomespace.org/datamanager/dataformat/gct/0.0.0
                     if (query != null) {
-                        if (query.contains("dataformat/gct")) {
-                            typeString = ".gct";
-                        } else if (query.contains("dataformat/bed")) {
-                            typeString = ".bed";
-                        } else if (query.contains("dataformat/cn")) {
-                            typeString = ".cn";
+                        Map<String, String> queryMap = HttpUtils.parseQueryString(query);
+                        // If type is set explicitly use it
+                        String format = queryMap.get("dataformat");
+                        if (format != null) {
+                            if (format.contains("genomespace")) {
+                                typeString = GSUtils.parseDataFormatString(format);
+                            } else {
+                                typeString = format;
+                            }
                         }
                     }
 
@@ -190,7 +165,7 @@ public class ResourceLocator {
     }
 
     public String toString() {
-        return path + (serverURL == null ? "" : " " + serverURL);
+        return path + (dbURL == null ? "" : " " + dbURL);
     }
 
     public String getPath() {
@@ -201,21 +176,21 @@ public class ResourceLocator {
         return (new File(path)).getName();
     }
 
-    //@Deprecated
-    public String getServerURL() {
-        return serverURL;
+
+    public String getDBUrl() {
+        return dbURL;
     }
 
     public boolean isLocal() {
-        return serverURL == null && !(FileUtils.isRemote(path));
+        return !(FileUtils.isRemote(path));
     }
 
-    public void setInfolink(String infolink) {
-        this.infolink = infolink;
+    public void setTrackInforURL(String trackInforURL) {
+        this.trackInforURL = trackInforURL;
     }
 
-    public String getInfolink() {
-        return infolink;
+    public String getTrackInforURL() {
+        return trackInforURL;
     }
 
     public String getDescription() {
@@ -256,12 +231,12 @@ public class ResourceLocator {
     }
 
 
-    public String getUrl() {
-        return url;
+    public String getFeatureInfoURL() {
+        return featureInfoURL;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setFeatureInfoURL(String featureInfoURL) {
+        this.featureInfoURL = featureInfoURL;
     }
 
     public void setPath(String path) {
@@ -312,13 +287,63 @@ public class ResourceLocator {
         this.password = password;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ResourceLocator that = (ResourceLocator) o;
+
+        if (dbURL != null ? !dbURL.equals(that.dbURL) : that.dbURL != null) return false;
+        if (!path.equals(that.path)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = path.hashCode();
+        result = 31 * result + (dbURL != null ? dbURL.hashCode() : 0);
+        return result;
+    }
+
+
+    public String getBamIndexPath() {
+
+        if (indexPath != null) return indexPath;
+
+        if (path.toLowerCase().startsWith("http://") || path.toLowerCase().startsWith("https://")) {
+            // See if bam file is specified by parameter
+            try {
+                URL url = new URL(path);
+                String queryString = url.getQuery();
+                if (queryString != null) {
+                    Map<String, String> parameters = HttpUtils.parseQueryString(queryString);
+                    if (parameters.containsKey("index")) {
+                        return parameters.get("index");
+                    } else if (parameters.containsKey("file")) {
+                        String bamFile = parameters.get("file");
+                        String bamIndexFile = bamFile + ".bai";
+                        String newQueryString = queryString.replace(bamFile, bamIndexFile);
+                        return path.replace(queryString, newQueryString);
+                    }
+                }
+            } catch (MalformedURLException e) {
+                log.error(e);
+            }
+
+        }
+
+        return path + ".bai";
+    }
+
 
     /**
      * FOR LOAD FROM SERVER
      */
     public static enum AttributeType {
 
-        SERVER_URL("serverURL"),
+        DB_URL("serverURL"),
         PATH("path"),
         DESCRIPTION("description"),
         HYPERLINK("hyperlink"),

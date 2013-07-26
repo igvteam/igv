@@ -122,8 +122,8 @@ public class TrackLoader {
             //This list will hold all new tracks created for this locator
             List<Track> newTracks = new ArrayList<Track>();
 
-            String serverURL = locator.getServerURL();
-            if (serverURL != null && serverURL.startsWith("jdbc:")) {
+            String dbUrl = locator.getDBUrl();
+            if (dbUrl != null) {
                 this.loadFromDatabase(locator, newTracks, genome);
             } else if (typeString.endsWith(".dbxml")) {
                 loadFromDBProfile(locator, newTracks);
@@ -213,12 +213,11 @@ public class TrackLoader {
                 loadWigFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".maf")) {
                 loadMultipleAlignmentTrack(locator, newTracks, genome);
-
             } else if (typeString.endsWith(".maf.dict")) {
                 loadMultipleAlignmentTrack(locator, newTracks, genome);
-            } else if (path.toLowerCase().contains(".peak.bin")) {
+            } else if (typeString.contains(".peak.bin")) {
                 loadPeakTrack(locator, newTracks, genome);
-            } else if ("mage-tab".equals(locator.getType()) || ExpressionFileParser.parsableMAGE_TAB(locator)) {
+            } else if ("mage-tab".equals(typeString) || ExpressionFileParser.parsableMAGE_TAB(locator)) {
                 locator.setDescription("MAGE_TAB");
                 loadGctFile(locator, newTracks, genome);
             } else if (GWASParser.isGWASFile(typeString)) {
@@ -245,8 +244,8 @@ public class TrackLoader {
 
             for (Track track : newTracks) {
 
-                if (locator.getUrl() != null) {
-                    track.setUrl(locator.getUrl());
+                if (locator.getFeatureInfoURL() != null) {
+                    track.setUrl(locator.getFeatureInfoURL());
                 }
                 if (tp != null) {
                     track.setProperties(tp);
@@ -1083,8 +1082,8 @@ public class TrackLoader {
 
         //For backwards/forwards compatibility
         //We used to put path in the serverURL field
-        ResourceLocator dbLocator = new ResourceLocator(locator.getServerURL());
-        if (".seg".equals(locator.getType())) {
+        ResourceLocator dbLocator = new ResourceLocator(locator.getDBUrl());
+        if (".seg".equals(locator.getTypeString())) {
             //TODO Don't hardcode table name, this might note even be right for our target case
             SegmentedAsciiDataSet ds = (new SegmentedSQLReader(dbLocator, "CNV", genome)).load();
             loadSegTrack(locator, newTracks, genome, ds);

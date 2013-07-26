@@ -198,7 +198,7 @@ public class HostedDataTest extends AbstractHeadlessTest {
 
     private String formatLocator(ResourceLocator locator) {
         return String.format("Name: %s\tPath: %s\t serverURL: %s",
-                locator.getName(), locator.getPath(), locator.getServerURL());
+                locator.getName(), locator.getPath(), locator.getDBUrl());
     }
 
     private void recordError(String path, Exception e, Map<ResourceLocator, Exception> failures) {

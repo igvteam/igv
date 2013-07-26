@@ -65,7 +65,7 @@ public class MultiFileWrapper {
                 String[] tokens = nextLine.split("\t");
                 String chr = tokens[0];
                 String file = tokens[1];
-                ResourceLocator loc = new ResourceLocator(serverURL, file);
+                ResourceLocator loc = new ResourceLocator(file);
                 locators.put(chr, loc);
             }
 

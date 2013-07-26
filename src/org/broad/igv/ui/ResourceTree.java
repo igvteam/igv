@@ -205,7 +205,6 @@ public class ResourceTree {
         String name = getAttribute(xmlNode, NAME.getText());
 
         ResourceLocator locator = new ResourceLocator(
-                getAttribute(xmlNode, SERVER_URL.getText()),
                 getAttribute(xmlNode, PATH.getText())
         );
         locator.setName(name);
@@ -214,7 +213,7 @@ public class ResourceTree {
         if (infoLink == null) {
             infoLink = getAttribute(xmlNode, INFOLINK.getText());
         }
-        locator.setInfolink(infoLink);
+        locator.setTrackInforURL(infoLink);
 
         if (xmlNode.getTagName().equalsIgnoreCase("Resource")) {
 
@@ -228,7 +227,7 @@ public class ResourceTree {
                 sampleId = getAttribute(xmlNode, ID.getText());
             }
             locator.setSampleId(sampleId);
-            locator.setUrl(getAttribute(xmlNode, URL.getText()));
+            locator.setFeatureInfoURL(getAttribute(xmlNode, URL.getText()));
             locator.setDescription(getAttribute(xmlNode, DESCRIPTION.getText()));
             locator.setTrackLine(getAttribute(xmlNode, TRACK_LINE.getText()));
             locator.setName(name);
@@ -449,7 +448,7 @@ public class ResourceTree {
                         renderer.setSelected(resource.isSelected());
                         renderer.setEnabled(resource.isEnabled());
 
-                        String hyperLink = resource.getResourceLocator().getInfolink();
+                        String hyperLink = resource.getResourceLocator().getTrackInforURL();
                         if (hyperLink == null) {
                             renderer.showHyperLink(false);
                         } else {

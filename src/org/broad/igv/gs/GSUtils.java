@@ -194,4 +194,18 @@ public class GSUtils {
         return url.getHost().contains(".genomespace.org");
     }
 
+    /**
+     * Convert GenomeSpace format string to igv format type (extension)
+     *   Example: https://dmtest.genomespace.org:8444/datamanager/files/users/SAGDemo/Step1/TF.data.tab
+     *     ?dataformat=http://www.genomespace.org/datamanager/dataformat/gct/0.0.0
+     *
+     * @param format
+     * @return
+     */
+    public static String parseDataFormatString(String format) {
+        int versionIdx = format.lastIndexOf("/");
+        String tmp = format.substring(0, versionIdx);
+        int extIdx = tmp.lastIndexOf("/") + 1;
+        return "." + tmp.substring(extIdx);
+    }
 }

@@ -1,19 +1,17 @@
 package org.broad.igv.util;
 
 
+import org.junit.Test;
+
+import java.net.URL;
+
 import static org.junit.Assert.*;
 
-/**
- * Created with IntelliJ IDEA.
- * User: jrobinso
- * Date: 6/24/13
- * Time: 12:58 PM
- * To change this template use File | Settings | File Templates.
- */
+
 public class ResourceLocatorTest {
 
 
-    @org.junit.Test
+    @Test
     public void testGetTypeString() throws Exception {
 
         // A URL from GenomeBridge
@@ -30,5 +28,32 @@ public class ResourceLocatorTest {
         loc = new ResourceLocator("/foo/bar.cn.gz");
         type = loc.getTypeString();
         assertTrue(type.endsWith(".cn"));
+
+        // File with "double" extension and mixed case
+        loc = new ResourceLocator("/foo/bar.PEAK.bin");
+        type = loc.getTypeString();
+        assertTrue(type.endsWith(".peak.bin"));
+    }
+
+    @Test
+    public void testBamIndexPaths() throws Exception {
+
+        String url = "http://some.server.org/foo/bar.bam";
+        ResourceLocator rl = new ResourceLocator(url);
+        String indexPath = rl.getBamIndexPath();
+        assertEquals(url + ".bai", indexPath);
+
+        url = "http://some.server.org/foo?file=/server/local/path/bar.bam&param2=value2";
+        String expectedPath = "http://some.server.org/foo?file=/server/local/path/bar.bam.bai&param2=value2";
+        rl = new ResourceLocator(url);
+        indexPath = rl.getBamIndexPath();
+        assertEquals(expectedPath, indexPath);
+
+        String localPath = "/foo/bar.bam";
+        rl = new ResourceLocator(localPath);
+        indexPath = rl.getBamIndexPath();
+        assertEquals(localPath + ".bai", indexPath);
+
+
     }
 }

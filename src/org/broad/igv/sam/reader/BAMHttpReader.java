@@ -63,7 +63,7 @@ public class BAMHttpReader implements AlignmentReader {
     public BAMHttpReader(ResourceLocator locator, boolean requireIndex) throws IOException {
         this.url = new URL(locator.getPath());
         if (requireIndex) {
-            indexFile = getIndexFile(url, locator.getIndexPath());
+            indexFile = getIndexFile(locator);
             if (indexFile == null) {
                 // Let user locate the index file
                 String defaultURL = url.getPath() + ".bai";
@@ -188,9 +188,9 @@ public class BAMHttpReader implements AlignmentReader {
         }
     }
 
-    File getIndexFile(URL url, String indexPath) throws IOException {
+    File getIndexFile(ResourceLocator locator) throws IOException {
 
-        log.debug("Getting index for " + url + ". Index path " + indexPath);
+        log.debug("Getting index for " + url + ". Index path " + locator.getIndexPath());
         String urlString = url.toString();
         indexFile = getTmpIndexFile(urlString);
 
@@ -201,7 +201,7 @@ public class BAMHttpReader implements AlignmentReader {
         }
 
         if (!indexFile.exists() || indexFile.length() < 1) {
-            loadIndexFile(urlString, indexPath, indexFile);
+            loadIndexFile(locator.getBamIndexPath(), indexFile);
             indexFile.deleteOnExit();
         }
 
@@ -219,21 +219,20 @@ public class BAMHttpReader implements AlignmentReader {
         return indexFile;
     }
 
-    private void loadIndexFile(String path, String indexPath, File indexFile) throws IOException {
+    private void loadIndexFile(String indexPath, File indexFile) throws IOException {
         InputStream is = null;
         OutputStream os = null;
 
         try {
-            String idx = (indexPath != null && indexPath.length() > 0) ? indexPath : path + ".bai";
-            URL indexURL = new URL(idx);
+            URL indexURL = new URL(indexPath);
             os = new FileOutputStream(indexFile);
             boolean foundIndex = true;
             try {
                 is = HttpUtils.getInstance().openConnectionStream(indexURL);
             } catch (FileNotFoundException e) {
                 // Try other index convention
-                String baseName = path.substring(0, path.length() - 4);
-                indexURL = new URL(baseName + ".bai");
+                indexPath = indexPath.replace(".bam.bai", ".bai");
+                indexURL = new URL(indexPath);
                 try {
                     is = org.broad.igv.util.HttpUtils.getInstance().openConnectionStream(indexURL);
                 } catch (FileNotFoundException e1) {
@@ -255,8 +254,8 @@ public class BAMHttpReader implements AlignmentReader {
             }
             if (!foundIndex) {
 
-                MessageUtils.showMessage("Index file not found for file: " + path);
-                throw new DataLoadException("Index file not found for file: " + path, path);
+                MessageUtils.showMessage("Index file not found: " + indexPath);
+                throw new DataLoadException("Index file not found: " + indexPath, indexPath);
 
             }
             byte[] buf = new byte[512000];

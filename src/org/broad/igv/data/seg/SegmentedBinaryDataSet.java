@@ -57,7 +57,7 @@ public class SegmentedBinaryDataSet implements SegmentedDataSet {
 
     public SegmentedBinaryDataSet(ResourceLocator locator) {
 
-        reader = locator.getServerURL() == null ? new SegmentedBinaryLocalReader(locator.getPath()) : new SegmentedBinaryRemoteReader(locator);
+        reader = new SegmentedBinaryLocalReader(locator.getPath());
 
         try {
             type = TrackType.valueOf(reader.getStringAttribute("type"));
