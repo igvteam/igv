@@ -257,6 +257,9 @@ public class TrackProperties {
         return autoScaleFlag || Float.isNaN(minValue) || Float.isNaN(maxValue);
     }
 
+    public boolean getAutoScale()    {
+        return this.autoScaleFlag;
+    }
 
     public String getGenome() {
         return genome;
@@ -445,4 +448,6 @@ public class TrackProperties {
         }
 
     }
+
+
 }

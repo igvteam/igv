@@ -213,5 +213,7 @@ public interface Track extends Persistable{
     float getYLine();
 
     void dispose();
+    
+    boolean getAutoScale();
 
 }

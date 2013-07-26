@@ -52,12 +52,6 @@ public class SpliceJunctionFeature extends BasicFeature {
         junctionEnd = end;
     }
 
-    public SpliceJunctionFeature(String chr, int start, int end, Strand strand,
-                                 int junctionStart, int junctionEnd) {
-        this(chr, start, end, strand);
-        this.junctionStart = junctionStart;
-        this.junctionEnd = junctionEnd;
-    }
 
     /**
      * Does this splice junction feature represent the same splice junction as another feature? This is used for
@@ -114,10 +108,18 @@ public class SpliceJunctionFeature extends BasicFeature {
             endFlankingRegionDepthArray[i] = endFlankingRegionDepthArray[i] + 1;
     }
 
-    public int getJunctionDepth() {
+    /**
+     * The "score" for a SpliceJunctionFeature is the junction depth.  This maintains compatibility with Tophat's
+     * use of the score field in junction bed files.
+     */
+    @Override
+    public float getScore() {
         return junctionDepth;
     }
 
+    public int getJunctionDepth() {
+        return junctionDepth;
+    }
 
     public void setJunctionDepth(int junctionDepth) {
         this.junctionDepth = junctionDepth;

@@ -1,5 +1,6 @@
 /**
  * Copyright (c) 2010-2011 by Fred Hutchinson Cancer Research Center.  All Rights Reserved.
+ * Portions of code, copyright (c) 2013 by F. Hoffmann-La Roche Ltd and Tessella Inc.
 
  * This software is licensed under the terms of the GNU Lesser General
  * Public License (LGPL), Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
@@ -15,11 +16,24 @@
  * REGARDLESS OF  WHETHER FRED HUTCHINSON CANCER RESEARCH CENTER SHALL BE ADVISED,
  * SHALL HAVE OTHER REASON TO KNOW, OR IN FACT SHALL KNOW OF THE POSSIBILITY OF THE
  * FOREGOING.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS." F.HOFFMANN-LA ROCHE AND TESSELLA INC MAKE NO
+ * REPRESENTATIONS OR WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED,
+ * INCLUDING, WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS,
+ * WHETHER OR NOT DISCOVERABLE.  IN NO EVENT SHALL F.HOFFMANN-LA ROCHE AND TESSELLA INC
+ * OR ITS TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR
+ * ANY DAMAGES OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR
+ * CONSEQUENTIAL DAMAGES, ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS,
+ * REGARDLESS OF WHETHER F.HOFFMANN-LA ROCHE AND TESSELLA INC SHALL BE ADVISED,
+ * SHALL HAVE OTHER REASON TO KNOW, OR IN FACT SHALL KNOW OF THE POSSIBILITY OF THE
+ * FOREGOING.
  */
 package org.broad.igv.renderer;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.apache.commons.math.stat.Frequency;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.IGVFeature;
@@ -32,6 +46,8 @@ import org.broad.igv.ui.FontManager;
 
 import java.awt.*;
 import java.awt.geom.GeneralPath;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -58,7 +74,7 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
 
     //maximum depth that can be displayed, due to track height limitations. Junctions with
     //this depth and deeper will all look the same
-    protected int MAX_DEPTH = 50;
+    protected int maxDepth = 50;
 
     /**
      * Note:  assumption is that featureList is sorted by pStart position.
@@ -100,12 +116,32 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
             double trackRectangleX = trackRectangle.getX();
             double trackRectangleMaxX = trackRectangle.getMaxX();
 
-            // Draw the lines that represent the bounds of
-            // a feature's region
-            // TODO -- bugs in "Line Placement" style -- hardocde to fishbone
-
+ 
             SpliceJunctionFeature selectedFeature =
                     (SpliceJunctionFeature) ((FeatureTrack) track).getSelectedFeature();
+
+            // Start of Roche-Tessella modification
+            if (track.getAutoScale())    {
+                Frequency f = new Frequency();
+                List<Integer> scores = new ArrayList<Integer>();
+
+                for (IGVFeature feature : featureList) {
+                    SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
+                    f.addValue(junctionFeature.getScore());
+                    scores.add((int) junctionFeature.getScore());
+                }
+
+                Collections.sort(scores);
+                Collections.reverse(scores);
+                for (int s: scores)	{
+                    if (f.getCumPct(s) < 0.99)	{
+                        maxDepth = s;
+                        break;
+                    }
+                }
+
+            }
+            // End of Roche-Tessella modification
 
             for (IGVFeature feature : featureList) {
                 SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
@@ -186,8 +222,8 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
             for (int j = flankingRegionArrayPixelMinIndex; j <= flankingRegionArrayPixelMaxIndex; j++)
                 meanDepthThisPixel += regionDepthArray[j];
             meanDepthThisPixel /= (flankingRegionArrayPixelMaxIndex - flankingRegionArrayPixelMinIndex + 1);
-            meanDepthThisPixel = Math.min(MAX_DEPTH, meanDepthThisPixel);
-            int pixelHeight = Math.max(maxPossibleArcHeight * meanDepthThisPixel / MAX_DEPTH, 2);
+            meanDepthThisPixel = Math.min(maxDepth, meanDepthThisPixel);
+            int pixelHeight = Math.max(maxPossibleArcHeight * meanDepthThisPixel / maxDepth, 2);
             g2D.fillRect(pixelStart + i,
                     (int) trackRectangle.getCenterY() + (isPositiveStrand ? -pixelHeight : 0),
                     1, pixelHeight);
@@ -281,7 +317,7 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
         double minArcHeightProportion = 0.33;
 
         int innerArcHeight = (int) (maxPossibleArcHeight * minArcHeightProportion);
-        float depthProportionOfMax = Math.min(1, depth / MAX_DEPTH);
+        float depthProportionOfMax = Math.min(1, depth / maxDepth);
         int arcWidth = Math.max(1, (int) ((1 - minArcHeightProportion) * maxPossibleArcHeight * depthProportionOfMax));
         int outerArcHeight = innerArcHeight + arcWidth;
 

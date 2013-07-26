@@ -23,6 +23,7 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.renderer.DataRange;
@@ -36,7 +37,10 @@ import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -96,12 +100,17 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         if (popupTitle != null) {
             popupMenu.add(popupTitle);
         }
-
         popupMenu.addSeparator();
 
         ArrayList<Track> tmp = new ArrayList();
         tmp.add(this);
         TrackMenuUtils.addStandardItems(popupMenu, tmp, te);
+
+        if (!Globals.isProduction()) {
+            popupMenu.addSeparator();
+            popupMenu.add(getChangeAutoScale());
+        }
+
 
         return popupMenu;
     }
@@ -156,6 +165,38 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         }
 
     }
+
+    // Start of Roche-Tessella modification
+    private JMenuItem getChangeAutoScale() {
+
+        final JCheckBoxMenuItem autoscaleItem = new JCheckBoxMenuItem("Autoscale");
+
+        boolean autoScale = getAutoScale();
+        autoscaleItem.setSelected(autoScale);
+
+
+        autoscaleItem.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent evt) {
+                boolean autoScale = getAutoScale();
+                TrackProperties tp = new TrackProperties();
+                if (autoScale) {
+                    tp.setAutoScale(false);
+                    autoscaleItem.setSelected(false);
+                } else {
+                    tp.setAutoScale(true);
+                    autoscaleItem.setSelected(true);
+                }
+                tp.setRendererClass(SpliceJunctionRenderer.class);
+                setProperties(tp);
+
+                if (parent != null) parent.repaint();
+            }
+        });
+
+        return autoscaleItem;
+    }
+    // End of Roche-Tessella modification
 
 
 }

@@ -15,6 +15,7 @@ package org.broad.igv.track;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.gwas.GWASTrack;
 import org.broad.igv.renderer.*;
 import org.broad.igv.sam.AlignmentTrack;
@@ -703,6 +704,10 @@ public abstract class AbstractTrack implements Track {
             }
         }
 
+        // Start of Roche-Tessella modification
+        this.autoScale = properties.getAutoScale();
+        // End of Roche-Tessella modification
+
     }
 
     /**
@@ -1019,4 +1024,9 @@ public abstract class AbstractTrack implements Track {
         return null;
     }
 
+    // Start of Roche-Tessella modification
+    public boolean getAutoScale()    {
+        return this.autoScale;
+    }
+    // End of Roche-Tessella modification
 }
