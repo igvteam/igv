@@ -699,14 +699,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         final byte[] reference = isSoftClipped ? softClippedReference : genome.getSequence(chr, start, end);
 
-        AlignmentBlock.MismatchBlock[] mismatchBlocks = block.getMismatches();
-
-        boolean haveMismatches = (mismatchBlocks != null);
-        boolean haveBases = (block.hasBases() && block.getLength() > 0) || haveMismatches;
-
-        if (!haveBases || reference == null) {
-            return;
-        }
+        boolean haveBases = (block.hasBases() && block.getLength() > 0);
 
         ShadeBasesOption shadeBasesOption = renderOptions.shadeBasesOption;
         ColorOption colorOption = renderOptions.getColorOption();
@@ -714,6 +707,18 @@ public class AlignmentRenderer implements FeatureRenderer {
         // Disable showAllBases in bisulfite mode
         boolean showAllBases = renderOptions.showAllBases &&
                 !(colorOption == ColorOption.BISULFITE || colorOption == ColorOption.NOMESEQ);
+
+        if (!showAllBases && (!haveBases || reference == null)) {
+            return;
+        }
+
+        byte[] read;
+        if(haveBases){
+            read = block.getBases();
+        }else{
+            read = reference;
+        }
+
 
         double locScale = context.getScale();
         double origin = context.getOrigin();
@@ -741,101 +746,48 @@ public class AlignmentRenderer implements FeatureRenderer {
         }
 
 
-        //If we don't have the mismatches, we create a dummy mismatch block to loop over.
-        //Same as looping over overall block
-        //Ditto for if we want to show all the bases
-        if(!haveMismatches || showAllBases){
-            mismatchBlocks = new AlignmentBlock.MismatchBlock[1];
-            byte[] read = block.getBases();
-            mismatchBlocks[0] = new AlignmentBlock.MismatchBlock(start, read);
-        }
+        for (int loc = start; loc < end; loc++) {
+            int idx = loc - start;
 
-        for(AlignmentBlock.MismatchBlock mismatchBlock: mismatchBlocks){
-            int curStart = mismatchBlock.start;
-            int curEnd = curStart + mismatchBlock.bases.length;
-            byte[] read = mismatchBlock.bases;
+            boolean misMatch = haveBases && AlignmentUtils.isMisMatch(reference, read, isSoftClipped, idx);
 
-            for (int loc = curStart; loc < curEnd; loc++) {
+            if (showAllBases || (!bisulfiteMode && misMatch) ||
+                    (bisulfiteMode && (!DisplayStatus.NOTHING.equals(bisinfo.getDisplayStatus(idx))))) {
+                char c = (char) read[idx];
 
-                // Index into read array,  just the genomic location offset by
-                // the start of this block
-                int readIdx = loc - curStart;
-                int refIdx = loc - start;
-
-                //This code is really confusing and should be refactored, but I believe it's correct.
-                //refIdx == readIdx iff haveMismatches == false
-                // if haveMismatches == true the second half is never called
-                //because we know it's a mismatch
-                boolean misMatch = haveMismatches || AlignmentUtils.isMisMatch(reference, read, isSoftClipped, refIdx);
-
-                if (showAllBases || (!bisulfiteMode && misMatch) ||
-                        (bisulfiteMode && (!DisplayStatus.NOTHING.equals(bisinfo.getDisplayStatus(refIdx))))) {
-                    char c = (char) read[readIdx];
-
-                    Color color = Globals.nucleotideColors.get(c);
-                    if (bisulfiteMode) color = bisinfo.getDisplayColor(refIdx);
-                    if (color == null) {
-                        color = Color.black;
-                    }
-
-                    if (ShadeBasesOption.QUALITY == shadeBasesOption) {
-                        byte qual = block.getQuality(loc - start);
-                        color = getShadedColor(qual, color, alignmentColor, prefs);
-                    } else if (ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ == shadeBasesOption || ShadeBasesOption.FLOW_SIGNAL_DEVIATION_REFERENCE == shadeBasesOption) {
-                        if (block.hasFlowSignals()) {
-                            color = getFlowSignalColor(reference, misMatch, genome, block, chr, start, loc, refIdx, shadeBasesOption, alignmentColor, color);
-                        }
-                    }
-
-                    double bisulfiteXaxisShift = (bisulfiteMode) ? bisinfo.getXaxisShift(refIdx) : 0;
-
-                    // If there is room for text draw the character, otherwise
-                    // just draw a rectangle to represent the
-                    int pX = (int) (((double) loc + bisulfiteXaxisShift - origin) / locScale);
-
-                    // Don't draw out of clipping rect
-                    if (pX > rect.getMaxX()) {
-                        break;
-                    } else if (pX + dX < rect.getX()) {
-                        continue;
-                    }
-
-                    BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(refIdx);
-                    drawBase(g, color, c, pX, pY, dX, dY, bisulfiteMode, bisstatus);
+                Color color = Globals.nucleotideColors.get(c);
+                if (bisulfiteMode) color = bisinfo.getDisplayColor(idx);
+                if (color == null) {
+                    color = Color.black;
                 }
+
+                if (ShadeBasesOption.QUALITY == shadeBasesOption) {
+                    byte qual = block.getQuality(loc - start);
+                    color = getShadedColor(qual, color, alignmentColor, prefs);
+                } else if (ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ == shadeBasesOption || ShadeBasesOption.FLOW_SIGNAL_DEVIATION_REFERENCE == shadeBasesOption) {
+                    if (block.hasFlowSignals()) {
+                        color = getFlowSignalColor(reference, misMatch, genome, block, chr, start, loc, idx, shadeBasesOption, alignmentColor, color);
+                    }
+                }
+
+                double bisulfiteXaxisShift = (bisulfiteMode) ? bisinfo.getXaxisShift(idx) : 0;
+
+                // If there is room for text draw the character, otherwise
+                // just draw a rectangle to represent the
+                int pX = (int) (((double) loc + bisulfiteXaxisShift - origin) / locScale);
+
+                // Don't draw out of clipping rect
+                if (pX > rect.getMaxX()) {
+                    break;
+                } else if (pX + dX < rect.getX()) {
+                    continue;
+                }
+
+                BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(idx);
+                drawBase(g, color, c, pX, pY, dX, dY, bisulfiteMode, bisstatus);
             }
-
         }
-    }
 
-    /**
-     * Note '=' means indicates a match by definition
-     * If we do not have a valid reference we assume a match.
-     *
-     * @param reference
-     * @param read
-     * @param isSoftClipped
-     * @param idx
-     * @return
-     */
-    private boolean isMisMatch(byte[] reference, byte[] read, boolean isSoftClipped, int idx) {
-        boolean misMatch = false;
-        if (isSoftClipped) {
-            // Goby will return '=' characters when the soft-clip happens to match the reference.
-            // It could actually be useful to see which part of the soft clipped bases match, to help detect
-            // cases when an aligner clipped too much.
-            final byte readbase = read[idx];
-            misMatch = readbase != '=';  // mismatch, except when the soft-clip has an '=' base.
-        } else {
-            final int referenceLength = reference.length;
-            final byte refbase = idx < referenceLength ? reference[idx] : 0;
-            final byte readbase = read[idx];
-            misMatch = readbase != '=' &&
-                    idx < referenceLength &&
-                    refbase != 0 &&
-                    !AlignmentUtils.compareBases(refbase, readbase);
-        }
-        return misMatch;
     }
 
     /**

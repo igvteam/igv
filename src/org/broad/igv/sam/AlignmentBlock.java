@@ -15,12 +15,9 @@
  */
 package org.broad.igv.sam;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.broad.igv.feature.genome.Genome;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class AlignmentBlock {
 
@@ -32,11 +29,6 @@ public class AlignmentBlock {
     protected short[] counts;
 
     private boolean softClipped = false;
-
-    /**
-     * We save space by only storing the mismatches to the reference
-     */
-    private MismatchBlock[] mismatches;
 
     /**
      * The reference genome we store mismatches to
@@ -70,16 +62,17 @@ public class AlignmentBlock {
         return offset >= 0 && offset < getLength();
     }
 
+    /**
+     * Return AlignmentBlock bases.
+     * May be null, which indicates they match the reference
+     * @return
+     */
     public byte[] getBases() {
-        if(bases != null) return bases;
-
-        byte[] reference = getReferenceSequence();
-        byte[] mbases = Arrays.copyOf(reference, reference.length);
-        for (MismatchBlock mismatchBlock : this.mismatches) {
-            System.arraycopy(mismatchBlock.bases, 0, mbases, mismatchBlock.start - start, mismatchBlock.bases.length);
+        if(bases != null){
+            return bases;
+        }else{
+            return getReferenceSequence();
         }
-
-        return mbases;
     }
 
     private byte[] getReferenceSequence() {
@@ -105,10 +98,6 @@ public class AlignmentBlock {
 
     public byte[] getQualities() {
         return qualities;
-    }
-
-    public short[] getCounts() {
-        return counts;
     }
 
     public short getCount(int i) {
@@ -161,74 +150,22 @@ public class AlignmentBlock {
     }
 
     /**
-     *
-     * @param start
-     * @param refBases
-     * @param readBases
-     * @return
-     */
-    static MismatchBlock[] createMismatchBlocks(int start, byte[] refBases, byte[] readBases){
-        List<MismatchBlock> mismatchBlocks = new ArrayList<MismatchBlock>();
-        List<Byte> mismatches = null;
-        int lastMMBlockStart = -1;
-        for(int ii = 0; ii <= readBases.length; ii++){
-
-            byte readBase = -1;
-            byte refBase = -1;
-            boolean atEnd = false;
-            if(ii < readBases.length){
-                readBase = readBases[ii];
-                //If reference is cutoff, just fill in with read
-                if(ii < refBases.length){
-                    refBase = refBases[ii];
-                }else{
-                    refBase = readBase;
-                }
-            }else{
-                atEnd = true;
-            }
-
-            if(atEnd || AlignmentUtils.compareBases(refBase, readBase)){
-                //Finish off last mismatch
-                if(mismatches != null){
-                    byte[] seq = ArrayUtils.toPrimitive(mismatches.toArray(new Byte[mismatches.size()]));
-                    MismatchBlock curMMBlock = new MismatchBlock(lastMMBlockStart, seq);
-                    mismatchBlocks.add(curMMBlock);
-                    mismatches = null;
-                    lastMMBlockStart = -1;
-                }
-            }else{
-                if(mismatches == null){
-                    lastMMBlockStart = start + ii;
-                    mismatches = new ArrayList<Byte>();
-                }
-                mismatches.add(readBase);
-            }
-        }
-        return mismatchBlocks.toArray(new MismatchBlock[mismatchBlocks.size()]);
-    }
-
-    public MismatchBlock[] getMismatches() {
-        return mismatches;
-    }
-
-    /**
      * Reduce so that we only store the mismatches between this block and reference
      * This may do nothing, if there are too many mismatches we keep the original
      * @param genome
      */
     public void reduce(Genome genome){
-        //TODO Come back to this and figure out if we want to store mismatches only
-//        this.genome = genome;
-//        byte[] refBases = genome.getSequence(this.chr, getStart(), getEnd());
-//        //This mostly happens in testing, but if we have no reference can't create mismatch
-//        if(refBases != null){
-//            MismatchBlock[] tmpmismatches = AlignmentBlock.createMismatchBlocks(getStart(), refBases, bases);
-//            if(tmpmismatches.length < (length / 5)) mismatches = tmpmismatches;
-//            if(mismatches != null){
-//                this.bases = null;
-//            }
-//        }
+        this.genome = genome;
+        byte[] refBases = genome.getSequence(this.chr, getStart(), getEnd());
+        //null refBases mostly happens in testing, but if we have no reference can't create mismatch
+        if(refBases != null){
+            boolean match = false;
+            for(int idx = 0; idx < refBases.length; idx++){
+                match = AlignmentUtils.compareBases(refBases[idx], this.bases[idx]);
+                if(!match) break;
+            }
+            if(match) this.bases = null;
+        }
     }
 
     /**
@@ -240,15 +177,4 @@ public class AlignmentBlock {
     }
 
 
-    public static class MismatchBlock{
-
-        public final int start;
-        public final byte[] bases;
-
-        public MismatchBlock(int start, byte[] bases){
-            this.start = start;
-            this.bases = bases;
-        }
-
-    }
 }
