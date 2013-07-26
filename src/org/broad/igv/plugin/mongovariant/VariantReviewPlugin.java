@@ -11,6 +11,8 @@
 
 package org.broad.igv.plugin.mongovariant;
 
+import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.dev.api.IGVPlugin;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
@@ -37,6 +39,8 @@ import java.util.Collection;
  */
 public class VariantReviewPlugin implements IGVPlugin{
 
+    private static Logger log = Logger.getLogger(VariantTrack.class);
+
     //TODO Experimental. Let user choose opinion and send info to DB
     private static final String SHOW_REVIEW_KEY = "SHOW_VARIANT_REVIEW";
 
@@ -46,6 +50,14 @@ public class VariantReviewPlugin implements IGVPlugin{
     @Override
     public void init(){
         if (showReviewOption) {
+            //Test loading a class, won't work if running old Java
+            if(!Globals.isVersionOrHigher("1.7")){
+                log.error("VariantReviewPlugin requires Java 7 or higher. This plugin will be disabled");
+                return;
+            }
+            //Test that we can load this class, plugin loader will catch the exception and
+            //not load plugin if it can't be loaded
+            NA12878DBArgumentCollection col = new NA12878DBArgumentCollection();
             initMenuItems();
         }
     }
