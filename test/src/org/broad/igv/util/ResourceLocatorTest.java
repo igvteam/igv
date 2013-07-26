@@ -24,6 +24,17 @@ public class ResourceLocatorTest {
         type = loc.getTypeString();
         assertTrue(type.endsWith(".gct"));
 
+        // Bam file with non-standard url
+        loc = new ResourceLocator("http://some.server.org/foo?file=/server/local/path/bar&param2=value2&dataformat=.bam");
+        type = loc.getTypeString();
+        assertTrue(type.endsWith(".bam"));
+
+        // Bam file specified by file parameter
+        loc = new ResourceLocator("http://some.server.org/foo?file=/server/local/path/bar.bam");
+        type = loc.getTypeString();
+        assertTrue(type.endsWith(".bam"));
+
+
         // Gzipped file
         loc = new ResourceLocator("/foo/bar.cn.gz");
         type = loc.getTypeString();
@@ -48,6 +59,14 @@ public class ResourceLocatorTest {
         rl = new ResourceLocator(url);
         indexPath = rl.getBamIndexPath();
         assertEquals(expectedPath, indexPath);
+
+        // Bam with bam extension
+        url = "http://some.server.org/foo?file=/server/local/path/bar&param2=value2&dataformat=.bam";
+        expectedPath = "http://some.server.org/foo?file=/server/local/path/bar.bai&param2=value2&dataformat=.bam";
+        rl = new ResourceLocator(url);
+        indexPath = rl.getBamIndexPath();
+        assertEquals(expectedPath, indexPath);
+
 
         String localPath = "/foo/bar.bam";
         rl = new ResourceLocator(localPath);
