@@ -136,13 +136,15 @@ public class ResourceLocator {
                     if (query != null) {
                         Map<String, String> queryMap = HttpUtils.parseQueryString(query);
                         // If type is set explicitly use it
-                        String format = queryMap.get("dataformat");
-                        if (format != null) {
+                        if (queryMap.containsKey("format")) {
+                            String format = queryMap.get("dataformat");
                             if (format.contains("genomespace")) {
                                 typeString = GSUtils.parseDataFormatString(format);
                             } else {
                                 typeString = format;
                             }
+                        } else if (queryMap.containsKey("file")) {
+                            typeString = queryMap.get("file");
                         }
                     }
 
