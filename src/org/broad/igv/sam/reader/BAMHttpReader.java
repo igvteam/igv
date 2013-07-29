@@ -190,7 +190,7 @@ public class BAMHttpReader implements AlignmentReader {
 
     File getIndexFile(ResourceLocator locator) throws IOException {
 
-        log.debug("Getting index for " + url + ". Index path " + locator.getIndexPath());
+        log.debug("Getting index for " + url + ". Index path " + locator.getBamIndexPath());
         String urlString = url.toString();
         indexFile = getTmpIndexFile(urlString);
 
