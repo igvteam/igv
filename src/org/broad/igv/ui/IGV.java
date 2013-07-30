@@ -2373,7 +2373,7 @@ public class IGV {
             if (igvArgs.getSessionFile() != null || igvArgs.getDataFileString() != null) {
 
                 if (log.isDebugEnabled()) {
-                    log.debug("Loadding session data");
+                    log.debug("Loading session data");
                 }
 
                 final IndefiniteProgressMonitor indefMonitor = new IndefiniteProgressMonitor();
@@ -2414,15 +2414,16 @@ public class IGV {
                     List<ResourceLocator> locators = new ArrayList();
                     int idx = 0;
                     for (String p : tokens) {
+
+                        // Decode local file paths
+                        if (HttpUtils.isURL(p) && !FileUtils.isRemote(p)) {
+                            p = StringUtils.decodeURL(p);
+                        }
+
                         ResourceLocator rl = new ResourceLocator(p);
+
                         if (names != null && idx < names.length) {
                             String name = names[idx];
-
-                            // Decode local file paths
-                            if (!FileUtils.isRemote(name)) {
-                                name = StringUtils.decodeURL(name);
-                            }
-
                             rl.setName(name);
                         }
                         rl.setIndexPath(indexFile);
