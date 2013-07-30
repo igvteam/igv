@@ -399,12 +399,12 @@ public class WiggleParser{
     }
 
     public void addData(String chr, int startPosition, int endPosition, float[] values) {
-        startLocations.add(startPosition);
-        endLocations.add(endPosition);
-        this.data.add(values[0]);
+        addData(chr, startPosition, endPosition, values[0]);
     }
 
-    public void addData(String chr, int start, int end, float value) {
+    public void addData(String chr, int startPosition, int endPosition, float value) {
+        startLocations.add(startPosition);
+        endLocations.add(endPosition);
         this.data.add(value);
     }
 
