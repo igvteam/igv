@@ -1,28 +1,24 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.tools.converters;
 
 import org.broad.igv.tools.parsers.DataConsumer;
-import org.broad.igv.tools.parsers.WiggleParser;
+import org.broad.igv.tools.parsers.ToolsWiggleParser;
 import org.broad.igv.track.TrackType;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * Converts a "wig" file to a "bed" file by applying a threshold
@@ -48,7 +44,7 @@ public class WigToBed implements DataConsumer {
     public static void main(String[] args) throws IOException {
         String input =  args[0]; //"/Users/jrobinso/Sigma/566.wgs.bam.large_isize.wig";
         WigToBed wigToBed = new WigToBed(input, .17f, .55f);
-        WiggleParser parser = new WiggleParser(input, wigToBed, null);
+        ToolsWiggleParser parser = new ToolsWiggleParser(input, wigToBed, null);
         parser.parse();
     }
 
@@ -60,7 +56,7 @@ public class WigToBed implements DataConsumer {
         int len = inputFile.length();
         String outputFile = inputFile.substring(0, len - 4) + ".bed";
         WigToBed wigToBed = new WigToBed(outputFile, hetThreshold, homThreshold);
-        WiggleParser parser = new WiggleParser(inputFile, wigToBed, null);
+        ToolsWiggleParser parser = new ToolsWiggleParser(inputFile, wigToBed, null);
         parser.parse();
     }
 

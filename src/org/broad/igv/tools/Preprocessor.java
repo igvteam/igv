@@ -18,8 +18,8 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tdf.*;
 import org.broad.igv.tools.parsers.CNParser;
 import org.broad.igv.tools.parsers.DataConsumer;
+import org.broad.igv.tools.parsers.ToolsWiggleParser;
 import org.broad.igv.tools.parsers.UnsortedException;
-import org.broad.igv.tools.parsers.WiggleParser;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.collections.FloatArrayList;
@@ -721,7 +721,7 @@ public class Preprocessor implements DataConsumer {
         if (tmp.endsWith(".txt")) tmp = tmp.substring(0, tmp.length() - 4);
         if (tmp.endsWith(".gz")) tmp = tmp.substring(0, tmp.length() - 3);
         if (tmp.endsWith("wig") || tmp.endsWith("bedgraph") || tmp.endsWith("cpg") || tmp.endsWith("map")) {
-            WiggleParser wg = new WiggleParser(iFile.getAbsolutePath(), this, genome);
+            ToolsWiggleParser wg = new ToolsWiggleParser(iFile.getAbsolutePath(), this, genome);
             wg.parse();
         } else if (tmp.endsWith("cn") || tmp.endsWith("xcn") || tmp.endsWith("igv") || tmp.endsWith("snp")) {
             CNParser cnParser = new CNParser(iFile.getAbsolutePath(), this, genome);

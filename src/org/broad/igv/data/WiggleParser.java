@@ -32,48 +32,46 @@ import java.util.Set;
 /**
  * Parser for wiggle and "wiggle-like" formats.
  *
- * @author Enter your name here...
- * @version Enter version here..., 08/10/31
+ * @since
  */
-public class WiggleParser {
+public class WiggleParser{
 
     private static Logger log = Logger.getLogger(WiggleParser.class);
-    private int chrColumn = 0;
-    private int startColumn = 1;
-    private int endColumn = 2;
-    private int dataColumn = 3;
+    protected int chrColumn = 0;
+    protected int startColumn = 1;
+    protected int endColumn = 2;
+    protected int dataColumn = 3;
 
-    private enum Type {
-
+    protected enum Type {
         FIXED, VARIABLE, BED_GRAPH, CPG, EXPR
     }
 
-    Genome genome;
+    protected Genome genome;
 
     WiggleDataset dataset;
     /**
      * The type of wiggle locator (see UCSC documentation).
      */
-    private Type type = Type.BED_GRAPH;
+    protected Type type = Type.BED_GRAPH;
 
     // State variables.  This is a serial type parser,  these variables are used to hold temporary
     // state.
-    private String chr;
-    String lastChr = "";
-    int lastPosition = 0;
-    private int start;
-    private int step = 1;
-    private int windowSpan = 1;
-    private int startBase = 1;   // <- set to zero for zero based coordinates
+    protected String chr;
+    protected String lastChr = "";
+    protected int lastPosition = 0;
+    protected int start;
+    protected int step = 1;
+    protected int windowSpan = 1;
+    protected int startBase = 1;   // <- set to zero for zero based coordinates
     IntArrayList startLocations = null;
     IntArrayList endLocations = null;
     FloatArrayList data = null;
-    ResourceLocator resourceLocator;
-    Set<String> unsortedChromosomes;
+    protected ResourceLocator resourceLocator;
+    protected Set<String> unsortedChromosomes;
     int estArraySize;
     Map<String, Integer> longestFeatureMap = new HashMap();
     // Used to estimate percentiles
-    private static final int maxSamples = 1000;
+    protected static final int maxSamples = 1000;
     DownsampledDoubleArrayList sampledData = new DownsampledDoubleArrayList(maxSamples, maxSamples);
 
 
@@ -82,10 +80,11 @@ public class WiggleParser {
     }
 
     public WiggleParser(ResourceLocator locator, Genome genome) {
-        this.genome = genome;
+
         this.resourceLocator = locator;
+        this.genome = genome;
         this.estArraySize = estArraySize(locator, genome);
-        dataset = new WiggleDataset(genome, locator.getTrackName());
+        this.dataset = new WiggleDataset(genome, locator.getTrackName());
 
         if (locator.getPath().endsWith("CpG.txt")) {
             type = Type.CPG;
@@ -118,16 +117,16 @@ public class WiggleParser {
      * @return
      */
     public static boolean isWiggle(ResourceLocator file) {
-
-        if (file.getPath().endsWith("CpG.txt") || file.getPath().endsWith(".expr") || file.getPath().endsWith(".wig")) {
-            return true;
-        } else {
-            return false;
-
-        }
+        return (file.getPath().endsWith("CpG.txt") || file.getPath().endsWith(".expr") || file.getPath().endsWith(".wig"));
     }
 
-    public WiggleDataset parse() {
+    public WiggleDataset parse(){
+        parseFile(this.resourceLocator);
+        this.parsingComplete();
+        return this.dataset;
+    }
+
+    protected void parseFile(ResourceLocator locator) {
 
         lastPosition = -1;
         unsortedChromosomes = new HashSet();
@@ -135,9 +134,10 @@ public class WiggleParser {
         AsciiLineReader reader = null;
         String nextLine = null;
         int lineNumber = 0;
+        float[] dataArray = null;
 
         try {
-            reader = ParsingUtils.openAsciiReader(resourceLocator);
+            reader = ParsingUtils.openAsciiReader(locator);
 
             if (type == Type.EXPR) {
                 reader.readLine(); // Skip header line
@@ -198,7 +198,7 @@ public class WiggleParser {
                                 try {
                                     endPosition = Integer.parseInt(tokens[2].trim());
                                 } catch (NumberFormatException numberFormatException) {
-                                    log.error("Column 2  is not a number");
+                                    log.error("Column 2 is not a number");
 
                                     throw new ParserException("Column 2 must be numeric." + " Found: " + tokens[1],
                                             lineNumber, nextLine);
@@ -218,7 +218,7 @@ public class WiggleParser {
                                     value = -value;
                                 }
 
-                                data.add(value);
+                                addData(chr, startPosition, endPosition, value);
                             }
                         } else if (type.equals(Type.BED_GRAPH) || type.equals(Type.EXPR)) {
 
@@ -248,9 +248,9 @@ public class WiggleParser {
 
                                 startLocations.add(startPosition);
 
-
+                                int endPosition = -1;
                                 try {
-                                    int endPosition = Integer.parseInt(tokens[endColumn].trim());
+                                    endPosition = Integer.parseInt(tokens[endColumn].trim());
                                     endLocations.add(endPosition);
                                     int length = endPosition - startPosition;
                                     updateLongestFeature(length);
@@ -262,7 +262,7 @@ public class WiggleParser {
                                             lineNumber, nextLine);
                                 }
 
-                                data.add(Float.parseFloat(tokens[dataColumn].trim()));
+                                addData(chr, startPosition, endPosition, Float.parseFloat(tokens[dataColumn].trim()));
                             }
                         } else if (type.equals(Type.VARIABLE)) {
                             if (nTokens > 1) {
@@ -275,16 +275,23 @@ public class WiggleParser {
                                 }
                                 lastPosition = startPosition;
 
-                                int end = startPosition + windowSpan;
+                                int endPosition = startPosition + windowSpan;
                                 startLocations.add(startPosition);
-                                endLocations.add(end);
-                                data.add(Float.parseFloat(tokens[1]));
+                                endLocations.add(endPosition);
+                                addData(chr, startPosition, endPosition, Float.parseFloat(tokens[1]));
                             }
                         } else {    // Fixed step -- sorting is checked when step line is parsed
                             if (position >= 0) {
+                                if (dataArray == null) {
+                                    dataArray = new float[nTokens];
+                                }
+                                int endPosition = position + windowSpan;
                                 startLocations.add(position);
-                                endLocations.add(position + windowSpan);
-                                data.add(Float.parseFloat(tokens[0]));
+                                endLocations.add(endPosition);
+                                for (int ii = 0; ii < dataArray.length; ii++) {
+                                    dataArray[ii] = Float.parseFloat(tokens[ii].trim());
+                                }
+                               addData(chr, position, endPosition, dataArray);
                             }
                             position += step;
                             lastPosition = position;
@@ -316,8 +323,9 @@ public class WiggleParser {
                 reader.close();
             }
         }
+    }
 
-
+    protected void parsingComplete(){
         dataset.sort(unsortedChromosomes);
         dataset.setLongestFeatureMap(longestFeatureMap);
 
@@ -326,8 +334,6 @@ public class WiggleParser {
         double percent90 = StatUtils.percentile(sd, 90.0);
         dataset.setPercent10((float) percent10);
         dataset.setPercent90((float) percent90);
-
-        return dataset;
     }
 
     private void updateLongestFeature(int length) {
@@ -374,7 +380,7 @@ public class WiggleParser {
     }
 
 
-    private void changedChromosome(WiggleDataset dataset, String lastChr) {
+    protected void changedChromosome(WiggleDataset dataset, String lastChr) {
 
         if (startLocations != null && startLocations.size() > 0) {
 
@@ -383,8 +389,8 @@ public class WiggleParser {
             //sz = startLocations.size();
 
             float[] f = data.toArray();
-            for (int i = 0; i < f.length; i++) {
-                sampledData.add(f[i]);
+            for (float ii: f) {
+                sampledData.add(ii);
             }
 
 
@@ -394,4 +400,13 @@ public class WiggleParser {
         data = new FloatArrayList(estArraySize);
         lastPosition = -1;
     }
+
+    public void addData(String chr, int start, int end, float[] values) {
+        this.data.add(values[0]);
+    }
+
+    public void addData(String chr, int start, int end, float value) {
+        this.data.add(value);
+    }
+
 }
