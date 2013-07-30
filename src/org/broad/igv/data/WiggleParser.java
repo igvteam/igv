@@ -128,7 +128,7 @@ public class WiggleParser{
 
     protected void parseFile(ResourceLocator locator) {
 
-        lastPosition = -1;
+        initializeDataHolders();
         unsortedChromosomes = new HashSet();
 
         AsciiLineReader reader = null;
@@ -210,9 +210,6 @@ public class WiggleParser{
                                 }
                                 lastPosition = startPosition;
 
-                                startLocations.add(startPosition);
-                                endLocations.add(endPosition);
-
                                 float value = Float.parseFloat(tokens[4].trim());
                                 if (tokens[3].trim().equals("R")) {
                                     value = -value;
@@ -276,8 +273,6 @@ public class WiggleParser{
                                 lastPosition = startPosition;
 
                                 int endPosition = startPosition + windowSpan;
-                                startLocations.add(startPosition);
-                                endLocations.add(endPosition);
                                 addData(chr, startPosition, endPosition, Float.parseFloat(tokens[1]));
                             }
                         } else {    // Fixed step -- sorting is checked when step line is parsed
@@ -285,13 +280,11 @@ public class WiggleParser{
                                 if (dataArray == null) {
                                     dataArray = new float[nTokens];
                                 }
-                                int endPosition = position + windowSpan;
-                                startLocations.add(position);
-                                endLocations.add(endPosition);
                                 for (int ii = 0; ii < dataArray.length; ii++) {
                                     dataArray[ii] = Float.parseFloat(tokens[ii].trim());
                                 }
-                               addData(chr, position, endPosition, dataArray);
+                                int endPosition = position + windowSpan;
+                                addData(chr, position, endPosition, dataArray);
                             }
                             position += step;
                             lastPosition = position;
@@ -346,7 +339,7 @@ public class WiggleParser{
 
     // fixedStep chrom=chrM strt=1 step=1
 
-    private void parseStepLine(String header) {
+    protected void parseStepLine(String header) {
         String[] tokens = header.split("\\s+");
         for (String token : tokens) {
             String[] keyValue = token.split("=");
@@ -395,13 +388,19 @@ public class WiggleParser{
 
 
         }
+        initializeDataHolders();
+    }
+
+    protected void initializeDataHolders(){
         startLocations = new IntArrayList(estArraySize);
         endLocations = new IntArrayList(estArraySize);
         data = new FloatArrayList(estArraySize);
         lastPosition = -1;
     }
 
-    public void addData(String chr, int start, int end, float[] values) {
+    public void addData(String chr, int startPosition, int endPosition, float[] values) {
+        startLocations.add(startPosition);
+        endLocations.add(endPosition);
         this.data.add(values[0]);
     }
 

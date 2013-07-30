@@ -208,8 +208,7 @@ public class ToolsWiggleParser extends WiggleParser{
 
     @Override
     protected void changedChromosome(WiggleDataset dataset, String lastChr) {
-        //getDataConsumer().newChromosome(chr);
-        //lastPosition = 0;
+        lastPosition = -1;
     }
 
     @Override
