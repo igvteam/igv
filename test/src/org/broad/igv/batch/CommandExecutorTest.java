@@ -421,11 +421,12 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         exec.execute("goto chr1:9,713,386-9,733,865");
 
 
-        int minHeight = (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight() - 10;
+        int minHeight = (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight() - 150;
+        int maxHeight = minHeight + 200;
 
         String outFileName =  minHeight + ".png";
 
-        exec.execute("maxpanelheight " + minHeight);
+        exec.execute("maxpanelheight " + maxHeight);
         exec.execute("snapshot " + outFileName);
 
         File outputFile = new File(snapshotDir, outFileName);
