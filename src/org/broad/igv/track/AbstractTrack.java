@@ -15,7 +15,6 @@ package org.broad.igv.track;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.gwas.GWASTrack;
 import org.broad.igv.renderer.*;
 import org.broad.igv.sam.AlignmentTrack;
@@ -138,7 +137,7 @@ public abstract class AbstractTrack implements Track {
 
     @XmlJavaTypeAdapter(SessionXmlAdapters.Color.class)
     @XmlAttribute
-    private Color altColor = Color.blue.darker();
+    private Color altColor = posColor;
 
     @XmlAttribute(name = "featureVisibilityWindow")
     protected int visibilityWindow = -1;
