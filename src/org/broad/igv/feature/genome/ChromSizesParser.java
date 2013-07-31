@@ -38,10 +38,10 @@ public class ChromSizesParser {
             br = ParsingUtils.openBufferedReader(path);
             List<Chromosome> chromosomes = new ArrayList<Chromosome>();
             String nextLine;
+            int idx = 0;
             while ((nextLine = br.readLine()) != null) {
 
                 String[] tokens = Globals.whitespacePattern.split(nextLine);
-                int idx = 0;
                 if (tokens.length >= 2) {
                     String chr = tokens[0];
                     int length = Integer.parseInt(tokens[1]);
