@@ -84,6 +84,7 @@ public class AlignmentUtils {
      * @return
      */
     static boolean isMisMatch(byte[] reference, byte[] read, boolean isSoftClipped, int idx){
+        if(reference == null) return false;
         boolean misMatch = false;
         if (isSoftClipped) {
             // Goby will return '=' characters when the soft-clip happens to match the reference.
