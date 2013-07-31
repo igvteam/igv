@@ -1274,7 +1274,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             int foundStart = -1;
             int foundEnd = -1;
             //Use ROI to select coordinates
-            Collection<RegionOfInterest> rois = IGV.getInstance().getSession().getRegionsOfInterest(frame.getChrName());
+
+            Collection<RegionOfInterest> rois = null;
+            if(frame != null){
+                rois = IGV.getInstance().getSession().getRegionsOfInterest(frame.getChrName());
+            }
             if (rois != null) {
                 for (RegionOfInterest roi : rois) {
                     if (chromoLoc >= roi.getStart() && chromoLoc < roi.getEnd()) {
