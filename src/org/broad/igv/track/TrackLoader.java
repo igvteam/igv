@@ -133,7 +133,7 @@ public class TrackLoader {
                 loadDASResource(locator, newTracks);
             } else if (MutationTrackLoader.isMutationAnnotationFile(locator)) {
                 this.loadMutFile(locator, newTracks, genome); // Must be tried before generic "loadIndexed" below
-            } else if ((typeString.endsWith(".vcf") || typeString.endsWith(".vcf4")) && !HttpUtils.isRemoteURL(locator.getPath())) {
+            } else if ((typeString.endsWith(".vcf3") || typeString.endsWith(".vcf4") || typeString.endsWith(".vcf")) && !HttpUtils.isRemoteURL(locator.getPath())) {
                 //Prompt user to see if they want to create an index file for VCFs
                 if(!isIndexed(path, genome)){
                     File baseFile = new File(locator.getPath());
@@ -147,6 +147,8 @@ public class TrackLoader {
                     }
                 }
                 loadIndexed(locator, newTracks, genome);
+            } else if(VCFrequiresIndex(path) && !isIndexed(path, genome)){
+                throw new DataLoadException("Could not access required index file", path);
             } else if (isIndexed(path, genome)) {
                 loadIndexed(locator, newTracks, genome);
             } else if (typeString.endsWith(".vcf.list")) {
@@ -265,6 +267,17 @@ public class TrackLoader {
             throw new DataLoadException(e.getMessage(), path);
         }
 
+    }
+
+    private boolean VCFrequiresIndex(String path) {
+        String fn = stripGZ(path);
+        String[] exts = new String[]{".vcf3", ".vcf4", ".vcf"};
+        for(String ext: exts){
+            if(fn.endsWith(ext)){
+                return true;
+            }
+        }
+        return false;
     }
 
     private void loadGMT(ResourceLocator locator) throws IOException {
@@ -1231,14 +1244,24 @@ public class TrackLoader {
      * @return
      */
     private static boolean isIndexable(String path, Genome genome) {
+        String fn = stripGZ(path);
+        // The vcf extension is for performance, it doesn't matter which codec is returned all vcf files
+        // are indexable.
+        return fn.endsWith(".vcf") || fn.endsWith(".bcf") || CodecFactory.getCodec(path, genome) != null;
+    }
+
+    /**
+     * Strip .gz extension if on path
+     * @param path
+     * @return
+     */
+    private static String stripGZ(String path){
         String fn = path.toLowerCase();
         if (fn.endsWith(".gz")) {
             int l = fn.length() - 3;
             fn = fn.substring(0, l);
         }
-        // The vcf extension is for performance, it doesn't matter which codec is returned all vcf files
-        // are indexable.
-        return fn.endsWith(".vcf") || fn.endsWith(".bcf") || CodecFactory.getCodec(path, genome) != null;
+        return fn;
     }
 
     public static TrackProperties getTrackProperties(Object header) {
