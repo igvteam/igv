@@ -15,9 +15,7 @@
 
 package org.broad.igv.dev.db;
 
-import org.broad.igv.DirectoryManager;
 import org.broad.igv.feature.tribble.CodecFactory;
-import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.Utilities;
 import org.w3c.dom.Document;
@@ -68,6 +66,7 @@ public class DBProfileEditor extends JDialog {
 
     private void postInit(String initProfilePath) {
         tableFields = new JComponent[]{chromField, posStartField, posEndField, startColField, endColField, binColField, dataType};
+        assert initProfilePath != null;
 
         //TODO Remember to add "." before extension when calling CodecFactory.getCodec
         DefaultComboBoxModel model = new DefaultComboBoxModel(CodecFactory.validExtensions.toArray(new String[0]));
@@ -75,8 +74,9 @@ public class DBProfileEditor extends JDialog {
 
         this.profilePath = initProfilePath;
         DBProfile.DBTable initTable = null;
+        File initProfileFile = new File(initProfilePath);
 
-        if (initProfilePath != null) {
+        if (initProfileFile.exists()) {
             //Editing existing profile
             profile = DBProfile.parseProfile(initProfilePath);
 
@@ -95,10 +95,11 @@ public class DBProfileEditor extends JDialog {
         }else{
             //Creating new profile
             profile = new DBProfile();
-
-            File profileFile = FileDialogUtils.chooseFile("Save DB Profile", DirectoryManager.getUserDirectory(), FileDialogUtils.SAVE);
-            this.profilePath = profileFile.getAbsolutePath();
-            initTable = null;
+            this.profilePath = initProfilePath;
+            if (!this.profilePath.endsWith(".dbxml")) {
+                this.profilePath += ".dbxml";
+                initTable = null;
+            }
         }
 
 

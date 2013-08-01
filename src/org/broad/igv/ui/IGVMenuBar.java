@@ -13,6 +13,7 @@ package org.broad.igv.ui;
 
 import apple.dts.samplecode.osxadapter.OSXAdapter;
 import org.apache.log4j.Logger;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.annotations.ForTesting;
@@ -304,8 +305,11 @@ public class IGVMenuBar extends JMenuBar {
             createNewProfile.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    DBProfileEditor editor = new DBProfileEditor(IGV.getMainFrame(), null);
-                    editor.setVisible(true);
+                    File file = FileDialogUtils.chooseFile("Save DB Profile", DirectoryManager.getUserDirectory(), FileDialogUtils.SAVE);
+                    if(file != null){
+                        DBProfileEditor editor = new DBProfileEditor(IGV.getMainFrame(), file.getAbsolutePath());
+                        editor.setVisible(true);
+                    }
                 }
             });
             JMenuItem editExistingProfile = new JMenuItem("Edit Existing Profile");
@@ -313,8 +317,13 @@ public class IGVMenuBar extends JMenuBar {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     File file = FileDialogUtils.chooseFile("Select .dbxml database profile");
-                    DBProfileEditor editor = new DBProfileEditor(IGV.getMainFrame(), file.getAbsolutePath());
-                    editor.setVisible(true);
+                    if(file != null){
+                        if(!file.exists()){
+
+                        }
+                        DBProfileEditor editor = new DBProfileEditor(IGV.getMainFrame(), file.getAbsolutePath());
+                        editor.setVisible(true);
+                    }
                 }
             });
             sqlDBProfileEditor.add(createNewProfile);
