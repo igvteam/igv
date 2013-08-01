@@ -12,11 +12,13 @@
 package org.broad.igv.sam;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.junit.Ignore;
 
 /**
  * User: jacob
  * Date: 2013-Feb-05
  */
+@Ignore("No runnable tests")
 public class AlignmentBlockTest extends AbstractHeadlessTest{
 
 //    @Test
