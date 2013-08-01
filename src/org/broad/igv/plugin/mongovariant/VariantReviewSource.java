@@ -119,13 +119,17 @@ public class VariantReviewSource implements FeatureSource<VCFVariant> {
 
     /**
      * TODO This chromosome replacement is a hack
-     * The db uses digits, IGV uses "chr#"
+     * The db uses digits (or X/Y, note the case), IGV uses "chr#"
      *
      * @param chromoName
      * @return
      */
     static String chromoNameToStandard(String chromoName) {
-        return chromoName.toLowerCase().replace("chr", "");
+        if(chromoName.toLowerCase().startsWith("chr")){
+            return chromoName.substring(3);
+        }else{
+            return chromoName;
+        }
     }
 
     private GenomeLocParser createGenomeLocParser() {
