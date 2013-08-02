@@ -106,11 +106,8 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         tmp.add(this);
         TrackMenuUtils.addStandardItems(popupMenu, tmp, te);
 
-        if (!Globals.isProduction()) {
-            popupMenu.addSeparator();
-            popupMenu.add(getChangeAutoScale());
-        }
-
+        popupMenu.addSeparator();
+        popupMenu.add(getChangeAutoScale());
 
         return popupMenu;
     }
