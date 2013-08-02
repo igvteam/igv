@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "5.1.0.2.64" Java: "1.6.0_37" encoding: "UTF-8"
+JFDML JFormDesigner: "5.2.0.0.54" Java: "1.6.0_51" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -194,7 +194,7 @@ new FormModel {
 						name: "panel8"
 						add( new FormComponent( "javax.swing.JLabel" ) {
 							name: "label8"
-							"text": "Data Type:"
+							"text": "Format:"
 							"horizontalAlignment": 2
 							"maximumSize": #Dimension0
 						} )
@@ -258,7 +258,7 @@ new FormModel {
 						name: "panel11"
 						add( new FormComponent( "javax.swing.JLabel" ) {
 							name: "label11"
-							"text": "Data start column index (opt.):"
+							"text": "Data start column index:"
 							"horizontalAlignment": 2
 							"maximumSize": #Dimension0
 						} )
@@ -276,7 +276,7 @@ new FormModel {
 						name: "panel12"
 						add( new FormComponent( "javax.swing.JLabel" ) {
 							name: "label12"
-							"text": "Data end column index (opt.):"
+							"text": "Data end column index:"
 							"horizontalAlignment": 2
 							"maximumSize": #Dimension0
 						} )

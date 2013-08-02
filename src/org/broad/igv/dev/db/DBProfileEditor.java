@@ -117,7 +117,21 @@ public class DBProfileEditor extends JDialog {
             allTableNames.put(table.getName(), table);
         }
 
-        tableName.setModel(new DefaultComboBoxModel(allTableNames.keySet().toArray(new String[tableList.size()])));
+        tableName.setModel(new VetoableComboBoxModel(allTableNames.keySet().toArray(new String[tableList.size()])));
+
+//        tableName.addItemListener(new ItemListener() {
+//            @Override
+//            public void itemStateChanged(ItemEvent e) {
+//                //If selected table not done, don't let user change
+//                if(e.getStateChange() == ItemEvent.DESELECTED){
+//                    String tabName = (String) e.getItem();
+//                    if(!checkTableAndWarn(tabName)){
+//                        tableName.setSelectedItem(tabName);
+//                        populateTableFieldValues(allTableNames.get(tabName));
+//                    }
+//                }
+//            }
+//        });
     }
 
     /**
@@ -152,7 +166,7 @@ public class DBProfileEditor extends JDialog {
      * Save text inputs to the appropriate table
      * Doesn't write to disk
      * @param table
-     * @return
+     * @return true if data saved
      */
     private boolean saveTableInput(DBProfile.DBTable table){
 
@@ -173,13 +187,9 @@ public class DBProfileEditor extends JDialog {
         table.setEndColIndex(endColIndex);
 
         table.setChromoColName(chromField.getText());
-
         table.setPosStartColName(posStartField.getText());
         table.setPosEndColName(posEndField.getText());
-
-
         table.setBinColName(binColField.getText());
-
         table.setFormat((String) dataType.getSelectedItem());
 
         return true;
@@ -242,8 +252,11 @@ public class DBProfileEditor extends JDialog {
     private void saveButtonActionPerformed(ActionEvent e) {
         saveDBInputs();
 
-        //Save to disk
+        if(!checkDBInputs()){
+            return;
+        }
 
+        //Save to disk
         FileWriter fileWriter = null;
         try {
             // Create a DOM document
@@ -275,16 +288,93 @@ public class DBProfileEditor extends JDialog {
 
     }
 
+    /**
+     * Checks that all fields have been filled out,
+     * and if not, warns the user
+     * @return true if all required fields have been filled out, else false
+     */
+    private boolean checkDBInputs() {
+        List<String> missingDBFields = this.profile.checkMissingValues();
+        if(missingDBFields.size() > 0){
+            String msg = String.format("Please fill in all required database fields");
+            MessageUtils.showMessage(msg);
+            return false;
+        }
+
+        List<DBProfile.DBTable> tables = this.profile.getTableList();
+        if(tables.size() == 0){
+            MessageUtils.showMessage("You must add at least one table");
+            return false;
+        }
+
+        for(DBProfile.DBTable table: tables){
+            if(!checkTableAndWarn(table.getName())){
+                return false;
+            }
+        }
+        return true;
+    }
+
     private void addNewTableButtonActionPerformed(ActionEvent e) {
         saveDBInputs();
 
+        if(!checkTableAndWarn((String) tableName.getSelectedItem())){
+            return;
+        }
+
         String strTableName = newTableNameField.getText();
+        if(strTableName.length() == 0){
+            MessageUtils.showMessage("Please enter a table name");
+            return;
+        }
         DBProfile.DBTable newTable = new DBProfile.DBTable(profile.getDBLocator(), strTableName);
 
         profile.addTable(newTable);
         initTableNameList();
 
         tableName.setSelectedItem(strTableName);
+        newTableNameField.setText("");
+    }
+
+    /**
+     * Verify that all fields for the table
+     * have been filled out. If the specified {@code tableName} is null,
+     * return true
+     * @return
+     */
+    private boolean checkTable(String tableName) {
+        if(tableName == null) return true;
+        DBProfile.DBTable table = allTableNames.get(tableName);
+        List<String> missingFields = table.checkMissingValues();
+        return missingFields.size() == 0;
+    }
+
+    private boolean checkTableAndWarn(String tableName){
+        if(!checkTable(tableName)){
+            MessageUtils.showMessage("Please fill in all required table fields in table " + tableName);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * ComboBoxModel which doesn't change if fields don't pass verification
+     */
+    private class VetoableComboBoxModel extends DefaultComboBoxModel{
+
+        private VetoableComboBoxModel(Object[] objects){
+            super(objects);
+        }
+
+        @Override
+        public void setSelectedItem(Object anItem) {
+            Object oldItem = getSelectedItem();
+            if(!checkTableAndWarn((String) oldItem)){
+                return;
+            }
+            super.setSelectedItem(anItem);
+
+        }
     }
 
     private void initComponents() {
@@ -566,7 +656,7 @@ public class DBProfileEditor extends JDialog {
                     panel8.setLayout(new BoxLayout(panel8, BoxLayout.X_AXIS));
 
                     //---- label8 ----
-                    label8.setText("Data Type:");
+                    label8.setText("Format:");
                     label8.setHorizontalAlignment(SwingConstants.LEFT);
                     label8.setMaximumSize(new Dimension(80, 16));
                     panel8.add(label8);
@@ -634,7 +724,7 @@ public class DBProfileEditor extends JDialog {
                     panel11.setLayout(new BoxLayout(panel11, BoxLayout.X_AXIS));
 
                     //---- label11 ----
-                    label11.setText("Data start column index (opt.):");
+                    label11.setText("Data start column index:");
                     label11.setHorizontalAlignment(SwingConstants.LEFT);
                     label11.setMaximumSize(new Dimension(80, 16));
                     panel11.add(label11);
@@ -653,7 +743,7 @@ public class DBProfileEditor extends JDialog {
                     panel12.setLayout(new BoxLayout(panel12, BoxLayout.X_AXIS));
 
                     //---- label12 ----
-                    label12.setText("Data end column index (opt.):");
+                    label12.setText("Data end column index:");
                     label12.setHorizontalAlignment(SwingConstants.LEFT);
                     label12.setMaximumSize(new Dimension(80, 16));
                     panel12.add(label12);

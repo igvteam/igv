@@ -25,6 +25,7 @@ import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -37,6 +38,8 @@ import java.util.*;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlSeeAlso(DBProfile.DBTable.class)
 public class DBProfile {
+
+    private static Logger log = Logger.getLogger(DBProfile.class);
 
     @XmlAttribute private String name;
     @XmlAttribute private String description;
@@ -188,6 +191,44 @@ public class DBProfile {
 
 
     /**
+     * Checks for {@code name}, {@code host}, {@code path},
+     * and {@code username}
+     * See {@link #checkMissingValues(Object, String[]}
+     * @return
+     */
+    public List<String> checkMissingValues() {
+        String[] requiredGetters = new String[]{"getName", "getHost", "getPath", "getUsername"};
+        return checkMissingValues(this, requiredGetters);
+    }
+
+    /**
+     * Checks {@code object} for non-null values (or empty strings)
+     * retrieved by getter in {@code requiredGetters}. If the getter is not found or cannot
+     * be accessed, an error is logged (access restrictions are followed).
+     * @param object The object to check for missing values
+     * @param requiredGetters The getter method names to use. Must take no arguments
+     * @return
+     */
+    public static List<String> checkMissingValues(Object object, String[] requiredGetters){
+        List<String> missing = new ArrayList<String>(requiredGetters.length);
+        for(String reqGetter: requiredGetters){
+            Method method = null;
+            try {
+                method = object.getClass().getMethod(reqGetter);
+                Object value = method.invoke(object);
+                if(value instanceof String && ((String) value).length() == 0){
+                    value = null;
+                }
+                if(value == null) missing.add(reqGetter);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                missing.add(reqGetter);
+            }
+        }
+        return missing;
+    }
+
+    /**
      * Object representation of a single {@code table} element of
      * a database profile. Contains static method for parsing dbXML files
      * <p/>
@@ -262,6 +303,11 @@ public class DBProfile {
             if(columnList != null){
                 columnLabelMap = ColumnMapAdapter.unmarshal(columnList);
             }
+        }
+
+        public List<String> checkMissingValues(){
+            String[] requiredGetters = new String[]{"getFormat", "getChromoColName", "getPosStartColName", "getPosEndColName"};
+            return DBProfile.checkMissingValues(this, requiredGetters);
         }
 
         public ResourceLocator getDbLocator() {
