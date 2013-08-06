@@ -297,18 +297,17 @@ public class ResourceLocator {
         ResourceLocator that = (ResourceLocator) o;
 
         if (dbURL != null ? !dbURL.equals(that.dbURL) : that.dbURL != null) return false;
-        if (!path.equals(that.path)) return false;
+        if (path != null ? !path.equals(that.path) : that.path != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = path.hashCode();
+        int result = path != null ? path.hashCode() : 0;
         result = 31 * result + (dbURL != null ? dbURL.hashCode() : 0);
         return result;
     }
-
 
     public String getBamIndexPath() {
 

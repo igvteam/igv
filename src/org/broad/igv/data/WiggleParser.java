@@ -31,10 +31,8 @@ import java.util.Set;
 
 /**
  * Parser for wiggle and "wiggle-like" formats.
- *
- * @since
  */
-public class WiggleParser{
+public class WiggleParser {
 
     private static Logger log = Logger.getLogger(WiggleParser.class);
     protected int chrColumn = 0;
@@ -120,7 +118,7 @@ public class WiggleParser{
         return (file.getPath().endsWith("CpG.txt") || file.getPath().endsWith(".expr") || file.getPath().endsWith(".wig"));
     }
 
-    public WiggleDataset parse(){
+    public WiggleDataset parse() {
         parseFile(this.resourceLocator);
         this.parsingComplete();
         return this.dataset;
@@ -243,12 +241,10 @@ public class WiggleParser{
                                 }
                                 lastPosition = startPosition;
 
-                                startLocations.add(startPosition);
 
                                 int endPosition = -1;
                                 try {
                                     endPosition = Integer.parseInt(tokens[endColumn].trim());
-                                    endLocations.add(endPosition);
                                     int length = endPosition - startPosition;
                                     updateLongestFeature(length);
                                 } catch (NumberFormatException numberFormatException) {
@@ -318,7 +314,7 @@ public class WiggleParser{
         }
     }
 
-    protected void parsingComplete(){
+    protected void parsingComplete() {
         dataset.sort(unsortedChromosomes);
         dataset.setLongestFeatureMap(longestFeatureMap);
 
@@ -382,7 +378,7 @@ public class WiggleParser{
             //sz = startLocations.size();
 
             float[] f = data.toArray();
-            for (float ii: f) {
+            for (float ii : f) {
                 sampledData.add(ii);
             }
 
@@ -391,7 +387,7 @@ public class WiggleParser{
         initializeDataHolders();
     }
 
-    protected void initializeDataHolders(){
+    protected void initializeDataHolders() {
         startLocations = new IntArrayList(estArraySize);
         endLocations = new IntArrayList(estArraySize);
         data = new FloatArrayList(estArraySize);
