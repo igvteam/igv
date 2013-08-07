@@ -113,7 +113,7 @@ public abstract class Sorter {
             return new CNSorter(inputFile, outputFile);
         } else if (shortFN.endsWith(".sam")) {
             return new SAMSorter(inputFile, outputFile);
-        } else if (shortFN.endsWith(".aligned") || shortFN.endsWith(".bed")) {
+        } else if (shortFN.endsWith(".aligned") || shortFN.endsWith(".bed") || shortFN.endsWith(".bedgraph")) {
             return new BedSorter(inputFile, outputFile);
         } else if (shortFN.endsWith(".sorted")) {
             return new SortedTxtSorter(inputFile, outputFile);
