@@ -474,7 +474,7 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     /**
-     * Knowing the feature row, figure out which feature is at position position. If not expanded,
+     * Knowing the feature row, figure out which feature is at {@code position}. If not expanded,
      * featureRow is ignored
      *
      * @param position
@@ -490,7 +490,9 @@ public class FeatureTrack extends AbstractTrack {
             return null;
         }
 
-        int nLevels = packedFeatures.getRowCount();
+        //If features are stacked we look at only the row.
+        //If they are collapsed on top of each other, we get all features in all rows
+        int nLevels =  areFeaturesStacked() ? packedFeatures.getRowCount() : 1;
         List<IGVFeature> possFeatures = null;
         if ((nLevels > 1) && (featureRow < nLevels)) {
             possFeatures = packedFeatures.getRows().get(featureRow).getFeatures();
