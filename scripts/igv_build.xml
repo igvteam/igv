@@ -30,10 +30,10 @@
 
     <!-- Src/binary archive file settings -->
     <property name="src.archive.name" value="IGVDistribution_${version}"/>
-    <property name="src.archive.zip" value="${download.dir}/${src.archive.name}"/>
+    <property name="src.archive.zip" value="${download.dir}/${src.archive.name}.zip"/>
 
     <property name="bin.archive.name" value="IGV_${version}"/>
-    <property name="bin.archive.zip" value="${download.dir}/${bin.archive.name}"/>
+    <property name="bin.archive.zip" value="${download.dir}/${bin.archive.name}.zip"/>
 
     <!-- Sign all jars if a keystore is defined -->
     <target name="sign-jars" if="keystore">
