@@ -331,14 +331,13 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
         if (descObject != null)
             region.setDescription(descObject.toString());
 
-        //stored values are 0-based, viewed values are 1-based.  Check for negative number just in case
+        //stored values are 0-based end-exclusive, viewed values are 1-based end-inclusive.  Check for negative number just in case
         int storeStartValue =
                 Math.max(0, (Integer) regionTableModel.getValueAt(rowIdx, TABLE_COLINDEX_START) - 1);
         region.setStart(storeStartValue);
 
-        //stored values are 0-based, viewed values are 1-based.  Check for negative number just in case
         int storeEndValue =
-                Math.max(0, (Integer) regionTableModel.getValueAt(rowIdx, TABLE_COLINDEX_END) - 1);
+                Math.max(0, (Integer) regionTableModel.getValueAt(rowIdx, TABLE_COLINDEX_END));
         region.setEnd(storeEndValue);
     }
 
