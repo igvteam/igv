@@ -112,13 +112,6 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         return popupMenu;
     }
 
-    @Override
-    public void setDataRange(DataRange axisDefinition) {
-        // Explicitly setting a data range turns off auto-scale
-        super.setDataRange(axisDefinition);
-    }
-
-
     public boolean isLogNormalized() {
         return false;
     }
