@@ -12,6 +12,8 @@
 package org.broad.igv.session;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.ui.IGV;
@@ -63,6 +65,12 @@ public class UCSCSessionReader implements SessionReader {
         final List<String> errors = new ArrayList<String>();
         final HashMap<String, List<Track>> loadedTracks = new HashMap();
         List<ResourceLocator> aSync = new ArrayList();
+
+        // UCSC sessions do not have means to set genome, or if they do we don't use it
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        if (genome != null) {
+            IGV.getInstance().setGenomeTracks(genome.getGeneTrack());
+        }
 
         while ((nextLine = reader.readLine()) != null) {
             ResourceLocator locator = null;

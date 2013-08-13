@@ -1363,7 +1363,7 @@ public class IGV {
             setStatusBarMessage("Opening session...");
             inputStream = new BufferedInputStream(ParsingUtils.openInputStreamGZ(new ResourceLocator(sessionPath)));
 
-            boolean isUCSC = sessionPath.endsWith(".session");
+            boolean isUCSC = sessionPath.endsWith(".session") || sessionPath.endsWith(".session.txt");
             final SessionReader sessionReader = isUCSC ?
                     new UCSCSessionReader(this) :
                     new IGVSessionReader(this);
