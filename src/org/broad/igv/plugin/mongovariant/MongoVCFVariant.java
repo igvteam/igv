@@ -34,7 +34,7 @@ public class MongoVCFVariant extends VCFVariant {
     public String getAttributeAsString(String key) {
         if (key.equalsIgnoreCase("date")) {
             try {
-                long date = (Long) super.getAttributes().get(key);
+                long date = Long.parseLong((String) super.getAttributes().get(key));
                 SimpleDateFormat formatter = new SimpleDateFormat("MMM dd, yyyy. HH:mm");
                 return formatter.format(new Date(date));
             } catch (Exception e) {
