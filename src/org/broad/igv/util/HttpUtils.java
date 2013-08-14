@@ -800,9 +800,8 @@ public class HttpUtils {
         String[] params = query.split("&");
         Map<String, String> map = new HashMap<String, String>();
         for (String param : params) {
-            String name = param.split("=")[0];
-            String value = param.split("=")[1];
-            map.put(name, value);
+            String[] name_val = param.split("=", 2);
+            map.put(name_val[0], name_val[1]);
         }
         return map;
     }
