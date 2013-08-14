@@ -133,12 +133,15 @@ public class GFFFeatureSource extends TribbleFeatureSource {
                 for (String parentId : parentIds) {
                     BasicFeature parent = gffFeatures.get(parentId);
                     if (parent == null) {
-                        igvFeatures.add(gffExon);
-                    } else {
-                        final Exon exon = new Exon(gffExon);
-                        exon.setNonCoding(!SequenceOntology.isCoding(gffExon.getType()));
-                        parent.addExon(exon);
+                        parent = createParent(gffExon);
+                        parent.setIdentifier(parentId);
+                        parent.setName(parentId);
+                        gffFeatures.put(parentId, parent);
                     }
+                    final Exon exon = new Exon(gffExon);
+                    exon.setNonCoding(!SequenceOntology.isCoding(gffExon.getType()));
+                    parent.addExon(exon);
+
                 }
             }
 
@@ -147,10 +150,13 @@ public class GFFFeatureSource extends TribbleFeatureSource {
                 for (String parentId : utr.getParentIds()) {
                     BasicFeature parent = gffFeatures.get(parentId);
                     if (parent == null) {
-                        igvFeatures.add(utr);
-                    } else {
-                        parent.addUTRorCDS(utr);
+                        parent = createParent(utr);
+                        parent.setIdentifier(parentId);
+                        parent.setName(parentId);
+                        gffFeatures.put(parentId, parent);
                     }
+                    parent.addUTRorCDS(utr);
+
                 }
             }
 
@@ -163,9 +169,10 @@ public class GFFFeatureSource extends TribbleFeatureSource {
                 if (parent == null) {
                     // Create a "dummy" transcript for the orphaned cds records
                     parent = new BasicFeature(gffCdsCltn.chr, gffCdsCltn.start, gffCdsCltn.end, gffCdsCltn.strand);
-                    igvFeatures.add(parent);
+                    parent.setIdentifier(parentId);
+                    parent.setName(parentId);
+                    gffFeatures.put(parentId, parent);
                 }
-
                 // Now add the cds objects.  There are 2 conventions in use for describing the coding section of mRNAs
                 // (1) All cds records for the same isoform get the same id.  CDS objects with different ids then
                 // imply different isoforms.  In IGV we need to create a parent object for each.  (2) each CDS has
@@ -217,6 +224,12 @@ public class GFFFeatureSource extends TribbleFeatureSource {
             FeatureUtils.sortFeatureList(igvFeatures);
             return igvFeatures;
 
+        }
+
+        private BasicFeature createParent(BasicFeature gffExon) {
+            BasicFeature parent;
+            parent = new BasicFeature(gffExon.getChr(), gffExon.getStart(), gffExon.getEnd(), gffExon.getStrand());
+            return parent;
         }
 
 

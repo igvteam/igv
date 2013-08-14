@@ -332,7 +332,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
             idFields.add("transcript_id");
         }
 
-        static String[] possParentNames = new String[]{"id", "mRNA", "systematic_id", "transcript_id", "gene", "transcriptId", "Parent", "proteinId"};
+        static String[] possParentNames = new String[]{"transcript_id", "id", "mRNA", "systematic_id",  "gene", "transcriptId", "Parent", "proteinId"};
 
         private String[] nameFields;
 
@@ -509,58 +509,5 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
     }
 
 
-    /**
-     * Helper for GTF files
-     * <p/>
-     * mandatory attributes
-     * gene_id value;     A globally unique identifier for the genomic source of the transcript
-     * transcript_id value;     A globally unique identifier for the predicted transcript.
-     * <p/>
-     * Attributes must end in a semicolon which must then be separated from the start of any subsequent
-     * attribute by exactly one space character (NOT a tab character).
-     * <p/>
-     * Textual attributes should be surrounded by doublequotes.
-     */
-    public static class GTFHelper implements Helper {
-
-        @Override
-        public void parseAttributes(String description, MultiMap<String, String> kvalues) {
-
-            List<String> kvPairs = StringUtils.breakQuotedString(description.trim(), ';');
-            for (String kv : kvPairs) {
-                List<String> tokens = StringUtils.breakQuotedString(kv, ' ');
-                if (tokens.size() >= 2) {
-                    String key = tokens.get(0).trim().replaceAll("\"", "");
-                    String value = tokens.get(1).trim().replaceAll("\"", "");
-                    kvalues.put(StringUtils.intern(key), value);
-                }
-            }
-        }
-
-        @Override
-        public String[] getParentIds(MultiMap<String, String> attributes, String attributeString) {
-            return new String[0];  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        public String getID(MultiMap<String, String> attributes) {
-            return attributes.get("transcript_id");  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        public void setUrlDecoding(boolean b) {
-            //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        public String getName(MultiMap<String, String> attributes) {
-            return attributes.get("transcript_id");  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        public void setNameFields(String[] fields) {
-            //To change body of implemented methods use File | Settings | File Templates.
-        }
-    }
 
 }

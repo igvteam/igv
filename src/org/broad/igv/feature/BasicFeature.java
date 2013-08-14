@@ -115,7 +115,7 @@ public class BasicFeature extends AbstractFeature {
             valueString.append("<b>" + name + "</b><br>");
         }
         valueString.append(getLocusString());
-        if (type != null) {
+        if (type != null && type.length() > 0) {
             valueString.append("<br>Type = " + type);
         }
         if ((identifier != null) && ((name == null) || !name.equals(identifier))) {
