@@ -330,7 +330,7 @@ public class ResourceLocator {
                     }
                 }
             } catch (MalformedURLException e) {
-                log.error(e);
+                log.error(e.getMessage(), e);
             }
 
         }

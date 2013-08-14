@@ -955,6 +955,10 @@ public class TrackLoader {
                 if (!path.contains("/query.cgi?")) {
                     covPath = path + ".tdf";
                 }
+                //Hack to deal with su2c
+                if(path.contains("dataformat=.bam")){
+                    covPath = null;
+                }
             }
             if (covPath != null) {
                 try {
