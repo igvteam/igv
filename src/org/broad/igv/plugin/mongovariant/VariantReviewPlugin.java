@@ -62,11 +62,27 @@ public class VariantReviewPlugin implements IGVPlugin{
         }
     }
 
+    /**
+     *
+     * @param tracks
+     * @return  true iff {@code tracks} is a single track of type {@code VariantTrack}
+     */
+    private boolean isSingleVariantTrack(Collection<Track> tracks){
+        if (tracks.size() != 1) return false;
+
+        Track track = tracks.iterator().next();
+
+        return (track instanceof VariantTrack);
+    }
+
     private void initMenuItems() {
         //Menu item for loading review track
         TrackMenuUtils.addTrackMenuItemBuilder(new TrackMenuItemBuilder() {
             @Override
             public JMenuItem build(Collection<Track> selectedTracks, TrackClickEvent te) {
+                if(!isSingleVariantTrack(selectedTracks)){
+                    return null;
+                }
                 JMenuItem showReviewMenuItem = new JMenuItem("Load Review Track");
                 showReviewMenuItem.addActionListener(new ActionListener() {
                     @Override
@@ -91,13 +107,10 @@ public class VariantReviewPlugin implements IGVPlugin{
             public JMenuItem build(Collection<Track> selectedTracks, TrackClickEvent te) {
                 //Not clear what to do with more than one track. Could be a bit nicer and only
                 //require 1 variant track
-                if (selectedTracks.size() != 1) return null;
-
-                Track track = selectedTracks.iterator().next();
-
-                if (!(track instanceof VariantTrack)) {
+                if(!isSingleVariantTrack(selectedTracks)){
                     return null;
                 }
+                Track track = selectedTracks.iterator().next();
                 VariantTrack vTrack = (VariantTrack) track;
                 final Variant variant = vTrack.getSelectedVariant(te);
 
