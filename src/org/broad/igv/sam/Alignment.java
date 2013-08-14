@@ -83,6 +83,9 @@ public interface Alignment extends LocusScore {
 
     Object getAttribute(String key);
 
+
+    void setMateSequence(String sequence);
+
     String getPairOrientation();
 
     boolean isSmallInsert();

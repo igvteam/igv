@@ -58,7 +58,6 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
      * Picard object upon which this SamAlignment is based
      */
     private SAMRecord record;
-
     private String mateSequence = null;
     private String pairOrientation = "";
     private Color defaultColor = AlignmentRenderer.grey1;
@@ -702,6 +701,16 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
     public Color getDefaultColor() {
         return defaultColor;
+    }
+
+    @Override
+    public String getMateSequence() {
+        return this.mateSequence;
+    }
+
+    @Override
+    public void setMateSequence(String sequence) {
+        this.mateSequence = sequence;
     }
 
 

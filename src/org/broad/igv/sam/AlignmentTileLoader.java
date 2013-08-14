@@ -22,6 +22,7 @@ import org.broad.igv.sam.reader.ReadGroupFilter;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressMonitor;
+import org.broad.igv.util.ObjectCache;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.collections.LRUCache;
 
@@ -111,6 +112,10 @@ public class AlignmentTileLoader {
         int alignmentCount = 0;
         WeakReference<AlignmentTileLoader> ref = new WeakReference(this);
         try {
+            ObjectCache<String, Alignment> mappedMates = new ObjectCache<String, Alignment>(1000);
+            ObjectCache<String, Alignment> unmappedMates = new ObjectCache<String, Alignment>(1000);
+
+
             activeLoaders.add(ref);
             iter = reader.query(chr, start, end, false);
 
@@ -122,8 +127,35 @@ public class AlignmentTileLoader {
 
                 Alignment record = iter.next();
 
+                // Set mate sequence of unmapped mates
+                // Put a limit on the total size of this collection.
+                String readName = record.getReadName();
                 if (record.isPaired()) {
                     pairedEnd = true;
+                    if (record.isMapped()) {
+                        if (!record.getMate().isMapped()) {
+                            // record is mapped, mate is not
+                            Alignment mate = unmappedMates.get(readName);
+                            if (mate == null) {
+                                mappedMates.put(readName, record);
+                            } else {
+                                record.setMateSequence(mate.getReadSequence());
+                                unmappedMates.remove(readName);
+                                mappedMates.remove(readName);
+                            }
+
+                        }
+                    } else if (record.getMate().isMapped()) {
+                        // record not mapped, mate is
+                        Alignment mappedMate = mappedMates.get(readName);
+                        if (mappedMate == null) {
+                            unmappedMates.put(readName, record);
+                        } else {
+                            mappedMate.setMateSequence(record.getReadSequence());
+                            unmappedMates.remove(readName);
+                            mappedMates.remove(readName);
+                        }
+                    }
                 }
 
 
@@ -178,6 +210,14 @@ public class AlignmentTileLoader {
                 }
             }
 
+            // Clean up any remaining unmapped mate sequences
+            for (String mappedMateName : mappedMates.getKeys()) {
+                Alignment mappedMate = mappedMates.get(mappedMateName);
+                Alignment mate = unmappedMates.get(mappedMate.getReadName());
+                if (mate != null) {
+                    mappedMate.setMateSequence(mate.getReadSequence());
+                }
+            }
             t.setLoaded(true);
 
             return t;
@@ -209,10 +249,7 @@ public class AlignmentTileLoader {
             if (!Globals.isHeadless()) {
                 IGV.getInstance().resetStatusMessage();
             }
-
         }
-
-
     }
 
 
@@ -300,7 +337,7 @@ public class AlignmentTileLoader {
             this.start = start;
         }
 
-        //int ignoredCount = 0;    // <= just for debugging
+        int ignoredCount = 0;    // <= just for debugging
 
         /**
          * Add an alignment record to this tile.  This record is not necessarily retained after down-sampling.

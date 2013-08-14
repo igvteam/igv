@@ -56,6 +56,10 @@ public abstract class AbstractAlignment implements Alignment {
         return mate;
     }
 
+    public String getMateSequence() {
+        return null;
+    }
+
     public String getReadName() {
         return readName;
     }
@@ -303,6 +307,10 @@ public abstract class AbstractAlignment implements Alignment {
 
     public Object getAttribute(String key) {
         return null;
+    }
+
+    public void setMateSequence(String sequence) {
+        // ignore by default
     }
 
     public String getPairOrientation() {
