@@ -979,13 +979,13 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             if (afValue != null && afValue.length() > 0 && !afValue.equals("null")) {
                 toolTip = toolTip.concat("<br>" + getFullName(k) + ": " + variant.getAttributeAsString(k));
             }
-
+            int maxFilterLines = getMaxFilterLines();
             for (String key : keys) {
                 count++;
 
                 if (key.equals("AF") || key.equals("GMAF")) continue;
 
-                if (count > MAX_FILTER_LINES) {
+                if (count > maxFilterLines) {
                     toolTip = toolTip.concat("<br>....");
                     break;
                 }
@@ -995,6 +995,16 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             return toolTip;
         }
         return " ";
+    }
+
+    /**
+     * The maximum number of filter lines to show for variants.
+     * We show more info if the user is displaying a separate window than
+     * if using tooltip
+     * @return
+     */
+    private int getMaxFilterLines() {
+        return IGV.getInstance().isShowDetailsOnHover() ? MAX_FILTER_LINES : 1000;
     }
 
     private String getSampleInfo(Genotype genotype) {
