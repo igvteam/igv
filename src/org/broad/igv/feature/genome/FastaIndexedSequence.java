@@ -44,9 +44,11 @@ public class FastaIndexedSequence implements Sequence {
 
         String indexPath = path + ".fai";
 
-        if(ParsingUtils.getLastModified(path) > ParsingUtils.getLastModified(indexPath)){
-            log.warn("Index file for " + path + " is older than the file it indexes");
-        }
+// The check below is not useful in the files have been copied or moved, which is always the case for our hosted
+// genomes.   It causes lots of spurious warnings
+//        if(ParsingUtils.getLastModified(path) > ParsingUtils.getLastModified(indexPath)){
+//            log.warn("Index file for " + path + " is older than the file it indexes");
+//        }
 
         index = new FastaIndex(indexPath);
         chromoNamesList = new ArrayList<String>(index.getSequenceNames());
