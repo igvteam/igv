@@ -49,7 +49,7 @@ public class ExpDiffCodec extends CufflinksCodec<ExpDiffValue>{
         return tokens;
     }
 
-    @Override
+    //@Override
     public ExpDiffValue decode(String[] tokens) {
         //Skip header line
         if (tokens[0].equalsIgnoreCase("test_id") || tokens[geneColumn].equalsIgnoreCase("gene_id")) {

@@ -19,6 +19,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.collections.MultiMap;
 import org.broad.tribble.AsciiFeatureCodec;
+import org.broad.tribble.readers.LineIterator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -53,53 +54,37 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
         super(Mutation.class);
         this.path = path;
         this.genome = genome;
-        readHeader(path);
     }
 
-    private void readHeader(String path) {
-
-        BufferedReader reader = null;
+    public Void readActualHeader(LineIterator reader) {
         String nextLine = null;
 
-        try {
-
-            reader = ParsingUtils.openBufferedReader(path);
-            while ((nextLine = reader.readLine()) != null) {
-                if (nextLine.startsWith("#")) {
-                    if (nextLine.startsWith("#samples")) {
-                        String[] tokens = Globals.whitespacePattern.split(nextLine, 2);
-                        if (tokens.length < 2) {
-                            log.error("Error parsing sample header in mutation file: " + path);
-                        } else {
-                            samples = Globals.commaPattern.split(tokens[1]);
-                            for (int i = 0; i < samples.length; i++) {
-                                samples[i] = samples[i].trim();
-                            }
+        while (reader.hasNext()) {
+            nextLine = reader.next();
+            if (nextLine.startsWith("#")) {
+                if (nextLine.startsWith("#samples")) {
+                    String[] tokens = Globals.whitespacePattern.split(nextLine, 2);
+                    if (tokens.length < 2) {
+                        log.error("Error parsing sample header in mutation file: " + path);
+                    } else {
+                        samples = Globals.commaPattern.split(tokens[1]);
+                        for (int i = 0; i < samples.length; i++) {
+                            samples[i] = samples[i].trim();
                         }
                     }
-                    continue;
                 }
-
-                String[] tokens = nextLine.split("\t");
-                if (tokens.length > 4) {
-
-                    headers = Globals.tabPattern.split(nextLine);
-                    isMAF = headers.length > 15 && headers[0].equalsIgnoreCase("Hugo_Symbol");
-                    setColumns(isMAF);
-                    return;
-                }
+                continue;
             }
-        } catch (IOException e) {
-            log.error("Error loading mutation file", e);
-            throw new DataLoadException("IO Exception: " + e.toString(), path);
-        } finally {
-            try {
-                reader.close();
-            } catch (IOException e) {
-                log.error("Error closing file: " + path, e);
+
+            String[] tokens = nextLine.split("\t");
+            if (tokens.length > 4) {
+
+                headers = Globals.tabPattern.split(nextLine);
+                isMAF = headers.length > 15 && headers[0].equalsIgnoreCase("Hugo_Symbol");
+                setColumns(isMAF);
+                return null;
             }
         }
-
         throw new RuntimeException("Unexpected end-of-file (no header line): " + path);
     }
 

@@ -21,6 +21,8 @@ import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.readers.AsciiLineReader;
+import org.broad.tribble.readers.LineIterator;
+import org.broad.tribble.readers.LineIteratorImpl;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -159,8 +161,12 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
             String lines = StringUtils.join(headerLines, "\n");
             byte[] bytes = lines.getBytes();
             InputStream is = new ByteArrayInputStream(bytes);
-            AsciiLineReader reader = new AsciiLineReader(is);
-            codec.readHeader(reader);
+            LineIterator reader = new LineIteratorImpl(new AsciiLineReader(is));
+            try {
+                codec.readHeader(reader);
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+            }
         }
 
     }
@@ -211,8 +217,8 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
 
     @Override
     protected Feature processResult(ResultSet rs) throws SQLException {
-        String[] tokens = rowToStringArray(rs);
-        return codec.decode(tokens);
+        String line = rowToStringLine(rs);
+        return codec.decode(line);
     }
 
     /**

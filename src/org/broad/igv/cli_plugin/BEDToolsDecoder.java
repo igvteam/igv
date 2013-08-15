@@ -14,7 +14,7 @@ package org.broad.igv.cli_plugin;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
-import org.broad.tribble.readers.LineReader;
+import org.broad.tribble.readers.LineIterator;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -82,7 +82,7 @@ public final class BEDToolsDecoder extends AsciiDecoder<BasicFeature> implements
     }
 
     @Override
-    public Object readHeader(LineReader reader) throws IOException {
+    public Object readActualHeader(LineIterator reader) throws IOException {
         return null;
     }
 

@@ -18,9 +18,7 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
 import org.broad.tribble.exception.CodecLineParsingException;
-import org.broad.tribble.readers.LineReader;
-
-import java.io.IOException;
+import org.broad.tribble.readers.LineIterator;
 
 /**
  * @author jrobinso
@@ -42,10 +40,12 @@ public abstract class UCSCCodec<T extends Feature> extends AsciiFeatureCodec<T> 
      * @param reader
      * @return
      */
-    public Object readHeader(LineReader reader) {
+    @Override
+    public Object readActualHeader(LineIterator reader) {
         String line;
         try {
-            while ((line = reader.readLine()) != null) {
+            while (reader.hasNext()) {
+                line = reader.next();
                 if (line.startsWith("#") || line.startsWith("track") ||
                         line.startsWith("browser")) {
                     readHeaderLine(line);
@@ -54,7 +54,7 @@ public abstract class UCSCCodec<T extends Feature> extends AsciiFeatureCodec<T> 
                 }
             }
             return header;
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new CodecLineParsingException("Error parsing header", e);
         }
     }

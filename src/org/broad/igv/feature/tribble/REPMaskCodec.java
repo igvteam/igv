@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.feature.tribble;
@@ -28,13 +21,8 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.collections.MultiMap;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.exception.CodecLineParsingException;
-import org.broad.tribble.readers.LineReader;
-
-import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import org.broad.tribble.readers.LineIterator;
 
 /**
  * Basically BED format with some columns rearranged
@@ -68,7 +56,7 @@ public class REPMaskCodec extends AsciiFeatureCodec<BasicFeature> {
         this.genome = genome;
     }
 
-    public Object readHeader(LineReader reader) {
+    public Object readActualHeader(LineIterator reader) {
 
         String nextLine;
         header = new FeatureFileHeader();
@@ -76,9 +64,12 @@ public class REPMaskCodec extends AsciiFeatureCodec<BasicFeature> {
         int nLines = 0;
 
         try {
-            while ((nextLine = reader.readLine()) != null &&
-                    (nextLine.startsWith("#") || nextLine.startsWith("track")) ||
-                    nextLine.startsWith("browser")) {
+            while (reader.hasNext()){
+                nextLine = reader.next();
+                if( !nextLine.startsWith("#") && !nextLine.startsWith("track") &&
+                    !nextLine.startsWith("browser") ){
+                    break;
+                }
                 nLines++;
                 if (nextLine.startsWith("#type")) {
                     String[] tokens = nextLine.split("=");
@@ -96,8 +87,8 @@ public class REPMaskCodec extends AsciiFeatureCodec<BasicFeature> {
                 }
             }
             return header;
-        } catch (IOException e) {
-            throw new CodecLineParsingException("Error parsing header", e);
+        } catch (Exception e) {
+            throw new CodecLineParsingException("Error parsing header: " + e.getMessage(), e);
         }
     }
 

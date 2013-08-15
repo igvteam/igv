@@ -16,8 +16,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.variant.Variant;
 import org.broad.igv.variant.vcf.VCFVariant;
 import org.broad.tribble.AsciiFeatureCodec;
-import org.broad.tribble.Feature;
-import org.broad.tribble.readers.LineReader;
+import org.broad.tribble.readers.LineIterator;
 import org.broadinstitute.variant.variantcontext.VariantContext;
 
 /**
@@ -35,11 +34,6 @@ public class VCFWrapperCodec extends AsciiFeatureCodec<VCFVariant> {
         super(VCFVariant.class);
         this.wrappedCodec = wrappedCodec;
         this.genome = genome;
-    }
-
-    @Override
-    public Feature decodeLoc(String line) {
-        return wrappedCodec.decodeLoc(line);
     }
 
     @Override
@@ -72,8 +66,8 @@ public class VCFWrapperCodec extends AsciiFeatureCodec<VCFVariant> {
     }
 
     @Override
-    public Object readHeader(LineReader reader) {
-        return wrappedCodec.readHeader(reader);
+    public Object readActualHeader(LineIterator reader) {
+        return wrappedCodec.readActualHeader(reader);
     }
 
     /**

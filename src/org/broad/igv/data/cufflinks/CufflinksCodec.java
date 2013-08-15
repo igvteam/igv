@@ -16,9 +16,7 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
-import org.broad.tribble.readers.LineReader;
-
-import java.io.IOException;
+import org.broad.tribble.readers.LineIterator;
 
 /**
  * @author jacob
@@ -38,13 +36,13 @@ public abstract class CufflinksCodec<T extends Feature> extends AsciiFeatureCode
     protected abstract Object readHeader(String[] tokens);
 
     @Override
-    public Object readHeader(LineReader reader){
+    public Object readActualHeader(LineIterator reader){
         String headerLine = null;
         try {
-            headerLine = reader.readLine();
+            headerLine = reader.next();
             String[] tokens = ParsingUtils.TAB_PATTERN.split(headerLine);
             return readHeader(tokens);
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new DataLoadException("Error reading header: " + e.getMessage(), this.path);
         }

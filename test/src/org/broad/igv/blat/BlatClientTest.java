@@ -42,7 +42,7 @@ public class BlatClientTest extends AbstractHeadlessTest{
                 "AGTGGAATGGCACTGGCTGGCCACTCAGCTCAGCGGGCGACGTGCCCCTACAAGTTGGCAGAAGTGGCTGCCACTGCTGGGTTTGTGTAAGAGA" +
                 "GGCTGCTGCCACCATTACCTGCAGA";
 
-        List<String []> features = BlatClient.blat(org, db, userSeq);
+        List<String> features = BlatClient.blat(org, db, userSeq);
 
         // We can't really assert a specific size as the blat server could get updated.  However it should have
         // several results

@@ -12,14 +12,16 @@
 package org.broad.tribble;
 
 
-import org.broad.igv.Globals;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.index.Index;
 import org.broad.tribble.index.IndexFactory;
 import org.broad.tribble.util.LittleEndianOutputStream;
 import org.broadinstitute.variant.variantcontext.VariantContext;
 import org.broadinstitute.variant.vcf.VCFCodec;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -41,7 +43,7 @@ import static org.junit.Assert.assertEquals;
 public class TribbleFeatureReaderTest {
 
     static String testFile = TestUtils.LARGE_DATA_DIR + "CEU.SRP000032.2010_03_v4.0.genotypes.head.vcf";
-    static AbstractFeatureReader<VariantContext> bfr;
+    static AbstractFeatureReader<VariantContext, ?> bfr;
 
     @BeforeClass
     public static void setUpClass() throws IOException {

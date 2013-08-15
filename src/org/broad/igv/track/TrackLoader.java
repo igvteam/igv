@@ -431,7 +431,7 @@ public class TrackLoader {
 
         FeatureCodec codec = CodecFactory.getCodec(locator.getPath(), genome);
         if (codec != null) {
-            AbstractFeatureReader<Feature> bfs = AbstractFeatureReader.getFeatureReader(locator.getPath(), codec, false);
+            AbstractFeatureReader<Feature, ?> bfs = AbstractFeatureReader.getFeatureReader(locator.getPath(), codec, false);
             Iterable<Feature> iter = bfs.iterator();
             Object header = bfs.getHeader();
             TrackProperties trackProperties = getTrackProperties(header);

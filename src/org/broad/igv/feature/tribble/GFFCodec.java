@@ -29,9 +29,8 @@ import org.broad.igv.util.collections.MultiMap;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
 import org.broad.tribble.exception.CodecLineParsingException;
-import org.broad.tribble.readers.LineReader;
+import org.broad.tribble.readers.LineIterator;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -136,7 +135,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         }
     }
 
-    public Object readHeader(LineReader reader) {
+    public Object readActualHeader(LineIterator reader) {
 
         if (header == null) {
             header = new FeatureFileHeader();
@@ -144,8 +143,8 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         String line;
         int nLines = 0;
         try {
-            while ((line = reader.readLine()) != null) {
-
+            while (reader.hasNext()) {
+                line = reader.next();
                 if (line.startsWith("#")) {
                     nLines++;
                     readHeaderLine(line);
@@ -156,8 +155,8 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
             header.setTrackProperties(trackProperties);
             return header;
-        } catch (IOException e) {
-            throw new CodecLineParsingException("Error parsing header", e);
+        } catch (Exception e) {
+            throw new CodecLineParsingException("Error parsing header: " + e.getMessage(), e);
         }
     }
 
