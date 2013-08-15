@@ -270,7 +270,14 @@ public class IGVMenuBar extends JMenuBar {
                             cmdItem.addActionListener(new ActionListener() {
                                 @Override
                                 public void actionPerformed(ActionEvent e) {
-                                    (new RunPlugin(IGV.getMainFrame(), pluginSpecReader, tool, command)).setVisible(true);
+                                    RunPlugin runPlugin = null;
+                                    try {
+                                        runPlugin = new RunPlugin(IGV.getMainFrame(), pluginSpecReader, tool, command);
+                                    } catch (IllegalStateException e1) {
+                                        MessageUtils.showErrorMessage(e1.getMessage(), e1);
+                                        return;
+                                    }
+                                    runPlugin.setVisible(true);
                                 }
                             });
                             cmdItem.setEnabled(true);

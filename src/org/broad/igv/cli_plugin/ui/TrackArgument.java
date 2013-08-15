@@ -42,7 +42,11 @@ public class TrackArgument extends ArgumentPanel {
 
             Class clazz = getTrackClass(argument);
             Iterable<Track> tracks = Iterables.filter(trackList, clazz);
-            trackComboBox.setModel(new DefaultComboBoxModel(Lists.newArrayList(tracks).toArray()));
+            List<Track> filteredTrackList = Lists.newArrayList(tracks);
+            if(filteredTrackList.size() == 0){
+                throw new IllegalStateException("No tracks found of appropriate type; make sure data is loaded");
+            }
+            trackComboBox.setModel(new DefaultComboBoxModel(filteredTrackList.toArray()));
             trackComboBox.setRenderer(new TrackComboBoxRenderer());
         }
     }
@@ -73,7 +77,10 @@ public class TrackArgument extends ArgumentPanel {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             Track track = (Track) value;
-            String toShow = track.getName();
+            String toShow = "No Tracks Found";
+            if(track != null){
+                toShow = track.getName();
+            }
             return super.getListCellRendererComponent(list, toShow, index, isSelected, cellHasFocus);
         }
     }
