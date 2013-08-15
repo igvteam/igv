@@ -19,7 +19,9 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.collections.MultiMap;
 import org.broad.tribble.AsciiFeatureCodec;
+import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.tribble.readers.LineIterator;
+import org.broad.tribble.readers.LineIteratorImpl;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -54,6 +56,12 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
         super(Mutation.class);
         this.path = path;
         this.genome = genome;
+        try {
+            LineIterator reader = new LineIteratorImpl(new AsciiLineReader(ParsingUtils.openInputStream(path)));
+            readActualHeader(reader);
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     public Void readActualHeader(LineIterator reader) {
