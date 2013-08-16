@@ -45,10 +45,11 @@ public abstract class UCSCCodec<T extends Feature> extends AsciiFeatureCodec<T> 
         String line;
         try {
             while (reader.hasNext()) {
-                line = reader.next();
+                line = reader.peek();
                 if (line.startsWith("#") || line.startsWith("track") ||
                         line.startsWith("browser")) {
                     readHeaderLine(line);
+                    reader.next();
                 } else {
                     break;
                 }

@@ -144,10 +144,11 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         int nLines = 0;
         try {
             while (reader.hasNext()) {
-                line = reader.next();
+                line = reader.peek();
                 if (line.startsWith("#")) {
                     nLines++;
                     readHeaderLine(line);
+                    reader.next();
                 } else {
                     break;
                 }

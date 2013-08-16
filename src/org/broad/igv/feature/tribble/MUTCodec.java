@@ -68,8 +68,9 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
         String nextLine = null;
 
         while (reader.hasNext()) {
-            nextLine = reader.next();
+            nextLine = reader.peek();
             if (nextLine.startsWith("#")) {
+                reader.next();
                 if (nextLine.startsWith("#samples")) {
                     String[] tokens = Globals.whitespacePattern.split(nextLine, 2);
                     if (tokens.length < 2) {

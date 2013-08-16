@@ -14,12 +14,13 @@ package org.broad.igv.cli_plugin;
 import org.apache.log4j.Logger;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
+import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.tribble.readers.LineIterator;
+import org.broad.tribble.readers.LineIteratorImpl;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.*;
 
 /**
@@ -46,12 +47,8 @@ public class AsciiDecoder<D extends Feature> implements FeatureDecoder<D> {
         String line;
         D feat;
 
-        BufferedReader bis = new BufferedReader(new InputStreamReader(is));
-        QueuingLineReader lrw = new QueuingLineReader(bis);
-
-        lrw.setQueueing(true);
+        LineIterator lrw = new LineIteratorImpl(new AsciiLineReader(is));
         lineFeatureDecoder.readActualHeader(lrw);
-        lrw.setQueueing(false);
 
         while (lrw.hasNext()) {
             line = lrw.next();
@@ -120,7 +117,10 @@ public class AsciiDecoder<D extends Feature> implements FeatureDecoder<D> {
      * will want to be read.
      * @author jacob
      * @since 3 Jul 2013
+     * @deprecated Using {@link org.broad.tribble.readers.LineIterator#peek()} should
+     * remove the need for this class
      */
+    @Deprecated
     private static class QueuingLineReader implements LineIterator{
 
         private BufferedReader wrappedReader;

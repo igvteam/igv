@@ -65,11 +65,12 @@ public class REPMaskCodec extends AsciiFeatureCodec<BasicFeature> {
 
         try {
             while (reader.hasNext()){
-                nextLine = reader.next();
+                nextLine = reader.peek();
                 if( !nextLine.startsWith("#") && !nextLine.startsWith("track") &&
                     !nextLine.startsWith("browser") ){
                     break;
                 }
+                reader.next();
                 nLines++;
                 if (nextLine.startsWith("#type")) {
                     String[] tokens = nextLine.split("=");
