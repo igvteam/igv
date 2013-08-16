@@ -16,8 +16,11 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.variant.Variant;
 import org.broad.igv.variant.vcf.VCFVariant;
 import org.broad.tribble.AsciiFeatureCodec;
+import org.broad.tribble.Feature;
 import org.broad.tribble.readers.LineIterator;
 import org.broadinstitute.variant.variantcontext.VariantContext;
+
+import java.io.IOException;
 
 /**
  * @author Jim Robinson
@@ -34,6 +37,11 @@ public class VCFWrapperCodec extends AsciiFeatureCodec<VCFVariant> {
         super(VCFVariant.class);
         this.wrappedCodec = wrappedCodec;
         this.genome = genome;
+    }
+
+    @Override
+    public Feature decodeLoc(LineIterator iterator) throws IOException{
+        return wrappedCodec.decodeLoc(iterator);
     }
 
     @Override
