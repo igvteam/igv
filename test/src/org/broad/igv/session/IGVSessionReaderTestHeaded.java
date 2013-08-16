@@ -298,6 +298,21 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
         assertTrue("No gene track found but one should exist", IGV.getInstance().hasGeneTrack());
     }
 
+    /**
+     * Test loading a session with spaces in the path and special
+     * characters in the file names
+     * @throws Exception
+     */
+    @Test
+    public void testLoadSessionSpecialChars() throws Exception {
+        int expTrackCount = 5;
+        String path = TestUtils.DATA_DIR + "sessions/special_chars.xml";
+        rewriteRestoreSession(path);
+
+        assertEquals(expTrackCount, IGV.getInstance().getVisibleTrackCount());
+
+    }
+
     private boolean listContainsFeature(List<Feature> featureList, Feature feature){
         for (Feature listFeature : featureList) {
             if ((feature.getChr().equals(listFeature.getChr())) &&
