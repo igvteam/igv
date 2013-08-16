@@ -468,15 +468,13 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosed(WindowEvent e) {
-                thisWindowClosed(e);
-            }
-
-            @Override
             public void windowActivated(WindowEvent e) {
                 thisWindowActivated(e);
             }
-
+            @Override
+            public void windowClosed(WindowEvent e) {
+                thisWindowClosed(e);
+            }
             @Override
             public void windowDeactivated(WindowEvent e) {
                 thisWindowDeactivated(e);
@@ -524,25 +522,23 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
 
                     //---- regionTable ----
                     regionTable.setModel(new DefaultTableModel(
-                            new Object[][]{
-                                    {null, null, null, null},
-                            },
-                            new String[]{
-                                    "Chr", "Start", "End", "Description"
-                            }
+                        new Object[][] {
+                            {null, null, null, null},
+                        },
+                        new String[] {
+                            "Chr", "Start", "End", "Description"
+                        }
                     ) {
-                        Class<?>[] columnTypes = new Class<?>[]{
-                                String.class, Integer.class, Integer.class, Object.class
+                        Class<?>[] columnTypes = new Class<?>[] {
+                            String.class, Integer.class, Integer.class, Object.class
                         };
-                        boolean[] columnEditable = new boolean[]{
-                                false, true, true, true
+                        boolean[] columnEditable = new boolean[] {
+                            false, true, true, true
                         };
-
                         @Override
                         public Class<?> getColumnClass(int columnIndex) {
                             return columnTypes[columnIndex];
                         }
-
                         @Override
                         public boolean isCellEditable(int rowIndex, int columnIndex) {
                             return columnEditable[columnIndex];
@@ -735,7 +731,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
                 List<RegionOfInterest> selectedRegions = getSelectedRegions(selectedRows);
 
                 // Create an "on-the-fly" gene list
-                // TODO -- this is ineffecient (converting regions -> strings then back again)
+                // TODO -- this is inefficient (converting regions -> strings then back again)
                 List<String> loci = new ArrayList<String>(selectedRegions.size());
                 if (checkBoxZoomWhenNav.isSelected() || selectedRegions.size() >= 2 || FrameManager.isGeneListMode()) {
                     for (RegionOfInterest roi : selectedRegions) {
@@ -748,6 +744,11 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
                     int length = range.getLength();
                     int start = roi.getCenter() - length / 2;
                     int end = start + length;
+                    //Shift so we don't go below 0
+                    if(start < 0){
+                        end += Math.abs(start);
+                        start = 0;
+                    }
                     loci.add(new RegionOfInterest(roi.getChr(), start, end, roi.getDescription()).getLocusString());
                 }
                 GeneList geneList = new GeneList("Regions of Interest", loci, false);

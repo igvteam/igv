@@ -116,6 +116,6 @@ public class RegionOfInterest{
 
 
     public String getLocusString() {
-        return getChr() + ":" + getStart() + "-" + getEnd();
+        return getChr() + ":" + getDisplayStart() + "-" + getDisplayEnd();
     }
 }

@@ -215,9 +215,16 @@ public class FrameManager {
         Locus locus = null;
         for (SearchCommand.SearchResult result : results) {
             if (result.getType() != SearchCommand.ResultType.ERROR) {
+                int start = result.getStart() - flankingRegion;
+                //Don't allow flanking region to extend past origin
+                //There are some circumstances in which we render before origin (e.g. soft-clips)
+                //so we are conservative
+                if(start < 0 && result.getStart() >= -1){
+                    start = 0;
+                }
                 locus = new Locus(
                         result.getChr(),
-                        result.getStart() - flankingRegion,
+                        start,
                         result.getEnd() + flankingRegion);
                 //We just take the first result
                 break;
