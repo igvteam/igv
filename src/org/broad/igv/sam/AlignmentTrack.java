@@ -976,12 +976,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         public void setShowAllBases(boolean showAllBases) {
             this.showAllBases = showAllBases;
-            if(showAllBases) this.showMismatches = false;
+            if (showAllBases) this.showMismatches = false;
         }
 
         public void setShowMismatches(boolean showMismatches) {
             this.showMismatches = showMismatches;
-            if(showMismatches) this.showAllBases = false;
+            if (showMismatches) this.showAllBases = false;
         }
 
         boolean showMismatches = true;
@@ -1233,11 +1233,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             addSelecteByNameItem();
             addClearSelectionsMenuItem();
 
+            addSeparator();
+            addConsensusSequence(e);
             if (!Globals.isProduction()) {
-                addSeparator();
                 addBlatItem(e);
-
-                addConsensusSequence(e);
             }
 
             boolean showSashimi = true;//!Globals.isProduction();
@@ -1269,14 +1268,14 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             //Export consensus sequence
             final ReferenceFrame frame = e.getFrame();
             int chromoLoc = (int) e.getChromosomePosition();
-            final int start =  (int) frame.getOrigin();
+            final int start = (int) frame.getOrigin();
             final int end = (int) frame.getEnd();
 
             JMenuItem item = new JMenuItem("Copy consensus sequence");
             item.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
-                    if((end - start) > 1000000){
+                    if ((end - start) > 1000000) {
                         MessageUtils.showMessage("Cannot export region more than 1 Megabase");
                         return;
                     }
@@ -1751,7 +1750,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             return item;
         }
 
-//        public void addCoverageDepthMenuItem() {
+        //        public void addCoverageDepthMenuItem() {
 //            // Change track height by attribute
 //            final JMenuItem item = new JCheckBoxMenuItem("Set maximum coverage depth ...");
 //            item.addActionListener(new ActionListener() {
@@ -2061,23 +2060,24 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     /**
      * Listener for deselecting one component when another is selected
      */
-    private static class Deselector implements ActionListener{
+    private static class Deselector implements ActionListener {
 
         private JMenuItem toDeselect;
         private JMenuItem parent;
 
-        Deselector(JMenuItem parent, JMenuItem toDeselect){
+        Deselector(JMenuItem parent, JMenuItem toDeselect) {
             this.parent = parent;
             this.toDeselect = toDeselect;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            if(this.parent.isSelected()){
+            if (this.parent.isSelected()) {
                 this.toDeselect.setSelected(false);
             }
         }
     }
+
     /**
      * if neither forward nor reverse, create 2 charts in one
      */
