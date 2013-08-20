@@ -83,7 +83,7 @@ public class FileDialogUtils {
     public static File[] chooseMultiple(String title, File initialDirectory, final FilenameFilter filter) {
         File[] files = null;
 
-        if (Globals.IS_MAC && !Globals.IS_JWS && Globals.isVersionOrHigher("1.7")) {
+        if (Globals.IS_MAC && !Globals.IS_JWS) {
             try{
                 files = chooseMultipleNative(title, initialDirectory, filter);
             }catch (UnsupportedOperationException e){
