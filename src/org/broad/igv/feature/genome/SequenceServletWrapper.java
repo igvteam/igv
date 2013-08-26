@@ -101,7 +101,7 @@ public class SequenceServletWrapper {
                         "Features that require a reference sequence, <br>" +
                         "such as displaying alignment mismatches, will be disabled.  " +
                         "If this problem persists please <br>" +
-                        "send email to igv-help@broadinstitute.org");
+                        "send email to igv-team@broadinstitute.org");
     }
 
 

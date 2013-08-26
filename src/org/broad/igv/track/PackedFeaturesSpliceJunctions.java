@@ -173,8 +173,6 @@ public class PackedFeaturesSpliceJunctions<T extends Feature> extends PackedFeat
         int allocatedCount = 0;
         int nextStart = currentRow.end + FeatureTrack.MINIMUM_FEATURE_SPACING;
 
-
-        int lastKey = 0;
         int lastAllocatedCount = -1;
         while (allocatedCount < totalCount && rows.size() < maxLevels) {
 
@@ -196,12 +194,6 @@ public class PackedFeaturesSpliceJunctions<T extends Feature> extends PackedFeat
 
             ArrayList<Integer> emptyBucketKeys = new ArrayList();
             for (Integer key : bucketArray.keySet()) {
-                //if (key < lastKey) {
-                //    String msg = "Features from track: " + trackName + " are not sorted.  Some features might not be shown.<br>" +
-                //            "Please notify igv-help@broadinstitute.org";
-                //    MessageUtils.showMessage(msg);
-                //}
-                lastKey = key;
                 if (key >= nextStart) {
                     bucket = bucketArray.get(key);
 
@@ -227,7 +219,6 @@ public class PackedFeaturesSpliceJunctions<T extends Feature> extends PackedFeat
             }
             currentRow = new FeatureRow();
             nextStart = 0;
-            lastKey = 0;
         }
         // Add the last row
         if (currentRow.features.size() > 0) {
