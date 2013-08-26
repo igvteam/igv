@@ -23,6 +23,7 @@ import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -40,7 +41,6 @@ public class FileDialogUtils {
     public static File chooseFile(String title, File initialDirectory, int mode) {
         return chooseFile(title, initialDirectory, null, mode);
     }
-
 
     public static File chooseFile(String title) {
         return chooseFile(title, DirectoryManager.getUserDirectory(), null, FileDialog.LOAD);
@@ -64,7 +64,6 @@ public class FileDialogUtils {
         // Strip off parent directory
         if (initialFile != null) initialFile = new File(initialFile.getName());
 
-        // TODO -- use native dialogs for windows as well?
         if (Globals.IS_MAC && !Globals.IS_JWS && directoriesMode != JFileChooser.FILES_AND_DIRECTORIES) {
             return chooseNative(title, initialDirectory, initialFile, filter, directoriesMode, mode);
         } else {
@@ -81,12 +80,19 @@ public class FileDialogUtils {
     }
 
     public static File[] chooseMultiple(String title, File initialDirectory, final FilenameFilter filter) {
+
         File[] files = null;
 
         if (Globals.IS_MAC && !Globals.IS_JWS) {
-            try{
-                files = chooseMultipleNative(title, initialDirectory, filter);
-            }catch (UnsupportedOperationException e){
+            try {
+                FileDialog fd = getNativeChooser(title, initialDirectory, null, filter, JFileChooser.FILES_ONLY, LOAD);
+                if (isMultipleMode(fd)) {
+                    fd.setVisible(true);
+                    Method method = fd.getClass().getMethod("getFiles");
+                    files = (File[]) method.invoke(fd);
+                }
+
+            } catch (Exception e) {
                 //This should never happen
                 log.error(e.getMessage(), e);
             }
@@ -94,7 +100,7 @@ public class FileDialogUtils {
 
         //Files will be an empty array if user cancelled dialog,
         //null if there was a problem with the native dialog
-        if(files == null){
+        if (files == null) {
             files = chooseMultipleSwing(title, initialDirectory, filter);
         }
 
@@ -117,17 +123,8 @@ public class FileDialogUtils {
         }
     }
 
-    private static File[] chooseMultipleNative(String title, File initialDirectory, final FilenameFilter filter) throws UnsupportedOperationException{
-        FileDialog fd = getNativeChooser(title, initialDirectory, null, filter, JFileChooser.FILES_ONLY, LOAD);
-        if(!isMultipleMode(fd)) throw new UnsupportedOperationException("Cannot choose multiple files with native dialog on this platform");
 
-        fd.setVisible(true);
-
-        return getFiles(fd);
-
-    }
-
-    private static FileDialog getNativeChooser(String title, File initialDirectory, File initialFile, FilenameFilter filter, int directoryMode, int mode){
+    private static FileDialog getNativeChooser(String title, File initialDirectory, File initialFile, FilenameFilter filter, int directoryMode, int mode) {
         boolean directories = JFileChooser.DIRECTORIES_ONLY == directoryMode;
         System.setProperty("apple.awt.fileDialogForDirectories", String.valueOf(directories));
         Frame parentFrame = getParentFrame();
@@ -144,7 +141,7 @@ public class FileDialogUtils {
         fd.setModal(true);
         fd.setMode(mode);
 
-        if(mode == LOAD && !directories){
+        if (mode == LOAD && !directories) {
             setMultipleMode(fd, true);
         }
         return fd;
@@ -173,16 +170,17 @@ public class FileDialogUtils {
     /**
      * Reflectively call FileDialog.setMultipleMode.
      * Does nothing if method not available
+     *
      * @param fd
      * @param b
      * @return true if call was successful, false if not
      */
     private static boolean setMultipleMode(FileDialog fd, boolean b) {
-        try{
+        try {
             Method method = FileDialog.class.getMethod("setMultipleMode", boolean.class);
             method.invoke(fd, b);
             return true;
-        }catch(Exception e){
+        } catch (Exception e) {
             return false;
         }
     }
@@ -190,24 +188,17 @@ public class FileDialogUtils {
     /**
      * Reflectively call FileDialog.getMultipleMode.
      * Does nothing if method not available
+     *
      * @param fd
      * @return Value of fd.getMultipleMode if available, otherwise false
      */
     private static boolean isMultipleMode(FileDialog fd) {
-        try{
-            Method method = FileDialog.class.getMethod("isMultipleMode");
+        try {
+            Method [] methods = FileDialog.class.getMethods();
+            Method method = fd.getClass().getMethod("isMultipleMode");
             return (Boolean) method.invoke(fd);
-        }catch(Exception e){
+        } catch (Exception e) {
             return false;
-        }
-    }
-
-    private static File[] getFiles(FileDialog fd){
-        try{
-            Method method = FileDialog.class.getMethod("getFiles");
-            return (File[]) method.invoke(fd);
-        }catch(Exception e){
-            return null;
         }
     }
 
