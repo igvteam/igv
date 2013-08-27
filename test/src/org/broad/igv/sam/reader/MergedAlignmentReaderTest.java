@@ -37,15 +37,19 @@ public class MergedAlignmentReaderTest extends AbstractHeadlessTest {
     public void testSimpleRead() throws Exception {
         //This test file is 2 lines of the same file.
         //Check that we get the same results twice
-        String file = TestUtils.LARGE_DATA_DIR + File.separator + "2largebams.bam.list";
-        String[] actfiles = IGVToolsTest.generateRepLargebamsList(file, "HG00171.hg18.bam", 2);
+        File listFile = new File(TestUtils.LARGE_DATA_DIR, "2largebams.bam.list");
+        listFile.delete();
+        listFile.deleteOnExit();
+        String listPath = listFile.getPath();
+
+        String[] actfiles = IGVToolsTest.generateRepLargebamsList(listPath, "HG00171.hg18.bam", 2);
         int start = 151667156;
         int end = start + 10000;
         int num_combined = 0;
         int num_sep = 0;
         Alignment align;
 
-        AlignmentReader mergedReader = AlignmentReaderFactory.getBamListReader(file, false);
+        AlignmentReader mergedReader = AlignmentReaderFactory.getBamListReader(listPath, false);
         CloseableIterator<Alignment> combData = mergedReader.query("chr1", start, end, false);
 
         Map<Float, Integer> combinedCounts = new HashMap();
@@ -59,9 +63,9 @@ public class MergedAlignmentReaderTest extends AbstractHeadlessTest {
         }
         mergedReader.close();
 
-        BufferedReader in = new BufferedReader(new FileReader(file));
+        BufferedReader in = new BufferedReader(new FileReader(listPath));
         String singfile = in.readLine();
-        singfile = FileUtils.getAbsolutePath(singfile, file);
+        singfile = FileUtils.getAbsolutePath(singfile, listPath);
         AlignmentReader singReader = AlignmentReaderFactory.getReader(singfile, false);
 
         CloseableIterator<Alignment> singData = singReader.query("chr1", start, end, false);
