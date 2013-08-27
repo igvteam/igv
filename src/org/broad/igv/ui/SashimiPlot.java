@@ -202,12 +202,30 @@ public class SashimiPlot extends JFrame {
 
         private T track;
         private ReferenceFrame frame;
+        private String toolTipText = null;
 
         public TrackComponent(ReferenceFrame frame, T track) {
             this.frame = frame;
             this.track = track;
         }
 
+
+//        @Override
+//        public String getToolTipText(){
+//            return toolTipText;
+//        }
+
+        public void updateToolTipText(TrackClickEvent tce){
+            toolTipText = track.getValueStringAt(tce.getFrame().getChrName(), tce.getChromosomePosition(), tce.getMouseEvent().getY(), tce.getFrame());
+            toolTipText = "<html>" + toolTipText;
+            setToolTipText(toolTipText);
+        }
+
+//        @Override
+//        public void setToolTipText(String text){
+//            this.toolTipText = text;
+//            putClientProperty(TOOL_TIP_TEXT_KEY, text);
+//        }
 
         @Override
         public void paintComponent(Graphics g) {
@@ -336,6 +354,11 @@ public class SashimiPlot extends JFrame {
                 getRenderer(spliceTrack).setSelectedExons(selectedExon);
             }
             repaint();
+        }
+
+        @Override
+        public void mouseMoved(MouseEvent e) {
+            trackComponent.updateToolTipText(createTrackClickEvent(e));
         }
 
         @Override
