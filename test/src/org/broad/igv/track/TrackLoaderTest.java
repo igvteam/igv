@@ -19,6 +19,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import org.broad.igv.variant.VariantTrack;
 import org.broad.tribble.Feature;
 import org.junit.Before;
 import org.junit.Rule;
@@ -140,6 +141,22 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
         assertEquals(30, features.size());
     }
 
+    /**
+     * Test that we properly load a vcf file, even though the
+     * extension is upper-case. IGV-2012
+     * @throws Exception
+     */
+    @Test
+    public void testLoadVCFUpperCase() throws Exception{
+        String filepath = TestUtils.DATA_DIR + "vcf/HC_MOD_CAPS.VCF";
+        ResourceLocator locator = new ResourceLocator(filepath);
+        TestUtils.createIndex(filepath);
+
+        List<Track> tracks = trackLoader.load(locator, genome);
+        assertEquals(1, tracks.size());
+        assertTrue("VCF file loaded incorrect track type", tracks.get(0) instanceof VariantTrack);
+
+    }
 
     private List<Track> tstLoadFi(String filepath, Integer expected_tracks, boolean makeIndex) throws Exception {
         Genome genome = TestUtils.loadGenome();

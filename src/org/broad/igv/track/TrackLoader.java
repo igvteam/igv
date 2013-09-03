@@ -295,7 +295,7 @@ public class TrackLoader {
         TribbleFeatureSource src = GFFFeatureSource.isGFF(locator.getPath()) ?
                 new GFFFeatureSource(locator.getPath(), genome) :
                 new TribbleFeatureSource(locator.getPath(), genome);
-        String typeString = locator.getPath();
+        String typeString = locator.getPath().toLowerCase();
 
         if (typeString.endsWith("vcf") || typeString.endsWith("vcf.gz") || typeString.endsWith("bcf")) {
 
