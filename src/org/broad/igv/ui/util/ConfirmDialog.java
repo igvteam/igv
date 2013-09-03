@@ -157,12 +157,12 @@ public class ConfirmDialog extends JDialog {
     public static void optionallyShowInfoDialog(String message, String key) {
 
         boolean show = PreferenceManager.getInstance().getAsBoolean(key);
+        show &= ( !Globals.isHeadless() && !Globals.isSuppressMessages() );
         if (show) {
             ConfirmDialog dlg = new ConfirmDialog(IGV.getMainFrame(), message, key);
             dlg.okButton.setText("OK");
             dlg.cancelButton.setVisible(false);
             dlg.setVisible(true);
-
         }
     }
 
