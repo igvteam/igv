@@ -52,7 +52,7 @@ public class SessionWriter {
     static Logger log = Logger.getLogger(SessionWriter.class);
 
     Session session;
-    private static int CURRENT_VERSION = 6;
+    private static int CURRENT_VERSION = 7;
 
     private static final String TRACK_TAG = SessionElement.TRACK.getText();
 
@@ -127,6 +127,8 @@ public class SessionWriter {
             }
 
             globalElement.setAttribute(SessionAttribute.HAS_GENE_TRACK.getText(), "" + IGV.getInstance().hasGeneTrack());
+            globalElement.setAttribute(SessionAttribute.HAS_SEQ_TRACK.getText(), "" + IGV.getInstance().hasSequenceTrack());
+
 
             // Resource Files
             writeResources(outputFile, globalElement, document);

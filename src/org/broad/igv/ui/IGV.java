@@ -2090,7 +2090,6 @@ public class IGV {
                 getTrackPanel(DATA_PANEL_NAME) : getTrackPanel(FEATURE_PANEL_NAME);
         SequenceTrack newSeqTrack = new SequenceTrack("Reference sequence");
 
-
         panel.addTrack(newSeqTrack);
         if (newGeneTrack != null) {
             panel.addTrack(newGeneTrack);
@@ -2101,10 +2100,24 @@ public class IGV {
     public boolean hasGeneTrack() {
         FeatureTrack geneTrack = GenomeManager.getInstance().getCurrentGenome().getGeneTrack();
         if (geneTrack == null) return false;
-        for (FeatureTrack ft : getFeatureTracks()) {
-            if (geneTrack == ft) return true;
+        for (Track t : getFeatureTracks()) {
+            if (geneTrack == t) return true;
         }
         return false;
+    }
+
+    public boolean hasSequenceTrack(){
+        return getSequenceTrack() != null;
+    }
+
+    /**
+     * @return First SequenceTrack found, or null if none
+     */
+    public SequenceTrack getSequenceTrack(){
+        for(Track t: getAllTracks()){
+            if (t instanceof SequenceTrack) return (SequenceTrack) t;
+        }
+        return null;
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////

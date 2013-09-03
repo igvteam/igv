@@ -15,6 +15,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import org.broad.igv.cli_plugin.PluginSpecReader;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.CoverageTrack;
@@ -297,6 +298,36 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
 
         assertTrue("No gene track found but one should exist", IGV.getInstance().hasGeneTrack());
     }
+
+    @Test
+    public void testLoadSequenceTrackOnlyDiffGenome() throws Exception{
+        String sessionPath = TestUtils.DATA_DIR + "sessions/ecoli_out_seqonly.xml";
+        rewriteRestoreSession(sessionPath);
+
+        assertFalse("Gene track exists but it shouldn't", IGV.getInstance().hasGeneTrack());
+
+        assertTrue("Sequence track doesn't exist but it should", IGV.getInstance().hasSequenceTrack());
+        assertNotNull("Sequence track doesn't exist but it should", IGV.getInstance().getSequenceTrack());
+    }
+
+    @Test
+    public void testLoadSequenceTrackOnlySameGenome() throws Exception{
+        String genomePath = TestUtils.DATA_DIR + "fasta/ecoli_out.padded.fasta";
+        GenomeManager.getInstance().loadGenome(genomePath, null);
+        genome = GenomeManager.getInstance().getCurrentGenome();
+        IGV.getInstance().removeTracks(IGV.getInstance().getAllTracks());
+
+        assertFalse("Sequence Track exists but it shouldn't", IGV.getInstance().hasSequenceTrack());
+
+        String sessionPath = TestUtils.DATA_DIR + "sessions/ecoli_out_seqonly.xml";
+        rewriteRestoreSession(sessionPath);
+
+        assertFalse("Gene track exists but it shouldn't", IGV.getInstance().hasGeneTrack());
+
+        assertTrue("Sequence track doesn't exist but it should", IGV.getInstance().hasSequenceTrack());
+        assertNotNull("Sequence track doesn't exist but it should", IGV.getInstance().getSequenceTrack());
+    }
+
 
     /**
      * Test loading a session with spaces in the path and special

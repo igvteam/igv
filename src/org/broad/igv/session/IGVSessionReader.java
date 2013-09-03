@@ -215,6 +215,7 @@ public class IGVSessionReader implements SessionReader {
         DISPLAY_NAME("displayName"),
         COLOR_SCALE("colorScale"),
         HAS_GENE_TRACK("hasGeneTrack"),
+        HAS_SEQ_TRACK("hasSequenceTrack"),
 
         //RESOURCE ATTRIBUTES
         PATH("path"),
@@ -351,13 +352,19 @@ public class IGVSessionReader implements SessionReader {
         if(hasGeneTrackStr != null){
             hasGeneTrack = Boolean.parseBoolean(hasGeneTrackStr);
         }
+        boolean hasSeqTrack = hasGeneTrack;
+        String hasSeqTrackStr = getAttribute(element, SessionAttribute.HAS_SEQ_TRACK.getText());
+        if(hasSeqTrackStr != null){
+            hasSeqTrack = Boolean.parseBoolean(hasSeqTrackStr);
+        }
 
         if (genomeId != null && genomeId.length() > 0) {
             if (genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
                 // We don't have to reload the genome, but the gene track for the current genome should be restored.
-                if(hasGeneTrack){
+                if(hasGeneTrack || hasSeqTrack){
                     Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                    IGV.getInstance().setGenomeTracks(genome.getGeneTrack());
+                    FeatureTrack geneTrack = hasGeneTrack ? genome.getGeneTrack() : null;
+                    IGV.getInstance().setGenomeTracks(geneTrack);
                 }
             } else {
                 // Selecting a genome will actually "reset" the session so we have to
@@ -384,6 +391,8 @@ public class IGVSessionReader implements SessionReader {
             }
         }
 
+        //TODO Remove these nearly identical if/then statements
+
         if(!hasGeneTrack && igv.hasGeneTrack()){
             //Need to remove gene track if it was loaded because it's not supposed to be in the session
             igv.removeTracks(Arrays.<Track>asList(GenomeManager.getInstance().getCurrentGenome().getGeneTrack()));
@@ -393,6 +402,19 @@ public class IGVSessionReader implements SessionReader {
             geneTrack = GenomeManager.getInstance().getCurrentGenome().getGeneTrack();
             if(geneTrack != null){
                 allTracks.put(geneTrack.getId(), Arrays.asList(geneTrack));
+            }
+        }
+
+        SequenceTrack tmpSeqTrack = igv.getSequenceTrack();
+        if(!hasSeqTrack && igv.hasSequenceTrack()){
+            //Need to remove seq track if it was loaded because it's not supposed to be in the session
+            igv.removeTracks(Arrays.<Track>asList(tmpSeqTrack));
+            seqTrack = null;
+        }else{
+            //For later lookup and to prevent dual adding, we keep a reference to the sequence track
+            seqTrack = tmpSeqTrack;
+            if(seqTrack != null){
+                allTracks.put(seqTrack.getId(), Arrays.asList(seqTrack));
             }
         }
 
