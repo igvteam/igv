@@ -485,7 +485,7 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
 
         Genome genome = IgvTools.loadGenome(fasta_file);
         FeatureCodec codec = CodecFactory.getCodec(infile, genome);
-        AbstractFeatureReader<Feature> reader = AbstractFeatureReader.getFeatureReader(infile, codec, true);
+        AbstractFeatureReader<Feature, ?> reader = AbstractFeatureReader.getFeatureReader(infile, codec, true);
         String chr = "NC_000913_bb";
         Iterator<Feature> features = reader.query(chr, 5085, 5091);
         int count = 0;

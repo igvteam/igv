@@ -12,7 +12,7 @@
 package org.broad.igv.cli_plugin;
 
 import org.broad.tribble.Feature;
-import org.broad.tribble.readers.LineReader;
+import org.broad.tribble.readers.LineIterator;
 
 import java.io.IOException;
 
@@ -23,5 +23,16 @@ import java.io.IOException;
 public interface LineFeatureDecoder<T extends Feature> {
     T decode(String line);
 
-    Object readHeader(LineReader reader) throws IOException;
+    /**
+     * Read the header AND NO MORE from the {@code reader}.
+     * {@link org.broad.tribble.readers.LineIterator#peek()} can be
+     * used to make sure no more than the header is consumed.
+     *
+     * @see org.broad.tribble.FeatureCodec#readHeader(Object)
+     *
+     * @param reader
+     * @return
+     * @throws IOException
+     */
+    Object readActualHeader(LineIterator reader) throws IOException;
 }

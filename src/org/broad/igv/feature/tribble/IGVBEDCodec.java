@@ -57,7 +57,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
         return this.gffTags;
     }
 
-    @Override
+    //@Override
     public BasicFeature decode(String[] tokens) {
         return decode(tokens, tokens.length);
     }

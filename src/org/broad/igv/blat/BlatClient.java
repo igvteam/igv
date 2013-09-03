@@ -82,18 +82,18 @@ public class BlatClient {
 
     }
 
-    public static List<String[]> blat(String org, String db, String userSeq) throws IOException {
+    public static List<String> blat(String org, String db, String userSeq) throws IOException {
         String searchType = "DNA";
         String sortOrder = "query,score";
         String outputType = "psl";
 
-        List<String[]> blatRecords = blat(org, db, searchType, sortOrder, outputType, userSeq);
+        List<String> blatRecords = blat(org, db, searchType, sortOrder, outputType, userSeq);
         return blatRecords;
 
 
     }
 
-    public static List<String[]> blat(String org, String db, String searchType, String sortOrder, String outputType, String userSeq) throws IOException {
+    public static List<String> blat(String org, String db, String searchType, String sortOrder, String outputType, String userSeq) throws IOException {
         if (searchType.equals("BLATGuess")) {
             searchType = "Blat's Guess";
         } else if (searchType.equals("transDNA")) {
@@ -150,9 +150,9 @@ public class BlatClient {
      * @return
      * @throws IOException
      */
-    static List<String[]> parseResult(String result) throws IOException {
+    static List<String> parseResult(String result) throws IOException {
 
-        ArrayList<String[]> records = new ArrayList<String[]>();
+        ArrayList<String> records = new ArrayList<String>();
 
         BufferedReader br = new BufferedReader(new StringReader(result));
         String line;
@@ -193,7 +193,7 @@ public class BlatClient {
                     System.err.println("Unexpected number of fields (" + tokens.length + ")");
                     System.err.println(line);
                 } else {
-                    records.add(tokens);
+                    records.add(line);
                 }
             }
         }
@@ -226,12 +226,12 @@ public class BlatClient {
                     String species = genome.getSpecies();
                     if (species == null) species = genome.getDisplayName();
 
-                    List<String[]> tokensList = blat(species, db, userSeq);
+                    List<String> tokensList = blat(species, db, userSeq);
 
                     // Convert tokens to features
                     List<PSLRecord> features = new ArrayList<PSLRecord>(tokensList.size());
-                    for (String[] tokens : tokensList) {
-                        PSLRecord f = (PSLRecord) codec.decode(tokens);
+                    for (String tokens : tokensList) {
+                        PSLRecord f = codec.decode(tokens);
                         if (f != null) {
                             features.add(f);
                         }

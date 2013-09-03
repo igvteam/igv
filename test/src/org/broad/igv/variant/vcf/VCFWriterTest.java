@@ -54,13 +54,13 @@ public class VCFWriterTest extends AbstractHeadlessTest {
     public void testWriteHeader() throws Exception {
 
         FeatureCodec codec = CodecFactory.getCodec(inpath, genome);
-        AbstractFeatureReader<Feature> bfs = AbstractFeatureReader.getFeatureReader(inpath, codec, false);
+        AbstractFeatureReader<Feature, ?> bfs = AbstractFeatureReader.getFeatureReader(inpath, codec, false);
         VCFHeader header0 = (VCFHeader) bfs.getHeader();
 
         VariantContextWriter writer = getWriter();
         writer.writeHeader(header0);
 
-        AbstractFeatureReader<Feature> bfs1 = AbstractFeatureReader.getFeatureReader(outFile.getAbsolutePath(), codec, false);
+        AbstractFeatureReader<Feature, ?> bfs1 = AbstractFeatureReader.getFeatureReader(outFile.getAbsolutePath(), codec, false);
         VCFHeader header1 = (VCFHeader) bfs1.getHeader();
 
         assertHeadersEquals(header0, header1);
@@ -70,7 +70,7 @@ public class VCFWriterTest extends AbstractHeadlessTest {
     public void testWriteRecords() throws Exception {
 
         FeatureCodec codec = CodecFactory.getCodec(inpath, genome);
-        AbstractFeatureReader<VCFVariant> bfs = AbstractFeatureReader.getFeatureReader(inpath, codec, false);
+        AbstractFeatureReader<VCFVariant, ?> bfs = AbstractFeatureReader.getFeatureReader(inpath, codec, false);
         Iterable<VCFVariant> iter0 = bfs.iterator();
         List<VCFVariant> list0 = new ArrayList<VCFVariant>();
         VCFHeader header0 = (VCFHeader) bfs.getHeader();
@@ -85,7 +85,7 @@ public class VCFWriterTest extends AbstractHeadlessTest {
 
         writer.close();
 
-        AbstractFeatureReader<VCFVariant> bfs1 = AbstractFeatureReader.getFeatureReader(outFile.getAbsolutePath(), codec, false);
+        AbstractFeatureReader<VCFVariant, ?> bfs1 = AbstractFeatureReader.getFeatureReader(outFile.getAbsolutePath(), codec, false);
         Iterable<VCFVariant> iter1 = bfs1.iterator();
         VCFHeader header1 = (VCFHeader) bfs1.getHeader();
 

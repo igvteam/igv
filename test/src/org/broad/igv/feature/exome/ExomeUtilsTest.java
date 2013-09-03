@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.feature.exome;
 
 import org.broad.igv.AbstractHeadlessTest;
@@ -18,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Jim Robinson
@@ -95,7 +105,7 @@ public class ExomeUtilsTest extends AbstractHeadlessTest {
 
         String file = TestUtils.DATA_DIR + "gene/UCSCgenes_sample.gene";
         FeatureCodec codec = CodecFactory.getCodec(file, null);
-        AbstractFeatureReader<Feature> bfs = AbstractFeatureReader.getFeatureReader(file, codec, false);
+        AbstractFeatureReader<Feature, ?> bfs = AbstractFeatureReader.getFeatureReader(file, codec, false);
         Iterable<Feature> iter = bfs.iterator();
         for (Feature f : iter) {
             List<Feature> flist = allFeatures.get(f.getChr());

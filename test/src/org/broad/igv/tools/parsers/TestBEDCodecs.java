@@ -97,7 +97,7 @@ public class TestBEDCodecs {
         String bedFile = TestUtils.DATA_DIR + "bed/gene.bed";
         Genome genome = TestUtils.loadGenome();
 
-        FeatureCodec<Feature> codec1 = CodecFactory.getCodec(bedFile, genome);
+        FeatureCodec codec1 = CodecFactory.getCodec(bedFile, genome);
         assertTrue(codec1 instanceof IGVBEDCodec);
         IGVBEDCodec codec = (IGVBEDCodec) codec1;
 
@@ -210,7 +210,7 @@ public class TestBEDCodecs {
         TestUtils.createIndex(bedFile, IgvTools.LINEAR_INDEX, 10000);
         FeatureCodec codec = CodecFactory.getCodec(bedFile, null);
 
-        AbstractFeatureReader<Feature> bfr = AbstractFeatureReader.getFeatureReader(bedFile, codec);
+        AbstractFeatureReader<Feature, ?> bfr = AbstractFeatureReader.getFeatureReader(bedFile, codec);
         for (Feature feat : bfr.iterator()) {
             BasicFeature f = (BasicFeature) feat;
             assertEquals(1, f.getLength());

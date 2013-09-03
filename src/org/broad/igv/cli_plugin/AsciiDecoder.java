@@ -14,15 +14,17 @@ package org.broad.igv.cli_plugin;
 import org.apache.log4j.Logger;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
-import org.broad.tribble.readers.LineReader;
+import org.broad.tribble.readers.AsciiLineReader;
+import org.broad.tribble.readers.LineIterator;
+import org.broad.tribble.readers.LineIteratorImpl;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.*;
 
 /**
+ * Decoder for Ascii features
  * User: jacob
  * Date: 2012-Sep-27
  */
@@ -45,15 +47,11 @@ public class AsciiDecoder<D extends Feature> implements FeatureDecoder<D> {
         String line;
         D feat;
 
+        LineIterator lrw = new LineIteratorImpl(new AsciiLineReader(is));
+        lineFeatureDecoder.readActualHeader(lrw);
 
-        BufferedReader bis = new BufferedReader(new InputStreamReader(is));
-        QueuingLineReader lrw = new QueuingLineReader(bis);
-
-        lrw.setQueueing(true);
-        lineFeatureDecoder.readHeader(lrw);
-        lrw.setQueueing(false);
-
-        while ((line = lrw.readLine()) != null) {
+        while (lrw.hasNext()) {
+            line = lrw.next();
             try {
                 feat = decode(line);
                 if (feat != null) {
@@ -103,7 +101,7 @@ public class AsciiDecoder<D extends Feature> implements FeatureDecoder<D> {
         }
 
         @Override
-        public Object readHeader(LineReader reader) throws IOException{
+        public Object readActualHeader(LineIterator reader) throws IOException{
             return wrappedCodec.readHeader(reader);
         }
 
@@ -111,7 +109,7 @@ public class AsciiDecoder<D extends Feature> implements FeatureDecoder<D> {
 
     /**
      * The purpose of this class is 2-fold:
-     * 0. Wrap a BufferedReader in a LineReader so the interface works
+     * 0. Wrap a BufferedReader in a LineIterator so the interface works
      * 1. Keep track of read lines so reading the header doesn't throw away potential data
      * When the QueuingLineReader is set to {@code queueing}, it queues each readLine.
      * Once {@code queueing} is turned off the queued lines are returned. The queue is
@@ -119,25 +117,40 @@ public class AsciiDecoder<D extends Feature> implements FeatureDecoder<D> {
      * will want to be read.
      * @author jacob
      * @since 3 Jul 2013
+     * @deprecated Using {@link org.broad.tribble.readers.LineIterator#peek()} should
+     * remove the need for this class
      */
-    private static class QueuingLineReader implements org.broad.tribble.readers.LineReader{
+    @Deprecated
+    private static class QueuingLineReader implements LineIterator{
 
         private BufferedReader wrappedReader;
 
         private Queue<String> lineBuffer = new ArrayDeque<String>();
         private boolean queueing = false;
 
+        private String next = null;
+        private boolean iterating = false;
+
         QueuingLineReader(BufferedReader lineReader){
             this.wrappedReader = lineReader;
         }
 
+        /**
+         * Toggle whether we are queuing lines or not
+         * @param queueing
+         */
         void setQueueing(boolean queueing){
+            boolean wasQueuing = this.queueing;
             this.queueing = queueing;
-            if(this.queueing) lineBuffer.clear();
+            if(this.queueing) {
+                lineBuffer.clear();
+            }else{
+                this.iterating = false;
+                this.next = null;
+            }
         }
 
-        @Override
-        public String readLine() throws IOException {
+        private String readLine() throws IOException {
             String line;
             if(queueing){
                 line = this.wrappedReader.readLine();
@@ -149,7 +162,6 @@ public class AsciiDecoder<D extends Feature> implements FeatureDecoder<D> {
             return line;
         }
 
-        @Override
         public void close() {
             this.lineBuffer = null;
             try {
@@ -157,6 +169,47 @@ public class AsciiDecoder<D extends Feature> implements FeatureDecoder<D> {
             } catch (IOException e) {
                 log.error(e.getMessage(), e);
             }
+        }
+
+        protected String advance() {
+            String next = null;
+            try {
+                next = readLine();
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+            }
+            return next;
+        }
+
+        @Override
+        public boolean hasNext() {
+            // If this is the start of iteration, queue up the first item
+            if (!iterating) {
+                next = advance();
+                iterating = true;
+            }
+            return next != null;
+        }
+
+        @Override
+        public String peek() {
+            return this.next;
+        }
+
+        @Override
+        public String next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+
+            String ret = next;
+            next = advance();
+            return ret;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException("remove() not supported");
         }
     }
 }

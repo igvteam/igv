@@ -20,6 +20,7 @@ import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
 import org.junit.Assume;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.*;
@@ -31,6 +32,7 @@ import static org.junit.Assert.*;
  * User: jacob
  * Date: 2012/05/01
  */
+@Ignore
 public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
 
     static boolean haveBedTools;

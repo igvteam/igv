@@ -31,9 +31,9 @@ public class FeatureCodecDecoder<D extends Feature> implements FeatureDecoder<D>
 
     private static Logger log = Logger.getLogger(PluginSource.class);
 
-    private FeatureCodec<D> codec;
+    private FeatureCodec<D, PositionalBufferedStream> codec;
 
-    public FeatureCodecDecoder(FeatureCodec<D> codec) {
+    public FeatureCodecDecoder(FeatureCodec<D, PositionalBufferedStream> codec) {
         this.codec = codec;
     }
 

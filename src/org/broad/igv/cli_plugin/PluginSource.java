@@ -28,6 +28,7 @@ import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.bed.SimpleBEDFeature;
+import org.broad.tribble.readers.PositionalBufferedStream;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
@@ -475,13 +476,13 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
      */
     protected final FeatureDecoder<D> instantiateDecodingCodec(String decodingCodec, URL[] libURLs) {
         if (decodingCodec == null) {
-            FeatureCodec<D> knownCodec = CodecFactory.getCodec("." + parser.format, GenomeManager.getInstance().getCurrentGenome());
+            FeatureCodec<D, ?> knownCodec = CodecFactory.getCodec("." + parser.format, GenomeManager.getInstance().getCurrentGenome());
             if (knownCodec == null) {
                 throw new IllegalArgumentException("Unable to find codec for format " + parser.format);
             } else if (knownCodec instanceof AsciiFeatureCodec) {
                 return new AsciiDecoder.DecoderWrapper<D>((AsciiFeatureCodec) knownCodec);
             } else {
-                return new FeatureCodecDecoder<D>(knownCodec);
+                return new FeatureCodecDecoder<D>((FeatureCodec<D, PositionalBufferedStream>) knownCodec);
             }
         }
 

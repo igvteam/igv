@@ -17,8 +17,10 @@ import org.broad.igv.variant.Variant;
 import org.broad.igv.variant.vcf.VCFVariant;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
-import org.broad.tribble.readers.LineReader;
+import org.broad.tribble.readers.LineIterator;
 import org.broadinstitute.variant.variantcontext.VariantContext;
+
+import java.io.IOException;
 
 /**
  * @author Jim Robinson
@@ -38,8 +40,8 @@ public class VCFWrapperCodec extends AsciiFeatureCodec<VCFVariant> {
     }
 
     @Override
-    public Feature decodeLoc(String line) {
-        return wrappedCodec.decodeLoc(line);
+    public Feature decodeLoc(LineIterator iterator) throws IOException{
+        return wrappedCodec.decodeLoc(iterator);
     }
 
     @Override
@@ -72,8 +74,8 @@ public class VCFWrapperCodec extends AsciiFeatureCodec<VCFVariant> {
     }
 
     @Override
-    public Object readHeader(LineReader reader) {
-        return wrappedCodec.readHeader(reader);
+    public Object readActualHeader(LineIterator reader) {
+        return wrappedCodec.readActualHeader(reader);
     }
 
     /**

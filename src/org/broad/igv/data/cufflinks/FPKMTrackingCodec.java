@@ -53,7 +53,7 @@ public class FPKMTrackingCodec extends CufflinksCodec<FPKMValue>{
         return decode(ParsingUtils.TAB_PATTERN.split(line));
     }
 
-    @Override
+    //@Override
     public FPKMValue decode(String[] tokens) {
         //Skip header line
         if (tokens[0].equalsIgnoreCase("tracking_id") || tokens[geneColumn].equalsIgnoreCase("gene_short_name")) {
