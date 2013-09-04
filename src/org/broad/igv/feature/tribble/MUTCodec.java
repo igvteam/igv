@@ -70,7 +70,6 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
         while (reader.hasNext()) {
             nextLine = reader.peek();
             if (nextLine.startsWith("#")) {
-                reader.next();
                 if (nextLine.startsWith("#samples")) {
                     String[] tokens = Globals.whitespacePattern.split(nextLine, 2);
                     if (tokens.length < 2) {
@@ -82,17 +81,20 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
                         }
                     }
                 }
+                reader.next();
                 continue;
             }
 
-            String[] tokens = nextLine.split("\t");
+            String[] tokens = Globals.tabPattern.split(nextLine);
             if (tokens.length > 4) {
-
-                headers = Globals.tabPattern.split(nextLine);
+                reader.next();
+                headers = tokens;
                 isMAF = headers.length > 15 && headers[0].equalsIgnoreCase("Hugo_Symbol");
                 setColumns(isMAF);
                 return null;
             }
+
+
         }
         throw new RuntimeException("Unexpected end-of-file (no header line): " + path);
     }
