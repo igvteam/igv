@@ -136,14 +136,6 @@ public class CoverageTrack extends AbstractTrack {
 
     }
 
-
-    @Override
-    public void setDataRange(DataRange axisDefinition) {
-        // Explicitly setting a data range turns off auto-scale
-        autoScale = false;
-        super.setDataRange(axisDefinition);
-    }
-
     public void setSnpThreshold(float snpThreshold){
         this.snpThreshold = snpThreshold;
     }
@@ -729,6 +721,7 @@ public class CoverageTrack extends AbstractTrack {
 
                         for (Track track : selectedTracks) {
                             track.setDataRange(dataRange);
+                            track.setAutoScale(false);
                         }
                         parentFrame.repaint();
                     }

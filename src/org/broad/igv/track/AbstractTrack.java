@@ -543,7 +543,6 @@ public abstract class AbstractTrack implements Track {
 
 
     public void setDataRange(DataRange axisDefinition) {
-        this.setAutoScale(false);
         this.dataRange = axisDefinition;
     }
 
@@ -594,6 +593,7 @@ public abstract class AbstractTrack implements Track {
         return autoScale;
     }
 
+    @Override
     public void setAutoScale(boolean autoScale) {
         this.autoScale = autoScale;
     }

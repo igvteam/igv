@@ -226,6 +226,7 @@ public class CommandExecutor {
         for (Track track : tracks) {
             if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
                 track.setDataRange(range);
+                track.setAutoScale(false);
             }
         }
         return "OK";

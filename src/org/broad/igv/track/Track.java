@@ -15,7 +15,6 @@
 package org.broad.igv.track;
 
 
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.Renderer;
@@ -134,6 +133,11 @@ public interface Track extends Persistable{
 
     int getMinimumHeight();
 
+    /**
+     * Manually specify the data range.
+     * {@code autoScale} must be turned off elsewhere, if applicable
+     * @param axisDefinition
+     */
     void setDataRange(DataRange axisDefinition);
 
     boolean hasDataRange();
@@ -215,5 +219,7 @@ public interface Track extends Persistable{
     void dispose();
     
     boolean getAutoScale();
+
+    void setAutoScale(boolean autoScale);
 
 }
