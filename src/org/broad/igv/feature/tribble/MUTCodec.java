@@ -86,12 +86,14 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
             }
 
             String[] tokens = Globals.tabPattern.split(nextLine);
-            if (tokens.length > 4) {
+            if (tokens.length >= 5) {
                 reader.next();
                 headers = tokens;
-                isMAF = headers.length > 15 && headers[0].equalsIgnoreCase("Hugo_Symbol");
+                isMAF = headers.length >= 16 && headers[0].equalsIgnoreCase("Hugo_Symbol");
                 setColumns(isMAF);
                 return null;
+            }else{
+                throw new RuntimeException(String.format("Not enough columns in header line found in %s: %s", path, nextLine));
             }
 
 

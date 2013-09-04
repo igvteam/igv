@@ -28,10 +28,7 @@ import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static junit.framework.Assert.*;
 
@@ -204,12 +201,18 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
 
     }
 
-    static String[] filenamesTryIndex = new String[]{"cufflinks/sample_genes.fpkm_tracking", "cufflinks/sample_gene_exp.diff", "/bb/chr21.refseq.bb", "/bed/MT_test.bed", "/bed/Unigene.sample.bed",
+    static String[] filenamesNoIndex = new String[]{"cufflinks/sample_genes.fpkm_tracking", "cufflinks/sample_gene_exp.diff", "/bb/chr21.refseq.bb", "/bed/MT_test.bed", "/bed/Unigene.sample.bed",
             "/bed/test.bed", "/cn/HindForGISTIC.hg16.cn", "/folder with spaces/test.wig",
-            "/gct/igv_test2.gct", "/gct/affy_human_mod.gct", "/gff/gene.unsorted.gff3", "/igv/MIP_44.cn",//"/gc/chr1.txt",
-            "/psl/fishBlat.psl", "/sam/test_2.sam", "/seg/canFam2_hg18.seg", "/wig/test.wig"};
+            "/gct/igv_test2.gct", "/gct/affy_human_mod.gct", "/gff/gene.unsorted.gff3", "/igv/MIP_44.cn",
+            "/maf/TCGA_GBM_Level3_Somatic_Mutations_08.28.2008.maf.gz",
+            "/psl/fishBlat.psl", "/seg/canFam2_hg18.seg", "/wig/test.wig"};
 
-    static String[] filenamesNoIndex = new String[]{"/maf/TCGA_GBM_Level3_Somatic_Mutations_08.28.2008.maf.gz"};
+    private static ArrayList<String> tmp = new ArrayList<String>(filenamesNoIndex.length);
+    static String[] filenamesTryIndex;
+    static{
+        tmp.add("/sam/test_2.sam");
+        filenamesTryIndex = tmp.toArray(new String[tmp.size()]);
+    }
 
     public void tstFilesHeadless(String[] filenames, boolean tryIndex) throws Exception {
         Genome genome = TestUtils.loadGenome();
