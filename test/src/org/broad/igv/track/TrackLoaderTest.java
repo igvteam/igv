@@ -204,18 +204,28 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
 
     }
 
-    static String[] filenames = new String[]{"cufflinks/sample_genes.fpkm_tracking", "cufflinks/sample_gene_exp.diff", "/bb/chr21.refseq.bb", "/bed/MT_test.bed", "/bed/Unigene.sample.bed",
+    static String[] filenamesTryIndex = new String[]{"cufflinks/sample_genes.fpkm_tracking", "cufflinks/sample_gene_exp.diff", "/bb/chr21.refseq.bb", "/bed/MT_test.bed", "/bed/Unigene.sample.bed",
             "/bed/test.bed", "/cn/HindForGISTIC.hg16.cn", "/folder with spaces/test.wig",
             "/gct/igv_test2.gct", "/gct/affy_human_mod.gct", "/gff/gene.unsorted.gff3", "/igv/MIP_44.cn",//"/gc/chr1.txt",
-            "/maf/TCGA_GBM_Level3_Somatic_Mutations_08.28.2008.maf.gz", "/psl/fishBlat.psl", "/sam/test_2.sam",
-            "/seg/canFam2_hg18.seg", "/wig/test.wig"};
+            "/psl/fishBlat.psl", "/sam/test_2.sam", "/seg/canFam2_hg18.seg", "/wig/test.wig"};
 
-    @Test
-    public void testFilesHeadless() throws Exception {
+    static String[] filenamesNoIndex = new String[]{"/maf/TCGA_GBM_Level3_Somatic_Mutations_08.28.2008.maf.gz"};
+
+    public void tstFilesHeadless(String[] filenames, boolean tryIndex) throws Exception {
         Genome genome = TestUtils.loadGenome();
         for (String finame : filenames) {
-            tstLoadFi(TestUtils.DATA_DIR + finame, null, genome, true);
+            tstLoadFi(TestUtils.DATA_DIR + finame, null, genome, tryIndex);
         }
+    }
+
+    @Test
+    public void testFilesHeadlessTryIndex() throws Exception {
+        tstFilesHeadless(filenamesTryIndex, true);
+    }
+
+    @Test
+    public void testFilesHeadlessNoIndex() throws Exception{
+        tstFilesHeadless(filenamesNoIndex, false);
     }
 
     @Test

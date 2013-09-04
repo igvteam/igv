@@ -43,7 +43,7 @@ public class TrackLoaderTestHeaded extends AbstractHeadedTest {
 
         String ex_filename = "/vcf/example4-last-gsnap-2_fixed.vcf";
         Genome genome = TestUtils.loadGenome();
-        List<String> finames = new ArrayList<String>(Arrays.asList(TrackLoaderTest.filenames));
+        List<String> finames = new ArrayList<String>(Arrays.asList(TrackLoaderTest.filenamesTryIndex));
 
         finames.add(ex_filename);
 
