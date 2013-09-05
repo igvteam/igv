@@ -18,6 +18,7 @@
  */
 package org.broad.igv.feature.genome;
 
+import com.google.common.collect.Iterables;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
@@ -783,7 +784,7 @@ public class GenomeManager {
     /**
      * Searches through currently loaded GenomeListItems and returns
      * that with a matching ID. null if not found. To search through
-     * all server and user defined genomes, use #findGenomeListItemByItem
+     * all server and user defined genomes, use {@link #findGenomeListItemById(String)}
      *
      * @param genomeId
      * @return
@@ -835,8 +836,10 @@ public class GenomeManager {
      */
     public void buildGenomeItemList() {
         Collection<GenomeListItem> tmpuserDefinedGenomeList = null;
+        Collection<GenomeListItem> tmpcachedGenomeArchiveList = null;
 
         try {
+            tmpcachedGenomeArchiveList = getCachedGenomeArchiveList();
             tmpuserDefinedGenomeList = getUserDefinedGenomeArchiveList();
         } catch (IOException e) {
             MessageUtils.showErrorMessage("Cannot access user defined genome archive list", e);
@@ -848,7 +851,8 @@ public class GenomeManager {
             genomeIdArray = new String[]{PreferenceManager.getInstance().getDefaultGenome(), "hg18"};
         }
 
-        addGenomesToMap(genomeIdArray, tmpuserDefinedGenomeList, genomeItemMap);
+        Iterable<GenomeListItem> combinedTmp = Iterables.concat(tmpuserDefinedGenomeList, tmpcachedGenomeArchiveList);
+        addGenomesToMap(genomeIdArray, combinedTmp, genomeItemMap);
 
     }
 
@@ -882,8 +886,6 @@ public class GenomeManager {
             if (!genomeMap.containsKey(id)) {
                 genomeMap.put(id, genomeListItem);
             }
-
-
         }
     }
 
