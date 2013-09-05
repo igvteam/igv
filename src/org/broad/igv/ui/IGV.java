@@ -2341,6 +2341,9 @@ public class IGV {
         @Override
         public void run() {
 
+            final boolean runningBatch = igvArgs.getBatchFile() != null;
+            BatchRunner.setIsBatchMode(runningBatch);
+
             final ProgressMonitor monitor = new ProgressMonitor();
             final ProgressBar.ProgressDialog progressDialog = ProgressBar.showProgressDialog(mainFrame, "Initializing...", monitor, false);
             progressDialog.getProgressBar().setIndeterminate(true);
@@ -2471,7 +2474,7 @@ public class IGV {
                     if (igvArgs.getLocusString() != null) {
                         goToLocus(igvArgs.getLocusString());
                     }
-                    if (igvArgs.getBatchFile() != null) {
+                    if (runningBatch) {
                         LongRunningTask.submit(new BatchRunner(igvArgs.getBatchFile()));
                     }
 
