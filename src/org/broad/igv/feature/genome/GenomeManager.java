@@ -66,7 +66,10 @@ public class GenomeManager {
     private List<GenomeListItem> cachedGenomeArchiveList;
     private Set<String> excludedArchivesUrls = new HashSet();
 
-    //ID comparison will be case insensitive
+    /**
+     * Map from genomeID -> GenomeListItem
+     * ID comparison will be case insensitive
+     */
     private Map<String, GenomeListItem> genomeItemMap = new CI.CILinkedHashMap<GenomeListItem>();
 
     public static void main(String[] args) {
@@ -812,7 +815,8 @@ public class GenomeManager {
         return matchingItem;
     }
 
-    private GenomeListItem searchGenomeList(String genomeId, Iterable<GenomeListItem> genomeList) {
+    static GenomeListItem searchGenomeList(String genomeId, Iterable<GenomeListItem> genomeList) {
+        if(genomeList == null) return null;
         for (GenomeListItem item : genomeList) {
             if (item.getId().equals(genomeId)) {
                 return item;
@@ -827,41 +831,16 @@ public class GenomeManager {
 
     /**
      * Completely rebuild the genome drop down info.
-     * This will load genomes from server/cached/user defined (as appropriate),
-     * and only keep the ones that the user has chosen to be displayed
+     * This is based on preferences only, does not contact server
      */
     public void buildGenomeItemList() {
-
-        // Build a single available genome list from both client, server
-        // and cached information. This allows us to process
-        // everything the same way.
         Collection<GenomeListItem> tmpuserDefinedGenomeList = null;
-        Collection<GenomeListItem> tmpArchiveGenomeItemList = null;
 
-        tmpArchiveGenomeItemList = getGenomeArchiveList();
         try {
             tmpuserDefinedGenomeList = getUserDefinedGenomeArchiveList();
         } catch (IOException e) {
             MessageUtils.showErrorMessage("Cannot access user defined genome archive list", e);
         }
-
-
-        combineGenomeLists(tmpuserDefinedGenomeList, tmpArchiveGenomeItemList);
-
-    }
-
-
-    /**
-     * Combine our different lists of genomeListItems
-     *
-     * @param userDefinedGenomeItemList
-     * @param archiveGenomeItemList     Either server or cached genomes
-     */
-    private void combineGenomeLists(Collection<GenomeListItem> userDefinedGenomeItemList,
-                                    Collection<GenomeListItem> archiveGenomeItemList) {
-
-        //We use a LinkedHashMap to prevent loading duplicates
-        genomeItemMap = new LinkedHashMap<String, GenomeListItem>();
 
         String[] genomeIdArray = PreferenceManager.getInstance().getGenomeIdDisplayList();
 
@@ -869,11 +848,8 @@ public class GenomeManager {
             genomeIdArray = new String[]{PreferenceManager.getInstance().getDefaultGenome(), "hg18"};
         }
 
-        if ((userDefinedGenomeItemList != null) && !userDefinedGenomeItemList.isEmpty()) {
-            addAllInSet(userDefinedGenomeItemList, genomeIdArray, genomeItemMap);
-        }
+        addGenomesToMap(genomeIdArray, tmpuserDefinedGenomeList, genomeItemMap);
 
-        addAllInSet(archiveGenomeItemList, genomeIdArray, genomeItemMap);
     }
 
     /**
@@ -885,18 +861,28 @@ public class GenomeManager {
      * @param keepGenomeIds
      * @param genomeMap
      */
-    private void addAllInSet(Iterable<GenomeListItem> genomeListItems, String[] keepGenomeIds, Map<String, GenomeListItem> genomeMap) {
+    private void addGenomesToMap(String[] keepGenomeIds, Iterable<GenomeListItem> genomeListItems, Map<String, GenomeListItem> genomeMap) {
         for (String id : keepGenomeIds) {
             GenomeListItem genomeListItem = searchGenomeList(id, genomeListItems);
 
-            //if we didn't find the id, it may be a path
+            //If we didn't find the id, it may be a path
             if (genomeListItem == null) {
                 genomeListItem = buildFromPath(id);
             }
 
-            if (!genomeMap.containsKey(id) && genomeListItem != null) {
+            if(genomeListItem == null){
+                /**
+                 * The {@code id} isn't in {@code genomeListItems},
+                 * and it's not a remote path or an existing local path
+                 * We assume it's the ID for a genome stored on the server
+                 */
+                genomeListItem = new GenomeListItem(id, null, id);
+            }
+
+            if (!genomeMap.containsKey(id)) {
                 genomeMap.put(id, genomeListItem);
             }
+
 
         }
     }

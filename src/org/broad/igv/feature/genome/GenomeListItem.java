@@ -30,13 +30,13 @@ public class GenomeListItem {
     /**
      *
      * @param displayableName The name that can be shown to a user.
-     * @param url             The url of the genome archive.
+     * @param location        The location of the genome archive, can be a file path or URL
      * @param id              The id of the genome.
      */
-    public GenomeListItem(String displayableName, String url, String id) {
+    public GenomeListItem(String displayableName, String location, String id) {
 
         this.displayableName = displayableName;
-        this.location = url;
+        this.location = location;
         this.id = id;
     }
 
@@ -51,6 +51,11 @@ public class GenomeListItem {
 
 
     public String getLocation() {
+        if(location == null){
+            GenomeListItem newItem = GenomeManager.searchGenomeList(this.id, GenomeManager.getInstance().getServerGenomeArchiveList());
+            this.displayableName = newItem.displayableName;
+            this.location = newItem.location;
+        }
         return location;
     }
 
