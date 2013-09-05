@@ -84,10 +84,12 @@ public class IGVTestHeaded extends AbstractHeadedTest {
 
         TestUtils.loadSession(igv, sessionPath);
 
-        Assert.assertEquals(2, igv.getVisibleTrackCount());
+        Assert.assertEquals(4, igv.getVisibleTrackCount());
+        int testBedTracks = 0;
         for (Track track : igv.getAllTracks()) {
-            assertTrue(track.getName().contains("Test Bed"));
+            testBedTracks += track.getName().contains("Test Bed") ? 1 : 0;
         }
+        Assert.assertEquals(2, testBedTracks);
     }
 
     @Ignore //Never seems to work on our testrunner for reasons unrelated to the code
