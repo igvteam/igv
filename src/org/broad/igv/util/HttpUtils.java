@@ -82,6 +82,12 @@ public class HttpUtils {
         CookieHandler.setDefault(new IGVCookieManager());
         Authenticator.setDefault(new IGVAuthenticator());
 
+        try {
+            System.setProperty("java.net.useSystemProxies", "true");
+        } catch (Exception e) {
+            log.info("Couldn't set useSystemProxies=true");
+        }
+
         byteRangeTestMap = Collections.synchronizedMap(new HashMap());
     }
 
