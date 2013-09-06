@@ -29,7 +29,6 @@ import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.stream.IGVSeekableBufferedStream;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
-import org.broad.igv.util.stream.SeekablePicardStream;
 
 import java.io.*;
 import java.net.URL;
@@ -153,13 +152,9 @@ public class BAMHttpReader implements AlignmentReader {
         String protocol = url.getProtocol().toLowerCase();
         SeekableStream is = null;
         if (protocol.equals("http") || protocol.equals("https")) {
-            SeekableStream tribbleStream = IGVSeekableStreamFactory.getStreamFor(url.toExternalForm());
-            String source = url.toExternalForm();
-            is = new SeekablePicardStream(tribbleStream, source);
+            is = IGVSeekableStreamFactory.getStreamFor(url.toExternalForm());
         } else if (protocol.equals("ftp")) {
-            SeekableStream tribbleStream = new SeekableFTPStream(url);
-            String source = url.toExternalForm();
-            is = new SeekablePicardStream(tribbleStream, source);
+            is = new SeekableFTPStream(url);
         } else {
             throw new RuntimeException("Unknown protocol: " + protocol);
         }
