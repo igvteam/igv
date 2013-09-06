@@ -1,12 +1,23 @@
+/*
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.util.stream;
 
 import net.sf.samtools.seekablestream.SeekableStream;
+import org.apache.log4j.Logger;
 import org.broad.tribble.util.URLHelper;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.Proxy;
 import java.net.URL;
 
 /**
@@ -16,6 +27,8 @@ import java.net.URL;
  */
 public class IGVSeekableHTTPStream extends SeekableStream {
 
+    static Logger log = Logger.getLogger(IGVSeekableHTTPStream.class);
+
     private long position = 0;
     private long contentLength = -1;
 
@@ -24,11 +37,12 @@ public class IGVSeekableHTTPStream extends SeekableStream {
     public IGVSeekableHTTPStream(final URL url) {
 
         this.helper = new IGVUrlHelper(url);
+        log.debug("Getting content length for " + url);
         try {
             this.contentLength = this.helper.getContentLength();
         } catch (IOException e) {
             e.printStackTrace();
-            throw new RuntimeException(e);
+            throw new RuntimeException(e.getMessage(), e);
         }
 
     }
@@ -58,8 +72,11 @@ public class IGVSeekableHTTPStream extends SeekableStream {
 
     public int read(byte[] buffer, int offset, int len) throws IOException {
 
+        String stats = "Offset="+offset+",len="+len+",buflen="+buffer.length;
+        log.debug("Reading from " + getSource());
+        log.debug("Stats: " + stats);
         if (offset < 0 || len < 0 || (offset + len) > buffer.length) {
-            throw new IndexOutOfBoundsException("Offset="+offset+",len="+len+",buflen="+buffer.length);
+            throw new IndexOutOfBoundsException(stats);
         }
         if (len == 0) {
             return 0;
@@ -74,6 +91,7 @@ public class IGVSeekableHTTPStream extends SeekableStream {
             if (contentLength > 0) {
                 endRange = Math.min(endRange, contentLength);
             }
+            log.debug("Trying to read range " + position + " to " + endRange);
             is = this.helper.openInputStreamForRange(position, endRange);
 
             while (n < len) {
@@ -89,7 +107,7 @@ public class IGVSeekableHTTPStream extends SeekableStream {
             }
 
             position += n;
-
+            log.debug("Read " + n  + " bytes, current position now " + position);
             return n;
 
         }
@@ -100,7 +118,7 @@ public class IGVSeekableHTTPStream extends SeekableStream {
             // an IOException with the 416 code in the message.  Windows translates the error to an EOFException.
             //
             //  The BAM file iterator  uses the return value to detect end of file (specifically looks for n == 0).
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             if (e.getMessage().contains("416") || (e instanceof EOFException)) {
                 if (n == 0) {
                     return -1;
