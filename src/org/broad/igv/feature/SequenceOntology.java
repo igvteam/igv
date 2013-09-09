@@ -36,8 +36,6 @@ public class SequenceOntology {
         utrTypes.addAll(SequenceOntology.fivePrimeUTRTypes);
         utrTypes.addAll(SequenceOntology.threePrimeUTRTypes);
         cdsTypes.add("CDS");
-
-        cdsTypes.add("CDS_parts");
         cdsTypes.add("cds");
 
         exonTypes.add("exon");

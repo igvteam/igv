@@ -144,7 +144,6 @@ public class GFFParser implements FeatureParser {
         geneParts.add("3utr");
         geneParts.add("CDS");
         geneParts.add("cds");
-        geneParts.add("CDS_parts");
         geneParts.add("exon");
         geneParts.add("coding_exon");
         geneParts.add("intron");

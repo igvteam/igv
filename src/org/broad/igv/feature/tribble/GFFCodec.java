@@ -63,6 +63,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         ignoredTypes.add("stop_codon");
         ignoredTypes.add("Contig");
         ignoredTypes.add("RealContig");
+        ignoredTypes.add("CDS_parts");
     }
 
 
@@ -231,7 +232,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
         helper.parseAttributes(attributeString, attributes);
 
-        String id = helper.getID(attributes);
+        String id = helper.getID(attributes, featureType);
         String[] parentIds = helper.getParentIds(attributes, attributeString);
 
         BasicFeature f = new BasicFeature(chromosome, start, end, strand);
@@ -312,7 +313,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
         void parseAttributes(String attributeString, MultiMap<String, String> map);
 
-        String getID(MultiMap<String, String> attributes);
+        String getID(MultiMap<String, String> attributes, String type);
 
         void setUrlDecoding(boolean b);
 
@@ -392,12 +393,20 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         }
 
 
-        public String getID(MultiMap<String, String> attributes) {
+        public String getID(MultiMap<String, String> attributes, String type) {
+
+            //Search for an attribute == type,  take this as ID
+            String id = attributes.get(type);
+            if(id != null) {
+                return id;
+            }
+
             for (String nf : idFields) {
                 if (attributes.containsKey(nf)) {
                     return attributes.get(nf);
                 }
             }
+
             return getName(attributes);
         }
 
@@ -422,7 +431,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
     public static class GFF3Helper implements Helper {
 
-        static String[] DEFAULT_NAME_FIELDS = {"Name", "Alias", "ID", "gene", "locus"};
+        static String[] DEFAULT_NAME_FIELDS = {"Name", "Alias", "ID", "gene", "locus", "gene_name"};
         private boolean useUrlDecoding = true;
 
         private String[] nameFields;
@@ -499,7 +508,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
             return null;
         }
 
-        public String getID(MultiMap<String, String> attributes) {
+        public String getID(MultiMap<String, String> attributes, String ignore) {
             return attributes.get("ID");
         }
 
