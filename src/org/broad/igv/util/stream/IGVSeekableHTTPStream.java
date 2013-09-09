@@ -37,7 +37,6 @@ public class IGVSeekableHTTPStream extends SeekableStream {
     public IGVSeekableHTTPStream(final URL url) {
 
         this.helper = new IGVUrlHelper(url);
-        log.debug("Getting content length for " + url);
         try {
             this.contentLength = this.helper.getContentLength();
         } catch (IOException e) {
@@ -73,8 +72,6 @@ public class IGVSeekableHTTPStream extends SeekableStream {
     public int read(byte[] buffer, int offset, int len) throws IOException {
 
         String stats = "Offset="+offset+",len="+len+",buflen="+buffer.length;
-        log.debug("Reading from " + getSource());
-        log.debug("Stats: " + stats);
         if (offset < 0 || len < 0 || (offset + len) > buffer.length) {
             throw new IndexOutOfBoundsException(stats);
         }
@@ -91,7 +88,9 @@ public class IGVSeekableHTTPStream extends SeekableStream {
             if (contentLength > 0) {
                 endRange = Math.min(endRange, contentLength);
             }
-            log.debug("Trying to read range " + position + " to " + endRange);
+            if(log.isTraceEnabled()){
+                log.trace("Trying to read range " + position + " to " + endRange);
+            }
             is = this.helper.openInputStreamForRange(position, endRange);
 
             while (n < len) {
@@ -107,7 +106,6 @@ public class IGVSeekableHTTPStream extends SeekableStream {
             }
 
             position += n;
-            log.debug("Read " + n  + " bytes, current position now " + position);
             return n;
 
         }

@@ -72,7 +72,6 @@ public class BAMHttpReader implements AlignmentReader {
             }
             //SeekableStream ss = new SeekableBufferedStream(getSeekableStream(url));
             SeekableStream ss = getSeekableStream(url);
-            log.debug("Initializing SAMFileReader");
             reader = new SAMFileReader(ss, indexFile, false);
         } else {
             InputStream is = HttpUtils.getInstance().openConnectionStream(url);
