@@ -15,9 +15,13 @@ import com.mongodb.*;
 import org.apache.log4j.Logger;
 import org.broad.igv.dev.api.IGVPlugin;
 import org.broad.igv.feature.AbstractFeature;
+import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
+import org.broad.igv.session.SubtlyImportant;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.PanelName;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.Feature;
@@ -29,7 +33,9 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -68,6 +74,8 @@ public class MongoCollabPlugin implements IGVPlugin {
                             throw new RuntimeException("Error reading file: " + path, ex);
                         }
                         DBCollection collection = getCollection(host, port, dbname, collectionName);
+                        //TODO Make this more flexible
+                        collection.setObjectClass(FeatDBObject.class);
                         for(Feature feat: iter){
                             DBObject featdbobj = createFeatDBObject(feat);
                             WriteResult result = collection.insert(featdbobj);
@@ -80,10 +88,23 @@ public class MongoCollabPlugin implements IGVPlugin {
             }
         });
 
+        JMenuItem loadAnnotTrack = new JMenuItem("Load Annotation Track From DB");
+        loadAnnotTrack.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //TODO Specify db from config file
+                DBCollection collection = getCollection(host, port, dbname, collectionName);
+                List<Track> newTracks = new ArrayList<Track>(1);
+                MongoFeatureSource.loadFeatureTrack(collection, newTracks);
+                IGV.getInstance().addTracks(newTracks, PanelName.DATA_PANEL);
+            }
+        });
+
+
 
         JMenu collabPluginItem = new JMenu("Annotate via DB");
         collabPluginItem.add(insertFeattoDBItem);
-        //collabPluginItem.add(loadAnnotTrack);
+        collabPluginItem.add(loadAnnotTrack);
         IGV.getInstance().addOtherToolMenu(collabPluginItem);
 
     }
@@ -131,20 +152,25 @@ public class MongoCollabPlugin implements IGVPlugin {
     /**
      * Object mapping to Mongo database
      * ReflectionDBObject works with getters/setters, and
-     * doesn't use the
+     * doesn't use the Java Beans case convention.
+     * So (get/set)Chr maps to a field named "Chr", not "chr"
+     * as we might prefer
      *
      * TODO Use existing feature interfaces/classes, which are long past
      * overdue for refactoring
      */
-    public static class FeatDBObject extends ReflectionDBObject{
+    public static class FeatDBObject extends ReflectionDBObject implements Feature {
 
         private String chr;
         private int start;
         private int end;
         private String description;
-        private float score;
+        private double score;
 
-        private FeatDBObject(String chr, int start, int end, String description, float score){
+        @SubtlyImportant
+        public FeatDBObject(){}
+
+        public FeatDBObject(String chr, int start, int end, String description, double score){
             this.chr = chr;
             this.start = start;
             this.end = end;
@@ -187,11 +213,11 @@ public class MongoCollabPlugin implements IGVPlugin {
             this.end = end;
         }
 
-        public float getScore() {
+        public double getScore() {
             return score;
         }
 
-        public void setScore(float score) {
+        public void setScore(double score) {
             this.score = score;
         }
 
@@ -201,6 +227,14 @@ public class MongoCollabPlugin implements IGVPlugin {
 
         public void setStart(int start) {
             this.start = start;
+        }
+
+        public BasicFeature createBasicFeature(){
+            BasicFeature bf = new BasicFeature(chr, start, end);
+            bf.setDescription(this.description);
+            //TODO Shouldn't just cast from double to float
+            bf.setScore((float) this.score);
+            return bf;
         }
 
 
