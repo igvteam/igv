@@ -14,7 +14,7 @@ package org.broad.igv.plugin.mongocollab;
 import com.mongodb.*;
 import org.apache.log4j.Logger;
 import org.broad.igv.dev.api.IGVPlugin;
-import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.feature.AbstractFeature;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.ui.IGV;
@@ -72,6 +72,7 @@ public class MongoCollabPlugin implements IGVPlugin {
                             DBObject featdbobj = createFeatDBObject(feat);
                             WriteResult result = collection.insert(featdbobj);
                         }
+
                     }else{
                         throw new RuntimeException("Cannot load features from file of this type");
                     }
@@ -116,32 +117,92 @@ public class MongoCollabPlugin implements IGVPlugin {
     }
 
     private DBObject createFeatDBObject(Feature feat) {
-        BasicDBObject obj = new BasicDBObject();
-        obj.put("chr", feat.getChr());
-        obj.put("start", feat.getStart());
-        obj.put("end", feat.getEnd());
-        if (feat instanceof IGVFeature) {
-            obj.put("description", ((IGVFeature) feat).getDescription());
-        }
-        return obj;
+        return FeatDBObject.create(feat);
+//        BasicDBObject obj = new BasicDBObject();
+//        obj.put("chr", feat.getChr());
+//        obj.put("start", feat.getStart());
+//        obj.put("end", feat.getEnd());
+//        if (feat instanceof IGVFeature) {
+//            obj.put("description", ((IGVFeature) feat).getDescription());
+//        }
+//        return obj;
     }
 
+    /**
+     * Object mapping to Mongo database
+     * ReflectionDBObject works with getters/setters, and
+     * doesn't use the
+     *
+     * TODO Use existing feature interfaces/classes, which are long past
+     * overdue for refactoring
+     */
+    public static class FeatDBObject extends ReflectionDBObject{
 
-    private class FeatDBObject extends ReflectionDBObject{
+        private String chr;
+        private int start;
+        private int end;
+        private String description;
+        private float score;
 
-        public String chr;
-        public int start;
-        public int end;
-        public String description;
-
-        FeatDBObject(Feature feat){
-            this.chr = feat.getChr();
-            this.start = feat.getStart();
-            this.end = feat.getEnd();
-            if(feat instanceof IGVFeature){
-                this.description = ((IGVFeature) feat).getDescription();
-            }
+        private FeatDBObject(String chr, int start, int end, String description, float score){
+            this.chr = chr;
+            this.start = start;
+            this.end = end;
+            this.description = description;
+            this.score = score;
         }
+
+        static FeatDBObject create(Feature feature){
+            if(feature instanceof AbstractFeature){
+                return create((AbstractFeature) feature);
+            }
+            return new FeatDBObject(feature.getChr(), feature.getStart(), feature.getEnd(), null, 0);
+        }
+
+        static FeatDBObject create(AbstractFeature feature){
+            return new FeatDBObject(feature.getChr(), feature.getStart(), feature.getEnd(), feature.getDescription(), feature.getScore());
+        }
+
+        public String getChr() {
+            return chr;
+        }
+
+        public void setChr(String chr) {
+            this.chr = chr;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public int getEnd() {
+            return end;
+        }
+
+        public void setEnd(int end) {
+            this.end = end;
+        }
+
+        public float getScore() {
+            return score;
+        }
+
+        public void setScore(float score) {
+            this.score = score;
+        }
+
+        public int getStart() {
+            return start;
+        }
+
+        public void setStart(int start) {
+            this.start = start;
+        }
+
 
     }
 }
