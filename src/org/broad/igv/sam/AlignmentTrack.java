@@ -1272,7 +1272,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             item.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
-                    if(frame == null) return;
+                    if(frame == null){
+                        MessageUtils.showMessage("Unknown region bounds, cannot export consensus");
+                        return;
+                    }
                     final int start = (int) frame.getOrigin();
                     final int end = (int) frame.getEnd();
                     if ((end - start) > 1000000) {
