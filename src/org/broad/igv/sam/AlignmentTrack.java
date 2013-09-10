@@ -1266,12 +1266,23 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
          */
         private void addConsensusSequence(TrackClickEvent e) {
             //Export consensus sequence
-            final ReferenceFrame frame = e.getFrame();
-
             JMenuItem item = new JMenuItem("Copy consensus sequence");
+
+
+            final ReferenceFrame frame;
+            if(e.getFrame() == null && FrameManager.getFrames().size() == 1){
+                frame = FrameManager.getFrames().get(0);
+            }else{
+                frame = e.getFrame();
+            }
+
+            item.setEnabled(frame != null);
+            add(item);
+
             item.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
+                    //This shouldn't ever be true, but just in case it's more user-friendly
                     if(frame == null){
                         MessageUtils.showMessage("Unknown region bounds, cannot export consensus");
                         return;
@@ -1288,8 +1299,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     StringUtils.copyTextToClipboard(text);
                 }
             });
-            item.setEnabled(frame != null);
-            add(item);
+
+
         }
 
         private JMenu getBisulfiteContextMenuItem(ButtonGroup group) {
