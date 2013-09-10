@@ -1267,14 +1267,14 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         private void addConsensusSequence(TrackClickEvent e) {
             //Export consensus sequence
             final ReferenceFrame frame = e.getFrame();
-            int chromoLoc = (int) e.getChromosomePosition();
-            final int start = (int) frame.getOrigin();
-            final int end = (int) frame.getEnd();
 
             JMenuItem item = new JMenuItem("Copy consensus sequence");
             item.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
+                    if(frame == null) return;
+                    final int start = (int) frame.getOrigin();
+                    final int end = (int) frame.getEnd();
                     if ((end - start) > 1000000) {
                         MessageUtils.showMessage("Cannot export region more than 1 Megabase");
                         return;
@@ -1285,6 +1285,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     StringUtils.copyTextToClipboard(text);
                 }
             });
+            item.setEnabled(frame != null);
             add(item);
         }
 
