@@ -85,7 +85,7 @@ public class MainTest {
         TestUtils.assertTrackLoaded(igv, trackName);
 
         String actLocus = FrameManager.getDefaultFrame().getFormattedLocusString();
-        assertEquals(actLocus, locus);
+        assertEquals(locus, actLocus);
     }
 
     @Test
