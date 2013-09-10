@@ -552,14 +552,11 @@ public class IGV {
         Runnable showDialog = new Runnable() {
             @Override
             public void run() {
-                if (GenomeManager.getInstance().getServerGenomeArchiveList() == null) {
-                    waitForNotify(10000);
-                }
-
                 Collection<GenomeListItem> inputListItems = GenomeManager.getInstance().getServerGenomeArchiveList();
                 if (inputListItems == null) {
-                    IOException exc = new IOException("Unable to reach genome server");
-                    MessageUtils.showErrorMessage(exc.getMessage(), exc);
+                    //Not necessary to display a message, getServerGenomeArchiveList does it already
+                    //IOException exc = new IOException("Unable to reach genome server");
+                    //MessageUtils.showErrorMessage(exc.getMessage(), exc);
                     return;
                 }
 

@@ -835,6 +835,7 @@ public class GenomeManager {
      * This is based on preferences only, does not contact server
      */
     public void buildGenomeItemList() {
+        genomeItemMap.clear();
         Collection<GenomeListItem> tmpuserDefinedGenomeList = null;
         Collection<GenomeListItem> tmpcachedGenomeArchiveList = null;
 

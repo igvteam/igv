@@ -53,8 +53,10 @@ public class GenomeListItem {
     public String getLocation() {
         if(location == null){
             GenomeListItem newItem = GenomeManager.searchGenomeList(this.id, GenomeManager.getInstance().getServerGenomeArchiveList());
-            this.displayableName = newItem.displayableName;
-            this.location = newItem.location;
+            if(newItem != null){
+                this.displayableName = newItem.displayableName;
+                this.location = newItem.location;
+            }
         }
         return location;
     }
