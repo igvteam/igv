@@ -693,7 +693,7 @@ public class HttpUtils {
                 } else {
                     // Non-broad URL
                     int l = (int) Math.min(1000, HttpUtils.getInstance().getContentLength(url));
-                    if (l > 1000) {
+                    if (l > 100) {
 
                         byte[] firstBytes = new byte[l];
                         str = new IGVSeekableHTTPStream(url);

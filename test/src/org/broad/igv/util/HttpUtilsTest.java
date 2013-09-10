@@ -64,11 +64,12 @@ public class HttpUtilsTest {
 
 
     /**
-     * Test of the "byte range" test for a non-Broad URL.  Note if running this test behind proxies that strip
-     * range headers the assertion should be "false".
+     * Test of the Range test for a non-Broad URL.  Note if running this test behind proxies that strip
+     * range headers the assertion should be false.
      *
      * @throws Exception
-     */    @Test
+     */
+    @Test
     public void testGenericURL() throws Exception {
         final URL url = new URL(genericURLString);
         String acceptsRangesValue = HttpUtils.getInstance().getHeaderField(url, "Accept-Ranges");
