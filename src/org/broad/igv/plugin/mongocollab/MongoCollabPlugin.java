@@ -16,22 +16,21 @@ import org.apache.log4j.Logger;
 import org.broad.igv.dev.api.IGVPlugin;
 import org.broad.igv.feature.AbstractFeature;
 import org.broad.igv.feature.BasicFeature;
-import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.PanelName;
 import org.broad.igv.ui.util.FileDialogUtils;
-import org.broad.tribble.AbstractFeatureReader;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureCodec;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,54 +45,58 @@ public class MongoCollabPlugin implements IGVPlugin {
 
     private static Logger log = Logger.getLogger(MongoCollabPlugin.class);
 
-    //TODO Make into config file
-    private static String host = "localhost";
-    private static int port = 27017;
-    private static String dbname = "mylocaldb";
-    private static String collectionName = "annotations";
-
     @Override
     public void init() {
 
-        JMenuItem insertFeattoDBItem = new JMenuItem("Load features into DB");
-        insertFeattoDBItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                File featFile = FileDialogUtils.chooseFile("Select feature file");
-                if(featFile != null){
-                    String path = featFile.getAbsolutePath();
-                    FeatureCodec codec = CodecFactory.getCodec(path, GenomeManager.getInstance().getCurrentGenome());
-                    if (codec != null) {
-                        AbstractFeatureReader<Feature, ?> bfs = AbstractFeatureReader.getFeatureReader(path, codec, false);
-
-                        Iterable<Feature> iter = null;
-                        try {
-                            iter = bfs.iterator();
-                        } catch (IOException ex) {
-                            log.error(ex.getMessage(), ex);
-                            throw new RuntimeException("Error reading file: " + path, ex);
-                        }
-                        DBCollection collection = getCollection(host, port, dbname, collectionName);
-                        //TODO Make this more flexible
-                        collection.setObjectClass(FeatDBObject.class);
-                        for(Feature feat: iter){
-                            DBObject featdbobj = createFeatDBObject(feat);
-                            WriteResult result = collection.insert(featdbobj);
-                        }
-
-                    }else{
-                        throw new RuntimeException("Cannot load features from file of this type");
-                    }
-                }
-            }
-        });
+//        JMenuItem insertFeattoDBItem = new JMenuItem("Load features into DB");
+//        insertFeattoDBItem.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                File featFile = FileDialogUtils.chooseFile("Select feature file");
+//                if(featFile != null){
+//                    String path = featFile.getAbsolutePath();
+//                    FeatureCodec codec = CodecFactory.getCodec(path, GenomeManager.getInstance().getCurrentGenome());
+//                    if (codec != null) {
+//                        AbstractFeatureReader<Feature, ?> bfs = AbstractFeatureReader.getFeatureReader(path, codec, false);
+//
+//                        Iterable<Feature> iter = null;
+//                        try {
+//                            iter = bfs.iterator();
+//                        } catch (IOException ex) {
+//                            log.error(ex.getMessage(), ex);
+//                            throw new RuntimeException("Error reading file: " + path, ex);
+//                        }
+//                        DBCollection collection = getCollection(host, port, dbname, collectionName);
+//                        //TODO Make this more flexible
+//                        collection.setObjectClass(FeatDBObject.class);
+//                        for(Feature feat: iter){
+//                            DBObject featdbobj = createFeatDBObject(feat);
+//                            WriteResult result = collection.insert(featdbobj);
+//                        }
+//
+//                    }else{
+//                        throw new RuntimeException("Cannot load features from file of this type");
+//                    }
+//                }
+//            }
+//        });
 
         JMenuItem loadAnnotTrack = new JMenuItem("Load Annotation Track From DB");
         loadAnnotTrack.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //TODO Specify db from config file
-                DBCollection collection = getCollection(host, port, dbname, collectionName);
+                File locatorFile = FileDialogUtils.chooseFile("Select config file");
+                if(locatorFile == null) return;
+
+                Locator locator = null;
+                try {
+                    locator = new Locator(locatorFile);
+                } catch (FileNotFoundException ex) {
+                    //This shouldn't happen, user just picked a file
+                    log.error(ex.getMessage(), ex);
+                    return;
+                }
+                DBCollection collection = getCollection(locator);
                 List<Track> newTracks = new ArrayList<Track>(1);
                 MongoFeatureSource.loadFeatureTrack(collection, newTracks);
                 IGV.getInstance().addTracks(newTracks, PanelName.DATA_PANEL);
@@ -103,7 +106,7 @@ public class MongoCollabPlugin implements IGVPlugin {
 
 
         JMenu collabPluginItem = new JMenu("Annotate via DB");
-        collabPluginItem.add(insertFeattoDBItem);
+        //collabPluginItem.add(insertFeattoDBItem);
         collabPluginItem.add(loadAnnotTrack);
         IGV.getInstance().addOtherToolMenu(collabPluginItem);
 
@@ -131,10 +134,10 @@ public class MongoCollabPlugin implements IGVPlugin {
         return host + ":" + port;
     }
 
-    private DBCollection getCollection(String host, int port, String dbname, String collectionName) {
-        Mongo mongo = getMongo(host, port);
-        DB mongoDB = mongo.getDB(dbname);
-        return mongoDB.getCollection(collectionName);
+    private DBCollection getCollection(Locator locator) {
+        Mongo mongo = getMongo(locator.host, locator.port);
+        DB mongoDB = mongo.getDB(locator.dbName);
+        return mongoDB.getCollection(locator.collectionName);
     }
 
     private DBObject createFeatDBObject(Feature feat) {
@@ -157,7 +160,7 @@ public class MongoCollabPlugin implements IGVPlugin {
      * as we might prefer
      *
      * TODO Use existing feature interfaces/classes, which are long past
-     * overdue for refactoring
+     * TODO overdue for refactoring
      */
     public static class FeatDBObject extends ReflectionDBObject implements Feature {
 
@@ -236,7 +239,25 @@ public class MongoCollabPlugin implements IGVPlugin {
             bf.setScore((float) this.score);
             return bf;
         }
+    }
 
+    public static class Locator {
+        public final String host;
+        public final int port;
+        public final String dbName;
+        public final String collectionName;
+
+        public Locator(File file) throws FileNotFoundException{
+            this(new FileInputStream(file));
+        }
+
+        public Locator(InputStream is){
+            Map<String, String> fields = ParsingUtils.loadMap(is);
+            this.host = fields.get("host");
+            this.port = Integer.parseInt(fields.get("port"));
+            this.dbName = fields.get("dbName");
+            this.collectionName = fields.get("collectionName");
+        }
 
     }
 }
