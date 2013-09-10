@@ -67,7 +67,6 @@ public class IGVUrlHelper implements URLHelper {
      */
     private URL addStartEndQueryString(long start, long end) throws MalformedURLException {
 
-        log.debug("old url: " + this.url);
         String surl = url.toExternalForm();
         String nurl = surl;
 
@@ -79,7 +78,10 @@ public class IGVUrlHelper implements URLHelper {
             nurl = String.format("%s?%s", parts[0], toadd);
             nurl += "&" + parts[1];
         }
-        log.debug("new url: " + nurl);
+        if(log.isDebugEnabled()){
+            log.debug("old url: " + surl);
+            log.debug("new url: " + nurl);
+        }
         return new URL(nurl);
     }
 
