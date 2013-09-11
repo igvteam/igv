@@ -16,26 +16,29 @@ import org.apache.log4j.Logger;
 import org.broad.igv.dev.api.IGVPlugin;
 import org.broad.igv.feature.AbstractFeature;
 import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.Locus;
+import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackClickEvent;
+import org.broad.igv.track.TrackMenuItemBuilder;
+import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.PanelName;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.Feature;
+import org.broad.tribble.FeatureCodec;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author jacob
@@ -47,39 +50,6 @@ public class MongoCollabPlugin implements IGVPlugin {
 
     @Override
     public void init() {
-
-//        JMenuItem insertFeattoDBItem = new JMenuItem("Load features into DB");
-//        insertFeattoDBItem.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                File featFile = FileDialogUtils.chooseFile("Select feature file");
-//                if(featFile != null){
-//                    String path = featFile.getAbsolutePath();
-//                    FeatureCodec codec = CodecFactory.getCodec(path, GenomeManager.getInstance().getCurrentGenome());
-//                    if (codec != null) {
-//                        AbstractFeatureReader<Feature, ?> bfs = AbstractFeatureReader.getFeatureReader(path, codec, false);
-//
-//                        Iterable<Feature> iter = null;
-//                        try {
-//                            iter = bfs.iterator();
-//                        } catch (IOException ex) {
-//                            log.error(ex.getMessage(), ex);
-//                            throw new RuntimeException("Error reading file: " + path, ex);
-//                        }
-//                        DBCollection collection = getCollection(host, port, dbname, collectionName);
-//                        //TODO Make this more flexible
-//                        collection.setObjectClass(FeatDBObject.class);
-//                        for(Feature feat: iter){
-//                            DBObject featdbobj = createFeatDBObject(feat);
-//                            WriteResult result = collection.insert(featdbobj);
-//                        }
-//
-//                    }else{
-//                        throw new RuntimeException("Cannot load features from file of this type");
-//                    }
-//                }
-//            }
-//        });
 
         JMenuItem loadAnnotTrack = new JMenuItem("Load Annotation Track From DB");
         loadAnnotTrack.addActionListener(new ActionListener() {
@@ -97,19 +67,83 @@ public class MongoCollabPlugin implements IGVPlugin {
                     return;
                 }
                 DBCollection collection = getCollection(locator);
+                //TODO Make this more flexible
+                collection.setObjectClass(FeatDBObject.class);
                 List<Track> newTracks = new ArrayList<Track>(1);
                 MongoFeatureSource.loadFeatureTrack(collection, newTracks);
-                IGV.getInstance().addTracks(newTracks, PanelName.DATA_PANEL);
+                IGV.getInstance().addTracks(newTracks, PanelName.FEATURE_PANEL);
+
+                //Add context menu entry
+                TrackMenuUtils.addTrackMenuItemBuilder(createBuilderForLocator(locator));
             }
         });
 
-
-
         JMenu collabPluginItem = new JMenu("Annotate via DB");
-        //collabPluginItem.add(insertFeattoDBItem);
         collabPluginItem.add(loadAnnotTrack);
+        //Add "Tools" menu option for loading annotation DB track
         IGV.getInstance().addOtherToolMenu(collabPluginItem);
+    }
 
+    private TrackMenuItemBuilder createBuilderForLocator(final Locator locator){
+        TrackMenuItemBuilder builder = new TrackMenuItemBuilder() {
+            @Override
+            public JMenuItem build(Collection<Track> selectedTracks, TrackClickEvent te) {
+                ReferenceFrame frame = te.getFrame();
+                boolean hasFrame = frame != null;
+                if(!hasFrame) return null;
+
+                final String chr = frame.getChrName();
+                final int start = (int) te.getChromosomePosition();
+                final int end = (int) Math.ceil(frame.getChromosomePosition(te.getMouseEvent().getX() + 1));
+
+                //TODO create dialog so user can fill in score/description
+                JMenuItem item = new JMenuItem("Annotate in " + locator.collectionName);
+                item.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        DBCollection collection = getCollection(locator);
+                        Feature feat = new FeatDBObject(chr, start, end, null, 0.0);
+                        insertFeature(collection, feat);
+                        log.info("Adding feature " + Locus.getFormattedLocusString(chr, start, end));
+                    }
+                });
+                return item;
+            }
+        };
+        return builder;
+    }
+    
+    private static void insertFeaturesFromFile(DBCollection collection){
+
+        File featFile = FileDialogUtils.chooseFile("Select feature file");
+        if (featFile != null) {
+            String path = featFile.getAbsolutePath();
+            FeatureCodec codec = CodecFactory.getCodec(path, GenomeManager.getInstance().getCurrentGenome());
+
+            if (codec != null) {
+                AbstractFeatureReader<Feature, ?> bfs = AbstractFeatureReader.getFeatureReader(path, codec, false);
+
+                Iterable<Feature> iter = null;
+                try {
+                    iter = bfs.iterator();
+                } catch (IOException ex) {
+                    log.error(ex.getMessage(), ex);
+                    throw new RuntimeException("Error reading file: " + path, ex);
+                }
+
+                for (Feature feat : iter) {
+                    insertFeature(collection, feat);
+                }
+
+            } else {
+                throw new RuntimeException("Cannot load features from file of this type");
+            }
+        }
+    }
+
+    private static WriteResult insertFeature(DBCollection collection, Feature feat) {
+        DBObject featdbobj = createFeatDBObject(feat);
+        return collection.insert(featdbobj);
     }
 
     private static Map<String, Mongo> connections = new HashMap<String, Mongo>();
@@ -134,13 +168,13 @@ public class MongoCollabPlugin implements IGVPlugin {
         return host + ":" + port;
     }
 
-    private DBCollection getCollection(Locator locator) {
+    private static DBCollection getCollection(Locator locator) {
         Mongo mongo = getMongo(locator.host, locator.port);
         DB mongoDB = mongo.getDB(locator.dbName);
         return mongoDB.getCollection(locator.collectionName);
     }
 
-    private DBObject createFeatDBObject(Feature feat) {
+    private static DBObject createFeatDBObject(Feature feat) {
         return FeatDBObject.create(feat);
 //        BasicDBObject obj = new BasicDBObject();
 //        obj.put("chr", feat.getChr());
