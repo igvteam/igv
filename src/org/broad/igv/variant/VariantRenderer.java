@@ -23,10 +23,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * User: Jesse Whitworth
- * Date: Jul 16, 2010
+ * @author Jesse Whitworth
+ * @since Jul 16, 2010
+ * @api
  */
-
 public class VariantRenderer { //extends FeatureRenderer {
 
     private static Logger log = Logger.getLogger(VariantRenderer.class);
@@ -77,6 +77,7 @@ public class VariantRenderer { //extends FeatureRenderer {
      * Whether to use alpha channel by default when rendering variants.
      * Normally they are dimmed if filtered
      * @return
+     * @api
      */
     protected boolean defaultUseAlpha(){
         return false;
@@ -90,6 +91,7 @@ public class VariantRenderer { //extends FeatureRenderer {
      * @param pixelX Location of the variant in pixels
      * @param xWidth Width of the variant in pixels
      * @param context
+     * @api
      */
     public void renderSiteBand(Variant variant,
                                Rectangle bandRectangle,
