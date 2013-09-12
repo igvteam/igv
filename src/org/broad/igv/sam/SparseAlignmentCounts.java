@@ -442,31 +442,6 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
         Collections.sort(indices);
     }
 
-    public AlignmentCounts merge(AlignmentCounts other, AlignmentTrack.BisulfiteContext bisulfiteContext) {
-        if (other.getClass() != this.getClass()) {
-            throw new IllegalArgumentException("Cannot merge different types of AlignmentCount instances");
-        }
-        return SparseAlignmentCounts.merge(this, (SparseAlignmentCounts) other, bisulfiteContext);
-    }
-
-    private static SparseAlignmentCounts merge(SparseAlignmentCounts first, SparseAlignmentCounts second, AlignmentTrack.BisulfiteContext bisulfiteContext) {
-        if (second.getStart() < first.getStart()) {
-            SparseAlignmentCounts tmp = first;
-            first = second;
-            second = tmp;
-        }
-
-        int totalPoints = first.getNumberOfPoints() + second.getNumberOfPoints();
-
-        SparseAlignmentCounts result = new SparseAlignmentCounts(first.getStart(), second.getEnd(), bisulfiteContext, totalPoints);
-
-        addRawCounts(result, first);
-        addRawCounts(result, second);
-        result.maxCount = Math.max(first.getMaxCount(), second.getMaxCount());
-        result.finish();
-        return result;
-    }
-
     /**
      * Take raw data from input and place it into result. Indexing is
      * consistent within {@code result}, which may not be the same as input.

@@ -55,16 +55,6 @@ public interface AlignmentCounts extends Feature {
 
     void finish();
 
-    /**
-     * Return the result of merging this alignment with {@code other}.
-     * This alignment is not changed
-     *
-     * @param other
-     * @param bisulfiteContext
-     * @return
-     */
-    AlignmentCounts merge(AlignmentCounts other, AlignmentTrack.BisulfiteContext bisulfiteContext);
-
     static interface PositionIterator {
         int nextPosition();
     }
