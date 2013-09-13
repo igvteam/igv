@@ -2443,7 +2443,7 @@ public class IGV {
                         locators.add(rl);
                         idx++;
                     }
-                    loadResources(locators);
+                    loadTracks(locators);
                 }
 
 
