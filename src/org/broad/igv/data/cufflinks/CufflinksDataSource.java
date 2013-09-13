@@ -16,7 +16,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.data.BasicScore;
 import org.broad.igv.data.DataSource;
 import org.broad.igv.data.GenomeSummaryData;
-import org.broad.igv.data.LocusScoreUtils;
+import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackType;
@@ -68,7 +68,7 @@ public class CufflinksDataSource implements DataSource {
 
         // Sort
         for (List<LocusScore> chrValues : values.values()) {
-            LocusScoreUtils.sortFeatureList(chrValues);
+            FeatureUtils.sortFeatureList(chrValues);
         }
 
         double[] sd = sampledData.toArray();

@@ -176,7 +176,7 @@ public class FeatureUtils {
      * @param features
      * @return
      */
-    public static Feature getFeatureAt(double position, int buffer, List<? extends Feature> features) {
+    public static <T extends Feature> T getFeatureAt(double position, int buffer, List<? extends T> features) {
 
         int startIdx = 0;
         int endIdx = features.size();
@@ -184,7 +184,7 @@ public class FeatureUtils {
         while (startIdx != endIdx) {
             int idx = (startIdx + endIdx) / 2;
 
-            org.broad.tribble.Feature feature = features.get(idx);
+            T feature = features.get(idx);
 
             int effectiveStart = feature.getStart();
             int effectiveEnd = feature.getEnd();
