@@ -1401,12 +1401,4 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         return (VariantTrack) IGVSessionReader.getNextTrack();
     }
 
-    /**
-     * Features are packed upon loading, effectively a cache.
-     * This clears that cache. Used to force a refresh
-     * @api
-     */
-    public void clearPackedFeatures(){
-        this.packedFeaturesMap.clear();
-    }
 }

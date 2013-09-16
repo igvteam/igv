@@ -1046,5 +1046,14 @@ public class FeatureTrack extends AbstractTrack {
             ((PluginSource) source).updateTrackReferences(allTracks);
         }
     }
+
+    /**
+     * Features are packed upon loading, effectively a cache.
+     * This clears that cache. Used to force a refresh
+     * @api
+     */
+    public void clearPackedFeatures(){
+        this.packedFeaturesMap.clear();
+    }
 }
 

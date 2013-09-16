@@ -82,7 +82,7 @@ public class MongoFeatureSource implements FeatureSource {
 
     public static FeatureTrack loadFeatureTrack(DBCollection collection, List<Track> newTracks) {
         MongoFeatureSource source = new MongoFeatureSource(collection);
-        FeatureTrack track = new FeatureTrack(collection.getName(), collection.getFullName(), source);
+        FeatureTrack track = new FeatureTrack(collection.getFullName(), collection.getName(), source);
         newTracks.add(track);
         track.setMargin(0);
         return track;

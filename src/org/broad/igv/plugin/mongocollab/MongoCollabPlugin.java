@@ -16,7 +16,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.dev.api.IGVPlugin;
 import org.broad.igv.feature.AbstractFeature;
 import org.broad.igv.feature.BasicFeature;
-import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.session.SubtlyImportant;
@@ -96,15 +95,14 @@ public class MongoCollabPlugin implements IGVPlugin {
                 final int start = (int) te.getChromosomePosition();
                 final int end = (int) Math.ceil(frame.getChromosomePosition(te.getMouseEvent().getX() + 1));
 
-                //TODO create dialog so user can fill in score/description
                 JMenuItem item = new JMenuItem("Annotate in " + locator.collectionName);
                 item.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         DBCollection collection = getCollection(locator);
-                        Feature feat = new FeatDBObject(chr, start, end, null, 0.0);
-                        insertFeature(collection, feat);
-                        log.info("Adding feature " + Locus.getFormattedLocusString(chr, start, end));
+                        Feature feat = new BasicFeature(chr, start, end);
+                        FeatureAnnotDialog dialog = new FeatureAnnotDialog(IGV.getMainFrame(), collection, feat);
+                        dialog.setVisible(true);
                     }
                 });
                 return item;
@@ -141,9 +139,9 @@ public class MongoCollabPlugin implements IGVPlugin {
         }
     }
 
-    private static WriteResult insertFeature(DBCollection collection, Feature feat) {
+    private static void insertFeature(DBCollection collection, Feature feat) {
         DBObject featdbobj = createFeatDBObject(feat);
-        return collection.insert(featdbobj);
+        collection.insert(featdbobj);
     }
 
     private static Map<String, Mongo> connections = new HashMap<String, Mongo>();
