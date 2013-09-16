@@ -65,11 +65,8 @@ public class MongoCollabPlugin implements IGVPlugin {
                     log.error(ex.getMessage(), ex);
                     return;
                 }
-                DBCollection collection = getCollection(locator);
-                //TODO Make this more flexible
-                collection.setObjectClass(FeatDBObject.class);
                 List<Track> newTracks = new ArrayList<Track>(1);
-                MongoFeatureSource.loadFeatureTrack(collection, newTracks);
+                MongoFeatureSource.loadFeatureTrack(locator, newTracks);
                 IGV.getInstance().addTracks(newTracks, PanelName.FEATURE_PANEL);
 
                 //Add context menu entry
@@ -166,7 +163,7 @@ public class MongoCollabPlugin implements IGVPlugin {
         return host + ":" + port;
     }
 
-    private static DBCollection getCollection(Locator locator) {
+    static DBCollection getCollection(Locator locator) {
         Mongo mongo = getMongo(locator.host, locator.port);
         DB mongoDB = mongo.getDB(locator.dbName);
         return mongoDB.getCollection(locator.collectionName);
@@ -278,6 +275,7 @@ public class MongoCollabPlugin implements IGVPlugin {
         public final int port;
         public final String dbName;
         public final String collectionName;
+        public final boolean buildIndex;
 
         public Locator(File file) throws FileNotFoundException{
             this(new FileInputStream(file));
@@ -289,6 +287,12 @@ public class MongoCollabPlugin implements IGVPlugin {
             this.port = Integer.parseInt(fields.get("port"));
             this.dbName = fields.get("dbName");
             this.collectionName = fields.get("collectionName");
+            boolean tmpBuildIndex = false;
+            if(fields.containsKey("buildIndex")){
+                tmpBuildIndex = Boolean.parseBoolean(fields.get("buildIndex"));
+            }
+            this.buildIndex = tmpBuildIndex;
+
         }
 
     }

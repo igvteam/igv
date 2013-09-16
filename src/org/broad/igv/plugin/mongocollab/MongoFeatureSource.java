@@ -15,6 +15,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.FeatureSource;
@@ -35,32 +36,99 @@ public class MongoFeatureSource implements FeatureSource {
     private int featureWindowSize = 1000000;
 
     private DBCollection collection;
+    private boolean hasIndex = false;
 
-    public MongoFeatureSource(DBCollection collection) {
+
+    public MongoFeatureSource(DBCollection collection, boolean buildIndex) {
         this.collection = collection;
+        if(buildIndex){
+            ensureIndex(collection);
+        }
+        //Check to see if we have the index we want
+        List<DBObject> indexes = collection.getIndexInfo();
+        DBObject neededFields = getIndexKeys();
+        for(DBObject index: indexes){
+
+            boolean isMatchingIndex = true;
+            DBObject indexKey = (DBObject) index.get("key");
+            for(String key: neededFields.keySet()){
+                boolean hasKey = indexKey.containsField(key);
+                if(!hasKey){
+                    isMatchingIndex = false;
+                    break;
+                }
+                Object value = indexKey.get(key);
+                boolean equals = neededFields.get(key).equals(value);
+                isMatchingIndex &= equals;
+            }
+
+            if(isMatchingIndex) {
+                this.hasIndex = true;
+                break;
+            }
+
+        }
     }
 
     private DBObject createQueryObject(String chr, int start, int end){
         BasicDBObject query = new BasicDBObject("Chr", chr);
-        //TODO figure out how to do OR so we can query range properly
-        //query.append("Start", (new BasicDBObject("$gt", start)).append("$lt", end));
+
+        //Only query over given interval
+        //See http://docs.mongodb.org/manual/tutorial/query-documents/
+        query.append("Start", new BasicDBObject("$lte", end));
+        query.append("End", new BasicDBObject("$gte", start));
 
         return query;
+    }
+
+    /**
+     * Return the key/value pairs for indexing
+     * Store these as doubles for easier comparison, MongoDB stores everything
+     * as a double in the DB
+     * @return
+     */
+    private DBObject getIndexKeys(){
+        BasicDBObject indexKeys = new BasicDBObject("Chr", 1.0d);
+        indexKeys.append("Start", 1.0d);
+        indexKeys.append("End", 1.0d);
+        return indexKeys;
+    }
+
+    /**
+     * Ensures there is an index on Chr, Start, and End
+     * To speed queries
+     * See http://docs.mongodb.org/manual/reference/method/db.collection.ensureIndex/#db.collection.ensureIndex
+     * @param collection
+     */
+    private void ensureIndex(DBCollection collection){
+        collection.ensureIndex(getIndexKeys());
     }
 
     @Override
     public Iterator<IGVFeature> getFeatures(String chr, int start, int end) throws IOException {
         this.collection.setObjectClass(MongoCollabPlugin.FeatDBObject.class);
         DBCursor cursor = this.collection.find(createQueryObject(chr, start, end));
+        //Sort by increasing start value
+        //Only do this if we have an index, otherwise might be too memory intensive
+        if(hasIndex){
+            cursor.sort(new BasicDBObject("Start", 1));
+        }
+        boolean isSorted = true;
+        int lastStart = -1;
 
         List<IGVFeature> features = new ArrayList<IGVFeature>();
-
-
         while (cursor.hasNext()) {
             DBObject obj = cursor.next();
             MongoCollabPlugin.FeatDBObject feat = (MongoCollabPlugin.FeatDBObject) obj;
             features.add(feat.createBasicFeature());
+            isSorted &= feat.getStart() >= lastStart;
+            lastStart = feat.getStart();
         }
+
+        if(!isSorted){
+            FeatureUtils.sortFeatureList(features);
+        }
+
         return features.iterator();
     }
 
@@ -80,8 +148,12 @@ public class MongoFeatureSource implements FeatureSource {
         this.featureWindowSize = size;
     }
 
-    public static FeatureTrack loadFeatureTrack(DBCollection collection, List<Track> newTracks) {
-        MongoFeatureSource source = new MongoFeatureSource(collection);
+    public static FeatureTrack loadFeatureTrack(MongoCollabPlugin.Locator locator, List<Track> newTracks) {
+
+        DBCollection collection = MongoCollabPlugin.getCollection(locator);
+        //TODO Make this more flexible
+        collection.setObjectClass(MongoCollabPlugin.FeatDBObject.class);
+        MongoFeatureSource source = new MongoFeatureSource(collection, locator.buildIndex);
         FeatureTrack track = new FeatureTrack(collection.getFullName(), collection.getName(), source);
         newTracks.add(track);
         track.setMargin(0);
