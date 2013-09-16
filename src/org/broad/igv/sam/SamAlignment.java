@@ -495,6 +495,14 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     }
 
     /**
+     * Variously called a supplementary alignment flag,
+     * or chimeric read
+     * @return
+     */
+    public boolean isSupplementaryAlignment(){
+        return this.record.getSupplementaryAlignmentFlag();
+    }
+    /**
      * @return the unclippedStart
      */
     public int getAlignmentStart() {
@@ -626,6 +634,10 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
             if (sectionBreak) {
                 buf.append("<br>-------------------");
             }
+        }
+
+        if(record.getSupplementaryAlignmentFlag()){
+            buf.append("<br> Chimeric Read");
         }
 
         List<SAMRecord.SAMTagAndValue> attributes = record.getAttributes();
