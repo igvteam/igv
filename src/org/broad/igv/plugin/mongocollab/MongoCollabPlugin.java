@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.dev.api.IGVPlugin;
 import org.broad.igv.feature.AbstractFeature;
 import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.session.SubtlyImportant;
@@ -108,42 +109,76 @@ public class MongoCollabPlugin implements IGVPlugin {
         return builder;
     }
     
-    private static void insertFeaturesFromFile(DBCollection collection){
+    static void insertFeaturesFromFile(DBCollection collection){
 
         File featFile = FileDialogUtils.chooseFile("Select feature file");
         if (featFile != null) {
             String path = featFile.getAbsolutePath();
-            FeatureCodec codec = CodecFactory.getCodec(path, GenomeManager.getInstance().getCurrentGenome());
-
-            if (codec != null) {
-                AbstractFeatureReader<Feature, ?> bfs = AbstractFeatureReader.getFeatureReader(path, codec, false);
-
-                Iterable<Feature> iter = null;
-                try {
-                    iter = bfs.iterator();
-                } catch (IOException ex) {
-                    log.error(ex.getMessage(), ex);
-                    throw new RuntimeException("Error reading file: " + path, ex);
-                }
-
-                for (Feature feat : iter) {
-                    insertFeature(collection, feat);
-                }
-
-            } else {
-                throw new RuntimeException("Cannot load features from file of this type");
-            }
+            insertFeaturesFromFile(collection, path);
         }
     }
 
-    private static void insertFeature(DBCollection collection, Feature feat) {
-        DBObject featdbobj = createFeatDBObject(feat);
-        collection.insert(featdbobj);
+    /**
+     *
+     * @param collection
+     * @param path
+     * @return The number of features inserted
+     */
+    static int insertFeaturesFromFile(DBCollection collection, String path) {
+        FeatureCodec codec = CodecFactory.getCodec(path, GenomeManager.getInstance().getCurrentGenome());
+
+        if (codec != null) {
+            AbstractFeatureReader<Feature, ?> bfs = AbstractFeatureReader.getFeatureReader(path, codec, false);
+
+            Iterable<Feature> iter = null;
+            try {
+                iter = bfs.iterator();
+            } catch (IOException ex) {
+                log.error(ex.getMessage(), ex);
+                throw new RuntimeException("Error reading file: " + path, ex);
+            }
+
+            int count = 0;
+            for (Feature feat : iter) {
+                String err = saveFeature(collection, FeatDBObject.create(feat));
+                if(err == null) count += 1;
+            }
+            return count;
+        } else {
+            throw new RuntimeException("Cannot load features from file of this type");
+        }
+    }
+
+
+    /**
+     * Save the specified FeatDBObject to the specified collection
+     * Does either an insert or update
+     *
+     * @param collection
+     * @param dbFeat
+     * @return
+     */
+    static String saveFeature(DBCollection collection, MongoCollabPlugin.FeatDBObject dbFeat) {
+
+        String errorMessage = "";
+        try {
+
+            if(log.isDebugEnabled()){
+                log.debug("Saving feature " + Locus.getFormattedLocusString(dbFeat.getChr(), dbFeat.getStart(), dbFeat.getEnd()));
+            }
+                WriteResult wr = collection.save(dbFeat);
+            errorMessage = wr.getError();
+
+        } catch (Exception ex) {
+            errorMessage = ex.getMessage();
+            if (errorMessage == null) errorMessage = "" + ex;
+        }
+        return errorMessage;
     }
 
     private static Map<String, Mongo> connections = new HashMap<String, Mongo>();
 
-    private static Mongo getMongo(String host, int port){
+    static Mongo getMongo(String host, int port){
         String key = createConnString(host, port);
         Mongo connection = connections.get(key);
         if(connection == null){
@@ -167,18 +202,6 @@ public class MongoCollabPlugin implements IGVPlugin {
         Mongo mongo = getMongo(locator.host, locator.port);
         DB mongoDB = mongo.getDB(locator.dbName);
         return mongoDB.getCollection(locator.collectionName);
-    }
-
-    private static DBObject createFeatDBObject(Feature feat) {
-        return FeatDBObject.create(feat);
-//        BasicDBObject obj = new BasicDBObject();
-//        obj.put("chr", feat.getChr());
-//        obj.put("start", feat.getStart());
-//        obj.put("end", feat.getEnd());
-//        if (feat instanceof IGVFeature) {
-//            obj.put("description", ((IGVFeature) feat).getDescription());
-//        }
-//        return obj;
     }
 
     /**

@@ -16,9 +16,7 @@
 package org.broad.igv.plugin.mongocollab;
 
 import com.mongodb.DBCollection;
-import com.mongodb.WriteResult;
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.Locus;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
@@ -116,7 +114,7 @@ public class FeatureAnnotDialog extends JDialog {
     private void okButtonActionPerformed(ActionEvent e) {
 
         MongoCollabPlugin.FeatDBObject featDBObject = createDBObjectFromFields();
-        String errorMessage = saveFeature(collection, featDBObject);
+        String errorMessage = MongoCollabPlugin.saveFeature(collection, featDBObject);
 
         if (errorMessage != null) {
             MessageUtils.showErrorMessage(errorMessage, new IOException(errorMessage));
@@ -131,30 +129,6 @@ public class FeatureAnnotDialog extends JDialog {
             }
             IGV.getInstance().repaintDataPanels();
         }
-    }
-
-    /**
-     * Save the specified FeatDBObject to the specified collection
-     * Does either an insert or update
-     *
-     * @param collection
-     * @param dbFeat
-     * @return
-     */
-    static String saveFeature(DBCollection collection, MongoCollabPlugin.FeatDBObject dbFeat) {
-
-        String errorMessage = "";
-        try {
-
-            log.info("Saving feature " + Locus.getFormattedLocusString(dbFeat.getChr(), dbFeat.getStart(), dbFeat.getEnd()));
-            WriteResult wr = collection.save(dbFeat);
-            errorMessage = wr.getError();
-
-        } catch (Exception ex) {
-            errorMessage = ex.getMessage();
-            if (errorMessage == null) errorMessage = "" + ex;
-        }
-        return errorMessage;
     }
 
     private void initComponents() {
