@@ -64,10 +64,6 @@ public class BAMHttpReader implements AlignmentReader {
         if (requireIndex) {
             indexFile = getIndexFile(locator);
             if (indexFile == null) {
-                // Let user locate the index file
-                String defaultURL = url.getPath() + ".bai";
-                MessageUtils.showInputDialog("Enter URL to the index (.bai) file", defaultURL);
-
                 throw new RuntimeException("Could not load index file for file: " + url.getPath());
             }
             //SeekableStream ss = new SeekableBufferedStream(getSeekableStream(url));
@@ -233,7 +229,7 @@ public class BAMHttpReader implements AlignmentReader {
                 } catch (FileNotFoundException e1) {
 
                     if (!Globals.isHeadless() && IGV.hasInstance()) {
-                        String tmp = MessageUtils.showInputDialog("Enter path to index file", indexURL.getPath());
+                        String tmp = MessageUtils.showInputDialog("Index file not found. Enter path to index file", indexPath);
                         if (tmp != null) {
                             try {
                                 indexURL = new URL(tmp);
@@ -246,12 +242,11 @@ public class BAMHttpReader implements AlignmentReader {
                         }
                     }
                 }
+
             }
             if (!foundIndex) {
-
-                MessageUtils.showMessage("Index file not found: " + indexPath);
-                throw new DataLoadException("Index file not found: " + indexPath, indexPath);
-
+                String msg = "Index file not found: " + indexPath;
+                throw new DataLoadException(msg, indexPath);
             }
             byte[] buf = new byte[512000];
             int bytesRead;
@@ -264,14 +259,14 @@ public class BAMHttpReader implements AlignmentReader {
                 try {
                     is.close();
                 } catch (IOException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    log.error(e.getMessage(), e);
                 }
             }
             if (os != null) {
                 try {
                     os.close();
                 } catch (IOException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    log.error(e.getMessage(), e);
                 }
             }
 
