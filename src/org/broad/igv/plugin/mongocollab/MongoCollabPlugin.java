@@ -194,6 +194,17 @@ public class MongoCollabPlugin implements IGVPlugin {
         return connection;
     }
 
+
+    static void closeMongo(String host, int port) {
+        String key = createConnString(host, port);
+        Mongo connection = connections.get(key);
+        if(connection != null){
+            log.info("Closing connection to MongoDB host=" + host + " port=" + port);
+            connection.close();
+            connections.remove(key);
+        }
+    }
+
     private static String createConnString(String host, int port){
         return host + ":" + port;
     }

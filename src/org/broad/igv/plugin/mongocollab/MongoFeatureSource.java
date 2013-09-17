@@ -41,6 +41,18 @@ public class MongoFeatureSource implements FeatureSource {
 
     public MongoFeatureSource(DBCollection collection, boolean buildIndex) {
         this.collection = collection;
+        checkForIndex(buildIndex);
+    }
+
+    boolean hasIndex(){
+        return this.hasIndex;
+    }
+
+    /**
+     * Check to see if we have an index useful for queries
+     * @param buildIndex Whether to build index if not found
+     */
+    private void checkForIndex(boolean buildIndex){
         if(buildIndex){
             ensureIndex(collection);
         }
@@ -66,9 +78,9 @@ public class MongoFeatureSource implements FeatureSource {
                 this.hasIndex = true;
                 break;
             }
-
         }
     }
+
 
     private DBObject createQueryObject(String chr, int start, int end){
         BasicDBObject query = new BasicDBObject("Chr", chr);
