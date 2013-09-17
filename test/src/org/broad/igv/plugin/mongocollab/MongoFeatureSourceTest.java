@@ -16,9 +16,7 @@ import com.mongodb.DBCollection;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.util.TestUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import java.util.Iterator;
 import java.util.List;
@@ -26,15 +24,26 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 /**
+ * Starts a Mongo server instance, host must have mongo installed
+ * See {@link MongoCollabPluginTest}
  * @author jacob
  * @date 2013-Sep-17
  */
-//@Ignore("DB must be started manually")
 public class MongoFeatureSourceTest extends AbstractHeadlessTest{
 
     private MongoCollabPlugin.Locator locator;
     private MongoFeatureSource source;
     private DBCollection collection;
+
+    @BeforeClass
+    public static void setUpClass() throws Exception{
+        MongoCollabPluginTest.setUpClass();
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception{
+        MongoCollabPluginTest.tearDownClass();
+    }
 
     @Before
     public void setUp() throws Exception {

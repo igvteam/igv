@@ -13,33 +13,51 @@ package org.broad.igv.plugin.mongocollab;
 
 import com.mongodb.DBCollection;
 import com.mongodb.Mongo;
+import org.apache.log4j.Logger;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.*;
 
 import static org.junit.Assert.*;
 
 /**
  * Tests of our integration with MongoDB for collaboration/annotation
+ * Starts MongoDB on a separate process, host machine must have Mongo and
+ * test runner must be pointed to it by {@link #MONGO_EXEC_KEY}
  * @author jacob
  * @date 2013-Sep-10
  */
-@Ignore("DB must be started manually")
 public class MongoCollabPluginTest extends AbstractHeadlessTest {
 
+    private static Logger log = Logger.getLogger(MongoCollabPluginTest.class);
+
     private static String testFileSpecPath = TestUtils.DATA_DIR + "testMongo.txt";
+    private static Thread mongoProc;
+
+    private static String MONGO_EXEC_KEY = "MONGO_EXEC_PATH";
+    private static String MONGO_EXEC_PATH = "/usr/bin/mongod";
+
+    @BeforeClass
+    public static void setUpClass() throws Exception{
+        MONGO_EXEC_PATH = System.getProperty(MONGO_EXEC_KEY, MONGO_EXEC_PATH);
+        startTestMongo();
+        assumeTestDBRunning();
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception{
+        stopTestMongo();
+        TestUtils.clearOutputDir();
+    }
 
     @Before
     public void setUp() throws Exception{
-        //assumeTestDBRunning();
+        assumeTestDBRunning();
     }
 
     @Test
@@ -116,6 +134,57 @@ public class MongoCollabPluginTest extends AbstractHeadlessTest {
             return mongo.getDatabaseNames() != null;
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    static void startTestMongo() throws Exception{
+        String mongoExecPath = MONGO_EXEC_PATH;
+        int port = getTestLocator().port;
+        String dbPath = TestUtils.TMP_OUTPUT_DIR;
+        File dbDir = new File(dbPath);
+        if(!dbDir.exists()){
+            dbDir.mkdirs();
+            dbDir.deleteOnExit();
+        }
+
+        final String[] commands = new String[]{mongoExecPath, "--port", "" + port, "--dbpath", dbPath};
+
+        Thread runnable = new Thread(){
+
+            private Process proc;
+
+            @Override
+            public void run() {
+                try {
+                    proc = RuntimeUtils.startExternalProcess(commands, null, null);
+                    InputStream is = proc.getInputStream();
+                    BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                    String line = null;
+                    while((line = br.readLine()) != null){
+                        log.debug(line);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void interrupt() {
+                if(this.proc != null){
+                    this.proc.destroy();
+                }
+                super.interrupt();
+            }
+        };
+        runnable.start();
+        mongoProc = runnable;
+    }
+
+
+    static void stopTestMongo() {
+        if(mongoProc != null){
+            mongoProc.interrupt();
+            mongoProc.stop();
         }
     }
 }

@@ -240,6 +240,8 @@
     <property name="test.reports" value="${basedir}/reports"/>
     <property name="test.reports.tmp" value="${basedir}/reportstmp"/>
     <property name="LARGE_DATA_DIR" value="${basedir}/test/largedata/"/>
+    <!--Path to mongodb executable. For testing; is optional-->
+    <property name="MONGO_EXEC_PATH" value="/usr/bin/mongod"/>
     <!--Can override this on command line to see test output-->
     <property name="show.test.out" value="no"/>
 
@@ -293,6 +295,7 @@
             <jvmarg value="-Dinclude.longrunning=${include.longrunning}"/>
             <jvmarg value="-Dignore.ioexceptions=${ignore.ioexceptions}"/>
             <sysproperty key="LARGE_DATA_DIR" value="${LARGE_DATA_DIR}"/>
+            <sysproperty key="MONGO_EXEC_PATH" value="${MONGO_EXEC_PATH}"/>
             <sysproperty key="make.fail" value="${make.fail}"/>
 
             <classpath refid="test.classpath"/>
