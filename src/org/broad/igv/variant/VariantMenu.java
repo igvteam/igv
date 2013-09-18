@@ -95,8 +95,8 @@ public class VariantMenu extends IGVPopupMenu {
 
             public void actionPerformed(ActionEvent evt) {
                 int currentValue = track.getSquishedHeight();
-                int newValue = TrackMenuUtils.getIntValue("Squished row height", currentValue);
-                if (newValue != Integer.MIN_VALUE) {
+                Integer newValue = TrackMenuUtils.getIntegerInput("Squished row height", currentValue);
+                if (newValue != null) {
                     track.setSquishedHeight(newValue);
                     IGV.getInstance().getContentPane().repaint();
                 }

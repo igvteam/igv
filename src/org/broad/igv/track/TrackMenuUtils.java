@@ -800,26 +800,20 @@ public class TrackMenuUtils {
     }
 
     public static void changeTrackHeight(final Collection<Track> selectedTracks) {
-
-
         if (selectedTracks.isEmpty()) {
             return;
         }
 
         final String parameter = "Track height";
-        int value = getIntValue(parameter, getRepresentativeTrackHeight(selectedTracks));
-        if (value == Integer.MIN_VALUE) {
+        Integer value = getIntegerInput(parameter, getRepresentativeTrackHeight(selectedTracks));
+        if (value == null) {
             return;
         }
 
         value = Math.max(0, value);
-
         for (Track track : selectedTracks) {
-
             track.setHeight(value, true);
-
         }
-
         refresh();
     }
 
@@ -839,8 +833,8 @@ public class TrackMenuUtils {
 
         int origValue = featureTracks.iterator().next().getVisibilityWindow();
         double origValueKB = (origValue / 1000.0);
-        double value = getNumericValue("Visibility window (kb)", origValueKB);
-        if (value == Integer.MIN_VALUE) {
+        Double value = getDoubleInput("Visibility window (kb)", origValueKB);
+        if (value == null) {
             return;
         }
 
@@ -860,8 +854,8 @@ public class TrackMenuUtils {
 
         final String parameter = "Font size";
         int defaultValue = selectedTracks.iterator().next().getFontSize();
-        int value = getIntValue(parameter, defaultValue);
-        if (value == Integer.MIN_VALUE) {
+        Integer value = getIntegerInput(parameter, defaultValue);
+        if (value == null) {
             return;
         }
 
@@ -873,20 +867,21 @@ public class TrackMenuUtils {
     }
 
 
-    public static int getIntValue(String parameter, int value) {
+    public static Integer getIntegerInput(String parameter, int value) {
 
         while (true) {
 
-            String height = JOptionPane.showInputDialog(
+            String strValue = JOptionPane.showInputDialog(
                     IGV.getMainFrame(), parameter + ": ",
                     String.valueOf(value));
 
-            if ((height == null) || height.trim().equals("")) {
-                return Integer.MIN_VALUE;   // <= the logical "null" value
+            //strValue will be null if dialog cancelled
+            if ((strValue == null) || strValue.trim().equals("")) {
+                return null;
             }
 
             try {
-                value = Integer.parseInt(height);
+                value = Integer.parseInt(strValue);
                 return value;
             } catch (NumberFormatException numberFormatException) {
                 JOptionPane.showMessageDialog(IGV.getMainFrame(),
@@ -895,20 +890,21 @@ public class TrackMenuUtils {
         }
     }
 
-    public static double getNumericValue(String parameter, double value) {
+    public static Double getDoubleInput(String parameter, double value) {
 
         while (true) {
 
-            String height = JOptionPane.showInputDialog(
+            String strValue = JOptionPane.showInputDialog(
                     IGV.getMainFrame(), parameter + ": ",
                     String.valueOf(value));
 
-            if ((height == null) || height.trim().equals("")) {
-                return Double.MIN_VALUE;   // <= the logical "null" value
+            //strValue will be null if dialog cancelled
+            if ((strValue == null) || strValue.trim().equals("")) {
+                return null;
             }
 
             try {
-                value = Double.parseDouble(height);
+                value = Double.parseDouble(strValue);
                 return value;
             } catch (NumberFormatException numberFormatException) {
                 MessageUtils.showMessage(parameter + " must be a number.");
