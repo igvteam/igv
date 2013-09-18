@@ -241,7 +241,7 @@
     <property name="test.reports.tmp" value="${basedir}/reportstmp"/>
     <property name="LARGE_DATA_DIR" value="${basedir}/test/largedata/"/>
     <!--Path to mongodb executable. For testing; is optional-->
-    <property name="MONGO_EXEC_PATH" value="/usr/bin/mongod"/>
+    <property name="MONGO_EXEC_PATH" value="mongod"/>
     <!--Can override this on command line to see test output-->
     <property name="show.test.out" value="no"/>
 

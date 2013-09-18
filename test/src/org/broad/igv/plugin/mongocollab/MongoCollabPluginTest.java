@@ -40,11 +40,16 @@ public class MongoCollabPluginTest extends AbstractHeadlessTest {
     private static Thread mongoProc;
 
     private static String MONGO_EXEC_KEY = "MONGO_EXEC_PATH";
-    private static String MONGO_EXEC_PATH = "mongod";
+    /**
+     * See build.xml for default value
+     */
+    private static String MONGO_EXEC_PATH;
 
     @BeforeClass
     public static void setUpClass() throws Exception{
         MONGO_EXEC_PATH = System.getProperty(MONGO_EXEC_KEY, MONGO_EXEC_PATH);
+        log.info("Mongo exec path: " + MONGO_EXEC_PATH);
+        Assume.assumeTrue(MONGO_EXEC_PATH != null && MONGO_EXEC_PATH.length() > 0);
         startTestMongo();
         assumeTestDBRunning();
     }
