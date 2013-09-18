@@ -40,8 +40,17 @@ public class IGVUrlHelper implements URLHelper {
         return url;
     }
 
+    //Basic caching
+    private static Map<URL, Long> contentLengths = new HashMap<URL, Long>();
+
     public long getContentLength() throws IOException {
-        return HttpUtils.getInstance().getContentLength(url);
+        if(contentLengths.containsKey(url)){
+            return contentLengths.get(url);
+        }else{
+            long length = HttpUtils.getInstance().getContentLength(url);
+            contentLengths.put(url, length);
+            return length;
+        }
     }
 
     public InputStream openInputStream() throws IOException {
