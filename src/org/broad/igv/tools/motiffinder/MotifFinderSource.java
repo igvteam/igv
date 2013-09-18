@@ -60,7 +60,7 @@ public class MotifFinderSource implements FeatureSource<Feature> {
     @XmlJavaTypeAdapter(SessionXmlAdapters.Genome.class)
     @XmlAttribute private Genome genome;
 
-    @XmlAttribute private int featureWindowSize = -1;
+    @XmlAttribute private int featureWindowSize = 1500;
 
     @XmlAttribute private Strand strand;
 
