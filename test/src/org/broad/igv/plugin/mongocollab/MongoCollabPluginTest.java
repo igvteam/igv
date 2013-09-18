@@ -40,7 +40,7 @@ public class MongoCollabPluginTest extends AbstractHeadlessTest {
     private static Thread mongoProc;
 
     private static String MONGO_EXEC_KEY = "MONGO_EXEC_PATH";
-    private static String MONGO_EXEC_PATH = "/usr/bin/mongod";
+    private static String MONGO_EXEC_PATH = "mongod";
 
     @BeforeClass
     public static void setUpClass() throws Exception{
