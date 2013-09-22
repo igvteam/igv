@@ -257,8 +257,9 @@ public class RulerPanel extends JPanel {
 
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
         if (genome == null) {
-            log.info("No genome found with id: " + genome.getId());
+            log.warn("No genome found");
             PreferenceManager.getInstance().remove(PreferenceManager.DEFAULT_GENOME_KEY);
+            return;
         }
 
         boolean even = true;
@@ -266,7 +267,7 @@ public class RulerPanel extends JPanel {
         chromosomeRects.clear();
         List<String> chrNames = genome.getLongChromosomeNames();
         if (chrNames == null) {
-            log.info("No chromosomes found for genome: " + genome.getId());
+            log.info("No chromosomes found for genome: " + PreferenceManager.getInstance().getDefaultGenome());
             PreferenceManager.getInstance().remove(PreferenceManager.DEFAULT_GENOME_KEY);
         }
         if (chrNames.size() > 500) {

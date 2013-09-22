@@ -299,10 +299,12 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
         assertTrue("No gene track found but one should exist", IGV.getInstance().hasGeneTrack());
     }
 
+
+    String EcoliFastaSessionPath = TestUtils.DATA_DIR + "sessions/ecoli_out_seqonly.xml";
+
     @Test
     public void testLoadSequenceTrackOnlyDiffGenome() throws Exception{
-        String sessionPath = TestUtils.DATA_DIR + "sessions/ecoli_out_seqonly.xml";
-        rewriteRestoreSession(sessionPath);
+        rewriteRestoreSession(EcoliFastaSessionPath);
 
         assertFalse("Gene track exists but it shouldn't", IGV.getInstance().hasGeneTrack());
 
@@ -341,6 +343,18 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
         rewriteRestoreSession(path);
 
         assertEquals(expTrackCount, IGV.getInstance().getVisibleTrackCount());
+
+    }
+
+    @Test
+    public void testLoadSessionWithoutLoadedGenome() throws Exception{
+        GenomeManager.getInstance().setCurrentGenome(null);
+        assertNull(GenomeManager.getInstance().getGenomeId());
+
+        rewriteRestoreSession(EcoliFastaSessionPath);
+
+        assertNotNull(GenomeManager.getInstance().getGenomeId());
+
 
     }
 
