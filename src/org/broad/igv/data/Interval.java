@@ -48,7 +48,10 @@ public class Interval implements Feature {
 
     /**
      * Determine whether this interval fully contains the specified
-     * input interval
+     * input interval.
+     *
+     * A negative input start position is special meaning.  It is considered within the interval if the interval
+     * contains position "0".
      *
      * @param chr
      * @param start
@@ -56,7 +59,9 @@ public class Interval implements Feature {
      * @return
      */
     public boolean contains(String chr, int start, int end) {
-        return Objects.equal(this.chr, chr) && this.start <= start && this.end >= end;
+        return Objects.equal(this.chr, chr)
+                && this.start <= (start < 0 ? 0 : start)
+                && this.end >= end;
     }
 
     /**
