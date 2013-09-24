@@ -9,15 +9,12 @@ import org.broad.igv.feature.PSLRecord;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.FileUtils;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
 import javax.swing.*;
-import javax.swing.border.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -34,11 +31,12 @@ public class BlatQueryWindow extends JFrame {
         initComponents();
         addSelectionListener();
 
+        querySeqTextPane.setContentType("text/html");
         StringBuffer headerBuffer = new StringBuffer("<html>");
         headerBuffer.append("&nbsp;&nbsp;BLAT result for query sequence: <br>&nbsp;&nbsp&nbsp;&nbsp;");
         headerBuffer.append(querySequence);
         headerBuffer.append("<br><br>&nbsp;&nbsp;<i>Click on a row to go to alignment");
-        querySeqTextArea.setText(headerBuffer.toString());
+        querySeqTextPane.setText(headerBuffer.toString());
     }
 
     private void addSelectionListener() {
@@ -99,7 +97,7 @@ public class BlatQueryWindow extends JFrame {
         headerPanel = new JPanel();
         panel1 = new JPanel();
         scrollPane2 = new JScrollPane();
-        querySeqTextArea = new JTextArea();
+        querySeqTextPane = new JTextPane();
 
         //======== this ========
         Container contentPane = getContentPane();
@@ -159,10 +157,7 @@ public class BlatQueryWindow extends JFrame {
                 //======== scrollPane2 ========
                 {
                     scrollPane2.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-                    //---- querySeqTextArea ----
-                    querySeqTextArea.setLineWrap(true);
-                    scrollPane2.setViewportView(querySeqTextArea);
+                    scrollPane2.setViewportView(querySeqTextPane);
                 }
                 headerPanel.add(scrollPane2, BorderLayout.CENTER);
             }
@@ -186,6 +181,6 @@ public class BlatQueryWindow extends JFrame {
     private JPanel headerPanel;
     private JPanel panel1;
     private JScrollPane scrollPane2;
-    private JTextArea querySeqTextArea;
+    private JTextPane querySeqTextPane;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

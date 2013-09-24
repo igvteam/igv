@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "5.1.0.2.64" Java: "1.6.0_37" encoding: "UTF-8"
+JFDML JFormDesigner: "5.1.1.0.120" Java: "1.6.0_51" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -33,9 +33,8 @@ new FormModel {
 					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 						name: "scrollPane2"
 						"horizontalScrollBarPolicy": 31
-						add( new FormComponent( "javax.swing.JTextArea" ) {
+						add( new FormComponent( "javax.swing.JTextPane" ) {
 							name: "querySeqTextArea"
-							"lineWrap": true
 						} )
 					}, new FormLayoutConstraints( class java.lang.String ) {
 						"value": "Center"
