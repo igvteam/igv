@@ -212,6 +212,7 @@ public class GenbankParser {
 
                             // join and complement functions irrelevant
                             String joinString = currentLocQualifier.replace("join", "");
+                            joinString = joinString.replace("order", "");
                             joinString = joinString.replace("complement", "");
                             joinString = joinString.replace("(", "");
                             joinString = joinString.replace(")", "");
@@ -263,7 +264,12 @@ public class GenbankParser {
         boolean isNegative = joinString.contains("complement");
         for (String loci : lociArray) {
             String[] tmp = loci.split("\\.\\.");
-            int exonStart = Integer.parseInt(tmp[0]) - 1;    // - (isNegative ? 0 : 1);
+            int exonStart = 0;    // - (isNegative ? 0 : 1);
+            try {
+                exonStart = Integer.parseInt(tmp[0]) - 1;
+            } catch (NumberFormatException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
             int exonEnd = exonStart + 1;
             if (tmp.length > 1) {
                 exonEnd = Integer.parseInt(tmp[1]);
