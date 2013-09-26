@@ -17,14 +17,13 @@ package org.broad.igv.ui.panel;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -32,6 +31,8 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import static org.broad.igv.track.TrackMenuUtils.getExportFeatures;
 
 /**
  * @author eflakes
@@ -183,6 +184,13 @@ abstract public class TrackPanelComponent extends JPanel {
             }
         });
         menu.add(item);
+
+        // Add export features
+        if(!Globals.isProduction()){
+            ReferenceFrame.Range range = FrameManager.getDefaultFrame().getCurrentRange();
+            JMenuItem exportFeats = getExportFeatures(selectedTracks, range);
+            if (exportFeats != null) menu.add(exportFeats);
+        }
 
 
         if (menu != null) {

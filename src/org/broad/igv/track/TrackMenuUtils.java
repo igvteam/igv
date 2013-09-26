@@ -11,6 +11,7 @@
 
 package org.broad.igv.track;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import org.apache.commons.math.stat.StatUtils;
@@ -20,17 +21,21 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.blat.BlatClient;
 import org.broad.igv.data.CombinedDataSource;
 import org.broad.igv.feature.Exon;
+import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.renderer.*;
 import org.broad.igv.ui.*;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.StringUtils;
+import org.broad.igv.util.collections.CollUtils;
 import org.broad.igv.util.stats.KMPlotFrame;
 import org.broad.tribble.Feature;
 
@@ -38,6 +43,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.*;
 import java.util.List;
 
@@ -395,11 +403,73 @@ public class TrackMenuUtils {
                 if (!Globals.isProduction()) {
                     featurePopupMenu.add(getBlatItem(f));
                 }
+
             }
         }
 
         featurePopupMenu.addSeparator();
         featurePopupMenu.add(getChangeFeatureWindow(tracks));
+    }
+
+    /**
+     * Return a menu item which will export visible features
+     * If {@code tracks} is not a single {@code FeatureTrack}, {@code null}
+     * is returned (there should be no menu entry)
+     * @param tracks
+     * @return
+     */
+    public static JMenuItem getExportFeatures(final Collection<Track> tracks, final ReferenceFrame.Range range) {
+        if(tracks.size() != 1 || !(tracks.iterator().next() instanceof FeatureTrack) ){
+            return null;
+        }
+        JMenuItem exportData = new JMenuItem("Export To BED File");
+        exportData.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                File outFile = FileDialogUtils.chooseFile("Save Visible Data",
+                        PreferenceManager.getInstance().getLastTrackDirectory(),
+                        new File("visibleData.bed"),
+                        FileDialogUtils.SAVE);
+
+                exportVisibleData(outFile.getAbsolutePath(), tracks, range);
+            }
+        });
+        return exportData;
+    }
+
+    /**
+     * Write features in {@code track} found in {@code range} to {@code outPath},
+     * BED format
+     * TODO Move somewhere else? run on separate thread?  Probably shouldn't be here
+     *
+     * @param outPath
+     * @param tracks
+     * @param range
+     */
+    static void exportVisibleData(String outPath, Collection<Track> tracks, ReferenceFrame.Range range) {
+        PrintWriter writer;
+        try {
+            writer = new PrintWriter(outPath);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        for (Track track : tracks) {
+            if (track instanceof FeatureTrack) {
+                FeatureTrack fTrack = (FeatureTrack) track;
+                //Can't trust FeatureTrack.getFeatures to limit itself, so we filter
+                List<Feature> features = fTrack.getFeatures(range.getChr(), range.getStart(), range.getEnd());
+                Predicate<Feature> pred = FeatureUtils.getOverlapPredicate(range.getChr(), range.getStart(), range.getEnd());
+                features = CollUtils.filter(features, pred);
+                IGVBEDCodec codec = new IGVBEDCodec();
+                for (Feature feat : features) {
+                    String featString = codec.encode(feat);
+                    writer.println(featString);
+                }
+            }
+        }
+        writer.flush();
+        writer.close();
     }
 
 
