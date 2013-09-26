@@ -120,6 +120,12 @@ class FeatureTrackUtils {
      */
     public static void nextFeatureSearch(FeatureSource source, String chr, int initStart, int initEnd, boolean forward,
                                          final FeatureSearcher.IFeatureFound foundHandler) throws IOException{
+
+        //Only allow one to be shown at a time
+        if(CancellableProgressDialog.hasCancellableProgressDialog()){
+            return;
+        }
+
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
         //We search backwards by setting a negative searchIncrement
@@ -151,6 +157,6 @@ class FeatureTrackUtils {
             }
         });
 
-        LongRunningTask.getThreadExecutor().execute(searcher);
+        LongRunningTask.submit(searcher);
     }
 }
