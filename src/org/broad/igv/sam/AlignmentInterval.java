@@ -32,7 +32,6 @@ public class AlignmentInterval extends Locus {
     private static Logger log = Logger.getLogger(AlignmentInterval.class);
 
     Genome genome;
-    private int maxCount = 0;
     private AlignmentCounts counts;
     private LinkedHashMap<String, List<Row>> groupedAlignmentRows;  // The alignments
     private SpliceJunctionHelper spliceJunctionHelper;
@@ -57,7 +56,6 @@ public class AlignmentInterval extends Locus {
 
         //reference = genome.getSequence(chr, start, end);
         this.counts = counts;
-        this.maxCount = counts.getMaxCount();
 
         this.spliceJunctionHelper = spliceJunctionHelper;
         this.downsampledIntervals = downsampledIntervals;
@@ -174,8 +172,8 @@ public class AlignmentInterval extends Locus {
         return 0;
     }
 
-    public int getMaxCount() {
-        return maxCount;
+    public int getMaxCount(int origin, int end) {
+        return counts.getMaxCount(origin, end);
     }
 
     public int getTotalCount(int pos) {

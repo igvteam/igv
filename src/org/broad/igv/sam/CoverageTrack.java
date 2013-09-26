@@ -154,38 +154,30 @@ public class CoverageTrack extends AbstractTrack {
      */
     @Subscribe
     public void receiveDataLoaded(DataLoadedEvent e){
-        rescale(e.context.getReferenceFrame());
+        rescale();
         e.context.getReferenceFrame().getEventBus().post(new ViewChange.Result());
     }
 
     public void rescale() {
         if (autoScale & dataManager != null) {
             List<ReferenceFrame> frameList = FrameManager.getFrames();
-            List<AlignmentInterval> intervals = new ArrayList<AlignmentInterval>(frameList.size());
-            for(ReferenceFrame frame: frameList){
-                intervals.add(dataManager.getLoadedInterval(frame.getName()));
+
+            int max = 10;
+            for (ReferenceFrame frame : frameList) {
+                AlignmentInterval interval = dataManager.getLoadedInterval(frame.getName());
+                if (interval == null) continue;
+
+                int origin = (int) frame.getOrigin();
+                int end = (int) frame.getEnd() + 1;
+
+                int intervalMax = interval.getMaxCount(origin, end);
+                max = intervalMax > max ? intervalMax : max;
             }
-            rescaleIntervals(intervals);
-        }
-    }
 
-    public void rescale(ReferenceFrame frame) {
-        if (autoScale & dataManager != null) {
-            rescaleIntervals(Arrays.asList(dataManager.getLoadedInterval(frame.getName())));
-        }
-    }
+            boolean isLog = (getDataRange().getType()) == DataRange.Type.LOG;
+            super.setDataRange(new DataRange(0, 0, max, isLog));
 
-    private void rescaleIntervals(List<AlignmentInterval> intervals) {
-        if (intervals == null || intervals.size() == 0) return;
-
-        int max = 10;
-        for(AlignmentInterval interval: intervals){
-            if(interval == null) continue;
-            max = Math.max(max, interval.getMaxCount());
         }
-        DataRange.Type type = getDataRange().getType();
-        super.setDataRange(new DataRange(0, 0, max));
-        getDataRange().setType(type);
     }
 
 
@@ -681,7 +673,7 @@ public class CoverageTrack extends AbstractTrack {
     private void addCopyDetailsItem(IGVPopupMenu popupMenu, TrackClickEvent te) {
         JMenuItem copyDetails = new JMenuItem("Copy Details to Clipboard");
         copyDetails.setEnabled(false);
-        if(te.getFrame() != null){
+        if (te.getFrame() != null) {
             final String details = getValueStringAt(te.getFrame().getChrName(), te.getChromosomePosition(), te.getMouseEvent().getY(), te.getFrame());
             copyDetails.addActionListener(new ActionListener() {
                 @Override
@@ -729,7 +721,7 @@ public class CoverageTrack extends AbstractTrack {
 
             }
         });
-        if(menu != null) menu.add(maxValItem);
+        if (menu != null) menu.add(maxValItem);
 
         return maxValItem;
     }
@@ -836,7 +828,7 @@ public class CoverageTrack extends AbstractTrack {
     }
 
     @SubtlyImportant
-    private static CoverageTrack getNextTrack(){
+    private static CoverageTrack getNextTrack() {
         return (CoverageTrack) IGVSessionReader.getNextTrack();
     }
 

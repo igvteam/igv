@@ -45,7 +45,7 @@ public interface AlignmentCounts extends Feature {
 
     int getNumberOfPoints();
 
-    int getMaxCount();
+    int getMaxCount(int origin, int end);
 
     String getValueStringAt(int pos);
 

@@ -103,8 +103,17 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
         return indices.get(idx);
     }
 
-
-    public int getMaxCount() {
+    /**
+     * Return an estimate of the maximum count over the specified bp range.
+     * <p/>
+     * NOTE:  currently the range is not used, so the estimate is overly conservative.  In the future we might
+     * use the range to get an more accurate estimate.
+     *
+     * @param origin
+     * @param end
+     * @return
+     */
+    public int getMaxCount(int origin, int end) {
         return maxCount;
     }
 
