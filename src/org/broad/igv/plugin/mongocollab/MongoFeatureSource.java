@@ -160,16 +160,19 @@ public class MongoFeatureSource implements FeatureSource {
         this.featureWindowSize = size;
     }
 
+    DBCollection getCollection(){
+        return this.collection;
+    }
+
     public static FeatureTrack loadFeatureTrack(MongoCollabPlugin.Locator locator, List<Track> newTracks) {
 
         DBCollection collection = MongoCollabPlugin.getCollection(locator);
         //TODO Make this more flexible
         collection.setObjectClass(MongoCollabPlugin.FeatDBObject.class);
         MongoFeatureSource source = new MongoFeatureSource(collection, locator.buildIndex);
-        FeatureTrack track = new FeatureTrack(collection.getFullName(), collection.getName(), source);
+        FeatureTrack track = new MongoFeatureTrack(collection.getFullName(), collection.getName(), source);
         newTracks.add(track);
         track.setMargin(0);
         return track;
     }
-
 }

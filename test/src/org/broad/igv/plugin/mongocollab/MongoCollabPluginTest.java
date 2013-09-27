@@ -36,7 +36,7 @@ public class MongoCollabPluginTest extends AbstractHeadlessTest {
 
     private static Logger log = Logger.getLogger(MongoCollabPluginTest.class);
 
-    private static String testFileSpecPath = TestUtils.DATA_DIR + "testMongo.txt";
+    private static String testFileSpecPath = TestUtils.DATA_DIR + "testMongo.db.spec";
     private static Thread mongoProc;
 
     private static String MONGO_EXEC_KEY = "MONGO_EXEC_PATH";
@@ -124,9 +124,9 @@ public class MongoCollabPluginTest extends AbstractHeadlessTest {
         return collection;
     }
 
-    public static MongoCollabPlugin.Locator getTestLocator(){
+    public static MongoCollabPlugin.Locator getTestLocator() throws IOException{
         try {
-            return new MongoCollabPlugin.Locator(new File(testFileSpecPath));
+            return new MongoCollabPlugin.Locator(testFileSpecPath);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             return null;

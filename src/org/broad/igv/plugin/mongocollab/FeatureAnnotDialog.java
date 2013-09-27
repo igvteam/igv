@@ -41,7 +41,7 @@ public class FeatureAnnotDialog extends JDialog {
     private DBCollection collection;
     private MongoCollabPlugin.FeatDBObject featDBObject;
 
-    public FeatureAnnotDialog(Frame owner, DBCollection collection, Feature feature) {
+    FeatureAnnotDialog(Frame owner, DBCollection collection, Feature feature) {
         super(owner);
         initComponents();
 

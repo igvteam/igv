@@ -14,6 +14,7 @@ package org.broad.igv.plugin.mongocollab;
 import com.mongodb.*;
 import org.apache.log4j.Logger;
 import org.broad.igv.dev.api.IGVPlugin;
+import org.broad.igv.dev.api.LoadHandler;
 import org.broad.igv.feature.AbstractFeature;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Locus;
@@ -21,24 +22,20 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackClickEvent;
-import org.broad.igv.track.TrackMenuItemBuilder;
-import org.broad.igv.track.TrackMenuUtils;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.PanelName;
-import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.track.TrackLoader;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author jacob
@@ -50,65 +47,9 @@ public class MongoCollabPlugin implements IGVPlugin {
 
     @Override
     public void init() {
-
-        JMenuItem loadAnnotTrack = new JMenuItem("Load Annotation Track From DB");
-        loadAnnotTrack.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                File locatorFile = FileDialogUtils.chooseFile("Select config file");
-                if(locatorFile == null) return;
-
-                Locator locator = null;
-                try {
-                    locator = new Locator(locatorFile);
-                } catch (FileNotFoundException ex) {
-                    //This shouldn't happen, user just picked a file
-                    log.error(ex.getMessage(), ex);
-                    return;
-                }
-                List<Track> newTracks = new ArrayList<Track>(1);
-                MongoFeatureSource.loadFeatureTrack(locator, newTracks);
-                IGV.getInstance().addTracks(newTracks, PanelName.FEATURE_PANEL);
-
-                //Add context menu entry
-                TrackMenuUtils.addTrackMenuItemBuilder(createBuilderForLocator(locator));
-            }
-        });
-
-        JMenu collabPluginItem = new JMenu("Annotate via DB");
-        collabPluginItem.add(loadAnnotTrack);
-        //Add "Tools" menu option for loading annotation DB track
-        IGV.getInstance().addOtherToolMenu(collabPluginItem);
+        TrackLoader.registerHandler("db.spec", new TrackLoadHandler());
     }
 
-    private TrackMenuItemBuilder createBuilderForLocator(final Locator locator){
-        TrackMenuItemBuilder builder = new TrackMenuItemBuilder() {
-            @Override
-            public JMenuItem build(Collection<Track> selectedTracks, TrackClickEvent te) {
-                ReferenceFrame frame = te.getFrame();
-                boolean hasFrame = frame != null;
-                if(!hasFrame) return null;
-
-                final String chr = frame.getChrName();
-                final int start = (int) te.getChromosomePosition();
-                final int end = (int) Math.ceil(frame.getChromosomePosition(te.getMouseEvent().getX() + 1));
-
-                JMenuItem item = new JMenuItem("Annotate in " + locator.collectionName);
-                item.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        DBCollection collection = getCollection(locator);
-                        Feature feat = new BasicFeature(chr, start, end);
-                        FeatureAnnotDialog dialog = new FeatureAnnotDialog(IGV.getMainFrame(), collection, feat);
-                        dialog.setVisible(true);
-                    }
-                });
-                return item;
-            }
-        };
-        return builder;
-    }
-    
     static void insertFeaturesFromFile(DBCollection collection){
 
         File featFile = FileDialogUtils.chooseFile("Select feature file");
@@ -311,8 +252,8 @@ public class MongoCollabPlugin implements IGVPlugin {
         public final String collectionName;
         public final boolean buildIndex;
 
-        public Locator(File file) throws FileNotFoundException{
-            this(new FileInputStream(file));
+        public Locator(String path) throws IOException{
+            this(ParsingUtils.openInputStream(path));
         }
 
         public Locator(InputStream is){
@@ -329,5 +270,14 @@ public class MongoCollabPlugin implements IGVPlugin {
 
         }
 
+    }
+
+    public static class TrackLoadHandler implements LoadHandler {
+
+        @Override
+        public void load(String path, List<Track> newTracks) throws IOException{
+            Locator locator = new Locator(path);
+            MongoFeatureSource.loadFeatureTrack(locator, newTracks);
+        }
     }
 }
