@@ -37,20 +37,31 @@ public class MongoFeatureTrack extends FeatureTrack{
         super(id, name, source);
     }
 
-    private JMenuItem createAddAnnotMenuEntry(TrackClickEvent te){
+    /**
+     * Return a menu entry for adding a new feature, or editing a feature the user clicked on.
+     * @param te
+     * @param selFeat Selected feature. {@code null} indicates adding a new feature
+     * @return
+     */
+    private JMenuItem createEditAnnotMenuEntry(TrackClickEvent te, final DBFeature.IGVFeat selFeat){
+
         ReferenceFrame frame = te.getFrame();
         boolean hasFrame = frame != null;
         if(!hasFrame) return null;
 
-        final String chr = frame.getChrName();
-        final int start = (int) te.getChromosomePosition();
-        final int end = (int) Math.ceil(frame.getChromosomePosition(te.getMouseEvent().getX() + 1));
 
-        JMenuItem item = new JMenuItem("Add annotation to " + MongoFeatureTrack.this.getName());
+        final boolean editing = selFeat != null;
+
+        final String chr = editing ? selFeat.getChr() : frame.getChrName();
+        final int start = editing ? selFeat.getStart() : (int) te.getChromosomePosition();
+        final int end = editing ? selFeat.getEnd() : (int) Math.ceil(frame.getChromosomePosition(te.getMouseEvent().getX() + 1));
+
+        String name = editing ? "Edit " + selFeat.getName() : "Add annotation to " + MongoFeatureTrack.this.getName();
+        JMenuItem item = new JMenuItem(name);
         item.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Feature feat = new BasicFeature(chr, start, end);
+                Feature feat = editing ? selFeat.getDBFeature() : new BasicFeature(chr, start, end);
                 FeatureAnnotDialog dialog = new FeatureAnnotDialog(IGV.getMainFrame(), getCollection(), feat);
                 dialog.setVisible(true);
             }
@@ -66,7 +77,11 @@ public class MongoFeatureTrack extends FeatureTrack{
     public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
         String title = getName();
         IGVPopupMenu menu = TrackMenuUtils.getPopupMenu(Arrays.<Track>asList(this), title, te);
-        menu.add(createAddAnnotMenuEntry(te));
+
+        //Add annotation or edit existing one
+        Feature feat = getFeatureAtMousePosition(te);
+        menu.add(createEditAnnotMenuEntry(te, (DBFeature.IGVFeat) feat));
+
         return menu;
     }
 }

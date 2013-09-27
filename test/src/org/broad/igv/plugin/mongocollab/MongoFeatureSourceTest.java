@@ -14,7 +14,6 @@ package org.broad.igv.plugin.mongocollab;
 import com.google.common.collect.Lists;
 import com.mongodb.DBCollection;
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.util.TestUtils;
 import org.junit.*;
 
@@ -74,11 +73,11 @@ public class MongoFeatureSourceTest extends AbstractHeadlessTest{
     public void testGetFeatures_chr() throws Exception{
         int inserted = MongoCollabPlugin.insertFeaturesFromFile(this.collection, TestUtils.DATA_DIR + "bed/test.bed");
 
-        Iterator<IGVFeature> features = this.source.getFeatures("chr1", 0, Integer.MAX_VALUE);
-        List<IGVFeature> chr1List = Lists.newArrayList(features);
+        Iterator<DBFeature.IGVFeat> features = this.source.getFeatures("chr1", 0, Integer.MAX_VALUE);
+        List<DBFeature.IGVFeat> chr1List = Lists.newArrayList(features);
 
         features = this.source.getFeatures("chr2", 0, Integer.MAX_VALUE);
-        List<IGVFeature> chr2List = Lists.newArrayList(features);
+        List<DBFeature.IGVFeat> chr2List = Lists.newArrayList(features);
 
         assertEquals(inserted, chr1List.size() + chr2List.size());
 
@@ -91,8 +90,8 @@ public class MongoFeatureSourceTest extends AbstractHeadlessTest{
     public void testGetFeatures_start_01() throws Exception{
         int inserted = MongoCollabPlugin.insertFeaturesFromFile(this.collection, TestUtils.DATA_DIR + "bed/test.bed");
 
-        Iterator<IGVFeature> features = this.source.getFeatures("chr1", 250, 100005);
-        List<IGVFeature> list = Lists.newArrayList(features);
+        Iterator<DBFeature.IGVFeat> features = this.source.getFeatures("chr1", 250, 100005);
+        List<DBFeature.IGVFeat> list = Lists.newArrayList(features);
 
         assertEquals(2, list.size());
         TestUtils.assertFeatureIteratorSorted(list.iterator());
@@ -102,14 +101,14 @@ public class MongoFeatureSourceTest extends AbstractHeadlessTest{
     public void testGetFeatures_start_02() throws Exception{
         int inserted = MongoCollabPlugin.insertFeaturesFromFile(this.collection, TestUtils.DATA_DIR + "bed/test.bed");
 
-        Iterator<IGVFeature> features = this.source.getFeatures("chr1", 100005, 100008);
-        List<IGVFeature> list_00 = Lists.newArrayList(features);
+        Iterator<DBFeature.IGVFeat> features = this.source.getFeatures("chr1", 100005, 100008);
+        List<DBFeature.IGVFeat> list_00 = Lists.newArrayList(features);
 
         assertEquals(1, list_00.size());
         assertEquals(100000, list_00.get(0).getStart());
 
         features = this.source.getFeatures("chr1", 100005, 200008);
-        List<IGVFeature> list_01 = Lists.newArrayList(features);
+        List<DBFeature.IGVFeat> list_01 = Lists.newArrayList(features);
 
         assertEquals(2, list_01.size());
         assertEquals(100000, list_01.get(0).getStart());

@@ -16,7 +16,6 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import org.broad.igv.feature.FeatureUtils;
-import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.FeatureTrack;
@@ -31,7 +30,7 @@ import java.util.List;
  * User: jacob
  * Date: 2012-Dec-14
  */
-public class MongoFeatureSource implements FeatureSource {
+public class MongoFeatureSource implements FeatureSource<DBFeature.IGVFeat> {
 
     private int featureWindowSize = 1000000;
 
@@ -117,7 +116,7 @@ public class MongoFeatureSource implements FeatureSource {
     }
 
     @Override
-    public Iterator<IGVFeature> getFeatures(String chr, int start, int end) throws IOException {
+    public Iterator<DBFeature.IGVFeat> getFeatures(String chr, int start, int end) throws IOException {
         this.collection.setObjectClass(DBFeature.class);
         DBCursor cursor = this.collection.find(createQueryObject(chr, start, end));
         //Sort by increasing start value
@@ -128,7 +127,7 @@ public class MongoFeatureSource implements FeatureSource {
         boolean isSorted = true;
         int lastStart = -1;
 
-        List<IGVFeature> features = new ArrayList<IGVFeature>();
+        List<DBFeature.IGVFeat> features = new ArrayList<DBFeature.IGVFeat>();
         while (cursor.hasNext()) {
             DBObject obj = cursor.next();
             DBFeature feat = (DBFeature) obj;

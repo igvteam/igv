@@ -14,7 +14,6 @@ package org.broad.igv.plugin.mongocollab;
 import com.mongodb.ReflectionDBObject;
 import org.broad.igv.feature.AbstractFeature;
 import org.broad.igv.feature.BasicFeature;
-import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.session.SubtlyImportant;
 import org.broad.tribble.Feature;
 
@@ -98,11 +97,29 @@ public class DBFeature extends ReflectionDBObject implements Feature {
         this.start = start;
     }
 
-    public IGVFeature createIGVFeature(){
-        BasicFeature bf = new BasicFeature(chr, start, end);
-        bf.setDescription(this.description);
-        //TODO Shouldn't just cast from double to float
-        bf.setScore((float) this.score);
-        return bf;
+    public IGVFeat createIGVFeature(){
+        return new IGVFeat(this);
+    }
+
+    /**
+     * This is the feature to be returned to {@code FeatureTrack}s.
+     * Would really like to inherit both ReflectionDBObject and BasicFeature, but
+     * that's not possible.
+     */
+    public static class IGVFeat extends BasicFeature{
+
+        private DBFeature dbFeat;
+
+        IGVFeat(DBFeature dbFeat){
+            super(dbFeat.getChr(), dbFeat.getStart(), dbFeat.getEnd());
+            this.dbFeat = dbFeat;
+            setDescription(dbFeat.getDescription());
+            //TODO Shouldn't just cast from double to float
+            setScore((float) dbFeat.getScore());
+        }
+
+        DBFeature getDBFeature(){
+            return this.dbFeat;
+        }
     }
 }
