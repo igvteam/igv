@@ -11,16 +11,16 @@
 
 package org.broad.igv.plugin.mongocollab;
 
-import com.mongodb.*;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.Mongo;
+import com.mongodb.WriteResult;
 import org.apache.log4j.Logger;
 import org.broad.igv.dev.api.IGVPlugin;
 import org.broad.igv.dev.api.LoadHandler;
-import org.broad.igv.feature.AbstractFeature;
-import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
-import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
 import org.broad.igv.ui.util.FileDialogUtils;
@@ -81,7 +81,7 @@ public class MongoCollabPlugin implements IGVPlugin {
 
             int count = 0;
             for (Feature feat : iter) {
-                String err = saveFeature(collection, FeatDBObject.create(feat));
+                String err = saveFeature(collection, DBFeature.create(feat));
                 if(err == null) count += 1;
             }
             return count;
@@ -99,7 +99,7 @@ public class MongoCollabPlugin implements IGVPlugin {
      * @param dbFeat
      * @return
      */
-    static String saveFeature(DBCollection collection, MongoCollabPlugin.FeatDBObject dbFeat) {
+    static String saveFeature(DBCollection collection, DBFeature dbFeat) {
 
         String errorMessage = "";
         try {
@@ -154,95 +154,6 @@ public class MongoCollabPlugin implements IGVPlugin {
         Mongo mongo = getMongo(locator.host, locator.port);
         DB mongoDB = mongo.getDB(locator.dbName);
         return mongoDB.getCollection(locator.collectionName);
-    }
-
-    /**
-     * Object mapping to Mongo database
-     * ReflectionDBObject works with getters/setters, and
-     * doesn't use the Java Beans case convention.
-     * So (get/set)Chr maps to a field named "Chr", not "chr"
-     * as we might prefer
-     *
-     * TODO Use existing feature interfaces/classes, which are long past
-     * TODO overdue for refactoring
-     */
-    public static class FeatDBObject extends ReflectionDBObject implements Feature {
-
-        private String chr;
-        private int start;
-        private int end;
-        private String description;
-        private double score;
-
-        @SubtlyImportant
-        public FeatDBObject(){}
-
-        public FeatDBObject(String chr, int start, int end, String description, double score){
-            this.chr = chr;
-            this.start = start;
-            this.end = end;
-            this.description = description;
-            this.score = score;
-        }
-
-        static FeatDBObject create(Feature feature){
-            if(feature instanceof AbstractFeature){
-                return create((AbstractFeature) feature);
-            }
-            return new FeatDBObject(feature.getChr(), feature.getStart(), feature.getEnd(), null, 0);
-        }
-
-        static FeatDBObject create(AbstractFeature feature){
-            return new FeatDBObject(feature.getChr(), feature.getStart(), feature.getEnd(), feature.getDescription(), feature.getScore());
-        }
-
-        public String getChr() {
-            return chr;
-        }
-
-        public void setChr(String chr) {
-            this.chr = chr;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public void setDescription(String description) {
-            this.description = description;
-        }
-
-        public int getEnd() {
-            return end;
-        }
-
-        public void setEnd(int end) {
-            this.end = end;
-        }
-
-        public double getScore() {
-            return score;
-        }
-
-        public void setScore(double score) {
-            this.score = score;
-        }
-
-        public int getStart() {
-            return start;
-        }
-
-        public void setStart(int start) {
-            this.start = start;
-        }
-
-        public BasicFeature createBasicFeature(){
-            BasicFeature bf = new BasicFeature(chr, start, end);
-            bf.setDescription(this.description);
-            //TODO Shouldn't just cast from double to float
-            bf.setScore((float) this.score);
-            return bf;
-        }
     }
 
     public static class Locator {

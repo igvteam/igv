@@ -39,7 +39,7 @@ public class FeatureAnnotDialog extends JDialog {
 
     private String userName;
     private DBCollection collection;
-    private MongoCollabPlugin.FeatDBObject featDBObject;
+    private DBFeature featDBObject;
 
     FeatureAnnotDialog(Frame owner, DBCollection collection, Feature feature) {
         super(owner);
@@ -49,16 +49,16 @@ public class FeatureAnnotDialog extends JDialog {
 
         if(collection == null) throw new IllegalArgumentException("DBCollection must not be null");
         this.collection = collection;
-        if(feature instanceof MongoCollabPlugin.FeatDBObject){
-            this.featDBObject = (MongoCollabPlugin.FeatDBObject) feature;
+        if(feature instanceof DBFeature){
+            this.featDBObject = (DBFeature) feature;
         }else{
-            this.featDBObject = MongoCollabPlugin.FeatDBObject.create(feature);
+            this.featDBObject = DBFeature.create(feature);
         }
 
         initComponentData(this.featDBObject);
     }
 
-    private void initComponentData(MongoCollabPlugin.FeatDBObject feature) {
+    private void initComponentData(DBFeature feature) {
 
         setTitle("Add/Save Feature in " + this.collection.getFullName());
 
@@ -78,7 +78,7 @@ public class FeatureAnnotDialog extends JDialog {
         setVisible(false);
     }
 
-    private MongoCollabPlugin.FeatDBObject createDBObjectFromFields(){
+    private DBFeature createDBObjectFromFields(){
 
         int start, end;
         float score;
@@ -113,7 +113,7 @@ public class FeatureAnnotDialog extends JDialog {
      */
     private void okButtonActionPerformed(ActionEvent e) {
 
-        MongoCollabPlugin.FeatDBObject featDBObject = createDBObjectFromFields();
+        DBFeature featDBObject = createDBObjectFromFields();
         String errorMessage = MongoCollabPlugin.saveFeature(collection, featDBObject);
 
         if (errorMessage != null) {

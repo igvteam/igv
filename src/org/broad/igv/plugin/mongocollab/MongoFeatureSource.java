@@ -118,7 +118,7 @@ public class MongoFeatureSource implements FeatureSource {
 
     @Override
     public Iterator<IGVFeature> getFeatures(String chr, int start, int end) throws IOException {
-        this.collection.setObjectClass(MongoCollabPlugin.FeatDBObject.class);
+        this.collection.setObjectClass(DBFeature.class);
         DBCursor cursor = this.collection.find(createQueryObject(chr, start, end));
         //Sort by increasing start value
         //Only do this if we have an index, otherwise might be too memory intensive
@@ -131,8 +131,8 @@ public class MongoFeatureSource implements FeatureSource {
         List<IGVFeature> features = new ArrayList<IGVFeature>();
         while (cursor.hasNext()) {
             DBObject obj = cursor.next();
-            MongoCollabPlugin.FeatDBObject feat = (MongoCollabPlugin.FeatDBObject) obj;
-            features.add(feat.createBasicFeature());
+            DBFeature feat = (DBFeature) obj;
+            features.add(feat.createIGVFeature());
             isSorted &= feat.getStart() >= lastStart;
             lastStart = feat.getStart();
         }
@@ -168,7 +168,7 @@ public class MongoFeatureSource implements FeatureSource {
 
         DBCollection collection = MongoCollabPlugin.getCollection(locator);
         //TODO Make this more flexible
-        collection.setObjectClass(MongoCollabPlugin.FeatDBObject.class);
+        collection.setObjectClass(DBFeature.class);
         MongoFeatureSource source = new MongoFeatureSource(collection, locator.buildIndex);
         FeatureTrack track = new MongoFeatureTrack(collection.getFullName(), collection.getName(), source);
         newTracks.add(track);

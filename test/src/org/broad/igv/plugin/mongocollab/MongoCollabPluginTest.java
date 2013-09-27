@@ -83,7 +83,7 @@ public class MongoCollabPluginTest extends AbstractHeadlessTest {
     public void testInsertFeature() throws Exception{
         MongoCollabPlugin.Locator locator = assumeTestDBRunning();
         Feature feat = new BasicFeature("chromo", 50, 100);
-        MongoCollabPlugin.FeatDBObject dbFeat = MongoCollabPlugin.FeatDBObject.create(feat);
+        DBFeature dbFeat = DBFeature.create(feat);
 
         assertNull(dbFeat.get_id());
 
