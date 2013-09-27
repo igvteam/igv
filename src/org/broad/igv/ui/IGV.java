@@ -2381,6 +2381,9 @@ public class IGV {
                 contentPane.getCommandBar().selectGenome(genomeId);
             }
 
+            //Load plugins
+            //Do this before loading files, hooks might need to be inserted
+            initIGVPlugins();
 
             //If there is an argument assume it is a session file or url
             if (igvArgs.getSessionFile() != null || igvArgs.getDataFileString() != null) {
@@ -2477,8 +2480,6 @@ public class IGV {
 
                 }
             });
-
-            initIGVPlugins();
 
             synchronized (IGV.getInstance()) {
                 IGV.getInstance().notifyAll();
