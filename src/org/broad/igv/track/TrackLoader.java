@@ -26,6 +26,7 @@ import org.broad.igv.data.rnai.RNAIGeneScoreParser;
 import org.broad.igv.data.rnai.RNAIHairpinParser;
 import org.broad.igv.data.seg.*;
 import org.broad.igv.dev.SegmentedReader;
+import org.broad.igv.dev.api.LoadHandler;
 import org.broad.igv.dev.db.DBProfile;
 import org.broad.igv.dev.db.SQLCodecSource;
 import org.broad.igv.dev.db.SampleInfoSQLReader;
@@ -74,9 +75,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * User: jrobinso
@@ -123,6 +122,7 @@ public class TrackLoader {
             List<Track> newTracks = new ArrayList<Track>();
 
             String dbUrl = locator.getDBUrl();
+            LoadHandler handler = getTrackLoaderHandler(typeString);
             if (dbUrl != null) {
                 this.loadFromDatabase(locator, newTracks, genome);
             } else if (typeString.endsWith(".dbxml")) {
@@ -229,7 +229,11 @@ public class TrackLoader {
             } else if (typeString.endsWith(".list")) {
                 // This should be deprecated
                 loadListFile(locator, newTracks, genome);
-            } else if (AttributeManager.isSampleInfoFile(locator)) {
+            }else if (handler != null) {
+                //Custom loader specified
+                log.info(String.format("Loading %s with %s", path, handler));
+                handler.load(path, newTracks);
+            }else if (AttributeManager.isSampleInfoFile(locator)) {
                 // This might be a sample information file.
                 AttributeManager.getInstance().loadSampleInfo(locator);
             } else {
@@ -1279,6 +1283,37 @@ public class TrackLoader {
         } catch (ClassCastException e) {
             return null;
         }
+    }
+
+    private static Map<String, LoadHandler> handlers = new HashMap<String, LoadHandler>();
+
+    /**
+     * Register a custom handler for the given extension.
+     * Note that this does NOT override built-in IGV behavior
+     *
+     * @param extension
+     * @param loader
+     * @api
+     */
+    public static void registerHandler(String extension, LoadHandler loader){
+        handlers.put(extension, loader);
+    }
+
+    /**
+     * Get the registered {@link org.broad.igv.dev.api.LoadHandler} for this path/typeString,
+     * or null if one not found
+     * @param typeString
+     * @return
+     * @api
+     */
+    private LoadHandler getTrackLoaderHandler(String typeString) {
+        String lower = typeString.toLowerCase();
+        for(Map.Entry<String, LoadHandler> entry: handlers.entrySet()){
+            if(lower.endsWith(entry.getKey().toLowerCase())){
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 
 
