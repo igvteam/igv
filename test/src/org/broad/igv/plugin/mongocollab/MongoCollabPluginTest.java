@@ -11,6 +11,7 @@
 
 package org.broad.igv.plugin.mongocollab;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.Mongo;
 import org.apache.log4j.Logger;
@@ -18,7 +19,6 @@ import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.TestUtils;
-import org.broad.tribble.Feature;
 import org.junit.*;
 
 import java.io.*;
@@ -82,17 +82,27 @@ public class MongoCollabPluginTest extends AbstractHeadlessTest {
     @Test
     public void testInsertFeature() throws Exception{
         MongoCollabPlugin.Locator locator = assumeTestDBRunning();
-        Feature feat = new BasicFeature("chromo", 50, 100);
+        BasicFeature feat = new BasicFeature("chromo", 50, 100);
+        //Set name/desc which look like colors, to make sure color parsing isn't activated
+        feat.setName("0,1,2");
+        feat.setDescription("mydescription,is,here");
         DBFeature dbFeat = DBFeature.create(feat);
 
         assertNull(dbFeat.get_id());
 
-        String err = MongoCollabPlugin.saveFeature(MongoCollabPlugin.getCollection(locator), dbFeat);
+        DBCollection coll = MongoCollabPlugin.getCollection(locator);
+        coll.setObjectClass(DBFeature.class);
+        String err = MongoCollabPlugin.saveFeature(coll, dbFeat);
 
         assertNull(err);
         assertNotNull(dbFeat.get_id());
 
-        TestUtils.assertFeaturesEqual(feat, dbFeat);
+        DBFeature retrievedFeat = (DBFeature) coll.find(new BasicDBObject("_id", dbFeat.get_id())).next();
+
+        TestUtils.assertFeaturesEqual(dbFeat, retrievedFeat);
+        assertEquals(dbFeat.getColor(), retrievedFeat.getColor());
+        assertEquals(dbFeat.getName(), retrievedFeat.getName());
+        assertEquals(dbFeat.getDescription(), retrievedFeat.getDescription());
     }
 
     @Test

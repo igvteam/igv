@@ -40,6 +40,7 @@ public class MongoFeatureSource implements FeatureSource<DBFeature.IGVFeat> {
 
     public MongoFeatureSource(DBCollection collection, boolean buildIndex) {
         this.collection = collection;
+        this.collection.setObjectClass(DBFeature.class);
         checkForIndex(buildIndex);
     }
 
@@ -117,7 +118,6 @@ public class MongoFeatureSource implements FeatureSource<DBFeature.IGVFeat> {
 
     @Override
     public Iterator<DBFeature.IGVFeat> getFeatures(String chr, int start, int end) throws IOException {
-        this.collection.setObjectClass(DBFeature.class);
         DBCursor cursor = this.collection.find(createQueryObject(chr, start, end));
         //Sort by increasing start value
         //Only do this if we have an index, otherwise might be too memory intensive
