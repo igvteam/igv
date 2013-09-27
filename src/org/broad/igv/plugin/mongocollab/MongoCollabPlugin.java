@@ -117,6 +117,10 @@ public class MongoCollabPlugin implements IGVPlugin {
         return errorMessage;
     }
 
+    public static void removeFeature(DBCollection collection, DBFeature featDBObject) {
+        collection.remove(featDBObject);
+    }
+
     private static Map<String, Mongo> connections = new HashMap<String, Mongo>();
 
     static Mongo getMongo(String host, int port){

@@ -56,7 +56,8 @@ public class MongoFeatureTrack extends FeatureTrack{
         final int start = editing ? selFeat.getStart() : (int) te.getChromosomePosition();
         final int end = editing ? selFeat.getEnd() : (int) Math.ceil(frame.getChromosomePosition(te.getMouseEvent().getX() + 1));
 
-        String name = editing ? "Edit " + selFeat.getName() : "Add annotation to " + MongoFeatureTrack.this.getName();
+        String featDispName = editing && selFeat.getName() != null ? selFeat.getName() : "Feature";
+        String name = editing ? "Edit " + featDispName : "Add annotation to " + MongoFeatureTrack.this.getName();
         JMenuItem item = new JMenuItem(name);
         item.addActionListener(new ActionListener() {
             @Override

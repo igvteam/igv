@@ -46,11 +46,6 @@ new FormModel {
 							name: "chrField"
 						} )
 					} )
-					add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
-						name: "hSpacer3"
-						"minimumSize": new java.awt.Dimension( 20, 12 )
-						"preferredSize": new java.awt.Dimension( 20, 10 )
-					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
 						"axis": 1
 					} ) {
@@ -68,32 +63,22 @@ new FormModel {
 							name: "startField"
 						} )
 					} )
-					add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
-						name: "hSpacer4"
-						"minimumSize": &Dimension0 new java.awt.Dimension( 20, 12 )
-						"preferredSize": &Dimension1 new java.awt.Dimension( 20, 10 )
-					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
 						"axis": 1
 					} ) {
 						name: "panel6"
-						"maximumSize": &Dimension2 new java.awt.Dimension( 500, 1000 )
-						"minimumSize": &Dimension3 new java.awt.Dimension( 100, 32 )
-						"preferredSize": &Dimension4 new java.awt.Dimension( 100, 32 )
+						"maximumSize": &Dimension0 new java.awt.Dimension( 500, 1000 )
+						"minimumSize": &Dimension1 new java.awt.Dimension( 100, 32 )
+						"preferredSize": &Dimension2 new java.awt.Dimension( 100, 32 )
 						add( new FormComponent( "javax.swing.JLabel" ) {
 							name: "label9"
 							"text": "End"
 							"horizontalAlignment": 2
-							"maximumSize": &Dimension5 new java.awt.Dimension( 100, 16 )
+							"maximumSize": &Dimension3 new java.awt.Dimension( 100, 16 )
 						} )
 						add( new FormComponent( "javax.swing.JTextField" ) {
 							name: "stopField"
 						} )
-					} )
-					add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
-						name: "hSpacer5"
-						"minimumSize": #Dimension0
-						"preferredSize": #Dimension1
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
 						"axis": 1
@@ -103,32 +88,49 @@ new FormModel {
 						"minimumSize": new java.awt.Dimension( 29, 44 )
 						"preferredSize": new java.awt.Dimension( 40, 44 )
 						add( new FormComponent( "javax.swing.JLabel" ) {
-							name: "label10"
+							name: "score"
 							"text": "Score"
 							"horizontalAlignment": 2
-							"maximumSize": #Dimension5
+							"maximumSize": #Dimension3
 						} )
 						add( new FormComponent( "javax.swing.JTextField" ) {
 							name: "scoreField"
 						} )
 					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+						"axis": 1
+					} ) {
+						name: "panel9"
+						"maximumSize": new java.awt.Dimension( 200, 1000 )
+						"minimumSize": new java.awt.Dimension( 100, 44 )
+						"preferredSize": new java.awt.Dimension( 100, 44 )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "name"
+							"text": "Name"
+							"horizontalAlignment": 2
+							"maximumSize": #Dimension3
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "nameField"
+						} )
+					} )
 					add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
 						name: "hSpacer6"
-						"minimumSize": #Dimension0
-						"preferredSize": #Dimension1
+						"minimumSize": new java.awt.Dimension( 20, 12 )
+						"preferredSize": new java.awt.Dimension( 20, 10 )
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
 						"axis": 1
 					} ) {
 						name: "panel8"
-						"maximumSize": #Dimension2
-						"minimumSize": #Dimension3
-						"preferredSize": #Dimension4
+						"maximumSize": #Dimension0
+						"minimumSize": #Dimension1
+						"preferredSize": #Dimension2
 						add( new FormComponent( "javax.swing.JLabel" ) {
 							name: "label11"
 							"text": "Description"
 							"horizontalAlignment": 2
-							"maximumSize": #Dimension5
+							"maximumSize": #Dimension3
 						} )
 						add( new FormComponent( "javax.swing.JTextField" ) {
 							name: "descField"
@@ -138,7 +140,7 @@ new FormModel {
 					"value": "North"
 				} )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
-					"$columnSpecs": "0:1.0, 80, 80"
+					"$columnSpecs": "0:1.0, 80, 80, 0"
 					"$rowSpecs": "0"
 					"$hGap": 5
 					"$vGap": 5
@@ -160,6 +162,13 @@ new FormModel {
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 						"gridx": 2
 						"gridy": 0
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "delButton"
+						"text": "Delete"
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "delButtonActionPerformed", true ) )
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+						"gridx": 3
 					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
 					"value": "South"

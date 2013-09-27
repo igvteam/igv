@@ -69,7 +69,12 @@ public class FeatureAnnotDialog extends JDialog {
         stopField.setText("" + feature.getEnd());
 
         scoreField.setText("" + feature.getScore());
+        nameField.setText(feature.getName());
         descField.setText("" + feature.getDescription());
+
+        if(this.featDBObject.get_id() == null){
+            delButton.setVisible(false);
+        }
 
         validate();
     }
@@ -103,6 +108,8 @@ public class FeatureAnnotDialog extends JDialog {
         this.featDBObject.setEnd(end);
         this.featDBObject.setScore(score);
         this.featDBObject.setDescription(descField.getText());
+        this.featDBObject.setName(nameField.getText());
+
         return this.featDBObject;
     }
 
@@ -120,15 +127,26 @@ public class FeatureAnnotDialog extends JDialog {
             MessageUtils.showErrorMessage(errorMessage, new IOException(errorMessage));
         } else {
             setVisible(false);
-            //Find the track showing results, clear it to force a refresh
-            for (FeatureTrack ft : IGV.getInstance().getFeatureTracks()) {
-                //TODO This is a somewhat fragile way of identifying the corresponding track
-                if(ft.getId() != null && ft.getId().equals(this.collection.getFullName())){
-                    ft.clearPackedFeatures();
-                }
-            }
-            IGV.getInstance().repaintDataPanels();
+            refreshTrack();
         }
+
+    }
+
+    private void refreshTrack(){
+        //Find the track showing results, clear it to force a refresh
+        for (FeatureTrack ft : IGV.getInstance().getFeatureTracks()) {
+            //TODO This is a somewhat fragile way of identifying the corresponding track
+            if(ft.getId() != null && ft.getId().equals(this.collection.getFullName())){
+                ft.clearPackedFeatures();
+            }
+        }
+        IGV.getInstance().repaintDataPanels();
+    }
+
+    private void delButtonActionPerformed(ActionEvent e) {
+        MongoCollabPlugin.removeFeature(collection, this.featDBObject);
+        setVisible(false);
+        refreshTrack();
     }
 
     private void initComponents() {
@@ -142,18 +160,18 @@ public class FeatureAnnotDialog extends JDialog {
         panel4 = new JPanel();
         label7 = new JLabel();
         chrField = new JTextField();
-        hSpacer3 = new JPanel(null);
         panel5 = new JPanel();
         label8 = new JLabel();
         startField = new JTextField();
-        hSpacer4 = new JPanel(null);
         panel6 = new JPanel();
         label9 = new JLabel();
         stopField = new JTextField();
-        hSpacer5 = new JPanel(null);
         panel7 = new JPanel();
-        label10 = new JLabel();
+        score = new JLabel();
         scoreField = new JTextField();
+        panel9 = new JPanel();
+        name = new JLabel();
+        nameField = new JTextField();
         hSpacer6 = new JPanel(null);
         panel8 = new JPanel();
         label11 = new JLabel();
@@ -161,6 +179,7 @@ public class FeatureAnnotDialog extends JDialog {
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
+        delButton = new JButton();
 
         //======== this ========
         Container contentPane = getContentPane();
@@ -210,11 +229,6 @@ public class FeatureAnnotDialog extends JDialog {
                 }
                 contentPanel.add(panel4);
 
-                //---- hSpacer3 ----
-                hSpacer3.setMinimumSize(new Dimension(20, 12));
-                hSpacer3.setPreferredSize(new Dimension(20, 10));
-                contentPanel.add(hSpacer3);
-
                 //======== panel5 ========
                 {
                     panel5.setMaximumSize(new Dimension(500, 1000));
@@ -230,11 +244,6 @@ public class FeatureAnnotDialog extends JDialog {
                     panel5.add(startField);
                 }
                 contentPanel.add(panel5);
-
-                //---- hSpacer4 ----
-                hSpacer4.setMinimumSize(new Dimension(20, 12));
-                hSpacer4.setPreferredSize(new Dimension(20, 10));
-                contentPanel.add(hSpacer4);
 
                 //======== panel6 ========
                 {
@@ -252,11 +261,6 @@ public class FeatureAnnotDialog extends JDialog {
                 }
                 contentPanel.add(panel6);
 
-                //---- hSpacer5 ----
-                hSpacer5.setMinimumSize(new Dimension(20, 12));
-                hSpacer5.setPreferredSize(new Dimension(20, 10));
-                contentPanel.add(hSpacer5);
-
                 //======== panel7 ========
                 {
                     panel7.setMaximumSize(new Dimension(46, 1000));
@@ -264,14 +268,30 @@ public class FeatureAnnotDialog extends JDialog {
                     panel7.setPreferredSize(new Dimension(40, 44));
                     panel7.setLayout(new BoxLayout(panel7, BoxLayout.Y_AXIS));
 
-                    //---- label10 ----
-                    label10.setText("Score");
-                    label10.setHorizontalAlignment(SwingConstants.LEFT);
-                    label10.setMaximumSize(new Dimension(100, 16));
-                    panel7.add(label10);
+                    //---- score ----
+                    score.setText("Score");
+                    score.setHorizontalAlignment(SwingConstants.LEFT);
+                    score.setMaximumSize(new Dimension(100, 16));
+                    panel7.add(score);
                     panel7.add(scoreField);
                 }
                 contentPanel.add(panel7);
+
+                //======== panel9 ========
+                {
+                    panel9.setMaximumSize(new Dimension(200, 1000));
+                    panel9.setMinimumSize(new Dimension(100, 44));
+                    panel9.setPreferredSize(new Dimension(100, 44));
+                    panel9.setLayout(new BoxLayout(panel9, BoxLayout.Y_AXIS));
+
+                    //---- name ----
+                    name.setText("Name");
+                    name.setHorizontalAlignment(SwingConstants.LEFT);
+                    name.setMaximumSize(new Dimension(100, 16));
+                    panel9.add(name);
+                    panel9.add(nameField);
+                }
+                contentPanel.add(panel9);
 
                 //---- hSpacer6 ----
                 hSpacer6.setMinimumSize(new Dimension(20, 12));
@@ -300,8 +320,8 @@ public class FeatureAnnotDialog extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
+                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 85, 0};
+                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("Save");
@@ -325,6 +345,18 @@ public class FeatureAnnotDialog extends JDialog {
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 5), 0, 0));
+
+                //---- delButton ----
+                delButton.setText("Delete");
+                delButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        delButtonActionPerformed(e);
+                    }
+                });
+                buttonBar.add(delButton, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
@@ -345,18 +377,18 @@ public class FeatureAnnotDialog extends JDialog {
     private JPanel panel4;
     private JLabel label7;
     private JTextField chrField;
-    private JPanel hSpacer3;
     private JPanel panel5;
     private JLabel label8;
     private JTextField startField;
-    private JPanel hSpacer4;
     private JPanel panel6;
     private JLabel label9;
     private JTextField stopField;
-    private JPanel hSpacer5;
     private JPanel panel7;
-    private JLabel label10;
+    private JLabel score;
     private JTextField scoreField;
+    private JPanel panel9;
+    private JLabel name;
+    private JTextField nameField;
     private JPanel hSpacer6;
     private JPanel panel8;
     private JLabel label11;
@@ -364,5 +396,6 @@ public class FeatureAnnotDialog extends JDialog {
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;
+    private JButton delButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

@@ -35,26 +35,29 @@ public class DBFeature extends ReflectionDBObject implements Feature {
     private String description;
     private double score;
 
+    private String name;
+
     @SubtlyImportant
     public DBFeature(){}
 
-    public DBFeature(String chr, int start, int end, String description, double score){
+    public DBFeature(String chr, int start, int end, String description, double score, String name){
         this.chr = chr;
         this.start = start;
         this.end = end;
         this.description = description;
         this.score = score;
+        this.name = name;
     }
 
     static DBFeature create(Feature feature){
         if(feature instanceof AbstractFeature){
             return create((AbstractFeature) feature);
         }
-        return new DBFeature(feature.getChr(), feature.getStart(), feature.getEnd(), null, 0);
+        return new DBFeature(feature.getChr(), feature.getStart(), feature.getEnd(), null, 0, null);
     }
 
     static DBFeature create(AbstractFeature feature){
-        return new DBFeature(feature.getChr(), feature.getStart(), feature.getEnd(), feature.getDescription(), feature.getScore());
+        return new DBFeature(feature.getChr(), feature.getStart(), feature.getEnd(), feature.getDescription(), feature.getScore(), feature.getName());
     }
 
     public String getChr() {
@@ -97,6 +100,14 @@ public class DBFeature extends ReflectionDBObject implements Feature {
         this.start = start;
     }
 
+    public void setName(String name){
+        this.name = name;
+    }
+
+    public String getName(){
+        return this.name;
+    }
+
     public IGVFeat createIGVFeature(){
         return new IGVFeat(this);
     }
@@ -113,6 +124,7 @@ public class DBFeature extends ReflectionDBObject implements Feature {
         IGVFeat(DBFeature dbFeat){
             super(dbFeat.getChr(), dbFeat.getStart(), dbFeat.getEnd());
             this.dbFeat = dbFeat;
+            setName(dbFeat.getName());
             setDescription(dbFeat.getDescription());
             //TODO Shouldn't just cast from double to float
             setScore((float) dbFeat.getScore());
