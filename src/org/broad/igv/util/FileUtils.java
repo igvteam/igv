@@ -292,7 +292,9 @@ public class FileUtils {
 
 
     /**
-     * Test to see if the ascii file is tab delimited.  Samples first 5 non-comment (lines starting with #) lines
+     * Test to see if the ascii file is tab delimited, with the
+     * given number of minimum columns.
+     * Samples first 5 non-comment (lines starting with #) lines
      */
     public static boolean isTabDelimited(ResourceLocator loc, int minColumnCount) throws IOException {
 
@@ -301,6 +303,7 @@ public class FileUtils {
         try {
             reader = ParsingUtils.openBufferedReader(loc.getPath());
             int nLinesTested = 0;
+            int nLinesMatch = 0;
             String nextLine;
             while ((nextLine = reader.readLine()) != null && nLinesTested < 5) {
                 if (nextLine.startsWith("#")) {
@@ -309,10 +312,10 @@ public class FileUtils {
                 nLinesTested++;
                 String[] tokens = nextLine.split("\t");
                 if (tokens.length >= minColumnCount) {
-                    return true;
+                    nLinesMatch += 1;
                 }
             }
-            return nLinesTested > 1;
+            return nLinesMatch == nLinesTested;
         } finally {
             if (reader != null) {
                 reader.close();
