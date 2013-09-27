@@ -167,40 +167,41 @@ public class ColorUtilities {
     }
 
     public static Color stringToColor(String string) {
-
         try {
-            // Excel will quote color strings, strip all quotes
-            string = string.replace("\"", "").replace("'", "");
-
-            Color c = colorCache.get(string);
+            Color c = stringToColorNoDefault(string);
             if (c == null) {
-                if (string.contains(",")) {
-                    String[] rgb = string.split(",");
-                    int red = Integer.parseInt(rgb[0]);
-                    int green = Integer.parseInt(rgb[1]);
-                    int blue = Integer.parseInt(rgb[2]);
-                    c = new Color(red, green, blue);
-                } else if (string.startsWith("#")) {
-                    c = hexToColor(string.substring(1));
-                } else {
-                    String hexString = colorSymbols.get(string.toLowerCase());
-                    if (hexString != null) {
-                        c = hexToColor(hexString);
-                    }
-                }
-
-
-                if (c == null) {
-                    c = Color.black;
-                }
-                colorCache.put(string, c);
+                c = Color.black;
             }
+            colorCache.put(string, c);
             return c;
-
         } catch (NumberFormatException numberFormatException) {
             log.error("Error in color string. ", numberFormatException);
             return Color.black;
         }
+    }
+
+    public static Color stringToColorNoDefault(String string) throws NumberFormatException{
+        // Excel will quote color strings, strip all quotes
+        string = string.replace("\"", "").replace("'", "");
+
+        Color c = colorCache.get(string);
+        if (c == null) {
+            if (string.contains(",")) {
+                String[] rgb = string.split(",");
+                int red = Integer.parseInt(rgb[0]);
+                int green = Integer.parseInt(rgb[1]);
+                int blue = Integer.parseInt(rgb[2]);
+                c = new Color(red, green, blue);
+            } else if (string.startsWith("#")) {
+                c = hexToColor(string.substring(1));
+            } else {
+                String hexString = colorSymbols.get(string.toLowerCase());
+                if (hexString != null) {
+                    c = hexToColor(hexString);
+                }
+            }
+        }
+        return c;
     }
 
     private static Color hexToColor(String string) {

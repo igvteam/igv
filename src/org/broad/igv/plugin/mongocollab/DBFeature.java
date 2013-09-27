@@ -14,8 +14,12 @@ package org.broad.igv.plugin.mongocollab;
 import com.mongodb.ReflectionDBObject;
 import org.broad.igv.feature.AbstractFeature;
 import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.session.SubtlyImportant;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.tribble.Feature;
+
+import java.awt.*;
 
 /**
  * Object mapping to Mongo database
@@ -29,35 +33,38 @@ import org.broad.tribble.Feature;
  */
 public class DBFeature extends ReflectionDBObject implements Feature {
 
+    static Color DEFAULT_COLOR = IGVFeatureRenderer.DULL_BLUE;
+
     private String chr;
     private int start;
     private int end;
     private String description;
-    private double score;
 
+    private Color color = DEFAULT_COLOR;
     private String name;
 
     @SubtlyImportant
     public DBFeature(){}
 
-    public DBFeature(String chr, int start, int end, String description, double score, String name){
+    DBFeature(String chr, int start, int end, String name, String description, Color color){
         this.chr = chr;
         this.start = start;
         this.end = end;
-        this.description = description;
-        this.score = score;
         this.name = name;
+        this.description = description;
+        this.color = color;
     }
 
     static DBFeature create(Feature feature){
         if(feature instanceof AbstractFeature){
             return create((AbstractFeature) feature);
         }
-        return new DBFeature(feature.getChr(), feature.getStart(), feature.getEnd(), null, 0, null);
+        return new DBFeature(feature.getChr(), feature.getStart(), feature.getEnd(), null, null, DEFAULT_COLOR);
     }
 
     static DBFeature create(AbstractFeature feature){
-        return new DBFeature(feature.getChr(), feature.getStart(), feature.getEnd(), feature.getDescription(), feature.getScore(), feature.getName());
+        Color color = feature.getColor() != null ? feature.getColor() : DEFAULT_COLOR;
+        return new DBFeature(feature.getChr(), feature.getStart(), feature.getEnd(), feature.getName(), feature.getDescription(), color);
     }
 
     public String getChr() {
@@ -84,14 +91,6 @@ public class DBFeature extends ReflectionDBObject implements Feature {
         this.end = end;
     }
 
-    public double getScore() {
-        return score;
-    }
-
-    public void setScore(double score) {
-        this.score = score;
-    }
-
     public int getStart() {
         return start;
     }
@@ -108,9 +107,23 @@ public class DBFeature extends ReflectionDBObject implements Feature {
         return this.name;
     }
 
+    public void setColor(Color color){
+        this.color = color;
+    }
+
+    public void setColor(String color){
+        this.color = ColorUtilities.stringToColor(color);
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+
     public IGVFeat createIGVFeature(){
         return new IGVFeat(this);
     }
+
 
     /**
      * This is the feature to be returned to {@code FeatureTrack}s.
@@ -126,8 +139,7 @@ public class DBFeature extends ReflectionDBObject implements Feature {
             this.dbFeat = dbFeat;
             setName(dbFeat.getName());
             setDescription(dbFeat.getDescription());
-            //TODO Shouldn't just cast from double to float
-            setScore((float) dbFeat.getScore());
+            setColor(dbFeat.getColor());
         }
 
         DBFeature getDBFeature(){

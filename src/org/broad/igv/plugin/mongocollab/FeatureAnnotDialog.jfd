@@ -84,17 +84,21 @@ new FormModel {
 						"axis": 1
 					} ) {
 						name: "panel7"
-						"maximumSize": new java.awt.Dimension( 46, 1000 )
-						"minimumSize": new java.awt.Dimension( 29, 44 )
-						"preferredSize": new java.awt.Dimension( 40, 44 )
+						"maximumSize": new java.awt.Dimension( 80, 1000 )
+						"minimumSize": new java.awt.Dimension( 60, 44 )
+						"preferredSize": new java.awt.Dimension( 60, 44 )
+						"toolTipText": "Click to edit"
 						add( new FormComponent( "javax.swing.JLabel" ) {
-							name: "score"
-							"text": "Score"
+							name: "color"
+							"text": "Color"
 							"horizontalAlignment": 2
 							"maximumSize": #Dimension3
 						} )
-						add( new FormComponent( "javax.swing.JTextField" ) {
-							name: "scoreField"
+						add( new FormComponent( "org.broad.igv.ui.color.ColorChooserPanel" ) {
+							name: "colorField"
+							auxiliary() {
+								"JavaCodeGenerator.postInitCode": "${field}.setSelectedColor(DBFeature.DEFAULT_COLOR);"
+							}
 						} )
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {

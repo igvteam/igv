@@ -23,12 +23,16 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
+import org.bson.BSON;
+import org.bson.Transformer;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,6 +48,19 @@ import java.util.Map;
 public class MongoCollabPlugin implements IGVPlugin {
 
     private static Logger log = Logger.getLogger(MongoCollabPlugin.class);
+
+    static{
+        BSON.addEncodingHook(Color.class, new Transformer() {
+            @Override
+            public Object transform(Object o) {
+                if(o instanceof Color){
+                    return ColorUtilities.colorToString((Color) o);
+                }else{
+                    return o;
+                }
+            }
+        });
+    }
 
     @Override
     public void init() {
@@ -107,11 +124,12 @@ public class MongoCollabPlugin implements IGVPlugin {
             if(log.isDebugEnabled()){
                 log.debug("Saving feature " + Locus.getFormattedLocusString(dbFeat.getChr(), dbFeat.getStart(), dbFeat.getEnd()));
             }
-                WriteResult wr = collection.save(dbFeat);
+            WriteResult wr = collection.save(dbFeat);
             errorMessage = wr.getError();
 
         } catch (Exception ex) {
             errorMessage = ex.getMessage();
+            log.error(errorMessage, ex);
             if (errorMessage == null) errorMessage = "" + ex;
         }
         return errorMessage;
@@ -195,4 +213,5 @@ public class MongoCollabPlugin implements IGVPlugin {
             MongoFeatureSource.loadFeatureTrack(locator, newTracks);
         }
     }
+
 }

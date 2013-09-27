@@ -19,6 +19,7 @@ import com.mongodb.DBCollection;
 import org.apache.log4j.Logger;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.color.ColorChooserPanel;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.tribble.Feature;
 
@@ -39,7 +40,7 @@ public class FeatureAnnotDialog extends JDialog {
 
     private String userName;
     private DBCollection collection;
-    private DBFeature featDBObject;
+    private DBFeature dbFeat;
 
     FeatureAnnotDialog(Frame owner, DBCollection collection, Feature feature) {
         super(owner);
@@ -50,12 +51,11 @@ public class FeatureAnnotDialog extends JDialog {
         if(collection == null) throw new IllegalArgumentException("DBCollection must not be null");
         this.collection = collection;
         if(feature instanceof DBFeature){
-            this.featDBObject = (DBFeature) feature;
+            this.dbFeat = (DBFeature) feature;
         }else{
-            this.featDBObject = DBFeature.create(feature);
+            this.dbFeat = DBFeature.create(feature);
         }
-
-        initComponentData(this.featDBObject);
+        initComponentData(this.dbFeat);
     }
 
     private void initComponentData(DBFeature feature) {
@@ -68,11 +68,12 @@ public class FeatureAnnotDialog extends JDialog {
         startField.setText("" + (feature.getStart() + 1));
         stopField.setText("" + feature.getEnd());
 
-        scoreField.setText("" + feature.getScore());
         nameField.setText(feature.getName());
         descField.setText("" + feature.getDescription());
 
-        if(this.featDBObject.get_id() == null){
+        colorField.setSelectedColor(feature.getColor());
+
+        if(this.dbFeat.get_id() == null){
             delButton.setVisible(false);
         }
 
@@ -86,12 +87,10 @@ public class FeatureAnnotDialog extends JDialog {
     private DBFeature createDBObjectFromFields(){
 
         int start, end;
-        float score;
         try{
             //Change from 1-based (user entered) to 0-based
             start = Integer.parseInt(startField.getText()) - 1;
             end = Integer.parseInt(stopField.getText());
-            score = Float.parseFloat(scoreField.getText());
         }catch(NumberFormatException e){
             MessageUtils.showErrorMessage(e.getMessage(), e);
             return null;
@@ -103,14 +102,14 @@ public class FeatureAnnotDialog extends JDialog {
             return null;
         }
 
-        this.featDBObject.setChr(chrField.getText());
-        this.featDBObject.setStart(start);
-        this.featDBObject.setEnd(end);
-        this.featDBObject.setScore(score);
-        this.featDBObject.setDescription(descField.getText());
-        this.featDBObject.setName(nameField.getText());
+        this.dbFeat.setChr(chrField.getText());
+        this.dbFeat.setStart(start);
+        this.dbFeat.setEnd(end);
+        this.dbFeat.setColor(colorField.getSelectedColor());
+        this.dbFeat.setDescription(descField.getText());
+        this.dbFeat.setName(nameField.getText());
 
-        return this.featDBObject;
+        return this.dbFeat;
     }
 
     /**
@@ -144,9 +143,13 @@ public class FeatureAnnotDialog extends JDialog {
     }
 
     private void delButtonActionPerformed(ActionEvent e) {
-        MongoCollabPlugin.removeFeature(collection, this.featDBObject);
+        MongoCollabPlugin.removeFeature(collection, this.dbFeat);
         setVisible(false);
         refreshTrack();
+    }
+
+    private void createUIComponents() {
+        // TODO: add custom component creation code here
     }
 
     private void initComponents() {
@@ -167,8 +170,8 @@ public class FeatureAnnotDialog extends JDialog {
         label9 = new JLabel();
         stopField = new JTextField();
         panel7 = new JPanel();
-        score = new JLabel();
-        scoreField = new JTextField();
+        color = new JLabel();
+        colorField = new ColorChooserPanel();
         panel9 = new JPanel();
         name = new JLabel();
         nameField = new JTextField();
@@ -263,17 +266,21 @@ public class FeatureAnnotDialog extends JDialog {
 
                 //======== panel7 ========
                 {
-                    panel7.setMaximumSize(new Dimension(46, 1000));
-                    panel7.setMinimumSize(new Dimension(29, 44));
-                    panel7.setPreferredSize(new Dimension(40, 44));
+                    panel7.setMaximumSize(new Dimension(80, 1000));
+                    panel7.setMinimumSize(new Dimension(60, 44));
+                    panel7.setPreferredSize(new Dimension(60, 44));
+                    panel7.setToolTipText("Click to edit");
                     panel7.setLayout(new BoxLayout(panel7, BoxLayout.Y_AXIS));
 
-                    //---- score ----
-                    score.setText("Score");
-                    score.setHorizontalAlignment(SwingConstants.LEFT);
-                    score.setMaximumSize(new Dimension(100, 16));
-                    panel7.add(score);
-                    panel7.add(scoreField);
+                    //---- color ----
+                    color.setText("Color");
+                    color.setHorizontalAlignment(SwingConstants.LEFT);
+                    color.setMaximumSize(new Dimension(100, 16));
+                    panel7.add(color);
+
+                    //---- colorField ----
+                    colorField.setSelectedColor(DBFeature.DEFAULT_COLOR);
+                    panel7.add(colorField);
                 }
                 contentPanel.add(panel7);
 
@@ -384,8 +391,8 @@ public class FeatureAnnotDialog extends JDialog {
     private JLabel label9;
     private JTextField stopField;
     private JPanel panel7;
-    private JLabel score;
-    private JTextField scoreField;
+    private JLabel color;
+    private ColorChooserPanel colorField;
     private JPanel panel9;
     private JLabel name;
     private JTextField nameField;
