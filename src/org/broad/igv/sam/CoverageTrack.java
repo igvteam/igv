@@ -195,6 +195,7 @@ public class CoverageTrack extends AbstractTrack {
             }
             if (interval != null) {
                 if (interval.contains(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation())) {
+                    if(autoScale) rescale();
                     intervalRenderer.paint(context, rect, interval.getCounts());
                 }
             }
@@ -297,7 +298,6 @@ public class CoverageTrack extends AbstractTrack {
     class IntervalRenderer {
 
         private void paint(RenderContext context, Rectangle rect, AlignmentCounts alignmentCounts) {
-
 
             Color color = getColor();
             Graphics2D graphics = context.getGraphic2DForColor(color);

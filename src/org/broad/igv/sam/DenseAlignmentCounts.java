@@ -44,6 +44,12 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
     private int[] totalQ;
     private int maxCount = 0;
 
+    /**
+     * We store the maximum number of counts over intervals
+     * For autoscaling, doesn't have to be super precise
+     */
+    protected static int MAX_COUNT_INTERVAL = 100;
+    protected int[] maxCounts;
 
     public DenseAlignmentCounts(int start, int end, AlignmentTrack.BisulfiteContext bisulfiteContext) {
         super(start, end, bisulfiteContext);
@@ -69,28 +75,29 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
         del = new int[nPts];
         ins = new int[nPts];
         totalQ = new int[nPts];
+
+        maxCounts = new int[(nPts / MAX_COUNT_INTERVAL) + 1];
     }
 
     public int getNumberOfPoints() {
         return end - start;
     }
 
-    public void finish() {
-        // Noop
+    @Override
+    public int getMaxCount(int strt, int end) {
+        strt = Math.max(0, strt);
+        end = Math.min(getEnd(), end);
+        int startMCI = Math.max(0, (strt-this.start) / MAX_COUNT_INTERVAL);
+        int endMCI = Math.max(1, (end-this.start) / MAX_COUNT_INTERVAL);
+        int max = maxCounts[startMCI];
+        for(int mci= startMCI+1; mci <= endMCI; mci++){
+            max = Math.max(max, maxCounts[mci]);
+        }
+        return max;
     }
 
-    /**
-     * Return an estimate of the maximum count over the specified bp range.
-     *
-     * NOTE:  currently the range is not used, so the estimate is overly conservative.  In the future we might
-     * use the range to get an more accurate estimate.
-     *
-     * @param origin
-     * @param end
-     * @return
-     */
-    public int getMaxCount(int origin, int end) {
-        return maxCount;
+    public void finish() {
+        // Noop
     }
 
     public int getTotalCount(int pos) {
@@ -395,7 +402,10 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
             totalQ[offset] = totalQ[offset] + q;
 
             int tmp = posTotal[offset] + negTotal[offset];
-            maxCount = tmp > maxCount ? tmp : maxCount;
+            int maxCountInt = offset / MAX_COUNT_INTERVAL;
+            if(tmp > maxCounts[maxCountInt]){
+                maxCounts[maxCountInt] = tmp;
+            }
         }
     }
 
