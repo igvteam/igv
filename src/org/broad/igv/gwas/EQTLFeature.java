@@ -4,11 +4,13 @@ import org.broad.igv.feature.AbstractFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.tdf.BufferedByteWriter;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.collections.MultiMap;
 import org.broad.tribble.Feature;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -25,17 +27,34 @@ public class EQTLFeature extends AbstractFeature {
     int position;
     private String geneId;
     private String geneName;
-    Map<String, String> attributes;
+    private float tStat;
+    private float pValue;
+    private float qValue;
 
     public EQTLFeature(String snp, String chr, int position, String geneId, String geneName,
-                       Map<String, String> attributes) {
+                       float tStat, float pValue, float qValue) {
         this.snp = snp;
         this.chr = chr;
         this.position = position;
         this.geneId = geneId;
         this.geneName = geneName;
+        this.tStat = tStat;
+        this.pValue = pValue;
+        this.qValue = qValue;
+    }
 
-        this.attributes = attributes;
+
+    public byte [] encodeBinary() throws IOException {
+        BufferedByteWriter writer = new BufferedByteWriter();
+        writer.putNullTerminatedString(snp);
+        writer.putNullTerminatedString(chr);
+        writer.putInt(position);
+        writer.putNullTerminatedString(geneId);
+        writer.putNullTerminatedString(geneName);
+        writer.putFloat(tStat);
+        writer.putFloat(pValue);
+        writer.putFloat(qValue);
+        return writer.getBytes();
     }
 
     @Override
@@ -72,9 +91,9 @@ public class EQTLFeature extends AbstractFeature {
         sb.append(snp);
         sb.append("<br>" + geneId);
         sb.append("<br>" + geneName);
-        for(Map.Entry<String, String> entry : attributes.entrySet()) {
-            sb.append("<br>" + entry.getKey() + " = " + entry.getValue());
-        }
+        sb.append("<br>tStat = " + tStat);
+        sb.append("<br>pValue = " + pValue);
+        sb.append("<br>qValue = " + qValue);
         return sb.toString();
 
     }

@@ -15,6 +15,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
+import org.broad.igv.tdf.BufferedByteWriter;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.util.StringUtils;
@@ -42,6 +43,7 @@ public class EQTLCodec extends AsciiFeatureCodec<EQTLFeature> {
         this.genome = genome;
     }
 
+
     //@Override
     public Feature decodeLoc(String line) {
         String[] tokens = Globals.tabPattern.split(line);
@@ -68,6 +70,12 @@ public class EQTLCodec extends AsciiFeatureCodec<EQTLFeature> {
         int position = Integer.parseInt(tokens[2]) - 1;
         String geneId = tokens[3];
         String geneName = tokens[4];
+        float tStart = Float.parseFloat(tokens[6]);
+
+        double tmp = Double.parseDouble(tokens[7]);
+        float pValue = tmp < Float.MIN_VALUE ? Float.MIN_VALUE : (float) tmp;
+
+        float qValue = Float.parseFloat(tokens[8]);
 
         Map<String, String> attributes = null;
         if (columnNames != null) {
@@ -80,7 +88,7 @@ public class EQTLCodec extends AsciiFeatureCodec<EQTLFeature> {
         }
 
 
-        return new EQTLFeature(snp, chr, position, geneId, geneName, attributes);
+        return new EQTLFeature(snp, chr, position, geneId, geneName, tStart, pValue, qValue);
     }
 
 
