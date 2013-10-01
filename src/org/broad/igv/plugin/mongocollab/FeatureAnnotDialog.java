@@ -38,15 +38,12 @@ public class FeatureAnnotDialog extends JDialog {
 
     private static Logger log = Logger.getLogger(MongoCollabPlugin.class);
 
-    private String userName;
     private DBCollection collection;
     private DBFeature dbFeat;
 
     FeatureAnnotDialog(Frame owner, DBCollection collection, Feature feature) {
         super(owner);
         initComponents();
-
-        this.userName = System.getProperty("user.name", "unknown");
 
         if(collection == null) throw new IllegalArgumentException("DBCollection must not be null");
         this.collection = collection;
@@ -61,8 +58,6 @@ public class FeatureAnnotDialog extends JDialog {
     private void initComponentData(DBFeature feature) {
 
         setTitle("Add/Save Feature in " + this.collection.getFullName());
-
-        userNameField.setText(userName);
 
         chrField.setText(feature.getChr());
         startField.setText("" + (feature.getStart() + 1));
@@ -157,9 +152,6 @@ public class FeatureAnnotDialog extends JDialog {
         // Generated using JFormDesigner non-commercial license
         dialogPane = new JPanel();
         contentPanel = new JPanel();
-        panel1 = new JPanel();
-        label4 = new JLabel();
-        userNameField = new JTextField();
         panel4 = new JPanel();
         label7 = new JLabel();
         chrField = new JTextField();
@@ -197,25 +189,6 @@ public class FeatureAnnotDialog extends JDialog {
             //======== contentPanel ========
             {
                 contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.X_AXIS));
-
-                //======== panel1 ========
-                {
-                    panel1.setLayout(new BoxLayout(panel1, BoxLayout.PAGE_AXIS));
-
-                    //---- label4 ----
-                    label4.setText("User");
-                    label4.setHorizontalAlignment(SwingConstants.CENTER);
-                    label4.setMaximumSize(new Dimension(80, 16));
-                    label4.setAlignmentX(0.5F);
-                    panel1.add(label4);
-
-                    //---- userNameField ----
-                    userNameField.setMaximumSize(new Dimension(200, 1000));
-                    userNameField.setMinimumSize(new Dimension(100, 28));
-                    userNameField.setPreferredSize(new Dimension(100, 28));
-                    panel1.add(userNameField);
-                }
-                contentPanel.add(panel1);
 
                 //======== panel4 ========
                 {
@@ -378,9 +351,6 @@ public class FeatureAnnotDialog extends JDialog {
     // Generated using JFormDesigner non-commercial license
     private JPanel dialogPane;
     private JPanel contentPanel;
-    private JPanel panel1;
-    private JLabel label4;
-    private JTextField userNameField;
     private JPanel panel4;
     private JLabel label7;
     private JTextField chrField;

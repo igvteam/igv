@@ -13,24 +13,6 @@ new FormModel {
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
 					name: "contentPanel"
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
-						"axis": 3
-					} ) {
-						name: "panel1"
-						add( new FormComponent( "javax.swing.JLabel" ) {
-							name: "label4"
-							"text": "User"
-							"horizontalAlignment": 0
-							"maximumSize": new java.awt.Dimension( 80, 16 )
-							"alignmentX": 0.5f
-						} )
-						add( new FormComponent( "javax.swing.JTextField" ) {
-							name: "userNameField"
-							"maximumSize": new java.awt.Dimension( 200, 1000 )
-							"minimumSize": new java.awt.Dimension( 100, 28 )
-							"preferredSize": new java.awt.Dimension( 100, 28 )
-						} )
-					} )
-					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
 						"axis": 1
 					} ) {
 						name: "panel4"
