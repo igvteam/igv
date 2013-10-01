@@ -157,14 +157,16 @@ public class MongoCollabPluginTest extends AbstractHeadlessTest {
     static void startTestMongo() throws Exception{
         String mongoExecPath = MONGO_EXEC_PATH;
         int port = getTestLocator().port;
-        String dbPath = TestUtils.TMP_OUTPUT_DIR;
-        File dbDir = new File(dbPath);
+
+        String dbRelPath = TestUtils.TMP_OUTPUT_DIR;
+        File dbDir = new File(dbRelPath);
+        String dbAbsPath = dbDir.getAbsolutePath();
         if(!dbDir.exists()){
             dbDir.mkdirs();
             dbDir.deleteOnExit();
         }
 
-        final String[] commands = new String[]{mongoExecPath, "--port", "" + port, "--dbpath", dbPath};
+        final String[] commands = new String[]{mongoExecPath, "--port", "" + port, "--dbpath", dbAbsPath};
 
         Thread runnable = new Thread(){
 
