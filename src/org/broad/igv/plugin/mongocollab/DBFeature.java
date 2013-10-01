@@ -107,12 +107,19 @@ public class DBFeature extends ReflectionDBObject implements Feature {
         return this.name;
     }
 
-    public void setColor(Color color){
-        this.color = color;
-    }
-
-    public void setColor(String color){
-        this.color = ColorUtilities.stringToColor(color);
+    /**
+     * Setter for {@code color}, can take a {@link Color}
+     * or a String. A String will be converted using
+     * {@link ColorUtilities#stringToColor(String)}. We do this weird business
+     * because MongoDB doesn't support {@link Color}s natively
+     * @param color
+     */
+    public void setColor(Object color){
+        if(color instanceof Color){
+            this.color = (Color) color;
+        }else if (color instanceof String){
+            this.color = ColorUtilities.stringToColor((String) color);
+        }
     }
 
     public Color getColor() {

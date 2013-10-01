@@ -167,7 +167,6 @@ public class FeatureAnnotDialog extends JDialog {
         panel9 = new JPanel();
         name = new JLabel();
         nameField = new JTextField();
-        hSpacer6 = new JPanel(null);
         panel8 = new JPanel();
         label11 = new JLabel();
         descField = new JTextField();
@@ -207,7 +206,7 @@ public class FeatureAnnotDialog extends JDialog {
 
                 //======== panel5 ========
                 {
-                    panel5.setMaximumSize(new Dimension(500, 1000));
+                    panel5.setMaximumSize(new Dimension(100, 1000));
                     panel5.setMinimumSize(new Dimension(80, 32));
                     panel5.setPreferredSize(new Dimension(80, 32));
                     panel5.setLayout(new BoxLayout(panel5, BoxLayout.Y_AXIS));
@@ -223,9 +222,9 @@ public class FeatureAnnotDialog extends JDialog {
 
                 //======== panel6 ========
                 {
-                    panel6.setMaximumSize(new Dimension(500, 1000));
-                    panel6.setMinimumSize(new Dimension(100, 32));
-                    panel6.setPreferredSize(new Dimension(100, 32));
+                    panel6.setMaximumSize(new Dimension(100, 1000));
+                    panel6.setMinimumSize(new Dimension(80, 32));
+                    panel6.setPreferredSize(new Dimension(80, 32));
                     panel6.setLayout(new BoxLayout(panel6, BoxLayout.Y_AXIS));
 
                     //---- label9 ----
@@ -273,11 +272,6 @@ public class FeatureAnnotDialog extends JDialog {
                 }
                 contentPanel.add(panel9);
 
-                //---- hSpacer6 ----
-                hSpacer6.setMinimumSize(new Dimension(20, 12));
-                hSpacer6.setPreferredSize(new Dimension(20, 10));
-                contentPanel.add(hSpacer6);
-
                 //======== panel8 ========
                 {
                     panel8.setMaximumSize(new Dimension(500, 1000));
@@ -289,7 +283,13 @@ public class FeatureAnnotDialog extends JDialog {
                     label11.setText("Description");
                     label11.setHorizontalAlignment(SwingConstants.LEFT);
                     label11.setMaximumSize(new Dimension(100, 16));
+                    label11.setLabelFor(descField);
+                    label11.setAlignmentX(1.0F);
                     panel8.add(label11);
+
+                    //---- descField ----
+                    descField.setPreferredSize(new Dimension(100, 28));
+                    descField.setMinimumSize(new Dimension(100, 28));
                     panel8.add(descField);
                 }
                 contentPanel.add(panel8);
@@ -366,7 +366,6 @@ public class FeatureAnnotDialog extends JDialog {
     private JPanel panel9;
     private JLabel name;
     private JTextField nameField;
-    private JPanel hSpacer6;
     private JPanel panel8;
     private JLabel label11;
     private JTextField descField;

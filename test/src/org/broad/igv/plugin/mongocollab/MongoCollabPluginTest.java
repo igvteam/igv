@@ -21,6 +21,7 @@ import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.TestUtils;
 import org.junit.*;
 
+import java.awt.*;
 import java.io.*;
 
 import static org.junit.Assert.*;
@@ -36,7 +37,7 @@ public class MongoCollabPluginTest extends AbstractHeadlessTest {
 
     private static Logger log = Logger.getLogger(MongoCollabPluginTest.class);
 
-    private static String testFileSpecPath = TestUtils.DATA_DIR + "testMongo.db.spec";
+    private static String testFileSpecPath = TestUtils.DATA_DIR + "localMongo.db.spec";
     private static Thread mongoProc;
 
     private static String MONGO_EXEC_KEY = "MONGO_EXEC_PATH";
@@ -84,6 +85,7 @@ public class MongoCollabPluginTest extends AbstractHeadlessTest {
         MongoCollabPlugin.Locator locator = assumeTestDBRunning();
         BasicFeature feat = new BasicFeature("chromo", 50, 100);
         //Set name/desc which look like colors, to make sure color parsing isn't activated
+        feat.setColor(Color.magenta);
         feat.setName("0,1,2");
         feat.setDescription("mydescription,is,here");
         DBFeature dbFeat = DBFeature.create(feat);
