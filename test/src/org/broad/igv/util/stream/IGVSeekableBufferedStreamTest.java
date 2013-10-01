@@ -29,32 +29,45 @@ import com.google.common.primitives.Ints;
 import net.sf.samtools.seekablestream.SeekableFileStream;
 import net.sf.samtools.seekablestream.SeekableHTTPStream;
 import net.sf.samtools.seekablestream.SeekableStream;
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.util.TestUtils;
 import org.junit.Assume;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.*;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Random;
 
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class IGVSeekableBufferedStreamTest {
+public class IGVSeekableBufferedStreamTest extends AbstractHeadlessTest{
 
     //    private final File BAM_INDEX_FILE = new File("testdata/net/sf/samtools/BAMFileIndexTest/index_test.bam.bai");
     private final File BAM_FILE = new File(TestUtils.DATA_DIR + "/samtools/index_test.bam");
     private final String BAM_URL_STRING = "http://picard.sourceforge.net/testdata/index_test.bam";
     private static File TestFile = new File(TestUtils.DATA_DIR + "/samtools/megabyteZeros.dat");
 
+    static int expectedFileSize = 20000;
     static byte[] expectedBytes;
     static File testFile;
 
+    final int streamBufferSize = 100;
+    final int halfStreamBufferSize = streamBufferSize / 2;
+    IGVSeekableBufferedStream testBuffStream;
+
 
     @BeforeClass
-    public static void setup() throws Exception {
-        final int fileSize = 20000;
-        createTestFile(fileSize);
+    public static void setUpClass() throws Exception {
+        createTestFile(expectedFileSize);
+    }
+
+    @Before
+    public void setUp() throws Exception{
+        testBuffStream = getTestStream(streamBufferSize);
     }
 
 
@@ -64,7 +77,7 @@ public class IGVSeekableBufferedStreamTest {
      * @throws Exception
      */
     @Test
-    public void testRead() throws Exception {
+    public void testSeekRead() throws Exception {
 
         final int fileSize = expectedBytes.length;
 
@@ -92,104 +105,84 @@ public class IGVSeekableBufferedStreamTest {
     }
 
 
+    private IGVSeekableBufferedStream getTestStream(int streamBufferSize) throws FileNotFoundException{
+       return new IGVSeekableBufferedStream(new SeekableFileStream(testFile), streamBufferSize);
+    }
     /**
      * Test reading byte arrays
      *
      * @throws Exception
      */
     @Test
-    public void testReadBuffer() throws Exception {
+    public void testReadBuffer_noOverlap() throws Exception {
 
+        byte[] buffer = new byte[halfStreamBufferSize];
 
-        final int fileSize = expectedBytes.length;
+        //Read at the beginning
+        tstSeekReadBuffer(testBuffStream, expectedBytes, 0, buffer);
 
-        final int streamBufferSize = 50;
-        IGVSeekableBufferedStream bufferedStream = new IGVSeekableBufferedStream(new SeekableFileStream(testFile), streamBufferSize);
-
-
-        // At the end
-        byte[] buffer = new byte[100];
-
-        int pos = fileSize - buffer.length;
-        bufferedStream.seek(pos);
-        bufferedStream.readFully(buffer);
-        for (int i = 0; i < buffer.length; i++) {
-            byte b = buffer[i];
-            assertEquals("" + i, expectedBytes[pos + i], b);
-        }
+        //Jump to the end
+        int pos = expectedFileSize - streamBufferSize;
+        tstSeekReadBuffer(testBuffStream, expectedBytes, pos, buffer);
 
         // Somewhere in the middle
         pos = 700;
-        bufferedStream.seek(pos);
-        bufferedStream.readFully(buffer);
-        for (int i = 0; i < buffer.length; i++) {
-            byte b = buffer[i];
-            assertEquals("" + i, expectedBytes[pos + i], b);
-
-        }
-
-        // At the beginning
-        pos = 0;
-        bufferedStream.seek(pos);
-        bufferedStream.readFully(buffer);
-        for (int i = 0; i < buffer.length; i++) {
-            byte b = buffer[i];
-            assertEquals(expectedBytes[pos + i], b);
-        }
-
-        // Overlap left
-        bufferedStream.seek(10000);
-        bufferedStream.read();
-
-        pos = 10000 - 75;
-        bufferedStream.seek(pos);
-        bufferedStream.readFully(buffer);
-        for (int i = 0; i < buffer.length; i++) {
-            byte b = buffer[i];
-            assertEquals(expectedBytes[pos + i], b);
-        }
-
-        // Overlap right
-        bufferedStream.seek(5000);
-        bufferedStream.read();
-
-        pos = 5000 + streamBufferSize - 25;
-        bufferedStream.seek(pos);
-        bufferedStream.readFully(buffer);
-        for (int i = 0; i < buffer.length; i++) {
-            byte b = buffer[i];
-            assertEquals(expectedBytes[pos + i], b);
-        }
-
-        // Overlap both ends
-        bufferedStream.seek(7000);
-        bufferedStream.read();
-
-        buffer = new byte[1000];
-        pos = 7000 - streamBufferSize - 25;
-        bufferedStream.seek(pos);
-        bufferedStream.readFully(buffer);
-        for (int i = 0; i < buffer.length; i++) {
-            byte b = buffer[i];
-            assertEquals(expectedBytes[pos + i], b);
-        }
-
-        // Completely contained
-        bufferedStream.seek(3000);
-        bufferedStream.read();
-
-        buffer = new byte[20];
-        pos = 3000 + 10;
-        bufferedStream.seek(pos);
-        bufferedStream.readFully(buffer);
-        for (int i = 0; i < buffer.length; i++) {
-            byte b = buffer[i];
-            assertEquals(expectedBytes[pos + i], b);
-        }
-
-
+        tstSeekReadBuffer(testBuffStream, expectedBytes, pos, buffer);
     }
 
+
+    @Test
+    public void testReadBuffer_overlap_begin() throws Exception{
+        // Overlap with stream missing buffer data in beginning of requested range
+        testBuffStream.seek(10000);
+        int tb = testBuffStream.read();
+
+        int pos = 10000 - halfStreamBufferSize;
+        byte[] buffer = new byte[halfStreamBufferSize + 5];
+        tstSeekReadBuffer(testBuffStream, expectedBytes, pos, buffer);
+    }
+
+    @Test
+    public void testReadBuffer_overlap_end() throws Exception{
+        // Overlap with stream missing data at the end of requested range
+        testBuffStream.seek(5000);
+        testBuffStream.read();
+
+        int pos = 5000 + halfStreamBufferSize;
+        byte[] buffer = new byte[halfStreamBufferSize + 5];
+        tstSeekReadBuffer(testBuffStream, expectedBytes, pos, buffer);
+    }
+
+    @Test
+    public void testReadBuffer_overlap_both() throws Exception{
+        // Overlap both ends
+        testBuffStream.seek(7000);
+        testBuffStream.read();
+
+        byte[] buffer = new byte[1000];
+        int pos = 7000 - streamBufferSize - 25;
+        tstSeekReadBuffer(testBuffStream, expectedBytes, pos, buffer);
+    }
+
+    @Test
+    public void testReadBuffer_contained() throws Exception {
+        // Completely contained
+        testBuffStream.seek(3000);
+        testBuffStream.read();
+
+        int tstSize = streamBufferSize / 10;
+        byte[] buffer = new byte[tstSize];
+        int pos = 3000 + tstSize;
+        tstSeekReadBuffer(testBuffStream, expectedBytes, pos, buffer);
+    }
+
+
+    private void tstSeekReadBuffer(IGVSeekableBufferedStream bufferedStream, byte[] allExpectedBytes, int pos, byte[] buffer) throws Exception{
+        bufferedStream.seek(pos);
+        bufferedStream.readFully(buffer);
+        byte[] expected = Arrays.copyOfRange(allExpectedBytes, pos, pos + buffer.length);
+        assertArraysEqual(expected, buffer);
+    }
 
     private static void createTestFile(int length) throws Exception {
 
@@ -199,8 +192,9 @@ public class IGVSeekableBufferedStreamTest {
         testFile.deleteOnExit();
 
         int range = Byte.MAX_VALUE - Byte.MIN_VALUE;
+        Random rand = new Random(19534);
         for (int i = 0; i < length; i++) {
-            expectedBytes[i] = (byte) (Byte.MIN_VALUE + (int) (Math.random() * range));
+            expectedBytes[i] = (byte) (Byte.MIN_VALUE + (int) (rand.nextDouble() * range));
         }
 
         OutputStream os = null;

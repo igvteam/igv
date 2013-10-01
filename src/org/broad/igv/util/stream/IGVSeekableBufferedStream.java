@@ -144,14 +144,6 @@ public class IGVSeekableBufferedStream extends SeekableStream {
         return b;
     }
 
-    /**
-     * This method implements the general contract of the corresponding read method of the InputStream class.
-     * @param b   destination buffer;
-     * @param off offset at which to start storing bytes.
-     * @param len maximum number of bytes to read.
-     * @return the number of bytes read, or -1 if the end of the stream has been reached.
-     * @throws IOException
-     */
     public int read(final byte[] b, final int off, final int len) throws IOException {
 
         if (position >= length) return -1;
@@ -178,44 +170,51 @@ public class IGVSeekableBufferedStream extends SeekableStream {
 
     private void fillBuffer() throws IOException {
 
-        int n = 0;
+        int curOffset = 0;
         long longLen = Math.min((long) maxBufferSize, (length - position));
+
         //This shouldn't actually be necessary as long as maxBufferSize is
         //an int, but we leave it here to stress the fact that
         //we need to watch for overflow
-        int len = Ints.saturatedCast(longLen);
+        int bytesRemaining = Ints.saturatedCast(longLen);
 
-        int offset = 0;
-//        long bufferEnd = bufferStartPosition + bufferSize;
-//        if(position + len > bufferStartPosition && position < bufferStartPosition) {
-//           // There is some overlap
-//            int sz = (int) (position + len - bufferStartPosition);
-//            arraycopy(buffer, bufferSize - sz, buffer, 0, sz);
-//
-//            n += sz;
-//            len -= sz;
-//        }
-//        else if(position + len > bufferEnd && position < bufferEnd) {
-//            int sz = (int) (bufferEnd - position);
-//            offset = sz;
-//            arraycopy(buffer, 0, buffer, bufferSize - sz, sz);
-//
-//            n += sz;
-//            len -= sz;
-//
-//        }
+        int toSkip = 0;
+        long bufferEnd = bufferStartPosition + bufferSize;
+        if(position < bufferEnd && position + bytesRemaining > bufferEnd) {
+            // Beginning of buffer data is useless, want to save
+            // some though
+            // Fill request:           xxxxxxxxxxxxxx...
+            // Buffer data:    xxxxxxxxxxxxx
+            int szOverlap = (int) (bufferEnd - position);
+            arraycopy(buffer, bufferSize - szOverlap, buffer, 0, szOverlap);
+            toSkip = szOverlap;
 
-        if (len > 0) {
-            wrappedStream.seek(position + offset);
-            while (n < len) {
-                int count = wrappedStream.read(buffer, n, len - n);
+            curOffset += szOverlap;
+            bytesRemaining -= szOverlap;
+        }//   else if(position < bufferStartPosition && position + bytesRemaining > bufferStartPosition) {
+//            //Gap between position and buffer start, but some overlap
+//            // Fill request: xxxxxxxxxxxx...
+//            // Buffer data:      xxxxxxxxxxxxxx...
+//            int szOverlap = (int) (position + bytesRemaining - bufferStartPosition);
+//            arraycopy(buffer, 0, buffer, bufferSize - szOverlap, szOverlap);
+//
+//            curOffset += szOverlap;
+//            bytesRemaining -= szOverlap;
+//        }
+//        else
+
+        if (bytesRemaining > 0) {
+            wrappedStream.seek(position + toSkip);
+            while (bytesRemaining > 0) {
+                int count = wrappedStream.read(buffer, curOffset, bytesRemaining);
                 if (count < 0) {
                     break;  // EOF.  This should not be possible as len is capped above.
                 }
-                n += count;
+                curOffset += count;
+                bytesRemaining -= count;
             }
             bufferStartPosition = position;
-            bufferSize = n;
+            bufferSize = curOffset;
         }
     }
 }
