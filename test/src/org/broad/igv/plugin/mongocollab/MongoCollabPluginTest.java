@@ -11,9 +11,7 @@
 
 package org.broad.igv.plugin.mongocollab;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
-import com.mongodb.Mongo;
+import com.mongodb.*;
 import org.apache.log4j.Logger;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.BasicFeature;
@@ -59,13 +57,22 @@ public class MongoCollabPluginTest extends AbstractHeadlessTest {
 
     @AfterClass
     public static void tearDownClass() throws Exception{
-        emptyTestCollection();
-        stopTestMongo();
+        try{
+            emptyTestCollection();
+        }catch(Exception e){
+            log.error(e.getMessage(), e);
+        }
+        try {
+            stopTestMongo();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     @Before
     public void setUp() throws Exception{
-        assumeTestDBRunning();
+        super.setUp();
+        //assumeTestDBRunning();
     }
 
     @Test
@@ -204,13 +211,40 @@ public class MongoCollabPluginTest extends AbstractHeadlessTest {
         };
         runnable.start();
         mongoProc = runnable;
+        //Need to wait for startup
+        Thread.sleep(5000);
     }
 
+//    @Test
+//    public void testShutdown() throws Exception{
+//        assertTrue(canAccessDB(getTestLocator()));
+//        assertFalse(stopTestMongo());
+//    }
 
-    static void stopTestMongo() {
-        if(mongoProc != null){
+
+    /**
+     * Stop the test Mongo instance
+     * @return state of server when done. False = stopped, true = running
+     * @throws IOException
+     */
+    static boolean stopTestMongo() throws Exception{
+
+        MongoCollabPlugin.Locator testLocator = getTestLocator();
+        Mongo mongo = MongoCollabPlugin.getMongo(testLocator.host, testLocator.port);
+        DB db = mongo.getDB("admin");
+        //This actually works (from localhost only), but the java driver throws an error for some reason
+        try{
+            CommandResult command = db.command( new BasicDBObject( "shutdown", 1 ) );
+        }catch(Exception e){
+
+        }
+        Thread.sleep(5000);
+
+        if(mongoProc != null && mongoProc.isAlive()){
             mongoProc.interrupt();
             mongoProc.stop();
         }
+
+        return canAccessDB(testLocator);
     }
 }
