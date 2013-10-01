@@ -59,8 +59,8 @@ public class MongoCollabPluginTest extends AbstractHeadlessTest {
 
     @AfterClass
     public static void tearDownClass() throws Exception{
-        stopTestMongo();
         emptyTestCollection();
+        stopTestMongo();
     }
 
     @Before
