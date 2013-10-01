@@ -132,24 +132,36 @@ public class IGVSeekableBufferedStreamTest extends AbstractHeadlessTest{
 
 
     @Test
-    public void testReadBuffer_overlap_begin() throws Exception{
-        // Overlap with stream missing buffer data in beginning of requested range
+    public void testReadBuffer_read_end() throws Exception{
+        // Overlap with where the buffer has the beginning data, but not the end
         testBuffStream.seek(10000);
-        int tb = testBuffStream.read();
+        testBuffStream.read();
 
-        int pos = 10000 - halfStreamBufferSize;
+        int pos = 10000 + halfStreamBufferSize;
         byte[] buffer = new byte[halfStreamBufferSize + 5];
         tstSeekReadBuffer(testBuffStream, expectedBytes, pos, buffer);
     }
 
     @Test
-    public void testReadBuffer_overlap_end() throws Exception{
-        // Overlap with stream missing data at the end of requested range
+    public void testReadBuffer_missing_start_end() throws Exception{
+        // Overlap with buffer missing data at the beginning and end
+        // of the requested range.
         testBuffStream.seek(5000);
         testBuffStream.read();
 
         int pos = 5000 + halfStreamBufferSize;
-        byte[] buffer = new byte[halfStreamBufferSize + 5];
+        byte[] buffer = new byte[streamBufferSize];
+        tstSeekReadBuffer(testBuffStream, expectedBytes, pos, buffer);
+    }
+
+    @Test
+    public void testReadBuffer_read_start() throws Exception{
+        // Overlap with stream missing data at the start of requested range
+        testBuffStream.seek(5000);
+        testBuffStream.read();
+
+        int pos = 5000 - halfStreamBufferSize;
+        byte[] buffer = new byte[halfStreamBufferSize - 5];
         tstSeekReadBuffer(testBuffStream, expectedBytes, pos, buffer);
     }
 

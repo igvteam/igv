@@ -180,28 +180,33 @@ public class IGVSeekableBufferedStream extends SeekableStream {
 
         int toSkip = 0;
         long bufferEnd = bufferStartPosition + bufferSize;
-        if(position < bufferEnd && position + bytesRemaining > bufferEnd) {
+        long requiredEnd = position + bytesRemaining;
+        if(position < bufferEnd && requiredEnd > bufferEnd) {
             // Beginning of buffer data is useless, want to save
             // some though
-            // Fill request:           xxxxxxxxxxxxxx...
+            // Fill request:           xxxxxxxx...
             // Buffer data:    xxxxxxxxxxxxx
             int szOverlap = (int) (bufferEnd - position);
             arraycopy(buffer, bufferSize - szOverlap, buffer, 0, szOverlap);
-            toSkip = szOverlap;
 
+            //Skip the first bytes that we already had
+            toSkip = szOverlap;
             curOffset += szOverlap;
             bytesRemaining -= szOverlap;
-        }//   else if(position < bufferStartPosition && position + bytesRemaining > bufferStartPosition) {
-//            //Gap between position and buffer start, but some overlap
-//            // Fill request: xxxxxxxxxxxx...
-//            // Buffer data:      xxxxxxxxxxxxxx...
-//            int szOverlap = (int) (position + bytesRemaining - bufferStartPosition);
-//            arraycopy(buffer, 0, buffer, bufferSize - szOverlap, szOverlap);
-//
-//            curOffset += szOverlap;
-//            bytesRemaining -= szOverlap;
-//        }
-//        else
+        }else if(position < bufferStartPosition && requiredEnd > bufferStartPosition && requiredEnd <= bufferEnd) {
+            //Gap between position and buffer start, but some overlap
+            //We require that the buffer contain data all the way to the end,
+            //because dealing with the case of writing buffered data to the middle
+            //is too complicated and not likely to occur in practice. When it does,
+            //we just re-read everything.
+            // Fill request: xxxxxxxxxxxx...
+            // Buffer data:      xxxxxxxxxxx...
+            int szOverlap = (int) (position + bytesRemaining - bufferStartPosition);
+            arraycopy(buffer, 0, buffer, bufferSize - szOverlap, szOverlap);
+
+            //Don't skip any bytes, just trim from the number requested
+            bytesRemaining -= szOverlap;
+        }
 
         if (bytesRemaining > 0) {
             wrappedStream.seek(position + toSkip);
