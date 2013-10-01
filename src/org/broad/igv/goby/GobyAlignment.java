@@ -813,4 +813,10 @@ public class GobyAlignment implements Alignment {
     public boolean isPrimary() {
         return !EntryFlagHelper.isNotPrimaryAlignment(entry);
     }
+
+    @Override
+    public boolean isSupplementary() {
+        // The SAM 0x0800 tag
+        return false;
+    }
 }

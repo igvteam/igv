@@ -495,14 +495,6 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     }
 
     /**
-     * Variously called a supplementary alignment flag,
-     * or chimeric read
-     * @return
-     */
-    public boolean isSupplementaryAlignment(){
-        return this.record.getSupplementaryAlignmentFlag();
-    }
-    /**
      * @return the unclippedStart
      */
     public int getAlignmentStart() {
@@ -534,6 +526,11 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     @Override
     public boolean isPrimary() {
         return !this.record.getNotPrimaryAlignmentFlag();
+    }
+
+    @Override
+    public boolean isSupplementary() {
+        return this.record.getSupplementaryAlignmentFlag();
     }
 
     /**
@@ -628,7 +625,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                 sectionBreak = true;
             }
             if (record.getReadFailsVendorQualityCheckFlag()) {
-                buf.append("<br>FAILED Vendor Quality Check");
+                buf.append("<br>FAILED Vendor quality check");
                 sectionBreak = true;
             }
             if (sectionBreak) {
@@ -637,7 +634,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         }
 
         if(record.getSupplementaryAlignmentFlag()){
-            buf.append("<br> Chimeric Read");
+            buf.append("<br>Supplementary alignment (chimeric)");
         }
 
         List<SAMRecord.SAMTagAndValue> attributes = record.getAttributes();

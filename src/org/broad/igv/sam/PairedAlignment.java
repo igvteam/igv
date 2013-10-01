@@ -309,4 +309,9 @@ public class PairedAlignment implements Alignment {
         return firstAlignment.isPrimary() && (secondAlignment == null || secondAlignment.isPrimary());
     }
 
+    @Override
+    public boolean isSupplementary() {
+        return firstAlignment.isSupplementary() && secondAlignment.isSupplementary();
+    }
+
 }

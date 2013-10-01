@@ -103,4 +103,6 @@ public interface Alignment extends LocusScore {
     void finish();
 
     boolean isPrimary();
+
+    boolean isSupplementary();
 }

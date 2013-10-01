@@ -247,4 +247,9 @@ public class FeatureWrappedAlignment implements Alignment {
     public boolean isPrimary() {
         return true;
     }
+
+    @Override
+    public boolean isSupplementary() {
+        return false;
+    }
 }

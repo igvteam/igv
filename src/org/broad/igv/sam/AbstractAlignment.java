@@ -339,4 +339,8 @@ public abstract class AbstractAlignment implements Alignment {
         return true;
     }
 
+    @Override
+    public boolean isSupplementary() {
+        return false;
+    }
 }

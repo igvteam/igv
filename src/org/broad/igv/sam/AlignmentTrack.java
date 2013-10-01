@@ -38,7 +38,10 @@ import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.InsertSizeSettingsDialog;
 import org.broad.igv.ui.SashimiPlot;
+import org.broad.igv.ui.color.ColorPalette;
+import org.broad.igv.ui.color.ColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
 import org.broad.igv.ui.event.AlignmentTrackEventListener;
 import org.broad.igv.ui.panel.DataPanel;
@@ -163,6 +166,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private Rectangle alignmentsRect;
     private Rectangle downsampleRect;
 
+    private ColorTable readNamePalette;
+
     /**
      * Create a new alignment track
      *
@@ -200,6 +205,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         if (renderOptions.getColorOption() == ColorOption.BISULFITE) {
             setExperimentType(ExperimentType.BISULFITE);
         }
+
+        readNamePalette = new PaletteColorTable(ColorUtilities.getDefaultPalette());
 
         // Register track
         if (!Globals.isHeadless()) {
@@ -749,6 +756,17 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
     }
 
+
+    private Alignment getAlignment(final TrackClickEvent te) {
+        MouseEvent e = te.getMouseEvent();
+        final ReferenceFrame frame = te.getFrame();
+        if (frame == null) {
+            return null;
+        }
+        final double location = frame.getChromosomePosition(e.getX());
+        return getAlignmentAt(location, e.getY(), frame);
+    }
+
     private Alignment getAlignmentAt(double position, int y, ReferenceFrame frame) {
 
         if (alignmentsRect == null) {
@@ -853,8 +871,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     private void setSelected(Alignment alignment) {
-        Color c = alignment.isPaired() && alignment.getMate() != null && alignment.getMate().isMapped()
-                ? ColorUtilities.randomColor(selectionColorIndex++) : Color.black;
+        Color c = readNamePalette.get(alignment.getReadName());
         selectedReadNames.put(alignment.getReadName(), c);
     }
 
@@ -1234,10 +1251,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             addClearSelectionsMenuItem();
 
             addSeparator();
-            addConsensusSequence(e);
+            addCopySequenceItem(e);
             if (!Globals.isProduction()) {
                 addBlatItem(e);
             }
+            addConsensusSequence(e);
 
             boolean showSashimi = true;//!Globals.isProduction();
 
@@ -1270,9 +1288,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
 
             final ReferenceFrame frame;
-            if(e.getFrame() == null && FrameManager.getFrames().size() == 1){
+            if (e.getFrame() == null && FrameManager.getFrames().size() == 1) {
                 frame = FrameManager.getFrames().get(0);
-            }else{
+            } else {
                 frame = e.getFrame();
             }
 
@@ -1283,7 +1301,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 @Override
                 public void actionPerformed(ActionEvent ae) {
                     //This shouldn't ever be true, but just in case it's more user-friendly
-                    if(frame == null){
+                    if (frame == null) {
                         MessageUtils.showMessage("Unknown region bounds, cannot export consensus");
                         return;
                     }
@@ -1357,7 +1375,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 public void actionPerformed(ActionEvent aEvt) {
                     String val = MessageUtils.showInputDialog("Enter read name: ");
                     if (val != null && val.trim().length() > 0) {
-                        selectedReadNames.put(val, ColorUtilities.randomColor(selectedReadNames.size() + 1));
+                        selectedReadNames.put(val, readNamePalette.get(val));
                         refresh();
                     }
                 }
@@ -1975,38 +1993,57 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             add(item);
         }
 
-        public void addBlatItem(final TrackClickEvent te) {
+        public void addCopySequenceItem(final TrackClickEvent te) {
             // Change track height by attribute
-            final JMenuItem item = new JMenuItem("Blat read sequence");
-            MouseEvent e = te.getMouseEvent();
-            final ReferenceFrame frame = te.getFrame();
-            if (frame == null) return;
-            final double location = frame.getChromosomePosition(e.getX());
-            final Alignment alignment = getAlignmentAt(location, e.getY(), frame);
-            if (alignment == null) return;
+            final JMenuItem item = new JMenuItem("Copy read sequence");
+            add(item);
+
+            final Alignment alignment = getAlignment(te);
+            if (alignment == null) {
+                item.setEnabled(false);
+                return;
+            }
+
+            final String seq = alignment.getReadSequence();
+            if(seq == null) {
+                item.setEnabled(false);
+                return;
+
+            }
+
             item.addActionListener(new ActionListener() {
-
                 public void actionPerformed(ActionEvent aEvt) {
-                    if (frame == null) {
-                        item.setEnabled(false);
-                    } else {
-                        String sequence;
-                        if (alignment != null) {
-                            sequence = alignment.getReadSequence();
-                        } else {
-                            sequence = MessageUtils.showInputDialog("Enter sequence");
-                        }
-
-                        if (sequence != null && sequence.trim().length() > 0) {
-                            BlatClient.doBlatQuery(sequence);
-                        }
-                    }
+                    StringUtils.copyTextToClipboard(seq);
                 }
             });
 
-            String seq = alignment.getReadSequence();
-            item.setEnabled(seq != null && seq.length() > 10);
+        }
+
+
+        public void addBlatItem(final TrackClickEvent te) {
+            // Change track height by attribute
+            final JMenuItem item = new JMenuItem("Blat read sequence");
             add(item);
+
+            final Alignment alignment = getAlignment(te);
+            if (alignment == null) {
+                item.setEnabled(false);
+                return;
+            }
+
+            final String seq = alignment.getReadSequence();
+            if(seq == null) {
+                item.setEnabled(false);
+                return;
+
+            }
+
+            item.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent aEvt) {
+                    BlatClient.doBlatQuery(seq);
+                }
+            });
+
         }
 
 

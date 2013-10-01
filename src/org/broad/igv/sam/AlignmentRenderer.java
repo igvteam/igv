@@ -966,7 +966,9 @@ public class AlignmentRenderer implements FeatureRenderer {
 
 
         Color defaultColor = alignment.getDefaultColor();
-        Color c = defaultColor;
+
+        Color c = alignment.isSupplementary() ? Color.darkGray : defaultColor;
+
         ColorOption colorOption = renderOptions.getColorOption();
         switch (colorOption) {
             case BISULFITE:
