@@ -99,7 +99,11 @@ public class MongoCollabPlugin implements IGVPlugin {
             int count = 0;
             for (Feature feat : iter) {
                 String err = saveFeature(collection, DBFeature.create(feat));
-                if(err == null) count += 1;
+                if(err == null){
+                    count += 1;
+                }else{
+                    log.error("Error inserting feature: " + err);
+                }
             }
             return count;
         } else {

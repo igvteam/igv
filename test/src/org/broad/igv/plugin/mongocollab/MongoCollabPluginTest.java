@@ -17,6 +17,7 @@ import com.mongodb.Mongo;
 import org.apache.log4j.Logger;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.TestUtils;
 import org.junit.*;
@@ -53,12 +54,13 @@ public class MongoCollabPluginTest extends AbstractHeadlessTest {
         Assume.assumeTrue(MONGO_EXEC_PATH != null && MONGO_EXEC_PATH.length() > 0);
         startTestMongo();
         assumeTestDBRunning();
+        emptyTestCollection();
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception{
         stopTestMongo();
-        TestUtils.clearOutputDir();
+        emptyTestCollection();
     }
 
     @Before
@@ -158,12 +160,17 @@ public class MongoCollabPluginTest extends AbstractHeadlessTest {
         String mongoExecPath = MONGO_EXEC_PATH;
         int port = getTestLocator().port;
 
-        String dbRelPath = TestUtils.TMP_OUTPUT_DIR;
-        File dbDir = new File(dbRelPath);
+        String dbRelPath = TestUtils.DATA_DIR + "mongodbtmp";
+        final File dbDir = new File(dbRelPath);
         String dbAbsPath = dbDir.getAbsolutePath();
         if(!dbDir.exists()){
             dbDir.mkdirs();
-            dbDir.deleteOnExit();
+            Runtime.getRuntime().addShutdownHook(new Thread(){
+                @Override
+                public void run() {
+                    FileUtils.deleteDir(dbDir);
+                }
+            });
         }
 
         final String[] commands = new String[]{mongoExecPath, "--port", "" + port, "--dbpath", dbAbsPath};
