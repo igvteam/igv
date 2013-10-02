@@ -103,6 +103,24 @@ public class DBFeature extends ReflectionDBObject implements Feature {
         this.name = name;
     }
 
+    /**
+     * Get the name of this feature, in upper-case, or null if name is null
+     * For case-insensitive searches
+     * @return
+     */
+    public String getUpperName(){
+        return this.name != null ? this.name.toUpperCase() : null;
+    }
+
+    /**
+     * no-op, just here because ReflectionDB needs a setter
+     * Does nothing
+     * @param upperName
+     */
+    public void setUpperName(String upperName){
+        //pass
+    }
+
     public String getName(){
         return this.name;
     }

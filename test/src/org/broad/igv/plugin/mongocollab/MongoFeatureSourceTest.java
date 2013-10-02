@@ -59,14 +59,14 @@ public class MongoFeatureSourceTest extends AbstractHeadlessTest{
 
     @Test
     public void testHasIndex() throws Exception{
-        assertTrue(this.source.hasIndex());
+        assertTrue(this.source.hasLocusIndex());
 
         this.source = new MongoFeatureSource(this.collection, false);
-        assertTrue(this.source.hasIndex());
+        assertTrue(this.source.hasLocusIndex());
 
         this.collection.dropIndexes();
         this.source = new MongoFeatureSource(this.collection, false);
-        assertFalse(this.source.hasIndex());
+        assertFalse(this.source.hasLocusIndex());
     }
 
     @Test
@@ -112,5 +112,26 @@ public class MongoFeatureSourceTest extends AbstractHeadlessTest{
 
         assertEquals(2, list_01.size());
         assertEquals(100000, list_01.get(0).getStart());
+    }
+
+    @Test
+    public void testGetFeaturesByName() throws Exception{
+        int inserted = MongoCollabPlugin.insertFeaturesFromFile(this.collection, TestUtils.DATA_DIR + "bed/Unigene.sample.bed");
+        assert inserted > 0;
+
+        //Note the cases are incorrect, want to make sure matching is case-insensitive
+        String featName = "hs.516555";
+
+        Iterator<DBFeature.IGVFeat> features = this.source.getFeatures(featName);
+        List<DBFeature.IGVFeat> list = Lists.newArrayList(features);
+
+        assertEquals(1, list.size());
+        DBFeature.IGVFeat feat = list.get(0);
+
+        //chr2	179908392	179909870
+        assertEquals("chr2", feat.getChr());
+        assertEquals(179908392, feat.getStart());
+        assertEquals(179909870, feat.getEnd());
+
     }
 }

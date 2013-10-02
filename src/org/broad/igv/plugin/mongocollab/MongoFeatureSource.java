@@ -35,30 +35,30 @@ public class MongoFeatureSource implements FeatureSource<DBFeature.IGVFeat> {
     private int featureWindowSize = 1000000;
 
     private DBCollection collection;
-    private boolean hasIndex = false;
+    private boolean hasLocusIndex = false;
 
 
     public MongoFeatureSource(DBCollection collection, boolean buildIndex) {
         this.collection = collection;
         this.collection.setObjectClass(DBFeature.class);
-        checkForIndex(buildIndex);
+        checkForLocusIndex(buildIndex);
     }
 
-    boolean hasIndex(){
-        return this.hasIndex;
+    boolean hasLocusIndex(){
+        return this.hasLocusIndex;
     }
 
     /**
      * Check to see if we have an index useful for queries
-     * @param buildIndex Whether to build index if not found
+     * @param buildIndex Whether to build locus index if not found
      */
-    private void checkForIndex(boolean buildIndex){
+    private void checkForLocusIndex(boolean buildIndex){
         if(buildIndex){
-            ensureIndex(collection);
+            ensureLocusIndex(collection);
         }
         //Check to see if we have the index we want
         List<DBObject> indexes = collection.getIndexInfo();
-        DBObject neededFields = getIndexKeys();
+        DBObject neededFields = getLocusIndexKeys();
         for(DBObject index: indexes){
 
             boolean isMatchingIndex = true;
@@ -75,7 +75,7 @@ public class MongoFeatureSource implements FeatureSource<DBFeature.IGVFeat> {
             }
 
             if(isMatchingIndex) {
-                this.hasIndex = true;
+                this.hasLocusIndex = true;
                 break;
             }
         }
@@ -99,7 +99,7 @@ public class MongoFeatureSource implements FeatureSource<DBFeature.IGVFeat> {
      * as a double in the DB
      * @return
      */
-    private DBObject getIndexKeys(){
+    private DBObject getLocusIndexKeys(){
         BasicDBObject indexKeys = new BasicDBObject("Chr", 1.0d);
         indexKeys.append("Start", 1.0d);
         indexKeys.append("End", 1.0d);
@@ -112,16 +112,26 @@ public class MongoFeatureSource implements FeatureSource<DBFeature.IGVFeat> {
      * See http://docs.mongodb.org/manual/reference/method/db.collection.ensureIndex/#db.collection.ensureIndex
      * @param collection
      */
-    private void ensureIndex(DBCollection collection){
-        collection.ensureIndex(getIndexKeys());
+    private void ensureLocusIndex(DBCollection collection){
+        collection.ensureIndex(getLocusIndexKeys());
     }
 
     @Override
     public Iterator<DBFeature.IGVFeat> getFeatures(String chr, int start, int end) throws IOException {
-        DBCursor cursor = this.collection.find(createQueryObject(chr, start, end));
+         return getFeatures(createQueryObject(chr, start, end));
+    }
+
+    public Iterator<DBFeature.IGVFeat> getFeatures(String name) throws IOException {
+        BasicDBObject dbObj = new BasicDBObject("UpperName", name.toUpperCase());
+        return getFeatures(dbObj);
+    }
+
+    private Iterator<DBFeature.IGVFeat> getFeatures(DBObject queryObject) throws IOException{
+        DBCursor cursor = this.collection.find(queryObject);
+
         //Sort by increasing start value
         //Only do this if we have an index, otherwise might be too memory intensive
-        if(hasIndex){
+        if(hasLocusIndex){
             cursor.sort(new BasicDBObject("Start", 1));
         }
         boolean isSorted = true;

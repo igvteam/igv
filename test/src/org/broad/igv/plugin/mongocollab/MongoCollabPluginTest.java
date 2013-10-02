@@ -18,7 +18,10 @@ import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.TestUtils;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assume;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.awt.*;
 import java.io.*;
@@ -67,12 +70,6 @@ public class MongoCollabPluginTest extends AbstractHeadlessTest {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
-    }
-
-    @Before
-    public void setUp() throws Exception{
-        super.setUp();
-        //assumeTestDBRunning();
     }
 
     @Test
