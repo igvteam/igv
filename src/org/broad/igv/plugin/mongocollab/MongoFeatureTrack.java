@@ -81,7 +81,8 @@ public class MongoFeatureTrack extends FeatureTrack{
 
         //Add annotation or edit existing one
         Feature feat = getFeatureAtMousePosition(te);
-        menu.add(createEditAnnotMenuEntry(te, (DBFeature.IGVFeat) feat));
+        JMenuItem item = createEditAnnotMenuEntry(te, (DBFeature.IGVFeat) feat);
+        if(item != null) menu.add(item);
 
         return menu;
     }

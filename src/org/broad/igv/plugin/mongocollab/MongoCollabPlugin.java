@@ -11,10 +11,7 @@
 
 package org.broad.igv.plugin.mongocollab;
 
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.Mongo;
-import com.mongodb.WriteResult;
+import com.mongodb.*;
 import org.apache.log4j.Logger;
 import org.broad.igv.dev.api.IGVPlugin;
 import org.broad.igv.dev.api.LoadHandler;
@@ -25,6 +22,7 @@ import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.util.FileDialogUtils;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.Feature;
@@ -40,6 +38,7 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author jacob
@@ -151,7 +150,7 @@ public class MongoCollabPlugin implements IGVPlugin {
         if(connection == null){
             try {
                 log.info("Connecting to MongoDB host=" + host + " port=" + port);
-                connection = new Mongo(host, port);
+                connection = new MongoClient(host, port);
             } catch (UnknownHostException e) {
                 log.error(e.getMessage(), e);
                 throw new RuntimeException(e.getMessage(), e);
@@ -209,12 +208,65 @@ public class MongoCollabPlugin implements IGVPlugin {
 
     }
 
+    public static final int DB_EXISTS = 0x1;
+    public static final int COLLECTION_EXISTS = 0x2;
+
+    /**
+     * Check whether the database/collection specified by the given {@code locator}
+     * exists.
+     * @param locator
+     * @return An integer consisting of 2 flags:
+     * DB_EXISTS
+     * COLLECTION_EXISTS
+     *
+     * with each set if the DB/COLLECTION exists. !DB_EXISTS && COLLECTION_EXISTS should never happen
+     */
+    public static int checkDestinationExists(Locator locator){
+        Mongo mongo = getMongo(locator.host, locator.port);
+        List<String> dbNames = mongo.getDatabaseNames();
+        boolean dbExists = dbNames.indexOf(locator.dbName) >= 0;
+
+        if(!dbExists){
+            return 0;
+        }
+
+        int result = DB_EXISTS;
+        DB db = mongo.getDB(locator.dbName);
+        Set<String> collections = db.getCollectionNames();
+        result |= collections.contains(locator.collectionName) ? COLLECTION_EXISTS : 0;
+
+        return result;
+    }
+
     public static class TrackLoadHandler implements LoadHandler {
 
         @Override
         public void load(String path, List<Track> newTracks) throws IOException{
             Locator locator = new Locator(path);
-            MongoFeatureSource.loadFeatureTrack(locator, newTracks);
+
+            int destExists = checkDestinationExists(locator);
+            String toAsk = null;
+            boolean doLoadTrack = false;
+
+            if( (destExists & COLLECTION_EXISTS) > 0){
+                //Both DB and collection exist
+                assert (destExists & DB_EXISTS) > 0;
+                doLoadTrack = true;
+            }else if(destExists == 0){
+                //Neither collection nor track exist
+                toAsk = String.format("Host '%s' does not contain database '%s'. Do you wish to create it?\n", locator.host, locator.dbName);
+                toAsk += String.format("If you select yes, collection '%s' will be created as well.", locator.collectionName);
+            }else{
+                //Collection doesn't exist but DB does
+                toAsk = String.format("Host '%s', database '%s', does not contain collection '%s'.\nDo you wish to create it?",
+                        locator.host, locator.dbName, locator.collectionName);
+            }
+
+            if(toAsk != null){
+                doLoadTrack = MessageUtils.confirm(toAsk);
+            }
+
+            if(doLoadTrack) MongoFeatureSource.loadFeatureTrack(locator, newTracks);
         }
     }
 
