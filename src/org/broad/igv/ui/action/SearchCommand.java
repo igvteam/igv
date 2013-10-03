@@ -17,6 +17,7 @@ package org.broad.igv.ui.action;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.dev.api.FeatureNameSearcher;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
@@ -43,16 +44,7 @@ import java.util.List;
  * <p/>
  * Note:  Currently the only recognized features are genes
  *
- * @author jrobinso
- */
-
-/**
- * A class for performing search actions.  The class takes a view context and
- * search string as parameters.   The search string can be either
- * (a) a feature (e.g. gene),  or
- * (b) a locus string in the UCSC form,  e.g. chr1:100,000-200,000
- * <p/>
- * Note:  Currently the only recognized features are genes
+ * Custom searchers can be registered, see {@link #registerFeatureNameSearcher(org.broad.igv.dev.api.FeatureNameSearcher)}
  *
  * @author jrobinso
  */
@@ -434,8 +426,23 @@ public class SearchCommand {
 
     }
 
-    public static void registerFeatureNameSearcher(FeatureNameSearcher searcher){
-        nameSearchers.add(searcher);
+    /**
+     * Register a {@link FeatureNameSearcher} to be used when searching for features,
+     * such as when the user enters text in the box
+     * @param searcher
+     * @api
+     */
+    public static boolean registerFeatureNameSearcher(FeatureNameSearcher searcher){
+        return nameSearchers.add(searcher);
+    }
+
+    /**
+     *
+     * @param searcher
+     * @api
+     */
+    public static boolean unregisterFeatureNameSearcher(FeatureNameSearcher searcher) {
+        return nameSearchers.remove(searcher);
     }
 
     /**
@@ -448,7 +455,7 @@ public class SearchCommand {
     private List<NamedFeature> comprehensiveFeatureSearch(String searchString){
         List<NamedFeature> features = new ArrayList<NamedFeature>();
         for(FeatureNameSearcher searcher: nameSearchers){
-            Collection<NamedFeature> tmp = searcher.search(searchString);
+            Collection<? extends NamedFeature> tmp = searcher.search(searchString);
             if(tmp == null){
                 log.warn("Error searching with " + searcher);
             }else{
@@ -685,6 +692,12 @@ public class SearchCommand {
 
         public int getEnd() {
             return end;
+        }
+
+        //May be null
+        @ForTesting
+        public NamedFeature getFeature(){
+            return feature;
         }
     }
 

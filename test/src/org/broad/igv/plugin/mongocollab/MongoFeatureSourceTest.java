@@ -14,9 +14,15 @@ package org.broad.igv.plugin.mongocollab;
 import com.google.common.collect.Lists;
 import com.mongodb.DBCollection;
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.NamedFeature;
+import org.broad.igv.track.Track;
+import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.util.TestUtils;
 import org.junit.*;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -47,6 +53,7 @@ public class MongoFeatureSourceTest extends AbstractHeadlessTest{
     @Before
     public void setUp() throws Exception {
         MongoCollabPluginTest.assumeTestDBRunning();
+        super.setUp();
         this.locator = MongoCollabPluginTest.getTestLocator();
         this.collection = MongoCollabPluginTest.emptyTestCollection();
         this.source = new MongoFeatureSource(this.collection, true);
@@ -54,6 +61,7 @@ public class MongoFeatureSourceTest extends AbstractHeadlessTest{
 
     @After
     public void tearDown() throws Exception{
+        super.tearDown();
         MongoCollabPlugin.closeMongo(locator.host, locator.port);
     }
 
@@ -114,24 +122,53 @@ public class MongoFeatureSourceTest extends AbstractHeadlessTest{
         assertEquals(100000, list_01.get(0).getStart());
     }
 
-    @Test
-    public void testGetFeaturesByName() throws Exception{
+    private void setupUnigene(){
+        collection.drop();
         int inserted = MongoCollabPlugin.insertFeaturesFromFile(this.collection, TestUtils.DATA_DIR + "bed/Unigene.sample.bed");
         assert inserted > 0;
 
-        //Note the cases are incorrect, want to make sure matching is case-insensitive
-        String featName = "hs.516555";
+    }
 
-        Iterator<DBFeature.IGVFeat> features = this.source.getFeatures(featName);
-        List<DBFeature.IGVFeat> list = Lists.newArrayList(features);
+    private NamedFeature getUnigeneTestFeature(){
+        //Note the cases are incorrect, want to make sure matching is case-insensitive
+        BasicFeature testFeat = new BasicFeature("chr2", 179908392, 179909870);
+        testFeat.setName("hs.516555");
+        return testFeat;
+    }
+
+    @Test
+    public void testGetFeaturesByName() throws Exception{
+
+        setupUnigene();
+        NamedFeature testFeat = getUnigeneTestFeature();
+
+        Collection<? extends NamedFeature> features = this.source.search(testFeat.getName());
+        List<? extends NamedFeature> list = Lists.newArrayList(features);
 
         assertEquals(1, list.size());
-        DBFeature.IGVFeat feat = list.get(0);
+        NamedFeature resFeat = list.get(0);
 
-        //chr2	179908392	179909870
-        assertEquals("chr2", feat.getChr());
-        assertEquals(179908392, feat.getStart());
-        assertEquals(179909870, feat.getEnd());
+        TestUtils.assertNamedFeaturesEqual(testFeat, resFeat);
+    }
 
+    @Test
+    public void testSearchCommand() throws Exception{
+        setupUnigene();
+        NamedFeature testFeat = getUnigeneTestFeature();
+
+        //Need to call this to attach listener
+        MongoFeatureSource.loadFeatureTrack(MongoCollabPluginTest.getTestLocator(), new ArrayList<Track>());
+
+        String searchStr = testFeat.getName();
+        SearchCommand cmd = new SearchCommand(null, searchStr, false);
+        List<SearchCommand.SearchResult> list = cmd.runSearch(searchStr);
+
+        assertEquals(1, list.size());
+        SearchCommand.SearchResult result = list.get(0);
+
+        assertEquals(SearchCommand.ResultType.FEATURE, result.getType());
+        NamedFeature resFeat = result.getFeature();
+
+        TestUtils.assertNamedFeaturesEqual(testFeat, resFeat);
     }
 }

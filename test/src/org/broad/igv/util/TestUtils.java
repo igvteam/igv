@@ -16,6 +16,7 @@ import com.google.common.base.Supplier;
 import net.sf.samtools.util.ftp.FTPClient;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.track.Track;
@@ -193,6 +194,16 @@ public class TestUtils {
         assertEquals(exp.getChr(), act.getChr());
         assertEquals(exp.getStart(), act.getStart());
         assertEquals(exp.getEnd(), act.getEnd());
+    }
+
+    /**
+     * Name matching is case-insensitive
+     * @param exp
+     * @param act
+     */
+    public static void assertNamedFeaturesEqual(NamedFeature exp, NamedFeature act) {
+        assertFeaturesEqual(exp, act);
+        assertEquals(exp.getName().toUpperCase(), act.getName().toUpperCase());
     }
 
     public static void assertTrackLoaded(IGV igv, String trackName){

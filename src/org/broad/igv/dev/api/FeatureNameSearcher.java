@@ -30,5 +30,5 @@ public interface FeatureNameSearcher {
      * @return Search results. Should be an empty collection if not found,
      * null means the search could not be performed
      */
-    public Collection<NamedFeature> search(String name);
+    public Collection<? extends NamedFeature> search(String name);
 }

@@ -15,14 +15,19 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import org.apache.log4j.Logger;
+import org.broad.igv.dev.api.FeatureNameSearcher;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
+import org.broad.igv.ui.action.SearchCommand;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -30,13 +35,14 @@ import java.util.List;
  * User: jacob
  * Date: 2012-Dec-14
  */
-public class MongoFeatureSource implements FeatureSource<DBFeature.IGVFeat> {
+public class MongoFeatureSource implements FeatureSource<DBFeature.IGVFeat>, FeatureNameSearcher {
 
     private int featureWindowSize = 1000000;
 
     private DBCollection collection;
     private boolean hasLocusIndex = false;
 
+    private static Logger log = Logger.getLogger(MongoCollabPlugin.class);
 
     public MongoFeatureSource(DBCollection collection, boolean buildIndex) {
         this.collection = collection;
@@ -118,15 +124,21 @@ public class MongoFeatureSource implements FeatureSource<DBFeature.IGVFeat> {
 
     @Override
     public Iterator<DBFeature.IGVFeat> getFeatures(String chr, int start, int end) throws IOException {
-         return getFeatures(createQueryObject(chr, start, end));
+         return getFeatures(createQueryObject(chr, start, end)).iterator();
     }
 
-    public Iterator<DBFeature.IGVFeat> getFeatures(String name) throws IOException {
+    @Override
+    public Collection<? extends NamedFeature> search(String name) {
         BasicDBObject dbObj = new BasicDBObject("UpperName", name.toUpperCase());
-        return getFeatures(dbObj);
+        try {
+            return getFeatures(dbObj);
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+            return null;
+        }
     }
 
-    private Iterator<DBFeature.IGVFeat> getFeatures(DBObject queryObject) throws IOException{
+    private Collection<DBFeature.IGVFeat> getFeatures(DBObject queryObject) throws IOException{
         DBCursor cursor = this.collection.find(queryObject);
 
         //Sort by increasing start value
@@ -150,7 +162,7 @@ public class MongoFeatureSource implements FeatureSource<DBFeature.IGVFeat> {
             FeatureUtils.sortFeatureList(features);
         }
 
-        return features.iterator();
+        return features;
     }
 
 
@@ -180,6 +192,7 @@ public class MongoFeatureSource implements FeatureSource<DBFeature.IGVFeat> {
         collection.setObjectClass(DBFeature.class);
         MongoFeatureSource source = new MongoFeatureSource(collection, locator.buildIndex);
         FeatureTrack track = new MongoFeatureTrack(collection.getFullName(), collection.getName(), source);
+        SearchCommand.registerFeatureNameSearcher(source);
         newTracks.add(track);
         track.setMargin(0);
         return track;

@@ -50,6 +50,7 @@ public class MongoCollabPluginTest extends AbstractHeadlessTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception{
+        AbstractHeadlessTest.setUpClass();
         MONGO_EXEC_PATH = System.getProperty(MONGO_EXEC_KEY, MONGO_EXEC_PATH);
         log.info("Mongo exec path: " + MONGO_EXEC_PATH);
         Assume.assumeTrue(MONGO_EXEC_PATH != null && MONGO_EXEC_PATH.length() > 0);
@@ -60,6 +61,7 @@ public class MongoCollabPluginTest extends AbstractHeadlessTest {
 
     @AfterClass
     public static void tearDownClass() throws Exception{
+        AbstractHeadlessTest.tearDownClass();
         try{
             emptyTestCollection();
         }catch(Exception e){
@@ -115,7 +117,6 @@ public class MongoCollabPluginTest extends AbstractHeadlessTest {
 
     @Test
     public void testInsertFeatures() throws Exception{
-        assumeTestDBRunning();
         DBCollection collection = emptyTestCollection();
         int inserted = MongoCollabPlugin.insertFeaturesFromFile(collection, TestUtils.DATA_DIR + "bed/test.bed");
 

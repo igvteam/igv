@@ -18,6 +18,7 @@ import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.tribble.Feature;
@@ -35,6 +36,12 @@ public class MongoFeatureTrack extends FeatureTrack{
 
     public MongoFeatureTrack(String id, String name, MongoFeatureSource source) {
         super(id, name, source);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        SearchCommand.unregisterFeatureNameSearcher((MongoFeatureSource) source);
     }
 
     /**
