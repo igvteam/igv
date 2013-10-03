@@ -16,7 +16,7 @@ import org.broad.igv.feature.NamedFeature;
 import java.util.Collection;
 
 /**
- * Service for finding features by their name
+ * Service for finding features by their name.
  *
  * @author jacob
  * @date 2013-Oct-02
@@ -24,5 +24,11 @@ import java.util.Collection;
  */
 public interface FeatureNameSearcher {
 
+    /**
+     *
+     * @param name
+     * @return Search results. Should be an empty collection if not found,
+     * null means the search could not be performed
+     */
     public Collection<NamedFeature> search(String name);
 }

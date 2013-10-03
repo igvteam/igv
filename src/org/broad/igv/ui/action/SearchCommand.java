@@ -68,6 +68,14 @@ public class SearchCommand {
     Genome genome;
 
 
+    private static Set<FeatureNameSearcher> nameSearchers;
+
+    static{
+        nameSearchers = new LinkedHashSet<FeatureNameSearcher>();
+        registerFeatureNameSearcher(new InexactLoadedFeatureSearcher());
+    }
+
+
     public SearchCommand(ReferenceFrame referenceFrame, String searchString) {
         this(referenceFrame, searchString, GenomeManager.getInstance().getCurrentGenome());
     }
@@ -403,7 +411,7 @@ public class SearchCommand {
         }
 
         if (types.contains(ResultType.FEATURE)) {
-            //Check if a feature
+            //Check if we have an exact name for the feature name
             NamedFeature feat = FeatureDB.getFeature(token.toUpperCase().trim());
             if (feat != null) {
                 results.add(new SearchResult(feat));
@@ -412,7 +420,7 @@ public class SearchCommand {
 
             //Check inexact match
             //We will later want to ask the user which of these to keep
-            features = FeatureDB.getFeaturesList(token, SEARCH_LIMIT);
+            features = comprehensiveFeatureSearch(token);
             if (features.size() > 0) {
                 askUser |= features.size() >= 2;
                 return getResults(features);
@@ -426,7 +434,6 @@ public class SearchCommand {
 
     }
 
-    private static Set<FeatureNameSearcher> nameSearchers = new LinkedHashSet<FeatureNameSearcher>();
     public static void registerFeatureNameSearcher(FeatureNameSearcher searcher){
         nameSearchers.add(searcher);
     }
@@ -439,9 +446,15 @@ public class SearchCommand {
      * @return
      */
     private List<NamedFeature> comprehensiveFeatureSearch(String searchString){
-        List<NamedFeature> features = FeatureDB.getFeaturesList(searchString, SEARCH_LIMIT);
+        List<NamedFeature> features = new ArrayList<NamedFeature>();
         for(FeatureNameSearcher searcher: nameSearchers){
-            features.addAll(searcher.search(searchString));
+            Collection<NamedFeature> tmp = searcher.search(searchString);
+            if(tmp == null){
+                log.warn("Error searching with " + searcher);
+            }else{
+                features.addAll(tmp);
+            }
+
         }
         return features;
     }
@@ -564,6 +577,13 @@ public class SearchCommand {
         LOCUS,
         CHROMOSOME,
         ERROR
+    }
+
+    private static class InexactLoadedFeatureSearcher implements FeatureNameSearcher{
+        @Override
+        public Collection<NamedFeature> search(String name) {
+            return FeatureDB.getFeaturesList(name, SEARCH_LIMIT);
+        }
     }
 
     /*
