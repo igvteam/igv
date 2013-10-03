@@ -67,8 +67,8 @@ public class BAMHttpReader implements AlignmentReader {
                 throw new RuntimeException("Could not load index file for file: " + url.getPath());
             }
 
-            //SeekableStream ss = new IGVSeekableBufferedStream(getSeekableStream(url), 128000);
-            SeekableStream ss = getSeekableStream(url);
+            SeekableStream ss = new IGVSeekableBufferedStream(getSeekableStream(url), 128000);
+            //SeekableStream ss = getSeekableStream(url);
             log.debug("Initializing SAMFileReader");
 
             reader = new SAMFileReader(ss, indexFile, false);
