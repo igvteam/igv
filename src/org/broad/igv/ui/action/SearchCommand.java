@@ -17,6 +17,7 @@ package org.broad.igv.ui.action;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.dev.api.FeatureNameSearcher;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -411,7 +412,7 @@ public class SearchCommand {
 
             //Check inexact match
             //We will later want to ask the user which of these to keep
-            features = FeatureDB.getFeaturesList(searchString, SEARCH_LIMIT);
+            features = FeatureDB.getFeaturesList(token, SEARCH_LIMIT);
             if (features.size() > 0) {
                 askUser |= features.size() >= 2;
                 return getResults(features);
@@ -425,6 +426,25 @@ public class SearchCommand {
 
     }
 
+    private static Set<FeatureNameSearcher> nameSearchers = new LinkedHashSet<FeatureNameSearcher>();
+    public static void registerFeatureNameSearcher(FeatureNameSearcher searcher){
+        nameSearchers.add(searcher);
+    }
+
+    /**
+     * Search all known sources for features with the provided name.
+     * This means our own database which gets updated when files are loaded,
+     * as well as others (possibly plugins)
+     * @param searchString
+     * @return
+     */
+    private List<NamedFeature> comprehensiveFeatureSearch(String searchString){
+        List<NamedFeature> features = FeatureDB.getFeaturesList(searchString, SEARCH_LIMIT);
+        for(FeatureNameSearcher searcher: nameSearchers){
+            features.addAll(searcher.search(searchString));
+        }
+        return features;
+    }
 
     /**
      * Parse a string of locus coordinates.
