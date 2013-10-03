@@ -428,8 +428,11 @@ public class SearchCommand {
 
     /**
      * Register a {@link FeatureNameSearcher} to be used when searching for features,
-     * such as when the user enters text in the box
+     * such as when the user enters text in the box.
+     * This is idempotent, registering the same searcher multiple times is the same as
+     * adding it once.
      * @param searcher
+     * @return Whether the searcher was added
      * @api
      */
     public static boolean registerFeatureNameSearcher(FeatureNameSearcher searcher){
@@ -439,6 +442,7 @@ public class SearchCommand {
     /**
      *
      * @param searcher
+     * @return Whether the searcher was removed
      * @api
      */
     public static boolean unregisterFeatureNameSearcher(FeatureNameSearcher searcher) {

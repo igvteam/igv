@@ -13,6 +13,9 @@ package org.broad.igv.ui.action;
 
 import junit.framework.AssertionFailedError;
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.dev.api.FeatureNameSearcher;
+import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
@@ -22,8 +25,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 
 /**
@@ -265,6 +267,67 @@ public class SearchCommandTest extends AbstractHeadlessTest {
         for (String s : errors) {
             //System.out.println(s);
             assertEquals(SearchCommand.ResultType.ERROR, cmd.checkTokenType(s));
+        }
+    }
+
+    @Test
+    public void testRegisterNameSearcher(){
+        String fakeName= "abbaboetatqtet";
+        int mult = 5;
+        FeatureNameSearcher searcher = new MultiplyNameSearcher(mult);
+        assertTrue(SearchCommand.registerFeatureNameSearcher(searcher));
+
+        SearchCommand cmd = new SearchCommand(null, fakeName);
+        List<SearchCommand.SearchResult> results = cmd.runSearch(fakeName);
+        assertEquals(mult, results.size());
+
+        assertFalse(SearchCommand.registerFeatureNameSearcher(searcher));
+        assertFalse(SearchCommand.registerFeatureNameSearcher(searcher));
+        assertFalse(SearchCommand.registerFeatureNameSearcher(searcher));
+
+        SearchCommand cmd2 = new SearchCommand(null, fakeName);
+        List<SearchCommand.SearchResult> results2 = cmd2.runSearch(fakeName);
+        assertEquals(mult, results2.size());
+    }
+
+    @Test
+    public void testunregisterNameSearcher(){
+        String fakeName= "abbaboetatqtet";
+        int mult = 5;
+        FeatureNameSearcher searcher = new MultiplyNameSearcher(mult);
+        assertTrue(SearchCommand.registerFeatureNameSearcher(searcher));
+
+        SearchCommand cmd = new SearchCommand(null, fakeName);
+        List<SearchCommand.SearchResult> results = cmd.runSearch(fakeName);
+        assertEquals(mult, results.size());
+
+        assertTrue(SearchCommand.unregisterFeatureNameSearcher(searcher));
+        assertFalse(SearchCommand.unregisterFeatureNameSearcher(searcher));
+        assertFalse(SearchCommand.unregisterFeatureNameSearcher(searcher));
+
+        SearchCommand cmd2 = new SearchCommand(null, fakeName);
+        List<SearchCommand.SearchResult> results2 = cmd2.runSearch(fakeName);
+        assertEquals(1, results2.size());
+        assertEquals(SearchCommand.ResultType.ERROR, results2.get(0).getType());
+    }
+
+    private static class MultiplyNameSearcher implements FeatureNameSearcher{
+
+        private int mult = 1;
+
+        public MultiplyNameSearcher(int mult){
+            this.mult = mult;
+        }
+
+        @Override
+        public Collection<? extends NamedFeature> search(String name) {
+            List<NamedFeature> output = new ArrayList<NamedFeature>(this.mult);
+            for(int ii=0; ii < this.mult; ii++){
+                BasicFeature bf = new BasicFeature();
+                bf.setName(name);
+                output.add(bf);
+            }
+            return output;
         }
     }
 
