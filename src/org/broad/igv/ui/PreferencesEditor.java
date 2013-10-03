@@ -161,7 +161,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }
 
     private void filterSecondaryAlignmentsCBActionPerformed(ActionEvent e) {
-        // TODO add your code here
+        updatedPreferenceMap.put(
+                PreferenceManager.SAM_FILTER_SECONDARY_ALIGNMENTS,
+                String.valueOf(filterSecondaryAlignmentsCB.isSelected()));
     }
 
     private void antialiasingCBActionPerformed(ActionEvent e) {
@@ -3800,6 +3802,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         //samShowZeroQualityCB.setSelected(samPrefs.isShowZeroQuality());
         samFilterDuplicatesCB.setSelected(!prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_DUPLICATES));
         filterFailedReadsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_FAILED_READS));
+        filterSecondaryAlignmentsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_SECONDARY_ALIGNMENTS));
         showSoftClippedCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED));
         samFlagUnmappedPairCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FLAG_UNMAPPED_PAIR));
         showCenterLineCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_CENTER_LINE));
