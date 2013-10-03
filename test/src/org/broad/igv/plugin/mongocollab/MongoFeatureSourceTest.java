@@ -142,7 +142,7 @@ public class MongoFeatureSourceTest extends AbstractHeadlessTest{
         setupUnigene();
         NamedFeature testFeat = getUnigeneTestFeature();
 
-        Collection<? extends NamedFeature> features = this.source.search(testFeat.getName());
+        Collection<? extends NamedFeature> features = this.source.search(testFeat.getName(), 0);
         List<? extends NamedFeature> list = Lists.newArrayList(features);
 
         assertEquals(1, list.size());

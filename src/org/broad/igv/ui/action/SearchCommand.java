@@ -459,13 +459,12 @@ public class SearchCommand {
     private List<NamedFeature> comprehensiveFeatureSearch(String searchString){
         List<NamedFeature> features = new ArrayList<NamedFeature>();
         for(FeatureNameSearcher searcher: nameSearchers){
-            Collection<? extends NamedFeature> tmp = searcher.search(searchString);
+            Collection<? extends NamedFeature> tmp = searcher.search(searchString, SEARCH_LIMIT);
             if(tmp == null){
                 log.warn("Error searching with " + searcher);
             }else{
                 features.addAll(tmp);
             }
-
         }
         return features;
     }
@@ -592,8 +591,8 @@ public class SearchCommand {
 
     private static class InexactLoadedFeatureSearcher implements FeatureNameSearcher{
         @Override
-        public Collection<NamedFeature> search(String name) {
-            return FeatureDB.getFeaturesList(name, SEARCH_LIMIT);
+        public Collection<NamedFeature> search(String name, int limit) {
+            return FeatureDB.getFeaturesList(name, limit);
         }
     }
 

@@ -320,14 +320,14 @@ public class SearchCommandTest extends AbstractHeadlessTest {
         }
 
         @Override
-        public Collection<? extends NamedFeature> search(String name) {
+        public Collection<? extends NamedFeature> search(String name, int limit) {
             List<NamedFeature> output = new ArrayList<NamedFeature>(this.mult);
             for(int ii=0; ii < this.mult; ii++){
                 BasicFeature bf = new BasicFeature();
                 bf.setName(name);
                 output.add(bf);
             }
-            return output;
+            return output.subList(0, limit);
         }
     }
 

@@ -917,6 +917,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
             if (text.length() <= 1) {
                 return false;
             } else {
+                //TODO Uncomment to use comprehensive feature search, note that it should support partial matches
+                //List<NamedFeature> features = SearchCommand.comprehensiveFeatureSearch(text);
                 List<NamedFeature> features = FeatureDB.getFeaturesList(text, SearchCommand.SEARCH_LIMIT);
                 final List<SearchCommand.SearchResult> results = SearchCommand.getResults(features);
                 Object[] list = SearchCommand.getSelectionList(results, false);

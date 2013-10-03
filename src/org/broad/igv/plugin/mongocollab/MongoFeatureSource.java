@@ -124,22 +124,30 @@ public class MongoFeatureSource implements FeatureSource<DBFeature.IGVFeat>, Fea
 
     @Override
     public Iterator<DBFeature.IGVFeat> getFeatures(String chr, int start, int end) throws IOException {
-         return getFeatures(createQueryObject(chr, start, end)).iterator();
+         return getFeatures(createQueryObject(chr, start, end), 0).iterator();
     }
 
     @Override
-    public Collection<? extends NamedFeature> search(String name) {
+    public Collection<? extends NamedFeature> search(String name, int limit) {
         BasicDBObject dbObj = new BasicDBObject("UpperName", name.toUpperCase());
         try {
-            return getFeatures(dbObj);
+            return getFeatures(dbObj, limit);
         } catch (IOException e) {
             log.error(e.getMessage(), e);
             return null;
         }
     }
 
-    private Collection<DBFeature.IGVFeat> getFeatures(DBObject queryObject) throws IOException{
+    /**
+     *
+     * @param queryObject
+     * @param limit Limitation on the number of results returned. Setting to 0 is equivalent to unlimited
+     * @return
+     * @throws IOException
+     */
+    private Collection<DBFeature.IGVFeat> getFeatures(DBObject queryObject, int limit) throws IOException{
         DBCursor cursor = this.collection.find(queryObject);
+        cursor.limit(limit >= 0 ? limit : 0);
 
         //Sort by increasing start value
         //Only do this if we have an index, otherwise might be too memory intensive
