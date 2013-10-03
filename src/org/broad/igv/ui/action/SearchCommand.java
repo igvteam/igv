@@ -63,8 +63,7 @@ public class SearchCommand {
     private static Set<FeatureNameSearcher> nameSearchers;
 
     static{
-        nameSearchers = new LinkedHashSet<FeatureNameSearcher>();
-        registerFeatureNameSearcher(new InexactLoadedFeatureSearcher());
+        resetNamedFeatureSearchers();
     }
 
 
@@ -447,6 +446,11 @@ public class SearchCommand {
      */
     public static boolean unregisterFeatureNameSearcher(FeatureNameSearcher searcher) {
         return nameSearchers.remove(searcher);
+    }
+
+    static void resetNamedFeatureSearchers(){
+        nameSearchers = new LinkedHashSet<FeatureNameSearcher>();
+        registerFeatureNameSearcher(new InexactLoadedFeatureSearcher());
     }
 
     /**

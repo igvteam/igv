@@ -18,6 +18,7 @@ import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.TestUtils;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -33,6 +34,12 @@ import static org.junit.Assert.*;
  * Date: 2011/12/19
  */
 public class SearchCommandTest extends AbstractHeadlessTest {
+
+    @Before
+    public void setUp() throws Exception{
+        super.setUp();
+        SearchCommand.resetNamedFeatureSearchers();
+    }
 
     @Test
     public void testSingleChromosomes() throws Exception {
@@ -327,7 +334,7 @@ public class SearchCommandTest extends AbstractHeadlessTest {
                 bf.setName(name);
                 output.add(bf);
             }
-            return output.subList(0, limit);
+            return output.subList(0, Math.min(output.size(), limit));
         }
     }
 
