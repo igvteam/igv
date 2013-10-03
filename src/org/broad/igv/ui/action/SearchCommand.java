@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.annotations.ForTesting;
-import org.broad.igv.dev.api.FeatureNameSearcher;
+import org.broad.igv.dev.api.NamedFeatureSearcher;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -44,7 +44,7 @@ import java.util.List;
  * <p/>
  * Note:  Currently the only recognized features are genes
  *
- * Custom searchers can be registered, see {@link #registerFeatureNameSearcher(org.broad.igv.dev.api.FeatureNameSearcher)}
+ * Custom searchers can be registered, see {@link #registerFeatureNameSearcher}
  *
  * @author jrobinso
  */
@@ -60,7 +60,7 @@ public class SearchCommand {
     Genome genome;
 
 
-    private static Set<FeatureNameSearcher> nameSearchers;
+    private static Set<NamedFeatureSearcher> nameSearchers;
 
     static{
         resetNamedFeatureSearchers();
@@ -426,7 +426,7 @@ public class SearchCommand {
     }
 
     /**
-     * Register a {@link FeatureNameSearcher} to be used when searching for features,
+     * Register a {@link org.broad.igv.dev.api.NamedFeatureSearcher} to be used when searching for features,
      * such as when the user enters text in the box.
      * This is idempotent, registering the same searcher multiple times is the same as
      * adding it once.
@@ -434,7 +434,7 @@ public class SearchCommand {
      * @return Whether the searcher was added
      * @api
      */
-    public static boolean registerFeatureNameSearcher(FeatureNameSearcher searcher){
+    public static boolean registerNamedFeatureSearcher(NamedFeatureSearcher searcher){
         return nameSearchers.add(searcher);
     }
 
@@ -444,13 +444,13 @@ public class SearchCommand {
      * @return Whether the searcher was removed
      * @api
      */
-    public static boolean unregisterFeatureNameSearcher(FeatureNameSearcher searcher) {
+    public static boolean unregisterNamedFeatureSearcher(NamedFeatureSearcher searcher) {
         return nameSearchers.remove(searcher);
     }
 
     static void resetNamedFeatureSearchers(){
-        nameSearchers = new LinkedHashSet<FeatureNameSearcher>();
-        registerFeatureNameSearcher(new InexactLoadedFeatureSearcher());
+        nameSearchers = new LinkedHashSet<NamedFeatureSearcher>();
+        registerNamedFeatureSearcher(new InexactLoadedFeatureSearcher());
     }
 
     /**
@@ -462,7 +462,7 @@ public class SearchCommand {
      */
     private List<NamedFeature> comprehensiveFeatureSearch(String searchString){
         List<NamedFeature> features = new ArrayList<NamedFeature>();
-        for(FeatureNameSearcher searcher: nameSearchers){
+        for(NamedFeatureSearcher searcher: nameSearchers){
             Collection<? extends NamedFeature> tmp = searcher.search(searchString, SEARCH_LIMIT);
             if(tmp == null){
                 log.warn("Error searching with " + searcher);
@@ -593,7 +593,7 @@ public class SearchCommand {
         ERROR
     }
 
-    private static class InexactLoadedFeatureSearcher implements FeatureNameSearcher{
+    private static class InexactLoadedFeatureSearcher implements NamedFeatureSearcher {
         @Override
         public Collection<NamedFeature> search(String name, int limit) {
             return FeatureDB.getFeaturesList(name, limit);

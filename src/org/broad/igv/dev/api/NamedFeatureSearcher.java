@@ -22,7 +22,7 @@ import java.util.Collection;
  * @date 2013-Oct-02
  * @api
  */
-public interface FeatureNameSearcher {
+public interface NamedFeatureSearcher {
 
     /**
      *

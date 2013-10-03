@@ -16,7 +16,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import org.apache.log4j.Logger;
-import org.broad.igv.dev.api.FeatureNameSearcher;
+import org.broad.igv.dev.api.NamedFeatureSearcher;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.NamedFeature;
@@ -35,7 +35,7 @@ import java.util.List;
  * User: jacob
  * Date: 2012-Dec-14
  */
-public class MongoFeatureSource implements FeatureSource<DBFeature.IGVFeat>, FeatureNameSearcher {
+public class MongoFeatureSource implements FeatureSource<DBFeature.IGVFeat>, NamedFeatureSearcher {
 
     private int featureWindowSize = 1000000;
 
@@ -200,7 +200,7 @@ public class MongoFeatureSource implements FeatureSource<DBFeature.IGVFeat>, Fea
         collection.setObjectClass(DBFeature.class);
         MongoFeatureSource source = new MongoFeatureSource(collection, locator.buildIndex);
         FeatureTrack track = new MongoFeatureTrack(collection.getFullName(), collection.getName(), source);
-        SearchCommand.registerFeatureNameSearcher(source);
+        SearchCommand.registerNamedFeatureSearcher(source);
         newTracks.add(track);
         track.setMargin(0);
         return track;

@@ -41,7 +41,7 @@ public class MongoFeatureTrack extends FeatureTrack{
     @Override
     public void dispose() {
         super.dispose();
-        SearchCommand.unregisterFeatureNameSearcher((MongoFeatureSource) source);
+        SearchCommand.unregisterNamedFeatureSearcher((MongoFeatureSource) source);
     }
 
     /**

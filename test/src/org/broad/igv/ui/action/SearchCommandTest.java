@@ -13,7 +13,7 @@ package org.broad.igv.ui.action;
 
 import junit.framework.AssertionFailedError;
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.dev.api.FeatureNameSearcher;
+import org.broad.igv.dev.api.NamedFeatureSearcher;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
@@ -281,16 +281,16 @@ public class SearchCommandTest extends AbstractHeadlessTest {
     public void testRegisterNameSearcher(){
         String fakeName= "abbaboetatqtet";
         int mult = 5;
-        FeatureNameSearcher searcher = new MultiplyNameSearcher(mult);
-        assertTrue(SearchCommand.registerFeatureNameSearcher(searcher));
+        NamedFeatureSearcher searcher = new MultiplyNameSearcher(mult);
+        assertTrue(SearchCommand.registerNamedFeatureSearcher(searcher));
 
         SearchCommand cmd = new SearchCommand(null, fakeName);
         List<SearchCommand.SearchResult> results = cmd.runSearch(fakeName);
         assertEquals(mult, results.size());
 
-        assertFalse(SearchCommand.registerFeatureNameSearcher(searcher));
-        assertFalse(SearchCommand.registerFeatureNameSearcher(searcher));
-        assertFalse(SearchCommand.registerFeatureNameSearcher(searcher));
+        assertFalse(SearchCommand.registerNamedFeatureSearcher(searcher));
+        assertFalse(SearchCommand.registerNamedFeatureSearcher(searcher));
+        assertFalse(SearchCommand.registerNamedFeatureSearcher(searcher));
 
         SearchCommand cmd2 = new SearchCommand(null, fakeName);
         List<SearchCommand.SearchResult> results2 = cmd2.runSearch(fakeName);
@@ -301,16 +301,16 @@ public class SearchCommandTest extends AbstractHeadlessTest {
     public void testunregisterNameSearcher(){
         String fakeName= "abbaboetatqtet";
         int mult = 5;
-        FeatureNameSearcher searcher = new MultiplyNameSearcher(mult);
-        assertTrue(SearchCommand.registerFeatureNameSearcher(searcher));
+        NamedFeatureSearcher searcher = new MultiplyNameSearcher(mult);
+        assertTrue(SearchCommand.registerNamedFeatureSearcher(searcher));
 
         SearchCommand cmd = new SearchCommand(null, fakeName);
         List<SearchCommand.SearchResult> results = cmd.runSearch(fakeName);
         assertEquals(mult, results.size());
 
-        assertTrue(SearchCommand.unregisterFeatureNameSearcher(searcher));
-        assertFalse(SearchCommand.unregisterFeatureNameSearcher(searcher));
-        assertFalse(SearchCommand.unregisterFeatureNameSearcher(searcher));
+        assertTrue(SearchCommand.unregisterNamedFeatureSearcher(searcher));
+        assertFalse(SearchCommand.unregisterNamedFeatureSearcher(searcher));
+        assertFalse(SearchCommand.unregisterNamedFeatureSearcher(searcher));
 
         SearchCommand cmd2 = new SearchCommand(null, fakeName);
         List<SearchCommand.SearchResult> results2 = cmd2.runSearch(fakeName);
@@ -318,7 +318,7 @@ public class SearchCommandTest extends AbstractHeadlessTest {
         assertEquals(SearchCommand.ResultType.ERROR, results2.get(0).getType());
     }
 
-    private static class MultiplyNameSearcher implements FeatureNameSearcher{
+    private static class MultiplyNameSearcher implements NamedFeatureSearcher {
 
         private int mult = 1;
 
