@@ -54,8 +54,8 @@ public class ArrayMemoryTest {
         long memArrList = 0;
 
         for (int ii = 0; ii < size; ii++) {
-            memArrList += RuntimeUtils.getObjectSize(tmp2.get(ii));
-            memIntArrList += RuntimeUtils.getObjectSize(tmp.get(ii));
+            memArrList += JavaAgent.getObjectSize(tmp2.get(ii));
+            memIntArrList += JavaAgent.getObjectSize(tmp.get(ii));
         }
         assertTrue(memIntArrList < memArrList);
 

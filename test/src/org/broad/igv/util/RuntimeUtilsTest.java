@@ -121,7 +121,7 @@ public class RuntimeUtilsTest extends AbstractHeadlessTest {
         //Not exactly sure how much memory a char[] takes up, doesn't seem precisely linear
         long expSize = 32 + 32*3 + 32 + testObj.length()*16 + 8;
 
-        long actSize = RuntimeUtils.getObjectSizeRecursive(testObj, new HashSet<Object>());
+        long actSize = JavaAgent.getObjectSizeRecursive(testObj, new HashSet<Object>());
         assertEquals(String.format("Characters: %d. Difference: %d in size", testObj.length(), expSize - actSize), expSize, actSize);
     }
 }

@@ -15,20 +15,14 @@
  */
 package org.broad.igv.util;
 
-import com.google.common.primitives.Primitives;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.io.*;
-import java.lang.instrument.Instrumentation;
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
 
 /**
  * @author jrobinso
@@ -36,27 +30,6 @@ import java.util.*;
 public class RuntimeUtils {
 
     private static Logger log = Logger.getLogger(RuntimeUtils.class);
-
-    private static Instrumentation instrumentation;
-
-    /**
-     * Size, in BITS, of each primitive
-     */
-    private static Map<Class, Long> primitiveMemMap = new HashMap<Class, Long>(9);
-    static{
-        primitiveMemMap.put(Byte.TYPE, 8l);
-        primitiveMemMap.put(Short.TYPE, 16l);
-        primitiveMemMap.put(Integer.TYPE, 32l);
-        primitiveMemMap.put(Long.TYPE, 64l);
-        primitiveMemMap.put(Float.TYPE, 32l);
-        primitiveMemMap.put(Double.TYPE, 64l);
-        //May be an overestimate
-        primitiveMemMap.put(Boolean.TYPE, 1l);
-        primitiveMemMap.put(Character.TYPE, 16l);
-        primitiveMemMap.put(Void.TYPE, 0l);
-        assert primitiveMemMap.size() == Primitives.allPrimitiveTypes().size();
-    }
-
 
     public static long getAvailableMemory() {
         Runtime runtime = Runtime.getRuntime();
@@ -75,111 +48,11 @@ public class RuntimeUtils {
 
     }
 
-    public static void premain(String args, Instrumentation inst) {
-        instrumentation = inst;
-    }
-
-    /**
-     * Must invoke with instrumentation on command line
-     * Note: Not recursive
-     *
-     * @param o
-     * @return
-     */
-    public static long getObjectSize(Object o) {
-        if (instrumentation == null) {
-            throw new IllegalStateException("No instrumentation available. Need to launch width -javaagent:path/to/RuntimeUtils.jar");
-        }
-
-        //Maybe not right
-        if(o == null) return 4;
-
-        return instrumentation.getObjectSize(o);
-    }
-
-    static boolean isPrimitiveOrWrapper(Object o){
-        return o.getClass().isPrimitive() || Primitives.isWrapperType(o.getClass());
-    }
-
-    public static long getObjectSizeRecursive(Object o, Set<Object> completedObjs){
-        try{
-            if(o != null && completedObjs.contains(o)) return 0;
-        }catch(Exception e){
-            System.out.println("Error on " + o.getClass() + " skipping");
-            return 0;
-        }
-
-        long fullSize = getObjectSize(o);
-
-        if(o == null) return fullSize;
-
-        completedObjs.add(o);
-
-        //May be off a bit for wrapper classes,
-        //but we let that go for now
-        if(isPrimitiveOrWrapper(o)){
-            return fullSize;
-        }
-
-        if(o.getClass().isArray()){
-            for(int ii=0; ii < Array.getLength(o); ii++){
-                Object el = Array.get(o, ii);
-                fullSize += getObjectSizeRecursive(el, completedObjs);
-            }
-        }
-
-        Set<Field> fields = new HashSet<Field>();
-        getAllFields(o.getClass(), fields);
-
-        for(Field field: fields){
-            if(Modifier.isStatic(field.getModifiers())){
-                continue;
-            }
-
-            field.setAccessible(true);
-
-            try {
-
-                Object fieldValue = field.get(o);
-
-                //Field.get boxes primitives as wrapper classes,
-                //which would artificially inflate the total
-                Class fieldType = field.getType();
-                if(fieldType.isPrimitive()){
-                    fullSize += primitiveMemMap.get(fieldType);
-                }else{
-                    fullSize += getObjectSizeRecursive(fieldValue, completedObjs);
-                }
-                completedObjs.add(fieldValue);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            } catch(NullPointerException e){
-                System.out.println("Error on " + o.getClass() + " skipping");
-            }
-        }
-        return fullSize;
-    }
-
-    /**
-     * Get all fields an object contains, including public, private, protected,
-     * and inherited
-     * @param clazz
-     * @param fields
-     */
-    static void getAllFields(Class clazz, Set<Field> fields){
-        fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
-        Class supClass = clazz.getSuperclass();
-        if(supClass != null){
-            getAllFields(supClass, fields);
-        }
-    }
-
-
     /**
      * Start an external process with the provided message.
      * Also starts a separate thread to read back error stream
      * <p/>
-     * See {@link Runtime#exec(String, String[], File)} for explanation of arguments
+     * See {@link Runtime#exec(String, String[], java.io.File)} for explanation of arguments
      *
      * @return
      */
@@ -210,8 +83,7 @@ public class RuntimeUtils {
                     }
                     err.close();
                 } catch (IOException e) {
-                    log.error(e);
-                    e.printStackTrace();
+                    log.error(e.getMessage(), e);
                     throw new RuntimeException(e);
                 }
             }
@@ -225,8 +97,8 @@ public class RuntimeUtils {
      * @param envp
      * @param dir
      * @return
-     * @throws IOException
-     * @deprecated Use {@link #executeShellCommand(String[], String[], File)}
+     * @throws java.io.IOException
+     * @deprecated Use {@link #executeShellCommand(String[], String[], java.io.File)}
      */
     @Deprecated
     public static String executeShellCommand(String cmd, String[] envp, File dir) throws IOException {

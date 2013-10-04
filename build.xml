@@ -126,12 +126,13 @@
         -->
     </target>
 
-    <target name="build-runtime-utils" description="Create RuntimeUtils.jar in testlib directory. Necessary for profiling"
+    <target name="build-java-agent" description="Create JavaAgent.jar in testlib directory. Necessary for profiling"
             depends="compile">
-        <jar destfile="${testlib.dir}/RuntimeUtils.jar" basedir="${tmp.dir}" compress="true" duplicate="preserve">
-            <include name="org/broad/igv/util/RuntimeUtils.class"/>
+        <jar destfile="${testlib.dir}/JavaAgent.jar" basedir="${tmp.dir}" compress="true" duplicate="preserve">
+            <include name="org/broad/igv/util/JavaAgent.class"/>
+            <include name="org/broad/igv/util/JavaAgent$*.class"/>
             <manifest>
-                <attribute name="Premain-Class" value="org.broad.igv.util.RuntimeUtils"/>
+                <attribute name="Premain-Class" value="org.broad.igv.util.JavaAgent"/>
             </manifest>
     </jar>
     </target>
@@ -290,7 +291,7 @@
         <junit haltonfailure="no" showoutput="${show.test.out}" printsummary="on" failureproperty="tests.failed"
                maxmemory="2000m">
 
-            <jvmarg value="-javaagent:${testlib.dir}/RuntimeUtils.jar"/>
+            <jvmarg value="-javaagent:${testlib.dir}/JavaAgent.jar"/>
             <jvmarg value="-Dfile.encoding=${java.encoding}"/>
             <jvmarg value="-Dinclude.longrunning=${include.longrunning}"/>
             <jvmarg value="-Dignore.ioexceptions=${ignore.ioexceptions}"/>
