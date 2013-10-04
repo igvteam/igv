@@ -210,7 +210,8 @@ public class RuntimeUtils {
                     }
                     err.close();
                 } catch (IOException e) {
-                    log.error(e.getMessage(), e);
+                    log.error(e);
+                    e.printStackTrace();
                     throw new RuntimeException(e);
                 }
             }
