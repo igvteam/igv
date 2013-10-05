@@ -23,7 +23,6 @@
 
 package org.broad.igv.ui;
 
-import org.broad.igv.ui.util.FilterComponent;
 import org.broad.igv.util.Filter;
 import org.broad.igv.util.FilterElement;
 import org.broad.igv.util.FilterElement.BooleanOperator;

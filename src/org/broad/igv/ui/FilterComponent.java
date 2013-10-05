@@ -16,9 +16,10 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.ui.util;
+package org.broad.igv.ui;
 
 import com.jidesoft.swing.JideButton;
+import org.broad.igv.ui.TrackFilterPane;
 import org.broad.igv.util.Filter;
 import org.broad.igv.util.FilterElement;
 import org.broad.igv.util.FilterElement.BooleanOperator;
@@ -33,9 +34,9 @@ import java.util.List;
 abstract public class FilterComponent extends javax.swing.JPanel {
 
     private FilterElement filterElement;
-    private FilterPane filterPane;
+    private TrackFilterPane filterPane;
 
-    public FilterComponent(FilterPane filterPane, String text, List<String> items,
+    public FilterComponent(TrackFilterPane filterPane, String text, List<String> items,
                            FilterElement element) {
 
         initComponents();
@@ -111,22 +112,22 @@ abstract public class FilterComponent extends javax.swing.JPanel {
         return filterElement;
     }
 
-    String getItem() {
+    public String getItem() {
         return (String) itemComboBox.getSelectedItem();
     }
 
-    String getComparisonOperator() {
+    public String getComparisonOperator() {
         return (String) comparisonOperatorComboBox.getSelectedItem();
     }
 
-    String getExpectedValue() {
+    public String getExpectedValue() {
         return valueTextField.getText();
     }
 
     /**
      * Save the UI content into a non-UI version of the FilterElement
      */
-    protected void save() {
+    public void save() {
 
         // Item
         filterElement.setSelectedItem(getItem());
@@ -278,6 +279,7 @@ abstract public class FilterComponent extends javax.swing.JPanel {
 
         if (filterPane.more()) {
             displayMoreButton(false);
+            invalidate();
         }
     }//GEN-LAST:event_moreButtonActionPerformed
 
