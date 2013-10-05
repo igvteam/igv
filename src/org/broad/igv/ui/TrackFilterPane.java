@@ -43,7 +43,6 @@ public class TrackFilterPane extends javax.swing.JPanel {
     protected List<String> itemList;
     protected String itemListLabel;
     private Component[] filterComponentBackup;
-    JScrollPane scrollPane;
 
     public TrackFilterPane(List<String> items, String itemListLabel, TrackFilter filter) {
 
@@ -81,28 +80,6 @@ public class TrackFilterPane extends javax.swing.JPanel {
         if (this.filter.isEmpty()) {
             more();
         }
-    }
-
-    public void setScrollPane(JScrollPane sp) {
-        this.scrollPane = sp;
-    }
-
-    @Override
-    public void setBounds(int x, int y, int width, int height) {
-        System.out.println("Set bounds " + height);
-        super.setBounds(x, y, width, height);    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void setBounds(Rectangle r) {
-        System.out.println("Set bounds " + r.height);
-        super.setBounds(r);    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void setPreferredSize(Dimension preferredSize) {
-        System.out.println("Set pref size " + preferredSize.getHeight());
-        super.setPreferredSize(preferredSize);    //To change body of overridden methods use File | Settings | File Templates.
     }
 
     public TrackFilter createNewFilter() {
@@ -183,7 +160,6 @@ public class TrackFilterPane extends javax.swing.JPanel {
             h += c.getHeight() + 2*vgap;
         }
         setPreferredSize(new Dimension(getWidth(), h));
-        if(scrollPane != null) scrollPane.invalidate();
 
         return true;
     }
