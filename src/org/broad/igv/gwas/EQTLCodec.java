@@ -75,7 +75,8 @@ public class EQTLCodec extends AsciiFeatureCodec<EQTLFeature> {
         double tmp = Double.parseDouble(tokens[7]);
         float pValue = tmp < Float.MIN_VALUE ? Float.MIN_VALUE : (float) tmp;
 
-        float qValue = Float.parseFloat(tokens[8]);
+
+        float qValue = tokens.length > 8 ? Float.parseFloat(tokens[8]) : 0f;
 
         Map<String, String> attributes = null;
         if (columnNames != null) {
