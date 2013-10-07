@@ -60,6 +60,8 @@
             <fileset file="${dist.dir}${jar.name}"/>
             <fileset file="${dist.dir}batik-codec.jar"/>
             <fileset file="${dist.dir}goby-io-igv.jar"/>
+            <fileset refid="scripts"/>
+            <fileset file="docs/readme.txt"/>
         </copy>
     </target>
 
