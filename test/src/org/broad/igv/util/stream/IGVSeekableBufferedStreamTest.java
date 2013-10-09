@@ -49,7 +49,7 @@ public class IGVSeekableBufferedStreamTest extends AbstractHeadlessTest{
     //    private final File BAM_INDEX_FILE = new File("testdata/net/sf/samtools/BAMFileIndexTest/index_test.bam.bai");
     private final File BAM_FILE = new File(TestUtils.DATA_DIR + "/samtools/index_test.bam");
     private final String BAM_URL_STRING = "http://picard.sourceforge.net/testdata/index_test.bam";
-    private static File TestFile = new File(TestUtils.DATA_DIR + "/samtools/megabyteZeros.dat");
+    private static File megabyteZerosFile = new File(TestUtils.DATA_DIR + "/samtools/megabyteZeros.dat");
 
     static int expectedFileSize = 20000;
     static byte[] expectedBytes;
@@ -72,16 +72,37 @@ public class IGVSeekableBufferedStreamTest extends AbstractHeadlessTest{
 
 
     /**
-     * Test reading individual bytes
+     * Test jumping around reading individual bytes
+     * from a typical file stream
      *
      * @throws Exception
      */
     @Test
-    public void testSeekRead() throws Exception {
+    public void testSeekReadStandard() throws Exception {
+        tstSeekRead(expectedBytes, new SeekableFileStream(testFile), 50);
+    }
+
+    /**
+     * Test jumping around reading individual bytes
+     * from a stream of unknown length
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testSeekReadUnknownLength() throws Exception {
+        tstSeekRead(expectedBytes, new UnknownLengthSeekableStream(testFile), 50);
+    }
+
+    /**
+     * Test reading individual bytes
+     *
+     * @throws Exception
+     */
+    public void tstSeekRead(byte[] expectedBytes, SeekableStream wrappedStream, int bufferSize) throws Exception {
 
         final int fileSize = expectedBytes.length;
 
-        IGVSeekableBufferedStream bufferedStream = new IGVSeekableBufferedStream(new SeekableFileStream(testFile), 50);
+        IGVSeekableBufferedStream bufferedStream = new IGVSeekableBufferedStream(wrappedStream, bufferSize);
 
         // Somewhere in the middle
         int pos = 700;
@@ -331,7 +352,7 @@ public class IGVSeekableBufferedStreamTest extends AbstractHeadlessTest{
 
         final int BUFFERED_STREAM_BUFFER_SIZE = 100;
         final byte buffer[]=new byte[BUFFERED_STREAM_BUFFER_SIZE*10];
-        final SeekableFileStream fileStream = new SeekableFileStream(TestFile);
+        final SeekableFileStream fileStream = new SeekableFileStream(megabyteZerosFile);
         final IGVSeekableBufferedStream  bufferedStream = new IGVSeekableBufferedStream(fileStream,BUFFERED_STREAM_BUFFER_SIZE);
 
         for( int i=0; i<10*BUFFERED_STREAM_BUFFER_SIZE/length ; ++i ){
@@ -375,6 +396,32 @@ public class IGVSeekableBufferedStreamTest extends AbstractHeadlessTest{
             assertTrue("Could not read from source", bytesRead >= 0);
         }
         assertTrue(bytesRead >= bytesToRead);
+    }
+
+
+
+    @Test
+    public void testReadStreamUnknownLength() throws Exception{
+        File inFile = testFile;
+        SeekableStream ss = new UnknownLengthSeekableStream(inFile);
+
+    }
+
+    /**
+     * Class which reads from a file, but gives -1 for length.
+     * Intended for checking that stream is resilient against unknown Content-Length,
+     * as sometimes happens over HTTP
+     */
+    private static class UnknownLengthSeekableStream extends SeekableFileStream{
+
+        UnknownLengthSeekableStream(File file) throws FileNotFoundException{
+            super(file);
+        }
+
+        @Override
+        public long length() {
+            return -1;
+        }
     }
 
     /**
