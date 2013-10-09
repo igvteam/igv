@@ -78,7 +78,10 @@ public class IGVSeekableBufferedStream extends SeekableStream {
 
     @Override
     public long skip(final long skipLength) throws IOException {
-        long actualSkip = Math.min(length - position - 1, skipLength);
+        long maxSkip = Long.MAX_VALUE;
+
+        if(length >= 0) maxSkip = length - position - 1;
+        long actualSkip = Math.min(maxSkip, skipLength);
         position += actualSkip;
         return actualSkip;
     }
@@ -113,7 +116,7 @@ public class IGVSeekableBufferedStream extends SeekableStream {
     }
 
     public boolean eof() throws IOException {
-        return position >= wrappedStream.length();
+        return this.length >= 0 && position >= this.length;
     }
 
     @Override
@@ -176,13 +179,13 @@ public class IGVSeekableBufferedStream extends SeekableStream {
     private void fillBuffer() throws IOException {
 
         int curOffset = 0;
-        long longLen = Math.min( (long) maxBufferSize, (length - position) );
-        if(longLen < 0) longLen = (long) maxBufferSize;
+        long longRem = maxBufferSize;
+        if(length >= 0) longRem = Math.min( (long) maxBufferSize, length - position);
 
         //This shouldn't actually be necessary as long as maxBufferSize is
         //an int, but we leave it here to stress the fact that
         //we need to watch for overflow
-        int bytesRemaining = Ints.saturatedCast(longLen);
+        int bytesRemaining = Ints.saturatedCast(longRem);
 
         int toSkip = 0;
         long bufferEnd = bufferStartPosition + bufferSize;
