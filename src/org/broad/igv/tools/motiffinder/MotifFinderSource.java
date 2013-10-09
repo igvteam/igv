@@ -43,7 +43,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Class for searching for pattern in a shortSeq.
+ * Class for searching for pattern in a sequence.
  *
  * We recognize single letter codes, including ambiguity codes,
  * only.
@@ -60,7 +60,7 @@ public class MotifFinderSource implements FeatureSource<Feature> {
     @XmlJavaTypeAdapter(SessionXmlAdapters.Genome.class)
     @XmlAttribute private Genome genome;
 
-    @XmlAttribute private int featureWindowSize = 1500;
+    @XmlAttribute private int featureWindowSize = (int) 10e6;
 
     @XmlAttribute private Strand strand;
 
@@ -198,7 +198,7 @@ public class MotifFinderSource implements FeatureSource<Feature> {
                             FeatureTrack track = new FeatureTrack(trackNames[ii], trackNames[ii], cachingSrc);
                             if(colors[ii] != null) track.setColor(colors[ii]);
 
-                            track.setDisplayMode(Track.DisplayMode.EXPANDED);
+                            track.setDisplayMode(Track.DisplayMode.SQUISHED);
                             trackList.add(track);
                         }
                         IGV.getInstance().addTracks(trackList, PanelName.FEATURE_PANEL);
