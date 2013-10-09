@@ -19,6 +19,7 @@ import net.sf.samtools.util.SequenceUtil;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.StringUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -209,13 +210,11 @@ public class MotifFinderDialog extends JDialog {
         });
     }
 
-    private static final int maxLength = 100;
+    static final int MaxTrackNameLength = 100;
 
     private String getAbbrevPatternText() {
         String patternText = MotifFinderDialog.this.patternField.getText();
-        if (patternText.length() > maxLength) {
-            patternText = patternText.substring(0, maxLength - 3) + "...";
-        }
+        patternText = StringUtils.checkLength(patternText, MaxTrackNameLength);
         return patternText;
     }
 

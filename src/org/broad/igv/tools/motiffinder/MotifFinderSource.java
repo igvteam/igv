@@ -13,27 +13,20 @@ package org.broad.igv.tools.motiffinder;
 
 import com.google.common.collect.Iterators;
 import net.sf.samtools.util.SequenceUtil;
-import org.broad.igv.dev.api.IGVPlugin;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.session.SessionXmlAdapters;
 import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.track.FeatureSource;
-import org.broad.igv.track.FeatureTrack;
-import org.broad.igv.track.Track;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.PanelName;
 import org.broad.tribble.Feature;
 
-import javax.swing.*;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -163,51 +156,6 @@ public class MotifFinderSource implements FeatureSource<Feature> {
     @Override
     public void setFeatureWindowSize(int size) {
         this.featureWindowSize = size;
-    }
-
-    public static class MotifFinderPlugin implements IGVPlugin {
-
-        /**
-         * Add menu entry for activating SequenceMatchDialog
-         */
-        @Override
-        public void init() {
-            JMenuItem menuItem = new JMenuItem("Find Motif...");
-            menuItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    MotifFinderDialog dialog = new MotifFinderDialog(IGV.getMainFrame());
-                    dialog.setVisible(true);
-
-                    String pattern = dialog.getInputPattern();
-
-                    String posTrackName = dialog.getPosTrackName();
-                    String negTrackName = dialog.getNegTrackName();
-
-                    String[] trackNames = {posTrackName, negTrackName};
-                    Color[] colors = {null, Color.RED};
-                    Strand[] strands = {Strand.POSITIVE, Strand.NEGATIVE};
-                    List<Track> trackList = new ArrayList<Track>(trackNames.length);
-
-                    if (pattern != null) {
-                        for(int ii=0; ii < trackNames.length; ii++){
-
-                            MotifFinderSource src = new MotifFinderSource(pattern, strands[ii], GenomeManager.getInstance().getCurrentGenome());
-                            CachingFeatureSource cachingSrc= new CachingFeatureSource(src);
-
-                            FeatureTrack track = new FeatureTrack(trackNames[ii], trackNames[ii], cachingSrc);
-                            if(colors[ii] != null) track.setColor(colors[ii]);
-
-                            track.setDisplayMode(Track.DisplayMode.SQUISHED);
-                            trackList.add(track);
-                        }
-                        IGV.getInstance().addTracks(trackList, PanelName.FEATURE_PANEL);
-                    }
-                }
-            });
-
-            IGV.getInstance().addOtherToolMenu(menuItem);
-        }
     }
 
     /**

@@ -339,6 +339,7 @@ public class IGVMenuBar extends JMenuBar {
         MenuAction toolsMenuAction = new MenuAction("Tools", null);
         if (toolsMenu == null) {
             toolsMenu = MenuAndToolbarUtils.createMenu(menuItems, toolsMenuAction);
+            toolsMenu.setName("Tools");
         } else {
             toolsMenu.removeAll();
             for (JComponent item : menuItems) {
