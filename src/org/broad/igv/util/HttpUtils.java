@@ -612,6 +612,10 @@ public class HttpUtils {
 
             int code = conn.getResponseCode();
 
+            if(log.isDebugEnabled()){
+                //logHeaders(conn);
+            }
+
             // Redirects.  These can occur even if followRedirects == true if there is a change in protocol,
             // for example http -> https.
             if (code >= 300 && code < 400) {
@@ -650,6 +654,15 @@ public class HttpUtils {
             }
         }
         return conn;
+    }
+
+    //Used for testing sometimes, please do not delete
+    private void logHeaders(HttpURLConnection conn) {
+        Map<String, List<String>> headerFields = conn.getHeaderFields();
+        log.debug("Headers for " + conn.getURL());
+        for(Map.Entry<String, List<String>> header: headerFields.entrySet()){
+            log.debug(header.getKey() + ": " + org.apache.commons.lang.StringUtils.join(header.getValue(), ','));
+        }
     }
 
     public void setDefaultPassword(String defaultPassword) {

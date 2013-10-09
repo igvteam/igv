@@ -33,8 +33,9 @@ import static java.lang.System.arraycopy;
 
 /**
  * A wrapper class to provide buffered read access to a SeekableStream.  Just wrapping such a stream with
- * a BufferedInputStream will not work as it does not support seeking.  In this implementation a
- * seek call is delegated to the wrapped stream, and the buffer reset.
+ * a BufferedInputStream will not work as it does not support seeking.  In this implementation,
+ * we attempt to reuse the buffer if there is overlap between the newly requested range and where
+ * the buffer contains data for.
  */
 public class IGVSeekableBufferedStream extends SeekableStream {
 
@@ -43,6 +44,10 @@ public class IGVSeekableBufferedStream extends SeekableStream {
     final private int maxBufferSize;
     final SeekableStream wrappedStream;
     long position;
+    /**
+     * Can't make the assumption that length is a valid value.
+     * May be -1, which means we don't know.
+     */
     long length;
 
     int markpos;
@@ -146,7 +151,7 @@ public class IGVSeekableBufferedStream extends SeekableStream {
 
     public int read(final byte[] b, final int off, final int len) throws IOException {
 
-        if (position >= length) return -1;
+        if (length >= 0 && position >= length) return -1;
 
         if (len > maxBufferSize) {
             // Buffering not useful here.  Don't bother trying to use any (possible) overlapping buffer contents
@@ -171,7 +176,8 @@ public class IGVSeekableBufferedStream extends SeekableStream {
     private void fillBuffer() throws IOException {
 
         int curOffset = 0;
-        long longLen = Math.min((long) maxBufferSize, (length - position));
+        long longLen = Math.min( (long) maxBufferSize, (length - position) );
+        if(longLen < 0) longLen = (long) maxBufferSize;
 
         //This shouldn't actually be necessary as long as maxBufferSize is
         //an int, but we leave it here to stress the fact that
