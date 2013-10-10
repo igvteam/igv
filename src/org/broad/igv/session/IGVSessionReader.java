@@ -406,14 +406,17 @@ public class IGVSessionReader implements SessionReader {
         }
 
         SequenceTrack tmpSeqTrack = igv.getSequenceTrack();
-        if(!hasSeqTrack && igv.hasSequenceTrack()){
+        if(hasSeqTrack && !igv.hasSequenceTrack()){
+            //This will create a sequence track
+            IGV.getInstance().setGenomeTracks(null);
+        } else if (!hasSeqTrack && igv.hasSequenceTrack()) {
             //Need to remove seq track if it was loaded because it's not supposed to be in the session
             igv.removeTracks(Arrays.<Track>asList(tmpSeqTrack));
             seqTrack = null;
-        }else{
+        } else {
             //For later lookup and to prevent dual adding, we keep a reference to the sequence track
             seqTrack = tmpSeqTrack;
-            if(seqTrack != null){
+            if (seqTrack != null) {
                 allTracks.put(seqTrack.getId(), Arrays.asList(seqTrack));
             }
         }
