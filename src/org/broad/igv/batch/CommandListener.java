@@ -125,6 +125,8 @@ public class CommandListener implements Runnable {
 
                 String cmd = inputLine;
                 if (cmd.startsWith("GET")) {
+                    //TODO Set to debug?
+                    log.info(cmd);
                     String command = null;
                     Map<String, String> params = null;
                     String[] tokens = inputLine.split(" ");
