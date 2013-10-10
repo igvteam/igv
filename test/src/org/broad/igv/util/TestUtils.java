@@ -14,10 +14,13 @@ package org.broad.igv.util;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import net.sf.samtools.util.ftp.FTPClient;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
@@ -70,10 +73,8 @@ public class TestUtils {
     public static void setUpTestEnvironment() throws IOException {
         Globals.setTesting(true);
         //Globals.setBatch(true);
-        File prefsFile = new File("testprefs.properties");
-        prefsFile.delete();
-        prefsFile.deleteOnExit();
-        PreferenceManager.getInstance().setPrefsFile(prefsFile.getAbsolutePath());
+        resetPrefsFile();
+        resetTestUserDefinedGenomes();
         Globals.READ_TIMEOUT = 60 * 1000;
         Globals.CONNECT_TIMEOUT = 60 * 1000;
         FTPClient.READ_TIMEOUT = 60 * 1000;
@@ -84,6 +85,13 @@ public class TestUtils {
             outDir.mkdir();
         }
         clearOutputDir();
+    }
+
+    public static void resetPrefsFile(){
+        File prefsFile = new File("testprefs.properties");
+        prefsFile.delete();
+        prefsFile.deleteOnExit();
+        PreferenceManager.getInstance().setPrefsFile(prefsFile.getAbsolutePath());
     }
 
     /**
@@ -526,4 +534,13 @@ public class TestUtils {
         return result.split("\n").length;
     }
 
+    public static void resetTestUserDefinedGenomes() throws IOException{
+        File userDefinedGenomeListFile = new File(DirectoryManager.getGenomeCacheDirectory(), GenomeManager.TEST_USER_DEFINED_GENOME_LIST_FILE);
+        userDefinedGenomeListFile.delete();
+        userDefinedGenomeListFile.deleteOnExit();
+        GenomeManager.getInstance().clearGenomeCache();
+        Collection<GenomeListItem> userDefined = GenomeManager.getInstance().getUserDefinedGenomeArchiveList();
+        userDefined.clear();
+        GenomeManager.getInstance().buildGenomeItemList();
+    }
 }

@@ -56,10 +56,14 @@ public class AbstractHeadlessTest {
     @Before
     public void setUp() throws Exception {
         oldOut = System.out;
+        TestUtils.resetPrefsFile();
+        TestUtils.resetTestUserDefinedGenomes();
     }
 
     @After
     public void tearDown() throws Exception {
+        TestUtils.resetPrefsFile();
+        TestUtils.resetTestUserDefinedGenomes();
         TestUtils.clearOutputDir();
         System.setOut(oldOut);
     }

@@ -52,6 +52,7 @@ public class CommandListenerTest extends AbstractHeadedTest {
         super.setUp();
         CommandListener.halt();
         CommandListener.start(port);
+        IGV.getInstance().loadGenome(TestUtils.defaultGenome, null);
     }
 
     @After
@@ -65,7 +66,7 @@ public class CommandListenerTest extends AbstractHeadedTest {
     }
 
 
-    String genId = "hg18";
+    String genId = "mm10";
 
     @Test
     public void testGenomeSocket() throws Exception{

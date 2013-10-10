@@ -56,7 +56,17 @@ public class GenomeManager {
 
     private static Logger log = Logger.getLogger(GenomeManager.class);
 
-    final public static String USER_DEFINED_GENOME_LIST_FILE = "user-defined-genomes.txt";
+    private static final String ACT_USER_DEFINED_GENOME_LIST_FILE = "user-defined-genomes.txt";
+    public static final String TEST_USER_DEFINED_GENOME_LIST_FILE = "test-user-defined-genomes.txt";
+
+    public static String getUserDefinedGenomeListFile(){
+        if(Globals.isTesting()){
+            return TEST_USER_DEFINED_GENOME_LIST_FILE;
+        }else{
+            return ACT_USER_DEFINED_GENOME_LIST_FILE;
+        }
+
+    }
 
     private static GenomeManager theInstance;
 
@@ -908,7 +918,7 @@ public class GenomeManager {
 
             userDefinedGenomeArchiveList = new LinkedHashSet<GenomeListItem>();
 
-            File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), USER_DEFINED_GENOME_LIST_FILE);
+            File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), getUserDefinedGenomeListFile());
 
             BufferedReader reader = null;
 
@@ -1081,7 +1091,7 @@ public class GenomeManager {
             return;
         }
 
-        File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), USER_DEFINED_GENOME_LIST_FILE);
+        File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), getUserDefinedGenomeListFile());
         File backup = null;
         if (listFile.exists()) {
             backup = new File(listFile.getAbsolutePath() + ".bak");

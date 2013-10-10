@@ -60,11 +60,16 @@ public class AbstractHeadedTest {
     public void setUp() throws Exception {
         igv.newSession();
         IGV.getMainFrame().requestFocus();
+
+        TestUtils.resetPrefsFile();
+        TestUtils.resetTestUserDefinedGenomes();
+        IGV.getInstance().getContentPane().getCommandBar().refreshGenomeListComboBox();
     }
 
     @After
     public void tearDown() throws Exception {
-
+        TestUtils.resetPrefsFile();
+        TestUtils.resetTestUserDefinedGenomes();
     }
 
 

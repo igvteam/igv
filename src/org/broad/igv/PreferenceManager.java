@@ -1081,11 +1081,8 @@ public class PreferenceManager implements PropertyManager {
      * @param s
      */
     public void setPrefsFile(String s) {
-        if (preferences == null) {
-            preferences = new IGVPreferences(new File(s));
-        } else {
-            preferences.setPrefFile(new File(s));
-        }
+        preferences = new IGVPreferences(new File(s));
+        clearCaches();
     }
 
     public static String generateGenomeIdString(Collection<GenomeListItem> genomeListItems) {
