@@ -618,6 +618,18 @@ public class IGV {
 
     }
 
+    public void loadGenomeById(String genomeId){
+        if (ParsingUtils.pathExists(genomeId)) {
+            try {
+                IGV.getInstance().loadGenome(genomeId, null);
+            } catch (IOException e) {
+                log.error("Error loading genome file: " + genomeId, e);
+            }
+        } else {
+            contentPane.getCommandBar().selectGenome(genomeId);
+        }
+    }
+
     public void loadGenome(String path, ProgressMonitor monitor) throws IOException {
         loadGenome(path, monitor, true);
     }
@@ -2367,15 +2379,7 @@ public class IGV {
             }
 
             if (igvArgs.getGenomeId() != null) {
-                if (ParsingUtils.pathExists(igvArgs.getGenomeId())) {
-                    try {
-                        IGV.getInstance().loadGenome(igvArgs.getGenomeId(), null);
-                    } catch (IOException e) {
-                        log.error("Error loading genome file: " + igvArgs.getGenomeId());
-                    }
-                } else {
-                    contentPane.getCommandBar().selectGenome(igvArgs.getGenomeId());
-                }
+                IGV.getInstance().loadGenomeById(igvArgs.getGenomeId());
             } else if (igvArgs.getSessionFile() == null) {
                 String genomeId = preferenceManager.getDefaultGenome();
                 contentPane.getCommandBar().selectGenome(genomeId);

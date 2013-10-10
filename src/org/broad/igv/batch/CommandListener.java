@@ -267,12 +267,7 @@ public class CommandListener implements Runnable {
             }
 
             if (genome != null) {
-                if (IGV.getInstance().getSelectableGenomeIDs().contains(genome)) {
-                    IGV.getInstance().selectGenomeFromList(genome);
-                }
-                else {
-                    IGV.getInstance().loadGenome(genome.trim(), null);
-                }
+                IGV.getInstance().loadGenomeById(genome);
             }
 
             if (file != null) {
