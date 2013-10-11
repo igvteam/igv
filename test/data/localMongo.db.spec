@@ -1,5 +1,5 @@
 host=localhost
 port=27017
 dbName=mylocaldb
-collectionName=annotations
+collectionName=MyCollection
 buildLocusIndex=false
