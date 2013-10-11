@@ -48,63 +48,70 @@ public class MotifFinderPlugin implements IGVPlugin, Command {
             @Override
             public void actionPerformed(ActionEvent e) {
                 MotifFinderDialog dialog = new MotifFinderDialog(IGV.getMainFrame());
-
                 dialog.setVisible(true);
 
-                String pattern = dialog.getInputPattern();
+                handleDialogResult(dialog);
 
-                if (pattern != null) {
-                    String posTrackName = dialog.getPosTrackName();
-                    String negTrackName = dialog.getNegTrackName();
-                    addTracksForPattern(pattern, posTrackName, negTrackName);
-                }
             }
         });
 
         IGV.getInstance().addOtherToolMenu(menuItem);
     }
 
+    static void handleDialogResult(MotifFinderDialog dialog){
+        String[] pattern = dialog.getInputPattern();
+        if (pattern != null) {
+            String[] posTrackName = dialog.getPosTrackName();
+            String[] negTrackName = dialog.getNegTrackName();
+            addTracksForPatterns(pattern, posTrackName, negTrackName);
+        }
+    }
+
     /**
      * Generate motif-finding track and add it to IGV
      * @param pattern
-     * @param posTrackName
-     * @param negTrackName
+     * @param posTrackNames
+     * @param negTrackNames
      * @return
      */
-    static List<Track> addTracksForPattern(String pattern, String posTrackName, String negTrackName){
-        List<Track> trackList = generateTracksForPattern(pattern, posTrackName, negTrackName);
+    static List<Track> addTracksForPatterns(String[] pattern, String[] posTrackNames, String[] negTrackNames){
+        List<Track> trackList = generateTracksForPatterns(pattern, posTrackNames, negTrackNames);
         IGV.getInstance().addTracks(trackList, PanelName.FEATURE_PANEL);
         return trackList;
     }
 
     /**
      * Generate motif-finding tracks for the given pattern, do not add them to anything
-     * @param pattern
-     * @param posTrackName
-     * @param negTrackName
+     * @param patterns
+     * @param posTrackNames
+     * @param negTrackNames
      * @return
      */
-    private static List<Track> generateTracksForPattern(String pattern, String posTrackName, String negTrackName){
+    static List<Track> generateTracksForPatterns(String[] patterns, String[] posTrackNames, String[] negTrackNames){
 
-        String[] trackNames = {posTrackName, negTrackName};
         Color[] colors = {null, Color.RED};
         Strand[] strands = {Strand.POSITIVE, Strand.NEGATIVE};
-        List<Track> trackList = new ArrayList<Track>(trackNames.length);
+        List<Track> trackList = new ArrayList<Track>(2*posTrackNames.length);
 
-        if (pattern != null) {
-            for(int ii=0; ii < trackNames.length; ii++){
-                String tName = trackNames[ii];
-                if(tName == null) continue;
+        if (patterns != null) {
+            for(int pi=0; pi < patterns.length; pi++){
+                String pattern = patterns[pi];
+                String[] curTrackNames = new String[]{posTrackNames[pi], negTrackNames[pi]};
+                for(int ci=0; ci < curTrackNames.length; ci++){
+                    String tName = curTrackNames[ci];
+                    if(tName == null) continue;
 
-                MotifFinderSource src = new MotifFinderSource(pattern, strands[ii], GenomeManager.getInstance().getCurrentGenome());
-                CachingFeatureSource cachingSrc= new CachingFeatureSource(src);
+                    MotifFinderSource src = new MotifFinderSource(pattern, strands[ci], GenomeManager.getInstance().getCurrentGenome());
+                    CachingFeatureSource cachingSrc= new CachingFeatureSource(src);
 
-                FeatureTrack track = new FeatureTrack(tName, tName, cachingSrc);
-                if(colors[ii] != null) track.setColor(colors[ii]);
+                    FeatureTrack track = new FeatureTrack(tName, tName, cachingSrc);
+                    if(colors[ci] != null) track.setColor(colors[ci]);
 
-                track.setDisplayMode(Track.DisplayMode.SQUISHED);
-                trackList.add(track);
+                    track.setDisplayMode(Track.DisplayMode.SQUISHED);
+                    trackList.add(track);
+                }
             }
+
         }
         return trackList;
     }
@@ -114,10 +121,11 @@ public class MotifFinderPlugin implements IGVPlugin, Command {
         String cmd = args.get(0);
         if(cmd.equalsIgnoreCase("find")){
             String pattern = args.get(1);
+            String[] patterns = new String[]{pattern};
             String shrtPattern = StringUtils.checkLength(pattern, MotifFinderDialog.MaxTrackNameLength);
-            String posName = shrtPattern + " Positive";
-            String negName = shrtPattern + " Negative";
-            addTracksForPattern(pattern, posName, negName);
+            String[] posName = new String[]{shrtPattern + " Positive"};
+            String[] negName = new String[]{shrtPattern + " Negative"};
+            addTracksForPatterns(patterns, posName, negName);
             return "OK";
         }else{
             return "ERROR: Unknown command " + cmd + " for plugin " + getClass().getName();

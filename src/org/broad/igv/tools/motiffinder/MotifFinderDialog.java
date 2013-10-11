@@ -16,6 +16,7 @@
 package org.broad.igv.tools.motiffinder;
 
 import net.sf.samtools.util.SequenceUtil;
+import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ParsingUtils;
@@ -68,26 +69,26 @@ public class MotifFinderDialog extends JDialog {
         return validIUPACInputStrings.contains(c);
     }
 
-    private String posTrackName;
-    private String negTrackName;
+    private String[] posTrackNames;
+    private String[] negTrackNames;
 
-    private String inputPattern;
+    private String[] inputPatterns;
 
     public MotifFinderDialog(Frame owner) {
         super(owner);
         initComponents();
     }
 
-    public String getInputPattern() {
-        return inputPattern;
+    public String[] getInputPattern() {
+        return inputPatterns;
     }
 
-    public String getPosTrackName() {
-        return posTrackName;
+    public String[] getPosTrackName() {
+        return posTrackNames;
     }
 
-    public String getNegTrackName() {
-        return negTrackName;
+    public String[] getNegTrackName() {
+        return negTrackNames;
     }
 
     /**
@@ -115,37 +116,55 @@ public class MotifFinderDialog extends JDialog {
         this.setVisible(false);
     }
 
-    private void okButtonActionPerformed(ActionEvent e) {
+    void okButtonActionPerformed(ActionEvent e) {
 
-        this.posTrackName = null;
-        this.inputPattern = null;
+        this.inputPatterns = null;
 
-        String strPattern = patternField.getText().toUpperCase();
+        //Split into lines, each one will be a new pair of tracks
+        String[] lines = patternField.getText().split("[\\r\\n]+");
+        String[] patterns = new String[lines.length];
+        boolean isMultiMatch = lines.length >= 2;
 
-        boolean isIUPAC = checkIUPACPatternValid(strPattern);
-        boolean isRegex = checkNucleotideRegex(strPattern);
-        boolean patternIsValid = isIUPAC || isRegex;
+        this.posTrackNames = new String[lines.length];
+        this.negTrackNames = new String[lines.length];
 
-        if (!patternIsValid) {
-            MessageUtils.showMessage("Please enter a valid pattern.\n" +
-                    "Patterns using IUPAC ambiguity codes should contain no special characters.\n" +
-                    "Regular expressions should contain only 'ACTGN' in addition to special characters");
-            return;
+        for(int ii=0; ii < lines.length; ii++){
+            String strPattern = lines[ii].toUpperCase();
+
+            boolean isIUPAC = checkIUPACPatternValid(strPattern);
+            boolean isRegex = checkNucleotideRegex(strPattern);
+            boolean patternIsValid = isIUPAC || isRegex;
+
+            if (!patternIsValid) {
+                MessageUtils.showMessage("Please enter a valid pattern.\n" +
+                        "Patterns using IUPAC ambiguity codes should contain no special characters.\n" +
+                        "Regular expressions should contain only 'ACTGN' in addition to special characters.\n" +
+                        strPattern + " is invalid");
+                return;
+            }
+
+            if (isIUPAC) {
+                strPattern = convertMotifToRegex(strPattern);
+            }
+
+            if(isMultiMatch){
+                String posName = getPosNameFromPattern(strPattern);
+                this.posTrackNames[ii] = posName;
+                this.negTrackNames[ii] = getNegNameFromPositive(posName);
+            }else{
+                this.posTrackNames[ii] = posNameField.getText();
+                this.negTrackNames[ii] = negNameField.getText();
+                if (this.posTrackNames[ii].equalsIgnoreCase(negTrackNames[ii])) {
+                    MessageUtils.showMessage("Track names must be different");
+                    return;
+                }
+            }
+            patterns[ii] = strPattern;
+
         }
+        this.inputPatterns = patterns;
 
-        if (isIUPAC) {
-            strPattern = convertMotifToRegex(strPattern);
-        }
-
-        this.posTrackName = posNameField.getText();
-        this.negTrackName = negNameField.getText();
-        if (this.posTrackName.equalsIgnoreCase(negTrackName)) {
-            MessageUtils.showMessage("Track names must be different");
-            return;
-        }
-        this.inputPattern = strPattern;
         this.setVisible(false);
-
     }
 
     /**
@@ -158,6 +177,7 @@ public class MotifFinderDialog extends JDialog {
     static boolean checkIUPACPatternValid(String strPattern) {
         for (int ii = 0; ii < strPattern.length(); ii++) {
             String c = strPattern.substring(ii, ii + 1);
+
             if (!isIUPACChar(c)) {
                 return false;
             }
@@ -191,12 +211,22 @@ public class MotifFinderDialog extends JDialog {
         return true;
     }
 
+    /**
+     * Whether we are matching multiple patterns (ie whether there are newlines in the text field)
+     * @return
+     */
+    private boolean isMultiMatch(){
+        String patternText = MotifFinderDialog.this.patternField.getText();
+        return patternText.contains("\n") || patternText.contains("\r");
+    }
+
     private void updateNegNameFieldFromPattern() {
         UIUtilities.invokeOnEventThread(new Runnable() {
             @Override
             public void run() {
-                String posText = MotifFinderDialog.this.patternField.getText();
-                MotifFinderDialog.this.negNameField.setText(posText + " Negative");
+                String posText = MotifFinderDialog.this.posNameField.getText();
+                MotifFinderDialog.this.negNameField.setText(getNegNameFromPositive(posText));
+                MotifFinderDialog.this.negNameField.setEnabled(isMultiMatch());
             }
         });
     }
@@ -205,18 +235,28 @@ public class MotifFinderDialog extends JDialog {
         UIUtilities.invokeOnEventThread(new Runnable() {
             @Override
             public void run() {
-                MotifFinderDialog.this.posNameField.setText(getAbbrevPatternText());
+                String posNameText = "Auto";
+                boolean hasNewlines = isMultiMatch();
+                if(!hasNewlines){
+                    String patternText = MotifFinderDialog.this.patternField.getText();
+                    posNameText = StringUtils.checkLength(patternText, MaxTrackNameLength);
+                }
+
+                MotifFinderDialog.this.posNameField.setEnabled(!hasNewlines);
+                MotifFinderDialog.this.posNameField.setText(posNameText);
             }
         });
     }
 
-    static final int MaxTrackNameLength = 100;
-
-    private String getAbbrevPatternText() {
-        String patternText = MotifFinderDialog.this.patternField.getText();
-        patternText = StringUtils.checkLength(patternText, MaxTrackNameLength);
-        return patternText;
+    private String getPosNameFromPattern(String patternText){
+        return StringUtils.checkLength(patternText, MaxTrackNameLength);
     }
+
+    private String getNegNameFromPositive(String posText){
+        return posText + " Negative";
+    }
+
+    static final int MaxTrackNameLength = 100;
 
     private void patternFieldCaretUpdate(CaretEvent e) {
         updatePosNameFieldFromPattern();
@@ -230,7 +270,7 @@ public class MotifFinderDialog extends JDialog {
         contentPanel = new JPanel();
         label2 = new JLabel();
         label4 = new JLabel();
-        patternField = new JTextField();
+        patternField = new JTextArea();
         textArea1 = new JTextArea();
         vSpacer1 = new JPanel(null);
         panel1 = new JPanel();
@@ -270,6 +310,8 @@ public class MotifFinderDialog extends JDialog {
                 contentPanel.add(label4);
 
                 //---- patternField ----
+                patternField.setToolTipText("Enter multiple patterns, separated by newlines");
+                patternField.setRows(2);
                 patternField.addCaretListener(new CaretListener() {
                     @Override
                     public void caretUpdate(CaretEvent e) {
@@ -279,7 +321,7 @@ public class MotifFinderDialog extends JDialog {
                 contentPanel.add(patternField);
 
                 //---- textArea1 ----
-                textArea1.setText("Enter nucleotide sequence (e.g. ACCGCT), \nor nucleotide sequence with IUPAC ambiguity codes (e.g. AAARNR), \nor regular expression of nucleotides (e.g. TATAAA(A){3,}). ");
+                textArea1.setText("Enter nucleotide sequence (e.g. ACCGCT),  or nucleotide sequence with IUPAC ambiguity codes (e.g. AAARNR),  or regular expression of nucleotides (e.g. TATAAA(A){3,}). ");
                 textArea1.setEditable(false);
                 textArea1.setBackground(new Color(238, 238, 238));
                 textArea1.setLineWrap(true);
@@ -334,8 +376,8 @@ public class MotifFinderDialog extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
-                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
+                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
+                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("OK");
@@ -346,8 +388,8 @@ public class MotifFinderDialog extends JDialog {
                     }
                 });
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 5), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -358,8 +400,8 @@ public class MotifFinderDialog extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
@@ -375,7 +417,7 @@ public class MotifFinderDialog extends JDialog {
     private JPanel contentPanel;
     private JLabel label2;
     private JLabel label4;
-    private JTextField patternField;
+    private JTextArea patternField;
     private JTextArea textArea1;
     private JPanel vSpacer1;
     private JPanel panel1;
@@ -388,4 +430,9 @@ public class MotifFinderDialog extends JDialog {
     private JButton okButton;
     private JButton cancelButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
+
+    @ForTesting
+    void setPatternFieldText(String text) {
+        this.patternField.setText(text);
+    }
 }

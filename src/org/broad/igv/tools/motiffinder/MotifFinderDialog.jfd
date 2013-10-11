@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "5.2.0.0.54" Java: "1.6.0_37" encoding: "UTF-8"
+JFDML JFormDesigner: "5.2.0.0.54" Java: "1.6.0_51" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -28,13 +28,15 @@ new FormModel {
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "label4"
 					} )
-					add( new FormComponent( "javax.swing.JTextField" ) {
+					add( new FormComponent( "javax.swing.JTextArea" ) {
 						name: "patternField"
+						"toolTipText": "Enter multiple patterns, separated by newlines"
+						"rows": 2
 						addEvent( new FormEvent( "javax.swing.event.CaretListener", "caretUpdate", "patternFieldCaretUpdate", true ) )
 					} )
 					add( new FormComponent( "javax.swing.JTextArea" ) {
 						name: "textArea1"
-						"text": "Enter nucleotide sequence (e.g. ACCGCT), \nor nucleotide sequence with IUPAC ambiguity codes (e.g. AAARNR), \nor regular expression of nucleotides (e.g. TATAAA(A){3,}). "
+						"text": "Enter nucleotide sequence (e.g. ACCGCT),  or nucleotide sequence with IUPAC ambiguity codes (e.g. AAARNR),  or regular expression of nucleotides (e.g. TATAAA(A){3,}). "
 						"editable": false
 						"background": new java.awt.Color( 238, 238, 238, 255 )
 						"lineWrap": true

@@ -36,13 +36,13 @@ import static junit.framework.Assert.assertTrue;
  * @author jacob
  * @date 2013-Oct-09
  */
-public class MotifFinderPluginTest extends AbstractHeadedTest {
+public class MotifFinderPluginHeadedTest extends AbstractHeadedTest {
 
     private static final String EGFR_begseq ="GCCCCCCGCACGGTGTGAGCGCCCGACGCGGCCGAGGCGGCCGGAGTCCCGAG";
 
     @Test
     public void testBasicSearch() throws Exception{
-        List<Track> tracks = MotifFinderPlugin.addTracksForPattern(EGFR_begseq, "pos", "neg");
+        List<Track> tracks = MotifFinderPlugin.addTracksForPatterns(new String[]{EGFR_begseq}, new String[]{"pos"}, new String[]{"neg"});
         tstSearchEGFR(tracks);
     }
 
