@@ -44,10 +44,10 @@ public class MongoFeatureSource implements FeatureSource<DBFeature.IGVFeat>, Nam
 
     private static Logger log = Logger.getLogger(MongoCollabPlugin.class);
 
-    public MongoFeatureSource(DBCollection collection, boolean buildIndex) {
+    public MongoFeatureSource(DBCollection collection, boolean buildLocusIndex) {
         this.collection = collection;
         this.collection.setObjectClass(DBFeature.class);
-        checkForLocusIndex(buildIndex);
+        checkForLocusIndex(buildLocusIndex);
     }
 
     boolean hasLocusIndex(){
@@ -198,7 +198,7 @@ public class MongoFeatureSource implements FeatureSource<DBFeature.IGVFeat>, Nam
         DBCollection collection = MongoCollabPlugin.getCollection(locator);
         //TODO Make this more flexible
         collection.setObjectClass(DBFeature.class);
-        MongoFeatureSource source = new MongoFeatureSource(collection, locator.buildIndex);
+        MongoFeatureSource source = new MongoFeatureSource(collection, locator.buildLocusIndex);
         FeatureTrack track = new MongoFeatureTrack(collection.getFullName(), collection.getName(), source);
         SearchCommand.registerNamedFeatureSearcher(source);
         newTracks.add(track);

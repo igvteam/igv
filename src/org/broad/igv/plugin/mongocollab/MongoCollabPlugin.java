@@ -186,7 +186,7 @@ public class MongoCollabPlugin implements IGVPlugin {
         public final int port;
         public final String dbName;
         public final String collectionName;
-        public final boolean buildIndex;
+        public final boolean buildLocusIndex;
 
         public Locator(String path) throws IOException{
             this(ParsingUtils.openInputStream(path));
@@ -199,10 +199,10 @@ public class MongoCollabPlugin implements IGVPlugin {
             this.dbName = fields.get("dbName");
             this.collectionName = fields.get("collectionName");
             boolean tmpBuildIndex = false;
-            if(fields.containsKey("buildIndex")){
-                tmpBuildIndex = Boolean.parseBoolean(fields.get("buildIndex"));
+            if(fields.containsKey("buildLocusIndex")){
+                tmpBuildIndex = Boolean.parseBoolean(fields.get("buildLocusIndex"));
             }
-            this.buildIndex = tmpBuildIndex;
+            this.buildLocusIndex = tmpBuildIndex;
 
         }
 
