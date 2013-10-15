@@ -13,15 +13,18 @@ package org.broad.igv.gwas;
 
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.exceptions.ParserException;
+import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackLoader;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.igv.util.collections.DoubleArrayList;
+import org.broad.igv.util.collections.IntArrayList;
 import org.junit.Test;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.*;
 
 /**
  * User: jacob
@@ -30,7 +33,7 @@ import static junit.framework.Assert.assertTrue;
 public class GWASParserTest extends AbstractHeadlessTest {
 
     @Test
-    public void testParse() throws Exception {
+    public void testParse_underflows() throws Exception {
         GWASParser parser = new GWASParser(new ResourceLocator(TestUtils.DATA_DIR + "gwas/smallp.gwas"), genome);
         GWASData data = parser.parse();
         LinkedHashMap<String, DoubleArrayList> values = data.getValues();
@@ -43,6 +46,19 @@ public class GWASParserTest extends AbstractHeadlessTest {
                 assertFalse("Value is 0", val == 0.0f);
             }
         }
+    }
+
+    @Test
+    public void testParseStarts() throws Exception {
+        GWASParser parser = new GWASParser(new ResourceLocator(TestUtils.DATA_DIR + "gwas/smallp.gwas"), genome);
+        GWASData data = parser.parse();
+        IntArrayList startLocs = data.getLocations().get("chr6");
+
+        int[] expStarts = {29622220,29623739,29623739};
+        for(int ii=0; ii < expStarts.length; ii++){
+            assertEquals(expStarts[ii], startLocs.get(ii));
+        }
+
     }
 
     @Test
@@ -63,5 +79,23 @@ public class GWASParserTest extends AbstractHeadlessTest {
         }
         assertTrue(excepted);
 
+    }
+
+    @Test
+    public void testLoadGWAS() throws Exception{
+        ResourceLocator locator = new ResourceLocator(TestUtils.DATA_DIR + "gwas/smallp.gwas");
+        List<Track> tracks = (new TrackLoader()).load(locator, genome);
+        GWASTrack track = (GWASTrack) tracks.get(0);
+        String desc = track.getDescription("chr6", 1);
+
+        String[] lines = desc.split("<br>");
+        String[] expTokens = new String[]{"rs29228", "6", "29623739", "0.931148124684"};
+        int offset = 3;
+        for(int tn=0; tn < expTokens.length; tn++){
+            String token = lines[tn+offset];
+            String[] areas = token.split("\\s");
+            String value = areas[1];
+            assertEquals("Value for field " + areas[0] + " not equal", expTokens[tn], value);
+        }
     }
 }

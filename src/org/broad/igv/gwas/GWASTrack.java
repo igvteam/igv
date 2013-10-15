@@ -46,11 +46,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * Created by IntelliJ IDEA.
- * User: jussi
- * Date: Nov 23, 2009
- * Time: 4:56:40 PM
- * To change this template use File | Settings | File Templates.
+ * @author  jussi
+ * @since  Nov 23, 2009
  */
 @XmlType(factoryMethod = "getNextTrack")
 public class GWASTrack extends AbstractTrack {
@@ -112,7 +109,7 @@ public class GWASTrack extends AbstractTrack {
         super.setDataRange(new DataRange(0, (maxValue / 2), maxValue));
 
 
-        // Get defaulta values
+        // Get default values
         super.setHeight(prefs.getAsInt(PreferenceManager.GWAS_TRACK_HEIGHT));
 
         this.minPointSize = prefs.getAsInt(PreferenceManager.GWAS_MIN_POINT_SIZE);
@@ -471,7 +468,7 @@ public class GWASTrack extends AbstractTrack {
 
 
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            log.error(e.getMessage(), e);
         }
         return textValue;
 
@@ -759,11 +756,6 @@ public class GWASTrack extends AbstractTrack {
 
     public boolean isLogNormalized() {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-
-    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type) {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @SubtlyImportant
