@@ -14,11 +14,13 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import static java.lang.Math.log10;
 
@@ -223,18 +225,13 @@ public class GWASParser {
 
     public GWASData parse() throws IOException {
 
-
-        FileInputStream fs = null;
-
+        InputStream is = null;
         AsciiLineReader reader = null;
         String nextLine = null;
         int rowCounter = 0;
 
         try {
-            fs = new FileInputStream(locator.getPath());
-            fs.getChannel().position(0);
-            reader = new AsciiLineReader(fs);
-
+            reader = ParsingUtils.openAsciiReader(locator);
 
             // Parse header line
             String headerLine = reader.readLine();
@@ -314,8 +311,7 @@ public class GWASParser {
                 throw new RuntimeException(e);
             }
         } finally {
-            reader.close();
-            fs.close();
+            if(reader != null) reader.close();
         }
 
 
