@@ -76,30 +76,25 @@ public class VariantReviewPlugin implements IGVPlugin{
     }
 
     private void initMenuItems() {
+
         //Menu item for loading review track
-        TrackMenuUtils.addTrackMenuItemBuilder(new TrackMenuItemBuilder() {
+        final JMenuItem loadReviewTrackItem = new JMenuItem("Load Review Track");
+        loadReviewTrackItem.addActionListener(new ActionListener() {
             @Override
-            public JMenuItem build(Collection<Track> selectedTracks, TrackClickEvent te) {
-                if(!isSingleVariantTrack(selectedTracks)){
-                    return null;
+            public void actionPerformed(ActionEvent e) {
+                java.util.List<Track> newTracks = new ArrayList<Track>(1);
+                ResourceLocator locator = new ResourceLocator(VariantReviewPlugin.getDbSpecPath());
+                //TODO Put the track name in the dbSpec
+                locator.setName("NA12878 KB");
+                VariantReviewSource.loadVariantReview(locator, newTracks);
+                IGV.getInstance().addTracks(newTracks, PanelName.DATA_PANEL);
+
+                hasReviewTrack = true;
+                loadReviewTrackItem.setEnabled(!hasReviewTrack);
                 }
-                JMenuItem showReviewMenuItem = new JMenuItem("Load Review Track");
-                showReviewMenuItem.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        java.util.List<Track> newTracks = new ArrayList<Track>(1);
-                        ResourceLocator locator = new ResourceLocator(VariantReviewPlugin.getDbSpecPath());
-                        //TODO Put the track name in the dbSpec
-                        locator.setName("NA12878 KB");
-                        VariantReviewSource.loadVariantReview(locator, newTracks);
-                        IGV.getInstance().addTracks(newTracks, PanelName.DATA_PANEL);
-                        hasReviewTrack = true;
-                    }
-                });
-                showReviewMenuItem.setEnabled(!hasReviewTrack);
-                return showReviewMenuItem;
-            }
-        });
+            });
+
+        IGV.getInstance().addOtherToolMenu(loadReviewTrackItem);
 
         //Menu item for submitting new review
         TrackMenuUtils.addTrackMenuItemBuilder(new TrackMenuItemBuilder() {
