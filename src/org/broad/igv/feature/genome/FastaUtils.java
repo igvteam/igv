@@ -191,4 +191,9 @@ public class FastaUtils {
             if (pw != null) pw.close();
         }
     }
+
+    public static boolean isFastaPath(String absolutePath) {
+        String pth = absolutePath.toLowerCase();
+        return pth.endsWith(".fa") || pth.endsWith(".fasta");
+    }
 }
