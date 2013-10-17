@@ -17,9 +17,9 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.zip.ZipFile;
 
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.*;
 
 /**
  * User: jacob
@@ -47,6 +47,50 @@ public class GenomeImporterTest extends AbstractHeadlessTest {
         deleteFaiFiles(fastaPath);
     }
 
+    @Test
+    public void testCreateGenomeArchiveFromFiles() throws Exception {
+
+        File genomeFile = new File(TestUtils.DATA_DIR, "out/testSetGenome.genome");
+        String genomeId = "testSet";
+        String genomeDisplayName = genomeId;
+        String fastaPath = TestUtils.DATA_DIR + "fasta/ecoli_out.padded.fasta";
+        File fastaFile = new File(fastaPath);
+
+        String parentDir = TestUtils.DATA_DIR + "genomes/genome_raw_files/hg18.unittest";
+        File cytobandFile = new File(parentDir, "hg18_cytoBand.txt");
+        File geneAnnotFile = new File(parentDir, "hg18_refGene_head1k.txt");
+        File chrAliasFile = new File(parentDir, "pointless_alias.tab");
+
+        deleteFaiFiles(fastaPath);
+
+        File genomeArchive = (new GenomeImporter()).createGenomeArchive(
+                genomeFile, genomeId, genomeDisplayName, fastaPath,
+                geneAnnotFile, cytobandFile, chrAliasFile);
+
+        assertNotNull(genomeArchive);
+        assertTrue(genomeArchive.exists());
+
+        GenomeDescriptor descriptor = GenomeManager.getInstance().parseGenomeArchiveFile(genomeArchive);
+
+        assertEquals(cytobandFile.getName(), descriptor.cytoBandFileName);
+        assertEquals(geneAnnotFile.getName(), descriptor.getGeneFileName());
+        assertEquals(chrAliasFile.getName(), descriptor.chrAliasFileName);
+        assertEquals(fastaFile.getAbsolutePath(), descriptor.getSequenceLocation());
+
+        assertTrue(descriptor.hasCytobands());
+        assertTrue(descriptor.isChromosomesAreOrdered());
+        assertTrue(descriptor.isFasta());
+
+        //Check that files seem to be accurate. We just look at sizes
+        ZipFile zipFile = new ZipFile(genomeArchive);
+        File[] files = new File[]{cytobandFile, geneAnnotFile, chrAliasFile};
+        for(File file: files){
+            assertEquals("File sizes unequal for " + file.getName(), file.length(), zipFile.getEntry(file.getName()).getSize());
+        }
+
+        deleteFaiFiles(fastaPath);
+    }
+
     /**
      * Deletes all fasta index files in the provided path
      *
@@ -61,6 +105,8 @@ public class GenomeImporterTest extends AbstractHeadlessTest {
                 return name.endsWith(".fai");
             }
         });
+
+        if(idxFiles == null) return;
 
         for (File idxFile : idxFiles) {
             idxFile.delete();
