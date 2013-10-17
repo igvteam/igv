@@ -486,14 +486,14 @@ public class IGV {
             }
 
             String cytobandFileName = genomeBuilderDialog.getCytobandFileName();
-            String refFlatFileName = genomeBuilderDialog.getRefFlatFileName();
+            String geneAnnotFileName = genomeBuilderDialog.getGeneAnnotFileName();
             String fastaFileName = genomeBuilderDialog.getFastaFileName();
             String chrAliasFile = genomeBuilderDialog.getChrAliasFileName();
             String genomeDisplayName = genomeBuilderDialog.getGenomeDisplayName();
             String genomeId = genomeBuilderDialog.getGenomeId();
 
             GenomeListItem genomeListItem = getGenomeManager().defineGenome(
-                    genomeZipFile, cytobandFileName, refFlatFileName,
+                    genomeZipFile, cytobandFileName, geneAnnotFileName,
                     fastaFileName, chrAliasFile, genomeDisplayName,
                     genomeId, monitor);
 

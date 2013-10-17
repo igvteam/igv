@@ -48,15 +48,15 @@ public class GenomeImporter {
      * @param genomeId          Id of the genome.
      * @param genomeDisplayName The genome name that is user-friendly.
      * @param fastaFile         The location of a fasta file, or directory of fasta files
-     * @param refFlatFile       RefFlat file.
-     * @param cytobandFile      Cytoband file.
+     * @param geneAnnotFile
+     * @param cytobandFile
      * @return The newly created genome archive file.
      */
     public File createGenomeArchive(File genomeFile,
                                     String genomeId,
                                     String genomeDisplayName,
                                     String fastaFile,
-                                    File refFlatFile,
+                                    File geneAnnotFile,
                                     File cytobandFile,
                                     File chrAliasFile) throws IOException {
 
@@ -132,9 +132,9 @@ public class GenomeImporter {
             fastaFile = FileUtils.getRelativePath(genomeFile.getParent(), fastaFile);
 
             // Create "in memory" property file
-            byte[] propertyBytes = createGenomePropertyFile(genomeId, genomeDisplayName, fastaFile, refFlatFile,
+            byte[] propertyBytes = createGenomePropertyFile(genomeId, genomeDisplayName, fastaFile, geneAnnotFile,
                     cytobandFile, chrAliasFile, fastaDirectory, fastaFileNames);
-            File[] inputFiles = {refFlatFile, cytobandFile, chrAliasFile};
+            File[] inputFiles = {geneAnnotFile, cytobandFile, chrAliasFile};
 
             // Create archive
             createGenomeArchive(genomeFile, inputFiles, propertyBytes);
@@ -175,7 +175,7 @@ public class GenomeImporter {
      * @param genomeId
      * @param genomeDisplayName
      * @param sequenceLocation Path to nucleotide sequence. Can be absolute or relative, also local or remote
-     * @param refFlatFile
+     * @param geneAnnotFile
      * @param cytobandFile
      * @param fastaFileNames
      * @return
@@ -183,7 +183,7 @@ public class GenomeImporter {
     public byte[] createGenomePropertyFile(String genomeId,
                                            String genomeDisplayName,
                                            String sequenceLocation,
-                                           File refFlatFile,
+                                           File geneAnnotFile,
                                            File cytobandFile,
                                            File chrAliasFile,
                                            boolean fastaDirectory,
@@ -219,8 +219,8 @@ public class GenomeImporter {
             if (cytobandFile != null) {
                 propertyFileWriter.println(Globals.GENOME_ARCHIVE_CYTOBAND_FILE_KEY + "=" + cytobandFile.getName());
             }
-            if (refFlatFile != null) {
-                propertyFileWriter.println(Globals.GENOME_ARCHIVE_GENE_FILE_KEY + "=" + refFlatFile.getName());
+            if (geneAnnotFile != null) {
+                propertyFileWriter.println(Globals.GENOME_ARCHIVE_GENE_FILE_KEY + "=" + geneAnnotFile.getName());
             }
             if (chrAliasFile != null) {
                 propertyFileWriter.println(Globals.GENOME_CHR_ALIAS_FILE_KEY + "=" + chrAliasFile.getName());
