@@ -151,7 +151,9 @@ public class AlignmentBlock {
 
     /**
      * Reduce so that we only store the mismatches between this block and reference
-     * This may do nothing, if there are too many mismatches we keep the original
+     * This may do nothing, if there are any mismatches we keep the original.
+     * Note that we require an EXACT match, meaning ambiguity codes need to match
+     * exactly. So if reference = 'N' and read = 'A', the full read sequence is stored.
      * @param genome
      */
     public void reduce(Genome genome){
@@ -161,7 +163,7 @@ public class AlignmentBlock {
         if(refBases != null){
             boolean match = false;
             for(int idx = 0; idx < refBases.length; idx++){
-                match = AlignmentUtils.compareBases(refBases[idx], this.bases[idx]);
+                match = refBases[idx] == this.bases[idx];
                 if(!match) break;
             }
             if(match) this.bases = null;
