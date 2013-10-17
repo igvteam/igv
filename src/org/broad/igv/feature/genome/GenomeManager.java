@@ -19,6 +19,7 @@
 package org.broad.igv.feature.genome;
 
 import com.google.common.collect.Iterables;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
@@ -44,10 +45,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.*;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
+import java.util.zip.*;
 
 /**
  * @author jrobinso
@@ -1188,6 +1186,132 @@ public class GenomeManager {
         addGenomeItem(newItem);
         return newItem;
 
+    }
+
+
+    /**
+     * Downloads .genome file, INCLUDING fasta file it points to,
+     * and rewrites the property.txt file to point to the local version
+     * @param srcGenome
+     * @param targetFile
+     * @return boolean indicating success or failure
+     *
+     * @throws IOException
+     */
+    public boolean downloadWholeGenome(String srcGenome, File targetFile) throws IOException{
+        File srcGenomeArchive = getArchiveFile(srcGenome);
+        boolean isFastaFile = FastaUtils.isFastaPath(srcGenomeArchive.getAbsolutePath());
+        GenomeDescriptor descriptor = parseGenomeArchiveFile(srcGenomeArchive);
+
+        FileUtils.copyFile(srcGenomeArchive, targetFile);
+
+        if(isFastaFile){
+            //Simple case, just need to copy fasta and create index
+            File destIndexFile = new File(targetFile.getAbsolutePath() + ".fai");
+            File fastaIndexFile = new File(srcGenomeArchive.getAbsolutePath() + ".fai");
+            if(fastaIndexFile.canRead()){
+                FileUtils.copyFile(fastaIndexFile, destIndexFile);
+            }else{
+                FastaUtils.createIndexFile(targetFile.getAbsolutePath(), destIndexFile.getAbsolutePath());
+            }
+            return true;
+        }
+
+        //Most useful case of a .genome file, which contains nearly everything in it, except the
+        //sequence which is a fasta file
+        if(descriptor.isFasta()){
+            boolean success = false;
+            String sequencePath = descriptor.getSequenceLocation();
+            String[] portions = sequencePath.split("[\\,/]");
+            String sequenceFileName = portions[portions.length - 1];
+            File localSequenceFile = new File(targetFile.getParent(), sequenceFileName);
+            //TODO Progress dialog, make cancellable
+            // Copy file directly from the server to local area
+            HttpUtils.getInstance().downloadFile(descriptor.getSequenceLocation(), localSequenceFile);
+
+            //Rewrite properties file to point to local fasta
+            ZipFile targetZipFile = new ZipFile(targetFile);
+            File tmpZipFile = File.createTempFile("tmpGenome", ".zip");
+            ZipEntry propEntry = targetZipFile.getEntry(Globals.GENOME_ARCHIVE_PROPERTY_FILE_NAME);
+
+            InputStream propertyInputStream = null;
+            ZipOutputStream zipOutputStream = null;
+
+            try{
+                propertyInputStream = targetZipFile.getInputStream(propEntry);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(propertyInputStream));
+
+                ByteArrayOutputStream propertyBytes = new ByteArrayOutputStream();
+                PrintWriter propertyFileWriter = new PrintWriter(new OutputStreamWriter(propertyBytes));
+
+                //Copy over property.txt, only replacing the sequenceLocation property
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    String writeLine = line;
+                    if(!line.startsWith("#")){
+                        String[] tokens = line.split("=", 2);
+
+                        if(tokens.length == 2){
+                            String propName = tokens[0];
+                            String propVal = tokens[1];
+
+                            if(propName.equals(Globals.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY)){
+                                propVal = localSequenceFile.getAbsolutePath();
+                            }
+
+                            writeLine = String.format("%s=%s", propName, propVal);
+                        }
+                    }
+                    propertyFileWriter.println(writeLine);
+                }
+
+                propertyFileWriter.flush();
+                byte[] newPropertyBytes = propertyBytes.toByteArray();
+
+                Enumeration<? extends ZipEntry> entries = targetZipFile.entries();
+                zipOutputStream = new ZipOutputStream(new FileOutputStream(tmpZipFile));
+                while(entries.hasMoreElements()){
+                    ZipEntry curEntry = entries.nextElement();
+                    ZipEntry writeEntry = curEntry;
+
+                    if(curEntry.getName().equals(Globals.GENOME_ARCHIVE_PROPERTY_FILE_NAME)){
+                        writeEntry = new ZipEntry(Globals.GENOME_ARCHIVE_PROPERTY_FILE_NAME);
+                        writeEntry.setSize(newPropertyBytes.length);
+                        zipOutputStream.putNextEntry(writeEntry);
+                        zipOutputStream.write(newPropertyBytes);
+                        continue;
+                    }
+
+                    zipOutputStream.putNextEntry(writeEntry);
+                    InputStream tmpIS = null;
+                    try{
+                        tmpIS = targetZipFile.getInputStream(writeEntry);
+                        int bytes = IOUtils.copy(tmpIS, zipOutputStream);
+                        log.info(bytes + " bytes written");
+                    }finally{
+                        if(tmpIS != null) tmpIS.close();
+                    }
+
+                }
+            }catch(Exception e){
+                targetFile.delete();
+                throw new RuntimeException(e.getMessage(), e);
+            }finally{
+                if(propertyInputStream != null) propertyInputStream.close();
+                if(zipOutputStream != null){
+                    zipOutputStream.flush();
+                    zipOutputStream.close();
+                }
+                success = targetFile.delete();
+            }
+
+            //Rename tmp file
+            if(success){
+                success = tmpZipFile.renameTo(targetFile);
+            }
+            return success;
+        }
+        return false;
     }
 
     public String getGenomeId() {

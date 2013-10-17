@@ -17,9 +17,8 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeListItem;
-import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.genome.*;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.TestUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -142,5 +141,44 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         assertEquals(24, genome.getAllChromosomeNames().size());
         assertEquals(3095677412l, genome.getTotalLength());
     }
+
+    /**
+     * Test for simple downloading of .genome file,
+     * which packages up all the resources it can
+     * @throws Exception
+     */
+    @Test
+    public void testDownloadDotGenome() throws Exception{
+
+        String genId = "NC_001802";
+        String genomePath = "http://igv.broadinstitute.org/genomes/" + genId + ".genome";
+        String outPath = TestUtils.TMP_OUTPUT_DIR + "test_genome_path.genome";
+        File outFile = new File(outPath);
+        boolean success = GenomeManager.getInstance().downloadWholeGenome(genomePath, outFile);
+        assertTrue("Download of genome failed", success);
+
+        assertTrue(outFile.exists());
+        File fastaFile = new File(TestUtils.TMP_OUTPUT_DIR, genId + ".fna");
+        assertTrue("fasta file not found: " + fastaFile.getAbsolutePath(), fastaFile.exists());
+
+        //I don't know exactly why this is necessary but it seems like there is some weird memory-buffering issue
+        //and if we try to read from the outPath again it uses the old (remote) fasta file name.
+        //This is just a unit test thing, copying the downloaded .genome file should have the same info
+        //and it makes the tests pass
+        File tmpOut = new File(TestUtils.TMP_OUTPUT_DIR + "t2.genome");
+        FileUtils.copyFile(outFile, tmpOut);
+        GenomeDescriptor descriptor = GenomeManager.getInstance().parseGenomeArchiveFile(tmpOut);
+        assertEquals(fastaFile.getAbsolutePath(), descriptor.getSequenceLocation());
+
+        String remSequencePath = "http://igvdata.broadinstitute.org/genomes/seq/Human_immunodeficiency_virus_1_uid15476/NC_001802.fna";
+        FastaIndexedSequence remSequence = new FastaIndexedSequence(remSequencePath);
+
+        TestUtils.createIndex(fastaFile.getAbsolutePath());
+        FastaIndexedSequence localSequence = new FastaIndexedSequence(fastaFile.getAbsolutePath());
+
+        assertEquals(remSequence.getChromosomeNames(), localSequence.getChromosomeNames());
+    }
+
+
 
 }
