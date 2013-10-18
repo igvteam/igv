@@ -62,14 +62,14 @@ public class FeatureSearcherTest extends AbstractHeadlessTest {
      */
     private void runSearch(FeatureSearcher searcher, boolean sepThread) throws Exception{
 
-        assertFalse(searcher.isRunning());
+        assertFalse(searcher.isDone());
         assertNull(searcher.getResult());
 
         if(sepThread){
             LongRunningTask.getThreadExecutor().execute(searcher);
             //Tacky, but it should take <1000 mSec to start the search
             Thread.sleep(1000);
-            while(searcher.isRunning()){
+            while(!searcher.isDone()){
                 Thread.sleep(100);
             }
         }else{
@@ -153,12 +153,12 @@ public class FeatureSearcherTest extends AbstractHeadlessTest {
         // This can make it seem like the search aborted prematurely
         LongRunningTask.getThreadExecutor().execute(searcher);
         Thread.sleep(500);
-        assertTrue(searcher.isRunning());
+        assertFalse(searcher.isDone());
         searcher.cancel();
 
         //Stopping is not instantaneous
         int counter = 0;
-        while(searcher.isRunning()){
+        while(!searcher.isDone()){
             Thread.sleep(100);
             counter++;
         }

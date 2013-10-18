@@ -56,6 +56,7 @@ public class FeatureSearcher implements Runnable {
 
     private volatile boolean isRunning = false;
     private volatile boolean wasCancelled = false;
+    private volatile boolean done = false;
 
     private final Genome genome;
     private String chr;
@@ -139,8 +140,8 @@ public class FeatureSearcher implements Runnable {
         this.wasCancelled = true;
     }
 
-    public boolean isRunning(){
-        return this.isRunning;
+    public boolean isDone(){
+        return this.done;
     }
 
     public Iterator<? extends Feature> getResult(){
@@ -197,6 +198,7 @@ public class FeatureSearcher implements Runnable {
             }
         }
         this.isRunning = false;
+        this.done = true;
         if(this.monitor != null){
             this.monitor.stop();
         }
