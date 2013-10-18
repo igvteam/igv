@@ -349,46 +349,18 @@ public class HttpUtils {
 
     }
 
-    public boolean downloadFile(String url, File outputFile) throws IOException {
-
-        log.info("Downloading " + url + " to " + outputFile.getAbsolutePath());
-
-        HttpURLConnection conn = openConnection(new URL(url), null);
-
-        long contentLength = -1;
-        String contentLengthString = conn.getHeaderField("Content-Length");
-        if (contentLengthString != null) {
-            contentLength = Long.parseLong(contentLengthString);
-        }
-
-
-        log.info("Content length = " + contentLength);
-
-        InputStream is = null;
-        OutputStream out = null;
-
-        try {
-            is = conn.getInputStream();
-            out = new FileOutputStream(outputFile);
-
-            byte[] buf = new byte[64 * 1024];
-            int downloaded = 0;
-            int bytesRead = 0;
-            while ((bytesRead = is.read(buf)) != -1) {
-                out.write(buf, 0, bytesRead);
-                downloaded += bytesRead;
-            }
-            log.info("Download complete.  Total bytes downloaded = " + downloaded);
-        } finally {
-            if (is != null) is.close();
-            if (out != null) {
-                out.flush();
-                out.close();
-            }
-        }
-        long fileLength = outputFile.length();
-
-        return contentLength <= 0 || contentLength == fileLength;
+    /**
+     *
+     * @param url
+     * @param outputFile
+     * @return Indicates success, or null if content length unknown (and hence success unknown)
+     * @throws IOException
+     */
+    public Boolean downloadFile(String url, File outputFile) throws IOException {
+        URLDownloader urlDownloader = new URLDownloader(url, outputFile);
+        //TODO Allow cancelling?
+        urlDownloader.run();
+        return urlDownloader.getResult();
     }
 
 
@@ -923,6 +895,112 @@ public class HttpUtils {
                 pwCache.put(pKey, pw);
                 return pw;
             }
+        }
+    }
+
+    /**
+     * Runnable for downloading a file from a URL.
+     * Downloading is buffered, and can be cancelled (between buffers)
+     * via {@link #cancel(boolean)}
+     */
+    public class URLDownloader implements Runnable {
+
+        private final URL srcUrl;
+        private final File outputFile;
+
+        private volatile boolean started = false;
+        private volatile boolean done = false;
+        private volatile boolean cancelled = false;
+        private volatile Boolean result = false;
+
+        public URLDownloader(String url, File outputFile) throws MalformedURLException{
+            this.srcUrl = new URL(url);
+            this.outputFile = outputFile;
+        }
+
+        @Override
+        public void run() {
+            if(this.cancelled){
+                return;
+            }
+            started = true;
+
+            try {
+                this.result = doDownload();
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+            } finally {
+                this.done();
+            }
+
+        }
+
+        /**
+         * Return the result. Must be called after run is complete
+         * @return
+         */
+        public Boolean getResult(){
+            if(!this.done) throw new IllegalStateException("Must wait for run to finish before getting result");
+            return this.result;
+        }
+
+        private Boolean doDownload() throws IOException{
+
+            log.info("Downloading " + srcUrl + " to " + outputFile.getAbsolutePath());
+
+            HttpURLConnection conn = openConnection(this.srcUrl, null);
+
+            long contentLength = -1;
+            String contentLengthString = conn.getHeaderField("Content-Length");
+            if (contentLengthString != null) {
+                contentLength = Long.parseLong(contentLengthString);
+            }
+
+            InputStream is = null;
+            OutputStream out = null;
+
+            int downloaded = 0;
+            try {
+                is = conn.getInputStream();
+                out = new FileOutputStream(outputFile);
+
+                byte[] buf = new byte[64 * 1024];
+                int bytesRead = 0;
+                while (!this.cancelled && (bytesRead = is.read(buf)) != -1) {
+                    out.write(buf, 0, bytesRead);
+                    downloaded += bytesRead;
+                }
+                log.info("Download complete.  Total bytes downloaded = " + downloaded);
+            } finally {
+                if (is != null) is.close();
+                if (out != null) {
+                    out.flush();
+                    out.close();
+                }
+            }
+            long fileLength = outputFile.length();
+            if(contentLength > 0){
+                return contentLength == fileLength;
+            }else{
+                return null;
+            }
+        }
+
+        protected void done(){
+           this.done = true;
+        }
+
+        /**
+         * See {@link java.util.concurrent.FutureTask#cancel(boolean)}
+         * @param mayInterruptIfRunning
+         * @return
+         */
+        public boolean cancel(boolean mayInterruptIfRunning){
+            if(this.started && !mayInterruptIfRunning){
+                return false;
+            }
+            this.cancelled = true;
+            return true;
         }
     }
 
