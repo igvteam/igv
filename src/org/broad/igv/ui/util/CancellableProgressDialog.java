@@ -22,9 +22,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author Jacob Silterra
@@ -147,17 +144,9 @@ public class CancellableProgressDialog extends JDialog {
      */
     public static CancellableProgressDialog showCancellableProgressDialog(Frame dialogsParent, String title, final ActionListener cancelActionListener, ProgressMonitor monitor){
         final CancellableProgressDialog progressDialog = new CancellableProgressDialog(dialogsParent);
-        cancellableDialogs.add(progressDialog);
 
         progressDialog.setTitle(title);
         progressDialog.addCancelActionListener(cancelActionListener);
-        progressDialog.addCancelActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cancellableDialogs.remove(progressDialog);
-            }
-        });
-
 
         if(monitor != null && monitor instanceof IndefiniteProgressMonitor) progressDialog.getProgressBar().setIndeterminate(true);
 
@@ -178,13 +167,6 @@ public class CancellableProgressDialog extends JDialog {
         progressDialog.toFront();
 
         return progressDialog;
-    }
-
-
-    private static Set<CancellableProgressDialog> cancellableDialogs = Collections.synchronizedSet(new HashSet<CancellableProgressDialog>());
-
-    public static boolean hasCancellableProgressDialog() {
-        return !cancellableDialogs.isEmpty();
     }
 
 }
