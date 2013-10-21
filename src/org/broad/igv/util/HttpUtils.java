@@ -23,6 +23,8 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.CancellableProgressDialog;
+import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.stream.IGVSeekableHTTPStream;
 import org.broad.igv.util.stream.IGVUrlHelper;
 
@@ -31,6 +33,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.*;
 import java.security.KeyManagementException;
@@ -349,18 +353,46 @@ public class HttpUtils {
 
     }
 
+
+    /**
+     * Calls {@link #downloadFile(String, java.io.File, boolean)}
+     * with {@code showProgressDialog = false}
+     * @param url
+     * @param outputFile
+     * @return True/false for success, or null if success not known
+     * @throws IOException
+     */
+    public Boolean downloadFile(String url, File outputFile) throws IOException {
+        URLDownloader downloader = downloadFile(url, outputFile, false);
+        return downloader.getResult();
+    }
+
     /**
      *
      * @param url
      * @param outputFile
-     * @return Indicates success, or null if content length unknown (and hence success unknown)
+     * @param showProgressDialog Whether to show a cancellable progress dialog
+     * @return URLDownloader used to perform download
      * @throws IOException
      */
-    public Boolean downloadFile(String url, File outputFile) throws IOException {
-        URLDownloader urlDownloader = new URLDownloader(url, outputFile);
-        //TODO Allow cancelling?
-        urlDownloader.run();
-        return urlDownloader.getResult();
+    public URLDownloader downloadFile(String url, File outputFile, boolean showProgressDialog) throws IOException {
+        final URLDownloader urlDownloader = new URLDownloader(url, outputFile);
+        if(!showProgressDialog){
+            urlDownloader.run();
+            return urlDownloader;
+        }else{
+            ProgressMonitor monitor = new ProgressMonitor();
+            urlDownloader.setMonitor(monitor);
+            ActionListener cancelListener = new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    urlDownloader.cancel(true);
+                }
+            };
+            CancellableProgressDialog.showCancellableProgressDialog(IGV.getMainFrame(), "Downloading " + url, cancelListener, monitor);
+            LongRunningTask.submit(urlDownloader);
+            return urlDownloader;
+        }
     }
 
 
@@ -905,6 +937,8 @@ public class HttpUtils {
      */
     public class URLDownloader implements Runnable {
 
+        private ProgressMonitor monitor = null;
+
         private final URL srcUrl;
         private final File outputFile;
 
@@ -959,16 +993,33 @@ public class HttpUtils {
             InputStream is = null;
             OutputStream out = null;
 
-            int downloaded = 0;
+            long downloaded = 0;
+            long downSinceLast = 0;
+            String curStatus;
+            String msg1 = String.format("bytes downloaded of %s total", contentLength >= 0 ? contentLength : "unknown");
+            int perc = 0;
             try {
                 is = conn.getInputStream();
                 out = new FileOutputStream(outputFile);
 
                 byte[] buf = new byte[64 * 1024];
+                int counter = 0;
+                int interval = 100;
                 int bytesRead = 0;
                 while (!this.cancelled && (bytesRead = is.read(buf)) != -1) {
                     out.write(buf, 0, bytesRead);
                     downloaded += bytesRead;
+                    downSinceLast += bytesRead;
+                    counter = (counter + 1) % interval;
+                    if(counter == 0 && this.monitor != null){
+                        curStatus = String.format("%s %s", downloaded, msg1);
+                        this.monitor.updateStatus(curStatus);
+                        if(contentLength >= 0){
+                            perc = (int) ( (downSinceLast * 100) / contentLength);
+                            this.monitor.fireProgressChange(perc);
+                            if(perc >= 1) downSinceLast = 0;
+                        }
+                    }
                 }
                 log.info("Download complete.  Total bytes downloaded = " + downloaded);
             } finally {
@@ -980,7 +1031,12 @@ public class HttpUtils {
             }
             long fileLength = outputFile.length();
             if(contentLength > 0){
-                return contentLength == fileLength;
+                boolean knownComplete = contentLength == fileLength;
+                if(knownComplete && this.monitor != null){
+                    this.monitor.fireProgressChange(100);
+                    this.monitor.updateStatus("Done");
+                }
+                return knownComplete;
             }else{
                 return null;
             }
@@ -988,6 +1044,10 @@ public class HttpUtils {
 
         protected void done(){
            this.done = true;
+        }
+
+        public boolean isDone(){
+            return this.done;
         }
 
         /**
@@ -1001,6 +1061,10 @@ public class HttpUtils {
             }
             this.cancelled = true;
             return true;
+        }
+
+        public void setMonitor(ProgressMonitor monitor) {
+            this.monitor = monitor;
         }
     }
 

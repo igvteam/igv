@@ -158,6 +158,8 @@ public class CancellableProgressDialog extends JDialog {
                         progressDialog.setStatus("" + evt.getNewValue());
                     } else if (evt.getPropertyName().equals(ProgressMonitor.PROGRESS_PROPERTY) && (Integer) evt.getNewValue() >= 100) {
                         progressDialog.cancelButton.doClick(1);
+                    }else if (evt.getPropertyName().equals(ProgressMonitor.PROGRESS_PROPERTY)) {
+                        progressDialog.getProgressBar().setValue((Integer) evt.getNewValue());
                     }
                 }
             });

@@ -1233,13 +1233,17 @@ public class GenomeManager {
             File localSequenceFile = new File(targetDir, sequenceFileName);
             //TODO Progress dialog, make cancellable
             // Copy file directly from the server to local area
-            HttpUtils.getInstance().downloadFile(descriptor.getSequenceLocation(), localSequenceFile);
-            //Download index file
-            File targetIndex = new File(localSequenceFile + ".fai");
-            HttpUtils.getInstance().downloadFile(descriptor.getSequenceLocation() + ".fai", targetIndex);
+            HttpUtils.URLDownloader urlDownloader = HttpUtils.getInstance().downloadFile(descriptor.getSequenceLocation(), localSequenceFile, true);
 
-            //Rewrite properties file to point to local fasta
-            success = rewriteSequenceLocation(targetGenomeFile, localSequenceFile.getAbsolutePath());
+            success = urlDownloader.getResult();
+            if(success){
+                //Download index file. Don't both with cancellation, because typically small enough file
+                File targetIndex = new File(localSequenceFile + ".fai");
+                HttpUtils.getInstance().downloadFile(descriptor.getSequenceLocation() + ".fai", targetIndex);
+
+                //Rewrite properties file to point to local fasta
+                success = rewriteSequenceLocation(targetGenomeFile, localSequenceFile.getAbsolutePath());
+            }
         }
 
         return success;
