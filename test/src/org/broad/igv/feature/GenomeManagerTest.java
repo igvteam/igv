@@ -152,12 +152,13 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
 
         String genId = "NC_001802";
         String genomePath = "http://igv.broadinstitute.org/genomes/" + genId + ".genome";
-        String outPath = TestUtils.TMP_OUTPUT_DIR + "test_genome_path.genome";
-        File outFile = new File(outPath);
-        boolean success = GenomeManager.getInstance().downloadWholeGenome(genomePath, outFile);
+        String outDirPath = TestUtils.TMP_OUTPUT_DIR;
+        File outDirFile = new File(outDirPath);
+        File outGenomeFile = new File(outDirPath, genId + ".genome");
+        boolean success = GenomeManager.getInstance().downloadWholeGenome(genomePath, outDirFile);
         assertTrue("Download of genome failed", success);
 
-        assertTrue(outFile.exists());
+        assertTrue(outGenomeFile.exists());
         File fastaFile = new File(TestUtils.TMP_OUTPUT_DIR, genId + ".fna");
         assertTrue("fasta file not found: " + fastaFile.getAbsolutePath(), fastaFile.exists());
 
@@ -166,7 +167,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         //This is just a unit test thing, copying the downloaded .genome file should have the same info
         //and it makes the tests pass
         File tmpOut = new File(TestUtils.TMP_OUTPUT_DIR + "t2.genome");
-        FileUtils.copyFile(outFile, tmpOut);
+        FileUtils.copyFile(outGenomeFile, tmpOut);
         GenomeDescriptor descriptor = GenomeManager.getInstance().parseGenomeArchiveFile(tmpOut);
         assertEquals(fastaFile.getAbsolutePath(), descriptor.getSequenceLocation());
 

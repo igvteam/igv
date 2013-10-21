@@ -17,14 +17,20 @@
 
 package org.broad.igv.ui;
 
+import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.util.FileDialogUtils;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -56,6 +62,8 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
         });
 
         initData(inputListItems);
+
+        downloadButton.setVisible(!Globals.isProduction());
     }
 
     private void initData(Collection<GenomeListItem> inputListItems) {
@@ -116,6 +124,29 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
         return selectedValuesList;
     }
 
+    private void downloadButtonActionPerformed(ActionEvent e) {
+        List<GenomeListItem> selectedGenomeList = genomeList.getSelectedValuesList();
+        if(selectedGenomeList.size() == 1){
+            downloadGenome(selectedGenomeList.get(0));
+        }else{
+            MessageUtils.showMessage("Please select 1 genome to download");
+        }
+
+    }
+
+    private void downloadGenome(GenomeListItem genomeListItem) {
+        File initialDir = PreferenceManager.getInstance().getLastGenomeImportDirectory();
+        File targetDir = FileDialogUtils.chooseDirectory("Select directory for .genome and sequence", initialDir);
+        if(targetDir == null) return;
+
+        try {
+            GenomeManager.getInstance().downloadWholeGenome(genomeListItem.getLocation(), targetDir);
+        } catch (IOException e) {
+            String msg = String.format("Error downloading genome %s from %s: %s", genomeListItem.getId(), genomeListItem.getLocation(), e.getMessage());
+            MessageUtils.showErrorMessage(msg, e);
+        }
+    }
+
     public boolean isCanceled() {
         return isCanceled;
     }
@@ -138,6 +169,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
         scrollPane1 = new JScrollPane();
         genomeList = new JList7<GenomeListItem>();
         buttonBar = new JPanel();
+        downloadButton = new JButton();
         okButton = new JButton();
         cancelButton = new JButton();
 
@@ -226,6 +258,18 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                 ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
                 ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
 
+                //---- downloadButton ----
+                downloadButton.setText("Download Genome");
+                downloadButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        downloadButtonActionPerformed(e);
+                    }
+                });
+                buttonBar.add(downloadButton, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 5), 0, 0));
+
                 //---- okButton ----
                 okButton.setText("OK");
                 okButton.addActionListener(new ActionListener() {
@@ -282,6 +326,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
     private JScrollPane scrollPane1;
     private JList7<GenomeListItem> genomeList;
     private JPanel buttonBar;
+    private JButton downloadButton;
     private JButton okButton;
     private JButton cancelButton;
     // End of variables declaration//GEN-END:variables

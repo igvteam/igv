@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "5.1.0.2.64" Java: "1.6.0_26" encoding: "UTF-8"
+JFDML JFormDesigner: "5.2.0.0.54" Java: "1.6.0_51" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -77,6 +77,11 @@ new FormModel {
 				} ) {
 					name: "buttonBar"
 					"border": new javax.swing.border.EmptyBorder( 12, 0, 0, 0 )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "downloadButton"
+						"text": "Download Genome"
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "downloadButtonActionPerformed", true ) )
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
 					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "okButton"
 						"text": "OK"

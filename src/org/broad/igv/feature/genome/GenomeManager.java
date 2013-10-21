@@ -1193,12 +1193,12 @@ public class GenomeManager {
      * Downloads .genome file, INCLUDING fasta file it points to,
      * and rewrites the property.txt file to point to the local version
      * @param srcGenome
-     * @param targetFile
+     * @param targetDir
      * @return boolean indicating success or failure
      *
      * @throws IOException
      */
-    public boolean downloadWholeGenome(String srcGenome, File targetFile) throws IOException{
+    public boolean downloadWholeGenome(String srcGenome, File targetDir) throws IOException{
 
         boolean success = false;
 
@@ -1206,16 +1206,20 @@ public class GenomeManager {
         boolean isFastaFile = FastaUtils.isFastaPath(srcGenomeArchive.getAbsolutePath());
         GenomeDescriptor descriptor = parseGenomeArchiveFile(srcGenomeArchive);
 
-        FileUtils.copyFile(srcGenomeArchive, targetFile);
+        File targetGenomeFile = new File(targetDir, srcGenomeArchive.getName());
+
+        //Copy .genome (or fasta) file
+        FileUtils.copyFile(srcGenomeArchive, targetGenomeFile);
 
         if(isFastaFile){
             //Simple case, just need to copy fasta and create index
-            File destIndexFile = new File(targetFile.getAbsolutePath() + ".fai");
-            File fastaIndexFile = new File(srcGenomeArchive.getAbsolutePath() + ".fai");
-            if(fastaIndexFile.canRead()){
-                FileUtils.copyFile(fastaIndexFile, destIndexFile);
+            //Copy was done above
+            File destIndexFile = new File(targetGenomeFile.getAbsolutePath() + ".fai");
+            File srcIndexFile = new File(srcGenomeArchive.getAbsolutePath() + ".fai");
+            if(srcIndexFile.canRead()){
+                FileUtils.copyFile(srcIndexFile, destIndexFile);
             }else{
-                FastaUtils.createIndexFile(targetFile.getAbsolutePath(), destIndexFile.getAbsolutePath());
+                FastaUtils.createIndexFile(srcGenomeArchive.getAbsolutePath(), destIndexFile.getAbsolutePath());
             }
             success = true;
         }else if(descriptor.isFasta()){
@@ -1226,13 +1230,16 @@ public class GenomeManager {
 
             String[] portions = sequencePath.split("[\\,/]");
             String sequenceFileName = portions[portions.length - 1];
-            File localSequenceFile = new File(targetFile.getParent(), sequenceFileName);
+            File localSequenceFile = new File(targetDir, sequenceFileName);
             //TODO Progress dialog, make cancellable
             // Copy file directly from the server to local area
             HttpUtils.getInstance().downloadFile(descriptor.getSequenceLocation(), localSequenceFile);
+            //Download index file
+            File targetIndex = new File(localSequenceFile + ".fai");
+            HttpUtils.getInstance().downloadFile(descriptor.getSequenceLocation() + ".fai", targetIndex);
 
             //Rewrite properties file to point to local fasta
-            success = rewriteSequenceLocation(targetFile, localSequenceFile.getAbsolutePath());
+            success = rewriteSequenceLocation(targetGenomeFile, localSequenceFile.getAbsolutePath());
         }
 
         return success;
