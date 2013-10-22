@@ -27,6 +27,8 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeDescriptor;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
+import org.broad.igv.feature.tribble.GFFCodec;
+import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.sam.reader.AlignmentIndexer;
 import org.broad.igv.tdf.TDFUtils;
 import org.broad.igv.tools.converters.BamToBed;
@@ -43,6 +45,7 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.converters.DensitiesToBedGraph;
 import org.broad.igv.variant.util.VCFtoBed;
+import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.TribbleException;
 import org.broad.tribble.index.Index;
@@ -309,19 +312,7 @@ public class IgvTools {
                 validateArgsLength(nonOptionArgs, 4, basic_syntax);
                 int maxZoomValue = (Integer) parser.getOptionValue(maxZoomOption, MAX_ZOOM);
                 String ofile = nonOptionArgs[2];
-
-                //Output will be written to stdout instead of file,
-                //need to redirect user messages
-                if(ofile.equals(STDOUT_FILE_STR)){
-                    userMessageWriter = System.err;
-
-                    ConsoleAppender appender = (ConsoleAppender) Logger.getRootLogger().getAppender(CONSOLE_APPENDER_NAME);
-                    appender.setTarget(ConsoleAppender.SYSTEM_ERR);
-                    appender.activateOptions();
-
-                    //See log4j.properties file
-                    Logger.getRootLogger().removeAppender("stdout");
-                }
+                setWriteToStdOout(ofile);
 
                 String genomeId = nonOptionArgs[3];
 
@@ -382,6 +373,11 @@ public class IgvTools {
                 validateArgsLength(nonOptionArgs, 3, "Error in syntax. Expected: " + command + " [options] inputfile outputdir");
                 String outputDirectory = nonOptionArgs[2];
                 GFFParser.splitFileByType(ifile, outputDirectory);
+            } else if(command.equals("gff3tobed")){
+                validateArgsLength(nonOptionArgs, 3, "Error in syntax. Expected: " + command + " inputfile outputfile");
+                String ofile = nonOptionArgs[2];
+                setWriteToStdOout(ofile);
+                GFF3ToBed(ifile, ofile);
             } else if (command.toLowerCase().equals("gcttoigv")) {
                 validateArgsLength(nonOptionArgs, 4, basic_syntax + " genomeId");
                 String ofile = nonOptionArgs[2];
@@ -446,6 +442,64 @@ public class IgvTools {
         } catch (IOException e) {
             throw new PreprocessingException("Unexpected IO error: ", e);
         }
+    }
+
+    private void GFF3ToBed(String ifile, String ofile) throws FileNotFoundException{
+        IGVBEDCodec outCodec = new IGVBEDCodec();
+        GFFParser parser = new GFFParser();
+        GFFCodec codec = new GFFCodec(GFFCodec.Version.GFF3, null);
+        BufferedReader reader = null;
+        PrintStream outStream = System.out;
+        if(!ofile.equals(STDOUT_FILE_STR)){
+            outStream = new PrintStream(new FileOutputStream(ofile));
+        }
+        try {
+            reader = ParsingUtils.openBufferedReader(ifile);
+            List<Feature> features = parser.loadFeatures(reader, null, codec);
+            for (Feature feat : features) {
+                String encoded = outCodec.encode(feat);
+                outStream.print(encoded);
+                outStream.print('\n');
+            }
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            if (reader != null){
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+            if (outStream != null) {
+                outStream.flush();
+                outStream.close();
+            }
+        }
+    }
+
+    /**
+     * if ofile.equals(STDOUT_FILE_STR), write output to stdout. This also means redirecting log statements
+     * to someplace other than stdout, we use stderr
+     * @param ofile
+     * @return Whether output will be written to stdout
+     */
+    private boolean setWriteToStdOout(String ofile) {
+        //Output will be written to stdout instead of file,
+        //need to redirect user messages
+        if(ofile.equals(STDOUT_FILE_STR)){
+
+            userMessageWriter = System.err;
+
+            ConsoleAppender appender = (ConsoleAppender) Logger.getRootLogger().getAppender(CONSOLE_APPENDER_NAME);
+            appender.setTarget(ConsoleAppender.SYSTEM_ERR);
+            appender.activateOptions();
+
+            //See log4j.properties file
+            Logger.getRootLogger().removeAppender("stdout");
+            return true;
+        }
+        return false;
     }
 
 
