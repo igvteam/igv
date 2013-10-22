@@ -389,7 +389,7 @@ public class HttpUtils {
                     urlDownloader.cancel(true);
                 }
             };
-            CancellableProgressDialog.showCancellableProgressDialog(IGV.getMainFrame(), "Downloading " + url, cancelListener, monitor);
+            CancellableProgressDialog dialog = CancellableProgressDialog.showCancellableProgressDialog(IGV.getMainFrame(), "Downloading " + url, cancelListener, monitor);
             LongRunningTask.submit(urlDownloader);
             return urlDownloader;
         }

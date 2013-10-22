@@ -1231,8 +1231,9 @@ public class GenomeManager {
             String[] portions = sequencePath.split("[\\,/]");
             String sequenceFileName = portions[portions.length - 1];
             File localSequenceFile = new File(targetDir, sequenceFileName);
-            //TODO Progress dialog, make cancellable
+
             // Copy file directly from the server to local area
+            // Shows cancellable dialog
             HttpUtils.URLDownloader urlDownloader = HttpUtils.getInstance().downloadFile(descriptor.getSequenceLocation(), localSequenceFile, true);
 
             success = urlDownloader.getResult();
@@ -1303,7 +1304,7 @@ public class GenomeManager {
             zipOutputStream = new ZipOutputStream(new FileOutputStream(tmpZipFile));
             while(entries.hasMoreElements()){
                 ZipEntry curEntry = entries.nextElement();
-                ZipEntry writeEntry = curEntry;
+                ZipEntry writeEntry = null;
 
                 if(curEntry.getName().equals(Globals.GENOME_ARCHIVE_PROPERTY_FILE_NAME)){
                     writeEntry = new ZipEntry(Globals.GENOME_ARCHIVE_PROPERTY_FILE_NAME);
@@ -1311,6 +1312,13 @@ public class GenomeManager {
                     zipOutputStream.putNextEntry(writeEntry);
                     zipOutputStream.write(newPropertyBytes);
                     continue;
+                }else{
+                    //Because the compressed size can vary,
+                    //we generate a new ZipEntry and copy some attributes
+                    writeEntry = new ZipEntry(curEntry.getName());
+                    writeEntry.setSize(curEntry.getSize());
+                    writeEntry.setComment(curEntry.getComment());
+                    writeEntry.setTime(curEntry.getTime());
                 }
 
                 zipOutputStream.putNextEntry(writeEntry);
@@ -1318,7 +1326,7 @@ public class GenomeManager {
                 try{
                     tmpIS = targetZipFile.getInputStream(writeEntry);
                     int bytes = IOUtils.copy(tmpIS, zipOutputStream);
-                    log.info(bytes + " bytes written");
+                    log.debug(bytes + " bytes written to " + targetFile);
                 }finally{
                     if(tmpIS != null) tmpIS.close();
                 }
