@@ -802,39 +802,48 @@ public class TrackMenuUtils {
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {
-                if (selectedTracks.isEmpty()) {
-                    return;
-                }
-
-                StringBuffer buffer = new StringBuffer();
-                for (Track track : selectedTracks) {
-                    buffer.append("\n\t");
-                    buffer.append(track.getName());
-                }
-                String deleteItems = buffer.toString();
-
-                JTextArea textArea = new JTextArea();
-                textArea.setEditable(false);
-                JScrollPane scrollPane = new JScrollPane(textArea);
-                textArea.setText(deleteItems);
-
-                JOptionPane optionPane = new JOptionPane(scrollPane,
-                        JOptionPane.PLAIN_MESSAGE,
-                        JOptionPane.YES_NO_OPTION);
-                optionPane.setPreferredSize(new Dimension(550, 500));
-                JDialog dialog = optionPane.createDialog(IGV.getMainFrame(), "Remove The Following Tracks");
-                dialog.setVisible(true);
-
-                Object choice = optionPane.getValue();
-                if ((choice == null) || (JOptionPane.YES_OPTION != ((Integer) choice).intValue())) {
-                    return;
-                }
-
-                IGV.getInstance().removeTracks(selectedTracks);
-                IGV.getInstance().doRefresh();
+                removeTracksAction(selectedTracks);
             }
         });
         return item;
+    }
+
+    /**
+     * Display a dialog to the user asking to confirm if they want to remove the
+     * selected tracks
+     * @param selectedTracks
+     */
+    public static void removeTracksAction(final Collection<Track> selectedTracks){
+        if (selectedTracks.isEmpty()) {
+            return;
+        }
+
+        StringBuffer buffer = new StringBuffer();
+        for (Track track : selectedTracks) {
+            buffer.append("\n\t");
+            buffer.append(track.getName());
+        }
+        String deleteItems = buffer.toString();
+
+        JTextArea textArea = new JTextArea();
+        textArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        textArea.setText(deleteItems);
+
+        JOptionPane optionPane = new JOptionPane(scrollPane,
+                JOptionPane.PLAIN_MESSAGE,
+                JOptionPane.YES_NO_OPTION);
+        optionPane.setPreferredSize(new Dimension(550, 500));
+        JDialog dialog = optionPane.createDialog(IGV.getMainFrame(), "Remove The Following Tracks");
+        dialog.setVisible(true);
+
+        Object choice = optionPane.getValue();
+        if ((choice == null) || (JOptionPane.YES_OPTION != ((Integer) choice).intValue())) {
+            return;
+        }
+
+        IGV.getInstance().removeTracks(selectedTracks);
+        IGV.getInstance().doRefresh();
     }
 
 

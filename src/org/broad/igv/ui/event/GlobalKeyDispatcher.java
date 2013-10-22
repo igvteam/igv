@@ -22,6 +22,7 @@ import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -113,6 +114,9 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         final KeyStroke statusWindowKey = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK, false);
         final KeyStroke scatterplotKey = KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_MASK, false);
 
+        final KeyStroke delKey = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0, false);
+        final KeyStroke backspaceKey = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0, false);
+
         final Action toolAction = new EnableWrappedAction(new AbstractAction() {
             
             public void actionPerformed(ActionEvent e) {
@@ -166,7 +170,6 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                                 currentRange.getStart(),
                                 currentRange.getEnd(),
                                 null);
-                // TODO -- get this ugly reference to IGV out of here
                 IGV.getInstance().addRegionOfInterest(regionOfInterest);
             }
         });
@@ -184,7 +187,6 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                                 center,
                                 center + 1,
                                 null);
-                // TODO -- get this ugly reference to IGV out of here
                 IGV.getInstance().addRegionOfInterest(regionOfInterest);
             }
         });
@@ -216,6 +218,17 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                 }
             }
         };
+
+        final Action delTracksAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TrackMenuUtils.removeTracksAction(IGV.getInstance().getSelectedTracks());
+            }
+        };
+
+        getInputMap().put(delKey, "deleteTracks");
+        getInputMap().put(backspaceKey, "deleteTracks");
+        getActionMap().put("deleteTracks", delTracksAction);
 
         getInputMap().put(nextKey, "nextFeature");
         getActionMap().put("nextFeature", nextAction);
