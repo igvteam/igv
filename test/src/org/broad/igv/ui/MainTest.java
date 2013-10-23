@@ -14,6 +14,7 @@ package org.broad.igv.ui;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.TestUtils;
 import org.junit.*;
@@ -130,7 +131,7 @@ public class MainTest {
     }
 
     /**
-     * Test loading a genome not in the display list
+     * Test loading a genome not in the display list , by id
      *
      * @throws Exception
      */
@@ -165,7 +166,7 @@ public class MainTest {
     }
 
     /**
-     * Test loading a genome not in the display list, by full path
+     * Test loading a fasta not in the display list, by full path
      *
      * @throws Exception
      */
@@ -178,6 +179,28 @@ public class MainTest {
         IGV igv = startMain(args, 5000);
 
         assertEquals(igv.getGenomeManager().getGenomeId(), genomeId);
+    }
+
+    /**
+     * Test loading a fasta in working directory
+     * This was GH #66 and IGV-2042
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testLoadFastaWorkDir() throws Exception {
+
+        String genomeFiName = "ecoli_out.padded.fasta";
+        String srcGenomePath = TestUtils.DATA_DIR + "fasta/" + genomeFiName;
+        File destFile = new File(genomeFiName);
+        destFile.delete();
+        destFile.deleteOnExit();
+        FileUtils.copyFile(new File(srcGenomePath), destFile);
+
+        String[] args = new String[]{"-g", genomeFiName};
+        IGV igv = startMain(args, 5000);
+
+        assertEquals(igv.getGenomeManager().getGenomeId(), genomeFiName);
     }
 
     private IGV startMain(String[] args, long timeout) {

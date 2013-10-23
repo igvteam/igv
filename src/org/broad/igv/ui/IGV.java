@@ -644,7 +644,7 @@ public class IGV {
 
         File file = new File(path);
         if (file.exists()) {
-            File directory = file.getParentFile();
+            File directory = file.getAbsoluteFile().getParentFile();
             PreferenceManager.getInstance().setLastGenomeImportDirectory(directory);
         }
 
