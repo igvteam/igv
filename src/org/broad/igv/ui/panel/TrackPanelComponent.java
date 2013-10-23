@@ -27,6 +27,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,6 +55,25 @@ abstract public class TrackPanelComponent extends JPanel {
         this.trackPanel = trackPanel;
         setFocusable(true);
         mouseRegions = new ArrayList();
+
+        initKeyDispatcher();
+    }
+
+    private void initKeyDispatcher(){
+        final Action delTracksAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TrackMenuUtils.removeTracksAction(IGV.getInstance().getSelectedTracks());
+            }
+        };
+
+
+        final KeyStroke delKey = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0, false);
+        final KeyStroke backspaceKey = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0, false);
+
+        getInputMap().put(delKey, "deleteTracks");
+        getInputMap().put(backspaceKey, "deleteTracks");
+        getActionMap().put("deleteTracks", delTracksAction);
     }
 
     public TrackPanel getTrackPanel() {
