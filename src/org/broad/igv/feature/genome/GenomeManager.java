@@ -31,11 +31,9 @@ import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressMonitor;
-import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.Utilities;
+import org.broad.igv.util.*;
 import org.broad.igv.util.collections.CI;
+import org.broad.tribble.util.ParsingUtils;
 
 import java.awt.*;
 import java.io.*;
@@ -507,7 +505,7 @@ public class GenomeManager {
     }
 
     /**
-     * Refresh a locally cached genome
+     * Refresh a locally cached genome if it's
      *
      * @param cachedFile
      * @param genomeArchiveURL
@@ -515,8 +513,6 @@ public class GenomeManager {
      */
     private void refreshCache(File cachedFile, URL genomeArchiveURL) {
         // Look in cache first
-
-
         try {
             if (cachedFile.exists()) {
                 boolean remoteModfied = !HttpUtils.getInstance().compareResources(cachedFile, genomeArchiveURL);
@@ -527,12 +523,11 @@ public class GenomeManager {
                 if (forceUpdate) {
                     log.info("Refreshing genome: " + genomeArchiveURL.toString());
                     File tmpFile = new File(cachedFile.getAbsolutePath() + ".tmp");
-                    if (HttpUtils.getInstance().downloadFile(genomeArchiveURL.toExternalForm(), tmpFile)) {
+                    if (HttpUtils.getInstance().downloadFile(genomeArchiveURL.toExternalForm(), tmpFile).isSuccess()) {
                         FileUtils.copyFile(tmpFile, cachedFile);
                         tmpFile.deleteOnExit();
                     }
                 }
-
             } else {
                 // Copy file directly from the server to local cache.
                 HttpUtils.getInstance().downloadFile(genomeArchiveURL.toExternalForm(), cachedFile);
@@ -966,7 +961,7 @@ public class GenomeManager {
     }
 
     /**
-     * Method description
+     * Delete .genome files from the cache directory
      */
     public void clearGenomeCache() {
 
@@ -1192,62 +1187,88 @@ public class GenomeManager {
     /**
      * Downloads .genome file, INCLUDING fasta file it points to,
      * and rewrites the property.txt file to point to the local version
-     * @param srcGenome
+     * @param srcPath
      * @param targetDir
-     * @return boolean indicating success or failure
      *
      * @throws IOException
      */
-    public boolean downloadWholeGenome(String srcGenome, File targetDir) throws IOException{
+    public RunnableResult downloadWholeGenome(String srcPath, File targetDir) throws IOException{
 
-        boolean success = false;
-
-        File srcGenomeArchive = getArchiveFile(srcGenome);
-        boolean isFastaFile = FastaUtils.isFastaPath(srcGenomeArchive.getAbsolutePath());
-        GenomeDescriptor descriptor = parseGenomeArchiveFile(srcGenomeArchive);
-
-        File targetGenomeFile = new File(targetDir, srcGenomeArchive.getName());
-
-        //Copy .genome (or fasta) file
-        FileUtils.copyFile(srcGenomeArchive, targetGenomeFile);
+        //Whether the srcGenome is simply a fasta file
+        boolean isFastaFile = FastaUtils.isFastaPath(srcPath);
+        boolean showProgressDialog = !Globals.isHeadless() && !Globals.isBatch();
+        String srcFileName = Utilities.getFileNameFromURL(srcPath);
 
         if(isFastaFile){
             //Simple case, just need to copy fasta and create index
-            //Copy was done above
-            File destIndexFile = new File(targetGenomeFile.getAbsolutePath() + ".fai");
-            File srcIndexFile = new File(srcGenomeArchive.getAbsolutePath() + ".fai");
-            if(srcIndexFile.canRead()){
-                FileUtils.copyFile(srcIndexFile, destIndexFile);
-            }else{
-                FastaUtils.createIndexFile(srcGenomeArchive.getAbsolutePath(), destIndexFile.getAbsolutePath());
-            }
-            success = true;
-        }else if(descriptor.isFasta()){
+            return downloadFasta(srcPath, targetDir, srcFileName , showProgressDialog);
 
+        }else if(srcFileName.endsWith(Globals.GENOME_FILE_EXTENSION)){
             //Most useful case of a .genome file, which contains nearly everything in it, except the
             //sequence which is a fasta file stored elsewhere
+            String genomeName = Utilities.getFileNameFromURL(srcPath);
+            File srcGenomeArchive = new File(targetDir, genomeName);
+            RunnableResult genomeResult = HttpUtils.getInstance().downloadFile(srcPath, srcGenomeArchive);
+            if(!genomeResult.isSuccess()) return genomeResult;
+
+            GenomeDescriptor descriptor = parseGenomeArchiveFile(srcGenomeArchive);
+
+            File targetGenomeFile = new File(targetDir, srcGenomeArchive.getName());
             String sequencePath = descriptor.getSequenceLocation();
 
-            String[] portions = sequencePath.split("[\\,/]");
-            String sequenceFileName = portions[portions.length - 1];
+            boolean seqIsFasta = FastaUtils.isFastaPath(sequencePath);
+            if(!seqIsFasta){
+                throw new IllegalArgumentException("Genome sequence must be a single fasta file");
+            }
+
+            String sequenceFileName = Utilities.getFileNameFromURL(sequencePath);
             File localSequenceFile = new File(targetDir, sequenceFileName);
 
             // Copy file directly from the server to local area
             // Shows cancellable dialog
-            HttpUtils.URLDownloader urlDownloader = HttpUtils.getInstance().downloadFile(descriptor.getSequenceLocation(), localSequenceFile, true);
-
-            success = urlDownloader.getResult();
-            if(success){
-                //Download index file. Don't both with cancellation, because typically small enough file
-                File targetIndex = new File(localSequenceFile + ".fai");
-                HttpUtils.getInstance().downloadFile(descriptor.getSequenceLocation() + ".fai", targetIndex);
-
+            RunnableResult fastaResult = downloadFasta(sequencePath, targetDir, sequenceFileName, showProgressDialog);
+            if(fastaResult.isSuccess()){
                 //Rewrite properties file to point to local fasta
-                success = rewriteSequenceLocation(targetGenomeFile, localSequenceFile.getAbsolutePath());
+                rewriteSequenceLocation(targetGenomeFile, localSequenceFile.getAbsolutePath());
             }
+            return fastaResult;
+        }else{
+            throw new IllegalArgumentException("Unknown file type. Cannot download " + srcPath);
+        }
+    }
+
+
+    /**
+     * Download a fasta file. Also attempts to download the index, and create an index
+     * if that download fails
+     * @param fastaPath  Full source path of fasta
+     * @param targetDir  Destination directory for fasta file
+     * @param targetName Destination file name for fasta file
+     * @param showProgressDialog Whether to show progress dialog during download
+     * @return
+     * @throws IOException
+     */
+    private RunnableResult downloadFasta(String fastaPath, File targetDir, String targetName, boolean showProgressDialog) throws IOException{
+        //Simple case, just need to copy fasta and create index
+        File destFile = new File(targetDir, targetName);
+        //TODO PROMPT TO OVERWRITE IF FILE EXISTS
+        HttpUtils.URLDownloader urlDownloader = HttpUtils.getInstance().downloadFile(fastaPath, destFile, showProgressDialog);
+        RunnableResult fastaResult = urlDownloader.getResult();
+        //If not successful for whatever reason, we don't get the index
+        if(!fastaResult.isSuccess()) return fastaResult;
+
+        File destIndexFile = new File(destFile.getAbsolutePath() + ".fai");
+        String srcIndexPath = fastaPath + ".fai";
+        RunnableResult idxResult = null;
+        if(ParsingUtils.resourceExists(srcIndexPath)){
+            idxResult = HttpUtils.getInstance().downloadFile(srcIndexPath, destIndexFile);
+        }
+        //If remote fasta doesn't exist or download failed, we create our own index
+        if(idxResult == null || idxResult == RunnableResult.FAILURE){
+            FastaUtils.createIndexFile(destFile.getAbsolutePath(), destIndexFile.getAbsolutePath());
         }
 
-        return success;
+        return fastaResult;
     }
 
     /**

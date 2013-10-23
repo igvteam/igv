@@ -194,6 +194,6 @@ public class FastaUtils {
 
     public static boolean isFastaPath(String absolutePath) {
         String pth = absolutePath.toLowerCase();
-        return pth.endsWith(".fa") || pth.endsWith(".fasta");
+        return pth.endsWith(".fa") || pth.endsWith(".fasta") || pth.endsWith(".fna");
     }
 }

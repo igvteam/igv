@@ -147,7 +147,7 @@ class FeatureTrackUtils {
             }
         };
 
-        final CancellableProgressDialog dialog = CancellableProgressDialog.showCancellableProgressDialog(IGV.getMainFrame(), "Searching...", cancelListener, monitor);
+        final CancellableProgressDialog dialog = CancellableProgressDialog.showCancellableProgressDialog(IGV.getMainFrame(), "Searching...", cancelListener, true, monitor);
         dialog.getProgressBar().setIndeterminate(true);
 
         monitor.addPropertyChangeListener(new PropertyChangeListener() {

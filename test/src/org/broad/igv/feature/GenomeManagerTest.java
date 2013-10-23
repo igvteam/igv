@@ -19,6 +19,7 @@ package org.broad.igv.feature;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.genome.*;
 import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.RunnableResult;
 import org.broad.igv.util.TestUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -155,8 +156,8 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         String outDirPath = TestUtils.TMP_OUTPUT_DIR;
         File outDirFile = new File(outDirPath);
         File outGenomeFile = new File(outDirPath, genId + ".genome");
-        boolean success = GenomeManager.getInstance().downloadWholeGenome(genomePath, outDirFile);
-        assertTrue("Download of genome failed", success);
+        RunnableResult result = GenomeManager.getInstance().downloadWholeGenome(genomePath, outDirFile);
+        assertTrue("Download of genome failed", result.isSuccess());
 
         assertTrue(outGenomeFile.exists());
         File fastaFile = new File(TestUtils.TMP_OUTPUT_DIR, genId + ".fna");

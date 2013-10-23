@@ -359,10 +359,10 @@ public class HttpUtils {
      * with {@code showProgressDialog = false}
      * @param url
      * @param outputFile
-     * @return True/false for success, or null if success not known
+     * @return RunnableResult
      * @throws IOException
      */
-    public Boolean downloadFile(String url, File outputFile) throws IOException {
+    public RunnableResult downloadFile(String url, File outputFile) throws IOException {
         URLDownloader downloader = downloadFile(url, outputFile, false);
         return downloader.getResult();
     }
@@ -383,13 +383,13 @@ public class HttpUtils {
         }else{
             ProgressMonitor monitor = new ProgressMonitor();
             urlDownloader.setMonitor(monitor);
-            ActionListener cancelListener = new ActionListener() {
+            ActionListener buttonListener = new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     urlDownloader.cancel(true);
                 }
             };
-            CancellableProgressDialog dialog = CancellableProgressDialog.showCancellableProgressDialog(IGV.getMainFrame(), "Downloading " + url, cancelListener, monitor);
+            CancellableProgressDialog dialog = CancellableProgressDialog.showCancellableProgressDialog(IGV.getMainFrame(), "Downloading " + url, buttonListener, false, monitor);
             LongRunningTask.submit(urlDownloader);
             return urlDownloader;
         }
@@ -945,7 +945,7 @@ public class HttpUtils {
         private volatile boolean started = false;
         private volatile boolean done = false;
         private volatile boolean cancelled = false;
-        private volatile Boolean result = false;
+        private volatile RunnableResult result;
 
         public URLDownloader(String url, File outputFile) throws MalformedURLException{
             this.srcUrl = new URL(url);
@@ -973,12 +973,12 @@ public class HttpUtils {
          * Return the result. Must be called after run is complete
          * @return
          */
-        public Boolean getResult(){
+        public RunnableResult getResult(){
             if(!this.done) throw new IllegalStateException("Must wait for run to finish before getting result");
             return this.result;
         }
 
-        private Boolean doDownload() throws IOException{
+        private RunnableResult doDownload() throws IOException{
 
             log.info("Downloading " + srcUrl + " to " + outputFile.getAbsolutePath());
 
@@ -1030,16 +1030,21 @@ public class HttpUtils {
                 }
             }
             long fileLength = outputFile.length();
-            if(contentLength > 0){
-                boolean knownComplete = contentLength == fileLength;
-                if(knownComplete && this.monitor != null){
+
+            if(this.cancelled) return RunnableResult.CANCELLED;
+
+            boolean knownComplete = contentLength == fileLength;
+            //Assume success if file length not known
+            if(knownComplete || contentLength < 0){
+                if(this.monitor != null){
                     this.monitor.fireProgressChange(100);
                     this.monitor.updateStatus("Done");
                 }
-                return knownComplete;
+                return RunnableResult.SUCCESS;
             }else{
-                return null;
+                return RunnableResult.FAILURE;
             }
+
         }
 
         protected void done(){

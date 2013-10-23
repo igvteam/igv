@@ -17,14 +17,14 @@
 
 package org.broad.igv.ui;
 
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.LongRunningTask;
+import org.broad.igv.util.RunnableResult;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -136,9 +136,10 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
     }
 
     private void downloadGenome(final GenomeListItem genomeListItem) {
-        File initialDir = PreferenceManager.getInstance().getLastGenomeImportDirectory();
-        final File targetDir = FileDialogUtils.chooseDirectory("Select directory for .genome and sequence", initialDir);
-        if (targetDir == null) return;
+        final File targetDir = new File(DirectoryManager.getGenomeCacheDirectory(), "permanent");
+        if(!targetDir.exists()){
+            targetDir.mkdirs();
+        }
 
         setVisible(false);
         Runnable runnable = new Runnable() {
@@ -146,7 +147,10 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
             public void run() {
 
                 try {
-                    GenomeManager.getInstance().downloadWholeGenome(genomeListItem.getLocation(), targetDir);
+                    RunnableResult result = GenomeManager.getInstance().downloadWholeGenome(genomeListItem.getLocation(), targetDir);
+                    if(result == RunnableResult.FAILURE){
+                        throw new IOException("Unknown Failure");
+                    }
                 } catch (IOException e) {
                     String msg = String.format("Error downloading genome %s from %s: %s", genomeListItem.getId(), genomeListItem.getLocation(), e.getMessage());
                     MessageUtils.showErrorMessage(msg, e);
