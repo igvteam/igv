@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
 import java.io.BufferedReader;
@@ -44,7 +45,7 @@ public class TribbleListFeatureSource implements FeatureSource {
         BufferedReader reader = null;
 
         try {
-            reader = new BufferedReader(new FileReader(path));
+            reader = ParsingUtils.openBufferedReader(path);
             String nextLine;
             while ((nextLine = reader.readLine()) != null) {
                 String f = nextLine.trim();
