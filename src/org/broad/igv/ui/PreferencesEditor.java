@@ -205,7 +205,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         generalPanel = new JPanel();
         jPanel10 = new JPanel();
         missingDataExplanation = new JLabel();
-        showMissingDataCB = new JCheckBox();
+        showDefaultTrackAttributesCB = new JCheckBox();
         combinePanelsCB = new JCheckBox();
         showAttributesDisplayCheckBox = new JCheckBox();
         searchZoomCB = new JCheckBox();
@@ -418,20 +418,20 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     //---- missingDataExplanation ----
                     missingDataExplanation.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
-                    missingDataExplanation.setText("<html>Distinguish  regions with zero values from regions with no data on plots <br>(e.g. bar charts).  Regions with no data are indicated with a gray background.");
+                    missingDataExplanation.setText("Display default track attributes (NAME, DATA_TYPE, and DATA_FILE) in the attribute panel.");
                     jPanel10.add(missingDataExplanation);
-                    missingDataExplanation.setBounds(41, 35, 474, missingDataExplanation.getPreferredSize().height);
+                    missingDataExplanation.setBounds(55, 135, 565, missingDataExplanation.getPreferredSize().height);
 
-                    //---- showMissingDataCB ----
-                    showMissingDataCB.setText("Distinguish missing data");
-                    showMissingDataCB.addActionListener(new ActionListener() {
+                    //---- showDefaultTrackAttributesCB ----
+                    showDefaultTrackAttributesCB.setText("Show default track attributes");
+                    showDefaultTrackAttributesCB.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
-                            showMissingDataCBActionPerformed(e);
+                            showDefaultTrackAttributesCBActionPerformed(e);
                         }
                     });
-                    jPanel10.add(showMissingDataCB);
-                    showMissingDataCB.setBounds(new Rectangle(new Point(10, 6), showMissingDataCB.getPreferredSize()));
+                    jPanel10.add(showDefaultTrackAttributesCB);
+                    showDefaultTrackAttributesCB.setBounds(new Rectangle(new Point(10, 105), showDefaultTrackAttributesCB.getPreferredSize()));
 
                     //---- combinePanelsCB ----
                     combinePanelsCB.setText("Display all tracks in a single panel");
@@ -442,7 +442,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(combinePanelsCB);
-                    combinePanelsCB.setBounds(new Rectangle(new Point(10, 95), combinePanelsCB.getPreferredSize()));
+                    combinePanelsCB.setBounds(new Rectangle(new Point(10, 25), combinePanelsCB.getPreferredSize()));
 
                     //---- showAttributesDisplayCheckBox ----
                     showAttributesDisplayCheckBox.setText("Show attribute panel");
@@ -453,7 +453,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(showAttributesDisplayCheckBox);
-                    showAttributesDisplayCheckBox.setBounds(new Rectangle(new Point(10, 130), showAttributesDisplayCheckBox.getPreferredSize()));
+                    showAttributesDisplayCheckBox.setBounds(new Rectangle(new Point(10, 65), showAttributesDisplayCheckBox.getPreferredSize()));
 
                     //---- searchZoomCB ----
                     searchZoomCB.setText("Zoom to features");
@@ -464,7 +464,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(searchZoomCB);
-                    searchZoomCB.setBounds(new Rectangle(new Point(10, 205), searchZoomCB.getPreferredSize()));
+                    searchZoomCB.setBounds(new Rectangle(new Point(10, 204), searchZoomCB.getPreferredSize()));
 
                     //---- zoomToFeatureExplanation ----
                     zoomToFeatureExplanation.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
@@ -609,7 +609,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 generalPanel.add(jPanel10, BorderLayout.CENTER);
             }
             tabbedPane.addTab("General", generalPanel);
-
 
             //======== tracksPanel ========
             {
@@ -789,7 +788,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
             }
             tabbedPane.addTab("Tracks", tracksPanel);
 
-
             //======== overlaysPanel ========
             {
                 overlaysPanel.setLayout(null);
@@ -922,7 +920,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 }
             }
             tabbedPane.addTab("Mutations", overlaysPanel);
-
 
             //======== chartPanel ========
             {
@@ -1094,7 +1091,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 }
             }
             tabbedPane.addTab("Charts", chartPanel);
-
 
             //======== alignmentPanel ========
             {
@@ -1767,7 +1763,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
             }
             tabbedPane.addTab("Alignments", alignmentPanel);
 
-
             //======== expressionPane ========
             {
                 expressionPane.setLayout(null);
@@ -1884,7 +1879,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 }
             }
             tabbedPane.addTab("Probes", expressionPane);
-
 
             //======== proxyPanel ========
             {
@@ -2095,7 +2089,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
             }
             tabbedPane.addTab("Proxy", proxyPanel);
 
-
             //======== dbPanel ========
             {
                 dbPanel.setLayout(null);
@@ -2184,7 +2177,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 }
             }
             tabbedPane.addTab("Database", dbPanel);
-
 
             //======== advancedPanel ========
             {
@@ -2446,7 +2438,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
             }
             tabbedPane.addTab("Advanced", advancedPanel);
 
-
             //======== ionTorrentPanel ========
             {
                 ionTorrentPanel.setLayout(new BoxLayout(ionTorrentPanel, BoxLayout.Y_AXIS));
@@ -2601,7 +2592,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 ionTorrentPanel.add(panel7);
             }
             tabbedPane.addTab("IonTorrent", ionTorrentPanel);
-
         }
         contentPane.add(tabbedPane, BorderLayout.CENTER);
 
@@ -2691,7 +2681,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
             }
 
             updatedPreferenceMap.clear();
-            IGV.getInstance().repaint();
+            IGV.getInstance().doRefresh();
             setVisible(false);
         } else {
             resetValidation();
@@ -3319,9 +3309,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 combinePanelsCB.isSelected()));
     }
 
-    private void showMissingDataCBActionPerformed(java.awt.event.ActionEvent evt) {
-        updatedPreferenceMap.put(PreferenceManager.SHOW_MISSING_DATA_KEY, String.valueOf(
-                showMissingDataCB.isSelected()));
+    private void showDefaultTrackAttributesCBActionPerformed(java.awt.event.ActionEvent evt) {
+        updatedPreferenceMap.put(PreferenceManager.SHOW_DEFAULT_TRACK_ATTRIBUTES, String.valueOf(
+                showDefaultTrackAttributesCB.isSelected()));
     }
 
 
@@ -3725,7 +3715,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         showOrphanedMutationsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SHOW_ORPHANED_MUTATIONS));
         overlayAttributeTextField.setText(prefMgr.get(PreferenceManager.OVERLAY_ATTRIBUTE_KEY));
         overlayTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.OVERLAY_MUTATION_TRACKS));
-        showMissingDataCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SHOW_MISSING_DATA_KEY));
+        showDefaultTrackAttributesCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SHOW_DEFAULT_TRACK_ATTRIBUTES));
         colorCodeMutationsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.COLOR_MUTATIONS));
         overlayAttributeTextField.setEnabled(overlayTrackCB.isSelected());
         showOrphanedMutationsCB.setEnabled(overlayTrackCB.isSelected());
@@ -3985,7 +3975,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JPanel generalPanel;
     private JPanel jPanel10;
     private JLabel missingDataExplanation;
-    private JCheckBox showMissingDataCB;
+    private JCheckBox showDefaultTrackAttributesCB;
     private JCheckBox combinePanelsCB;
     private JCheckBox showAttributesDisplayCheckBox;
     private JCheckBox searchZoomCB;

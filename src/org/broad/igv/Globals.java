@@ -31,13 +31,18 @@ public class Globals {
     /**
      * CONSTANTS
      */
-    final public static String CHR_ALL = "All";
+    public static final String CHR_ALL = "All";
+    public static final String TRACK_NAME_ATTRIBUTE = "NAME";
+    public static final String TRACK_DATA_FILE_ATTRIBUTE = "DATA FILE";
+    public static final String TRACK_DATA_TYPE_ATTRIBUTE = "DATA TYPE";
+
     private static boolean headless = false;
     private static boolean suppressMessages = false;
     private static boolean batch = false;
     private static boolean testing = false;
     public static int CONNECT_TIMEOUT = 20000;        // 20 seconds
     public static int READ_TIMEOUT = 1000 * 3 * 60;   // 3 minutes
+
     /**
      * Field description
      */
@@ -164,7 +169,7 @@ public class Globals {
     }
 
     public static boolean isProduction() {
-         return production;
+        return production;
     }
 
 
@@ -181,12 +186,13 @@ public class Globals {
      * Checks whether the current JVM is the minimum specified version
      * or higher. Only compares up to as many characters as
      * in {@code minVersion}
+     *
      * @param minVersion
      * @return
      */
-    public static boolean isVersionOrHigher(String minVersion){
+    public static boolean isVersionOrHigher(String minVersion) {
         String curVersion = System.getProperty(JAVA_VERSION_STRING);
-        if(curVersion.length() >= minVersion.length()){
+        if (curVersion.length() >= minVersion.length()) {
             curVersion = curVersion.substring(0, minVersion.length());
         }
         return curVersion.compareTo(minVersion) >= 0;

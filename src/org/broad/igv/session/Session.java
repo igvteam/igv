@@ -42,7 +42,6 @@ public class Session {
     private HashMap<String, String> preferences;
     private HashMap<TrackType, ContinuousColorScale> colorScales;
     private boolean removeEmptyPanels = false;
-
     double[] dividerFractions = null;
 
     private History history;
@@ -58,6 +57,9 @@ public class Session {
     private GeneList currentGeneList;
     private Set<String> hiddenAttributes;
     private String locus;
+
+    private static List<String> defaultTrackAttributes = Arrays.asList(Globals.TRACK_NAME_ATTRIBUTE,
+            Globals.TRACK_DATA_FILE_ATTRIBUTE, Globals.TRACK_DATA_TYPE_ATTRIBUTE);
 
     public Session(String path) {
         log.debug("New session");
@@ -324,8 +326,8 @@ public class Session {
     }
 
     @Subscribe
-    public void receiveViewChange(ViewChange.Result e){
-        if(e.recordHistory()){
+    public void receiveViewChange(ViewChange.Result e) {
+        if (e.recordHistory()) {
             recordHistory();
         }
     }
@@ -369,7 +371,17 @@ public class Session {
 
 
     public Set<String> getHiddenAttributes() {
-        return hiddenAttributes;
+
+        Set<String> extendedHiddenAttributes = new HashSet<String>();
+        if (hiddenAttributes != null) {
+            extendedHiddenAttributes.addAll(hiddenAttributes);
+        }
+        if (!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_DEFAULT_TRACK_ATTRIBUTES)) {
+
+            extendedHiddenAttributes.addAll(defaultTrackAttributes);
+        }
+
+        return extendedHiddenAttributes;
     }
 
     public void setHiddenAttributes(Set<String> attributes) {

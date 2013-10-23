@@ -126,7 +126,7 @@ public class PreferenceManager implements PropertyManager {
     final public static String TRACK_HEIGHT_KEY = "IGV.track.height";
     final public static String CHART_TRACK_HEIGHT_KEY = "IGV.chart.track.height";
     final public static String CHART_SHOW_ALL_HEATMAP = "CHART.SHOW_ALL_HEATMAP";
-    final public static String SHOW_MISSING_DATA_KEY = "IGV.track.show.missing.data";
+
     final public static String SHOW_ATTRIBUTE_VIEWS_KEY = "IGV.track.show.attribute.views";
     final public static String SHOW_SINGLE_TRACK_PANE_KEY = "IGV.single.track.pane";
     final public static String GENOMES_SERVER_URL = "IGV.genome.sequence.dir";
@@ -168,6 +168,7 @@ public class PreferenceManager implements PropertyManager {
     final public static String SEARCH_ZOOM = "SEARCH_ZOOM";
     final public static String NORMALIZE_COVERAGE = "NORMALIZE_COVERAGE";
     public static final String SHOW_EXPAND_ICON = "SHOW_EXPAND_ICON";
+    final public static String SHOW_DEFAULT_TRACK_ATTRIBUTES = "SHOW_DEFAULT_TRACK_ATTRIBUTES";
 
     public static final String SHOW_SIZE_WARNING = "SHOW_SIZE_WARNING";
     public static final String SHOW_GENOME_SERVER_WARNING = "SHOW_GENOME_SERVER_WARNING";
@@ -928,9 +929,9 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(PORT_ENABLED, "true");
         defaultValues.put(EXPAND_FEAUTRE_TRACKS, "false");
         defaultValues.put(SHOW_ATTRIBUTE_VIEWS_KEY, "true");
-        defaultValues.put(SHOW_MISSING_DATA_KEY, "false");
         defaultValues.put(SHOW_SINGLE_TRACK_PANE_KEY, "false");
         defaultValues.put(SHOW_EXPAND_ICON, "false");
+        defaultValues.put(SHOW_DEFAULT_TRACK_ATTRIBUTES, "false");
 
         defaultValues.put(IONTORRENT_FLOWDIST_HIDE_FIRST_HP, "true");
         defaultValues.put(IONTORRENT_FLOWDIST_BINSIZE, "15");

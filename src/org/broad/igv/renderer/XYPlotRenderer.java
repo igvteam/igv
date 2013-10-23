@@ -55,8 +55,6 @@ public abstract class XYPlotRenderer extends DataRenderer {
      */
     public synchronized void renderScores(Track track, List<LocusScore> locusScores, RenderContext context, Rectangle arect) {
 
-        boolean showMissingData = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_MISSING_DATA_KEY);
-
         Graphics2D noDataGraphics = context.getGraphic2DForColor(UIConstants.NO_DATA_COLOR);
         Graphics2D tickGraphics = context.getGraphic2DForColor(Color.BLACK);
 
@@ -130,26 +128,14 @@ public abstract class XYPlotRenderer extends DataRenderer {
                 drawDataPoint(color, (int) dx, (int) pX, baseY, pY, context);
 
             }
-            if (showMissingData) {
 
-                // Draw from lastPx + 1  to pX - 1;
-                int w = (int) pX - lastPx - 4;
-                if (w > 0) {
-                    noDataGraphics.fillRect(lastPx + 2, (int) arect.getY(), w, (int) arect.getHeight());
-                }
-            }
             if (!Float.isNaN(dataY)) {
 
                 lastPx = (int) pX + (int) dx;
 
             }
         }
-        if (showMissingData) {
-            int w = (int) arect.getMaxX() - lastPx - 4;
-            if (w > 0) {
-                noDataGraphics.fillRect(lastPx + 2, (int) arect.getY(), w, (int) arect.getHeight());
-            }
-        }
+
 
     }
 

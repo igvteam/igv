@@ -179,7 +179,9 @@ public class AttributeManager {
             Collections.emptyList();
         }
         final Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
-        if (hiddenAttributes != null) visibleAttributes.removeAll(hiddenAttributes);
+        if (hiddenAttributes != null) {
+            visibleAttributes.removeAll(hiddenAttributes);
+        }
 
         return visibleAttributes;
     }

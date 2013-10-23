@@ -1700,9 +1700,9 @@ public class IGV {
                 if (lastSlashIdx > 0) {
                     fn = fn.substring(lastSlashIdx + 1);
                 }
-                track.setAttributeValue("NAME", track.getName());
-                track.setAttributeValue("DATA FILE", fn);
-                track.setAttributeValue("DATA TYPE", track.getTrackType().toString());
+                track.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, track.getName());
+                track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
+                track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
 
                 if (track instanceof TrackGroupEventListener) {
                     addGroupEventListener((TrackGroupEventListener) track);
