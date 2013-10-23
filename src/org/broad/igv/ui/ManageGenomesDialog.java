@@ -151,6 +151,7 @@ public class ManageGenomesDialog extends JDialog {
         addRemBar = new JPanel();
         addButton = new JButton();
         removeButton = new JButton();
+        separator1 = new JSeparator();
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -233,6 +234,7 @@ public class ManageGenomesDialog extends JDialog {
                     addRemBar.add(removeButton);
                 }
                 panel1.add(addRemBar);
+                panel1.add(separator1);
 
                 //======== buttonBar ========
                 {
@@ -287,6 +289,7 @@ public class ManageGenomesDialog extends JDialog {
     private JPanel addRemBar;
     private JButton addButton;
     private JButton removeButton;
+    private JSeparator separator1;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;
