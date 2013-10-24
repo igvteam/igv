@@ -56,7 +56,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
     static final DecimalFormat numFormat = new DecimalFormat("#.###");
 
-    private static final Color OFF_WHITE = new Color(170, 170, 170);
+    private static final Color GREY_170 = new Color(170, 170, 170);
     private static final int GROUP_BORDER_WIDTH = 3;
     private static final Color BAND1_COLOR = new Color(245, 245, 245);
     private static final Color BAND2_COLOR = Color.white;
@@ -410,7 +410,10 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         Rectangle tmpRect = new Rectangle(trackRectangle);
         tmpRect.height = getGenotypeBandHeight();
         tmpRect.y = trackRectangle.y;
-        drawBackground(g2D, tmpRect, visibleRectangle, BackgroundType.DATA);
+
+        Rectangle bandRect = new Rectangle(tmpRect);
+        bandRect.y += variantBandHeight;
+        drawBackground(g2D, bandRect, visibleRectangle, BackgroundType.DATA);
 
         List<PackedFeatures.FeatureRow> rows = packedFeatures.getRows();
 
@@ -503,19 +506,15 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             for (Map.Entry<String, List<String>> entry : samplesByGroups.entrySet()) {
                 for (String sample : entry.getValue()) {
                     if (overallSampleRect.intersects(visibleRectangle)) {
-                        renderer.renderGenotypeBandSNP(variant, context, tmpRect, x, w, sample, coloring,
-                                hideFiltered);
+                        renderer.renderGenotypeBandSNP(variant, context, tmpRect, x, w, sample, coloring, hideFiltered);
                     }
                     tmpRect.y += tmpRect.height;
                 }
-                g2D.setColor(OFF_WHITE);
-                g2D.fillRect(tmpRect.x, tmpRect.y, tmpRect.width, GROUP_BORDER_WIDTH);
             }
         } else {
             for (String sample : allSamples) {
                 if (tmpRect.intersects(visibleRectangle)) {
-                    renderer.renderGenotypeBandSNP(variant, context, tmpRect, x, w, sample, coloring,
-                            hideFiltered);
+                    renderer.renderGenotypeBandSNP(variant, context, tmpRect, x, w, sample, coloring, hideFiltered);
                 }
                 tmpRect.y += tmpRect.height;
             }
@@ -703,7 +702,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                 List<String> sampleList = sampleGroup.getValue();
                 coloredLast = colorBand(g2D, bandRectangle, visibleRectangle, coloredLast, textRectangle, sampleList, type);
 
-                g2D.setColor(OFF_WHITE);
+                g2D.setColor(GREY_170);
                 g2D.fillRect(bandRectangle.x, bandRectangle.y, bandRectangle.width, GROUP_BORDER_WIDTH);
                 bandRectangle.y += GROUP_BORDER_WIDTH;
 
