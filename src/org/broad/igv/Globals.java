@@ -107,7 +107,7 @@ public class Globals {
     //is named rather than the full path given
     public static String BEDtoolsPath = "/usr/local/bin/bedtools"; //"bedtools"
     public static boolean toolsMenuEnabled = false;
-    public static boolean production;
+    public static boolean development;
 
     static {
         Properties properties = new Properties();
@@ -133,8 +133,14 @@ public class Globals {
         nucleotideColors.put('n', Color.gray.brighter());
 
         BEDtoolsPath = System.getProperty("BEDtoolsPath", BEDtoolsPath);
-        final String prodProperty = System.getProperty("production", "true");
-        production = Boolean.parseBoolean(prodProperty);
+        //Runtime property overrides compile-time property, if both exist.
+        //If neither exist we default to false
+        final String prodProperty = System.getProperty("development", properties.getProperty("development", "false"));
+        development = Boolean.parseBoolean(prodProperty);
+        if(development){
+            log.warn("Development mode is enabled");
+        }
+
     }
 
     public static void setHeadless(boolean bool) {
@@ -169,8 +175,8 @@ public class Globals {
         return "<html>Version " + VERSION + " (" + BUILD + ")<br>" + TIMESTAMP;
     }
 
-    public static boolean isProduction() {
-        return production;
+    public static boolean isDevelopment() {
+        return development;
     }
 
 

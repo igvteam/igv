@@ -282,7 +282,7 @@ public class IGV {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                if (!Globals.isProduction()) {
+                if (Globals.isDevelopment()) {
                     Component cButton = contentPane.getStatusBar().getCancelButton();
                     int tX = -(contentPane.getStatusBar().getX() + cButton.getX());
                     int tY = -(contentPane.getY() + contentPane.getStatusBar().getY());

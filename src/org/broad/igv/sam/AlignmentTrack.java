@@ -38,7 +38,6 @@ import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.InsertSizeSettingsDialog;
 import org.broad.igv.ui.SashimiPlot;
-import org.broad.igv.ui.color.ColorPalette;
 import org.broad.igv.ui.color.ColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
@@ -1252,12 +1251,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             addSeparator();
             addCopySequenceItem(e);
-            if (!Globals.isProduction()) {
+            if (Globals.isDevelopment()) {
                 addBlatItem(e);
             }
             addConsensusSequence(e);
 
-            boolean showSashimi = true;//!Globals.isProduction();
+            boolean showSashimi = true;//Globals.isDevelopment();
 
             if (showSashimi) {
                 addSeparator();

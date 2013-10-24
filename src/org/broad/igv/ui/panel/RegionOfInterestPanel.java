@@ -181,7 +181,7 @@ public class RegionOfInterestPanel extends JPanel {
         popupMenu.add(item);
 
 
-        if (!Globals.isProduction()) {
+        if (Globals.isDevelopment()) {
             item = new JMenuItem("Blat sequence");
             item.addActionListener(new ActionListener() {
 

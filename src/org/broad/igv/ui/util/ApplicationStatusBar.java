@@ -63,7 +63,7 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
         messageBox.setPreferredSize(new Dimension(135, 20));
         add(messageBox, JideBoxLayout.FIX);
 
-        if (!Globals.isProduction()) {
+        if (Globals.isDevelopment()) {
             cancelButton = new JideButton(IconFactory.getInstance().getIcon(IconFactory.IconID.CLOSE));
             cancelButton.setMinimumSize(new Dimension(20, 10));
             cancelButton.setPreferredSize(new Dimension(20, 20));
@@ -127,7 +127,7 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
      */
     public void activateCancelButton(ActionListener listener) {
 
-        if (!Globals.isProduction()) {
+        if (Globals.isDevelopment()) {
             this.cancelButton.addActionListener(listener);
             this.cancelButton.addActionListener(new CancelButtonActionListener());
             this.cancelButton.setEnabled(true);
@@ -136,7 +136,7 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
     }
 
     public void deactivateCancelButton() {
-        if (!Globals.isProduction()) {
+        if (Globals.isDevelopment()) {
             for (ActionListener l : this.cancelButton.getActionListeners()) {
                 this.cancelButton.removeActionListener(l);
             }

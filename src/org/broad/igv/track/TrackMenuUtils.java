@@ -308,7 +308,7 @@ public class TrackMenuUtils {
         menu.addSeparator();
         menu.add(getChangeKMPlotItem(tracks));
 
-//        if(!Globals.isProduction()){
+//        if(Globals.isDevelopment()){
 //            for(JMenuItem item: getCombinedDataSourceItems(tracks)){
 //                menu.add(item);
 //            }
@@ -400,7 +400,7 @@ public class TrackMenuUtils {
                 featurePopupMenu.add(getCopyDetailsItem(f, te));
                 featurePopupMenu.add(getCopySequenceItem(f));
 
-                if (!Globals.isProduction()) {
+                if (Globals.isDevelopment()) {
                     featurePopupMenu.add(getBlatItem(f));
                 }
 

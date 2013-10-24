@@ -321,7 +321,7 @@ public class IGVMenuBar extends JMenuBar {
 
 
         //DataTrack Math------------------------//
-        if(!Globals.isProduction()){
+        if(Globals.isDevelopment()){
             JMenuItem combineDataItem = new JMenuItem("Combine Data Tracks");
             combineDataItem.addActionListener(new ActionListener() {
                 @Override

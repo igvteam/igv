@@ -137,7 +137,6 @@
             <fileset dir="${src.dir}"/>
         </copy>
 
-        <replace file="${tmp.dir}/${src.archive.name}/build.xml" token="@version" value="${version}"/>
         <write_version targetFile="${tmp.dir}/${src.archive.name}/src/resources/about.properties"/>
 
         <copy todir="${tmp.dir}/${src.archive.name}/lib">
