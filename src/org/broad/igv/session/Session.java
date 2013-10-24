@@ -18,6 +18,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.renderer.ContinuousColorScale;
+import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
@@ -57,9 +58,6 @@ public class Session {
     private GeneList currentGeneList;
     private Set<String> hiddenAttributes;
     private String locus;
-
-    private static List<String> defaultTrackAttributes = Arrays.asList(Globals.TRACK_NAME_ATTRIBUTE,
-            Globals.TRACK_DATA_FILE_ATTRIBUTE, Globals.TRACK_DATA_TYPE_ATTRIBUTE);
 
     public Session(String path) {
         log.debug("New session");
@@ -378,7 +376,7 @@ public class Session {
         }
         if (!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_DEFAULT_TRACK_ATTRIBUTES)) {
 
-            extendedHiddenAttributes.addAll(defaultTrackAttributes);
+            extendedHiddenAttributes.addAll(AttributeManager.defaultTrackAttributes);
         }
 
         return extendedHiddenAttributes;

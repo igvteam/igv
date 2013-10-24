@@ -962,6 +962,14 @@ public class IGV {
         dlg.setVisible(true);
 
         if (!dlg.isCanceled()) {
+            // If any "default" attributes are checked turn off hide default option
+            Set<String> selections = dlg.getSelections();
+            for(String att : AttributeManager.defaultTrackAttributes) {
+                if(selections.contains(att)) {
+                    PreferenceManager.getInstance().put(PreferenceManager.SHOW_DEFAULT_TRACK_ATTRIBUTES, true);
+                    break;
+                }
+            }
             IGV.getInstance().getSession().setHiddenAttributes(dlg.getNonSelections());
             doRefresh();
         }

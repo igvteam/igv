@@ -48,6 +48,8 @@ import java.util.List;
  */
 public class AttributeManager {
 
+    public static List<String> defaultTrackAttributes = Arrays.asList(Globals.TRACK_NAME_ATTRIBUTE,
+            Globals.TRACK_DATA_FILE_ATTRIBUTE, Globals.TRACK_DATA_TYPE_ATTRIBUTE);
     private static Logger log = Logger.getLogger(AttributeManager.class);
 
     private static AttributeManager singleton;
