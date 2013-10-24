@@ -133,7 +133,8 @@ public class Globals {
         nucleotideColors.put('n', Color.gray.brighter());
 
         BEDtoolsPath = System.getProperty("BEDtoolsPath", BEDtoolsPath);
-        production = Boolean.parseBoolean(System.getProperty("production", "false"));
+        final String prodProperty = System.getProperty("production", "true");
+        production = Boolean.parseBoolean(prodProperty);
     }
 
     public static void setHeadless(boolean bool) {
