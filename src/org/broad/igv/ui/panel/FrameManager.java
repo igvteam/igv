@@ -50,7 +50,6 @@ public class FrameManager {
     /**
      * Set exome mode.
      *
-     *
      * @param b
      * @param showTrackMenu
      * @return true if a change was made,
@@ -215,17 +214,26 @@ public class FrameManager {
         Locus locus = null;
         for (SearchCommand.SearchResult result : results) {
             if (result.getType() != SearchCommand.ResultType.ERROR) {
-                int start = result.getStart() - flankingRegion;
+
+                int delta;
+                if (flankingRegion < 0) {
+                    delta = (-flankingRegion * (result.getEnd() - result.getStart())) / 100;
+
+                } else {
+                    delta = flankingRegion;
+                }
+
+                int start = result.getStart() - delta;
                 //Don't allow flanking region to extend past origin
                 //There are some circumstances in which we render before origin (e.g. soft-clips)
                 //so we are conservative
-                if(start < 0 && result.getStart() >= -1){
+                if (start < 0 && result.getStart() >= -1) {
                     start = 0;
                 }
                 locus = new Locus(
                         result.getChr(),
                         start,
-                        result.getEnd() + flankingRegion);
+                        result.getEnd() + delta);
                 //We just take the first result
                 break;
             }

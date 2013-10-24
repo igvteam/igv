@@ -268,7 +268,7 @@
               <string>javax.swing.JLabel</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>Feature flanking region (bp): </string> 
+               <string>Feature flanking region (bp or %): </string> 
               </void> 
               <void property="name"> 
                <string>label4</string> 
@@ -313,7 +313,7 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>215</int> 
+               <int>235</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
@@ -334,7 +334,7 @@
               </void> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>&lt;html&gt;&lt;i&gt;Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.</string> 
+               <string>&lt;html&gt;&lt;i&gt;Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.&lt;b&gt; A negative number is interpreted as a percentage.&lt;/b&gt;</string> 
               </void> 
               <void method="setProperty"> 
                <string>verticalAlignment</string> 

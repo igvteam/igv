@@ -43,7 +43,7 @@ import java.util.List;
  * (b) a locus string in the UCSC form,  e.g. chr1:100,000-200,000
  * <p/>
  * Note:  Currently the only recognized features are genes
- *
+ * <p/>
  * Custom searchers can be registered, see {@link #registerFeatureNameSearcher}
  *
  * @author jrobinso
@@ -62,7 +62,7 @@ public class SearchCommand {
 
     private static Set<NamedFeatureSearcher> nameSearchers;
 
-    static{
+    static {
         resetNamedFeatureSearchers();
     }
 
@@ -430,16 +430,16 @@ public class SearchCommand {
      * such as when the user enters text in the box.
      * This is idempotent, registering the same searcher multiple times is the same as
      * adding it once.
+     *
      * @param searcher
      * @return Whether the searcher was added
      * @api
      */
-    public static boolean registerNamedFeatureSearcher(NamedFeatureSearcher searcher){
+    public static boolean registerNamedFeatureSearcher(NamedFeatureSearcher searcher) {
         return nameSearchers.add(searcher);
     }
 
     /**
-     *
      * @param searcher
      * @return Whether the searcher was removed
      * @api
@@ -448,7 +448,7 @@ public class SearchCommand {
         return nameSearchers.remove(searcher);
     }
 
-    static void resetNamedFeatureSearchers(){
+    static void resetNamedFeatureSearchers() {
         nameSearchers = new LinkedHashSet<NamedFeatureSearcher>();
         registerNamedFeatureSearcher(new InexactLoadedFeatureSearcher());
     }
@@ -457,16 +457,17 @@ public class SearchCommand {
      * Search all known sources for features with the provided name.
      * This means our own database which gets updated when files are loaded,
      * as well as others (possibly plugins)
+     *
      * @param searchString
      * @return
      */
-    private List<NamedFeature> comprehensiveFeatureSearch(String searchString){
+    private List<NamedFeature> comprehensiveFeatureSearch(String searchString) {
         List<NamedFeature> features = new ArrayList<NamedFeature>();
-        for(NamedFeatureSearcher searcher: nameSearchers){
+        for (NamedFeatureSearcher searcher : nameSearchers) {
             Collection<? extends NamedFeature> tmp = searcher.search(searchString, SEARCH_LIMIT);
-            if(tmp == null){
+            if (tmp == null) {
                 log.warn("Error searching with " + searcher);
-            }else{
+            } else {
                 features.addAll(tmp);
             }
         }
@@ -538,8 +539,17 @@ public class SearchCommand {
 
     private void showFlankedRegion(String chr, int start, int end) {
         int flankingRegion = PreferenceManager.getInstance().getAsInt(PreferenceManager.FLANKING_REGION);
-        start = Math.max(0, start - flankingRegion);
-        end = end + flankingRegion;
+        int delta;
+        if((end - start) == 1) {
+            delta = 20; // Don't show flanking region for single base jumps, use 40bp window
+        }
+        else if (flankingRegion < 0) {
+            delta = (-flankingRegion * (end - start)) / 100;
+        } else {
+            delta = flankingRegion;
+        }
+        start = Math.max(0, start - delta);
+        end = end + delta;
 
         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SEARCH_ZOOM)) {
             referenceFrame.jumpTo(chr, start, end);
@@ -703,7 +713,7 @@ public class SearchCommand {
 
         //May be null
         @ForTesting
-        public NamedFeature getFeature(){
+        public NamedFeature getFeature() {
             return feature;
         }
     }

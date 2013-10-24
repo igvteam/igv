@@ -474,7 +474,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     zoomToFeatureExplanation.setBounds(50, 230, 644, 50);
 
                     //---- label4 ----
-                    label4.setText("Feature flanking region (bp): ");
+                    label4.setText("Feature flanking region (bp or %): ");
                     jPanel10.add(label4);
                     label4.setBounds(new Rectangle(new Point(15, 365), label4.getPreferredSize()));
 
@@ -492,11 +492,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(geneListFlankingField);
-                    geneListFlankingField.setBounds(215, 360, 255, geneListFlankingField.getPreferredSize().height);
+                    geneListFlankingField.setBounds(235, 360, 255, geneListFlankingField.getPreferredSize().height);
 
                     //---- zoomToFeatureExplanation2 ----
                     zoomToFeatureExplanation2.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
-                    zoomToFeatureExplanation2.setText("<html><i>Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.");
+                    zoomToFeatureExplanation2.setText("<html><i>Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.<b> A negative number is interpreted as a percentage.</b>");
                     zoomToFeatureExplanation2.setVerticalAlignment(SwingConstants.TOP);
                     jPanel10.add(zoomToFeatureExplanation2);
                     zoomToFeatureExplanation2.setBounds(45, 395, 637, 50);
@@ -3292,7 +3292,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
             updatedPreferenceMap.put(PreferenceManager.FLANKING_REGION, flankingRegion);
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
-            MessageUtils.showMessage("Track height must be an integer number.");
+            MessageUtils.showMessage("Flanking region must be an integer number.");
         }
 
     }
