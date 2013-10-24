@@ -152,11 +152,15 @@
             <jar destfile="${jar.path}" basedir="${tmp.dir}" compress="true" duplicate="preserve">
                 <fileset refid="@{includedFileset}"/>
                 <manifest>
+
+                    <attribute name="Permissions" value="all-permissions"/>
+                    <attribute name="Application-Name" value="${ant.project.name}"/>
                     <!-- Here just to be a good citizen. Apparently reading from the correct manifest
                     is tricky. We rely on a separate properties file-->
                     <attribute name="Class-Path" value="${class-path}"/>
                     <attribute name="Built-By" value="${user.name}"/>
                     <attribute name="Main-Class" value="${main-class}"/>
+
                     <section name="org/broad/igv">
                         <attribute name="Specification-Title" value="${ant.project.name}"/>
                         <attribute name="Specification-Version" value="${version}"/>
@@ -164,6 +168,7 @@
                         <attribute name="Implementation-Version" value="${version} ${build-number}"/>
                         <attribute name="Implementation-Vendor" value="${vendor}"/>
                     </section>
+
                 </manifest>
             </jar>
             <copy file="${lib.dir}batik-codec.jar" tofile="${dist.dir}batik-codec.jar" overwrite="true"/>
