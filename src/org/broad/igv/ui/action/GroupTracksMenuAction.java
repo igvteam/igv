@@ -49,54 +49,57 @@ public class GroupTracksMenuAction extends MenuAction {
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        UIUtilities.invokeOnEventThread(new Runnable() {
-
-            public void run() {
-                doGroupBy();
-            }
-        });
+        doGroupBy();
 
     }
 
     final public void doGroupBy() {
 
-        final AttributeSelectionDialog dlg = new AttributeSelectionDialog(mainFrame.getMainFrame(), true);
 
-        List<String> attributeKeys = AttributeManager.getInstance().getAttributeNames();
+        UIUtilities.invokeOnEventThread(new Runnable() {
+
+            public void run() {
+
+                final AttributeSelectionDialog dlg = new AttributeSelectionDialog(mainFrame.getMainFrame(), true);
+
+                List<String> attributeKeys = AttributeManager.getInstance().getVisibleAttributes();
 
 
-        // Sorting disabled -- order will match the order in the panel.  If sorting is desired make a copy
-        // of the array so the panel is not affected.
+                // Sorting disabled -- order will match the order in the panel.  If sorting is desired make a copy
+                // of the array so the panel is not affected.
 
-        //if (attributeKeys != null) {
-        //    Collections.sort(attributeKeys,
-        //            AttributeManager.getInstance().getAttributeComparator());
-        //}
+                //if (attributeKeys != null) {
+                //    Collections.sort(attributeKeys,
+                //            AttributeManager.getInstance().getAttributeComparator());
+                //}
 
-        ArrayList<String> selections = new ArrayList(attributeKeys);
+                ArrayList<String> selections = new ArrayList(attributeKeys);
 
-        selections.add(0, "None");
-        String[] selArray = selections.toArray(new String[]{});
+                selections.add(0, "None");
+                String[] selArray = selections.toArray(new String[]{});
 
-        dlg.setModel(new javax.swing.DefaultComboBoxModel(selArray));
-        dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                dlg.setModel(new javax.swing.DefaultComboBoxModel(selArray));
+                dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-        String currentSelection = IGV.getInstance().getGroupByAttribute();
-        if (currentSelection == null) {
-            dlg.setSelectedIndex(0);
-        } else {
-            dlg.setSelectedItem(currentSelection);
-        }
+                String currentSelection = IGV.getInstance().getGroupByAttribute();
+                if (currentSelection == null) {
+                    dlg.setSelectedIndex(0);
+                } else {
+                    dlg.setSelectedItem(currentSelection);
+                }
 
-        dlg.setVisible(true);
+                dlg.setVisible(true);
 
-        if (!dlg.isCanceled()) {
-            int selIndex = dlg.getSelectedIndex();
-            String selectedAttribute = (selIndex == 0 ? null : selArray[selIndex]);
-            IGV.getInstance().setGroupByAttribute(selectedAttribute);
-            mainFrame.doRefresh();
+                if (!dlg.isCanceled()) {
+                    int selIndex = dlg.getSelectedIndex();
+                    String selectedAttribute = (selIndex == 0 ? null : selArray[selIndex]);
+                    IGV.getInstance().setGroupByAttribute(selectedAttribute);
+                    mainFrame.doRefresh();
 
-        }
+                }
 
+            }
+
+        });
     }
 }

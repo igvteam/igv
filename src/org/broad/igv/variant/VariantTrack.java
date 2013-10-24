@@ -160,7 +160,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         this.renderer = renderer;
     }
 
-    public VariantTrack(String name, FeatureSource source){
+    public VariantTrack(String name, FeatureSource source) {
         this(null, source, Collections.<String>emptyList(), false);
         this.setName(name);
     }
@@ -346,8 +346,8 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         }
     }
 
-    public Object getHeader(){
-        if(source instanceof TribbleFeatureSource){
+    public Object getHeader() {
+        if (source instanceof TribbleFeatureSource) {
             return ((TribbleFeatureSource) source).getHeader();
         }
         return null;
@@ -355,10 +355,11 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
     /**
      * Return the height of the variant section only (no samples/genotypes)
+     *
      * @return
      */
-    private int getVariantsHeight(){
-        return variantBandHeight*Math.max(1, getNumberOfFeatureLevels());
+    private int getVariantsHeight() {
+        return variantBandHeight * Math.max(1, getNumberOfFeatureLevels());
     }
 
     /**
@@ -412,7 +413,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         tmpRect.y = trackRectangle.y;
 
         Rectangle bandRect = new Rectangle(tmpRect);
-        bandRect.y += variantBandHeight;
+        bandRect.y += getVariantsHeight();
         drawBackground(g2D, bandRect, visibleRectangle, BackgroundType.DATA);
 
         List<PackedFeatures.FeatureRow> rows = packedFeatures.getRows();
@@ -431,7 +432,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             final double pXMax = tmpRect.getMaxX();
             tmpRect.height = variantBandHeight;
 
-            for(PackedFeatures.FeatureRow row: rows){
+            for (PackedFeatures.FeatureRow row : rows) {
                 List<Feature> features = row.getFeatures();
                 for (Feature feature : features) {
                     Variant variant = (Variant) feature;
@@ -471,11 +472,11 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                     }
 
                 }
-                if(areFeaturesStacked()){
+                if (areFeaturesStacked()) {
                     curRowTop += variantBandHeight;
                 }
             }
-        }else {
+        } else {
             tmpRect.height = variantBandHeight;
             tmpRect.y = trackRectangle.y;
             g2D.setColor(Color.gray);
@@ -486,20 +487,21 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
     }
 
-    private void drawLineIfVisible(Graphics2D g2D, Rectangle visibleRectangle, Color color, int yLoc, int left, int right){
+    private void drawLineIfVisible(Graphics2D g2D, Rectangle visibleRectangle, Color color, int yLoc, int left, int right) {
         if (yLoc >= visibleRectangle.y && yLoc <= visibleRectangle.getMaxY()) {
-            if(color != null) g2D.setColor(color);
+            if (color != null) g2D.setColor(color);
             g2D.drawLine(left, yLoc, right, yLoc);
         }
     }
 
-    private void drawVariantBandBorder(Graphics2D g2D, Rectangle visibleRectangle, int variantBandY, int left, int right){
+    private void drawVariantBandBorder(Graphics2D g2D, Rectangle visibleRectangle, int variantBandY, int left, int right) {
         if (allSamples.size() > 0) {
             drawLineIfVisible(g2D, visibleRectangle, Color.black, variantBandY, left, right);
         }
     }
 
     private void renderSamples(Graphics2D g2D, Rectangle visibleRectangle, Variant variant, RenderContext context, Rectangle overallSampleRect, int x, int w) {
+
         Rectangle tmpRect = new Rectangle(overallSampleRect);
         tmpRect.height = getGenotypeBandHeight();
         if (grouped) {
@@ -523,11 +525,12 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
     /**
      * Renders the top line, bottom track line, and border between variants / genotypes
+     *
      * @param g2D
      * @param trackRectangle
      * @param visibleRectangle
      */
-    private void renderBoundaryLines(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle){
+    private void renderBoundaryLines(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
         top = trackRectangle.y;
         final int left = trackRectangle.x;
         final int right = (int) trackRectangle.getMaxX();
@@ -542,8 +545,16 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         // Variant / Genotype border
         int variantGenotypeBorderY = trackRectangle.y + getVariantsHeight();
         drawVariantBandBorder(g2D, visibleRectangle, variantGenotypeBorderY, left, right);
-    }
 
+        if (grouped) {
+            g2D.setColor(Color.black);
+            int y = trackRectangle.y + getVariantsHeight();
+            for (Map.Entry<String, List<String>> entry : samplesByGroups.entrySet()) {
+                y += entry.getValue().size() * getGenotypeBandHeight() + GROUP_BORDER_WIDTH;
+                g2D.drawLine(trackRectangle.x, y, trackRectangle.x + trackRectangle.width, y);
+            }
+        }
+    }
 
     /**
      * Render the name panel.
@@ -591,6 +602,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      * @param attributeNames
      * @param mouseRegions
      */
+
     public void renderAttributes(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle,
                                  List<String> attributeNames, List<MouseableRegion> mouseRegions) {
 
@@ -701,9 +713,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
                 List<String> sampleList = sampleGroup.getValue();
                 coloredLast = colorBand(g2D, bandRectangle, visibleRectangle, coloredLast, textRectangle, sampleList, type);
-
-                g2D.setColor(GREY_170);
-                g2D.fillRect(bandRectangle.x, bandRectangle.y, bandRectangle.width, GROUP_BORDER_WIDTH);
                 bandRectangle.y += GROUP_BORDER_WIDTH;
 
                 if (type == BackgroundType.NAME && bandRectangle.height < 3) {
@@ -724,6 +733,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         }
         g2D.setFont(oldFont);
     }
+
 
     private boolean colorBand(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle,
                               boolean coloredLast, Rectangle textRectangle, List<String> sampleList,
@@ -818,7 +828,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             } else {
                 if (sampleBounds == null || sampleBounds.isEmpty()) return null;
                 String sample = getSampleAtPosition(y);
-                if(sample == null) return null;
+                if (sample == null) return null;
 
                 Variant variant = getFeatureClosest(position, -1, frame.getName(), maxDistance);
                 return getSampleToolTip(sample, variant);
@@ -875,7 +885,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      * Return the variant closest to the genomic position in the given reference frame, within the prescribed tolerance
      *
      * @param position
-     * @param y         pixel position in panel coordinates (i.e. not track coordinates)
+     * @param y           pixel position in panel coordinates (i.e. not track coordinates)
      * @param frameName
      * @param maxDistance
      * @return
@@ -893,10 +903,10 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
         //We search only the specified row if y is a meaningful value.
         //Otherwise we search everything
-        int row = ( (y - top) / variantBandHeight);
-        if(y < 0 || row >= getNumberOfFeatureLevels()){
+        int row = ((y - top) / variantBandHeight);
+        if (y < 0 || row >= getNumberOfFeatureLevels()) {
             features = packedFeatures.getFeatures();
-        }else{
+        } else {
             features = packedFeatures.getRows().get(row).getFeatures();
         }
 
@@ -1000,6 +1010,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      * The maximum number of filter lines to show for variants.
      * We show more info if the user is displaying a separate window than
      * if using tooltip
+     *
      * @return
      */
     private int getMaxFilterLines() {
@@ -1082,7 +1093,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
 
     private String getSampleToolTip(String sample, Variant variant) {
-        if(variant == null) return null;
+        if (variant == null) return null;
         double goodBaseCount = variant.getGenotype(sample).getAttributeAsDouble("GB");
         if (Double.isNaN(goodBaseCount)) goodBaseCount = 0;
         if (isEnableMethylationRateSupport() && goodBaseCount < 10) {
@@ -1159,11 +1170,12 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
     /**
      * Return the {@code Variant} object closest to the specified event
+     *
      * @param te
      * @return
      * @api
      */
-    public Variant getSelectedVariant(final TrackClickEvent te){
+    public Variant getSelectedVariant(final TrackClickEvent te) {
         final ReferenceFrame referenceFrame = te.getFrame();
         Variant selVariant = null;
         if (referenceFrame != null && referenceFrame.getName() != null) {
@@ -1177,7 +1189,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
     public IGVPopupMenu getPopupMenu(final TrackClickEvent te) {
         selectedVariant = getSelectedVariant(te);
-        if(selectedVariant != null){
+        if (selectedVariant != null) {
             IGV.getInstance().doRefresh();
         }
         return new VariantMenu(this, selectedVariant);
@@ -1396,7 +1408,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     }
 
     @SubtlyImportant
-    private static VariantTrack getNextTrack(){
+    private static VariantTrack getNextTrack() {
         return (VariantTrack) IGVSessionReader.getNextTrack();
     }
 

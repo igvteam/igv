@@ -12,9 +12,11 @@
 package org.broad.igv.variant;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.action.GroupTracksMenuAction;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 
 import javax.swing.*;
@@ -79,6 +81,11 @@ public class VariantMenu extends IGVPopupMenu {
         for (JMenuItem item : getSortMenuItems(variant)) {
             add(item);
             item.setEnabled(variant != null);
+        }
+
+        if (AttributeManager.getInstance().getVisibleAttributes().size() > 0) {
+            addSeparator();
+            add(getGenotypeGroupItem());
         }
 
         //Variant Information
@@ -188,6 +195,19 @@ public class VariantMenu extends IGVPopupMenu {
                 }
             });
         }
+
+        return item;
+    }
+
+    public JMenuItem getGenotypeGroupItem() {
+
+        JMenuItem item = new JMenuItem("Group By...");
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                (new GroupTracksMenuAction("", 0, IGV.getInstance())).doGroupBy();
+            }
+        });
+        item.setEnabled(AttributeManager.getInstance().getVisibleAttributes().size() > 0);
 
         return item;
     }
