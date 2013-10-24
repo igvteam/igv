@@ -19,10 +19,7 @@ import org.broad.igv.variant.VariantTrack;
 import org.broadinstitute.variant.variantcontext.VariantContext;
 import org.broadinstitute.variant.variantcontext.VariantContextBuilder;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Jim Robinson, jacob
@@ -41,6 +38,8 @@ public class VCFVariant implements Variant {
     private double methylationRate = Double.NaN;  // <= signals unknown / not applicable
     private double coveredSampleFraction = Double.NaN;
 
+    Map<String, VCFGenotype> genotypeMap;
+
     private int start = -1;
 
     public VCFVariant(VariantContext variantContext, String chr) {
@@ -50,6 +49,15 @@ public class VCFVariant implements Variant {
     }
 
     private void init() {
+
+        // Copy the genotype map.  Calls to variantContext.getGenotype() are expensive
+        genotypeMap = new HashMap<String, VCFGenotype>();
+        for (String sample : getSampleNames()) {
+            org.broadinstitute.variant.variantcontext.Genotype genotype = variantContext.getGenotype(sample);
+            VCFGenotype vcfGenotype = genotype == null ? null : new VCFGenotype(genotype);
+            genotypeMap.put(sample, vcfGenotype);
+        }
+
         zygosityCount = new ZygosityCount();
         for (String sample : getSampleNames()) {
             Genotype genotype = getGenotype(sample);
@@ -196,9 +204,7 @@ public class VCFVariant implements Variant {
 
     @Override
     public Genotype getGenotype(String sample) {
-        org.broadinstitute.variant.variantcontext.Genotype gt = variantContext.getGenotype(sample);
-        if(gt == null) return null;
-        return new VCFGenotype(gt);
+        return genotypeMap.get(sample);
     }
 
     public Collection<String> getFilters() {
