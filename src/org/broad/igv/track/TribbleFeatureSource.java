@@ -15,11 +15,15 @@ import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.*;
+import org.broad.igv.feature.tribble.reader.AbstractFeatureReader;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.RuntimeUtils;
-import org.broad.tribble.*;
+import org.broad.tribble.CloseableTribbleIterator;
+import org.broad.tribble.Feature;
+import org.broad.tribble.FeatureCodec;
+import org.broad.tribble.FeatureReader;
 
 import java.io.IOException;
 import java.util.*;
