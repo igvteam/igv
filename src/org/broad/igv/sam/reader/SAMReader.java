@@ -168,7 +168,7 @@ public class SAMReader implements AlignmentReader {
 
     private SAMFileReader getSAMFileReader(String samFile, long startPosition) {
         try {
-            SeekableStream stream = IGVSeekableStreamFactory.getStreamFor(samFile);
+            SeekableStream stream = IGVSeekableStreamFactory.getInstance().getStreamFor(samFile);
             if (startPosition >= 0) {
                 stream.seek(startPosition);
             }

@@ -89,7 +89,7 @@ public class MAFParser implements MAFReader {
         SeekableStream is = null;
 
 
-        is = IGVSeekableStreamFactory.getStreamFor(path);
+        is = IGVSeekableStreamFactory.getInstance().getStreamFor(path);
         is.seek(startPosition);
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(is), 256000);
@@ -141,7 +141,7 @@ public class MAFParser implements MAFReader {
         BufferedReader reader = null;
 
         try {
-            InputStream is = IGVSeekableStreamFactory.getStreamFor(path);
+            InputStream is = IGVSeekableStreamFactory.getInstance().getStreamFor(path);
             reader = new BufferedReader(new InputStreamReader(is));
 
             String line;

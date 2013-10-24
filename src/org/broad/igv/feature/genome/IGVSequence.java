@@ -52,7 +52,7 @@ public class IGVSequence implements Sequence {
         try {
 
 
-            is = IGVSeekableStreamFactory.getStreamFor(seqFile);
+            is = IGVSeekableStreamFactory.getInstance().getStreamFor(seqFile);
 
             byte[] bytes = new byte[end - start];
             is.seek(start);

@@ -386,7 +386,7 @@ public class IGVDatasetParser {
             // Get an estimate of the number of snps (rows).  THIS IS ONLY AN ESTIMATE
             int nRowsEst = chrSummary.getNDataPts();
 
-            SeekableStream is = IGVSeekableStreamFactory.getStreamFor(dataResourceLocator.getPath());
+            SeekableStream is = IGVSeekableStreamFactory.getInstance().getStreamFor(dataResourceLocator.getPath());
             is.seek(chrSummary.getStartPosition());
             AsciiLineReader reader = new AsciiLineReader(is);
 

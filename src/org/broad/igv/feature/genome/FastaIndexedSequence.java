@@ -160,7 +160,7 @@ public class FastaIndexedSequence implements Sequence {
 
         SeekableStream ss = null;
         try {
-            ss = IGVSeekableStreamFactory.getStreamFor(path);
+            ss = IGVSeekableStreamFactory.getInstance().getStreamFor(path);
             int nBytes = (int) (posEnd - posStart);
             byte[] bytes = new byte[nBytes];
             ss.seek(posStart);

@@ -151,7 +151,7 @@ public class BAMHttpReader implements AlignmentReader {
         String protocol = url.getProtocol().toLowerCase();
         SeekableStream is = null;
         if (protocol.equals("http") || protocol.equals("https")) {
-            is = IGVSeekableStreamFactory.getStreamFor(url.toExternalForm());
+            is = IGVSeekableStreamFactory.getInstance().getStreamFor(url.toExternalForm());
         } else if (protocol.equals("ftp")) {
             is = new SeekableFTPStream(url);
         } else {

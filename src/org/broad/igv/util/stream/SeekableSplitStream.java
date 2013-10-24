@@ -129,7 +129,7 @@ public class SeekableSplitStream extends SeekableStream {
                     } else {
                         listFileName = (new File(path)).getName();
                     }
-                    SeekableStream stream = IGVSeekableStreamFactory.getStreamFor(path.replace(listFileName, p));
+                    SeekableStream stream = IGVSeekableStreamFactory.getInstance().getStreamFor(path.replace(listFileName, p));
 
                     long length = Long.parseLong(tokens[1]);
                     descriptors.add(new SeekableSplitStream.PartDescriptor(length, stream));

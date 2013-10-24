@@ -23,16 +23,17 @@
  */
 package org.broad.igv.feature.tribble.reader;
 
-import java.io.*;
-import java.nio.*;
-import java.util.HashMap;
-import java.util.Arrays;
-import java.lang.StringBuffer;
-
 import net.sf.samtools.seekablestream.SeekableStream;
 import net.sf.samtools.util.BlockCompressedInputStream;
 import org.broad.igv.util.stream.IGVSeekableBufferedStream;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.Arrays;
+import java.util.HashMap;
 
 /**
  * @author Heng Li <hengli@broadinstitute.org>
@@ -92,7 +93,7 @@ public class TabixReader {
      * @param fn File name of the data file
      */
     public TabixReader(final String fn) throws IOException {
-        this(fn, new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getStreamFor(fn)));
+        this(fn, new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(fn)));
     }
 
     /**
@@ -203,7 +204,7 @@ public class TabixReader {
      * Read the Tabix index from the default file.
      */
     public void readIndex() throws IOException {
-        readIndex(new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getStreamFor(mFn + ".tbi"), 128000));
+        readIndex(new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(mFn + ".tbi"), 128000));
     }
 
     /**

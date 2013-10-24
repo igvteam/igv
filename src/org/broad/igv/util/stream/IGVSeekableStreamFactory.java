@@ -24,7 +24,18 @@ import java.net.URL;
  */
 public class IGVSeekableStreamFactory {
 
-    public static SeekableStream getStreamFor(String path) throws IOException {
+    private static IGVSeekableStreamFactory instance;
+    static{
+        instance = new IGVSeekableStreamFactory();
+    }
+
+    private IGVSeekableStreamFactory(){}
+
+    public static IGVSeekableStreamFactory getInstance(){
+        return instance;
+    }
+
+    public SeekableStream getStreamFor(String path) throws IOException {
 
         if (path.endsWith(".list")) {
             return new SeekableSplitStream(path);

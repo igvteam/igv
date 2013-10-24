@@ -50,7 +50,7 @@ public class PeakParser {
     private void loadHeader() throws IOException {
         SeekableStream ss = null;
         try {
-            ss = IGVSeekableStreamFactory.getStreamFor(path);
+            ss = IGVSeekableStreamFactory.getInstance().getStreamFor(path);
             LittleEndianInputStream is = new LittleEndianInputStream(new BufferedInputStream(ss));
 
             long indexPosition = is.readLong();
@@ -96,7 +96,7 @@ public class PeakParser {
             SeekableStream ss = null;
             try {
 
-                ss = IGVSeekableStreamFactory.getStreamFor(path);
+                ss = IGVSeekableStreamFactory.getInstance().getStreamFor(path);
                 int bufferSize = 512000;
                 long contentLength = ss.length();
                 if(contentLength > 0) {
