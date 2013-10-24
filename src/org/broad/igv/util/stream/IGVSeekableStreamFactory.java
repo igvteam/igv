@@ -35,6 +35,10 @@ public class IGVSeekableStreamFactory {
         return instance;
     }
 
+    public SeekableStream getStreamFor(URL url) throws IOException{
+        return getStreamFor(url.toExternalForm());
+    }
+
     public SeekableStream getStreamFor(String path) throws IOException {
 
         if (path.endsWith(".list")) {

@@ -15,7 +15,6 @@ import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
 import net.sf.samtools.SAMSequenceRecord;
-import net.sf.samtools.seekablestream.SeekableFTPStream;
 import net.sf.samtools.seekablestream.SeekableStream;
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
@@ -67,7 +66,7 @@ public class BAMHttpReader implements AlignmentReader {
                 throw new RuntimeException("Could not load index file for file: " + url.getPath());
             }
 
-            SeekableStream ss = new IGVSeekableBufferedStream(getSeekableStream(url), 128000);
+            SeekableStream ss = new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(url), 128000);
             //SeekableStream ss = getSeekableStream(url);
             log.debug("Initializing SAMFileReader");
 
@@ -136,7 +135,7 @@ public class BAMHttpReader implements AlignmentReader {
     public CloseableIterator<Alignment> query(String sequence, int start, int end, boolean contained) {
         try {
             if (reader == null) {
-                SeekableStream ss = new IGVSeekableBufferedStream(getSeekableStream(url));
+                SeekableStream ss = new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(url));
                 reader = new SAMFileReader(ss, indexFile, false);
             }
             CloseableIterator<SAMRecord> iter = reader.query(sequence, start + 1, end, contained);
@@ -145,19 +144,6 @@ public class BAMHttpReader implements AlignmentReader {
             log.error("Error opening SAM reader", e);
             throw new RuntimeException("Error opening SAM reader", e);
         }
-    }
-
-    private SeekableStream getSeekableStream(URL url) throws IOException {
-        String protocol = url.getProtocol().toLowerCase();
-        SeekableStream is = null;
-        if (protocol.equals("http") || protocol.equals("https")) {
-            is = IGVSeekableStreamFactory.getInstance().getStreamFor(url.toExternalForm());
-        } else if (protocol.equals("ftp")) {
-            is = new SeekableFTPStream(url);
-        } else {
-            throw new RuntimeException("Unknown protocol: " + protocol);
-        }
-        return is;
     }
 
     /**
