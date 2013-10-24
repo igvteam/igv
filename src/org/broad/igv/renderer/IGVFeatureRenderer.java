@@ -216,7 +216,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         // the track rectangle.
                         int nameStart = Math.max(0, pixelStart);
                         int nameEnd = Math.min(pixelEnd, (int) trackRectangle.getWidth());
-                        int textBaselineY = pixelYCenter + blockHeight;
+                        int textBaselineY =  trackRectangle.y + trackRectangle.height - 3;
 
                         // Calculate the minimum amount of vertical track
                         // space required be we  draw the
