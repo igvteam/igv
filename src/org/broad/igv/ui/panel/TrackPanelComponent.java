@@ -68,12 +68,14 @@ abstract public class TrackPanelComponent extends JPanel {
         };
 
 
-        final KeyStroke delKey = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0, false);
-        final KeyStroke backspaceKey = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0, false);
+        if(!Globals.isProduction()){
+            final KeyStroke delKey = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0, false);
+            final KeyStroke backspaceKey = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0, false);
 
-        getInputMap().put(delKey, "deleteTracks");
-        getInputMap().put(backspaceKey, "deleteTracks");
-        getActionMap().put("deleteTracks", delTracksAction);
+            getInputMap().put(delKey, "deleteTracks");
+            getInputMap().put(backspaceKey, "deleteTracks");
+            getActionMap().put("deleteTracks", delTracksAction);
+        }
     }
 
     public TrackPanel getTrackPanel() {
