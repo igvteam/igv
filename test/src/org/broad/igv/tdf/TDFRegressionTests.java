@@ -43,7 +43,7 @@ public class TDFRegressionTests extends AbstractHeadlessTest{
     public TestRule testTimeout = new Timeout((int) 30e6);
 
      /**
-     * IGV-1421 - error reading a version 1 file (error thrown in header)
+     * IGV-1417 and/or IGV-1421 - error reading a version 1 file (error thrown in header)
      */
     @Test
     public void test_IGV1417() {
@@ -52,17 +52,12 @@ public class TDFRegressionTests extends AbstractHeadlessTest{
         assertEquals(1, reader.getVersion());
     }
 
-    /**
-     * IGV-1421 - error reading a version 2 file (error thrown in header)
-     */
     @Test
-    public void test_IGV1421() {
-        String tdfFile = "http://www.broadinstitute.org/igvdata/1KG/freeze5/NA12878.pilot2.454.bam.tdf";
+    public void test_v3() {
+        String tdfFile = "http://www.broadinstitute.org/igvdata/test/tdf/NA12878.pilot2.454.bam.tdf";
         TDFReader reader = TDFReader.getReader(tdfFile);
-        assertEquals(2, reader.getVersion());
+        assertEquals(3, reader.getVersion());
     }
-
-
 
     String[] dm3posChromos = new String[]{"chr2RHet", "chr4", "chrU"};
     String[] dm3emptyChromos = new String[]{"chrUextra"};
