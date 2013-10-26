@@ -140,8 +140,8 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                 double virtualPixelStart = (feature.getStart() - origin) / locScale;
                 double virtualPixelEnd = (feature.getEnd() - origin) / locScale;
 
-                int pixelEnd = (int) Math.round(Math.min(trackRectangleMaxX, virtualPixelEnd));
                 int pixelStart = (int) Math.round(Math.max(trackRectangleX, virtualPixelStart));
+                int pixelEnd = (int) Math.round(Math.min(trackRectangleMaxX, virtualPixelEnd));
 
                 if (isGenotypeRenderer) {
                     if ((pixelEnd - pixelStart) < 3) {
@@ -182,26 +182,28 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     hasExons = bf.hasExons();
                 }
 
+                // Trim ends by a pixel, so adjacent features have some whitespace between them
+                pixelEnd = Math.max(pixelStart + 1, pixelEnd-1);
+                pixelThickEnd = Math.max(pixelThickStart + 1, pixelThickEnd - 1);
+
                 // Add directional arrows and exons, if there is room.
                 int pixelYCenter = trackRectangle.y + NORMAL_STRAND_Y_OFFSET / 2;
-                if (!hasExons) {
-                    drawFeatureBlock(pixelStart, pixelEnd, pixelThickStart, pixelThickEnd, pixelYCenter, g2D);
-                }
 
-
-                if ((pixelEnd - pixelStart < 3) && hasExons) {
-                    drawFeatureBounds(pixelStart, pixelEnd, pixelYCenter, g2D);
-                } else {
-                    if (hasExons) {
+                if (hasExons) {
+                    if ((pixelEnd - pixelStart < 3)) {
+                        drawFeatureBounds(pixelStart, pixelEnd, pixelYCenter, g2D);
+                    } else {
                         drawExons(feature, pixelYCenter, context, g2D, trackRectangle, displayMode,
                                 alternateExonColor, track.getColor(), track.getAltColor());
-                    } else {
-                        Graphics2D arrowGraphics = context.getGraphic2DForColor(Color.WHITE);
-                        drawStrandArrows(feature.getStrand(), pixelStart, pixelEnd, pixelYCenter, 0,
-                                displayMode, arrowGraphics);
                     }
+                } else {
 
+                    drawFeatureBlock(pixelStart, pixelEnd, pixelThickStart, pixelThickEnd, pixelYCenter, g2D);
+                    Graphics2D arrowGraphics = context.getGraphic2DForColor(Color.WHITE);
+                    drawStrandArrows(feature.getStrand(), pixelStart, pixelEnd, pixelYCenter, 0,
+                            displayMode, arrowGraphics);
                 }
+
 
                 // Draw name , if there is room
                 if (displayMode != Track.DisplayMode.SQUISHED) {
@@ -216,7 +218,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         // the track rectangle.
                         int nameStart = Math.max(0, pixelStart);
                         int nameEnd = Math.min(pixelEnd, (int) trackRectangle.getWidth());
-                        int textBaselineY =  trackRectangle.y + trackRectangle.height - 3;
+                        int textBaselineY = trackRectangle.y + trackRectangle.height - 3;
 
                         // Calculate the minimum amount of vertical track
                         // space required be we  draw the
@@ -268,7 +270,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
      * @param g
      */
     private void drawFeatureBlock(int pixelStart, int pixelEnd, int pixelThickStart, int pixelThickEnd,
-                                        int yOffset, Graphics2D g) {
+                                  int yOffset, Graphics2D g) {
 
         Graphics2D g2D = (Graphics2D) g.create();
 
@@ -324,7 +326,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                              Graphics2D g2D, Rectangle trackRectangle, Track.DisplayMode mode,
                              boolean alternateExonColor, Color color1, Color color2) {
 
-        Graphics2D exonNumberGraphics = (Graphics2D)g2D.create();
+        Graphics2D exonNumberGraphics = (Graphics2D) g2D.create();
 
 
         exonNumberGraphics.setColor(Color.BLACK);
@@ -486,12 +488,13 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
     /**
      * Draw an individual rectangle representing an individual exon
+     *
      * @param x
      * @param y
      * @param width
      * @param height
      */
-    protected void drawExonRect(Graphics blockGraphics, Exon exon, int x, int y, int width, int height){
+    protected void drawExonRect(Graphics blockGraphics, Exon exon, int x, int y, int width, int height) {
         blockGraphics.fillRect(x, y, width, height);
     }
 
