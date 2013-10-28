@@ -671,7 +671,7 @@ public class GenomeManager {
     public boolean loadFromArchive(String genomeId) throws IOException {
         GenomeListItem matchingItem = findGenomeListItemById(genomeId);
         if (matchingItem != null) {
-            GenomeManager.getInstance().addGenomeItems(Arrays.asList(matchingItem));
+            GenomeManager.getInstance().addGenomeItems(Arrays.asList(matchingItem), false);
         }
         return matchingItem != null;
     }
@@ -1178,7 +1178,7 @@ public class GenomeManager {
         if (monitor != null) monitor.fireProgressChange(75);
 
         GenomeListItem newItem = new GenomeListItem(genomeDisplayName, genomeFile.getAbsolutePath(), genomeId);
-        addGenomeItem(newItem);
+        addGenomeItem(newItem, true);
         return newItem;
 
     }
@@ -1386,19 +1386,19 @@ public class GenomeManager {
         return currentGenome;
     }
 
-    public void addGenomeItems(Collection<GenomeListItem> genomeListItems) {
+    public void addGenomeItems(Collection<GenomeListItem> genomeListItems, boolean userDefined) {
         for (GenomeListItem genomeListItem : genomeListItems) {
             genomeItemMap.put(genomeListItem.getId(), genomeListItem);
-            userDefinedGenomeArchiveList.add(genomeListItem);
+            if(userDefined) userDefinedGenomeArchiveList.add(genomeListItem);
         }
         PreferenceManager.getInstance().saveGenomeIdDisplayList(genomeItemMap.values());
         updateImportedGenomePropertyFile();
     }
 
-    public void addGenomeItem(GenomeListItem genomeListItem) {
+    public void addGenomeItem(GenomeListItem genomeListItem, boolean userDefined) {
         genomeItemMap.put(genomeListItem.getId(), genomeListItem);
         PreferenceManager.getInstance().saveGenomeIdDisplayList(genomeItemMap.values());
-        userDefinedGenomeArchiveList.add(genomeListItem);
+        if(userDefined) userDefinedGenomeArchiveList.add(genomeListItem);
         updateImportedGenomePropertyFile();
     }
 
@@ -1522,4 +1522,30 @@ public class GenomeManager {
     }
 
 
+    /**
+     * Delete the specified .genome files and their sequences, only if they were downloaded from the
+     * server. Doesn't touch user defined genomes
+     * @param removedValuesList
+     */
+    public void deleteDownloadedGenomes(List<GenomeListItem> removedValuesList) throws IOException{
+        Collection<GenomeListItem> userDefinedGenomes = getUserDefinedGenomeArchiveList();
+        for(GenomeListItem item: removedValuesList){
+            if(userDefinedGenomes.contains(item)){
+                continue;
+            }
+
+            String loc = item.getLocation();
+            if(!HttpUtils.isRemoteURL(loc)){
+                File genFile = new File(loc);
+                GenomeDescriptor descriptor = parseGenomeArchiveFile(genFile);
+                if(!HttpUtils.isRemoteURL(descriptor.getSequenceLocation())){
+                    File seqFile = new File(descriptor.getSequenceLocation());
+                    seqFile.delete();
+                    File indexFile = new File(seqFile.getAbsolutePath() + ".fai");
+                    indexFile.delete();
+                }
+                genFile.delete();
+            }
+        }
+    }
 }

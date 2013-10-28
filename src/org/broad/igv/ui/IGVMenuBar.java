@@ -567,6 +567,11 @@ public class IGVMenuBar extends JMenuBar {
                     GenomeManager.getInstance().buildGenomeItemList();
                     igv.getContentPane().getCommandBar().refreshGenomeListComboBox();
                     if (removedValuesList != null && !removedValuesList.isEmpty()) {
+                        try {
+                            GenomeManager.getInstance().deleteDownloadedGenomes(removedValuesList);
+                        } catch (IOException e) {
+                            MessageUtils.showErrorMessage("Error deleting genome files", e);
+                        }
                         GenomeManager.getInstance().updateImportedGenomePropertyFile();
                         notifyGenomesAddedRemoved(removedValuesList, false);
                     }

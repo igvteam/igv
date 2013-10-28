@@ -323,7 +323,7 @@ public class CommandExecutor {
         }
         if (ParsingUtils.pathExists(genomePath)) {
             try {
-                igv.loadGenome(genomePath, null);
+                igv.loadGenome(genomePath, null, true);
             } catch (IOException e) {
                 throw new RuntimeException("Error loading genome: " + genomeID);
             }
