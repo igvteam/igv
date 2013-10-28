@@ -64,7 +64,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
 
         initData(inputListItems);
 
-        downloadButton.setVisible(!Globals.isProduction());
+        downloadSequenceCB.setVisible(!Globals.isProduction() && listSelectionMode == ListSelectionModel.SINGLE_SELECTION);
     }
 
     private void initData(Collection<GenomeListItem> inputListItems) {
@@ -111,6 +111,10 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
      */
     private void genomeListMouseClicked(MouseEvent e) {
         switch (e.getClickCount()) {
+            case 1:
+                List<GenomeListItem> selValues = genomeList.getSelectedValuesList();
+                downloadSequenceCB.setEnabled(selValues != null && selValues.size() == 1);
+                break;
             case 2:
                 okButtonActionPerformed(null);
                 break;
@@ -125,29 +129,22 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
         return selectedValuesList;
     }
 
-    private void downloadButtonActionPerformed(ActionEvent e) {
-        List<GenomeListItem> selectedGenomeList = genomeList.getSelectedValuesList();
-        if(selectedGenomeList.size() == 1){
-            downloadGenome(selectedGenomeList.get(0));
-        }else{
-            MessageUtils.showMessage("Please select 1 genome to download");
-        }
-
+    public boolean downloadSequence(){
+        return !isCanceled() && downloadSequenceCB.isEnabled() && downloadSequenceCB.isSelected();
     }
 
-    private void downloadGenome(final GenomeListItem genomeListItem) {
-        final File targetDir = new File(DirectoryManager.getGenomeCacheDirectory(), "permanent");
+    static void downloadGenome(final Frame dialogsParent, final GenomeListItem genomeListItem) {
+        final File targetDir = DirectoryManager.getGenomeCacheDirectory();
         if(!targetDir.exists()){
             targetDir.mkdirs();
         }
 
-        setVisible(false);
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
 
                 try {
-                    RunnableResult result = GenomeManager.getInstance().downloadWholeGenome(genomeListItem.getLocation(), targetDir);
+                    RunnableResult result = GenomeManager.getInstance().downloadWholeGenome(genomeListItem.getLocation(), targetDir, dialogsParent);
                     if(result == RunnableResult.FAILURE){
                         throw new IOException("Unknown Failure");
                     }
@@ -182,8 +179,8 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
         genomeFilter = new JTextField();
         scrollPane1 = new JScrollPane();
         genomeList = new JList7<GenomeListItem>();
+        downloadSequenceCB = new JCheckBox();
         buttonBar = new JPanel();
-        downloadButton = new JButton();
         okButton = new JButton();
         cancelButton = new JButton();
 
@@ -262,6 +259,14 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                     scrollPane1.setViewportView(genomeList);
                 }
                 contentPanel.add(scrollPane1);
+
+                //---- downloadSequenceCB ----
+                downloadSequenceCB.setText("Download Sequence");
+                downloadSequenceCB.setAlignmentX(1.0F);
+                downloadSequenceCB.setToolTipText("Download the full sequence for this organism. Note that these files can be very large (human is about 3 Gb)");
+                downloadSequenceCB.setMaximumSize(new Dimension(300, 23));
+                downloadSequenceCB.setPreferredSize(new Dimension(200, 23));
+                contentPanel.add(downloadSequenceCB);
             }
             dialogPane.add(contentPanel, BorderLayout.CENTER);
 
@@ -271,18 +276,6 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                 buttonBar.setLayout(new GridBagLayout());
                 ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
                 ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
-
-                //---- downloadButton ----
-                downloadButton.setText("Download Genome");
-                downloadButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        downloadButtonActionPerformed(e);
-                    }
-                });
-                buttonBar.add(downloadButton, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- okButton ----
                 okButton.setText("OK");
@@ -294,7 +287,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                 });
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                    new Insets(0, 0, 5, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -306,7 +299,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                    new Insets(0, 0, 5, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
@@ -339,8 +332,8 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
     private JTextField genomeFilter;
     private JScrollPane scrollPane1;
     private JList7<GenomeListItem> genomeList;
+    private JCheckBox downloadSequenceCB;
     private JPanel buttonBar;
-    private JButton downloadButton;
     private JButton okButton;
     private JButton cancelButton;
     // End of variables declaration//GEN-END:variables

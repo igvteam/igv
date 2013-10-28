@@ -52,23 +52,7 @@ public class ManageGenomesDialog extends JDialog {
 
         initData();
 
-        genomeList.setCellRenderer(new ListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList jList, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                JLabel comp = new JLabel(value.toString());
-                if (value instanceof GenomeListItem) {
-                    GenomeListItem item = (GenomeListItem) value;
-                    comp.setText(item.getDisplayableName());
-                    comp.setToolTipText(item.getLocation());
-                    if (isSelected) {
-                        comp.setBackground(genomeList.getSelectionBackground());
-                        comp.setForeground(genomeList.getSelectionForeground());
-                        comp.setOpaque(isSelected);
-                    }
-                }
-                return comp;
-            }
-        });
+        genomeList.setCellRenderer(new GenomeCellRenderer());
     }
 
     private void initData() {
@@ -367,6 +351,25 @@ public class ManageGenomesDialog extends JDialog {
         public boolean canImport(TransferSupport support) {
             support.setShowDropLocation(true);
             return support.isDrop();
+        }
+    }
+
+    private class GenomeCellRenderer implements ListCellRenderer<GenomeListItem>{
+        @Override
+        public Component getListCellRendererComponent(JList<? extends GenomeListItem> list, GenomeListItem value, int index, boolean isSelected, boolean cellHasFocus) {
+            JLabel comp = new JLabel(value.toString());
+            comp.setText(value.getDisplayableName());
+            comp.setToolTipText(value.getLocation());
+            if (isSelected) {
+                comp.setBackground(genomeList.getSelectionBackground());
+                comp.setForeground(genomeList.getSelectionForeground());
+                comp.setOpaque(isSelected);
+            }
+
+            if(value.hasLocalSequence()){
+                comp.setFont(comp.getFont().deriveFont(Font.BOLD));
+            }
+            return comp;
         }
     }
 

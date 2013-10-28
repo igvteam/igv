@@ -355,7 +355,7 @@ public class HttpUtils {
 
 
     /**
-     * Calls {@link #downloadFile(String, java.io.File, boolean)}
+     * Calls {@link #downloadFile(String, java.io.File, boolean, Frame)}
      * with {@code showProgressDialog = false}
      * @param url
      * @param outputFile
@@ -363,7 +363,7 @@ public class HttpUtils {
      * @throws IOException
      */
     public RunnableResult downloadFile(String url, File outputFile) throws IOException {
-        URLDownloader downloader = downloadFile(url, outputFile, false);
+        URLDownloader downloader = downloadFile(url, outputFile, null);
         return downloader.getResult();
     }
 
@@ -371,12 +371,13 @@ public class HttpUtils {
      *
      * @param url
      * @param outputFile
-     * @param showProgressDialog Whether to show a cancellable progress dialog
+     * @param dialogsParent Parent of dialog to show progress. If null, none shown
      * @return URLDownloader used to perform download
      * @throws IOException
      */
-    public URLDownloader downloadFile(String url, File outputFile, boolean showProgressDialog) throws IOException {
+    public URLDownloader downloadFile(String url, File outputFile, Frame dialogsParent) throws IOException {
         final URLDownloader urlDownloader = new URLDownloader(url, outputFile);
+        boolean showProgressDialog = dialogsParent != null;
         if(!showProgressDialog){
             urlDownloader.run();
             return urlDownloader;
@@ -389,7 +390,7 @@ public class HttpUtils {
                     urlDownloader.cancel(true);
                 }
             };
-            CancellableProgressDialog dialog = CancellableProgressDialog.showCancellableProgressDialog(IGV.getMainFrame(), "Downloading " + url, buttonListener, false, monitor);
+            CancellableProgressDialog dialog = CancellableProgressDialog.showCancellableProgressDialog(dialogsParent, "Downloading " + url, buttonListener, false, monitor);
             LongRunningTask.submit(urlDownloader);
             return urlDownloader;
         }

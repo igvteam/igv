@@ -1192,7 +1192,7 @@ public class GenomeManager {
      *
      * @throws IOException
      */
-    public RunnableResult downloadWholeGenome(String srcPath, File targetDir) throws IOException{
+    public RunnableResult downloadWholeGenome(String srcPath, File targetDir, Frame dialogsParent) throws IOException{
 
         //Whether the srcGenome is simply a fasta file
         boolean isFastaFile = FastaUtils.isFastaPath(srcPath);
@@ -1201,7 +1201,7 @@ public class GenomeManager {
 
         if(isFastaFile){
             //Simple case, just need to copy fasta and create index
-            return downloadFasta(srcPath, targetDir, srcFileName , showProgressDialog);
+            return downloadFasta(srcPath, targetDir, srcFileName , dialogsParent);
 
         }else if(srcFileName.endsWith(Globals.GENOME_FILE_EXTENSION)){
             //Most useful case of a .genome file, which contains nearly everything in it, except the
@@ -1226,7 +1226,7 @@ public class GenomeManager {
 
             // Copy file directly from the server to local area
             // Shows cancellable dialog
-            RunnableResult fastaResult = downloadFasta(sequencePath, targetDir, sequenceFileName, showProgressDialog);
+            RunnableResult fastaResult = downloadFasta(sequencePath, targetDir, sequenceFileName, dialogsParent);
             if(fastaResult.isSuccess()){
                 //Rewrite properties file to point to local fasta
                 rewriteSequenceLocation(targetGenomeFile, localSequenceFile.getAbsolutePath());
@@ -1244,15 +1244,15 @@ public class GenomeManager {
      * @param fastaPath  Full source path of fasta
      * @param targetDir  Destination directory for fasta file
      * @param targetName Destination file name for fasta file
-     * @param showProgressDialog Whether to show progress dialog during download
+     * @param dialogsParent Parent of progress dialog shown. None shown if null
      * @return
      * @throws IOException
      */
-    private RunnableResult downloadFasta(String fastaPath, File targetDir, String targetName, boolean showProgressDialog) throws IOException{
+    private RunnableResult downloadFasta(String fastaPath, File targetDir, String targetName, Frame dialogsParent) throws IOException{
         //Simple case, just need to copy fasta and create index
         File destFile = new File(targetDir, targetName);
         //TODO PROMPT TO OVERWRITE IF FILE EXISTS
-        HttpUtils.URLDownloader urlDownloader = HttpUtils.getInstance().downloadFile(fastaPath, destFile, showProgressDialog);
+        HttpUtils.URLDownloader urlDownloader = HttpUtils.getInstance().downloadFile(fastaPath, destFile, dialogsParent);
         RunnableResult fastaResult = urlDownloader.getResult();
         //If not successful for whatever reason, we don't get the index
         if(!fastaResult.isSuccess()) return fastaResult;

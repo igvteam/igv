@@ -564,7 +564,19 @@ public class IGV {
                 GenomeSelectionDialog dialog = new GenomeSelectionDialog(IGV.getMainFrame(), inputListItems, ListSelectionModel.SINGLE_SELECTION);
                 dialog.setVisible(true);
                 List<GenomeListItem> selectedValues = dialog.getSelectedValuesList();
+
                 if (selectedValues != null && selectedValues.size() >= 1) {
+
+                    if(selectedValues.size() == 1 && dialog.downloadSequence()){
+                        GenomeListItem oldItem = selectedValues.get(0);
+                        GenomeSelectionDialog.downloadGenome(getMainFrame(), oldItem);
+                        selectedValues = new ArrayList<GenomeListItem>();
+
+                        File newLocation = new File(DirectoryManager.getGenomeCacheDirectory().getAbsolutePath(), Utilities.getFileNameFromURL(oldItem.getLocation()));
+                        GenomeListItem newItem = new GenomeListItem(oldItem.getDisplayableName(), newLocation.getAbsolutePath(),oldItem.getId());
+                        selectedValues.add(newItem);
+                    }
+
                     GenomeManager.getInstance().addGenomeItems(selectedValues);
                     getContentPane().getCommandBar().refreshGenomeListComboBox();
                     selectGenomeFromList(selectedValues.get(0).getId());
@@ -574,6 +586,13 @@ public class IGV {
         LongRunningTask.submit(showDialog);
     }
 
+    private void downloadSelectedGenome(List<GenomeListItem> selectedGenomeList) {
+        if(selectedGenomeList.size() == 1){
+            GenomeSelectionDialog.downloadGenome(getMainFrame(), selectedGenomeList.get(0));
+        }else{
+            MessageUtils.showMessage("Can only download sequence for 1 genome at a time");
+        }
+    }
     /**
      * Load a .genome file directly.  This method really belongs in IGVMenuBar.
      *

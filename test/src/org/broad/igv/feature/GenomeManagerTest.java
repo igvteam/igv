@@ -156,7 +156,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         String outDirPath = TestUtils.TMP_OUTPUT_DIR;
         File outDirFile = new File(outDirPath);
         File outGenomeFile = new File(outDirPath, genId + ".genome");
-        RunnableResult result = GenomeManager.getInstance().downloadWholeGenome(genomePath, outDirFile);
+        RunnableResult result = GenomeManager.getInstance().downloadWholeGenome(genomePath, outDirFile, null);
         assertTrue("Download of genome failed", result.isSuccess());
 
         assertTrue(outGenomeFile.exists());
