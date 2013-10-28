@@ -373,11 +373,11 @@ public class IgvTools {
                 validateArgsLength(nonOptionArgs, 3, "Error in syntax. Expected: " + command + " [options] inputfile outputdir");
                 String outputDirectory = nonOptionArgs[2];
                 GFFParser.splitFileByType(ifile, outputDirectory);
-            } else if(command.equals("gff3tobed")){
+            } else if(command.equals("gfftobed")){
                 validateArgsLength(nonOptionArgs, 3, "Error in syntax. Expected: " + command + " inputfile outputfile");
                 String ofile = nonOptionArgs[2];
                 setWriteToStdOout(ofile);
-                GFF3ToBed(ifile, ofile);
+                GFFToBed(ifile, ofile);
             } else if (command.toLowerCase().equals("gcttoigv")) {
                 validateArgsLength(nonOptionArgs, 4, basic_syntax + " genomeId");
                 String ofile = nonOptionArgs[2];
@@ -444,10 +444,15 @@ public class IgvTools {
         }
     }
 
-    private void GFF3ToBed(String ifile, String ofile) throws FileNotFoundException{
+    private void GFFToBed(String ifile, String ofile) throws FileNotFoundException{
         IGVBEDCodec outCodec = new IGVBEDCodec();
         GFFParser parser = new GFFParser();
-        GFFCodec codec = new GFFCodec(GFFCodec.Version.GFF3, null);
+        GFFCodec codec = null;
+        try {
+            codec = (GFFCodec) CodecFactory.getCodec(ifile, null);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Input file is not recognized as a GFF");
+        }
         BufferedReader reader = null;
         PrintStream outStream = System.out;
         if(!ofile.equals(STDOUT_FILE_STR)){
