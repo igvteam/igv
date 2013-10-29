@@ -612,7 +612,7 @@ public class HttpUtils {
 
             int code = conn.getResponseCode();
 
-            if(log.isDebugEnabled()){
+            if (log.isDebugEnabled()) {
                 //logHeaders(conn);
             }
 
@@ -660,7 +660,7 @@ public class HttpUtils {
     private void logHeaders(HttpURLConnection conn) {
         Map<String, List<String>> headerFields = conn.getHeaderFields();
         log.debug("Headers for " + conn.getURL());
-        for(Map.Entry<String, List<String>> header: headerFields.entrySet()){
+        for (Map.Entry<String, List<String>> header : headerFields.entrySet()) {
             log.debug(header.getKey() + ": " + org.apache.commons.lang.StringUtils.join(header.getValue(), ','));
         }
     }
@@ -691,71 +691,73 @@ public class HttpUtils {
         if (BYTE_RANGE_DISABLED) return false;
 
         // We can test byte-range success for hosts we can reach.
+        synchronized (byteRangeTestMap) {
+            final String host = url.getHost();
 
-        final String host = url.getHost();
+            if (byteRangeTestMap.containsKey(host)) {
+                return byteRangeTestMap.get(host);
+            } else {
+                SeekableStream str = null;
+                try {
+                    boolean byteRangeTestSuccess = true;
 
-        if (byteRangeTestMap.containsKey(host)) {
-            return byteRangeTestMap.get(host);
-        } else {
-            SeekableStream str = null;
-            try {
-                boolean byteRangeTestSuccess = true;
-
-                if (host.contains("broadinstitute.org")) {
-                    byteRangeTestSuccess = testBroadHost(host);
-                } else {
-                    // Non-broad URL
-                    int l = (int) Math.min(1000, HttpUtils.getInstance().getContentLength(url));
-                    if (l > 100) {
-
-                        byte[] firstBytes = new byte[l];
-                        str = new IGVSeekableHTTPStream(url);
-                        str.readFully(firstBytes);
-
-                        int end = firstBytes.length;
-                        int start = end - 100;
-                        str.seek(start);
-                        int len = end - start;
-                        byte[] buffer = new byte[len];
-                        int n = 0;
-                        while (n < len) {
-                            int count = str.read(buffer, n, len - n);
-                            if (count < 0)
-                                throw new EOFException();
-                            n += count;
-                        }
-
-                        for (int i = 0; i < len; i++) {
-                            if (buffer[i] != firstBytes[i + start]) {
-                                byteRangeTestSuccess = false;
-                                break;
-                            }
-                        }
+                    if (host.contains("broadinstitute.org")) {
+                        byteRangeTestSuccess = testBroadHost(host);
                     } else {
-                        // Too small a sample to test, return "true" but don't record this host as tested.
-                        return true;
+                        // Non-broad URL
+                        int l = (int) Math.min(1000, HttpUtils.getInstance().getContentLength(url));
+                        if (l > 100) {
+
+                            byte[] firstBytes = new byte[l];
+                            str = new IGVSeekableHTTPStream(url);
+                            str.readFully(firstBytes);
+
+                            int end = firstBytes.length;
+                            int start = end - 100;
+                            str.seek(start);
+                            int len = end - start;
+                            byte[] buffer = new byte[len];
+                            int n = 0;
+                            while (n < len) {
+                                int count = str.read(buffer, n, len - n);
+                                if (count < 0)
+                                    throw new EOFException();
+                                n += count;
+                            }
+
+                            for (int i = 0; i < len; i++) {
+                                if (buffer[i] != firstBytes[i + start]) {
+                                    byteRangeTestSuccess = false;
+                                    break;
+                                }
+                            }
+                        } else {
+                            // Too small a sample to test, return "true" but don't record this host as tested.
+                            return true;
+                        }
                     }
-                }
 
-                if (byteRangeTestSuccess) {
-                    log.info("Range-byte request succeeded");
-                } else {
-                    log.info("Range-byte test failed -- problem with client network environment.");
-                }
+                    if (byteRangeTestSuccess) {
+                        log.info("Range-byte request succeeded");
+                    } else {
+                        log.info("Range-byte test failed -- problem with client network environment.");
+                    }
 
-                byteRangeTestMap.put(host, byteRangeTestSuccess);
-                return byteRangeTestSuccess;
+                    byteRangeTestMap.put(host, byteRangeTestSuccess);
+                    return byteRangeTestSuccess;
 
-            } catch (IOException e) {
-                log.error("Error while testing byte range " + e.getMessage());
-                // We could not reach the test server, so we can't know if this client can do byte-range tests or
-                // not.  Take the "optimistic" view.
-                return true;
-            } finally {
-                if (str != null) try {
-                    str.close();
+
                 } catch (IOException e) {
-                    log.error("Error closing stream (" + url.toExternalForm() + ")", e);
+                    log.error("Error while testing byte range " + e.getMessage());
+                    // We could not reach the test server, so we can't know if this client can do byte-range tests or
+                    // not.  Take the "optimistic" view.
+                    return true;
+                } finally {
+                    if (str != null) try {
+                        str.close();
+                    } catch (IOException e) {
+                        log.error("Error closing stream (" + url.toExternalForm() + ")", e);
+                    }
                 }
             }
 
