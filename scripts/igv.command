@@ -1,4 +1,8 @@
 #!/bin/sh
+
+#This script is intended for launching on Macs
+#It may or may not work on *nix, definitely not on windows
+
 #apple.laf.useScreenMenuBar for Macs, to put menu bar at top of screen
 #-Xdock:name again for Macs, sets the name in menu bar
 #-Xmx2000m indicates 2000 mb of memory, adjust number up or down as needed
