@@ -100,7 +100,7 @@ public class PeakTrack extends AbstractTrack {
     public PeakTrack(final ResourceLocator locator, Genome genome) throws IOException {
         super(locator);
         this.genome = genome;
-        setHeight(30);
+        setHeight(20);
 
 
         try {
@@ -260,10 +260,9 @@ public class PeakTrack extends AbstractTrack {
         }
     }
 
-
     @Override
-    public void setHeight(int h) {
-        super.setHeight(h);
+    public void setHeight(int h, boolean force) {
+        super.setHeight(h, force);
 
         int nBands = getDisplayMode() == DisplayMode.COLLAPSED ? 1 : nTimePoints;
 
