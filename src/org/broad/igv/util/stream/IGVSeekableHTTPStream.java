@@ -1,71 +1,47 @@
 /*
- * The MIT License
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
  *
- * Copyright (c) 2013 The Broad Institute
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  */
+
 package org.broad.igv.util.stream;
 
 import net.sf.samtools.seekablestream.SeekableStream;
-import net.sf.samtools.util.HttpUtils;
+import org.apache.log4j.Logger;
+import org.broad.tribble.util.URLHelper;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.Proxy;
 import java.net.URL;
 
 /**
- * Temporary class -- remove when Tribble is updated with the "actualLength" fix in the read method.
- *
- * @author jrobinso
+ * TODO Get rid of this class
+ * Temporary workaround to let us use IGVUrlHelper, think
+ * it's what's causing the issue with reading TDF from web start over http
  */
 public class IGVSeekableHTTPStream extends SeekableStream {
 
+    static Logger log = Logger.getLogger(IGVSeekableHTTPStream.class);
+
     private long position = 0;
     private long contentLength = -1;
-    private final URL url;
-    private final Proxy proxy;
+
+    private URLHelper helper;
 
     public IGVSeekableHTTPStream(final URL url) {
-        this(url, null);
 
-    }
-
-    public IGVSeekableHTTPStream(final URL url, Proxy proxy) {
-
-        this.proxy = proxy;
-        this.url = url;
-
-        // Try to get the file length
-        // Note: This also sets setDefaultUseCaches(false), which is important
-        final String contentLengthString = HttpUtils.getHeaderField(url, "Content-Length");
-        if (contentLengthString != null) {
-            try {
-                contentLength = Long.parseLong(contentLengthString);
-            }
-            catch (NumberFormatException ignored) {
-                System.err.println("WARNING: Invalid content length (" + contentLengthString + "  for: " + url);
-                contentLength = -1;
-            }
+        this.helper = new IGVUrlHelper(url);
+        try {
+            this.contentLength = this.helper.getContentLength();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage(), e);
         }
 
     }
@@ -95,36 +71,29 @@ public class IGVSeekableHTTPStream extends SeekableStream {
 
     public int read(byte[] buffer, int offset, int len) throws IOException {
 
+        String stats = "Offset="+offset+",len="+len+",buflen="+buffer.length;
         if (offset < 0 || len < 0 || (offset + len) > buffer.length) {
-            throw new IndexOutOfBoundsException("Offset="+offset+",len="+len+",buflen="+buffer.length);
+            throw new IndexOutOfBoundsException(stats);
         }
         if (len == 0) {
             return 0;
         }
 
-        HttpURLConnection connection = null;
         InputStream is = null;
-        String byteRange = "";
         int n = 0;
         try {
-            connection = proxy == null ?
-                    (HttpURLConnection) url.openConnection() :
-                    (HttpURLConnection) url.openConnection(proxy);
 
             long endRange = position + len - 1;
             // IF we know the total content length, limit the end range to that.
             if (contentLength > 0) {
                 endRange = Math.min(endRange, contentLength);
             }
-            byteRange = "bytes=" + position + "-" + endRange;
-            connection.setRequestProperty("Range", byteRange);
+            if(log.isTraceEnabled()){
+                log.trace("Trying to read range " + position + " to " + endRange);
+            }
+            is = this.helper.openInputStreamForRange(position, endRange);
 
-            int actualLength = connection.getContentLength();  // Might be < len
-            if(actualLength < 0) actualLength = len;
-
-            is = connection.getInputStream();
-
-            while (n < actualLength) {
+            while (n < len) {
                 int count = is.read(buffer, offset + n, len - n);
                 if (count < 0) {
                     if (n == 0) {
@@ -137,7 +106,6 @@ public class IGVSeekableHTTPStream extends SeekableStream {
             }
 
             position += n;
-
             return n;
 
         }
@@ -148,6 +116,7 @@ public class IGVSeekableHTTPStream extends SeekableStream {
             // an IOException with the 416 code in the message.  Windows translates the error to an EOFException.
             //
             //  The BAM file iterator  uses the return value to detect end of file (specifically looks for n == 0).
+            log.error(e.getMessage(), e);
             if (e.getMessage().contains("416") || (e instanceof EOFException)) {
                 if (n == 0) {
                     return -1;
@@ -167,9 +136,6 @@ public class IGVSeekableHTTPStream extends SeekableStream {
             if (is != null) {
                 is.close();
             }
-            if (connection != null) {
-                connection.disconnect();
-            }
         }
     }
 
@@ -187,6 +153,6 @@ public class IGVSeekableHTTPStream extends SeekableStream {
 
     @Override
     public String getSource() {
-        return url.toString();
+        return this.helper.getUrl().toExternalForm();
     }
 }
