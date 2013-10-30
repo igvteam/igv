@@ -178,7 +178,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
         if (tokenCount > 8) {
             String colorString = tokens[8];
             if (colorString.trim().length() > 0 && !colorString.equals(".")) {
-                feature.setColor(ParsingUtils.parseColor(colorString));
+                feature.setColor(ColorUtilities.stringToColor(colorString));
             }
         }
 

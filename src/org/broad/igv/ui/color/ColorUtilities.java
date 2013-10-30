@@ -14,6 +14,7 @@ package org.broad.igv.ui.color;
 
 
 import org.apache.log4j.Logger;
+import org.broad.igv.util.ObjectCache;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -32,7 +33,7 @@ public class ColorUtilities {
 
     private static Logger log = Logger.getLogger(ColorUtilities.class);
 
-    public static Map<Object, Color> colorCache = new WeakHashMap<Object, Color>(100);
+    public static ObjectCache<Object, Color> colorCache = new ObjectCache<Object, Color>(1000);
 
     private static float[] whiteComponents = Color.white.getRGBColorComponents(null);
 
@@ -65,11 +66,11 @@ public class ColorUtilities {
     }
 
     /**
-     * @see #randomColor(int, float)
      * @param idx
      * @return
+     * @see #randomColor(int, float)
      */
-    private static int[] quasiRandomColor(int idx){
+    private static int[] quasiRandomColor(int idx) {
         int BASE_COL = 40;
         int RAND_COL = 255 - BASE_COL;
 
@@ -84,6 +85,7 @@ public class ColorUtilities {
     /**
      * Port of DChip function of the same name.
      * Calls {@link #randomColor(int, float)} with {@code alpha=1.0}
+     *
      * @param idx
      * @return
      */
@@ -95,6 +97,7 @@ public class ColorUtilities {
      * Generate a color based on {@code idx}. Unpredictable but deterministic (like a hash)
      * Good for generating a set of colors for successive values of {@code idx}.
      * Alpha value is set as specified
+     *
      * @param idx
      * @param alpha alpha value of color, from 0.0-1.0
      * @return
@@ -180,21 +183,24 @@ public class ColorUtilities {
         }
     }
 
-    public static Color stringToColorNoDefault(String string) throws NumberFormatException{
+    private static Color stringToColorNoDefault(String string) throws NumberFormatException {
         // Excel will quote color strings, strip all quotes
         string = string.replace("\"", "").replace("'", "");
 
-        Color c = colorCache.get(string);
-        if (c == null) {
-            if (string.contains(",")) {
-                String[] rgb = string.split(",");
-                int red = Integer.parseInt(rgb[0]);
-                int green = Integer.parseInt(rgb[1]);
-                int blue = Integer.parseInt(rgb[2]);
-                c = new Color(red, green, blue);
-            } else if (string.startsWith("#")) {
-                c = hexToColor(string.substring(1));
-            } else {
+        Color c = null;
+        if (string.contains(",")) {
+            String[] rgb = string.split(",");
+            int red = Integer.parseInt(rgb[0]);
+            int green = Integer.parseInt(rgb[1]);
+            int blue = Integer.parseInt(rgb[2]);
+            c = new Color(red, green, blue);
+        } else if (string.startsWith("#")) {
+            c = hexToColor(string.substring(1));
+        } else {
+            try {
+                int intValue = Integer.parseInt(string);
+                c = new Color(intValue);
+            } catch (NumberFormatException e) {
                 String hexString = colorSymbols.get(string.toLowerCase());
                 if (hexString != null) {
                     c = hexToColor(hexString);
