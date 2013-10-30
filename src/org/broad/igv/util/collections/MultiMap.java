@@ -95,15 +95,15 @@ public class MultiMap<K, V> {
             Object value = entry.getValue();
             if (value instanceof List) {
                 for (V v : ((List<V>) value)) {
-                    buffer.append(entry.getKey());
-                    buffer.append("=");
+                    buffer.append("<b>" + entry.getKey() + "</b>");
+                    buffer.append(":&nbsp;");
                     buffer.append(v.toString());
                     buffer.append("<br/>");
                     count++;
                 }
             } else {
-                buffer.append(entry.getKey());
-                buffer.append("=");
+                buffer.append("<b>" + entry.getKey() + "</b>");
+                buffer.append(":&nbsp;");
                 String ts = lineWrapString(value.toString(), MAX_CHARS_PER_LINE);
 
                 buffer.append(ts);
@@ -147,8 +147,8 @@ public class MultiMap<K, V> {
     }
 
     public void addAll(MultiMap<K, V> attributes) {
-        for(K key : attributes.keys())  {
-             map.put(key, attributes.get(key));
+        for (K key : attributes.keys()) {
+            map.put(key, attributes.get(key));
         }
     }
 }

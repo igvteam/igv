@@ -78,6 +78,8 @@ public class CodecFactory {
                 codec.setSpliceJunctions(true);
             }
             return codec;
+        } else if (fn.endsWith(".dgv")) {
+            return new DGVCodec(genome);
         } else if (fn.contains("refflat")) {
             return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.REFFLAT, genome);
         } else if (fn.contains("genepred") || fn.contains("ensgene") || fn.contains("refgene")) {
