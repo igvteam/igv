@@ -63,7 +63,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
             assertTrue(line.contains(rootPath + "/"));
             count++;
         }
-        assertEquals(5, count);
+        assertEquals(4, count);
     }
 
     private String genomeZipFile = TestUtils.TMP_OUTPUT_DIR + "tmp.genome";
