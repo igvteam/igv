@@ -63,6 +63,12 @@ public class Globals {
     final public static String GENOME_ARCHIVE_CYTOBAND_FILE_KEY = "cytobandFile";
     final public static String GENOME_ARCHIVE_GENE_FILE_KEY = "geneFile";
     final public static String GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY = "sequenceLocation";
+
+    /**
+     * Whether the sequenceLocation has been modified from the version of the .genome
+     * file on the server
+     */
+    public static final String GENOME_ARCHIVE_CUSTOM_SEQUENCE_LOCATION_KEY = "customSequenceLocation";
     public static final String GENOME_CHR_ALIAS_FILE_KEY = "chrAliasFile";
     public static final String DEFAULT_GENOME = "hg18";
 

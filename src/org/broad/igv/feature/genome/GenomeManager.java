@@ -542,7 +542,7 @@ public class GenomeManager {
     /**
      * Creates a genome descriptor.
      */
-    public GenomeDescriptor parseGenomeArchiveFile(File f)
+    public static GenomeDescriptor parseGenomeArchiveFile(File f)
             throws IOException {
 
 
@@ -592,6 +592,7 @@ public class GenomeManager {
                     boolean fasta = parseBooleanPropertySafe(properties, "fasta");
                     boolean fastaDirectory = parseBooleanPropertySafe(properties, "fastaDirectory");
                     boolean chromosomesAreOrdered = parseBooleanPropertySafe(properties, Globals.GENOME_ORDERED_KEY);
+                    boolean hasCustomSequenceLocation = parseBooleanPropertySafe(properties, Globals.GENOME_ARCHIVE_CUSTOM_SEQUENCE_LOCATION_KEY);
 
 
                     String fastaFileNameString = properties.getProperty("fastaFiles");
@@ -608,6 +609,7 @@ public class GenomeManager {
                             chrAliasFileName,
                             properties.getProperty(Globals.GENOME_GENETRACK_NAME, "Gene"),
                             sequenceLocation,
+                            hasCustomSequenceLocation,
                             zipFile,
                             zipEntries,
                             chromosomesAreOrdered,
@@ -634,7 +636,7 @@ public class GenomeManager {
         return genomeDescriptor;
     }
 
-    private boolean parseBooleanPropertySafe(Properties properties, String key) {
+    private static boolean parseBooleanPropertySafe(Properties properties, String key) {
         String propertyString = properties.getProperty(key);
         return Boolean.parseBoolean(propertyString);
     }
@@ -1279,7 +1281,7 @@ public class GenomeManager {
      * @return boolean indicating success or failure.
      * @throws IOException
      */
-    private static boolean rewriteSequenceLocation(File targetFile, String newSequencePath) throws IOException{
+    static boolean rewriteSequenceLocation(File targetFile, String newSequencePath) throws IOException{
 
         ZipFile targetZipFile = new ZipFile(targetFile);
         boolean success = false;
@@ -1299,6 +1301,7 @@ public class GenomeManager {
 
             //Copy over property.txt, only replacing the sequenceLocation property
             String line = null;
+            boolean hasCustomSequenceProperty = false;
             while ((line = reader.readLine()) != null) {
                 String writeLine = line;
                 if(!line.startsWith("#")){
@@ -1310,11 +1313,20 @@ public class GenomeManager {
 
                         if(propName.equals(Globals.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY)){
                             propVal = newSequencePath;
+                        }else if(propName.equals(Globals.GENOME_ARCHIVE_CUSTOM_SEQUENCE_LOCATION_KEY)){
+                            propVal = Boolean.TRUE.toString();
+                            hasCustomSequenceProperty = true;
                         }
 
                         writeLine = String.format("%s=%s", propName, propVal);
                     }
                 }
+                propertyFileWriter.println(writeLine);
+            }
+
+            //hasCustomSequence was not already set, we need to set it
+            if(!hasCustomSequenceProperty){
+                String writeLine = String.format("%s=%s", Globals.GENOME_ARCHIVE_CUSTOM_SEQUENCE_LOCATION_KEY, true);
                 propertyFileWriter.println(writeLine);
             }
 
@@ -1366,7 +1378,9 @@ public class GenomeManager {
 
         //Rename tmp file
         if(success){
-            success = tmpZipFile.renameTo(targetFile);
+            FileUtils.copyFile(tmpZipFile, targetFile);
+            success = targetFile.exists();
+            tmpZipFile.delete();
         }
         return success;
     }

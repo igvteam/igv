@@ -14,10 +14,9 @@
  * and open the template in the editor.
  */
 
-package org.broad.igv.feature;
+package org.broad.igv.feature.genome;
 
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.feature.genome.*;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.RunnableResult;
 import org.broad.igv.util.TestUtils;
@@ -51,7 +50,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
     @Test
     public void testGenerateGenomeList() throws Exception {
         File inDir = new File(TestUtils.DATA_DIR, "genomes");
-        String outPath = TestUtils.DATA_DIR + "out/genomelist.txt";
+        String outPath = TestUtils.TMP_OUTPUT_DIR + "/genomelist.txt";
 
         String rootPath = "http://igvdata.broadinstitute.org/genomes";
 
@@ -169,8 +168,9 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         //and it makes the tests pass
         File tmpOut = new File(TestUtils.TMP_OUTPUT_DIR + "t2.genome");
         FileUtils.copyFile(outGenomeFile, tmpOut);
-        GenomeDescriptor descriptor = GenomeManager.getInstance().parseGenomeArchiveFile(tmpOut);
+        GenomeDescriptor descriptor = GenomeManager.parseGenomeArchiveFile(tmpOut);
         assertEquals(fastaFile.getAbsolutePath(), descriptor.getSequenceLocation());
+        assertTrue(descriptor.hasCustomSequenceLocation());
 
         String remSequencePath = "http://igvdata.broadinstitute.org/genomes/seq/Human_immunodeficiency_virus_1_uid15476/NC_001802.fna";
         FastaIndexedSequence remSequence = new FastaIndexedSequence(remSequencePath);
@@ -179,6 +179,30 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         FastaIndexedSequence localSequence = new FastaIndexedSequence(fastaFile.getAbsolutePath());
 
         assertEquals(remSequence.getChromosomeNames(), localSequence.getChromosomeNames());
+    }
+
+    @Test
+    public void testRewriteSequenceLocation() throws Exception{
+        String origGenomePath = TestUtils.DATA_DIR + "genomes/hg18.unittest.genome";
+        File newGenomeFile = File.createTempFile("hg18.unittest.testrewrite", ".genome");
+        FileUtils.copyFile(new File(origGenomePath), newGenomeFile);
+        newGenomeFile.deleteOnExit();
+
+        String newSeqLocation = (new File(TestUtils.TMP_OUTPUT_DIR + "/myseq.fa")).getAbsolutePath();
+        boolean success = GenomeManager.rewriteSequenceLocation(newGenomeFile, newSeqLocation);
+
+        assertTrue("Rewrite of .genome failed", success);
+        GenomeDescriptor descriptor = GenomeManager.parseGenomeArchiveFile(newGenomeFile);
+
+        assertEquals(newSeqLocation, descriptor.getSequenceLocation());
+        assertTrue(descriptor.hasCustomSequenceLocation());
+    }
+
+    @Test
+    public void testLoadNonCustomGenome() throws Exception{
+        String genomePath = TestUtils.DATA_DIR + "genomes/hg18.unittest.genome";
+        GenomeDescriptor descriptor = GenomeManager.parseGenomeArchiveFile(new File(genomePath));
+        assertFalse(descriptor.hasCustomSequenceLocation());
     }
 
 
