@@ -42,7 +42,7 @@ public class Locus extends Interval implements NamedFeature {
         return l.isValid() ? l : null;
     }
 
-    private Locus(String locusString) {
+    public Locus(String locusString) {
         this(null, -1, -1);
         parseLocusString(locusString);
 

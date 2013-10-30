@@ -61,15 +61,27 @@ public class FeatureCollectionSource implements FeatureSource {
                 coverageData.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
     }
 
+    /**
+     * Return features over the interval as an iterator
+     * @param chr
+     * @param start
+     * @param end
+     * @return
+     */
     public Iterator<Feature> getFeatures(String chr, int start, int end) {
+        return getFeatureList(chr, start, end).iterator();
+    }
+
+    public List<Feature> getFeatureList(String chr, int start, int end) {
 
         List<Feature> features = featureMap.get(chr);
         if (features == null) {
-            return Collections.<Feature>emptyList().iterator();
+            return Collections.<Feature>emptyList();
         }
         List<Feature> filteredFeatures = CollUtils.filter(features, FeatureUtils.getOverlapPredicate(chr, start, end));
-        return filteredFeatures.iterator();
+        return filteredFeatures;
     }
+
 
     public List<Feature> getFeatures(String chr) {
         return featureMap.get(chr);

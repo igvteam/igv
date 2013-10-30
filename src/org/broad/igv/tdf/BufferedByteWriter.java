@@ -91,6 +91,13 @@ public class BufferedByteWriter {
         buffer.write((v >>> 24) & 0xFF);
     }
 
+
+    public void putShort(short v) throws IOException {
+        buffer.write((v >>> 0) & 0xFF);
+        buffer.write((v >>> 8) & 0xFF);
+    }
+
+
     public void putFloat(float f) throws IOException {
         int v = Float.floatToIntBits(f);
         putInt(v);

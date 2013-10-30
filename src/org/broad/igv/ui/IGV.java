@@ -33,6 +33,7 @@ import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.dev.api.IGVPlugin;
+import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.MaximumContigGenomeException;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.*;
@@ -1492,6 +1493,28 @@ public class IGV {
      */
     public void goToLocus(String locus) {
         contentPane.getCommandBar().searchByLocus(locus);
+    }
+
+    /**
+     * To to multiple loci,  creating a new gene list if required.  This method is provided to support control of
+     * multiple panels from a command or external program.
+     *
+     * @param loci
+     */
+    public void goToLociList(List<String> loci) {
+
+        List<ReferenceFrame> frames = FrameManager.getFrames();
+        if (frames.size() == loci.size()) {
+            for (int i = 0; i < loci.size(); i++) {
+                frames.get(i).jumpTo(new Locus(loci.get(i)));
+            }
+            repaint();
+        } else {
+            GeneList geneList = new GeneList("", loci, false);
+            getSession().setCurrentGeneList(geneList);
+            resetFrames();
+        }
+
     }
 
     public void tweakPanelDivider() {
