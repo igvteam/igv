@@ -211,8 +211,8 @@ public class FeatureWrappedAlignment implements Alignment {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public Color getDefaultColor() {
-        return AlignmentRenderer.grey1;
+    public Color getColor() {
+        return null;
     }
 
     public char[] getGapTypes() {

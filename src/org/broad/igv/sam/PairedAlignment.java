@@ -243,7 +243,7 @@ public class PairedAlignment implements Alignment {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public Color getDefaultColor() {
+    public Color getColor() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

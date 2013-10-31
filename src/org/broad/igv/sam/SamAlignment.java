@@ -60,7 +60,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     private SAMRecord record;
     private String mateSequence = null;
     private String pairOrientation = "";
-    private Color defaultColor = AlignmentRenderer.grey1;
+    private Color color = null;
     private String readGroup;
     private String library;
     private String sample;
@@ -135,10 +135,9 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         Object colorTag = record.getAttribute("YC");
         if (colorTag != null) {
             try {
-                defaultColor = ColorUtilities.stringToColor(colorTag.toString());
+                color = ColorUtilities.stringToColor(colorTag.toString());
             } catch (Exception e) {
                 log.error("Error interpreting color tag: " + colorTag, e);
-                defaultColor = AlignmentRenderer.grey1;
             }
         }
     }      // End constructor
@@ -708,8 +707,8 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         return getRecord().getReadFailsVendorQualityCheckFlag();
     }
 
-    public Color getDefaultColor() {
-        return defaultColor;
+    public Color getColor() {
+        return color;
     }
 
     @Override

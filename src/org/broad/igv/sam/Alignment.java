@@ -83,7 +83,6 @@ public interface Alignment extends LocusScore {
 
     Object getAttribute(String key);
 
-
     void setMateSequence(String sequence);
 
     String getPairOrientation();
@@ -92,7 +91,11 @@ public interface Alignment extends LocusScore {
 
     boolean isVendorFailedRead();
 
-    Color getDefaultColor();
+    /**
+     * Return an explicitly set color for this alignment, if any  (typically null).
+     * @return
+     */
+    Color getColor();
 
     String getLibrary();
 

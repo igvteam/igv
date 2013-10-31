@@ -266,7 +266,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
                     // Optimization for really zoomed out views.  If this alignment occupies screen space already taken,
                     // and it is the default color, skip drawing.
-                    if (pixelEnd <= lastPixelDrawn && alignmentColor == alignment.getDefaultColor()) {
+                    if (pixelEnd <= lastPixelDrawn && alignmentColor == grey1) {
                         continue;
                     }
 
@@ -965,9 +965,10 @@ public class AlignmentRenderer implements FeatureRenderer {
         // center line.  Also restorePersistentState row "score" if alignment intersects center line
 
 
-        Color defaultColor = alignment.getDefaultColor();
+        Color color = alignment.getColor();
+        if(color != null) return color;   // Color has been explicitly set
 
-        Color c = alignment.isSupplementary() ? Color.darkGray : defaultColor;
+        Color c = alignment.isSupplementary() ? Color.darkGray : grey1;
 
         ColorOption colorOption = renderOptions.getColorOption();
         switch (colorOption) {
@@ -989,7 +990,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             case UNEXPECTED_PAIR:
             case PAIR_ORIENTATION:
                 c = getOrientationColor(alignment, getPEStats(alignment, renderOptions));
-                if (colorOption == ColorOption.PAIR_ORIENTATION || c != defaultColor) {
+                if (colorOption == ColorOption.PAIR_ORIENTATION || c != color) {
                     break;
                 }
             case INSERT_SIZE:

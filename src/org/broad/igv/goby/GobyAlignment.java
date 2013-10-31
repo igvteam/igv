@@ -63,7 +63,6 @@ public class GobyAlignment implements Alignment {
     private final GobyAlignmentIterator iterator;
     protected AlignmentBlock[] block = new AlignmentBlock[1];
     protected AlignmentBlock[] insertionBlock;
-    private Color defaultColor = new Color(200, 200, 200);
     private CharArrayList gapTypes = null;
     private static final ReadMate unmappedMate = new ReadMate("*", -1, false, true);
     private Comparator<? super AlignmentBlock> blockComparator = new Comparator<AlignmentBlock>() {
@@ -674,8 +673,8 @@ public class GobyAlignment implements Alignment {
      *
      * @return
      */
-    public Color getDefaultColor() {
-        return defaultColor;
+    public Color getColor() {
+        return null;
     }
 
     public int getStart() {

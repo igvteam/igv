@@ -321,8 +321,8 @@ public abstract class AbstractAlignment implements Alignment {
         return false;
     }
 
-    public Color getDefaultColor() {
-        return AlignmentRenderer.grey1;
+    public Color getColor() {
+        return null;
     }
 
     public Strand getReadStrand() {

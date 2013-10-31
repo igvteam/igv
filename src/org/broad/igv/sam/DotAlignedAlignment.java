@@ -80,8 +80,8 @@ public class DotAlignedAlignment implements Alignment {
     }
 
 
-    public Color getDefaultColor() {
-        return AlignmentRenderer.grey1;
+    public Color getColor() {
+        return null;
     }
 
 
