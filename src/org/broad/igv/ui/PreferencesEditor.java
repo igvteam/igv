@@ -173,6 +173,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     }
 
+    private void showMissingDataCBActionPerformed(ActionEvent e) {
+        updatedPreferenceMap.put(PreferenceManager.SHOW_MISSING_DATA_KEY, String.valueOf(
+                showMissingDataCB.isSelected()));
+    }
+
 
     public PreferencesEditor(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -223,6 +228,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
         label7 = new JLabel();
         backgroundColorPanel = new JPanel();
         resetBackgroundButton = new JButton();
+        showMissingDataCB = new JCheckBox();
+        label32 = new JLabel();
         tracksPanel = new JPanel();
         jPanel6 = new JPanel();
         jLabel5 = new JLabel();
@@ -420,7 +427,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     missingDataExplanation.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                     missingDataExplanation.setText("Display default track attributes (NAME, DATA_TYPE, and DATA_FILE) in the attribute panel.");
                     jPanel10.add(missingDataExplanation);
-                    missingDataExplanation.setBounds(55, 135, 565, missingDataExplanation.getPreferredSize().height);
+                    missingDataExplanation.setBounds(55, 190, 565, missingDataExplanation.getPreferredSize().height);
 
                     //---- showDefaultTrackAttributesCB ----
                     showDefaultTrackAttributesCB.setText("Show default track attributes");
@@ -431,7 +438,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(showDefaultTrackAttributesCB);
-                    showDefaultTrackAttributesCB.setBounds(new Rectangle(new Point(10, 105), showDefaultTrackAttributesCB.getPreferredSize()));
+                    showDefaultTrackAttributesCB.setBounds(new Rectangle(new Point(10, 160), showDefaultTrackAttributesCB.getPreferredSize()));
 
                     //---- combinePanelsCB ----
                     combinePanelsCB.setText("Display all tracks in a single panel");
@@ -442,7 +449,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(combinePanelsCB);
-                    combinePanelsCB.setBounds(new Rectangle(new Point(10, 25), combinePanelsCB.getPreferredSize()));
+                    combinePanelsCB.setBounds(new Rectangle(new Point(10, 90), combinePanelsCB.getPreferredSize()));
 
                     //---- showAttributesDisplayCheckBox ----
                     showAttributesDisplayCheckBox.setText("Show attribute panel");
@@ -453,7 +460,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(showAttributesDisplayCheckBox);
-                    showAttributesDisplayCheckBox.setBounds(new Rectangle(new Point(10, 65), showAttributesDisplayCheckBox.getPreferredSize()));
+                    showAttributesDisplayCheckBox.setBounds(new Rectangle(new Point(10, 125), showAttributesDisplayCheckBox.getPreferredSize()));
 
                     //---- searchZoomCB ----
                     searchZoomCB.setText("Zoom to features");
@@ -464,19 +471,19 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(searchZoomCB);
-                    searchZoomCB.setBounds(new Rectangle(new Point(10, 204), searchZoomCB.getPreferredSize()));
+                    searchZoomCB.setBounds(new Rectangle(new Point(10, 260), searchZoomCB.getPreferredSize()));
 
                     //---- zoomToFeatureExplanation ----
                     zoomToFeatureExplanation.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                     zoomToFeatureExplanation.setText("<html>This option controls the behavior of feature searchs.  If true, the zoom level is changed as required to size the view to the feature size.  If false the zoom level is unchanged.");
                     zoomToFeatureExplanation.setVerticalAlignment(SwingConstants.TOP);
                     jPanel10.add(zoomToFeatureExplanation);
-                    zoomToFeatureExplanation.setBounds(50, 230, 644, 50);
+                    zoomToFeatureExplanation.setBounds(50, 285, 644, 50);
 
                     //---- label4 ----
                     label4.setText("Feature flanking region (bp or %): ");
                     jPanel10.add(label4);
-                    label4.setBounds(new Rectangle(new Point(15, 365), label4.getPreferredSize()));
+                    label4.setBounds(new Rectangle(new Point(15, 420), label4.getPreferredSize()));
 
                     //---- geneListFlankingField ----
                     geneListFlankingField.addFocusListener(new FocusAdapter() {
@@ -492,25 +499,25 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(geneListFlankingField);
-                    geneListFlankingField.setBounds(235, 360, 255, geneListFlankingField.getPreferredSize().height);
+                    geneListFlankingField.setBounds(235, 415, 255, geneListFlankingField.getPreferredSize().height);
 
                     //---- zoomToFeatureExplanation2 ----
                     zoomToFeatureExplanation2.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                     zoomToFeatureExplanation2.setText("<html><i>Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.<b> A negative number is interpreted as a percentage.</b>");
                     zoomToFeatureExplanation2.setVerticalAlignment(SwingConstants.TOP);
                     jPanel10.add(zoomToFeatureExplanation2);
-                    zoomToFeatureExplanation2.setBounds(45, 395, 637, 50);
+                    zoomToFeatureExplanation2.setBounds(45, 450, 637, 50);
 
                     //---- label5 ----
                     label5.setText("<html><i>Resolution in base-pairs per pixel at which sequence track becomes visible. ");
                     label5.setFont(new Font("Lucida Grande", Font.PLAIN, 12));
                     jPanel10.add(label5);
-                    label5.setBounds(new Rectangle(new Point(50, 320), label5.getPreferredSize()));
+                    label5.setBounds(new Rectangle(new Point(50, 375), label5.getPreferredSize()));
 
                     //---- label6 ----
                     label6.setText("Sequence resolution threshold (bp/pixel):");
                     jPanel10.add(label6);
-                    label6.setBounds(new Rectangle(new Point(15, 290), label6.getPreferredSize()));
+                    label6.setBounds(new Rectangle(new Point(15, 345), label6.getPreferredSize()));
 
                     //---- seqResolutionThreshold ----
                     seqResolutionThreshold.addFocusListener(new FocusAdapter() {
@@ -526,18 +533,18 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(seqResolutionThreshold);
-                    seqResolutionThreshold.setBounds(315, 285, 105, seqResolutionThreshold.getPreferredSize().height);
+                    seqResolutionThreshold.setBounds(315, 340, 105, seqResolutionThreshold.getPreferredSize().height);
 
                     //---- label10 ----
                     label10.setText("Default font: ");
                     label10.setLabelFor(defaultFontField);
                     jPanel10.add(label10);
-                    label10.setBounds(new Rectangle(new Point(15, 530), label10.getPreferredSize()));
+                    label10.setBounds(new Rectangle(new Point(15, 585), label10.getPreferredSize()));
 
                     //---- defaultFontField ----
                     defaultFontField.setEditable(false);
                     jPanel10.add(defaultFontField);
-                    defaultFontField.setBounds(105, 525, 238, defaultFontField.getPreferredSize().height);
+                    defaultFontField.setBounds(105, 580, 238, defaultFontField.getPreferredSize().height);
 
                     //---- fontChangeButton ----
                     fontChangeButton.setText("Change...");
@@ -548,7 +555,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(fontChangeButton);
-                    fontChangeButton.setBounds(360, 525, 97, fontChangeButton.getPreferredSize().height);
+                    fontChangeButton.setBounds(360, 580, 97, fontChangeButton.getPreferredSize().height);
 
                     //---- showRegionBoundariesCB ----
                     showRegionBoundariesCB.setText("Show region boundaries");
@@ -559,12 +566,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(showRegionBoundariesCB);
-                    showRegionBoundariesCB.setBounds(10, 165, 275, 23);
+                    showRegionBoundariesCB.setBounds(10, 220, 275, 23);
 
                     //---- label7 ----
                     label7.setText("Background color click to change): ");
                     jPanel10.add(label7);
-                    label7.setBounds(15, 480, 235, label7.getPreferredSize().height);
+                    label7.setBounds(15, 535, 235, label7.getPreferredSize().height);
 
                     //======== backgroundColorPanel ========
                     {
@@ -579,7 +586,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         backgroundColorPanel.setLayout(null);
                     }
                     jPanel10.add(backgroundColorPanel);
-                    backgroundColorPanel.setBounds(255, 474, 30, 29);
+                    backgroundColorPanel.setBounds(255, 530, 30, 29);
 
                     //---- resetBackgroundButton ----
                     resetBackgroundButton.setText("Reset to default");
@@ -590,7 +597,23 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(resetBackgroundButton);
-                    resetBackgroundButton.setBounds(315, 474, 150, resetBackgroundButton.getPreferredSize().height);
+                    resetBackgroundButton.setBounds(315, 530, 150, resetBackgroundButton.getPreferredSize().height);
+
+                    //---- showMissingDataCB ----
+                    showMissingDataCB.setText("Distinguish missing data");
+                    showMissingDataCB.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            showMissingDataCBActionPerformed(e);
+                        }
+                    });
+                    jPanel10.add(showMissingDataCB);
+                    showMissingDataCB.setBounds(10, 10, 248, 23);
+
+                    //---- label32 ----
+                    label32.setText("<html><i>Distinguish regions with zero values from regions with no data on plots (e.g. bar charts).  Regions with no data are indicated with a gray background.</b>");
+                    jPanel10.add(label32);
+                    label32.setBounds(45, 35, 700, 47);
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
@@ -3715,6 +3738,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         showOrphanedMutationsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SHOW_ORPHANED_MUTATIONS));
         overlayAttributeTextField.setText(prefMgr.get(PreferenceManager.OVERLAY_ATTRIBUTE_KEY));
         overlayTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.OVERLAY_MUTATION_TRACKS));
+        showMissingDataCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SHOW_MISSING_DATA_KEY));
         showDefaultTrackAttributesCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SHOW_DEFAULT_TRACK_ATTRIBUTES));
         colorCodeMutationsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.COLOR_MUTATIONS));
         overlayAttributeTextField.setEnabled(overlayTrackCB.isSelected());
@@ -3993,6 +4017,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JLabel label7;
     private JPanel backgroundColorPanel;
     private JButton resetBackgroundButton;
+    private JCheckBox showMissingDataCB;
+    private JLabel label32;
     private JPanel tracksPanel;
     private JPanel jPanel6;
     private JLabel jLabel5;

@@ -88,7 +88,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>135</int> 
+               <int>190</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
@@ -123,7 +123,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>105</int> 
+               <int>160</int> 
               </void> 
              </object> 
             </void> 
@@ -154,7 +154,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>25</int> 
+               <int>90</int> 
               </void> 
              </object> 
             </void> 
@@ -185,7 +185,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>65</int> 
+               <int>125</int> 
               </void> 
              </object> 
             </void> 
@@ -216,7 +216,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>204</int> 
+               <int>260</int> 
               </void> 
              </object> 
             </void> 
@@ -251,7 +251,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>230</int> 
+               <int>285</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
@@ -282,7 +282,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>365</int> 
+               <int>420</int> 
               </void> 
              </object> 
             </void> 
@@ -317,7 +317,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>360</int> 
+               <int>415</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
@@ -352,7 +352,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>395</int> 
+               <int>450</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
@@ -391,7 +391,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>320</int> 
+               <int>375</int> 
               </void> 
              </object> 
             </void> 
@@ -414,7 +414,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>290</int> 
+               <int>345</int> 
               </void> 
              </object> 
             </void> 
@@ -449,7 +449,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>285</int> 
+               <int>340</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
@@ -482,7 +482,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>530</int> 
+               <int>585</int> 
               </void> 
              </object> 
             </void> 
@@ -505,7 +505,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>525</int> 
+               <int>580</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
@@ -540,7 +540,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>525</int> 
+               <int>580</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
@@ -583,7 +583,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>165</int> 
+               <int>220</int> 
               </void> 
              </object> 
             </void> 
@@ -606,7 +606,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>480</int> 
+               <int>535</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
@@ -661,7 +661,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>474</int> 
+               <int>530</int> 
               </void> 
               <void method="setProperty"> 
                <string>height</string> 
@@ -700,11 +700,81 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>474</int> 
+               <int>530</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
                <int>150</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JCheckBox</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>Distinguish missing data</string> 
+              </void> 
+              <void property="name"> 
+               <string>showMissingDataCB</string> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.ActionListener</string> 
+                <string>actionPerformed</string> 
+                <string>showMissingDataCBActionPerformed</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>248</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>height</string> 
+               <int>23</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>10</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>10</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JLabel</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>&lt;html&gt;&lt;i&gt;Distinguish regions with zero values from regions with no data on plots (e.g. bar charts).  Regions with no data are indicated with a gray background.&lt;/b&gt;</string> 
+              </void> 
+              <void property="name"> 
+               <string>label32</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>45</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>35</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>700</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>height</string> 
+               <int>47</int> 
               </void> 
              </object> 
             </void> 
