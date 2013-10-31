@@ -83,6 +83,10 @@ public class IGVSeekableHTTPStream extends SeekableStream {
         int n = 0;
         try {
 
+            if(contentLength > 0 && position >= contentLength) {
+                return -1;  // EOF
+            }
+
             long endRange = position + len - 1;
             // IF we know the total content length, limit the end range to that.
             if (contentLength > 0) {
