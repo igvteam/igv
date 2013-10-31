@@ -24,6 +24,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.*;
 
@@ -43,7 +44,8 @@ public class CommandListener implements Runnable {
      * Different keys which can be used to specify a file to load
      */
     public static Set<String> fileParams;
-    static{
+
+    static {
         String[] fps = new String[]{"file", "bigDataURL", "sessionURL", "dataURL"};
         fileParams = new LinkedHashSet<String>(Arrays.asList(fps));
         fileParams = Collections.unmodifiableSet(fileParams);
@@ -250,17 +252,18 @@ public class CommandListener implements Runnable {
         //track%20type=bigBed%20name=%27hES_HUES1_p28.RRBS_CpG_meth%27%20description=%27RRBS%20CpG%20methylation%20for%20hES_HUES1_p28.RRBS%27%20visibility=4%20useScore=1%20color=0,60,120
 
         /** from what server was IGV started? Used to link to other tools/apps */
-        
+
         String server = params.get("server");
-        if (server == null || server.trim().length()<1) server = PreferenceManager.getInstance().get(PreferenceManager.IONTORRENT_SERVER);
+        if (server == null || server.trim().length() < 1)
+            server = PreferenceManager.getInstance().get(PreferenceManager.IONTORRENT_SERVER);
         else {
             PreferenceManager.getInstance().put(PreferenceManager.IONTORRENT_SERVER, server);
         }
         if (command.equals("/load")) {
             String file = null;
-            for(String fp: fileParams){
+            for (String fp : fileParams) {
                 file = params.get(fp);
-                if(file != null) break;
+                if (file != null) break;
             }
 
             String genome = params.get("genome");
@@ -303,12 +306,16 @@ public class CommandListener implements Runnable {
         } else if (command.equals("/reload") || command.equals("/goto")) {
             String locus = params.get("locus");
             IGV.getInstance().goToLocus(locus);
+        } else if (command.equals("/execute")) {
+            String param = StringUtils.decodeURL(params.get("command"));
+            return cmdExe.execute(param);
         } else {
             return ("ERROR Unknown command: " + command);
         }
 
         return result;
     }
+
 
     /**
      * Parse the html parameter string into a set of key-value pairs.  Parameter values are
