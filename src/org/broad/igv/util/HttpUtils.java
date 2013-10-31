@@ -254,15 +254,17 @@ public class HttpUtils {
     }
 
     /**
-     * Compare a local and remote resource.
+     * Compare a local and remote resource, returning true if it is believed that the
+     * remote file is newer than the local file
      *
      * @param file
      * @param url
-     * @return true if the files are "the same", false if the remote file has been modified wrt the local one.
+     * @param compareContentLength Whether to use the content length to compare files. If false, only
+     *                             the modified date is used
+     * @return true if the files are the same or the local file is newer, false if the remote file has been modified wrt the local one.
      * @throws IOException
      */
-    public boolean compareResources(File file, URL url) throws IOException {
-
+    public boolean remoteIsNewer(File file, URL url, boolean compareContentLength) throws IOException {
 
         if (!file.exists()) {
             return false;
@@ -283,7 +285,7 @@ public class HttpUtils {
             }
         }
         if (contentLength != file.length()) {
-            return false;
+            return true;
         }
 
         // Compare last-modified dates
@@ -295,7 +297,7 @@ public class HttpUtils {
             date.parse(lastModifiedString);
             long remoteModifiedTime = date.getTime();
             long localModifiedTime = file.lastModified();
-            return remoteModifiedTime <= localModifiedTime;
+            return remoteModifiedTime > localModifiedTime;
         }
 
 
@@ -355,7 +357,7 @@ public class HttpUtils {
 
 
     /**
-     * Calls {@link #downloadFile(String, java.io.File, boolean, Frame)}
+     * Calls {@link #downloadFile(String, java.io.File, Frame)}
      * with {@code showProgressDialog = false}
      * @param url
      * @param outputFile

@@ -505,17 +505,23 @@ public class GenomeManager {
     }
 
     /**
-     * Refresh a locally cached genome if it's
+     * Refresh a locally cached genome if appropriate (newer one on server, user set preference to enable it)
+     * If it doesn't have a local cache, just downloaded
+     * If the cached version has a custom sequence location, that is copied over to the downloaded version
      *
      * @param cachedFile
      * @param genomeArchiveURL
      * @throws IOException
      */
-    private void refreshCache(File cachedFile, URL genomeArchiveURL) {
+    void refreshCache(File cachedFile, URL genomeArchiveURL) {
         // Look in cache first
         try {
             if (cachedFile.exists()) {
-                boolean remoteModfied = !HttpUtils.getInstance().compareResources(cachedFile, genomeArchiveURL);
+                //Check to see cached version has a custom sequence
+                GenomeDescriptor cachedDescriptor = parseGenomeArchiveFile(cachedFile);
+                //File sizes won't be the same if the local version has a different sequence location
+                boolean remoteModfied = HttpUtils.getInstance().remoteIsNewer(cachedFile, genomeArchiveURL,
+                        !cachedDescriptor.hasCustomSequenceLocation());
 
                 // Force an update of cached genome if file length does not equal remote content length
                 boolean forceUpdate = remoteModfied &&
@@ -524,8 +530,19 @@ public class GenomeManager {
                     log.info("Refreshing genome: " + genomeArchiveURL.toString());
                     File tmpFile = new File(cachedFile.getAbsolutePath() + ".tmp");
                     if (HttpUtils.getInstance().downloadFile(genomeArchiveURL.toExternalForm(), tmpFile).isSuccess()) {
-                        FileUtils.copyFile(tmpFile, cachedFile);
+
                         tmpFile.deleteOnExit();
+                        boolean success = true;
+
+                        if (cachedDescriptor.hasCustomSequenceLocation()) {
+                            success = rewriteSequenceLocation(tmpFile, cachedDescriptor.getSequenceLocation());
+                        }
+
+                        if (success) {
+                            FileUtils.copyFile(tmpFile, cachedFile);
+                        } else {
+                            log.warn("Updating genome failed: " + genomeArchiveURL.toString());
+                        }
                     }
                 }
             } else {
@@ -1366,14 +1383,25 @@ public class GenomeManager {
 
             }
         }catch(Exception e){
+            tmpZipFile.delete();
             throw new RuntimeException(e.getMessage(), e);
         }finally{
             if(propertyInputStream != null) propertyInputStream.close();
             if(zipOutputStream != null){
                 zipOutputStream.flush();
+                zipOutputStream.finish();
                 zipOutputStream.close();
             }
             success = targetFile.delete();
+        }
+
+        //This is a hack. I don't know why it's necessary,
+        //but for some reason the output zip file seems to be corrupt
+        //at least when called from GenomeManager.refreshArchive
+        try{
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            //
         }
 
         //Rename tmp file

@@ -64,7 +64,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
 
         initData(inputListItems);
 
-        downloadSequenceCB.setVisible(!Globals.isProduction() && listSelectionMode == ListSelectionModel.SINGLE_SELECTION);
+        downloadSequenceCB.setVisible(Globals.isDevelopment() && listSelectionMode == ListSelectionModel.SINGLE_SELECTION);
     }
 
     private void initData(Collection<GenomeListItem> inputListItems) {

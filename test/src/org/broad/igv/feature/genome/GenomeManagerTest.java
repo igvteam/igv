@@ -17,6 +17,8 @@
 package org.broad.igv.feature.genome;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.DirectoryManager;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.RunnableResult;
 import org.broad.igv.util.TestUtils;
@@ -27,6 +29,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URL;
 
 import static org.junit.Assert.*;
 
@@ -63,7 +66,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
             assertTrue(line.contains(rootPath + "/"));
             count++;
         }
-        assertEquals(4, count);
+        assertEquals(6, count);
     }
 
     private String genomeZipFile = TestUtils.TMP_OUTPUT_DIR + "tmp.genome";
@@ -203,6 +206,49 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         String genomePath = TestUtils.DATA_DIR + "genomes/hg18.unittest.genome";
         GenomeDescriptor descriptor = GenomeManager.parseGenomeArchiveFile(new File(genomePath));
         assertFalse(descriptor.hasCustomSequenceLocation());
+    }
+
+    /**
+     * Test that when we update a cached genome with custom sequence, the sequence location is preserved
+     * We have 2 .genome files in the test directory which are very similar.
+     * We copy one to the genome cache directory and rewrite the sequence
+     * Then we download the other (needs to be remote)
+     * We then check that the rewritten sequence was preserved, and differing properties were updated
+     * @throws Exception
+     */
+    @Test
+    public void testRefreshCacheLocalSequence() throws Exception{
+        String cachedSrcPath = TestUtils.DATA_DIR + "genomes/local.unittest_cached.genome";
+        File cachedSrcFile = new File(cachedSrcPath);
+        File cachedFile = new File(DirectoryManager.getGenomeCacheDirectory(), cachedSrcFile.getName());
+        FileUtils.copyFile(cachedSrcFile, cachedFile);
+
+        //The local variable names "updatedDescriptor" and "newDescriptor" are somewhat
+        //confusing, but I don't know how to do better
+        File updatedFile = new File(TestUtils.DATA_DIR + "genomes/local.unittest_updated.genome");
+        GenomeDescriptor updatedDescriptor = GenomeManager.parseGenomeArchiveFile(updatedFile);
+
+        GenomeDescriptor cachedDescriptor = GenomeManager.parseGenomeArchiveFile(cachedFile);
+        String targetSeqLocation = cachedDescriptor.getSequenceLocation();
+        assert (cachedDescriptor.hasCustomSequenceLocation());
+
+        //TODO We could point to github instead of the Broad, only real benefit is if we ever change
+        //this file it's one less manual update step
+        //String parent = "https://github.com/broadinstitute/IGV/tree/master/test/data/genomes";
+        String parent = "http://www.broadinstitute.org/igvdata/test";
+        URL remURL = new URL(parent + "/" + updatedFile.getName());
+
+        PreferenceManager.getInstance().put(PreferenceManager.AUTO_UPDATE_GENOMES, true);
+        GenomeManager.getInstance().refreshCache(cachedFile, remURL);
+
+        GenomeDescriptor newDescriptor = GenomeManager.parseGenomeArchiveFile(cachedFile);
+        assertEquals(targetSeqLocation, newDescriptor.getSequenceLocation());
+        assertTrue(newDescriptor.hasCustomSequenceLocation());
+
+        assertEquals(updatedDescriptor.getName(), newDescriptor.getName());
+        assertEquals(updatedDescriptor.getGeneFileName(), newDescriptor.getGeneFileName());
+
+        assertNotSame(newDescriptor.getName(), cachedDescriptor.getName());
     }
 
 
