@@ -47,16 +47,22 @@ public class Parser {
         try {
             nextLine = reader.readLine();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
             return null;
         }
-        if (nextLine == null) {
+        if (nextLine == null || nextLine.trim().length() == 0) {
             return null;
         } else if (nextLine.startsWith(commentPrefix)) {
             return readNextRecord(reader);
         }
 
-        return createRecord(nextLine);
+        try {
+            return createRecord(nextLine);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            e.printStackTrace();
+            System.out.println(nextLine);
+            throw e;
+        }
     }
 
     public SortableRecord createRecord(String nextLine) {
