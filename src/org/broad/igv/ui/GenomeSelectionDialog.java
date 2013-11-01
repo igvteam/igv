@@ -264,8 +264,9 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                 downloadSequenceCB.setText("Download Sequence");
                 downloadSequenceCB.setAlignmentX(1.0F);
                 downloadSequenceCB.setToolTipText("Download the full sequence for this organism. Note that these files can be very large (human is about 3 Gb)");
-                downloadSequenceCB.setMaximumSize(new Dimension(300, 23));
-                downloadSequenceCB.setPreferredSize(new Dimension(200, 23));
+                downloadSequenceCB.setMaximumSize(new Dimension(1000, 23));
+                downloadSequenceCB.setPreferredSize(new Dimension(300, 23));
+                downloadSequenceCB.setMinimumSize(new Dimension(300, 23));
                 contentPanel.add(downloadSequenceCB);
             }
             dialogPane.add(contentPanel, BorderLayout.CENTER);

@@ -71,8 +71,9 @@ new FormModel {
 						"text": "Download Sequence"
 						"alignmentX": 1.0f
 						"toolTipText": "Download the full sequence for this organism. Note that these files can be very large (human is about 3 Gb)"
-						"maximumSize": new java.awt.Dimension( 300, 23 )
-						"preferredSize": new java.awt.Dimension( 200, 23 )
+						"maximumSize": new java.awt.Dimension( 1000, 23 )
+						"preferredSize": new java.awt.Dimension( 300, 23 )
+						"minimumSize": new java.awt.Dimension( 300, 23 )
 					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
 					"value": "Center"

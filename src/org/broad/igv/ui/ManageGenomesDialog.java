@@ -46,6 +46,9 @@ public class ManageGenomesDialog extends JDialog {
     private List<GenomeListItem> removedValuesList = new ArrayList<GenomeListItem>();
     private GenomeListItem currentGenomeItem = null;
 
+    private boolean haveLocalGenomes = false;
+    private static final String LOCAL_SEQUENCE_CHAR = "\u002A";
+
     public ManageGenomesDialog(Frame owner) {
         super(owner);
         initComponents();
@@ -57,12 +60,19 @@ public class ManageGenomesDialog extends JDialog {
 
     private void initData() {
         allListItems = new ArrayList<GenomeListItem>(GenomeManager.getInstance().getGenomes());
+        for(GenomeListItem item: allListItems){
+            if(item.hasLocalSequence()){
+                haveLocalGenomes = true;
+                break;
+            }
+        }
         String genomeId = GenomeManager.getInstance().getGenomeId();
         currentGenomeItem = GenomeManager.getInstance().getLoadedGenomeListItemById(genomeId);
         buildList();
         genomeList.setTransferHandler(new SimpleTransferHandler());
 
         addButton.setEnabled(!GenomeManager.getInstance().isServerGenomeListUnreachable());
+        label2.setVisible(haveLocalGenomes);
     }
 
 
@@ -146,6 +156,7 @@ public class ManageGenomesDialog extends JDialog {
         contentPanel = new JPanel();
         scrollPane1 = new JScrollPane();
         genomeList = new JList7<GenomeListItem>();
+        label2 = new JLabel();
         panel1 = new JPanel();
         addRemBar = new JPanel();
         addButton = new JButton();
@@ -197,6 +208,17 @@ public class ManageGenomesDialog extends JDialog {
                     scrollPane1.setViewportView(genomeList);
                 }
                 contentPanel.add(scrollPane1);
+
+                //---- label2 ----
+                label2.setText("Sequence on local machine");
+                label2.setLabelFor(genomeList);
+                label2.setAlignmentX(1.0F);
+                label2.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+                label2.setPreferredSize(new Dimension(400, 16));
+                label2.setMaximumSize(new Dimension(400, 16));
+                label2.setMinimumSize(new Dimension(100, 16));
+                label2.setText(LOCAL_SEQUENCE_CHAR + label2.getText());
+                contentPanel.add(label2);
             }
             dialogPane.add(contentPanel, BorderLayout.CENTER);
 
@@ -284,6 +306,7 @@ public class ManageGenomesDialog extends JDialog {
     private JPanel contentPanel;
     private JScrollPane scrollPane1;
     private JList7<GenomeListItem> genomeList;
+    private JLabel label2;
     private JPanel panel1;
     private JPanel addRemBar;
     private JButton addButton;
@@ -372,8 +395,11 @@ public class ManageGenomesDialog extends JDialog {
     private class GenomeCellRenderer implements ListCellRenderer<GenomeListItem>{
         @Override
         public Component getListCellRendererComponent(JList<? extends GenomeListItem> list, GenomeListItem value, int index, boolean isSelected, boolean cellHasFocus) {
+
             JLabel comp = new JLabel(value.toString());
-            comp.setText(value.getDisplayableName());
+
+            String displayableName = value.getDisplayableName();
+
             comp.setToolTipText(value.getLocation());
             if (isSelected) {
                 comp.setBackground(genomeList.getSelectionBackground());
@@ -382,8 +408,10 @@ public class ManageGenomesDialog extends JDialog {
             }
 
             if(value.hasLocalSequence()){
-                comp.setFont(comp.getFont().deriveFont(Font.BOLD));
+                displayableName += LOCAL_SEQUENCE_CHAR;
             }
+
+            comp.setText(displayableName);
             return comp;
         }
     }
