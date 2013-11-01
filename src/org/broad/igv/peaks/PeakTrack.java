@@ -52,6 +52,9 @@ public class PeakTrack extends AbstractTrack {
     private static ColorOption colorOption = ColorOption.SCORE;
     private static boolean showPeaks = true;
     private static boolean showSignals = false;
+    static boolean commandBarAdded = false;
+    static int timeStep = 0;
+    static boolean animate = false;
 
     int nTimePoints;
 
@@ -72,8 +75,6 @@ public class PeakTrack extends AbstractTrack {
     // Data range
     DataRange scoreDataRange = new DataRange(0, 0, 100);
     DataRange signalDataRange = new DataRange(0, 0, 1000f);
-
-    static boolean commandBarAdded = false;
 
     int bandHeight;
     int signalHeight;
@@ -237,7 +238,7 @@ public class PeakTrack extends AbstractTrack {
             renderer.render(peakList, context, rect, this);
 
         } catch (IOException e) {
-             log.error("Error loading peaks", e);
+            log.error("Error loading peaks", e);
         }
     }
 
@@ -275,11 +276,49 @@ public class PeakTrack extends AbstractTrack {
     @Override
     public void setDisplayMode(DisplayMode mode) {
         super.setDisplayMode(mode);
-        if (mode == Track.DisplayMode.COLLAPSED) {
-            setHeight(bandHeight);
-        } else {
+        if (mode == Track.DisplayMode.EXPANDED) {
             setHeight(nTimePoints * bandHeight + gapHeight);
+        } else {
+            setHeight(bandHeight);
         }
+    }
+
+
+    public static void setAnimate(boolean animate) {
+        PeakTrack.animate = animate;
+        if(animate) {
+            startAnimationThread();
+        }
+    }
+
+    private static synchronized void startAnimationThread() {
+
+        timeStep = 0;
+
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+
+                while (animate) {
+                    try {
+                        Thread.sleep(1000) ;
+                        timeStep ++;
+                        if(timeStep == 4) {
+                            Thread.sleep(500);
+                            timeStep = 0;
+                        }
+                        IGV.getInstance().doRefresh();
+
+                    } catch (InterruptedException e) {
+                        setAnimate(false);
+                        return;
+                    }
+                }
+            }
+        };
+
+        (new Thread(runnable)).start();
+
     }
 
 
@@ -413,6 +452,8 @@ public class PeakTrack extends AbstractTrack {
     }
 
 
+
+
     public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
 
         int interval = end - start;
@@ -493,6 +534,10 @@ public class PeakTrack extends AbstractTrack {
 
     public static void setShowSignals(boolean b) {
         showSignals = b;
+    }
+
+    public int getTimeStep() {
+        return timeStep;
     }
 
     public DataSource[] getTimeSignalSources() {

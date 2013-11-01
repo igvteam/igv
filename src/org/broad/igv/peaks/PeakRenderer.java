@@ -83,16 +83,22 @@ public class PeakRenderer implements Renderer<LocusScore> {
                     top += track.signalHeight;
                 }
 
-
-                if (track.getDisplayMode() == Track.DisplayMode.EXPANDED) {
+                if (PeakTrack.animate) {
+                    int step = track.getTimeStep();
                     float[] timeScores = peak.getTimeScores();
-                    for (int i = 0; i < timeScores.length; i++) {
-                        score = timeScores[i];
-                        drawPeak(context, fgColor, pX, dX, top, peakHeight, score, PeakTrack.getColorOption());
-                        top += h;
-                    }
-                } else {
+                    int idx = Math.min(step, timeScores.length - 1);
+                    score = timeScores[idx];
                     drawPeak(context, fgColor, pX, dX, top, peakHeight, score, PeakTrack.getColorOption());
+                } else {
+                    if (track.getDisplayMode() == Track.DisplayMode.EXPANDED) {
+                        float[] timeScores = peak.getTimeScores();
+                        for (int i = 0; i < timeScores.length; i++) {
+                            score = timeScores[i];
+                            drawPeak(context, fgColor, pX, dX, top, peakHeight, score, PeakTrack.getColorOption());
+                            top += h;
+                        }
+                    } else {
+                        drawPeak(context, fgColor, pX, dX, top, peakHeight, score, PeakTrack.getColorOption());
 
 //                    float[] timeScores = peak.getTimeScores();
 //                    if (dX > 10 && timeScores.length > 1) {
@@ -113,6 +119,7 @@ public class PeakRenderer implements Renderer<LocusScore> {
 //
 //                        }
 //                    }
+                    }
                 }
             }
         }
@@ -121,29 +128,40 @@ public class PeakRenderer implements Renderer<LocusScore> {
             int h = track.bandHeight;
             int signalHeight = PeakTrack.isShowPeaks() ? track.signalHeight : h;
 
-
-            if (track.getDisplayMode() == Track.DisplayMode.EXPANDED) {
-
+            if (PeakTrack.animate) {
+                int step = track.getTimeStep();
                 DataSource[] timeSignalSources = track.getTimeSignalSources();
-                if (timeSignalSources != null) {
-                    int top = rect.y + 2;
-                    for (int i = 0; i < timeSignalSources.length; i++) {
-                        DataSource src = timeSignalSources[i];
-                        if (src != null) {
-                            List<LocusScore> timeSignals = src.getSummaryScoresForRange(chr, contextStart, contextEnd, zoom);
-                            Rectangle timeSignalRect = new Rectangle(rect.x, top, rect.width, signalHeight - 1);
-                            chartRenderer.render(timeSignals, context, timeSignalRect, track);
-                        }
-                        top += h;
-
-                    }
+                int idx = Math.min(step, timeSignalSources.length - 1);
+                DataSource src = timeSignalSources[idx];
+                if (src != null) {
+                    int top = rect.y + 2;List<LocusScore> timeSignals = src.getSummaryScoresForRange(chr, contextStart, contextEnd, zoom);
+                    Rectangle timeSignalRect = new Rectangle(rect.x, top, rect.width, signalHeight - 1);
+                    chartRenderer.render(timeSignals, context, timeSignalRect, track);
                 }
             } else {
-                final PeakTrack.WrappedDataSource signalSource = track.getSignalSource(chr, contextStart, contextEnd, zoom);
-                if (signalSource != null) {
-                    List<LocusScore> signals = signalSource.getSummaryScoresForRange(chr, contextStart, contextEnd, zoom);
-                    Rectangle signalRect = new Rectangle(rect.x, rect.y + 1, rect.width, signalHeight - 1);
-                    chartRenderer.render(signals, context, signalRect, track);
+                if (track.getDisplayMode() == Track.DisplayMode.EXPANDED) {
+
+                    DataSource[] timeSignalSources = track.getTimeSignalSources();
+                    if (timeSignalSources != null) {
+                        int top = rect.y + 2;
+                        for (int i = 0; i < timeSignalSources.length; i++) {
+                            DataSource src = timeSignalSources[i];
+                            if (src != null) {
+                                List<LocusScore> timeSignals = src.getSummaryScoresForRange(chr, contextStart, contextEnd, zoom);
+                                Rectangle timeSignalRect = new Rectangle(rect.x, top, rect.width, signalHeight - 1);
+                                chartRenderer.render(timeSignals, context, timeSignalRect, track);
+                            }
+                            top += h;
+
+                        }
+                    }
+                } else {
+                    final PeakTrack.WrappedDataSource signalSource = track.getSignalSource(chr, contextStart, contextEnd, zoom);
+                    if (signalSource != null) {
+                        List<LocusScore> signals = signalSource.getSummaryScoresForRange(chr, contextStart, contextEnd, zoom);
+                        Rectangle signalRect = new Rectangle(rect.x, rect.y + 1, rect.width, signalHeight - 1);
+                        chartRenderer.render(signals, context, signalRect, track);
+                    }
                 }
             }
         }
@@ -154,7 +172,6 @@ public class PeakRenderer implements Renderer<LocusScore> {
             borderGraphics.drawLine(rect.x, rect.y + rect.height, rect.x + rect.width, rect.y + rect.height);
         }
     }
-
 
 
     private void drawPeak(RenderContext context, Color fgColor,
