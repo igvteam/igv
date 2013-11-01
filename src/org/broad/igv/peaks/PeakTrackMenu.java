@@ -103,6 +103,7 @@ public class PeakTrackMenu extends IGVPopupMenu {
         m1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 track.setDisplayMode(Track.DisplayMode.COLLAPSED);
+                PeakTrack.setAnimate(false);
                 IGV.getInstance().doRefresh();
             }
         });
@@ -112,14 +113,26 @@ public class PeakTrackMenu extends IGVPopupMenu {
         m3.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 track.setDisplayMode(Track.DisplayMode.EXPANDED);
+                PeakTrack.setAnimate(false);
                 IGV.getInstance().doRefresh();
             }
         });
 
+        JRadioButtonMenuItem m4 = new JRadioButtonMenuItem("Animate");
+        m4.setSelected(PeakTrack.animate);
+        m4.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                track.setDisplayMode(Track.DisplayMode.COLLAPSED);
+                PeakTrack.setAnimate(true);
+             }
+        });
+
         add(m1);
         add(m3);
+        add(m4);
         group.add(m1);
         group.add(m3);
+        group.add(m4);
 
     }
 
