@@ -379,10 +379,10 @@ public class IGV {
         contentPane.chromosomeChanged(chrName);
         repaintDataAndHeaderPanels(updateCommandBar);
         contentPane.getCommandBar().updateComponentStates();
-
     }
 
     public void repaintStatusAndZoomSlider() {
+        contentPane.getCommandBar().updateComponentStates();
         contentPane.getCommandBar().repaint();
     }
 
