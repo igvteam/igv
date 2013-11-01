@@ -1,4 +1,4 @@
-package org.broad.igv.blat;
+package org.broad.igv.util.blat;
 
 import org.broad.igv.feature.PSLRecord;
 import org.broad.igv.feature.Strand;

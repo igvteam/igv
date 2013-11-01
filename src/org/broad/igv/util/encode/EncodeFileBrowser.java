@@ -1,0 +1,315 @@
+/*
+ * Created by JFormDesigner on Thu Oct 31 22:31:02 EDT 2013
+ */
+
+package org.broad.igv.util.encode;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.text.ParseException;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.swing.*;
+import javax.swing.border.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.text.NumberFormatter;
+
+import com.jidesoft.swing.JideBoxLayout;
+import org.broad.igv.Globals;
+
+/**
+ * @author Stan Diamond
+ */
+public class EncodeFileBrowser extends JDialog {
+
+    private static EncodeFileBrowser theInstance;
+    private static NumberFormatter numberFormatter = new NumberFormatter();
+
+    private JButton cancelButton;
+    private JPanel dialogPane;
+    private JPanel contentPanel;
+    private JScrollPane scrollPane1;
+    private JTable table;
+    private JPanel filterPanel;
+    private JLabel filterLabel;
+    private JTextField filterTextField;
+    private JLabel rowCountLabel;
+    private JPanel buttonBar;
+    private JButton okButton;
+
+
+    EncodeTableModel model;
+
+    private EncodeFileBrowser(Frame owner, EncodeTableModel model) {
+        super(owner);
+        this.model = model;
+        initComponents();
+        init(model);
+    }
+
+    private void init(final EncodeTableModel model) {
+        setModal(true);
+        setTitle("Encode Production Data");
+
+        table.setAutoCreateRowSorter(true);
+        table.setModel(model);
+        table.setRowSorter(model.getSorter());
+        try {
+            rowCountLabel.setText(numberFormatter.valueToString(table.getRowCount()) + " rows");
+        } catch (ParseException e) {
+
+        }
+
+        table.setRowSelectionAllowed(false);
+        table.setColumnSelectionAllowed(false);
+
+        filterTextField.getDocument().addDocumentListener(
+                new DocumentListener() {
+                    public void changedUpdate(DocumentEvent e) {
+                        updateFilter();
+                    }
+
+                    public void insertUpdate(DocumentEvent e) {
+                        updateFilter();
+                    }
+
+                    public void removeUpdate(DocumentEvent e) {
+                        updateFilter();
+                    }
+                });
+
+    }
+
+    /**
+     * Update the row filter regular expression from the expression in
+     * the text box.
+     */
+    private void updateFilter() {
+
+        int[] headerColumns = new int[EncodeTableModel.columnHeadings.length - 1];
+        for (int i = 1; i < EncodeTableModel.columnHeadings.length; i++) {
+            headerColumns[i - 1] = i;
+        }
+        RowFilter<EncodeTableModel, Object> rf = null;
+        //If current expression doesn't parse, don't update.
+        try {
+            rf = new RegexFilter(filterTextField.getText(), headerColumns);
+        } catch (java.util.regex.PatternSyntaxException e) {
+            return;
+        }
+        model.getSorter().setRowFilter(rf);
+
+        try {
+            rowCountLabel.setText(numberFormatter.valueToString(table.getRowCount()) + " rows");
+        } catch (ParseException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+
+    private void loadButtonActionPerformed(ActionEvent e) {
+        for(EncodeFileRecord record : model.getRecords()) {
+             if(record.isSelected()) {
+                 System.out.println(record.getPath());
+             }
+        }
+        setVisible(false);
+    }
+
+    private void cancelButtonActionPerformed(ActionEvent e) {
+        setVisible(false);
+    }
+
+
+    private static class RegexFilter extends RowFilter {
+
+        int[] columns;
+        java.util.List<Matcher> matchers;
+
+        RegexFilter(String text, int[] columns) {
+            this.columns = columns;
+            if (text == null) {
+                throw new IllegalArgumentException("Pattern must be non-null");
+            }
+            matchers = new ArrayList<Matcher>();
+            String[] tokens = Globals.commaPattern.split(text);
+            for (String t : tokens) {
+                matchers.add(Pattern.compile("(?i)" + t.trim()).matcher(""));
+            }
+
+        }
+
+
+        @Override
+        public boolean include(Entry value) {
+            int count = value.getValueCount();
+            if (columns.length > 0) {
+                for (Matcher matcher : matchers) {
+                    boolean found = false;
+                    for (int i = columns.length - 1; i >= 0; i--) {
+                        int index = columns[i];
+                        if (index < count) {
+                            matcher.reset(value.getStringValue(index));
+                            if (matcher.find()) {
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!found) return false;  // Must match all expressions
+                }
+                return true;  // If we get here we matched them all
+            }
+
+            return false;
+        }
+    }
+
+
+    public synchronized static void open(Frame parent) throws IOException {
+
+        if (theInstance == null) {
+
+            InputStream is = EncodeFileBrowser.class.getResourceAsStream("encode.txt");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+
+
+            String[] headers = Globals.tabPattern.split(reader.readLine());
+
+            java.util.List<EncodeFileRecord> records = new ArrayList<EncodeFileRecord>(20000);
+            String nextLine;
+            while ((nextLine = reader.readLine()) != null) {
+                if (!nextLine.startsWith("#")) {
+                    String[] tokens = Globals.tabPattern.split(nextLine, -1);
+                    String path = tokens[0];
+                    Map<String, String> attributes = new HashMap<String, String>();
+                    for (int i = 0; i < headers.length; i++) {
+                        String value = tokens[i];
+                        if (value.length() > 0) {
+                            attributes.put(headers[i], value);
+                        }
+                    }
+                    records.add(new EncodeFileRecord(path, attributes));
+                }
+
+            }
+
+            theInstance = new EncodeFileBrowser(parent, new EncodeTableModel(records));
+        }
+        theInstance.setVisible(true);
+
+    }
+
+    public static void main(String[] args) throws IOException {
+        open(null);
+    }
+
+
+    private void initComponents() {
+
+        dialogPane = new JPanel();
+        contentPanel = new JPanel();
+        scrollPane1 = new JScrollPane();
+        table = new JTable();
+        filterPanel = new JPanel();
+        filterLabel = new JLabel();
+        filterTextField = new JTextField();
+        rowCountLabel = new JLabel();
+        buttonBar = new JPanel();
+        okButton = new JButton();
+        cancelButton = new JButton();
+
+        final String filterToolTip = "Enter multiple filter strings separated by commas.  e.g.  GM12878, ChipSeq";
+        filterLabel.setToolTipText(filterToolTip);
+        filterTextField.setToolTipText(filterToolTip);
+
+        //======== this ========
+        Container contentPane = getContentPane();
+        contentPane.setLayout(new BorderLayout());
+
+        //======== dialogPane ========
+
+        dialogPane.setBorder(new EmptyBorder(12, 12, 12, 12));
+        dialogPane.setLayout(new BorderLayout());
+
+        //======== contentPanel ========
+
+        contentPanel.setLayout(new BorderLayout(0, 10));
+
+        //======== scrollPane1 ========
+
+        scrollPane1.setViewportView(table);
+
+        contentPanel.add(scrollPane1, BorderLayout.CENTER);
+
+        //======== panel1 ========
+
+        filterPanel.setLayout(new JideBoxLayout(filterPanel, JideBoxLayout.X_AXIS, 5));
+
+        //---- label1 ----
+        filterLabel.setText("Filter:");
+        filterPanel.add(filterLabel, JideBoxLayout.FIX);
+
+        //---- filterTextField ----
+        filterPanel.add(filterTextField, JideBoxLayout.VARY);
+
+        rowCountLabel.setHorizontalAlignment(JLabel.RIGHT);
+        JPanel sillyPanel = new JPanel();
+        sillyPanel.setLayout(new JideBoxLayout(sillyPanel, JideBoxLayout.X_AXIS, 0));
+        sillyPanel.setPreferredSize(new Dimension(100, 28));
+        sillyPanel.add(rowCountLabel, JideBoxLayout.VARY);
+
+        filterPanel.add(sillyPanel, JideBoxLayout.FIX);
+
+        contentPanel.add(filterPanel, BorderLayout.NORTH);
+
+        dialogPane.add(contentPanel, BorderLayout.CENTER);
+
+        //======== buttonBar ========
+
+        buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
+        buttonBar.setLayout(new GridBagLayout());
+        ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
+        ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
+
+        //---- okButton ----
+        okButton.setText("Load");
+        okButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                loadButtonActionPerformed(e);
+            }
+        });
+        buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 0, 5), 0, 0));
+
+        //---- cancelButton ----
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cancelButtonActionPerformed(e);
+            }
+        });
+        buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 0, 0), 0, 0));
+
+        dialogPane.add(buttonBar, BorderLayout.SOUTH);
+
+        contentPane.add(dialogPane, BorderLayout.CENTER);
+        setSize(700, 620);
+        setLocationRelativeTo(getOwner());
+    }
+
+
+}

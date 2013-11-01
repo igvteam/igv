@@ -2,7 +2,7 @@
  * Created by JFormDesigner on Fri Nov 30 11:55:45 EST 2012
  */
 
-package org.broad.igv.blat;
+package org.broad.igv.util.blat;
 
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.feature.PSLRecord;

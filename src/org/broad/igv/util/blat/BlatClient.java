@@ -9,7 +9,7 @@
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  */
 
-package org.broad.igv.blat;
+package org.broad.igv.util.blat;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.PSLRecord;
