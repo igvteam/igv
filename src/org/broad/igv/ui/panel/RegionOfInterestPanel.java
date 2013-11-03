@@ -16,7 +16,7 @@
 package org.broad.igv.ui.panel;
 
 import org.broad.igv.Globals;
-import org.broad.igv.blat.BlatClient;
+import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;

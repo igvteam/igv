@@ -13,6 +13,7 @@ package org.broad.igv.blat;
 
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.util.blat.BlatClient;
 import org.junit.Test;
 
 import java.util.List;

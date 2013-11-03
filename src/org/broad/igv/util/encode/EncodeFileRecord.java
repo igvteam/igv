@@ -8,7 +8,7 @@ import java.util.Map;
 *         Date: 10/31/13
 *         Time: 10:11 PM
 */
-class EncodeFileRecord {
+public class EncodeFileRecord {
 
     boolean selected = false;
     String path;

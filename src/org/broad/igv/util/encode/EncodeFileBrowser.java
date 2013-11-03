@@ -12,23 +12,27 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.text.NumberFormatter;
 
 import com.jidesoft.swing.JideBoxLayout;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.util.ResourceLocator;
 
 /**
- * @author Stan Diamond
+ * @author Jim Robinson
  */
 public class EncodeFileBrowser extends JDialog {
+
+    private static Logger log = Logger.getLogger(EncodeFileBrowser.class);
 
     private static EncodeFileBrowser theInstance;
     private static NumberFormatter numberFormatter = new NumberFormatter();
@@ -45,12 +49,61 @@ public class EncodeFileBrowser extends JDialog {
     private JPanel buttonBar;
     private JButton okButton;
 
-
     EncodeTableModel model;
+    private boolean canceled;
+
+
+    public synchronized static EncodeFileBrowser getInstance() throws IOException {
+
+        if (theInstance == null) {
+            List<EncodeFileRecord> records = getEncodeFileRecords();
+            Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
+            theInstance = new EncodeFileBrowser(parent, new EncodeTableModel(records));
+        }
+
+        return theInstance;
+    }
+
+    private static List<EncodeFileRecord> getEncodeFileRecords() throws IOException {
+
+        InputStream is = null;
+
+        try {
+
+            is = EncodeFileBrowser.class.getResourceAsStream("encode.txt");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            String[] headers = Globals.tabPattern.split(reader.readLine());
+            List<EncodeFileRecord> records = new ArrayList<EncodeFileRecord>(20000);
+            String nextLine;
+            while ((nextLine = reader.readLine()) != null) {
+                if (!nextLine.startsWith("#")) {
+
+                    String[] tokens = Globals.tabPattern.split(nextLine, -1);
+                    String path = tokens[0];
+
+                    Map<String, String> attributes = new HashMap<String, String>();
+                    for (int i = 0; i < headers.length; i++) {
+                        String value = tokens[i];
+                        if (value.length() > 0) {
+                            attributes.put(headers[i], value);
+                        }
+                    }
+                    records.add(new EncodeFileRecord(path, attributes));
+
+                }
+
+            }
+            return records;
+        } finally {
+            if (is != null) is.close();
+        }
+    }
+
 
     private EncodeFileBrowser(Frame owner, EncodeTableModel model) {
         super(owner);
         this.model = model;
+        setModal(true);
         initComponents();
         init(model);
     }
@@ -116,18 +169,52 @@ public class EncodeFileBrowser extends JDialog {
 
 
     private void loadButtonActionPerformed(ActionEvent e) {
-        for(EncodeFileRecord record : model.getRecords()) {
-             if(record.isSelected()) {
-                 System.out.println(record.getPath());
-             }
-        }
+        canceled = false;
         setVisible(false);
     }
 
     private void cancelButtonActionPerformed(ActionEvent e) {
+        canceled = true;
         setVisible(false);
     }
 
+    public boolean isCanceled() {
+        return canceled;
+    }
+
+    private Set<String> getLoadedPaths() {
+
+        if (!IGV.hasInstance()) return new HashSet<String>();
+
+        Collection<ResourceLocator> locators = IGV.getInstance().getDataResourceLocators();
+        HashSet<String> loadedPaths = new HashSet<String>(locators.size());
+        for (ResourceLocator locator : locators) {
+            loadedPaths.add(locator.getPath());
+        }
+        return loadedPaths;
+    }
+
+    /**
+     *
+     * @return the list of VISIBLE selected records.  Filtered records are not returned even if record.selected == true
+     * @throws IOException
+     */
+    public List<EncodeFileRecord> getSelectedRecords() throws IOException {
+
+        List<EncodeFileRecord> selectedRecords = new ArrayList<EncodeFileRecord>();
+        List<EncodeFileRecord> allRecords = model.getRecords();
+
+        int rowCount = table.getRowCount();
+        for(int i=0; i<rowCount; i++) {
+            int modelIdx = table.convertRowIndexToModel(i);
+            EncodeFileRecord record = allRecords.get(modelIdx);
+            if(record.isSelected()) {
+                selectedRecords.add(record);
+            }
+        }
+
+        return selectedRecords;
+    }
 
     private static class RegexFilter extends RowFilter {
 
@@ -150,6 +237,7 @@ public class EncodeFileBrowser extends JDialog {
 
         @Override
         public boolean include(Entry value) {
+
             int count = value.getValueCount();
             if (columns.length > 0) {
                 for (Matcher matcher : matchers) {
@@ -174,45 +262,6 @@ public class EncodeFileBrowser extends JDialog {
     }
 
 
-    public synchronized static void open(Frame parent) throws IOException {
-
-        if (theInstance == null) {
-
-            InputStream is = EncodeFileBrowser.class.getResourceAsStream("encode.txt");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-
-
-            String[] headers = Globals.tabPattern.split(reader.readLine());
-
-            java.util.List<EncodeFileRecord> records = new ArrayList<EncodeFileRecord>(20000);
-            String nextLine;
-            while ((nextLine = reader.readLine()) != null) {
-                if (!nextLine.startsWith("#")) {
-                    String[] tokens = Globals.tabPattern.split(nextLine, -1);
-                    String path = tokens[0];
-                    Map<String, String> attributes = new HashMap<String, String>();
-                    for (int i = 0; i < headers.length; i++) {
-                        String value = tokens[i];
-                        if (value.length() > 0) {
-                            attributes.put(headers[i], value);
-                        }
-                    }
-                    records.add(new EncodeFileRecord(path, attributes));
-                }
-
-            }
-
-            theInstance = new EncodeFileBrowser(parent, new EncodeTableModel(records));
-        }
-        theInstance.setVisible(true);
-
-    }
-
-    public static void main(String[] args) throws IOException {
-        open(null);
-    }
-
-
     private void initComponents() {
 
         dialogPane = new JPanel();
@@ -226,6 +275,8 @@ public class EncodeFileBrowser extends JDialog {
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
+
+        getRootPane().setDefaultButton(okButton);
 
         final String filterToolTip = "Enter multiple filter strings separated by commas.  e.g.  GM12878, ChipSeq";
         filterLabel.setToolTipText(filterToolTip);
@@ -311,5 +362,9 @@ public class EncodeFileBrowser extends JDialog {
         setLocationRelativeTo(getOwner());
     }
 
+
+    public static void main(String[] args) throws IOException {
+        getInstance().setVisible(true);
+    }
 
 }

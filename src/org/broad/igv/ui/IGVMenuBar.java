@@ -291,7 +291,7 @@ public class IGVMenuBar extends JMenuBar {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     File file = FileDialogUtils.chooseFile("Save DB Profile", DirectoryManager.getUserDirectory(), FileDialogUtils.SAVE);
-                    if(file != null){
+                    if (file != null) {
                         DBProfileEditor editor = new DBProfileEditor(IGV.getMainFrame(), file.getAbsolutePath());
                         editor.setVisible(true);
                     }
@@ -302,8 +302,8 @@ public class IGVMenuBar extends JMenuBar {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     File file = FileDialogUtils.chooseFile("Select .dbxml database profile");
-                    if(file != null){
-                        if(!file.exists()){
+                    if (file != null) {
+                        if (!file.exists()) {
 
                         }
                         DBProfileEditor editor = new DBProfileEditor(IGV.getMainFrame(), file.getAbsolutePath());
@@ -321,7 +321,7 @@ public class IGVMenuBar extends JMenuBar {
 
 
         //DataTrack Math------------------------//
-        if(Globals.isDevelopment()){
+        if (Globals.isDevelopment()) {
             JMenuItem combineDataItem = new JMenuItem("Combine Data Tracks");
             combineDataItem.addActionListener(new ActionListener() {
                 @Override
@@ -381,6 +381,11 @@ public class IGVMenuBar extends JMenuBar {
 
         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.DB_ENABLED)) {
             menuAction = new LoadFromDatabaseAction("Load from Database...", 0, igv);
+            menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        }
+
+        if (Globals.isDevelopment()) {
+            menuAction = new BrowseEncodeAction("Encode...", KeyEvent.VK_E, igv);
             menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         }
 
