@@ -147,14 +147,11 @@ public class EncodeFileBrowser extends JDialog {
      */
     private void updateFilter() {
 
-        int[] headerColumns = new int[EncodeTableModel.columnHeadings.length - 1];
-        for (int i = 1; i < EncodeTableModel.columnHeadings.length; i++) {
-            headerColumns[i - 1] = i;
-        }
+
         RowFilter<EncodeTableModel, Object> rf = null;
         //If current expression doesn't parse, don't update.
         try {
-            rf = new RegexFilter(filterTextField.getText(), headerColumns);
+            rf = new RegexFilter(filterTextField.getText());
         } catch (java.util.regex.PatternSyntaxException e) {
             return;
         }
@@ -195,7 +192,6 @@ public class EncodeFileBrowser extends JDialog {
     }
 
     /**
-     *
      * @return the list of VISIBLE selected records.  Filtered records are not returned even if record.selected == true
      * @throws IOException
      */
@@ -205,10 +201,10 @@ public class EncodeFileBrowser extends JDialog {
         List<EncodeFileRecord> allRecords = model.getRecords();
 
         int rowCount = table.getRowCount();
-        for(int i=0; i<rowCount; i++) {
+        for (int i = 0; i < rowCount; i++) {
             int modelIdx = table.convertRowIndexToModel(i);
             EncodeFileRecord record = allRecords.get(modelIdx);
-            if(record.isSelected()) {
+            if (record.isSelected()) {
                 selectedRecords.add(record);
             }
         }
@@ -216,20 +212,33 @@ public class EncodeFileBrowser extends JDialog {
         return selectedRecords;
     }
 
-    private static class RegexFilter extends RowFilter {
+    private class RegexFilter extends RowFilter {
 
-        int[] columns;
-        java.util.List<Matcher> matchers;
+        Map<String, Matcher> matchers;
 
-        RegexFilter(String text, int[] columns) {
-            this.columns = columns;
+        RegexFilter(String text) {
+
             if (text == null) {
                 throw new IllegalArgumentException("Pattern must be non-null");
             }
-            matchers = new ArrayList<Matcher>();
-            String[] tokens = Globals.commaPattern.split(text);
+            matchers = new HashMap<String, Matcher>();
+            String[] tokens = Globals.whitespacePattern.split(text);
             for (String t : tokens) {
-                matchers.add(Pattern.compile("(?i)" + t.trim()).matcher(""));
+                // If token contains an = sign apply to specified column only
+                String column = "*";
+                String value = t.trim();
+                if (t.contains("=")) {
+                    String[] kv = Globals.equalPattern.split(t);
+                    if (kv.length > 1) {
+                        column = kv[0].trim();
+                        value = kv[1].trim();
+                    }
+                    else {
+                        value = kv[0];  // Value is column name until more input is entered
+                    }
+                }
+
+                matchers.put(column, Pattern.compile("(?i)" + value).matcher(""));
             }
 
         }
@@ -238,26 +247,35 @@ public class EncodeFileBrowser extends JDialog {
         @Override
         public boolean include(Entry value) {
 
-            int count = value.getValueCount();
-            if (columns.length > 0) {
-                for (Matcher matcher : matchers) {
-                    boolean found = false;
-                    for (int i = columns.length - 1; i >= 0; i--) {
-                        int index = columns[i];
-                        if (index < count) {
-                            matcher.reset(value.getStringValue(index));
-                            if (matcher.find()) {
-                                found = true;
-                                break;
-                            }
+            for (Map.Entry<String, Matcher> entry : matchers.entrySet()) {
+                String column = entry.getKey();
+                Matcher matcher = entry.getValue();
+
+                int nColumns = table.getColumnCount();
+                // First column is checkbox
+
+                boolean found = false;
+                for (int index = 1; index < nColumns; index++) {
+
+                    // Include column headings in search
+                    matcher.reset(table.getColumnName(index).toLowerCase());
+                    if (matcher.find()) {
+                        found = true;
+                        break;
+                    }
+
+                    boolean wildcard = column.equals("*");
+                    if (wildcard || column.equalsIgnoreCase(table.getColumnName(index))) {
+                        matcher.reset(value.getStringValue(index));
+                        if (matcher.find()) {
+                            found = true;
+                            break;
                         }
                     }
-                    if (!found) return false;  // Must match all expressions
                 }
-                return true;  // If we get here we matched them all
+                if (!found) return false; // End of column loop.  Must find a match for all matchers
             }
-
-            return false;
+            return true;  // If we get here we matched them all
         }
     }
 
