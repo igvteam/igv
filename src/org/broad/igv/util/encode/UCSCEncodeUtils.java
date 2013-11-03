@@ -24,11 +24,34 @@ public class UCSCEncodeUtils {
     static HashSet<String> fileTypes = new HashSet<String>();
     static HashSet<String> allHeaders = new LinkedHashSet<String>();
 
+    private static List<String> rnaChipQualifiers = Arrays.asList("CellTotal", "Longnonpolya", "Longpolya",
+            "NucleolusTotal", "ChromatinTotal", "ChromatinTotal", "NucleoplasmTotal");
+
     public static void main(String[] args) throws IOException {
 
 
-        //List<EncodeFileRecord> records =  new ArrayList();
-        //parseFilesDotTxt("http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeAffyRnaChip/files.txt", records);
+//        List<EncodeFileRecord> records = new ArrayList();
+//        parseFilesDotTxt(args[0], records);
+//        PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(args[1])));
+//
+//        pw.print("path");
+//        for (String h : EncodeTableModel.columnHeadings) {
+//            pw.print("\t");
+//            pw.print(h);
+//        }
+//        pw.println();
+//
+//        for (EncodeFileRecord rec : records) {
+//            pw.print(rec.getPath());
+//            for (String h : EncodeTableModel.columnHeadings) {
+//                pw.print("\t");
+//                String value = rec.getAttributeValue(h);
+//                pw.print(value == null ? "" : value);
+//            }
+//            pw.println();
+//        }
+//        pw.close();
+
         updateEncodeTableFile(args[0], args[1]);
 
     }
@@ -46,7 +69,7 @@ public class UCSCEncodeUtils {
         String nextLine;
         while ((nextLine = reader.readLine()) != null) {
             if (!nextLine.startsWith("#")) {
-                String[] tokens = Globals.tabPattern.split(nextLine,-1);
+                String[] tokens = Globals.tabPattern.split(nextLine, -1);
                 String path = tokens[0];
                 Map<String, String> attributes = new HashMap<String, String>();
                 for (int i = 0; i < headers.length; i++) {
@@ -138,7 +161,7 @@ public class UCSCEncodeUtils {
 
     }
 
-    static HashSet knownFileTypes = new HashSet(Arrays.asList("bam", "bigBed", "bed", "bigWig", "gtf", "broadPeak", "narrowPeak", "gff"));
+    static HashSet knownFileTypes = new HashSet(Arrays.asList("bam", "bigBed", "bed", "bb", "bw", "bigWig", "gtf", "broadPeak", "narrowPeak", "gff"));
 
     public static void parseFilesDotTxt(String url, List<EncodeFileRecord> fileRecords) throws IOException {
 
@@ -168,6 +191,15 @@ public class UCSCEncodeUtils {
 
             }
 
+            // Hack for RnaChip -- need this to disambiguate them
+            if ("RnaChip".equals(kvalues.get("dataType"))) {
+                for (String qual : rnaChipQualifiers) {
+                    if (fn.contains(qual)) {
+                        kvalues.put("antibody", qual);
+                    }
+                }
+            }
+
             EncodeFileRecord df = new EncodeFileRecord(url.replace("files.txt", fn), kvalues);
 
             if (knownFileTypes.contains(df.getFileType())) {
@@ -180,35 +212,10 @@ public class UCSCEncodeUtils {
             labs.add(df.getAttributeValue("lab"));
             fileTypes.add(df.getFileType());
 
-//            System.out.println(df.getPath());
-//            System.out.println(df.getDataType());
-//            System.out.println(df.getAntibody());
-//            System.out.println(df.getCell());
-//            System.out.println(df.getFileType());
-//            System.out.println(df.getReplicate());
         }
 
         reader.close();
 
-        //wgEncodeBroadHistoneGm12878H3k4me1StdSig.bigWig
-        // size=346M;
-        // dateSubmitted=2009-01-05;
-        // dataType=ChipSeq;
-        // cell=GM12878;
-        // antibody=H3K4me1;
-        // control=std;
-        // expId=33;
-        // setType=exp;
-        // controlId=GM12878/Input/std;
-        // subId=2804;
-        // dataVersion=ENCODE Jan 2011 Freeze;
-        // dateResubmitted=2010-11-05;
-        // grant=Bernstein;
-        // lab=Broad;
-        // view=Signal;
-        // type=bigWig;
-        // dccAccession=wgEncodeEH000033;
-        // origAssembly=hg18
     }
 
     /*
@@ -239,5 +246,6 @@ tgz
 bedLogR
 peaks
 */
+
 
 }

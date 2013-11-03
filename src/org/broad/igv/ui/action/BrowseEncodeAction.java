@@ -39,6 +39,7 @@ public class BrowseEncodeAction extends MenuAction {
 
             if(browser == null) {
                 MessageUtils.showMessage("Encode data is not available for " + genome.getDisplayName() + " through IGV.");
+                return;
             }
 
             browser.setVisible(true);

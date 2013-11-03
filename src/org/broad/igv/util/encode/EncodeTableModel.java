@@ -6,6 +6,7 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.table.TableStringConverter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -39,13 +40,27 @@ import java.util.regex.Pattern;
 public class EncodeTableModel extends AbstractTableModel {
 
 
-    static String[] columnHeadings = {"", "cell", "dataType", "antibody", "view", "type", "lab"};
+    static String[] columnHeadings;// = {"", "cell", "dataType", "antibody", "view", "type", "lab"};
     List<EncodeFileRecord> records;
     String filter;
     private final TableRowSorter<EncodeTableModel> sorter;
 
-    public EncodeTableModel(List<EncodeFileRecord> records) {
+    public EncodeTableModel(String [] headings, List<EncodeFileRecord> records) {
+
         this.records = records;
+
+        List<String> tmp = new ArrayList<String>();
+        tmp.add("");  // Checkbox heading
+        for(String h : headings) {
+            String heading = h.trim();
+            if(heading.length() > 0 && !"path".equals(heading)) {
+                tmp.add(heading);
+            }
+        }
+        //tmp.add("path");
+        columnHeadings = tmp.toArray(new String[tmp.size()]);
+
+
         sorter = new TableRowSorter<EncodeTableModel>(this);
 
         sorter.setStringConverter(new TableStringConverter() {

@@ -25,6 +25,7 @@ import com.jidesoft.swing.JideBoxLayout;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
 
 /**
@@ -58,12 +59,12 @@ public class EncodeFileBrowser extends JDialog {
         String encodeGenomeId = getEncodeGenomeId(genomeId);
         EncodeFileBrowser instance = instanceMap.get(encodeGenomeId);
         if (instance == null) {
-            List<EncodeFileRecord> records = getEncodeFileRecords(encodeGenomeId);
+            Pair<String [], List<EncodeFileRecord>> records = getEncodeFileRecords(encodeGenomeId);
             if (records == null) {
                 return null;
             }
             Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
-            instance = new EncodeFileBrowser(parent, new EncodeTableModel(records));
+            instance = new EncodeFileBrowser(parent, new EncodeTableModel(records.getFirst(), records.getSecond()));
             instanceMap.put(encodeGenomeId, instance);
         }
 
@@ -76,7 +77,7 @@ public class EncodeFileBrowser extends JDialog {
         else return genomeId;
     }
 
-    private static List<EncodeFileRecord> getEncodeFileRecords(String genomeId) throws IOException {
+    private static Pair<String [], List<EncodeFileRecord>> getEncodeFileRecords(String genomeId) throws IOException {
 
         InputStream is = null;
 
@@ -87,7 +88,9 @@ public class EncodeFileBrowser extends JDialog {
                 return null;
             }
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+
             String[] headers = Globals.tabPattern.split(reader.readLine());
+
             List<EncodeFileRecord> records = new ArrayList<EncodeFileRecord>(20000);
             String nextLine;
             while ((nextLine = reader.readLine()) != null) {
@@ -98,7 +101,7 @@ public class EncodeFileBrowser extends JDialog {
 
                     Map<String, String> attributes = new HashMap<String, String>();
                     for (int i = 0; i < headers.length; i++) {
-                        String value = tokens[i];
+                        String value = i < tokens.length ? tokens[i] : "";
                         if (value.length() > 0) {
                             attributes.put(headers[i], value);
                         }
@@ -108,7 +111,7 @@ public class EncodeFileBrowser extends JDialog {
                 }
 
             }
-            return records;
+            return new Pair(headers, records);
         } finally {
             if (is != null) is.close();
         }
@@ -229,14 +232,14 @@ public class EncodeFileBrowser extends JDialog {
 
     private class RegexFilter extends RowFilter {
 
-        Map<String, Matcher> matchers;
+        List<Pair <String, Matcher>> matchers;
 
         RegexFilter(String text) {
 
             if (text == null) {
                 throw new IllegalArgumentException("Pattern must be non-null");
             }
-            matchers = new HashMap<String, Matcher>();
+            matchers = new ArrayList<Pair <String, Matcher>>();
             String[] tokens = Globals.whitespacePattern.split(text);
             for (String t : tokens) {
                 // If token contains an = sign apply to specified column only
@@ -252,26 +255,33 @@ public class EncodeFileBrowser extends JDialog {
                     }
                 }
 
-                matchers.put(column, Pattern.compile("(?i)" + value).matcher(""));
+                matchers.add(new Pair(column, Pattern.compile("(?i)" + value).matcher("")));
             }
 
         }
 
-
+        /**
+         * Include row if each matcher succeeds in at least one column.  In other words all the conditions
+         * are combined with "and"
+         *
+         * @param value
+         * @return
+         */
         @Override
         public boolean include(Entry value) {
 
-            for (Map.Entry<String, Matcher> entry : matchers.entrySet()) {
-                String column = entry.getKey();
-                Matcher matcher = entry.getValue();
+            for (Pair<String, Matcher> entry : matchers) {
+                String column = entry.getFirst();
+                Matcher matcher = entry.getSecond();
 
+
+                // Search for a match in at least one column.  The first column is the checkbox.
+                boolean found = false;  // Pessimistic
                 int nColumns = table.getColumnCount();
-                // First column is checkbox
-
-                boolean found = false;
                 for (int index = 1; index < nColumns; index++) {
 
-                    // Include column headings in search
+                    // Include column headings in search.  This is to prevent premature filtering when entering a
+                    // specific column condition (e.g. cataType=ChipSeq)
                     matcher.reset(table.getColumnName(index).toLowerCase());
                     if (matcher.find()) {
                         found = true;
@@ -287,10 +297,11 @@ public class EncodeFileBrowser extends JDialog {
                         }
                     }
                 }
-                if (!found) return false; // End of column loop.  Must find a match for all matchers
+                if (!found) return false;
             }
             return true;  // If we get here we matched them all
         }
+
     }
 
 
