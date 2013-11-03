@@ -29,7 +29,7 @@ public class UCSCEncodeUtils {
 
         //List<EncodeFileRecord> records =  new ArrayList();
         //parseFilesDotTxt("http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeAffyRnaChip/files.txt", records);
-       // updateEncodeTableFile();
+        updateEncodeTableFile(args[0], args[1]);
 
     }
 
@@ -63,10 +63,11 @@ public class UCSCEncodeUtils {
     }
 
 
-    private static void updateEncodeTableFile() throws IOException {
-        List<EncodeFileRecord> records = parseUCSCMasterFile("resources/ucscEncodeDirectories");
+    private static void updateEncodeTableFile(String inputFile, String outputFile) throws IOException {
 
-        PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter("encode.txt")));
+        List<EncodeFileRecord> records = parseUCSCMasterFile(inputFile);
+
+        PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
 
         pw.print("path");
         for (String h : EncodeTableModel.columnHeadings) {

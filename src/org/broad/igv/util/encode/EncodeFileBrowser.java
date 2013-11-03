@@ -34,7 +34,7 @@ public class EncodeFileBrowser extends JDialog {
 
     private static Logger log = Logger.getLogger(EncodeFileBrowser.class);
 
-    private static EncodeFileBrowser theInstance;
+    private static Map<String, EncodeFileBrowser> instanceMap = Collections.synchronizedMap(new HashMap<String, EncodeFileBrowser>());
     private static NumberFormatter numberFormatter = new NumberFormatter();
 
     private JButton cancelButton;
@@ -53,24 +53,39 @@ public class EncodeFileBrowser extends JDialog {
     private boolean canceled;
 
 
-    public synchronized static EncodeFileBrowser getInstance() throws IOException {
+    public synchronized static EncodeFileBrowser getInstance(String genomeId) throws IOException {
 
-        if (theInstance == null) {
-            List<EncodeFileRecord> records = getEncodeFileRecords();
+        String encodeGenomeId = getEncodeGenomeId(genomeId);
+        EncodeFileBrowser instance = instanceMap.get(encodeGenomeId);
+        if (instance == null) {
+            List<EncodeFileRecord> records = getEncodeFileRecords(encodeGenomeId);
+            if (records == null) {
+                return null;
+            }
             Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
-            theInstance = new EncodeFileBrowser(parent, new EncodeTableModel(records));
+            instance = new EncodeFileBrowser(parent, new EncodeTableModel(records));
+            instanceMap.put(encodeGenomeId, instance);
         }
 
-        return theInstance;
+        return instance;
     }
 
-    private static List<EncodeFileRecord> getEncodeFileRecords() throws IOException {
+    private static String getEncodeGenomeId(String genomeId) {
+        if (genomeId.equals("b37") || genomeId.equals("1kg_v37")) return "hg19";
+        else if (genomeId.equals("1kg_ref")) return "hg19";
+        else return genomeId;
+    }
+
+    private static List<EncodeFileRecord> getEncodeFileRecords(String genomeId) throws IOException {
 
         InputStream is = null;
 
         try {
 
-            is = EncodeFileBrowser.class.getResourceAsStream("encode.txt");
+            is = EncodeFileBrowser.class.getResourceAsStream("encode." + genomeId + ".txt");
+            if (is == null) {
+                return null;
+            }
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             String[] headers = Globals.tabPattern.split(reader.readLine());
             List<EncodeFileRecord> records = new ArrayList<EncodeFileRecord>(20000);
@@ -232,8 +247,7 @@ public class EncodeFileBrowser extends JDialog {
                     if (kv.length > 1) {
                         column = kv[0].trim();
                         value = kv[1].trim();
-                    }
-                    else {
+                    } else {
                         value = kv[0];  // Value is column name until more input is entered
                     }
                 }
@@ -382,7 +396,7 @@ public class EncodeFileBrowser extends JDialog {
 
 
     public static void main(String[] args) throws IOException {
-        getInstance().setVisible(true);
+        getInstance("hg18").setVisible(true);
     }
 
 }

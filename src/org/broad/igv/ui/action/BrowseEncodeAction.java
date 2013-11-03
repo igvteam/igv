@@ -1,7 +1,9 @@
 package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.encode.EncodeFileBrowser;
 import org.broad.igv.util.encode.EncodeFileRecord;
@@ -32,7 +34,13 @@ public class BrowseEncodeAction extends MenuAction {
     public void actionPerformed(ActionEvent event) {
 
         try {
-            EncodeFileBrowser browser = EncodeFileBrowser.getInstance();
+            Genome genome = igv.getGenomeManager().getCurrentGenome();
+            EncodeFileBrowser browser = EncodeFileBrowser.getInstance(genome.getId());
+
+            if(browser == null) {
+                MessageUtils.showMessage("Encode data is not available for " + genome.getDisplayName() + " through IGV.");
+            }
+
             browser.setVisible(true);
             if(browser.isCanceled()) return;
 
