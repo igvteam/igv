@@ -85,48 +85,29 @@ public class UCSCEncodeUtils {
         return records;
     }
 
+    static String[] columnHeadings = {"cell", "dataType", "antibody", "view", "replicate", "type", "lab"};
 
     private static void updateEncodeTableFile(String inputFile, String outputFile) throws IOException {
-
-        List<EncodeFileRecord> records = parseUCSCMasterFile(inputFile);
-
-        PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
-
-        pw.print("path");
-        for (String h : EncodeTableModel.columnHeadings) {
-            pw.print("\t");
-            pw.print(h);
-        }
-        pw.println();
-
-        for (EncodeFileRecord rec : records) {
-            pw.print(rec.getPath());
-            for (String h : EncodeTableModel.columnHeadings) {
-                pw.print("\t");
-                String value = rec.getAttributeValue(h);
-                pw.print(value == null ? "" : value);
-            }
-            pw.println();
-        }
-        pw.close();
-    }
-
-    private static List<EncodeFileRecord> parseUCSCMasterFile(String url) throws IOException {
 
         List<EncodeFileRecord> records = new ArrayList<EncodeFileRecord>();
 
         BufferedReader reader = null;
-        reader = ParsingUtils.openBufferedReader(url);
+        reader = ParsingUtils.openBufferedReader(inputFile);
 
         String rootPath = reader.readLine();
 
+        String hub = null;
         String nextLine;
         while ((nextLine = reader.readLine()) != null) {
 
-            if (!nextLine.startsWith("#")) {
+            if (nextLine.startsWith("#")) {
+                if(nextLine.startsWith("#hub=")) {
+                    hub = nextLine.substring(5);
+                }
+            }
+            else {
                 String dir = rootPath + nextLine;
                 String filesDotTxt = dir + "/files.txt";
-
                 try {
                     if (HttpUtils.getInstance().resourceAvailable(new URL(filesDotTxt))) {
                         parseFilesDotTxt(filesDotTxt, records);
@@ -137,28 +118,37 @@ public class UCSCEncodeUtils {
             }
 
         }
-
-//
-//
-//        System.out.println("Labs");
-//        for (String dt : labs) System.out.println(dt);
-//
-//        System.out.println();
-//        System.out.println("Data Types");
-//        for (String dt : dataTypes) System.out.println(dt);
-//
-//        System.out.println();
-//        System.out.println("Antibodies");
-//        for (String dt : antibodies) System.out.println(dt);
-//
-//        System.out.println();
-//        System.out.println("cells");
-//        for (String dt : cells) System.out.println(dt);
-
         for (String dt : fileTypes) System.out.println(dt);
 
-        return records;
 
+        outputRecords(outputFile, records, hub);
+    }
+
+    private static void outputRecords(String outputFile, List<EncodeFileRecord> records, String hub) throws IOException {
+        PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
+        pw.print("path");
+        for (String h : columnHeadings) {
+            pw.print("\t");
+            pw.print(h);
+        }
+        if(hub != null) {
+            pw.print("\thub");
+        }
+        pw.println();
+
+        for (EncodeFileRecord rec : records) {
+            pw.print(rec.getPath());
+            for (String h : columnHeadings) {
+                pw.print("\t");
+                String value = rec.getAttributeValue(h);
+                pw.print(value == null ? "" : value);
+            }
+            if(hub != null) {
+                pw.print("\t" + hub);
+            }
+            pw.println();
+        }
+        pw.close();
     }
 
     static HashSet knownFileTypes = new HashSet(Arrays.asList("bam", "bigBed", "bed", "bb", "bw", "bigWig", "gtf", "broadPeak", "narrowPeak", "gff"));

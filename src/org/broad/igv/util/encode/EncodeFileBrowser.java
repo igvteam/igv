@@ -407,7 +407,7 @@ public class EncodeFileBrowser extends JDialog {
 
 
     public static void main(String[] args) throws IOException {
-        getInstance("hg18").setVisible(true);
+        getInstance("hg19").setVisible(true);
     }
 
 }
