@@ -39,17 +39,17 @@ public class SorterTest extends AbstractHeadlessTest {
 
     @Test
     public void testSortBed() throws Exception {
-        testSort(TestUtils.DATA_DIR + "bed/Unigene.unsorted.bed", 0, 1, 10, 71);
+        testSort(TestUtils.DATA_DIR + "bed/Unigene.unsorted.bed", 0, 1, 10, 71, 0);
     }
 
     @Test
     public void testSortBed1() throws Exception {
-        testSort(TestUtils.DATA_DIR + "bed/Unigene.unsorted1.bed", 0, 1, 10, 71);
+        testSort(TestUtils.DATA_DIR + "bed/Unigene.unsorted1.bed", 0, 1, 10, 71, 0);
     }
 
     @Test
     public void testSortBed2() throws Exception {
-        testSort(TestUtils.DATA_DIR + "bed/GSM1004654_10k.bed", 0, 1, 50, 10000);
+        testSort(TestUtils.DATA_DIR + "bed/GSM1004654_10k.bed", 0, 1, 50, 10000, 0);
     }
 
     @Test
@@ -65,14 +65,20 @@ public class SorterTest extends AbstractHeadlessTest {
     @Test
     public void testSortCN() throws Exception{
         String path = TestUtils.DATA_DIR + "cn/1klines.cn";
-        testSort(path, 1, 2, 10, 1000);
+        testSort(path, 1, 2, 10, 1000, 1);
+    }
+
+    @Test
+    public void testSortGWAS() throws Exception{
+        String path = TestUtils.DATA_DIR + "gwas/random.gwas";
+        testSort(path, 0, 1, 10, 100, 1);
     }
 
     public void testSort(String infile, int chrCol, int startCol) throws IOException {
-        testSort(infile, chrCol, startCol, 10, null);
+        testSort(infile, chrCol, startCol, 10, null, 0);
     }
 
-    public void testSort(String infile, int chrCol, int startCol, int maxRecords, Integer expectedLines) throws IOException {
+    public void testSort(String infile, int chrCol, int startCol, int maxRecords, Integer expectedLines, int skipTopLines) throws IOException {
 
         File ifile = new File(infile);
         File ofile = new File(infile + ".sorted");
@@ -82,27 +88,24 @@ public class SorterTest extends AbstractHeadlessTest {
         sorter.setMaxRecords(maxRecords);
         sorter.run();
 
-        int outLines = checkFileSorted(ofile, chrCol, startCol);
+        int outLines = checkFileSorted(ofile, chrCol, startCol, skipTopLines);
 
         if(expectedLines != null){
             assertEquals((int) expectedLines, outLines);
         }
     }
 
-    public static int checkFileSorted(File ofile, int chrCol, int startCol) {
+    public static int checkFileSorted(File ofile, int chrCol, int startCol, int skipTopLines) {
         BufferedReader reader = null;
         int numlines = 0;
         String nextLine = "";
-        int skipLines = 0;
-        if(ofile.getAbsolutePath().replace(".sorted", "").endsWith(".cn")){
-            skipLines = 1;
-        }
+
         try {
             reader = new BufferedReader(new FileReader(ofile));
             String lastChr = "";
             int lastStart = 0;
             Set<String> chromosomes = new HashSet();
-            for(int ii=0; ii < skipLines; ii++){
+            for(int ii=0; ii < skipTopLines; ii++){
                 reader.readLine();
             }
             while ((nextLine = reader.readLine()) != null) {

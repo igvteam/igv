@@ -356,7 +356,7 @@ public class IGVToolsTest extends AbstractHeadlessTest {
         String input = "sort --tmpDir=./ --maxRecords=50 " + inputFile + " " + outputArg;
         igvTools.run(input.split("\\s+"));
 
-        int numlines = SorterTest.checkFileSorted(oFile, 0, 1);
+        int numlines = SorterTest.checkFileSorted(oFile, 0, 1, 0);
         assertEquals(71, numlines);
     }
 

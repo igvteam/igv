@@ -10,6 +10,7 @@
  */
 package org.broad.igv.gwas;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
@@ -19,6 +20,8 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Random;
 
 import static java.lang.Math.log10;
 
@@ -31,12 +34,10 @@ public class GWASParser {
 
     private static final Logger log = Logger.getLogger(GWASParser.class);
     private ResourceLocator locator;
-
-    private int locationCol = -1;
-    private int chrCol = -1;
-    private int pCol = -1;
-    private int SNPCol = -1;
+    
     Genome genome;
+
+    private GWASColumns columns;
 
     public static boolean isGWASFile(String typeString) {
         return typeString.endsWith(".logistic") || typeString.endsWith(".linear") || typeString.endsWith(".assoc") ||
@@ -47,58 +48,8 @@ public class GWASParser {
     public GWASParser(ResourceLocator locator, Genome genome) {
         this.locator = locator;
         this.genome = genome;
+        this.columns = new GWASColumns();
     }
-
-    /**
-     * Parse a header string. Based on tokenized header, populate column numbers to indicate which columns hold chromosome, location, p-value and SNP identifier information.
-     *
-     * @param headerString
-     * @return
-     */
-    public boolean parseHeader(String headerString) {
-
-        boolean parsingSuccessful = true;
-
-        headerString = headerString.trim();
-
-
-        String[] headers = Globals.singleTabMultiSpacePattern.split(headerString);
-        int headersSize = headers.length;
-
-        if (headersSize < 4)
-            parsingSuccessful = false;
-
-        int colCounter = 0;
-        for (int i = 0; i < headersSize; i++) {
-            String header = headers[i];
-            header = header.toLowerCase();
-
-            // Chromosome column
-            if (header.equals("chr") || header.equals("chromosome"))
-                this.chrCol = colCounter;
-
-            // Nucleotide position column
-            if (header.equals("bp") || header.equals("pos") || header.equals("position"))
-                this.locationCol = colCounter;
-
-            // p-value column
-            if (header.equals("p") || header.equals("pval") || header.equals("p-value") || header.equals("pvalue") || header.equals("p.value"))
-                this.pCol = colCounter;
-
-            // SNP identifier column
-            if (header.equals("snp") || header.equals("rs") || header.equals("rsid") || header.equals("rsnum") || header.equals("id") || header.equals("marker") || header.equals("markername"))
-                this.SNPCol = colCounter;
-
-            colCounter++;
-
-        }
-
-        if (this.locationCol < 0 || this.chrCol < 0 || this.pCol < 0 || this.SNPCol < 0)
-            parsingSuccessful = false;
-
-        return parsingSuccessful;
-    }
-
 
     /**
      * Parses and populates description cache from a GWAS result file. Cache will be filled with data points surrounding the given query data point.
@@ -122,10 +73,10 @@ public class GWASParser {
         try {
             reader = ParsingUtils.openAsciiReader(locator);
 
-            // Parse header line
+            // Parse columns line
             String headerLine = reader.readLine();
-            if (!parseHeader(headerLine))
-                throw new ParserException("Error while parsing header line.", 0, nextLine);
+            if (!this.columns.parseHeader(headerLine))
+                throw new ParserException("Error while parsing columns line.", 0, nextLine);
 
             gData.getDescriptionCache().setHeaderTokens(headerLine);
 
@@ -183,10 +134,9 @@ public class GWASParser {
         try {
             reader = ParsingUtils.openAsciiReader(locator);
 
-            // Parse header line
             String headerLine = reader.readLine();
-            if (!parseHeader(headerLine))
-                throw new ParserException("Error while parsing header line.", 0, nextLine);
+            if (!this.columns.parseHeader(headerLine))
+                throw new ParserException("Error while parsing columns line.", 0, nextLine);
 
             GWASData gData = new GWASData();
 
@@ -237,22 +187,22 @@ public class GWASParser {
         if (tokens.length > 1) {
 
             //String chr = ParsingUtils.convertChrString(tokens[chrCol].trim());
-            String chr = genome.getChromosomeAlias(tokens[chrCol].trim());
+            String chr = genome.getChromosomeAlias(tokens[this.columns.chrCol].trim());
 
             int start;
 
             try {
-                start = Integer.parseInt(tokens[locationCol].trim());
+                start = Integer.parseInt(tokens[this.columns.locationCol].trim());
             } catch (NumberFormatException e) {
-                throw new ParserException("Column " + locationCol + " must be a numeric value.", lineNumber, nextLine);
+                throw new ParserException("Column " + this.columns.locationCol + " must be a numeric value.", lineNumber, nextLine);
             }
 
             // Check if the p-value is NA
-            if (!tokens[pCol].trim().equalsIgnoreCase("NA")) {
+            if (!tokens[this.columns.pCol].trim().equalsIgnoreCase("NA")) {
                 double p;
 
                 try {
-                    p = Double.parseDouble(tokens[pCol]);
+                    p = Double.parseDouble(tokens[this.columns.pCol]);
                     if (p <= 0) {
                         throw new NumberFormatException();
                     }
@@ -260,7 +210,7 @@ public class GWASParser {
                     p = -log10(p);
 
                 } catch (NumberFormatException e) {
-                    throw new ParserException("Column " + pCol + " must be a positive numeric value. Found " + tokens[pCol], lineNumber, nextLine);
+                    throw new ParserException("Column " + this.columns.pCol + " must be a positive numeric value. Found " + tokens[this.columns.pCol], lineNumber, nextLine);
                 }
 
                 return new GWASEntry(chr, start, p, nextLine);
@@ -283,6 +233,85 @@ public class GWASParser {
         this.description = description;
     }
 }
+
+    /**
+     * Stores numerical indexes of relevant columns
+     */
+    public static class GWASColumns {
+        public int locationCol = -1;
+        public int chrCol = -1;
+        public int pCol = -1;
+        public int SNPCol = -1;
+        
+        public boolean hasAllFields(){
+            return (this.locationCol >= 0 || this.chrCol >= 0 || this.pCol >= 0 || this.SNPCol >= 0);
+        }
+
+        /**
+         * Parse a columns string. Based on tokenized columns, populate column numbers to indicate which columns hold chromosome, location, p-value and SNP identifier information.
+         *
+         * @param headerString
+         * @return
+         */
+        public boolean parseHeader(String headerString) {
+            headerString = headerString.trim();
+            String[] headers = Globals.singleTabMultiSpacePattern.split(headerString);
+            int headersSize = headers.length;
+
+            if (headersSize < 4) return false;
+
+            for (int colCounter = 0; colCounter < headersSize; colCounter++) {
+                String header = headers[colCounter];
+                header = header.toLowerCase();
+
+                // Chromosome column
+                if (header.equals("chr") || header.equals("chromosome"))
+                    this.chrCol = colCounter;
+
+                // Nucleotide position column
+                if (header.equals("bp") || header.equals("pos") || header.equals("position"))
+                    this.locationCol = colCounter;
+
+                // p-value column
+                if (header.equals("p") || header.equals("pval") || header.equals("p-value") || header.equals("pvalue") || header.equals("p.value"))
+                    this.pCol = colCounter;
+
+                // SNP identifier column
+                if (header.equals("snp") || header.equals("rs") || header.equals("rsid") || header.equals("rsnum") || header.equals("id") || header.equals("marker") || header.equals("markername"))
+                    this.SNPCol = colCounter;
+            }
+
+            return this.hasAllFields();
+        }
+    }
+
+//    public static void main(String[] args) throws Exception{
+//        generateUnsortedGWASData();
+//    }
+
+    //Used for generating test data
+    public static void generateUnsortedGWASData() throws Exception{
+        Random random = new Random(12345);
+        int numFeats = 100;
+        String headerLine = StringUtils.join(new String[]{"Chr", "bp", "p", "snp"}, "\t");
+
+        PrintWriter writer = new PrintWriter("random.gwas");
+        writer.println(headerLine);
+        for(int ii=0; ii < numFeats; ii++){
+            String chr = String.format("chr%d", random.nextInt(20));
+            String location = String.format("%d", random.nextInt(Integer.MAX_VALUE));
+            String pVal = String.format("%2.8f", random.nextDouble()/1000.0d);
+            String rsID = String.format("rs%d", random.nextInt(100000));
+
+            String line = StringUtils.join(new String[]{chr, location, pVal, rsID}, "\t");
+
+            writer.println(line);
+        }
+
+        writer.flush();
+        writer.close();
+
+    }
 
 
 
