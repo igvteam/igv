@@ -21,7 +21,9 @@ import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 import static java.lang.Math.log10;
 
@@ -131,6 +133,9 @@ public class GWASParser {
         String nextLine = null;
         int rowCounter = 0;
 
+        Set<String> chromos = new HashSet<String>();
+        GWASEntry lastEntry = null;
+
         try {
             reader = ParsingUtils.openAsciiReader(locator);
 
@@ -153,6 +158,20 @@ public class GWASParser {
                 gData.addLocation(entry.chr, entry.start);
                 gData.addValue(entry.chr, entry.p);
 
+                //Check that file is sorted
+                if(lastEntry != null){
+                    if(entry.chr.equals(lastEntry.chr)){
+                        if(entry.start < lastEntry.start){
+                            throw new ParserException("File is not sorted, found start position lower than previous", rowCounter);
+                        }
+                    }else{
+                        if(chromos.contains(entry.chr)){
+                            throw new ParserException("File is not sorted; chromosome repeated", rowCounter);
+                        }
+                        chromos.add(entry.chr);
+                    }
+                }
+
                 indexCounter++;
 
                 int indexSize = 10000;
@@ -160,6 +179,8 @@ public class GWASParser {
                     gData.getFileIndex().add((int) reader.getPosition());
                     indexCounter = 0;
                 }
+
+                lastEntry = entry;
             }
             return gData;
 

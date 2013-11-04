@@ -69,6 +69,12 @@ public class GWASParserTest extends AbstractHeadlessTest {
         }
     }
 
+    @Test
+    public void testUnsorted() throws Exception{
+        String path = "random.gwas";
+        tstParseBad(path);
+    }
+
     public void tstParseBad(String finame) throws Exception {
         GWASParser parser = new GWASParser(new ResourceLocator(TestUtils.DATA_DIR + "gwas/" + finame), genome);
         boolean excepted = false;
