@@ -49,7 +49,9 @@ public class BrowseEncodeAction extends MenuAction {
             if(records.size() > 0) {
                 List<ResourceLocator> locators = new ArrayList<ResourceLocator>(records.size());
                 for(EncodeFileRecord record : records) {
-                    locators.add(new ResourceLocator(record.getPath()));
+                    ResourceLocator rl = new ResourceLocator(record.getPath());
+                    rl.setName(record.getTrackName());
+                    locators.add(rl);
                 }
                 igv.loadTracks(locators);
             }

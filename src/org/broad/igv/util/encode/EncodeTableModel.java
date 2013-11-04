@@ -39,10 +39,8 @@ import java.util.regex.Pattern;
  */
 public class EncodeTableModel extends AbstractTableModel {
 
-
-    static String[] columnHeadings;// = {"", "cell", "dataType", "antibody", "view", "type", "lab"};
-    List<EncodeFileRecord> records;
-    String filter;
+    private String[] columnHeadings;
+    private List<EncodeFileRecord> records;
     private final TableRowSorter<EncodeTableModel> sorter;
 
     public EncodeTableModel(String [] headings, List<EncodeFileRecord> records) {
