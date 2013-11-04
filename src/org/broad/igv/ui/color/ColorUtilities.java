@@ -199,7 +199,9 @@ public class ColorUtilities {
         } else {
             try {
                 int intValue = Integer.parseInt(string);
-                c = new Color(intValue);
+                if (intValue >= 0) {
+                    c = new Color(intValue);
+                }
             } catch (NumberFormatException e) {
                 String hexString = colorSymbols.get(string.toLowerCase());
                 if (hexString != null) {

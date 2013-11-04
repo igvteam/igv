@@ -19,6 +19,7 @@ import org.broad.igv.data.BasicScore;
 import org.broad.igv.data.DataTile;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
@@ -58,9 +59,10 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
     private RawDataInterval currentInterval = null;
 
-
     private double dataMin = 0;
     private double dataMax = 100;
+
+    IGVBEDCodec bedCodec;
 
     public BigWigDataSource(BBFileReader reader, Genome genome) throws IOException {
         super(genome);
@@ -85,6 +87,8 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
                 }
             }
         }
+
+        bedCodec = new IGVBEDCodec(genome);
     }
 
 
@@ -384,7 +388,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public static class WrappedIterator implements Iterator<Feature> {
+    public  class WrappedIterator implements Iterator<Feature> {
 
         BigBedIterator bedIterator;
 
@@ -398,11 +402,14 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
         public Feature next() {
             BedFeature feat = bedIterator.next();
-            BasicFeature feature = new BasicFeature(feat.getChromosome(), feat.getStartBase(), feat.getEndBase());
             String[] restOfFields = feat.getRestOfFields();
-            if (restOfFields != null && restOfFields.length > 0) {
-                decode(feature, restOfFields);
-            }
+            String [] tokens = new String[restOfFields.length + 3];
+            tokens[0] = feat.getChromosome();
+            tokens[1] = String.valueOf(feat.getStartBase());
+            tokens[2] = String.valueOf(feat.getEndBase());
+            System.arraycopy(restOfFields, 0, tokens, 3, restOfFields.length);
+
+            BasicFeature feature = bedCodec.decode(tokens);
             return feature;
 
         }
@@ -433,92 +440,6 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         }
     }
 
-
-    /////////// Decoder for BED features
-
-
-    private static void decode(BasicFeature feature, String[] restOfFields) {
-
-        int tokenCount = restOfFields.length;
-
-
-        // The rest of the columns are optional.  Stop parsing upon encountering
-        // a non-expected value
-
-        // Name
-        if (tokenCount > 0) {
-            String name = restOfFields[0].replaceAll("\"", "");
-            feature.setName(name);
-            feature.setIdentifier(name);
-        }
-
-        // Score
-        if (tokenCount > 1) {
-            try {
-                float score = Float.parseFloat(restOfFields[1]);
-                feature.setScore(score);
-            } catch (NumberFormatException numberFormatException) {
-
-                // Unexpected, but does not invalidate the previous values.
-                // Stop parsing the line here but keep the feature
-                // Don't log, would just slow parsing down.
-                return;
-            }
-        }
-
-        // Strand
-        if (tokenCount > 2) {
-            String strandString = restOfFields[2].trim();
-            char strand = (strandString.length() == 0)
-                    ? ' ' : strandString.charAt(0);
-
-            if (strand == '-') {
-                feature.setStrand(Strand.NEGATIVE);
-            } else if (strand == '+') {
-                feature.setStrand(Strand.POSITIVE);
-            } else {
-                feature.setStrand(Strand.NONE);
-            }
-        }
-
-        if (tokenCount > 5) {
-            String colorString = restOfFields[5];
-            feature.setColor(ColorUtilities.stringToColor(colorString));
-        }
-
-        // Coding information is optional
-        if (tokenCount > 8) {
-            Strand strand = feature.getStrand();
-            int cdStart = Integer.parseInt(restOfFields[3]);
-            int cdEnd = Integer.parseInt(restOfFields[4]);
-
-            int exonCount = Integer.parseInt(restOfFields[6]);
-            String[] exonSizes = Globals.commaPattern.split(restOfFields[7]);
-            String[] startsBuffer = Globals.commaPattern.split(restOfFields[8]);
-
-            int exonNumber = (strand == Strand.NEGATIVE ? exonCount : 1);
-
-            int start = feature.getStart();
-            String chr = feature.getChr();
-            if (startsBuffer.length == exonSizes.length) {
-                for (int i = 0; i < startsBuffer.length; i++) {
-                    int exonStart = start + Integer.parseInt(startsBuffer[i]);
-                    int exonEnd = exonStart + Integer.parseInt(exonSizes[i]);
-                    Exon exon = new Exon(chr, exonStart, exonEnd, strand);
-                    exon.setCodingStart(cdStart);
-                    exon.setCodingEnd(cdEnd);
-                    exon.setNumber(exonNumber);
-                    feature.addExon(exon);
-
-                    if (strand == Strand.NEGATIVE) {
-                        exonNumber--;
-                    } else {
-                        exonNumber++;
-                    }
-                }
-            }
-        }
-    }
 
 
 }

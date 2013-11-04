@@ -101,9 +101,6 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
                 MultiMap<String, String> atts = new MultiMap<String, String>();
                 tagHelper.parseAttributes(tokens[3], atts);
                 String name = tagHelper.getName(atts);
-                //if (name == null) {
-                //    name = tokens[3];
-                //}
                 feature.setName(name);
 
                 String id = atts.get("ID");
@@ -130,12 +127,15 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
 
             } else {
                 String name = tokens[3].replaceAll("\"", "");
+                if(name.equals(".")) name = "";   // Convention
                 feature.setName(name);
                 feature.setIdentifier(name);
             }
         }
 
+        // Bed files are not always to-spec after the name field.  Stop parsing when we find an unexpected column.
         // Score
+
         if (tokenCount > 4) {
             try {
                 float score = Float.parseFloat(tokens[4]);
@@ -169,8 +169,17 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
 
         // Thick ends
         if (tokenCount > 7) {
-            feature.setThickStart(Integer.parseInt(tokens[6]));
-            feature.setThickEnd(Integer.parseInt(tokens[7]));
+            try {
+                int thickStart = Integer.parseInt(tokens[6]);
+                int thickEnd = Integer.parseInt(tokens[7]);
+                if(thickStart < start || thickStart > end || thickEnd < start || thickEnd > end) {
+                    return feature;
+                }
+                feature.setThickStart(Integer.parseInt(tokens[6]));
+                feature.setThickEnd(Integer.parseInt(tokens[7]));
+            } catch (NumberFormatException e) {
+                return feature;
+            }
         }
 
 
