@@ -106,7 +106,7 @@ public class UCSCEncodeUtils {
                 }
             }
             else {
-                String dir = rootPath + nextLine;
+                String dir = nextLine.equals(".") ? rootPath : rootPath + nextLine;
                 String filesDotTxt = dir + "/files.txt";
                 try {
                     if (HttpUtils.getInstance().resourceAvailable(new URL(filesDotTxt))) {
@@ -190,7 +190,9 @@ public class UCSCEncodeUtils {
                 }
             }
 
-            EncodeFileRecord df = new EncodeFileRecord(url.replace("files.txt", fn), kvalues);
+            String path = fn.startsWith("http") ? fn : url.replace("files.txt", fn);
+
+            EncodeFileRecord df = new EncodeFileRecord(path, kvalues);
 
             if (knownFileTypes.contains(df.getFileType())) {
                 fileRecords.add(df);
