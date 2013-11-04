@@ -26,8 +26,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 
 /**
@@ -40,17 +39,17 @@ public class SorterTest extends AbstractHeadlessTest {
 
     @Test
     public void testSortBed() throws Exception {
-        testSort(TestUtils.DATA_DIR + "bed/Unigene.unsorted.bed", 0, 1);
+        testSort(TestUtils.DATA_DIR + "bed/Unigene.unsorted.bed", 0, 1, 10, 71);
     }
 
     @Test
     public void testSortBed1() throws Exception {
-        testSort(TestUtils.DATA_DIR + "bed/Unigene.unsorted1.bed", 0, 1);
+        testSort(TestUtils.DATA_DIR + "bed/Unigene.unsorted1.bed", 0, 1, 10, 71);
     }
 
     @Test
     public void testSortBed2() throws Exception {
-        testSort(TestUtils.DATA_DIR + "bed/GSM1004654_10k.bed", 0, 1, 50);
+        testSort(TestUtils.DATA_DIR + "bed/GSM1004654_10k.bed", 0, 1, 50, 10000);
     }
 
     @Test
@@ -63,11 +62,17 @@ public class SorterTest extends AbstractHeadlessTest {
         testSort(TestUtils.DATA_DIR + "gff/aliased.unsorted.gff", 0, 3);
     }
 
-    public void testSort(String infile, int chrCol, int startCol) throws IOException {
-        testSort(infile, chrCol, startCol, 10);
+    @Test
+    public void testSortCN() throws Exception{
+        String path = TestUtils.DATA_DIR + "cn/1klines.cn";
+        testSort(path, 1, 2, 10, 1000);
     }
 
-    public void testSort(String infile, int chrCol, int startCol, int maxRecords) throws IOException {
+    public void testSort(String infile, int chrCol, int startCol) throws IOException {
+        testSort(infile, chrCol, startCol, 10, null);
+    }
+
+    public void testSort(String infile, int chrCol, int startCol, int maxRecords, Integer expectedLines) throws IOException {
 
         File ifile = new File(infile);
         File ofile = new File(infile + ".sorted");
@@ -77,18 +82,29 @@ public class SorterTest extends AbstractHeadlessTest {
         sorter.setMaxRecords(maxRecords);
         sorter.run();
 
-        checkFileSorted(ofile, chrCol, startCol);
+        int outLines = checkFileSorted(ofile, chrCol, startCol);
+
+        if(expectedLines != null){
+            assertEquals((int) expectedLines, outLines);
+        }
     }
 
     public static int checkFileSorted(File ofile, int chrCol, int startCol) {
         BufferedReader reader = null;
         int numlines = 0;
+        String nextLine = "";
+        int skipLines = 0;
+        if(ofile.getAbsolutePath().replace(".sorted", "").endsWith(".cn")){
+            skipLines = 1;
+        }
         try {
             reader = new BufferedReader(new FileReader(ofile));
-            String nextLine = "";
             String lastChr = "";
             int lastStart = 0;
             Set<String> chromosomes = new HashSet();
+            for(int ii=0; ii < skipLines; ii++){
+                reader.readLine();
+            }
             while ((nextLine = reader.readLine()) != null) {
                 if (nextLine.startsWith("track") || nextLine.startsWith(("#"))) {
                     continue;
@@ -100,7 +116,8 @@ public class SorterTest extends AbstractHeadlessTest {
                 if (chr.equals(lastChr)) {
                     assertTrue(start >= lastStart);
                 } else {
-                    assertFalse(chromosomes.contains(chr));
+                    String msg = String.format("Chromosome %s out of order in line: %s", chr, nextLine);
+                    assertFalse(msg, chromosomes.contains(chr));
                     chromosomes.add(chr);
                 }
                 numlines++;
@@ -108,7 +125,9 @@ public class SorterTest extends AbstractHeadlessTest {
                 lastStart = start;
             }
         } catch (Exception e) {
-            throw new AssertionError("Exception during checking: " + e);
+            e.printStackTrace();
+            String msg = "Exception during checking on line: " + nextLine;
+            throw new AssertionError(msg);
         } finally {
             try {
                 reader.close();

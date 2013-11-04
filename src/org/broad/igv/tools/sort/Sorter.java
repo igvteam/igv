@@ -221,6 +221,14 @@ public abstract class Sorter {
 
     abstract Parser getParser() throws IOException;
 
+    /**
+     * Write the header to the output file. Since many readers can't help but read
+     * one feature line, that line should be returned and will then be treated as a record
+     * @param reader
+     * @param writer
+     * @return
+     * @throws IOException
+     */
     abstract String writeHeader(AsciiLineReader reader, PrintWriter writer) throws IOException;
 
     public void setTmpDir(File tmpDir) {
