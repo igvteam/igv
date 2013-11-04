@@ -183,7 +183,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                 }
 
                 // Trim ends by a pixel, so adjacent features have some whitespace between them
-                pixelEnd = Math.max(pixelStart + 1, pixelEnd-1);
+                pixelEnd = Math.max(pixelStart + 1, pixelEnd - 1);
                 pixelThickEnd = Math.max(pixelThickStart + 1, pixelThickEnd - 1);
 
                 // Add directional arrows and exons, if there is room.
@@ -202,6 +202,24 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     Graphics2D arrowGraphics = context.getGraphic2DForColor(Color.WHITE);
                     drawStrandArrows(feature.getStrand(), pixelStart, pixelEnd, pixelYCenter, 0,
                             displayMode, arrowGraphics);
+
+                    // This is ugly, but alternatives are probably worse
+                    if (feature instanceof EncodePeakFeature && (pixelEnd - pixelStart) > 5) {
+                        int peakPosition = ((EncodePeakFeature) feature).getPeakPosition();
+                        if (peakPosition > 0) {
+                            Color c = g2D.getColor();
+                            int peakPixelPosition = (int) ((peakPosition - origin) / locScale);
+                            Color peakColor = DULL_RED;
+                            if (track.isUseScore()) {
+                                float alpha = getAlpha(0, 500, feature.getScore());
+                                peakColor = ColorUtilities.getCompositeColor(DULL_RED, alpha);
+                            }
+                            g2D.setColor(peakColor);
+                            g2D.fillRect(peakPixelPosition - 1, pixelYCenter - thinBlockHeight / 2, 2, thinBlockHeight);
+                            g2D.setColor(c);
+                        }
+                    }
+
                 }
 
 
