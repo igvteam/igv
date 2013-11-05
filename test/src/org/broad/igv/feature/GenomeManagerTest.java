@@ -43,6 +43,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        GenomeManager.getInstance().clearGenomeCache();
         AbstractHeadlessTest.setUpClass();
         genomeManager = GenomeManager.getInstance();
     }

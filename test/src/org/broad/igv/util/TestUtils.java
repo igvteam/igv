@@ -538,7 +538,7 @@ public class TestUtils {
         File userDefinedGenomeListFile = new File(DirectoryManager.getGenomeCacheDirectory(), GenomeManager.TEST_USER_DEFINED_GENOME_LIST_FILE);
         userDefinedGenomeListFile.delete();
         userDefinedGenomeListFile.deleteOnExit();
-        GenomeManager.getInstance().clearGenomeCache();
+
         Collection<GenomeListItem> userDefined = GenomeManager.getInstance().getUserDefinedGenomeArchiveList();
         userDefined.clear();
         GenomeManager.getInstance().buildGenomeItemList();
