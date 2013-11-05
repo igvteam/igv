@@ -236,12 +236,6 @@ abstract public class TrackPanelComponent extends JPanel {
     }
 
     protected void selectTracks(MouseEvent e) {
-
-        if (log.isDebugEnabled()) {
-            log.debug("Enter selectTracks");
-        }
-
-
         for (MouseableRegion mouseRegion : mouseRegions) {
             if (mouseRegion.containsPoint(e.getX(), e.getY())) {
                 IGV.getInstance().setTrackSelections(mouseRegion.getTracks());
