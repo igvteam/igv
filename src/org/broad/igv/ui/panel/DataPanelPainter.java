@@ -22,7 +22,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.exome.ExomeBlock;
 import org.broad.igv.feature.exome.ExomeReferenceFrame;
-import org.broad.igv.sam.CoverageTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.RenderContextImpl;
 import org.broad.igv.track.Track;
@@ -42,11 +41,6 @@ public class DataPanelPainter {
     private static Logger log = Logger.getLogger(DataPanelPainter.class);
 
     private static Color exomeBorderColor = new Color(190, 190, 255);
-
-    /**
-     * Hacky field to keep scales from drawing multiple times in Exome view
-     */
-    private boolean scalesDrawn;
 
     public synchronized void paint(Collection<TrackGroup> groups,
                                    RenderContext context,
@@ -83,7 +77,6 @@ public class DataPanelPainter {
                 int pEnd;
                 int exomeOrigin = ((ExomeReferenceFrame) frame).getExomeOrigin();
                 int visibleBlockCount = 0;
-                scalesDrawn = false;
 
                 do {
                     b = blocks.get(idx);
@@ -180,7 +173,8 @@ public class DataPanelPainter {
 
         int trackX = 0;
         int trackY = 0;
-        boolean anyScaleDrawn = false;
+
+        resetLastY(groups);
 
         for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
             TrackGroup group = groupIter.next();
@@ -223,14 +217,6 @@ public class DataPanelPainter {
                             Rectangle rect = new Rectangle(trackX, trackY, width, trackHeight);
                             draw(track, rect, context);
                             trackY += trackHeight;
-
-                            //TODO Hack to keep from rendering scale multiple times in Exome View
-                            if (track instanceof CoverageTrack && FrameManager.isExomeMode() && !scalesDrawn) {
-                                int x = context.getGraphics().getClipBounds().x;
-                                Rectangle scaleRect = new Rectangle(x, rect.y, rect.width, rect.height);
-                                ((CoverageTrack) track).drawScale(context, scaleRect);
-                                anyScaleDrawn = true;
-                            }
                         }
                     }
                 }
@@ -242,7 +228,14 @@ public class DataPanelPainter {
                 }
             }
         }
-        scalesDrawn |= anyScaleDrawn;
+    }
+
+    private void resetLastY(Collection<TrackGroup> groups) {
+        for(TrackGroup group: groups){
+            for(Track track: group.getTracks()){
+                track.resetLastY();
+            }
+        }
     }
 
     final private void draw(Track track, Rectangle rect, RenderContext context) {

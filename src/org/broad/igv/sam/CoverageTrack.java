@@ -54,7 +54,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -180,14 +179,40 @@ public class CoverageTrack extends AbstractTrack {
         }
     }
 
+    public void render(RenderContext context, Rectangle rect){
 
-    public void render(RenderContext context, Rectangle rect) {
+        overlay(context, rect);
+
+        if(!isRepeatY(rect)){
+            drawBorder(context, rect);
+            List<LocusScore> scores = getSummaryScores(context);
+            if (scores != null) {
+                dataSourceRenderer.renderAxis(this, context, rect);
+                dataSourceRenderer.renderBorder(this, context, rect);
+            }
+        }
+
+    }
+
+    private List<LocusScore> getSummaryScores(RenderContext context){
+        List<LocusScore> scores = null;
+        if(dataSource != null){
+            String chr = context.getChr();
+            int start = (int) context.getOrigin();
+            int end = (int) context.getEndLocation();
+            int zoom = context.getZoom();
+            scores = dataSource.getSummaryScoresForRange(chr, start, end, zoom);
+        }
+        return scores;
+    }
+
+    public void overlay(RenderContext context, Rectangle rect) {
 
         float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
         float minVisibleScale = (maxRange * 1000) / 700;
 
         if (context.getScale() < minVisibleScale && !context.getChr().equals(Globals.CHR_ALL)) {
-            //
+            //Show coverage calculated from intervals if zoomed in enough
             AlignmentInterval interval = null;
             if (dataManager != null) {
                 dataManager.preload(context, renderOptions, true);
@@ -197,21 +222,17 @@ public class CoverageTrack extends AbstractTrack {
                 if (interval.contains(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation())) {
                     if(autoScale) rescale();
                     intervalRenderer.paint(context, rect, interval.getCounts());
+                    return;
                 }
             }
-        } else if (dataSource != null) {
-            // Use precomputed data source, if any
-            String chr = context.getChr();
-            int start = (int) context.getOrigin();
-            int end = (int) context.getEndLocation();
-            int zoom = context.getZoom();
-            List<LocusScore> scores = dataSource.getSummaryScoresForRange(chr, start, end, zoom);
-            if (scores != null) {
-                dataSourceRenderer.render(scores, context, rect, this);
-            }
-
         }
-        drawBorder(context, rect);
+
+        //Use precomputed scores, if available
+        List<LocusScore> scores = getSummaryScores(context);
+        if (scores != null) {
+            dataSourceRenderer.renderScores(this, scores, context, rect);
+        }
+
     }
 
     private void drawBorder(RenderContext context, Rectangle rect) {
@@ -220,9 +241,7 @@ public class CoverageTrack extends AbstractTrack {
                 rect.x, rect.y + rect.height,
                 rect.x + rect.width, rect.y + rect.height);
 
-        // Draw scale
-        if (!FrameManager.isExomeMode())
-            drawScale(context, rect);
+        drawScale(context, rect);
     }
 
     public void drawScale(RenderContext context, Rectangle rect) {

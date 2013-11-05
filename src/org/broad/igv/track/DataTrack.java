@@ -66,12 +66,49 @@ public abstract class DataTrack extends AbstractTrack {
 
     }
 
-    public void render(RenderContext context, Rectangle rect) {
 
+    public void render(RenderContext context, Rectangle rect){
         if (featuresLoading) {
             return;
         }
 
+        if(isRepeatY(rect)){
+            overlay(context, rect);
+        }else{
+            renderFirstTimeY(context, rect);
+        }
+    }
+
+
+    /**
+     * Called the first time we render for a given Y-coordinate
+     * @param context
+     * @param rect
+     */
+    private void renderFirstTimeY(RenderContext context, Rectangle rect) {
+        this.lastRenderY = rect.y;
+        List<LocusScore> inViewScores = getInViewScores(context, rect);
+
+        if ((inViewScores == null || inViewScores.size() == 0) && Globals.CHR_ALL.equals(context.getChr())) {
+            Graphics2D g = context.getGraphic2DForColor(Color.gray);
+            GraphicUtils.drawCenteredText("Data not available for whole genome view; zoom in to see data", rect, g);
+        }else{
+            getRenderer().render(inViewScores, context, rect, this);
+        }
+    }
+
+    public void overlay(RenderContext context, Rectangle rect){
+        List<LocusScore> inViewScores = getInViewScores(context, rect);
+        if(inViewScores != null){
+            synchronized (inViewScores){
+                getRenderer().renderScores(this, inViewScores, context, rect);
+            }
+        }
+
+    }
+
+
+    private List<LocusScore> getInViewScores(RenderContext context, Rectangle rect){
         String chr = context.getChr();
         int start = (int) context.getOrigin();
         int end = (int) context.getEndLocation() + 1;
@@ -114,11 +151,8 @@ public abstract class DataTrack extends AbstractTrack {
 
             }
         }
-
-        getRenderer().render(inViewScores, context, rect, this);
-
+        return inViewScores;
     }
-
 
     @Override
     public synchronized void load(RenderContext context) {

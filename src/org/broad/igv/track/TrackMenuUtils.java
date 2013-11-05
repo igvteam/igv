@@ -33,10 +33,12 @@ import org.broad.igv.ui.*;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.panel.TrackPanel;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.StringUtils;
+import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.util.collections.CollUtils;
 import org.broad.igv.util.stats.KMPlotFrame;
 import org.broad.tribble.Feature;
@@ -214,8 +216,8 @@ public class TrackMenuUtils {
      */
     public static void addDataItems(JPopupMenu menu, final Collection<Track> tracks) {
 
-        if (log.isDebugEnabled()) {
-            log.debug("enter getDataPopupMenu");
+        if (log.isTraceEnabled()) {
+            log.trace("enter getDataPopupMenu");
         }
 
         final String[] labels = {"Heatmap", "Bar Chart", "Points", "Line Plot"};
@@ -317,11 +319,19 @@ public class TrackMenuUtils {
             menu.add(getShowSortFramesItem(tracks.iterator().next()));
         }
 
-//        if(Globals.isDevelopment()){
-//            for(JMenuItem item: getCombinedDataSourceItems(tracks)){
-//                menu.add(item);
-//            }
-//        }
+        if(Globals.isDevelopment() && tracks.size() >= 2){
+            final JMenuItem overlayGroups = new JMenuItem("Create Overlay Track");
+            overlayGroups.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    MergedTracks mergedTracks = new MergedTracks(UUID.randomUUID().toString(), "Overlay", tracks);
+
+                    TrackPanel panel = TrackPanel.getParentPanel(tracks.iterator().next());
+                    panel.addTrack(mergedTracks);
+                }
+            });
+            menu.add(overlayGroups);
+        }
 
     }
 

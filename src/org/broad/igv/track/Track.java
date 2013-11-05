@@ -35,8 +35,6 @@ import java.util.List;
  */
 public interface Track extends Persistable{
 
-
-
     enum DisplayMode {
         COLLAPSED, SQUISHED, EXPANDED, ALTERNATIVE_SPLICE
     }
@@ -77,6 +75,12 @@ public interface Track extends Persistable{
      * @param rect    the track bounds, relative to the enclosing DataPanel bounds.
      */
     void overlay(RenderContext context, Rectangle rect);
+
+    /**
+     * We store the y-coordinate at which this track was last rendered,
+     * to avoid repeating borders/scales/etc. This resets that value
+     */
+    void resetLastY();
 
     /**
      * Render the name of the track. Both the track and visible rectangles are supplied so the implementor

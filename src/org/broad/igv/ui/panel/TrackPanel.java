@@ -16,6 +16,7 @@ import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackGroup;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 
 import java.awt.*;
@@ -37,9 +38,6 @@ public class TrackPanel extends IGVPanel {
     private String groupAttribute;
     int trackCountEstimate = 0;  // <= used to size array list, not neccesarily precise
 
-    /**
-     * Map of attribute name -> associated track group
-     */
     List<TrackGroup> trackGroups;
 
     /**
@@ -442,5 +440,20 @@ public class TrackPanel extends IGVPanel {
 
         //super.paintBorder(g);
 
+    }
+
+    public void addTrackGroup(TrackGroup trackGroup) {
+        trackGroups.add(trackGroup);
+    }
+
+    public static TrackPanel getParentPanel(Track track) {
+        for(TrackPanel panel: IGV.getInstance().getTrackPanels()){
+            for(TrackGroup group: panel.getGroups()){
+                if(group.contains(track)){
+                    return panel;
+                }
+            }
+        }
+        return null;
     }
 }
