@@ -73,7 +73,7 @@ public class EncodePeakCodec extends UCSCCodec {
         //BED format, and IGV, use starting element as 0.
         int start = Integer.parseInt(tokens[1]);
         int end = Integer.parseInt(tokens[2]);
-        BasicFeature feature = new BasicFeature(chr, start, end);
+        EncodePeakFeature feature = new EncodePeakFeature(chr, start, end);
 
         feature.setName(tokens[3]);
         feature.setScore(Float.parseFloat(tokens[4]));
@@ -84,12 +84,13 @@ public class EncodePeakCodec extends UCSCCodec {
         char strandChar = (strandString.length() == 0) ? ' ' : strandString.charAt(0);
 
         if (strandChar == '-') {
-            feature.setStrand(Strand.NEGATIVE);
+            strand = Strand.NEGATIVE;
         } else if (strandChar == '+') {
-            feature.setStrand(Strand.POSITIVE);
+            strand = Strand.POSITIVE;
         } else {
-            feature.setStrand(Strand.NONE);
+            strand = Strand.NONE;
         }
+        feature.setStrand(strand);
 
 
         // Store the remaining features in description string */
@@ -98,9 +99,12 @@ public class EncodePeakCodec extends UCSCCodec {
         desc.append("<br>P value: " + tokens[7]);
         desc.append("<br>Q value: " + tokens[8]);
         if (tokens.length > 9) {
-            int peak = Integer.parseInt(tokens[9]);
-            if (peak >= 0) {
-                desc.append("<br>Peak: " + (feature.getStart() + peak + 1));
+            int peakOffset = Integer.parseInt(tokens[9]);
+            if (peakOffset >= 0) {
+                final int peakPosition = feature.getStart() + peakOffset;
+                feature.setPeakPosition(peakPosition);
+                desc.append("<br>Peak: " + (peakPosition + 1));
+
             }
         }
         feature.setDescription(desc.toString());
@@ -110,6 +114,6 @@ public class EncodePeakCodec extends UCSCCodec {
 
     @Override
     public boolean canDecode(String s) {
-        return s.toLowerCase().contains("narrowpeak");
+        return s.toLowerCase().endsWith("peak");
     }
 }
