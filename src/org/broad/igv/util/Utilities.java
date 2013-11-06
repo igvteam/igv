@@ -209,7 +209,7 @@ public class Utilities {
         String fileName = null;
 
         if (lastIndexOfSlash > -1) {
-            fileName = url.substring(lastIndexOfSlash, url.length());
+            fileName = url.substring(lastIndexOfSlash+1, url.length());
         } else {
             fileName = url;
         }
