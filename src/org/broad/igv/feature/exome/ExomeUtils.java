@@ -97,6 +97,8 @@ public class ExomeUtils {
             }
 
         }
+        // Add the last block
+        blocks.add(block);
 
         return blocks;
 
