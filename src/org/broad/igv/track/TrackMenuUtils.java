@@ -18,6 +18,8 @@ import org.apache.commons.math.stat.StatUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.lists.GeneList;
+import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.data.CombinedDataSource;
 import org.broad.igv.feature.Exon;
@@ -73,10 +75,11 @@ public class TrackMenuUtils {
     /**
      * Called by plugins to add a listener, which is then called when TrackMenus are created
      * to generate menu entries.
+     *
      * @param builder
      * @api
      */
-    public static void addTrackMenuItemBuilder(TrackMenuItemBuilder builder){
+    public static void addTrackMenuItemBuilder(TrackMenuItemBuilder builder) {
         trackMenuItems.add(builder);
     }
 
@@ -110,22 +113,23 @@ public class TrackMenuUtils {
 
     /**
      * Add menu items which have been added through the api, not known until runtime
+     *
      * @param menu
      * @param tracks
      * @param te
      */
     public static void addPluginItems(JPopupMenu menu, Collection<Track> tracks, TrackClickEvent te) {
         List<JMenuItem> items = new ArrayList<JMenuItem>(0);
-        for(TrackMenuItemBuilder builder: trackMenuItems){
+        for (TrackMenuItemBuilder builder : trackMenuItems) {
             JMenuItem item = builder.build(tracks, te);
-            if(item != null){
+            if (item != null) {
                 items.add(item);
             }
         }
 
-        if(items.size() > 0){
+        if (items.size() > 0) {
             menu.addSeparator();
-            for(JMenuItem item: items){
+            for (JMenuItem item : items) {
                 menu.add(item);
             }
         }
@@ -308,6 +312,11 @@ public class TrackMenuUtils {
         menu.addSeparator();
         menu.add(getChangeKMPlotItem(tracks));
 
+        if (Globals.isDevelopment() && FrameManager.isGeneListMode() && tracks.size() == 1) {
+            menu.addSeparator();
+            menu.add(getShowSortFramesItem(tracks.iterator().next()));
+        }
+
 //        if(Globals.isDevelopment()){
 //            for(JMenuItem item: getCombinedDataSourceItems(tracks)){
 //                menu.add(item);
@@ -344,9 +353,9 @@ public class TrackMenuUtils {
         return Arrays.asList(addItem, subItem);
     }
 
-    private static void addCombinedDataTrack(List<DataTrack> dataTracks, CombinedDataSource.Operation op){
+    private static void addCombinedDataTrack(List<DataTrack> dataTracks, CombinedDataSource.Operation op) {
         String text = "";
-        switch (op){
+        switch (op) {
             case ADD:
                 text = "Sum";
                 break;
@@ -405,21 +414,42 @@ public class TrackMenuUtils {
                 }
 
             }
+            if (Globals.isDevelopment()) {
+                featurePopupMenu.addSeparator();
+                featurePopupMenu.add(getFeatureToGeneListItem(t));
+            }
         }
 
         featurePopupMenu.addSeparator();
         featurePopupMenu.add(getChangeFeatureWindow(tracks));
+
+    }
+
+    private static JMenuItem getFeatureToGeneListItem(final Track t) {
+        JMenuItem mi = new JMenuItem("Use as loci list");
+
+        mi.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Current chromosome only for now
+
+
+            }
+        });
+
+        return mi;
     }
 
     /**
      * Return a menu item which will export visible features
      * If {@code tracks} is not a single {@code FeatureTrack}, {@code null}
      * is returned (there should be no menu entry)
+     *
      * @param tracks
      * @return
      */
     public static JMenuItem getExportFeatures(final Collection<Track> tracks, final ReferenceFrame.Range range) {
-        if(tracks.size() != 1 || !(tracks.iterator().next() instanceof FeatureTrack) ){
+        if (tracks.size() != 1 || !(tracks.iterator().next() instanceof FeatureTrack)) {
             return null;
         }
         JMenuItem exportData = new JMenuItem("Export To BED File");
@@ -811,9 +841,10 @@ public class TrackMenuUtils {
     /**
      * Display a dialog to the user asking to confirm if they want to remove the
      * selected tracks
+     *
      * @param selectedTracks
      */
-    public static void removeTracksAction(final Collection<Track> selectedTracks){
+    public static void removeTracksAction(final Collection<Track> selectedTracks) {
         if (selectedTracks.isEmpty()) {
             return;
         }
@@ -1171,6 +1202,36 @@ public class TrackMenuUtils {
 
             public void actionPerformed(ActionEvent evt) {
                 changeFontSize(selectedTracks);
+            }
+        });
+        return item;
+    }
+
+
+    // Experimental methods follow
+
+    public static JMenuItem getShowSortFramesItem(final Track track) {
+
+        final JCheckBoxMenuItem item = new JCheckBoxMenuItem("Sort frames");
+
+        item.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                if (!(track instanceof DataTrack)) {
+                    item.setEnabled(false);
+
+                } else {
+                    Runnable runnable = new Runnable() {
+                        public void run() {
+                            DataTrack dt = (DataTrack) track;
+                            FrameManager.sortFrames(dt);
+                            IGV.getInstance().resetFrames();
+                        }
+                    };
+                    LongRunningTask.submit(runnable);
+                }
             }
         });
         return item;

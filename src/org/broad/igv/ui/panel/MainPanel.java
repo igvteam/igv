@@ -14,6 +14,7 @@ package org.broad.igv.ui.panel;
 import com.jidesoft.swing.JideSplitPane;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.session.Session;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.SnapshotUtilities;
@@ -430,7 +431,14 @@ public class MainPanel extends JPanel implements Paintable {
 
                 // Width is in floating point because we need to fill data panel,  going straight to an "int" here
                 // would cause truncation
-                float wc = ((float) dataPanelWidth - (frames.size() - 1) * gap) / frames.size();
+                Session.GeneListMode mode = IGV.hasInstance() ?
+                        IGV.getInstance().getSession().getGeneListMode() :
+                        Session.GeneListMode.NORMAL;
+
+                float wc =  mode == Session.GeneListMode.NORMAL ?
+                        ((float) dataPanelWidth - (frames.size() - 1) * gap) / frames.size() :
+                        20;
+
                 for (int i = 0; i < frames.size(); i++) {
                     ReferenceFrame frame = frames.get(i);
                     int nextX = (int) ((i + 1) * (wc + gap));

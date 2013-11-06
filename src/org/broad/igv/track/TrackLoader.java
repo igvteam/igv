@@ -285,7 +285,7 @@ public class TrackLoader {
     }
 
     private void loadGMT(ResourceLocator locator) throws IOException {
-        List<GeneList> lists = GeneListManager.getInstance().importGMTFile(locator.getPath());
+        List<GeneList> lists = GeneListManager.getInstance().loadGMTFile(locator.getPath());
         if (lists.size() == 1) {
             GeneList gl = lists.get(0);
             IGV.getInstance().setGeneList(gl, true);

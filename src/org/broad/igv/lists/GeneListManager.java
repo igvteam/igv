@@ -20,9 +20,11 @@ package org.broad.igv.lists;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
+import org.broad.igv.Globals;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.tribble.Feature;
 
 import java.io.*;
 import java.net.URLEncoder;
@@ -203,22 +205,38 @@ public class GeneListManager {
     // TODO -- why are there 2 of these methods?
     public void importGMTFile(File gmtFile) throws IOException {
 
+        String path = gmtFile.getPath();
+        String name = gmtFile.getName();
         File f = gmtFile;
-        File dir = DirectoryManager.getGeneListDirectory();
-        if (!dir.equals(gmtFile.getParentFile())) {
-            f = new File(dir, gmtFile.getName());
-            FileUtils.copyFile(gmtFile, f);
+        boolean isBed = path.toLowerCase().endsWith(".bed") || path.toLowerCase().endsWith(".bed.gz");
+
+        // If this is a gmt file, make a copy
+        if (!isBed) {
+            File dir = DirectoryManager.getGeneListDirectory();
+            if (!dir.equals(gmtFile.getParentFile())) {
+                f = new File(dir, gmtFile.getName());
+                FileUtils.copyFile(gmtFile, f);
+            }
         }
 
-        String group = f.getName().replace(".gmt", "");
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new FileReader(f));
-            importedFiles.put(group, f);
-            List<GeneList> lists = loadGMT(group, reader);
-            for (GeneList gl : lists) {
-                gl.setEditable(true);
-                addGeneList(gl);
+
+            if (path.toLowerCase().endsWith(".bed") || path.toLowerCase().endsWith(".bed.gz")) {
+                GeneList geneList = loadBedFile(name, reader);
+                geneList.setGroup(USER_GROUP);
+                geneList.setEditable(false);
+                addGeneList(geneList);
+            } else {
+
+                String group = f.getName().replace(".gmt", "");
+                importedFiles.put(group, f);
+                List<GeneList> lists = loadGMT(group, reader);
+                for (GeneList gl : lists) {
+                    gl.setEditable(true);
+                    addGeneList(gl);
+                }
             }
         } finally {
             if (reader != null) {
@@ -231,20 +249,20 @@ public class GeneListManager {
         }
     }
 
-
-    // TODO -- why are there 2 of these methods?
-    public List<GeneList> importGMTFile(String path) throws IOException {
+    // Called from TrackLoader -- naming of methods here is quite confusing.
+    public List<GeneList> loadGMTFile(String path) throws IOException {
 
         BufferedReader reader = null;
         try {
-            String group = new File(path).getName();
             reader = ParsingUtils.openBufferedReader(path);
+            String group = USER_GROUP;
             List<GeneList> lists = loadGMT(group, reader);
             for (GeneList gl : lists) {
                 gl.setEditable(false);
                 addGeneList(gl);
             }
             return lists;
+
 
         } finally {
             if (reader != null) reader.close();
@@ -278,6 +296,28 @@ public class GeneListManager {
         }
         return lists;
     }
+
+    public GeneList loadBedFile(String name, BufferedReader reader) throws IOException {
+
+        try {
+            List<String> loci = new ArrayList<String>(1000);
+            String nextLine;
+            while ((nextLine = reader.readLine()) != null) {
+
+                if (nextLine.startsWith("#") || nextLine.startsWith("track") || nextLine.startsWith("browser"))
+                    continue;
+                String[] tokens = Globals.whitespacePattern.split(nextLine);
+                if (tokens.length > 2) {
+                    loci.add(tokens[0] + ":" + tokens[1] + "-" + tokens[2]);
+                }
+
+            }
+            return new GeneList(name, loci);
+        } finally {
+            if (reader != null) reader.close();
+        }
+    }
+
 
     /**
      * #name=Example gene lists

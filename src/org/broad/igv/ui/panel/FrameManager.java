@@ -16,12 +16,16 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.exome.ExomeReferenceFrame;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.track.RegionScoreType;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -243,6 +247,22 @@ public class FrameManager {
 
     public static void removeFrame(ReferenceFrame frame) {
         frames.remove(frame);
+    }
+
+
+    public static void sortFrames(final Track t) {
+
+        Collections.sort(frames, new Comparator<ReferenceFrame>() {
+            @Override
+            public int compare(ReferenceFrame o1, ReferenceFrame o2) {
+                float s1 = t.getRegionScore(o1.getChromosome().getName(), (int) o1.getOrigin(), (int) o1.getEnd(),
+                        o1.getZoom(), RegionScoreType.SCORE, o1.getName());
+                float s2  = t.getRegionScore(o2.getChromosome().getName(), (int) o2.getOrigin(), (int) o2.getEnd(),
+                        o2.getZoom(), RegionScoreType.SCORE, o2.getName());
+                return (s1 == s2 ? 0 : (s1 > s2) ? -1 : 1);
+            }
+        });
+
     }
 
 }
