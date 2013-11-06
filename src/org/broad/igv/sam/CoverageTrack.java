@@ -33,7 +33,6 @@ import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.DataRangeDialog;
-import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.event.DataLoadedEvent;
@@ -183,13 +182,23 @@ public class CoverageTrack extends AbstractTrack {
 
         overlay(context, rect);
 
+        drawBorder(context, rect);
+        List<LocusScore> scores = getSummaryScores(context);
+        if (scores != null) {
+            dataSourceRenderer.renderBorder(this, context, rect);
+        }
+
         if(!isRepeatY(rect)){
-            drawBorder(context, rect);
-            List<LocusScore> scores = getSummaryScores(context);
-            if (scores != null) {
+            lastRenderY = rect.y;
+            if(dataSourceRenderer != null){
                 dataSourceRenderer.renderAxis(this, context, rect);
-                dataSourceRenderer.renderBorder(this, context, rect);
             }
+            if(FrameManager.isExomeMode()){
+                int x = context.getGraphics().getClipBounds().x;
+                Rectangle scaleRect = new Rectangle(x, rect.y, rect.width, rect.height);
+                drawScale(context, scaleRect);
+            }
+
         }
 
     }
@@ -235,29 +244,23 @@ public class CoverageTrack extends AbstractTrack {
 
     }
 
+    /**
+     * Draw border and scale
+     * @param context
+     * @param rect
+     */
     private void drawBorder(RenderContext context, Rectangle rect) {
-        // Draw border
         context.getGraphic2DForColor(Color.gray).drawLine(
                 rect.x, rect.y + rect.height,
                 rect.x + rect.width, rect.y + rect.height);
 
-        drawScale(context, rect);
+        if(!FrameManager.isExomeMode()){
+            drawScale(context, rect);
+        }
     }
 
     public void drawScale(RenderContext context, Rectangle rect) {
-        DataRange range = getDataRange();
-        if (range != null) {
-            Graphics2D g = context.getGraphic2DForColor(Color.black);
-            Font font = g.getFont();
-            Font smallFont = FontManager.getFont(8);
-            g.setFont(smallFont);
-            String scale = "[" + (int) range.getMinimum() + " - " +
-                    (int) range.getMaximum() + "]";
-
-            g.drawString(scale, rect.x + 5, rect.y + 10);
-
-            g.setFont(font);
-        }
+        DataRenderer.drawScale(getDataRange(), context, rect);
     }
 
     public boolean isLogNormalized() {

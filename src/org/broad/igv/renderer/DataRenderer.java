@@ -28,6 +28,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
+import org.broad.igv.ui.FontManager;
 
 import java.awt.*;
 import java.util.List;
@@ -113,5 +114,31 @@ public abstract class DataRenderer implements Renderer<LocusScore> {
      */
     public abstract void renderScores(Track track, List<LocusScore> scores,
                                          RenderContext context, Rectangle arect);
+
+
+    /**
+     * Draw scale in top left of rectangle
+     * @param range
+     * @param context
+     * @param arect
+     */
+    public static void drawScale(DataRange range, RenderContext context, Rectangle arect){
+        if (range != null) {
+            Graphics2D g = context.getGraphic2DForColor(Color.black);
+            Font font = g.getFont();
+            Font smallFont = FontManager.getFont(8);
+            try {
+                g.setFont(smallFont);
+                String minString = range.getMinimum() == 0f ? "0" : String.format("%.3f", range.getMinimum());
+                String fmtString = range.getMaximum() > 10 ? "%.0f" : "%.2f";
+                String maxString = String.format(fmtString, range.getMaximum());
+                String scale = "[" + minString + " - " + maxString + "]";
+                g.drawString(scale, arect.x + 5, arect.y + 10);
+
+            } finally {
+                g.setFont(font);
+            }
+        }
+    }
 
 }

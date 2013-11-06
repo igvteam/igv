@@ -76,6 +76,7 @@ public abstract class DataTrack extends AbstractTrack {
             overlay(context, rect);
         }else{
             renderFirstTimeY(context, rect);
+            this.lastRenderY = rect.y;
         }
     }
 
@@ -86,7 +87,6 @@ public abstract class DataTrack extends AbstractTrack {
      * @param rect
      */
     private void renderFirstTimeY(RenderContext context, Rectangle rect) {
-        this.lastRenderY = rect.y;
         List<LocusScore> inViewScores = getInViewScores(context, rect);
 
         if ((inViewScores == null || inViewScores.size() == 0) && Globals.CHR_ALL.equals(context.getChr())) {
@@ -94,7 +94,13 @@ public abstract class DataTrack extends AbstractTrack {
             GraphicUtils.drawCenteredText("Data not available for whole genome view; zoom in to see data", rect, g);
         }else{
             getRenderer().render(inViewScores, context, rect, this);
+            if(FrameManager.isExomeMode()){
+                int x = context.getGraphics().getClipBounds().x;
+                Rectangle scaleRect = new Rectangle(x, rect.y, rect.width, rect.height);
+                DataRenderer.drawScale(getDataRange(), context, scaleRect);
+            }
         }
+
     }
 
     public void overlay(RenderContext context, Rectangle rect){
@@ -104,7 +110,7 @@ public abstract class DataTrack extends AbstractTrack {
                 getRenderer().renderScores(this, inViewScores, context, rect);
             }
         }
-
+        getRenderer().renderBorder(this, context, rect);
     }
 
 

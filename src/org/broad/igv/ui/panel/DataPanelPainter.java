@@ -58,6 +58,8 @@ public class DataPanelPainter {
 
             ReferenceFrame frame = context.getReferenceFrame();
 
+            resetLastY(groups);
+
             if (frame.isExomeMode()) {
 
                 ExomeReferenceFrame exomeFrame = (ExomeReferenceFrame) frame;
@@ -173,8 +175,6 @@ public class DataPanelPainter {
 
         int trackX = 0;
         int trackY = 0;
-
-        resetLastY(groups);
 
         for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
             TrackGroup group = groupIter.next();

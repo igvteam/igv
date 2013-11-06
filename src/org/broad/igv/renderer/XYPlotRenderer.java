@@ -231,26 +231,9 @@ public abstract class XYPlotRenderer extends DataRenderer {
             }
 
         } else if (!FrameManager.isExomeMode() && track.isShowDataRange() && arect.height > 20) {
-            DataRange range = track.getDataRange();
-            if (range != null) {
-                Graphics2D g = context.getGraphic2DForColor(Color.black);
-                Font font = g.getFont();
-                Font smallFont = FontManager.getFont(8);
-                try {
-                    g.setFont(smallFont);
-                    String minString = range.getMinimum() == 0f ? "0" : String.format("%.3f", range.getMinimum());
-                    String fmtString = range.getMaximum() > 10 ? "%.0f" : "%.2f";
-                    String maxString = String.format(fmtString, range.getMaximum());
-                    String scale = "[" + minString + " - " + maxString + "]";
-                    g.drawString(scale, arect.x + 5, arect.y + 10);
-
-                } finally {
-                    g.setFont(font);
-                }
-            }
+            drawScale(track.getDataRange(), context, arect);
         }
     }
-
 
     @Override
     public void renderBorder(Track track, RenderContext context, Rectangle arect) {
