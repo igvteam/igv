@@ -143,9 +143,10 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                 int pixelStart = (int) Math.round(Math.max(trackRectangleX, virtualPixelStart));
                 int pixelEnd = (int) Math.round(Math.min(trackRectangleMaxX, virtualPixelEnd));
 
+                final int pixelWidth = pixelEnd - pixelStart;
                 if (isGenotypeRenderer) {
-                    if ((pixelEnd - pixelStart) < 3) {
-                        double dx = 3.0 - (pixelEnd - pixelStart);
+                    if (pixelWidth < 3) {
+                        double dx = 3.0 - pixelWidth;
                         pixelStart -= dx / 2.0;
                         pixelEnd += dx / 2.0;
                     }
@@ -190,7 +191,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                 int pixelYCenter = trackRectangle.y + NORMAL_STRAND_Y_OFFSET / 2;
 
                 if (hasExons) {
-                    if ((pixelEnd - pixelStart < 3)) {
+                    if ((pixelWidth < 3)) {
                         drawFeatureBounds(pixelStart, pixelEnd, pixelYCenter, g2D);
                     } else {
                         drawExons(feature, pixelYCenter, context, g2D, trackRectangle, displayMode,
@@ -204,18 +205,19 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                             displayMode, arrowGraphics);
 
                     // This is ugly, but alternatives are probably worse
-                    if (feature instanceof EncodePeakFeature && (pixelEnd - pixelStart) > 5) {
+                    if (feature instanceof EncodePeakFeature && pixelWidth > 5) {
                         int peakPosition = ((EncodePeakFeature) feature).getPeakPosition();
                         if (peakPosition > 0) {
                             Color c = g2D.getColor();
                             int peakPixelPosition = (int) ((peakPosition - origin) / locScale);
-                            Color peakColor = DULL_RED;
-                            if (track.isUseScore()) {
-                                float alpha = getAlpha(0, 500, feature.getScore());
-                                peakColor = ColorUtilities.getCompositeColor(DULL_RED, alpha);
-                            }
+                            Color peakColor = c == Color.black ? Color.red : Color.black;
+                            //if (track.isUseScore()) {
+                            //    float alpha = getAlpha(0, 500, feature.getScore());
+                            //    peakColor = ColorUtilities.getCompositeColor(DULL_RED, alpha);
+                            //}
                             g2D.setColor(peakColor);
-                            g2D.fillRect(peakPixelPosition - 1, pixelYCenter - thinBlockHeight / 2, 2, thinBlockHeight);
+                            int pw = Math.min(3, pixelWidth / 5);
+                            g2D.fillRect(peakPixelPosition - pw/2, pixelYCenter - thinBlockHeight/2 - 1, pw, thinBlockHeight + 2);
                             g2D.setColor(c);
                         }
                     }
@@ -254,7 +256,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                 if (getHighlightFeature() == feature) {
                     int yStart = pixelYCenter - blockHeight / 2 - 1;
                     Graphics2D highlightGraphics = context.getGraphic2DForColor(Color.cyan);
-                    highlightGraphics.drawRect(pixelStart - 1, yStart, (pixelEnd - pixelStart + 2), blockHeight + 2);
+                    highlightGraphics.drawRect(pixelStart - 1, yStart, (pixelWidth + 2), blockHeight + 2);
 
 
                 }
