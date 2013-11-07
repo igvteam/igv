@@ -741,7 +741,7 @@ public class TrackMenuUtils {
     private static boolean checkAutoscale(Collection<Track> selectedTracks) {
         boolean autoScale = false;
         for (Track t : selectedTracks) {
-            if (t instanceof DataTrack && ((DataTrack) t).isAutoScale()) {
+            if (t.getAutoScale()) {
                 autoScale = true;
                 break;
             }

@@ -611,15 +611,10 @@ public abstract class AbstractTrack implements Track {
         // Do nothing
     }
 
-    public boolean isAutoScale() {
-        return autoScale;
-    }
-
     @Override
     public void setAutoScale(boolean autoScale) {
         this.autoScale = autoScale;
     }
-
 
     /**
      * Set some properties of this track,  usually from a "track line" specification.

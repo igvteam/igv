@@ -56,7 +56,7 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
 
         assertTrue(track.isShowReference());
         assertEquals(0.5, track.getSnpThreshold(), 1e-5);
-        assertTrue(track.isAutoScale());
+        assertTrue(track.getAutoScale());
     }
 
     @Test
@@ -96,7 +96,7 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
         assertTrue(alTrack.isShowSpliceJunctions());
 
         assertEquals(CoverageTrack.DEFAULT_SHOW_REFERENCE, covTrack.isShowReference());
-        assertEquals(CoverageTrack.DEFAULT_AUTOSCALE, covTrack.isAutoScale());
+        assertEquals(CoverageTrack.DEFAULT_AUTOSCALE, covTrack.getAutoScale());
         assertEquals(0.1337f, covTrack.getSnpThreshold(), 1e-5);
     }
 
