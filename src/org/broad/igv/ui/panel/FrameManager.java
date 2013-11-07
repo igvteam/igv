@@ -150,11 +150,10 @@ public class FrameManager {
         if (gl == null) {
             frames.add(getDefaultFrame());
         } else {
-            int flankingRegion = PreferenceManager.getInstance().getAsInt(PreferenceManager.FLANKING_REGION);
             List<String> lociNotFound = new ArrayList();
             List<String> loci = gl.getLoci();
             if (loci.size() == 1) {
-                Locus locus = getLocus(loci.get(0), flankingRegion);
+                Locus locus = getLocus(loci.get(0));
                 if (locus == null) {
                     lociNotFound.add(loci.get(0));
                 } else {
@@ -163,7 +162,7 @@ public class FrameManager {
                 }
             } else {
                 for (String searchString : gl.getLoci()) {
-                    Locus locus = getLocus(searchString, flankingRegion);
+                    Locus locus = getLocus(searchString);
                     if (locus == null) {
                         lociNotFound.add(searchString);
                     } else {
@@ -199,14 +198,22 @@ public class FrameManager {
     }
 
 
-    public static Locus getLocus(String name) {
+    /**
+     * Uses default flanking region with
+     * {@link #getLocus(String, int)}
+     * @param searchString
+     * @return
+     */
+    public static Locus getLocus(String searchString) {
         int flankingRegion = PreferenceManager.getInstance().getAsInt(PreferenceManager.FLANKING_REGION);
-        return getLocus(name, flankingRegion);
+        return getLocus(searchString, flankingRegion);
     }
 
     /**
      * Runs a search for the specified string, and returns a locus
-     * of the given region with additional space on each side
+     * of the given region with additional space on each side.
+     * Note: We DO NOT add the flanking region if the {@code searchString}
+     * is a locus (e.g. chr1:50-100), only if it's a gene or feature name (or something else)
      *
      * @param searchString
      * @param flankingRegion
@@ -218,13 +225,14 @@ public class FrameManager {
         Locus locus = null;
         for (SearchCommand.SearchResult result : results) {
             if (result.getType() != SearchCommand.ResultType.ERROR) {
+                int delta = 0;
 
-                int delta;
-                if (flankingRegion < 0) {
-                    delta = (-flankingRegion * (result.getEnd() - result.getStart())) / 100;
-
-                } else {
-                    delta = flankingRegion;
+                if (result.getType() != SearchCommand.ResultType.LOCUS) {
+                    if (flankingRegion < 0) {
+                        delta = (-flankingRegion * (result.getEnd() - result.getStart())) / 100;
+                    } else {
+                        delta = flankingRegion;
+                    }
                 }
 
                 int start = result.getStart() - delta;
