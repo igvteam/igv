@@ -149,7 +149,7 @@ public abstract class AbstractTrack implements Track {
     protected Integer height = -1;
 
     @XmlElement(name = "DataRange")
-    private DataRange dataRange;
+    protected DataRange dataRange;
 
     @SubtlyImportant
     private AbstractTrack() {

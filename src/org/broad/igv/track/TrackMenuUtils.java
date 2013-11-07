@@ -320,16 +320,20 @@ public class TrackMenuUtils {
         }
 
         if(Globals.isDevelopment() && tracks.size() >= 2){
+            final List<DataTrack> dataTrackList = Lists.newArrayList(Iterables.filter(tracks, DataTrack.class));
             final JMenuItem overlayGroups = new JMenuItem("Create Overlay Track");
             overlayGroups.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    MergedTracks mergedTracks = new MergedTracks(UUID.randomUUID().toString(), "Overlay", tracks);
+                    MergedTracks mergedTracks = new MergedTracks(UUID.randomUUID().toString(), "Overlay", dataTrackList);
 
                     TrackPanel panel = TrackPanel.getParentPanel(tracks.iterator().next());
                     panel.addTrack(mergedTracks);
                 }
             });
+
+            int numDataTracks = dataTrackList.size();
+            overlayGroups.setEnabled(numDataTracks >= 2 && numDataTracks == tracks.size());
             menu.add(overlayGroups);
         }
 
@@ -625,38 +629,19 @@ public class TrackMenuUtils {
 
             public void actionPerformed(ActionEvent evt) {
                 if (selectedTracks.size() > 0) {
-                    // Create a datarange that spans the extent of prev tracks range
-                    float mid = 0;
-                    float min = Float.MAX_VALUE;
-                    float max = Float.MIN_VALUE;
-                    boolean drawBaseline = true;
-                    boolean isLog = true;
-                    for (Track t : selectedTracks) {
-                        DataRange dr = t.getDataRange();
-                        min = Math.min(min, dr.getMinimum());
-                        max = Math.max(max, dr.getMaximum());
-                        mid += dr.getBaseline();
-                        drawBaseline &= dr.isDrawBaseline();
-                        isLog &= dr.isLog();
-                    }
-                    mid /= selectedTracks.size();
-                    if (mid < min) {
-                        mid = min;
-                    } else if (mid > max) {
-                        min = max;
-                    }
 
-                    DataRange prevAxisDefinition = new DataRange(min, mid, max, drawBaseline, isLog);
+                    // Create a datarange that spans the extent of prev tracks range
+                    DataRange prevAxisDefinition = DataRange.getFromTracks(selectedTracks);
                     DataRangeDialog dlg = new DataRangeDialog(IGV.getMainFrame(), prevAxisDefinition);
                     dlg.setVisible(true);
                     if (!dlg.isCanceled()) {
-                        min = Math.min(dlg.getMax(), dlg.getMin());
-                        max = Math.max(dlg.getMin(), dlg.getMax());
-                        mid = dlg.getBase();
+                        float min = Math.min(dlg.getMax(), dlg.getMin());
+                        float max = Math.max(dlg.getMin(), dlg.getMax());
+                        float mid = dlg.getBase();
                         mid = Math.max(min, Math.min(mid, max));
 
                         DataRange axisDefinition = new DataRange(dlg.getMin(), mid, dlg.getMax(),
-                                drawBaseline, dlg.isLog());
+                                prevAxisDefinition.isDrawBaseline(), dlg.isLog());
 
                         for (Track track : selectedTracks) {
                             track.setDataRange(axisDefinition);
