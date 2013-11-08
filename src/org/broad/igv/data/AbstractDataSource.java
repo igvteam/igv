@@ -164,7 +164,7 @@ public abstract class AbstractDataSource implements DataSource {
                 SummaryTile summaryTile = summaryTileCache.get(key);
                 if (summaryTile == null) {
 
-                    summaryTile = computeSummaryTile(chr, t, tileStart, tileEnd, 700);
+                    summaryTile = computeSummaryTile(chr, tileStart, tileEnd, 700);
 
                     if (cacheSummaryTiles && !FrameManager.isGeneListMode()) {
                         synchronized (summaryTileCache) {
@@ -180,7 +180,7 @@ public abstract class AbstractDataSource implements DataSource {
             }
             return tiles;
         } else {
-            SummaryTile summaryTile = computeSummaryTile(chr, 0, startLocation, endLocation, 700);
+            SummaryTile summaryTile = computeSummaryTile(chr, startLocation, endLocation, 700);
             return Arrays.asList(summaryTile);
         }
 
@@ -192,14 +192,13 @@ public abstract class AbstractDataSource implements DataSource {
      * Note:  Package scope used so this method can be unit tested
      *
      * @param chr
-     * @param tileNumber
      * @param startLocation
      * @param endLocation
      * @param nBins
      * @return
      */
 
-    SummaryTile computeSummaryTile(String chr, int tileNumber, int startLocation, int endLocation, int nBins) {
+    SummaryTile computeSummaryTile(String chr, int startLocation, int endLocation, int nBins) {
 
 
         // TODO -- we should use an index here
@@ -207,11 +206,7 @@ public abstract class AbstractDataSource implements DataSource {
 
         int adjustedStart = Math.max(startLocation - longestGene, 0);
         DataTile rawTile = getRawData(chr, adjustedStart, endLocation);
-        SummaryTile tile = null;
-
-        if(rawTile != null){
-            tile = new SummaryTile();
-        }
+        SummaryTile tile = new SummaryTile();
 
         if (rawTile != null && !rawTile.isEmpty() && nBins > 0) {
             int[] starts = rawTile.getStartLocations();
