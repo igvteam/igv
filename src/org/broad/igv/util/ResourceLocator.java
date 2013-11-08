@@ -121,6 +121,11 @@ public class ResourceLocator {
         return type;
     }
 
+    /**
+     * Return a string suitable for determining file type based on extension
+     * May or may not be a full, readable path. txt and gz extensions are stripped
+     * @return
+     */
     public String getTypeString() {
         if (type != null) {
             return type;
@@ -164,6 +169,16 @@ public class ResourceLocator {
             return typeString;
 
         }
+    }
+
+    /**
+     * Returns the portion of the contained path before the query string.
+     * If there is no query string, or if the path is not a url,
+     * this will be the same as #getPath()
+     * @return
+     */
+    public String getURLPath() {
+        return getPath().split("\\?", 2)[0];
     }
 
     public String toString() {

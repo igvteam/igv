@@ -19,6 +19,7 @@ import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.feature.tribble.MUTCodec;
 import org.broad.igv.gwas.GWASParser;
 import org.broad.igv.track.GFFFeatureSource;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.*;
@@ -127,7 +128,7 @@ public abstract class Sorter {
             return new EQTLSorter(inputFile, outputFile);
         } else if (GWASParser.isGWASFile(shortFN)) {
             return new GWASSorter(inputFile, outputFile);
-        } else if (MUTCodec.isMutationAnnotationFile(inputFile.getAbsolutePath())) {
+        } else if (MUTCodec.isMutationAnnotationFile(new ResourceLocator(inputFile.getAbsolutePath()))) {
             return new MUTSorter(inputFile, outputFile);
         } else {
             log.error("Unknown file type or sorting not supported for: " + inputFile.getName());

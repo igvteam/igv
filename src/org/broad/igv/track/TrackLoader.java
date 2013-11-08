@@ -135,7 +135,7 @@ public class TrackLoader {
                 this.loadMutFile(locator, newTracks, genome); // Must be tried before generic "loadIndexed" below
             } else if ((typeString.endsWith(".vcf3") || typeString.endsWith(".vcf4") || typeString.endsWith(".vcf")) && !HttpUtils.isRemoteURL(locator.getPath())) {
                 //Prompt user to see if they want to create an index file for VCFs
-                if(!isIndexed(path, genome)){
+                if(!isIndexed(locator, genome)){
                     File baseFile = new File(locator.getPath());
                     File newIdxFile = new File(locator.getPath() + ".idx");
                     IndexCreatorDialog dialog = IndexCreatorDialog.createShowDialog(IGV.getMainFrame(), baseFile, newIdxFile);
@@ -147,9 +147,9 @@ public class TrackLoader {
                     }
                 }
                 loadIndexed(locator, newTracks, genome);
-            } else if(VCFrequiresIndex(path) && !isIndexed(path, genome)){
+            } else if(VCFrequiresIndex(locator) && !isIndexed(locator, genome)){
                 throw new DataLoadException("Could not access required index file", path);
-            } else if (isIndexed(path, genome)) {
+            } else if (isIndexed(locator, genome)) {
                 loadIndexed(locator, newTracks, genome);
             } else if (typeString.endsWith(".vcf.list")) {
                 loadVCFListFile(locator, newTracks, genome);
@@ -207,9 +207,9 @@ public class TrackLoader {
                 loadTDFFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".counts")) {
                 loadGobyCountsArchive(locator, newTracks, genome);
-            } else if (GFFFeatureSource.isGFF(locator.getPath())) {
+            } else if (GFFFeatureSource.isGFF(typeString)) {
                 loadGFFfile(locator, newTracks, genome);
-            } else if (AbstractFeatureParser.canParse(locator.getPath())) {
+            } else if (AbstractFeatureParser.canParse(locator)) {
                 loadFeatureFile(locator, newTracks, genome);
             } else if (WiggleParser.isWiggle(locator)) {
                 loadWigFile(locator, newTracks, genome);
@@ -219,7 +219,7 @@ public class TrackLoader {
                 loadMultipleAlignmentTrack(locator, newTracks, genome);
             } else if (typeString.contains(".peak.bin")) {
                 loadPeakTrack(locator, newTracks, genome);
-            } else if ("mage-tab".equals(typeString) || ExpressionFileParser.parsableMAGE_TAB(locator)) {
+            } else if (typeString.endsWith("mage-tab") || ExpressionFileParser.parsableMAGE_TAB(locator)) {
                 locator.setDescription("MAGE_TAB");
                 loadGctFile(locator, newTracks, genome);
             } else if (GWASParser.isGWASFile(typeString)) {
@@ -273,8 +273,8 @@ public class TrackLoader {
 
     }
 
-    private boolean VCFrequiresIndex(String path) {
-        String fn = stripGZ(path);
+    private boolean VCFrequiresIndex(ResourceLocator locator) {
+        String fn = stripGZ(locator.getTypeString());
         String[] exts = new String[]{".vcf3", ".vcf4", ".vcf"};
         for(String ext: exts){
             if(fn.endsWith(ext)){
@@ -1104,7 +1104,7 @@ public class TrackLoader {
         //For backwards/forwards compatibility
         //We used to put path in the serverURL field
         ResourceLocator dbLocator = new ResourceLocator(locator.getDBUrl());
-        if (".seg".equals(locator.getTypeString())) {
+        if (locator.getTypeString().endsWith(".seg")) {
             //TODO Don't hardcode table name, this might note even be right for our target case
             SegmentedAsciiDataSet ds = (new SegmentedSQLReader(dbLocator, "CNV", genome)).load();
             loadSegTrack(locator, newTracks, genome, ds);
@@ -1219,20 +1219,29 @@ public class TrackLoader {
     }
 
 
-    public static boolean isIndexed(String path, Genome genome) {
+    public static boolean isIndexed(ResourceLocator locator, Genome genome) {
 
         // Checking for the index is expensive over HTTP.  First see if this is an indexable format by fetching the codec
-        if (!isIndexable(path, genome)) {
+        String fullPath = locator.getPath();
+        String pathNoQuery = locator.getURLPath();
+        if (!isIndexable(locator, genome)) {
             return false;
         }
 
-        String indexExtension = path.endsWith("gz") ? ".tbi" : ".idx";
-        String indexPath = path + indexExtension;
+        String indexExtension = pathNoQuery.endsWith("gz") ? ".tbi" : ".idx";
+
         try {
-            if (HttpUtils.isRemoteURL(path)) {
+            if (HttpUtils.isRemoteURL(fullPath)) {
+                String indexPath = fullPath + indexExtension;
+                //Handle query string, if it exists
+                String[] toks = fullPath.split("\\?", 2);
+                if(toks.length == 2){
+                    indexPath = String.format("%s%s?%s", toks[0], indexExtension, toks[1]);
+                }
+
                 return HttpUtils.getInstance().resourceAvailable(new URL(indexPath));
             } else {
-                File f = new File(path + indexExtension);
+                File f = new File(fullPath + indexExtension);
                 return f.exists();
             }
 
@@ -1248,14 +1257,15 @@ public class TrackLoader {
      * for the index but that is expensive to do for remote resources.  All tribble indexable extensions should be
      * listed here.
      *
-     * @param path
+     * @param locator
+     * @param genome
      * @return
      */
-    private static boolean isIndexable(String path, Genome genome) {
-        String fn = stripGZ(path);
+    private static boolean isIndexable(ResourceLocator locator, Genome genome) {
+        String fn = stripGZ(locator.getTypeString());
         // The vcf extension is for performance, it doesn't matter which codec is returned all vcf files
         // are indexable.
-        return fn.endsWith(".vcf") || fn.endsWith(".bcf") || CodecFactory.getCodec(path, genome) != null;
+        return fn.endsWith(".vcf") || fn.endsWith(".bcf") || CodecFactory.getCodec(locator.getPath(), genome) != null;
     }
 
     /**

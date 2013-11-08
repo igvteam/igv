@@ -15,6 +15,7 @@ package org.broad.igv.feature;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
 
 import java.io.*;
@@ -142,7 +143,7 @@ public class FeatureFileUtils {
         try {
             br = new BufferedReader(new FileReader(iFile));
             pw = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
-            FeatureParser parser = AbstractFeatureParser.getInstanceFor(iFile, null);
+            FeatureParser parser = AbstractFeatureParser.getInstanceFor(new ResourceLocator(iFile), null);
             List<Feature> features = parser.loadFeatures(br, null);
             IGVBEDCodec codec = new IGVBEDCodec();
 
@@ -206,7 +207,7 @@ public class FeatureFileUtils {
         try {
             br = new BufferedReader(new FileReader(iFile));
             pw = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
-            FeatureParser parser = AbstractFeatureParser.getInstanceFor(iFile, null);
+            FeatureParser parser = AbstractFeatureParser.getInstanceFor(new ResourceLocator(iFile), null);
             List<Feature> features = parser.loadFeatures(br, null);
             IGVBEDCodec codec = new IGVBEDCodec();
 

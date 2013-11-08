@@ -107,15 +107,15 @@ public class WiggleParser {
     }
 
     /**
-     * Utility method.  Returns true if this looks like a wiggle locator.  The criteria is to scan
-     * the first 100 lines looking for a valid "track" line.  According to UCSC documentation
-     * track lines must contain a type attribute,  which must be equal to "wiggle_0".
+     * Utility method.  Returns true if this looks like a wiggle locator,
+     * based on file extension
      *
      * @param file
      * @return
      */
     public static boolean isWiggle(ResourceLocator file) {
-        return (file.getPath().endsWith("CpG.txt") || file.getPath().endsWith(".expr") || file.getPath().endsWith(".wig"));
+        String ts = file.getTypeString().toLowerCase();
+        return (ts.endsWith("cpg.txt") || ts.endsWith(".expr") || ts.endsWith(".wig"));
     }
 
     public WiggleDataset parse() {

@@ -14,6 +14,7 @@ package org.broad.igv.tools.converters;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.GFFCodec;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
 import org.junit.Test;
@@ -55,7 +56,7 @@ public class GFFtoBedTest {
             List<Feature> gffFeatures = parser.loadFeatures(gffReader, genome, codec);
 
             bedReader = new BufferedReader(new FileReader(outputFile));
-            FeatureParser bedParser = AbstractFeatureParser.getInstanceFor(outputFile.getAbsolutePath(), null);
+            FeatureParser bedParser = AbstractFeatureParser.getInstanceFor(new ResourceLocator(outputFile.getAbsolutePath()), null);
             List<Feature> bedFeatures = bedParser.loadFeatures(bedReader, genome);
 
             assertTrue(gffFeatures.size() > 0);

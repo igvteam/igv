@@ -73,7 +73,7 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
     @Test
     public void testLoadBEDNotIndexed() throws Exception {
         String filepath = TestUtils.DATA_DIR + "bed/intervalTest.bed";
-        if (TrackLoader.isIndexed(filepath, null)) {
+        if (TrackLoader.isIndexed(new ResourceLocator(filepath), null)) {
             File f = new File(filepath + ".idx");
             f.delete();
         }

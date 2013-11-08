@@ -53,8 +53,8 @@ public abstract class AbstractFeatureParser implements FeatureParser {
     protected TrackProperties trackProperties = null;
 
 
-    public static boolean canParse(String path) {
-        return getCodec(path, null) != null;
+    public static boolean canParse(ResourceLocator locator) {
+        return CodecFactory.getCodec(locator, null) != null;
     }
 
     /**
@@ -62,26 +62,13 @@ public abstract class AbstractFeatureParser implements FeatureParser {
      * is used to determine file type, this is fragile obviously but what is the alternative?
      */
     public static FeatureParser getInstanceFor(ResourceLocator locator, Genome genome) {
-
-        final String path = locator.getPath();
-        return getInstanceFor(path, genome);
-    }
-
-
-    public static FeatureParser getInstanceFor(String path, Genome genome) {
-        FeatureCodec codec = getCodec(path, genome);
+        FeatureCodec codec = CodecFactory.getCodec(locator, genome);
         if (codec != null && codec instanceof AsciiFeatureCodec) {
             return new FeatureCodecParser((AsciiFeatureCodec) codec, genome);
         } else {
             return null;
         }
     }
-
-    private static FeatureCodec getCodec(String path, Genome genome) {
-        String tmp = getStrippedFilename(path);
-        return CodecFactory.getCodec(tmp, genome);
-    }
-
 
     /**
      * Load all features in this file.
@@ -251,19 +238,6 @@ public abstract class AbstractFeatureParser implements FeatureParser {
     }
 
     abstract protected Feature parseLine(String nextLine);
-
-    protected static String getStrippedFilename(String filename) {
-        String tmp = filename.toLowerCase();
-
-//      String off common, non-informative extensions .gz, .tab, .txt, and .csv
-        if (filename.endsWith(".gz")) {
-            tmp = tmp.substring(0, tmp.length() - 3);
-        }
-        if (tmp.endsWith(".tab") || tmp.endsWith(".txt") || tmp.endsWith(".csv")) {
-            tmp = tmp.substring(0, tmp.length() - 4);
-        }
-        return tmp;
-    }
 
     /**
      * Convenience method.  Write a list of features out as a BED file

@@ -12,6 +12,7 @@
 package org.broad.igv.feature.tribble;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
@@ -31,7 +32,7 @@ public class MUTCodecTest extends AbstractHeadlessTest {
 
     @Test
     public void testIsMutationAnnotationFile() throws Exception {
-        assertTrue(MUTCodec.isMutationAnnotationFile(path));
+        assertTrue(MUTCodec.isMutationAnnotationFile(new ResourceLocator(path)));
     }
 
     @Test
