@@ -21,10 +21,10 @@ package org.broad.igv.lists;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
+import org.broad.igv.track.TrackProperties;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.tribble.Feature;
 
 import java.io.*;
 import java.net.URLEncoder;
@@ -42,6 +42,8 @@ public class GeneListManager {
             /*"biocarta_cancer_cp.gmt",*/  "examples.gmt", "reactome_cp.gmt", "kegg_cancer_cp.gmt");
 
     public static final String USER_GROUP = "My lists";
+
+    private static final HashSet<String> fileTypes = new HashSet(Arrays.asList("bed", "gmt", "grp"));
 
     private LinkedHashSet<String> groups = new LinkedHashSet();
 
@@ -93,7 +95,7 @@ public class GeneListManager {
             try {
                 reader = new BufferedReader(new InputStreamReader(is));
                 new BufferedReader(new InputStreamReader(is));
-                List<GeneList> lists = loadGMT(geneListFile, reader);
+                List<GeneList> lists = loadGMTFile(reader);
                 for (GeneList gl : lists) {
                     gl.setEditable(false);
                     addGeneList(gl);
@@ -117,15 +119,8 @@ public class GeneListManager {
         if (dir.exists()) {
             for (File f : dir.listFiles()) {
                 try {
-                    if (f.getName().toLowerCase().endsWith(".gmt")) {
-                        importGMTFile(f);
-                    } else {
-                        GeneList geneList = loadGRPFile(f);
-                        geneList.setEditable(true);
-                        geneList.setGroup(USER_GROUP);
-                        if (geneList != null) {
-                            addGeneList(geneList);
-                        }
+                    if (fileTypes.contains(getFileType(f.getPath()))) {
+                        importFile(f);
                     }
                 } catch (IOException e) {
                     log.error("Error loading user gene lists: ", e);
@@ -133,7 +128,6 @@ public class GeneListManager {
                             "<br/>See log for more details");
                 }
             }
-
         }
 
         // Add empty group if there are no lists
@@ -142,102 +136,89 @@ public class GeneListManager {
         }
     }
 
-    GeneList loadGRPFile(File grpFile) throws IOException {
-
-        // First copy file to gene list directory
-        File f = grpFile;
-        File dir = DirectoryManager.getGeneListDirectory();
-        if (!dir.equals(grpFile.getParentFile())) {
-            f = new File(dir, grpFile.getName());
-            FileUtils.copyFile(grpFile, f);
+    private String getFileType(String path) {
+        String tmp = path.toLowerCase();
+        if (tmp.endsWith(".gz")) {
+            tmp = tmp.substring(0, tmp.length() - 3);
         }
-
-        String name = f.getName();
-        String group = USER_GROUP;
-        String description = null;
-        List<String> genes = new ArrayList();
-        BufferedReader reader = null;
-
-        try {
-            reader = new BufferedReader(new FileReader(f));
-            String nextLine;
-            while ((nextLine = reader.readLine()) != null) {
-                if (nextLine.startsWith("#")) {
-
-                    if (nextLine.startsWith("#name")) {
-                        String[] tokens = nextLine.split("=");
-                        if (tokens.length > 1) {
-                            name = tokens[1];
-                        }
-                    } else if (nextLine.startsWith("#description")) {
-                        String[] tokens = nextLine.split("=");
-                        if (tokens.length > 1) {
-                            description = tokens[1];
-                        }
-
-                    }
-                } else {
-                    String[] tokens = nextLine.split("\\s+");
-                    for (String s : tokens) {
-                        genes.add(s);
-                    }
-                }
-            }
-            if (genes.size() > 0) {
-                if (name == null) {
-                    name = f.getName();
-                }
-                importedFiles.put(name, f);
-                return new GeneList(name, description, group, genes);
-            }
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-
-                }
-            }
-        }
-        return null;
+        int idx = path.lastIndexOf(".");
+        return idx < 0 ? path : path.substring(idx + 1);
     }
 
-    // TODO -- why are there 2 of these methods?
-    public void importGMTFile(File gmtFile) throws IOException {
+    public List<GeneList> importFile(File f) throws IOException {
 
-        String path = gmtFile.getPath();
-        String name = gmtFile.getName();
-        File f = gmtFile;
-        boolean isBed = path.toLowerCase().endsWith(".bed") || path.toLowerCase().endsWith(".bed.gz");
+        String path = f.getPath();
+        String name = f.getName();
 
-        // If this is a gmt file, make a copy
-        if (!isBed) {
-            File dir = DirectoryManager.getGeneListDirectory();
-            if (!dir.equals(gmtFile.getParentFile())) {
-                f = new File(dir, gmtFile.getName());
-                FileUtils.copyFile(gmtFile, f);
-            }
+        File dir = DirectoryManager.getGeneListDirectory();
+        if (!dir.equals(f.getParentFile())) {
+            File copy = new File(dir, f.getName());
+            FileUtils.copyFile(f, copy);
         }
+
+        List<GeneList> loadedLists = loadFile(path);
+
+        if (loadedLists.size() > 0) {
+            importedFiles.put(name, f);
+        }
+
+        return loadedLists;
+
+    }
+
+    private List<GeneList> loadFile(String path) throws IOException {
+
+        String type = getFileType(path);
+        if (type.equals("bed")) {
+            return loadBEDFile(path);
+        } else if (type.equals("gmt")) {
+            return loadGMTFile(path);
+        } else if (type.equals("grp")) {
+            return loadGRPFile(path);
+        } else {
+            throw new RuntimeException("Unrecognized file extension: " + path);
+        }
+    }
+
+
+    private List<GeneList> loadBEDFile(String path) throws IOException {
+
+        String name = (new File(path)).getName();
 
         BufferedReader reader = null;
         try {
-            reader = new BufferedReader(new FileReader(f));
+            reader = ParsingUtils.openBufferedReader(path);
 
-            if (path.toLowerCase().endsWith(".bed") || path.toLowerCase().endsWith(".bed.gz")) {
-                GeneList geneList = loadBedFile(name, reader);
+            try {
+                List<String> loci = new ArrayList<String>(1000);
+                String nextLine;
+                while ((nextLine = reader.readLine()) != null) {
+
+                    if (nextLine.startsWith("#") || nextLine.startsWith("browser"))
+                        continue;
+                    if (nextLine.startsWith("track")) {
+                        TrackProperties tp = new TrackProperties();
+                        ParsingUtils.parseTrackLine(nextLine, tp);
+                        String tmp = tp.getName();
+                        if (tmp != null) name = tmp;
+                        continue;
+                    }
+                    String[] tokens = Globals.whitespacePattern.split(nextLine);
+                    if (tokens.length > 2) {
+                        loci.add(tokens[0] + ":" + tokens[1] + "-" + tokens[2]);
+                    }
+                }
+                GeneList geneList = new GeneList(name, loci);
                 geneList.setGroup(USER_GROUP);
                 geneList.setEditable(false);
                 addGeneList(geneList);
-            } else {
 
-                String group = f.getName().replace(".gmt", "");
-                importedFiles.put(group, f);
-                List<GeneList> lists = loadGMT(group, reader);
-                for (GeneList gl : lists) {
-                    gl.setEditable(true);
-                    addGeneList(gl);
-                }
+                return Arrays.asList(geneList);
+
+            } finally {
+                if (reader != null) reader.close();
             }
+
         } finally {
             if (reader != null) {
                 try {
@@ -249,28 +230,21 @@ public class GeneListManager {
         }
     }
 
-    // Called from TrackLoader -- naming of methods here is quite confusing.
     public List<GeneList> loadGMTFile(String path) throws IOException {
 
         BufferedReader reader = null;
         try {
             reader = ParsingUtils.openBufferedReader(path);
-            String group = USER_GROUP;
-            List<GeneList> lists = loadGMT(group, reader);
-            for (GeneList gl : lists) {
-                gl.setEditable(false);
-                addGeneList(gl);
-            }
-            return lists;
-
-
+            return loadGMTFile(reader);
         } finally {
             if (reader != null) reader.close();
         }
-
     }
 
-    private List<GeneList> loadGMT(String group, BufferedReader reader) throws IOException {
+    private List<GeneList> loadGMTFile(BufferedReader reader) throws IOException {
+
+        String group = USER_GROUP;
+
         String nextLine;
         List<GeneList> lists = new ArrayList();
         while ((nextLine = reader.readLine()) != null) {
@@ -294,27 +268,67 @@ public class GeneListManager {
                 }
             }
         }
+
+        for (GeneList gl : lists) {
+            gl.setEditable(false);
+            addGeneList(gl);
+        }
         return lists;
     }
 
-    public GeneList loadBedFile(String name, BufferedReader reader) throws IOException {
+    List<GeneList> loadGRPFile(String path) throws IOException {
+
+        String name = (new File(path)).getName();
+        String group = USER_GROUP;
+        String description = null;
+        //
+        BufferedReader reader = null;
 
         try {
-            List<String> loci = new ArrayList<String>(1000);
+            List<String> genes = new ArrayList();
+            reader = ParsingUtils.openBufferedReader(path);
             String nextLine;
             while ((nextLine = reader.readLine()) != null) {
 
-                if (nextLine.startsWith("#") || nextLine.startsWith("track") || nextLine.startsWith("browser"))
-                    continue;
-                String[] tokens = Globals.whitespacePattern.split(nextLine);
-                if (tokens.length > 2) {
-                    loci.add(tokens[0] + ":" + tokens[1] + "-" + tokens[2]);
-                }
+                if (nextLine.startsWith("#")) {
 
+                    if (nextLine.startsWith("#name")) {
+                        String[] tokens = nextLine.split("=");
+                        if (tokens.length > 1) {
+                            name = tokens[1];
+                        }
+                    } else if (nextLine.startsWith("#description")) {
+                        String[] tokens = nextLine.split("=");
+                        if (tokens.length > 1) {
+                            description = tokens[1];
+                        }
+
+                    }
+                } else {
+                    String[] tokens = nextLine.split("\\s+");
+                    for (String s : tokens) {
+                        genes.add(s);
+                    }
+                }
             }
-            return new GeneList(name, loci);
+
+            if (genes.size() > 0) {
+                GeneList geneList = new GeneList(name, description, group, genes);
+                geneList.setEditable(false);
+                addGeneList(geneList);
+                return Arrays.asList(geneList);
+            } else {
+                return Collections.EMPTY_LIST;
+            }
+
         } finally {
-            if (reader != null) reader.close();
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+
+                }
+            }
         }
     }
 
