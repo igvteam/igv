@@ -52,7 +52,7 @@ public class CommandListenerTest extends AbstractHeadedTest {
         super.setUp();
         CommandListener.halt();
         CommandListener.start(port);
-        IGV.getInstance().loadGenome(TestUtils.defaultGenome, null);
+        IGV.getInstance().loadGenome(TestUtils.defaultGenome, null, true);
     }
 
     @After

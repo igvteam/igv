@@ -19,6 +19,7 @@
 package org.broad.igv.feature.genome;
 
 import com.google.common.collect.Iterables;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
@@ -30,11 +31,9 @@ import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressMonitor;
-import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.Utilities;
+import org.broad.igv.util.*;
 import org.broad.igv.util.collections.CI;
+import org.broad.tribble.util.ParsingUtils;
 
 import java.awt.*;
 import java.io.*;
@@ -44,10 +43,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.*;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
+import java.util.zip.*;
 
 /**
  * @author jrobinso
@@ -509,19 +505,23 @@ public class GenomeManager {
     }
 
     /**
-     * Refresh a locally cached genome
+     * Refresh a locally cached genome if appropriate (newer one on server, user set preference to enable it)
+     * If it doesn't have a local cache, just downloaded
+     * If the cached version has a custom sequence location, that is copied over to the downloaded version
      *
      * @param cachedFile
      * @param genomeArchiveURL
      * @throws IOException
      */
-    private void refreshCache(File cachedFile, URL genomeArchiveURL) {
+    void refreshCache(File cachedFile, URL genomeArchiveURL) {
         // Look in cache first
-
-
         try {
             if (cachedFile.exists()) {
-                boolean remoteModfied = !HttpUtils.getInstance().compareResources(cachedFile, genomeArchiveURL);
+                //Check to see cached version has a custom sequence
+                GenomeDescriptor cachedDescriptor = parseGenomeArchiveFile(cachedFile);
+                //File sizes won't be the same if the local version has a different sequence location
+                boolean remoteModfied = HttpUtils.getInstance().remoteIsNewer(cachedFile, genomeArchiveURL,
+                        !cachedDescriptor.hasCustomSequenceLocation());
 
                 // Force an update of cached genome if file length does not equal remote content length
                 boolean forceUpdate = remoteModfied &&
@@ -529,12 +529,22 @@ public class GenomeManager {
                 if (forceUpdate) {
                     log.info("Refreshing genome: " + genomeArchiveURL.toString());
                     File tmpFile = new File(cachedFile.getAbsolutePath() + ".tmp");
-                    if (HttpUtils.getInstance().downloadFile(genomeArchiveURL.toExternalForm(), tmpFile)) {
-                        FileUtils.copyFile(tmpFile, cachedFile);
+                    if (HttpUtils.getInstance().downloadFile(genomeArchiveURL.toExternalForm(), tmpFile).isSuccess()) {
+
                         tmpFile.deleteOnExit();
+                        boolean success = true;
+
+                        if (cachedDescriptor.hasCustomSequenceLocation()) {
+                            success = rewriteSequenceLocation(tmpFile, cachedDescriptor.getSequenceLocation());
+                        }
+
+                        if (success) {
+                            FileUtils.copyFile(tmpFile, cachedFile);
+                        } else {
+                            log.warn("Updating genome failed: " + genomeArchiveURL.toString());
+                        }
                     }
                 }
-
             } else {
                 // Copy file directly from the server to local cache.
                 HttpUtils.getInstance().downloadFile(genomeArchiveURL.toExternalForm(), cachedFile);
@@ -549,7 +559,7 @@ public class GenomeManager {
     /**
      * Creates a genome descriptor.
      */
-    public GenomeDescriptor parseGenomeArchiveFile(File f)
+    public static GenomeDescriptor parseGenomeArchiveFile(File f)
             throws IOException {
 
 
@@ -599,6 +609,7 @@ public class GenomeManager {
                     boolean fasta = parseBooleanPropertySafe(properties, "fasta");
                     boolean fastaDirectory = parseBooleanPropertySafe(properties, "fastaDirectory");
                     boolean chromosomesAreOrdered = parseBooleanPropertySafe(properties, Globals.GENOME_ORDERED_KEY);
+                    boolean hasCustomSequenceLocation = parseBooleanPropertySafe(properties, Globals.GENOME_ARCHIVE_CUSTOM_SEQUENCE_LOCATION_KEY);
 
 
                     String fastaFileNameString = properties.getProperty("fastaFiles");
@@ -615,6 +626,7 @@ public class GenomeManager {
                             chrAliasFileName,
                             properties.getProperty(Globals.GENOME_GENETRACK_NAME, "Gene"),
                             sequenceLocation,
+                            hasCustomSequenceLocation,
                             zipFile,
                             zipEntries,
                             chromosomesAreOrdered,
@@ -641,7 +653,7 @@ public class GenomeManager {
         return genomeDescriptor;
     }
 
-    private boolean parseBooleanPropertySafe(Properties properties, String key) {
+    private static boolean parseBooleanPropertySafe(Properties properties, String key) {
         String propertyString = properties.getProperty(key);
         return Boolean.parseBoolean(propertyString);
     }
@@ -678,7 +690,7 @@ public class GenomeManager {
     public boolean loadFromArchive(String genomeId) throws IOException {
         GenomeListItem matchingItem = findGenomeListItemById(genomeId);
         if (matchingItem != null) {
-            GenomeManager.getInstance().addGenomeItems(Arrays.asList(matchingItem));
+            GenomeManager.getInstance().addGenomeItems(Arrays.asList(matchingItem), false);
         }
         return matchingItem != null;
     }
@@ -968,7 +980,7 @@ public class GenomeManager {
     }
 
     /**
-     * Method description
+     * Delete .genome files from the cache directory
      */
     public void clearGenomeCache() {
 
@@ -1185,9 +1197,220 @@ public class GenomeManager {
         if (monitor != null) monitor.fireProgressChange(75);
 
         GenomeListItem newItem = new GenomeListItem(genomeDisplayName, genomeFile.getAbsolutePath(), genomeId);
-        addGenomeItem(newItem);
+        addGenomeItem(newItem, true);
         return newItem;
 
+    }
+
+
+    /**
+     * Downloads .genome file, INCLUDING fasta file it points to,
+     * and rewrites the property.txt file to point to the local version
+     * @param srcPath
+     * @param targetDir
+     *
+     * @throws IOException
+     */
+    public RunnableResult downloadWholeGenome(String srcPath, File targetDir, Frame dialogsParent) throws IOException{
+
+        //Whether the srcGenome is simply a fasta file
+        boolean isFastaFile = FastaUtils.isFastaPath(srcPath);
+        boolean showProgressDialog = !Globals.isHeadless() && !Globals.isBatch();
+        String srcFileName = Utilities.getFileNameFromURL(srcPath);
+
+        if(isFastaFile){
+            //Simple case, just need to copy fasta and create index
+            return downloadFasta(srcPath, targetDir, srcFileName , dialogsParent);
+
+        }else if(srcFileName.endsWith(Globals.GENOME_FILE_EXTENSION)){
+            //Most useful case of a .genome file, which contains nearly everything in it, except the
+            //sequence which is a fasta file stored elsewhere
+            String genomeName = Utilities.getFileNameFromURL(srcPath);
+            File srcGenomeArchive = new File(targetDir, genomeName);
+            RunnableResult genomeResult = HttpUtils.getInstance().downloadFile(srcPath, srcGenomeArchive);
+            if(!genomeResult.isSuccess()) return genomeResult;
+
+            GenomeDescriptor descriptor = parseGenomeArchiveFile(srcGenomeArchive);
+
+            File targetGenomeFile = new File(targetDir, srcGenomeArchive.getName());
+            String sequencePath = descriptor.getSequenceLocation();
+
+            boolean seqIsFasta = FastaUtils.isFastaPath(sequencePath);
+            if(!seqIsFasta){
+                throw new IllegalArgumentException("Genome sequence must be a single fasta file");
+            }
+
+            String sequenceFileName = Utilities.getFileNameFromURL(sequencePath);
+            File localSequenceFile = new File(targetDir, sequenceFileName);
+
+            // Copy file directly from the server to local area
+            // Shows cancellable dialog
+            RunnableResult fastaResult = downloadFasta(sequencePath, targetDir, sequenceFileName, dialogsParent);
+            if(fastaResult.isSuccess()){
+                //Rewrite properties file to point to local fasta
+                rewriteSequenceLocation(targetGenomeFile, localSequenceFile.getAbsolutePath());
+            }
+            return fastaResult;
+        }else{
+            throw new IllegalArgumentException("Unknown file type. Cannot download " + srcPath);
+        }
+    }
+
+
+    /**
+     * Download a fasta file. Also attempts to download the index, and create an index
+     * if that download fails
+     * @param fastaPath  Full source path of fasta
+     * @param targetDir  Destination directory for fasta file
+     * @param targetName Destination file name for fasta file
+     * @param dialogsParent Parent of progress dialog shown. None shown if null
+     * @return
+     * @throws IOException
+     */
+    private RunnableResult downloadFasta(String fastaPath, File targetDir, String targetName, Frame dialogsParent) throws IOException{
+        //Simple case, just need to copy fasta and create index
+        File destFile = new File(targetDir, targetName);
+        //TODO PROMPT TO OVERWRITE IF FILE EXISTS
+        HttpUtils.URLDownloader urlDownloader = HttpUtils.getInstance().downloadFile(fastaPath, destFile, dialogsParent);
+        RunnableResult fastaResult = urlDownloader.getResult();
+        //If not successful for whatever reason, we don't get the index
+        if(!fastaResult.isSuccess()) return fastaResult;
+
+        File destIndexFile = new File(destFile.getAbsolutePath() + ".fai");
+        String srcIndexPath = fastaPath + ".fai";
+        RunnableResult idxResult = null;
+        if(ParsingUtils.resourceExists(srcIndexPath)){
+            idxResult = HttpUtils.getInstance().downloadFile(srcIndexPath, destIndexFile);
+        }
+        //If remote fasta doesn't exist or download failed, we create our own index
+        if(idxResult == null || idxResult == RunnableResult.FAILURE){
+            FastaUtils.createIndexFile(destFile.getAbsolutePath(), destIndexFile.getAbsolutePath());
+        }
+
+        return fastaResult;
+    }
+
+    /**
+     * Rewrite the {@link Globals#GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY} property to equal
+     * the specified {@code newSequencePath}. Works by creating a temp file and renaming
+     * @param targetFile A .genome file, in zip format
+     * @param newSequencePath
+     * @return boolean indicating success or failure.
+     * @throws IOException
+     */
+    static boolean rewriteSequenceLocation(File targetFile, String newSequencePath) throws IOException{
+
+        ZipFile targetZipFile = new ZipFile(targetFile);
+        boolean success = false;
+
+        File tmpZipFile = File.createTempFile("tmpGenome", ".zip");
+        ZipEntry propEntry = targetZipFile.getEntry(Globals.GENOME_ARCHIVE_PROPERTY_FILE_NAME);
+
+        InputStream propertyInputStream = null;
+        ZipOutputStream zipOutputStream = null;
+
+        try{
+            propertyInputStream = targetZipFile.getInputStream(propEntry);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(propertyInputStream));
+
+            ByteArrayOutputStream propertyBytes = new ByteArrayOutputStream();
+            PrintWriter propertyFileWriter = new PrintWriter(new OutputStreamWriter(propertyBytes));
+
+            //Copy over property.txt, only replacing the sequenceLocation property
+            String line = null;
+            boolean hasCustomSequenceProperty = false;
+            while ((line = reader.readLine()) != null) {
+                String writeLine = line;
+                if(!line.startsWith("#")){
+                    String[] tokens = line.split("=", 2);
+
+                    if(tokens.length == 2){
+                        String propName = tokens[0];
+                        String propVal = tokens[1];
+
+                        if(propName.equals(Globals.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY)){
+                            propVal = newSequencePath;
+                        }else if(propName.equals(Globals.GENOME_ARCHIVE_CUSTOM_SEQUENCE_LOCATION_KEY)){
+                            propVal = Boolean.TRUE.toString();
+                            hasCustomSequenceProperty = true;
+                        }
+
+                        writeLine = String.format("%s=%s", propName, propVal);
+                    }
+                }
+                propertyFileWriter.println(writeLine);
+            }
+
+            //hasCustomSequence was not already set, we need to set it
+            if(!hasCustomSequenceProperty){
+                String writeLine = String.format("%s=%s", Globals.GENOME_ARCHIVE_CUSTOM_SEQUENCE_LOCATION_KEY, true);
+                propertyFileWriter.println(writeLine);
+            }
+
+            propertyFileWriter.flush();
+            byte[] newPropertyBytes = propertyBytes.toByteArray();
+
+            Enumeration<? extends ZipEntry> entries = targetZipFile.entries();
+            zipOutputStream = new ZipOutputStream(new FileOutputStream(tmpZipFile));
+            while(entries.hasMoreElements()){
+                ZipEntry curEntry = entries.nextElement();
+                ZipEntry writeEntry = null;
+
+                if(curEntry.getName().equals(Globals.GENOME_ARCHIVE_PROPERTY_FILE_NAME)){
+                    writeEntry = new ZipEntry(Globals.GENOME_ARCHIVE_PROPERTY_FILE_NAME);
+                    writeEntry.setSize(newPropertyBytes.length);
+                    zipOutputStream.putNextEntry(writeEntry);
+                    zipOutputStream.write(newPropertyBytes);
+                    continue;
+                }else{
+                    //Because the compressed size can vary,
+                    //we generate a new ZipEntry and copy some attributes
+                    writeEntry = new ZipEntry(curEntry.getName());
+                    writeEntry.setSize(curEntry.getSize());
+                    writeEntry.setComment(curEntry.getComment());
+                    writeEntry.setTime(curEntry.getTime());
+                }
+
+                zipOutputStream.putNextEntry(writeEntry);
+                InputStream tmpIS = null;
+                try{
+                    tmpIS = targetZipFile.getInputStream(writeEntry);
+                    int bytes = IOUtils.copy(tmpIS, zipOutputStream);
+                    log.debug(bytes + " bytes written to " + targetFile);
+                }finally{
+                    if(tmpIS != null) tmpIS.close();
+                }
+
+            }
+        }catch(Exception e){
+            tmpZipFile.delete();
+            throw new RuntimeException(e.getMessage(), e);
+        }finally{
+            if(propertyInputStream != null) propertyInputStream.close();
+            if(zipOutputStream != null){
+                zipOutputStream.flush();
+                zipOutputStream.finish();
+                zipOutputStream.close();
+            }
+            success = targetFile.delete();
+        }
+
+        //This is a hack. I don't know why it's necessary,
+        //but for some reason the output zip file seems to be corrupt
+        //at least when called from GenomeManager.refreshArchive
+        try{
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            //
+        }
+
+        //Rename tmp file
+        if(success){
+            FileUtils.copyFile(tmpZipFile, targetFile);
+            success = targetFile.exists();
+            tmpZipFile.delete();
+        }
+        return success;
     }
 
     public String getGenomeId() {
@@ -1205,19 +1428,19 @@ public class GenomeManager {
         return currentGenome;
     }
 
-    public void addGenomeItems(Collection<GenomeListItem> genomeListItems) {
+    public void addGenomeItems(Collection<GenomeListItem> genomeListItems, boolean userDefined) {
         for (GenomeListItem genomeListItem : genomeListItems) {
             genomeItemMap.put(genomeListItem.getId(), genomeListItem);
-            userDefinedGenomeArchiveList.add(genomeListItem);
+            if(userDefined) userDefinedGenomeArchiveList.add(genomeListItem);
         }
         PreferenceManager.getInstance().saveGenomeIdDisplayList(genomeItemMap.values());
         updateImportedGenomePropertyFile();
     }
 
-    public void addGenomeItem(GenomeListItem genomeListItem) {
+    public void addGenomeItem(GenomeListItem genomeListItem, boolean userDefined) {
         genomeItemMap.put(genomeListItem.getId(), genomeListItem);
         PreferenceManager.getInstance().saveGenomeIdDisplayList(genomeItemMap.values());
-        userDefinedGenomeArchiveList.add(genomeListItem);
+        if(userDefined) userDefinedGenomeArchiveList.add(genomeListItem);
         updateImportedGenomePropertyFile();
     }
 
@@ -1341,4 +1564,30 @@ public class GenomeManager {
     }
 
 
+    /**
+     * Delete the specified .genome files and their sequences, only if they were downloaded from the
+     * server. Doesn't touch user defined genomes
+     * @param removedValuesList
+     */
+    public void deleteDownloadedGenomes(List<GenomeListItem> removedValuesList) throws IOException{
+        Collection<GenomeListItem> userDefinedGenomes = getUserDefinedGenomeArchiveList();
+        for(GenomeListItem item: removedValuesList){
+            if(userDefinedGenomes.contains(item)){
+                continue;
+            }
+
+            String loc = item.getLocation();
+            if(!HttpUtils.isRemoteURL(loc)){
+                File genFile = new File(loc);
+                GenomeDescriptor descriptor = parseGenomeArchiveFile(genFile);
+                if(!HttpUtils.isRemoteURL(descriptor.getSequenceLocation())){
+                    File seqFile = new File(descriptor.getSequenceLocation());
+                    seqFile.delete();
+                    File indexFile = new File(seqFile.getAbsolutePath() + ".fai");
+                    indexFile.delete();
+                }
+                genFile.delete();
+            }
+        }
+    }
 }

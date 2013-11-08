@@ -13,7 +13,6 @@ package org.broad.igv.util;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.ui.util.MessageUtils;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -325,7 +324,7 @@ public class FileUtils {
 
 
     /**
-     * Create a file from an input stream.
+     * Copy a file from one location to another, using buffered writing
      *
      * @param inputFile
      * @param outputFile
@@ -333,8 +332,6 @@ public class FileUtils {
      */
 
     public static void copyFile(File inputFile, File outputFile) throws IOException {
-
-        int totalSize = 0;
 
         OutputStream out = null;
         InputStream in = null;
@@ -345,12 +342,11 @@ public class FileUtils {
             int bytes_read;
             while ((bytes_read = in.read(buffer)) != -1) {
                 out.write(buffer, 0, bytes_read);
-                totalSize += bytes_read;
             }
 
         } catch (Exception e) {
             outputFile.delete();
-            MessageUtils.showMessage("<html>Error copying file: " + outputFile.getAbsoluteFile() +
+            throw new RuntimeException("<html>Error copying file: " + outputFile.getAbsoluteFile() +
                     "<br/>" + e.toString());
 
         } finally {

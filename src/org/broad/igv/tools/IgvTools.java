@@ -1069,7 +1069,7 @@ public class IgvTools {
         //TODO Prevents loading genome again if loading from path.
         //May or may not want this, for now we just use it for testing
         if (Globals.isTesting() && genomeFile.getAbsolutePath().endsWith(".genome")) {
-            GenomeDescriptor genomeDescriptor = genomeManager.parseGenomeArchiveFile(genomeFile);
+            GenomeDescriptor genomeDescriptor = GenomeManager.parseGenomeArchiveFile(genomeFile);
             if (genome != null && genomeDescriptor.getId().equals(genome.getId())) {
                 return genome;
             }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_31" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_51" class="java.beans.XMLDecoder"> 
  <object class="com.jformdesigner.model.FormModel"> 
   <void property="contentType"> 
    <string>form/swing</string> 
@@ -511,7 +511,7 @@
              <string>Gene file</string> 
             </void> 
             <void property="name"> 
-             <string>refFlatFileLabel</string> 
+             <string>geneAnnotFileLabel</string> 
             </void> 
            </object> 
            <object class="com.jformdesigner.model.FormLayoutConstraints"> 
@@ -556,7 +556,7 @@
              </object> 
             </void> 
             <void property="name"> 
-             <string>refFlatFileTextField</string> 
+             <string>geneAnnotFileTextField</string> 
             </void> 
            </object> 
            <object class="com.jformdesigner.model.FormLayoutConstraints"> 
@@ -587,7 +587,7 @@
              <string>Browse</string> 
             </void> 
             <void property="name"> 
-             <string>refFlatFileButton</string> 
+             <string>geneAnnotFileButton</string> 
             </void> 
             <void method="addEvent"> 
              <object class="com.jformdesigner.model.FormEvent"> 
@@ -622,7 +622,7 @@
              <string>Alias file</string> 
             </void> 
             <void property="name"> 
-             <string>refFlatFileLabel2</string> 
+             <string>aliasFileLabel</string> 
             </void> 
            </object> 
            <object class="com.jformdesigner.model.FormLayoutConstraints"> 

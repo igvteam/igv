@@ -1,21 +1,31 @@
 /*
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
+/*
  * Created by JFormDesigner on Wed Apr 11 16:44:25 EDT 2012
  */
 
 package org.broad.igv.feature.genome;
 
-import java.awt.event.*;
-
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.FileUtils;
 
-import java.awt.*;
-import java.io.File;
 import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
 
 /**
  * @author Stan Diamond
@@ -165,8 +175,8 @@ public class GenomeBuilderDialog extends JDialog {
         return panel1.getCytobandFileName();
     }
 
-    public String getRefFlatFileName() {
-        return panel1.getRefFlatFileName();
+    public String getGeneAnnotFileName() {
+        return panel1.getGeneAnnotFileName();
     }
 
     public String getFastaFileName() {

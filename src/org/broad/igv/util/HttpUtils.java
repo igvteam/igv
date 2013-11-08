@@ -23,6 +23,8 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.CancellableProgressDialog;
+import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.stream.IGVSeekableHTTPStream;
 import org.broad.igv.util.stream.IGVUrlHelper;
 
@@ -31,6 +33,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.*;
 import java.security.KeyManagementException;
@@ -250,15 +254,17 @@ public class HttpUtils {
     }
 
     /**
-     * Compare a local and remote resource.
+     * Compare a local and remote resource, returning true if it is believed that the
+     * remote file is newer than the local file
      *
      * @param file
      * @param url
-     * @return true if the files are "the same", false if the remote file has been modified wrt the local one.
+     * @param compareContentLength Whether to use the content length to compare files. If false, only
+     *                             the modified date is used
+     * @return true if the files are the same or the local file is newer, false if the remote file has been modified wrt the local one.
      * @throws IOException
      */
-    public boolean compareResources(File file, URL url) throws IOException {
-
+    public boolean remoteIsNewer(File file, URL url, boolean compareContentLength) throws IOException {
 
         if (!file.exists()) {
             return false;
@@ -279,7 +285,7 @@ public class HttpUtils {
             }
         }
         if (contentLength != file.length()) {
-            return false;
+            return true;
         }
 
         // Compare last-modified dates
@@ -291,7 +297,7 @@ public class HttpUtils {
             date.parse(lastModifiedString);
             long remoteModifiedTime = date.getTime();
             long localModifiedTime = file.lastModified();
-            return remoteModifiedTime <= localModifiedTime;
+            return remoteModifiedTime > localModifiedTime;
         }
 
 
@@ -349,46 +355,47 @@ public class HttpUtils {
 
     }
 
-    public boolean downloadFile(String url, File outputFile) throws IOException {
 
-        log.info("Downloading " + url + " to " + outputFile.getAbsolutePath());
+    /**
+     * Calls {@link #downloadFile(String, java.io.File, Frame)}
+     * with {@code showProgressDialog = false}
+     * @param url
+     * @param outputFile
+     * @return RunnableResult
+     * @throws IOException
+     */
+    public RunnableResult downloadFile(String url, File outputFile) throws IOException {
+        URLDownloader downloader = downloadFile(url, outputFile, null);
+        return downloader.getResult();
+    }
 
-        HttpURLConnection conn = openConnection(new URL(url), null);
-
-        long contentLength = -1;
-        String contentLengthString = conn.getHeaderField("Content-Length");
-        if (contentLengthString != null) {
-            contentLength = Long.parseLong(contentLengthString);
+    /**
+     *
+     * @param url
+     * @param outputFile
+     * @param dialogsParent Parent of dialog to show progress. If null, none shown
+     * @return URLDownloader used to perform download
+     * @throws IOException
+     */
+    public URLDownloader downloadFile(String url, File outputFile, Frame dialogsParent) throws IOException {
+        final URLDownloader urlDownloader = new URLDownloader(url, outputFile);
+        boolean showProgressDialog = dialogsParent != null;
+        if(!showProgressDialog){
+            urlDownloader.run();
+            return urlDownloader;
+        }else{
+            ProgressMonitor monitor = new ProgressMonitor();
+            urlDownloader.setMonitor(monitor);
+            ActionListener buttonListener = new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    urlDownloader.cancel(true);
+                }
+            };
+            CancellableProgressDialog dialog = CancellableProgressDialog.showCancellableProgressDialog(dialogsParent, "Downloading " + url, buttonListener, false, monitor);
+            LongRunningTask.submit(urlDownloader);
+            return urlDownloader;
         }
-
-
-        log.info("Content length = " + contentLength);
-
-        InputStream is = null;
-        OutputStream out = null;
-
-        try {
-            is = conn.getInputStream();
-            out = new FileOutputStream(outputFile);
-
-            byte[] buf = new byte[64 * 1024];
-            int downloaded = 0;
-            int bytesRead = 0;
-            while ((bytesRead = is.read(buf)) != -1) {
-                out.write(buf, 0, bytesRead);
-                downloaded += bytesRead;
-            }
-            log.info("Download complete.  Total bytes downloaded = " + downloaded);
-        } finally {
-            if (is != null) is.close();
-            if (out != null) {
-                out.flush();
-                out.close();
-            }
-        }
-        long fileLength = outputFile.length();
-
-        return contentLength <= 0 || contentLength == fileLength;
     }
 
 
@@ -925,6 +932,149 @@ public class HttpUtils {
                 pwCache.put(pKey, pw);
                 return pw;
             }
+        }
+    }
+
+    /**
+     * Runnable for downloading a file from a URL.
+     * Downloading is buffered, and can be cancelled (between buffers)
+     * via {@link #cancel(boolean)}
+     */
+    public class URLDownloader implements Runnable {
+
+        private ProgressMonitor monitor = null;
+
+        private final URL srcUrl;
+        private final File outputFile;
+
+        private volatile boolean started = false;
+        private volatile boolean done = false;
+        private volatile boolean cancelled = false;
+        private volatile RunnableResult result;
+
+        public URLDownloader(String url, File outputFile) throws MalformedURLException{
+            this.srcUrl = new URL(url);
+            this.outputFile = outputFile;
+        }
+
+        @Override
+        public void run() {
+            if(this.cancelled){
+                return;
+            }
+            started = true;
+
+            try {
+                this.result = doDownload();
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+            } finally {
+                this.done();
+            }
+
+        }
+
+        /**
+         * Return the result. Must be called after run is complete
+         * @return
+         */
+        public RunnableResult getResult(){
+            if(!this.done) throw new IllegalStateException("Must wait for run to finish before getting result");
+            return this.result;
+        }
+
+        private RunnableResult doDownload() throws IOException{
+
+            log.info("Downloading " + srcUrl + " to " + outputFile.getAbsolutePath());
+
+            HttpURLConnection conn = openConnection(this.srcUrl, null);
+
+            long contentLength = -1;
+            String contentLengthString = conn.getHeaderField("Content-Length");
+            if (contentLengthString != null) {
+                contentLength = Long.parseLong(contentLengthString);
+            }
+
+            InputStream is = null;
+            OutputStream out = null;
+
+            long downloaded = 0;
+            long downSinceLast = 0;
+            String curStatus;
+            String msg1 = String.format("bytes downloaded of %s total", contentLength >= 0 ? contentLength : "unknown");
+            int perc = 0;
+            try {
+                is = conn.getInputStream();
+                out = new FileOutputStream(outputFile);
+
+                byte[] buf = new byte[64 * 1024];
+                int counter = 0;
+                int interval = 100;
+                int bytesRead = 0;
+                while (!this.cancelled && (bytesRead = is.read(buf)) != -1) {
+                    out.write(buf, 0, bytesRead);
+                    downloaded += bytesRead;
+                    downSinceLast += bytesRead;
+                    counter = (counter + 1) % interval;
+                    if(counter == 0 && this.monitor != null){
+                        curStatus = String.format("%s %s", downloaded, msg1);
+                        this.monitor.updateStatus(curStatus);
+                        if(contentLength >= 0){
+                            perc = (int) ( (downSinceLast * 100) / contentLength);
+                            this.monitor.fireProgressChange(perc);
+                            if(perc >= 1) downSinceLast = 0;
+                        }
+                    }
+                }
+                log.info("Download complete.  Total bytes downloaded = " + downloaded);
+            } finally {
+                if (is != null) is.close();
+                if (out != null) {
+                    out.flush();
+                    out.close();
+                }
+            }
+            long fileLength = outputFile.length();
+
+            if(this.cancelled) return RunnableResult.CANCELLED;
+
+            boolean knownComplete = contentLength == fileLength;
+            //Assume success if file length not known
+            if(knownComplete || contentLength < 0){
+                if(this.monitor != null){
+                    this.monitor.fireProgressChange(100);
+                    this.monitor.updateStatus("Done");
+                }
+                return RunnableResult.SUCCESS;
+            }else{
+                return RunnableResult.FAILURE;
+            }
+
+        }
+
+        protected void done(){
+           this.done = true;
+        }
+
+        public boolean isDone(){
+            return this.done;
+        }
+
+        /**
+         * See {@link java.util.concurrent.FutureTask#cancel(boolean)}
+         * @param mayInterruptIfRunning
+         * @return
+         */
+        public boolean cancel(boolean mayInterruptIfRunning){
+            if(this.started && !mayInterruptIfRunning){
+                return false;
+            }
+            this.cancelled = true;
+            return true;
+        }
+
+        public void setMonitor(ProgressMonitor monitor) {
+            this.monitor = monitor;
         }
     }
 
