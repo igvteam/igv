@@ -822,7 +822,9 @@ public class HttpUtils {
         Map<String, String> map = new HashMap<String, String>();
         for (String param : params) {
             String[] name_val = param.split("=", 2);
-            map.put(name_val[0], name_val[1]);
+            if(name_val.length == 2){
+                map.put(name_val[0], name_val[1]);
+            }
         }
         return map;
     }
