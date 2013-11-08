@@ -392,22 +392,23 @@ public class ManageGenomesDialog extends JDialog {
         }
     }
 
-    private class GenomeCellRenderer implements ListCellRenderer<GenomeListItem>{
+    private class GenomeCellRenderer implements ListCellRenderer{
         @Override
-        public Component getListCellRendererComponent(JList<? extends GenomeListItem> list, GenomeListItem value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 
             JLabel comp = new JLabel(value.toString());
 
-            String displayableName = value.getDisplayableName();
+            GenomeListItem item = (GenomeListItem) value;
+            String displayableName = item.getDisplayableName();
 
-            comp.setToolTipText(value.getLocation());
+            comp.setToolTipText(item.getLocation());
             if (isSelected) {
                 comp.setBackground(genomeList.getSelectionBackground());
                 comp.setForeground(genomeList.getSelectionForeground());
                 comp.setOpaque(isSelected);
             }
 
-            if(value.hasLocalSequence()){
+            if(item.hasLocalSequence()){
                 displayableName += LOCAL_SEQUENCE_CHAR;
             }
 
