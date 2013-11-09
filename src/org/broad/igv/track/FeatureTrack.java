@@ -306,10 +306,10 @@ public class FeatureTrack extends AbstractTrack {
     public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType scoreType, String frameName) {
 
         try {
-            if (scoreType == RegionScoreType.MUTATION_COUNT && this.getTrackType() == TrackType.MUTATION) {
-                Iterator<Feature> features = source.getFeatures(chr, start, end);
-                int count = 0;
-                if (features != null) {
+            Iterator<Feature> features = source.getFeatures(chr, start, end);
+            if (features != null) {
+                if (scoreType == RegionScoreType.MUTATION_COUNT && this.getTrackType() == TrackType.MUTATION) {
+                    int count = 0;
                     while (features.hasNext()) {
                         Feature f = features.next();
                         if (f.getStart() > end) {
@@ -319,8 +319,29 @@ public class FeatureTrack extends AbstractTrack {
                             count++;
                         }
                     }
+
+                    return count;
+                } else if (scoreType == RegionScoreType.SCORE) {
+                    // Average score of features in region.  Note: Should the score be weighted by genomic size?
+                    float regionScore = 0;
+                    int nValues = 0;
+                    while (features.hasNext()) {
+                        Feature f = features.next();
+                        if (f instanceof IGVFeature) {
+                            if ((f.getEnd() >= start) && (f.getStart() <= end)) {
+                                float value = ((IGVFeature) f).getScore();
+                                regionScore += value;
+                                nValues ++;
+                            }
+                        }
+                    }
+                    if (nValues == 0) {
+                        // No scores in interval
+                        return -Float.MAX_VALUE;
+                    } else {
+                        return regionScore / nValues;
+                    }
                 }
-                return count;
             }
         } catch (IOException e) {
             log.error("Error counting features.", e);
@@ -492,7 +513,7 @@ public class FeatureTrack extends AbstractTrack {
 
         //If features are stacked we look at only the row.
         //If they are collapsed on top of each other, we get all features in all rows
-        int nLevels =  areFeaturesStacked() ? packedFeatures.getRowCount() : 1;
+        int nLevels = areFeaturesStacked() ? packedFeatures.getRowCount() : 1;
         List<IGVFeature> possFeatures = null;
         if ((nLevels > 1) && (featureRow < nLevels)) {
             possFeatures = packedFeatures.getRows().get(featureRow).getFeatures();
@@ -1050,9 +1071,10 @@ public class FeatureTrack extends AbstractTrack {
     /**
      * Features are packed upon loading, effectively a cache.
      * This clears that cache. Used to force a refresh
+     *
      * @api
      */
-    public void clearPackedFeatures(){
+    public void clearPackedFeatures() {
         this.packedFeaturesMap.clear();
     }
 }

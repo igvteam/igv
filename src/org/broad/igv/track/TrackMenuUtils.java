@@ -418,6 +418,11 @@ public class TrackMenuUtils {
                 featurePopupMenu.addSeparator();
                 featurePopupMenu.add(getFeatureToGeneListItem(t));
             }
+            if (Globals.isDevelopment() && FrameManager.isGeneListMode() && tracks.size() == 1) {
+                featurePopupMenu.addSeparator();
+                featurePopupMenu.add(getShowSortFramesItem(tracks.iterator().next()));
+            }
+
         }
 
         featurePopupMenu.addSeparator();
@@ -1218,21 +1223,15 @@ public class TrackMenuUtils {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-
-                if (!(track instanceof DataTrack)) {
-                    item.setEnabled(false);
-
-                } else {
-                    Runnable runnable = new Runnable() {
-                        public void run() {
-                            DataTrack dt = (DataTrack) track;
-                            FrameManager.sortFrames(dt);
-                            IGV.getInstance().resetFrames();
-                        }
-                    };
-                    LongRunningTask.submit(runnable);
-                }
+                Runnable runnable = new Runnable() {
+                    public void run() {
+                        FrameManager.sortFrames(track);
+                        IGV.getInstance().resetFrames();
+                    }
+                };
+                LongRunningTask.submit(runnable);
             }
+
         });
         return item;
     }
