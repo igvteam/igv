@@ -613,6 +613,9 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
             for (Argument argument : v.arg) {
                 Object oVal = null;
                 switch (argument.getType()) {
+                    case BOOL:
+                        oVal = Boolean.parseBoolean(argument.value.get(0));
+                        break;
                     case LONGTEXT:
                     case TEXT:
                         oVal = argument.value.get(0);
@@ -673,6 +676,10 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
                         for (FeatureTrack fTrack : lVal) {
                             values.add(fTrack.getId());
                         }
+                        break;
+                    case BOOL:
+                        sval = Boolean.toString((Boolean) loopEntry.getValue());
+                        values = Arrays.asList(sval);
                         break;
                     case LONGTEXT:
                     case TEXT:
