@@ -58,6 +58,7 @@ public class RunPlugin extends JDialog {
     private String pluginId;
     private String toolName;
     private String commandName;
+    private boolean forbidEmptyOutput;
 
 
     public RunPlugin(Frame owner, PluginSpecReader pluginSpecReader, final PluginSpecReader.Tool tool, PluginSpecReader.Command command) {
@@ -98,6 +99,7 @@ public class RunPlugin extends JDialog {
 
         this.pluginId = pluginSpecReader.getId();
         this.toolName = tool.name;
+        this.forbidEmptyOutput = tool.forbidEmptyOutput;
         this.commandName = command.name;
 
         String[] cmdEls = new String[]{toolPath, command.cmd};
@@ -201,7 +203,7 @@ public class RunPlugin extends JDialog {
             Track newTrack = null;
             switch (outputAttr.type) {
                 case FEATURE_TRACK:
-                    PluginFeatureSource featSource1 = new PluginFeatureSource(cmdList, argumentValues, outputAttr, specPath);
+                    PluginFeatureSource featSource1 = new PluginFeatureSource(cmdList, argumentValues, outputAttr, specPath, this.forbidEmptyOutput);
                     //featSource1.setQueryTracker(queryTracker);
                     FeatureSource featSource = new CachingFeatureSource(featSource1);
                     newTrack = new FeatureTrack(UUID.randomUUID().toString(), name, featSource);
@@ -212,7 +214,7 @@ public class RunPlugin extends JDialog {
                     newTrack = new DataSourceTrack(null, UUID.randomUUID().toString(), name, dataSource);
                     break;
                 case VARIANT_TRACK:
-                    PluginFeatureSource VfeatSource1 = new PluginFeatureSource(cmdList, argumentValues, outputAttr, specPath);
+                    PluginFeatureSource VfeatSource1 = new PluginFeatureSource(cmdList, argumentValues, outputAttr, specPath, this.forbidEmptyOutput);
                     FeatureSource VfeatSource = new CachingFeatureSource(VfeatSource1);
                     newTrack = new VariantTrack(name, VfeatSource);
                     break;
