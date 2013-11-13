@@ -77,6 +77,7 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
         totalQ = new int[nPts];
 
         maxCounts = new int[(nPts / MAX_COUNT_INTERVAL) + 1];
+        log.debug("nPts: " + nPts + " maxCounts.length: " + maxCounts.length);
     }
 
     public int getNumberOfPoints() {
@@ -85,11 +86,14 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
 
     @Override
     public int getMaxCount(int strt, int end) {
+        log.debug(String.format("strt: %d end: %d", strt, end));
         strt = Math.max(0, strt);
         end = Math.min(getEnd(), end);
         int startMCI = Math.max(0, (strt-this.start) / MAX_COUNT_INTERVAL);
         int endMCI = Math.max(0, (end-this.start) / MAX_COUNT_INTERVAL);
+        endMCI = Math.min(endMCI, maxCounts.length - 1);
         int max = maxCounts[startMCI];
+        log.debug(String.format("startMCI: %d endMCI: %d", startMCI, endMCI));
         for(int mci= startMCI+1; mci <= endMCI; mci++){
             max = Math.max(max, maxCounts[mci]);
         }
