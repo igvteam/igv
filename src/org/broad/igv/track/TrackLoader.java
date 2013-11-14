@@ -433,7 +433,7 @@ public class TrackLoader {
             }
         }
 
-        FeatureCodec codec = CodecFactory.getCodec(locator.getPath(), genome);
+        FeatureCodec codec = CodecFactory.getCodec(locator, genome);
         if (codec != null) {
             AbstractFeatureReader<Feature, ?> bfs = AbstractFeatureReader.getFeatureReader(locator.getPath(), codec, false);
             Iterable<Feature> iter = bfs.iterator();
@@ -1265,7 +1265,7 @@ public class TrackLoader {
         String fn = stripGZ(locator.getTypeString());
         // The vcf extension is for performance, it doesn't matter which codec is returned all vcf files
         // are indexable.
-        return fn.endsWith(".vcf") || fn.endsWith(".bcf") || CodecFactory.getCodec(locator.getPath(), genome) != null;
+        return fn.endsWith(".vcf") || fn.endsWith(".bcf") || CodecFactory.getCodec(locator, genome) != null;
     }
 
     /**

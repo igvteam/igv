@@ -78,7 +78,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
      */
     public List<FeatureTrack> loadTracks(ResourceLocator locator, Genome genome) throws IOException {
 
-        FeatureCodec codec = CodecFactory.getCodec(locator.getPath(), genome);
+        FeatureCodec codec = CodecFactory.getCodec(locator, genome);
         if (codec != null) {
             AbstractFeatureReader<Feature, ?> bfs = AbstractFeatureReader.getFeatureReader(locator.getPath(), codec, false);
             Iterable<Feature> iter = bfs.iterator();
