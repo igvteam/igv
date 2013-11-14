@@ -71,15 +71,7 @@ public class BEDToolsPluginSourceTest extends AbstractPluginTest {
     private List<Feature> tstOperationBED(String[] paths,
                                           String cmd, int expectedNumFeatures) throws Exception {
 
-        //Find the command element
-        PluginSpecReader.Command command = null;
-        for (PluginSpecReader.Command curCmd : tool.commandList) {
-            if (curCmd.cmd.equals(cmd)) {
-                command = curCmd;
-                break;
-            }
-        }
-
+        PluginSpecReader.Command command = findCommandElementByName(tool, cmd);
         List<Argument> argumentList = command.argumentList;
         LinkedHashMap<Argument, Object> arguments = new LinkedHashMap<Argument, Object>(argumentList.size());
         int argnum = 0;

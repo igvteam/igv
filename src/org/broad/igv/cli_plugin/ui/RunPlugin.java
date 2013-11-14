@@ -179,8 +179,12 @@ public class RunPlugin extends JDialog {
         this.validate();
     }
 
-    private List<Track> genNewTracks() {
-        //Retrieve the actual argument values
+    /**
+     * Retrieve the argument values from the UI components, and save whichever
+     * are appropriate to preferences (for remembering)
+     * @return
+     */
+    LinkedHashMap<Argument, Object> getArgumentValues(){
         LinkedHashMap<Argument, Object> argumentValues = new LinkedHashMap<Argument, Object>(argumentComponents.size());
         for (Map.Entry<Argument, ArgumentPanel> argComp : argumentComponents.entrySet()) {
             Object value = argComp.getValue().getValue();
@@ -191,10 +195,14 @@ public class RunPlugin extends JDialog {
                 PreferenceManager.getInstance().putArgumentValue(pluginId, toolName, commandName, argComp.getKey().getId(), (String) value);
             }
         }
+        return argumentValues;
+    }
+
+    private List<Track> genNewTracks() {
+        //Retrieve the actual argument values
+        LinkedHashMap<Argument, Object> argumentValues = getArgumentValues();
 
         List<Track> newTracks = new ArrayList<Track>(outputAttrs.size());
-
-        //QueryTracker queryTracker = QueryTracker.get();
 
         for (PluginSpecReader.Output outputAttr : outputAttrs) {
             //TODO Hacky, only works for output components being TextArgument, which they are as of this comment writing

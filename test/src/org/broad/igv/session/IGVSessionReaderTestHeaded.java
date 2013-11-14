@@ -13,6 +13,7 @@ package org.broad.igv.session;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import org.broad.igv.cli_plugin.AbstractPluginTest;
 import org.broad.igv.cli_plugin.PluginSpecReader;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -29,6 +30,7 @@ import org.broad.igv.util.TestUtils;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.tribble.Feature;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -203,16 +205,52 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
 
 
     /**
-     * Test loading a session with an analysis track
+     * Test creating an analysis track, saving the session, and loading it
+     */
+    @Ignore("Not ready yet")
+    @Test
+    public void testSaveLoadPluginSession() throws Exception{
+        String toolPath = "/usr/local/bin/bedtools";
+        boolean haveTool = PluginSpecReader.isToolPathValid(toolPath);
+        Assume.assumeTrue(haveTool);
+
+        String sessionPath = TestUtils.DATA_DIR + "sessions/GSM_beds.xml";
+        rewriteRestoreSession(sessionPath);
+
+        String trackAname = "GSM1004654_100k.bed";
+        String trackBname = "GSM1004654_10k.bed";
+
+        //Generate bedtools subtraction track
+        PluginSpecReader reader = PluginSpecReader.create(toolPath);
+        PluginSpecReader.Tool tool = reader.getTools().get(0);
+        PluginSpecReader.Command command = AbstractPluginTest.findCommandElementByName(tool, "Subtract");
+    }
+
+    /**
+     * Very basic test, just makes sure it loads without throwing an exception
      * @throws Exception
      */
     @Test
-    public void testLoadPluginSession() throws Exception{
+    public void testLoadBedtools_Intersect() throws Exception{
+        String sessionPath = TestUtils.DATA_DIR + "sessions/GSM_bedtools_intersect.xml";
+        String toolPath = "/usr/local/bin/bedtools";
+        boolean haveTool = PluginSpecReader.isToolPathValid(toolPath);
+        Assume.assumeTrue(haveTool);
+
+        rewriteRestoreSession(sessionPath);
+    }
+    /**
+     * Test loading a session with a bedtools analysis track
+     * @throws Exception
+     */
+    @Test
+    public void testLoadBedtools_Subtract() throws Exception{
         String toolPath = "/usr/local/bin/bedtools";
         boolean haveTool = PluginSpecReader.isToolPathValid(toolPath);
         Assume.assumeTrue(haveTool);
 
         String sessionPath = TestUtils.DATA_DIR + "sessions/GSM_bedtools_subtract.xml";
+
         rewriteRestoreSession(sessionPath);
 
         String trackAname = "GSM1004654_100k.bed";

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright (c) 2007-2013 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  ~
+  ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+  ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+  -->
+
+<Session genome="hg18" hasGeneTrack="true" hasSequenceTrack="true" locus="chr2:177932001-180561093" version="7">
+    <Resources>
+        <Resource path="${DATA_DIR}bed/GSM1004654_10k.bed"/>
+        <Resource path="${DATA_DIR}bed/GSM1004654_100k.bed"/>
+    </Resources>
+    <Panel height="566" name="FeaturePanel" width="1156">
+        <Track altColor="0,0,178" autoScale="false" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="Reference sequence" name="Reference sequence" sortable="false" visible="true"/>
+        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;226.0;255,255,255;0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="35" id="hg18_genes" name="RefSeq genes" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="226.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;818.0;255,255,255;0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="45" id="${DATA_DIR}bed/GSM1004654_100k.bed" name="GSM1004654_100k.bed" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="818.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;74.0;255,255,255;0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="45" id="${DATA_DIR}bed/GSM1004654_10k.bed" name="GSM1004654_10k.bed" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="74.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="dbcabacc-8281-4d66-ba68-1820f8c34f3d" name="BEDTools Intersect" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
+            <PluginSource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" commands="/Users/jacob/bin/bedtools_dir/bedtools intersect" specPath="resources/bedtools_plugin.xml" xsi:type="pluginFeatureSource">
+                <arguments>
+                    <arg cmd_arg="-split" defaultValue="true" name="Split by Exons" output="true" remembered="false" type="BOOL" visible="true">
+                        <value>true</value>
+                    </arg>
+                    <arg cmd_arg="-bed" defaultValue="true" name="Output bed" output="true" remembered="false" type="BOOL" visible="false">
+                        <value>true</value>
+                    </arg>
+                    <arg cmd_arg="-a" name="Track A" output="true" remembered="false" type="FEATURE_TRACK" visible="true">
+                        <value>hg18_genes</value>
+                    </arg>
+                    <arg cmd_arg="-b" name="Track B" output="true" remembered="false" type="FEATURE_TRACK" visible="true">
+                        <value>${DATA_DIR}bed/GSM1004654_10k.bed</value>
+                    </arg>
+                    <arg cmd_arg="" name="Optional Arguments" output="true" remembered="false" type="TEXT" visible="true">
+                        <value/>
+                    </arg>
+                </arguments>
+                <parser decodingCodec="org.broad.igv.cli_plugin.BEDToolsDecoder" format="bed" source="stdout" strict="true">
+                    <libs>BEDToolsPluginCodec.jar</libs>
+                </parser>
+            </PluginSource>
+        </Track>
+    </Panel>
+    <PanelLayout dividerFractions="0.013816925734024179"/>
+    <HiddenAttributes>
+        <Attribute name="NAME"/>
+        <Attribute name="DATA FILE"/>
+        <Attribute name="DATA TYPE"/>
+    </HiddenAttributes>
+</Session>

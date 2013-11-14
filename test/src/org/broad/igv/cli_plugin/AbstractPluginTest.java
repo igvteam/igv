@@ -56,4 +56,17 @@ public class AbstractPluginTest extends AbstractHeadlessTest {
         PluginSpecReader reader = PluginSpecReader.create(path);
         return reader;
     }
+
+    public static PluginSpecReader.Command findCommandElementByName(PluginSpecReader.Tool tool, String cmd){
+
+        //Find the command element
+        PluginSpecReader.Command command = null;
+        for (PluginSpecReader.Command curCmd : tool.commandList) {
+            if (curCmd.cmd.equalsIgnoreCase(cmd)) {
+                return curCmd;
+            }
+        }
+        return null;
+
+    }
 }
