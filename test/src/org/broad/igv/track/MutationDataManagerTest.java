@@ -36,7 +36,7 @@ public class MutationDataManagerTest extends AbstractHeadlessTest {
         int start = 97575730;
         int end = 123482409;
 
-        MutationDataManager mgr = new MutationDataManager(path, genome);
+        MutationFeatureSource.MutationDataManager mgr = new MutationFeatureSource.MutationDataManager(path, genome);
         Iterator<Mutation> mutations =  mgr.getFeatures(sample, chr, start, end);
 
         int mutationCount = 0;

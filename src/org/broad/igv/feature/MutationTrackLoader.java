@@ -53,7 +53,7 @@ public class MutationTrackLoader {
 
         if (indexed) {
             String[] samples = getCodec().getSamples();
-            MutationDataManager dataManager = new MutationDataManager(locator.getPath(), genome);
+            MutationFeatureSource.MutationDataManager dataManager = new MutationFeatureSource.MutationDataManager(locator.getPath(), genome);
             for (String sampleId : samples) {
                 String id = locator.getPath() + "_" + sampleId;
                 FeatureSource<Mutation> featureSource = new MutationFeatureSource(sampleId, dataManager);
