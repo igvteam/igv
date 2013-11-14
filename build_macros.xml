@@ -49,4 +49,14 @@
 
         </sequential>
     </macrodef>
+
+    <macrodef name="set_log_level">
+        <attribute name="targetFile"/>
+        <attribute name="logLevel"/>
+        <sequential>
+            <echo message="Target File: @{targetFile}"/>
+            <echo message="Log Level: @{logLevel}"/>
+            <replace file="@{targetFile}" token="log4j.rootLogger=INFO" value="log4j.rootLogger=@{logLevel}"/>
+        </sequential>
+    </macrodef>
 </project>
