@@ -283,19 +283,6 @@ public abstract class DataTrack extends AbstractTrack {
 
     abstract public List<LocusScore> getSummaryScores(String chr, int startLocation, int endLocation, int zoom);
 
-
-    @Override
-    public void setColor(Color color) {
-        super.setColor(color);
-    }
-
-
-    @Override
-    public void setAltColor(Color color) {
-        super.setAltColor(color);
-
-    }
-
     private InViewInterval computeScale(double origin, double end, List<LocusScore> scores) {
 
         InViewInterval interval = new InViewInterval();

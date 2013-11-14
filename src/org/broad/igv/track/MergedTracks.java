@@ -15,8 +15,11 @@ package org.broad.igv.track;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.DataRange;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.panel.TrackPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -40,7 +43,16 @@ public class MergedTracks extends DataTrack{
         super(null, id, name);
         this.trackList = trackList;
         this.autoScale = this.getAutoScale();
+        setTrackAlphas(150);
     }
+
+    private void setTrackAlphas(int alpha) {
+        for(Track track: trackList){
+            track.setColor(ColorUtilities.modifyAlpha(track.getColor(), alpha));
+            track.setAltColor(ColorUtilities.modifyAlpha(track.getAltColor(), alpha));
+        }
+    }
+
 
     @Override
     public void render(RenderContext context, Rectangle rect) {
@@ -203,6 +215,19 @@ public class MergedTracks extends DataTrack{
         }
 
         menu.addSeparator();
+
+        JMenuItem unmergeItem = new JMenuItem("Separate Tracks");
+        unmergeItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TrackPanel panel = TrackPanel.getParentPanel(MergedTracks.this);
+                setTrackAlphas(255);
+                panel.addTracks(trackList);
+                IGV.getInstance().removeTracks(Arrays.<Track>asList(MergedTracks.this));
+            }
+        });
+        menu.add(unmergeItem);
+
         menu.add(TrackMenuUtils.getRemoveMenuItem(selfAsList));
 
 

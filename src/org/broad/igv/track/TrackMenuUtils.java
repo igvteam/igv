@@ -27,6 +27,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.renderer.*;
 import org.broad.igv.ui.*;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -327,6 +328,7 @@ public class TrackMenuUtils {
 
                     TrackPanel panel = TrackPanel.getParentPanel(tracks.iterator().next());
                     panel.addTrack(mergedTracks);
+                    panel.removeTracks(tracks);
                 }
             });
 
@@ -1032,12 +1034,15 @@ public class TrackMenuUtils {
                 "Select Track Color (Positive Values)",
                 currentSelection);
 
-        if (color != null) {
-            for (Track track : selectedTracks) {
-                track.setColor(color);
-            }
-            refresh();
+        if (color == null) {
+            return;
         }
+
+        for (Track track : selectedTracks) {
+            //We preserve the alpha value. This is motivated by MergedTracks
+            track.setColor(ColorUtilities.modifyAlpha(color, currentSelection.getAlpha()));
+        }
+        refresh();
 
     }
 
@@ -1058,8 +1063,7 @@ public class TrackMenuUtils {
         }
 
         for (Track track : selectedTracks) {
-
-            track.setAltColor(color);
+            track.setAltColor(ColorUtilities.modifyAlpha(color, currentSelection.getAlpha()));
         }
         refresh();
 

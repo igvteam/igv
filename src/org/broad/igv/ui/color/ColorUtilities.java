@@ -374,4 +374,14 @@ public class ColorUtilities {
         }
         return c;
     }
+
+    /**
+     * Return a new Color, same as the old, but with a new alpha value
+     * @param oldColor
+     * @param newAlpha
+     * @return
+     */
+    public static Color modifyAlpha(Color oldColor, int newAlpha){
+        return new Color(oldColor.getRed(), oldColor.getGreen(), oldColor.getBlue(), newAlpha);
+    }
 }

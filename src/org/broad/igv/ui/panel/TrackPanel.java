@@ -181,7 +181,7 @@ public class TrackPanel extends IGVPanel {
         trackCountEstimate++;
     }
 
-    public void addTracks(Collection<Track> tracks) {
+    public void addTracks(Collection<? extends Track> tracks) {
         for (Track t : tracks) {
             addTrack(t);
         }
