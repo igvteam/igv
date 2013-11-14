@@ -18,9 +18,6 @@ import org.apache.commons.math.stat.StatUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.lists.GeneList;
-import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.data.CombinedDataSource;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.FeatureUtils;
@@ -37,6 +34,7 @@ import org.broad.igv.ui.panel.TrackPanel;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
+import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.util.collections.CollUtils;
@@ -319,7 +317,7 @@ public class TrackMenuUtils {
             menu.add(getShowSortFramesItem(tracks.iterator().next()));
         }
 
-        if(Globals.isDevelopment() && tracks.size() >= 2){
+        if(Globals.isDevelopment()){
             final List<DataTrack> dataTrackList = Lists.newArrayList(Iterables.filter(tracks, DataTrack.class));
             final JMenuItem overlayGroups = new JMenuItem("Create Overlay Track");
             overlayGroups.addActionListener(new ActionListener() {

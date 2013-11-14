@@ -15,9 +15,14 @@ package org.broad.igv.track;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.DataRange;
+import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
+import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -155,6 +160,81 @@ public class MergedTracks extends DataTrack{
         super.setShowDataRange(showDataRange);
         for(DataTrack track: trackList){
             track.setShowDataRange(showDataRange);
+        }
+    }
+
+    @Override
+    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
+
+        IGVPopupMenu menu = new IGVPopupMenu();
+
+        List<Track> selfAsList = Arrays.asList((Track) this);
+        menu.add(TrackMenuUtils.getTrackRenameItem(selfAsList));
+
+        //Give users the ability to set the color of each track individually
+        JMenu setPosColorMenu = new JMenu("Change Track Color (Positive Values)");
+        JMenu setNegColorMenu = new JMenu("Change Track Color (Negative Values)");
+        for(DataTrack track: trackList){
+            JMenuItem posItem = new JMenuItem(track.getName());
+            posItem.addActionListener(new ChangeTrackColorActionListener(track, ChangeTrackMethod.POSITIVE));
+            setPosColorMenu.add(posItem);
+
+            JMenuItem negItem = new JMenuItem(track.getName());
+            negItem.addActionListener(new ChangeTrackColorActionListener(track, ChangeTrackMethod.NEGATIVE));
+            setNegColorMenu.add(negItem);
+        }
+        menu.add(setPosColorMenu);
+        menu.add(setNegColorMenu);
+
+        menu.add(TrackMenuUtils.getChangeTrackHeightItem(selfAsList));
+        menu.add(TrackMenuUtils.getChangeFontSizeItem(selfAsList));
+
+        menu.addSeparator();
+        TrackMenuUtils.addDataItems(menu, selfAsList);
+        for(Component c: menu.getComponents()){
+            if(c instanceof JMenuItem){
+                String text = ((JMenuItem) c).getText();
+                text = text != null ? text.toLowerCase() : "null";
+                if(text.contains("heatmap")){
+                    c.setEnabled(false);
+                }    
+            }
+
+        }
+
+        menu.addSeparator();
+        menu.add(TrackMenuUtils.getRemoveMenuItem(selfAsList));
+
+
+        return menu;
+    }
+
+    private enum ChangeTrackMethod{
+        POSITIVE, NEGATIVE
+    }
+
+    private static class ChangeTrackColorActionListener implements ActionListener{
+
+        private Track mTrack;
+        private ChangeTrackMethod method;
+
+        private ChangeTrackColorActionListener(Track track, ChangeTrackMethod method){
+            this.mTrack=track;
+            this.method = method;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            switch(this.method){
+                case POSITIVE:
+                    TrackMenuUtils.changeTrackColor(Arrays.asList(this.mTrack));
+                    break;
+                case NEGATIVE:
+                    TrackMenuUtils.changeAltTrackColor(Arrays.asList(this.mTrack));
+                    break;
+                default:
+                    throw new IllegalStateException("Method not understood: " + this.method);
+            }
         }
     }
 }
