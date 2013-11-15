@@ -17,6 +17,7 @@ import org.broad.igv.cli_plugin.AbstractPluginTest;
 import org.broad.igv.cli_plugin.PluginSpecReader;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.gwas.GWASTrack;
 import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.CoverageTrack;
@@ -394,6 +395,21 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
         assertNotNull(GenomeManager.getInstance().getGenomeId());
 
 
+    }
+
+    @Test
+    public void testGWAS() throws Exception{
+        String sessionPath = TestUtils.DATA_DIR + "sessions/smallp_session.xml";
+        rewriteRestoreSession(sessionPath);
+        boolean haveGWAS = false;
+        for(Track track: IGV.getInstance().getAllTracks()){
+            if(track instanceof GWASTrack){
+                haveGWAS = true;
+                break;
+            }
+        }
+        assertTrue("No GWAS track loaded", haveGWAS);
+        assertEquals(3, IGV.getInstance().getVisibleTrackCount());
     }
 
     private boolean listContainsFeature(List<Feature> featureList, Feature feature){
