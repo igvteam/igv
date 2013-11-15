@@ -26,6 +26,7 @@ package org.broad.igv.util.stream;
 
 import com.google.common.primitives.Ints;
 import net.sf.samtools.seekablestream.SeekableStream;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
@@ -38,6 +39,8 @@ import static java.lang.System.arraycopy;
  * the buffer contains data for.
  */
 public class IGVSeekableBufferedStream extends SeekableStream {
+
+    private static Logger log = Logger.getLogger(IGVSeekableBufferedStream.class);
 
     public static final int DEFAULT_BUFFER_SIZE = 512000;
 
@@ -178,7 +181,6 @@ public class IGVSeekableBufferedStream extends SeekableStream {
 
     private void fillBuffer() throws IOException {
 
-        int curOffset = 0;
         long longRem = maxBufferSize;
         if(length >= 0) longRem = Math.min( (long) maxBufferSize, length - position);
 
@@ -186,8 +188,11 @@ public class IGVSeekableBufferedStream extends SeekableStream {
         //an int, but we leave it here to stress the fact that
         //we need to watch for overflow
         int bytesRemaining = Ints.saturatedCast(longRem);
-
+        //Number of bytes to skip at beginning when reading from stream later
         int toSkip = 0;
+        //Number of bytes known to be stored in the buffer, which are valid
+        int tmpBufferSize = 0;
+
         long bufferEnd = bufferStartPosition + bufferSize;
         long requiredEnd = position + bytesRemaining;
         if(position < bufferEnd && requiredEnd > bufferEnd) {
@@ -200,9 +205,9 @@ public class IGVSeekableBufferedStream extends SeekableStream {
 
             //Skip the first bytes that we already had
             toSkip = szOverlap;
-            curOffset += szOverlap;
+            tmpBufferSize += szOverlap;
             bytesRemaining -= szOverlap;
-        }else if(position < bufferStartPosition && requiredEnd > bufferStartPosition && requiredEnd <= bufferEnd) {
+        }else if(position < bufferStartPosition && requiredEnd > bufferStartPosition && requiredEnd < bufferEnd) {
             //Gap between position and buffer start, but some overlap
             //We require that the buffer contain data all the way to the end,
             //because dealing with the case of writing buffered data to the middle
@@ -215,9 +220,11 @@ public class IGVSeekableBufferedStream extends SeekableStream {
 
             //Don't skip any bytes, just trim from the number requested
             bytesRemaining -= szOverlap;
+            tmpBufferSize += szOverlap;
         }
 
         if (bytesRemaining > 0) {
+            int curOffset = toSkip;
             wrappedStream.seek(position + toSkip);
             while (bytesRemaining > 0) {
                 int count = wrappedStream.read(buffer, curOffset, bytesRemaining);
@@ -226,9 +233,10 @@ public class IGVSeekableBufferedStream extends SeekableStream {
                 }
                 curOffset += count;
                 bytesRemaining -= count;
+                tmpBufferSize += count;
             }
             bufferStartPosition = position;
-            bufferSize = curOffset;
+            bufferSize = tmpBufferSize;
         }
     }
 }
