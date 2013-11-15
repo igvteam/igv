@@ -11,7 +11,9 @@
 
 package org.broad.igv.feature.genome;
 
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.util.TestUtils;
+import org.junit.Assume;
 import org.junit.Test;
 
 import java.io.FileWriter;
@@ -26,7 +28,7 @@ import static junit.framework.Assert.*;
  * @author Jim Robinson
  * @date 10/31/11
  */
-public class GenomeTest {
+public class GenomeTest extends AbstractHeadlessTest {
 
 
     /**
@@ -34,25 +36,43 @@ public class GenomeTest {
      * @throws Exception
      */
     @Test
-    public void testAliases() throws Exception {
+    public void testAlias_01() throws Exception {
         String genomeURL = "http://igv.broadinstitute.org/genomes/hg19.genome";
-        Genome genome = GenomeManager.getInstance().loadGenome(genomeURL, null);
+        Genome genome = loadGenomeAssumeSuccess(genomeURL);
+
         assertEquals("chrUn_gl000229", genome.getChromosomeAlias("GL000229.1"));
         assertEquals("chr14", genome.getChromosomeAlias("14"));
+    }
 
+    @Test
+    public void testAlias_02() throws Exception {
         // NCBI genome, test an auto-generated alias
-        genomeURL = "http://igvdata.broadinstitute.org/genomes/NC_000964.genome";
-        genome = GenomeManager.getInstance().loadGenome(genomeURL, null);
+        String genomeURL = "http://igvdata.broadinstitute.org/genomes/NC_000964.genome";
+        Genome genome = loadGenomeAssumeSuccess(genomeURL);
         assertEquals("gi|255767013|ref|NC_000964.3|", genome.getChromosomeAlias("NC_000964.3"));
+    }
+
+    /**
+     * Loads a genome
+     * @param genomeURL
+     * @return
+     */
+    private Genome loadGenomeAssumeSuccess(String genomeURL){
+        Genome genome = null;
+        try {
+            genome = GenomeManager.getInstance().loadGenome(genomeURL, null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Assume.assumeNotNull(genome);
+        return genome;
     }
 
     @Test
     public void testGetNCBIName() throws Exception {
-
         String ncbiID = "gi|125745044|ref|NC_002229.3|";
         String ncbiName = "NC_002229.3";
         assertEquals(ncbiName, Genome.getNCBIName(ncbiID));
-
     }
 
 
