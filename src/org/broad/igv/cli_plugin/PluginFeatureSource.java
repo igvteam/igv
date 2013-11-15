@@ -22,6 +22,7 @@ import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.tribble.Feature;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -38,6 +39,7 @@ public class PluginFeatureSource<E extends Feature, D extends Feature> extends P
 
     private static Logger log = Logger.getLogger(PluginFeatureSource.class);
 
+    @XmlAttribute
     private boolean forbidEmptyOutput;
 
     @SubtlyImportant
