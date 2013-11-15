@@ -20,7 +20,6 @@ import com.iontorrent.views.FlowSignalDistributionPanel;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Locus;
@@ -54,6 +53,7 @@ import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.Utilities;
+import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.util.collections.CollUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -902,8 +902,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     @Override
-    public void restorePersistentState(Node node) throws JAXBException {
-        super.restorePersistentState(node);
+    public void restorePersistentState(Node node, int version) throws JAXBException {
+        super.restorePersistentState(node, version);
 
         //For legacy sessions (<= v4. RenderOptions used to be stuffed in
         //with Track tag, now it's a sub element

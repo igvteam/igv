@@ -786,9 +786,9 @@ public abstract class AbstractTrack implements Track {
      *
      * @param node
      */
-    public void restorePersistentState(Node node) throws JAXBException {
+    public void restorePersistentState(Node node, int version) throws JAXBException {
         Map<String, String> attributes = Utilities.getAttributes(node);
-        restorePersistentState(attributes);
+        restorePersistentState(attributes, version);
     }
 
     /**
@@ -799,7 +799,7 @@ public abstract class AbstractTrack implements Track {
      * @param attributes
      * @see #getPersistentState
      */
-    public void restorePersistentState(Map<String, String> attributes) {
+    public void restorePersistentState(Map<String, String> attributes, int version) {
 
         String displayName = attributes.get(IGVSessionReader.SessionAttribute.DISPLAY_NAME.getText());
         String name = attributes.get(IGVSessionReader.SessionAttribute.NAME.getText());
@@ -811,13 +811,15 @@ public abstract class AbstractTrack implements Track {
         }
 
         // Set DataRange -- legacy (pre V3 sessions)
-        String scale = attributes.get(IGVSessionReader.SessionAttribute.SCALE.getText());
-        if (scale != null) {
-            String[] axis = scale.split(",");
-            float minimum = Float.parseFloat(axis[0]);
-            float baseline = Float.parseFloat(axis[1]);
-            float maximum = Float.parseFloat(axis[2]);
-            setDataRange(new DataRange(minimum, baseline, maximum));
+        if(version <= 3){
+            String scale = attributes.get(IGVSessionReader.SessionAttribute.SCALE.getText());
+            if (scale != null) {
+                String[] axis = scale.split(",");
+                float minimum = Float.parseFloat(axis[0]);
+                float baseline = Float.parseFloat(axis[1]);
+                float maximum = Float.parseFloat(axis[2]);
+                setDataRange(new DataRange(minimum, baseline, maximum));
+            }
         }
 
     }

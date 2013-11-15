@@ -138,8 +138,8 @@ public class DataSourceTrack extends DataTrack {
     }
 
     @Override
-    public void restorePersistentState(Node node) throws JAXBException {
-        super.restorePersistentState(node);
+    public void restorePersistentState(Node node, int version) throws JAXBException {
+        super.restorePersistentState(node, version);
         if (node.hasChildNodes()) {
             NodeList childNodes = node.getChildNodes();
             for (int ii = 0; ii < childNodes.getLength(); ii++) {

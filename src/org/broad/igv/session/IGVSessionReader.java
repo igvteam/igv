@@ -1102,7 +1102,7 @@ public class IGVSessionReader implements SessionReader {
             setNextTrack(track);
             ut = unmarshalTrack(u, element, trackClass, trackClass);
         }
-        ut.restorePersistentState(element);
+        ut.restorePersistentState(element, version);
         return ut;
     }
 
