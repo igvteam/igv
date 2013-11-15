@@ -92,6 +92,10 @@ public class PackedFeatures<T extends Feature>{
         return this.getChr().equals(chr) && start >= this.getStart() && end <= this.getEnd();
     }
 
+    public boolean overlapsInterval(String chr, int start, int end) {
+        return this.getChr().equals(chr) && start <= this.end && end >= this.start;
+    }
+
     /**
      * Allocates each feature to the rows such that there is no overlap.
      *
