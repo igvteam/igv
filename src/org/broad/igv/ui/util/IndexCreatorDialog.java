@@ -41,6 +41,7 @@ import java.io.File;
 /**
  * Dialog for asking the user if they want to create an index, and
  * displaying progress if they do.
+ *
  * @author jacob
  */
 
@@ -51,21 +52,23 @@ public class IndexCreatorDialog extends JDialog {
     IndexWorker worker;
 
     FileType fileType;
-    private enum FileType{
+
+    private enum FileType {
         SAM,
         VCF
     }
 
     static String introText = "An index file for @filename could not " +
-            "be located. An index is required to view @filetype files in IGV.  " +
+            "be located. An index is recommended to view @filetype files in IGV.  " +
             "Click \"Go\" to create one now.";
 
-    public static IndexCreatorDialog createShowDialog(Frame parent, File baseFile, File newIdxFile){
+    public static IndexCreatorDialog createShowDialog(Frame parent, File baseFile, File newIdxFile) {
         IndexCreatorDialog dialog = new IndexCreatorDialog(parent, true, baseFile, newIdxFile);
         dialog.setLocationRelativeTo(parent);
         dialog.setVisible(true);
         return dialog;
     }
+
     /**
      * Creates new form IndexCreatorDialog
      */
@@ -79,7 +82,8 @@ public class IndexCreatorDialog extends JDialog {
         this.file = file;
         this.idxFile = idxFile;
         this.determineFileType(file);
-        if(this.fileType == null) throw new IllegalArgumentException("Cannot determine file type for " + file.getAbsolutePath());
+        if (this.fileType == null)
+            throw new IllegalArgumentException("Cannot determine file type for " + file.getAbsolutePath());
 
         int timeEst = 1 + (int) Math.ceil(file.length() / 1000000000.0);
 
@@ -90,7 +94,7 @@ public class IndexCreatorDialog extends JDialog {
 
         this.introTextPane.setBorder(BorderFactory.createEmptyBorder());
 
-        switch (this.fileType){
+        switch (this.fileType) {
             case SAM:
                 worker = new SamIndexWorker();
                 break;
@@ -100,9 +104,9 @@ public class IndexCreatorDialog extends JDialog {
         }
     }
 
-    private void determineFileType(File file){
-        for(FileType ft: FileType.values()){
-            if(file.getName().toLowerCase().endsWith(ft.name().toLowerCase())){
+    private void determineFileType(File file) {
+        for (FileType ft : FileType.values()) {
+            if (file.getName().toLowerCase().endsWith(ft.name().toLowerCase())) {
                 this.fileType = ft;
             }
         }
@@ -121,7 +125,7 @@ public class IndexCreatorDialog extends JDialog {
         }
     }
 
-    public class SamIndexWorker extends IndexWorker<FeatureIndex>{
+    public class SamIndexWorker extends IndexWorker<FeatureIndex> {
         @Override
         protected FeatureIndex doInBackground() throws Exception {
             AlignmentIndexer indexer = AlignmentIndexer.getInstance(file, progressBar, this);
@@ -129,7 +133,7 @@ public class IndexCreatorDialog extends JDialog {
         }
     }
 
-    private class VCFIndexWorker extends IndexWorker<Index>{
+    private class VCFIndexWorker extends IndexWorker<Index> {
         @Override
         protected Index doInBackground() throws Exception {
             int binSize = IgvTools.LINEAR_BIN_SIZE;
@@ -137,7 +141,7 @@ public class IndexCreatorDialog extends JDialog {
             if (codec != null) {
                 try {
                     Index index = IndexFactory.createLinearIndex(file, codec, binSize);
-                    if(index != null){
+                    if (index != null) {
                         IgvTools.writeTribbleIndex(index, idxFile.getAbsolutePath());
                     }
                     return index;
@@ -156,6 +160,8 @@ public class IndexCreatorDialog extends JDialog {
     }
 
     public abstract class IndexWorker<I> extends SwingWorker<I, Void> {
+
+        private boolean isStarted = false;
 
         @Override
         protected void done() {
@@ -178,6 +184,8 @@ public class IndexCreatorDialog extends JDialog {
             });
 
         }
+
+
     }
 
     /**
@@ -255,37 +263,37 @@ public class IndexCreatorDialog extends JDialog {
         layout.setHorizontalGroup(
                 layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                         .add(layout.createSequentialGroup()
-                        .add(30, 30, 30)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 343, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .add(layout.createSequentialGroup()
-                                        .add(jLabel1)
-                                        .add(18, 18, 18)
-                                        .add(timeRemainingLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 103, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                .add(layout.createSequentialGroup()
-                                        .add(cancelButton)
-                                        .add(18, 18, 18)
-                                        .add(goButton))
-                                .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 351, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                        .addContainerGap(26, Short.MAX_VALUE))
+                                .add(30, 30, 30)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                        .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 343, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .add(layout.createSequentialGroup()
+                                                .add(jLabel1)
+                                                .add(18, 18, 18)
+                                                .add(timeRemainingLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 103, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                                .add(layout.createSequentialGroup()
+                                                        .add(cancelButton)
+                                                        .add(18, 18, 18)
+                                                        .add(goButton))
+                                                .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 351, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                                .addContainerGap(26, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
                 layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                         .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap(23, Short.MAX_VALUE)
-                        .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 132, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(35, 35, 35)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .add(timeRemainingLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(18, 18, 18)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                .add(goButton)
-                                .add(cancelButton))
-                        .addContainerGap())
+                                .addContainerGap(23, Short.MAX_VALUE)
+                                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 132, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(35, 35, 35)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                        .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .add(timeRemainingLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(18, 18, 18)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                        .add(goButton)
+                                        .add(cancelButton))
+                                .addContainerGap())
         );
 
         pack();
@@ -296,24 +304,28 @@ public class IndexCreatorDialog extends JDialog {
         if (worker.isDone() || worker.isCancelled()) {
             setVisible(false);
         } else {
-            goButton.setEnabled(false);
-            worker.execute();
-            jLabel1.setVisible(true);
-            //Haven't worked out how to publish progress yet, just going to set it to indeterminate
-            if(fileType == FileType.VCF){
-                IndexCreatorDialog.this.progressBar.setIndeterminate(true);
-                jLabel1.setText("Creating index...");
+            if (!worker.isStarted) {
+                goButton.setEnabled(false);
+                worker.isStarted = true;
+                worker.execute();
+                jLabel1.setVisible(true);
+                //Haven't worked out how to publish progress yet, just going to set it to indeterminate
+                if (fileType == FileType.VCF) {
+                    IndexCreatorDialog.this.progressBar.setIndeterminate(true);
+                    jLabel1.setText("Creating index...");
+                }
             }
         }
+    }
 
-    }//GEN-LAST:event_goButtonActionPerformed
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
 
-    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        if (worker != null) {
-            worker.cancel(true);
+        if(worker != null && worker.isStarted && !(worker.isDone() || worker.isCancelled())) {
+            worker.isStarted = false;
+            worker.cancel(true);  // <+ doing this before execution starts will raise an error
         }
         setVisible(false);
-    }//GEN-LAST:event_cancelButtonActionPerformed
+    }
 
     /**
      * @param args the command line arguments

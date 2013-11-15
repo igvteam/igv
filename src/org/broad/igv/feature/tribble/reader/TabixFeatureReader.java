@@ -13,6 +13,7 @@ package org.broad.igv.feature.tribble.reader;
 
 import net.sf.samtools.seekablestream.SeekableStream;
 import net.sf.samtools.util.BlockCompressedInputStream;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.stream.IGVSeekableBufferedStream;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.tribble.*;
@@ -37,17 +38,28 @@ public class TabixFeatureReader<T extends Feature, SOURCE> extends AbstractFeatu
 
     /**
      *
-     * @param featureFile - path to a feature file. Can be a local file, http url, or ftp url
+     * @param locator - specifies a path to the feature file, and optionally its index
      * @param codec
      * @throws java.io.IOException
      */
-    public TabixFeatureReader(final String featureFile, final AsciiFeatureCodec codec) throws IOException {
-        super(featureFile, codec);
-        tabixReader = new TabixReader(featureFile);
+    public TabixFeatureReader(ResourceLocator locator, final AsciiFeatureCodec codec) throws IOException {
+        super(locator.getPath(), codec);
+
+        String featureFile = locator.getPath();
+        String idxFile = locator.getIndexPath();
+        if(idxFile == null || idxFile.length() == 0) {
+            idxFile = featureFile + ".tbi";
+        }
+        tabixReader = new TabixReader(featureFile, idxFile);
         sequenceNames = new ArrayList<String>(tabixReader.mChr2tid.keySet());
         readHeader();
     }
 
+
+    @Override
+    public boolean hasIndex() {
+        return true;  //By definition
+    }
 
     /**
      * read the header
@@ -211,6 +223,8 @@ public class TabixFeatureReader<T extends Feature, SOURCE> extends AbstractFeatu
 
     static class TabixReader {
         private String mFn;
+        private String mIdxFn;
+
         BlockCompressedInputStream mFp;
 
         private int mPreset;
@@ -260,20 +274,15 @@ public class TabixFeatureReader<T extends Feature, SOURCE> extends AbstractFeatu
             return (u < v) ^ (u < 0) ^ (v < 0);
         }
 
-        /**
-         * @param fn File name of the data file
-         */
-        public TabixReader(final String fn) throws IOException {
-            this(fn, new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(fn)));
-        }
 
         /**
          * @param fn File name of the data file  (used for error messages only)
-         * @param stream Seekable stream from which the data is read
+         * @parm idxFn  File name of the index file.
          */
-        public TabixReader(final String fn, SeekableStream stream) throws IOException {
+        public TabixReader(final String fn, String idxFn) throws IOException {
             mFn = fn;
-            mFp = new BlockCompressedInputStream(stream); //  new File(fn));
+            mFp = new BlockCompressedInputStream(new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(fn)));
+            mIdxFn = idxFn;
             readIndex();
         }
 
@@ -375,7 +384,7 @@ public class TabixFeatureReader<T extends Feature, SOURCE> extends AbstractFeatu
          * Read the Tabix index from the default file.
          */
         public void readIndex() throws IOException {
-            readIndex(new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(mFn + ".tbi"), 128000));
+            readIndex(new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(mIdxFn), 128000));
         }
 
         /**
@@ -590,7 +599,8 @@ public class TabixFeatureReader<T extends Feature, SOURCE> extends AbstractFeatu
                 System.exit(1);
             }
             try {
-                TabixReader tr = new TabixReader(args[0]);
+                String idxFn = args[0] + ".tbi";
+                TabixReader tr = new TabixReader(args[0], idxFn);
                 String s;
                 if (args.length == 1) { // no region is specified; print the whole file
                     while ((s = tr.readLine()) != null)

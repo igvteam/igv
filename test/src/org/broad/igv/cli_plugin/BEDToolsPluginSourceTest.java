@@ -161,7 +161,7 @@ public class BEDToolsPluginSourceTest extends AbstractPluginTest {
         List<Feature> actFeatures = tstOperationBED3("intersect", 4);
         String expectedPath = TestUtils.DATA_DIR + "bed/isect_res.bed";
         TestUtils.createIndex(expectedPath);
-        FeatureSource expFeatureSource = new TribbleFeatureSource(expectedPath, genome);
+        FeatureSource expFeatureSource = TribbleFeatureSource.getFeatureSource(new ResourceLocator(expectedPath), genome);
         Iterator<Feature> expFeatures = expFeatureSource.getFeatures("chr1", 0, (int) 1e6);
         TestUtils.assertFeatureListsEqual(expFeatures, actFeatures.iterator());
     }

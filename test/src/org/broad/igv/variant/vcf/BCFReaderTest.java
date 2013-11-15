@@ -14,6 +14,7 @@ package org.broad.igv.variant.vcf;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.TribbleFeatureSource;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
 import org.broad.tribble.readers.PositionalBufferedStream;
@@ -44,7 +45,7 @@ public class BCFReaderTest extends AbstractHeadlessTest {
     @Test
     public void loadBCF() throws Exception {
         String path = TestUtils.DATA_DIR + "bcf/ex2.bcf";
-        FeatureSource source = new TribbleFeatureSource(path, genome);
+        FeatureSource source = TribbleFeatureSource.getFeatureSource(new ResourceLocator(path), genome);
         Iterator<Feature> features = source.getFeatures("chr20", 14000, 1300000);
         int count = 0;
 
@@ -64,13 +65,13 @@ public class BCFReaderTest extends AbstractHeadlessTest {
     @Test
     public void compareBCFtoVCF() throws Exception {
         String BCF2path = TestUtils.DATA_DIR + "bcf/ex2.bcf";
-        FeatureSource BCF2source = new TribbleFeatureSource(BCF2path, genome);
+        FeatureSource BCF2source = TribbleFeatureSource.getFeatureSource(new ResourceLocator(BCF2path), genome);
         Iterator<Feature> BCF2features = BCF2source.getFeatures("chr20", 14000, 1300000);
         List<VCFVariant> BCF2List = new ArrayList<VCFVariant>();
 
         String VCFpath = TestUtils.DATA_DIR + "vcf/ex2.vcf";
         TestUtils.createIndex(VCFpath);
-        FeatureSource VCFsource = new TribbleFeatureSource(VCFpath, genome);
+        FeatureSource VCFsource = TribbleFeatureSource.getFeatureSource(new ResourceLocator(VCFpath), genome);
         Iterator<Feature> VCFfeatures = VCFsource.getFeatures("chr20", 14000, 1300000);
         List<VCFVariant> VCFList = new ArrayList<VCFVariant>();
 

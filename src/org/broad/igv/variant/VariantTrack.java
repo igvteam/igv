@@ -72,6 +72,15 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     // TODO -- this needs to be settable
     public static int METHYLATION_MIN_BASE_COUNT = 10;
 
+
+    public static boolean isVCF(String typeString) {
+        return (typeString.endsWith(".vcf3") ||
+                typeString.endsWith(".vcf4") ||
+                typeString.endsWith(".vcf") ||
+                typeString.endsWith(".bcf"));
+    }
+
+
     private VariantRenderer renderer;
 
     /**

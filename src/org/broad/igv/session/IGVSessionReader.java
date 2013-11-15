@@ -219,6 +219,7 @@ public class IGVSessionReader implements SessionReader {
 
         //RESOURCE ATTRIBUTES
         PATH("path"),
+        INDEX("index"),
         LABEL("label"),
         SERVER_URL("serverURL"),
         HYPERLINK("hyperlink"),
@@ -683,6 +684,8 @@ public class IGVSessionReader implements SessionReader {
 
         // Older sessions used the "name" attribute for the path.
         String path = getAttribute(element, SessionAttribute.PATH.getText());
+
+        String index = getAttribute(element, SessionAttribute.INDEX.getText());
 
         if (oldSession && name != null) {
             path = name;

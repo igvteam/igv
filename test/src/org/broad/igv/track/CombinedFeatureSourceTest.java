@@ -15,6 +15,7 @@ import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.Globals;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
@@ -128,8 +129,8 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
         IgvTools igvTools = new IgvTools();
         igvTools.doIndex(pathA, null, 1, 16000);
         igvTools.doIndex(pathB, null, 1, 16000);
-        FeatureSource sourceA = new TribbleFeatureSource(pathA, genome);
-        FeatureSource sourceB = new TribbleFeatureSource(pathB, genome);
+        FeatureSource sourceA = TribbleFeatureSource.getFeatureSource(new ResourceLocator(pathA), genome);
+        FeatureSource sourceB = TribbleFeatureSource.getFeatureSource(new ResourceLocator(pathB), genome);
 
 
         CombinedFeatureSource combinedFeatureSource = new CombinedFeatureSource(new FeatureSource[]{sourceA, sourceB}, operation);
@@ -178,7 +179,7 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
     public void testIntersectBED() throws Exception {
         List<Feature> actFeatures = tstOperationBED3(CombinedFeatureSource.Operation.INTERSECT, 4);
         String expectedPath = TestUtils.DATA_DIR + "bed/isect_res.bed";
-        FeatureSource expFeatureSource = new TribbleFeatureSource(expectedPath, genome);
+        FeatureSource expFeatureSource = TribbleFeatureSource.getFeatureSource(new ResourceLocator(expectedPath), genome);
         Iterator<Feature> expFeatures = expFeatureSource.getFeatures("chr1", 0, (int) 1e6);
         TestUtils.assertFeatureListsEqual(expFeatures, actFeatures.iterator());
 
@@ -219,7 +220,7 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
         String[] bedfiles = new String[]{"test.bed", "test2.bed", "isect_res.bed"};
         List<FeatureSource> sources = new ArrayList<FeatureSource>(bedfiles.length);
         for (String bedfile : bedfiles) {
-            sources.add(new TribbleFeatureSource(TestUtils.DATA_DIR + "bed/" + bedfile, genome));
+            sources.add(TribbleFeatureSource.getFeatureSource(new ResourceLocator(TestUtils.DATA_DIR + "bed/" + bedfile), genome));
         }
 
         CombinedFeatureSource combinedFeatureSource = new CombinedFeatureSource(sources.toArray(new FeatureSource[0]),

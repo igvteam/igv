@@ -66,7 +66,7 @@ public class TribbleListFeatureSource implements FeatureSource {
             String path = pathMap.get(chr);
             if (path != null) {
                 try {
-                    src = new TribbleFeatureSource(path, genome);
+                    src = TribbleFeatureSource.getFeatureSource(new ResourceLocator(path), genome);
                 } catch (IOException e) {
                     log.error("Error loading tribble source: " + path);
                 }

@@ -15,6 +15,7 @@ import org.broad.igv.data.Interval;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Mutation;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
 
 import java.io.IOException;
@@ -59,14 +60,12 @@ public class MutationFeatureSource implements FeatureSource<Mutation> {
 
     static public class MutationDataManager {
 
-        String path;
         Interval currentInterval;
         Map<String, List<Mutation>> featureMap = Collections.synchronizedMap(new HashMap());
         TribbleFeatureSource tribbleFeatureSource;
 
-        public MutationDataManager(String path, Genome genome) throws IOException {
-            this.path = path;
-            this.tribbleFeatureSource = new TribbleFeatureSource(path, genome);
+        public MutationDataManager(ResourceLocator locator, Genome genome) throws IOException {
+            this.tribbleFeatureSource = TribbleFeatureSource.getFeatureSource(locator, genome);
         }
 
         synchronized Iterator<Mutation> getFeatures(String trackKey, String chr, int start, int end) throws IOException {

@@ -14,6 +14,7 @@ package org.broad.igv.track;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
 
 import java.io.IOException;
@@ -23,10 +24,11 @@ import java.util.*;
  * User: jacob
  * Date: 2012-Jun-22
  */
-public class GFFFeatureSource extends TribbleFeatureSource {
+public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
 
     private static Logger log = Logger.getLogger(GFFFeatureSource.class);
 
+    private FeatureSource wrappedSource;
 
     public static boolean isGFF(String path) {
         String lowpath = path.toLowerCase();
@@ -41,19 +43,33 @@ public class GFFFeatureSource extends TribbleFeatureSource {
         return lowpath.endsWith("gff3") || lowpath.endsWith("gvf") || lowpath.endsWith("gff") || lowpath.endsWith("gtf");
     }
 
-    public GFFFeatureSource(String path, Genome genome) throws IOException {
-        super(path, genome);
-        this.isVCF = false;
+    public GFFFeatureSource(FeatureSource wrappedSource) throws IOException {
+        this.wrappedSource = wrappedSource;
     }
 
     @Override
     public Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
 
-        Iterator<Feature> rawIter = super.getFeatures(chr, start, end);
+        Iterator<Feature> rawIter = wrappedSource.getFeatures(chr, start, end);
         GFFCombiner combiner = (new GFFCombiner()).addFeatures(rawIter);
 
 
         return new WrappedIterator(combiner.combineFeatures().iterator());
+    }
+
+    @Override
+    public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
+        return wrappedSource.getCoverageScores(chr, start, end, zoom);
+    }
+
+    @Override
+    public int getFeatureWindowSize() {
+        return wrappedSource.getFeatureWindowSize();
+    }
+
+    @Override
+    public void setFeatureWindowSize(int size) {
+       wrappedSource.setFeatureWindowSize(size);
     }
 
     /**

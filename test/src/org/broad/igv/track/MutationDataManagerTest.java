@@ -13,6 +13,7 @@ package org.broad.igv.track;
 
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.Mutation;
+import org.broad.igv.util.ResourceLocator;
 import org.junit.Test;
 
 import java.util.Iterator;
@@ -36,7 +37,7 @@ public class MutationDataManagerTest extends AbstractHeadlessTest {
         int start = 97575730;
         int end = 123482409;
 
-        MutationFeatureSource.MutationDataManager mgr = new MutationFeatureSource.MutationDataManager(path, genome);
+        MutationFeatureSource.MutationDataManager mgr = new MutationFeatureSource.MutationDataManager(new ResourceLocator(path), genome);
         Iterator<Mutation> mutations =  mgr.getFeatures(sample, chr, start, end);
 
         int mutationCount = 0;

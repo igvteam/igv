@@ -144,7 +144,8 @@ public class CodecFactory {
             int lineCount = 0;
             String formatLine;
             while ((formatLine = reader.readLine()) != null && lineCount < 20) {
-                if (formatLine.toLowerCase().startsWith("##fileformat")) {
+                if (formatLine.toLowerCase().startsWith("##fileformat") ||
+                        formatLine.toLowerCase().startsWith("##format")) {
                     String[] tmp = formatLine.split("=");
                     if (tmp.length > 1) {
                         String version = tmp[1].toLowerCase();

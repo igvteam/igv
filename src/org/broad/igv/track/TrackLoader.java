@@ -125,32 +125,14 @@ public class TrackLoader {
             LoadHandler handler = getTrackLoaderHandler(typeString);
             if (dbUrl != null) {
                 this.loadFromDatabase(locator, newTracks, genome);
+            } else if (CodecFactory.getCodec(locator, null) != null) {
+                loadFeatureFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".dbxml")) {
                 loadFromDBProfile(locator, newTracks);
             } else if (typeString.endsWith(".gmt")) {
                 loadGMT(locator);
             } else if (typeString.equals("das")) {
                 loadDASResource(locator, newTracks);
-            } else if (MutationTrackLoader.isMutationAnnotationFile(locator)) {
-                this.loadMutFile(locator, newTracks, genome); // Must be tried before generic "loadIndexed" below
-            } else if ((typeString.endsWith(".vcf3") || typeString.endsWith(".vcf4") || typeString.endsWith(".vcf")) && !HttpUtils.isRemoteURL(locator.getPath())) {
-                //Prompt user to see if they want to create an index file for VCFs
-                if(!isIndexed(locator, genome)){
-                    File baseFile = new File(locator.getPath());
-                    File newIdxFile = new File(locator.getPath() + ".idx");
-                    IndexCreatorDialog dialog = IndexCreatorDialog.createShowDialog(IGV.getMainFrame(), baseFile, newIdxFile);
-                    Object index = dialog.getIndex();
-                    //If user hits cancel or if there's a problem indexing we do nothing
-                    if(index == null) {
-                        log.warn("No index created, loading cancelled");
-                        return newTracks;
-                    }
-                }
-                loadIndexed(locator, newTracks, genome);
-            } else if(VCFrequiresIndex(locator) && !isIndexed(locator, genome)){
-                throw new DataLoadException("Could not access required index file", path);
-            } else if (isIndexed(locator, genome)) {
-                loadIndexed(locator, newTracks, genome);
             } else if (typeString.endsWith(".vcf.list")) {
                 loadVCFListFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".trio")) {
@@ -180,8 +162,6 @@ public class TrackLoader {
                 loadRNAiGeneScoreFile(locator, newTracks, RNAIGeneScoreParser.Type.POOLED, genome);
             } else if (typeString.endsWith(".hp")) {
                 loadRNAiHPScoreFile(locator);
-            } else if (typeString.endsWith("gene")) {
-                loadGeneFile(locator, newTracks, genome);
             } else if (typeString.contains(".tabblastn") || typeString.endsWith(".orthologs")) {
                 loadSyntentyMapping(locator, newTracks);
             } else if (typeString.endsWith(".sam") || typeString.endsWith(".bam") ||
@@ -207,10 +187,6 @@ public class TrackLoader {
                 loadTDFFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".counts")) {
                 loadGobyCountsArchive(locator, newTracks, genome);
-            } else if (GFFFeatureSource.isGFF(typeString)) {
-                loadGFFfile(locator, newTracks, genome);
-            } else if (AbstractFeatureParser.canParse(locator)) {
-                loadFeatureFile(locator, newTracks, genome);
             } else if (WiggleParser.isWiggle(locator)) {
                 loadWigFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".maf")) {
@@ -229,11 +205,11 @@ public class TrackLoader {
             } else if (typeString.endsWith(".list")) {
                 // This should be deprecated
                 loadListFile(locator, newTracks, genome);
-            }else if (handler != null) {
+            } else if (handler != null) {
                 //Custom loader specified
                 log.info(String.format("Loading %s with %s", path, handler));
                 handler.load(path, newTracks);
-            }else if (AttributeManager.isSampleInfoFile(locator)) {
+            } else if (AttributeManager.isSampleInfoFile(locator)) {
                 // This might be a sample information file.
                 AttributeManager.getInstance().loadSampleInfo(locator);
             } else {
@@ -276,8 +252,8 @@ public class TrackLoader {
     private boolean VCFrequiresIndex(ResourceLocator locator) {
         String fn = stripGZ(locator.getTypeString());
         String[] exts = new String[]{".vcf3", ".vcf4", ".vcf"};
-        for(String ext: exts){
-            if(fn.endsWith(ext)){
+        for (String ext : exts) {
+            if (fn.endsWith(ext)) {
                 return true;
             }
         }
@@ -294,59 +270,41 @@ public class TrackLoader {
         }
     }
 
-    private void loadIndexed(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+    private void loadVCF(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
-        TribbleFeatureSource src = GFFFeatureSource.isGFF(locator.getPath()) ?
-                new GFFFeatureSource(locator.getPath(), genome) :
-                new TribbleFeatureSource(locator.getPath(), genome);
-        String typeString = locator.getPath().toLowerCase();
-
-        if (typeString.endsWith("vcf") || typeString.endsWith("vcf.gz") || typeString.endsWith("bcf")) {
-
-            VCFHeader header = (VCFHeader) src.getHeader();
-
-            // Test if the input VCF file contains methylation rate data:
-
-            // This is determined by testing for the presence of two sample format fields: MR and GB, used in the
-            // rendering of methylation rate.
-            // MR is the methylation rate on a scale of 0 to 100% and GB is the number of bases that pass
-            // filter for the position. GB is needed to avoid displaying positions for which limited coverage
-            // prevents reliable estimation of methylation rate.
-            boolean enableMethylationRateSupport = (header.getFormatHeaderLine("MR") != null &&
-                    header.getFormatHeaderLine("GB") != null);
-
-            List<String> allSamples = new ArrayList(header.getGenotypeSamples());
-
-            VariantTrack t = new VariantTrack(locator, src, allSamples, enableMethylationRateSupport);
-
-            // VCF tracks handle their own margin
-            t.setMargin(0);
-            newTracks.add(t);
-        } else {
-
-            // Create feature source and track
-            FeatureTrack t = new FeatureTrack(locator, src);
-            t.setName(locator.getTrackName());
-            //t.setRendererClass(BasicTribbleRenderer.class);
-
-            // Set track properties from header
-            Object header = src.getHeader();
-            if (header != null && header instanceof FeatureFileHeader) {
-                FeatureFileHeader ffh = (FeatureFileHeader) header;
-                if (ffh.getTrackType() != null) {
-                    t.setTrackType(ffh.getTrackType());
-                }
-                if (ffh.getTrackProperties() != null) {
-                    t.setProperties(ffh.getTrackProperties());
-                }
-
-                if (ffh.getTrackType() == TrackType.REPMASK) {
-                    t.setHeight(15);
-                }
+        if (!isIndexed(locator, genome)) {
+            File baseFile = new File(locator.getPath());
+            File newIdxFile = new File(locator.getPath() + ".idx");
+            IndexCreatorDialog dialog = IndexCreatorDialog.createShowDialog(IGV.getMainFrame(), baseFile, newIdxFile);
+            Object index = dialog.getIndex();
+            //If user hits cancel or if there's a problem indexing we do nothing
+            if (index == null) {
+                log.warn("No index created, loading cancelled");
             }
-            newTracks.add(t);
         }
 
+        TribbleFeatureSource src = TribbleFeatureSource.getFeatureSource(locator, genome);
+
+
+        VCFHeader header = (VCFHeader) src.getHeader();
+
+        // Test if the input VCF file contains methylation rate data:
+
+        // This is determined by testing for the presence of two sample format fields: MR and GB, used in the
+        // rendering of methylation rate.
+        // MR is the methylation rate on a scale of 0 to 100% and GB is the number of bases that pass
+        // filter for the position. GB is needed to avoid displaying positions for which limited coverage
+        // prevents reliable estimation of methylation rate.
+        boolean enableMethylationRateSupport = (header.getFormatHeaderLine("MR") != null &&
+                header.getFormatHeaderLine("GB") != null);
+
+        List<String> allSamples = new ArrayList(header.getGenotypeSamples());
+
+        VariantTrack t = new VariantTrack(locator, src, allSamples, enableMethylationRateSupport);
+
+        // VCF tracks handle their own margin
+        t.setMargin(0);
+        newTracks.add(t);
     }
 
     private void loadVCFListFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
@@ -374,15 +332,6 @@ public class TrackLoader {
         newTracks.add(t);
     }
 
-    private void loadGeneFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-
-        FeatureParser featureParser = AbstractFeatureParser.getInstanceFor(locator, genome);
-        if (featureParser != null) {
-            List<FeatureTrack> tracks = featureParser.loadTracks(locator, genome);
-            newTracks.addAll(tracks);
-        }
-
-    }
 
     private void loadSyntentyMapping(ResourceLocator locator, List<Track> newTracks) {
 
@@ -410,19 +359,6 @@ public class TrackLoader {
      * @param locator
      * @param newTracks
      */
-    private void loadGFFfile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-
-        GFFParser featureParser = new GFFParser();
-        List<FeatureTrack> tracks = featureParser.loadTracks(locator, genome);
-        newTracks.addAll(tracks);
-    }
-
-    /**
-     * Load the input file as a feature, mutation, or maf (multiple alignment) file.
-     *
-     * @param locator
-     * @param newTracks
-     */
     private void loadFeatureFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
         if (locator.isLocal() && (locator.getPath().endsWith(".bed") ||
@@ -432,29 +368,43 @@ public class TrackLoader {
                 return;
             }
         }
+        String typeString = locator.getTypeString();
 
-        FeatureCodec codec = CodecFactory.getCodec(locator, genome);
-        if (codec != null) {
-            AbstractFeatureReader<Feature, ?> bfs = AbstractFeatureReader.getFeatureReader(locator.getPath(), codec, false);
-            Iterable<Feature> iter = bfs.iterator();
-            Object header = bfs.getHeader();
-            TrackProperties trackProperties = getTrackProperties(header);
-            List<FeatureTrack> tracks = AbstractFeatureParser.loadTracks(iter, locator, genome, trackProperties);
+        // Mutation (mut, maf, vcf) files are handled special.  Check here, rather than depend on order in giant case statement.
+        if (MutationTrackLoader.isMutationAnnotationFile(locator)) {
+            loadMutFile(locator, newTracks, genome); // Must be tried before generic "loadIndexed" below
+        } else if (VariantTrack.isVCF(typeString)) {
+            loadVCF(locator, newTracks, genome);
+        } else {
 
-            if (locator.getPath().contains(".narrowPeak") || locator.getPath().contains(".broadPeak")) {
-                for (FeatureTrack t : tracks) {
-                    t.setUseScore(true);
+            TribbleFeatureSource tribbleFeatureSource = TribbleFeatureSource.getFeatureSource(locator, genome);
+            FeatureSource src = GFFFeatureSource.isGFF(locator.getPath()) ?
+                    new GFFFeatureSource(tribbleFeatureSource) : tribbleFeatureSource;
+
+            // Create feature source and track
+            FeatureTrack t = new FeatureTrack(locator, src);
+            t.setName(locator.getTrackName());
+            //t.setRendererClass(BasicTribbleRenderer.class);
+
+            // Set track properties from header
+            Object header = tribbleFeatureSource.getHeader();
+            if (header != null && header instanceof FeatureFileHeader) {
+                FeatureFileHeader ffh = (FeatureFileHeader) header;
+                if (ffh.getTrackType() != null) {
+                    t.setTrackType(ffh.getTrackType());
+                }
+                if (ffh.getTrackProperties() != null) {
+                    t.setProperties(ffh.getTrackProperties());
+                }
+
+                if (ffh.getTrackType() == TrackType.REPMASK) {
+                    t.setHeight(15);
                 }
             }
-
-
-            newTracks.addAll(tracks);
-        } else if (MutationTrackLoader.isMutationAnnotationFile(locator)) {
-            this.loadMutFile(locator, newTracks, genome);
-        } else if (WiggleParser.isWiggle(locator)) {
-            loadWigFile(locator, newTracks, genome);
-        } else if (locator.getPath().toLowerCase().contains(".maf") || locator.getPath().toLowerCase().endsWith(".maf.dict")) {
-            loadMultipleAlignmentTrack(locator, newTracks, genome);
+            if (locator.getPath().contains(".narrowPeak") || locator.getPath().contains(".broadPeak")) {
+                t.setUseScore(true);
+            }
+            newTracks.add(t);
         }
     }
 
@@ -588,7 +538,7 @@ public class TrackLoader {
         if (s.endsWith("fpkm_tracking")) {
             FPKMTrackingCodec codec = new FPKMTrackingCodec(path);
             List<FPKMValue> values = CufflinksParser.parse(codec, path);
-            for(int sampleIndex = 0; sampleIndex < codec.getNumSamples(); sampleIndex++){
+            for (int sampleIndex = 0; sampleIndex < codec.getNumSamples(); sampleIndex++) {
                 CufflinksDataSource ds = new CufflinksDataSource(sampleIndex, values, genome);
                 String supId = String.format("q%02d", sampleIndex);
                 DataTrack track = new DataSourceTrack(locator, locator.getPath() + " " + supId, locator.getTrackName() + " " + supId, ds);
@@ -604,7 +554,7 @@ public class TrackLoader {
             throw new RuntimeException("Unsupported file type: " + path);
         }
 
-        for(DataTrack track: cuffTracks){
+        for (DataTrack track : cuffTracks) {
             track.setTrackType(TrackType.FPKM);
             CufflinksTrack.setCufflinksScale(track);
             newTracks.add(track);
@@ -960,7 +910,7 @@ public class TrackLoader {
                     covPath = path + ".tdf";
                 }
                 //Hack to deal with su2c
-                if(path.contains("dataformat=.bam")){
+                if (path.contains("dataformat=.bam")) {
                     covPath = null;
                 }
             }
@@ -1104,7 +1054,7 @@ public class TrackLoader {
         //For backwards/forwards compatibility
         //We used to put path in the serverURL field
         ResourceLocator dbLocator = new ResourceLocator(locator.getDBUrl());
-        if (locator.getTypeString().endsWith(".seg")) {
+        if (".seg".equals(locator.getTypeString())) {
             //TODO Don't hardcode table name, this might note even be right for our target case
             SegmentedAsciiDataSet ds = (new SegmentedSQLReader(dbLocator, "CNV", genome)).load();
             loadSegTrack(locator, newTracks, genome, ds);
@@ -1235,7 +1185,7 @@ public class TrackLoader {
                 String indexPath = fullPath + indexExtension;
                 //Handle query string, if it exists
                 String[] toks = fullPath.split("\\?", 2);
-                if(toks.length == 2){
+                if (toks.length == 2) {
                     indexPath = String.format("%s%s?%s", toks[0], indexExtension, toks[1]);
                 }
 
@@ -1262,18 +1212,22 @@ public class TrackLoader {
      * @return
      */
     private static boolean isIndexable(ResourceLocator locator, Genome genome) {
+
         String fn = stripGZ(locator.getTypeString());
         // The vcf extension is for performance, it doesn't matter which codec is returned all vcf files
         // are indexable.
         return fn.endsWith(".vcf") || fn.endsWith(".bcf") || CodecFactory.getCodec(locator, genome) != null;
+
+
     }
 
     /**
      * Strip .gz extension if on path
+     *
      * @param path
      * @return
      */
-    private static String stripGZ(String path){
+    private static String stripGZ(String path) {
         String fn = path.toLowerCase();
         if (fn.endsWith(".gz")) {
             int l = fn.length() - 3;
@@ -1305,21 +1259,22 @@ public class TrackLoader {
      * @param loader
      * @api
      */
-    public static void registerHandler(String extension, LoadHandler loader){
+    public static void registerHandler(String extension, LoadHandler loader) {
         handlers.put(extension, loader);
     }
 
     /**
      * Get the registered {@link org.broad.igv.dev.api.LoadHandler} for this path/typeString,
      * or null if one not found
+     *
      * @param typeString
      * @return
      * @api
      */
     private LoadHandler getTrackLoaderHandler(String typeString) {
         String lower = typeString.toLowerCase();
-        for(Map.Entry<String, LoadHandler> entry: handlers.entrySet()){
-            if(lower.endsWith(entry.getKey().toLowerCase())){
+        for (Map.Entry<String, LoadHandler> entry : handlers.entrySet()) {
+            if (lower.endsWith(entry.getKey().toLowerCase())) {
                 return entry.getValue();
             }
         }

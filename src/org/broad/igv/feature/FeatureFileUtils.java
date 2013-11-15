@@ -222,8 +222,7 @@ public class FeatureFileUtils {
                 int tss = transcript.getStrand() == Strand.POSITIVE ? f.getStart() : f.getEnd();
                 if (tss != lastTSS) {
                     int tssEnd = transcript.getStrand() == Strand.POSITIVE ? tss + 20 : tss - 20;
-
-                    pw.println(transcript.getChr() + "\t" + tss + "\t" + tssEnd);
+                    pw.println(transcript.getChr() + "\t" + Math.min(tss, tssEnd) + "\t" + Math.max(tss, tssEnd));
                     lastTSS = tss;
                 }
 
@@ -233,6 +232,10 @@ public class FeatureFileUtils {
             if (br != null) br.close();
             if (pw != null) pw.close();
         }
+    }
+
+    public static void main(String [] args) throws IOException {
+        createTSSFile("/Users/jrobinso/igv/tmp/refGene.txt", "/Users/jrobinso/tss.refSeq.hg19.bed");
     }
 
 

@@ -29,6 +29,7 @@ import java.io.*;
 import java.util.*;
 
 /**
+ * @deprecated   use org.broad.igv.track.GFFFeatureSource
  * User: jrobinso
  */
 
@@ -38,49 +39,6 @@ public class GFFParser implements FeatureParser {
     static Logger log = Logger.getLogger(GFFParser.class);
 
     private TrackProperties trackProperties = null;
-
-
-    public List<FeatureTrack> loadTracks(ResourceLocator locator, Genome genome) {
-
-        BufferedReader reader = null;
-        try {
-            reader = ParsingUtils.openBufferedReader(locator);
-
-            GFFCodec.Version version = locator.getTypeString().endsWith(".gff3") ? GFFCodec.Version.GFF3 : GFFCodec.Version.GFF2;
-            GFFCodec codec = new GFFCodec(version, genome);
-            List<org.broad.tribble.Feature> features = loadFeatures(reader, genome, codec);
-
-            FeatureTrack track = new FeatureTrack(locator, new FeatureCollectionSource(features, genome));
-            track.setName(locator.getTrackName());
-            track.setRendererClass(IGVFeatureRenderer.class);
-            track.setMinimumHeight(35);
-            track.setHeight(45);
-            track.setRendererClass(GeneTrackRenderer.class);
-
-            if (trackProperties != null) {
-                track.setProperties(trackProperties);
-                track.setName(trackProperties.getName());
-            }
-
-            List<FeatureTrack> tracks = new ArrayList();
-            tracks.add(track);
-            return tracks;
-
-        } catch (IOException ex) {
-            log.error(ex);
-            throw new RuntimeException(ex);
-
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-
-                }
-
-            }
-        }
-    }
 
     public List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome) {
           return loadFeatures(reader, genome, new GFFCodec(genome));

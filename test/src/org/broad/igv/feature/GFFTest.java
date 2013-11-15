@@ -13,12 +13,17 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.feature.tribble.GFFCodec;
+import org.broad.igv.track.GFFFeatureSource;
+import org.broad.igv.track.TribbleFeatureSource;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
 import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import static junit.framework.Assert.*;
@@ -32,12 +37,13 @@ public class GFFTest{//} extends AbstractHeadlessTest{
 
 
     private List<Feature> getFeatures(String filePath) throws Exception{
-        GFFParser parser = new GFFParser();
-        GFFCodec.Version version = filePath.endsWith(".gff3") ? GFFCodec.Version.GFF3 : GFFCodec.Version.GFF2;
-        GFFCodec codec = new GFFCodec(version, null);
-        BufferedReader br = new BufferedReader(new FileReader(filePath));
-        List<Feature> features = parser.loadFeatures(br, null, codec);
-        br.close();
+
+        GFFFeatureSource src =  new GFFFeatureSource(TribbleFeatureSource.getFeatureSource(new ResourceLocator(filePath), null));
+
+        List<Feature> features = new ArrayList<Feature>();
+        Iterator<Feature> iter = src.getFeatures("chr1", 0, Integer.MAX_VALUE);
+        while(iter.hasNext()) features.add(iter.next());
+
         return features;
     }
     /**

@@ -50,8 +50,11 @@ public class ExomeUtils {
                 if (tmp != null) {
                     exons.addAll(tmp);
                 }
+                else {
+                    exons.add(f);
+                }
             } else {
-
+                 exons.add(f);
             }
         }
 
