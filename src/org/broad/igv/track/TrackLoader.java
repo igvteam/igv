@@ -269,7 +269,7 @@ public class TrackLoader {
 
     private void loadVCF(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
-        if (!isIndexed(locator, genome)) {
+        if (locator.isLocal() && !isIndexed(locator, genome)) {
             File baseFile = new File(locator.getPath());
             File newIdxFile = new File(locator.getPath() + ".idx");
             IndexCreatorDialog dialog = IndexCreatorDialog.createShowDialog(IGV.getMainFrame(), baseFile, newIdxFile);
