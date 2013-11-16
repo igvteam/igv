@@ -65,10 +65,7 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.util.PedigreeUtils;
-import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.AsciiFeatureCodec;
-import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureCodec;
 import org.broadinstitute.variant.vcf.VCFHeader;
 
 import java.io.File;
@@ -125,8 +122,8 @@ public class TrackLoader {
             LoadHandler handler = getTrackLoaderHandler(typeString);
             if (dbUrl != null) {
                 this.loadFromDatabase(locator, newTracks, genome);
-            } else if (CodecFactory.getCodec(locator, null) != null) {
-                loadFeatureFile(locator, newTracks, genome);
+            } else if (hasCodec(locator, genome)) {
+                loadTribbleFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".dbxml")) {
                 loadFromDBProfile(locator, newTracks);
             } else if (typeString.endsWith(".gmt")) {
@@ -359,7 +356,7 @@ public class TrackLoader {
      * @param locator
      * @param newTracks
      */
-    private void loadFeatureFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+    private void loadTribbleFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
         if (locator.isLocal() && (locator.getPath().endsWith(".bed") ||
                 locator.getPath().endsWith(".bed.txt"))) {
@@ -1174,7 +1171,7 @@ public class TrackLoader {
         // Checking for the index is expensive over HTTP.  First see if this is an indexable format by fetching the codec
         String fullPath = locator.getPath();
         String pathNoQuery = locator.getURLPath();
-        if (!isIndexable(locator, genome)) {
+        if (!hasCodec(locator, genome)) {
             return false;
         }
 
@@ -1211,7 +1208,7 @@ public class TrackLoader {
      * @param genome
      * @return
      */
-    private static boolean isIndexable(ResourceLocator locator, Genome genome) {
+    private static boolean hasCodec(ResourceLocator locator, Genome genome) {
 
         String fn = stripGZ(locator.getTypeString());
         // The vcf extension is for performance, it doesn't matter which codec is returned all vcf files

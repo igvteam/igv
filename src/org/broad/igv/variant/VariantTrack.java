@@ -1421,4 +1421,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         return (VariantTrack) IGVSessionReader.getNextTrack();
     }
 
+
+
 }

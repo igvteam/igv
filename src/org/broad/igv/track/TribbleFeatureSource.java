@@ -58,10 +58,10 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
     }
 
     public static TribbleFeatureSource getFeatureSource(ResourceLocator locator, Genome genome, boolean useCache) throws IOException {
-        FeatureCodec codec = CodecFactory.getCodec(locator.getPath(), genome);
+
+        FeatureCodec codec = CodecFactory.getCodec(locator, genome);
         AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(locator, codec);
 
-        TribbleFeatureSource tribbleFeatureSource;
         if (basicReader.hasIndex()) {
             return new IndexedFeatureSource(basicReader, codec, locator, genome, useCache);
         } else {
