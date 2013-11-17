@@ -10,6 +10,7 @@
  */
 package org.broad.igv.util;
 
+import net.sf.samtools.util.ftp.FTPUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
@@ -578,20 +579,23 @@ public class FileUtils {
      */
     public static long getLength(String file) {
 
-        if(isRemote(file)) {
+        if (isRemote(file)) {
             try {
-                return HttpUtils.getInstance().getContentLength(new URL(file));
-            } catch (IOException e) {
+                URL url = new URL(file);
+                if (file.startsWith("ftp://")) {
+                    return FTPUtils.getContentLength(url);
+                } else {
+                    return HttpUtils.getInstance().getContentLength(url);
+                }
+            } catch (Exception e) {
                 log.error("Error fetching content length for: " + file, e);
                 return -1;
             }
-        }
-        else {
-          File f = new File(file);
-            if(f.exists() && f.isFile()) {
-                 return f.length();
-            }
-            else {
+        } else {
+            File f = new File(file);
+            if (f.exists() && f.isFile()) {
+                return f.length();
+            } else {
                 return -1;
             }
         }
