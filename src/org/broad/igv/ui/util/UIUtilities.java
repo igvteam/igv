@@ -16,15 +16,20 @@ package org.broad.igv.ui.util;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.apache.log4j.Logger;
 import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
 import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
+
 
 /**
  * @author eflakes
  */
 public class UIUtilities {
+
+    final private static Logger log = Logger.getLogger(UIUtilities.class);
 
     final private static StringBuffer scratchBuffer = new StringBuffer();
 
@@ -130,6 +135,27 @@ public class UIUtilities {
         } else {
             SwingUtilities.invokeLater(runnable);
         }
+    }
 
+    /**
+     * A wrapper around invokeOnEventThread.  If the runnable is already in the event dispatching
+     * queue it is just run.  Otherwise it is placed in the queue via invokeOnEventThread.
+     * <p/>
+     * I'm not sure this is strictly necessary,  but is safe.
+     *
+     * @param runnable
+     */
+    public static void invokeAndWaitOnEventThread(Runnable runnable) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            runnable.run();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(runnable);
+            } catch (InterruptedException e) {
+                log.error("Error invoking runnable", e);
+            } catch (InvocationTargetException e) {
+                log.error("Error invoking runnable", e);
+            }
+        }
     }
 }

@@ -13,6 +13,7 @@ package org.broad.igv.feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.feature.tribble.MUTCodec;
 import org.broad.igv.track.*;
 import org.broad.igv.util.ParsingUtils;
@@ -42,7 +43,7 @@ public class MutationTrackLoader {
         return MUTCodec.isMutationAnnotationFile(locator);
     }
 
-    public List<FeatureTrack> loadMutationTracks(ResourceLocator locator, Genome genome) throws IOException {
+    public List<FeatureTrack> loadMutationTracks(ResourceLocator locator, Genome genome) throws IOException, TribbleIndexNotFoundException {
 
         this.locator = locator;
         this.genome = genome;

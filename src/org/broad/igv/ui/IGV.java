@@ -33,6 +33,7 @@ import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.dev.api.IGVPlugin;
+import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.MaximumContigGenomeException;
 import org.broad.igv.feature.RegionOfInterest;
@@ -1717,7 +1718,7 @@ public class IGV {
      * @param locator
      * @return A list of loaded tracks
      */
-    public List<Track> load(ResourceLocator locator) {
+    public List<Track> load(ResourceLocator locator) throws DataLoadException {
 
         TrackLoader loader = new TrackLoader();
         List<Track> newTracks = loader.load(locator, this);
@@ -1748,7 +1749,7 @@ public class IGV {
     /**
      * Load the data file into the specified panel.   Triggered via drag and drop.
      */
-    public void load(ResourceLocator locator, TrackPanel panel) {
+    public void load(ResourceLocator locator, TrackPanel panel) throws DataLoadException {
         // If this is a session  TODO -- need better "is a session?" test
         if (locator.getPath().endsWith(".xml") || locator.getPath().endsWith(("session"))) {
             boolean merge = false;  // TODO -- ask user?

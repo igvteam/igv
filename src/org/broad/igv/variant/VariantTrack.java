@@ -1362,7 +1362,12 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                 ResourceLocator loc = new ResourceLocator(bamList);
                 loc.setType("alist");
                 loc.setName(name);
-                List<Track> tracks = IGV.getInstance().load(loc);
+                List<Track> tracks = null;
+                try {
+                    tracks = IGV.getInstance().load(loc);
+                } catch (Exception e) {
+                    log.error("Error loading bam: " + loc.getPath(), e);
+                }
 
                 TrackPanel panel = IGV.getInstance().getVcfBamPanel();
                 panel.clearTracks();

@@ -569,4 +569,31 @@ public class FileUtils {
         }
         return libURLList.toArray(new URL[0]);
     }
+
+    /**
+     * Return the length of the file, which might be remote.
+     *
+     * @param file
+     * @return
+     */
+    public static long getLength(String file) {
+
+        if(isRemote(file)) {
+            try {
+                return HttpUtils.getInstance().getContentLength(new URL(file));
+            } catch (IOException e) {
+                log.error("Error fetching content length for: " + file, e);
+                return -1;
+            }
+        }
+        else {
+          File f = new File(file);
+            if(f.exists() && f.isFile()) {
+                 return f.length();
+            }
+            else {
+                return -1;
+            }
+        }
+    }
 }

@@ -17,6 +17,7 @@ import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.GFFParser;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.GFFCodec;
+import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -65,7 +66,7 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
         return sourceFeats;
     }
 
-    private GFFFeatureSource getGffFeatureSource(String filepath) throws IOException {
+    private GFFFeatureSource getGffFeatureSource(String filepath) throws IOException, TribbleIndexNotFoundException {
         TribbleFeatureSource fs = TribbleFeatureSource.getFeatureSource(new ResourceLocator(filepath), genome);
         return new GFFFeatureSource(fs);
     }

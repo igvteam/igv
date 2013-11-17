@@ -11,10 +11,10 @@
 
 package org.broad.igv.feature.tribble.reader;
 
+import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.*;
-import org.broad.tribble.index.Index;
 import org.broad.tribble.util.ParsingUtils;
 
 import java.io.IOException;
@@ -43,7 +43,7 @@ public abstract class AbstractFeatureReader<T extends Feature, SOURCE> implement
      * Convenience overload which defaults to requiring an index.
      */
     public static <FEATURE extends Feature, SOURCE> AbstractFeatureReader<FEATURE, SOURCE>
-    getFeatureReader(final ResourceLocator locator, final FeatureCodec<FEATURE, SOURCE> codec) throws TribbleException {
+    getFeatureReader(final ResourceLocator locator, final FeatureCodec<FEATURE, SOURCE> codec) throws TribbleException, TribbleIndexNotFoundException {
 
         try {
             // Test for tabix index
