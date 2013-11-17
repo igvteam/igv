@@ -948,7 +948,7 @@ public class TrackMenuUtils {
 
         int origValue = featureTracks.iterator().next().getVisibilityWindow();
         double origValueKB = (origValue / 1000.0);
-        Double value = getDoubleInput("Visibility window (kb)", origValueKB);
+        Double value = getDoubleInput("Enter visibility window in kilo-bases.  To load all data enter zero.", origValueKB);
         if (value == null) {
             return;
         }
