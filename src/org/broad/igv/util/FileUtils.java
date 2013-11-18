@@ -535,6 +535,7 @@ public class FileUtils {
 
         String systemPath = System.getenv("PATH");
         if (systemPath == null) systemPath = System.getenv("path");
+        if (systemPath == null || File.pathSeparator == null) return executable;
 
         String[] pathDirs = systemPath.split(File.pathSeparator);
 
