@@ -73,15 +73,15 @@ public class TribbleFeatureReader<T extends Feature, SOURCE> extends AbstractFea
 
         String indexFile = locator.getIndexPath();
         if (indexFile == null) {
-            indexFile = Tribble.indexFile(locator.getPath());
+            indexFile = ResourceLocator.indexFile(locator, Tribble.STANDARD_INDEX_EXTENSION);
         }
 
         if (FileUtils.resourceExists(indexFile)) {
             index = IndexFactory.loadIndex(indexFile);
         } else {
             // See if the index itself is gzipped
-            indexFile = indexFile + ".gz";
-            if (FileUtils.resourceExists(indexFile)) {
+            indexFile = ResourceLocator.indexFile(new ResourceLocator(indexFile), ".gz");
+            if (ParsingUtils.resourceExists(indexFile)) {
                 index = IndexFactory.loadIndex(indexFile);
             } else {
                 index = null;

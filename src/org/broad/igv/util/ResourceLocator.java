@@ -181,6 +181,19 @@ public class ResourceLocator {
         return getPath().split("\\?", 2)[0];
     }
 
+    /**
+     * Returns the portion of the contained path after the query string.
+     * If there is no query string, this will return an empty string
+     * @return
+     */
+    public String getURLQueryString(){
+        String[] tmp  = getPath().split("\\?", 2);
+        if(tmp.length == 1){
+            return "";
+        }
+        return tmp[1];
+    }
+
     public String toString() {
         return path + (dbURL == null ? "" : " " + dbURL);
     }
@@ -351,6 +364,22 @@ public class ResourceLocator {
         }
 
         return path + ".bai";
+    }
+
+    /**
+     * Add the {@code indexExtension} to the path in locator, preserving
+     * query string elements if present
+     * @param locator
+     * @param indexExtension
+     * @return
+     */
+    public static String indexFile(ResourceLocator locator, String indexExtension) {
+        String indexFile = locator.getURLPath() + indexExtension;
+        String qs = locator.getURLQueryString();
+        if(qs != null && qs.length() > 0){
+            indexFile += "?" + qs;
+        }
+        return indexFile;
     }
 
 
