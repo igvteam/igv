@@ -9,6 +9,7 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
@@ -25,21 +26,23 @@ public class TribbleListFeatureSource implements FeatureSource {
 
     private static Logger log = Logger.getLogger(TribbleListFeatureSource.class);
 
-     Map<String, TribbleFeatureSource> featureSourceMap;
+    Map<String, String> pathMap;
+    Map<String, TribbleFeatureSource> featureSourceMap;
     int windowSize = 1000;
     Object header;
     Genome genome;
 
-    public TribbleListFeatureSource(String path, Genome genome) throws IOException, TribbleIndexNotFoundException {
+    public TribbleListFeatureSource(String path, Genome genome) throws IOException {
 
         this.genome = genome;
         init(path, genome);
 
     }
 
-    private void init(String path, Genome genome) throws IOException, TribbleIndexNotFoundException {
+    private void init(String path, Genome genome) throws IOException {
 
         featureSourceMap = Collections.synchronizedMap(new HashMap());
+        pathMap = new HashMap<String, String>();
         BufferedReader reader = null;
 
         try {
@@ -49,10 +52,8 @@ public class TribbleListFeatureSource implements FeatureSource {
                 String f = nextLine.trim();
                 if (!f.startsWith("#")) {
                     String[] tokens = Globals.whitespacePattern.split(nextLine);
-                    final String chr = tokens[0];
-                    final String srcPath = tokens[1];
-                    featureSourceMap.put(chr, TribbleFeatureSource.getFeatureSource(new ResourceLocator(srcPath), genome));
-
+                    if (tokens.length > 1)
+                        pathMap.put(tokens[0], tokens[1]);
                 }
             }
         } finally {
@@ -60,25 +61,52 @@ public class TribbleListFeatureSource implements FeatureSource {
         }
     }
 
+    private TribbleFeatureSource getSource(String chr) throws TribbleIndexNotFoundException {
 
+        TribbleFeatureSource src = featureSourceMap.get(chr);
+        if (src == null) {
+            String path = pathMap.get(chr);
+            if (path != null) {
+                try {
+                    src = TribbleFeatureSource.getFeatureSource(new ResourceLocator(path), genome);
+                } catch (IOException e) {
+                    log.error("Error loading tribble source: " + path);
+                }
+                featureSourceMap.put(chr, src);
+            }
+        }
+        return src;
+
+    }
 
     @Override
     public Iterator getFeatures(String chr, int start, int end) throws IOException {
-        FeatureSource src = featureSourceMap.get(chr);
-        if (src != null) {
-            return src.getFeatures(chr, start, end);
-        } else {
-            return null;
+        try {
+            FeatureSource src = getSource(chr);
+            if (src != null) {
+                return src.getFeatures(chr, start, end);
+            } else {
+                return null;
+            }
+        } catch (TribbleIndexNotFoundException e) {
+            log.error("Index not found", e);
+            throw new IOException(e.getMessage());
         }
+
     }
 
     @Override
     public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
 
-        FeatureSource src = featureSourceMap.get(chr);
-        if (src != null) {
-            return src.getCoverageScores(chr, start, end, zoom);
-        } else {
+        try {
+            FeatureSource src = getSource(chr);
+            if (src != null) {
+                return src.getCoverageScores(chr, start, end, zoom);
+            } else {
+                return null;
+            }
+        } catch (TribbleIndexNotFoundException e) {
+            log.error("Index not found for", e);
             return null;
         }
 
@@ -94,11 +122,12 @@ public class TribbleListFeatureSource implements FeatureSource {
         this.windowSize = size;
     }
 
-    public Object getHeader() {
+    public Object getHeader() throws TribbleIndexNotFoundException {
         if (header == null) {
             // Arbitrarily get the first source
-            if (featureSourceMap != null && featureSourceMap.size() > 0) {
-                TribbleFeatureSource src = featureSourceMap.values().iterator().next();
+            if (pathMap != null && pathMap.size() > 0) {
+                String chr = pathMap.keySet().iterator().next();
+                TribbleFeatureSource src = getSource(chr);
                 header = src.getHeader();
             }
 

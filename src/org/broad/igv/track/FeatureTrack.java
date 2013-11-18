@@ -331,7 +331,7 @@ public class FeatureTrack extends AbstractTrack {
                             if ((f.getEnd() >= start) && (f.getStart() <= end)) {
                                 float value = ((IGVFeature) f).getScore();
                                 regionScore += value;
-                                nValues ++;
+                                nValues++;
                             }
                         }
                     }
@@ -682,8 +682,14 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     protected boolean isShowFeatures(RenderContext context) {
-        // Always show features, except in whole-genome view.
-        return !context.getChr().equals(Globals.CHR_ALL);
+
+        if (context.getChr().equals(Globals.CHR_ALL)) {
+            return false;
+        } else {
+            double windowSize = context.getEndLocation() - context.getOrigin();
+            int vw = getVisibilityWindow();
+            return (vw <= 0 || windowSize <= vw);
+        }
     }
 
     protected void renderCoverage(RenderContext context, Rectangle inputRect) {
@@ -691,15 +697,20 @@ public class FeatureTrack extends AbstractTrack {
             return;
         }
 
-        List<LocusScore> scores = source.getCoverageScores(context.getChr(), (int) context.getOrigin(),
-                (int) context.getEndLocation(), context.getZoom());
+        final String chr = context.getChr();
+
+        List<LocusScore> scores =  chr.equals(Globals.CHR_ALL) ?
+                source.getCoverageScores(chr, (int) context.getOrigin(),
+                (int) context.getEndLocation(), context.getZoom()) :
+                null;
+
         if (scores == null) {
             Graphics2D g = context.getGraphic2DForColor(Color.gray);
             Rectangle textRect = new Rectangle(inputRect);
 
             // Keep text near the top of the track rectangle
             textRect.height = Math.min(inputRect.height, 20);
-            String message = context.getChr().equals(Globals.CHR_ALL) ? "Zoom in to see features." :
+            String message = chr.equals(Globals.CHR_ALL) ? "Zoom in to see features." :
                     "Zoom in to see features, or right-click to increase Feature Visibility Window.";
             GraphicUtils.drawCenteredText(message, textRect, g);
 

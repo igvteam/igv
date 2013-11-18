@@ -70,7 +70,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
     }
 
 
-    private TribbleFeatureSource(AbstractFeatureReader reader, FeatureCodec codec, Genome genome, boolean useCache) throws IOException {
+    private TribbleFeatureSource(ResourceLocator locator, AbstractFeatureReader reader, FeatureCodec codec, Genome genome, boolean useCache) throws IOException {
 
         this.genome = genome;
         this.isVCF = codec.getClass() == VCFWrapperCodec.class;
@@ -81,13 +81,16 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                 new CachingFeatureReader(reader, 5, featureWindowSize) :
                 new TribbleReaderWrapper(reader);
 
-        // initCoverageSource(locator.getPath() + ".tdf");
+        initCoverageSource(locator.getPath() + ".tdf");
+
 
     }
 
     protected abstract int estimateFeatureWindowSize(FeatureReader reader);
 
     protected abstract Collection<String> getSequenceNames();
+
+    public abstract boolean isIndexed();
 
     public Class getFeatureClass() {
         return featureClass;
@@ -108,12 +111,19 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         return header;
     }
 
+    private void initCoverageSource(String covPath) {
+        if (ParsingUtils.pathExists(covPath)) {
+            TDFReader reader = TDFReader.getReader(covPath);
+            coverageSource = new TDFDataSource(reader, 0, "", genome);
+        }
+    }
+
     static class IndexedFeatureSource extends TribbleFeatureSource {
 
 
         private IndexedFeatureSource(AbstractFeatureReader basicReader, FeatureCodec codec, ResourceLocator locator,
                                      Genome genome, boolean useCache) throws IOException {
-            super(basicReader, codec, genome, useCache);
+            super(locator, basicReader, codec, genome, useCache);
 
 
             if (genome != null) {
@@ -127,18 +137,13 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                     }
                 }
             }
+       }
 
 
-            initCoverageSource(locator.getPath() + ".tdf");
+        @Override
+        public boolean isIndexed() {
+            return true;
         }
-
-        private void initCoverageSource(String covPath) {
-            if (ParsingUtils.pathExists(covPath)) {
-                TDFReader reader = TDFReader.getReader(covPath);
-                coverageSource = new TDFDataSource(reader, 0, "", genome);
-            }
-        }
-
 
         @Override
         public Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
@@ -180,6 +185,13 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         @Override
         protected int estimateFeatureWindowSize(FeatureReader reader) {
 
+            // Simple formula for VCF.  Appropriate for human 1KG/dbSNp, probably overly conservative otherwise
+            if(isVCF) {
+                 return 10000;
+            }
+            else {
+
+            }
             CloseableTribbleIterator<org.broad.tribble.Feature> iter = null;
 
             try {
@@ -187,7 +199,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                 iter = reader.iterator();
                 if (iter.hasNext()) {
 
-                    int nSamples = isVCF ? 100 : 1000;
+                    int nSamples = 1000;
                     org.broad.tribble.Feature firstFeature = iter.next();
                     org.broad.tribble.Feature lastFeature = firstFeature;
                     String chr = firstFeature.getChr();
@@ -205,7 +217,6 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                                 lastFeature = f;
                                 chr = f.getChr();
                             }
-
                         }
                     }
                     double dMem = mem - RuntimeUtils.getAvailableMemory();
@@ -215,7 +226,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                     double featuresPerBase = ((double) n) / len;
 
                     double targetBinMemory = 20000000;  // 20  mega bytes
-                    int maxBinSize = isVCF ? 1000000 : Integer.MAX_VALUE;
+                    int maxBinSize = Integer.MAX_VALUE;
                     int bs = Math.min(maxBinSize, (int) (targetBinMemory / (bytesPerFeature * featuresPerBase)));
                     return Math.max(1000000, bs);
                 } else {
@@ -242,7 +253,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
         private NonIndexedFeatureSource(AbstractFeatureReader basicReader, FeatureCodec codec, ResourceLocator locator, Genome genome) throws IOException {
 
-            super(basicReader, codec, genome, false);
+            super(locator, basicReader, codec, genome, false);
 
             featureMap = new HashMap<String, List<Feature>>(25);
             Iterator<Feature> iter = reader.iterator();
@@ -271,6 +282,11 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                 coverageData.computeGenomeCoverage();
                 sampleGenomeFeatures();
             }
+        }
+
+        @Override
+        public boolean isIndexed() {
+            return false;
         }
 
         @Override
