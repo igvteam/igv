@@ -682,10 +682,8 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     protected boolean isShowFeatures(RenderContext context) {
-        double windowSize = context.getEndLocation() - context.getOrigin();
-        int vw = getVisibilityWindow();
-        return (vw <= 0 && !context.getChr().equals(Globals.CHR_ALL) ||
-                windowSize <= vw && !context.getChr().equals(Globals.CHR_ALL));
+        // Always show features, except in whole-genome view.
+        return !context.getChr().equals(Globals.CHR_ALL);
     }
 
     protected void renderCoverage(RenderContext context, Rectangle inputRect) {
