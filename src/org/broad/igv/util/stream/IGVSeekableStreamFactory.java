@@ -11,6 +11,7 @@
 
 package org.broad.igv.util.stream;
 
+import net.sf.samtools.seekablestream.ISeekableStreamFactory;
 import net.sf.samtools.seekablestream.SeekableFileStream;
 import net.sf.samtools.seekablestream.SeekableStream;
 import org.broad.igv.util.HttpUtils;
@@ -22,7 +23,7 @@ import java.net.URL;
 /**
  * @author Jim Robinson
  */
-public class IGVSeekableStreamFactory {
+public class IGVSeekableStreamFactory implements ISeekableStreamFactory {
 
     private static IGVSeekableStreamFactory instance;
     static{
@@ -62,6 +63,14 @@ public class IGVSeekableStreamFactory {
             }
             return is;
         }
+    }
+
+    public SeekableStream getBufferedStream(SeekableStream stream){
+        return getBufferedStream(stream, IGVSeekableBufferedStream.DEFAULT_BUFFER_SIZE);
+    }
+
+    public SeekableStream getBufferedStream(SeekableStream stream, int bufferSize){
+        return new IGVSeekableBufferedStream(stream, bufferSize);
     }
 
 }

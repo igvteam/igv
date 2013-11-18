@@ -373,13 +373,27 @@ public class ResourceLocator {
      * @param indexExtension
      * @return
      */
-    public static String indexFile(ResourceLocator locator, String indexExtension) {
+    public static String appendToPath(ResourceLocator locator, String indexExtension) {
         String indexFile = locator.getURLPath() + indexExtension;
         String qs = locator.getURLQueryString();
         if(qs != null && qs.length() > 0){
             indexFile += "?" + qs;
         }
         return indexFile;
+    }
+
+    /**
+     *
+     * @param locator
+     * @param indexExtension
+     * @return  locator.getIndexPath() if not null, otherwise
+     *          {@link #appendToPath(ResourceLocator, String)}
+     */
+    public static String indexFile(ResourceLocator locator, String indexExtension){
+        if(locator.getIndexPath() != null){
+            return locator.getIndexPath();
+        }
+        return appendToPath(locator, indexExtension);
     }
 
 

@@ -15,22 +15,25 @@ import org.broad.igv.Globals;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.DataSource;
 import org.broad.igv.data.DataTile;
+import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.*;
-import org.broad.igv.feature.tribble.reader.AbstractFeatureReader;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.util.IndexCreatorDialog;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.collections.CollUtils;
-import org.broad.tribble.CloseableTribbleIterator;
-import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureCodec;
-import org.broad.tribble.FeatureReader;
+import org.broad.igv.variant.VariantTrack;
+import org.broad.tribble.*;
+import org.broad.tribble.index.Index;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -60,13 +63,52 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
     public static TribbleFeatureSource getFeatureSource(ResourceLocator locator, Genome genome, boolean useCache) throws IOException, TribbleIndexNotFoundException {
 
         FeatureCodec codec = CodecFactory.getCodec(locator, genome);
-        AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(locator, codec);
+        String idxPath = ResourceLocator.indexFile(locator, Tribble.STANDARD_INDEX_EXTENSION);
+        boolean indexExists = false;
+        try{
+            indexExists = (new File(idxPath)).canRead();
+        }catch (Exception e){
+            //pass
+        }
+
+        // Optionally let the user create an index.
+        final int tenMB = 10000000;
+        final int oneGB = 1000000000;
+        long size = FileUtils.getLength(locator.getPath());
+        final boolean indexRequired =
+                (VariantTrack.isVCF(locator.getTypeString()) && size > tenMB) || size > oneGB;
+        if (!Globals.isHeadless() && locator.isLocal() && !locator.getPath().endsWith(".gz") && !indexExists) {
+            if (size > tenMB) {
+                createIndex(locator, indexRequired);   // Note, might return null.
+            }
+        }
+
+        AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(locator.getPath(), idxPath, codec, indexRequired);
 
         if (basicReader.hasIndex()) {
             return new IndexedFeatureSource(basicReader, codec, locator, genome, useCache);
         } else {
-            return  new NonIndexedFeatureSource(basicReader, codec, locator, genome);
+            return new NonIndexedFeatureSource(basicReader, codec, locator, genome);
         }
+    }
+
+
+    /**
+     * Present a dialog for the user to create an index.  This method can return null if the user cancels, or there
+     * is an error while creating the index.
+     *
+     * @param locator
+     * @param indexRequired
+     * @return
+     */
+    private static Index createIndex(ResourceLocator locator, boolean indexRequired) {
+        File baseFile = new File(locator.getPath());
+        File newIdxFile = new File(locator.getPath() + ".idx");
+        String messageText = "An index file for " + baseFile.getAbsolutePath() + " could not " +
+                "be located. An index is " + (indexRequired ? "required" : "recommended") +
+                " to view files of this size.   Click \"Go\" to create one now.";
+        IndexCreatorDialog dialog = IndexCreatorDialog.createShowDialog(IGV.getMainFrame(), baseFile, newIdxFile, messageText);
+        return (Index) dialog.getIndex();
     }
 
 
