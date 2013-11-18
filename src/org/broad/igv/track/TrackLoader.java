@@ -243,7 +243,7 @@ public class TrackLoader {
 
             return newTracks;
         } catch (Exception e) {
-            if(!NOLogExceptions.contains(e.getClass())) {
+            if (!NOLogExceptions.contains(e.getClass())) {
                 log.error(e.getMessage(), e);
             }
             throw new DataLoadException(e.getMessage());
@@ -877,18 +877,13 @@ public class TrackLoader {
                 }
             }
             if (covPath != null) {
-                try {
-                    if ((new File(covPath)).exists() || (HttpUtils.isRemoteURL(covPath) &&
-                            HttpUtils.getInstance().resourceAvailable(new URL(covPath)))) {
-                        log.debug("Loading TDF for coverage: " + covPath);
-                        TDFReader reader = TDFReader.getReader(covPath);
-                        TDFDataSource ds = new TDFDataSource(reader, 0, alignmentTrack.getName() + " coverage", genome);
-                        covTrack.setDataSource(ds);
-                    }
-                } catch (MalformedURLException e) {
-                    // This is expected if
-                    //    log.info("Could not loading coverage data: MalformedURL: " + covPath);
+                if (FileUtils.resourceExists(covPath)) {
+                    log.debug("Loading TDF for coverage: " + covPath);
+                    TDFReader reader = TDFReader.getReader(covPath);
+                    TDFDataSource ds = new TDFDataSource(reader, 0, alignmentTrack.getName() + " coverage", genome);
+                    covTrack.setDataSource(ds);
                 }
+
             }
 
             boolean showSpliceJunctionTrack = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
@@ -1142,24 +1137,15 @@ public class TrackLoader {
 
         String indexExtension = pathNoQuery.endsWith("gz") ? ".tbi" : ".idx";
 
-        try {
-            if (HttpUtils.isRemoteURL(fullPath)) {
-                String indexPath = fullPath + indexExtension;
-                //Handle query string, if it exists
-                String[] toks = fullPath.split("\\?", 2);
-                if (toks.length == 2) {
-                    indexPath = String.format("%s%s?%s", toks[0], indexExtension, toks[1]);
-                }
-
-                return HttpUtils.getInstance().resourceAvailable(new URL(indexPath));
-            } else {
-                File f = new File(fullPath + indexExtension);
-                return f.exists();
+        String indexPath = fullPath + indexExtension;
+        if (HttpUtils.isRemoteURL(fullPath)) {
+            //Handle query string, if it exists
+            String[] toks = fullPath.split("\\?", 2);
+            if (toks.length == 2) {
+                indexPath = String.format("%s%s?%s", toks[0], indexExtension, toks[1]);
             }
-
-        } catch (IOException e) {
-            return false;
         }
+        return FileUtils.resourceExists(indexPath);
 
     }
 

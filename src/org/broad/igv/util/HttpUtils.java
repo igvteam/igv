@@ -216,14 +216,14 @@ public class HttpUtils {
         log.debug("Checking if resource is available: " + url);
         if (url.getProtocol().toLowerCase().equals("ftp")) {
             return FTPUtils.resourceAvailable(url);
-        }
-
-        try {
-            HttpURLConnection conn = openConnection(url, null, "HEAD");
-            int code = conn.getResponseCode();
-            return code >= 200 && code < 300;
-        } catch (IOException e) {
-            return false;
+        } else {
+            try {
+                HttpURLConnection conn = openConnection(url, null, "HEAD");
+                int code = conn.getResponseCode();
+                return code >= 200 && code < 300;
+            } catch (IOException e) {
+                return false;
+            }
         }
     }
 
@@ -822,7 +822,7 @@ public class HttpUtils {
         Map<String, String> map = new HashMap<String, String>();
         for (String param : params) {
             String[] name_val = param.split("=", 2);
-            if(name_val.length == 2){
+            if (name_val.length == 2) {
                 map.put(name_val[0], name_val[1]);
             }
         }

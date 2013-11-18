@@ -12,6 +12,7 @@
 package org.broad.igv.feature.tribble.reader;
 
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.*;
@@ -78,7 +79,7 @@ public abstract class AbstractFeatureReader<T extends Feature, SOURCE> implement
                 tabxIndex = locator.getIndexPath() + ".tbi";
             }
         }
-        boolean isTabix =  locator.getPath().endsWith(".gz") && ParsingUtils.resourceExists(tabxIndex);
+        boolean isTabix =  locator.getPath().endsWith(".gz") && FileUtils.resourceExists(tabxIndex);
         if(isTabix) {
             locator.setIndexPath(tabxIndex);
         }

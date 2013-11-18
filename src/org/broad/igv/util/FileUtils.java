@@ -77,11 +77,13 @@ public class FileUtils {
 
     public static boolean resourceExists(String path) {
         try {
-            boolean remoteFile = isRemote(path);
-            return (!remoteFile && (new File(path).exists())) ||
-                    (remoteFile && HttpUtils.getInstance().resourceAvailable(new URL(path)));
+            if (isRemote(path)) {
+                return HttpUtils.getInstance().resourceAvailable(new URL(path));
+            } else {
+                return (new File(path)).exists();
+            }
         } catch (IOException e) {
-            log.error("Malformed URL: " + path, e);
+            log.error("Error checking existence of: " + path, e);
             return false;
         }
     }
