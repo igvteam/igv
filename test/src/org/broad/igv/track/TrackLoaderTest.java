@@ -42,7 +42,7 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
     TrackLoader trackLoader;
 
     @Rule
-    public TestRule testTimeout = new Timeout((int) (5 * 60e3));
+    public TestRule testTimeout = new Timeout((int) (500 * 60e3));
 
     @Before
     public void setUp() throws Exception {
@@ -91,8 +91,19 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
     @Test
     public void testLoadSIF() throws Exception {
         String filepath = TestUtils.DATA_DIR + "sample/BRCA_sif.txt";
-        //Sample information file, shouldn't have tracks. Not a great test
-        tstLoadFi(filepath, 0, false);
+        List<String> expectedAttributeNames = Arrays.asList("TCGA_EXPERIMENT", "TCGA_BATCH", "TUMOR_NORMAL",
+                "BIRDSEED_GENDER", "LEVEL2_NOISE", "LEVEL3_SEGMENT_COUNT", "PURITY	PLOIDY", "DELTA",
+                "CANCER_DNA_FRACTION", "SUBCLONAL_GENOME_FRACTION");
+
+        tstLoadFi(filepath, 0, false);  //Sample information file, shouldn't have tracks.
+
+        Set<String> attrNames = new HashSet<String>(AttributeManager.getInstance().getAttributeNames());
+
+        assertTrue(attrNames.size() >= expectedAttributeNames.size());  // Can be larger because of default attributes
+        for (String name : expectedAttributeNames) {
+            assertTrue(expectedAttributeNames.contains(name));
+        }
+
     }
 
     @Test
@@ -140,10 +151,11 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
     /**
      * Test that we properly load a vcf file, even though the
      * extension is upper-case. IGV-2012
+     *
      * @throws Exception
      */
     @Test
-    public void testLoadVCFUpperCase() throws Exception{
+    public void testLoadVCFUpperCase() throws Exception {
         String filepath = TestUtils.DATA_DIR + "vcf/HC_MOD_CAPS.VCF";
         ResourceLocator locator = new ResourceLocator(filepath);
         TestUtils.createIndex(filepath);
@@ -208,7 +220,8 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
 
     private static ArrayList<String> tmp = new ArrayList<String>(filenamesNoIndex.length);
     static String[] filenamesTryIndex;
-    static{
+
+    static {
         tmp.add("/sam/test_2.sam");
         filenamesTryIndex = tmp.toArray(new String[tmp.size()]);
     }
@@ -226,7 +239,7 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testFilesHeadlessNoIndex() throws Exception{
+    public void testFilesHeadlessNoIndex() throws Exception {
         tstFilesHeadless(filenamesNoIndex, false);
     }
 
@@ -300,7 +313,7 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testLoadBAMFtp() throws Exception{
+    public void testLoadBAMFtp() throws Exception {
         String path = "ftp://ftp.broadinstitute.org/pub/igv/TEST/HG00171.hg18.bam";
         tstLoadFi(path, 2, false);
     }
