@@ -89,7 +89,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
     }
 
     /**
-     * Set the data manager and coverage track.
+     * Set the data manager
      * @param dataManager
      */
     public void setDataManager(IAlignmentDataManager dataManager) {
@@ -142,7 +142,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
     public void setCoverageTrack(CoverageTrack covTrack) {
         this.coverageTrack = new CoverageTrack(covTrack);
         this.coverageTrack.setColor(color);
-        //Don't want to color SNPs
+        //Don't want to color SNPs, so we just set an impossibly high threshold
         coverageTrack.setSnpThreshold(2.0f);
         coverageTrack.setAutoScale(true);
         coverageTrack.rescale();
