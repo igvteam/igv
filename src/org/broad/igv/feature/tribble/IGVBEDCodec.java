@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
  * SOFTWARE COPYRIGHT NOTICE
  * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
  *

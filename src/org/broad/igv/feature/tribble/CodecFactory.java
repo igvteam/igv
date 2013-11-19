@@ -172,4 +172,27 @@ public class CodecFactory {
         // Should never get here, but as a last resort assume this is a VCF 4.x file.
         return new VCFCodec();
     }
+
+    /**
+     * Return true if a file represented by "path" is indexable.  This method is an optimization, we could just look
+     * for the index but that is expensive to do for remote resources.  All tribble indexable extensions should be
+     * listed here.
+     *
+     * @param locator
+     * @param genome
+     * @return
+     */
+    public static boolean hasCodec(ResourceLocator locator, Genome genome) {
+
+        String fn = locator.getTypeString();
+        if (fn.endsWith(".gz")) {
+            int l = fn.length() - 3;
+            fn = fn.substring(0, l);
+        }
+        // The vcf extension is for performance, it doesn't matter which codec is returned all vcf files
+        // are indexable.
+        return fn.endsWith(".vcf") || fn.endsWith(".bcf") || getCodec(locator, genome) != null;
+
+
+    }
 }

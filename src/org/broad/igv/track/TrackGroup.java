@@ -188,7 +188,7 @@ public class TrackGroup {
     public void sortByAttributes(final String[] attributeNames,
                                  final boolean[] ascending) {
         if ((tracks != null) && !tracks.isEmpty()) {
-            Comparator<Track> comparator = new AttributeComparator(attributeNames, ascending);
+            Comparator<Track> comparator = new AttributeComparator.TrackAttributeComparator(attributeNames, ascending);
 
             // Step 1, remove non-sortable tracks and remember position
             List<Track> nonsortableTracks = new ArrayList<Track>();
@@ -204,10 +204,12 @@ public class TrackGroup {
 
             // Step 2, sort "sortable" tracks
             Collections.sort(tracks, comparator);
-            // Step 2.5, internal sort by sample attributes for variant tracks
+
+            // Step 2.5, internal sort by sample attributes for variant tracks.  This is ugly but neccessary as
+            // variant tracks are implemented as monoliths, with sample rows internal to the track.
             for (Track t : tracks) {
                 if (t instanceof org.broad.igv.variant.VariantTrack) {
-                    ((org.broad.igv.variant.VariantTrack)t).sortSamples(new SampleAttributeComparator(attributeNames, ascending));
+                    ((org.broad.igv.variant.VariantTrack) t).sortSamples(new AttributeComparator.SampleAttributeComparator(attributeNames, ascending));
                 }
             }
 
@@ -385,141 +387,5 @@ public class TrackGroup {
         igv.clearSelections();
         igv.setTrackSelections(new HashSet(tracks));
 
-    }
-
-    /**
-     * Sort tracks by attribute value
-     */
-    private class AttributeComparator implements Comparator<Track> {
-
-        private final String[] attributeNames;
-        private final boolean[] ascending;
-
-        private AttributeComparator(String[] attributeNames, boolean[] ascending) {
-            assert attributeNames.length == ascending.length;
-            this.attributeNames = attributeNames;
-            this.ascending = ascending;
-        }
-
-        private String getAttributeValue(Track track, String attName) {
-            String value = track.getAttributeValue(attName);
-
-            if (value == null) {
-                value = "";
-            }
-
-            return value.toLowerCase();
-        }
-
-        public int compare(Track t1, Track t2) {
-            // Loop through the attributes in order (primary, secondary, tertiary, ...).  The
-            // first attribute to yield a non-zero comparison wins
-            for (int i = 0; i < attributeNames.length; i++) {
-                String attName = attributeNames[i];
-
-                if (attName != null) {
-                    String value1 = getAttributeValue(t1, attName);
-                    String value2 = getAttributeValue(t2, attName);
-
-                    boolean isNumeric = AttributeManager.getInstance().isNumeric(attName);
-
-                    int c = 0;
-                    if (isNumeric) {
-                        double d1;
-                        try {
-                            d1 = Double.parseDouble(value1);
-                        } catch (NumberFormatException e) {
-                            d1 = Double.MIN_VALUE;
-                        }
-                        double d2;
-                        try {
-                            d2 = Double.parseDouble(value2);
-                        } catch (NumberFormatException e) {
-                            d2 = Double.MIN_VALUE;
-                        }
-                        c = Double.compare(d1, d2);
-                    } else {
-                        c = value1.compareTo(value2);
-                    }
-
-                    if (c != 0) {
-                        return ascending[i] ? c : -c;
-                    }
-
-                }
-            }
-
-            // All compares are equal
-            return 0;
-        }
-    }
-
-    /**
-     * Sort samples by attribute value; logic copied wholesale from 
-     * AttributeComparator, probably some refactoring could be done
-     * to minimize the duplicated code
-     */
-    private class SampleAttributeComparator implements Comparator<String> {
-
-        private final String[] attributeNames;
-        private final boolean[] ascending;
-
-        private SampleAttributeComparator(String[] attributeNames, boolean[] ascending) {
-            assert attributeNames.length == ascending.length;
-            this.attributeNames = attributeNames;
-            this.ascending = ascending;
-        }
-
-        private String getAttributeValue(String sample, String attName) {
-            String value = AttributeManager.getInstance().getAttribute(sample, attName);
-
-            if (value == null) {
-                value = "";
-            }
-
-            return value.toLowerCase();
-        }
-
-        public int compare(String s1, String s2) {
-            // Loop through the attributes in order (primary, secondary, tertiary, ...).  The
-            // first attribute to yield a non-zero comparison wins
-            for (int i = 0; i < attributeNames.length; i++) {
-                String attName = attributeNames[i];
-
-                if (attName != null) {
-                    String value1 = getAttributeValue(s1, attName);
-                    String value2 = getAttributeValue(s2, attName);
-
-                    boolean isNumeric = AttributeManager.getInstance().isNumeric(attName);
-
-                    int c = 0;
-                    if (isNumeric) {
-                        double d1;
-                        try {
-                            d1 = Double.parseDouble(value1);
-                        } catch (NumberFormatException e) {
-                            d1 = Double.MIN_VALUE;
-                        }
-                        double d2;
-                        try {
-                            d2 = Double.parseDouble(value2);
-                        } catch (NumberFormatException e) {
-                            d2 = Double.MIN_VALUE;
-                        }
-                        c = Double.compare(d1, d2);
-                    } else {
-                        c = value1.compareTo(value2);
-                    }
-
-                    if (c != 0) {
-                        return ascending[i] ? c : -c;
-                    }
-
-                }
-            }
-
-            // All compares are equal
-            return 0;
-        }
     }
 }

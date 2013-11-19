@@ -12,6 +12,7 @@
 package org.broad.igv.tools;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.util.LongRunningTask;
@@ -133,7 +134,7 @@ public class FeatureSearcherTest extends AbstractHeadlessTest {
         assertEquals(10, feat.getEnd());
     }
 
-    public FeatureSource<? extends Feature> getTestBedSource() throws IOException{
+    public FeatureSource<? extends Feature> getTestBedSource() throws IOException, TribbleIndexNotFoundException {
         String path = TestUtils.DATA_DIR + "bed/test.bed";
         TestUtils.createIndex(path);
         return TribbleFeatureSource.getFeatureSource(new ResourceLocator(path), genome);

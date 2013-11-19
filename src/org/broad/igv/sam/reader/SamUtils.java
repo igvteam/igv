@@ -68,7 +68,10 @@ public class SamUtils {
         }
 
         if (!Globals.isHeadless()) {
-            IndexCreatorDialog dialog = IndexCreatorDialog.createShowDialog(IGV.getMainFrame(), samFile, newIdxFile);
+            String introText = "An index file for " + samFile.getAbsolutePath() + " could not " +
+                    "be located. An index is required to view SAM files in IGV.  " +
+                    "Click \"Go\" to create one now.";
+            IndexCreatorDialog dialog = IndexCreatorDialog.createShowDialog(IGV.getMainFrame(), samFile, newIdxFile, introText);
             return (FeatureIndex) dialog.getIndex();
         } else {
             AlignmentIndexer indexer = AlignmentIndexer.getInstance(samFile, null, null);

@@ -11,6 +11,7 @@
 
 package org.broad.igv.track;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.bbfile.BBFileReader;
@@ -38,6 +39,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
+import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.gwas.GWASData;
@@ -58,17 +60,14 @@ import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.ConfirmDialog;
-import org.broad.igv.ui.util.IndexCreatorDialog;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.util.PedigreeUtils;
-import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.AsciiFeatureCodec;
-import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureCodec;
 import org.broadinstitute.variant.vcf.VCFHeader;
 
 import java.io.File;
@@ -85,6 +84,8 @@ public class TrackLoader {
 
     private static Logger log = Logger.getLogger(TrackLoader.class);
 
+    private static Collection<? extends Class> NOLogExceptions = Arrays.asList(TribbleIndexNotFoundException.class);
+
     /**
      * Calls {@linkplain TrackLoader#load(org.broad.igv.util.ResourceLocator, org.broad.igv.feature.genome.Genome)}
      * with genome from IGV instance (if not null).
@@ -93,7 +94,7 @@ public class TrackLoader {
      * @param igv
      * @return
      */
-    public List<Track> load(ResourceLocator locator, IGV igv) {
+    public List<Track> load(ResourceLocator locator, IGV igv) throws DataLoadException {
         Genome genome = igv != null ? GenomeManager.getInstance().getCurrentGenome() : null;
         return load(locator, genome);
     }
@@ -106,7 +107,7 @@ public class TrackLoader {
      * @param genome
      * @return
      */
-    public List<Track> load(ResourceLocator locator, Genome genome) {
+    public List<Track> load(ResourceLocator locator, Genome genome) throws DataLoadException {
 
         final String path = locator.getPath();
         log.info("Loading resource, path " + path);
@@ -125,8 +126,8 @@ public class TrackLoader {
             LoadHandler handler = getTrackLoaderHandler(typeString);
             if (dbUrl != null) {
                 this.loadFromDatabase(locator, newTracks, genome);
-            } else if (CodecFactory.getCodec(locator, null) != null) {
-                loadFeatureFile(locator, newTracks, genome);
+            } else if (CodecFactory.hasCodec(locator, genome)) {
+                loadTribbleFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".dbxml")) {
                 loadFromDBProfile(locator, newTracks);
             } else if (typeString.endsWith(".gmt")) {
@@ -142,7 +143,7 @@ public class TrackLoader {
             } else if (typeString.endsWith("samplepathmap")) {
                 VariantListManager.loadSamplePathMap(locator);
             } else if (typeString.endsWith("h5") || typeString.endsWith("hbin")) {
-                throw new DataLoadException("HDF5 files are no longer supported", locator.getPath());
+                throw new DataLoadException("HDF5 files are no longer supported");
             } else if (typeString.endsWith(".rnai.gct")) {
                 loadRnaiGctFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".gct") || typeString.endsWith("res") || typeString.endsWith("tab")) {
@@ -240,25 +241,16 @@ public class TrackLoader {
                 }
             }
 
-
             return newTracks;
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new DataLoadException(e.getMessage(), path);
-        }
-
-    }
-
-    private boolean VCFrequiresIndex(ResourceLocator locator) {
-        String fn = stripGZ(locator.getTypeString());
-        String[] exts = new String[]{".vcf3", ".vcf4", ".vcf"};
-        for (String ext : exts) {
-            if (fn.endsWith(ext)) {
-                return true;
+            if (!NOLogExceptions.contains(e.getClass())) {
+                log.error(e.getMessage(), e);
             }
+            throw new DataLoadException(e.getMessage());
         }
-        return false;
+
     }
+
 
     private void loadGMT(ResourceLocator locator) throws IOException {
         List<GeneList> lists = GeneListManager.getInstance().loadGMTFile(locator.getPath());
@@ -270,18 +262,8 @@ public class TrackLoader {
         }
     }
 
-    private void loadVCF(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+    private void loadVCF(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException, TribbleIndexNotFoundException {
 
-        if (!isIndexed(locator, genome)) {
-            File baseFile = new File(locator.getPath());
-            File newIdxFile = new File(locator.getPath() + ".idx");
-            IndexCreatorDialog dialog = IndexCreatorDialog.createShowDialog(IGV.getMainFrame(), baseFile, newIdxFile);
-            Object index = dialog.getIndex();
-            //If user hits cancel or if there's a problem indexing we do nothing
-            if (index == null) {
-                log.warn("No index created, loading cancelled");
-            }
-        }
 
         TribbleFeatureSource src = TribbleFeatureSource.getFeatureSource(locator, genome);
 
@@ -307,7 +289,7 @@ public class TrackLoader {
         newTracks.add(t);
     }
 
-    private void loadVCFListFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+    private void loadVCFListFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException, TribbleIndexNotFoundException {
 
         TribbleListFeatureSource src = new TribbleListFeatureSource(locator.getPath(), genome);
 
@@ -359,15 +341,8 @@ public class TrackLoader {
      * @param locator
      * @param newTracks
      */
-    private void loadFeatureFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+    private void loadTribbleFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException, TribbleIndexNotFoundException {
 
-        if (locator.isLocal() && (locator.getPath().endsWith(".bed") ||
-                locator.getPath().endsWith(".bed.txt"))) {
-            //checkSize takes care of warning the user
-            if (!checkSize(locator.getPath())) {
-                return;
-            }
-        }
         String typeString = locator.getTypeString();
 
         // Mutation (mut, maf, vcf) files are handled special.  Check here, rather than depend on order in giant case statement.
@@ -450,7 +425,7 @@ public class TrackLoader {
     private void loadGctFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
         if (locator.isLocal()) {
-            if (!checkSize(locator.getPath())) {
+            if (!checkSize(locator)) {
                 return;
             }
         }
@@ -498,7 +473,7 @@ public class TrackLoader {
     private void loadIGVFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         if (locator.isLocal()) {
-            if (!checkSize(locator.getPath())) {
+            if (!checkSize(locator)) {
                 return;
             }
         }
@@ -562,45 +537,32 @@ public class TrackLoader {
     }
 
 
-    private boolean checkSize(String file) {
+    private static boolean checkSize(ResourceLocator locator) {
 
         if (!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SIZE_WARNING)) {
             return true;
         }
 
-        File f = new File(file);
-        String tmp = file;
-        if (f.exists()) {
-            long size = f.length();
-            if (file.endsWith(".gz")) {
-                size *= 3;
-                tmp = file.substring(0, file.length() - 3);
-            }
+        final String path = locator.getPath();
+        long size = FileUtils.getLength(path);
+        int maxSize = 50000000;  // 50 mb
+        if (path.endsWith(".gz")) {
+            maxSize /= 4;
+        }
 
-            if (size > 50000000) {
-                String message = "";
-                if (tmp.endsWith(".bed") || tmp.endsWith(".bed.txt")) {
-                    message = "The file " + file + " is large (" + (size / 1000000) + " mb).  It is recommended " +
-                            "that large files be indexed using IGVTools or Tabix. Loading un-indexed " +
-                            "ascii fies of this size can lead to poor performance or unresponsiveness (freezing).  " +
-                            "<br><br>IGVTools can be launched from the <b>Tools</b> menu or separately as a command line program.  " +
-                            "See the user guide for more details.<br><br>Click <b>Continue</b> to continue loading, or <b>Cancel</b>" +
-                            " to skip this file.";
+        if (size > maxSize) {
 
-                } else {
+            String message = "The file " + path + " is large (" + (size / 1000000) + " mb).  It is recommended " +
+                    "that large files be converted to the binary <i>.tdf</i> format using the IGVTools " +
+                    "<b>tile</b> command. Loading  unconverted ascii fies of this size can lead to poor " +
+                    "performance or unresponsiveness (freezing).  " +
+                    "<br><br>IGVTools can be launched from the <b>Tools</b> menu or separately as a " +
+                    "command line program. See the user guide for more details.<br><br>Click <b>Continue</b> " +
+                    "to continue loading, or <b>Cancel</b> to skip this file.";
 
-                    message = "The file " + file + " is large (" + (size / 1000000) + " mb).  It is recommended " +
-                            "that large files be converted to the binary <i>.tdf</i> format using the IGVTools " +
-                            "<b>tile</b> command. Loading  unconverted ascii fies of this size can lead to poor " +
-                            "performance or unresponsiveness (freezing).  " +
-                            "<br><br>IGVTools can be launched from the <b>Tools</b> menu or separately as a " +
-                            "command line program. See the user guide for more details.<br><br>Click <b>Continue</b> " +
-                            "to continue loading, or <b>Cancel</b> to skip this file.";
-                }
+            return ConfirmDialog.optionallyShowConfirmDialog(message, PreferenceManager.SHOW_SIZE_WARNING, true);
 
-                return ConfirmDialog.optionallyShowConfirmDialog(message, PreferenceManager.SHOW_SIZE_WARNING, true);
 
-            }
         }
         return true;
     }
@@ -616,7 +578,7 @@ public class TrackLoader {
     private void loadWigFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         if (locator.isLocal()) {
-            if (!checkSize(locator.getPath())) {
+            if (!checkSize(locator)) {
                 return;
             }
         }
@@ -915,18 +877,13 @@ public class TrackLoader {
                 }
             }
             if (covPath != null) {
-                try {
-                    if ((new File(covPath)).exists() || (HttpUtils.isRemoteURL(covPath) &&
-                            HttpUtils.getInstance().resourceAvailable(new URL(covPath)))) {
-                        log.debug("Loading TDF for coverage: " + covPath);
-                        TDFReader reader = TDFReader.getReader(covPath);
-                        TDFDataSource ds = new TDFDataSource(reader, 0, alignmentTrack.getName() + " coverage", genome);
-                        covTrack.setDataSource(ds);
-                    }
-                } catch (MalformedURLException e) {
-                    // This is expected if
-                    //    log.info("Could not loading coverage data: MalformedURL: " + covPath);
+                if (FileUtils.resourceExists(covPath)) {
+                    log.debug("Loading TDF for coverage: " + covPath);
+                    TDFReader reader = TDFReader.getReader(covPath);
+                    TDFDataSource ds = new TDFDataSource(reader, 0, alignmentTrack.getName() + " coverage", genome);
+                    covTrack.setDataSource(ds);
                 }
+
             }
 
             boolean showSpliceJunctionTrack = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
@@ -1001,7 +958,7 @@ public class TrackLoader {
      * @param locator
      * @param newTracks
      */
-    private void loadMutFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+    private void loadMutFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException, TribbleIndexNotFoundException {
 
         MutationTrackLoader loader = new MutationTrackLoader();
         List<FeatureTrack> mutationTracks = loader.loadMutationTracks(locator, genome);
@@ -1121,7 +1078,7 @@ public class TrackLoader {
         }
     }
 
-    private void loadDASResource(ResourceLocator locator, List<Track> currentTracks) {
+    private void loadDASResource(ResourceLocator locator, List<Track> currentTracks) throws DataLoadException {
 
         //TODO Connect and get all the attributes of the DAS server, and run the appropriate load statements
         //TODO Currently we are only going to be doing features
@@ -1133,7 +1090,7 @@ public class TrackLoader {
             featureSource = new DASFeatureSource(locator);
         } catch (MalformedURLException e) {
             log.error("Malformed URL", e);
-            throw new DataLoadException("Error: Malformed URL ", locator.getPath());
+            throw new DataLoadException("Error: Malformed URL ");
         }
 
         FeatureTrack track = new FeatureTrack(locator, featureSource);
@@ -1174,67 +1131,24 @@ public class TrackLoader {
         // Checking for the index is expensive over HTTP.  First see if this is an indexable format by fetching the codec
         String fullPath = locator.getPath();
         String pathNoQuery = locator.getURLPath();
-        if (!isIndexable(locator, genome)) {
+        if (!CodecFactory.hasCodec(locator, genome)) {
             return false;
         }
 
         String indexExtension = pathNoQuery.endsWith("gz") ? ".tbi" : ".idx";
 
-        try {
-            if (HttpUtils.isRemoteURL(fullPath)) {
-                String indexPath = fullPath + indexExtension;
-                //Handle query string, if it exists
-                String[] toks = fullPath.split("\\?", 2);
-                if (toks.length == 2) {
-                    indexPath = String.format("%s%s?%s", toks[0], indexExtension, toks[1]);
-                }
-
-                return HttpUtils.getInstance().resourceAvailable(new URL(indexPath));
-            } else {
-                File f = new File(fullPath + indexExtension);
-                return f.exists();
+        String indexPath = fullPath + indexExtension;
+        if (HttpUtils.isRemoteURL(fullPath)) {
+            //Handle query string, if it exists
+            String[] toks = fullPath.split("\\?", 2);
+            if (toks.length == 2) {
+                indexPath = String.format("%s%s?%s", toks[0], indexExtension, toks[1]);
             }
-
-        } catch (IOException e) {
-            return false;
         }
+        return FileUtils.resourceExists(indexPath);
 
     }
 
-
-    /**
-     * Return true if a file represented by "path" is indexable.  This method is an optimization, we could just look
-     * for the index but that is expensive to do for remote resources.  All tribble indexable extensions should be
-     * listed here.
-     *
-     * @param locator
-     * @param genome
-     * @return
-     */
-    private static boolean isIndexable(ResourceLocator locator, Genome genome) {
-
-        String fn = stripGZ(locator.getTypeString());
-        // The vcf extension is for performance, it doesn't matter which codec is returned all vcf files
-        // are indexable.
-        return fn.endsWith(".vcf") || fn.endsWith(".bcf") || CodecFactory.getCodec(locator, genome) != null;
-
-
-    }
-
-    /**
-     * Strip .gz extension if on path
-     *
-     * @param path
-     * @return
-     */
-    private static String stripGZ(String path) {
-        String fn = path.toLowerCase();
-        if (fn.endsWith(".gz")) {
-            int l = fn.length() - 3;
-            fn = fn.substring(0, l);
-        }
-        return fn;
-    }
 
     public static TrackProperties getTrackProperties(Object header) {
         try {

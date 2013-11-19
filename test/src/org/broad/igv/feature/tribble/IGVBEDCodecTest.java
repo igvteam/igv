@@ -85,7 +85,11 @@ public class IGVBEDCodecTest extends AbstractHeadlessTest {
         Function<String, Void> loadFileFunc = new Function<String, Void>() {
             @Override
             public Void apply(String input) {
-                List<Track> newTrack = loader.load(new ResourceLocator(path), genome);
+                try {
+                    List<Track> newTrack = loader.load(new ResourceLocator(path), genome);
+                } catch (Exception e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
                 return null;
             }
         };

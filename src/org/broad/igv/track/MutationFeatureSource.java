@@ -15,6 +15,7 @@ import org.broad.igv.data.Interval;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Mutation;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
 
@@ -64,7 +65,7 @@ public class MutationFeatureSource implements FeatureSource<Mutation> {
         Map<String, List<Mutation>> featureMap = Collections.synchronizedMap(new HashMap());
         TribbleFeatureSource tribbleFeatureSource;
 
-        public MutationDataManager(ResourceLocator locator, Genome genome) throws IOException {
+        public MutationDataManager(ResourceLocator locator, Genome genome) throws IOException, TribbleIndexNotFoundException {
             this.tribbleFeatureSource = TribbleFeatureSource.getFeatureSource(locator, genome);
         }
 

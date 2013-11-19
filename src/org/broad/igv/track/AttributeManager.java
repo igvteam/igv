@@ -161,7 +161,7 @@ public class AttributeManager {
     /**
      * Return true if the associated column contains all numeric values
      */
-    boolean isNumeric(String attributeName) {
+    public boolean isNumeric(String attributeName) {
         String key = attributeName.toUpperCase();
         ColumnMetaData metaData = columnMetaData.get(key);
         return metaData != null && metaData.isNumeric();

@@ -199,7 +199,7 @@ public class ResourceLocator {
     }
 
     public boolean isLocal() {
-        return !(FileUtils.isRemote(path));
+        return dbURL == null && !(FileUtils.isRemote(path));
     }
 
     public void setTrackInforURL(String trackInforURL) {

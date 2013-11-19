@@ -12,8 +12,15 @@
 package org.broad.igv.feature.tribble.reader;
 
 import net.sf.samtools.seekablestream.SeekableStream;
+import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
+import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.IndexCreatorDialog;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
+import org.broad.igv.variant.VariantTrack;
 import org.broad.tribble.*;
 import org.broad.tribble.index.Block;
 import org.broad.tribble.index.Index;
@@ -22,12 +29,12 @@ import org.broad.tribble.readers.PositionalBufferedStream;
 import org.broad.tribble.util.ParsingUtils;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -41,6 +48,8 @@ import java.util.zip.GZIPInputStream;
  */
 public class TribbleFeatureReader<T extends Feature, SOURCE> extends AbstractFeatureReader<T, SOURCE> {
 
+    private static Logger log = Logger.getLogger(TribbleFeatureReader.class);
+
     private Index index;
 
     /**
@@ -53,19 +62,17 @@ public class TribbleFeatureReader<T extends Feature, SOURCE> extends AbstractFea
      */
     private SeekableStream seekableStream = null;
 
-
-
     /**
      * @param locator - path to the feature file, can be a local file path, http url, or ftp url
-     * @param codec       - codec to decode the features
+     * @param codec   - codec to decode the features
      * @throws java.io.IOException
      */
-    public TribbleFeatureReader(ResourceLocator locator, final FeatureCodec<T, SOURCE> codec) throws IOException {
+    public TribbleFeatureReader(ResourceLocator locator, final FeatureCodec<T, SOURCE> codec) throws IOException, TribbleIndexNotFoundException {
 
         super(locator.getPath(), codec);
 
         String indexFile = locator.getIndexPath();
-        if(indexFile == null) {
+        if (indexFile == null) {
             indexFile = Tribble.indexFile(locator.getPath());
         }
 
@@ -78,7 +85,23 @@ public class TribbleFeatureReader<T extends Feature, SOURCE> extends AbstractFea
                 index = IndexFactory.loadIndex(indexFile);
             } else {
                 index = null;
-                //  throw new TribbleException("An index is required, but none found.");
+
+                // Optionally let the user create an index.
+                final int tenMB = 10000000;
+                final int oneGB = 1000000000;
+                long size = FileUtils.getLength(locator.getPath());
+                final boolean indexRequired =
+                        (VariantTrack.isVCF(locator.getTypeString()) && size > tenMB) || size > oneGB;
+                if (!Globals.isHeadless() && locator.isLocal() && !locator.getPath().endsWith(".gz")) {
+                    if (size > tenMB) {
+                        index = createIndex(locator, indexRequired);   // Note, might return null.
+                    }
+                }
+
+                if(indexRequired && index == null) {
+                    throw new TribbleIndexNotFoundException("An index is required for: " + locator.getPath() + " but was not found");
+                }
+
             }
         }
         // does path point to a regular file?
@@ -86,6 +109,7 @@ public class TribbleFeatureReader<T extends Feature, SOURCE> extends AbstractFea
 
         readHeader();
     }
+
 
     /**
      * Get a seekable stream appropriate to read information from the current feature path
@@ -478,5 +502,22 @@ public class TribbleFeatureReader<T extends Feature, SOURCE> extends AbstractFea
         }
     }
 
+    /**
+     * Present a dialog for the user to create an index.  This method can return null if the user cancels, or there
+     * is an error while creating the index.
+     *
+     * @param locator
+     * @param indexRequired
+     * @return
+     */
 
+    private Index createIndex(ResourceLocator locator, boolean indexRequired) {
+        File baseFile = new File(locator.getPath());
+        File newIdxFile = new File(locator.getPath() + ".idx");
+        String messageText = "An index file for " + baseFile.getAbsolutePath() + " could not " +
+                "be located. An index is " + (indexRequired ? "required" : "recommended") +
+                " to view files of this size.   Click \"Go\" to create one now.";
+        IndexCreatorDialog dialog = IndexCreatorDialog.createShowDialog(IGV.getMainFrame(), baseFile, newIdxFile, messageText);
+        return (Index) dialog.getIndex();
+    }
 }

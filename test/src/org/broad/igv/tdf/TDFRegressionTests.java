@@ -21,11 +21,13 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
+import java.io.IOException;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -129,7 +131,14 @@ public class TDFRegressionTests extends AbstractHeadlessTest{
      * @throws Exception
      */
     public void tstCHR_ALL(String genPath, String wigPath, String tdfPath, boolean expHaveChrAll, String[] posChromos, String[] emptyChromos) throws Exception{
-        Genome genome = GenomeManager.getInstance().loadGenome(genPath, null);
+        Genome genome = null;
+        try {
+            genome = GenomeManager.getInstance().loadGenome(genPath, null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Assume.assumeTrue(genome != null);
+
 
         WiggleDataset ds = (new WiggleParser(new ResourceLocator(wigPath), genome)).parse();
         DatasetDataSource wigSource = new DatasetDataSource(wigPath, ds, genome);
