@@ -363,7 +363,7 @@
     </fileset>
 
     <property name="input.test.reports" value="${test.reports}"/>
-    <target name="failedtests">
+    <target name="failedtests" depends="compile">
         <delete dir="${test.reports.tmp}"/>
         <copy todir="${test.reports.tmp}" overwrite="true">
             <fileset dir="${input.test.reports}">

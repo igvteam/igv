@@ -14,7 +14,10 @@ package org.broad.igv.feature.genome;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.util.TestUtils;
 import org.junit.Assume;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.rules.Timeout;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -30,6 +33,8 @@ import static junit.framework.Assert.*;
  */
 public class GenomeTest extends AbstractHeadlessTest {
 
+    @Rule
+    public TestRule testTimeout = new Timeout((int) 60e3);
 
     /**
      * Test some aliases, both manually entered and automatic.
@@ -82,7 +87,7 @@ public class GenomeTest extends AbstractHeadlessTest {
         //contigs into "small" and "large"
         String indexPath = TestUtils.DATA_DIR + "fasta/CE.cns.all.fa.fai";
         Sequence seq = new MockSequence(indexPath);
-        Genome genome = new Genome("GenomeeTest", "GenomeTest", seq, false);
+        Genome genome = new Genome("GenomeTest", "GenomeTest", seq, false);
         List<String> actNames = genome.getAllChromosomeNames();
 
         String[] expNames = {"chr1", "chr2", "chr3", "chrX", "C121713571", "scaffold22502"};
@@ -115,9 +120,11 @@ public class GenomeTest extends AbstractHeadlessTest {
     private class MockSequence implements Sequence {
 
         private FastaIndex index;
+        private ArrayList<String> chromoNames;
 
         public MockSequence(String fastaIndexPath) throws IOException {
             this.index = new FastaIndex(fastaIndexPath);
+            this.chromoNames = new ArrayList<String>(index.getSequenceNames());
         }
 
         @Override
@@ -132,7 +139,7 @@ public class GenomeTest extends AbstractHeadlessTest {
 
         @Override
         public List<String> getChromosomeNames() {
-            return new ArrayList<String>(index.getSequenceNames());
+            return chromoNames;
         }
 
         @Override
