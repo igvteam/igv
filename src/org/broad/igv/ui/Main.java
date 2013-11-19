@@ -18,11 +18,9 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.tribble.reader.IGVComponentMethods;
 import org.broad.igv.ui.event.GlobalKeyDispatcher;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
-import org.broad.tribble.AbstractFeatureReader;
 
 import javax.swing.*;
 import java.awt.*;
@@ -158,7 +156,7 @@ public class Main {
 
 
         HttpUtils.getInstance().updateProxySettings();
-        AbstractFeatureReader.setComponentMethods(new IGVComponentMethods());
+        //AbstractFeatureReader.setComponentMethods(new IGVComponentMethods());
         SeekableStreamFactory.setInstance(IGVSeekableStreamFactory.getInstance());
 
         IGV.createInstance(frame).startUp(igvArgs);
