@@ -105,7 +105,7 @@ public class TribbleFeatureReader<T extends Feature, SOURCE> extends AbstractFea
             }
         }
         // does path point to a regular file?
-        this.pathIsRegularFile = !(path.startsWith("http:") || path.startsWith("https:") || path.startsWith("ftp:"));
+        this.pathIsRegularFile = (new File(path)).exists();
 
         readHeader();
     }
