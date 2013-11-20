@@ -236,7 +236,7 @@ public abstract class AbstractTrack implements Track {
     }
 
     @Override
-    public void preload(RenderContext context) {
+    public void load(RenderContext context) {
         // No-op, to be overriden by subclasses
     }
 

@@ -631,7 +631,7 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     @Override
-    public void preload(RenderContext context) {
+    public void load(RenderContext context) {
         ReferenceFrame frame = context.getReferenceFrame();
         PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
         String chr = context.getChr();
@@ -753,7 +753,7 @@ public class FeatureTrack extends AbstractTrack {
 
         //Attempt to load the relevant data. Note that there is no guarantee
         //the data will be loaded once preload exits, as loading may be asynchronous
-        preload(context);
+        load(context);
         PackedFeatures packedFeatures = packedFeaturesMap.get(context.getReferenceFrame().getName());
 
         if (packedFeatures == null || !packedFeatures.overlapsInterval(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation() + 1)) {

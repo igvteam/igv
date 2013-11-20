@@ -83,11 +83,7 @@ public abstract class DataTrack extends AbstractTrack {
         if (interval != null && interval.contains(chr, start, end, zoom)) {
             inViewScores = interval.getScores();
         } else {
-            // Get a buffer +/- 50% of screen size
-            int delta = (end - start) / 2;
-            int adjustedStart = Math.max(0, start - delta);
-            int adjustedEnd = end + delta;
-            inViewScores = load(context, chr, adjustedStart, adjustedEnd, zoom);
+            inViewScores = loadScores(context);
         }
 
 
@@ -96,7 +92,7 @@ public abstract class DataTrack extends AbstractTrack {
             Graphics2D g = context.getGraphic2DForColor(Color.gray);
             GraphicUtils.drawCenteredText("Data not available for whole genome view; zoom in to see data", rect, g);
         } else {
-            if (autoScale && !FrameManager.isGeneListMode() && !FrameManager.isExomeMode()) {
+            if (autoScale && !FrameManager.isGeneListMode()) {
 
                 InViewInterval inter = computeScale(start, end, inViewScores);
                 if (inter.endIdx > inter.startIdx) {
@@ -125,44 +121,24 @@ public abstract class DataTrack extends AbstractTrack {
 
 
     @Override
-    public synchronized void preload(RenderContext context) {
-        LoadedDataInterval interval = loadedIntervalCache.get(context.getReferenceFrame().getName());
+    public synchronized void load(RenderContext context) {
 
         String chr = context.getChr();
         int start = (int) context.getOrigin();
         int end = (int) context.getEndLocation() + 1;
         int zoom = context.getZoom();
+        LoadedDataInterval interval = loadedIntervalCache.get(context.getReferenceFrame().getName());
         if (interval == null || !interval.contains(chr, start, end, zoom)) {
-            int delta = (end - start) / 2;
-            int adjustedStart = Math.max(0, start - delta);
-            int adjustedEnd = end + delta;
-            List<LocusScore> scores = load(context, chr, adjustedStart, adjustedEnd, zoom);
-
-            if (autoScale && FrameManager.isExomeMode()) {
-                InViewInterval inter = computeScale(start, end, scores);
-                if (inter.endIdx > inter.startIdx) {
-
-                    DataRange dr = getDataRange();
-                    float min = Math.min(0, inter.dataMin);
-                    float base = Math.max(min, dr.getBaseline());
-                    float max = inter.dataMax;
-                    // Pathological case where min ~= max  (no data in view)
-                    if (max - min <= (2 * Float.MIN_VALUE)) {
-                        max = min + 1;
-                    }
-
-                    DataRange newDR = new DataRange(min, base, max, dr.isDrawBaseline());
-                    newDR.setType(dr.getType());
-                    setDataRange(newDR);
-                }
-            }
-
+            loadScores(context);
         }
-
-
     }
 
-    public List<LocusScore> load(final RenderContext context, final String chr, final int start, final int end, final int zoom) {
+    public List<LocusScore> loadScores(final RenderContext context) {
+
+        String chr = context.getChr();
+        int start = (int) context.getOrigin();
+        int end = (int) context.getEndLocation() + 1;
+        int zoom = context.getZoom();
 
         try {
             featuresLoading = true;
@@ -175,8 +151,10 @@ public abstract class DataTrack extends AbstractTrack {
                 Chromosome c = genome.getChromosome(chr);
                 if (c != null) maxEnd = Math.max(c.getLength(), end);
             }
-            // Expand interval +/- 50%
-            int delta = (end - start) / 2;
+
+            // Expand interval +/- 50%, unless in a multi-locus mode with "lots" of frames
+            boolean multiLocus = FrameManager.isExomeMode() || (FrameManager.getFrames().size() > 4);
+            int delta = multiLocus ? 1 : (end - start) / 2;
             int expandedStart = Math.max(0, start - delta);
             int expandedEnd = Math.min(maxEnd, end + delta);
             List<LocusScore> inViewScores = getSummaryScores(queryChr, expandedStart, expandedEnd, zoom);
@@ -443,7 +421,7 @@ public abstract class DataTrack extends AbstractTrack {
     }
 
     @SubtlyImportant
-    private static DataTrack getNextTrack(){
+    private static DataTrack getNextTrack() {
         return (DataTrack) IGVSessionReader.getNextTrack();
     }
 

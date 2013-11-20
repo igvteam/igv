@@ -19,7 +19,6 @@ package org.broad.igv.ui.panel;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.exome.ExomeBlock;
 import org.broad.igv.feature.exome.ExomeReferenceFrame;
@@ -37,16 +36,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * @author jrobinso
- *
- * Apart from what you wrote, here are two things I'm encountering:
-1. 'Show data range' does not seem to work in exome view (it doesn't display the range on the side).
-2. In terms of the display - the lines running from the top track (showing the gene name) go all the way through, and make it difficult to tell whether the lines are coming from an exon, or from this top line. It should ideally be more intutitve exactly what the exon-exon structure is. Maybe this top line should just be removed altogether - it doesn't really provide any additional information, and it does actually get quite confusing when you have two genes overlapping each other (in which case it's unclear to me based on what the top track decides whether to display a section as the first gene or the other, but it's often confusing).
-3. Something I suggested in the past: It would be nice if I could toggle back and forth more rapidly, without having to select each time the same bullet (based on which introns are removed).
-Thanks a lot!
 
- */
 public class DataPanelPainter {
 
     private static Logger log = Logger.getLogger(DataPanelPainter.class);
@@ -296,33 +286,11 @@ public class DataPanelPainter {
 
         final List<Track> visibleTracks = getVisibleTracks(groups);
 
-        Runnable runnable = new Runnable() {
-            public void run() {
-                for (Track track : visibleTracks) {
-                    RenderContextImpl newContext = new RenderContextImpl(null, null, context.getReferenceFrame(), visibleRect);
-                    track.preload(newContext);
-                }
-            }
-        };
+        for (Track track : visibleTracks) {
+            RenderContextImpl newContext = new RenderContextImpl(null, null, context.getReferenceFrame(), visibleRect);
+            track.load(newContext);
+        }
 
-        runnable.run();
-
-//        Future future = LongRunningTask.submit(runnable);
-//        try {
-//            future.get();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//        } catch (ExecutionException e) {
-//            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//        }
-
-//        Thread workerThread = new Thread(runnable);
-//        workerThread.start();
-//        try {
-//            workerThread.join();
-//        } catch (InterruptedException e) {
-//            log.error("Preload thread was interrupted", e);
-//        }
     }
 }
 
