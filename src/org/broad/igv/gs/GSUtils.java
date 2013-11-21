@@ -191,13 +191,36 @@ public class GSUtils {
 
 
     public static boolean isGenomeSpace(URL url) {
-        return url.getHost().contains(".genomespace.org");
+        String dmServer = getDMHost();
+        String atmServer = getATMHost();
+        return url.getHost().contains(dmServer) || url.getHost().contains(atmServer);
+    }
+
+    private synchronized static String getDMHost() {
+        try {
+            return (new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER))).getHost();
+        } catch (MalformedURLException e) {
+            log.error(e);
+            return null;
+        }
+    }
+
+
+    private synchronized static String getATMHost() {
+
+        try {
+            return (new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER))).getHost();
+        } catch (MalformedURLException e) {
+            log.error(e);
+            return null;
+        }
+
     }
 
     /**
      * Convert GenomeSpace format string to igv format type (extension)
-     *   Example: https://dmtest.genomespace.org:8444/datamanager/files/users/SAGDemo/Step1/TF.data.tab
-     *     ?dataformat=http://www.genomespace.org/datamanager/dataformat/gct/0.0.0
+     * Example: https://dmtest.genomespace.org:8444/datamanager/files/users/SAGDemo/Step1/TF.data.tab
+     * ?dataformat=http://www.genomespace.org/datamanager/dataformat/gct/0.0.0
      *
      * @param format
      * @return
