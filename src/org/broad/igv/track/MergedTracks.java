@@ -187,11 +187,14 @@ public class MergedTracks extends DataTrack{
         JMenu setPosColorMenu = new JMenu("Change Track Color (Positive Values)");
         JMenu setNegColorMenu = new JMenu("Change Track Color (Negative Values)");
         for(DataTrack track: trackList){
-            JMenuItem posItem = new JMenuItem(track.getName());
+
+            Icon posColorIcon = new ColorIcon(track.getColor());
+            JMenuItem posItem = new JMenuItem(track.getName(), posColorIcon);
             posItem.addActionListener(new ChangeTrackColorActionListener(track, ChangeTrackMethod.POSITIVE));
             setPosColorMenu.add(posItem);
 
-            JMenuItem negItem = new JMenuItem(track.getName());
+            Icon negColorIcon = new ColorIcon(track.getAltColor());
+            JMenuItem negItem = new JMenuItem(track.getName(), negColorIcon);
             negItem.addActionListener(new ChangeTrackColorActionListener(track, ChangeTrackMethod.NEGATIVE));
             setNegColorMenu.add(negItem);
         }
@@ -260,6 +263,44 @@ public class MergedTracks extends DataTrack{
                 default:
                     throw new IllegalStateException("Method not understood: " + this.method);
             }
+        }
+    }
+
+    /**
+     * A square, solid color Icon
+     */
+    private static class ColorIcon implements Icon{
+
+        private Color color;
+        private int iconSize;
+
+        ColorIcon(Color color){
+            this(color, 16);
+        }
+
+        ColorIcon(Color color, int iconSize){
+            this.color = color;
+            this.iconSize = iconSize;
+        }
+
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            Graphics cg = g.create();
+            cg.setColor(this.color);
+            if(this.iconSize > c.getHeight()){
+                this.iconSize = c.getHeight();
+            }
+            cg.fillRect(x, y, this.iconSize, this.iconSize);
+        }
+
+        @Override
+        public int getIconWidth() {
+            return this.iconSize;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return this.iconSize;
         }
     }
 }
