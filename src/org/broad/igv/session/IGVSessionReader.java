@@ -1069,7 +1069,9 @@ public class IGVSessionReader implements SessionReader {
      * Recursively loop through children of {@code element}, which must be a MergedTracks
      * container.
      * We need to create all the member tracks associated with this instance first
-     //TODO This is hacky, would be good to simplify it, would need to set/getNextTrack for each child track
+       TODO This is hacky, would be good to simplify it, would need to set/getNextTrack for each child track
+       TODO Could be more consistent with other hacks, do the same thing as with Feature/Datatracks.
+       TODO  Create a placeholder track and then call updateTrackReferences
      * @param session
      * @param element
      * @param additionalInformation
