@@ -11,17 +11,22 @@
 
 package org.broad.igv.track;
 
-
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.DataRange;
+import org.broad.igv.session.IGVSessionReader;
+import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.TrackPanel;
+import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -36,9 +41,19 @@ import java.util.List;
  * @author jacob
  * @date 2013-Nov-05
  */
+@XmlType(factoryMethod = "getNextTrack")
 public class MergedTracks extends DataTrack{
 
+    @XmlAttribute
+    protected Class clazz = MergedTracks.class;
+
     private Collection<DataTrack> memberTracks;
+
+    /**
+     * This is a session tag, changing it will break backwards compatibility
+     * with sessions!
+     */
+    public static final String MEMBER_TRACK_TAG_NAME = "memberTracks";
 
     public MergedTracks(String id, String name, Collection<DataTrack> inputTracks){
         super(null, id, name);
@@ -58,6 +73,16 @@ public class MergedTracks extends DataTrack{
         }
     }
 
+    @Override
+    public Collection<ResourceLocator> getResourceLocators(){
+        Collection<ResourceLocator> locators = new ArrayList<ResourceLocator>(memberTracks.size());
+        for(DataTrack memTrack: memberTracks){
+            locators.addAll(memTrack.getResourceLocators());
+        }
+        return locators;
+    }
+
+    @XmlElement(name = MEMBER_TRACK_TAG_NAME)
     private Collection<DataTrack> getMemberTracks(){
         return this.memberTracks;
     }
@@ -254,6 +279,14 @@ public class MergedTracks extends DataTrack{
         return menu;
     }
 
+    //Not clear whether this is necessary, don't think it is, the real problem is loading not saving
+//    public void marshalMemberTracks(Marshaller m, Element trackElement) throws JAXBException{
+//        for(DataTrack memberTrack: memberTracks){
+//            JAXBElement element = new JAXBElement<DataTrack>(new QName("", DataTrack.DATA_TRACK), DataTrack.class, memberTrack);
+//            m.marshal(element, trackElement);
+//        }
+//    }
+
     private enum ChangeTrackMethod{
         POSITIVE, NEGATIVE
     }
@@ -319,5 +352,19 @@ public class MergedTracks extends DataTrack{
         public int getIconHeight() {
             return this.iconSize;
         }
+    }
+
+    @SubtlyImportant
+    private MergedTracks(){
+        super(null, null, null);
+    }
+
+    @SubtlyImportant
+    private static MergedTracks getNextTrack(){
+        MergedTracks out = (MergedTracks) IGVSessionReader.getNextTrack();
+        if (out == null){
+            out = new MergedTracks();
+        }
+        return out;
     }
 }

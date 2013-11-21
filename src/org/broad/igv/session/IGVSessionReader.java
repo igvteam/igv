@@ -1020,7 +1020,7 @@ public class IGVSessionReader implements SessionReader {
             String className = getAttribute(element, "clazz");
 
             //We try anyway, some tracks can be reconstructed without a resource element
-            //They must have a source, though
+            //They must have children in that case though, either a source or something else
             try{
                 if(className != null && ( className.contains("FeatureTrack") || className.contains("DataSourceTrack") ) && element.hasChildNodes()){
                     Class clazz = Class.forName(className);
@@ -1028,6 +1028,10 @@ public class IGVSessionReader implements SessionReader {
                     Track track = unmarshalTrackElement(u, element, null, clazz);
                     matchedTracks = new ArrayList<Track>(Arrays.asList(track));
                     allTracks.put(track.getId(), matchedTracks);
+                }else if(className != null && className.contains("MergedTracks")){
+                    MergedTracks newMergedTracks = processMergedTrack(session, element, additionalInformation, rootPath, id);
+                    matchedTracks = Arrays.<Track>asList(newMergedTracks);
+                    allTracks.put(id, matchedTracks);
                 }
 
             } catch (JAXBException e) {
@@ -1059,6 +1063,34 @@ public class IGVSessionReader implements SessionReader {
         process(session, elements, additionalInformation, rootPath);
 
         return matchedTracks;
+    }
+
+    /**
+     * Recursively loop through children of {@code element}, which must be a MergedTracks
+     * container.
+     * We need to create all the member tracks associated with this instance first
+     //TODO This is hacky, would be good to simplify it, would need to set/getNextTrack for each child track
+     * @param session
+     * @param element
+     * @param additionalInformation
+     * @param rootPath
+     * @param trackID
+     * @return
+     */
+    private MergedTracks processMergedTrack(Session session, Element element, HashMap additionalInformation, String rootPath, String trackID) {
+
+        NodeList memberTrackNodes = element.getElementsByTagName(MergedTracks.MEMBER_TRACK_TAG_NAME);
+        List<DataTrack> memberTracks = new ArrayList<DataTrack>(memberTrackNodes.getLength());
+        for(int index=0; index < memberTrackNodes.getLength(); index++){
+            Node memberNode = memberTrackNodes.item(index);
+            List<Track> addedTracks = processTrack(session, (Element) memberNode, additionalInformation, rootPath);
+
+            for(Track aTrack: addedTracks){
+                memberTracks.add((DataTrack) aTrack);
+            }
+
+        }
+        return new MergedTracks(trackID, getAttribute(element, SessionAttribute.NAME.getText()), memberTracks);
     }
 
     private static void setNextTrack(AbstractTrack track){
@@ -1168,7 +1200,7 @@ public class IGVSessionReader implements SessionReader {
         // ColorScaleFactory.setColorScale(trackType, colorScale);
     }
 
-    private String getAttribute(Element element, String key) {
+    private static String getAttribute(Element element, String key) {
         String value = element.getAttribute(key);
         if (value != null) {
             if (value.trim().equals("")) {

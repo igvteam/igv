@@ -2073,13 +2073,13 @@ public class IGV {
         HashSet<ResourceLocator> locators = new HashSet();
 
         for (Track track : getAllTracks()) {
-            ResourceLocator locator = track.getResourceLocator();
+            Collection<ResourceLocator> tlocators = track.getResourceLocators();
 
-            if (locator != null) {
-                locators.add(locator);
+            if (tlocators != null) {
+                locators.addAll(tlocators);
             }
         }
-
+        locators.remove(null);
         return locators;
 
     }

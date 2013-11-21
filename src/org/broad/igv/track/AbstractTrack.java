@@ -49,7 +49,7 @@ import java.util.List;
  */
 @XmlType(factoryClass = IGVSessionReader.class, factoryMethod = "getNextTrack")
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlSeeAlso({CoverageTrack.class, AlignmentTrack.class, DataSourceTrack.class, GWASTrack.class, FeatureTrack.class})
+@XmlSeeAlso({CoverageTrack.class, AlignmentTrack.class, DataSourceTrack.class, GWASTrack.class, FeatureTrack.class, MergedTracks.class})
 public abstract class AbstractTrack implements Track {
 
     private static Logger log = Logger.getLogger(AbstractTrack.class);
@@ -355,6 +355,10 @@ public abstract class AbstractTrack implements Track {
 
     public ResourceLocator getResourceLocator() {
         return resourceLocator;
+    }
+
+    public Collection<ResourceLocator> getResourceLocators() {
+        return Arrays.asList(getResourceLocator());
     }
 
     /**

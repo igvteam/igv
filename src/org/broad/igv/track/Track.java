@@ -109,6 +109,13 @@ public interface Track extends Persistable{
 
     ResourceLocator getResourceLocator();
 
+    /**
+     * Return ALL ResourceLocators associated with this track.
+     * For most tracks, this will just be a collection of size 1
+     * @return
+     */
+    Collection<ResourceLocator> getResourceLocators();
+
     void setAttributeValue(String key, String value);
 
     String getAttributeValue(String attributeKey);
