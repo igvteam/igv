@@ -354,7 +354,7 @@ public class TrackGroup {
      * @param targetTrack
      * @param before
      */
-    public boolean moveSelectedTracksTo(Collection<Track> selectedTracks,
+    public boolean moveSelectedTracksTo(Collection<? extends Track> selectedTracks,
                                         Track targetTrack,
                                         boolean before) {
 

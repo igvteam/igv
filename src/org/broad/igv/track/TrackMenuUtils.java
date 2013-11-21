@@ -326,8 +326,10 @@ public class TrackMenuUtils {
                 public void actionPerformed(ActionEvent e) {
                     MergedTracks mergedTracks = new MergedTracks(UUID.randomUUID().toString(), "Overlay", dataTrackList);
 
-                    TrackPanel panel = TrackPanel.getParentPanel(tracks.iterator().next());
+                    Track firstTrack = tracks.iterator().next();
+                    TrackPanel panel = TrackPanel.getParentPanel(firstTrack);
                     panel.addTrack(mergedTracks);
+                    panel.moveSelectedTracksTo(Arrays.asList(mergedTracks), firstTrack, false);
                     panel.removeTracks(tracks);
                 }
             });

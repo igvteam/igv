@@ -25,6 +25,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -37,17 +38,32 @@ import java.util.List;
  */
 public class MergedTracks extends DataTrack{
 
-    private Collection<DataTrack> trackList;
+    private Collection<DataTrack> memberTracks;
 
-    public MergedTracks(String id, String name, Collection<DataTrack> trackList){
+    public MergedTracks(String id, String name, Collection<DataTrack> inputTracks){
         super(null, id, name);
-        this.trackList = trackList;
+        initTrackList(inputTracks);
         this.autoScale = this.getAutoScale();
         setTrackAlphas(150);
     }
 
+    private void initTrackList(Collection<DataTrack> inputTracks) {
+        this.memberTracks = new ArrayList<DataTrack>(inputTracks.size());
+        for(DataTrack inputTrack: inputTracks){
+            if(inputTrack instanceof MergedTracks){
+                this.memberTracks.addAll(((MergedTracks) inputTrack).getMemberTracks());
+            }else{
+                this.memberTracks.add(inputTrack);
+            }
+        }
+    }
+
+    private Collection<DataTrack> getMemberTracks(){
+        return this.memberTracks;
+    }
+
     private void setTrackAlphas(int alpha) {
-        for(Track track: trackList){
+        for(Track track: memberTracks){
             track.setColor(ColorUtilities.modifyAlpha(track.getColor(), alpha));
             track.setAltColor(ColorUtilities.modifyAlpha(track.getAltColor(), alpha));
         }
@@ -57,7 +73,7 @@ public class MergedTracks extends DataTrack{
     @Override
     public void render(RenderContext context, Rectangle rect) {
         resetLastY();
-        for(Track track: trackList){
+        for(Track track: memberTracks){
             if(isRepeatY(rect)){
                 track.overlay(context, rect);
             }else{
@@ -71,7 +87,7 @@ public class MergedTracks extends DataTrack{
     @Override
     public int getHeight() {
         int height = super.getHeight();
-        for(Track track: trackList){
+        for(Track track: memberTracks){
             height = Math.max(height, track.getHeight());
         }
         return height;
@@ -80,7 +96,7 @@ public class MergedTracks extends DataTrack{
     @Override
     public void setHeight(int height) {
         super.setHeight(height);
-        for(Track track: trackList){
+        for(Track track: memberTracks){
             track.setHeight(height);
         }
     }
@@ -88,7 +104,7 @@ public class MergedTracks extends DataTrack{
     @Override
     public void setDataRange(DataRange axisDefinition) {
         super.setDataRange(axisDefinition);
-        for(Track track: trackList){
+        for(Track track: memberTracks){
             track.setDataRange(axisDefinition);
         }
     }
@@ -96,17 +112,17 @@ public class MergedTracks extends DataTrack{
     @Override
     public DataRange getDataRange() {
         if(this.dataRange == null){
-            this.dataRange = DataRange.getFromTracks(trackList);
+            this.dataRange = DataRange.getFromTracks(memberTracks);
         }
         return this.dataRange;
     }
 
     @Override
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
-        StringBuilder builder = new StringBuilder(trackList.size() + 2);
+        StringBuilder builder = new StringBuilder(memberTracks.size() + 2);
         builder.append(getName());
         builder.append("<br/>--------------<br/>");
-        for(Track track: trackList){
+        for(Track track: memberTracks){
             String curS = track.getValueStringAt(chr, position, y, frame);
             if (curS != null) {
                 builder.append(curS);
@@ -124,7 +140,7 @@ public class MergedTracks extends DataTrack{
     @Override
     public void setRendererClass(Class rc) {
         super.setRendererClass(rc);
-        for(Track track: trackList){
+        for(Track track: memberTracks){
             track.setRendererClass(rc);
         }
     }
@@ -132,7 +148,7 @@ public class MergedTracks extends DataTrack{
     @Override
     public boolean getAutoScale() {
         boolean autoScale = super.getAutoScale();
-        for(Track track: trackList){
+        for(Track track: memberTracks){
             autoScale &= track.getAutoScale();
         }
         return autoScale;
@@ -141,7 +157,7 @@ public class MergedTracks extends DataTrack{
     @Override
     public void setAutoScale(boolean autoScale) {
         super.setAutoScale(autoScale);
-        for(Track track: trackList){
+        for(Track track: memberTracks){
             track.setAutoScale(autoScale);
         }
     }
@@ -154,7 +170,7 @@ public class MergedTracks extends DataTrack{
     @Override
     public void setColorScale(ContinuousColorScale colorScale) {
         super.setColorScale(colorScale);
-        for(Track track: trackList){
+        for(Track track: memberTracks){
             track.setColorScale(colorScale);
         }
     }
@@ -162,7 +178,7 @@ public class MergedTracks extends DataTrack{
     @Override
     public void setWindowFunction(WindowFunction type) {
         super.setWindowFunction(type);
-        for(Track track: trackList){
+        for(Track track: memberTracks){
             track.setWindowFunction(type);
         }
     }
@@ -170,7 +186,7 @@ public class MergedTracks extends DataTrack{
     @Override
     public void setShowDataRange(boolean showDataRange) {
         super.setShowDataRange(showDataRange);
-        for(DataTrack track: trackList){
+        for(DataTrack track: memberTracks){
             track.setShowDataRange(showDataRange);
         }
     }
@@ -180,13 +196,13 @@ public class MergedTracks extends DataTrack{
 
         IGVPopupMenu menu = new IGVPopupMenu();
 
-        List<Track> selfAsList = Arrays.asList((Track) this);
+        final List<Track> selfAsList = Arrays.asList((Track) this);
         menu.add(TrackMenuUtils.getTrackRenameItem(selfAsList));
 
         //Give users the ability to set the color of each track individually
         JMenu setPosColorMenu = new JMenu("Change Track Color (Positive Values)");
         JMenu setNegColorMenu = new JMenu("Change Track Color (Negative Values)");
-        for(DataTrack track: trackList){
+        for(DataTrack track: memberTracks){
 
             Icon posColorIcon = new ColorIcon(track.getColor());
             JMenuItem posItem = new JMenuItem(track.getName(), posColorIcon);
@@ -225,8 +241,9 @@ public class MergedTracks extends DataTrack{
             public void actionPerformed(ActionEvent e) {
                 TrackPanel panel = TrackPanel.getParentPanel(MergedTracks.this);
                 setTrackAlphas(255);
-                panel.addTracks(trackList);
-                IGV.getInstance().removeTracks(Arrays.<Track>asList(MergedTracks.this));
+                panel.addTracks(memberTracks);
+                panel.moveSelectedTracksTo(memberTracks, MergedTracks.this, true);
+                IGV.getInstance().removeTracks(selfAsList);
             }
         });
         menu.add(unmergeItem);

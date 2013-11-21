@@ -358,7 +358,7 @@ public class TrackPanel extends IGVPanel {
      * @param targetTrack
      * @param before
      */
-    public void moveSelectedTracksTo(Collection<Track> selectedTracks,
+    public void moveSelectedTracksTo(Collection<? extends Track> selectedTracks,
                                      Track targetTrack,
                                      boolean before) {
 
