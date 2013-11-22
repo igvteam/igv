@@ -13,7 +13,7 @@ package org.broad.igv.util;
 
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
-import net.sf.samtools.util.ftp.FTPClient;
+import org.broad.igv.util.ftp.FTPClient;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;

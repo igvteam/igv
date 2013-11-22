@@ -13,9 +13,9 @@ package org.broad.igv.util;
 
 import biz.source_code.base64Coder.Base64Coder;
 import net.sf.samtools.seekablestream.SeekableStream;
-import net.sf.samtools.util.ftp.FTPClient;
-import net.sf.samtools.util.ftp.FTPStream;
-import net.sf.samtools.util.ftp.FTPUtils;
+import org.broad.igv.util.ftp.FTPClient;
+import org.broad.igv.util.ftp.FTPStream;
+import org.broad.igv.util.ftp.FTPUtils;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.HttpDate;
 import org.broad.igv.Globals;

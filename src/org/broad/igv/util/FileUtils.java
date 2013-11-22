@@ -10,7 +10,7 @@
  */
 package org.broad.igv.util;
 
-import net.sf.samtools.util.ftp.FTPUtils;
+import org.broad.igv.util.ftp.FTPUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
