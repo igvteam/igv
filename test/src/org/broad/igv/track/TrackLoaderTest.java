@@ -85,8 +85,18 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
     @Test
     public void testBEDCodec1() throws Exception {
         // This file has an extra tab in the second to last line.  Should have no effect, but earlier versions
-        // of IGV would incorrectly parse the file and throw a runtime exception.
+        // of IGV would split on tabs only and throw a runtime exception.
         String filepath = TestUtils.DATA_DIR + "bed/NA12878.deletions.10kbp.het.gq99.hand_curated.hg19.bed";
+        tstLoadFi(filepath, null, false);
+    }
+
+    /**
+     * Make sure we throw an exception when parsing a bad file
+     * @throws Exception
+     */
+    @Test(expected = RuntimeException.class)
+    public void testBEDCodec2() throws Exception {
+        String filepath = TestUtils.DATA_DIR + "bed/bad_file.bed";
         tstLoadFi(filepath, null, false);
     }
 
