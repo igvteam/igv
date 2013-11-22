@@ -53,7 +53,7 @@ public class MergedTracks extends DataTrack{
      * This is a session tag, changing it will break backwards compatibility
      * with sessions!
      */
-    public static final String MEMBER_TRACK_TAG_NAME = "memberTracks";
+    public static final String MEMBER_TRACK_TAG_NAME = "Track";
 
     public MergedTracks(String id, String name, Collection<DataTrack> inputTracks){
         super(null, id, name);

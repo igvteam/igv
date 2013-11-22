@@ -14,13 +14,16 @@ package org.broad.igv.data;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.session.IGVSessionReader;
+import org.broad.igv.session.SessionXmlAdapters;
 import org.broad.igv.session.SubtlyImportant;
-import org.broad.igv.track.*;
+import org.broad.igv.track.DataTrack;
+import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackType;
+import org.broad.igv.track.WindowFunction;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,11 +53,11 @@ public class CombinedDataSource implements DataSource {
 
     }
 
-    @XmlJavaTypeAdapter(DataTrackAdapter.class)
+    @XmlJavaTypeAdapter(SessionXmlAdapters.DataTrackIDAdapter.class)
     @XmlAttribute(name = "source0")
     DataTrack source0;
 
-    @XmlJavaTypeAdapter(DataTrackAdapter.class)
+    @XmlJavaTypeAdapter(SessionXmlAdapters.DataTrackIDAdapter.class)
     @XmlAttribute(name = "source1")
     DataTrack source1;
 
@@ -345,21 +348,4 @@ public class CombinedDataSource implements DataSource {
         if(source1 != null) source1.dispose();
     }
 
-    private static class DataTrackAdapter extends XmlAdapter<String, org.broad.igv.track.DataTrack> {
-
-        @Override
-        public String marshal(DataTrack dataTrack) throws Exception {
-            return dataTrack.getId();
-        }
-
-        @Override
-        public DataTrack unmarshal(String trackId) throws Exception {
-            DataTrack dataTrack = (DataTrack) IGVSessionReader.getMatchingTrack(trackId, null);
-            if(dataTrack == null){
-                dataTrack = new DataSourceTrack(null, trackId, null, null);
-            }
-            return dataTrack;
-        }
-
-    }
 }
