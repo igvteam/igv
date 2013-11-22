@@ -70,7 +70,7 @@ public class TabixFeatureReader<T extends Feature, SOURCE> extends AbstractFeatu
     private void readHeader() throws IOException {
         SOURCE source = null;
         try {
-            source = codec.makeSourceFromStream(new PositionalBufferedStream(new BlockCompressedInputStream(ParsingUtils.openInputStream(path))));
+            source = codec.makeSourceFromStream(new PositionalBufferedStream(new BlockCompressedInputStream(org.broad.tribble.util.ParsingUtils.openInputStream(path))));
             header = codec.readHeader(source);
         } catch (Exception e) {
             throw new TribbleException.MalformedFeatureFile("Unable to parse header with error: " + e.getMessage(), path, e);
@@ -107,7 +107,7 @@ public class TabixFeatureReader<T extends Feature, SOURCE> extends AbstractFeatu
     }
 
     public CloseableTribbleIterator<T> iterator() throws IOException {
-        final InputStream is = new BlockCompressedInputStream(ParsingUtils.openInputStream(path));
+        final InputStream is = new BlockCompressedInputStream(org.broad.tribble.util.ParsingUtils.openInputStream(path));
         final PositionalBufferedStream stream = new PositionalBufferedStream(is);
         final LineReader reader = LineReaderUtil.fromBufferedStream(stream, LineReaderUtil.LineReaderOption.SYNCHRONOUS);
         return new FeatureIterator<T>(reader, 0, Integer.MAX_VALUE);

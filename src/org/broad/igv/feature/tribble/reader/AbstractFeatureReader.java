@@ -76,7 +76,7 @@ public abstract class AbstractFeatureReader<T extends Feature, SOURCE> implement
                 String indexPath = path + ".tbi";   // Strip off parameters
                 tabxIndex = locator.getPath().replace(path, indexPath);
             } else {
-                tabxIndex = locator.getIndexPath() + ".tbi";
+                tabxIndex = locator.getPath() + ".tbi";
             }
         }
         boolean isTabix =  locator.getPath().endsWith(".gz") && FileUtils.resourceExists(tabxIndex);

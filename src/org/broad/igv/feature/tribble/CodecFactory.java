@@ -135,6 +135,7 @@ public class CodecFactory {
         try {
             // If the file ends with ".gz" assume it is a tabix indexed file
             if (locator.getURLPath().toLowerCase().endsWith(".gz")) {
+                // NOTE:  MUST USE THE PICARD VERSION OF ParsingUtils.  The IGV version will return a gzip stream.
                 reader = new BufferedReader(new InputStreamReader(new BlockCompressedInputStream(
                         org.broad.tribble.util.ParsingUtils.openInputStream(path))));
             } else {
