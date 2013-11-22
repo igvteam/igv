@@ -46,11 +46,8 @@ public class FTPUtils {
     public static boolean resourceAvailable(URL url) {
         InputStream is = null;
         try {
-            URLConnection conn = url.openConnection();
-            conn.setConnectTimeout(TIMEOUT);
-            conn.setReadTimeout(TIMEOUT);
-            is = conn.getInputStream();
-            return (is.read() >= 0);
+
+            return getContentLength(url) > 0;
 
         } catch (IOException e) {
             return false;
