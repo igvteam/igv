@@ -295,7 +295,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     @Override
     public void load(RenderContext context) {
-        dataManager.preload(context, renderOptions, true);
+        dataManager.load(context, renderOptions, true);
     }
 
     public void render(RenderContext context, Rectangle rect) {

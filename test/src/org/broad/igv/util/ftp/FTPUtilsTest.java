@@ -26,7 +26,7 @@ public class FTPUtilsTest {
     }
 
     @Test
-    public void testEBIResourceAvailable() throws Exception {
+    public void testNCBIResourceAvailable() throws Exception {
 
         URL vcfURL = new URL("ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20110521/ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf.gz");
         assertTrue(FTPUtils.resourceAvailable(vcfURL));

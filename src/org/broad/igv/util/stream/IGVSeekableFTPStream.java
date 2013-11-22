@@ -165,7 +165,7 @@ public class IGVSeekableFTPStream extends SeekableStream {
 
 
     public void close() throws IOException {
-        log.info("close");
+        log.debug("close");
         if (ftp != null) {
             ftp.disconnect();
             ftp = null;

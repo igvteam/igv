@@ -19,13 +19,16 @@
 package org.broad.igv.util.ftp;
 
 
+import net.sf.samtools.SAMException;
 import net.sf.samtools.seekablestream.UserPasswordInput;
 import net.sf.samtools.util.ftp.FTPClient;
 import net.sf.samtools.util.ftp.FTPReply;
 
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,21 +44,18 @@ public class FTPUtils {
     static int TIMEOUT = 10000;
 
     public static boolean resourceAvailable(URL url) {
-
-        FTPClient ftp = null;
+        InputStream is = null;
         try {
-            ftp = FTPUtils.connect(url.getHost(), url.getUserInfo(), null);
-            return true;
+            URLConnection conn = url.openConnection();
+            conn.setConnectTimeout(TIMEOUT);
+            conn.setReadTimeout(TIMEOUT);
+            is = conn.getInputStream();
+            return (is.read() >= 0);
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             return false;
         }
-        finally {
-            if(ftp != null) {
-                ftp.disconnect();
-            }
-        }
-
+        // NOTE-- DO NOT TRY TO CLOSE STREAM.  IT WILL HANG.
     }
 
     public static long getContentLength(URL url) throws IOException {

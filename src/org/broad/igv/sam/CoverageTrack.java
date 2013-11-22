@@ -224,7 +224,7 @@ public class CoverageTrack extends AbstractTrack {
             //Show coverage calculated from intervals if zoomed in enough
             AlignmentInterval interval = null;
             if (dataManager != null) {
-                dataManager.preload(context, renderOptions, true);
+                dataManager.load(context, renderOptions, true);
                 interval = dataManager.getLoadedInterval(context.getReferenceFrame().getName());
             }
             if (interval != null) {

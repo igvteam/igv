@@ -3,6 +3,7 @@ package org.broad.igv.ui.action;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.session.SessionXmlAdapters;
+import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -53,6 +54,7 @@ public class BrowseEncodeAction extends MenuAction {
     @Override
     public void actionPerformed(ActionEvent event) {
 
+        String [] visibleAttributes = { "dataType", "cell","antibody", "lab"};
         try {
             Genome genome = igv.getGenomeManager().getCurrentGenome();
             EncodeFileBrowser browser = EncodeFileBrowser.getInstance(genome.getId());
@@ -75,6 +77,13 @@ public class BrowseEncodeAction extends MenuAction {
                     final String antibody = record.getAttributeValue("antibody");
                     if (antibody != null) {
                         rl.setColor(colors.get(antibody.toUpperCase()));
+                    }
+
+                    for(String name : visibleAttributes) {
+                        String value = record.getAttributeValue(name);
+                        if(value != null) {
+                            AttributeManager.getInstance().addAttribute(rl.getName(), name, value);
+                        }
                     }
 
                     locators.add(rl);

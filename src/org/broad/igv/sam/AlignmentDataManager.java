@@ -55,6 +55,8 @@ public class AlignmentDataManager implements IAlignmentDataManager{
 
     private SpliceJunctionHelper.LoadOptions loadOptions;
 
+    private Object loadLock = new Object();
+
     /**
      * This {@code EventBus} is typically used to notify listeners when new data
      * is loaded
@@ -259,46 +261,44 @@ public class AlignmentDataManager implements IAlignmentDataManager{
         loadedInterval.setAlignmentRows(alignmentRows, renderOptions);
     }
 
-    public void preload(RenderContext context) {
-        AlignmentTrack.RenderOptions renderOptions = getCoverageTrack() != null ? getCoverageTrack().getRenderOptions() : null;
-        preload(context, renderOptions, true);
-    }
 
-    public synchronized void preload(RenderContext context,
-                                     AlignmentTrack.RenderOptions renderOptions,
-                                     boolean expandEnds) {
+    public void load(RenderContext context,
+                     AlignmentTrack.RenderOptions renderOptions,
+                     boolean expandEnds) {
 
-        final String chr = context.getChr();
-        final int start = (int) context.getOrigin();
-        final int end = (int) context.getEndLocation();
-        AlignmentInterval loadedInterval = loadedIntervalMap.get(context.getReferenceFrame().getName());
+        synchronized (loadLock) {
+            final String chr = context.getChr();
+            final int start = (int) context.getOrigin();
+            final int end = (int) context.getEndLocation();
+            AlignmentInterval loadedInterval = loadedIntervalMap.get(context.getReferenceFrame().getName());
 
-        int adjustedStart = start;
-        int adjustedEnd = end;
-        int windowSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MAX_VISIBLE_RANGE) * 1000;
-        int center = (end + start) / 2;
-        int expand = Math.max(end - start, windowSize / 2);
+            int adjustedStart = start;
+            int adjustedEnd = end;
+            int windowSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MAX_VISIBLE_RANGE) * 1000;
+            int center = (end + start) / 2;
+            int expand = Math.max(end - start, windowSize / 2);
 
-        if (loadedInterval != null) {
-            // First see if we have a loaded interval that fully contain the requested interval.  If yes we're done
-            if (loadedInterval.contains(chr, start, end)) {
-                // Requested interval is fully contained in the existing one, we're done
-                return;
+            if (loadedInterval != null) {
+                // First see if we have a loaded interval that fully contain the requested interval.  If yes we're done
+                if (loadedInterval.contains(chr, start, end)) {
+                    // Requested interval is fully contained in the existing one, we're done
+                    return;
 
+                }
             }
-        }
 
-        if (expandEnds) {
-            adjustedStart = Math.max(0, Math.min(start, center - expand));
-            adjustedEnd = Math.max(end, center + expand);
+            if (expandEnds) {
+                adjustedStart = Math.max(0, Math.min(start, center - expand));
+                adjustedEnd = Math.max(end, center + expand);
+            }
+            loadAlignments(chr, adjustedStart, adjustedEnd, renderOptions, context);
         }
-        loadAlignments(chr, adjustedStart, adjustedEnd, renderOptions, context);
     }
 
     public synchronized LinkedHashMap<String, List<AlignmentInterval.Row>> getGroups(RenderContext context,
                                                                                      AlignmentTrack.RenderOptions renderOptions) {
 
-        preload(context, renderOptions, false);
+        load(context, renderOptions, false);
 
         AlignmentInterval loadedInterval = loadedIntervalMap.get(context.getReferenceFrame().getName());
         if (loadedInterval != null) {
@@ -362,7 +362,7 @@ public class AlignmentDataManager implements IAlignmentDataManager{
 
         ProgressMonitor monitor = null;
         //Show cancel button
-        if(IGV.hasInstance() && !Globals.isBatch() && !Globals.isHeadless()){
+        if (IGV.hasInstance() && !Globals.isBatch() && !Globals.isHeadless()) {
             ActionListener cancelListener = new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
