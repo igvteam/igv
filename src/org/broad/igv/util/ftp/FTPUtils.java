@@ -19,15 +19,13 @@
 package org.broad.igv.util.ftp;
 
 
-import net.sf.samtools.SAMException;
 import net.sf.samtools.seekablestream.UserPasswordInput;
-import org.broad.igv.util.ftp.FTPClient;
-import org.broad.igv.util.ftp.FTPReply;
+import net.sf.samtools.util.ftp.FTPClient;
+import net.sf.samtools.util.ftp.FTPReply;
+
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
 
