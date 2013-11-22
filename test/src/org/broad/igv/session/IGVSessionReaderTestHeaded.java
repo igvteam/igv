@@ -21,10 +21,7 @@ import org.broad.igv.gwas.GWASTrack;
 import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.CoverageTrack;
-import org.broad.igv.track.DataSourceTrack;
-import org.broad.igv.track.DataTrack;
-import org.broad.igv.track.FeatureTrack;
-import org.broad.igv.track.Track;
+import org.broad.igv.track.*;
 import org.broad.igv.ui.AbstractHeadedTest;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.TestUtils;
@@ -225,6 +222,17 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
         PluginSpecReader reader = PluginSpecReader.create(toolPath);
         PluginSpecReader.Tool tool = reader.getTools().get(0);
         PluginSpecReader.Command command = AbstractPluginTest.findCommandElementByName(tool, "Subtract");
+    }
+
+    @Test
+    public void testLoadOverlaySession() throws Exception{
+        String sessionpath = TestUtils.DATA_DIR + "sessions/hind_gistic_overlay.xml";
+        rewriteRestoreSession(sessionpath);
+
+        //Load the session, check things went well
+        List<DataTrack> dataTracks = IGV.getInstance().getDataTracks();
+        assertEquals(3, dataTracks.size());
+        assertTrue(dataTracks.get(0) instanceof MergedTracks);
     }
 
     /**
