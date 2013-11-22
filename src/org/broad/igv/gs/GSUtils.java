@@ -209,7 +209,7 @@ public class GSUtils {
     private synchronized static String getATMHost() {
 
         try {
-            return (new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER))).getHost();
+            return (new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ATM_SERVER))).getHost();
         } catch (MalformedURLException e) {
             log.error(e);
             return null;
