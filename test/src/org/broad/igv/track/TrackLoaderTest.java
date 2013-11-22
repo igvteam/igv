@@ -86,7 +86,7 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
     public void testBEDCodec1() throws Exception {
         // This file has an extra tab in the second to last line.  Should have no effect, but earlier versions
         // of IGV would split on tabs only and throw a runtime exception.
-        String filepath = TestUtils.DATA_DIR + "bed/NA12878.deletions.10kbp.het.gq99.hand_curated.hg19.bed";
+        String filepath = TestUtils.DATA_DIR + "bed/multi_tab.bed";
         tstLoadFi(filepath, null, false);
     }
 
