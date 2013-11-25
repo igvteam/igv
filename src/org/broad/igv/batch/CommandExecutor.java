@@ -135,14 +135,17 @@ public class CommandExecutor {
                 } else if (cmd.equalsIgnoreCase("group")) {
                     group(param1);
                 } else if (cmd.equalsIgnoreCase("collapse")) {
-                    String trackName = param1 == null ? null : param1.replace("\"", "").replace("'", "");
+                    String trackName = parseTrackName(param1);
                     igv.setTrackDisplayMode(Track.DisplayMode.COLLAPSED, trackName);
                 } else if (cmd.equalsIgnoreCase("expand")) {
-                    String trackName = param1 == null ? null : param1.replace("\"", "").replace("'", "");
+                    String trackName = parseTrackName(param1);
                     igv.setTrackDisplayMode(Track.DisplayMode.EXPANDED, trackName);
                 } else if (cmd.equalsIgnoreCase("squish")) {
-                    String trackName = param1 == null ? null : param1.replace("\"", "").replace("'", "");
+                    String trackName = parseTrackName(param1);
                     igv.setTrackDisplayMode(Track.DisplayMode.SQUISHED, trackName);
+                } else if (cmd.equalsIgnoreCase("remove")) {
+                    String trackName = parseTrackName(param1);
+                    result = removeTrack(trackName);
                 } else if (cmd.equalsIgnoreCase("tweakdivider")) {
                     igv.tweakPanelDivider();
                 } else if (cmd.equalsIgnoreCase("setDataRange")) {
@@ -197,6 +200,21 @@ public class CommandExecutor {
         log.info(result);
 
         return result;
+    }
+
+    private String removeTrack(String trackName) {
+        if(trackName == null) return "Error: NULL TRACK NAME";
+        for(Track track: igv.getAllTracks()){
+            if(track.getName().equals(trackName)){
+                igv.removeTracks(Arrays.asList(track));
+                return "OK";
+            }
+        }
+        return String.format("Error: Track %s not found", trackName);
+    }
+
+    static String parseTrackName(String param1) {
+        return param1 == null ? null : param1.replace("\"", "").replace("'", "");
     }
 
     private String overridePreference(String prefKey, String prefVal) {
