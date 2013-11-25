@@ -2489,16 +2489,11 @@ public class IGV {
                         for (int i = 0; i < dataFiles.length; i++) {
 
                             String p = dataFiles[i].trim();
-                            String idxP = indexFiles == null ? null : indexFiles[i].trim();
 
                             // Decode local file paths
                             if (HttpUtils.isURL(p) && !FileUtils.isRemote(p)) {
                                 p = StringUtils.decodeURL(p);
                             }
-                            if (idxP != null && HttpUtils.isURL(idxP) && !FileUtils.isRemote(idxP)) {
-                                idxP = StringUtils.decodeURL(idxP);
-                            }
-
 
                             ResourceLocator rl = new ResourceLocator(p);
 
@@ -2507,9 +2502,18 @@ public class IGV {
                                 rl.setName(name);
                             }
 
-                            if (idxP.length() > 0) {
-                                rl.setIndexPath(idxP);
+                            //Set index file, iff one was passed
+                            String idxP = indexFiles == null ? null : indexFiles[i].trim();
+                            if(idxP != null){
+                                if (HttpUtils.isURL(idxP) && !FileUtils.isRemote(idxP)) {
+                                    idxP = StringUtils.decodeURL(idxP);
+                                }
+
+                                if (idxP.length() > 0) {
+                                    rl.setIndexPath(idxP);
+                                }
                             }
+
                             locators.add(rl);
                             idx++;
                         }
