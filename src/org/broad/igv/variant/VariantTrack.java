@@ -442,6 +442,8 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             final double pXMax = tmpRect.getMaxX();
             tmpRect.height = variantBandHeight;
 
+            int lastEndX = -1;
+            int minSpacing = 3;
             for (PackedFeatures.FeatureRow row : rows) {
                 List<Feature> features = row.getFeatures();
                 for (Feature feature : features) {
@@ -464,14 +466,24 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                     }
                     int w = dX;
                     int x = pX;
+
                     if (w < 3) {
                         w = 3;
                         x--;
                     }
 
+                    //Make sure we have some whitespace between this
+                    //feature and the previous one, but only if they don't
+                    //actually overlap and the current size is reasonably large
+                    int spacing = x - lastEndX;
+                    if(spacing > 0 && spacing < minSpacing && w > 2*minSpacing){
+                        x += minSpacing - spacing;
+                    }
+
                     tmpRect.y = curRowTop;
                     if (tmpRect.intersects(visibleRectangle)) {
                         renderer.renderSiteBand(variant, tmpRect, x, w, context);
+                        lastEndX = x + w - 1;
                     }
 
                     renderSamples(g2D, visibleRectangle, variant, context, overallSampleRect, x, w);
@@ -484,6 +496,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                 }
                 if (areFeaturesStacked()) {
                     curRowTop += variantBandHeight;
+                    lastEndX = -1;
                 }
             }
         } else {
