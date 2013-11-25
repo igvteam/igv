@@ -386,7 +386,7 @@ public class IGVMenuBar extends JMenuBar {
         }
 
         String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
-        if (Globals.isDevelopment() && EncodeFileBrowser.genomeSupported(genomeId)) {
+        if (EncodeFileBrowser.genomeSupported(genomeId)) {
             menuAction = new BrowseEncodeAction("Load from ENCODE...", KeyEvent.VK_E, igv);
             menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         }
