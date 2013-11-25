@@ -12,6 +12,7 @@
 package org.broad.igv.cli_plugin;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.AlignmentTrack;
@@ -21,7 +22,9 @@ import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.tribble.Feature;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -36,11 +39,19 @@ public class PluginFeatureSource<E extends Feature, D extends Feature> extends P
 
     private static Logger log = Logger.getLogger(PluginFeatureSource.class);
 
+    @XmlAttribute
+    private boolean forbidEmptyOutput;
+
     @SubtlyImportant
     private PluginFeatureSource(){}
 
     public PluginFeatureSource(List<String> commands, LinkedHashMap<Argument, Object> arguments, PluginSpecReader.Output outputAttrs, String specPath) {
+        this(commands, arguments, outputAttrs, specPath, false);
+    }
+
+    public PluginFeatureSource(List<String> commands, LinkedHashMap<Argument, Object> arguments, PluginSpecReader.Output outputAttrs, String specPath, boolean forbidEmptyOutput) {
         super(commands, arguments, outputAttrs, specPath);
+        this.forbidEmptyOutput = forbidEmptyOutput;
     }
 
     @Override
@@ -52,6 +63,10 @@ public class PluginFeatureSource<E extends Feature, D extends Feature> extends P
 
         FeatureTrack fTrack = (FeatureTrack) track;
         List<Feature> features = fTrack.getFeatures(chr, start, end);
+        //Workaround for BEDTools bug, github #88, it can't read an empty file
+        if(features.size() == 0 && forbidEmptyOutput){
+            features = Arrays.<Feature>asList(new Locus("XXXchr0XXX", 0, 1));
+        }
         return super.createTempFile(features, argument);
     }
 

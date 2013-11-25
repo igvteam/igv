@@ -52,7 +52,7 @@ public class SessionWriter {
     static Logger log = Logger.getLogger(SessionWriter.class);
 
     Session session;
-    private static int CURRENT_VERSION = 7;
+    private static int CURRENT_VERSION = 8;
 
     private static final String TRACK_TAG = SessionElement.TRACK.getText();
 

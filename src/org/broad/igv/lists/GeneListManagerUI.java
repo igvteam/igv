@@ -15,6 +15,7 @@
 
 package org.broad.igv.lists;
 
+import javax.swing.plaf.*;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.cbio.FilterGeneNetworkUI;
@@ -34,10 +35,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 
 /**
  * @author Jim RObinson
@@ -95,10 +94,9 @@ public class GeneListManagerUI extends JDialog {
     }
 
     /**
-     *
      * @param owner
      * @param actionText Text to be displayed when the action is performed. Default is "View", for simply viewing the gene list
-     * @param listener The action performed with the specified GeneList
+     * @param listener   The action performed with the specified GeneList
      * @return
      */
     public static GeneListManagerUI getInstance(Frame owner, String actionText, GeneListListener listener) {
@@ -109,7 +107,7 @@ public class GeneListManagerUI extends JDialog {
         instance.actionButton.setText(actionText);
         instance.listener = listener;
 
-        if(listener != DEFAULT_ACTION_LISTENER){
+        if (listener != DEFAULT_ACTION_LISTENER) {
             instance.viewNetworkButton.setVisible(false);
         }
 
@@ -308,8 +306,16 @@ public class GeneListManagerUI extends JDialog {
         if (gmtFile != null) {
 
             try {
-                manager.importGMTFile(gmtFile);
+                List<GeneList> loadedLists = manager.importFile(gmtFile);
                 initLists();
+
+                if (loadedLists.size() > 0) {
+                    groupJList.setSelectedValue(loadedLists.get(0).getGroup(), true);
+                    glJList.setSelectedValue(loadedLists.get(0).getName(), true);
+                    groupJList.updateUI();
+                    glJList.updateUI();
+                }
+
             } catch (IOException e1) {
                 log.error("Error updating genome property file", e1);
                 MessageUtils.showMessage("Error importing .gmt file: " + e1.getMessage());
@@ -654,7 +660,7 @@ public class GeneListManagerUI extends JDialog {
                                 //---- importButton ----
                                 importButton.setIcon(null);
                                 importButton.setText("Import");
-                                importButton.setToolTipText("Import a .gmt file");
+                                importButton.setToolTipText("Import a .gmt file, .grp, or .bed file");
                                 importButton.addActionListener(new ActionListener() {
                                     @Override
                                     public void actionPerformed(ActionEvent e) {
@@ -912,6 +918,7 @@ public class GeneListManagerUI extends JDialog {
      * and taking some action based on that. Listeners
      * implementing this interface can be used as callbacks
      * once a GeneList is selected from GeneListManagerUI
+     *
      * @author jacob
      * @date 2013-Jan-04
      * @api

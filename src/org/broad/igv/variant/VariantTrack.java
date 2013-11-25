@@ -72,6 +72,15 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     // TODO -- this needs to be settable
     public static int METHYLATION_MIN_BASE_COUNT = 10;
 
+
+    public static boolean isVCF(String typeString) {
+        return (typeString.endsWith(".vcf3") ||
+                typeString.endsWith(".vcf4") ||
+                typeString.endsWith(".vcf") ||
+                typeString.endsWith(".bcf"));
+    }
+
+
     private VariantRenderer renderer;
 
     /**
@@ -185,14 +194,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
         setDisplayMode(DisplayMode.EXPANDED);
 
-        // Estimate visibility window.
-        // TODO -- set beta based on available memory
-        int cnt = Math.max(1, allSamples.size());
-        int beta = 10000000;
-        double p = Math.pow(cnt, 1.5);
-        int visWindow = (int) Math.min(500000, (beta / p) * 1000);
-        setVisibilityWindow(visWindow);
-
         // Listen for "group by" events.
         if (IGV.hasInstance()) {
             IGV.getInstance().addGroupEventListener(this);
@@ -203,6 +204,15 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         if (ParsingUtils.pathExists(bamListPath)) {
             loadAlignmentMappings(bamListPath);
         }
+
+        // Set visibility window.  These values are appropriate for human dbsnp/1kg files, probably conservative otherwise
+        // Ugly test on source is to avoid having to add "isIndexed" to a zillion feature source classes.  The intent
+        // is to skip this if using a non-indexed source.
+        if (!(source instanceof TribbleFeatureSource && ((TribbleFeatureSource) source).isIndexed() == false)) {
+            int vw = Math.max(10000, 2000000 - 2000 * allSamples.size());
+            setVisibilityWindow(vw);
+        }
+
     }
 
     private void loadAlignmentMappings(String bamListPath) {
@@ -1353,7 +1363,12 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                 ResourceLocator loc = new ResourceLocator(bamList);
                 loc.setType("alist");
                 loc.setName(name);
-                List<Track> tracks = IGV.getInstance().load(loc);
+                List<Track> tracks = null;
+                try {
+                    tracks = IGV.getInstance().load(loc);
+                } catch (Exception e) {
+                    log.error("Error loading bam: " + loc.getPath(), e);
+                }
 
                 TrackPanel panel = IGV.getInstance().getVcfBamPanel();
                 panel.clearTracks();
@@ -1411,5 +1426,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     private static VariantTrack getNextTrack() {
         return (VariantTrack) IGVSessionReader.getNextTrack();
     }
+
 
 }

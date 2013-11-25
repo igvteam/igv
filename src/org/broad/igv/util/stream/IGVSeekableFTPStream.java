@@ -14,7 +14,7 @@ package org.broad.igv.util.stream;
 import net.sf.samtools.seekablestream.SeekableStream;
 import net.sf.samtools.util.ftp.FTPClient;
 import net.sf.samtools.util.ftp.FTPReply;
-import net.sf.samtools.util.ftp.FTPUtils;
+import org.broad.igv.util.ftp.FTPUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.util.UserPasswordInputImpl;
 
@@ -165,7 +165,7 @@ public class IGVSeekableFTPStream extends SeekableStream {
 
 
     public void close() throws IOException {
-        log.info("close");
+        log.debug("close");
         if (ftp != null) {
             ftp.disconnect();
             ftp = null;

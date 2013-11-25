@@ -13,22 +13,22 @@ package org.broad.igv.session;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import org.broad.igv.cli_plugin.AbstractPluginTest;
 import org.broad.igv.cli_plugin.PluginSpecReader;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.gwas.GWASTrack;
 import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.CoverageTrack;
-import org.broad.igv.track.DataSourceTrack;
-import org.broad.igv.track.DataTrack;
-import org.broad.igv.track.FeatureTrack;
-import org.broad.igv.track.Track;
+import org.broad.igv.track.*;
 import org.broad.igv.ui.AbstractHeadedTest;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.TestUtils;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.tribble.Feature;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -53,7 +53,7 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
 
         assertTrue(track.isShowReference());
         assertEquals(0.5, track.getSnpThreshold(), 1e-5);
-        assertTrue(track.isAutoScale());
+        assertTrue(track.getAutoScale());
     }
 
     @Test
@@ -93,7 +93,7 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
         assertTrue(alTrack.isShowSpliceJunctions());
 
         assertEquals(CoverageTrack.DEFAULT_SHOW_REFERENCE, covTrack.isShowReference());
-        assertEquals(CoverageTrack.DEFAULT_AUTOSCALE, covTrack.isAutoScale());
+        assertEquals(CoverageTrack.DEFAULT_AUTOSCALE, covTrack.getAutoScale());
         assertEquals(0.1337f, covTrack.getSnpThreshold(), 1e-5);
     }
 
@@ -203,16 +203,63 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
 
 
     /**
-     * Test loading a session with an analysis track
+     * Test creating an analysis track, saving the session, and loading it
+     */
+    @Ignore("Not ready yet")
+    @Test
+    public void testSaveLoadPluginSession() throws Exception{
+        String toolPath = "/usr/local/bin/bedtools";
+        boolean haveTool = PluginSpecReader.isToolPathValid(toolPath);
+        Assume.assumeTrue(haveTool);
+
+        String sessionPath = TestUtils.DATA_DIR + "sessions/GSM_beds.xml";
+        rewriteRestoreSession(sessionPath);
+
+        String trackAname = "GSM1004654_100k.bed";
+        String trackBname = "GSM1004654_10k.bed";
+
+        //Generate bedtools subtraction track
+        PluginSpecReader reader = PluginSpecReader.create(toolPath);
+        PluginSpecReader.Tool tool = reader.getTools().get(0);
+        PluginSpecReader.Command command = AbstractPluginTest.findCommandElementByName(tool, "Subtract");
+    }
+
+    @Test
+    public void testLoadOverlaySession() throws Exception{
+        String sessionpath = TestUtils.DATA_DIR + "sessions/hind_gistic_overlay.xml";
+        rewriteRestoreSession(sessionpath);
+
+        //Load the session, check things went well
+        List<DataTrack> dataTracks = IGV.getInstance().getDataTracks();
+        assertEquals(3, dataTracks.size());
+        assertTrue(dataTracks.get(0) instanceof MergedTracks);
+    }
+
+    /**
+     * Very basic test, just makes sure it loads without throwing an exception
      * @throws Exception
      */
     @Test
-    public void testLoadPluginSession() throws Exception{
+    public void testLoadBedtools_Intersect() throws Exception{
+        String sessionPath = TestUtils.DATA_DIR + "sessions/GSM_bedtools_intersect.xml";
+        String toolPath = "/usr/local/bin/bedtools";
+        boolean haveTool = PluginSpecReader.isToolPathValid(toolPath);
+        Assume.assumeTrue(haveTool);
+
+        rewriteRestoreSession(sessionPath);
+    }
+    /**
+     * Test loading a session with a bedtools analysis track
+     * @throws Exception
+     */
+    @Test
+    public void testLoadBedtools_Subtract() throws Exception{
         String toolPath = "/usr/local/bin/bedtools";
         boolean haveTool = PluginSpecReader.isToolPathValid(toolPath);
         Assume.assumeTrue(haveTool);
 
         String sessionPath = TestUtils.DATA_DIR + "sessions/GSM_bedtools_subtract.xml";
+
         rewriteRestoreSession(sessionPath);
 
         String trackAname = "GSM1004654_100k.bed";
@@ -356,6 +403,21 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
         assertNotNull(GenomeManager.getInstance().getGenomeId());
 
 
+    }
+
+    @Test
+    public void testGWAS() throws Exception{
+        String sessionPath = TestUtils.DATA_DIR + "sessions/smallp_session.xml";
+        rewriteRestoreSession(sessionPath);
+        boolean haveGWAS = false;
+        for(Track track: IGV.getInstance().getAllTracks()){
+            if(track instanceof GWASTrack){
+                haveGWAS = true;
+                break;
+            }
+        }
+        assertTrue("No GWAS track loaded", haveGWAS);
+        assertEquals(3, IGV.getInstance().getVisibleTrackCount());
     }
 
     private boolean listContainsFeature(List<Feature> featureList, Feature feature){

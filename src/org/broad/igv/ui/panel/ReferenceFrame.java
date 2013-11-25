@@ -39,6 +39,8 @@ public class ReferenceFrame {
 
     private static Logger log = Logger.getLogger(ReferenceFrame.class);
 
+    boolean visible = true;
+
     /**
      * The nominal viewport width in pixels.
      */
@@ -153,6 +155,14 @@ public class ReferenceFrame {
         return eventBus;
     }
 
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+    }
+
     /**
      * Set the position and width of the frame, in pixels
      * The origin/end positions are kept fixed iff valid
@@ -216,8 +226,6 @@ public class ReferenceFrame {
 
 
     private synchronized void setZoomWithinLimits(int newZoom) {
-        computeMinZoom();
-        computeMaxZoom();
         zoom = Math.max(minZoom, Math.min(maxZoom, newZoom));
         nTiles = Math.pow(2, zoom);
     }
@@ -382,22 +390,6 @@ public class ReferenceFrame {
     }
 
     /**
-     * Compute the minimum zoom level for the data panel width.  This is defined as the maximum
-     * zoom level for which all data bins will fit in the window without loss of
-     * data,  i.e. the maximum zoom level for which nBins < nPixels.  The number
-     * of bins is defined as
-     * nBins =  2^z
-     * so minZoom is the value z such that nBins < dataPanelWidth
-     */
-    protected void computeMinZoom() {
-        if (this.chrName.equals(Globals.CHR_ALL)) {
-            minZoom = 0;
-        } else {
-            minZoom = Math.max(0, (int) (Math.log((widthInPixels / binsPerTile)) / Globals.log2));
-        }
-    }
-
-    /**
      * Record the current state of the frame in history.
      * It is recommended that this NOT be called from within ReferenceFrame,
      * and callers use it after making all changes
@@ -506,22 +498,6 @@ public class ReferenceFrame {
 
 
     /**
-     * Compute the maximum zoom level, which is a function of chromosome length.
-     */
-    private void computeMaxZoom() {
-        Genome genome = getGenome();
-        // Compute max zoom.  Assume window size @ max zoom of ~ 50 bp
-        if (genome != null && chrName != null && genome.getChromosome(chrName) != null) {
-            if (chrName.equals(Globals.CHR_ALL)) {
-                maxZoom = 0;
-            } else {
-                int chrLength = genome.getChromosome(chrName).getLength();
-                maxZoom = (int) (Math.log(chrLength / 50.0) / Globals.log2) + 1;
-            }
-        }
-    }
-
-    /**
      * Calculate the zoom level given start/end in bp.
      * Doesn't change anything
      *
@@ -530,7 +506,7 @@ public class ReferenceFrame {
      * @return
      */
     protected int calculateZoom(double start, double end) {
-        return (int) (Math.log(getChromosomeLength() / (end - start)) / Globals.log2) + 1;
+        return (int) Math.round((Math.log((getChromosomeLength() / (end - start)) * (((double) widthInPixels) / binsPerTile)) / Globals.log2));
     }
 
     protected Genome getGenome() {

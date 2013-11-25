@@ -42,7 +42,7 @@ public class UCSCGeneTableCodecTest extends AbstractHeadlessTest {
 
         assertEquals(1, tracks.size());
 
-        FeatureCodec codec = CodecFactory.getCodec(locator.getPath(), genome);
+        FeatureCodec codec = CodecFactory.getCodec(locator, genome);
         AbstractFeatureReader<Feature, ?> bfs = AbstractFeatureReader.getFeatureReader(locator.getPath(), codec, false);
         Iterable<Feature> iter = bfs.iterator();
         int count = 0;

@@ -66,6 +66,9 @@ visible
     for the user to access it. Intended to be used by developers
 toolUrl:
     url where the user can go for help on this command line tool.
+forbidEmptyOutput:
+    If the tool requires at least 1 feature, mark this true.
+    A dummy feature will be written out
 -->
 <!ELEMENT tool (default_arg?, default_output?, msg*, command+)>
 <!ATTLIST tool name CDATA #REQUIRED
@@ -73,7 +76,8 @@ toolUrl:
     description CDATA #IMPLIED
     visible (true|false) "true"
     toolUrl CDATA #IMPLIED
-    helpUrl CDATA #IMPLIED>
+    helpUrl CDATA #IMPLIED
+    forbidEmptyOutput (true|false) "false">
 
 <!--
 msg

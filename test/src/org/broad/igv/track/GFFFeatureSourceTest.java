@@ -17,6 +17,7 @@ import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.GFFParser;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.GFFCodec;
+import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -25,6 +26,7 @@ import org.broad.tribble.Feature;
 import org.junit.Test;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -51,7 +53,7 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
     private List<Feature> getGeneFeatures(String filepath, String chr, int start, int end) throws Exception {
         TestUtils.createIndex(filepath);
 
-        GFFFeatureSource source = new GFFFeatureSource(filepath, genome);
+        GFFFeatureSource source = getGffFeatureSource(filepath);
 
         Iterator<Feature> feats = source.getFeatures(chr, start, end);
         List<Feature> sourceFeats = new ArrayList<Feature>(2);
@@ -62,6 +64,11 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
             sourceFeats.add(feat);
         }
         return sourceFeats;
+    }
+
+    private GFFFeatureSource getGffFeatureSource(String filepath) throws IOException, TribbleIndexNotFoundException {
+        TribbleFeatureSource fs = TribbleFeatureSource.getFeatureSource(new ResourceLocator(filepath), genome);
+        return new GFFFeatureSource(fs);
     }
 
     @Test
@@ -75,10 +82,12 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
         assertEquals(2, sourceFeats.size());
 
 
-        GFFParser parser = new GFFParser();
-        List<FeatureTrack> tracks = parser.loadTracks(new ResourceLocator(filepath), genome);
+        GFFFeatureSource source = getGffFeatureSource(filepath);
 
-        List<Feature> parserFeats = tracks.get(0).getFeatures(chr, start, end);
+        Iterator<Feature> iter = source.getFeatures(chr, start, end);
+        List<Feature> parserFeats = new ArrayList();
+        while (iter.hasNext()) parserFeats.add(iter.next());
+
         assertEquals(parserFeats.size(), sourceFeats.size());
 
         int sF = 0;
@@ -361,15 +370,20 @@ chr1	.	CDS	7000	7600	.	+	1	ID=cds00004;Parent=mRNA00003;Name=edenprotein.4
      */
     @Test
     public void testUTR() throws Exception {
-        String filepath = TestUtils.DATA_DIR + "gff/utr.gff";
+        String file = TestUtils.DATA_DIR + "gff/utr.gff";
 
         BufferedReader reader = null;
         Genome genome = null;
         try {
-            GFFParser parser = new GFFParser();
-            reader = ParsingUtils.openBufferedReader(filepath);
+            FeatureSource source =
+                    new GFFFeatureSource(TribbleFeatureSource.getFeatureSource(new ResourceLocator(file), genome));
 
-            List<org.broad.tribble.Feature> features = parser.loadFeatures(reader, genome);
+            Iterator<Feature> iter = source.getFeatures("chr1", 0, Integer.MAX_VALUE);
+            List<org.broad.tribble.Feature> features = new ArrayList<Feature>();
+            while (iter.hasNext()) {
+                features.add(iter.next());
+            }
+
             assertEquals(1, features.size());
 
             BasicFeature feature = (BasicFeature) features.get(0);
@@ -401,19 +415,23 @@ chr1	.	CDS	7000	7600	.	+	1	ID=cds00004;Parent=mRNA00003;Name=edenprotein.4
      */
     @Test
     public void testRNA() throws Exception {
-        String file = TestUtils.DATA_DIR + "gff/rna1.gff3";
+        String filepath = TestUtils.DATA_DIR + "gff/rna1.gff3";
         BufferedReader reader = null;
         Genome genome = null;
         try {
-            GFFParser parser = new GFFParser();
-            reader = ParsingUtils.openBufferedReader(file);
-            GFFCodec codec = new GFFCodec(GFFCodec.Version.GFF3, genome);
-            List<org.broad.tribble.Feature> features = parser.loadFeatures(reader, genome, codec);
-            assertEquals(1, features.size());
+            GFFFeatureSource source = getGffFeatureSource(filepath);
 
-           List<Exon> exons = ((BasicFeature) features.get(0)).getExons();
-           assertEquals(6, exons.size());
+            Iterator<Feature> iter = source.getFeatures("chr1", 0, Integer.MAX_VALUE);
+            int featureCount = 0;
+            Feature feature = null;
+            while (iter.hasNext()) {
+                feature = iter.next();
+                featureCount++;
+            }
+            assertEquals(1, featureCount);
 
+            List<Exon> exons = ((BasicFeature) feature).getExons();
+            assertEquals(6, exons.size());
 
 
         } finally {

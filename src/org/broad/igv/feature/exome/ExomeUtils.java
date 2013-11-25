@@ -50,8 +50,11 @@ public class ExomeUtils {
                 if (tmp != null) {
                     exons.addAll(tmp);
                 }
+                else {
+                    exons.add(f);
+                }
             } else {
-
+                 exons.add(f);
             }
         }
 
@@ -97,6 +100,8 @@ public class ExomeUtils {
             }
 
         }
+        // Add the last block
+        blocks.add(block);
 
         return blocks;
 

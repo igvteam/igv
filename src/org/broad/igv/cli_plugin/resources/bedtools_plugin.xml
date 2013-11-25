@@ -13,7 +13,8 @@
             id="org.broad.igv.plugin.bedtools">
     <tool name="BEDTools" defaultPath="bedtools" toolUrl="http://code.google.com/p/bedtools/" visible="true"
           helpUrl="http://bedtools.readthedocs.org/en/latest/"
-          description="bedtools: a flexible suite of utilities for comparing genomic features.">
+          description="bedtools: a flexible suite of utilities for comparing genomic features."
+          forbidEmptyOutput="true">
 
         <default_arg>
             <arg name="Track A" cmd_arg="-a" type="FEATURE_TRACK"/>

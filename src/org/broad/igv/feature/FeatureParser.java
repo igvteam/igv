@@ -30,12 +30,11 @@ import java.io.IOException;
 import java.util.List;
 
 /**
+ *
+ *
  * @author jrobinso
  */
 public interface FeatureParser {
-
-
-    List<FeatureTrack> loadTracks(ResourceLocator locator, Genome genome) throws IOException;
 
     /**
      * Method description

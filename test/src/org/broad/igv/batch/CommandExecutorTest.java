@@ -23,6 +23,7 @@ import org.broad.igv.ui.AbstractHeadedTest;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.IGVTestHeadless;
 import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.Before;
@@ -181,8 +182,9 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     @Test
     public void testSortByRegionScoreType() throws Exception {
         Timer deadlockChecker = TestUtils.startDeadlockChecker(1000);
-        String sessionPath = TestUtils.DATA_DIR + "sessions/BRCA_loh2.xml";
+        String sessionPath = TestUtils.DATA_DIR + "sessions/metabric_expression.xml";
         TestUtils.loadSession(igv, sessionPath);
+
         Collection<RegionOfInterest> rois = igv.getSession().getAllRegionsOfInterest();
 
         List<Track> tracks;
@@ -198,7 +200,8 @@ public class CommandExecutorTest extends AbstractHeadedTest {
                 assertEquals("OK", resp);
 
                 tracks = igv.getAllTracks();
-                IGVTestHeadless.checkIsSorted(tracks, roi, type, FrameManager.getDefaultFrame().getZoom());
+                ReferenceFrame frame = FrameManager.getDefaultFrame();
+                IGVTestHeadless.checkIsSorted(tracks, roi, type, frame.getZoom(), frame);
                 count++;
             }
         }

@@ -87,9 +87,9 @@ public class IGVUrlHelper implements URLHelper {
             nurl = String.format("%s?%s", parts[0], toadd);
             nurl += "&" + parts[1];
         }
-        if(log.isDebugEnabled()){
-            log.debug("old url: " + surl);
-            log.debug("new url: " + nurl);
+        if(log.isTraceEnabled()){
+            log.trace("old url: " + surl);
+            log.trace("new url: " + nurl);
         }
         return new URL(nurl);
     }

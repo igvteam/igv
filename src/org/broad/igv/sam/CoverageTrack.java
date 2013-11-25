@@ -33,7 +33,6 @@ import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.DataRangeDialog;
-import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.event.DataLoadedEvent;
@@ -54,7 +53,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -180,65 +178,89 @@ public class CoverageTrack extends AbstractTrack {
         }
     }
 
+    public void render(RenderContext context, Rectangle rect){
 
-    public void render(RenderContext context, Rectangle rect) {
+        overlay(context, rect);
+
+        drawBorder(context, rect);
+        List<LocusScore> scores = getSummaryScores(context);
+        if (scores != null) {
+            dataSourceRenderer.renderBorder(this, context, rect);
+        }
+
+        if(!isRepeatY(rect)){
+            lastRenderY = rect.y;
+            if(dataSourceRenderer != null){
+                dataSourceRenderer.renderAxis(this, context, rect);
+            }
+            if(FrameManager.isExomeMode()){
+                int x = context.getGraphics().getClipBounds().x;
+                Rectangle scaleRect = new Rectangle(x, rect.y, rect.width, rect.height);
+                drawScale(context, scaleRect);
+            }
+
+        }
+
+    }
+
+    private List<LocusScore> getSummaryScores(RenderContext context){
+        List<LocusScore> scores = null;
+        if(dataSource != null){
+            String chr = context.getChr();
+            int start = (int) context.getOrigin();
+            int end = (int) context.getEndLocation();
+            int zoom = context.getZoom();
+            scores = dataSource.getSummaryScoresForRange(chr, start, end, zoom);
+        }
+        return scores;
+    }
+
+    public void overlay(RenderContext context, Rectangle rect) {
 
         float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
         float minVisibleScale = (maxRange * 1000) / 700;
 
         if (context.getScale() < minVisibleScale && !context.getChr().equals(Globals.CHR_ALL)) {
-            //
+            //Show coverage calculated from intervals if zoomed in enough
             AlignmentInterval interval = null;
             if (dataManager != null) {
-                dataManager.preload(context, renderOptions, true);
+                dataManager.load(context, renderOptions, true);
                 interval = dataManager.getLoadedInterval(context.getReferenceFrame().getName());
             }
             if (interval != null) {
                 if (interval.contains(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation())) {
                     if(autoScale) rescale();
                     intervalRenderer.paint(context, rect, interval.getCounts());
+                    return;
                 }
             }
-        } else if (dataSource != null) {
-            // Use precomputed data source, if any
-            String chr = context.getChr();
-            int start = (int) context.getOrigin();
-            int end = (int) context.getEndLocation();
-            int zoom = context.getZoom();
-            List<LocusScore> scores = dataSource.getSummaryScoresForRange(chr, start, end, zoom);
-            if (scores != null) {
-                dataSourceRenderer.render(scores, context, rect, this);
-            }
-
         }
-        drawBorder(context, rect);
+
+        //Use precomputed scores, if available
+        List<LocusScore> scores = getSummaryScores(context);
+        if (scores != null) {
+            dataSourceRenderer.renderScores(this, scores, context, rect);
+        }
+
     }
 
+    /**
+     * Draw border and scale
+     * @param context
+     * @param rect
+     */
     private void drawBorder(RenderContext context, Rectangle rect) {
-        // Draw border
         context.getGraphic2DForColor(Color.gray).drawLine(
                 rect.x, rect.y + rect.height,
                 rect.x + rect.width, rect.y + rect.height);
 
-        // Draw scale
-        if (!FrameManager.isExomeMode())
+        if(!FrameManager.isExomeMode()){
             drawScale(context, rect);
+        }
     }
 
     public void drawScale(RenderContext context, Rectangle rect) {
-        DataRange range = getDataRange();
-        if (range != null) {
-            Graphics2D g = context.getGraphic2DForColor(Color.black);
-            Font font = g.getFont();
-            Font smallFont = FontManager.getFont(8);
-            g.setFont(smallFont);
-            String scale = "[" + (int) range.getMinimum() + " - " +
-                    (int) range.getMaximum() + "]";
-
-            g.drawString(scale, rect.x + 5, rect.y + 10);
-
-            g.setFont(font);
-        }
+        DataRenderer.drawScale(getDataRange(), context, rect);
     }
 
     public boolean isLogNormalized() {

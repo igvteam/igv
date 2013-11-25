@@ -36,6 +36,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -104,7 +105,7 @@ public class DataSourceTrack extends DataTrack {
 
     public List<LocusScore> getSummaryScores(String chr, int startLocation, int endLocation, int zoom) {
         List<LocusScore> tmp = dataSource.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
-        tmp = tmp == null ? new ArrayList() : tmp;
+        if (tmp == null) tmp = Collections.EMPTY_LIST;
         if(!firstDataLoaded && rescaleOnFirst){
             initScale(dataSource, tmp);
             firstDataLoaded = true;
@@ -138,8 +139,8 @@ public class DataSourceTrack extends DataTrack {
     }
 
     @Override
-    public void restorePersistentState(Node node) throws JAXBException {
-        super.restorePersistentState(node);
+    public void restorePersistentState(Node node, int version) throws JAXBException {
+        super.restorePersistentState(node, version);
         if (node.hasChildNodes()) {
             NodeList childNodes = node.getChildNodes();
             for (int ii = 0; ii < childNodes.getLength(); ii++) {

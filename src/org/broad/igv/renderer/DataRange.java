@@ -16,9 +16,12 @@
 */
 package org.broad.igv.renderer;
 
+import org.broad.igv.track.Track;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import java.util.Collection;
 
 /**
  * Encapsulates parameter for an x-y plot axis.
@@ -122,6 +125,30 @@ public class DataRange{
 
     public void setDrawBaseline(boolean drawBaseline) {
         this.drawBaseline = drawBaseline;
+    }
+
+    public static DataRange getFromTracks(Collection<? extends Track> tracks){
+        float min = Float.MAX_VALUE;
+        float max = Float.MIN_VALUE;
+        float mid = 0;
+        boolean drawBaseline = true;
+        boolean isLog = true;
+        for (Track t : tracks) {
+            DataRange dr = t.getDataRange();
+            min = Math.min(min, dr.getMinimum());
+            max = Math.max(max, dr.getMaximum());
+            mid += dr.getBaseline();
+            drawBaseline &= dr.isDrawBaseline();
+            isLog &= dr.isLog();
+        }
+        mid /= tracks.size();
+        if (mid < min) {
+            mid = min;
+        } else if (mid > max) {
+            min = max;
+        }
+
+        return new DataRange(min, mid, max, drawBaseline, isLog);
     }
 
 }

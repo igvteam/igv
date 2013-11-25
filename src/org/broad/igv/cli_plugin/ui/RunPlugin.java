@@ -58,6 +58,7 @@ public class RunPlugin extends JDialog {
     private String pluginId;
     private String toolName;
     private String commandName;
+    private boolean forbidEmptyOutput;
 
 
     public RunPlugin(Frame owner, PluginSpecReader pluginSpecReader, final PluginSpecReader.Tool tool, PluginSpecReader.Command command) {
@@ -98,6 +99,7 @@ public class RunPlugin extends JDialog {
 
         this.pluginId = pluginSpecReader.getId();
         this.toolName = tool.name;
+        this.forbidEmptyOutput = tool.forbidEmptyOutput;
         this.commandName = command.name;
 
         String[] cmdEls = new String[]{toolPath, command.cmd};
@@ -177,8 +179,12 @@ public class RunPlugin extends JDialog {
         this.validate();
     }
 
-    private List<Track> genNewTracks() {
-        //Retrieve the actual argument values
+    /**
+     * Retrieve the argument values from the UI components, and save whichever
+     * are appropriate to preferences (for remembering)
+     * @return
+     */
+    LinkedHashMap<Argument, Object> getArgumentValues(){
         LinkedHashMap<Argument, Object> argumentValues = new LinkedHashMap<Argument, Object>(argumentComponents.size());
         for (Map.Entry<Argument, ArgumentPanel> argComp : argumentComponents.entrySet()) {
             Object value = argComp.getValue().getValue();
@@ -189,10 +195,14 @@ public class RunPlugin extends JDialog {
                 PreferenceManager.getInstance().putArgumentValue(pluginId, toolName, commandName, argComp.getKey().getId(), (String) value);
             }
         }
+        return argumentValues;
+    }
+
+    private List<Track> genNewTracks() {
+        //Retrieve the actual argument values
+        LinkedHashMap<Argument, Object> argumentValues = getArgumentValues();
 
         List<Track> newTracks = new ArrayList<Track>(outputAttrs.size());
-
-        //QueryTracker queryTracker = QueryTracker.get();
 
         for (PluginSpecReader.Output outputAttr : outputAttrs) {
             //TODO Hacky, only works for output components being TextArgument, which they are as of this comment writing
@@ -201,7 +211,7 @@ public class RunPlugin extends JDialog {
             Track newTrack = null;
             switch (outputAttr.type) {
                 case FEATURE_TRACK:
-                    PluginFeatureSource featSource1 = new PluginFeatureSource(cmdList, argumentValues, outputAttr, specPath);
+                    PluginFeatureSource featSource1 = new PluginFeatureSource(cmdList, argumentValues, outputAttr, specPath, this.forbidEmptyOutput);
                     //featSource1.setQueryTracker(queryTracker);
                     FeatureSource featSource = new CachingFeatureSource(featSource1);
                     newTrack = new FeatureTrack(UUID.randomUUID().toString(), name, featSource);
@@ -212,7 +222,7 @@ public class RunPlugin extends JDialog {
                     newTrack = new DataSourceTrack(null, UUID.randomUUID().toString(), name, dataSource);
                     break;
                 case VARIANT_TRACK:
-                    PluginFeatureSource VfeatSource1 = new PluginFeatureSource(cmdList, argumentValues, outputAttr, specPath);
+                    PluginFeatureSource VfeatSource1 = new PluginFeatureSource(cmdList, argumentValues, outputAttr, specPath, this.forbidEmptyOutput);
                     FeatureSource VfeatSource = new CachingFeatureSource(VfeatSource1);
                     newTrack = new VariantTrack(name, VfeatSource);
                     break;

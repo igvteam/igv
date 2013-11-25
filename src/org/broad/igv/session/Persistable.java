@@ -31,6 +31,7 @@ public interface Persistable {
     /**
      * Restore object state from a map of key-value string pairs
      * @param values
+     * @param version
      */
-    public void restorePersistentState(Map<String, String> values);
+    public void restorePersistentState(Map<String, String> values, int version);
 }

@@ -13,6 +13,7 @@ package org.broad.igv.feature.tribble;
 
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.track.TribbleFeatureSource;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.igv.variant.vcf.VCFVariant;
 import org.junit.Test;
@@ -40,7 +41,7 @@ public class VCFWrapperCodecTest extends AbstractHeadlessTest {
         String filePath = TestUtils.DATA_DIR + "vcf/missingFields.vcf";
         TestUtils.createIndex(filePath);
 
-        TribbleFeatureSource src = new TribbleFeatureSource(filePath, genome);
+        TribbleFeatureSource src = TribbleFeatureSource.getFeatureSource(new ResourceLocator(filePath), genome);
 
         Iterator iter = src.getFeatures("chr2", 3321000, 13346000);
 

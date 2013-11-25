@@ -18,6 +18,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.gwas.EQTLCodec;
 import org.broad.igv.peaks.PeakCodec;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.FeatureCodec;
 import org.broadinstitute.variant.bcf2.BCF2Codec;
@@ -42,26 +43,28 @@ public class CodecFactory {
     public static final List<String> validExtensions = new ArrayList<String>(15);
 
     static {
-        validExtensions.addAll(Arrays.asList("vcf4", "vcf", "bed", "refflat", "genepred", "ensgene", "refgene", "ucscgene",
-                "repmask", "gff3", "gvf", "gff", "gtf", "psl", "mut", "maf"));
+        validExtensions.addAll(Arrays.asList("vcf4", "vcf", "bed", "refflat", "genepred", "ensgene", "refgene", "ucscgene", "repmask", "gff3", "gvf", "gff", "gtf", "psl", "mut", "maf"));
     }
 
     /**
-     * Return a tribble codec to decode the supplied file, or null if not found.
-     *
-     * @param path the path (file or URL) to the feature file
+     * @deprecated Use {@link #getCodec(org.broad.igv.util.ResourceLocator, org.broad.igv.feature.genome.Genome)}
+     * This won't handle URLs with query strings properly for all codecs
+     * @param path
+     * @param genome
+     * @return
      */
     public static FeatureCodec getCodec(String path, Genome genome) {
+        return getCodec(new ResourceLocator(path), genome);
+    }
+    /**
+     * Return a tribble codec to decode the supplied file, or null if not found.
+     *
+     * @param locator the ResourceLocator (file or URL) to the feature file
+     */
+    public static FeatureCodec getCodec(ResourceLocator locator, Genome genome) {
 
-        String fn = path.toLowerCase();
-        if (fn.endsWith(".gz")) {
-            int l = fn.length() - 3;
-            fn = fn.substring(0, l);
-        }
-        if (fn.endsWith(".txt")) {
-            int l = fn.length() - 4;
-            fn = fn.substring(0, l);
-        }
+        String path = locator.getPath();
+        String fn = locator.getTypeString().toLowerCase();
 
         if (fn.endsWith(".vcf3")) {
             return new VCFWrapperCodec(new VCF3Codec(), genome);
@@ -69,7 +72,7 @@ public class CodecFactory {
         if (fn.endsWith(".vcf4")) {
             return new VCFWrapperCodec(new VCFCodec(), genome);
         } else if (fn.endsWith(".vcf")) {
-            return new VCFWrapperCodec(getVCFCodec(path), genome);
+            return new VCFWrapperCodec(getVCFCodec(locator), genome);
         } else if (fn.endsWith(".bcf")) {
             return new BCF2WrapperCodec(new BCF2Codec(), genome);
         } else if (fn.endsWith(".bed")) {
@@ -96,7 +99,7 @@ public class CodecFactory {
             //return new SAMCodec();
         } else if (fn.endsWith(".psl") || fn.endsWith(".pslx")) {
             return new PSLCodec(genome);
-        } else if (MUTCodec.isMutationAnnotationFile(path)) {
+        } else if (MUTCodec.isMutationAnnotationFile(locator)) {
             return new MUTCodec(path, genome);
         } else if (fn.endsWith(".narrowpeak") || fn.endsWith(".broadpeak")) {
             return new EncodePeakCodec(genome);
@@ -120,16 +123,19 @@ public class CodecFactory {
      * <p/>
      * e.g.  ##fileformat=VCFv4.1
      *
-     * @param path Path to the VCF file.  Can be a file path, or URL
+     * @param locator
      * @return
      */
-    private static AsciiFeatureCodec getVCFCodec(String path) {
+    private static AsciiFeatureCodec getVCFCodec(ResourceLocator locator) {
+
+        String path = locator.getPath();
 
         BufferedReader reader = null;
 
         try {
             // If the file ends with ".gz" assume it is a tabix indexed file
-            if (path.toLowerCase().endsWith(".gz")) {
+            if (locator.getURLPath().toLowerCase().endsWith(".gz")) {
+                // NOTE:  MUST USE THE PICARD VERSION OF ParsingUtils.  The IGV version will return a gzip stream.
                 reader = new BufferedReader(new InputStreamReader(new BlockCompressedInputStream(
                         org.broad.tribble.util.ParsingUtils.openInputStream(path))));
             } else {
@@ -139,7 +145,8 @@ public class CodecFactory {
             int lineCount = 0;
             String formatLine;
             while ((formatLine = reader.readLine()) != null && lineCount < 20) {
-                if (formatLine.toLowerCase().startsWith("##fileformat")) {
+                if (formatLine.toLowerCase().startsWith("##fileformat") ||
+                        formatLine.toLowerCase().startsWith("##format")) {
                     String[] tmp = formatLine.split("=");
                     if (tmp.length > 1) {
                         String version = tmp[1].toLowerCase();
@@ -165,5 +172,28 @@ public class CodecFactory {
         }
         // Should never get here, but as a last resort assume this is a VCF 4.x file.
         return new VCFCodec();
+    }
+
+    /**
+     * Return true if a file represented by "path" is indexable.  This method is an optimization, we could just look
+     * for the index but that is expensive to do for remote resources.  All tribble indexable extensions should be
+     * listed here.
+     *
+     * @param locator
+     * @param genome
+     * @return
+     */
+    public static boolean hasCodec(ResourceLocator locator, Genome genome) {
+
+        String fn = locator.getTypeString();
+        if (fn.endsWith(".gz")) {
+            int l = fn.length() - 3;
+            fn = fn.substring(0, l);
+        }
+        // The vcf extension is for performance, it doesn't matter which codec is returned all vcf files
+        // are indexable.
+        return fn.endsWith(".vcf") || fn.endsWith(".bcf") || getCodec(locator, genome) != null;
+
+
     }
 }

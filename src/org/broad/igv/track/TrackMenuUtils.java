@@ -18,7 +18,6 @@ import org.apache.commons.math.stat.StatUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.data.CombinedDataSource;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.FeatureUtils;
@@ -28,13 +27,17 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.renderer.*;
 import org.broad.igv.ui.*;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.panel.TrackPanel;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
+import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.StringUtils;
+import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.util.collections.CollUtils;
 import org.broad.igv.util.stats.KMPlotFrame;
 import org.broad.tribble.Feature;
@@ -73,10 +76,11 @@ public class TrackMenuUtils {
     /**
      * Called by plugins to add a listener, which is then called when TrackMenus are created
      * to generate menu entries.
+     *
      * @param builder
      * @api
      */
-    public static void addTrackMenuItemBuilder(TrackMenuItemBuilder builder){
+    public static void addTrackMenuItemBuilder(TrackMenuItemBuilder builder) {
         trackMenuItems.add(builder);
     }
 
@@ -110,22 +114,23 @@ public class TrackMenuUtils {
 
     /**
      * Add menu items which have been added through the api, not known until runtime
+     *
      * @param menu
      * @param tracks
      * @param te
      */
     public static void addPluginItems(JPopupMenu menu, Collection<Track> tracks, TrackClickEvent te) {
         List<JMenuItem> items = new ArrayList<JMenuItem>(0);
-        for(TrackMenuItemBuilder builder: trackMenuItems){
+        for (TrackMenuItemBuilder builder : trackMenuItems) {
             JMenuItem item = builder.build(tracks, te);
-            if(item != null){
+            if (item != null) {
                 items.add(item);
             }
         }
 
-        if(items.size() > 0){
+        if (items.size() > 0) {
             menu.addSeparator();
-            for(JMenuItem item: items){
+            for (JMenuItem item : items) {
                 menu.add(item);
             }
         }
@@ -210,8 +215,8 @@ public class TrackMenuUtils {
      */
     public static void addDataItems(JPopupMenu menu, final Collection<Track> tracks) {
 
-        if (log.isDebugEnabled()) {
-            log.debug("enter getDataPopupMenu");
+        if (log.isTraceEnabled()) {
+            log.trace("enter getDataPopupMenu");
         }
 
         final String[] labels = {"Heatmap", "Bar Chart", "Points", "Line Plot"};
@@ -308,11 +313,31 @@ public class TrackMenuUtils {
         menu.addSeparator();
         menu.add(getChangeKMPlotItem(tracks));
 
-//        if(Globals.isDevelopment()){
-//            for(JMenuItem item: getCombinedDataSourceItems(tracks)){
-//                menu.add(item);
-//            }
-//        }
+        if (Globals.isDevelopment() && FrameManager.isGeneListMode() && tracks.size() == 1) {
+            menu.addSeparator();
+            menu.add(getShowSortFramesItem(tracks.iterator().next()));
+        }
+
+        if(Globals.isDevelopment()){
+            final List<DataTrack> dataTrackList = Lists.newArrayList(Iterables.filter(tracks, DataTrack.class));
+            final JMenuItem overlayGroups = new JMenuItem("Create Overlay Track");
+            overlayGroups.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    MergedTracks mergedTracks = new MergedTracks(UUID.randomUUID().toString(), "Overlay", dataTrackList);
+
+                    Track firstTrack = tracks.iterator().next();
+                    TrackPanel panel = TrackPanel.getParentPanel(firstTrack);
+                    panel.addTrack(mergedTracks);
+                    panel.moveSelectedTracksTo(Arrays.asList(mergedTracks), firstTrack, false);
+                    panel.removeTracks(tracks);
+                }
+            });
+
+            int numDataTracks = dataTrackList.size();
+            overlayGroups.setEnabled(numDataTracks >= 2 && numDataTracks == tracks.size());
+            menu.add(overlayGroups);
+        }
 
     }
 
@@ -344,9 +369,9 @@ public class TrackMenuUtils {
         return Arrays.asList(addItem, subItem);
     }
 
-    private static void addCombinedDataTrack(List<DataTrack> dataTracks, CombinedDataSource.Operation op){
+    private static void addCombinedDataTrack(List<DataTrack> dataTracks, CombinedDataSource.Operation op) {
         String text = "";
-        switch (op){
+        switch (op) {
             case ADD:
                 text = "Sum";
                 break;
@@ -405,21 +430,47 @@ public class TrackMenuUtils {
                 }
 
             }
+            if (Globals.isDevelopment()) {
+                featurePopupMenu.addSeparator();
+                featurePopupMenu.add(getFeatureToGeneListItem(t));
+            }
+            if (Globals.isDevelopment() && FrameManager.isGeneListMode() && tracks.size() == 1) {
+                featurePopupMenu.addSeparator();
+                featurePopupMenu.add(getShowSortFramesItem(tracks.iterator().next()));
+            }
+
         }
 
         featurePopupMenu.addSeparator();
         featurePopupMenu.add(getChangeFeatureWindow(tracks));
+
+    }
+
+    private static JMenuItem getFeatureToGeneListItem(final Track t) {
+        JMenuItem mi = new JMenuItem("Use as loci list");
+
+        mi.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Current chromosome only for now
+
+
+            }
+        });
+
+        return mi;
     }
 
     /**
      * Return a menu item which will export visible features
      * If {@code tracks} is not a single {@code FeatureTrack}, {@code null}
      * is returned (there should be no menu entry)
+     *
      * @param tracks
      * @return
      */
     public static JMenuItem getExportFeatures(final Collection<Track> tracks, final ReferenceFrame.Range range) {
-        if(tracks.size() != 1 || !(tracks.iterator().next() instanceof FeatureTrack) ){
+        if (tracks.size() != 1 || !(tracks.iterator().next() instanceof FeatureTrack)) {
             return null;
         }
         JMenuItem exportData = new JMenuItem("Export To BED File");
@@ -580,38 +631,19 @@ public class TrackMenuUtils {
 
             public void actionPerformed(ActionEvent evt) {
                 if (selectedTracks.size() > 0) {
-                    // Create a datarange that spans the extent of prev tracks range
-                    float mid = 0;
-                    float min = Float.MAX_VALUE;
-                    float max = Float.MIN_VALUE;
-                    boolean drawBaseline = true;
-                    boolean isLog = true;
-                    for (Track t : selectedTracks) {
-                        DataRange dr = t.getDataRange();
-                        min = Math.min(min, dr.getMinimum());
-                        max = Math.max(max, dr.getMaximum());
-                        mid += dr.getBaseline();
-                        drawBaseline &= dr.isDrawBaseline();
-                        isLog &= dr.isLog();
-                    }
-                    mid /= selectedTracks.size();
-                    if (mid < min) {
-                        mid = min;
-                    } else if (mid > max) {
-                        min = max;
-                    }
 
-                    DataRange prevAxisDefinition = new DataRange(min, mid, max, drawBaseline, isLog);
+                    // Create a datarange that spans the extent of prev tracks range
+                    DataRange prevAxisDefinition = DataRange.getFromTracks(selectedTracks);
                     DataRangeDialog dlg = new DataRangeDialog(IGV.getMainFrame(), prevAxisDefinition);
                     dlg.setVisible(true);
                     if (!dlg.isCanceled()) {
-                        min = Math.min(dlg.getMax(), dlg.getMin());
-                        max = Math.max(dlg.getMin(), dlg.getMax());
-                        mid = dlg.getBase();
+                        float min = Math.min(dlg.getMax(), dlg.getMin());
+                        float max = Math.max(dlg.getMin(), dlg.getMax());
+                        float mid = dlg.getBase();
                         mid = Math.max(min, Math.min(mid, max));
 
                         DataRange axisDefinition = new DataRange(dlg.getMin(), mid, dlg.getMax(),
-                                drawBaseline, dlg.isLog());
+                                prevAxisDefinition.isDrawBaseline(), dlg.isLog());
 
                         for (Track track : selectedTracks) {
                             track.setDataRange(axisDefinition);
@@ -696,7 +728,7 @@ public class TrackMenuUtils {
     private static boolean checkAutoscale(Collection<Track> selectedTracks) {
         boolean autoScale = false;
         for (Track t : selectedTracks) {
-            if (t instanceof DataTrack && ((DataTrack) t).isAutoScale()) {
+            if (t.getAutoScale()) {
                 autoScale = true;
                 break;
             }
@@ -811,9 +843,10 @@ public class TrackMenuUtils {
     /**
      * Display a dialog to the user asking to confirm if they want to remove the
      * selected tracks
+     *
      * @param selectedTracks
      */
-    public static void removeTracksAction(final Collection<Track> selectedTracks){
+    public static void removeTracksAction(final Collection<Track> selectedTracks) {
         if (selectedTracks.isEmpty()) {
             return;
         }
@@ -912,7 +945,7 @@ public class TrackMenuUtils {
 
         int origValue = featureTracks.iterator().next().getVisibilityWindow();
         double origValueKB = (origValue / 1000.0);
-        Double value = getDoubleInput("Visibility window (kb)", origValueKB);
+        Double value = getDoubleInput("Enter visibility window in kilo-bases.  To load all data enter zero.", origValueKB);
         if (value == null) {
             return;
         }
@@ -1003,12 +1036,15 @@ public class TrackMenuUtils {
                 "Select Track Color (Positive Values)",
                 currentSelection);
 
-        if (color != null) {
-            for (Track track : selectedTracks) {
-                track.setColor(color);
-            }
-            refresh();
+        if (color == null) {
+            return;
         }
+
+        for (Track track : selectedTracks) {
+            //We preserve the alpha value. This is motivated by MergedTracks
+            track.setColor(ColorUtilities.modifyAlpha(color, currentSelection.getAlpha()));
+        }
+        refresh();
 
     }
 
@@ -1029,8 +1065,7 @@ public class TrackMenuUtils {
         }
 
         for (Track track : selectedTracks) {
-
-            track.setAltColor(color);
+            track.setAltColor(ColorUtilities.modifyAlpha(color, currentSelection.getAlpha()));
         }
         refresh();
 
@@ -1172,6 +1207,30 @@ public class TrackMenuUtils {
             public void actionPerformed(ActionEvent evt) {
                 changeFontSize(selectedTracks);
             }
+        });
+        return item;
+    }
+
+
+    // Experimental methods follow
+
+    public static JMenuItem getShowSortFramesItem(final Track track) {
+
+        final JCheckBoxMenuItem item = new JCheckBoxMenuItem("Sort frames");
+
+        item.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Runnable runnable = new Runnable() {
+                    public void run() {
+                        FrameManager.sortFrames(track);
+                        IGV.getInstance().resetFrames();
+                    }
+                };
+                LongRunningTask.submit(runnable);
+            }
+
         });
         return item;
     }

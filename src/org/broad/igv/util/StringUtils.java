@@ -201,7 +201,10 @@ public class StringUtils {
             int ii = 0;
             for (String kv : params) {
                 String[] kvs = kv.split("\\=", 2);
-                String encString = String.format("%s=%s", StringUtils.encodeURL(kvs[0]), StringUtils.encodeURL(kvs[1]));
+                String encString = StringUtils.encodeURL(kvs[0]);
+                if(kvs.length == 2){
+                    encString = String.format("%s=%s", encString, StringUtils.encodeURL(kvs[1]));
+                }
                 encParms[ii++] = encString;
             }
             String encQuery = org.apache.commons.lang.StringUtils.join(encParms, "&");

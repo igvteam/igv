@@ -56,8 +56,10 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
     public void createDataPanels() {
         removeAll();
         for (ReferenceFrame f : FrameManager.getFrames()) {
-            DataPanel dp = new DataPanel(f, this);
-            add(dp);
+            if (f.isVisible()) {
+                DataPanel dp = new DataPanel(f, this);
+                add(dp);
+            }
         }
         invalidate();
     }

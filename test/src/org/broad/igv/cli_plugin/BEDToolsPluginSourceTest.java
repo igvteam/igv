@@ -71,15 +71,7 @@ public class BEDToolsPluginSourceTest extends AbstractPluginTest {
     private List<Feature> tstOperationBED(String[] paths,
                                           String cmd, int expectedNumFeatures) throws Exception {
 
-        //Find the command element
-        PluginSpecReader.Command command = null;
-        for (PluginSpecReader.Command curCmd : tool.commandList) {
-            if (curCmd.cmd.equals(cmd)) {
-                command = curCmd;
-                break;
-            }
-        }
-
+        PluginSpecReader.Command command = findCommandElementByName(tool, cmd);
         List<Argument> argumentList = command.argumentList;
         LinkedHashMap<Argument, Object> arguments = new LinkedHashMap<Argument, Object>(argumentList.size());
         int argnum = 0;
@@ -169,7 +161,7 @@ public class BEDToolsPluginSourceTest extends AbstractPluginTest {
         List<Feature> actFeatures = tstOperationBED3("intersect", 4);
         String expectedPath = TestUtils.DATA_DIR + "bed/isect_res.bed";
         TestUtils.createIndex(expectedPath);
-        FeatureSource expFeatureSource = new TribbleFeatureSource(expectedPath, genome);
+        FeatureSource expFeatureSource = TribbleFeatureSource.getFeatureSource(new ResourceLocator(expectedPath), genome);
         Iterator<Feature> expFeatures = expFeatureSource.getFeatures("chr1", 0, (int) 1e6);
         TestUtils.assertFeatureListsEqual(expFeatures, actFeatures.iterator());
     }

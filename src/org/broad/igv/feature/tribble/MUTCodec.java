@@ -17,6 +17,7 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.Mutation;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.MultiMap;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.readers.AsciiLineReader;
@@ -200,28 +201,29 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
     }
 
     /**
-     * @param path
+     * @param locator
      * @return
      * @throws IOException
      */
-    public static boolean isMutationAnnotationFile(String path) {
+    public static boolean isMutationAnnotationFile(ResourceLocator locator) {
 
         String ext;
         {
             //Only want pathLC when checking extension, so we limit its scope
-            String pathLC = path.toLowerCase();
-            if(pathLC.endsWith(".maf.annotated")) {
+            String typeStringLC = locator.getTypeString().toLowerCase();
+            if(typeStringLC.endsWith(".maf.annotated")) {
                 // TCGA extension
                 return true;
             }
 
-            ext = ParsingUtils.getIGVExtension(pathLC);
+            ext = ParsingUtils.getIGVExtension(typeStringLC);
         }
         if (ext.equals("mut")) {
             return true;
         } else if(ext.equals("maf")) {
 
             BufferedReader reader = null;
+            String path = locator.getPath();
             try {
                 reader = ParsingUtils.openBufferedReader(path);
                 if (reader == null) {

@@ -35,8 +35,6 @@ import java.util.List;
  */
 public interface Track extends Persistable{
 
-
-
     enum DisplayMode {
         COLLAPSED, SQUISHED, EXPANDED, ALTERNATIVE_SPLICE
     }
@@ -51,7 +49,7 @@ public interface Track extends Persistable{
     String getId();
 
 
-    void preload(RenderContext context);
+    void load(RenderContext context);
 
     /**
      * Return true if a track can be filtered by sample annotation.
@@ -79,6 +77,12 @@ public interface Track extends Persistable{
     void overlay(RenderContext context, Rectangle rect);
 
     /**
+     * We store the y-coordinate at which this track was last rendered,
+     * to avoid repeating borders/scales/etc. This resets that value
+     */
+    void resetLastY();
+
+    /**
      * Render the name of the track. Both the track and visible rectangles are supplied so the implementor
      * can adjust the placing of the name based on the current viewport.  This is used to center track names
      * on the viewport for large tracks that extend outside the viewport.
@@ -104,6 +108,13 @@ public interface Track extends Persistable{
     void setUrl(String url);
 
     ResourceLocator getResourceLocator();
+
+    /**
+     * Return ALL ResourceLocators associated with this track.
+     * For most tracks, this will just be a collection of size 1
+     * @return
+     */
+    Collection<ResourceLocator> getResourceLocators();
 
     void setAttributeValue(String key, String value);
 

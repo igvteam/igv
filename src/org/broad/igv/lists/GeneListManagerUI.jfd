@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_37" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_51" class="java.beans.XMLDecoder"> 
  <object class="com.jformdesigner.model.FormModel"> 
   <void property="contentType"> 
    <string>form/swing</string> 
@@ -373,7 +373,7 @@
                     </void> 
                     <void method="setProperty"> 
                      <string>toolTipText</string> 
-                     <string>Import a .gmt file</string> 
+                     <string>Import a .gmt file, .grp, or .bed file</string> 
                     </void> 
                     <void property="name"> 
                      <string>importButton</string> 

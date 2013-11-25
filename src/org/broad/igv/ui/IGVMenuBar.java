@@ -39,6 +39,7 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.ReorderPanelsDialog;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.util.BrowserLauncher;
+import org.broad.igv.util.encode.EncodeFileBrowser;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicBorders;
@@ -384,8 +385,9 @@ public class IGVMenuBar extends JMenuBar {
             menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         }
 
-        if (Globals.isDevelopment()) {
-            menuAction = new BrowseEncodeAction("Encode...", KeyEvent.VK_E, igv);
+        String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
+        if (Globals.isDevelopment() && EncodeFileBrowser.genomeSupported(genomeId)) {
+            menuAction = new BrowseEncodeAction("Load from ENCODE...", KeyEvent.VK_E, igv);
             menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         }
 

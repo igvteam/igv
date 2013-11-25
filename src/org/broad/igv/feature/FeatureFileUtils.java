@@ -15,6 +15,7 @@ package org.broad.igv.feature;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
 
 import java.io.*;
@@ -30,7 +31,7 @@ public class FeatureFileUtils {
      * Compute feature density in units of # / window.  Note: This function could be extended to other file types by
      * using codecs.
      *
-     * @param iFile       - a bed file
+     * @param iFile      - a bed file
      * @param windowSize
      * @param step
      */
@@ -60,12 +61,12 @@ public class FeatureFileUtils {
                 int start = Integer.parseInt(tokens[1]);
                 int end = Integer.parseInt(tokens[2]);
 
-                if(!chr.equals(lastChr)) {
+                if (!chr.equals(lastChr)) {
                     lastWindowOutput = 0;
-                    for(Window window : openWindows.values()) {
+                    for (Window window : openWindows.values()) {
                         int w = window.idx;
                         int windowCenter = w * step + (windowSize / 2);
-                        int windowStart = windowCenter - step/2;
+                        int windowStart = windowCenter - step / 2;
                         int windowEnd = windowStart + step;
                         pw.println(lastChr + "\t" + windowStart + "\t" + windowEnd + "\t" + window.count);
                     }
@@ -85,27 +86,27 @@ public class FeatureFileUtils {
                 }
 
                 // File is sorted by start position, will never see windows < startWindow aganin
-                if(startWindow > lastWindowOutput) {
-                   for(int w = lastWindowOutput; w < startWindow; w++) {
-                       Window window = openWindows.get(w);
-                       if (window != null) {
-                           int windowCenter = w * step + (windowSize / 2);
-                           int windowStart = windowCenter - step/2;
-                           int windowEnd = windowStart + step;
-                           pw.println(chr + "\t" + windowStart + "\t" + windowEnd + "\t" + window.count);
-                       }
-                   }
-                    for(int w = lastWindowOutput; w < startWindow; w++) {
+                if (startWindow > lastWindowOutput) {
+                    for (int w = lastWindowOutput; w < startWindow; w++) {
+                        Window window = openWindows.get(w);
+                        if (window != null) {
+                            int windowCenter = w * step + (windowSize / 2);
+                            int windowStart = windowCenter - step / 2;
+                            int windowEnd = windowStart + step;
+                            pw.println(chr + "\t" + windowStart + "\t" + windowEnd + "\t" + window.count);
+                        }
+                    }
+                    for (int w = lastWindowOutput; w < startWindow; w++) {
                         openWindows.remove(w);
                     }
                     lastWindowOutput = startWindow - 1;
                 }
             }
         } finally {
-            if(br != null) {
+            if (br != null) {
                 br.close();
             }
-            if(pw != null) {
+            if (pw != null) {
                 pw.close();
             }
         }
@@ -142,7 +143,7 @@ public class FeatureFileUtils {
         try {
             br = new BufferedReader(new FileReader(iFile));
             pw = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
-            FeatureParser parser = AbstractFeatureParser.getInstanceFor(iFile, null);
+            FeatureParser parser = AbstractFeatureParser.getInstanceFor(new ResourceLocator(iFile), null);
             List<Feature> features = parser.loadFeatures(br, null);
             IGVBEDCodec codec = new IGVBEDCodec();
 
@@ -188,6 +189,53 @@ public class FeatureFileUtils {
         }
 
 
+    }
+
+    /**
+     * Create a bed file of "TSS regions", define as the 20 bp region downstream of the start of the feature.
+     * <p/>
+     * It is assume that iFile is sorted by start position.
+     *
+     * @param iFile
+     * @param outputFile
+     */
+    static void createTSSFile(String iFile, String outputFile) throws IOException {
+
+        BufferedReader br = null;
+        PrintWriter pw = null;
+
+        try {
+            br = new BufferedReader(new FileReader(iFile));
+            pw = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
+            FeatureParser parser = AbstractFeatureParser.getInstanceFor(new ResourceLocator(iFile), null);
+            List<Feature> features = parser.loadFeatures(br, null);
+            IGVBEDCodec codec = new IGVBEDCodec();
+
+
+            Map<String, List<BasicFeature>> genes = new HashMap<String, List<BasicFeature>>();
+
+            int lastTSS = -1;
+            for (Feature f : features) {
+
+                BasicFeature transcript = (BasicFeature) f;
+
+                int tss = transcript.getStrand() == Strand.POSITIVE ? f.getStart() : f.getEnd();
+                if (tss != lastTSS) {
+                    int tssEnd = transcript.getStrand() == Strand.POSITIVE ? tss + 20 : tss - 20;
+                    pw.println(transcript.getChr() + "\t" + Math.min(tss, tssEnd) + "\t" + Math.max(tss, tssEnd));
+                    lastTSS = tss;
+                }
+
+
+            }
+        } finally {
+            if (br != null) br.close();
+            if (pw != null) pw.close();
+        }
+    }
+
+    public static void main(String [] args) throws IOException {
+        createTSSFile("/Users/jrobinso/igv/tmp/refGene.txt", "/Users/jrobinso/tss.refSeq.hg19.bed");
     }
 
 

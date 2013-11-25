@@ -95,11 +95,6 @@ public class CNFreqTrack extends AbstractTrack {
         return Integer.MIN_VALUE;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    /**
-     * Override to return a specialized popup menu
-     *
-     * @return
-     */
     @Override
     public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
 

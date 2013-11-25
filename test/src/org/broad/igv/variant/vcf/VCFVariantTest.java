@@ -13,6 +13,7 @@ package org.broad.igv.variant.vcf;
 
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.track.TribbleFeatureSource;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broadinstitute.variant.variantcontext.VariantContext;
 import org.junit.Test;
@@ -33,7 +34,7 @@ public class VCFVariantTest extends AbstractHeadlessTest {
     private VCFVariant get_hc_mod_Feat(String chr, int start, int end) throws Exception{
         String filePath = TestUtils.DATA_DIR + "vcf/hc_mod.vcf";
         TestUtils.createIndex(filePath);
-        TribbleFeatureSource src = new TribbleFeatureSource(filePath, genome);
+        TribbleFeatureSource src = TribbleFeatureSource.getFeatureSource(new ResourceLocator(filePath), genome);
 
         return (VCFVariant) (src.getFeatures(chr, start, end)).next();
     }

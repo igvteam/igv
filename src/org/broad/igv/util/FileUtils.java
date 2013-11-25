@@ -10,6 +10,7 @@
  */
 package org.broad.igv.util;
 
+import org.broad.igv.util.ftp.FTPUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
@@ -75,11 +76,13 @@ public class FileUtils {
 
     public static boolean resourceExists(String path) {
         try {
-            boolean remoteFile = isRemote(path);
-            return (!remoteFile && (new File(path).exists())) ||
-                    (remoteFile && HttpUtils.getInstance().resourceAvailable(new URL(path)));
+            if (isRemote(path)) {
+                return HttpUtils.getInstance().resourceAvailable(new URL(path));
+            } else {
+                return (new File(path)).exists();
+            }
         } catch (IOException e) {
-            log.error("Malformed URL: " + path, e);
+            log.error("Error checking existence of: " + path, e);
             return false;
         }
     }
@@ -528,6 +531,7 @@ public class FileUtils {
 
         String systemPath = System.getenv("PATH");
         if (systemPath == null) systemPath = System.getenv("path");
+        if (systemPath == null || File.pathSeparator == null) return executable;
 
         String[] pathDirs = systemPath.split(File.pathSeparator);
 
@@ -564,5 +568,35 @@ public class FileUtils {
             }
         }
         return libURLList.toArray(new URL[0]);
+    }
+
+    /**
+     * Return the length of the file, which might be remote.
+     *
+     * @param file
+     * @return
+     */
+    public static long getLength(String file) {
+
+        if (isRemote(file)) {
+            try {
+                URL url = new URL(file);
+                if (file.startsWith("ftp://")) {
+                    return FTPUtils.getContentLength(url);
+                } else {
+                    return HttpUtils.getInstance().getContentLength(url);
+                }
+            } catch (Exception e) {
+                log.error("Error fetching content length for: " + file, e);
+                return -1;
+            }
+        } else {
+            File f = new File(file);
+            if (f.exists() && f.isFile()) {
+                return f.length();
+            } else {
+                return -1;
+            }
+        }
     }
 }

@@ -33,7 +33,10 @@ import java.util.*;
  * @author eflakes
  */
 public class Session {
+
     private static Logger log = Logger.getLogger(Session.class);
+
+    public enum GeneListMode {NORMAL, CURSOR};
 
     private int version;
     private String path;
@@ -56,6 +59,7 @@ public class Session {
     private ObservableForObject<Map<String, Collection<RegionOfInterest>>> regionsOfInterestObservable;
 
     private GeneList currentGeneList;
+    private GeneListMode geneListMode = GeneListMode.NORMAL;
     private Set<String> hiddenAttributes;
     private String locus;
 
@@ -345,6 +349,14 @@ public class Session {
     public void setCurrentGeneList(GeneList currentGeneList) {
         this.currentGeneList = currentGeneList;
         FrameManager.resetFrames(currentGeneList);
+    }
+
+    public GeneListMode getGeneListMode() {
+        return geneListMode;
+    }
+
+    public void setGeneListMode(GeneListMode geneListMode) {
+        this.geneListMode = geneListMode;
     }
 
     /**

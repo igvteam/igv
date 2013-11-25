@@ -50,7 +50,7 @@ public class IGVTestHeadless extends AbstractHeadlessTest{
 
     @Test
     public void testSorts() throws Exception {
-        String sessionPath = TestUtils.DATA_DIR + "sessions/BRCA_loh2.xml";
+        String sessionPath = TestUtils.DATA_DIR + "sessions/metabric_expression.xml";
         List<Track> tracks = new ArrayList<Track>();
         InputStream cbioStream = ParsingUtils.openInputStream(sessionPath);
         Document document = Utilities.createDOMDocumentFromXmlStream(cbioStream);
@@ -78,19 +78,20 @@ public class IGVTestHeadless extends AbstractHeadlessTest{
         ReferenceFrame frame = null;
         final int zoom = 0;
         final String chr = "chr20";
-        final int start = Integer.parseInt("14104912");
+        final int start = Integer.parseInt("14104912") - 1;
         final int end = Integer.parseInt("36031032");
         RegionOfInterest roi = new RegionOfInterest(chr, start, end, "");
 
         IGV.sortByRegionScore(tracks, roi, type, frame);
-        return checkIsSorted(tracks, roi, type, zoom);
+        return checkIsSorted(tracks, roi, type, zoom, frame);
     }
 
-    public static int checkIsSorted(List<Track> tracks, RegionOfInterest roi, RegionScoreType type, int zoom) {
+    public static int checkIsSorted(List<Track> tracks, RegionOfInterest roi, RegionScoreType type, int zoom, ReferenceFrame frame) {
 
         String chr = roi.getChr();
         int start = roi.getStart();
         int end = roi.getEnd();
+        String frameName = frame != null ? frame.getName() : null;
 
         Track lastTrack = null;
         int count = 0;
@@ -109,10 +110,9 @@ public class IGVTestHeadless extends AbstractHeadlessTest{
                 }
 
                 // Test sort order -- by default tracks should be sorted in descending value
-                float s2 = track.getRegionScore(chr, start, end, zoom, type, null);
-                float s1 = lastTrack.getRegionScore(chr, start, end, zoom, type, null);
-                assertTrue("Track named " + track.getName() + ", " + s2 + " and " + lastTrack.getName() + ", " + s1 +
-                        " out of order type " + type, s2 <= s1);
+                float s2 = track.getRegionScore(chr, start, end, zoom, type, frameName);
+                float s1 = lastTrack.getRegionScore(chr, start, end, zoom, type, frameName);
+                assertTrue("Track named " + track.getName() + ", " + s2 + " and " + lastTrack.getName() + ", " + s1 + " out of order type " + type, s2 <= s1);
 
                 lastTrack = track;
             }

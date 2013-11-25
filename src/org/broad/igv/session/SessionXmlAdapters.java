@@ -14,6 +14,8 @@ package org.broad.igv.session;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.ColorScaleFactory;
+import org.broad.igv.track.DataSourceTrack;
+import org.broad.igv.track.DataTrack;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
@@ -125,4 +127,22 @@ public class SessionXmlAdapters{
         }
 
     }
+
+    public static class DataTrackIDAdapter extends XmlAdapter<String, org.broad.igv.track.DataTrack> {
+
+        @Override
+        public String marshal(DataTrack dataTrack) throws Exception {
+            return dataTrack.getId();
+        }
+
+        @Override
+        public DataTrack unmarshal(String trackId) throws Exception {
+            DataTrack dataTrack = (DataTrack) IGVSessionReader.getMatchingTrack(trackId, null);
+            if(dataTrack == null){
+                dataTrack = new DataSourceTrack(null, trackId, null, null);
+            }
+            return dataTrack;
+        }
+    }
+
 }

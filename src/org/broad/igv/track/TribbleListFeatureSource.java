@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
@@ -51,7 +52,8 @@ public class TribbleListFeatureSource implements FeatureSource {
                 String f = nextLine.trim();
                 if (!f.startsWith("#")) {
                     String[] tokens = Globals.whitespacePattern.split(nextLine);
-                    pathMap.put(tokens[0], tokens[1]);
+                    if (tokens.length > 1)
+                        pathMap.put(tokens[0], tokens[1]);
                 }
             }
         } finally {
@@ -59,14 +61,14 @@ public class TribbleListFeatureSource implements FeatureSource {
         }
     }
 
-    private TribbleFeatureSource getSource(String chr) {
+    private TribbleFeatureSource getSource(String chr) throws TribbleIndexNotFoundException {
 
         TribbleFeatureSource src = featureSourceMap.get(chr);
         if (src == null) {
             String path = pathMap.get(chr);
             if (path != null) {
                 try {
-                    src = new TribbleFeatureSource(path, genome);
+                    src = TribbleFeatureSource.getFeatureSource(new ResourceLocator(path), genome);
                 } catch (IOException e) {
                     log.error("Error loading tribble source: " + path);
                 }
@@ -79,11 +81,16 @@ public class TribbleListFeatureSource implements FeatureSource {
 
     @Override
     public Iterator getFeatures(String chr, int start, int end) throws IOException {
-        FeatureSource src = getSource(chr);
-        if (src != null) {
-            return src.getFeatures(chr, start, end);
-        } else {
-            return null;
+        try {
+            FeatureSource src = getSource(chr);
+            if (src != null) {
+                return src.getFeatures(chr, start, end);
+            } else {
+                return null;
+            }
+        } catch (TribbleIndexNotFoundException e) {
+            log.error("Index not found", e);
+            throw new IOException(e.getMessage());
         }
 
     }
@@ -91,10 +98,15 @@ public class TribbleListFeatureSource implements FeatureSource {
     @Override
     public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
 
-        FeatureSource src = getSource(chr);
-        if (src != null) {
-            return src.getCoverageScores(chr, start, end, zoom);
-        } else {
+        try {
+            FeatureSource src = getSource(chr);
+            if (src != null) {
+                return src.getCoverageScores(chr, start, end, zoom);
+            } else {
+                return null;
+            }
+        } catch (TribbleIndexNotFoundException e) {
+            log.error("Index not found for", e);
             return null;
         }
 
@@ -110,7 +122,7 @@ public class TribbleListFeatureSource implements FeatureSource {
         this.windowSize = size;
     }
 
-    public Object getHeader() {
+    public Object getHeader() throws TribbleIndexNotFoundException {
         if (header == null) {
             // Arbitrarily get the first source
             if (pathMap != null && pathMap.size() > 0) {

@@ -360,6 +360,8 @@ public class PluginSpecReader {
         public String toolUrl;
         @XmlAttribute
         public String helpUrl;
+        @XmlAttribute
+        public boolean forbidEmptyOutput = false;
 
         /**
          * Contains the default settings for input arguments

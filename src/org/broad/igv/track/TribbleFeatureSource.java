@@ -11,15 +11,21 @@
 
 package org.broad.igv.track;
 
+import org.broad.igv.Globals;
+import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.DataSource;
-import org.broad.igv.feature.LocusScore;
+import org.broad.igv.data.DataTile;
+import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.*;
 import org.broad.igv.feature.tribble.reader.AbstractFeatureReader;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.RuntimeUtils;
+import org.broad.igv.util.collections.CollUtils;
 import org.broad.tribble.CloseableTribbleIterator;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
@@ -32,13 +38,12 @@ import java.util.*;
  * @author jrobinso
  * @date Jun 27, 2010
  */
-public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
+abstract public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
 
     IGVFeatureReader reader;
     DataSource coverageSource;
     boolean isVCF;
     Genome genome;
-    boolean useCache;
 
     /**
      * Map of IGV chromosome name -> source name
@@ -48,75 +53,47 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
     Object header;
     Class featureClass;
 
-    public TribbleFeatureSource(String path, Genome genome) throws IOException {
-        this(path, genome, true);
+    public static TribbleFeatureSource getFeatureSource(ResourceLocator locator, Genome genome) throws IOException, TribbleIndexNotFoundException {
+        return getFeatureSource(locator, genome, true);
+    }
+
+    public static TribbleFeatureSource getFeatureSource(ResourceLocator locator, Genome genome, boolean useCache) throws IOException, TribbleIndexNotFoundException {
+
+        FeatureCodec codec = CodecFactory.getCodec(locator, genome);
+        AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(locator, codec);
+
+        if (basicReader.hasIndex()) {
+            return new IndexedFeatureSource(basicReader, codec, locator, genome, useCache);
+        } else {
+            return  new NonIndexedFeatureSource(basicReader, codec, locator, genome);
+        }
     }
 
 
-    public TribbleFeatureSource(String path, Genome genome, boolean useCache) throws IOException {
+    private TribbleFeatureSource(ResourceLocator locator, AbstractFeatureReader reader, FeatureCodec codec, Genome genome, boolean useCache) throws IOException {
+
         this.genome = genome;
-        this.useCache = useCache;
-        init(path);
+        this.isVCF = codec.getClass() == VCFWrapperCodec.class;
+        this.featureClass = codec.getFeatureType();
+        this.header = reader.getHeader();
+        this.featureWindowSize = estimateFeatureWindowSize(reader);
+        this.reader = useCache ?
+                new CachingFeatureReader(reader, 5, featureWindowSize) :
+                new TribbleReaderWrapper(reader);
+
+        initCoverageSource(locator.getPath() + ".tdf");
+
+
     }
 
-    private void initCoverageSource(String covPath) {
-        if (ParsingUtils.pathExists(covPath)) {
-            TDFReader reader = TDFReader.getReader(covPath);
-            coverageSource = new TDFDataSource(reader, 0, "", genome);
-        }
-    }
+    protected abstract int estimateFeatureWindowSize(FeatureReader reader);
 
-    protected void init(String path) {
+    protected abstract Collection<String> getSequenceNames();
 
-        FeatureCodec codec = CodecFactory.getCodec(path, genome);
-        isVCF = codec.getClass() == VCFWrapperCodec.class;
-        featureClass = codec.getFeatureType();
-        AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(path, codec, true);
-        header = basicReader.getHeader();
-        initFeatureWindowSize(basicReader);
-        reader = useCache ?
-                new CachingFeatureReader(basicReader, 5, getFeatureWindowSize()) :
-                new TribbleReaderWrapper(basicReader);
-
-        if (genome != null) {
-            Collection<String> seqNames = reader.getSequenceNames();
-            if (seqNames != null)
-                for (String seqName : seqNames) {
-                    String igvChr = genome.getChromosomeAlias(seqName);
-                    if (igvChr != null && !igvChr.equals(seqName)) {
-                        chrNameMap.put(igvChr, seqName);
-                    }
-                }
-        }
-
-        initCoverageSource(path + ".tdf");
-    }
+    public abstract boolean isIndexed();
 
     public Class getFeatureClass() {
         return featureClass;
-    }
-
-    public Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
-
-        String seqName = chrNameMap.get(chr);
-        if (seqName == null) seqName = chr;
-
-        return reader.query(seqName, start, end);
-    }
-
-    /**
-     * Return coverage values overlapping the query interval.   At this time Tribble sources do not provide
-     * coverage values
-     *
-     * @param chr
-     * @param start
-     * @param end
-     * @param zoom
-     * @return
-     */
-    public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
-        return coverageSource == null ? null :
-                coverageSource.getSummaryScoresForRange(chr, start, end, zoom);
     }
 
     public int getFeatureWindowSize() {
@@ -134,63 +111,374 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
         return header;
     }
 
-
-    /**
-     * Estimate an appropriate feature window size.
-     *
-     * @param reader
-     */
-    private void initFeatureWindowSize(FeatureReader reader) {
-
-        CloseableTribbleIterator<org.broad.tribble.Feature> iter = null;
-
-        try {
-            double mem = RuntimeUtils.getAvailableMemory();
-            iter = reader.iterator();
-            if (iter.hasNext()) {
-
-                int nSamples = isVCF ? 100 : 1000;
-                org.broad.tribble.Feature firstFeature = iter.next();
-                org.broad.tribble.Feature lastFeature = firstFeature;
-                String chr = firstFeature.getChr();
-                int n = 1;
-                long len = 0;
-                while (iter.hasNext() && n < nSamples) {
-                    org.broad.tribble.Feature f = iter.next();
-                    if (f != null) {
-                        n++;
-                        if (f.getChr().equals(chr)) {
-                            lastFeature = f;
-                        } else {
-                            len += lastFeature.getEnd() - firstFeature.getStart() + 1;
-                            firstFeature = f;
-                            lastFeature = f;
-                            chr = f.getChr();
-                        }
-
-                    }
-                }
-                double dMem = mem - RuntimeUtils.getAvailableMemory();
-                double bytesPerFeature = Math.max(100, dMem / n);
-
-                len += lastFeature.getEnd() - firstFeature.getStart() + 1;
-                double featuresPerBase = ((double) n) / len;
-
-                double targetBinMemory = 20000000;  // 20  mega bytes
-                int maxBinSize = isVCF ? 1000000 : Integer.MAX_VALUE;
-                int bs = Math.min(maxBinSize, (int) (targetBinMemory / (bytesPerFeature * featuresPerBase)));
-                featureWindowSize = Math.max(1000000, bs);
-            } else {
-                featureWindowSize = Integer.MAX_VALUE;
-            }
-        } catch (IOException e) {
-            featureWindowSize = 1000000;
-        } finally {
-            if (iter != null) iter.close();
+    private void initCoverageSource(String covPath) {
+        if (ParsingUtils.pathExists(covPath)) {
+            TDFReader reader = TDFReader.getReader(covPath);
+            coverageSource = new TDFDataSource(reader, 0, "", genome);
         }
     }
 
-    public Collection<String> getChrNames() {
-        return chrNameMap.keySet();
+    static class IndexedFeatureSource extends TribbleFeatureSource {
+
+
+        private IndexedFeatureSource(AbstractFeatureReader basicReader, FeatureCodec codec, ResourceLocator locator,
+                                     Genome genome, boolean useCache) throws IOException {
+            super(locator, basicReader, codec, genome, useCache);
+
+
+            if (genome != null) {
+                Collection<String> seqNames = reader.getSequenceNames();
+                if (seqNames != null) {
+                    for (String seqName : seqNames) {
+                        String igvChr = genome.getChromosomeAlias(seqName);
+                        if (igvChr != null && !igvChr.equals(seqName)) {
+                            chrNameMap.put(igvChr, seqName);
+                        }
+                    }
+                }
+            }
+       }
+
+
+        @Override
+        public boolean isIndexed() {
+            return true;
+        }
+
+        @Override
+        public Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
+
+            String seqName = chrNameMap.get(chr);
+            if (seqName == null) seqName = chr;
+
+            return reader.query(seqName, start, end);
+        }
+
+        /**
+         * Return coverage values overlapping the query interval.   At this time Tribble sources do not provide
+         * coverage values
+         *
+         * @param chr
+         * @param start
+         * @param end
+         * @param zoom
+         * @return
+         */
+        @Override
+        public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
+            return coverageSource == null ? null :
+                    coverageSource.getSummaryScoresForRange(chr, start, end, zoom);
+        }
+
+
+        @Override
+        protected Collection<String> getSequenceNames() {
+            return reader.getSequenceNames();
+        }
+
+
+        /**
+         * Estimate an appropriate feature window size.
+         *
+         * @param reader
+         */
+        @Override
+        protected int estimateFeatureWindowSize(FeatureReader reader) {
+
+            // Simple formula for VCF.  Appropriate for human 1KG/dbSNp, probably overly conservative otherwise
+            if(isVCF) {
+                 return 10000;
+            }
+            else {
+
+            }
+            CloseableTribbleIterator<org.broad.tribble.Feature> iter = null;
+
+            try {
+                double mem = RuntimeUtils.getAvailableMemory();
+                iter = reader.iterator();
+                if (iter.hasNext()) {
+
+                    int nSamples = 1000;
+                    org.broad.tribble.Feature firstFeature = iter.next();
+                    org.broad.tribble.Feature lastFeature = firstFeature;
+                    String chr = firstFeature.getChr();
+                    int n = 1;
+                    long len = 0;
+                    while (iter.hasNext() && n < nSamples) {
+                        org.broad.tribble.Feature f = iter.next();
+                        if (f != null) {
+                            n++;
+                            if (f.getChr().equals(chr)) {
+                                lastFeature = f;
+                            } else {
+                                len += lastFeature.getEnd() - firstFeature.getStart() + 1;
+                                firstFeature = f;
+                                lastFeature = f;
+                                chr = f.getChr();
+                            }
+                        }
+                    }
+                    double dMem = mem - RuntimeUtils.getAvailableMemory();
+                    double bytesPerFeature = Math.max(100, dMem / n);
+
+                    len += lastFeature.getEnd() - firstFeature.getStart() + 1;
+                    double featuresPerBase = ((double) n) / len;
+
+                    double targetBinMemory = 20000000;  // 20  mega bytes
+                    int maxBinSize = Integer.MAX_VALUE;
+                    int bs = Math.min(maxBinSize, (int) (targetBinMemory / (bytesPerFeature * featuresPerBase)));
+                    return Math.max(1000000, bs);
+                } else {
+                    return Integer.MAX_VALUE;
+                }
+            } catch (IOException e) {
+                return 1000000;
+            } finally {
+                if (iter != null) iter.close();
+            }
+        }
+
+    }
+
+
+    static class NonIndexedFeatureSource extends TribbleFeatureSource {
+
+        /**
+         * Map containing all features.  Used only when there is no index.
+         */
+        Map<String, List<Feature>> featureMap;
+
+        CoverageDataSource coverageData;
+
+        private NonIndexedFeatureSource(AbstractFeatureReader basicReader, FeatureCodec codec, ResourceLocator locator, Genome genome) throws IOException {
+
+            super(locator, basicReader, codec, genome, false);
+
+            featureMap = new HashMap<String, List<Feature>>(25);
+            Iterator<Feature> iter = reader.iterator();
+            while (iter.hasNext()) {
+                Feature f = iter.next();
+                if (f == null) continue;
+
+                String seqName = f.getChr();
+                String igvChr = genome == null ? seqName : genome.getChromosomeAlias(seqName);
+
+                List<Feature> featureList = featureMap.get(igvChr);
+                if (featureList == null) {
+                    featureList = new ArrayList();
+                    featureMap.put(igvChr, featureList);
+                }
+                featureList.add(f);
+                if (f instanceof NamedFeature) FeatureDB.addFeature((NamedFeature) f, genome);
+            }
+
+            for (List<Feature> featureList : featureMap.values()) {
+                FeatureUtils.sortFeatureList(featureList);
+            }
+
+            if (genome != null) {
+                coverageData = new CoverageDataSource(genome);
+                coverageData.computeGenomeCoverage();
+                sampleGenomeFeatures();
+            }
+        }
+
+        @Override
+        public boolean isIndexed() {
+            return false;
+        }
+
+        @Override
+        public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
+            return coverageData == null ? Collections.<LocusScore>emptyList() :
+                    coverageData.getSummaryScoresForRange(chr, start, end, zoom);
+        }
+
+        @Override
+        public Iterator getFeatures(String chr, int start, int end) throws IOException {
+            List<Feature> features = featureMap.get(chr);
+            if (features == null) {
+                return Collections.<Feature>emptyList().iterator();
+            }
+            List<Feature> filteredFeatures = CollUtils.filter(features, FeatureUtils.getOverlapPredicate(chr, start, end));
+            return filteredFeatures.iterator();
+
+        }
+
+        @Override
+        protected Collection<String> getSequenceNames() {
+            return featureMap.keySet();
+        }
+
+        @Override
+        protected int estimateFeatureWindowSize(FeatureReader reader) {
+            return 0;
+        }
+
+        protected void sampleGenomeFeatures() {
+            List<Feature> chrAllFeatures = new ArrayList(1000);
+            int sampleLength = (int) ((double) genome.getNominalLength() / (1000 * 700));
+            int lastFeaturePosition = -1;
+            for (String chr : genome.getLongChromosomeNames()) {
+                List<Feature> features = featureMap.get(chr);
+                if (features != null) {
+                    long offset = genome.getCumulativeOffset(chr);
+                    for (Feature feature : features) {
+                        if (feature instanceof IGVFeature) {
+                            IGVFeature f = (IGVFeature) feature;
+                            int genStart = (int) ((offset + f.getStart()) / 1000);
+                            int genEnd = (int) ((offset + f.getEnd()) / 1000);
+                            if (genEnd > lastFeaturePosition + sampleLength) {
+                                BasicFeature f2 = new BasicFeature(Globals.CHR_ALL, genStart, genEnd);
+                                if (f instanceof BasicFeature) {
+                                    BasicFeature bf = (BasicFeature) f;
+                                    f2.setThickEnd((int) ((offset + bf.getThickEnd()) / 1000));
+                                    f2.setThickStart((int) ((offset + bf.getThickStart()) / 1000));
+                                    f2.setName(f.getName());
+                                }
+                                chrAllFeatures.add(f2);
+
+                                lastFeaturePosition = genEnd;
+                            }
+                        }
+                    }
+                }
+            }
+
+            featureMap.put(Globals.CHR_ALL, chrAllFeatures);
+        }
+
+        class CoverageDataSource extends AbstractDataSource {
+
+            int windowSize = 1000;
+            double dataMin = 0;
+            double dataMax = 0;
+
+            Map<String, DataTile> dataCache = new HashMap();
+
+            CoverageDataSource(Genome genome) {
+                super(genome);
+            }
+
+            protected DataTile getRawData(String chr, int startLocation, int endLocation) {
+
+
+                DataTile coverageData = dataCache.get(chr);
+                if (coverageData == null) {
+                    coverageData = computeCoverage(chr, startLocation, endLocation);
+                    dataCache.put(chr, coverageData);
+                }
+                return coverageData;
+
+            }
+
+            @Override
+            protected List<LocusScore> getPrecomputedSummaryScores(String chr, int startLocation, int endLocation, int zoom) {
+                return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            @Override
+            public int getLongestFeature(String chr) {
+                return windowSize;
+            }
+
+            public double getDataMax() {
+                return dataMax;
+            }
+
+            public double getDataMin() {
+                return dataMin;
+            }
+
+            public TrackType getTrackType() {
+                return TrackType.OTHER;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            // This won't work for large track!
+
+            private DataTile computeCoverage(String chr, int start, int end) {
+
+                int nBins = (end - start) / windowSize + 1;
+                int[] starts = new int[nBins];
+                int[] ends = new int[nBins];
+                for (int i = 0; i < nBins; i++) {
+                    starts[i] = start + i * windowSize;
+                    ends[i] = starts[i] + windowSize;
+                }
+                float[] values = new float[nBins];
+                List<Feature> features = featureMap.get(chr);
+                if (features != null) {
+                    for (Feature f : features) {
+                        int startBin = f.getStart() / windowSize;
+                        int endBin = f.getEnd() / windowSize;
+                        for (int i = startBin; i < endBin; i++) {
+                            values[i] = values[i] + 1;
+                            dataMax = Math.max(dataMax, values[i]);
+                        }
+                    }
+                }
+                return new DataTile(starts, ends, values, null);
+
+            }
+
+            protected void computeGenomeCoverage() {
+                int nBins = 1000;
+                int[] starts = new int[nBins];
+                int[] ends = new int[nBins];
+                float[] values = new float[nBins];
+                Arrays.fill(values, 0);
+
+
+                double step = ((double) genome.getNominalLength() / 1000) / nBins;
+                for (int i = 0; i < nBins; i++) {
+                    starts[i] = (int) (i * step);
+                    ends[i] = (int) ((i + 1) * step);
+                }
+
+
+                for (String chr : genome.getLongChromosomeNames()) {
+                    List<Feature> features = featureMap.get(chr);
+                    if (features != null) {
+                        long offset = genome.getCumulativeOffset(chr);
+                        for (Feature f : features) {
+                            int genStart = (int) ((offset + f.getStart()) / 1000);
+                            int genEnd = (int) ((offset + f.getEnd()) / 1000);
+                            int binStart = Math.min(values.length - 1, (int) (genStart / step));
+                            int binEnd = Math.min(values.length - 1, (int) (genEnd / step));
+                            for (int i = binStart; i <= binEnd; i++) {
+                                values[i] = values[i] + 1;
+                                dataMax = Math.max(dataMax, values[i]);
+                            }
+
+                        }
+                    }
+                }
+
+                dataCache.put(Globals.CHR_ALL, new DataTile(starts, ends, values, null));
+            }
+
+
+            public String getValueString(String chr, double position, ReferenceFrame frame) {
+
+                int zoom = Math.max(0, frame.getZoom());
+                List<LocusScore> scores = getSummaryScoresForRange(chr, (int) position - 10, (int) position + 10, zoom);
+
+                // give a 2 pixel window, otherwise very narrow features will be missed.
+                double bpPerPixel = frame.getScale();
+                int minWidth = (int) (2 * bpPerPixel);    /* * */
+
+                if (scores == null) {
+                    return "";
+                } else {
+                    LocusScore score = (LocusScore) FeatureUtils.getFeatureAt(position, minWidth, scores);
+                    return score == null ? "" : "Mean count: " + score.getScore();
+                }
+            }
+
+
+        }
+
+
     }
 }

@@ -12,6 +12,7 @@
 package org.broad.igv.lists;
 
 import org.broad.igv.feature.Locus;
+import org.broad.tribble.Feature;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,11 +34,7 @@ public class GeneList {
     private static Comparator<String> POSITION_COMPARATOR;
 
     public GeneList(String name, String description, String group, List<String> loci) {
-        this.group = group;
-        this.description = description;
-        this.name = name;
-        //We do this to guarantee that certain operations will be supported
-        this.loci = loci;
+        init(name, description, group, loci);
     }
 
     public GeneList(String name, List<String> loci) {
@@ -51,6 +48,14 @@ public class GeneList {
 
     public GeneList() {
         this.group = GeneListManager.USER_GROUP;
+    }
+
+    private void init(String name, String description, String group, List<String> loci) {
+        this.group = group;
+        this.description = description;
+        this.name = name;
+        //We do this to guarantee that certain operations will be supported
+        this.loci = loci;
     }
 
     public String getName() {

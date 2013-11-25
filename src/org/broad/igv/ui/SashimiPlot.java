@@ -46,7 +46,6 @@ public class SashimiPlot extends JFrame {
 
     private List<SpliceJunctionFinderTrack> spliceJunctionTracks;
     private ReferenceFrame frame;
-    private AlignmentDataManager dataManager;  // <= retained to release self from event bus
 
     /**
      * The minimum allowed origin of the frame. We set scrolling
@@ -78,7 +77,6 @@ public class SashimiPlot extends JFrame {
 
         minOrigin = this.frame.getOrigin();
         maxEnd = this.frame.getEnd();
-        int minZoom = this.frame.getZoom();
 
         initSize(frame.getWidthInPixels());
 
@@ -86,21 +84,7 @@ public class SashimiPlot extends JFrame {
         getContentPane().setLayout(boxLayout);
 
         //Add control elements to the top
-        ZoomSliderPanel controlPanel = new ZoomSliderPanel(this.frame);
-        controlPanel.setMinZoomLevel(minZoom);
-
-        Dimension dimSize = new Dimension(200, 30);
-        controlPanel.setPreferredSize(dimSize);
-        controlPanel.setMinimumSize(dimSize);
-        controlPanel.setMaximumSize(dimSize);
-
-        getContentPane().add(controlPanel);
-        controlPanel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                SashimiPlot.this.repaint();
-            }
-        });
+        getContentPane().add(generateControlPanel(this.frame));
 
         spliceJunctionTracks = new ArrayList<SpliceJunctionFinderTrack>(alignmentTracks.size());
         int colorInd = 0;
@@ -133,11 +117,48 @@ public class SashimiPlot extends JFrame {
         SelectableFeatureTrack geneTrackClone = new SelectableFeatureTrack(geneTrack);
         TrackComponent<SelectableFeatureTrack> geneComponent = new TrackComponent<SelectableFeatureTrack>(frame, geneTrackClone);
 
-
         getContentPane().add(geneComponent);
 
         initGeneComponent(frame.getWidthInPixels(), geneComponent, geneTrackClone);
         validate();
+    }
+
+    private Component generateControlPanel(ReferenceFrame frame) {
+        JPanel controlPanel = new JPanel();
+
+        ZoomSliderPanel zoomSliderPanel = new ZoomSliderPanel(frame);
+        zoomSliderPanel.setMinZoomLevel(frame.getZoom());
+
+        zoomSliderPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                SashimiPlot.this.repaint();
+            }
+        });
+
+        Dimension controlSize = new Dimension(200, 30);
+
+        //JSlider scaleSlider = new JSlider(JSlider.HORIZONTAL);
+        //setFixedSize(scaleSlider, controlSize);
+        //controlPanel.add(scaleSlider);
+
+        controlPanel.add(zoomSliderPanel);
+        setFixedSize(zoomSliderPanel, controlSize);
+
+        Dimension panelSize = controlSize;
+        setFixedSize(controlPanel, panelSize);
+
+
+        BoxLayout layout = new BoxLayout(controlPanel, BoxLayout.X_AXIS);
+        controlPanel.setLayout(layout);
+
+        return controlPanel;
+    }
+
+    private static void setFixedSize(Component component, Dimension dimension){
+        component.setPreferredSize(dimension);
+        component.setMinimumSize(dimension);
+        component.setMaximumSize(dimension);
     }
 
     private void initSize(int width) {
@@ -163,7 +184,7 @@ public class SashimiPlot extends JFrame {
         //Hacky way of clearing packed features
         geneTrack.setVisibilityWindow(geneTrack.getVisibilityWindow());
         RenderContext context = new RenderContextImpl(geneComponent, null, frame, null);
-        geneTrack.preload(context);
+        geneTrack.load(context);
 
 
         Dimension maxGeneDim = new Dimension(Integer.MAX_VALUE, geneTrack.getNumberOfFeatureLevels() * geneTrack.getSquishedRowHeight() + 10);
@@ -237,6 +258,35 @@ public class SashimiPlot extends JFrame {
 
     }
 
+    /**
+     * Set the minimum junction coverage, per trac,k and is not persistent
+     *
+     * Our "Set Max Junction Coverage Range" just changes the view scaling, it doesn't
+     * filter anything, which is different behavior than the minimum. This might be confusing.
+     *
+     * @param trackComponent
+     * @param newMinJunctionCoverage
+     **/
+    private void setMinJunctionCoverage(TrackComponent<SpliceJunctionFinderTrack> trackComponent, int newMinJunctionCoverage) {
+        IAlignmentDataManager dataManager = getRenderer(trackComponent.track).getDataManager();
+        dataManager.setMinJunctionCoverage(newMinJunctionCoverage);
+        trackComponent.track.onAlignmentTrackEvent(
+                new AlignmentTrackEvent(this, AlignmentTrackEvent.Type.SPLICE_JUNCTION));
+        trackComponent.repaint();
+    }
+
+
+    /**
+     * Set the max coverage depth, which is a graphical scaling parameter for determining how
+     * thick the junction arcs will be
+     * @param trackComponent
+     * @param newMaxDepth
+     */
+    private void setMaxCoverageDepth(TrackComponent<SpliceJunctionFinderTrack> trackComponent, int newMaxDepth) {
+        getRenderer(trackComponent.track).setMaxDepth(newMaxDepth);
+        repaint();
+    }
+
     private class JunctionTrackMouseAdapter extends TrackComponentMouseAdapter<SpliceJunctionFinderTrack> {
 
         JunctionTrackMouseAdapter(TrackComponent<SpliceJunctionFinderTrack> trackComponent) {
@@ -262,16 +312,6 @@ public class SashimiPlot extends JFrame {
             minJunctionCoverage.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    /** The popup sets it per track and is not persistent
-                     *
-                     * On top of this, our "Set Max Junction Coverage Range" just changes the view scaling, it doesn't
-                     * filter anything, which is different behavior than the minimum. This might be confusing.
-                     *
-                     * Did some refactoring, going to set it for the track and clear that tracks data, but the setting
-                     * will not persist at all. May be weird for users. Still has the problem that max/min do very different
-                     * things.
-                     */
-
                     IAlignmentDataManager dataManager = getRenderer(trackComponent.track).getDataManager();
                     SpliceJunctionHelper.LoadOptions loadOptions = dataManager.getSpliceJunctionLoadOptions();
 
@@ -279,15 +319,11 @@ public class SashimiPlot extends JFrame {
                     if (input == null || input.length() == 0) return;
                     try {
                         int newMinJunctionCoverage = Integer.parseInt(input);
-                        dataManager.setMinJunctionCoverage(newMinJunctionCoverage);
+                        setMinJunctionCoverage(JunctionTrackMouseAdapter.this.trackComponent, newMinJunctionCoverage);
 
-                        trackComponent.track.onAlignmentTrackEvent(new AlignmentTrackEvent(this, AlignmentTrackEvent.Type.SPLICE_JUNCTION));
-                        trackComponent.repaint();
                     } catch (NumberFormatException ex) {
                         JOptionPane.showMessageDialog(SashimiPlot.this, input + " is not an integer");
                     }
-
-
                 }
             });
 
@@ -301,8 +337,7 @@ public class SashimiPlot extends JFrame {
                     if (input == null || input.length() == 0) return;
                     try {
                         int newMaxDepth = Integer.parseInt(input);
-                        getRenderer(trackComponent.track).setMaxDepth(newMaxDepth);
-                        repaint();
+                        setMaxCoverageDepth(JunctionTrackMouseAdapter.this.trackComponent, newMaxDepth);
                     } catch (NumberFormatException ex) {
                         JOptionPane.showMessageDialog(SashimiPlot.this, input + " is not an integer");
                     }
@@ -339,6 +374,7 @@ public class SashimiPlot extends JFrame {
             return menu;
         }
     }
+
 
     private class GeneTrackMouseAdapter extends TrackComponentMouseAdapter<SelectableFeatureTrack> {
 

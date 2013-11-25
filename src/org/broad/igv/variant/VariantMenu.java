@@ -273,31 +273,8 @@ public class VariantMenu extends IGVPopupMenu {
     }
 
     public void changeVisibilityWindow() {
-        int value = getIntValue("Visibility Window", track.getVisibilityWindow());
-        if (value > 0) {
-            track.setVisibilityWindow(value);
-        }
+        TrackMenuUtils.changeFeatureVisibilityWindow(Arrays.asList((Track) track));
     }
-
-    private static int getIntValue(String parameter, int value) {
-        while (true) {
-            String height = JOptionPane.showInputDialog(
-                    IGV.getMainFrame(), parameter + ": ",
-                    String.valueOf(value));
-            if ((height == null) || height.trim().equals("")) {
-                return Integer.MIN_VALUE;   // <= the logical "null" value
-            }
-
-            try {
-                value = Integer.parseInt(height);
-                return value;
-            } catch (NumberFormatException numberFormatException) {
-                JOptionPane.showMessageDialog(IGV.getMainFrame(),
-                        parameter + " must be an integer number.");
-            }
-        }
-    }
-
 
     public Collection<JMenuItem> getSortMenuItems(Variant variant) {
 

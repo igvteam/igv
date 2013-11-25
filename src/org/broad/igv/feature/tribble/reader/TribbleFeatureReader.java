@@ -12,7 +12,15 @@
 package org.broad.igv.feature.tribble.reader;
 
 import net.sf.samtools.seekablestream.SeekableStream;
+import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
+import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.IndexCreatorDialog;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
+import org.broad.igv.variant.VariantTrack;
 import org.broad.tribble.*;
 import org.broad.tribble.index.Block;
 import org.broad.tribble.index.Index;
@@ -21,6 +29,7 @@ import org.broad.tribble.readers.PositionalBufferedStream;
 import org.broad.tribble.util.ParsingUtils;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -37,7 +46,9 @@ import java.util.zip.GZIPInputStream;
  * @author Jim Robinson
  * @since 2/11/12
  */
-public class TribbleIndexedFeatureReader<T extends Feature, SOURCE> extends AbstractFeatureReader<T, SOURCE> {
+public class TribbleFeatureReader<T extends Feature, SOURCE> extends AbstractFeatureReader<T, SOURCE> {
+
+    private static Logger log = Logger.getLogger(TribbleFeatureReader.class);
 
     private Index index;
 
@@ -52,35 +63,53 @@ public class TribbleIndexedFeatureReader<T extends Feature, SOURCE> extends Abst
     private SeekableStream seekableStream = null;
 
     /**
-     * @param featurePath  - path to the feature file, can be a local file path, http url, or ftp url
-     * @param codec        - codec to decode the features
-     * @param requireIndex - true if the reader will be queries for specific ranges.  An index (idx) file must exist
+     * @param locator - path to the feature file, can be a local file path, http url, or ftp url
+     * @param codec   - codec to decode the features
      * @throws java.io.IOException
      */
-    public TribbleIndexedFeatureReader(final String featurePath, final FeatureCodec<T, SOURCE> codec, final boolean requireIndex) throws IOException {
+    public TribbleFeatureReader(ResourceLocator locator, final FeatureCodec<T, SOURCE> codec) throws IOException, TribbleIndexNotFoundException {
 
-        super(featurePath, codec);
+        super(locator.getPath(), codec);
 
-        if (requireIndex) {
-            String indexFile = Tribble.indexFile(featurePath);
-            if (ParsingUtils.resourceExists(indexFile)) {
-                index = IndexFactory.loadIndex(indexFile);
-            } else {
-                // See if the index itself is gzipped
-                indexFile = indexFile + ".gz";
-                if (ParsingUtils.resourceExists(indexFile)) {
-                    index = IndexFactory.loadIndex(indexFile);
-                } else {
-                    throw new TribbleException("An index is required, but none found.");
-                }
-            }
+        String indexFile = locator.getIndexPath();
+        if (indexFile == null) {
+            indexFile = Tribble.indexFile(locator.getPath());
         }
 
+        if (FileUtils.resourceExists(indexFile)) {
+            index = IndexFactory.loadIndex(indexFile);
+        } else {
+            // See if the index itself is gzipped
+            indexFile = indexFile + ".gz";
+            if (FileUtils.resourceExists(indexFile)) {
+                index = IndexFactory.loadIndex(indexFile);
+            } else {
+                index = null;
+
+                // Optionally let the user create an index.
+                final int tenMB = 10000000;
+                final int oneGB = 1000000000;
+                long size = FileUtils.getLength(locator.getPath());
+                final boolean indexRequired =
+                        (VariantTrack.isVCF(locator.getTypeString()) && size > tenMB) || size > oneGB;
+                if (!Globals.isHeadless() && locator.isLocal() && !locator.getPath().endsWith(".gz")) {
+                    if (size > tenMB) {
+                        index = createIndex(locator, indexRequired);   // Note, might return null.
+                    }
+                }
+
+                if(indexRequired && index == null) {
+                    throw new TribbleIndexNotFoundException("An index is required for: " + locator.getPath() + " but was not found");
+                }
+
+            }
+        }
         // does path point to a regular file?
-        this.pathIsRegularFile = ! ( path.startsWith("http:") || path.startsWith("https:") || path.startsWith("ftp:") );
+        this.pathIsRegularFile = (new File(path)).exists();
 
         readHeader();
     }
+
 
     /**
      * Get a seekable stream appropriate to read information from the current feature path
@@ -115,17 +144,6 @@ public class TribbleIndexedFeatureReader<T extends Feature, SOURCE> extends Abst
         return pathIsRegularFile;
     }
 
-    /**
-     * @param featureFile - path to the feature file, can be a local file path, http url, or ftp url
-     * @param codec       - codec to decode the features
-     * @param index       - a tribble Index object
-     * @throws IOException
-     */
-    public TribbleIndexedFeatureReader(final String featureFile, final FeatureCodec<T, SOURCE> codec, final Index index) throws IOException {
-        this(featureFile, codec, false); // required to read the header
-        this.index = index;
-    }
-
 
     public void close() throws IOException {
         // close the seekable stream if that's necessary
@@ -141,6 +159,11 @@ public class TribbleIndexedFeatureReader<T extends Feature, SOURCE> extends Abst
         return index == null ? new ArrayList<String>() : new ArrayList<String>(index.getSequenceNames());
     }
 
+
+    @Override
+    public boolean hasIndex() {
+        return index != null;
+    }
 
     /**
      * read the header from the file
@@ -479,5 +502,22 @@ public class TribbleIndexedFeatureReader<T extends Feature, SOURCE> extends Abst
         }
     }
 
+    /**
+     * Present a dialog for the user to create an index.  This method can return null if the user cancels, or there
+     * is an error while creating the index.
+     *
+     * @param locator
+     * @param indexRequired
+     * @return
+     */
 
+    private Index createIndex(ResourceLocator locator, boolean indexRequired) {
+        File baseFile = new File(locator.getPath());
+        File newIdxFile = new File(locator.getPath() + ".idx");
+        String messageText = "An index file for " + baseFile.getAbsolutePath() + " could not " +
+                "be located. An index is " + (indexRequired ? "required" : "recommended") +
+                " to view files of this size.   Click \"Go\" to create one now.";
+        IndexCreatorDialog dialog = IndexCreatorDialog.createShowDialog(IGV.getMainFrame(), baseFile, newIdxFile, messageText);
+        return (Index) dialog.getIndex();
+    }
 }

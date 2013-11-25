@@ -49,7 +49,7 @@ import java.util.List;
  */
 @XmlType(factoryClass = IGVSessionReader.class, factoryMethod = "getNextTrack")
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlSeeAlso({CoverageTrack.class, AlignmentTrack.class, DataSourceTrack.class, GWASTrack.class, FeatureTrack.class})
+@XmlSeeAlso({CoverageTrack.class, AlignmentTrack.class, DataSourceTrack.class, GWASTrack.class, FeatureTrack.class, MergedTracks.class})
 public abstract class AbstractTrack implements Track {
 
     private static Logger log = Logger.getLogger(AbstractTrack.class);
@@ -149,7 +149,7 @@ public abstract class AbstractTrack implements Track {
     protected Integer height = -1;
 
     @XmlElement(name = "DataRange")
-    private DataRange dataRange;
+    protected DataRange dataRange;
 
     @SubtlyImportant
     private AbstractTrack() {
@@ -236,7 +236,7 @@ public abstract class AbstractTrack implements Track {
     }
 
     @Override
-    public void preload(RenderContext context) {
+    public void load(RenderContext context) {
         // No-op, to be overriden by subclasses
     }
 
@@ -268,6 +268,28 @@ public abstract class AbstractTrack implements Track {
         }
     }
 
+
+    protected int lastRenderY = -1;
+    /**
+     * Render the components which should only be rendered once
+     * for a give y-value. We sometimes render tracks piecewise, but may
+     * only want to show the scale once at the left, for instance
+     * @param context
+     * @param rect
+     */
+
+    /**
+     * Return whether we have rendered anything at this Y-coordinate already
+     * @param rect
+     * @return
+     */
+    protected boolean isRepeatY(Rectangle rect){
+        return rect.y == lastRenderY;
+    }
+
+    public void resetLastY(){
+        this.lastRenderY = -1;
+    }
 
     public void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect,
                                  List<String> names, List<MouseableRegion> mouseRegions) {
@@ -333,6 +355,10 @@ public abstract class AbstractTrack implements Track {
 
     public ResourceLocator getResourceLocator() {
         return resourceLocator;
+    }
+
+    public Collection<ResourceLocator> getResourceLocators() {
+        return Arrays.asList(getResourceLocator());
     }
 
     /**
@@ -589,15 +615,10 @@ public abstract class AbstractTrack implements Track {
         // Do nothing
     }
 
-    public boolean isAutoScale() {
-        return autoScale;
-    }
-
     @Override
     public void setAutoScale(boolean autoScale) {
         this.autoScale = autoScale;
     }
-
 
     /**
      * Set some properties of this track,  usually from a "track line" specification.
@@ -786,9 +807,9 @@ public abstract class AbstractTrack implements Track {
      *
      * @param node
      */
-    public void restorePersistentState(Node node) throws JAXBException {
+    public void restorePersistentState(Node node, int version) throws JAXBException {
         Map<String, String> attributes = Utilities.getAttributes(node);
-        restorePersistentState(attributes);
+        restorePersistentState(attributes, version);
     }
 
     /**
@@ -799,7 +820,7 @@ public abstract class AbstractTrack implements Track {
      * @param attributes
      * @see #getPersistentState
      */
-    public void restorePersistentState(Map<String, String> attributes) {
+    public void restorePersistentState(Map<String, String> attributes, int version) {
 
         String displayName = attributes.get(IGVSessionReader.SessionAttribute.DISPLAY_NAME.getText());
         String name = attributes.get(IGVSessionReader.SessionAttribute.NAME.getText());
@@ -811,13 +832,15 @@ public abstract class AbstractTrack implements Track {
         }
 
         // Set DataRange -- legacy (pre V3 sessions)
-        String scale = attributes.get(IGVSessionReader.SessionAttribute.SCALE.getText());
-        if (scale != null) {
-            String[] axis = scale.split(",");
-            float minimum = Float.parseFloat(axis[0]);
-            float baseline = Float.parseFloat(axis[1]);
-            float maximum = Float.parseFloat(axis[2]);
-            setDataRange(new DataRange(minimum, baseline, maximum));
+        if(version <= 3){
+            String scale = attributes.get(IGVSessionReader.SessionAttribute.SCALE.getText());
+            if (scale != null) {
+                String[] axis = scale.split(",");
+                float minimum = Float.parseFloat(axis[0]);
+                float baseline = Float.parseFloat(axis[1]);
+                float maximum = Float.parseFloat(axis[2]);
+                setDataRange(new DataRange(minimum, baseline, maximum));
+            }
         }
 
     }

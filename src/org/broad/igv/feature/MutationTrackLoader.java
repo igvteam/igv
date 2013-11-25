@@ -13,6 +13,7 @@ package org.broad.igv.feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.feature.tribble.MUTCodec;
 import org.broad.igv.track.*;
 import org.broad.igv.util.ParsingUtils;
@@ -39,21 +40,21 @@ public class MutationTrackLoader {
     MUTCodec codec;
 
     public static boolean isMutationAnnotationFile(ResourceLocator locator) throws IOException {
-        return MUTCodec.isMutationAnnotationFile(locator.getPath());
+        return MUTCodec.isMutationAnnotationFile(locator);
     }
 
-    public List<FeatureTrack> loadMutationTracks(ResourceLocator locator, Genome genome) throws IOException {
+    public List<FeatureTrack> loadMutationTracks(ResourceLocator locator, Genome genome) throws IOException, TribbleIndexNotFoundException {
 
         this.locator = locator;
         this.genome = genome;
 
-        boolean indexed = isIndexed(locator.getPath(), genome);
+        boolean indexed = isIndexed(locator, genome);
 
         List<FeatureTrack> tracks = new ArrayList<FeatureTrack>();
 
         if (indexed) {
             String[] samples = getCodec().getSamples();
-            MutationDataManager dataManager = new MutationDataManager(locator.getPath(), genome);
+            MutationFeatureSource.MutationDataManager dataManager = new MutationFeatureSource.MutationDataManager(locator, genome);
             for (String sampleId : samples) {
                 String id = locator.getPath() + "_" + sampleId;
                 FeatureSource<Mutation> featureSource = new MutationFeatureSource(sampleId, dataManager);
@@ -95,17 +96,17 @@ public class MutationTrackLoader {
      * Test to see if a usable index exists.  In addition to the index, mutation files have an additional requirement
      * that samples be specified in a header directive.
      *
-     * @param path
+     * @param locator
      * @return
      */
-    private boolean isIndexed(String path, Genome genome) {
-        if (!TrackLoader.isIndexed(path, genome)) return false;
+    private boolean isIndexed(ResourceLocator locator, Genome genome) {
+        if (!TrackLoader.isIndexed(locator, genome)) return false;
 
         try {
             String[] samples = getCodec().getSamples();
             return samples != null && samples.length > 0;
         } catch (Exception e) {
-            log.error("Error creating codec for: " + path, e);
+            log.error("Error creating codec for: " + locator.getPath(), e);
             return false;
         }
 

@@ -11,12 +11,16 @@
 
 package org.broad.igv.track;
 
+import org.broad.igv.data.Interval;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Mutation;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
+import org.broad.igv.util.ResourceLocator;
+import org.broad.tribble.Feature;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -52,5 +56,39 @@ public class MutationFeatureSource implements FeatureSource<Mutation> {
     @Override
     public void setFeatureWindowSize(int size) {
         // Ignored
+    }
+
+
+    static public class MutationDataManager {
+
+        Interval currentInterval;
+        Map<String, List<Mutation>> featureMap = Collections.synchronizedMap(new HashMap());
+        TribbleFeatureSource tribbleFeatureSource;
+
+        public MutationDataManager(ResourceLocator locator, Genome genome) throws IOException, TribbleIndexNotFoundException {
+            this.tribbleFeatureSource = TribbleFeatureSource.getFeatureSource(locator, genome);
+        }
+
+        synchronized Iterator<Mutation> getFeatures(String trackKey, String chr, int start, int end) throws IOException {
+            if (currentInterval == null || !currentInterval.contains(chr, start, end)) {
+                Iterator<Feature> features = tribbleFeatureSource.getFeatures(chr, start, end);
+
+                while (features.hasNext()) {
+                    Mutation feat = (Mutation) features.next();
+                    String thisKey = feat.getSampleId();
+                    List<Mutation> keyFeatures = featureMap.get(thisKey);
+                    if (keyFeatures == null) {
+                        keyFeatures = new ArrayList<Mutation>();
+                        featureMap.put(thisKey, keyFeatures);
+                    }
+                    keyFeatures.add(feat);
+                    currentInterval = new Interval(chr, start, end);
+                }
+
+            }
+            List<Mutation> featureList = featureMap.get(trackKey);
+            return featureList == null ? Collections.EMPTY_LIST.iterator() : featureList.iterator();
+
+        }
     }
 }

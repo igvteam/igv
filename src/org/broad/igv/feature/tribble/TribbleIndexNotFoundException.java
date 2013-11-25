@@ -9,28 +9,19 @@
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  */
 
-package org.broad.igv.track;
-
-import org.broad.igv.feature.Mutation;
-import org.broad.igv.feature.genome.Genome;
-
-import java.io.IOException;
+package org.broad.igv.feature.tribble;
 
 /**
+ * Thrown when an index is not found, but required.  This class extends Exception, as opposed to RuntimeException, so
+ * clients will be forced to deal with it.
+ *
  * @author jrobinso
- *         Date: 4/9/13
- *         Time: 8:49 AM
+ *         Date: 11/16/13
+ *         Time: 10:10 PM
  */
-public class MutationDataManager extends MultitrackDataManager<Mutation>{
+public class TribbleIndexNotFoundException extends Exception{
 
-    public MutationDataManager(String path, Genome genome) throws IOException {
-        super(path, genome);
+    public TribbleIndexNotFoundException(String message) {
+        super(message);
     }
-
-    @Override
-    protected String getTrackKey(Mutation feat) {
-        return feat.getSampleId();
-    }
-
-
 }

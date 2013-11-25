@@ -187,31 +187,47 @@ public class TrackGroup {
 
     public void sortByAttributes(final String[] attributeNames,
                                  final boolean[] ascending) {
+
+
         if ((tracks != null) && !tracks.isEmpty()) {
-            Comparator<Track> comparator = new AttributeComparator(attributeNames, ascending);
+            List<Track> allTracks = new ArrayList<Track>(tracks);
+            try {
+                Comparator<Track> comparator = new TrackAttributeComparator(attributeNames, ascending);
 
-            // Step 1, remove non-sortable tracks and remember position
-            List<Track> nonsortableTracks = new ArrayList<Track>();
-            Map<Track, Integer> trackIndices = new HashMap<Track, Integer>();
-            for (int i = tracks.size() - 1; i >= 0; i--) {
-                if (!tracks.get(i).isSortable()) {
-                    Track t = tracks.remove(i);
-                    nonsortableTracks.add(t);
-                    trackIndices.put(t, i);
+                // Step 1, remove non-sortable tracks and remember position
+                List<Track> nonsortableTracks = new ArrayList<Track>();
+                Map<Track, Integer> trackIndices = new HashMap<Track, Integer>();
+                for (int i = tracks.size() - 1; i >= 0; i--) {
+                    if (!tracks.get(i).isSortable()) {
+                        Track t = tracks.remove(i);
+                        nonsortableTracks.add(t);
+                        trackIndices.put(t, i);
 
+                    }
                 }
-            }
 
-            // Step 2, sort "sortable" tracks
-            Collections.sort(tracks, comparator);
+                // Step 2, sort "sortable" tracks
+                Collections.sort(tracks, comparator);
 
-            // Step 3, put non-sortable tracks back in original order
-            if (nonsortableTracks.size() > 0) {
-                for (int i = nonsortableTracks.size() - 1; i >= 0; i--) {
-                    Track t = nonsortableTracks.get(i);
-                    int index = trackIndices.get(t);
-                    tracks.add(index, t);
+                // Step 2.5, internal sort by sample attributes for variant tracks.  This is ugly but neccessary as
+                // variant tracks are implemented as monoliths, with sample rows internal to the track.
+                for (Track t : allTracks) {
+                    if (t instanceof org.broad.igv.variant.VariantTrack) {
+                        ((org.broad.igv.variant.VariantTrack) t).sortSamples(new SampleAttributeComparator(attributeNames, ascending));
+                    }
                 }
+
+                // Step 3, put non-sortable tracks back in original order
+                if (nonsortableTracks.size() > 0) {
+                    for (int i = nonsortableTracks.size() - 1; i >= 0; i--) {
+                        Track t = nonsortableTracks.get(i);
+                        int index = trackIndices.get(t);
+                        tracks.add(index, t);
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error sorting tracks by attribute", e);
+                tracks = allTracks;
             }
         }
 
@@ -338,7 +354,7 @@ public class TrackGroup {
      * @param targetTrack
      * @param before
      */
-    public boolean moveSelectedTracksTo(Collection<Track> selectedTracks,
+    public boolean moveSelectedTracksTo(Collection<? extends Track> selectedTracks,
                                         Track targetTrack,
                                         boolean before) {
 
@@ -381,31 +397,20 @@ public class TrackGroup {
 
     }
 
-    /**
-     * Sort tracks by attribute value
-     */
-    private class AttributeComparator implements Comparator<Track> {
+    private abstract static class AttributeComparator<T> implements Comparator<T> {
 
         private final String[] attributeNames;
         private final boolean[] ascending;
 
-        private AttributeComparator(String[] attributeNames, boolean[] ascending) {
+        AttributeComparator(String[] attributeNames, boolean[] ascending) {
             assert attributeNames.length == ascending.length;
             this.attributeNames = attributeNames;
             this.ascending = ascending;
         }
 
-        private String getAttributeValue(Track track, String attName) {
-            String value = track.getAttributeValue(attName);
+        protected abstract String getAttributeValue(T track, String attName);
 
-            if (value == null) {
-                value = "";
-            }
-
-            return value.toLowerCase();
-        }
-
-        public int compare(Track t1, Track t2) {
+        public int compare(T t1, T t2) {
             // Loop through the attributes in order (primary, secondary, tertiary, ...).  The
             // first attribute to yield a non-zero comparison wins
             for (int i = 0; i < attributeNames.length; i++) {
@@ -446,5 +451,46 @@ public class TrackGroup {
             // All compares are equal
             return 0;
         }
+    }
+
+    private static class TrackAttributeComparator extends AttributeComparator<Track> {
+
+        public TrackAttributeComparator(String[] attributeNames, boolean[] ascending) {
+            super(attributeNames, ascending);
+        }
+
+        protected String getAttributeValue(Track track, String attName) {
+            String value = track.getAttributeValue(attName);
+
+            if (value == null) {
+                value = "";
+            }
+
+            return value.toLowerCase();
+        }
+    }
+
+
+    /**
+     * Sort samples by attribute value; logic copied wholesale from
+     * AttributeComparator, probably some refactoring could be done
+     * to minimize the duplicated code
+     */
+    private static class SampleAttributeComparator extends AttributeComparator<String> {
+
+        public SampleAttributeComparator(String[] attributeNames, boolean[] ascending) {
+            super(attributeNames, ascending);
+        }
+
+        protected String getAttributeValue(String sample, String attName) {
+            String value = AttributeManager.getInstance().getAttribute(sample, attName);
+
+            if (value == null) {
+                value = "";
+            }
+
+            return value.toLowerCase();
+        }
+
     }
 }

@@ -71,9 +71,13 @@ public class EncodeFileBrowser extends JDialog {
         return instance;
     }
 
+    static HashSet<String> supportedGenomes = new HashSet<String>(Arrays.asList("hg19", "mm9"));
+    public static boolean genomeSupported(String genomeId) {
+          return genomeId != null && supportedGenomes.contains(getEncodeGenomeId(genomeId));
+    }
+
     private static String getEncodeGenomeId(String genomeId) {
         if (genomeId.equals("b37") || genomeId.equals("1kg_v37")) return "hg19";
-        else if (genomeId.equals("1kg_ref")) return "hg19";
         else return genomeId;
     }
 

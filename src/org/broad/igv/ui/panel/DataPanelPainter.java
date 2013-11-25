@@ -19,11 +19,9 @@ package org.broad.igv.ui.panel;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.exome.ExomeBlock;
 import org.broad.igv.feature.exome.ExomeReferenceFrame;
-import org.broad.igv.sam.CoverageTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.RenderContextImpl;
 import org.broad.igv.track.Track;
@@ -37,26 +35,12 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * @author jrobinso
- *
- * Apart from what you wrote, here are two things I'm encountering:
-1. 'Show data range' does not seem to work in exome view (it doesn't display the range on the side).
-2. In terms of the display - the lines running from the top track (showing the gene name) go all the way through, and make it difficult to tell whether the lines are coming from an exon, or from this top line. It should ideally be more intutitve exactly what the exon-exon structure is. Maybe this top line should just be removed altogether - it doesn't really provide any additional information, and it does actually get quite confusing when you have two genes overlapping each other (in which case it's unclear to me based on what the top track decides whether to display a section as the first gene or the other, but it's often confusing).
-3. Something I suggested in the past: It would be nice if I could toggle back and forth more rapidly, without having to select each time the same bullet (based on which introns are removed).
-Thanks a lot!
 
- */
 public class DataPanelPainter {
 
     private static Logger log = Logger.getLogger(DataPanelPainter.class);
 
     private static Color exomeBorderColor = new Color(190, 190, 255);
-
-    /**
-     * Hacky field to keep scales from drawing multiple times in Exome view
-     */
-    private boolean scalesDrawn;
 
     public synchronized void paint(Collection<TrackGroup> groups,
                                    RenderContext context,
@@ -73,6 +57,8 @@ public class DataPanelPainter {
             graphics2D.setColor(Color.BLACK);
 
             ReferenceFrame frame = context.getReferenceFrame();
+
+            resetLastY(groups);
 
             if (frame.isExomeMode()) {
 
@@ -93,7 +79,6 @@ public class DataPanelPainter {
                 int pEnd;
                 int exomeOrigin = ((ExomeReferenceFrame) frame).getExomeOrigin();
                 int visibleBlockCount = 0;
-                scalesDrawn = false;
 
                 do {
                     b = blocks.get(idx);
@@ -190,7 +175,6 @@ public class DataPanelPainter {
 
         int trackX = 0;
         int trackY = 0;
-        boolean anyScaleDrawn = false;
 
         for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
             TrackGroup group = groupIter.next();
@@ -233,14 +217,6 @@ public class DataPanelPainter {
                             Rectangle rect = new Rectangle(trackX, trackY, width, trackHeight);
                             draw(track, rect, context);
                             trackY += trackHeight;
-
-                            //TODO Hack to keep from rendering scale multiple times in Exome View
-                            if (track instanceof CoverageTrack && FrameManager.isExomeMode() && !scalesDrawn) {
-                                int x = context.getGraphics().getClipBounds().x;
-                                Rectangle scaleRect = new Rectangle(x, rect.y, rect.width, rect.height);
-                                ((CoverageTrack) track).drawScale(context, scaleRect);
-                                anyScaleDrawn = true;
-                            }
                         }
                     }
                 }
@@ -252,7 +228,14 @@ public class DataPanelPainter {
                 }
             }
         }
-        scalesDrawn |= anyScaleDrawn;
+    }
+
+    private void resetLastY(Collection<TrackGroup> groups) {
+        for(TrackGroup group: groups){
+            for(Track track: group.getTracks()){
+                track.resetLastY();
+            }
+        }
     }
 
     final private void draw(Track track, Rectangle rect, RenderContext context) {
@@ -296,33 +279,11 @@ public class DataPanelPainter {
 
         final List<Track> visibleTracks = getVisibleTracks(groups);
 
-        Runnable runnable = new Runnable() {
-            public void run() {
-                for (Track track : visibleTracks) {
-                    RenderContextImpl newContext = new RenderContextImpl(null, null, context.getReferenceFrame(), visibleRect);
-                    track.preload(newContext);
-                }
-            }
-        };
+        for (Track track : visibleTracks) {
+            RenderContextImpl newContext = new RenderContextImpl(null, null, context.getReferenceFrame(), visibleRect);
+            track.load(newContext);
+        }
 
-        runnable.run();
-
-//        Future future = LongRunningTask.submit(runnable);
-//        try {
-//            future.get();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//        } catch (ExecutionException e) {
-//            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//        }
-
-//        Thread workerThread = new Thread(runnable);
-//        workerThread.start();
-//        try {
-//            workerThread.join();
-//        } catch (InterruptedException e) {
-//            log.error("Preload thread was interrupted", e);
-//        }
     }
 }
 

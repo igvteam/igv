@@ -33,6 +33,7 @@ import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.dev.api.IGVPlugin;
+import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.MaximumContigGenomeException;
 import org.broad.igv.feature.RegionOfInterest;
@@ -631,7 +632,7 @@ public class IGV {
 
     }
 
-    public void loadGenomeById(String genomeId){
+    public void loadGenomeById(String genomeId) {
         if (ParsingUtils.pathExists(genomeId)) {
             try {
                 IGV.getInstance().loadGenome(genomeId, null, false);
@@ -977,8 +978,8 @@ public class IGV {
         if (!dlg.isCanceled()) {
             // If any "default" attributes are checked turn off hide default option
             Set<String> selections = dlg.getSelections();
-            for(String att : AttributeManager.defaultTrackAttributes) {
-                if(selections.contains(att)) {
+            for (String att : AttributeManager.defaultTrackAttributes) {
+                if (selections.contains(att)) {
                     PreferenceManager.getInstance().put(PreferenceManager.SHOW_DEFAULT_TRACK_ATTRIBUTES, true);
                     break;
                 }
@@ -1729,7 +1730,7 @@ public class IGV {
      * @param locator
      * @return A list of loaded tracks
      */
-    public List<Track> load(ResourceLocator locator) {
+    public List<Track> load(ResourceLocator locator) throws DataLoadException {
 
         TrackLoader loader = new TrackLoader();
         List<Track> newTracks = loader.load(locator, this);
@@ -1760,7 +1761,7 @@ public class IGV {
     /**
      * Load the data file into the specified panel.   Triggered via drag and drop.
      */
-    public void load(ResourceLocator locator, TrackPanel panel) {
+    public void load(ResourceLocator locator, TrackPanel panel) throws DataLoadException {
         // If this is a session  TODO -- need better "is a session?" test
         if (locator.getPath().endsWith(".xml") || locator.getPath().endsWith(("session"))) {
             boolean merge = false;  // TODO -- ask user?
@@ -2084,13 +2085,13 @@ public class IGV {
         HashSet<ResourceLocator> locators = new HashSet();
 
         for (Track track : getAllTracks()) {
-            ResourceLocator locator = track.getResourceLocator();
+            Collection<ResourceLocator> tlocators = track.getResourceLocators();
 
-            if (locator != null) {
-                locators.add(locator);
+            if (tlocators != null) {
+                locators.addAll(tlocators);
             }
         }
-
+        locators.remove(null);
         return locators;
 
     }
@@ -2158,15 +2159,15 @@ public class IGV {
         return false;
     }
 
-    public boolean hasSequenceTrack(){
+    public boolean hasSequenceTrack() {
         return getSequenceTrack() != null;
     }
 
     /**
      * @return First SequenceTrack found, or null if none
      */
-    public SequenceTrack getSequenceTrack(){
-        for(Track t: getAllTracks()){
+    public SequenceTrack getSequenceTrack() {
+        for (Track t : getAllTracks()) {
             if (t instanceof SequenceTrack) return (SequenceTrack) t;
         }
         return null;
@@ -2467,33 +2468,65 @@ public class IGV {
                     }
                 } else if (igvArgs.getDataFileString() != null) {
                     // Not an xml file, assume its a list of data files
-                    String[] tokens = igvArgs.getDataFileString().split(",");
+                    String[] dataFiles = igvArgs.getDataFileString().split(",");
                     String[] names = null;
                     if (igvArgs.getName() != null) {
                         names = igvArgs.getName().split(",");
                     }
+                    String[] indexFiles = null;
+                    if (igvArgs.getIndexFile() != null) {
+                        indexFiles = igvArgs.getIndexFile().split(",");
 
-                    String indexFile = igvArgs.getIndexFile();
+                    }
+
                     List<ResourceLocator> locators = new ArrayList();
                     int idx = 0;
-                    for (String p : tokens) {
-
-                        // Decode local file paths
-                        if (HttpUtils.isURL(p) && !FileUtils.isRemote(p)) {
-                            p = StringUtils.decodeURL(p);
+                    if (indexFiles != null && (dataFiles.length != indexFiles.length)) {
+                        log.error("Data and index file lists are different lengths." +
+                                "   Data file list = igvArgs.getDataFileString().  " +
+                                "   Index file list = " + igvArgs.getIndexFile());
+                        StringBuffer message = new StringBuffer();
+                        message.append("<html>Error: Data and index file lists are different lengths.");
+                        message.append("<br>Data file list:");
+                        for(String df : dataFiles) {
+                            message.append("<br>&nbsp;&nbsp;" + df);
                         }
-
-                        ResourceLocator rl = new ResourceLocator(p);
-
-                        if (names != null && idx < names.length) {
-                            String name = names[idx];
-                            rl.setName(name);
+                        message.append("<br>Index file list:");
+                        for(String df : indexFiles) {
+                            message.append("<br>&nbsp;&nbsp;" + df);
                         }
-                        rl.setIndexPath(indexFile);
-                        locators.add(rl);
-                        idx++;
+                        JOptionPane.showMessageDialog(mainFrame, message);
+
+                    } else {
+                        for (int i = 0; i < dataFiles.length; i++) {
+
+                            String p = dataFiles[i].trim();
+                            String idxP = indexFiles == null ? null : indexFiles[i].trim();
+
+                            // Decode local file paths
+                            if (HttpUtils.isURL(p) && !FileUtils.isRemote(p)) {
+                                p = StringUtils.decodeURL(p);
+                            }
+                            if (idxP != null && HttpUtils.isURL(idxP) && !FileUtils.isRemote(idxP)) {
+                                idxP = StringUtils.decodeURL(idxP);
+                            }
+
+
+                            ResourceLocator rl = new ResourceLocator(p);
+
+                            if (names != null && idx < names.length) {
+                                String name = names[idx];
+                                rl.setName(name);
+                            }
+
+                            if (idxP.length() > 0) {
+                                rl.setIndexPath(idxP);
+                            }
+                            locators.add(rl);
+                            idx++;
+                        }
+                        loadTracks(locators);
                     }
-                    loadTracks(locators);
                 }
 
 

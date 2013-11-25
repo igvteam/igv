@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
  * SOFTWARE COPYRIGHT NOTICE
  * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
  *
@@ -11,6 +11,7 @@
 
 package org.broad.igv.feature.tribble;
 
+import org.broad.igv.Globals;
 import org.broad.igv.cli_plugin.Argument;
 import org.broad.igv.cli_plugin.LineFeatureDecoder;
 import org.broad.igv.cli_plugin.LineFeatureEncoder;
@@ -59,19 +60,10 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
 
     //@Override
     public BasicFeature decode(String[] tokens) {
-        return decode(tokens, tokens.length);
-    }
-
-    /**
-     * @param tokens
-     * @param tokenCount The number of tokens contained in {@code tokens}. We use
-     *                   a separate parameter so we can use an arraybuffer and only
-     * @return
-     */
-    public BasicFeature decode(String[] tokens, int tokenCount) {
 
         // The first 3 columns are non optional for BED.  We will relax this
         // and only require 2.
+        int tokenCount = tokens.length;
 
         if (tokenCount < 2) {
             return null;
@@ -224,10 +216,8 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
             return null;
         }
 
-        //String[] tokens = Globals.singleTabMultiSpacePattern.split(nextLine);
-        //return decode(tokens);
-        int numTokens = ParsingUtils.splitWhitespace(trimLine, tokens);
-        return decode(tokens, numTokens);
+        tokens = Globals.whitespacePattern.split(trimLine);
+        return decode(tokens);
     }
 
 
@@ -257,10 +247,8 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
         int cdEnd = Integer.parseInt(tokens[7]);
 
         int exonCount = Integer.parseInt(tokens[9]);
-        String[] exonSizes = new String[exonCount];
-        String[] startsBuffer = new String[exonCount];
-        ParsingUtils.split(tokens[10], exonSizes, ',');
-        ParsingUtils.split(tokens[11], startsBuffer, ',');
+        String[] exonSizes = Globals.commaPattern.split(tokens[10]);
+        String[] startsBuffer = Globals.commaPattern.split(tokens[11]);
 
         int exonNumber = (strand == Strand.NEGATIVE ? exonCount : 1);
 

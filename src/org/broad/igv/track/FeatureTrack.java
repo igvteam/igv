@@ -119,6 +119,7 @@ public class FeatureTrack extends AbstractTrack {
     private static final String PLUGIN_SOURCE = "PluginSource";
     private static final String SEQUENCE_MATCH_SOURCE = "SequenceMatchSource";
 
+    private static Object loadLock = new Object();
 
     // TODO -- there are WAY too many constructors for this class
 
@@ -306,10 +307,10 @@ public class FeatureTrack extends AbstractTrack {
     public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType scoreType, String frameName) {
 
         try {
-            if (scoreType == RegionScoreType.MUTATION_COUNT && this.getTrackType() == TrackType.MUTATION) {
-                Iterator<Feature> features = source.getFeatures(chr, start, end);
-                int count = 0;
-                if (features != null) {
+            Iterator<Feature> features = source.getFeatures(chr, start, end);
+            if (features != null) {
+                if (scoreType == RegionScoreType.MUTATION_COUNT && this.getTrackType() == TrackType.MUTATION) {
+                    int count = 0;
                     while (features.hasNext()) {
                         Feature f = features.next();
                         if (f.getStart() > end) {
@@ -319,8 +320,29 @@ public class FeatureTrack extends AbstractTrack {
                             count++;
                         }
                     }
+
+                    return count;
+                } else if (scoreType == RegionScoreType.SCORE) {
+                    // Average score of features in region.  Note: Should the score be weighted by genomic size?
+                    float regionScore = 0;
+                    int nValues = 0;
+                    while (features.hasNext()) {
+                        Feature f = features.next();
+                        if (f instanceof IGVFeature) {
+                            if ((f.getEnd() >= start) && (f.getStart() <= end)) {
+                                float value = ((IGVFeature) f).getScore();
+                                regionScore += value;
+                                nValues++;
+                            }
+                        }
+                    }
+                    if (nValues == 0) {
+                        // No scores in interval
+                        return -Float.MAX_VALUE;
+                    } else {
+                        return regionScore / nValues;
+                    }
                 }
-                return count;
             }
         } catch (IOException e) {
             log.error("Error counting features.", e);
@@ -492,7 +514,7 @@ public class FeatureTrack extends AbstractTrack {
 
         //If features are stacked we look at only the row.
         //If they are collapsed on top of each other, we get all features in all rows
-        int nLevels =  areFeaturesStacked() ? packedFeatures.getRowCount() : 1;
+        int nLevels = areFeaturesStacked() ? packedFeatures.getRowCount() : 1;
         List<IGVFeature> possFeatures = null;
         if ((nLevels > 1) && (featureRow < nLevels)) {
             possFeatures = packedFeatures.getRows().get(featureRow).getFeatures();
@@ -610,7 +632,7 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     @Override
-    public void preload(RenderContext context) {
+    public void load(RenderContext context) {
         ReferenceFrame frame = context.getReferenceFrame();
         PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
         String chr = context.getChr();
@@ -661,10 +683,14 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     protected boolean isShowFeatures(RenderContext context) {
-        double windowSize = context.getEndLocation() - context.getOrigin();
-        int vw = getVisibilityWindow();
-        return (vw <= 0 && !context.getChr().equals(Globals.CHR_ALL) ||
-                windowSize <= vw && !context.getChr().equals(Globals.CHR_ALL));
+
+        if (context.getChr().equals(Globals.CHR_ALL)) {
+            return false;
+        } else {
+            double windowSize = context.getEndLocation() - context.getOrigin();
+            int vw = getVisibilityWindow();
+            return (vw <= 0 || windowSize <= vw);
+        }
     }
 
     protected void renderCoverage(RenderContext context, Rectangle inputRect) {
@@ -672,15 +698,20 @@ public class FeatureTrack extends AbstractTrack {
             return;
         }
 
-        List<LocusScore> scores = source.getCoverageScores(context.getChr(), (int) context.getOrigin(),
-                (int) context.getEndLocation(), context.getZoom());
+        final String chr = context.getChr();
+
+        List<LocusScore> scores = chr.equals(Globals.CHR_ALL) ?
+                source.getCoverageScores(chr, (int) context.getOrigin(),
+                        (int) context.getEndLocation(), context.getZoom()) :
+                null;
+
         if (scores == null) {
             Graphics2D g = context.getGraphic2DForColor(Color.gray);
             Rectangle textRect = new Rectangle(inputRect);
 
             // Keep text near the top of the track rectangle
             textRect.height = Math.min(inputRect.height, 20);
-            String message = context.getChr().equals(Globals.CHR_ALL) ? "Zoom in to see features." :
+            String message = chr.equals(Globals.CHR_ALL) ? "Zoom in to see features." :
                     "Zoom in to see features, or right-click to increase Feature Visibility Window.";
             GraphicUtils.drawCenteredText(message, textRect, g);
 
@@ -723,10 +754,10 @@ public class FeatureTrack extends AbstractTrack {
 
         //Attempt to load the relevant data. Note that there is no guarantee
         //the data will be loaded once preload exits, as loading may be asynchronous
-        preload(context);
+        load(context);
         PackedFeatures packedFeatures = packedFeaturesMap.get(context.getReferenceFrame().getName());
 
-        if (packedFeatures == null || !packedFeatures.containsInterval(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation() + 1)) {
+        if (packedFeatures == null || !packedFeatures.overlapsInterval(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation() + 1)) {
             return;
         }
 
@@ -800,7 +831,7 @@ public class FeatureTrack extends AbstractTrack {
      * @param start
      * @param end
      */
-    protected synchronized void loadFeatures(final String chr, final int start, final int end, final RenderContext context) {
+    protected void loadFeatures(final String chr, final int start, final int end, final RenderContext context) {
 
         // TODO -- improve or remove the need for this test.  We know that FeatureCollectionSource has all the data
         // in memory, and can by run synchronously
@@ -811,40 +842,43 @@ public class FeatureTrack extends AbstractTrack {
             public void run() {
                 try {
                     featuresLoading = true;
-                    if (log.isTraceEnabled()) {
-                        log.trace(String.format("Loading features: %s:%d-%d", chr, start, end));
-                    }
+
+                    synchronized (loadLock) {
+                        if (log.isTraceEnabled()) {
+                            log.trace(String.format("Loading features: %s:%d-%d", chr, start, end));
+                        }
 
 
-                    int delta = (end - start) / 2;
-                    int expandedStart = start - delta;
-                    int expandedEnd = end + delta;
+                        int delta = (end - start) / 2;
+                        int expandedStart = start - delta;
+                        int expandedEnd = end + delta;
 
-                    //Make sure we are only querying within the chromosome
-                    //we allow for somewhat pathological cases of start
-                    //being negative and end being outside, but
-                    //only if directly queried. Our expansion should not
-                    //set start < 0 or end > chromosomeLength
-                    if (start >= 0) {
-                        expandedStart = Math.max(0, expandedStart);
-                    }
+                        //Make sure we are only querying within the chromosome
+                        //we allow for somewhat pathological cases of start
+                        //being negative and end being outside, but
+                        //only if directly queried. Our expansion should not
+                        //set start < 0 or end > chromosomeLength
+                        if (start >= 0) {
+                            expandedStart = Math.max(0, expandedStart);
+                        }
 
 
-                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                    if (genome != null) {
-                        Chromosome c = genome.getChromosome(chr);
-                        if (c != null && end < c.getLength()) expandedEnd = Math.min(c.getLength(), expandedEnd);
-                    }
+                        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                        if (genome != null) {
+                            Chromosome c = genome.getChromosome(chr);
+                            if (c != null && end < c.getLength()) expandedEnd = Math.min(c.getLength(), expandedEnd);
+                        }
 
-                    Iterator<Feature> iter = source.getFeatures(chr, expandedStart, expandedEnd);
-                    if (iter == null) {
-                        PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd);
-                        packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
-                    } else {
-                        //dhmay putting a switch in for different packing behavior in splice junction tracks.
-                        //This should probably be switched somewhere else, but that would require a big refactor.
-                        PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd, iter, getName());
-                        packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
+                        Iterator<Feature> iter = source.getFeatures(chr, expandedStart, expandedEnd);
+                        if (iter == null) {
+                            PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd);
+                            packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
+                        } else {
+                            //dhmay putting a switch in for different packing behavior in splice junction tracks.
+                            //This should probably be switched somewhere else, but that would require a big refactor.
+                            PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd, iter, getName());
+                            packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
+                        }
                     }
 
                     //Now that features are loaded, we may need to repaint
@@ -972,8 +1006,8 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     @Override
-    public void restorePersistentState(Node node) throws JAXBException {
-        super.restorePersistentState(node);
+    public void restorePersistentState(Node node, int version) throws JAXBException {
+        super.restorePersistentState(node, version);
         if (node.hasChildNodes()) {
             NodeList childNodes = node.getChildNodes();
             for (int ii = 0; ii < childNodes.getLength(); ii++) {
@@ -1050,9 +1084,10 @@ public class FeatureTrack extends AbstractTrack {
     /**
      * Features are packed upon loading, effectively a cache.
      * This clears that cache. Used to force a refresh
+     *
      * @api
      */
-    public void clearPackedFeatures(){
+    public void clearPackedFeatures() {
         this.packedFeaturesMap.clear();
     }
 }
