@@ -61,7 +61,7 @@ public class ManageGenomesDialog extends JDialog {
     private void initData() {
         allListItems = new ArrayList<GenomeListItem>(GenomeManager.getInstance().getGenomes());
         for(GenomeListItem item: allListItems){
-            if(item.hasLocalSequence()){
+            if(item.hasDownloadedSequence()){
                 haveLocalGenomes = true;
                 break;
             }
@@ -90,7 +90,7 @@ public class ManageGenomesDialog extends JDialog {
         if(removedValuesList.size() > 0){
             int countHasSeq = 0;
             for(GenomeListItem item: removedValuesList){
-                if(item.hasLocalSequence()){
+                if(item.hasDownloadedSequence()){
                     countHasSeq++;
                 }
             }
@@ -408,7 +408,7 @@ public class ManageGenomesDialog extends JDialog {
                 comp.setOpaque(isSelected);
             }
 
-            if(item.hasLocalSequence()){
+            if(item.hasDownloadedSequence()){
                 displayableName += LOCAL_SEQUENCE_CHAR;
             }
 

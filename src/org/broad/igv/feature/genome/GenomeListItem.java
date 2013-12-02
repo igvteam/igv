@@ -25,7 +25,7 @@ public class GenomeListItem {
     private String displayableName;
     private String location;
     private String id;
-    private Boolean hasLocalSequence = null;
+    private Boolean hasDownloadedSequence = null;
 
     public static final GenomeListItem ITEM_MORE;
 
@@ -93,28 +93,31 @@ public class GenomeListItem {
         return result;
     }
 
-    public boolean hasLocalSequence(){
-        if(hasLocalSequence == null){
-            try {
-                hasLocalSequence = checkHasLocalSequence();
-            } catch (IOException e) {
-                e.printStackTrace();
-                hasLocalSequence = false;
-            }
-        }
-        return hasLocalSequence;
-    }
-
     /**
-     * Check if the genome being referred to points to a local
-     * sequence. Returns false if location unknown, or remote
+     * Check if the genome being referred to points to a local (on this machine)
+     * sequence, which was downloaded from a server. So a user-created genome
+     * which points to a local fasta file will return false, but one created
+     * by {@link GenomeManager#downloadWholeGenome(String, java.io.File, java.awt.Frame)}
+     * will return true
      * @return
      */
-    private boolean checkHasLocalSequence() throws IOException{
+    public boolean hasDownloadedSequence(){
+        if(hasDownloadedSequence == null){
+            try {
+                hasDownloadedSequence = checkHasDownloadedSequence();
+            } catch (IOException e) {
+                e.printStackTrace();
+                hasDownloadedSequence = false;
+            }
+        }
+        return hasDownloadedSequence;
+    }
+
+    private boolean checkHasDownloadedSequence() throws IOException{
         if(this.location == null) return false;
         if(HttpUtils.isRemoteURL(this.location)) return false;
         GenomeDescriptor descriptor = GenomeManager.getInstance().parseGenomeArchiveFile(new File(this.location));
-        return !HttpUtils.isRemoteURL(descriptor.getSequenceLocation());
+        return descriptor.hasCustomSequenceLocation() && !HttpUtils.isRemoteURL(descriptor.getSequenceLocation());
 
 
     }
