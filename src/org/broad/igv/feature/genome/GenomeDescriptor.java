@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 /*
@@ -29,7 +22,6 @@ package org.broad.igv.feature.genome;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 
 /**
  * @author eflakes
@@ -46,6 +38,7 @@ public abstract class GenomeDescriptor {
     private String geneTrackName;
     private String url;
     private String sequenceLocation;
+    private boolean hasCustomSequenceLocation;
     private boolean chromosomesAreOrdered = false;
     private boolean fasta = false;
     private boolean fastaDirectory = false;
@@ -59,6 +52,7 @@ public abstract class GenomeDescriptor {
                             String chrAliasFileName,
                             String geneTrackName,
                             String sequenceLocation,
+                            boolean hasCustomSequenceLocation,
                             boolean chromosomesAreOrdered,
                             boolean fasta,
                             boolean fastaDirectory,
@@ -71,6 +65,7 @@ public abstract class GenomeDescriptor {
         this.chrAliasFileName = chrAliasFileName;
         this.geneTrackName = geneTrackName;
         this.sequenceLocation = sequenceLocation;
+        this.hasCustomSequenceLocation = hasCustomSequenceLocation;
         this.chromosomesAreOrdered = chromosomesAreOrdered;
         this.fasta = fasta;
         this.fastaDirectory = fastaDirectory;
@@ -175,4 +170,8 @@ public abstract class GenomeDescriptor {
     }
 
     public abstract void close();
+
+    public boolean hasCustomSequenceLocation() {
+        return hasCustomSequenceLocation;
+    }
 }

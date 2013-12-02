@@ -55,8 +55,8 @@ public class GenomeBuilderPane extends javax.swing.JPanel implements Serializabl
         return cytobandFile;
     }
 
-    public String getRefFlatFileName() {
-        String refFlatFile = refFlatFileTextField.getText();
+    public String getGeneAnnotFileName() {
+        String refFlatFile = geneAnnotFileTextField.getText();
         if (refFlatFile != null && refFlatFile.trim().equals("")) {
             refFlatFile = null;
         }
@@ -224,10 +224,10 @@ public class GenomeBuilderPane extends javax.swing.JPanel implements Serializabl
         cytobandFileLabel = new JLabel();
         cytobandFileTextField = new JTextField();
         cytobandFileButton = new JButton();
-        refFlatFileLabel = new JLabel();
-        refFlatFileTextField = new JTextField();
-        refFlatFileButton = new JButton();
-        refFlatFileLabel2 = new JLabel();
+        geneAnnotFileLabel = new JLabel();
+        geneAnnotFileTextField = new JTextField();
+        geneAnnotFileButton = new JButton();
+        aliasFileLabel = new JLabel();
         chrAliasField = new JTextField();
         chrAliasButton = new JButton();
         vSpacer2 = new JPanel(null);
@@ -303,7 +303,7 @@ public class GenomeBuilderPane extends javax.swing.JPanel implements Serializabl
             //======== panel1 ========
             {
                 panel1.setBorder(new TitledBorder(null, "Optional", TitledBorder.LEADING, TitledBorder.DEFAULT_POSITION,
-                        new Font("Lucida Grande", Font.BOLD, 13)));
+                    new Font("Lucida Grande", Font.BOLD, 13)));
                 panel1.setLayout(null);
 
                 //---- cytobandFileLabel ----
@@ -329,33 +329,33 @@ public class GenomeBuilderPane extends javax.swing.JPanel implements Serializabl
                 panel1.add(cytobandFileButton);
                 cytobandFileButton.setBounds(698, 22, 83, cytobandFileButton.getPreferredSize().height);
 
-                //---- refFlatFileLabel ----
-                refFlatFileLabel.setText("Gene file");
-                panel1.add(refFlatFileLabel);
-                refFlatFileLabel.setBounds(15, 56, 84, 29);
+                //---- geneAnnotFileLabel ----
+                geneAnnotFileLabel.setText("Gene file");
+                panel1.add(geneAnnotFileLabel);
+                geneAnnotFileLabel.setBounds(15, 56, 84, 29);
 
-                //---- refFlatFileTextField ----
-                refFlatFileTextField.setToolTipText("An annotation file");
-                refFlatFileTextField.setPreferredSize(new Dimension(400, 28));
-                refFlatFileTextField.setMinimumSize(new Dimension(25, 28));
-                panel1.add(refFlatFileTextField);
-                refFlatFileTextField.setBounds(145, 56, 548, 29);
+                //---- geneAnnotFileTextField ----
+                geneAnnotFileTextField.setToolTipText("An annotation file");
+                geneAnnotFileTextField.setPreferredSize(new Dimension(400, 28));
+                geneAnnotFileTextField.setMinimumSize(new Dimension(25, 28));
+                panel1.add(geneAnnotFileTextField);
+                geneAnnotFileTextField.setBounds(145, 56, 548, 29);
 
-                //---- refFlatFileButton ----
-                refFlatFileButton.setText("Browse");
-                refFlatFileButton.addActionListener(new ActionListener() {
+                //---- geneAnnotFileButton ----
+                geneAnnotFileButton.setText("Browse");
+                geneAnnotFileButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         refFlatFileButtonActionPerformed(e);
                     }
                 });
-                panel1.add(refFlatFileButton);
-                refFlatFileButton.setBounds(698, 56, 83, refFlatFileButton.getPreferredSize().height);
+                panel1.add(geneAnnotFileButton);
+                geneAnnotFileButton.setBounds(698, 56, 83, geneAnnotFileButton.getPreferredSize().height);
 
-                //---- refFlatFileLabel2 ----
-                refFlatFileLabel2.setText("Alias file");
-                panel1.add(refFlatFileLabel2);
-                refFlatFileLabel2.setBounds(15, 90, 84, 29);
+                //---- aliasFileLabel ----
+                aliasFileLabel.setText("Alias file");
+                panel1.add(aliasFileLabel);
+                aliasFileLabel.setBounds(15, 90, 84, 29);
 
                 //---- chrAliasField ----
                 chrAliasField.setPreferredSize(new Dimension(400, 28));
@@ -404,7 +404,7 @@ public class GenomeBuilderPane extends javax.swing.JPanel implements Serializabl
         File directory = PreferenceManager.getInstance().getDefineGenomeInputDirectory();
         File file = FileDialogUtils.chooseFile("Select Annotation File", directory, FileDialogUtils.LOAD);
         if (file != null) {
-            refFlatFileTextField.setText(file.getAbsolutePath());
+            geneAnnotFileTextField.setText(file.getAbsolutePath());
             PreferenceManager.getInstance().setDefineGenomeInputDirectory(file.getParentFile());
         }
     }
@@ -433,10 +433,10 @@ public class GenomeBuilderPane extends javax.swing.JPanel implements Serializabl
     private JLabel cytobandFileLabel;
     private JTextField cytobandFileTextField;
     private JButton cytobandFileButton;
-    private JLabel refFlatFileLabel;
-    private JTextField refFlatFileTextField;
-    private JButton refFlatFileButton;
-    private JLabel refFlatFileLabel2;
+    private JLabel geneAnnotFileLabel;
+    private JTextField geneAnnotFileTextField;
+    private JButton geneAnnotFileButton;
+    private JLabel aliasFileLabel;
     private JTextField chrAliasField;
     private JButton chrAliasButton;
     private JPanel vSpacer2;

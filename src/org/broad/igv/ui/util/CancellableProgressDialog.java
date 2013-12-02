@@ -22,9 +22,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author Jacob Silterra
@@ -54,7 +51,7 @@ public class CancellableProgressDialog extends JDialog {
         progressBar = new JProgressBar();
         buttonBar = new JPanel();
         hSpacer1 = new JPanel(null);
-        cancelButton = new JButton();
+        button = new JButton();
         hSpacer2 = new JPanel(null);
 
         //======== this ========
@@ -85,15 +82,15 @@ public class CancellableProgressDialog extends JDialog {
                 buttonBar.setLayout(new GridLayout(1, 3));
                 buttonBar.add(hSpacer1);
 
-                //---- cancelButton ----
-                cancelButton.setText("Cancel");
-                cancelButton.addActionListener(new ActionListener() {
+                //---- button ----
+                button.setText("Cancel");
+                button.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         cancelButtonActionPerformed(e);
                     }
                 });
-                buttonBar.add(cancelButton);
+                buttonBar.add(button);
                 buttonBar.add(hSpacer2);
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
@@ -113,7 +110,7 @@ public class CancellableProgressDialog extends JDialog {
     private JProgressBar progressBar;
     private JPanel buttonBar;
     private JPanel hSpacer1;
-    private JButton cancelButton;
+    private JButton button;
     private JPanel hSpacer2;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
@@ -121,8 +118,8 @@ public class CancellableProgressDialog extends JDialog {
         return progressBar;
     }
 
-    public void addCancelActionListener(ActionListener cancelActionListener) {
-        cancelButton.addActionListener(cancelActionListener);
+    public void addButtonActionListener(ActionListener cancelActionListener) {
+        button.addActionListener(cancelActionListener);
     }
 
     public void setStatus(final String status) {
@@ -137,27 +134,19 @@ public class CancellableProgressDialog extends JDialog {
 
 
     /**
-     * Create a show a progress dialog which is cancellable
+     * Create a show a progress dialog with a single button (default text "Cancel")
      * @param dialogsParent
      * @param title
-     * @param cancelActionListener The {@code ActionListener} to be called when the cancel button is pressed. Closing the
-     *                             dialog is not necessary and is performed automatically.
+     * @param buttonActionListener The {@code ActionListener} to be called when the  button is pressed.
+     * @param autoClose Whether to automatically close the dialog when it's finished
      * @param monitor Optional (may be null). Status text is updated based on monitor.updateStatus
      * @return
      */
-    public static CancellableProgressDialog showCancellableProgressDialog(Frame dialogsParent, String title, final ActionListener cancelActionListener, ProgressMonitor monitor){
+    public static CancellableProgressDialog showCancellableProgressDialog(Frame dialogsParent, String title, final ActionListener buttonActionListener, final boolean autoClose, ProgressMonitor monitor){
         final CancellableProgressDialog progressDialog = new CancellableProgressDialog(dialogsParent);
-        cancellableDialogs.add(progressDialog);
 
         progressDialog.setTitle(title);
-        progressDialog.addCancelActionListener(cancelActionListener);
-        progressDialog.addCancelActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cancellableDialogs.remove(progressDialog);
-            }
-        });
-
+        progressDialog.addButtonActionListener(buttonActionListener);
 
         if(monitor != null && monitor instanceof IndefiniteProgressMonitor) progressDialog.getProgressBar().setIndeterminate(true);
 
@@ -168,7 +157,12 @@ public class CancellableProgressDialog extends JDialog {
                     if (evt.getPropertyName().equals(ProgressMonitor.STATUS_PROPERTY)) {
                         progressDialog.setStatus("" + evt.getNewValue());
                     } else if (evt.getPropertyName().equals(ProgressMonitor.PROGRESS_PROPERTY) && (Integer) evt.getNewValue() >= 100) {
-                        progressDialog.cancelButton.doClick(1);
+                        progressDialog.button.setText("Done");
+                        if(autoClose){
+                            progressDialog.button.doClick(1);
+                        }
+                    }else if (evt.getPropertyName().equals(ProgressMonitor.PROGRESS_PROPERTY)) {
+                        progressDialog.getProgressBar().setValue((Integer) evt.getNewValue());
                     }
                 }
             });
@@ -178,13 +172,6 @@ public class CancellableProgressDialog extends JDialog {
         progressDialog.toFront();
 
         return progressDialog;
-    }
-
-
-    private static Set<CancellableProgressDialog> cancellableDialogs = Collections.synchronizedSet(new HashSet<CancellableProgressDialog>());
-
-    public static boolean hasCancellableProgressDialog() {
-        return !cancellableDialogs.isEmpty();
     }
 
 }

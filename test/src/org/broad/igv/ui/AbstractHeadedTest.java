@@ -109,7 +109,7 @@ public class AbstractHeadedTest {
             assertTrue(IGV.getInstance().waitForNotify(1000));
         }
         if (genomeFile != null) {
-            igv.loadGenome(genomeFile, null);
+            igv.loadGenome(genomeFile, null, true);
             genome = igv.getGenomeManager().getCurrentGenome();
         }
         return igv;

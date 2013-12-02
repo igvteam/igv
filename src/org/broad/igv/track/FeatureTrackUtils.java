@@ -33,6 +33,8 @@ import java.util.Iterator;
  */
 class FeatureTrackUtils {
 
+    private static volatile boolean isSearching;
+
     /**
      * Find the next/previous feature which lies outside chr:initStart-initEnd
      * @param source
@@ -122,7 +124,7 @@ class FeatureTrackUtils {
                                          final FeatureSearcher.IFeatureFound foundHandler) throws IOException{
 
         //Only allow one to be shown at a time
-        if(CancellableProgressDialog.hasCancellableProgressDialog()){
+        if(isSearching()){
             return;
         }
 
@@ -140,23 +142,31 @@ class FeatureTrackUtils {
         final ActionListener cancelListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                FeatureTrackUtils.isSearching = false;
                 searcher.cancel();
             }
         };
 
-        final CancellableProgressDialog dialog = CancellableProgressDialog.showCancellableProgressDialog(IGV.getMainFrame(), "Searching...", cancelListener, monitor);
+        final CancellableProgressDialog dialog = CancellableProgressDialog.showCancellableProgressDialog(IGV.getMainFrame(), "Searching...", cancelListener, true, monitor);
         dialog.getProgressBar().setIndeterminate(true);
 
         monitor.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if(evt.getPropertyName().equals(ProgressMonitor.PROGRESS_PROPERTY) &&  (Integer) evt.getNewValue() >= 100){
+                    FeatureTrackUtils.isSearching = false;
                     Iterator<? extends Feature> result = searcher.getResult();
                     if(result != null) foundHandler.processResult(result);
                 }
             }
         });
 
+        FeatureTrackUtils.isSearching = true;
         LongRunningTask.submit(searcher);
     }
+
+    private static boolean isSearching() {
+        return isSearching;
+    }
+
 }

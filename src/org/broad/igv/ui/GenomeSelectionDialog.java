@@ -17,14 +17,21 @@
 
 package org.broad.igv.ui;
 
+import org.broad.igv.DirectoryManager;
+import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
+import org.broad.igv.util.LongRunningTask;
+import org.broad.igv.util.RunnableResult;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -56,6 +63,8 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
         });
 
         initData(inputListItems);
+
+        downloadSequenceCB.setVisible(Globals.isDevelopment() && listSelectionMode == ListSelectionModel.SINGLE_SELECTION);
     }
 
     private void initData(Collection<GenomeListItem> inputListItems) {
@@ -102,6 +111,10 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
      */
     private void genomeListMouseClicked(MouseEvent e) {
         switch (e.getClickCount()) {
+            case 1:
+                List<GenomeListItem> selValues = genomeList.getSelectedValuesList();
+                downloadSequenceCB.setEnabled(selValues != null && selValues.size() == 1);
+                break;
             case 2:
                 okButtonActionPerformed(null);
                 break;
@@ -114,6 +127,35 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
 
     public List<GenomeListItem> getSelectedValuesList() {
         return selectedValuesList;
+    }
+
+    public boolean downloadSequence(){
+        return !isCanceled() && downloadSequenceCB.isEnabled() && downloadSequenceCB.isSelected();
+    }
+
+    static void downloadGenome(final Frame dialogsParent, final GenomeListItem genomeListItem) {
+        final File targetDir = DirectoryManager.getGenomeCacheDirectory();
+        if(!targetDir.exists()){
+            targetDir.mkdirs();
+        }
+
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+
+                try {
+                    RunnableResult result = GenomeManager.getInstance().downloadWholeGenome(genomeListItem.getLocation(), targetDir, dialogsParent);
+                    if(result == RunnableResult.FAILURE){
+                        throw new IOException("Unknown Failure");
+                    }
+                } catch (IOException e) {
+                    String msg = String.format("Error downloading genome %s from %s: %s", genomeListItem.getId(), genomeListItem.getLocation(), e.getMessage());
+                    MessageUtils.showErrorMessage(msg, e);
+                }
+            }
+        };
+
+        LongRunningTask.submit(runnable);
     }
 
     public boolean isCanceled() {
@@ -137,6 +179,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
         genomeFilter = new JTextField();
         scrollPane1 = new JScrollPane();
         genomeList = new JList7<GenomeListItem>();
+        downloadSequenceCB = new JCheckBox();
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -216,6 +259,15 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                     scrollPane1.setViewportView(genomeList);
                 }
                 contentPanel.add(scrollPane1);
+
+                //---- downloadSequenceCB ----
+                downloadSequenceCB.setText("Download Sequence");
+                downloadSequenceCB.setAlignmentX(1.0F);
+                downloadSequenceCB.setToolTipText("Download the full sequence for this organism. Note that these files can be very large (human is about 3 Gb)");
+                downloadSequenceCB.setMaximumSize(new Dimension(1000, 23));
+                downloadSequenceCB.setPreferredSize(new Dimension(300, 23));
+                downloadSequenceCB.setMinimumSize(new Dimension(300, 23));
+                contentPanel.add(downloadSequenceCB);
             }
             dialogPane.add(contentPanel, BorderLayout.CENTER);
 
@@ -236,7 +288,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                 });
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                    new Insets(0, 0, 5, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -248,7 +300,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                    new Insets(0, 0, 5, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
@@ -281,6 +333,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
     private JTextField genomeFilter;
     private JScrollPane scrollPane1;
     private JList7<GenomeListItem> genomeList;
+    private JCheckBox downloadSequenceCB;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;

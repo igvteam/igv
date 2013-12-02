@@ -487,14 +487,14 @@ public class IGV {
             }
 
             String cytobandFileName = genomeBuilderDialog.getCytobandFileName();
-            String refFlatFileName = genomeBuilderDialog.getRefFlatFileName();
+            String geneAnnotFileName = genomeBuilderDialog.getGeneAnnotFileName();
             String fastaFileName = genomeBuilderDialog.getFastaFileName();
             String chrAliasFile = genomeBuilderDialog.getChrAliasFileName();
             String genomeDisplayName = genomeBuilderDialog.getGenomeDisplayName();
             String genomeId = genomeBuilderDialog.getGenomeId();
 
             GenomeListItem genomeListItem = getGenomeManager().defineGenome(
-                    genomeZipFile, cytobandFileName, refFlatFileName,
+                    genomeZipFile, cytobandFileName, geneAnnotFileName,
                     fastaFileName, chrAliasFile, genomeDisplayName,
                     genomeId, monitor);
 
@@ -565,8 +565,20 @@ public class IGV {
                 GenomeSelectionDialog dialog = new GenomeSelectionDialog(IGV.getMainFrame(), inputListItems, ListSelectionModel.SINGLE_SELECTION);
                 dialog.setVisible(true);
                 List<GenomeListItem> selectedValues = dialog.getSelectedValuesList();
+
                 if (selectedValues != null && selectedValues.size() >= 1) {
-                    GenomeManager.getInstance().addGenomeItems(selectedValues);
+
+                    if(selectedValues.size() == 1 && dialog.downloadSequence()){
+                        GenomeListItem oldItem = selectedValues.get(0);
+                        GenomeSelectionDialog.downloadGenome(getMainFrame(), oldItem);
+                        selectedValues = new ArrayList<GenomeListItem>();
+
+                        File newLocation = new File(DirectoryManager.getGenomeCacheDirectory().getAbsolutePath(), Utilities.getFileNameFromURL(oldItem.getLocation()));
+                        GenomeListItem newItem = new GenomeListItem(oldItem.getDisplayableName(), newLocation.getAbsolutePath(),oldItem.getId());
+                        selectedValues.add(newItem);
+                    }
+
+                    GenomeManager.getInstance().addGenomeItems(selectedValues, false);
                     getContentPane().getCommandBar().refreshGenomeListComboBox();
                     selectGenomeFromList(selectedValues.get(0).getId());
                 }
@@ -601,7 +613,7 @@ public class IGV {
                     progressDialog = ProgressBar.showProgressDialog(mainFrame, "Loading Genome...", monitor, false);
                 }
 
-                loadGenome(file.getAbsolutePath(), monitor);
+                loadGenome(file.getAbsolutePath(), monitor, true);
 
             }
         } catch (IOException e) {
@@ -623,7 +635,7 @@ public class IGV {
     public void loadGenomeById(String genomeId) {
         if (ParsingUtils.pathExists(genomeId)) {
             try {
-                IGV.getInstance().loadGenome(genomeId, null);
+                IGV.getInstance().loadGenome(genomeId, null, false);
             } catch (IOException e) {
                 log.error("Error loading genome file: " + genomeId, e);
             }
@@ -632,8 +644,8 @@ public class IGV {
         }
     }
 
-    public void loadGenome(String path, ProgressMonitor monitor) throws IOException {
-        loadGenome(path, monitor, true);
+    public void loadGenome(String path, ProgressMonitor monitor, boolean userDefined) throws IOException {
+        loadGenome(path, monitor, true, userDefined);
     }
 
     /**
@@ -642,7 +654,7 @@ public class IGV {
      * @param addGenomeTrack Whether to display the gene track as well
      * @throws IOException
      */
-    public void loadGenome(String path, ProgressMonitor monitor, boolean addGenomeTrack) throws IOException {
+    public void loadGenome(String path, ProgressMonitor monitor, boolean addGenomeTrack, boolean userDefined) throws IOException {
 
         File file = new File(path);
         if (file.exists()) {
@@ -660,7 +672,7 @@ public class IGV {
         final String id = genome.getId();
 
         GenomeListItem genomeListItem = new GenomeListItem(name, path, id);
-        getGenomeManager().addGenomeItem(genomeListItem);
+        getGenomeManager().addGenomeItem(genomeListItem, userDefined);
 
         IGVCommandBar cmdBar = contentPane.getCommandBar();
         cmdBar.refreshGenomeListComboBox();

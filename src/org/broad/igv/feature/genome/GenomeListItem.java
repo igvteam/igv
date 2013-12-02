@@ -11,6 +11,11 @@
 
 package org.broad.igv.feature.genome;
 
+import org.broad.igv.util.HttpUtils;
+
+import java.io.File;
+import java.io.IOException;
+
 /**
  * A container for specific genome information which can be used to
  * manage loaded genomes.
@@ -20,6 +25,7 @@ public class GenomeListItem {
     private String displayableName;
     private String location;
     private String id;
+    private Boolean hasLocalSequence = null;
 
     public static final GenomeListItem ITEM_MORE;
 
@@ -34,7 +40,6 @@ public class GenomeListItem {
      * @param id              The id of the genome.
      */
     public GenomeListItem(String displayableName, String location, String id) {
-
         this.displayableName = displayableName;
         this.location = location;
         this.id = id;
@@ -48,7 +53,6 @@ public class GenomeListItem {
     public String getId() {
         return id;
     }
-
 
     public String getLocation() {
         if(location == null){
@@ -87,5 +91,31 @@ public class GenomeListItem {
         result = 31 * result + (location != null ? location.hashCode() : 0);
         result = 31 * result + (id != null ? id.hashCode() : 0);
         return result;
+    }
+
+    public boolean hasLocalSequence(){
+        if(hasLocalSequence == null){
+            try {
+                hasLocalSequence = checkHasLocalSequence();
+            } catch (IOException e) {
+                e.printStackTrace();
+                hasLocalSequence = false;
+            }
+        }
+        return hasLocalSequence;
+    }
+
+    /**
+     * Check if the genome being referred to points to a local
+     * sequence. Returns false if location unknown, or remote
+     * @return
+     */
+    private boolean checkHasLocalSequence() throws IOException{
+        if(this.location == null) return false;
+        if(HttpUtils.isRemoteURL(this.location)) return false;
+        GenomeDescriptor descriptor = GenomeManager.getInstance().parseGenomeArchiveFile(new File(this.location));
+        return !HttpUtils.isRemoteURL(descriptor.getSequenceLocation());
+
+
     }
 }
