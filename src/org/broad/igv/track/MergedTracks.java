@@ -59,7 +59,7 @@ public class MergedTracks extends DataTrack{
         super(null, id, name);
         initTrackList(inputTracks);
         this.autoScale = this.getAutoScale();
-        setTrackAlphas(150);
+        setTrackAlphas(120);
     }
 
     private void initTrackList(Collection<DataTrack> inputTracks) {
