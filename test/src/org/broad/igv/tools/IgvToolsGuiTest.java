@@ -38,7 +38,7 @@ public class IgvToolsGuiTest extends AbstractHeadlessTest{
      */
     @Test
     public void testSortName_FolderPeriods() throws Exception{
-        String fname = "unigene.sample.bed";
+        String fname = "Unigene.sample.bed";
         File baseInputFile = new File(TestUtils.DATA_DIR + "bed", fname);
         File inputFile = new File(TestUtils.DATA_DIR + "folder.with.periods", fname);
         inputFile.delete();
