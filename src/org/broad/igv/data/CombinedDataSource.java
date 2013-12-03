@@ -43,7 +43,9 @@ public class CombinedDataSource implements DataSource {
 
     public enum Operation{
         ADD("+"),
-        SUBTRACT("-");
+        SUBTRACT("-"),
+        MULTIPLY("*"),
+        DIVIDE("/");
 
         private String stringRep;
 
@@ -188,82 +190,33 @@ public class CombinedDataSource implements DataSource {
     }
 
     /**
-    public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom) {
-
-        List<LocusScore> scores1 = getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
-        List<LocusScore> scores2 = getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
-
-        List<LocusScore> pendingScores = new ArrayList<LocusScore>();
-        List<LocusScore> scoresToClose = new ArrayList<LocusScore>();
-        List<LocusScore> mergedScores = new ArrayList<LocusScore>(scores1.size() + scores2.size());
-
-        Iterator<LocusScore> iter = new MergedIterator(scores1.iterator(), scores2.iterator());
-        while (iter.hasNext()) {
-
-            LocusScore score = iter.next();
-            int start = score.getStart();
-
-
-
-
-
-            // Loop through the scores that are left cutting them at "score" boundary
-            for (LocusScore ps : pendingScores) {
-
-                if (ps.getEnd() <= start) {
-                    // Done with ps
-                    mergedScores.add(ps);
-                    scoresToClose.add(ps);
-
-                } else {
-                    BasicScore newScore = new BasicScore(ps.getStart(), start, ps.getScore());
-                    mergedScores.add(newScore);
-
-
-                    // The common chunk, we know ps.end is > score.start
-                    int end = Math.min(ps.getEnd(), score.getEnd());
-                    float newVal = combineScores(ps, score);
-                    newScore = new BasicScore(start, end, newVal);
-                    pendingScores.add(newScore);
-
-                    // The "tail" of ps,  if any
-                    if (ps.getEnd() > score.getEnd()) {
-                        newScore = new BasicScore(score.getEnd(), ps.getEnd(), ps.getScore());
-                        pendingScores.add(newScore);
-                    }
-                }
-
-            }
-            pendingScores.removeAll(scoresToClose);
-
-        }
-
-
-        return null;
-    }
-     **/
-
-    /**
      * Combine the scores using this sources operation. Either can be null,
      * in which case it is given the coordinates of the other and a score of 0.
      * Both inputs cannot be null
+     * @param score0
      * @param score1
-     * @param score2
      * @return
      */
-    private float combineScores(LocusScore score1, LocusScore score2) {
-        if(score1 == null && score2 == null) throw new IllegalArgumentException("Both inputs cannot be null");
-        if(score1 == null){
-            score1 = new BasicScore(score2.getStart(), score2.getEnd(), 0.0f);
-        }else if(score2 == null){
-            score2 = new BasicScore(score1.getStart(), score1.getEnd(), 0.0f);
+    private float combineScores(LocusScore score0, LocusScore score1) {
+        if(score0 == null && score1 == null) throw new IllegalArgumentException("Both inputs cannot be null");
+        if(score0 == null){
+            score0 = new BasicScore(score1.getStart(), score1.getEnd(), 0.0f);
+        }else if(score1 == null){
+            score1 = new BasicScore(score0.getStart(), score0.getEnd(), 0.0f);
         }
 
         switch(operation){
             case ADD:
-                return score1.getScore() + score2.getScore();
+                return score0.getScore() + score1.getScore();
             case SUBTRACT:
-                return score1.getScore() - score2.getScore();
+                return score0.getScore() - score1.getScore();
+            case MULTIPLY:
+                return score0.getScore() * score1.getScore();
+            case DIVIDE:
+                if(score1.getScore() == 0.0f){
+                    return 0.0f;
+                }
+                return score0.getScore() / score1.getScore();
             default:
                 throw new IllegalStateException("Operation not recognized: " + operation);
         }
