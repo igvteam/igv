@@ -1,0 +1,32 @@
+##gff-version	3		8112758	8112758				
+##sequence-region	chr7	1	8358960	8112758				
+chr7	maker	gene	8120097	8126653	.	+	.	ID=Phvul.007G082400.1;Name=Phvul.007G082400.1;Alias=maker-chr7-augustus-gene-0.42,Exonerate::Protein2Genome
+chr7	maker	mRNA	8120097	8126653	.	+	.	ID=Phvul.007G082400.1-1;Name=Phvul.007G082400.1-1;Alias=maker-chr7-augustus-gene-0.42-mRNA-1,Exonerate::Protein2Genome
+chr7	maker	exon	8120097	8120191	.	+	.	ID=maker-chr7-augustus-gene-0.42-mRNA-1:exon:9;Name=no_name;Parent=Phvul.007G082400.1-1
+chr7	maker	exon	8121393	8121549	.	+	.	ID=maker-chr7-augustus-gene-0.42-mRNA-1:exon:10;Name=no_name;Parent=Phvul.007G082400.1-1
+chr7	maker	exon	8121913	8121999	.	+	.	ID=maker-chr7-augustus-gene-0.42-mRNA-1:exon:11;Name=no_name;Parent=Phvul.007G082400.1-1
+chr7	maker	exon	8122169	8122253	.	+	.	ID=maker-chr7-augustus-gene-0.42-mRNA-1:exon:12;Name=no_name;Parent=Phvul.007G082400.1-1
+chr7	maker	exon	8122336	8122429	.	+	.	ID=maker-chr7-augustus-gene-0.42-mRNA-1:exon:13;Name=no_name;Parent=Phvul.007G082400.1-1
+chr7	maker	exon	8123619	8123634	.	+	.	ID=maker-chr7-augustus-gene-0.42-mRNA-1:exon:14;Name=no_name;Parent=Phvul.007G082400.1-1
+chr7	maker	exon	8123828	8123862	.	+	.	ID=maker-chr7-augustus-gene-0.42-mRNA-1:exon:15;Name=no_name;Parent=Phvul.007G082400.1-1
+chr7	maker	exon	8124979	8125424	.	+	.	ID=maker-chr7-augustus-gene-0.42-mRNA-1:exon:16;Name=no_name;Parent=Phvul.007G082400.1-1
+chr7	maker	exon	8126370	8126653	.	+	.	ID=maker-chr7-augustus-gene-0.42-mRNA-1:exon:17;Name=no_name;Parent=Phvul.007G082400.1-1
+chr7	maker	CDS	8120184	8120191	.	+	0	ID=maker-chr7-augustus-gene-0.42-mRNA-1:exon:9-cds;Name=no_name-cds;Parent=Phvul.007G082400.1-1
+chr7	maker	CDS	8121393	8121549	.	+	2	ID=maker-chr7-augustus-gene-0.42-mRNA-1:exon:10-cds;Name=no_name-cds;Parent=Phvul.007G082400.1-1
+chr7	maker	CDS	8121913	8121999	.	+	0	ID=maker-chr7-augustus-gene-0.42-mRNA-1:exon:11-cds;Name=no_name-cds;Parent=Phvul.007G082400.1-1
+chr7	maker	CDS	8122169	8122253	.	+	0	ID=maker-chr7-augustus-gene-0.42-mRNA-1:exon:12-cds;Name=no_name-cds;Parent=Phvul.007G082400.1-1
+chr7	maker	CDS	8122336	8122429	.	+	1	ID=maker-chr7-augustus-gene-0.42-mRNA-1:exon:13-cds;Name=no_name-cds;Parent=Phvul.007G082400.1-1
+chr7	maker	CDS	8123619	8123634	.	+	2	ID=maker-chr7-augustus-gene-0.42-mRNA-1:exon:14-cds;Name=no_name-cds;Parent=Phvul.007G082400.1-1
+chr7	maker	CDS	8123828	8123862	.	+	0	ID=maker-chr7-augustus-gene-0.42-mRNA-1:exon:15-cds;Name=no_name-cds;Parent=Phvul.007G082400.1-1
+chr7	maker	CDS	8124979	8125424	.	+	2	ID=maker-chr7-augustus-gene-0.42-mRNA-1:exon:16-cds;Name=no_name-cds;Parent=Phvul.007G082400.1-1
+chr7	maker	CDS	8126370	8126653	.	+	1	ID=maker-chr7-augustus-gene-0.42-mRNA-1:exon:17-cds;Name=no_name-cds;Parent=Phvul.007G082400.1-1
+###			8112758	8112758				
+##FASTA			8112758	8112758				
+>chr7			8112758	8112758				
+NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNTGGGAAAATANAAGATACT			8112758	8112758				
+AAAAATGCATGAAATAGNNTTTTAATAGCTTTGTCTTTTGTTTTATTTTGGTTTGATTTC			8112758	8112758				
+ATGTTGTGAAGTCACTCTCTGTGGATATGAGAAGAACTCTTTTTCAGATATTCATTTACC			8112758	8112758				
+AAATTTTACTAGGGACACGTCAGCATGTGGTGGGCCCCGGGTTCAGTGCATGATCCTCAT			8112758	8112758				
+CACACCACTTCTATCTCTTTCATGGAGTTAGGTCACNCNGGACANANCNAAANTACAAAA			8112758	8112758				
+TNTTGCNTTTNAGCCAAGTATTATTNAGTGAAAATNNNNNNNNNNNNNNNNNNNNNNNNN			8112758	8112758				
+		

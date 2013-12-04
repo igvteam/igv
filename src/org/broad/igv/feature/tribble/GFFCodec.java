@@ -55,7 +55,6 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
     private static Logger log = Logger.getLogger(GFFCodec.class);
 
 
-
     static HashSet<String> ignoredTypes = new HashSet();
 
     static {
@@ -68,12 +67,11 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
 
     private TrackProperties trackProperties = null;
-    CI.CIHashSet featuresToHide = new CI.CIHashSet();
-
-
-    FeatureFileHeader header;
-    Helper helper;
-    Genome genome;
+    private CI.CIHashSet featuresToHide = new CI.CIHashSet();
+    private FeatureFileHeader header;
+    private Helper helper;
+    private Genome genome;
+    private boolean fastaSection = false;
 
     public enum Version {
         GFF2, GFF3
@@ -187,8 +185,13 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
     public BasicFeature decode(String line) {
 
+        if (fastaSection) {
+            return null;
+        }
         if (line.startsWith("#")) {
-            // This should not be possible as this line would be parsed as a header.  But just in case
+            if (line.toUpperCase().startsWith("##FASTA")) {
+                fastaSection = true;
+            }
             return null;
         }
 
@@ -333,7 +336,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
             idFields.add("transcript_id");
         }
 
-        static String[] possParentNames = new String[]{"transcript_id", "id", "mRNA", "systematic_id",  "gene", "transcriptId", "Parent", "proteinId"};
+        static String[] possParentNames = new String[]{"transcript_id", "id", "mRNA", "systematic_id", "gene", "transcriptId", "Parent", "proteinId"};
 
         private String[] nameFields;
 
@@ -397,7 +400,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
             //Search for an attribute == type,  take this as ID
             String id = attributes.get(type);
-            if(id != null) {
+            if (id != null) {
                 return id;
             }
 
@@ -516,7 +519,6 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
             this.nameFields = nameFields;
         }
     }
-
 
 
 }

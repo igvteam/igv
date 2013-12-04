@@ -14,6 +14,7 @@ package org.broad.igv.feature.tribble;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.FeatureCodecParser;
+import org.broad.igv.feature.tribble.reader.TribbleFeatureReader;
 import org.broad.igv.track.GFFFeatureSource;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.util.ResourceLocator;
@@ -52,6 +53,28 @@ public class GFFCodecTest extends AbstractHeadlessTest {
             BasicFeature bf = (BasicFeature) iter.next();
             assertEquals(expName, bf.getName());
         }
+
+    }
+
+    /**
+     * Insure we can parse a GFF file that includes a fasta section.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testGFFWithFasta() throws Exception {
+
+        String path = TestUtils.DATA_DIR + "gff/gffWithFasta.gff";
+        final ResourceLocator locator = new ResourceLocator(path);
+        TribbleFeatureReader reader = new TribbleFeatureReader(locator, CodecFactory.getCodec(locator, null));
+
+        int featureCount = 0;
+        Iterator<Feature> iter = reader.iterator();
+        while (iter.hasNext()) {
+            BasicFeature bf = (BasicFeature) iter.next();
+            featureCount++;
+        }
+        assertEquals(20, featureCount);
 
     }
 }
