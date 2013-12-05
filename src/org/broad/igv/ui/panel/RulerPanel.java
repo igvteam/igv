@@ -223,11 +223,11 @@ public class RulerPanel extends JPanel {
         // Find starting point closest to the current origin
         int nTick = (int) (frame.getOrigin() / spacing) - 1;
         int l = (int) (nTick * spacing);
-        int x = frame.getScreenPosition(l - 1);    // 0 vs 1 based coordinates
+        int x = frame.getScreenPosition(l - 1 + 0.5);    // 0 vs 1 based coordinates, then center over base
         //int strEnd = Integer.MIN_VALUE;
         while (x < getWidth()) {
             l = (int) (nTick * spacing);
-            x = frame.getScreenPosition(l - 1);
+            x = frame.getScreenPosition(l - 1 + 0.5);
             String chrPosition = formatNumber((double) l / ts.getUnitMultiplier()) +
                     " " + ts.getMajorUnit();
             int strWidth = g.getFontMetrics().stringWidth(chrPosition);
