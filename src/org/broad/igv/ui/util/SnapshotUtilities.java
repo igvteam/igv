@@ -21,6 +21,7 @@ package org.broad.igv.ui.util;
 //import de.erichseifert.vectorgraphics2d.EPSGraphics2D;
 //import net.sf.epsgraphics.ColorMode;
 //import net.sf.epsgraphics.EpsGraphics;
+
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.log4j.Logger;
@@ -183,6 +184,8 @@ public class SnapshotUtilities {
             g = (Graphics2D) constructor.newInstance("eps", fos, 0, 0, target.getWidth(), target.getHeight(), colorModeValue);
 
             choosePaint(target, g, paintOffscreen);
+
+            graphicsClass.getMethod("close").invoke(g);
 
         }catch (Exception e){
             log.error(e.getMessage(), e);
