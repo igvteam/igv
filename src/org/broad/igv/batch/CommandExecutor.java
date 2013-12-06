@@ -68,16 +68,12 @@ public class CommandExecutor {
         List<String> subArgs = Collections.emptyList();
         if (args.size() > 1) subArgs = args.subList(1, args.size());
         try {
-            Object ocommand = RuntimeUtils.loadClassForName(cmd, null);
-            Command command = (Command) ocommand;
+            Object ocmmand = RuntimeUtils.loadInstanceForName(cmd, null);
+            Command command = (Command) ocmmand;
             return command.run(subArgs);
-        } catch (InstantiationException e) {
-            return e.getMessage();
-        } catch (IllegalAccessException e) {
-            return e.getMessage();
-        } catch (ClassNotFoundException e) {
+        }catch (ClassNotFoundException e) {
             return null;
-        } catch (ClassCastException e) {
+        } catch (Exception e) {
             return e.getMessage();
         }
     }

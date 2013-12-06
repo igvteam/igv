@@ -20,9 +20,12 @@ import org.broad.igv.DirectoryManager;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -148,20 +151,15 @@ public class RuntimeUtils {
     }
 
     /**
-     * Returns an array of builtin library URL locations, as well as those passed in with {@code libURLs}
-     * @param libURLs
+     * Converts input string paths to file URLs
+     * @param paths
      * @return
      */
-    private static URL[] getClassURLs(String[] libURLs) {
-        String[] paths = new String[1];
-        paths[0] = (new File(DirectoryManager.getIgvDirectory(), "plugins/")).getAbsolutePath();
-        List<String> allPaths = Arrays.asList(paths);
-        if(libURLs != null) allPaths.addAll(Arrays.asList(libURLs));
-
-        URL[] urls = new URL[allPaths.size()];
-        for (int pp = 0; pp < allPaths.size(); pp++) {
+    private static URL[] pathsToURLs(String[] paths) {
+        URL[] urls = new URL[paths.length];
+        for (int pp = 0; pp < paths.length; pp++) {
             try {
-                urls[pp] = new URL("file://" + allPaths.get(pp));
+                urls[pp] = new URL("file://" + paths[0]);
             } catch (MalformedURLException e) {
                 log.error(e);
             }
@@ -169,23 +167,70 @@ public class RuntimeUtils {
         return urls;
     }
 
-    public static Object loadClassForName(String className, String[] libURLs) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
+    /**
+     * Returns an array of builtin library URL locations, as well as those passed in with {@code libURLs}
+     * @param libURLs
+     * @return
+     */
+    private static URL[] addBuiltinURLs(URL[] libURLs) {
+        String[] builtin_paths = new String[1];
+        builtin_paths[0] = (new File(DirectoryManager.getIgvDirectory(), "plugins/")).getAbsolutePath();
+        URL[] builtin_urls = pathsToURLs(builtin_paths);
 
-        Object object = null;
+        List<URL> outURLs = new ArrayList<URL>(Arrays.asList(libURLs != null ? libURLs : new URL[0]));
+        outURLs.addAll(Arrays.asList(builtin_urls));
+
+        return outURLs.toArray(new URL[outURLs.size()]);
+    }
+
+    private static URL[] getClassURLs(URL[] libURLs){
+        return addBuiltinURLs(libURLs);
+    }
+
+    /**
+     *  Create {@link java.lang.Class} object with the desired name,
+     *  looking in {@code libURLs} as well as built-in locations
+     * @param className
+     * @param libURLs
+     * @return
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws ClassNotFoundException
+     */
+    public static Class loadClassForName(String className, URL[] libURLs) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
+
+        Class clazz = null;
         //Easy way
         try {
-            object = Class.forName(className).newInstance();
+            clazz = Class.forName(className);
         } catch (ClassNotFoundException e) {
             //Try with custom loader below
         }
-        if (object != null) return object;
+        if (clazz != null) return clazz;
 
         //If not found, check other locations
+
         ClassLoader loader = URLClassLoader.newInstance(
                 getClassURLs(libURLs),
                 ClassLoader.getSystemClassLoader()
         );
         return loader.loadClass(className);
+    }
+
+    /**
+     * Create an instance of the specified class. Must have no-arg constructor
+     * @param className
+     * @param libURLs
+     * @return
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws ClassNotFoundException
+     */
+    public static Object loadInstanceForName(String className, URL[] libURLs) throws IllegalAccessException, InstantiationException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
+
+        Class clazz = loadClassForName(className, libURLs);
+        Constructor constructor = clazz.getConstructor();
+        return constructor.newInstance();
     }
 
 

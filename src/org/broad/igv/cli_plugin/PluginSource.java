@@ -489,10 +489,8 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
         try {
 
             if (libURLs == null) libURLs = new URL[0];
-            ClassLoader loader = URLClassLoader.newInstance(libURLs,
-                    getClass().getClassLoader());
 
-            Class clazz = loader.loadClass(decodingCodec);
+            Class clazz = RuntimeUtils.loadClassForName(decodingCodec, libURLs);
             Constructor constructor = clazz.getConstructor();
             Object codec = constructor.newInstance();
             //User can pass in LineFeatureDecoder, we just wrap it
