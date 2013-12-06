@@ -18,14 +18,15 @@
  */
 package org.broad.igv.ui.util;
 
-import de.erichseifert.vectorgraphics2d.EPSGraphics2D;
-import net.sf.epsgraphics.ColorMode;
-import net.sf.epsgraphics.EpsGraphics;
+//import de.erichseifert.vectorgraphics2d.EPSGraphics2D;
+//import net.sf.epsgraphics.ColorMode;
+//import net.sf.epsgraphics.EpsGraphics;
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.log4j.Logger;
 import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.Paintable;
+import org.broad.igv.util.RuntimeUtils;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 
@@ -33,6 +34,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.lang.reflect.Constructor;
 
 /**
  * Utility methods for supporting saving of images as jpeg, png, and svg files.
@@ -46,6 +48,11 @@ public class SnapshotUtilities {
      * Class logger
      */
     private static Logger log = Logger.getLogger(SnapshotUtilities.class);
+
+
+
+    private static String EPSClassName = "net.sf.epsgraphics.EpsGraphics";
+    private static String EPSColorModeClassName = "net.sf.epsgraphics.ColorMode";
 
 
     /**
@@ -127,7 +134,9 @@ public class SnapshotUtilities {
                 exts = new String[]{"." + format};
                 break;
             case EPS:
-                exportScreenShotEpsGraphics(component, file, paintOffscreen);
+                exportScreenshotEpsGraphics(component, file, paintOffscreen);
+                //exportScreenshotEpsGraphicsNoRef(component, file, paintOffscreen);
+                break;
         }
         if(format != null && exts != null){
             exportScreenShotBufferedImage(component, file, width, height, exts, format, paintOffscreen);
@@ -157,15 +166,26 @@ public class SnapshotUtilities {
 
     }
 
-    private static void exportScreenShotEpsGraphics(Component target, File selectedFile, boolean paintOffscreen) throws IOException{
+    private static void exportScreenshotEpsGraphics(Component target, File selectedFile, boolean paintOffscreen) throws IOException{
 
+        Graphics2D g = null;
         FileOutputStream fos = null;
-        try {
+        try{
+            Class<Enum> colorModeClass = RuntimeUtils.loadClassForName(EPSColorModeClassName, null);
+            Object colorModeValue = Enum.valueOf(colorModeClass, "COLOR_RGB");
+            Class graphicsClass = RuntimeUtils.loadClassForName(EPSClassName, null);
+
+            Constructor constructor = graphicsClass.getConstructor(String.class, OutputStream.class,
+                    int.class, int.class, int.class, int.class, colorModeClass);
+
             // EpsGraphics stores directly in a file
             fos = new FileOutputStream(selectedFile);
-            Graphics2D g = new EpsGraphics("eps", fos, 0, 0, target.getWidth(), target.getHeight(), ColorMode.COLOR_RGB);
+            g = (Graphics2D) constructor.newInstance("eps", fos, 0, 0, target.getWidth(), target.getHeight(), colorModeValue);
+
             choosePaint(target, g, paintOffscreen);
 
+        }catch (Exception e){
+            log.error(e.getMessage(), e);
         } finally {
             if(fos != null){
                 fos.flush();
@@ -173,6 +193,38 @@ public class SnapshotUtilities {
             }
         }
 
+    }
+
+//    private static void exportScreenshotEpsGraphicsNoRef(Component target, File selectedFile, boolean paintOffscreen) throws IOException{
+//
+//        FileOutputStream fos = null;
+//        try {
+//            // EpsGraphics stores directly in a file
+//            fos = new FileOutputStream(selectedFile);
+//            Graphics2D g = new EpsGraphics("eps", fos, 0, 0, target.getWidth(), target.getHeight(), ColorMode.COLOR_RGB);
+//            choosePaint(target, g, paintOffscreen);
+//
+//        } finally {
+//            if(fos != null){
+//                fos.flush();
+//                fos.close();
+//            }
+//        }
+//
+//    }
+
+    static boolean canExportScreenshotEps(){
+        try {
+            Class clazz = RuntimeUtils.loadClassForName(EPSClassName, null);
+            return clazz != null;
+        } catch (IllegalAccessException e) {
+            log.error(e.getMessage(), e);
+        } catch (InstantiationException e) {
+            log.error(e.getMessage(), e);
+        } catch (ClassNotFoundException e) {
+            log.warn("class not found " + EPSClassName);
+        }
+        return false;
     }
 
 

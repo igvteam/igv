@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.ui.util;
 
 import org.broad.igv.util.Utilities;
@@ -26,8 +37,6 @@ public class SnapshotFileChooser extends JFileChooser {
         SNAPSHOT_TYPE_TO_FILTER.put(SnapshotFileType.JPEG, new SnapshotFileFilter(SnapshotFileType.JPEG));
         //SNAPSHOT_TYPE_TO_FILTER.put(SnapshotFileType.PDF,
         //    new SnapshotFileFilter(SnapshotFileType.PDF));
-        //SNAPSHOT_TYPE_TO_FILTER.put(SnapshotFileType.EPS,
-        //        new SnapshotFileFilter(SnapshotFileType.EPS));
         SNAPSHOT_TYPE_TO_FILTER.put(SnapshotFileType.SVG, new SnapshotFileFilter(SnapshotFileType.SVG));
         SNAPSHOT_TYPE_TO_FILTER.put(SnapshotFileType.PNG, new SnapshotFileFilter(SnapshotFileType.PNG));
     }
@@ -163,6 +172,11 @@ public class SnapshotFileChooser extends JFileChooser {
     }
 
     private void init() {
+
+        if(SnapshotUtilities.canExportScreenshotEps()){
+            SNAPSHOT_TYPE_TO_FILTER.put(SnapshotFileType.EPS,
+                    new SnapshotFileFilter(SnapshotFileType.EPS));
+        }
 
         FileFilter[] fileFilters =
                 SNAPSHOT_TYPE_TO_FILTER.values().toArray(new FileFilter[SNAPSHOT_TYPE_TO_FILTER.size()]);

@@ -151,15 +151,15 @@ public class RuntimeUtils {
     }
 
     /**
-     * Converts input string paths to file URLs
-     * @param paths
+     * Converts input files to file URLs
+     * @param files
      * @return
      */
-    private static URL[] pathsToURLs(String[] paths) {
-        URL[] urls = new URL[paths.length];
-        for (int pp = 0; pp < paths.length; pp++) {
+    private static URL[] filesToURLs(File[] files) {
+        URL[] urls = new URL[files.length];
+        for (int pp = 0; pp < files.length; pp++) {
             try {
-                urls[pp] = new URL("file://" + paths[0]);
+                urls[pp] = new URL("file://" + files[0].getAbsolutePath());
             } catch (MalformedURLException e) {
                 log.error(e);
             }
@@ -173,11 +173,8 @@ public class RuntimeUtils {
      * @return
      */
     private static URL[] addBuiltinURLs(URL[] libURLs) {
-        String[] builtin_paths = new String[1];
-        File builtinFile = new File(DirectoryManager.getIgvDirectory(), "plugins/");
-
-        builtin_paths[0] = builtinFile.getAbsolutePath();
-        URL[] builtin_urls = pathsToURLs(builtin_paths);
+        File[] builtin_paths = getPluginJars();
+        URL[] builtin_urls = filesToURLs(builtin_paths);
 
         List<URL> outURLs = new ArrayList<URL>(Arrays.asList(libURLs != null ? libURLs : new URL[0]));
         outURLs.addAll(Arrays.asList(builtin_urls));
@@ -235,16 +232,28 @@ public class RuntimeUtils {
         return constructor.newInstance();
     }
 
-    public static void loadPluginJars(){
+    public static File[] getPluginJars(){
         File builtinDir = new File(DirectoryManager.getIgvDirectory(), "plugins/");
-        for(File inFile: builtinDir.listFiles()){
-            if(inFile.getName().endsWith(".jar")){
-                loadLibrary(inFile);
+        return builtinDir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.toLowerCase().endsWith(".jar");
             }
+        });
+    }
+
+    /**
+     * Add jars in plugin directory to system classloader
+     * This may not work on all systems, for security reasons
+     */
+    public static void loadPluginJars(){
+        for(File jar: getPluginJars()){
+            loadLibrary(jar);
         }
     }
 
-    public static boolean loadLibrary(java.io.File jar){
+    //Not sure about the security implications of this method
+    private static boolean loadLibrary(java.io.File jar){
         try {
             //We are using reflection here to circumvent encapsulation; addURL is not public
             java.net.URLClassLoader loader = (java.net.URLClassLoader)ClassLoader.getSystemClassLoader();
