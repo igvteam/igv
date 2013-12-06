@@ -174,7 +174,9 @@ public class RuntimeUtils {
      */
     private static URL[] addBuiltinURLs(URL[] libURLs) {
         String[] builtin_paths = new String[1];
-        builtin_paths[0] = (new File(DirectoryManager.getIgvDirectory(), "plugins/")).getAbsolutePath();
+        File builtinFile = new File(DirectoryManager.getIgvDirectory(), "plugins/");
+
+        builtin_paths[0] = builtinFile.getAbsolutePath();
         URL[] builtin_urls = pathsToURLs(builtin_paths);
 
         List<URL> outURLs = new ArrayList<URL>(Arrays.asList(libURLs != null ? libURLs : new URL[0]));
@@ -209,12 +211,12 @@ public class RuntimeUtils {
         if (clazz != null) return clazz;
 
         //If not found, check other locations
-
+        URL[] allURLs = getClassURLs(libURLs);
         ClassLoader loader = URLClassLoader.newInstance(
-                getClassURLs(libURLs),
-                ClassLoader.getSystemClassLoader()
+                allURLs, ClassLoader.getSystemClassLoader()
         );
-        return loader.loadClass(className);
+        clazz = loader.loadClass(className);
+        return clazz;
     }
 
     /**
@@ -231,6 +233,41 @@ public class RuntimeUtils {
         Class clazz = loadClassForName(className, libURLs);
         Constructor constructor = clazz.getConstructor();
         return constructor.newInstance();
+    }
+
+    public static void loadPluginJars(){
+        File builtinDir = new File(DirectoryManager.getIgvDirectory(), "plugins/");
+        for(File inFile: builtinDir.listFiles()){
+            if(inFile.getName().endsWith(".jar")){
+                loadLibrary(inFile);
+            }
+        }
+    }
+
+    public static boolean loadLibrary(java.io.File jar){
+        try {
+            //We are using reflection here to circumvent encapsulation; addURL is not public
+            java.net.URLClassLoader loader = (java.net.URLClassLoader)ClassLoader.getSystemClassLoader();
+            java.net.URL url = jar.toURI().toURL();
+
+            //Skip if already loaded
+            for (java.net.URL it : java.util.Arrays.asList(loader.getURLs())){
+                if (it.equals(url)){
+                    return false;
+                }
+            }
+
+            java.lang.reflect.Method method = java.net.URLClassLoader.class.getDeclaredMethod(
+                    "addURL",
+                    new Class[]{java.net.URL.class}
+            );
+            method.setAccessible(true);
+            method.invoke(loader, new Object[]{url});
+            return true;
+        } catch (Exception e){
+            log.warn("Error loading jar: " + e.getMessage());
+            return false;
+        }
     }
 
 

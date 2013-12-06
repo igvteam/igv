@@ -21,6 +21,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.event.GlobalKeyDispatcher;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
+import org.broad.igv.util.RuntimeUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -159,6 +160,7 @@ public class Main {
         //AbstractFeatureReader.setComponentMethods(new IGVComponentMethods());
         SeekableStreamFactory.setInstance(IGVSeekableStreamFactory.getInstance());
 
+        RuntimeUtils.loadPluginJars();
         IGV.createInstance(frame).startUp(igvArgs);
 
         // TODO Should this be done here?  Will this step on other key dispatchers?
