@@ -23,6 +23,8 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -145,14 +147,21 @@ public class RuntimeUtils {
         }
     }
 
-    private static URL[] getClassURLs() {
-        String[] paths = new String[2];
+    /**
+     * Returns an array of builtin library URL locations, as well as those passed in with {@code libURLs}
+     * @param libURLs
+     * @return
+     */
+    private static URL[] getClassURLs(String[] libURLs) {
+        String[] paths = new String[1];
         paths[0] = (new File(DirectoryManager.getIgvDirectory(), "plugins/")).getAbsolutePath();
+        List<String> allPaths = Arrays.asList(paths);
+        if(libURLs != null) allPaths.addAll(Arrays.asList(libURLs));
 
-        URL[] urls = new URL[paths.length];
-        for (int pp = 0; pp < paths.length; pp++) {
+        URL[] urls = new URL[allPaths.size()];
+        for (int pp = 0; pp < allPaths.size(); pp++) {
             try {
-                urls[pp] = new URL("file://" + paths[pp]);
+                urls[pp] = new URL("file://" + allPaths.get(pp));
             } catch (MalformedURLException e) {
                 log.error(e);
             }
@@ -160,7 +169,7 @@ public class RuntimeUtils {
         return urls;
     }
 
-    public static Object loadClassForName(String className) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
+    public static Object loadClassForName(String className, String[] libURLs) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
 
         Object object = null;
         //Easy way
@@ -173,7 +182,7 @@ public class RuntimeUtils {
 
         //If not found, check other locations
         ClassLoader loader = URLClassLoader.newInstance(
-                getClassURLs(),
+                getClassURLs(libURLs),
                 ClassLoader.getSystemClassLoader()
         );
         return loader.loadClass(className);

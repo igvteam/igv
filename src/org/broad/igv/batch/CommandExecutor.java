@@ -68,7 +68,7 @@ public class CommandExecutor {
         List<String> subArgs = Collections.emptyList();
         if (args.size() > 1) subArgs = args.subList(1, args.size());
         try {
-            Object ocommand = Class.forName(cmd).newInstance();
+            Object ocommand = RuntimeUtils.loadClassForName(cmd, null);
             Command command = (Command) ocommand;
             return command.run(subArgs);
         } catch (InstantiationException e) {
