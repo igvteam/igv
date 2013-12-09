@@ -677,6 +677,7 @@ public class IGVSessionReader implements SessionReader {
         String coverage = getAttribute(element, SessionAttribute.COVERAGE.getText());
         String trackLine = getAttribute(element, SessionAttribute.TRACK_LINE.getText());
         String colorString = getAttribute(element, SessionAttribute.COLOR.getText());
+        String index = getAttribute(element, SessionAttribute.INDEX.getText());
 
         //String relPathValue = getAttribute(element, SessionAttribute.RELATIVE_PATH.getText());
         //boolean isRelativePath = ((relPathValue != null) && relPathValue.equalsIgnoreCase("true"));
@@ -684,8 +685,6 @@ public class IGVSessionReader implements SessionReader {
 
         // Older sessions used the "name" attribute for the path.
         String path = getAttribute(element, SessionAttribute.PATH.getText());
-
-        String index = getAttribute(element, SessionAttribute.INDEX.getText());
 
         if (oldSession && name != null) {
             path = name;
@@ -702,7 +701,10 @@ public class IGVSessionReader implements SessionReader {
         }
         String absolutePath = FileUtils.getAbsolutePath(path, rootPath);
         fullToRelPathMap.put(absolutePath, path);
+
         ResourceLocator resourceLocator = new ResourceLocator(serverURL, absolutePath);
+
+        if(index != null) resourceLocator.setIndexPath(index);
 
         if (coverage != null) {
             String absoluteCoveragePath = FileUtils.getAbsolutePath(coverage, rootPath);

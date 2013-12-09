@@ -44,11 +44,14 @@ public class CommandListener implements Runnable {
      * Different keys which can be used to specify a file to load
      */
     public static Set<String> fileParams;
+    public static Set<String> indexParams;
 
     static {
         String[] fps = new String[]{"file", "bigDataURL", "sessionURL", "dataURL"};
         fileParams = new LinkedHashSet<String>(Arrays.asList(fps));
         fileParams = Collections.unmodifiableSet(fileParams);
+
+        indexParams = new HashSet<String>(Arrays.asList("index"));
     }
 
     public static synchronized void start(int port) {
@@ -298,8 +301,8 @@ public class CommandListener implements Runnable {
 
                 String name = params.get("name");
                 String locus = params.get("locus");
-
-                result = cmdExe.loadFiles(file, locus, merge, name, params);
+                String index = params.get("index");
+                result = cmdExe.loadFiles(file, index, name, locus, merge, params);
             } else {
                 return ("ERROR Parameter \"file\" is required");
             }
@@ -343,7 +346,8 @@ public class CommandListener implements Runnable {
                 //Parameters must be URL encoded, including the file parameter
                 //CommandExecutor URL-decodes the file parameter sometimes, but not always
                 //So we URL-decode iff CommandExecutor doesn't
-                boolean cmdExeWillDecode = fileParams.contains(key) && CommandExecutor.needsDecode(kv[1]);
+                boolean cmdExeWillDecode = (fileParams.contains(key) || indexParams.contains(key)) && CommandExecutor.needsDecode(kv[1]);
+
                 String value = cmdExeWillDecode ? kv[1] : StringUtils.decodeURL(kv[1]);
                 params.put(kv[0], value);
             }

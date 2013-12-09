@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
+import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -64,12 +65,12 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     }
 
     @Test
-    public void testRegionNoname() throws Exception{
+    public void testRegionNoname() throws Exception {
         tstRegion(null);
     }
 
     @Test
-    public void testRegionName() throws Exception{
+    public void testRegionName() throws Exception {
         tstRegion("myregion");
     }
 
@@ -93,7 +94,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
 
     @Test
     @Ignore
-    public void stressTestSnapshotsHG00171() throws Exception{
+    public void stressTestSnapshotsHG00171() throws Exception {
         PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "1000");
 
         String interv0 = "chr1:151666000-152666000";
@@ -107,7 +108,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
 
     @Test
     @Ignore
-    public void stressTestSnapshotsBodymap() throws Exception{
+    public void stressTestSnapshotsBodymap() throws Exception {
         PreferenceManager.getInstance().put(PreferenceManager.SAM_DOWNSAMPLE_READS, "true");
         PreferenceManager.getInstance().put(PreferenceManager.SAM_SAMPLING_COUNT, "100");
         PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "1000");
@@ -122,13 +123,13 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     }
 
 
-
     /**
      * Take a large number of snapshots, make sure they all
      * actually show data.
+     *
      * @throws Exception
      */
-    public void stressTstSnapshots(String filePath, String[] intervals) throws Exception{
+    public void stressTstSnapshots(String filePath, String[] intervals) throws Exception {
 
         exec.execute("load " + filePath);
         //exec.execute(("setSleepInterval 10000"));
@@ -139,7 +140,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         Long expSize;
         long margin;
         int numTrials = 50;
-        for(int tri=0; tri < numTrials; tri++){
+        for (int tri = 0; tri < numTrials; tri++) {
 
             int intInd = tri % intervals.length;
             String interval = intervals[intInd];
@@ -149,18 +150,18 @@ public class CommandExecutorTest extends AbstractHeadedTest {
 
             String outFileName = outFileBase + tri + ".png";
             File outFile = new File(snapshotDir, outFileName);
-            if(outFile.exists()) outFile.delete();
+            if (outFile.exists()) outFile.delete();
             tstSnapshot(outFileName);
 
             long size = outFile.length();
-            if(expSize == null){
+            if (expSize == null) {
                 expSize = size;
                 intervalSizeMap.put(interval, expSize);
             }
             margin = expSize / 10;
             long sizeDiff = Math.abs(size - expSize);
             //break;
-            assertTrue(String.format("File size much different than expected. Trial %d, Diff = %d, margin = %d", tri, sizeDiff, margin),  sizeDiff < margin);
+            assertTrue(String.format("File size much different than expected. Trial %d, Diff = %d, margin = %d", tri, sizeDiff, margin), sizeDiff < margin);
         }
 
     }
@@ -278,43 +279,43 @@ public class CommandExecutorTest extends AbstractHeadedTest {
 
 
     @Test
-    public void testLoadFileSpaces() throws Exception{
+    public void testLoadFileSpaces() throws Exception {
         tstLoadFileSpaces(fileName01);
     }
 
     @Test
-    public void testLoadFileSpacesPerc() throws Exception{
+    public void testLoadFileSpacesPerc() throws Exception {
         tstLoadFileSpaces(fileNamePerc);
     }
 
     @Test
-    public void testLoadFileSpacesPlus() throws Exception{
+    public void testLoadFileSpacesPlus() throws Exception {
         tstLoadFileSpaces(fileNamePlus);
     }
 
 
     @Test
-    public void testLoadFileURLSpaces() throws Exception{
+    public void testLoadFileURLSpaces() throws Exception {
         tstLoadFileURLSpaces(fileName01);
     }
 
     @Test
-    public void testLoadFileURLSpacesPerc() throws Exception{
+    public void testLoadFileURLSpacesPerc() throws Exception {
         tstLoadFileURLSpaces(fileNamePerc);
     }
 
     @Test
-    public void testLoadFileURLSpacesPlus() throws Exception{
+    public void testLoadFileURLSpacesPlus() throws Exception {
         tstLoadFileURLSpaces(fileNamePlus);
     }
 
-    private void tstLoadFileURLSpaces(String filename) throws Exception{
+    private void tstLoadFileURLSpaces(String filename) throws Exception {
         String fileURL = "file://" + org.broad.igv.util.StringUtils.encodeURL(new File(dirPathSpaces, filename).getAbsolutePath());
         exec.execute("load " + fileURL);
         TestUtils.assertTrackLoaded(IGV.getInstance(), filename);
     }
 
-    private void tstLoadFileSpaces(String filename) throws Exception{
+    private void tstLoadFileSpaces(String filename) throws Exception {
         File file = new File(dirPathSpaces, filename);
         exec.execute("load \"" + file.getPath() + "\"");
         TestUtils.assertTrackLoaded(IGV.getInstance(), filename);
@@ -328,10 +329,16 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         int beginTracks = igv.getAllTracks().size();
 
         String urlPath = urlPathSpaces;
-        exec.loadFiles(urlPath, null, true, "hasSpaces");
+        Map<String, String> params = null;
+        String name = "hasSpaces";
+        String index = null;
+        String locus = null;
+        boolean merge = true;
+        exec.loadFiles(urlPath, index, name, locus, merge, params);
 
+        name = null;
         String localPath = TestUtils.DATA_DIR + "bed/test.bed";
-        exec.loadFiles(localPath, null, true, null);
+        exec.loadFiles(localPath, index, name, locus, merge, params);
 
         assertEquals(2, igv.getAllTracks().size() - beginTracks);
     }
@@ -339,7 +346,12 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     @Test
     public void testSetDataRange() throws Exception {
         String dataFile = TestUtils.DATA_DIR + "igv/recombRate.ens.igv.txt";
-        exec.loadFiles(dataFile, null, true, null);
+        Map<String, String> params = null;
+        String name = null;
+        String index = null;
+        String locus = null;
+        boolean merge = true;
+        exec.loadFiles(dataFile, index, name, locus, merge, params);
 
         String[] goodArgSet = new String[]{"0,5.0 ", "0,1,5", "-1,0,1", "-1.32,10.21"};
         for (String arg : goodArgSet) {
@@ -402,7 +414,28 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     }
 
     @Test
-    public void testPreference() throws Exception{
+    public void testLoadIndex() throws Exception {
+        String urlPath = TestUtils.DATA_DIR + "bam/NA12878.SLX.sample.bam";
+        String index = TestUtils.DATA_DIR + "bam/NA12878.SLX.sample.bam.bai";
+        String name = null;
+        String locus = "chr1:155,156,300-155,164,706";  //muc1
+        boolean merge = true;
+        Map<String, String> params = null;
+        exec.loadFiles(urlPath, index, name, locus, merge, params);
+        List<Track> tracks = igv.getAllTracks();
+        // Find our alignment track
+        boolean foundTrack = false;
+        for(Track t : tracks) {
+            ResourceLocator rl = t.getResourceLocator();
+            if(rl != null && rl.getPath().equals(urlPath)) {
+               foundTrack = true;
+            }
+        }
+        assertTrue(foundTrack);
+    }
+
+    @Test
+    public void testPreference() throws Exception {
         String key = PreferenceManager.DATA_SERVER_URL_KEY;
         String val = "myDataServerURL";
 
@@ -414,11 +447,11 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     }
 
     @Test
-    public void testSnapshotsize() throws Exception{
+    public void testSnapshotsize() throws Exception {
         String filePath = TestUtils.DATA_DIR + "bam/NA12878.SLX.sample.bam";
         int numLoads = 1;
 
-        for(int ii = 0; ii < numLoads; ii++){
+        for (int ii = 0; ii < numLoads; ii++) {
             IGV.getInstance().loadResources(Arrays.asList(new ResourceLocator(filePath)));
         }
         exec.execute("goto chr1:9,713,386-9,733,865");
@@ -427,7 +460,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         int minHeight = (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight() - 150;
         int maxHeight = minHeight + 200;
 
-        String outFileName =  minHeight + ".png";
+        String outFileName = minHeight + ".png";
 
         exec.execute("maxpanelheight " + maxHeight);
         exec.execute("snapshot " + outFileName);
@@ -440,8 +473,8 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         int remAlphaMask = 0x00ffffff;
 
         int numBlackPix = 0;
-        for(int yy = image.getMinY(); yy < image.getHeight(); yy++){
-            for(int xx = image.getMinX(); xx < image.getWidth(); xx++){
+        for (int yy = image.getMinY(); yy < image.getHeight(); yy++) {
+            for (int xx = image.getMinX(); xx < image.getWidth(); xx++) {
                 int color = image.getRGB(xx, yy) & remAlphaMask;
                 numBlackPix += color == 0 ? 1 : 0;
             }
@@ -450,7 +483,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         //Just making sure we don't trivially satisfy the problem
         assertTrue(numBlackPix > 100);
 
-        int totalPix = image.getHeight()*image.getWidth();
+        int totalPix = image.getHeight() * image.getWidth();
         assertTrue("Too much of the snapshot is black", numBlackPix < totalPix * 0.1);
     }
 

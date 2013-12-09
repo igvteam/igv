@@ -378,19 +378,23 @@ public class CommandExecutor {
             merge = true;
         }
 
-        // remaining parameters might be "merge" or "name"
+        // remaining parameters might be "merge", "name", or "index"
         String name = null;
+        String index = null;
         for (String param : Arrays.asList(param2, param3)) {
             if (param != null && param.startsWith("name=")) {
                 name = param.substring(5);
             } else if (param != null && param.startsWith("merge=")) {
                 String mergeString = param.substring(6);
                 merge = mergeString.equalsIgnoreCase("true");
+            } else if (param != null && param.startsWith("index=")) {
+                 index = param.substring(6);
             }
         }
         // Locus is not specified from port commands
         String locus = null;
-        return loadFiles(fileString, null, merge, name);
+        Map<String, String> params = null;
+        return loadFiles(fileString, index, name, locus, merge,  params);
     }
 
     /**
@@ -399,34 +403,46 @@ public class CommandExecutor {
      * @param fileString
      * @param locus
      * @param merge
-     * @param name
+     * @param nameString
+     * @param params
      * @return
      * @throws IOException
      */
-    String loadFiles(final String fileString, final String locus, final boolean merge, String name) throws IOException {
-        return loadFiles(fileString, locus, merge, name, null);
-    }
 
-    String loadFiles(final String fileString, final String locus, final boolean merge, String nameString, Map<String, String> params) throws IOException {
+    String loadFiles(final String fileString,
+                     final String indexString,
+                     final String nameString,
+                     final String locus,
+                     final boolean merge,
+                     Map<String, String> params) throws IOException {
 
 
         log.debug("Run load files");
 
         String[] files = fileString.split(",");
         String[] names = nameString != null ? nameString.split(",") : null;
+        String[] indexFiles = indexString != null ? indexString.split(",") : null;
+
         if (files.length == 1) {
             // String might be URL encoded
             files = fileString.split("%2C");
             names = nameString != null ? nameString.split("%2C") : null;
+            indexFiles = indexString != null ? indexString.split("%2C") : null;
         }
 
         if (names != null && names.length != files.length) {
-            return "Error: If files is a comma-separated list, names must also be a comma-separated list of the same length";
+            return "Error: If file is a comma-separated list, names must also be a comma-separated list of the same length";
         }
+
+        if (indexFiles != null && indexFiles.length != files.length) {
+            return "Error: If file is a comma-separated list, index must also be a comma-separated list of the same length";
+        }
+
 
         // Must decode URLs (local or remote), but leave local file paths only
         for (int ii = 0; ii < files.length; ii++) {
             files[ii] = decodeFileString(files[ii]);
+            indexFiles[ii] = decodeFileString(indexFiles[ii]);
         }
 
         List<ResourceLocator> fileLocators = new ArrayList<ResourceLocator>();
@@ -452,8 +468,10 @@ public class CommandExecutor {
         }
 
         // Loop through files
-        int fi = 0;
-        for (String f : files) {
+        for (int fi=0; fi<files.length; fi++) {
+
+            String f = files[fi];
+
             // Skip already loaded files TODO -- make this optional?  Check for change?
             if (loadedFiles.contains(f)) continue;
 
@@ -472,13 +490,15 @@ public class CommandExecutor {
                 if (names != null) {
                     rl.setName(names[fi]);
                 }
+                if(indexFiles != null) {
+                    rl.setIndexPath(indexFiles[fi]);
+                }
                 if (params != null) {
                     String trackLine = createTrackLine(params);
                     rl.setTrackLine(trackLine);
                 }
                 fileLocators.add(rl);
             }
-            fi++;
         }
 
         for (String sessionPath : sessionPaths) {
