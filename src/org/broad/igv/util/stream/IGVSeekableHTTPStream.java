@@ -40,7 +40,8 @@ public class IGVSeekableHTTPStream extends SeekableStream {
         try {
             this.contentLength = this.helper.getContentLength();
         } catch (IOException e) {
-            log.error("Error getting content length: " + e.getMessage());
+            log.error(e.getMessage(), e);
+            throw new RuntimeException(e.getMessage(), e);
         }
 
     }
