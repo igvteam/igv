@@ -18,10 +18,6 @@
  */
 package org.broad.igv.ui.util;
 
-//import de.erichseifert.vectorgraphics2d.EPSGraphics2D;
-//import net.sf.epsgraphics.ColorMode;
-//import net.sf.epsgraphics.EpsGraphics;
-
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.log4j.Logger;
@@ -142,27 +138,27 @@ public class SnapshotUtilities {
         return "OK";
     }
 
-    private static void exportScreenshotVector2D(Component target, File selectedFile, boolean paintOffscreen) throws IOException{
-
-        de.erichseifert.vectorgraphics2d.VectorGraphics2D g = null;
-        String filePath = selectedFile.getAbsolutePath();
-
-        if(filePath.endsWith(".svg")){
-            g = new de.erichseifert.vectorgraphics2d.SVGGraphics2D(0.0, 0.0, target.getWidth(), target.getHeight());
-        }else if(filePath.endsWith(".eps")){
-            g = new de.erichseifert.vectorgraphics2d.EPSGraphics2D(0.0, 0.0, target.getWidth(), target.getHeight());
-        }
-        target.paintAll(g);
-
-        // Write the output to a file
-        FileOutputStream file = new FileOutputStream(selectedFile);
-        try {
-            file.write(g.getBytes());
-        } finally {
-            file.close();
-        }
-
-    }
+//    private static void exportScreenshotVector2D(Component target, File selectedFile, boolean paintOffscreen) throws IOException{
+//
+//        de.erichseifert.vectorgraphics2d.VectorGraphics2D g = null;
+//        String filePath = selectedFile.getAbsolutePath();
+//
+//        if(filePath.endsWith(".svg")){
+//            g = new de.erichseifert.vectorgraphics2d.SVGGraphics2D(0.0, 0.0, target.getWidth(), target.getHeight());
+//        }else if(filePath.endsWith(".eps")){
+//            g = new de.erichseifert.vectorgraphics2d.EPSGraphics2D(0.0, 0.0, target.getWidth(), target.getHeight());
+//        }
+//        target.paintAll(g);
+//
+//        // Write the output to a file
+//        FileOutputStream file = new FileOutputStream(selectedFile);
+//        try {
+//            file.write(g.getBytes());
+//        } finally {
+//            file.close();
+//        }
+//
+//    }
 
     private static void exportScreenshotEpsGraphics(Component target, File selectedFile, boolean paintOffscreen) throws IOException{
 
