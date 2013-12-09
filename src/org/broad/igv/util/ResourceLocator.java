@@ -12,6 +12,7 @@ package org.broad.igv.util;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.gs.GSUtils;
+import org.broad.tribble.Tribble;
 
 import java.awt.*;
 import java.io.File;
@@ -385,14 +386,15 @@ public class ResourceLocator {
     /**
      *
      * @param locator
-     * @param indexExtension
      * @return  locator.getIndexPath() if not null, otherwise
      *          {@link #appendToPath(ResourceLocator, String)}
+     *          where the second argument is .idx or tbi, depending on the resource
      */
-    public static String indexFile(ResourceLocator locator, String indexExtension){
+    public static String indexFile(ResourceLocator locator){
         if(locator.getIndexPath() != null){
             return locator.getIndexPath();
         }
+        String indexExtension = locator.getPath().toLowerCase().endsWith(".gz") ? ".tbi" : Tribble.STANDARD_INDEX_EXTENSION;
         return appendToPath(locator, indexExtension);
     }
 

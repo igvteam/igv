@@ -63,7 +63,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
     public static TribbleFeatureSource getFeatureSource(ResourceLocator locator, Genome genome, boolean useCache) throws IOException, TribbleIndexNotFoundException {
 
         FeatureCodec codec = CodecFactory.getCodec(locator, genome);
-        String idxPath = ResourceLocator.indexFile(locator, Tribble.STANDARD_INDEX_EXTENSION);
+        String idxPath = ResourceLocator.indexFile(locator);
         boolean indexExists = false;
         try{
             indexExists = (new File(idxPath)).canRead();
