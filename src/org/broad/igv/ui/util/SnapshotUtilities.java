@@ -45,9 +45,6 @@ import java.lang.reflect.Constructor;
  */
 public class SnapshotUtilities {
 
-    /**
-     * Class logger
-     */
     private static Logger log = Logger.getLogger(SnapshotUtilities.class);
 
 
@@ -169,6 +166,11 @@ public class SnapshotUtilities {
 
     private static void exportScreenshotEpsGraphics(Component target, File selectedFile, boolean paintOffscreen) throws IOException{
 
+        if(!SnapshotUtilities.canExportScreenshotEps()){
+            log.error("ERROR: File extension EPS, but EPS Graphics library not available");
+            return;
+        }
+
         Graphics2D g = null;
         FileOutputStream fos = null;
         try{
@@ -216,7 +218,7 @@ public class SnapshotUtilities {
 //
 //    }
 
-    static boolean canExportScreenshotEps(){
+    public static boolean canExportScreenshotEps(){
         try {
             Class clazz = RuntimeUtils.loadClassForName(EPSClassName, null);
             return clazz != null;

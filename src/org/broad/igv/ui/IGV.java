@@ -1015,7 +1015,7 @@ public class IGV {
         try {
             token = WaitCursorManager.showWaitCursor();
             contentPane.getStatusBar().setMessage("Exporting image: " + defaultFile.getAbsolutePath());
-            createSnapshotNonInteractive(target, file, false);
+            String msg = createSnapshotNonInteractive(target, file, false);
         } catch (IOException e) {
             log.error("Error creating exporting image ", e);
             MessageUtils.showMessage(("Error creating the image file: " + defaultFile + "<br> "
@@ -1049,9 +1049,13 @@ public class IGV {
 
         String message;
         IOException exc = null;
-        // If valid extension
+
         if (type == SnapshotFileChooser.SnapshotFileType.NULL) {
             message = "ERROR: Unknown file extension " + extension;
+            log.error(message);
+            return message;
+        }else if(type == SnapshotFileChooser.SnapshotFileType.EPS && !SnapshotUtilities.canExportScreenshotEps()){
+            message = "ERROR: File extension EPS, but EPS Graphics library not available";
             log.error(message);
             return message;
         }
