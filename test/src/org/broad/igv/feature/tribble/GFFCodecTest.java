@@ -13,8 +13,7 @@ package org.broad.igv.feature.tribble;
 
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.BasicFeature;
-import org.broad.igv.feature.FeatureCodecParser;
-import org.broad.igv.feature.tribble.reader.TribbleFeatureReader;
+import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.GFFFeatureSource;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.util.ResourceLocator;
@@ -22,10 +21,7 @@ import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
 import org.junit.Test;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.util.Iterator;
-import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -66,15 +62,17 @@ public class GFFCodecTest extends AbstractHeadlessTest {
 
         String path = TestUtils.DATA_DIR + "gff/gffWithFasta.gff";
         final ResourceLocator locator = new ResourceLocator(path);
-        TribbleFeatureReader reader = new TribbleFeatureReader(locator, CodecFactory.getCodec(locator, null));
+
+        TribbleFeatureSource tribbleFeatureSource = TribbleFeatureSource.getFeatureSource(locator, genome);
+        FeatureSource source = new GFFFeatureSource(tribbleFeatureSource);
 
         int featureCount = 0;
-        Iterator<Feature> iter = reader.iterator();
+        Iterator<Feature> iter = source.getFeatures("chr7", 0, Integer.MAX_VALUE);
         while (iter.hasNext()) {
             BasicFeature bf = (BasicFeature) iter.next();
             featureCount++;
         }
-        assertEquals(20, featureCount);
+        assertEquals(2, featureCount);
 
     }
 }
