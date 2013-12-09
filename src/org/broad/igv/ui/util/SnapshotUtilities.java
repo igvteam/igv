@@ -225,7 +225,7 @@ public class SnapshotUtilities {
         } catch (InstantiationException e) {
             log.error(e.getMessage(), e);
         } catch (ClassNotFoundException e) {
-            log.warn("class not found " + EPSClassName);
+            log.trace("EPS class not found: " + EPSClassName);
         }
         return false;
     }
