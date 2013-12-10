@@ -64,13 +64,24 @@ public class MessageUtils {
             message = "<html>" + message.replaceAll("<html>", "");
             Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
             Color background = parent != null ? parent.getBackground() : Color.lightGray;
-            //So users can select text
+
+            //JEditorPane So users can select text
             JEditorPane content = new JEditorPane();
             content.setContentType("text/html");
             content.setText(message);
             content.setBackground(background);
             content.setEditable(false);
-            JOptionPane.showMessageDialog(parent, content);
+            Component dispMessage = content;
+
+            //Really long messages should be scrollable
+            if(message.length() > 200){
+                Dimension size = new Dimension(1000, content.getHeight());
+                content.setPreferredSize(size);
+                JScrollPane pane = new JScrollPane(content);
+                dispMessage = pane;
+            }
+
+            JOptionPane.showMessageDialog(parent, dispMessage);
         }
     }
 
