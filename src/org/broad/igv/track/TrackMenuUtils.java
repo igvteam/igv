@@ -318,26 +318,26 @@ public class TrackMenuUtils {
             menu.add(getShowSortFramesItem(tracks.iterator().next()));
         }
 
-        if(Globals.isDevelopment()){
-            final List<DataTrack> dataTrackList = Lists.newArrayList(Iterables.filter(tracks, DataTrack.class));
-            final JMenuItem overlayGroups = new JMenuItem("Create Overlay Track");
-            overlayGroups.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    MergedTracks mergedTracks = new MergedTracks(UUID.randomUUID().toString(), "Overlay", dataTrackList);
+        //Add overlay track option
+        final List<DataTrack> dataTrackList = Lists.newArrayList(Iterables.filter(tracks, DataTrack.class));
+        final JMenuItem overlayGroups = new JMenuItem("Create Overlay Track");
+        overlayGroups.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MergedTracks mergedTracks = new MergedTracks(UUID.randomUUID().toString(), "Overlay", dataTrackList);
 
-                    Track firstTrack = tracks.iterator().next();
-                    TrackPanel panel = TrackPanel.getParentPanel(firstTrack);
-                    panel.addTrack(mergedTracks);
-                    panel.moveSelectedTracksTo(Arrays.asList(mergedTracks), firstTrack, false);
-                    panel.removeTracks(tracks);
-                }
-            });
+                Track firstTrack = tracks.iterator().next();
+                TrackPanel panel = TrackPanel.getParentPanel(firstTrack);
+                panel.addTrack(mergedTracks);
+                panel.moveSelectedTracksTo(Arrays.asList(mergedTracks), firstTrack, false);
+                panel.removeTracks(tracks);
+            }
+        });
 
-            int numDataTracks = dataTrackList.size();
-            overlayGroups.setEnabled(numDataTracks >= 2 && numDataTracks == tracks.size());
-            menu.add(overlayGroups);
-        }
+        int numDataTracks = dataTrackList.size();
+        overlayGroups.setEnabled(numDataTracks >= 2 && numDataTracks == tracks.size());
+        menu.add(overlayGroups);
+        /////////////
 
     }
 
