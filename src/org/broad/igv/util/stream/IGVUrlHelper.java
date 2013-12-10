@@ -44,9 +44,9 @@ public class IGVUrlHelper implements URLHelper {
     private static Map<URL, Long> contentLengths = new HashMap<URL, Long>();
 
     public long getContentLength() throws IOException {
-        if(contentLengths.containsKey(url)){
+        if (contentLengths.containsKey(url)) {
             return contentLengths.get(url);
-        }else{
+        } else {
             long length = HttpUtils.getInstance().getContentLength(url);
             contentLengths.put(url, length);
             return length;
@@ -70,8 +70,9 @@ public class IGVUrlHelper implements URLHelper {
     /**
      * Add query parameters which should more properly be in Range header field
      * to query string
+     *
      * @param start start byte
-     * @param end end byte
+     * @param end   end byte
      * @throws MalformedURLException
      */
     private URL addStartEndQueryString(long start, long end) throws MalformedURLException {
@@ -83,11 +84,11 @@ public class IGVUrlHelper implements URLHelper {
         String[] parts = surl.split("\\?", 2);
         //TODO For now only mess with the string if we already have query parameters
         //nurl = String.format("%s?%s", parts[0], toadd);
-        if(parts.length == 2){
+        if (parts.length == 2) {
             nurl = String.format("%s?%s", parts[0], toadd);
             nurl += "&" + parts[1];
         }
-        if(log.isTraceEnabled()){
+        if (log.isTraceEnabled()) {
             log.trace("old url: " + surl);
             log.trace("new url: " + nurl);
         }

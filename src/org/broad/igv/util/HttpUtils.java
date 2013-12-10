@@ -232,9 +232,16 @@ public class HttpUtils {
     }
 
     public String getHeaderField(URL url, String key) throws IOException {
-        HttpURLConnection conn = openConnection(url, null, "HEAD");
-        if (conn == null) return null;
-        return conn.getHeaderField(key);
+        try {
+            HttpURLConnection conn = openConnection(url, null, "HEAD");
+            if (conn == null) return null;
+            return conn.getHeaderField(key);
+        } catch (IOException e) {
+            log.info("HEAD request failed for " + key + "  url:" + url.getPath() + ".  Trying GET");
+            HttpURLConnection conn = openConnection(url, null, "GET");
+            if (conn == null) return null;
+            return conn.getHeaderField(key);
+        }
     }
 
     public long getLastModified(URL url) throws IOException {
@@ -245,11 +252,16 @@ public class HttpUtils {
 
     public long getContentLength(URL url) throws IOException {
 
-        String contentLengthString = getHeaderField(url, "Content-Length");
-        if (contentLengthString == null) {
+        try {
+            String contentLengthString = getHeaderField(url, "Content-Length");
+            if (contentLengthString == null) {
+                return -1;
+            } else {
+                return Long.parseLong(contentLengthString);
+            }
+        } catch (Exception e) {
+            log.error("Error fetching content length", e);
             return -1;
-        } else {
-            return Long.parseLong(contentLengthString);
         }
     }
 
@@ -739,7 +751,8 @@ public class HttpUtils {
                                 }
                             }
                         } else {
-                            // Too small a sample to test, return "true" but don't record this host as tested.
+                            // Too small a sample to test, or unknown content length.  Return "true" but don't record
+                            // this host as tested.
                             return true;
                         }
                     }
