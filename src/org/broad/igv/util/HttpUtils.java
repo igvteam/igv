@@ -15,7 +15,6 @@ import biz.source_code.base64Coder.Base64Coder;
 import net.sf.samtools.seekablestream.SeekableStream;
 import net.sf.samtools.util.ftp.FTPClient;
 import net.sf.samtools.util.ftp.FTPStream;
-import org.broad.igv.util.ftp.FTPUtils;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.HttpDate;
 import org.broad.igv.Globals;
@@ -25,6 +24,7 @@ import org.broad.igv.gs.GSUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.CancellableProgressDialog;
 import org.broad.igv.ui.util.ProgressMonitor;
+import org.broad.igv.util.ftp.FTPUtils;
 import org.broad.igv.util.stream.IGVSeekableHTTPStream;
 import org.broad.igv.util.stream.IGVUrlHelper;
 
@@ -222,7 +222,7 @@ public class HttpUtils {
             return FTPUtils.resourceAvailable(url);
         } else {
             try {
-                HttpURLConnection conn = openConnection(url, null, "HEAD");
+                HttpURLConnection conn = openConnectionHeadOrGet(url);
                 int code = conn.getResponseCode();
                 return code >= 200 && code < 300;
             } catch (IOException e) {
@@ -231,21 +231,30 @@ public class HttpUtils {
         }
     }
 
-    public String getHeaderField(URL url, String key) throws IOException {
+    /**
+     * First tries a HEAD request, then a GET request if the HEAD fails.
+     * If the GET fails, the exception is thrown
+     * @param url
+     * @return
+     * @throws IOException
+     */
+    private HttpURLConnection openConnectionHeadOrGet(URL url) throws IOException{
         try {
-            HttpURLConnection conn = openConnection(url, null, "HEAD");
-            if (conn == null) return null;
-            return conn.getHeaderField(key);
+            return openConnection(url, null, "HEAD");
         } catch (IOException e) {
-            log.info("HEAD request failed for " + key + "  url:" + url.getPath() + ".  Trying GET");
-            HttpURLConnection conn = openConnection(url, null, "GET");
-            if (conn == null) return null;
-            return conn.getHeaderField(key);
+            log.info("HEAD request failed for url:" + url.getPath() + ".  Trying GET");
+            return openConnection(url, null, "GET");
         }
     }
 
+    public String getHeaderField(URL url, String key) throws IOException {
+        HttpURLConnection conn = openConnectionHeadOrGet(url);
+        if(conn == null) return null;
+        return conn.getHeaderField(key);
+    }
+
     public long getLastModified(URL url) throws IOException {
-        HttpURLConnection conn = openConnection(url, null, "HEAD");
+        HttpURLConnection conn = openConnectionHeadOrGet(url);
         if (conn == null) return 0;
         return conn.getLastModified();
     }
