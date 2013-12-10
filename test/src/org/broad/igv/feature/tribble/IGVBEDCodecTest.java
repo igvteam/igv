@@ -21,6 +21,7 @@ import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -31,8 +32,10 @@ import static org.junit.Assert.assertTrue;
  * User: jacob
  * Date: 2012-Dec-11
  */
+@Ignore("No Runnable Tests")
 public class IGVBEDCodecTest extends AbstractHeadlessTest {
 
+    @Ignore("We always ignore this test anyway, performance not consistent")
     @Test
     public void decodeSpeedTest() throws Exception {
         long benchTime = TestUtils.getBenchmarkTime();
