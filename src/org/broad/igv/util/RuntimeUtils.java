@@ -232,14 +232,24 @@ public class RuntimeUtils {
         return constructor.newInstance();
     }
 
+    /**
+     * Return an array of jar files in the plugin directory.
+     * Never returns null, only empty array
+     * @return
+     */
     public static File[] getPluginJars(){
         File builtinDir = new File(DirectoryManager.getIgvDirectory(), "plugins/");
-        return builtinDir.listFiles(new FilenameFilter() {
+        File[] pluginJars =  builtinDir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
                 return name.toLowerCase().endsWith(".jar");
             }
         });
+
+        if(pluginJars == null){
+            pluginJars = new File[0];
+        }
+        return pluginJars;
     }
 
     /**
@@ -247,9 +257,13 @@ public class RuntimeUtils {
      * This may not work on all systems, for security reasons
      */
     public static void loadPluginJars(){
-        for(File jar: getPluginJars()){
-            loadLibrary(jar);
+        File[] pluginJars = getPluginJars();
+        if(pluginJars != null){
+            for(File jar: pluginJars){
+                loadLibrary(jar);
+            }
         }
+
     }
 
     //Not sure about the security implications of this method
