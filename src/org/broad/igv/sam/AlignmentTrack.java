@@ -167,6 +167,22 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     private ColorTable readNamePalette;
 
+    private static AlignmentTrack.SortOption lastSortOption = null;
+    private static String lastSortTag = null;
+
+    public static void setLastSortOption(AlignmentTrack.SortOption sortOption, String tag) {
+        lastSortOption = sortOption;
+        lastSortTag = tag;
+    }
+
+    public static AlignmentTrack.SortOption getLastSortOption(){
+        return lastSortOption;
+    }
+
+    public static String getLastSortTag(){
+        return lastSortTag;
+    }
+
     /**
      * Create a new alignment track
      *
@@ -878,7 +894,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         dataManager.clear();
     }
 
-    private void refresh() {
+    public static void refresh() {
         IGV.getInstance().getContentPane().getMainPanel().invalidate();
         IGV.getInstance().repaintDataPanels();
     }
@@ -1185,6 +1201,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
     }
 
+    public static void sortAlignmentTracks(SortOption option, String tag){
+        IGV.getInstance().sortAlignmentTracks(option, tag);
+        setLastSortOption(option, tag);
+        refresh();
+    }
+
     class PopupMenu extends IGVPopupMenu {
 
         PopupMenu(final TrackClickEvent e) {
@@ -1449,9 +1471,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             mi.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
-                    IGV.getInstance().sortAlignmentTracks(option, null);
-                    refresh();
-
+                    sortAlignmentTracks(option, null);
                 }
             });
 
@@ -1491,8 +1511,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 public void actionPerformed(ActionEvent aEvt) {
                     String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getSortByTag());
                     renderOptions.setSortByTag(tag);
-                    IGV.getInstance().sortAlignmentTracks(SortOption.TAG, tag);
-                    refresh();
+                    sortAlignmentTracks(SortOption.TAG, tag);
                 }
             });
             sortMenu.add(tagOption);

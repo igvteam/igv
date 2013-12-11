@@ -20,6 +20,7 @@ import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
@@ -108,10 +109,12 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         final KeyStroke forwardKey1 = KeyStroke.getKeyStroke(KeyEvent.VK_OPEN_BRACKET, KeyEvent.META_DOWN_MASK, false);
         final KeyStroke forwardKey2 = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_DOWN_MASK, false);
 
-        final KeyStroke statusWindowKey = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK, false);
-        final KeyStroke scatterplotKey = KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_MASK, false);
+        //This was never implemented properly and now it seems pointless since we have the window on click
+        //final KeyStroke statusWindowKey = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK, false);
+        ////////////
 
-        //final KeyStroke sortByLast = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.ALT_DOWN_MASK, false);
+        final KeyStroke scatterplotKey = KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_MASK, false);
+        final KeyStroke sortByLastKey = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK, false);
 
         final Action toolAction = new EnableWrappedAction(new AbstractAction() {
             
@@ -215,6 +218,16 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
             }
         };
 
+        final Action sortByLastAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AlignmentTrack.SortOption option = AlignmentTrack.getLastSortOption();
+                if (option != null){
+                    AlignmentTrack.sortAlignmentTracks(option, AlignmentTrack.getLastSortTag());
+                }
+            }
+        };
+
         getInputMap().put(nextKey, "nextFeature");
         getActionMap().put("nextFeature", nextAction);
         getInputMap().put(prevKey, "prevFeature");
@@ -233,8 +246,8 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         getInputMap().put(regionCenterKey, "regionCenter");
         getActionMap().put("regionCenter", regionCenterAction);
 
-        getInputMap().put(statusWindowKey, "statusWindow");
-        getActionMap().put("statusWindow", statusWindowAction);
+        getInputMap().put(sortByLastKey, "sortByLast");
+        getActionMap().put("sortByLast", sortByLastAction);
 
         getInputMap().put(scatterplotKey, "scatterPlot");
         getActionMap().put("scatterPlot", scatterplotAction);
