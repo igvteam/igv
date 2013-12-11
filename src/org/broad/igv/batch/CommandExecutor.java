@@ -438,7 +438,9 @@ public class CommandExecutor {
         // Must decode URLs (local or remote), but leave local file paths only
         for (int ii = 0; ii < files.length; ii++) {
             files[ii] = decodeFileString(files[ii]);
-            indexFiles[ii] = decodeFileString(indexFiles[ii]);
+            if(indexFiles != null){
+                indexFiles[ii] = decodeFileString(indexFiles[ii]);
+            }
         }
 
         List<ResourceLocator> fileLocators = new ArrayList<ResourceLocator>();
