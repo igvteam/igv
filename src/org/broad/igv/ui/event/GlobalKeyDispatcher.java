@@ -90,8 +90,6 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         return false;
     }
 
-    // Here for convenience,  move out of this class eventually
-
     public void init() {
 
         final KeyStroke nextKey = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_MASK, false);
@@ -112,6 +110,8 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
 
         final KeyStroke statusWindowKey = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK, false);
         final KeyStroke scatterplotKey = KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_MASK, false);
+
+        //final KeyStroke sortByLast = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.ALT_DOWN_MASK, false);
 
         final Action toolAction = new EnableWrappedAction(new AbstractAction() {
             
@@ -232,10 +232,12 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         getActionMap().put("region", regionAction);
         getInputMap().put(regionCenterKey, "regionCenter");
         getActionMap().put("regionCenter", regionCenterAction);
+
         getInputMap().put(statusWindowKey, "statusWindow");
         getActionMap().put("statusWindow", statusWindowAction);
-        getInputMap().put(scatterplotKey, "statusWindow");
-        getActionMap().put("statusWindow", scatterplotAction);
+
+        getInputMap().put(scatterplotKey, "scatterPlot");
+        getActionMap().put("scatterPlot", scatterplotAction);
 
         getInputMap().put(backKey1, "back");
         getInputMap().put(backKey2, "back");
