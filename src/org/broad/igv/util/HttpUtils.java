@@ -372,6 +372,9 @@ public class HttpUtils {
             return null;
         } catch (NullPointerException e) {
             return null;
+        } catch (Exception e){
+            log.error(e.getMessage(), e);
+            return null;
         }
 
     }
