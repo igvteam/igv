@@ -15,20 +15,14 @@
  */
 package org.broad.igv.sam;
 
-import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
-import org.broad.igv.sam.reader.ReadGroupFilter;
-import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.TestUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -37,6 +31,77 @@ import static org.junit.Assert.*;
  * @author jrobinso
  */
 public class AlignmentTileLoaderTest extends AbstractHeadlessTest {
+
+
+    /**
+     * Test that sampling keeps pairs together. Note that this test requires a lot of memory (2Gb on this devs machine)
+     * Pairs are only definitely kept together if they end up on the same tile, so we need 1 big tile.
+     *
+     * @throws Exception
+     */
+    @Ignore
+    @Test
+    public void testKeepPairs() throws Exception {
+        String path = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.SOLID.bam";
+
+
+        String sequence = "1";
+        int start = 1;
+        int end = 2000;
+        int maxDepth = 2;
+        String max_vis = PreferenceManager.getInstance().get(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
+        PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "" + (end - start));
+
+        try {
+            ResourceLocator loc = new ResourceLocator(path);
+            AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
+            AlignmentTileLoader loader = new AlignmentTileLoader(reader);
+
+            AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions();
+
+            AlignmentTileLoader.AlignmentTile tile = loader.loadTile(sequence, start, end, null, downsampleOptions, null, null, null);
+            List<Alignment> alignments = tile.getAlignments();
+            int count = 0;
+            Map<String, Integer> pairedReads = new HashMap<String, Integer>();
+            for(Alignment al: alignments) {
+                assertNotNull(al);
+                count++;
+
+                if (al.isPaired() && al.getMate().isMapped()) {
+                    //Mate may not be part of the query.
+                    //Make sure it's within bounds
+                    int mateStart = al.getMate().getStart();
+                    //All we require is some overlap
+                    boolean overlap = mateStart >= start && mateStart < end;
+                    if (overlap) {
+                        Integer rdCnt = pairedReads.get(al.getReadName());
+                        rdCnt = rdCnt != null ? rdCnt + 1 : 1;
+                        pairedReads.put(al.getReadName(), rdCnt);
+                    }
+                }
+            }
+
+            assertTrue(count > 0);
+
+            //Note: CachingQueryReader will not line alignments up properly if they land in different tiles
+            int countmissing = 0;
+            for (String readName : pairedReads.keySet()) {
+                int val = pairedReads.get(readName);
+                countmissing += 2 == val ? 0 : 1;
+                if (val != 2) {
+                    System.out.println("Read " + readName + " has val " + val);
+                }
+            }
+
+            //System.out.println("Number of paired reads: " + pairedReads.size());
+            assertTrue("No pairs in test data set", pairedReads.size() > 0);
+            assertEquals("Missing " + countmissing + " out of " + pairedReads.size() + " pairs", 0, countmissing);
+        } catch (Exception e) {
+            PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, max_vis);
+            throw e;
+        }
+
+    }
 
 
     public static void main(String[] args) {
