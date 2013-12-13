@@ -15,27 +15,17 @@
  */
 package org.broad.igv.sam;
 
-import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.sam.reader.AlignmentReader;
-import org.broad.igv.sam.reader.AlignmentReaderFactory;
-import org.broad.igv.sam.reader.ReadGroupFilter;
-import org.broad.igv.tools.IgvTools;
-import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.TestUtils;
 import org.junit.Ignore;
-import org.junit.Test;
 
-import java.io.IOException;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author jrobinso
  */
+@Ignore("The active tests in this class have been moved to AlignmentDataManagerTest")
 public class AlignmentIntervalLoaderTest extends AbstractHeadlessTest {
 
 
@@ -61,13 +51,6 @@ public class AlignmentIntervalLoaderTest extends AbstractHeadlessTest {
         long t4 = System.currentTimeMillis();
         System.out.println("Time for down sampling: " + (t4 - t3) + " mSec");
 
-    }
-
-    // NOTE: The active tests in this class have been moved to AlignmentDataManagerTest.
-
-    @Test
-    public void nullTest() {
-        assert(true == true);
     }
 
     /**
