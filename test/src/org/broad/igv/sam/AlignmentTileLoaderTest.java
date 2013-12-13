@@ -40,15 +40,14 @@ public class AlignmentTileLoaderTest extends AbstractHeadlessTest {
      *
      * @throws Exception
      */
-    @Ignore
     @Test
+    @Ignore("Not implemented yet")
     public void testKeepPairs() throws Exception {
-        String path = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.SOLID.bam";
-
+        String path = "http://1000genomes.s3.amazonaws.com/data/NA12878/high_coverage_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130520.bam";
 
         String sequence = "1";
-        int start = 1;
-        int end = 2000;
+        int start = 10000;
+        int end = 11000;
         int maxDepth = 2;
         String max_vis = PreferenceManager.getInstance().get(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
         PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "" + (end - start));
@@ -58,7 +57,7 @@ public class AlignmentTileLoaderTest extends AbstractHeadlessTest {
             AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
             AlignmentTileLoader loader = new AlignmentTileLoader(reader);
 
-            AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions();
+            AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions(true, 50, 100);
 
             AlignmentTileLoader.AlignmentTile tile = loader.loadTile(sequence, start, end, null, downsampleOptions, null, null, null);
             List<Alignment> alignments = tile.getAlignments();
@@ -84,7 +83,6 @@ public class AlignmentTileLoaderTest extends AbstractHeadlessTest {
 
             assertTrue(count > 0);
 
-            //Note: CachingQueryReader will not line alignments up properly if they land in different tiles
             int countmissing = 0;
             for (String readName : pairedReads.keySet()) {
                 int val = pairedReads.get(readName);

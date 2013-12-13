@@ -492,9 +492,19 @@ public class AlignmentDataManager implements IAlignmentDataManager{
 
         public DownsampleOptions() {
             PreferenceManager prefs = PreferenceManager.getInstance();
-            downsample = prefs.getAsBoolean(PreferenceManager.SAM_DOWNSAMPLE_READS);
-            sampleWindowSize = prefs.getAsInt(PreferenceManager.SAM_SAMPLING_WINDOW);
-            maxReadCount = prefs.getAsInt(PreferenceManager.SAM_SAMPLING_COUNT);
+            init(prefs.getAsBoolean(PreferenceManager.SAM_DOWNSAMPLE_READS),
+                 prefs.getAsInt(PreferenceManager.SAM_SAMPLING_WINDOW),
+                 prefs.getAsInt(PreferenceManager.SAM_SAMPLING_COUNT));
+        }
+
+        DownsampleOptions(boolean downsample, int sampleWindowSize, int maxReadCount){
+            init(downsample, sampleWindowSize, maxReadCount);
+        }
+
+        private void init(boolean downsample, int sampleWindowSize, int maxReadCount){
+            this.downsample = downsample;
+            this.sampleWindowSize = sampleWindowSize;
+            this.maxReadCount = maxReadCount;
         }
 
         public boolean isDownsample() {
