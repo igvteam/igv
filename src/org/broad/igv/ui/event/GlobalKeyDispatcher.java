@@ -15,6 +15,8 @@
  */
 package org.broad.igv.ui.event;
 
+import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
@@ -42,6 +44,8 @@ import java.util.List;
  * @author jrobinso
  */
 public class GlobalKeyDispatcher implements KeyEventDispatcher {
+
+    private static Logger log = Logger.getLogger(GlobalKeyDispatcher.class);
 
     private final InputMap keyStrokes = new InputMap();
     private final ActionMap actions = new ActionMap();
@@ -117,27 +121,27 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         final KeyStroke sortByLastKey = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK, false);
 
         final Action toolAction = new EnableWrappedAction(new AbstractAction() {
-            
+
             public void actionPerformed(ActionEvent e) {
                 IGV.getInstance().enableExtrasMenu();
             }
         });
 
         final Action statusWindowAction = new EnableWrappedAction(new AbstractAction() {
-            
+
             public void actionPerformed(ActionEvent e) {
                 IGV.getInstance().openStatusWindow();
             }
         });
 
         final Action nextAction = new EnableWrappedAction(new AbstractAction() {
-            
+
             public void actionPerformed(ActionEvent e) {
                 nextFeature(true);
             }
         });
         final Action prevAction = new EnableWrappedAction(new AbstractAction() {
-            
+
             public void actionPerformed(ActionEvent e) {
                 nextFeature(false);
             }
@@ -179,7 +183,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                 if (FrameManager.isGeneListMode()) {
                     return;
                 }
-                int center = (int)  FrameManager.getDefaultFrame().getCenter();
+                int center = (int) FrameManager.getDefaultFrame().getCenter();
                 RegionOfInterest regionOfInterest =
                         new RegionOfInterest(
                                 FrameManager.getDefaultFrame().getChrName(),
@@ -218,12 +222,19 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
             }
         };
 
-        final Action sortByLastAction = new AbstractAction() {
+        final Action sorAlignmentTracksAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                AlignmentTrack.SortOption option = AlignmentTrack.getLastSortOption();
-                if (option != null){
-                    AlignmentTrack.sortAlignmentTracks(option, AlignmentTrack.getLastSortTag());
+                String sortOptionString = PreferenceManager.getInstance().get(PreferenceManager.SAM_SORT_OPTION);
+                if (sortOptionString != null) {
+                    try {
+                        AlignmentTrack.SortOption option = AlignmentTrack.SortOption.valueOf(sortOptionString);
+                        String lastSortTag = PreferenceManager.getInstance().get(PreferenceManager.SAM_SORT_BY_TAG);
+                        IGV.getInstance().sortAlignmentTracks(option, lastSortTag);
+                        IGV.getInstance().repaintDataPanels();
+                    } catch (IllegalArgumentException e1) {
+                        log.error("Unrecognized sort option: " + sortOptionString);
+                    }
                 }
             }
         };
@@ -247,7 +258,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         getActionMap().put("regionCenter", regionCenterAction);
 
         getInputMap().put(sortByLastKey, "sortByLast");
-        getActionMap().put("sortByLast", sortByLastAction);
+        getActionMap().put("sortByLast", sorAlignmentTracksAction);
 
         getInputMap().put(scatterplotKey, "scatterPlot");
         getActionMap().put("scatterPlot", scatterplotAction);
@@ -407,14 +418,12 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
      * TODO I'm actually pretty sure this class doesn't do what it's intended to do,
      * but I just refactored it to condense code, there were no functional changes.
      * -JS
-     *
-     *
      */
-    private class EnableWrappedAction extends AbstractAction{
+    private class EnableWrappedAction extends AbstractAction {
 
         private Action action;
 
-        private EnableWrappedAction(Action action){
+        private EnableWrappedAction(Action action) {
             this.action = action;
         }
 

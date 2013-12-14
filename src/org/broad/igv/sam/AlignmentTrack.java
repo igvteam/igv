@@ -167,21 +167,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     private ColorTable readNamePalette;
 
-    private static AlignmentTrack.SortOption lastSortOption = null;
-    private static String lastSortTag = null;
-
-    public static void setLastSortOption(AlignmentTrack.SortOption sortOption, String tag) {
-        lastSortOption = sortOption;
-        lastSortTag = tag;
-    }
-
-    public static AlignmentTrack.SortOption getLastSortOption(){
-        return lastSortOption;
-    }
-
-    public static String getLastSortTag(){
-        return lastSortTag;
-    }
 
     /**
      * Create a new alignment track
@@ -1201,9 +1186,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
     }
 
-    public static void sortAlignmentTracks(SortOption option, String tag){
+    public static void sortAlignmentTracks(SortOption option, String tag) {
         IGV.getInstance().sortAlignmentTracks(option, tag);
-        setLastSortOption(option, tag);
+        final PreferenceManager prefMgr = PreferenceManager.getInstance();
+        prefMgr.put(PreferenceManager.SAM_SORT_OPTION, option.toString());
+        prefMgr.put(PreferenceManager.SAM_SORT_BY_TAG, tag);
         refresh();
     }
 
@@ -2023,7 +2010,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             }
 
             final String seq = alignment.getReadSequence();
-            if(seq == null) {
+            if (seq == null) {
                 item.setEnabled(false);
                 return;
 
@@ -2050,7 +2037,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             }
 
             final String seq = alignment.getReadSequence();
-            if(seq == null) {
+            if (seq == null) {
                 item.setEnabled(false);
                 return;
 

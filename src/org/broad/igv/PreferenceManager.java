@@ -93,6 +93,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_SAMPLING_COUNT = "SAM.MAX_LEVELS"; // Sampling count
     public static final String SAM_SAMPLING_WINDOW = "SAM.SAMPLING_WINDOW";
     public static final String SAM_DOWNSAMPLE_READS = "SAM.DOWNSAMPLE_READS";
+    public static final String SAM_SORT_OPTION = "SAM>SORT_OPTION";
 
     public static final String SAM_COLOR_BY = "SAM.COLOR_BY";
     public static final String SAM_COLOR_BY_TAG = "SAM.COLOR_BY_TAG";
@@ -992,6 +993,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_COUNT_DELETED_BASES_COVERED, "false");
         defaultValues.put(SAM_FLAG_LARGE_INSERTIONS, "false");
         defaultValues.put(SAM_LARGE_INSERTIONS_THRESHOLD, "1");
+        defaultValues.put(SAM_SORT_OPTION, "NUCELOTIDE");
 
         defaultValues.put(NORMALIZE_COVERAGE, "false");
 
