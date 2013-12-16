@@ -11,7 +11,6 @@
 
 package org.broad.igv.sam;
 
-
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
@@ -294,6 +293,8 @@ public class AlignmentTileLoader {
         private SpliceJunctionHelper spliceJunctionHelper;
         private boolean isPairedEnd;
 
+        private static final Random RAND = new Random();
+
         private boolean downsample;
         private int samplingWindowSize;
         private int samplingDepth;
@@ -301,6 +302,7 @@ public class AlignmentTileLoader {
         //private SamplingBucket currentSamplingBucket;
         private int currentSamplingWindowStart = -1;
         private int curEffSamplingWindowDepth = 0;
+        private DownsampledInterval currentDownsampledInterval;
 
         /**
          * We keep a data structure of alignments which can efficiently
@@ -308,17 +310,8 @@ public class AlignmentTileLoader {
          */
         IndexableMap<String, Alignment> imAlignments;
 
-        private static final Random RAND = new Random();
-
-        /**
-         * To make sure we downsample pairs together, we keep track of when an alignment
-         * is kept or not
-         */
-        //private Map<String, Boolean> readKeptAfterDownsampling = new HashMap<String, Boolean>();
-
         private int downsampledCount = 0;
         private int offset = 0;
-
 
         AlignmentTile(int start, int end,
                       SpliceJunctionHelper spliceJunctionHelper,
@@ -327,7 +320,7 @@ public class AlignmentTileLoader {
             this.start = start;
             this.end = end;
             alignments = new ArrayList(16000);
-            downsampledIntervals = new ArrayList();
+            downsampledIntervals = new ArrayList<DownsampledInterval>();
             long seed = System.currentTimeMillis();
             //System.out.println("seed: " + seed);
             RAND.setSeed(seed);
@@ -380,15 +373,18 @@ public class AlignmentTileLoader {
             }
 
             if (downsample) {
-                //TODO
-                downsampledIntervals = new ArrayList<DownsampledInterval>();
                 final int alignmentStart = alignment.getAlignmentStart();
                 int currentSamplingBucketEnd = currentSamplingWindowStart + samplingWindowSize;
                 if (currentSamplingWindowStart < 0 || alignmentStart >= currentSamplingBucketEnd) {
+                    if(currentDownsampledInterval != null) downsampledIntervals.add(currentDownsampledInterval);
+
                     curEffSamplingWindowDepth = 0;
                     downsampledCount = 0;
                     currentSamplingWindowStart = alignmentStart;
                     offset = imAlignments.size();
+
+                    currentSamplingBucketEnd = currentSamplingWindowStart + samplingWindowSize;
+                    currentDownsampledInterval = new DownsampledInterval(alignmentStart, currentSamplingBucketEnd, 0);
                 }
 
                 String readName = alignment.getReadName();
@@ -408,7 +404,7 @@ public class AlignmentTileLoader {
                         //We keep the alignment if it's mate is kept
                         imAlignments.append(readName, alignment);
                     }else{
-                        //pass
+                        currentDownsampledInterval.incCount();
                     }
                 }else{
                     if (curEffSamplingWindowDepth < samplingDepth) {
@@ -420,10 +416,12 @@ public class AlignmentTileLoader {
                             int rndInt = (int) (RAND.nextDouble() * (samplingDepth - 1));
                             int idx = offset + rndInt;
                             // Replace random record with this one
-                            imAlignments.replace(idx, readName, alignment);
+                            List<Alignment> removedValues = imAlignments.replace(idx, readName, alignment);
+                            incrementDownsampledIntervals(removedValues);
                         }else{
                             //Mark that record was not kept
                             imAlignments.markNull(readName);
+                            currentDownsampledInterval.incCount();
                         }
                         downsampledCount++;
                     }
@@ -434,6 +432,23 @@ public class AlignmentTileLoader {
             }
 
             alignment.finish();
+        }
+
+        private void incrementDownsampledIntervals(List<Alignment> removedValues) {
+            if(removedValues == null) return;
+            for(Alignment al: removedValues){
+                DownsampledInterval interval = findDownsampledInterval(al);
+                if(interval != null) interval.incCount();
+            }
+        }
+
+        private DownsampledInterval findDownsampledInterval(Alignment al){
+            for(DownsampledInterval interval: downsampledIntervals){
+                if(al.getStart() >= interval.getStart() && al.getStart() < interval.getEnd()){
+                    return interval;
+                }
+            }
+            return null;
         }
 
 //        private void emptyBucket() {
@@ -454,23 +469,6 @@ public class AlignmentTileLoader {
 //
 //            currentSamplingBucket = null;
 //
-//        }
-
-//        /**
-//         * Add readName to the map of kept readNames, or delete
-//         * it out of that map if the status is already marked (since we only ever see 2, after the 2nd we don't care)
-//         * @param readName
-//         * @param status
-//         */
-//        private void markReadKept(String readName, boolean status) {
-//            if(!isPairedEnd){
-//                return;
-//            }
-//            if(readKeptAfterDownsampling.containsKey(readName)){
-//                readKeptAfterDownsampling.remove(readName);
-//            }else{
-//                readKeptAfterDownsampling.put(readName, status);
-//            }
 //        }
 
         public List<Alignment> getAlignments() {
@@ -500,6 +498,15 @@ public class AlignmentTileLoader {
                         }
                     };
                     Collections.sort(this.alignments, alignmentSorter);
+
+                    //Only keep the intervals for which count > 0
+                    List<DownsampledInterval> tmp = new ArrayList<DownsampledInterval>(this.downsampledIntervals.size());
+                    for(DownsampledInterval interval: this.downsampledIntervals){
+                        if(interval.getCount() > 0){
+                            tmp.add(interval);
+                        }
+                    }
+                    this.downsampledIntervals = tmp;
                 }
                 finalizeSpliceJunctions();
                 counts.finish();
@@ -574,8 +581,8 @@ public class AlignmentTileLoader {
                 }
             }
 
-            public void markNull(K key){
-                map.put(key, null);
+            public List<V> markNull(K key){
+                return map.put(key, null);
             }
 
             private void addNewValueToMap(K key, V value){
@@ -595,16 +602,18 @@ public class AlignmentTileLoader {
              * @param value
              * @return Whether the replacement actually happened
              */
-            public void replace(int index, K key, V value){
+            public List<V> replace(int index, K key, V value){
                 checkSize(index);
                 K oldKey = list.get(index);
                 if(!oldKey.equals(key)){
                     //Remove the old key from map, and make sure nothing else gets put there
-                    markNull(oldKey);
+                    List<V> oldValue = markNull(oldKey);
                     addNewValueToMap(key, value);
                     list.set(index, key);
+                    return oldValue;
                 }else{
                     append(key, value);
+                    return null;
                 }
             }
 
