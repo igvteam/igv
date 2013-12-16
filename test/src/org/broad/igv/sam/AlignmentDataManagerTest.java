@@ -24,7 +24,10 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.Assert;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.rules.Timeout;
 
 import java.io.IOException;
 import java.util.*;
@@ -37,6 +40,9 @@ import static junit.framework.Assert.assertTrue;
  * Date: 2012-Jul-12
  */
 public class AlignmentDataManagerTest extends AbstractHeadlessTest {
+
+    @Rule
+    public TestRule testTimeout = new Timeout((int) 120e3);
 
     private static String frameName = "testFrame";
 
@@ -346,18 +352,22 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
     @Ignore
     @Test
     public void testQueryLargeFile2() throws Exception {
-        String path = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.454.bam";
+        String path = "http://1000genomes.s3.amazonaws.com/data/NA12878/high_coverage_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130520.bam";
 
         ResourceLocator loc = new ResourceLocator(path);
 
-        String sequence = "MT";
-        int start = 1000;
-        int end = 3000;
+        String sequence = "chrM";
+        int start = 0;
+        int end = 200;
 
+        System.gc();
+
+        long startTime = System.nanoTime();
         AlignmentDataManager manager = new AlignmentDataManager(loc, genome);
 
         AlignmentInterval interval = loadInterval(manager, sequence, start, end);
 
+        System.out.println("# of downsampled intervals: " + interval.getDownsampledIntervals().size());
         Iterator<Alignment> iter = interval.getAlignmentIterator();
 
         int count = 0;
@@ -367,6 +377,9 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
             assertTrue(al.getStart() <= end);
             assertTrue(al.getEnd() >= start);
         }
+        long endTime = System.nanoTime();
+        long total = endTime - startTime;
+        System.out.println(String.format("Total time: %2.2f sec, %d alignments kept\"", total * 1.0 / 1e9, count));
 
         Assert.assertTrue(count > 0);
     }
