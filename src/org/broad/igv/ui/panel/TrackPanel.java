@@ -344,7 +344,7 @@ public class TrackPanel extends IGVPanel {
         return foundTrack;
     }
 
-    public void removeTracks(Collection<Track> tracksToRemove) {
+    public void removeTracks(Collection<? extends Track> tracksToRemove) {
         for (TrackGroup tg : trackGroups) {
             tg.removeTracks(tracksToRemove);
         }

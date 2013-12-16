@@ -341,7 +341,7 @@ public class TrackGroup {
         Collections.sort(tracks, c);
     }
 
-    public void removeTracks(Collection<Track> tracksToRemove) {
+    public void removeTracks(Collection<? extends Track> tracksToRemove) {
         tracks.removeAll(tracksToRemove);
     }
 

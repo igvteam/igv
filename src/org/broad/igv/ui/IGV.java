@@ -2109,7 +2109,7 @@ public class IGV {
     }
 
 
-    public void removeTracks(Collection<Track> tracksToRemove) {
+    public void removeTracks(Collection<? extends Track> tracksToRemove) {
 
         // Make copy of list as we will be modifying the original in the loop
         List<TrackPanel> panels = getTrackPanels();

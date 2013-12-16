@@ -307,25 +307,16 @@ public class TrackMenuUtils {
 
         menu.add(getAutoscaleItem(tracks));
 
-
         menu.add(getShowDataRangeItem(tracks));
 
-        menu.addSeparator();
-        menu.add(getChangeKMPlotItem(tracks));
-
-        if (Globals.isDevelopment() && FrameManager.isGeneListMode() && tracks.size() == 1) {
-            menu.addSeparator();
-            menu.add(getShowSortFramesItem(tracks.iterator().next()));
-        }
-
         //Add overlay track option
+        menu.addSeparator();
         final List<DataTrack> dataTrackList = Lists.newArrayList(Iterables.filter(tracks, DataTrack.class));
         final JMenuItem overlayGroups = new JMenuItem("Create Overlay Track");
         overlayGroups.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 MergedTracks mergedTracks = new MergedTracks(UUID.randomUUID().toString(), "Overlay", dataTrackList);
-
                 Track firstTrack = tracks.iterator().next();
                 TrackPanel panel = TrackPanel.getParentPanel(firstTrack);
                 panel.addTrack(mergedTracks);
@@ -337,7 +328,41 @@ public class TrackMenuUtils {
         int numDataTracks = dataTrackList.size();
         overlayGroups.setEnabled(numDataTracks >= 2 && numDataTracks == tracks.size());
         menu.add(overlayGroups);
-        /////////////
+
+        // Enable "separateTracks" menu if selection is a single track, and that track is merged.
+
+        JMenuItem unmergeItem = new JMenuItem("Separate Tracks");
+        menu.add(unmergeItem);
+
+        Track firstTrack = tracks.iterator().next();
+        if(tracks.size() == 1 && firstTrack instanceof MergedTracks) {
+
+        unmergeItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Track firstTrack = tracks.iterator().next();
+                TrackPanel panel = TrackPanel.getParentPanel(firstTrack);
+                final MergedTracks mergedTracks = (MergedTracks) firstTrack;
+                mergedTracks.setTrackAlphas(255);
+                panel.addTracks(mergedTracks.getMemberTracks());
+                panel.moveSelectedTracksTo(mergedTracks.getMemberTracks(), mergedTracks, true);
+                IGV.getInstance().removeTracks(Arrays.asList(mergedTracks));
+            }
+        });
+        }
+        else {
+            unmergeItem.setEnabled(false);
+        }
+
+
+        menu.addSeparator();
+        menu.add(getChangeKMPlotItem(tracks));
+
+        if (Globals.isDevelopment() && FrameManager.isGeneListMode() && tracks.size() == 1) {
+            menu.addSeparator();
+            menu.add(getShowSortFramesItem(tracks.iterator().next()));
+        }
+
 
     }
 

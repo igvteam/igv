@@ -83,11 +83,11 @@ public class MergedTracks extends DataTrack{
     }
 
     @XmlElement(name = MEMBER_TRACK_TAG_NAME)
-    private Collection<DataTrack> getMemberTracks(){
+    Collection<DataTrack> getMemberTracks(){
         return this.memberTracks;
     }
 
-    private void setTrackAlphas(int alpha) {
+    public void setTrackAlphas(int alpha) {
         for(Track track: memberTracks){
             track.setColor(ColorUtilities.modifyAlpha(track.getColor(), alpha));
             track.setAltColor(ColorUtilities.modifyAlpha(track.getAltColor(), alpha));
@@ -259,19 +259,6 @@ public class MergedTracks extends DataTrack{
         }
 
         menu.addSeparator();
-
-        JMenuItem unmergeItem = new JMenuItem("Separate Tracks");
-        unmergeItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                TrackPanel panel = TrackPanel.getParentPanel(MergedTracks.this);
-                setTrackAlphas(255);
-                panel.addTracks(memberTracks);
-                panel.moveSelectedTracksTo(memberTracks, MergedTracks.this, true);
-                IGV.getInstance().removeTracks(selfAsList);
-            }
-        });
-        menu.add(unmergeItem);
 
         menu.add(TrackMenuUtils.getRemoveMenuItem(selfAsList));
 
