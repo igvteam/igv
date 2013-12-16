@@ -110,7 +110,8 @@ public class EncodeFileBrowser extends JDialog {
                             attributes.put(headers[i], value);
                         }
                     }
-                    records.add(new EncodeFileRecord(path, attributes));
+                    final EncodeFileRecord record = new EncodeFileRecord(path, attributes);
+                    if(record.hasMetaData()) records.add(record);
 
                 }
 

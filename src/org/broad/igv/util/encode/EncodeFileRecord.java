@@ -82,4 +82,15 @@ public class EncodeFileRecord {
         return trackName;
 
     }
+
+    /**
+     * Test if record has a eough of meta-data to be interpretable
+     *
+     * @return
+     */
+    public boolean hasMetaData() {
+
+        return  (attributes.containsKey("cell")) || (attributes.containsKey("antibody"));
+
+    }
 }
