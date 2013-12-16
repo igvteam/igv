@@ -380,14 +380,6 @@ public class AlignmentDataManager implements IAlignmentDataManager{
 
         List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();
 
-        // Since we (potentially) downsampled,  we need to sort
-        Comparator<Alignment> alignmentSorter = new Comparator<Alignment>() {
-            public int compare(Alignment alignment, Alignment alignment1) {
-                return alignment.getStart() - alignment1.getStart();
-            }
-        };
-        Collections.sort(alignments, alignmentSorter);
-
         Iterator<Alignment> iter = alignments.iterator();
 
         final AlignmentPacker alignmentPacker = new AlignmentPacker();

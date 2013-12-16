@@ -292,13 +292,32 @@ public class AlignmentTileLoader {
         private List<Alignment> alignments;
         private List<DownsampledInterval> downsampledIntervals;
         private SpliceJunctionHelper spliceJunctionHelper;
+        private boolean isPairedEnd;
 
         private boolean downsample;
         private int samplingWindowSize;
         private int samplingDepth;
-        private SamplingBucket currentSamplingBucket;
 
-        private static final Random RAND = new Random(System.currentTimeMillis());
+        //private SamplingBucket currentSamplingBucket;
+        private int currentSamplingWindowStart = -1;
+        private int curEffSamplingWindowDepth = 0;
+
+        /**
+         * We keep a data structure of alignments which can efficiently
+         * look up by string (read name) or index (for random replacement)
+         */
+        IndexableMap<String, Alignment> imAlignments;
+
+        private static final Random RAND = new Random();
+
+        /**
+         * To make sure we downsample pairs together, we keep track of when an alignment
+         * is kept or not
+         */
+        //private Map<String, Boolean> readKeptAfterDownsampling = new HashMap<String, Boolean>();
+
+        private int downsampledCount = 0;
+        private int offset = 0;
 
 
         AlignmentTile(int start, int end,
@@ -309,6 +328,9 @@ public class AlignmentTileLoader {
             this.end = end;
             alignments = new ArrayList(16000);
             downsampledIntervals = new ArrayList();
+            long seed = System.currentTimeMillis();
+            //System.out.println("seed: " + seed);
+            RAND.setSeed(seed);
 
             // Use a sparse array for large regions  (> 10 mb)
             if ((end - start) > 10000000) {
@@ -327,6 +349,10 @@ public class AlignmentTileLoader {
             this.samplingDepth = Math.max(1, downsampleOptions.getMaxReadCount());
 
             this.spliceJunctionHelper = spliceJunctionHelper;
+
+            if(this.downsample){
+                imAlignments = new IndexableMap<String, Alignment>(8000);
+            }
         }
 
         public int getStart() {
@@ -347,21 +373,62 @@ public class AlignmentTileLoader {
         public void addRecord(Alignment alignment) {
 
             counts.incCounts(alignment);
+            isPairedEnd |= alignment.isPaired();
 
             if (spliceJunctionHelper != null) {
                 spliceJunctionHelper.addAlignment(alignment);
             }
 
             if (downsample) {
+                //TODO
+                downsampledIntervals = new ArrayList<DownsampledInterval>();
                 final int alignmentStart = alignment.getAlignmentStart();
-                if (currentSamplingBucket == null || alignmentStart >= currentSamplingBucket.end) {
-                    if (currentSamplingBucket != null) {
-                        emptyBucket();
-                    }
-                    int end = alignmentStart + samplingWindowSize;
-                    currentSamplingBucket = new SamplingBucket(alignmentStart, end);
+                int currentSamplingBucketEnd = currentSamplingWindowStart + samplingWindowSize;
+                if (currentSamplingWindowStart < 0 || alignmentStart >= currentSamplingBucketEnd) {
+                    curEffSamplingWindowDepth = 0;
+                    downsampledCount = 0;
+                    currentSamplingWindowStart = alignmentStart;
+                    offset = imAlignments.size();
                 }
-                currentSamplingBucket.add(alignment);
+
+                String readName = alignment.getReadName();
+                //There are 3 possibilities: mate-kept, mate-rejected, mate-unknown (haven't seen, or non-paired reads)
+                //If we kept or rejected the mate, we do the same for this one
+                boolean hasRead = imAlignments.containsKey(readName);
+                if(hasRead){
+                    List<Alignment> mateAlignments = imAlignments.get(readName);
+                    boolean haveMate = false;
+                    if(mateAlignments != null){
+                        for(Alignment al: mateAlignments){
+                            ReadMate mate = al.getMate();
+                            haveMate |= mate.getChr().equals(alignment.getChr()) && mate.getStart() == alignment.getStart();
+                        }
+                    }
+                    if(haveMate){
+                        //We keep the alignment if it's mate is kept
+                        imAlignments.append(readName, alignment);
+                    }else{
+                        //pass
+                    }
+                }else{
+                    if (curEffSamplingWindowDepth < samplingDepth) {
+                        imAlignments.append(readName, alignment);
+                        curEffSamplingWindowDepth++;
+                    } else {
+                        double samplingProb = ((double) samplingDepth) / (samplingDepth + downsampledCount + 1);
+                        if (RAND.nextDouble() < samplingProb) {
+                            int rndInt = (int) (RAND.nextDouble() * (samplingDepth - 1));
+                            int idx = offset + rndInt;
+                            // Replace random record with this one
+                            imAlignments.replace(idx, readName, alignment);
+                        }else{
+                            //Mark that record was not kept
+                            imAlignments.markNull(readName);
+                        }
+                        downsampledCount++;
+                    }
+                }
+
             } else {
                 alignments.add(alignment);
             }
@@ -369,24 +436,42 @@ public class AlignmentTileLoader {
             alignment.finish();
         }
 
-        private void emptyBucket() {
-            if (currentSamplingBucket == null) {
-                return;
-            }
-            //List<Alignment> sampledRecords = sampleCurrentBucket();
-            for (Alignment alignment : currentSamplingBucket.getAlignments()) {
-                alignments.add(alignment);
-            }
+//        private void emptyBucket() {
+//            if (currentSamplingBucket == null) {
+//                return;
+//            }
+//            //List<Alignment> sampledRecords = sampleCurrentBucket();
+//            for (Alignment alignment : currentSamplingBucket.getAlignments()) {
+//                alignments.add(alignment);
+//
+//            }
+//
+//            if (currentSamplingBucket.isSampled()) {
+//                DownsampledInterval interval = new DownsampledInterval(currentSamplingBucket.start,
+//                        currentSamplingBucket.end, currentSamplingBucket.downsampledCount);
+//                downsampledIntervals.add(interval);
+//            }
+//
+//            currentSamplingBucket = null;
+//
+//        }
 
-            if (currentSamplingBucket.isSampled()) {
-                DownsampledInterval interval = new DownsampledInterval(currentSamplingBucket.start,
-                        currentSamplingBucket.end, currentSamplingBucket.downsampledCount);
-                downsampledIntervals.add(interval);
-            }
-
-            currentSamplingBucket = null;
-
-        }
+//        /**
+//         * Add readName to the map of kept readNames, or delete
+//         * it out of that map if the status is already marked (since we only ever see 2, after the 2nd we don't care)
+//         * @param readName
+//         * @param status
+//         */
+//        private void markReadKept(String readName, boolean status) {
+//            if(!isPairedEnd){
+//                return;
+//            }
+//            if(readKeptAfterDownsampling.containsKey(readName)){
+//                readKeptAfterDownsampling.remove(readName);
+//            }else{
+//                readKeptAfterDownsampling.put(readName, status);
+//            }
+//        }
 
         public List<Alignment> getAlignments() {
             return alignments;
@@ -404,9 +489,18 @@ public class AlignmentTileLoader {
             this.loaded = loaded;
 
             if (loaded) {
-                // Empty any remaining alignments in the current bucket
-                emptyBucket();
-                currentSamplingBucket = null;
+                //emptyBucket();
+                //If we downsampled,  we need to sort
+                if(downsample){
+                    this.alignments = imAlignments.getAllValues();
+
+                    Comparator<Alignment> alignmentSorter = new Comparator<Alignment>() {
+                        public int compare(Alignment alignment, Alignment alignment1) {
+                            return alignment.getStart() - alignment1.getStart();
+                        }
+                    };
+                    Collections.sort(this.alignments, alignmentSorter);
+                }
                 finalizeSpliceJunctions();
                 counts.finish();
             }
@@ -432,40 +526,144 @@ public class AlignmentTileLoader {
             return spliceJunctionHelper;
         }
 
+        /**
+         * Map-like structure designed to be accessible both by key, and by numeric index
+         * Multiple values are stored for each key, and a list is returned
+         * If the key for a value is set as null, nothing can be added
+         *
+         * Intended to support downsampling, where if a read name is added and then removed
+         * we don't want to add the read pair
+         * @param <K>
+         * @param <V>
+         */
+        private class IndexableMap<K, V>{
+            private HashMap<K, List<V>> map;
+            private List<K> list;
+
+            IndexableMap(int size){
+                this.map = new HashMap<K, List<V>>(size);
+                this.list = new ArrayList<K>(size);
+            }
+
+            public List<V> get(K key){
+                return map.get(key);
+            }
+
+//
+//            public V get(int index){
+//                checkSize(index);
+//                return map.get(list.get(index));
+//            }
+
+            /**
+             * Append a value for the specified key, unless
+             * the current value is null. If the current value is
+             * null, it's a no-op.
+             * @param key
+             * @param value
+             * @return Whether the element was added
+             */
+            public boolean append(K key, V value){
+                if(!map.containsKey(key)){
+                    addNewValueToMap(key, value);
+                    return list.add(key);
+                }else{
+                    List<V> curList = map.get(key);
+                    if(curList == null) return false;
+                    return curList.add(value);
+                }
+            }
+
+            public void markNull(K key){
+                map.put(key, null);
+            }
+
+            private void addNewValueToMap(K key, V value){
+                List<V> curList = new ArrayList<V>(1);
+                curList.add(value);
+                map.put(key, curList);
+            }
+
+            /**
+             * Place the specified {@code key} and {@code value} in the map,
+             * at index {@code index}.
+             *
+             * In the unlikely event that {@code key} is already
+             * at {@code index}, {@code value} will be appended
+             * @param index
+             * @param key
+             * @param value
+             * @return Whether the replacement actually happened
+             */
+            public void replace(int index, K key, V value){
+                checkSize(index);
+                K oldKey = list.get(index);
+                if(!oldKey.equals(key)){
+                    //Remove the old key from map, and make sure nothing else gets put there
+                    markNull(oldKey);
+                    addNewValueToMap(key, value);
+                    list.set(index, key);
+                }else{
+                    append(key, value);
+                }
+            }
+
+            public int size(){
+                return list.size();
+            }
+
+            private void checkSize(int index){
+                if(index >= size()){
+                    throw new IllegalArgumentException("index " + index + " greater than current size" + size());
+                }
+            }
+
+            public List<V> getAllValues() {
+                List<V> allValues = new ArrayList<V>(2*size());
+                for(K k: list){
+                    allValues.addAll(map.get(k));
+                }
+                return allValues;
+            }
+
+            public boolean containsKey(K key) {
+                return map.containsKey(key);
+            }
+        }
+
 
         private class SamplingBucket {
             int start;
             int end;
             int downsampledCount = 0;
-            List<Alignment> alignments;
-
+            //List<Alignment> alignments;
+            IndexableMap<String, Alignment> imAlignments;
 
             private SamplingBucket(int start, int end) {
                 this.start = start;
                 this.end = end;
-                alignments = new ArrayList(samplingDepth);
+                alignments = new ArrayList<Alignment>(samplingDepth);
+                //imAlignments = new IndexableMap<String, Alignment>(samplingDepth);
             }
 
 
             public void add(Alignment alignment) {
                 // If the current bucket is < max depth we keep it.  Otherwise,  keep with probability == samplingProb
-                if (alignments.size() < samplingDepth) {
-                    alignments.add(alignment);
+                if (imAlignments.size() < samplingDepth) {
+                    //alignments.add(alignment);
+                    //imAlignments.append(alignment.getReadName(), alignment);
                 } else {
                     double samplingProb = ((double) samplingDepth) / (samplingDepth + downsampledCount + 1);
                     if (RAND.nextDouble() < samplingProb) {
-                        int idx = (int) (RAND.nextDouble() * (alignments.size() - 1));
+                        int idx = (int) (RAND.nextDouble() * (imAlignments.size() - 1));
                         // Replace random record with this one
-                        alignments.set(idx, alignment);
+                        //Alignment oldVal = alignments.set(idx, alignment);
+                        imAlignments.replace(idx, alignment.getReadName(), alignment);
                     }
                     downsampledCount++;
 
                 }
 
-            }
-
-            public List<Alignment> getAlignments() {
-                return alignments;
             }
 
             public boolean isSampled() {
@@ -474,6 +672,11 @@ public class AlignmentTileLoader {
 
             public int getDownsampledCount() {
                 return downsampledCount;
+            }
+
+            public List<Alignment> getAlignments() {
+                return alignments;
+                //return imAlignments.getAllValues();
             }
         }
     }

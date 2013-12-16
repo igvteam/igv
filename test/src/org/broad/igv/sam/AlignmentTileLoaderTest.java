@@ -20,7 +20,6 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.util.ResourceLocator;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -41,12 +40,12 @@ public class AlignmentTileLoaderTest extends AbstractHeadlessTest {
      * @throws Exception
      */
     @Test
-    @Ignore("Not implemented yet")
+    //@Ignore("Not implemented yet")
     public void testKeepPairs() throws Exception {
         String path = "http://1000genomes.s3.amazonaws.com/data/NA12878/high_coverage_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130520.bam";
 
         String sequence = "1";
-        int start = 10000;
+        int start = 10000-1;
         int end = 11000;
         int maxDepth = 2;
         String max_vis = PreferenceManager.getInstance().get(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
@@ -72,7 +71,8 @@ public class AlignmentTileLoaderTest extends AbstractHeadlessTest {
                     //Make sure it's within bounds
                     int mateStart = al.getMate().getStart();
                     //All we require is some overlap
-                    boolean overlap = mateStart >= start && mateStart < end;
+                    boolean overlap = (mateStart + al.getReadSequence().length()) >= start && mateStart < end;
+                    overlap &= al.getMate().getChr().equals(al.getChr());
                     if (overlap) {
                         Integer rdCnt = pairedReads.get(al.getReadName());
                         rdCnt = rdCnt != null ? rdCnt + 1 : 1;
@@ -81,7 +81,7 @@ public class AlignmentTileLoaderTest extends AbstractHeadlessTest {
                 }
             }
 
-            assertTrue(count > 0);
+            assertTrue("No alignments loaded", count > 0);
 
             int countmissing = 0;
             for (String readName : pairedReads.keySet()) {
@@ -92,7 +92,7 @@ public class AlignmentTileLoaderTest extends AbstractHeadlessTest {
                 }
             }
 
-            //System.out.println("Number of paired reads: " + pairedReads.size());
+            System.out.println("Number of paired reads: " + pairedReads.size());
             assertTrue("No pairs in test data set", pairedReads.size() > 0);
             assertEquals("Missing " + countmissing + " out of " + pairedReads.size() + " pairs", 0, countmissing);
         } catch (Exception e) {
