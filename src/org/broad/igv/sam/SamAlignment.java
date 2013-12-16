@@ -148,7 +148,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
             String mateReferenceName = record.getMateReferenceName();
             String mateChr = genome == null ? mateReferenceName : genome.getChromosomeAlias(mateReferenceName);
             this.setMate(new ReadMate(mateChr,
-                    record.getMateAlignmentStart(),
+                    record.getMateAlignmentStart() - 1,
                     record.getMateNegativeStrandFlag(),
                     record.getMateUnmappedFlag()));
         }
