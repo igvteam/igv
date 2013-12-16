@@ -319,8 +319,7 @@ public class AlignmentTileLoader {
                       AlignmentTrack.BisulfiteContext bisulfiteContext) {
             this.start = start;
             this.end = end;
-            alignments = new ArrayList(16000);
-            downsampledIntervals = new ArrayList<DownsampledInterval>();
+            this.downsampledIntervals = new ArrayList<DownsampledInterval>();
             long seed = System.currentTimeMillis();
             //System.out.println("seed: " + seed);
             RAND.setSeed(seed);
@@ -345,6 +344,8 @@ public class AlignmentTileLoader {
 
             if(this.downsample){
                 imAlignments = new IndexableMap<String, Alignment>(8000);
+            }else{
+                alignments = new ArrayList<Alignment>(16000);
             }
         }
 
@@ -376,62 +377,80 @@ public class AlignmentTileLoader {
                 final int alignmentStart = alignment.getAlignmentStart();
                 int currentSamplingBucketEnd = currentSamplingWindowStart + samplingWindowSize;
                 if (currentSamplingWindowStart < 0 || alignmentStart >= currentSamplingBucketEnd) {
-                    if(currentDownsampledInterval != null) downsampledIntervals.add(currentDownsampledInterval);
-
-                    curEffSamplingWindowDepth = 0;
-                    downsampledCount = 0;
-                    currentSamplingWindowStart = alignmentStart;
-                    offset = imAlignments.size();
-
-                    currentSamplingBucketEnd = currentSamplingWindowStart + samplingWindowSize;
-                    currentDownsampledInterval = new DownsampledInterval(alignmentStart, currentSamplingBucketEnd, 0);
+                    setCurrentSamplingBucket(alignmentStart);
                 }
 
-                String readName = alignment.getReadName();
-                //There are 3 possibilities: mate-kept, mate-rejected, mate-unknown (haven't seen, or non-paired reads)
-                //If we kept or rejected the mate, we do the same for this one
-                boolean hasRead = imAlignments.containsKey(readName);
-                if(hasRead){
-                    List<Alignment> mateAlignments = imAlignments.get(readName);
-                    boolean haveMate = false;
-                    if(mateAlignments != null){
-                        for(Alignment al: mateAlignments){
-                            ReadMate mate = al.getMate();
-                            haveMate |= mate.getChr().equals(alignment.getChr()) && mate.getStart() == alignment.getStart();
-                        }
-                    }
-                    if(haveMate){
-                        //We keep the alignment if it's mate is kept
-                        imAlignments.append(readName, alignment);
-                    }else{
-                        currentDownsampledInterval.incCount();
-                    }
-                }else{
-                    if (curEffSamplingWindowDepth < samplingDepth) {
-                        imAlignments.append(readName, alignment);
-                        curEffSamplingWindowDepth++;
-                    } else {
-                        double samplingProb = ((double) samplingDepth) / (samplingDepth + downsampledCount + 1);
-                        if (RAND.nextDouble() < samplingProb) {
-                            int rndInt = (int) (RAND.nextDouble() * (samplingDepth - 1));
-                            int idx = offset + rndInt;
-                            // Replace random record with this one
-                            List<Alignment> removedValues = imAlignments.replace(idx, readName, alignment);
-                            incrementDownsampledIntervals(removedValues);
-                        }else{
-                            //Mark that record was not kept
-                            imAlignments.markNull(readName);
-                            currentDownsampledInterval.incCount();
-                        }
-                        downsampledCount++;
-                    }
-                }
+                attemptAddRecordDownsampled(alignment);
 
             } else {
                 alignments.add(alignment);
             }
 
             alignment.finish();
+        }
+
+        /**
+         * Attempt to add this alignment. The alignment is definitely added iff it's mate was added.
+         * If we haven't seen the mate, the record is added with some probability according to
+         * reservoir sampling
+         * @param alignment
+         */
+        private void attemptAddRecordDownsampled(Alignment alignment) {
+            String readName = alignment.getReadName();
+            //A simple way to turn off the mate-checking is to replace the read name with a random string
+            //so that there are no repeats
+            //readName = String.format("%s%d", readName, RAND.nextInt());
+
+            //There are 3 possibilities: mate-kept, mate-rejected, mate-unknown (haven't seen, or non-paired reads)
+            //If we kept or rejected the mate, we do the same for this one
+            boolean hasRead = imAlignments.containsKey(readName);
+            if(hasRead){
+                List<Alignment> mateAlignments = imAlignments.get(readName);
+                boolean haveMate = false;
+                if(mateAlignments != null){
+                    for(Alignment al: mateAlignments){
+                        ReadMate mate = al.getMate();
+                        haveMate |= mate.getChr().equals(alignment.getChr()) && mate.getStart() == alignment.getStart();
+                    }
+                }
+                if(haveMate){
+                    //We keep the alignment if it's mate is kept
+                    imAlignments.append(readName, alignment);
+                }else{
+                    currentDownsampledInterval.incCount();
+                }
+            }else{
+                if (curEffSamplingWindowDepth < samplingDepth) {
+                    imAlignments.append(readName, alignment);
+                    curEffSamplingWindowDepth++;
+                } else {
+                    double samplingProb = ((double) samplingDepth) / (samplingDepth + downsampledCount + 1);
+                    if (RAND.nextDouble() < samplingProb) {
+                        int rndInt = (int) (RAND.nextDouble() * (samplingDepth - 1));
+                        int idx = offset + rndInt;
+                        // Replace random record with this one
+                        List<Alignment> removedValues = imAlignments.replace(idx, readName, alignment);
+                        incrementDownsampledIntervals(removedValues);
+                    }else{
+                        //Mark that record was not kept
+                        imAlignments.markNull(readName);
+                        currentDownsampledInterval.incCount();
+                    }
+                    downsampledCount++;
+                }
+            }
+        }
+
+        private void setCurrentSamplingBucket(int alignmentStart) {
+            if(currentDownsampledInterval != null) downsampledIntervals.add(currentDownsampledInterval);
+
+            curEffSamplingWindowDepth = 0;
+            downsampledCount = 0;
+            currentSamplingWindowStart = alignmentStart;
+            offset = imAlignments.size();
+
+            int currentSamplingBucketEnd = currentSamplingWindowStart + samplingWindowSize;
+            currentDownsampledInterval = new DownsampledInterval(alignmentStart, currentSamplingBucketEnd, 0);
         }
 
         private void incrementDownsampledIntervals(List<Alignment> removedValues) {
@@ -451,25 +470,33 @@ public class AlignmentTileLoader {
             return null;
         }
 
-//        private void emptyBucket() {
-//            if (currentSamplingBucket == null) {
-//                return;
-//            }
-//            //List<Alignment> sampledRecords = sampleCurrentBucket();
-//            for (Alignment alignment : currentSamplingBucket.getAlignments()) {
-//                alignments.add(alignment);
-//
-//            }
-//
-//            if (currentSamplingBucket.isSampled()) {
-//                DownsampledInterval interval = new DownsampledInterval(currentSamplingBucket.start,
-//                        currentSamplingBucket.end, currentSamplingBucket.downsampledCount);
-//                downsampledIntervals.add(interval);
-//            }
-//
-//            currentSamplingBucket = null;
-//
-//        }
+        /**
+         * Sort the alignments by start position, and filter {@code downsampledIntervals}.
+         * This will have the same results as if no downsampling occurred, although will incur
+         * extra computational cost
+         *
+         */
+        private void sortFilterDownsampled() {
+            if((this.alignments == null || this.alignments.size() == 0) && this.downsample){
+                this.alignments = imAlignments.getAllValues();
+            }
+
+            Comparator<Alignment> alignmentSorter = new Comparator<Alignment>() {
+                public int compare(Alignment alignment, Alignment alignment1) {
+                    return alignment.getStart() - alignment1.getStart();
+                }
+            };
+            Collections.sort(this.alignments, alignmentSorter);
+
+            //Only keep the intervals for which count > 0
+            List<DownsampledInterval> tmp = new ArrayList<DownsampledInterval>(this.downsampledIntervals.size());
+            for(DownsampledInterval interval: this.downsampledIntervals){
+                if(interval.getCount() > 0){
+                    tmp.add(interval);
+                }
+            }
+            this.downsampledIntervals = tmp;
+        }
 
         public List<Alignment> getAlignments() {
             return alignments;
@@ -487,26 +514,9 @@ public class AlignmentTileLoader {
             this.loaded = loaded;
 
             if (loaded) {
-                //emptyBucket();
                 //If we downsampled,  we need to sort
                 if(downsample){
-                    this.alignments = imAlignments.getAllValues();
-
-                    Comparator<Alignment> alignmentSorter = new Comparator<Alignment>() {
-                        public int compare(Alignment alignment, Alignment alignment1) {
-                            return alignment.getStart() - alignment1.getStart();
-                        }
-                    };
-                    Collections.sort(this.alignments, alignmentSorter);
-
-                    //Only keep the intervals for which count > 0
-                    List<DownsampledInterval> tmp = new ArrayList<DownsampledInterval>(this.downsampledIntervals.size());
-                    for(DownsampledInterval interval: this.downsampledIntervals){
-                        if(interval.getCount() > 0){
-                            tmp.add(interval);
-                        }
-                    }
-                    this.downsampledIntervals = tmp;
+                    sortFilterDownsampled();
                 }
                 finalizeSpliceJunctions();
                 counts.finish();
@@ -555,12 +565,6 @@ public class AlignmentTileLoader {
             public List<V> get(K key){
                 return map.get(key);
             }
-
-//
-//            public V get(int index){
-//                checkSize(index);
-//                return map.get(list.get(index));
-//            }
 
             /**
              * Append a value for the specified key, unless
@@ -638,58 +642,10 @@ public class AlignmentTileLoader {
             public boolean containsKey(K key) {
                 return map.containsKey(key);
             }
+
         }
 
-
-        private class SamplingBucket {
-            int start;
-            int end;
-            int downsampledCount = 0;
-            //List<Alignment> alignments;
-            IndexableMap<String, Alignment> imAlignments;
-
-            private SamplingBucket(int start, int end) {
-                this.start = start;
-                this.end = end;
-                alignments = new ArrayList<Alignment>(samplingDepth);
-                //imAlignments = new IndexableMap<String, Alignment>(samplingDepth);
-            }
-
-
-            public void add(Alignment alignment) {
-                // If the current bucket is < max depth we keep it.  Otherwise,  keep with probability == samplingProb
-                if (imAlignments.size() < samplingDepth) {
-                    //alignments.add(alignment);
-                    //imAlignments.append(alignment.getReadName(), alignment);
-                } else {
-                    double samplingProb = ((double) samplingDepth) / (samplingDepth + downsampledCount + 1);
-                    if (RAND.nextDouble() < samplingProb) {
-                        int idx = (int) (RAND.nextDouble() * (imAlignments.size() - 1));
-                        // Replace random record with this one
-                        //Alignment oldVal = alignments.set(idx, alignment);
-                        imAlignments.replace(idx, alignment.getReadName(), alignment);
-                    }
-                    downsampledCount++;
-
-                }
-
-            }
-
-            public boolean isSampled() {
-                return downsampledCount > 0;
-            }
-
-            public int getDownsampledCount() {
-                return downsampledCount;
-            }
-
-            public List<Alignment> getAlignments() {
-                return alignments;
-                //return imAlignments.getAllValues();
-            }
-        }
     }
-
 
 }
 
