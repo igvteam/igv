@@ -299,9 +299,10 @@ public class AlignmentTileLoader {
         private int samplingWindowSize;
         private int samplingDepth;
 
-        //private SamplingBucket currentSamplingBucket;
         private int currentSamplingWindowStart = -1;
         private int curEffSamplingWindowDepth = 0;
+        //Although not strictly necessary, we keep track of the currentDownsampledInterval
+        //for easy incrementing
         private DownsampledInterval currentDownsampledInterval;
 
         /**
@@ -442,8 +443,6 @@ public class AlignmentTileLoader {
         }
 
         private void setCurrentSamplingBucket(int alignmentStart) {
-            if(currentDownsampledInterval != null) downsampledIntervals.add(currentDownsampledInterval);
-
             curEffSamplingWindowDepth = 0;
             downsampledCount = 0;
             currentSamplingWindowStart = alignmentStart;
@@ -451,23 +450,37 @@ public class AlignmentTileLoader {
 
             int currentSamplingBucketEnd = currentSamplingWindowStart + samplingWindowSize;
             currentDownsampledInterval = new DownsampledInterval(alignmentStart, currentSamplingBucketEnd, 0);
+            downsampledIntervals.add(currentDownsampledInterval);
         }
 
         private void incrementDownsampledIntervals(List<Alignment> removedValues) {
             if(removedValues == null) return;
             for(Alignment al: removedValues){
-                DownsampledInterval interval = findDownsampledInterval(al);
+                DownsampledInterval interval = findDownsampledInterval(al, downsampledIntervals.size() / 2);
                 if(interval != null) interval.incCount();
             }
         }
 
-        private DownsampledInterval findDownsampledInterval(Alignment al){
-            for(DownsampledInterval interval: downsampledIntervals){
-                if(al.getStart() >= interval.getStart() && al.getStart() < interval.getEnd()){
-                    return interval;
-                }
+        private DownsampledInterval findDownsampledInterval(Alignment al, int startInd) {
+            //Attempt to find by binary search
+            DownsampledInterval curInterval = downsampledIntervals.get(startInd);
+            if (al.getStart() >= curInterval.getStart() && al.getStart() < curInterval.getEnd()) {
+                //Found
+                return curInterval;
             }
-            return null;
+
+            int sz = downsampledIntervals.size();
+            int newStart = -1;
+            if(al.getStart() >= curInterval.getEnd()){
+                // startInd + (sz - startInd)/2 = (sz + startInd)/2
+                newStart = (sz + startInd)/2;
+            }else{
+                // startInd - (startInd)/2 = startInd/2
+                newStart = startInd/2;
+            }
+            //This would be infinite regress, we give up
+            if(newStart == startInd) return null;
+            return findDownsampledInterval(al, newStart);
         }
 
         /**
