@@ -180,6 +180,7 @@ public class AlignmentTileLoader {
                     if (memoryTooLow()) {
                         if(monitor != null) monitor.fireProgressChange(100);
                         cancelReaders();
+                        t.finish();
                         return t;        // <=  TODO need to cancel all readers
                     }
                 }
@@ -217,7 +218,7 @@ public class AlignmentTileLoader {
                     mappedMate.setMateSequence(mate.getReadSequence());
                 }
             }
-            t.setLoaded(true);
+            t.finish();
 
             return t;
 
@@ -492,6 +493,7 @@ public class AlignmentTileLoader {
         private void sortFilterDownsampled() {
             if((this.alignments == null || this.alignments.size() == 0) && this.downsample){
                 this.alignments = imAlignments.getAllValues();
+                imAlignments.clear();
             }
 
             Comparator<Alignment> alignmentSorter = new Comparator<Alignment>() {
@@ -519,21 +521,13 @@ public class AlignmentTileLoader {
             return downsampledIntervals;
         }
 
-        public boolean isLoaded() {
-            return loaded;
-        }
-
-        public void setLoaded(boolean loaded) {
-            this.loaded = loaded;
-
-            if (loaded) {
-                //If we downsampled,  we need to sort
-                if(downsample){
-                    sortFilterDownsampled();
-                }
-                finalizeSpliceJunctions();
-                counts.finish();
+        public void finish() {
+            //If we downsampled,  we need to sort
+            if (downsample) {
+                sortFilterDownsampled();
             }
+            finalizeSpliceJunctions();
+            counts.finish();
         }
 
         public AlignmentCounts getCounts() {
@@ -656,6 +650,10 @@ public class AlignmentTileLoader {
                 return map.containsKey(key);
             }
 
+            public void clear() {
+                map.clear();
+                list.clear();
+            }
         }
 
     }
