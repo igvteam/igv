@@ -2045,7 +2045,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         //---- proxyTypeCB ----
                         proxyTypeCB.setModel(new DefaultComboBoxModel(new String[] {
                             "HTTP",
-                            "SOCKS"
+                            "SOCKS",
+                            "DIRECT"
                         }));
                         proxyTypeCB.addActionListener(new ActionListener() {
                             @Override

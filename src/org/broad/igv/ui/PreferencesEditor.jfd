@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_51" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_65" class="java.beans.XMLDecoder"> 
  <object class="com.jformdesigner.model.FormModel"> 
   <void property="contentType"> 
    <string>form/swing</string> 
@@ -4963,6 +4963,9 @@
                   <void method="addElement"> 
                    <string>SOCKS</string> 
                   </void> 
+                  <void method="addElement"> 
+                   <string>DIRECT</string> 
+                  </void> 
                  </object> 
                 </void> 
                 <void property="name"> 
@@ -6590,6 +6593,12 @@
           </void> 
           <void property="name"> 
            <string>okButton</string> 
+          </void> 
+          <void method="auxiliary"> 
+           <void method="setProperty"> 
+            <string>JavaCodeGenerator.variableModifiers</string> 
+            <int>0</int> 
+           </void> 
           </void> 
           <void method="addEvent"> 
            <object class="com.jformdesigner.model.FormEvent"> 

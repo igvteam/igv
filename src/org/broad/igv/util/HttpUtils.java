@@ -349,7 +349,7 @@ public class HttpUtils {
         }
 
         String proxyTypeString = prefMgr.get(PreferenceManager.PROXY_TYPE, "HTTP");
-        Proxy.Type type = proxyTypeString.equals("SOCKS") ? Proxy.Type.SOCKS : Proxy.Type.HTTP;
+        Proxy.Type type = Proxy.Type.valueOf(proxyTypeString.trim().toUpperCase());
 
         proxySettings = new ProxySettings(useProxy, user, pw, auth, proxyHost, proxyPort, type);
     }
@@ -588,15 +588,23 @@ public class HttpUtils {
             url = new URL(newPath);
         }
 
-        Proxy sysProxy = getSystemProxy(url.toExternalForm());
-        boolean igvProxySettingsExist = proxySettings != null && proxySettings.useProxy && proxySettings.proxyHost != null && proxySettings.proxyPort > 0;
+        Proxy sysProxy = null;
+        boolean igvProxySettingsExist = proxySettings != null && proxySettings.useProxy;
+        //Only check for system proxy if igv proxy settings not found
+        if(!igvProxySettingsExist){
+            sysProxy = getSystemProxy(url.toExternalForm());
+        }
         boolean useProxy = sysProxy != null || igvProxySettingsExist;
 
         HttpURLConnection conn;
         if (useProxy) {
             Proxy proxy = sysProxy;
             if (igvProxySettingsExist) {
-                proxy = new Proxy(proxySettings.type, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
+                if(proxySettings.type == Proxy.Type.DIRECT){
+                    proxy = Proxy.NO_PROXY;
+                }else{
+                    proxy = new Proxy(proxySettings.type, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
+                }
             }
             conn = (HttpURLConnection) url.openConnection(proxy);
 
