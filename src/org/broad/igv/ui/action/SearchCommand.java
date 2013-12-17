@@ -44,7 +44,7 @@ import java.util.List;
  * <p/>
  * Note:  Currently the only recognized features are genes
  * <p/>
- * Custom searchers can be registered, see {@link #registerFeatureNameSearcher}
+ * Custom searchers can be registered, see {@link #registerNamedFeatureSearcher(org.broad.igv.dev.api.NamedFeatureSearcher)}
  *
  * @author jrobinso
  */
