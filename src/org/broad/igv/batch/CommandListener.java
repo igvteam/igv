@@ -24,7 +24,6 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.*;
 
@@ -302,7 +301,9 @@ public class CommandListener implements Runnable {
                 String name = params.get("name");
                 String locus = params.get("locus");
                 String index = params.get("index");
-                result = cmdExe.loadFiles(file, index, name, locus, merge, params);
+                String sort = params.get("sort");
+                String sortTag = params.get("sortTag");
+                result = cmdExe.loadFiles(file, index, name, locus, merge, params, sort, sortTag);
             } else {
                 return ("ERROR Parameter \"file\" is required");
             }

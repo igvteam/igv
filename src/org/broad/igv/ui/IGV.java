@@ -698,13 +698,13 @@ public class IGV {
      *
      * @param locators
      */
-    public void loadTracks(final Collection<ResourceLocator> locators) {
+    public Future loadTracks(final Collection<ResourceLocator> locators) {
 
         contentPane.getStatusBar().setMessage("Loading ...");
 
         log.debug("Run loadTracks");
 
-
+        Future toRet = null;
         if (locators != null && !locators.isEmpty()) {
 
             // NOTE:  this work CANNOT be done on the dispatch thread, it will potentially cause deadlock if
@@ -728,11 +728,10 @@ public class IGV {
                 }
             };
 
-            LongRunningTask.submit(runnable);
+            toRet = LongRunningTask.submit(runnable);
         }
-
         log.debug("Finish loadTracks");
-
+        return toRet;
     }
 
     /**

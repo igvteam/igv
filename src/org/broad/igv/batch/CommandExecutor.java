@@ -16,6 +16,9 @@
 
 package org.broad.igv.batch;
 
+import com.google.common.collect.Iterables;
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -28,6 +31,7 @@ import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.event.DataLoadedEvent;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.SnapshotUtilities;
@@ -523,36 +527,46 @@ public class CommandExecutor {
             igv.goToLocus(locus);
         }
 
-        if (sort != null){
-            final AlignmentTrack.SortOption sortOption;
-            try {
-                sortOption = AlignmentTrack.SortOption.valueOf(sort.trim().toUpperCase());
-                Runnable runnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            log.debug("starting sort runnable");
-                            //Waits until loading is finished
-                            Object res = loadTask.get();
-                            log.debug("loading finished, doing sort");
-                            igv.sortAlignmentTracks(sortOption, sortTag);
-                        } catch (InterruptedException e) {
-                            log.error(e.getMessage(), e);
-                        } catch (ExecutionException e) {
-                            log.error(e.getMessage(), e);
-                        }
-
-                    }
-                };
-                LongRunningTask.submit(runnable);
-            } catch (IllegalArgumentException e) {
-                log.error(e.getMessage(), e);
-                return "ERROR: UNKNOWN SORT PARAMETER " + sort;
-            }
-
+        if (sort != null) {
+            submitPerformSort(loadTask, sort, sortTag);
         }
 
         return "OK";
+    }
+
+    private void submitPerformSort(final Future loadTask, final String sort, final String sortTag) {
+        final AlignmentTrack.SortOption sortOption = getAlignmentSortOption(sort);
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    //We need to wait until the track is loaded. If loadTask is null,
+                    //it was loaded synchronously
+                    if(loadTask != null){
+                        Object res = loadTask.get();
+                    }
+                    //Thought we were done waiting, huh? Guess again
+                    //Alignment tracks load alignment data asynchronously from the track
+
+                    //Since sorting applies to all tracks, we only need to have 1 handler
+                    AlignmentTrack track = null;
+                    try {
+                        track = Iterables.filter(igv.getAllTracks(), AlignmentTrack.class).iterator().next();
+                        EventBus bus = track.getDataManager().getEventBus();
+                        bus.register(new SortAlignmentsHandler(igv, bus, sortOption, sortTag));
+                    } catch (NoSuchElementException e) {
+                        //No alignment tracks found.
+                        log.warn("Sort argument provided but no alignment tracks found");
+                    }
+                } catch (InterruptedException e) {
+                    log.error(e.getMessage(), e);
+                } catch (ExecutionException e) {
+                    log.error(e.getMessage(), e);
+                }
+
+            }
+        };
+        LongRunningTask.submit(runnable);
     }
 
     /**
@@ -799,5 +813,26 @@ public class CommandExecutor {
             return AlignmentTrack.GroupOption.READ_GROUP;
         }
         return AlignmentTrack.GroupOption.NONE;
+    }
+
+    private static class SortAlignmentsHandler{
+
+        private IGV igv = null;
+        private EventBus bus = null;
+        private AlignmentTrack.SortOption sortOption;
+        private String sortTag;
+
+        SortAlignmentsHandler(IGV igv, EventBus bus, AlignmentTrack.SortOption sortOption, String sortTag){
+            this.igv = igv;
+            this.bus = bus;
+            this.sortOption = sortOption;
+            this.sortTag = sortTag;
+        }
+
+        @Subscribe
+        public void received(DataLoadedEvent event){
+            igv.sortAlignmentTracks(sortOption, sortTag);
+            this.bus.unregister(this);
+        }
     }
 }
