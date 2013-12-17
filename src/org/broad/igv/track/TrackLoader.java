@@ -11,7 +11,6 @@
 
 package org.broad.igv.track;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.bbfile.BBFileReader;
@@ -33,7 +32,9 @@ import org.broad.igv.dev.db.SQLCodecSource;
 import org.broad.igv.dev.db.SampleInfoSQLReader;
 import org.broad.igv.dev.db.SegmentedSQLReader;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.CachingFeatureSource;
+import org.broad.igv.feature.GisticFileParser;
+import org.broad.igv.feature.MutationTrackLoader;
 import org.broad.igv.feature.dranger.DRangerParser;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -70,10 +71,8 @@ import org.broad.igv.variant.util.PedigreeUtils;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broadinstitute.variant.vcf.VCFHeader;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.*;
 
 /**
@@ -126,7 +125,7 @@ public class TrackLoader {
             LoadHandler handler = getTrackLoaderHandler(typeString);
             if (dbUrl != null) {
                 this.loadFromDatabase(locator, newTracks, genome);
-            } else if (CodecFactory.hasCodec(locator, genome)) {
+            } else if (CodecFactory.hasCodec(locator, genome) && !forceNotTribble(typeString)) {
                 loadTribbleFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".dbxml")) {
                 loadFromDBProfile(locator, newTracks);
@@ -249,6 +248,16 @@ public class TrackLoader {
             throw new DataLoadException(e.getMessage());
         }
 
+    }
+
+    private boolean forceNotTribble(String typeString) {
+        List<String> nonTribble = Arrays.asList("fpkm_tracking", "exp_diff", "_exp.diff");
+        for(String s: nonTribble){
+            if(typeString.endsWith(s)){
+                return true;
+            }
+        }
+        return false;
     }
 
 
