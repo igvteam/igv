@@ -49,7 +49,10 @@ public class VariantReviewDialog extends JDialog {
     private VariantContext variantContext;
     private String userName;
 
-    public VariantReviewDialog(Frame owner, VariantContext vc) {
+    //Path to spec file describing database
+    private String dbSpecPath;
+
+    public VariantReviewDialog(Frame owner, VariantContext vc, String dbSpecPath) {
         super(owner);
         initComponents();
 
@@ -57,6 +60,7 @@ public class VariantReviewDialog extends JDialog {
         genotypeTypeField.setModel(new DefaultComboBoxModel(GenotypeType.values()));
         this.variantContext = vc;
         this.userName = System.getProperty("user.name", "unknown");
+        this.dbSpecPath = dbSpecPath;
 
         initComponentData(vc);
     }
@@ -109,7 +113,7 @@ public class VariantReviewDialog extends JDialog {
         }
 
         MongoVariantContext mvc = VariantReviewSource.createMVC(allele0, allele1, callsetName, variantContext, truthStatus, isComplexEvent);
-        String errorMessage = addCall(VariantReviewPlugin.getDbSpecPath(), mvc);
+        String errorMessage = addCall(this.dbSpecPath, mvc);
 
         if (errorMessage != null) {
             MessageUtils.showErrorMessage(errorMessage, new IOException(errorMessage));

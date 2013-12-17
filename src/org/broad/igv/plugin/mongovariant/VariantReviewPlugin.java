@@ -14,13 +14,12 @@ package org.broad.igv.plugin.mongovariant;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.dev.api.IGVPlugin;
-import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackClickEvent;
-import org.broad.igv.track.TrackMenuItemBuilder;
-import org.broad.igv.track.TrackMenuUtils;
+import org.broad.igv.dev.api.LoadHandler;
+import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.PanelName;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.Utilities;
 import org.broad.igv.variant.Variant;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.vcf.VCFVariant;
@@ -30,8 +29,10 @@ import org.broadinstitute.variant.variantcontext.VariantContext;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * User: jacob
@@ -59,6 +60,8 @@ public class VariantReviewPlugin implements IGVPlugin{
             //not load plugin if it can't be loaded
             NA12878DBArgumentCollection col = new NA12878DBArgumentCollection();
             initMenuItems();
+
+            TrackLoader.registerHandler("variant.db.json", new TrackLoadHandler());
         }
     }
 
@@ -75,20 +78,24 @@ public class VariantReviewPlugin implements IGVPlugin{
         return (track instanceof VariantTrack);
     }
 
+    private static void loadVariantReviewTrack(String dbSpecPath,java.util.List<Track> newTracks, String trackName){
+        ResourceLocator locator = new ResourceLocator(dbSpecPath);
+        locator.setName(trackName);
+        VariantReviewSource.loadVariantReview(locator, newTracks);
+
+    }
+
     private void initMenuItems() {
 
         //Menu item for loading review track
         final JMenuItem loadReviewTrackItem = new JMenuItem("Load Review Track");
+
         loadReviewTrackItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 java.util.List<Track> newTracks = new ArrayList<Track>(1);
-                ResourceLocator locator = new ResourceLocator(VariantReviewPlugin.getDbSpecPath());
-                //TODO Put the track name in the dbSpec
-                locator.setName("NA12878 KB");
-                VariantReviewSource.loadVariantReview(locator, newTracks);
+                loadVariantReviewTrack(VariantReviewPlugin.getDbSpecPath(), newTracks, "NA12878 KB");
                 IGV.getInstance().addTracks(newTracks, PanelName.DATA_PANEL);
-
                 hasReviewTrack = true;
                 loadReviewTrackItem.setEnabled(!hasReviewTrack);
                 }
@@ -100,21 +107,20 @@ public class VariantReviewPlugin implements IGVPlugin{
         TrackMenuUtils.addTrackMenuItemBuilder(new TrackMenuItemBuilder() {
             @Override
             public JMenuItem build(Collection<Track> selectedTracks, TrackClickEvent te) {
-                //Not clear what to do with more than one track. Could be a bit nicer and only
-                //require 1 variant track
                 if(!isSingleVariantTrack(selectedTracks)){
                     return null;
                 }
                 Track track = selectedTracks.iterator().next();
-                VariantTrack vTrack = (VariantTrack) track;
+                final VariantTrack vTrack = (VariantTrack) track;
                 final Variant variant = vTrack.getSelectedVariant(te);
 
-                JMenuItem addReviewMenuItem = new JMenuItem("Submit Review to DB");
+                String dbName = vTrack.getResourceLocator().getName();
+                JMenuItem addReviewMenuItem = new JMenuItem("Submit Review to " + dbName);
                 addReviewMenuItem.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         VariantContext vc = VCFVariant.getVariantContext(variant);
-                        (new VariantReviewDialog(IGV.getMainFrame(), vc)).setVisible(true);
+                        (new VariantReviewDialog(IGV.getMainFrame(), vc, vTrack.getResourceLocator().getPath())).setVisible(true);
                     }
                 });
                 addReviewMenuItem.setEnabled(variant != null);
@@ -122,6 +128,8 @@ public class VariantReviewPlugin implements IGVPlugin{
             }
         });
     }
+
+    //All of this is is for loading from a db specified in the preferences / command line
 
     private static final String DB_PATH_KEY = "VARIANT_DB_PATH";
     public static final String DB_PATH_DEFAULT = NA12878DBArgumentCollection.DEFAULT_SPEC_PATH;
@@ -144,6 +152,20 @@ public class VariantReviewPlugin implements IGVPlugin{
             dbSpecPath = IGV.getPersistent(DB_PATH_KEY, DB_PATH_DEFAULT);
         }
         return dbSpecPath;
+    }
+
+    //------------//
+
+    //For loading from a spec file
+    private static class TrackLoadHandler implements LoadHandler{
+
+
+        @Override
+        public void load(String path, List<Track> newTracks) throws IOException {
+            //TODO Put the track name in the dbSpec
+            String name = Utilities.getFileNameFromURL(path);
+            loadVariantReviewTrack(path, newTracks, name);
+        }
     }
 
 }
