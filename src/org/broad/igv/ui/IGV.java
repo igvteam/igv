@@ -568,13 +568,13 @@ public class IGV {
 
                 if (selectedValues != null && selectedValues.size() >= 1) {
 
-                    if(selectedValues.size() == 1 && dialog.downloadSequence()){
+                    if (selectedValues.size() == 1 && dialog.downloadSequence()) {
                         GenomeListItem oldItem = selectedValues.get(0);
                         GenomeSelectionDialog.downloadGenome(getMainFrame(), oldItem);
                         selectedValues = new ArrayList<GenomeListItem>();
 
                         File newLocation = new File(DirectoryManager.getGenomeCacheDirectory().getAbsolutePath(), Utilities.getFileNameFromURL(oldItem.getLocation()));
-                        GenomeListItem newItem = new GenomeListItem(oldItem.getDisplayableName(), newLocation.getAbsolutePath(),oldItem.getId());
+                        GenomeListItem newItem = new GenomeListItem(oldItem.getDisplayableName(), newLocation.getAbsolutePath(), oldItem.getId());
                         selectedValues.add(newItem);
                     }
 
@@ -740,7 +740,7 @@ public class IGV {
      * changed.  Also record panel sizes
      *
      * @return A 2 element list: 0th element is a map from scrollpane -> number of tracks,
-     *         1st element is a map from scrollpane -> track height (in pixels)
+     * 1st element is a map from scrollpane -> track height (in pixels)
      */
     public List<Map<TrackPanelScrollPane, Integer>> getTrackPanelAttrs() {
         Map<TrackPanelScrollPane, Integer> trackCountMap = new HashMap();
@@ -1054,7 +1054,7 @@ public class IGV {
             message = "ERROR: Unknown file extension " + extension;
             log.error(message);
             return message;
-        }else if(type == SnapshotFileChooser.SnapshotFileType.EPS && !SnapshotUtilities.canExportScreenshotEps()){
+        } else if (type == SnapshotFileChooser.SnapshotFileType.EPS && !SnapshotUtilities.canExportScreenshotEps()) {
             message = "ERROR: File extension EPS, but EPS Graphics library not available";
             log.error(message);
             return message;
@@ -2480,61 +2480,57 @@ public class IGV {
                     String[] indexFiles = null;
                     if (igvArgs.getIndexFile() != null) {
                         indexFiles = igvArgs.getIndexFile().split(",");
-
                     }
+                    String[] coverageFiles = null;
+                    if (igvArgs.getCoverageFile() != null) {
+                        coverageFiles = igvArgs.getCoverageFile().split(",");
+                    }
+
 
                     List<ResourceLocator> locators = new ArrayList();
-                    int idx = 0;
-                    if (indexFiles != null && (dataFiles.length != indexFiles.length)) {
-                        log.error("Data and index file lists are different lengths." +
-                                "   Data file list = igvArgs.getDataFileString().  " +
-                                "   Index file list = " + igvArgs.getIndexFile());
-                        StringBuffer message = new StringBuffer();
-                        message.append("<html>Error: Data and index file lists are different lengths.");
-                        message.append("<br>Data file list:");
-                        for(String df : dataFiles) {
-                            message.append("<br>&nbsp;&nbsp;" + df);
+
+
+                    for (int i = 0; i < dataFiles.length; i++) {
+
+                        String p = dataFiles[i].trim();
+
+                        // Decode local file paths
+                        if (HttpUtils.isURL(p) && !FileUtils.isRemote(p)) {
+                            p = StringUtils.decodeURL(p);
                         }
-                        message.append("<br>Index file list:");
-                        for(String df : indexFiles) {
-                            message.append("<br>&nbsp;&nbsp;" + df);
+
+                        ResourceLocator rl = new ResourceLocator(p);
+
+                        if (names != null && i < names.length) {
+                            String name = names[i];
+                            rl.setName(name);
                         }
-                        JOptionPane.showMessageDialog(mainFrame, message);
 
-                    } else {
-                        for (int i = 0; i < dataFiles.length; i++) {
-
-                            String p = dataFiles[i].trim();
-
-                            // Decode local file paths
-                            if (HttpUtils.isURL(p) && !FileUtils.isRemote(p)) {
-                                p = StringUtils.decodeURL(p);
+                        //Set index file, iff one was passed
+                        if(indexFiles != null && i < indexFiles.length) {
+                            String idxP = indexFiles[i];
+                            if (HttpUtils.isURL(idxP) && !FileUtils.isRemote(idxP)) {
+                                idxP = StringUtils.decodeURL(idxP);
                             }
-
-                            ResourceLocator rl = new ResourceLocator(p);
-
-                            if (names != null && idx < names.length) {
-                                String name = names[idx];
-                                rl.setName(name);
+                            if (idxP.length() > 0) {
+                                rl.setIndexPath(idxP);
                             }
-
-                            //Set index file, iff one was passed
-                            String idxP = indexFiles == null ? null : indexFiles[i].trim();
-                            if(idxP != null){
-                                if (HttpUtils.isURL(idxP) && !FileUtils.isRemote(idxP)) {
-                                    idxP = StringUtils.decodeURL(idxP);
-                                }
-
-                                if (idxP.length() > 0) {
-                                    rl.setIndexPath(idxP);
-                                }
-                            }
-
-                            locators.add(rl);
-                            idx++;
                         }
-                        loadTracks(locators);
+
+                        //Set coverage file, iff one was passed
+                        if(coverageFiles != null && i < coverageFiles.length) {
+                            String covP = coverageFiles[i];
+                            if (HttpUtils.isURL(covP) && !FileUtils.isRemote(covP)) {
+                                covP = StringUtils.decodeURL(covP);
+                            }
+                            if (covP.length() > 0) {
+                                rl.setCoverage(covP);
+                            }
+                        }
+
+                        locators.add(rl);
                     }
+                    loadTracks(locators);
                 }
 
 
@@ -2572,7 +2568,6 @@ public class IGV {
             synchronized (IGV.getInstance()) {
                 IGV.getInstance().notifyAll();
             }
-
         }
 
         private void setAppleDockIcon() {

@@ -205,6 +205,7 @@ public class Main {
         private String dataServerURL = null;
         private String genomeServerURL = null;
         private String indexFile = null;
+        private String coverageFile = null;
         private String name = null;
 
         IGVArgs(String[] args) {
@@ -225,7 +226,8 @@ public class Main {
             CmdLineParser.Option genomeOption = parser.addStringOption('g', "genome");
             CmdLineParser.Option dataServerOption = parser.addStringOption('d', "dataServerURL");
             CmdLineParser.Option genomeServerOption = parser.addStringOption('u', "genomeServerURL");
-            CmdLineParser.Option indexFileOption = parser.addStringOption('i', "indexFileURL");
+            CmdLineParser.Option indexFileOption = parser.addStringOption('i', "indexFile");
+            CmdLineParser.Option coverageFileOption = parser.addStringOption('c', "coverageFile");
             CmdLineParser.Option nameOption = parser.addStringOption('n', "name");
 
             try {
@@ -242,6 +244,7 @@ public class Main {
             dataServerURL = (String) parser.getOptionValue(dataServerOption);
             genomeServerURL = (String) parser.getOptionValue(genomeServerOption);
             indexFile = (String) parser.getOptionValue(indexFileOption);
+            coverageFile = (String) parser.getOptionValue(coverageFileOption);
             name = (String) parser.getOptionValue(nameOption);
 
             String[] nonOptionArgs = parser.getRemainingArgs();
@@ -331,9 +334,7 @@ public class Main {
             return sessionFile;
         }
 
-        public String getDataFileString() {
-            return dataFileString;
-        }
+        public String getDataFileString() {return dataFileString;}
 
         public String getLocusString() {
             return locusString;
@@ -359,13 +360,14 @@ public class Main {
             return genomeServerURL;
         }
 
-        public String getIndexFile() {
-            return indexFile;
-        }
+        public String getIndexFile() { return indexFile; }
+
+        public String getCoverageFile() { return coverageFile; }
 
         public String getName() {
             return name;
         }
+
     }
 
 }
