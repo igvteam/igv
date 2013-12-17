@@ -20,8 +20,8 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.event.GlobalKeyDispatcher;
 import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.igv.util.RuntimeUtils;
+import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -74,6 +74,7 @@ public class Main {
         log.info("Startup  " + Globals.applicationString());
         log.info("Java " + System.getProperty(Globals.JAVA_VERSION_STRING));
         log.info("Default User Directory: " + DirectoryManager.getUserDirectory());
+        log.info("OS: " + System.getProperty("os.name"));
         System.setProperty("http.agent", Globals.applicationString());
 
         Runtime.getRuntime().addShutdownHook(new ShutdownThread());
