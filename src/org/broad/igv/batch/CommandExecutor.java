@@ -39,6 +39,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public class CommandExecutor {
 
@@ -393,6 +395,15 @@ public class CommandExecutor {
         return loadFiles(fileString, index, name, locus, merge,  params);
     }
 
+    String loadFiles(final String fileString,
+                     final String indexString,
+                     final String nameString,
+                     final String locus,
+                     final boolean merge,
+                     Map<String, String> params) throws IOException {
+        return loadFiles(fileString, indexString, nameString, locus, merge, params, null, null);
+    }
+
     /**
      * Load files -- used by port, batch, and http commands
      *
@@ -401,16 +412,19 @@ public class CommandExecutor {
      * @param merge
      * @param nameString
      * @param params
+     * @param sort
+     * @param sortTag Used iff sort == SortOption.TAG
      * @return
      * @throws IOException
      */
-
     String loadFiles(final String fileString,
                      final String indexString,
                      final String nameString,
                      final String locus,
                      final boolean merge,
-                     Map<String, String> params) throws IOException {
+                     Map<String, String> params,
+                     final String sort,
+                     final String sortTag) throws IOException {
 
 
         log.debug("Run load files");
@@ -503,10 +517,39 @@ public class CommandExecutor {
             igv.restoreSessionSynchronous(sessionPath, locus, merge);
         }
 
-        igv.loadTracks(fileLocators);
+        final Future loadTask = igv.loadTracks(fileLocators);
 
         if (locus != null && !locus.equals("null")) {
             igv.goToLocus(locus);
+        }
+
+        if (sort != null){
+            final AlignmentTrack.SortOption sortOption;
+            try {
+                sortOption = AlignmentTrack.SortOption.valueOf(sort.trim().toUpperCase());
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            log.debug("starting sort runnable");
+                            //Waits until loading is finished
+                            Object res = loadTask.get();
+                            log.debug("loading finished, doing sort");
+                            igv.sortAlignmentTracks(sortOption, sortTag);
+                        } catch (InterruptedException e) {
+                            log.error(e.getMessage(), e);
+                        } catch (ExecutionException e) {
+                            log.error(e.getMessage(), e);
+                        }
+
+                    }
+                };
+                LongRunningTask.submit(runnable);
+            } catch (IllegalArgumentException e) {
+                log.error(e.getMessage(), e);
+                return "ERROR: UNKNOWN SORT PARAMETER " + sort;
+            }
+
         }
 
         return "OK";
@@ -728,7 +771,7 @@ public class CommandExecutor {
         } else if (str.equalsIgnoreCase("strand")) {
             return AlignmentTrack.SortOption.STRAND;
         } else if (str.equalsIgnoreCase("base")) {
-            return AlignmentTrack.SortOption.NUCELOTIDE;
+            return AlignmentTrack.SortOption.NUCLEOTIDE;
         } else if (str.equalsIgnoreCase("quality")) {
             return AlignmentTrack.SortOption.QUALITY;
         } else if (str.equalsIgnoreCase("sample")) {
@@ -742,7 +785,7 @@ public class CommandExecutor {
         } else if (str.equalsIgnoreCase("mateChr")) {
             return AlignmentTrack.SortOption.MATE_CHR;
         }
-        return AlignmentTrack.SortOption.NUCELOTIDE;
+        return AlignmentTrack.SortOption.NUCLEOTIDE;
     }
 
     private static AlignmentTrack.GroupOption getAlignmentGroupOption(String str) {

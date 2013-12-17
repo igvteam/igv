@@ -993,7 +993,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_COUNT_DELETED_BASES_COVERED, "false");
         defaultValues.put(SAM_FLAG_LARGE_INSERTIONS, "false");
         defaultValues.put(SAM_LARGE_INSERTIONS_THRESHOLD, "1");
-        defaultValues.put(SAM_SORT_OPTION, "NUCELOTIDE");
+        defaultValues.put(SAM_SORT_OPTION, "NUCLEOTIDE");
 
         defaultValues.put(NORMALIZE_COVERAGE, "false");
 

@@ -102,7 +102,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     public enum SortOption {
-        START, STRAND, NUCELOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FIRST_OF_PAIR_STRAND, MATE_CHR, TAG;
+        START, STRAND, NUCLEOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FIRST_OF_PAIR_STRAND, MATE_CHR, TAG;
     }
 
     public enum GroupOption {
@@ -1478,7 +1478,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             mappings.put("start location", SortOption.START);
             mappings.put("read strand", SortOption.STRAND);
             mappings.put("first-of-pair strand", SortOption.FIRST_OF_PAIR_STRAND);
-            mappings.put("base", SortOption.NUCELOTIDE);
+            mappings.put("base", SortOption.NUCLEOTIDE);
             mappings.put("mapping quality", SortOption.QUALITY);
             mappings.put("sample", SortOption.SAMPLE);
             mappings.put("read group", SortOption.READ_GROUP);

@@ -287,7 +287,7 @@ public class AlignmentInterval extends Locus {
                             score = strand == Strand.NEGATIVE ? 1 : -1;
                         }
                         return score;
-                    case NUCELOTIDE:
+                    case NUCLEOTIDE:
                         byte base = centerAlignment.getBase(adjustedCenter);
                         byte ref = interval.getReference(adjustedCenter);
 
