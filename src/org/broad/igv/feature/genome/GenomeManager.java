@@ -1237,7 +1237,10 @@ public class GenomeManager {
 
             boolean seqIsFasta = FastaUtils.isFastaPath(sequencePath);
             if(!seqIsFasta){
-                throw new IllegalArgumentException("Genome sequence must be a single fasta file");
+                String msg = ("This genome sequence is not available for download. \n" +
+                        "Please contact the igv team for further assistance");
+                MessageUtils.showMessage(msg);
+                return RunnableResult.CANCELLED;
             }
 
             String sequenceFileName = Utilities.getFileNameFromURL(sequencePath);
