@@ -226,7 +226,7 @@ public class MotifFinderDialog extends JDialog {
             public void run() {
                 String posText = MotifFinderDialog.this.posNameField.getText();
                 MotifFinderDialog.this.negNameField.setText(getNegNameFromPositive(posText));
-                MotifFinderDialog.this.negNameField.setEnabled(isMultiMatch());
+                MotifFinderDialog.this.negNameField.setEnabled(!isMultiMatch());
             }
         });
     }
@@ -242,7 +242,7 @@ public class MotifFinderDialog extends JDialog {
                     posNameText = StringUtils.checkLength(patternText, MaxTrackNameLength);
                 }
 
-                MotifFinderDialog.this.posNameField.setEnabled(!hasNewlines);
+                MotifFinderDialog.this.posNameField.setEnabled(!isMultiMatch());
                 MotifFinderDialog.this.posNameField.setText(posNameText);
             }
         });
