@@ -423,6 +423,7 @@ public class CommandExecutor {
      */
     String loadFiles(final String fileString,
                      final String indexString,
+                     final String coverageString,
                      final String nameString,
                      final String locus,
                      final boolean merge,
@@ -436,6 +437,7 @@ public class CommandExecutor {
         String[] files = fileString.split(",");
         String[] names = nameString != null ? nameString.split(",") : null;
         String[] indexFiles = indexString != null ? indexString.split(",") : null;
+        String[] coverageFiles =  coverageString != null ? coverageString.split(",") : null;
 
         if (files.length == 1) {
             // String might be URL encoded
@@ -458,6 +460,9 @@ public class CommandExecutor {
             files[ii] = decodeFileString(files[ii]);
             if(indexFiles != null){
                 indexFiles[ii] = decodeFileString(indexFiles[ii]);
+            }
+            if(coverageFiles != null) {
+                coverageFiles[ii] = decodeFileString(coverageFiles[ii]);
             }
         }
 
@@ -508,6 +513,9 @@ public class CommandExecutor {
                 }
                 if(indexFiles != null) {
                     rl.setIndexPath(indexFiles[fi]);
+                }
+                if(coverageFiles != null) {
+                    rl.setCoverage(coverageFiles[fi]);
                 }
                 if (params != null) {
                     String trackLine = createTrackLine(params);
