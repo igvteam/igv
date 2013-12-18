@@ -383,6 +383,7 @@ public class CommandExecutor {
         // remaining parameters might be "merge", "name", or "index"
         String name = null;
         String index = null;
+        String coverage = null;
         for (String param : Arrays.asList(param2, param3)) {
             if (param != null && param.startsWith("name=")) {
                 name = param.substring(5);
@@ -391,21 +392,24 @@ public class CommandExecutor {
                 merge = mergeString.equalsIgnoreCase("true");
             } else if (param != null && param.startsWith("index=")) {
                  index = param.substring(6);
+            } else if (param != null && param.startsWith("coverage=")) {
+                coverage = param.substring(9);
             }
         }
         // Locus is not specified from port commands
         String locus = null;
         Map<String, String> params = null;
-        return loadFiles(fileString, index, name, locus, merge,  params);
+        return loadFiles(fileString, index, coverage,name, locus, merge,  params);
     }
 
     String loadFiles(final String fileString,
                      final String indexString,
+                     final String coverageString,
                      final String nameString,
                      final String locus,
                      final boolean merge,
                      Map<String, String> params) throws IOException {
-        return loadFiles(fileString, indexString, nameString, locus, merge, params, null, null);
+        return loadFiles(fileString, indexString, coverageString, nameString, locus, merge, params, null, null);
     }
 
     /**

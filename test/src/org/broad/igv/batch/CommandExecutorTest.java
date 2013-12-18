@@ -332,13 +332,14 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         Map<String, String> params = null;
         String name = "hasSpaces";
         String index = null;
+        String coverage = null;
         String locus = null;
         boolean merge = true;
-        exec.loadFiles(urlPath, index, name, locus, merge, params);
+        exec.loadFiles(urlPath, index, coverage, name, locus, merge, params);
 
         name = null;
         String localPath = TestUtils.DATA_DIR + "bed/test.bed";
-        exec.loadFiles(localPath, index, name, locus, merge, params);
+        exec.loadFiles(localPath, index, coverage, name, locus, merge, params);
 
         assertEquals(2, igv.getAllTracks().size() - beginTracks);
     }
@@ -349,9 +350,10 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         Map<String, String> params = null;
         String name = null;
         String index = null;
+        String coverage = null;
         String locus = null;
         boolean merge = true;
-        exec.loadFiles(dataFile, index, name, locus, merge, params);
+        exec.loadFiles(dataFile, index, coverage, name, locus, merge, params);
 
         String[] goodArgSet = new String[]{"0,5.0 ", "0,1,5", "-1,0,1", "-1.32,10.21"};
         for (String arg : goodArgSet) {
@@ -418,10 +420,11 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         String urlPath = TestUtils.DATA_DIR + "bam/NA12878.SLX.sample.bam";
         String index = TestUtils.DATA_DIR + "bam/NA12878.SLX.sample.bam.bai";
         String name = null;
+        String coverage = null;
         String locus = "chr1:155,156,300-155,164,706";  //muc1
         boolean merge = true;
         Map<String, String> params = null;
-        exec.loadFiles(urlPath, index, name, locus, merge, params);
+        exec.loadFiles(urlPath, index, coverage, name, locus, merge, params);
         List<Track> tracks = igv.getAllTracks();
         // Find our alignment track
         boolean foundTrack = false;
