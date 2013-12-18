@@ -364,6 +364,7 @@ public class HttpUtils {
      */
     private Proxy getSystemProxy(String uri) {
         try {
+            log.debug("Getting system proxy for " + uri);
             ProxySelector selector = ProxySelector.getDefault();
             List<Proxy> proxyList = selector.select(new URI(uri));
             return proxyList.get(0);
