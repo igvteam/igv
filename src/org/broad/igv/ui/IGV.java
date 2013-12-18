@@ -1015,6 +1015,9 @@ public class IGV {
             token = WaitCursorManager.showWaitCursor();
             contentPane.getStatusBar().setMessage("Exporting image: " + defaultFile.getAbsolutePath());
             String msg = createSnapshotNonInteractive(target, file, false);
+            if(msg != null && msg.toLowerCase().startsWith("error")){
+                MessageUtils.showMessage(msg);
+            }
         } catch (IOException e) {
             log.error("Error creating exporting image ", e);
             MessageUtils.showMessage(("Error creating the image file: " + defaultFile + "<br> "
@@ -1054,7 +1057,7 @@ public class IGV {
             log.error(message);
             return message;
         } else if (type == SnapshotFileChooser.SnapshotFileType.EPS && !SnapshotUtilities.canExportScreenshotEps()) {
-            message = "ERROR: File extension EPS, but EPS Graphics library not available";
+            message = "ERROR: EPS output requires EPSGraphics library. See https://www.broadinstitute.org/software/igv/third_party_tools#epsgraphics";
             log.error(message);
             return message;
         }

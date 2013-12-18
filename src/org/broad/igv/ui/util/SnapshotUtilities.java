@@ -163,19 +163,21 @@ public class SnapshotUtilities {
     private static void exportScreenshotEpsGraphics(Component target, File selectedFile, boolean paintOffscreen) throws IOException{
 
         if(!SnapshotUtilities.canExportScreenshotEps()){
-            log.error("ERROR: File extension EPS, but EPS Graphics library not available");
+            String msg = "ERROR: EPS output requires EPSGraphics library. See https://www.broadinstitute.org/software/igv/third_party_tools#epsgraphics";
+            log.error(msg);
             return;
         }
 
         Graphics2D g = null;
         FileOutputStream fos = null;
         try{
-            Class<Enum> colorModeClass = RuntimeUtils.loadClassForName(EPSColorModeClassName, null);
-            Object colorModeValue = Enum.valueOf(colorModeClass, "COLOR_RGB");
+            Class colorModeClass = RuntimeUtils.loadClassForName(EPSColorModeClassName, null);
             Class graphicsClass = RuntimeUtils.loadClassForName(EPSClassName, null);
 
             Constructor constructor = graphicsClass.getConstructor(String.class, OutputStream.class,
                     int.class, int.class, int.class, int.class, colorModeClass);
+
+            Object colorModeValue = Enum.valueOf(colorModeClass, "COLOR_RGB");
 
             // EpsGraphics stores directly in a file
             fos = new FileOutputStream(selectedFile);
@@ -196,6 +198,19 @@ public class SnapshotUtilities {
 
     }
 
+    public static boolean canExportScreenshotEps(){
+        Constructor constr = null;
+        try {
+            Class colorModeClass = RuntimeUtils.loadClassForName(EPSColorModeClassName, null);
+            Class graphicsClass = RuntimeUtils.loadClassForName(EPSClassName, null);
+            constr = graphicsClass.getConstructor(String.class, OutputStream.class,
+                    int.class, int.class, int.class, int.class, colorModeClass);
+        } catch (Exception e) {
+            //pass
+        }
+        return constr != null;
+    }
+
 //    private static void exportScreenshotEpsGraphicsNoRef(Component target, File selectedFile, boolean paintOffscreen) throws IOException{
 //
 //        FileOutputStream fos = null;
@@ -213,21 +228,6 @@ public class SnapshotUtilities {
 //        }
 //
 //    }
-
-    public static boolean canExportScreenshotEps(){
-        try {
-            Class clazz = RuntimeUtils.loadClassForName(EPSClassName, null);
-            return clazz != null;
-        } catch (IllegalAccessException e) {
-            log.error(e.getMessage(), e);
-        } catch (InstantiationException e) {
-            log.error(e.getMessage(), e);
-        } catch (ClassNotFoundException e) {
-            log.trace("EPS class not found: " + EPSClassName);
-        }
-        return false;
-    }
-
 
     private static void exportScreenshotSVG(Component target, File selectedFile, boolean paintOffscreen) throws IOException {
 

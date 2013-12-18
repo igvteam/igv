@@ -230,5 +230,7 @@ public class SnapshotFileChooser extends JFileChooser {
                 }
             }
         });
+
+        setFileFilter(SNAPSHOT_TYPE_TO_FILTER.get(SnapshotFileType.PNG));
     }
 }
