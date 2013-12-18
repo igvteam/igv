@@ -1,10 +1,10 @@
-// $Id: webstart.js,v 1.13 2008-01-14 15:05:28 grossben Exp $
-//------------------------------------------------------------------------------
 /** Copyright (c) 2007 Memorial Sloan-Kettering Cancer Center.
  **
  ** Code written by: Ethan Cerami, Benjamin Gross
  ** Authors: Ethan Cerami, Gary Bader, Chris Sander, Benjamin Gross
- ** Modified by Jim Robinson for use with IGV
+ **
+ ** Extensively modifed by Jim Robinson for use with IGV and for supporting https.
+ ** For https support you must also include "launch.html"
  **
  ** This library is free software; you can redistribute it and/or modify it
  ** under the terms of the GNU Lesser General Public License as published
@@ -34,18 +34,160 @@
  */
 
 // globals
-var SCRIPT_ELEMENT_ID = "igv";
-var timeoutVar; // used to set/unset timeout handlers
-var aWindow;
-var origProtocol;
+
+var igv = (function (igv) {
+
+    igv.SCRIPT_ELEMENT_ID = "igv_script";
+    var timeoutVar; // used to set/unset timeout handlers
+
+    /**
+     *
+     * @param port -- the IGV port, typically 60151
+     * @param command -- the command to send to the port, either "file" or "load"
+     * @param paramString -- full parameter string (everything after ?),  including file to load.  See IGV user guide for
+     *                       the complete list of paramters
+     */
+    igv.igvRequest = function (port, command, paramString, origProtocol) {
+
+        var protocol = window.location.protocol;
+        if (!origProtocol) origProtocol = protocol;
+
+        var isIpad = navigator.userAgent.match(/iPad/i) != null;
+        if (isIpad) {
+            launchIGV(paramString);
+            return;
+        }
+
+        //  var href = getSelfURL();
+        var isHTTPS = protocol == "https:";
+
+        if (isHTTPS) {
+            // We can't talk to IGV via http from this https page.  Open a new http page to do the request
+
+            var selfURL = getSelfURL();
+            var launchURL = selfURL.replace("https:", "http:").replace("webstart.js", "launch.html");
+            launchURL += "?port=" + port;
+            launchURL += "&command=" + command;
+            launchURL += "&protocol=" + protocol;
+            launchURL += "&paramString=" + encodeURIComponent(paramString);
+
+            var salt = Math.random();
+            launchURL += "&salt=" + salt;
+
+            window.open(
+                launchURL,
+                "igv launch",
+                "menubar=no,height=150,width=200,location=no,status=no,titlebar=no,toolbar=no",
+                false);
+        } else {
+
+            var salt = Math.random(); // to prevent the browser from caching the response and preventing a relaunch if igv was shut down
+            var localURL = "http://127.0.0.1:" + port + "/" + command + "?" + decodeURIComponent(paramString) + "&callback=igv.callBack();&salt=" + salt;
+
+            //create new script
+            var newScript = document.createElement("script");
+            newScript.id = igv.SCRIPT_ELEMENT_ID;
+            newScript.setAttribute("type", "text/javascript");
+            newScript.setAttribute("src", localURL);
+
+            // add new script to document (head section)
+            var head = document.getElementsByTagName("head")[0];
+            head.appendChild(newScript);
+            timeoutVar = setTimeout('igv.launchIGV("' + origProtocol + '", "' + paramString + '")', 2000);
+        }
+
+    }
+
+    /*
+     * Handler function to launch IGV via java web start.  This handler is scheduled in the appRequest() function, and
+     * is canceled by the callBack() function called in the response to the "localhost" request.  If callBack() is not
+     * invoked we conclude IGV is not running and launch it via Java WebStart.
+     */
+    igv.launchIGV = function(protocol, queryString) {
 
 
-/*
- * This function is called by IGV in the response to the GET request to load the data.  It cancels the JNLP load.
- */
-function callBack() {
-    clearTimeout(timeoutVar);
-}
+        var webstart_url = protocol + "//www.broadinstitute.org/igv/projects/current/igv.php";
+
+        if (queryString) {
+            webstart_url += "?" + queryString;
+        }
+
+        // determine if webstart is available - code taken from sun site
+        var userAgent = navigator.userAgent.toLowerCase();
+        // user is running windows
+        if (userAgent.indexOf("msie") != -1 && userAgent.indexOf("win") != -1) {
+            document.write("<OBJECT " +
+                "codeBase=http://java.sun.com/update/1.5.0/jinstall-1_5_0_05-windows-i586.cab " +
+                "classid=clsid:5852F5ED-8BF4-11D4-A245-0080C6F74284 height=0 width=0>");
+            document.write("<PARAM name=app VALUE=" + webstart_url + ">");
+            document.write("<PARAM NAME=back VALUE=true>");
+            // alternate html for browsers which cannot instantiate the object
+            document.write("<A href=\"http://java.sun.com/j2se/1.5.0/download.html\">Download Java WebStart</A>");
+            document.write("</OBJECT>");
+        }
+        // user is not running windows
+        else if (navigator.mimeTypes['application/x-java-jnlp-file']) {
+            var isChildWindow = window.location.href.indexOf("launch.html") > 0;
+
+            if (isChildWindow) {
+                window.open(webstart_url);
+                window.close();
+            }
+            else {
+                window.location = webstart_url;
+            }
+        }
+        // user does not have jre installed or lacks appropriate version - direct them to sun download site
+        else {
+            openWindow("http://jdl.sun.com/webapps/getjava/BrowserRedirect?locale=en&host=java.com",
+                "needdownload");
+        }
+    }
+
+    /*
+     * This function is called by IGV in the response to the GET request to load the data.  It cancels the JNLP load.
+     */
+     igv.callBack = function() {
+        clearTimeout(timeoutVar);
+        var isChildWindow = window.location.href.indexOf("launch.html") > 0;
+        if (isChildWindow) {
+            window.close();
+        }
+
+    }
+
+
+    function getSelfURL() {
+
+        var sc = document.getElementsByTagName("script");
+
+        for (var idx = 0; idx < sc.length; idx++) {
+            var s = sc.item(idx);
+
+            if (s.src && s.src.match(/webstart\.js$/)) {
+                return s.src;
+            }
+        }
+    }
+
+    igv.getQueryValue = function (name, queryString) {
+
+        if (!queryString) queryString = window.location.href;
+
+        name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+        var regexS = "[\\?&]" + name + "=([^&#]*)";
+        var regex = new RegExp(regexS);
+        var results = regex.exec(queryString);
+        if (results == null)
+            return "";
+        else
+            return results[1];
+    }
+
+    return igv;
+
+})(igv || {});    // Create "igv" function object if it doesn't exist
+
 
 /**
  * @Deprecated.  This is kept for legacy applications, but igvRequest should be used for new development.
@@ -65,9 +207,9 @@ function callBack() {
  */
 function appRequest(port, dataUrl, genomeID, mergeFlag, locusString, trackName) {
 
-    // be good and remove the previous cytoscape script element
+    // be good and remove the previous script element
     // although, based on debugging, i'm not sure this really does anything
-    var oldScript = document.getElementById(SCRIPT_ELEMENT_ID);
+    var oldScript = document.getElementById(igv.SCRIPT_ELEMENT_ID);
     if (oldScript) {
         oldScript.parentNode.removeChild(oldScript);
     }
@@ -86,135 +228,7 @@ function appRequest(port, dataUrl, genomeID, mergeFlag, locusString, trackName) 
         paramString += "&name=" + trackName;
     }
 
-    igvRequest(port, "load", paramString);
+    igv.igvRequest(port, "load", paramString);
 
 }
 
-/**
- *
- * @param port -- the IGV port, typically 60151
- * @param command -- the command to send to the port, either "file" or "load"
- * @param paramString -- full parameter string (everything after ?),  including file to load.  See IGV user guide for
- *                       the complete list of paramters
- */
-function igvRequest(port, command, paramString, origProtocol) {
-
-    var protocol = window.location.protocol;
-    if(!origProtocol) origProtocol = protocol;
-
-    if (aWindow) {
-        aWindow.close();
-    }
-
-    var isIpad = navigator.userAgent.match(/iPad/i) != null;
-    if (isIpad) {
-        launchIGV(paramString);
-        return;
-    }
-
-    //  var href = getSelfURL();
-    var isHTTPS = protocol == "https:";
-
-    if (isHTTPS) {
-        // We can't talk to IGV via http from this https page.  Open a new http page to do the request
-
-        var selfURL = getSelfURL();
-        var launchURL = selfURL.replace("https:", "http:").replace("webstart.js", "launch.html");
-        launchURL += "?port=" + port;
-        launchURL += "&command=" + command;
-        launchURL += "&protocol=" + protocol;
-        launchURL += "&paramString=" + encodeURIComponent(paramString);
-
-        var salt = Math.random();
-        launchURL += "&salt=" + salt;
-
-        aWindow = window.open(
-            launchURL,
-            "igv launch",
-            "menubar=no,height=150,width=200,location=no,status=no,titlebar=no,toolbar=no",
-            false);
-//        aWindow.document.close();
-    }
-    else {
-
-        var salt = Math.random(); // to prevent the browser from caching the response and preventing a relaunch if igv was shut down
-        var localURL = "http://127.0.0.1:" + port + "/" + command + "?paramString=" + decodeURIComponent(paramString) + "&callback=callBack();&salt=" + salt;
-
-        //create new script
-        var newScript = document.createElement("script");
-        newScript.id = SCRIPT_ELEMENT_ID;
-        newScript.setAttribute("type", "text/javascript");
-        newScript.setAttribute("src", localURL);
-
-        // add new script to document (head section)
-        var head = document.getElementsByTagName("head")[0];
-        head.appendChild(newScript);
-        timeoutVar = setTimeout('launchIGV("' + origProtocol + '", "' + paramString + '")', 2000);
-    }
-
-}
-
-/*
- * Handler function to launch IGV via java web start.  This handler is scheduled in the appRequest() function, and
- * is canceled by the callBack() function called in the response to the "localhost" request.  If callBack() is not
- * invoked we conclude IGV is not running and launch it via Java WebStart.
- */
-function launchIGV(protocol, queryString) {
-
-
-    var webstart_url = protocol + "//www.broadinstitute.org/igv/projects/current/igv.php";
-
-    if (queryString) {
-        webstart_url += "?" + queryString;
-    }
-
-    // determine if webstart is available - code taken from sun site
-    var userAgent = navigator.userAgent.toLowerCase();
-    // user is running windows
-    if (userAgent.indexOf("msie") != -1 && userAgent.indexOf("win") != -1) {
-        document.write("<OBJECT " +
-            "codeBase=http://java.sun.com/update/1.5.0/jinstall-1_5_0_05-windows-i586.cab " +
-            "classid=clsid:5852F5ED-8BF4-11D4-A245-0080C6F74284 height=0 width=0>");
-        document.write("<PARAM name=app VALUE=" + webstart_url + ">");
-        document.write("<PARAM NAME=back VALUE=true>");
-        // alternate html for browsers which cannot instantiate the object
-        document.write("<A href=\"http://java.sun.com/j2se/1.5.0/download.html\">Download Java WebStart</A>");
-        document.write("</OBJECT>");
-    }
-    // user is not running windows
-    else if (navigator.mimeTypes['application/x-java-jnlp-file']) {
-        window.location = webstart_url;
-    }
-    // user does not have jre installed or lacks appropriate version - direct them to sun download site
-    else {
-        openWindow("http://jdl.sun.com/webapps/getjava/BrowserRedirect?locale=en&host=java.com",
-            "needdownload");
-    }
-}
-
-function getSelfURL() {
-
-    var sc = document.getElementsByTagName("script");
-
-    for (var idx = 0; idx < sc.length; idx++) {
-        var s = sc.item(idx);
-
-        if (s.src && s.src.match(/webstart\.js$/)) {
-            return s.src;
-        }
-    }
-}
-
-getQueryValue = function (name, queryString) {
-
-    if (!queryString) queryString = window.location.href;
-
-    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
-    var regexS = "[\\?&]" + name + "=([^&#]*)";
-    var regex = new RegExp(regexS);
-    var results = regex.exec(queryString);
-    if (results == null)
-        return "";
-    else
-        return results[1];
-}
