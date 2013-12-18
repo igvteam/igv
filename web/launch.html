@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IGV Launch</title>
+    <script type="text/javascript" src="webstart.js"></script>
+
+    <script type="text/javascript">
+
+        var loadFunc = function () {
+            var paramString = decodeURIComponent(getQueryValue("paramString"));
+            var port = parseInt(getQueryValue("port"));
+            var command = getQueryValue("command");
+            var protocol = getQueryValue("protocol")
+            igvRequest(60151, "load", paramString, protocol);
+//        igvRequest(port, command, paramString);
+            return true;
+        };
+
+    </script>
+</head>
+<body onload="loadFunc()">
+
+<b>Attempting to communicate with IGV...</b>
+
+<script type="text/javascript">
+
+
+</script>
+
+
+</body>
+</html>
