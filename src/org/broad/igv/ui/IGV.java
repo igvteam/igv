@@ -571,16 +571,22 @@ public class IGV {
                     if (selectedValues.size() == 1 && dialog.downloadSequence()) {
                         GenomeListItem oldItem = selectedValues.get(0);
                         GenomeSelectionDialog.downloadGenome(getMainFrame(), oldItem);
-                        selectedValues = new ArrayList<GenomeListItem>();
 
                         File newLocation = new File(DirectoryManager.getGenomeCacheDirectory().getAbsolutePath(), Utilities.getFileNameFromURL(oldItem.getLocation()));
+
                         GenomeListItem newItem = new GenomeListItem(oldItem.getDisplayableName(), newLocation.getAbsolutePath(), oldItem.getId());
-                        selectedValues.add(newItem);
+                        //Checking to see if it has a downloaded sequence might seem redundant,
+                        //but if the user cancels a download we want to use the oldItem
+                        if(newItem.hasDownloadedSequence()){
+                            selectedValues = Arrays.asList(newItem);
+                        }
                     }
 
-                    GenomeManager.getInstance().addGenomeItems(selectedValues, false);
-                    getContentPane().getCommandBar().refreshGenomeListComboBox();
-                    selectGenomeFromList(selectedValues.get(0).getId());
+                    if(selectedValues.size() > 0){
+                        GenomeManager.getInstance().addGenomeItems(selectedValues, false);
+                        getContentPane().getCommandBar().refreshGenomeListComboBox();
+                        selectGenomeFromList(selectedValues.get(0).getId());
+                    }
                 }
             }
         };
