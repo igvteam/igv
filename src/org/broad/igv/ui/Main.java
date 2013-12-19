@@ -70,6 +70,14 @@ public class Main {
     }
 
     private static void initApplication() {
+
+        long mem = RuntimeUtils.getAvailableMemory();
+        int MB = 1000000;
+        if(mem < 600*MB) {
+            int mb = (int) (mem / MB);
+            JOptionPane.showMessageDialog(null, "Warning: IGV is running with minimal available memory (" + mb + " mb)");
+        }
+
         DirectoryManager.initializeLog();
         log.info("Startup  " + Globals.applicationString());
         log.info("Java " + System.getProperty(Globals.JAVA_VERSION_STRING));
@@ -335,7 +343,9 @@ public class Main {
             return sessionFile;
         }
 
-        public String getDataFileString() {return dataFileString;}
+        public String getDataFileString() {
+            return dataFileString;
+        }
 
         public String getLocusString() {
             return locusString;
@@ -361,9 +371,13 @@ public class Main {
             return genomeServerURL;
         }
 
-        public String getIndexFile() { return indexFile; }
+        public String getIndexFile() {
+            return indexFile;
+        }
 
-        public String getCoverageFile() { return coverageFile; }
+        public String getCoverageFile() {
+            return coverageFile;
+        }
 
         public String getName() {
             return name;
