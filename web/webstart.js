@@ -149,7 +149,7 @@ var igv = (function (igv) {
      */
      igv.callBack = function() {
         clearTimeout(timeoutVar);
-        var isChildWindow = window.location.href.indexOf("launch.html") > 0;
+        var isChildWindow = window.location.href.indexOf("launchIGV.html") > 0;
         if (isChildWindow) {
             window.close();
         }
