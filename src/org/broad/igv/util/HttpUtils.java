@@ -1044,7 +1044,7 @@ public class HttpUtils {
             long downloaded = 0;
             long downSinceLast = 0;
             String curStatus;
-            String msg1 = String.format("bytes downloaded of %s total", contentLength >= 0 ? contentLength : "unknown");
+            String msg1 = String.format("downloaded of %s total", contentLength >= 0 ? bytesToByteCountString(contentLength) : "unknown");
             int perc = 0;
             try {
                 is = conn.getInputStream();
@@ -1060,7 +1060,7 @@ public class HttpUtils {
                     downSinceLast += bytesRead;
                     counter = (counter + 1) % interval;
                     if(counter == 0 && this.monitor != null){
-                        curStatus = String.format("%s %s", downloaded, msg1);
+                        curStatus = String.format("%s %s", bytesToByteCountString(downloaded), msg1);
                         this.monitor.updateStatus(curStatus);
                         if(contentLength >= 0){
                             perc = (int) ( (downSinceLast * 100) / contentLength);
@@ -1118,6 +1118,25 @@ public class HttpUtils {
 
         public void setMonitor(ProgressMonitor monitor) {
             this.monitor = monitor;
+        }
+
+        /**
+         * Convert bytes to human-readable string.
+         * e.g. 102894 -> 102.89 KB. If too big or too small,
+         * doesn't append a prefix just returns {@code bytes + " B"}
+         * @param bytes
+         * @return
+         */
+        public String bytesToByteCountString(long bytes) {
+            int unit = 1000;
+            String prefs = "KMGT";
+
+            if (bytes < unit ) return bytes + " B";
+            int exp = (int) (Math.log(bytes) / Math.log(unit));
+            if(exp <= 0 || exp >= prefs.length()) return bytes + " B";
+
+            String pre = (prefs).charAt(exp-1) + "";
+            return String.format("%.2f %sB", bytes / Math.pow(unit, exp), pre);
         }
     }
 
