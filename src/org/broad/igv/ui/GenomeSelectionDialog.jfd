@@ -70,7 +70,7 @@ new FormModel {
 						name: "downloadSequenceCB"
 						"text": "Download Sequence"
 						"alignmentX": 1.0f
-						"toolTipText": "Download the full sequence for this organism. Note that these files can be very large (human is about 3 Gb)"
+						"toolTipText": "Download the full sequence for this organism. Note that these files can be very large (human is about 3 gigabytes)"
 						"maximumSize": new java.awt.Dimension( 1000, 23 )
 						"preferredSize": new java.awt.Dimension( 300, 23 )
 						"minimumSize": new java.awt.Dimension( 300, 23 )

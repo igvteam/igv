@@ -1274,7 +1274,7 @@ public class GenomeManager {
         //Simple case, just need to copy fasta and create index
         File destFile = new File(targetDir, targetName);
         //TODO PROMPT TO OVERWRITE IF FILE EXISTS
-        HttpUtils.URLDownloader urlDownloader = HttpUtils.getInstance().downloadFile(fastaPath, destFile, dialogsParent);
+        HttpUtils.URLDownloader urlDownloader = HttpUtils.getInstance().downloadFile(fastaPath, destFile, dialogsParent, "Downloading genome sequence");
         RunnableResult fastaResult = urlDownloader.getResult();
         //If not successful for whatever reason, we don't get the index
         if(!fastaResult.isSuccess()) return fastaResult;

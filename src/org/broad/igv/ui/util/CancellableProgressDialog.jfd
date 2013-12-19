@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "5.2.0.0.54" Java: "1.6.0_51" encoding: "UTF-8"
+JFDML JFormDesigner: "5.2.0.0.54" Java: "1.6.0_65" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -15,6 +15,10 @@ new FormModel {
 					name: "contentPanel"
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "permText"
+					} )
+					add( new FormComponent( "com.jformdesigner.designer.wrapper.VSpacer" ) {
+						name: "vSpacer1"
+						"maximumSize": new java.awt.Dimension( 12, 10 )
 					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "statusText"

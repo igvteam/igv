@@ -47,6 +47,7 @@ public class CancellableProgressDialog extends JDialog {
         dialogPane = new JPanel();
         contentPanel = new JPanel();
         permText = new JLabel();
+        vSpacer1 = new JPanel(null);
         statusText = new JLabel();
         progressBar = new JProgressBar();
         buttonBar = new JPanel();
@@ -68,6 +69,10 @@ public class CancellableProgressDialog extends JDialog {
             {
                 contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
                 contentPanel.add(permText);
+
+                //---- vSpacer1 ----
+                vSpacer1.setMaximumSize(new Dimension(12, 10));
+                contentPanel.add(vSpacer1);
 
                 //---- statusText ----
                 statusText.setText("...");
@@ -106,6 +111,7 @@ public class CancellableProgressDialog extends JDialog {
     private JPanel dialogPane;
     private JPanel contentPanel;
     private JLabel permText;
+    private JPanel vSpacer1;
     private JLabel statusText;
     private JProgressBar progressBar;
     private JPanel buttonBar;
@@ -127,6 +133,16 @@ public class CancellableProgressDialog extends JDialog {
             @Override
             public void run() {
                 statusText.setText(status);
+            }
+        };
+        UIUtilities.invokeOnEventThread(updater);
+    }
+
+    public void setPermText(final String perm){
+        Runnable updater = new Runnable() {
+            @Override
+            public void run() {
+                permText.setText(perm);
             }
         };
         UIUtilities.invokeOnEventThread(updater);

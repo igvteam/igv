@@ -382,15 +382,15 @@ public class HttpUtils {
 
 
     /**
-     * Calls {@link #downloadFile(String, java.io.File, Frame)}
-     * with {@code showProgressDialog = false}
+     * Calls {@link #downloadFile(String, java.io.File, Frame, String)}
+     * with {@code dialogsParent = null, title = null}
      * @param url
      * @param outputFile
      * @return RunnableResult
      * @throws IOException
      */
     public RunnableResult downloadFile(String url, File outputFile) throws IOException {
-        URLDownloader downloader = downloadFile(url, outputFile, null);
+        URLDownloader downloader = downloadFile(url, outputFile, null, null);
         return downloader.getResult();
     }
 
@@ -402,7 +402,7 @@ public class HttpUtils {
      * @return URLDownloader used to perform download
      * @throws IOException
      */
-    public URLDownloader downloadFile(String url, File outputFile, Frame dialogsParent) throws IOException {
+    public URLDownloader downloadFile(String url, File outputFile, Frame dialogsParent, String dialogTitle) throws IOException {
         final URLDownloader urlDownloader = new URLDownloader(url, outputFile);
         boolean showProgressDialog = dialogsParent != null;
         if(!showProgressDialog){
@@ -417,7 +417,16 @@ public class HttpUtils {
                     urlDownloader.cancel(true);
                 }
             };
-            CancellableProgressDialog dialog = CancellableProgressDialog.showCancellableProgressDialog(dialogsParent, "Downloading " + url, buttonListener, false, monitor);
+            String permText = "Downloading " + url;
+            String title = dialogTitle != null ? dialogTitle : permText;
+            CancellableProgressDialog dialog = CancellableProgressDialog.showCancellableProgressDialog(dialogsParent, title, buttonListener, false, monitor);
+            dialog.setPermText(permText);
+
+            Dimension dms = new Dimension(600, 150);
+            dialog.setPreferredSize(dms);
+            dialog.setSize(dms);
+            dialog.validate();
+
             LongRunningTask.submit(urlDownloader);
             return urlDownloader;
         }
