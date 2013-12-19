@@ -47,10 +47,7 @@ var igv = (function (igv) {
      * @param paramString -- full parameter string (everything after ?),  including file to load.  See IGV user guide for
      *                       the complete list of paramters
      */
-    igv.igvRequest = function (port, command, paramString, origProtocol) {
-
-        var protocol = window.location.protocol;
-        if (!origProtocol) origProtocol = protocol;
+    igv.igvRequest = function (port, command, paramString) {
 
         var isIpad = navigator.userAgent.match(/iPad/i) != null;
         if (isIpad) {
@@ -59,16 +56,16 @@ var igv = (function (igv) {
         }
 
         //  var href = getSelfURL();
+        var protocol = window.location.protocol;
         var isHTTPS = protocol == "https:";
 
         if (isHTTPS) {
             // We can't talk to IGV via http from this https page.  Open a new http page to do the request
 
             var selfURL = getSelfURL();
-            var launchURL = selfURL.replace("https:", "http:").replace("webstart.js", "launch.html");
+            var launchURL = selfURL.replace("https:", "http:").replace("webstart.js", "launchIGV.html");
             launchURL += "?port=" + port;
             launchURL += "&command=" + command;
-            launchURL += "&protocol=" + protocol;
             launchURL += "&paramString=" + encodeURIComponent(paramString);
 
             var salt = Math.random();
@@ -93,7 +90,8 @@ var igv = (function (igv) {
             // add new script to document (head section)
             var head = document.getElementsByTagName("head")[0];
             head.appendChild(newScript);
-            timeoutVar = setTimeout('igv.launchIGV("' + origProtocol + '", "' + paramString + '")', 2000);
+            var code = 'igv.launchIGV("' + paramString + '")';
+            timeoutVar = setTimeout(code, 2000);
         }
 
     }
@@ -103,51 +101,33 @@ var igv = (function (igv) {
      * is canceled by the callBack() function called in the response to the "localhost" request.  If callBack() is not
      * invoked we conclude IGV is not running and launch it via Java WebStart.
      */
-    igv.launchIGV = function(protocol, queryString) {
+    igv.launchIGV = function (queryString) {
 
 
-        var webstart_url = protocol + "//www.broadinstitute.org/igv/projects/current/igv.php";
+        var protocol = window.location.protocol;
+        var wsProtocol = "https:"; //(protocol == "https:" ? protocol : "http:");
+        var webstart_url = wsProtocol + "//www.broadinstitute.org/igv/projects/current/igv.php";
 
         if (queryString) {
             webstart_url += "?" + queryString;
         }
 
-        // determine if webstart is available - code taken from sun site
-        var userAgent = navigator.userAgent.toLowerCase();
-        // user is running windows
-        if (userAgent.indexOf("msie") != -1 && userAgent.indexOf("win") != -1) {
-            document.write("<OBJECT " +
-                "codeBase=http://java.sun.com/update/1.5.0/jinstall-1_5_0_05-windows-i586.cab " +
-                "classid=clsid:5852F5ED-8BF4-11D4-A245-0080C6F74284 height=0 width=0>");
-            document.write("<PARAM name=app VALUE=" + webstart_url + ">");
-            document.write("<PARAM NAME=back VALUE=true>");
-            // alternate html for browsers which cannot instantiate the object
-            document.write("<A href=\"http://java.sun.com/j2se/1.5.0/download.html\">Download Java WebStart</A>");
-            document.write("</OBJECT>");
-        }
-        // user is not running windows
-        else if (navigator.mimeTypes['application/x-java-jnlp-file']) {
-            var isChildWindow = window.location.href.indexOf("launch.html") > 0;
+        var isChildWindow = window.location.href.indexOf("launchIGV.html") > 0;
 
-            if (isChildWindow) {
-                window.open(webstart_url);
-                window.close();
-            }
-            else {
-                window.location = webstart_url;
-            }
+        if (isChildWindow) {
+            window.open(webstart_url);
+            window.close();
         }
-        // user does not have jre installed or lacks appropriate version - direct them to sun download site
         else {
-            openWindow("http://jdl.sun.com/webapps/getjava/BrowserRedirect?locale=en&host=java.com",
-                "needdownload");
+            window.location = webstart_url;
         }
+
     }
 
     /*
      * This function is called by IGV in the response to the GET request to load the data.  It cancels the JNLP load.
      */
-     igv.callBack = function() {
+    igv.callBack = function () {
         clearTimeout(timeoutVar);
         var isChildWindow = window.location.href.indexOf("launchIGV.html") > 0;
         if (isChildWindow) {

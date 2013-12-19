@@ -12,7 +12,6 @@
             var paramString = decodeURIComponent(igv.getQueryValue("paramString"));
             var port = parseInt(igv.getQueryValue("port"));
             var command = igv.getQueryValue("command");
-            var protocol = igv.getQueryValue("protocol")
             igv.igvRequest(port, command, paramString);
             return true;
         };

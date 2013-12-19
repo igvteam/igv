@@ -8,31 +8,31 @@
 
 <br/>
 <button type="button"
-        onclick="appRequest(60151, 'http://igvdata.broadinstitute.org/data/hg19/encode/broadHistone/wgEncodeBroadHistoneGm12878ControlStdSig.wig.tdf')">Load</button>
+        onclick="igv.igvRequest(60151, 'load', 'file=http://igvdata.broadinstitute.org/data/hg19/encode/broadHistone/wgEncodeBroadHistoneGm12878ControlStdSig.wig.tdf')">Load</button>
 <br/>
 <br/>
 <button type="button"
-        onclick="appRequest(60151, 'http://igvdata.broadinstitute.org/data/hg19/encode/broadHistone/wgEncodeBroadHistoneGm12878ControlStdSig.wig.tdf', 'hg19')">Load with genome</button>
+        onclick="igv.igvRequest(60151, 'load', 'file=http://igvdata.broadinstitute.org/data/hg19/encode/broadHistone/wgEncodeBroadHistoneGm12878ControlStdSig.wig.tdf?genome=hg19')">Load with genome</button>
 <br/>
 <br/>
 <button type="button"
-        onclick="appRequest(60151, 'http://igvdata.broadinstitute.org/data/hg19/encode/broadHistone/wgEncodeBroadHistoneGm12878ControlStdSig.wig.tdf', 'hg19', 'true')">Load with genome, merge=true</button>
+        onclick="igv.igvRequest(60151, 'load', 'file=http://igvdata.broadinstitute.org/data/hg19/encode/broadHistone/wgEncodeBroadHistoneGm12878ControlStdSig.wig.tdf&genome=hg19&merg=true')">Load with genome, merge=true</button>
 <br/>
 <br/>
 <button type="button"
-        onclick="appRequest(60151, 'http://igvdata.broadinstitute.org/data/hg19/encode/broadHistone/wgEncodeBroadHistoneGm12878ControlStdSig.wig.tdf', 'hg19', 'true', 'EGFR')">Load with genome, merge=true, locus</button>
+        onclick="igv.igvRequest(60151, 'load', 'file=http://igvdata.broadinstitute.org/data/hg19/encode/broadHistone/wgEncodeBroadHistoneGm12878ControlStdSig.wig.tdf&genome=hg19&merge=true&locus=EGFR')">Load with genome, merge=true, locus</button>
 <br/>
 <br/>
 <button type="button"
-        onclick="appRequest(60151, 'http://igvdata.broadinstitute.org/data/hg19/encode/broadHistone/wgEncodeBroadHistoneGm12878ControlStdSig.wig.tdf', 'hg19', 'false', 'EGFR')">Load with genome, merge=false, locus</button>
+        onclick="igv.igvRequest(60151, 'load', 'file=http://igvdata.broadinstitute.org/data/hg19/encode/broadHistone/wgEncodeBroadHistoneGm12878ControlStdSig.wig.tdf&genome=hg19&merge=false&locus=EGFR')">Load with genome, merge=false, locus</button>
 <br/>
 <br/>
 <button type="button"
-        onclick="appRequest(60151, 'http://igvdata.broadinstitute.org/data/hg19/encode/broadHistone/wgEncodeBroadHistoneGm12878ControlStdSig.wig.tdf', 'hg19', 'true', 'EGFR', 'GM12878 Control')">Load with genome, merge=true, locus, name</button>
+        onclick="igv.igvRequest(60151, 'load', 'file=http://igvdata.broadinstitute.org/data/hg19/encode/broadHistone/wgEncodeBroadHistoneGm12878ControlStdSig.wig.tdf&genome=hg19&merge=true&locus=EGFR&name=GM12878%20Control')">Load with genome, merge=true, locus, name</button>
 <br/>
 <br/>
 <button type="button"
-        onclick="appRequest(60151, 'http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz', 'hg18', 'true', 'BRCA1%20PTEN')">Load 2 genes, merge=true,</button>
+        onclick="igv.igvRequest(60151, 'load', 'file=http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz&genome=hg18&merge=true&locus=BRCA1%20PTEN')">Load 2 genes, merge=true,</button>
 <br/>
 <br/>
 
