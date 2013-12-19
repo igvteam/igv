@@ -13,6 +13,7 @@ package org.broad.igv.plugin.mongovariant;
 
 import net.sf.samtools.SAMSequenceDictionary;
 import net.sf.samtools.SAMSequenceRecord;
+import org.apache.log4j.Logger;
 import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.LocusScore;
@@ -42,6 +43,8 @@ import java.util.List;
  */
 public class VariantReviewSource implements FeatureSource<VCFVariant> {
 
+    private static Logger log = Logger.getLogger(VariantReviewSource.class);
+
     private int featureWindowSize = 1000000;
     private NA12878DBArgumentCollection args;
     private NA12878KnowledgeBase kb;
@@ -60,6 +63,7 @@ public class VariantReviewSource implements FeatureSource<VCFVariant> {
 
     private void initKB() {
         kb = new NA12878KnowledgeBase(parser, this.args);
+        log.info("Connected to " + this.args.getLocator());
     }
 
     private void closeKB() {
