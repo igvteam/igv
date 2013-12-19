@@ -15,6 +15,7 @@ import org.broad.igv.util.HttpUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.zip.ZipException;
 
 /**
  * A container for specific genome information which can be used to
@@ -116,8 +117,17 @@ public class GenomeListItem {
     private boolean checkHasDownloadedSequence() throws IOException{
         if(this.location == null) return false;
         if(HttpUtils.isRemoteURL(this.location)) return false;
-        GenomeDescriptor descriptor = GenomeManager.getInstance().parseGenomeArchiveFile(new File(this.location));
-        return descriptor.hasCustomSequenceLocation() && !HttpUtils.isRemoteURL(descriptor.getSequenceLocation());
+
+        if(FastaUtils.isFastaPath(this.location)){
+            return !HttpUtils.isRemoteURL(this.location);
+        }
+
+        try {
+            GenomeDescriptor descriptor = GenomeManager.parseGenomeArchiveFile(new File(this.location));
+            return descriptor.hasCustomSequenceLocation() && !HttpUtils.isRemoteURL(descriptor.getSequenceLocation());
+        } catch (ZipException e) {
+            return false;
+        }
 
 
     }

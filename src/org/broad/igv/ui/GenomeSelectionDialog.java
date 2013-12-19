@@ -70,8 +70,23 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
     private void initData(Collection<GenomeListItem> inputListItems) {
         this.allListItems = new ArrayList<GenomeListItem>(inputListItems);
         //We don't show those currently in the box
+        //We only check by id, as some local genomes might be the same except for path
+        for(GenomeListItem gli: GenomeManager.getInstance().getGenomes()){
+            removeById(gli.getId());
+        }
         this.allListItems.removeAll(GenomeManager.getInstance().getGenomes());
         rebuildGenomeList();
+    }
+
+    private void removeById(String id){
+        int ci = 0;
+        for(; ci < this.allListItems.size(); ci++){
+            GenomeListItem gli = this.allListItems.get(ci);
+            if(gli.getId().equals(id)){
+                break;
+            }
+        }
+        if(ci < this.allListItems.size()) this.allListItems.remove(ci);
     }
 
     private void rebuildGenomeList() {
