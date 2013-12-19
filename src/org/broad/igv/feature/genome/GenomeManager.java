@@ -1238,7 +1238,7 @@ public class GenomeManager {
             boolean seqIsFasta = FastaUtils.isFastaPath(sequencePath);
             if(!seqIsFasta){
                 String msg = ("This genome sequence is not available for download. \n" +
-                        "Please contact the igv team for further assistance");
+                        "Please contact the igv team at https://groups.google.com/forum/#!forum/igv-help for further assistance");
                 MessageUtils.showMessage(msg);
                 return RunnableResult.CANCELLED;
             }
