@@ -423,26 +423,45 @@
         </javadoc>
     </target>
 
+
     <!-- Build MacOS native app-->
-    <!-- Create the app bundle -->
+    <!-- Create the app bundle from an input jar-->
+    <macrodef name="bundle-jar-macro">
+        <attribute name="version"/>
+        <attribute name="dist.dir"/>
+        <attribute name="jar.name"/>
+        <sequential>
+            <!-- Define the appbundler task -->
+            <taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask" classpath="${basedir}/ant/appbundler-1.0.jar"/>
+            <bundleapp outputdirectory="${download.dir}"
+                       name="IGV_@{version}"
+                       displayname="${ant.project.name}"
+                       identifier="${main-class}"
+                       shortversion="${version}"
+                       applicationCategory="public.app-category.developer-tools"
+                       mainclassname="${main-class}">
+                <classpath dir="@{dist.dir}">
+                    <include name="@{jar.name}"/>
+                    <include name="batik-codec.jar"/>
+                    <include name="goby-io-igv.jar"/>
+                </classpath>
+                <option value="-Dapple.laf.useScreenMenuBar=true"/>
+                <argument value="-Xmx2g"/>
+                <argument value="-Xdock:name=${ant.project.name}"/>
+            </bundleapp>
+
+        </sequential>
+
+    </macrodef>
+
+    <!-- Target to be called  as part of building all-->
     <target name="bundle" depends="build-all">
-        <!-- Define the appbundler task -->
-        <taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask" classpath="${basedir}/ant/appbundler-1.0.jar"/>
-        <bundleapp outputdirectory="${download.dir}"
-                   name="IGV_${version}"
-                   displayname="${ant.project.name}"
-                   identifier="${main-class}"
-                   shortversion="${version}"
-                   applicationCategory="public.app-category.developer-tools"
-                   mainclassname="${main-class}">
-            <classpath dir="${dist.dir}">
-                <include name="${jar.name}"/>
-                <include name="batik-codec.jar"/>
-                <include name="goby-io-igv.jar"/>
-            </classpath>
-            <option value="-Dapple.laf.useScreenMenuBar=true"/>
-            <argument value="-Xmx2g"/>
-            <argument value="-Xdock:name=${ant.project.name}"/>
-        </bundleapp>
+        <bundle-jar-macro version="${version}" dist.dir="${dist.dir}" jar.name="${jar.name}"/>
     </target>
+
+    <!-- Target to bundle an existing build -->
+    <target name="bundle-existing">
+        <bundle-jar-macro  version="${version}" dist.dir="${dist.dir}" jar.name="${jar.name}"/>
+    </target>
+
 </project>
