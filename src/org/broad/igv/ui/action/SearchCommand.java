@@ -62,8 +62,36 @@ public class SearchCommand {
 
     private static Set<NamedFeatureSearcher> nameSearchers;
 
+    private static HashMap<ResultType, String> tokenMatchers;
+
     static {
         resetNamedFeatureSearchers();
+
+        //Regexp for a number with commas in it (no periods)
+        String num_withcommas = "(((\\d)+,?)+)";
+
+        //chromosome can include anything except whitespace
+        String chromo_string = "(\\S)+";
+
+        String chromo = chromo_string;
+        //This will match chr1:1-100, chr1:1, chr1  1, chr1 1   100
+        String chromo_range = chromo_string + "(:|(\\s)+)" + num_withcommas + "(-|(\\s)+)?" + num_withcommas + "?(\\s)*";
+
+        //Simple feature
+        String feature = chromo_string;
+        //Amino acid mutation notation. e.g. KRAS:G12C. * is stop codon
+        String featureMutAA = chromo_string + ":[A-Z,a-z,*]" + num_withcommas + "[A-Z,a-z,*]";
+
+        //Nucleotide mutation notation. e.g. KRAS:123A>T
+        String nts = "[A,C,G,T,a,c,g,t]";
+        String featureMutNT = chromo_string + ":" + num_withcommas + nts + "\\>" + nts;
+
+        tokenMatchers = new HashMap<ResultType, String>();
+        tokenMatchers.put(ResultType.CHROMOSOME, chromo);
+        tokenMatchers.put(ResultType.FEATURE, feature);
+        tokenMatchers.put(ResultType.LOCUS, chromo_range);
+        tokenMatchers.put(ResultType.FEATURE_MUT_AA, featureMutAA);
+        tokenMatchers.put(ResultType.FEATURE_MUT_NT, featureMutNT);
     }
 
 
@@ -295,35 +323,10 @@ public class SearchCommand {
     Set<ResultType> checkTokenType(String token) {
         token = token.trim();
 
-        //Regexp for a number with commas in it (no periods)
-        String num_withcommas = "(((\\d)+,?)+)";
-
-        //chromosome can include anything except whitespace
-        String chromo_string = "(\\S)+";
-
-
-        String chromo = chromo_string;
-        //This will match chr1:1-100, chr1:1, chr1  1, chr1 1   100
-        String chromo_range = chromo_string + "(:|(\\s)+)" + num_withcommas + "(-|(\\s)+)?" + num_withcommas + "?(\\s)*";
-
-        //Simple feature
-        String feature = chromo_string;
-        //Amino acid mutation notation. e.g. KRAS:G12C. * is stop codon
-        String featureMutAA = chromo_string + ":[A-Z,a-z,*]" + num_withcommas + "[A-Z,a-z,*]";
-
-        //Nucleotide mutation notation. e.g. KRAS:123A>T
-        String nts = "[A,C,G,T,a,c,g,t]";
-        String featureMutNT = chromo_string + ":" + num_withcommas + nts + "\\>" + nts;
 
         Set<ResultType> possibles = new HashSet<ResultType>();
-        Map<ResultType, String> matchers = new HashMap<ResultType, String>();
-        matchers.put(ResultType.CHROMOSOME, chromo);
-        matchers.put(ResultType.FEATURE, feature);
-        matchers.put(ResultType.LOCUS, chromo_range);
-        matchers.put(ResultType.FEATURE_MUT_AA, featureMutAA);
-        matchers.put(ResultType.FEATURE_MUT_NT, featureMutNT);
-        for (ResultType type : matchers.keySet()) {
-            if (token.matches(matchers.get(type))) { //note: entire string must match
+        for (ResultType type : tokenMatchers.keySet()) {
+            if (token.matches(tokenMatchers.get(type))) { //note: entire string must match
                 possibles.add(type);
             }
         }
