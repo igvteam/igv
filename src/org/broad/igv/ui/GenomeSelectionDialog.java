@@ -208,7 +208,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
         //======== dialogPane ========
         {
             dialogPane.setBorder(new EmptyBorder(12, 12, 12, 12));
-            dialogPane.setPreferredSize(new Dimension(250, 500));
+            dialogPane.setPreferredSize(new Dimension(350, 500));
             dialogPane.setLayout(new BorderLayout());
 
             //======== contentPanel ========

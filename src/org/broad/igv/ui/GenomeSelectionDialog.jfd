@@ -10,7 +10,7 @@ new FormModel {
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 				name: "dialogPane"
 				"border": new javax.swing.border.EmptyBorder( 12, 12, 12, 12 )
-				"preferredSize": new java.awt.Dimension( 250, 500 )
+				"preferredSize": new java.awt.Dimension( 350, 500 )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
 					"axis": 1
 				} ) {
