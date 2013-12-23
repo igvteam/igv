@@ -105,7 +105,7 @@ var igv = (function (igv) {
 
 
         var protocol = window.location.protocol;
-        var wsProtocol = "https:"; //(protocol == "https:" ? protocol : "http:");
+        var wsProtocol = (protocol == "https:" ? "https:" : "http:");
         var webstart_url = wsProtocol + "//www.broadinstitute.org/igv/projects/current/igv.php";
 
         if (queryString) {
