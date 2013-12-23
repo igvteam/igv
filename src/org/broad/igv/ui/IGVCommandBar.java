@@ -47,6 +47,8 @@ import org.broad.igv.util.LongRunningTask;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -444,18 +446,22 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
                 label.setOpaque(true);
                 label.setBorder(new EmptyBorder(1, 1, 1, 1));
+                label.setSize(label.getWidth() + 10, label.getHeight());
                 renderer = label;
             }
 
-            if (isSelected) {
-                renderer.setBackground(list.getSelectionBackground());
-                renderer.setForeground(list.getSelectionForeground());
-            } else {
-                renderer.setBackground(list.getBackground());
-                renderer.setForeground(list.getForeground());
+            //We call with a null list when setting width
+            if (list != null) {
+                if (isSelected) {
+                    renderer.setBackground(list.getSelectionBackground());
+                    renderer.setForeground(list.getSelectionForeground());
+                } else {
+                    renderer.setBackground(list.getBackground());
+                    renderer.setForeground(list.getForeground());
+                }
+                renderer.setFont(list.getFont());
             }
 
-            renderer.setFont(list.getFont());
 
             return renderer;
         }
@@ -582,6 +588,28 @@ public class IGVCommandBar extends javax.swing.JPanel {
         genomeComboBox = new JComboBox();
         genomeComboBox.setMinimumSize(new Dimension(180, 27));
         genomeComboBox.setPreferredSize(new Dimension(180, 27));
+
+        genomeComboBox.addPopupMenuListener(new PopupMenuListener() {
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                try {
+                    adjustPopupWidth(genomeComboBox);
+                } catch (Exception e1) {
+                    log.warn(e1.getMessage(), e1);
+                }
+            }
+
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                //TODO
+            }
+
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {
+                //TODO
+            }
+        });
+
         locationPanel.add(genomeComboBox, JideBoxLayout.FIX);
         locationPanel.add(Box.createHorizontalStrut(5), JideBoxLayout.FIX);
 
@@ -815,6 +843,40 @@ public class IGVCommandBar extends javax.swing.JPanel {
         chromosomeComboBox.setMinimumSize(new java.awt.Dimension(newWidth, 27));
         chromosomeComboBox.setPreferredSize(new java.awt.Dimension(newWidth, 16));
         revalidate();
+    }
+
+    /**
+     * Adjust the popup for the combobox to be at least as wide as
+     * the widest item.
+     * @param box
+     */
+    private void adjustPopupWidth(JComboBox box) {
+        if (box.getItemCount() == 0) return;
+        Object comp = box.getUI().getAccessibleChild(box, 0);
+        if (!(comp instanceof JPopupMenu)) {
+            return;
+        }
+        JPopupMenu popup = (JPopupMenu) comp;
+        JScrollPane scrollPane = null;
+        for(Component scomp: popup.getComponents()){
+            if(scomp instanceof JScrollPane){
+                scrollPane = (JScrollPane) scomp;
+            }
+        }
+        if(scrollPane == null) return;
+
+        //Loop through and set width to widest component, plus some padding
+        int rendererWidth = box.getWidth();
+        for(int index=0; index < box.getItemCount(); index++){
+            Object value = box.getItemAt(index);
+            Component rendererComp = box.getRenderer().getListCellRendererComponent(null, value, index, false, false);
+        }
+
+        Dimension size = scrollPane.getPreferredSize();
+        size.width = Math.max(size.width, rendererWidth);
+        scrollPane.setPreferredSize(size);
+        scrollPane.setMaximumSize(size);
+        scrollPane.revalidate();
     }
 
     private void homeButtonActionPerformed(java.awt.event.ActionEvent evt) {
