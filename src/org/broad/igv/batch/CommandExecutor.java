@@ -432,8 +432,8 @@ public class CommandExecutor {
                      final String locus,
                      final boolean merge,
                      Map<String, String> params,
-                     final String sort,
-                     final String sortTag) throws IOException {
+                     String sort,
+                     String sortTag) throws IOException {
 
 
         log.debug("Run load files");
@@ -537,6 +537,19 @@ public class CommandExecutor {
 
         if (locus != null && !locus.equals("null")) {
             igv.goToLocus(locus);
+            //If locus is a single base, we sort by base
+            String[] tokens= locus.split(":", 2);
+            if(tokens.length == 2){
+                String chr = tokens[0];
+                try {
+                    int pos = Integer.parseInt(tokens[1].replace(",", ""));
+                    if(pos >= 0 && sort == null) sort = "base";
+
+                } catch (Exception e) {
+                    //pass
+                }
+            }
+
         }
 
         if (sort != null) {
