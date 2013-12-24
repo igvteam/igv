@@ -115,15 +115,15 @@ public class HttpUtils {
      * @param joiner
      * @return
      * @deprecated HttpUtils.openConnection does URL encoding itself
-     *             <p/>
-     *             Join the {@code elements} with the character {@code joiner},
-     *             URLencoding the {@code elements} along the way. {@code joiner}
-     *             is NOT URLEncoded
-     *             Example:
-     *             String[] parm_list = new String[]{"app les", "oranges", "bananas"};
-     *             String formatted = buildURLString(Arrays.asList(parm_list), "+");
-     *             <p/>
-     *             formatted will be "app%20les+oranges+bananas"
+     * <p/>
+     * Join the {@code elements} with the character {@code joiner},
+     * URLencoding the {@code elements} along the way. {@code joiner}
+     * is NOT URLEncoded
+     * Example:
+     * String[] parm_list = new String[]{"app les", "oranges", "bananas"};
+     * String formatted = buildURLString(Arrays.asList(parm_list), "+");
+     * <p/>
+     * formatted will be "app%20les+oranges+bananas"
      */
     @Deprecated
     public static String buildURLString(Iterable<String> elements, String joiner) {
@@ -206,8 +206,17 @@ public class HttpUtils {
     public InputStream openConnectionStream(URL url, Map<String, String> requestProperties) throws IOException {
 
         HttpURLConnection conn = openConnection(url, requestProperties);
-        if (conn == null)
+        if (conn == null) {
             return null;
+        }
+
+        Map<String,List<String>> headerFields = conn.getHeaderFields();
+        final boolean rangeRequested = requestProperties != null && requestProperties.containsKey("Range");
+        final boolean rangeReceived = headerFields != null && headerFields.containsKey("Content-Range");
+        if(rangeRequested && !rangeReceived) {
+            log.error("Byte range requested, but no Content-Range header in response");
+        }
+
         InputStream input = conn.getInputStream();
         if ("gzip".equals(conn.getContentEncoding())) {
             input = new GZIPInputStream(input);
@@ -234,11 +243,12 @@ public class HttpUtils {
     /**
      * First tries a HEAD request, then a GET request if the HEAD fails.
      * If the GET fails, the exception is thrown
+     *
      * @param url
      * @return
      * @throws IOException
      */
-    private HttpURLConnection openConnectionHeadOrGet(URL url) throws IOException{
+    private HttpURLConnection openConnectionHeadOrGet(URL url) throws IOException {
         try {
             return openConnection(url, null, "HEAD");
         } catch (IOException e) {
@@ -249,7 +259,7 @@ public class HttpUtils {
 
     public String getHeaderField(URL url, String key) throws IOException {
         HttpURLConnection conn = openConnectionHeadOrGet(url);
-        if(conn == null) return null;
+        if (conn == null) return null;
         return conn.getHeaderField(key);
     }
 
@@ -373,7 +383,7 @@ public class HttpUtils {
             return null;
         } catch (NullPointerException e) {
             return null;
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error(e.getMessage(), e);
             return null;
         }
@@ -384,6 +394,7 @@ public class HttpUtils {
     /**
      * Calls {@link #downloadFile(String, java.io.File, Frame, String)}
      * with {@code dialogsParent = null, title = null}
+     *
      * @param url
      * @param outputFile
      * @return RunnableResult
@@ -395,7 +406,6 @@ public class HttpUtils {
     }
 
     /**
-     *
      * @param url
      * @param outputFile
      * @param dialogsParent Parent of dialog to show progress. If null, none shown
@@ -405,10 +415,10 @@ public class HttpUtils {
     public URLDownloader downloadFile(String url, File outputFile, Frame dialogsParent, String dialogTitle) throws IOException {
         final URLDownloader urlDownloader = new URLDownloader(url, outputFile);
         boolean showProgressDialog = dialogsParent != null;
-        if(!showProgressDialog){
+        if (!showProgressDialog) {
             urlDownloader.run();
             return urlDownloader;
-        }else{
+        } else {
             ProgressMonitor monitor = new ProgressMonitor();
             urlDownloader.setMonitor(monitor);
             ActionListener buttonListener = new ActionListener() {
@@ -601,7 +611,7 @@ public class HttpUtils {
         Proxy sysProxy = null;
         boolean igvProxySettingsExist = proxySettings != null && proxySettings.useProxy;
         //Only check for system proxy if igv proxy settings not found
-        if(!igvProxySettingsExist){
+        if (!igvProxySettingsExist) {
             sysProxy = getSystemProxy(url.toExternalForm());
         }
         boolean useProxy = sysProxy != null || igvProxySettingsExist;
@@ -610,9 +620,9 @@ public class HttpUtils {
         if (useProxy) {
             Proxy proxy = sysProxy;
             if (igvProxySettingsExist) {
-                if(proxySettings.type == Proxy.Type.DIRECT){
+                if (proxySettings.type == Proxy.Type.DIRECT) {
                     proxy = Proxy.NO_PROXY;
-                }else{
+                } else {
                     proxy = new Proxy(proxySettings.type, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
                 }
             }
@@ -995,14 +1005,14 @@ public class HttpUtils {
         private volatile boolean cancelled = false;
         private volatile RunnableResult result;
 
-        public URLDownloader(String url, File outputFile) throws MalformedURLException{
+        public URLDownloader(String url, File outputFile) throws MalformedURLException {
             this.srcUrl = new URL(url);
             this.outputFile = outputFile;
         }
 
         @Override
         public void run() {
-            if(this.cancelled){
+            if (this.cancelled) {
                 return;
             }
             started = true;
@@ -1019,14 +1029,15 @@ public class HttpUtils {
 
         /**
          * Return the result. Must be called after run is complete
+         *
          * @return
          */
-        public RunnableResult getResult(){
-            if(!this.done) throw new IllegalStateException("Must wait for run to finish before getting result");
+        public RunnableResult getResult() {
+            if (!this.done) throw new IllegalStateException("Must wait for run to finish before getting result");
             return this.result;
         }
 
-        private RunnableResult doDownload() throws IOException{
+        private RunnableResult doDownload() throws IOException {
 
             log.info("Downloading " + srcUrl + " to " + outputFile.getAbsolutePath());
 
@@ -1059,13 +1070,13 @@ public class HttpUtils {
                     downloaded += bytesRead;
                     downSinceLast += bytesRead;
                     counter = (counter + 1) % interval;
-                    if(counter == 0 && this.monitor != null){
+                    if (counter == 0 && this.monitor != null) {
                         curStatus = String.format("%s %s", bytesToByteCountString(downloaded), msg1);
                         this.monitor.updateStatus(curStatus);
-                        if(contentLength >= 0){
-                            perc = (int) ( (downSinceLast * 100) / contentLength);
+                        if (contentLength >= 0) {
+                            perc = (int) ((downSinceLast * 100) / contentLength);
                             this.monitor.fireProgressChange(perc);
-                            if(perc >= 1) downSinceLast = 0;
+                            if (perc >= 1) downSinceLast = 0;
                         }
                     }
                 }
@@ -1079,37 +1090,38 @@ public class HttpUtils {
             }
             long fileLength = outputFile.length();
 
-            if(this.cancelled) return RunnableResult.CANCELLED;
+            if (this.cancelled) return RunnableResult.CANCELLED;
 
             boolean knownComplete = contentLength == fileLength;
             //Assume success if file length not known
-            if(knownComplete || contentLength < 0){
-                if(this.monitor != null){
+            if (knownComplete || contentLength < 0) {
+                if (this.monitor != null) {
                     this.monitor.fireProgressChange(100);
                     this.monitor.updateStatus("Done");
                 }
                 return RunnableResult.SUCCESS;
-            }else{
+            } else {
                 return RunnableResult.FAILURE;
             }
 
         }
 
-        protected void done(){
-           this.done = true;
+        protected void done() {
+            this.done = true;
         }
 
-        public boolean isDone(){
+        public boolean isDone() {
             return this.done;
         }
 
         /**
          * See {@link java.util.concurrent.FutureTask#cancel(boolean)}
+         *
          * @param mayInterruptIfRunning
          * @return
          */
-        public boolean cancel(boolean mayInterruptIfRunning){
-            if(this.started && !mayInterruptIfRunning){
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            if (this.started && !mayInterruptIfRunning) {
                 return false;
             }
             this.cancelled = true;
@@ -1124,6 +1136,7 @@ public class HttpUtils {
          * Convert bytes to human-readable string.
          * e.g. 102894 -> 102.89 KB. If too big or too small,
          * doesn't append a prefix just returns {@code bytes + " B"}
+         *
          * @param bytes
          * @return
          */
@@ -1131,11 +1144,11 @@ public class HttpUtils {
             int unit = 1000;
             String prefs = "KMGT";
 
-            if (bytes < unit ) return bytes + " B";
+            if (bytes < unit) return bytes + " B";
             int exp = (int) (Math.log(bytes) / Math.log(unit));
-            if(exp <= 0 || exp >= prefs.length()) return bytes + " B";
+            if (exp <= 0 || exp >= prefs.length()) return bytes + " B";
 
-            String pre = (prefs).charAt(exp-1) + "";
+            String pre = (prefs).charAt(exp - 1) + "";
             return String.format("%.2f %sB", bytes / Math.pow(unit, exp), pre);
         }
     }
