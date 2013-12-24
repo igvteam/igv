@@ -33,9 +33,9 @@ import static junit.framework.Assert.assertTrue;
 /**
  * @author jrobinso
  */
-public class BAMQueryReaderTest {
+public class BAMFileReaderTest {
 
-    public BAMQueryReaderTest() {
+    public BAMFileReaderTest() {
     }
 
     @BeforeClass
