@@ -12,6 +12,8 @@
 package org.broad.igv.sam;
 
 import net.sf.samtools.SAMFileHeader;
+import net.sf.samtools.SAMFileReader;
+import net.sf.samtools.SAMRecordIterator;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
@@ -25,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * User: jacob
@@ -140,6 +143,50 @@ public class SAMWriterTest extends AbstractHeadlessTest {
                 alignments.add((SamAlignment) iter.next());
             }
         }
+
+    }
+
+    @Test
+    public void testCopyBAMFileSnippet() {
+
+        String sequence = "chr1";
+        int end = 300000000;
+        int start = end / 5 - 1;
+        boolean createIndex = true;
+
+        String inpath = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.bam";
+
+        String outPath = "tmpbam.bam";
+        File outFile = new File(outPath);
+        File indexFile = new File(outPath.replace(".bam", ".bai"));
+        outFile.delete();
+        indexFile.delete();
+        outFile.deleteOnExit();
+        indexFile.deleteOnExit();
+
+        int writtenCount = SAMWriter.writeAlignmentFilePicard(inpath, outFile, sequence, start, end);
+
+        assertEquals("Index file existence unexpected: " + indexFile.getAbsolutePath(), createIndex, indexFile.exists());
+
+        SAMFileReader writtenReader = new SAMFileReader(new File(outPath));
+        writtenReader.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+        SAMRecordIterator iter = null;
+        if(createIndex){
+            iter = writtenReader.queryOverlapping(sequence, start + 1, end);
+        }else{
+            iter = writtenReader.iterator();
+        }
+
+        int readCount = 0;
+        while (iter.hasNext()) {
+            readCount++;
+            iter.next();
+        }
+
+        System.out.println(readCount + " alignments read");
+        assertTrue("No alignments read", readCount > 0);
+        assertEquals("Read a different number of alignments than written", writtenCount, readCount);
+
 
     }
 }

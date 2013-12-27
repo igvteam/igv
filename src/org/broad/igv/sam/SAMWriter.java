@@ -186,5 +186,34 @@ public class SAMWriter {
         }
     }
 
+    public static int writeAlignmentFilePicard(String infilepath, File outFile,
+                                                String sequence, int start, int end){
+        SAMFileWriterFactory factory = new SAMFileWriterFactory();
+
+        SAMFileReader reader = new SAMFileReader(new File(infilepath));
+
+        // Hit the index to determine the chunk boundaries for the required data.
+        final SAMFileHeader fileHeader = reader.getFileHeader();
+        reader.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+
+        //factory.setMaxRecordsInRam(1000).setUseAsyncIo(true);
+
+        boolean createIndex = true;
+        factory.setCreateIndex(createIndex);
+        SAMFileWriter writer = factory.makeSAMOrBAMWriter(fileHeader, true, outFile);
+
+        int count = 0;
+        //NOTE: 1-BASED START/END
+        SAMRecordIterator iter = reader.queryOverlapping(sequence, start + 1, end);
+        while (iter.hasNext()) {
+            writer.addAlignment(iter.next());
+            count++;
+        }
+        iter.close();
+        writer.close();
+
+        return count;
+    }
+
 
 }
