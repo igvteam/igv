@@ -43,7 +43,7 @@ public class AsciiEncoder<E extends Feature> implements FeatureEncoder<E> {
     public static final String NUM_COLS_ATTR = "numCols";
 
     @Override
-    public Map<String, Object> encodeAll(OutputStream outputStream, Iterator<E> features) {
+    public Map<String, Object> encodeAll(OutputStream outputStream, Iterator<? extends E> features) {
         LineFeatureEncoder<E> encoder = lineFeatureEncoder;
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream));
         Map<String, Object> attributes = new HashMap<String, Object>(1);

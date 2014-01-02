@@ -74,7 +74,7 @@ public abstract class PluginCodec<E extends Feature, D extends Feature> implemen
     }
 
     @Override
-    public Map<String, Object> encodeAll(OutputStream outputStream, Iterator<E> features) {
+    public Map<String, Object> encodeAll(OutputStream outputStream, Iterator<? extends E> features) {
         return this.encoder.encodeAll(outputStream, features);
     }
 

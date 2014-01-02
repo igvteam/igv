@@ -42,7 +42,7 @@ public class VCFEncoder implements FeatureEncoder<VCFVariant> {
     }
 
     @Override
-    public Map<String, Object> encodeAll(OutputStream outputStream, Iterator<VCFVariant> features) throws IOException {
+    public Map<String, Object> encodeAll(OutputStream outputStream, Iterator<? extends VCFVariant> features) throws IOException {
 
         SAMSequenceDictionary seqDict = new SAMSequenceDictionary();
         EnumSet<Options> options = VariantContextWriterFactory.DEFAULT_OPTIONS;

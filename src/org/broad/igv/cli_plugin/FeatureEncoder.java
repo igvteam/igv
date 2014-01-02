@@ -37,6 +37,6 @@ public interface FeatureEncoder<T extends Feature> extends PluginArguments {
      * @return A map containing any attributes deemed necessary. This map will be provided
      *         to the {@link FeatureDecoder}. It may be null
      */
-    Map<String, Object> encodeAll(OutputStream outputStream, Iterator<T> features) throws IOException;
+    Map<String, Object> encodeAll(OutputStream outputStream, Iterator<? extends T> features) throws IOException;
 
 }

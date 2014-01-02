@@ -13,6 +13,7 @@ package org.broad.igv.cli_plugin;
 
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.sam.Alignment;
+import org.broad.igv.sam.SamAlignment;
 import org.broad.igv.sam.reader.SAMReader;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
@@ -26,8 +27,8 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * Basic test to see if we can write out and read in alignments
- * User: jacob
- * Date: 2012-Oct-01
+ * @author jacob
+ * @author 2012-Oct-01
  */
 public class AlignmentIOTest extends AbstractHeadlessTest {
 
@@ -36,21 +37,21 @@ public class AlignmentIOTest extends AbstractHeadlessTest {
         String testFile = TestUtils.DATA_DIR + "sam/NA12878.muc1.test.sam";
         SAMReader reader = new SAMReader(testFile);
 
-        Iterator<Alignment> inputAlignmentIterator = reader.iterator();
-        ArrayList<Alignment> inputAlignmentList = new ArrayList<Alignment>();
+        Iterator<SamAlignment> inputAlignmentIterator = reader.iterator();
+        ArrayList<SamAlignment> inputAlignmentList = new ArrayList<SamAlignment>();
 
         while (inputAlignmentIterator.hasNext()) {
-            Alignment al = inputAlignmentIterator.next();
+            SamAlignment al = inputAlignmentIterator.next();
             inputAlignmentList.add(al);
         }
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        FeatureEncoder<Alignment> alignmentEncoder = new SamAlignmentEncoder();
+        FeatureEncoder<SamAlignment> alignmentEncoder = new SamAlignmentEncoder();
         alignmentEncoder.encodeAll(bos, reader.iterator());
 
         ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
 
-        FeatureDecoder<Alignment> alignmentDecoder = new AlignmentDecoder();
-        Iterator<Alignment> decodedAlignments = alignmentDecoder.decodeAll(bis, false);
+        FeatureDecoder<SamAlignment> alignmentDecoder = new AlignmentDecoder();
+        Iterator<SamAlignment> decodedAlignments = alignmentDecoder.decodeAll(bis, false);
 
         int ind = 0;
         while (decodedAlignments.hasNext()) {

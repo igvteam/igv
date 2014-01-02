@@ -25,26 +25,23 @@ import java.util.Map;
 
 /**
  * Encode an Alignment into SAM format
- * User: jacob
- * Date: 2012-Sep-27
+ * @author jacob
+ * @since 2012-Sep-27
  */
-public class SamAlignmentEncoder implements FeatureEncoder<Alignment> {
+public class SamAlignmentEncoder implements FeatureEncoder<SamAlignment> {
 
     private boolean headerSet = false;
 
-    public Map<String, Object> encodeAll(OutputStream stream, Iterator<Alignment> alignments) {
+    public Map<String, Object> encodeAll(OutputStream stream, Iterator<? extends SamAlignment> alignments) {
         SAMFileWriterImpl writer = new SAMTextWriter(stream);
         while (alignments.hasNext()) {
-            Alignment al = alignments.next();
-            if (al instanceof SamAlignment) {
-                SamAlignment samAl = (SamAlignment) al;
-                if (!headerSet) {
-                    writer.setSortOrder(SAMFileHeader.SortOrder.unsorted, true);
-                    writer.setHeader(samAl.getRecord().getHeader());
-                    headerSet = true;
-                }
-                writer.addAlignment(samAl.getRecord());
+            SamAlignment samAl = alignments.next();
+            if (!headerSet) {
+                writer.setSortOrder(SAMFileHeader.SortOrder.unsorted, true);
+                writer.setHeader(samAl.getRecord().getHeader());
+                headerSet = true;
             }
+            writer.addAlignment(samAl.getRecord());
         }
         writer.close();
         return null;
