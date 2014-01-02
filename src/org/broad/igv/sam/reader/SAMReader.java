@@ -22,8 +22,8 @@ import net.sf.samtools.SAMRecord;
 import net.sf.samtools.seekablestream.SeekableStream;
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
-import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.EmptyAlignmentIterator;
+import org.broad.igv.sam.SamAlignment;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
@@ -40,7 +40,7 @@ import java.util.Set;
  *
  * @author jrobinso
  */
-public class SAMReader implements AlignmentReader {
+public class SAMReader implements AlignmentReader<SamAlignment> {
 
     static Logger log = Logger.getLogger(SAMReader.class);
     String samFile;
@@ -99,7 +99,7 @@ public class SAMReader implements AlignmentReader {
         }
     }
 
-    public CloseableIterator<Alignment> query(final String sequence, final int start, final int end, final boolean contained) {
+    public CloseableIterator<SamAlignment> query(final String sequence, final int start, final int end, final boolean contained) {
 
         if (featureIndex == null) {
             featureIndex = SamUtils.getIndexFor(samFile);
@@ -160,7 +160,7 @@ public class SAMReader implements AlignmentReader {
 
     }
 
-    public CloseableIterator<Alignment> iterator() {
+    public CloseableIterator<SamAlignment> iterator() {
         SAMFileReader reader = getSAMFileReader(samFile, -1);
         CloseableIterator<SAMRecord> iter = reader.iterator();
         return new SAMQueryIterator(iter);

@@ -13,7 +13,6 @@ package org.broad.igv.sam.reader;
 
 import net.sf.samtools.SAMRecord;
 import net.sf.samtools.util.CloseableIterator;
-import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.SamAlignment;
 
 /**
@@ -23,7 +22,7 @@ import org.broad.igv.sam.SamAlignment;
  * Time: 2:32:51 PM
  * To change this template use File | Settings | File Templates.
  */
-public class WrappedIterator implements CloseableIterator<Alignment> {
+public class WrappedIterator implements CloseableIterator<SamAlignment> {
 
     CloseableIterator<SAMRecord> iter;
 
@@ -39,7 +38,7 @@ public class WrappedIterator implements CloseableIterator<Alignment> {
         return iter.hasNext();
     }
 
-    public Alignment next() {
+    public SamAlignment next() {
         return new SamAlignment(iter.next());
     }
 

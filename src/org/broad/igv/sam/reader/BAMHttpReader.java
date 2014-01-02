@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.sam.Alignment;
+import org.broad.igv.sam.SamAlignment;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
@@ -43,7 +43,7 @@ import java.util.Set;
  * Time: 2:21:04 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BAMHttpReader implements AlignmentReader {
+public class BAMHttpReader implements AlignmentReader<SamAlignment> {
 
     static Logger log = Logger.getLogger(BAMHttpReader.class);
 
@@ -118,7 +118,7 @@ public class BAMHttpReader implements AlignmentReader {
     }
 
 
-    public CloseableIterator<Alignment> iterator() {
+    public CloseableIterator<SamAlignment> iterator() {
         try {
             if (reader == null) {
                 InputStream is = HttpUtils.getInstance().openConnectionStream(url);
@@ -132,7 +132,7 @@ public class BAMHttpReader implements AlignmentReader {
 
     }
 
-    public CloseableIterator<Alignment> query(String sequence, int start, int end, boolean contained) {
+    public CloseableIterator<SamAlignment> query(String sequence, int start, int end, boolean contained) {
         try {
             if (reader == null) {
                 SeekableStream ss = new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(url));

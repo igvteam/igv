@@ -18,6 +18,7 @@ import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.sam.reader.SAMReader;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
@@ -135,7 +136,7 @@ public class SAMWriterTest extends AbstractHeadlessTest {
         public SamHeaderIterator(String inpath) throws IOException {
 
             SAMReader reader = new SAMReader(inpath, false);
-            this.header = reader.getHeader();
+            this.header = reader.getFileHeader();
             Iterator<Alignment> iter = reader.iterator();
 
             alignments = new ArrayList<SamAlignment>();
@@ -147,7 +148,7 @@ public class SAMWriterTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testCopyBAMFileSnippet() {
+    public void testCopyBAMFileSnippet() throws IOException{
 
         String sequence = "chr1";
         int end = 300000000;
@@ -164,7 +165,7 @@ public class SAMWriterTest extends AbstractHeadlessTest {
         outFile.deleteOnExit();
         indexFile.deleteOnExit();
 
-        int writtenCount = SAMWriter.writeAlignmentFilePicard(inpath, outFile, sequence, start, end);
+        int writtenCount = SAMWriter.writeAlignmentFilePicard(new ResourceLocator(inpath), outFile, sequence, start, end);
 
         assertEquals("Index file existence unexpected: " + indexFile.getAbsolutePath(), createIndex, indexFile.exists());
 

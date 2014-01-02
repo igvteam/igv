@@ -22,7 +22,8 @@ import net.sf.samtools.SAMRecordIterator;
 import net.sf.samtools.SAMSequenceRecord;
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
-import org.broad.igv.sam.Alignment;
+import org.broad.igv.sam.EmptyAlignmentIterator;
+import org.broad.igv.sam.SamAlignment;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.io.File;
@@ -34,7 +35,7 @@ import java.util.Set;
 /**
  * @author jrobinso
  */
-public class BAMFileReader implements AlignmentReader {
+public class BAMFileReader implements AlignmentReader<SamAlignment> {
 
     private static Logger log = Logger.getLogger(BAMFileReader.class);
     SAMFileReader reader;
@@ -91,7 +92,7 @@ public class BAMFileReader implements AlignmentReader {
         return reader.hasIndex();
     }
 
-    public CloseableIterator<Alignment> query(String sequence, int start, int end, boolean contained) {
+    public CloseableIterator<SamAlignment> query(String sequence, int start, int end, boolean contained) {
         SAMRecordIterator query = null;
         try {
             query = reader.query(sequence, start + 1, end, contained);
@@ -100,40 +101,14 @@ public class BAMFileReader implements AlignmentReader {
             log.error("Error querying BAM file ", e);
             MessageUtils.showMessage("Error reading bam file.  This usually indicates a problem with the index (bai) file." +
                     "<br>" + e.toString() + " (" + e.getMessage() + ")");
-            return EmptyIterator.instance;
+            return EmptyAlignmentIterator.getInstance();
         }
 
     }
 
-    public CloseableIterator<Alignment> iterator() {
+    public CloseableIterator<SamAlignment> iterator() {
         return new WrappedIterator(reader.iterator());
     }
-
-
-    /**
-     * Class
-     */
-    public static class EmptyIterator implements CloseableIterator<Alignment> {
-
-        public static final EmptyIterator instance = new EmptyIterator();
-
-        public void close() {
-            // Ignore
-        }
-
-        public boolean hasNext() {
-            return false;
-        }
-
-        public Alignment next() {
-            return null;
-        }
-
-        public void remove() {
-
-        }
-    }
-
 
     /**
      * Look for BAM index file according to standard naming convention.  Slightly modified version of Picard

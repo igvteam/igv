@@ -27,7 +27,7 @@ import java.util.Set;
 /**
  * @author jrobinso
  */
-public interface AlignmentReader {
+public interface AlignmentReader<T extends Alignment> {
 
     void close() throws IOException;
 
@@ -48,7 +48,7 @@ public interface AlignmentReader {
      */
     Set<String>  getPlatforms();
 
-    CloseableIterator<Alignment> iterator();
+    CloseableIterator<T> iterator();
 
     /**
      * Query alignments over a given range. Be careful about start/end,
@@ -63,7 +63,7 @@ public interface AlignmentReader {
      * @return
      * @throws IOException
      */
-    CloseableIterator<Alignment> query(final String sequence, final int start, final int end, final boolean contained) throws IOException;
+    CloseableIterator<T> query(final String sequence, final int start, final int end, final boolean contained) throws IOException;
 
     boolean hasIndex();
 
