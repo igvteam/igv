@@ -1311,44 +1311,23 @@ public class GenomeManager {
 
         InputStream propertyInputStream = null;
         ZipOutputStream zipOutputStream = null;
+        Properties inputProperties = new Properties();
+
 
         try{
             propertyInputStream = targetZipFile.getInputStream(propEntry);
             BufferedReader reader = new BufferedReader(new InputStreamReader(propertyInputStream));
 
+            //Copy over property.txt, only replacing a few properties
+            inputProperties.load(reader);
+            inputProperties.put(Globals.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY, newSequencePath);
+            inputProperties.put(Globals.GENOME_ARCHIVE_CUSTOM_SEQUENCE_LOCATION_KEY, Boolean.TRUE.toString());
+
+
             ByteArrayOutputStream propertyBytes = new ByteArrayOutputStream();
             PrintWriter propertyFileWriter = new PrintWriter(new OutputStreamWriter(propertyBytes));
 
-            //Copy over property.txt, only replacing the sequenceLocation property
-            String line = null;
-            boolean hasCustomSequenceProperty = false;
-            while ((line = reader.readLine()) != null) {
-                String writeLine = line;
-                if(!line.startsWith("#")){
-                    String[] tokens = line.split("=", 2);
-
-                    if(tokens.length == 2){
-                        String propName = tokens[0];
-                        String propVal = tokens[1];
-
-                        if(propName.equals(Globals.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY)){
-                            propVal = newSequencePath;
-                        }else if(propName.equals(Globals.GENOME_ARCHIVE_CUSTOM_SEQUENCE_LOCATION_KEY)){
-                            propVal = Boolean.TRUE.toString();
-                            hasCustomSequenceProperty = true;
-                        }
-
-                        writeLine = String.format("%s=%s", propName, propVal);
-                    }
-                }
-                propertyFileWriter.println(writeLine);
-            }
-
-            //hasCustomSequence was not already set, we need to set it
-            if(!hasCustomSequenceProperty){
-                String writeLine = String.format("%s=%s", Globals.GENOME_ARCHIVE_CUSTOM_SEQUENCE_LOCATION_KEY, true);
-                propertyFileWriter.println(writeLine);
-            }
+            inputProperties.store(propertyFileWriter, null);
 
             propertyFileWriter.flush();
             byte[] newPropertyBytes = propertyBytes.toByteArray();
@@ -1395,7 +1374,9 @@ public class GenomeManager {
                 zipOutputStream.finish();
                 zipOutputStream.close();
             }
-            success = targetFile.delete();
+            zipOutputStream = null;
+            System.gc();
+            success = true;
         }
 
         //This is a hack. I don't know why it's necessary,
@@ -1409,6 +1390,7 @@ public class GenomeManager {
 
         //Rename tmp file
         if(success){
+            targetFile.delete();
             FileUtils.copyFile(tmpZipFile, targetFile);
             success = targetFile.exists();
             tmpZipFile.delete();
