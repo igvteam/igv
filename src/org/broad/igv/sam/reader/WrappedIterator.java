@@ -16,11 +16,8 @@ import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.sam.SamAlignment;
 
 /**
- * Created by IntelliJ IDEA.
- * User: jrobinso
- * Date: Sep 22, 2009
- * Time: 2:32:51 PM
- * To change this template use File | Settings | File Templates.
+ * @author jrobinso
+ * @since Sep 22, 2009
  */
 public class WrappedIterator implements CloseableIterator<SamAlignment> {
 

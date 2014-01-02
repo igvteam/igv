@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * User: jacob
- * Date: 2012-Oct-01
+ * @author jacob
+ * @since 2012-Oct-01
  */
 public class AlignmentDecoder implements FeatureDecoder<SamAlignment> {
 
