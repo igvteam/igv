@@ -210,11 +210,13 @@ public class HttpUtils {
             return null;
         }
 
-        Map<String,List<String>> headerFields = conn.getHeaderFields();
-        final boolean rangeRequested = requestProperties != null && requestProperties.containsKey("Range");
-        final boolean rangeReceived = headerFields != null && headerFields.containsKey("Content-Range");
-        if(rangeRequested && !rangeReceived) {
-            log.error("Byte range requested, but no Content-Range header in response");
+        boolean rangeRequestedNotReceived = isExpectedRangeMissing(conn, requestProperties);
+        if(rangeRequestedNotReceived) {
+            String msg = "Byte range requested, but no Content-Range header in response";
+            log.error(msg);
+//            if(Globals.isTesting()){
+//                throw new IOException(msg);
+//            }
         }
 
         InputStream input = conn.getInputStream();
@@ -222,6 +224,13 @@ public class HttpUtils {
             input = new GZIPInputStream(input);
         }
         return input;
+    }
+
+    boolean isExpectedRangeMissing(URLConnection conn, Map<String, String> requestProperties){
+        Map<String,List<String>> headerFields = conn.getHeaderFields();
+        final boolean rangeRequested = requestProperties != null && requestProperties.containsKey("Range");
+        final boolean rangeReceived = headerFields != null && headerFields.containsKey("Content-Range");
+        return rangeRequested && !rangeReceived;
     }
 
 
@@ -575,7 +584,7 @@ public class HttpUtils {
         return openConnection(url, Collections.<String, String>emptyMap(), "DELETE");
     }
 
-    private HttpURLConnection openConnection(URL url, Map<String, String> requestProperties) throws IOException {
+    HttpURLConnection openConnection(URL url, Map<String, String> requestProperties) throws IOException {
         return openConnection(url, requestProperties, "GET");
     }
 

@@ -11,6 +11,7 @@
 
 package org.broad.igv.util;
 
+import org.broad.igv.AbstractHeadlessTest;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -20,6 +21,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -28,11 +31,13 @@ import static org.junit.Assert.assertTrue;
 /**
  * Test of class HttpUtils (TODO -- need more tests!!)
  */
-public class HttpUtilsTest {
+public class HttpUtilsTest extends AbstractHeadlessTest{
 
 
     static String broadURLString = "http://www.broadinstitute.org/igvdata/annotations/seq/hg19/chr1.txt";
     static String genericURLString = "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/chromosomes/chr1.fa.gz";
+
+    static String noRangeHeaderSupportString = "http://www.ncbi.nlm.nih.gov/geo/download/?acc=GSM714693&format=file&file=GSM714693%5Fhg19%5FwgEncodeGisDnaPetK562F1kAln%2Ebam";
 
     @Test
     public void testGetContentLength() throws IOException {
@@ -75,6 +80,37 @@ public class HttpUtilsTest {
         String acceptsRangesValue = HttpUtils.getInstance().getHeaderField(url, "Accept-Ranges");
         boolean acceptsRanges = acceptsRangesValue != null && acceptsRangesValue.contains("bytes");
         assertEquals(acceptsRanges, HttpUtils.getInstance().useByteRange(url));
+    }
+
+    /**
+     * Test that when we include the Range header, {@link HttpUtils#openConnection(java.net.URL, java.util.Map, String) we detect the absence of the range response properly
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testFailedRangeRequest() throws Exception {
+        int start = 1;
+        int end = 100;
+        int numBytes = end - start + 1;
+        String byteRange = "bytes=" + start + "-" + end;
+        Map<String, String> params = new HashMap();
+        params.put("Range", byteRange);
+
+        HttpURLConnection conn = HttpUtils.getInstance().openConnection(new URL(noRangeHeaderSupportString), params);
+        boolean rangeRequestedNotReceived = HttpUtils.getInstance().isExpectedRangeMissing(conn, params);
+
+        assertTrue(rangeRequestedNotReceived);
+
+        InputStream input = conn.getInputStream();
+        byte b;
+        int count=0, cc;
+        while( (cc = input.read()) >= 0){
+            count += cc;
+            if(count > numBytes) break;
+        }
+
+        assertTrue("Read fewer than expected bytes even though range header ignored", count > numBytes);
+        input.close();
     }
 
     @Ignore
