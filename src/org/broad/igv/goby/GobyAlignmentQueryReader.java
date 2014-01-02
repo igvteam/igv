@@ -23,13 +23,17 @@ import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.lang.MutableString;
+import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.reader.AlignmentReader;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Query reader to parse <a href="http://goby.campagnelab.org">Goby</a> alignment files.
@@ -115,6 +119,10 @@ public class GobyAlignmentQueryReader implements AlignmentReader {
 
     public List<String> getSequenceNames() {
         return targetSequenceNames;
+    }
+
+    public SAMFileHeader getFileHeader(){
+        return null;
     }
 
     /**

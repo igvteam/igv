@@ -52,7 +52,7 @@ public class BAMFileReader implements AlignmentReader {
         }
     }
 
-    private SAMFileHeader getHeader() {
+    public SAMFileHeader getFileHeader() {
         if (header == null) {
             loadHeader();
         }
@@ -60,7 +60,7 @@ public class BAMFileReader implements AlignmentReader {
     }
 
     public List<String> getSequenceNames() {
-        SAMFileHeader header = getHeader();
+        SAMFileHeader header = getFileHeader();
         if (header == null) {
             return null;
         }
@@ -76,7 +76,7 @@ public class BAMFileReader implements AlignmentReader {
     }
 
     public Set<String> getPlatforms() {
-        return AlignmentReaderFactory.getPlatforms(getHeader());
+        return AlignmentReaderFactory.getPlatforms(getFileHeader());
     }
 
     private void loadHeader() {

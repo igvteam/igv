@@ -1,6 +1,20 @@
+/*
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.sam.reader;
 
-import net.sf.samtools.*;
+import net.sf.samtools.SAMFileHeader;
+import net.sf.samtools.SAMFileReader;
+import net.sf.samtools.SAMRecord;
+import net.sf.samtools.SAMTextHeaderCodec;
 import net.sf.samtools.util.BufferedLineReader;
 import net.sf.samtools.util.CloseableIterator;
 import net.sf.samtools.util.LineReader;
@@ -13,7 +27,6 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -131,11 +144,10 @@ public class CGIAlignmentReader implements AlignmentReader {
     }
 
     public Set<String> getPlatforms() {
-        return AlignmentReaderFactory.getPlatforms(getHeader());
+        return AlignmentReaderFactory.getPlatforms(getFileHeader());
     }
 
-
-    public SAMFileHeader getHeader() {
+    public SAMFileHeader getFileHeader() {
         if(header == null) {
             loadHeader();
         }

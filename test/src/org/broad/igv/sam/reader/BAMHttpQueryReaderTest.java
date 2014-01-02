@@ -63,7 +63,7 @@ public class BAMHttpQueryReaderTest extends AbstractHeadlessTest {
 
     @Test
     public void testGetHeader() throws IOException {
-        SAMFileHeader header = reader.getHeader();
+        SAMFileHeader header = reader.getFileHeader();
         assertEquals(114, header.getSequenceDictionary().size());
         assertEquals("1.0", header.getVersion());
     }

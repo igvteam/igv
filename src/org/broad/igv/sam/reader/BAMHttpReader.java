@@ -84,7 +84,7 @@ public class BAMHttpReader implements AlignmentReader {
         }
     }
 
-    public SAMFileHeader getHeader() {
+    public SAMFileHeader getFileHeader() {
         if (header == null) {
             header = reader.getFileHeader();
         }
@@ -92,7 +92,7 @@ public class BAMHttpReader implements AlignmentReader {
     }
 
     public Set<String> getPlatforms() {
-        return AlignmentReaderFactory.getPlatforms(getHeader());
+        return AlignmentReaderFactory.getPlatforms(getFileHeader());
     }
 
     public boolean hasIndex() {
@@ -101,7 +101,7 @@ public class BAMHttpReader implements AlignmentReader {
 
     public List<String> getSequenceNames() {
         if (sequenceNames == null) {
-            SAMFileHeader header = getHeader();
+            SAMFileHeader header = getFileHeader();
             if (header == null) {
                 return null;
             }

@@ -64,12 +64,12 @@ public class SAMReader implements AlignmentReader {
         }
     }
 
-    public SAMFileHeader getHeader() {
+    public SAMFileHeader getFileHeader() {
         return header;
     }
 
     public Set<String> getPlatforms() {
-        return AlignmentReaderFactory.getPlatforms(getHeader());
+        return AlignmentReaderFactory.getPlatforms(getFileHeader());
     }
 
     private void loadHeader() {
