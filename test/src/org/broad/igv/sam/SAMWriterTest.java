@@ -17,6 +17,7 @@ import net.sf.samtools.SAMRecordIterator;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
+import org.broad.igv.sam.reader.MergedAlignmentReaderTest;
 import org.broad.igv.sam.reader.SAMReader;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
@@ -148,16 +149,33 @@ public class SAMWriterTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testCopyBAMFileSnippet() throws IOException{
-
+    public void testCopyBAMFile_01() throws Exception{
         String sequence = "chr1";
         int end = 300000000;
         int start = end / 5 - 1;
+        String inpath = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.bam";
+        ResourceLocator inlocator = new ResourceLocator(inpath);
+        tstCopyBAMFile(inlocator, sequence, start, end);
+    }
+
+    @Test
+    public void testCopyMergedBAM_01() throws Exception{
+        String sequence = "chr1";
+        int start = 151667156;
+        int end = start + 10000;
+
+        File listFile = new File(TestUtils.LARGE_DATA_DIR, "2largebams.bam.list");
+        MergedAlignmentReaderTest.generateRepLargebamsList(listFile);
+        ResourceLocator inlocator = new ResourceLocator(listFile.getAbsolutePath());
+        tstCopyBAMFile(inlocator, sequence, start, end);
+    }
+
+    public void tstCopyBAMFile(ResourceLocator inlocator, String sequence, int start, int end) throws IOException{
+
         boolean createIndex = true;
 
-        String inpath = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.bam";
 
-        String outPath = "tmpbam.bam";
+        String outPath = TestUtils.TMP_OUTPUT_DIR + "tmpbam.bam";
         File outFile = new File(outPath);
         File indexFile = new File(outPath.replace(".bam", ".bai"));
         outFile.delete();
@@ -165,7 +183,7 @@ public class SAMWriterTest extends AbstractHeadlessTest {
         outFile.deleteOnExit();
         indexFile.deleteOnExit();
 
-        int writtenCount = SAMWriter.writeAlignmentFilePicard(new ResourceLocator(inpath), outFile, sequence, start, end);
+        int writtenCount = SAMWriter.writeAlignmentFilePicard(inlocator, outFile, sequence, start, end);
 
         assertEquals("Index file existence unexpected: " + indexFile.getAbsolutePath(), createIndex, indexFile.exists());
 
@@ -187,7 +205,5 @@ public class SAMWriterTest extends AbstractHeadlessTest {
         System.out.println(readCount + " alignments read");
         assertTrue("No alignments read", readCount > 0);
         assertEquals("Read a different number of alignments than written", writtenCount, readCount);
-
-
     }
 }

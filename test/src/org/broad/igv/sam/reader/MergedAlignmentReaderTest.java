@@ -22,34 +22,39 @@ import org.junit.Test;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
 
 /**
- * User: jacob
- * Date: 2012/01/25
+ * @author jacob
+ * @since 2012/01/25
  */
 public class MergedAlignmentReaderTest extends AbstractHeadlessTest {
 
-    @Test
-    public void testSimpleRead() throws Exception {
-        //This test file is 2 lines of the same file.
-        //Check that we get the same results twice
-        File listFile = new File(TestUtils.LARGE_DATA_DIR, "2largebams.bam.list");
+    public static String[] generateRepLargebamsList(File listFile) throws IOException{
         listFile.delete();
         listFile.deleteOnExit();
         String listPath = listFile.getPath();
 
-        String[] actfiles = IGVToolsTest.generateRepLargebamsList(listPath, "HG00171.hg18.bam", 2);
+        return IGVToolsTest.generateRepLargebamsList(listPath, "HG00171.hg18.bam", 2);
+    }
+
+    @Test
+    public void testSimpleRead() throws Exception {
+
+        File listFile = new File(TestUtils.LARGE_DATA_DIR, "2largebams.bam.list");
+
+        String[] actfiles = generateRepLargebamsList(listFile);
         int start = 151667156;
         int end = start + 10000;
         int num_combined = 0;
         int num_sep = 0;
         Alignment align;
 
-        AlignmentReader mergedReader = AlignmentReaderFactory.getBamListReader(listPath, false);
+        AlignmentReader mergedReader = AlignmentReaderFactory.getBamListReader(listFile.getAbsolutePath(), false);
         CloseableIterator<Alignment> combData = mergedReader.query("chr1", start, end, false);
 
         Map<Float, Integer> combinedCounts = new HashMap();
@@ -63,9 +68,9 @@ public class MergedAlignmentReaderTest extends AbstractHeadlessTest {
         }
         mergedReader.close();
 
-        BufferedReader in = new BufferedReader(new FileReader(listPath));
+        BufferedReader in = new BufferedReader(new FileReader(listFile));
         String singfile = in.readLine();
-        singfile = FileUtils.getAbsolutePath(singfile, listPath);
+        singfile = FileUtils.getAbsolutePath(singfile, listFile.getPath());
         AlignmentReader singReader = AlignmentReaderFactory.getReader(singfile, false);
 
         CloseableIterator<Alignment> singData = singReader.query("chr1", start, end, false);

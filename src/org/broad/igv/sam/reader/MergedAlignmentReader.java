@@ -11,8 +11,10 @@
 
 package org.broad.igv.sam.reader;
 
+import net.sf.picard.sam.SamFileHeaderMerger;
 import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.util.CloseableIterator;
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.Alignment;
@@ -29,9 +31,12 @@ import java.util.*;
  */
 public class MergedAlignmentReader implements AlignmentReader {
 
+    private static Logger log = Logger.getLogger(MergedAlignmentReader.class);
+
     List<AlignmentReader> readers;
     List<String> sequenceNames;
     Map<String, Integer> chrNameIndex;
+    SAMFileHeader header;
 
     public MergedAlignmentReader(List<AlignmentReader> readers) {
         this.readers = readers;
@@ -68,7 +73,10 @@ public class MergedAlignmentReader implements AlignmentReader {
     }
 
     public SAMFileHeader getFileHeader(){
-        return null;
+        if(this.header == null){
+            this.header = loadHeaders();
+        }
+        return this.header;
     }
 
     /**
@@ -93,6 +101,24 @@ public class MergedAlignmentReader implements AlignmentReader {
         }
     }
 
+    private SAMFileHeader loadHeaders(){
+        List<SAMFileHeader> headersList = new ArrayList<SAMFileHeader>();
+        SAMFileHeader.SortOrder sortOrder = null;
+        for(AlignmentReader reader: readers){
+            SAMFileHeader curHeader = reader.getFileHeader();
+            if(curHeader != null) {
+                headersList.add(curHeader);
+                sortOrder = curHeader.getSortOrder();
+            }
+        }
+        if(sortOrder != null){
+            SamFileHeaderMerger headerMerger = new SamFileHeaderMerger(sortOrder, headersList, true);
+            return headerMerger.getMergedHeader();
+        }
+
+        return null;
+    }
+
     public boolean hasIndex() {
         return readers.iterator().next().hasIndex();
     }
@@ -107,8 +133,7 @@ public class MergedAlignmentReader implements AlignmentReader {
             try {
                 create(null, -1, -1, false);
             } catch (IOException e) {
-                e.printStackTrace();
-                return;
+                log.error(e.getMessage(), e);
             }
         }
 

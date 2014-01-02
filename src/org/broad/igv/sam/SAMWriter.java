@@ -205,7 +205,7 @@ public class SAMWriter {
                                                 String sequence, int start, int end) throws IOException{
 
         String typeString = inlocator.getTypeString();
-        String[] validExts = new String[]{".bam", ".sam"};
+        String[] validExts = new String[]{".bam", ".sam", ".bam.list", ".sam.list"};
         boolean isValidExt = false;
         for(String validExt: validExts){
             isValidExt |= typeString.endsWith(validExt);
