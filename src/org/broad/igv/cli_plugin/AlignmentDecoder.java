@@ -12,7 +12,7 @@
 package org.broad.igv.cli_plugin;
 
 import net.sf.samtools.SAMFileReader;
-import org.broad.igv.sam.Alignment;
+import org.broad.igv.sam.SamAlignment;
 import org.broad.igv.sam.reader.WrappedIterator;
 
 import java.io.IOException;
@@ -25,10 +25,10 @@ import java.util.Map;
  * User: jacob
  * Date: 2012-Oct-01
  */
-public class AlignmentDecoder implements FeatureDecoder<Alignment> {
+public class AlignmentDecoder implements FeatureDecoder<SamAlignment> {
 
     @Override
-    public Iterator<Alignment> decodeAll(InputStream is, boolean strictParsing) throws IOException {
+    public Iterator<SamAlignment> decodeAll(InputStream is, boolean strictParsing) throws IOException {
         SAMFileReader reader = new SAMFileReader(is);
         SAMFileReader.ValidationStringency stringency =
                 strictParsing ? SAMFileReader.ValidationStringency.STRICT : SAMFileReader.ValidationStringency.SILENT;

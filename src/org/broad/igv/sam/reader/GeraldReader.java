@@ -94,7 +94,7 @@ public class GeraldReader implements AlignmentReader {
         return null;
     }
 
-    public CloseableIterator<Alignment> query(final String sequence, final int start, final int end, final boolean contained) {
+    public CloseableIterator<? extends Alignment> query(final String sequence, final int start, final int end, final boolean contained) {
 
         if (featureIndex == null) {
             featureIndex = SamUtils.getIndexFor(alignmentFile);
