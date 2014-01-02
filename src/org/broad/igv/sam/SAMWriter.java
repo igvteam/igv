@@ -12,9 +12,14 @@
 package org.broad.igv.sam;
 
 import net.sf.samtools.*;
+import net.sf.samtools.util.CloseableIterator;
 import org.apache.commons.lang.StringUtils;
+import org.broad.igv.sam.reader.AlignmentReader;
+import org.broad.igv.sam.reader.AlignmentReaderFactory;
+import org.broad.igv.util.ResourceLocator;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -186,27 +191,47 @@ public class SAMWriter {
         }
     }
 
-    public static int writeAlignmentFilePicard(String infilepath, File outFile,
-                                                String sequence, int start, int end){
-        SAMFileWriterFactory factory = new SAMFileWriterFactory();
+    /**
+     * Use Picard to write alignment subset.
+     * We read alignments in first
+     * @param inlocator
+     * @param outFile
+     * @param sequence
+     * @param start
+     * @param end
+     * @return
+     */
+    public static int writeAlignmentFilePicard(ResourceLocator inlocator, File outFile,
+                                                String sequence, int start, int end) throws IOException{
 
-        SAMFileReader reader = new SAMFileReader(new File(infilepath));
+        String typeString = inlocator.getTypeString();
+        String[] validExts = new String[]{".bam", ".sam"};
+        boolean isValidExt = false;
+        for(String validExt: validExts){
+            isValidExt |= typeString.endsWith(validExt);
+        }
+        if(!isValidExt){
+            throw new IllegalArgumentException("Input alignment valid not valid for export");
+        }
+
+        AlignmentReader reader = AlignmentReaderFactory.getReader(inlocator);
+        CloseableIterator<SamAlignment> iter = reader.query(sequence, start, end, false);
 
         // Hit the index to determine the chunk boundaries for the required data.
         final SAMFileHeader fileHeader = reader.getFileHeader();
-        reader.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
 
         //factory.setMaxRecordsInRam(1000).setUseAsyncIo(true);
 
         boolean createIndex = true;
+
+        SAMFileWriterFactory factory = new SAMFileWriterFactory();
         factory.setCreateIndex(createIndex);
         SAMFileWriter writer = factory.makeSAMOrBAMWriter(fileHeader, true, outFile);
 
         int count = 0;
-        //NOTE: 1-BASED START/END
-        SAMRecordIterator iter = reader.queryOverlapping(sequence, start + 1, end);
         while (iter.hasNext()) {
-            writer.addAlignment(iter.next());
+            SamAlignment al = iter.next();
+            writer.addAlignment(al.getRecord());
             count++;
         }
         iter.close();

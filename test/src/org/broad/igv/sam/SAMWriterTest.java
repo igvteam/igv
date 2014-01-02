@@ -137,11 +137,11 @@ public class SAMWriterTest extends AbstractHeadlessTest {
 
             SAMReader reader = new SAMReader(inpath, false);
             this.header = reader.getFileHeader();
-            Iterator<Alignment> iter = reader.iterator();
+            Iterator<SamAlignment> iter = reader.iterator();
 
             alignments = new ArrayList<SamAlignment>();
             while (iter.hasNext()) {
-                alignments.add((SamAlignment) iter.next());
+                alignments.add(iter.next());
             }
         }
 
