@@ -183,7 +183,7 @@ public class SAMWriterTest extends AbstractHeadlessTest {
         outFile.deleteOnExit();
         indexFile.deleteOnExit();
 
-        int writtenCount = SAMWriter.writeAlignmentFilePicard(inlocator, outFile, sequence, start, end);
+        int writtenCount = SAMWriter.writeAlignmentFilePicard(inlocator, outPath, sequence, start, end);
 
         assertEquals("Index file existence unexpected: " + indexFile.getAbsolutePath(), createIndex, indexFile.exists());
 

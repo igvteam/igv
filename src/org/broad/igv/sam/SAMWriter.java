@@ -195,13 +195,13 @@ public class SAMWriter {
      * Use Picard to write alignment subset.
      * We read alignments in first
      * @param inlocator
-     * @param outFile
+     * @param outPath
      * @param sequence
      * @param start
      * @param end
      * @return
      */
-    public static int writeAlignmentFilePicard(ResourceLocator inlocator, File outFile,
+    public static int writeAlignmentFilePicard(ResourceLocator inlocator, String outPath,
                                                 String sequence, int start, int end) throws IOException{
 
         String typeString = inlocator.getTypeString();
@@ -226,7 +226,7 @@ public class SAMWriter {
 
         SAMFileWriterFactory factory = new SAMFileWriterFactory();
         factory.setCreateIndex(createIndex);
-        SAMFileWriter writer = factory.makeSAMOrBAMWriter(fileHeader, true, outFile);
+        SAMFileWriter writer = factory.makeSAMOrBAMWriter(fileHeader, true, new File(outPath));
 
         int count = 0;
         while (iter.hasNext()) {

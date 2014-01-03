@@ -49,7 +49,7 @@ public class TrackMenuUtilsTest extends AbstractHeadlessTest {
         Predicate<Feature> overlapPred = FeatureUtils.getOverlapPredicate(chr, start, end);
         ReferenceFrame.Range range = new ReferenceFrame.Range(chr, start, end);
 
-        TrackMenuUtils.exportVisibleData(outPath, loadedTrack, range);
+        TrackMenuUtils.exportVisibleFeatures(outPath, loadedTrack, range);
 
         AbstractFeatureReader bfs = AbstractFeatureReader.getFeatureReader(outPath, CodecFactory.getCodec(outPath, genome), false);
         Iterator<Feature> iter = bfs.iterator();

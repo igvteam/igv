@@ -26,6 +26,8 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.renderer.*;
+import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.sam.SAMWriter;
 import org.broad.igv.ui.*;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.FrameManager;
@@ -36,6 +38,7 @@ import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.LongRunningTask;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.util.collections.CollUtils;
@@ -48,6 +51,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.List;
@@ -495,22 +499,63 @@ public class TrackMenuUtils {
      * @return
      */
     public static JMenuItem getExportFeatures(final Collection<Track> tracks, final ReferenceFrame.Range range) {
-        if (tracks.size() != 1 || !(tracks.iterator().next() instanceof FeatureTrack)) {
+        Track ft = tracks.iterator().next();
+        if (tracks.size() != 1) {
             return null;
         }
-        JMenuItem exportData = new JMenuItem("Export To BED File");
-        exportData.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                File outFile = FileDialogUtils.chooseFile("Save Visible Data",
-                        PreferenceManager.getInstance().getLastTrackDirectory(),
-                        new File("visibleData.bed"),
-                        FileDialogUtils.SAVE);
+        JMenuItem exportData = null;
 
-                exportVisibleData(outFile.getAbsolutePath(), tracks, range);
-            }
-        });
+        if(ft instanceof FeatureTrack){
+            exportData = new JMenuItem("Export To BED File");
+            exportData.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    File outFile = FileDialogUtils.chooseFile("Save Visible Data",
+                            PreferenceManager.getInstance().getLastTrackDirectory(),
+                            new File("visibleData.bed"),
+                            FileDialogUtils.SAVE);
+
+                    exportVisibleFeatures(outFile.getAbsolutePath(), tracks, range);
+                }
+            });
+        }else if(ft instanceof AlignmentTrack){
+            exportData = new JMenuItem("Export Alignments");
+            exportData.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    File outFile = FileDialogUtils.chooseFile("Save Visible Data",
+                            PreferenceManager.getInstance().getLastTrackDirectory(),
+                            new File("visibleData.sam"),
+                            FileDialogUtils.SAVE);
+
+                    int countExp = exportVisibleAlignments(outFile.getAbsolutePath(), tracks, range);
+                    String msg = String.format("%d reads written", countExp);
+                    MessageUtils.setStatusBarMessage(msg);
+                }
+            });
+        }
+
         return exportData;
+    }
+
+    static int exportVisibleAlignments(String outPath, Collection<Track> tracks, ReferenceFrame.Range range){
+        AlignmentTrack alignmentTrack = null;
+        for(Track track: tracks){
+            if(track instanceof AlignmentTrack){
+                alignmentTrack = (AlignmentTrack) track;
+                break;
+            }
+        }
+
+        if(alignmentTrack == null) return -1;
+
+        ResourceLocator inlocator = alignmentTrack.getDataManager().getLocator();
+        try {
+            return SAMWriter.writeAlignmentFilePicard(inlocator, outPath, range.getChr(), range.getStart(), range.getEnd());
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -522,7 +567,7 @@ public class TrackMenuUtils {
      * @param tracks
      * @param range
      */
-    static void exportVisibleData(String outPath, Collection<Track> tracks, ReferenceFrame.Range range) {
+    static void exportVisibleFeatures(String outPath, Collection<Track> tracks, ReferenceFrame.Range range) {
         PrintWriter writer;
         try {
             writer = new PrintWriter(outPath);

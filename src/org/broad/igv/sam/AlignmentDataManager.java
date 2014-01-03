@@ -63,8 +63,10 @@ public class AlignmentDataManager implements IAlignmentDataManager{
      */
     private EventBus eventBus = new EventBus();
 
+    private ResourceLocator locator;
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
+        this.locator = locator;
         reader = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator));
         peStats = new HashMap();
         initLoadOptions();
@@ -106,6 +108,10 @@ public class AlignmentDataManager implements IAlignmentDataManager{
 
     public AlignmentTileLoader getReader() {
         return reader;
+    }
+
+    public ResourceLocator getLocator() {
+        return locator;
     }
 
     public Map<String, PEStats> getPEStats() {
