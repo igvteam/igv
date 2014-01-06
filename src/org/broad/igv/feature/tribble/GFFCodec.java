@@ -176,7 +176,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
     public boolean canDecode(String path) {
         final String pathLowerCase = path.toLowerCase();
         return pathLowerCase.endsWith(".gff") || pathLowerCase.endsWith(".gff3") ||
-                pathLowerCase.endsWith(".gvf");
+                pathLowerCase.endsWith(".gvf") || pathLowerCase.endsWith(".gtf");
     }
 
     public BasicFeature decodeLoc(String line) {
