@@ -392,32 +392,27 @@ public class AlignmentTileLoader {
         }
 
         /**
-         * Attempt to add this alignment. The alignment is definitely added iff it's mate was added.
-         * If we haven't seen the mate, the record is added with some probability according to
+         * Attempt to add this alignment. The alignment is definitely added if there is another
+         * read with the same name. Typically this other read is a mate pair, but it could also be a secondary alignment
+         * or chimeric read.
+         * If we haven't seen another read like that, the record is added with some probability according to
          * reservoir sampling
          * @param alignment
          */
         private void attemptAddRecordDownsampled(Alignment alignment) {
             String readName = alignment.getReadName();
-            //A simple way to turn off the mate-checking is to replace the read name with a random string
+            //A simple way to turn off the same-readName-checking is to replace the read name with a random string
             //so that there are no repeats
             //readName = String.format("%s%d", readName, RAND.nextInt());
 
-            //There are 3 possibilities: mate-kept, mate-rejected, mate-unknown (haven't seen, or non-paired reads)
-            //If we kept or rejected the mate, we do the same for this one
+            //There are 3 possibilities: other-kept, other-rejected, other-unknown (haven't seen)
+            //If we kept or rejected the another read with the same name, we do the same for this one
             boolean hasRead = imAlignments.containsKey(readName);
-            if(hasRead && alignment.isProperPair()){
+            if(hasRead){
                 List<Alignment> mateAlignments = imAlignments.get(readName);
-                boolean haveMate = false;
-                if(mateAlignments != null){
-                    for(Alignment al: mateAlignments){
-                        ReadMate mate = al.getMate();
-                        //mate shouldn't be null if we have paired end reads, but if it is this line throws an NPE
-                        haveMate |= mate.getChr().equals(alignment.getChr()) && mate.getStart() == alignment.getStart();
-                    }
-                }
-                if(haveMate){
-                    //We keep the alignment if it's mate is kept
+                boolean haveOther = mateAlignments != null;
+                if(haveOther){
+                    //We keep the alignment if others have been kept
                     imAlignments.append(readName, alignment);
                 }else{
                     currentDownsampledInterval.incCount();
