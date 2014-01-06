@@ -406,12 +406,13 @@ public class AlignmentTileLoader {
             //There are 3 possibilities: mate-kept, mate-rejected, mate-unknown (haven't seen, or non-paired reads)
             //If we kept or rejected the mate, we do the same for this one
             boolean hasRead = imAlignments.containsKey(readName);
-            if(hasRead){
+            if(hasRead && alignment.isProperPair()){
                 List<Alignment> mateAlignments = imAlignments.get(readName);
                 boolean haveMate = false;
                 if(mateAlignments != null){
                     for(Alignment al: mateAlignments){
                         ReadMate mate = al.getMate();
+                        //mate shouldn't be null if we have paired end reads, but if it is this line throws an NPE
                         haveMate |= mate.getChr().equals(alignment.getChr()) && mate.getStart() == alignment.getStart();
                     }
                 }
@@ -597,7 +598,7 @@ public class AlignmentTileLoader {
             }
 
             private void addNewValueToMap(K key, V value){
-                List<V> curList = new ArrayList<V>(1);
+                List<V> curList = new ArrayList<V>(2);
                 curList.add(value);
                 map.put(key, curList);
             }
