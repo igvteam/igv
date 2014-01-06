@@ -49,8 +49,8 @@ var igv = (function (igv) {
      */
     igv.igvRequest = function (port, command, paramString) {
 
-        var isIpad = navigator.userAgent.match(/iPad/i) != null;
-        if (isIpad) {
+        var iOS = ( navigator.userAgent.match(/(iPad|iPhone|iPod)/g) ? true : false );
+        if (iOS) {
             launchIGV(paramString);
             return;
         }
