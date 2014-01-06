@@ -11,6 +11,7 @@
 
 package org.broad.igv.sam;
 
+import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
@@ -68,6 +69,10 @@ public class AlignmentTileLoader {
 
     public void close() throws IOException {
         reader.close();
+    }
+
+    public SAMFileHeader getFileHeader(){
+        return this.reader.getFileHeader();
     }
 
     public List<String> getSequenceNames() {

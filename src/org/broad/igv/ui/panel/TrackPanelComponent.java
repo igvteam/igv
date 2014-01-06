@@ -209,8 +209,8 @@ abstract public class TrackPanelComponent extends JPanel {
 
         // Add export features
         if(Globals.isDevelopment()){
-            ReferenceFrame.Range range = FrameManager.getDefaultFrame().getCurrentRange();
-            JMenuItem exportFeats = getExportFeatures(selectedTracks, range);
+            ReferenceFrame frame = FrameManager.getDefaultFrame();
+            JMenuItem exportFeats = getExportFeatures(selectedTracks, frame);
             if (exportFeats != null) menu.add(exportFeats);
         }
 

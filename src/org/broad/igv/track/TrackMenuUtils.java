@@ -26,6 +26,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.renderer.*;
+import org.broad.igv.sam.AlignmentDataManager;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.SAMWriter;
 import org.broad.igv.ui.*;
@@ -498,7 +499,7 @@ public class TrackMenuUtils {
      * @param tracks
      * @return
      */
-    public static JMenuItem getExportFeatures(final Collection<Track> tracks, final ReferenceFrame.Range range) {
+    public static JMenuItem getExportFeatures(final Collection<Track> tracks, final ReferenceFrame frame) {
         Track ft = tracks.iterator().next();
         if (tracks.size() != 1) {
             return null;
@@ -515,7 +516,7 @@ public class TrackMenuUtils {
                             new File("visibleData.bed"),
                             FileDialogUtils.SAVE);
 
-                    exportVisibleFeatures(outFile.getAbsolutePath(), tracks, range);
+                    exportVisibleFeatures(outFile.getAbsolutePath(), tracks, frame.getCurrentRange());
                 }
             });
         }else if(ft instanceof AlignmentTrack){
@@ -528,7 +529,7 @@ public class TrackMenuUtils {
                             new File("visibleData.sam"),
                             FileDialogUtils.SAVE);
 
-                    int countExp = exportVisibleAlignments(outFile.getAbsolutePath(), tracks, range);
+                    int countExp = exportVisibleAlignments(outFile.getAbsolutePath(), tracks, frame);
                     String msg = String.format("%d reads written", countExp);
                     MessageUtils.setStatusBarMessage(msg);
                 }
@@ -538,7 +539,7 @@ public class TrackMenuUtils {
         return exportData;
     }
 
-    static int exportVisibleAlignments(String outPath, Collection<Track> tracks, ReferenceFrame.Range range){
+    static int exportVisibleAlignments(String outPath, Collection<Track> tracks, ReferenceFrame frame){
         AlignmentTrack alignmentTrack = null;
         for(Track track: tracks){
             if(track instanceof AlignmentTrack){
@@ -549,9 +550,16 @@ public class TrackMenuUtils {
 
         if(alignmentTrack == null) return -1;
 
-        ResourceLocator inlocator = alignmentTrack.getDataManager().getLocator();
         try {
-            return SAMWriter.writeAlignmentFilePicard(inlocator, outPath, range.getChr(), range.getStart(), range.getEnd());
+            AlignmentDataManager dataManager = alignmentTrack.getDataManager();
+            ResourceLocator inlocator = dataManager.getLocator();
+            ReferenceFrame.Range range = frame.getCurrentRange();
+
+            //Read directly from file
+            //return SAMWriter.writeAlignmentFilePicard(inlocator, outPath, range.getChr(), range.getStart(), range.getEnd());
+
+            //Export those in memory, overlapping current view
+            return SAMWriter.writeAlignmentFilePicard(dataManager, frame.getName(), outPath, range.getChr(), range.getStart(), range.getEnd());
         } catch (IOException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);

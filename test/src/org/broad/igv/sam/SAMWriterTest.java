@@ -120,10 +120,10 @@ public class SAMWriterTest extends AbstractHeadlessTest {
             boolean bam = outpath.endsWith(".bam");
 
             if (!outStream) {
-                writer.writeToFile(outFile, shi.alignments);
+                writer.writeToFile(outFile, shi.alignments.iterator(), false);
             } else {
                 OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outFile));
-                writer.writeToStream(outputStream, shi.alignments, bam);
+                writer.writeToStream(outputStream, shi.alignments.iterator(), bam);
             }
             checkRecordsMatch(shi.alignments, outFile, inpath);
 
