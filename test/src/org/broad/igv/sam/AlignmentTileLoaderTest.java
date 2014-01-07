@@ -50,7 +50,7 @@ public class AlignmentTileLoaderTest extends AbstractHeadlessTest {
         int end = 11000;
         int maxDepth = -1;
 
-        AlignmentTileLoader.AlignmentTile tile= tstKeepPairsDownsample(path, sequence, start, end, maxDepth);
+        AlignmentTileLoader.AlignmentTile tile = tstKeepPairsDownsample(path, sequence, start, end, maxDepth);
         assertTrue(tile.getDownsampledIntervals().size() > 0);
     }
 
@@ -118,7 +118,10 @@ public class AlignmentTileLoaderTest extends AbstractHeadlessTest {
                 assertNotNull(al);
                 count++;
 
-                if (al.isPaired() && al.getMate().isMapped()) {
+                //Only look at proper pairs, which are a subset.
+                //Our system should keep all things with the same read name, but we don't know
+                //how many chimeric/secondary alignments there might be
+                if (al.isProperPair()) {
                     //Mate may not be part of the query.
                     //Make sure it's within bounds
                     int mateStart = al.getMate().getStart();
