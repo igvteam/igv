@@ -217,9 +217,9 @@ public class ReferenceFrame {
         int windowLengthBP = (int) (widthInPixels * getScale());
         double newOrigin;
         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED)) {
-            newOrigin = Math.max(-1000, Math.min(position, getChromosomeLength() + 1000 - windowLengthBP));
+            newOrigin = Math.max(-1000, Math.min(position, getMaxCoordinate() + 1000 - windowLengthBP));
         } else {
-            newOrigin = Math.max(0, Math.min(position, getChromosomeLength() - windowLengthBP));
+            newOrigin = Math.max(0, Math.min(position, getMaxCoordinate() - windowLengthBP));
         }
         origin = newOrigin;
     }
@@ -277,7 +277,7 @@ public class ReferenceFrame {
      * and center location
      *
      * @param newZoom
-     * @param newCenter
+     * @param newCenter Center position, in genome coordinates
      */
     public void doSetZoomCenter(final int newZoom, final double newCenter) {
 
@@ -441,7 +441,7 @@ public class ReferenceFrame {
 
     public boolean windowAtEnd() {
         double windowLengthBP = widthInPixels * getScale();
-        return origin + windowLengthBP + 1 > getChromosomeLength();
+        return origin + windowLengthBP + 1 > getMaxCoordinate();
     }
 
     /**
@@ -470,7 +470,7 @@ public class ReferenceFrame {
             }
         }
 
-        end = Math.min(getChromosomeLength(chr), end);
+        end = Math.min(getMaxCoordinate(chr), end);
 
         synchronized (this) {
             this.initialLocus = locus;
@@ -620,6 +620,28 @@ public class ReferenceFrame {
         return genome.getChromosome(chrName);
     }
 
+    /**
+     * The maximum coordinate currently allowed.
+     * In genomic coordinates this is the same as the chromosome length.
+     * In exome coordinates, the two are different
+     * (since ExomeReferenceFrame takes input in genomic coordinates)
+     * @see #getChromosomeLength()
+     * @return
+     */
+    public int getMaxCoordinate(){
+        return this.getChromosomeLength();
+    }
+
+    private int getMaxCoordinate(String chrName){
+        return this.getChromosomeLength(chrName);
+    }
+
+    /**
+     * Chromosome length, in genomic coordinates.
+     * Intended to be used for scaling
+     * @see #getMaxCoordinate()
+     * @return
+     */
     public int getChromosomeLength(){
         return getChromosomeLength(this.chrName);
     }

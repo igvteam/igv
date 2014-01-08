@@ -143,7 +143,16 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         calcExomeOrigin();
     }
 
-     @Override
+    public int getMaxCoordinate(){
+        return super.getChromosomeLength();
+    }
+
+    /**
+     * Chromosome length, in exome coordinates
+     * Intended to be used for scaling.
+     * @see #getMaxCoordinate()
+     */
+    @Override
     public int getChromosomeLength() {
         return genomeToExomePosition(super.getChromosomeLength());
     }
