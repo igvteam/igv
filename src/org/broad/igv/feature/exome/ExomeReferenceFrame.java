@@ -126,6 +126,7 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         List<ExomeBlock> blocks = getBlocks(chrName);
         firstBlockIdx = getIndexForGenomePosition(blocks, origin);
         ExomeBlock firstBlock = blocks.get(firstBlockIdx);
+        origin = Math.max(origin, firstBlock.getGenomeStart());
 
         exomeOrigin = origin > firstBlock.getGenomeEnd() ? firstBlock.getExomeEnd() :
                 firstBlock.getExomeStart() + (int) (origin - firstBlock.getGenomeStart());
@@ -138,11 +139,9 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         calcExomeOrigin();
     }
 
-    @Override
-    public void jumpTo(String chr, int start, int end) {
-        jumpTo(new Locus(chr, start, end));
-        IGV.repaintPanelsHeadlessSafe();
-
+     @Override
+    public int getChromosomeLength() {
+        return genomeToExomePosition(super.getChromosomeLength());
     }
 
     /**
@@ -166,7 +165,10 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         int pw = widthInPixels <= 0 ? 1000 : widthInPixels;
         this.locationScale = (((double) bp) / pw);
 
-        setZoom(calculateZoom(exomeOrigin, exomeEnd));
+        int newZoom = calculateZoom(exomeOrigin, exomeEnd);
+        if(newZoom != this.zoom){
+            setZoomWithinLimits(newZoom);
+        }
     }
 
     @Override
@@ -174,7 +176,6 @@ public class ExomeReferenceFrame extends ReferenceFrame {
 
         newZoom = Math.max(0, Math.min(newZoom, maxZoom));
         double zoomFactor = Math.pow(2, newZoom - zoom);
-
 
         int currentBPLength = (int) (locationScale * widthInPixels);
         int delta = (int) (currentBPLength / (2 * zoomFactor));
@@ -200,7 +201,6 @@ public class ExomeReferenceFrame extends ReferenceFrame {
      */
     @Override
     public double getChromosomePosition(int screenPosition) {
-
         double exomePosition = exomeOrigin + getScale() * screenPosition;
         return exomeToGenomePosition((int) exomePosition);
     }
@@ -275,7 +275,8 @@ public class ExomeReferenceFrame extends ReferenceFrame {
     }
 
     /**
-     * Return the index to the last feature in the list with a start < the given position
+     * Return the index to the last feature in the list with a start < the given position,
+     * or 0 if the position is less than the start of the first block
      *
      * @param position
      * @param blocks

@@ -225,7 +225,7 @@ public class ReferenceFrame {
     }
 
 
-    private synchronized void setZoomWithinLimits(int newZoom) {
+    protected synchronized void setZoomWithinLimits(int newZoom) {
         zoom = Math.max(minZoom, Math.min(maxZoom, newZoom));
         nTiles = Math.pow(2, zoom);
     }
@@ -357,7 +357,7 @@ public class ReferenceFrame {
      * {@link #widthInPixels}
      * DOES NOT alter zoom value
      */
-    private synchronized void computeLocationScale() {
+    protected synchronized void computeLocationScale() {
         Genome genome = getGenome();
 
         //Should consider getting rid of this. We don't have
