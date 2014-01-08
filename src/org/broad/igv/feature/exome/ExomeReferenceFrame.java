@@ -132,6 +132,10 @@ public class ExomeReferenceFrame extends ReferenceFrame {
                 firstBlock.getExomeStart() + (int) (origin - firstBlock.getGenomeStart());
     }
 
+    @Override
+    protected void beforeScaleZoom(Locus locus){
+        calcExomeOrigin();
+    }
 
     @Override
     public void setOrigin(double genomePosition) {
@@ -144,32 +148,48 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         return genomeToExomePosition(super.getChromosomeLength());
     }
 
-    /**
-     * Jump to a specific locus (in genome coordinates).
-     *
-     * @param locus
-     */
     @Override
-    public void jumpTo(Locus locus) {
-        this.initialLocus = locus;
-        this.chrName = locus.getChr();
-        this.origin = locus.getStart();    // Genome locus
-        int genomeEnd = locus.getEnd();
-
-        calcExomeOrigin();
-
+    protected synchronized void computeLocationScale() {
+        //TODO What if initialLocus is null?
+        int genomeEnd = this.initialLocus.getEnd();
         int exomeEnd = Math.max(exomeOrigin + 40, genomeToExomePosition(genomeEnd));
-
-
         int bp = exomeEnd - exomeOrigin;
         int pw = widthInPixels <= 0 ? 1000 : widthInPixels;
         this.locationScale = (((double) bp) / pw);
+    }
 
-        int newZoom = calculateZoom(exomeOrigin, exomeEnd);
+    @Override
+    protected void computeZoom(){
+        int newZoom = calculateZoom(exomeOrigin, genomeToExomePosition((int) getEnd()));
         if(newZoom != this.zoom){
             setZoomWithinLimits(newZoom);
         }
     }
+//
+//    /**
+//     * Jump to a specific locus (in genome coordinates).
+//     *
+//     * @param locus
+//     */
+//    @Override
+//    public void jumpTo(Locus locus) {
+//        this.initialLocus = locus;
+//        this.chrName = locus.getChr();
+//        this.origin = locus.getStart();    // Genome locus
+//        int genomeEnd = locus.getEnd();
+//
+//        calcExomeOrigin();
+//
+//        int exomeEnd = Math.max(exomeOrigin + 40, genomeToExomePosition(genomeEnd));
+//        int bp = exomeEnd - exomeOrigin;
+//        int pw = widthInPixels <= 0 ? 1000 : widthInPixels;
+//        this.locationScale = (((double) bp) / pw);
+//
+//        int newZoom = calculateZoom(exomeOrigin, exomeEnd);
+//        if(newZoom != this.zoom){
+//            setZoomWithinLimits(newZoom);
+//        }
+//    }
 
     @Override
     public synchronized void doSetZoomCenter(int newZoom, double newCenter) {

@@ -384,7 +384,7 @@ public class ReferenceFrame {
      * Recalculate the zoom value based on current start/end
      * locationScale is not altered
      */
-    private void computeZoom() {
+    protected void computeZoom() {
         int newZoom = calculateZoom(getOrigin(), getEnd());
         setZoomWithinLimits(newZoom);
     }
@@ -470,18 +470,16 @@ public class ReferenceFrame {
             }
         }
 
-        Chromosome chromosome = genome == null ? null : genome.getChromosome(chr);
-        if (chromosome != null) {
-            end = Math.min(chromosome.getLength(), end);
-        }
+        end = Math.min(getChromosomeLength(chr), end);
 
         synchronized (this) {
             this.initialLocus = locus;
             this.chrName = chr;
             if (start >= 0 && end >= 0) {
                 this.origin = start;
+                beforeScaleZoom(locus);
                 computeLocationScale();
-                setZoomWithinLimits(calculateZoom(this.getOrigin(), this.getEnd()));
+                computeZoom();
             }
         }
 
@@ -496,6 +494,14 @@ public class ReferenceFrame {
         getEventBus().post(new ViewChange.Result());
     }
 
+    /**
+     * Called before scaling and zooming, during jumpTo.
+     * Intended to be overridden
+     * @param locus
+     */
+    protected void beforeScaleZoom(Locus locus) {
+        //pass
+    }
 
     /**
      * Calculate the zoom level given start/end in bp.
@@ -614,8 +620,11 @@ public class ReferenceFrame {
         return genome.getChromosome(chrName);
     }
 
+    public int getChromosomeLength(){
+        return getChromosomeLength(this.chrName);
+    }
 
-    public int getChromosomeLength() {
+    public int getChromosomeLength(String chrName) {
         Genome genome = getGenome();
 
         if (genome == null) {
@@ -623,21 +632,17 @@ public class ReferenceFrame {
         }
 
         if (chrName.equals("All")) {
-
             // TODO -- remove the hardcoded unit divider ("1000")
             return (int) (genome.getNominalLength() / 1000);
-
-            // return genome.getLength();
         } else {
             if (getChromosome() == null) {
                 log.error("Null chromosome: " + chrName);
-                if (genome == null || genome.getChromosomes().size() == 0) {
+                if (genome.getChromosomes().size() == 0) {
                     return 1;
                 } else {
                     return genome.getChromosomes().iterator().next().getLength();
                 }
             }
-
             return getChromosome().getLength();
         }
     }
