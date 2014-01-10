@@ -305,7 +305,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
 
     protected List<Alignment> getAlignmentsForRange(AlignmentTrack track, String chr, int start, int end, int zoom) throws IOException {
 
-        Collection<AlignmentInterval> loadedIntervals = track.getDataManager().getAllLoadedIntervals();
+        Collection<AlignmentInterval> loadedIntervals = track.getDataManager().getLoadedIntervals();
         List<Alignment> alignments = new ArrayList<Alignment>();
         for (AlignmentInterval interval : loadedIntervals) {
             if (interval.overlaps(chr, start, end)) {

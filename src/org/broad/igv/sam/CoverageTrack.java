@@ -162,7 +162,7 @@ public class CoverageTrack extends AbstractTrack {
 
             int max = 10;
             for (ReferenceFrame frame : frameList) {
-                AlignmentInterval interval = dataManager.getLoadedInterval(frame.getName());
+                AlignmentInterval interval = dataManager.getLoadedInterval(frame.getCurrentRange());
                 if (interval == null) continue;
 
                 int origin = (int) frame.getOrigin();
@@ -225,7 +225,7 @@ public class CoverageTrack extends AbstractTrack {
             AlignmentInterval interval = null;
             if (dataManager != null) {
                 dataManager.load(context, renderOptions, true);
-                interval = dataManager.getLoadedInterval(context.getReferenceFrame().getName());
+                interval = dataManager.getLoadedInterval(context.getReferenceFrame().getCurrentRange());
             }
             if (interval != null) {
                 if (interval.contains(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation())) {
@@ -272,7 +272,7 @@ public class CoverageTrack extends AbstractTrack {
         float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
         float minVisibleScale = (maxRange * 1000) / 700;
         if (frame.getScale() < minVisibleScale) {
-            AlignmentInterval interval = dataManager.getLoadedInterval(frame.getName());
+            AlignmentInterval interval = dataManager.getLoadedInterval(frame.getCurrentRange());
             if (interval == null) return null;
 
             if (interval.contains(chr, (int) position, (int) position)) {

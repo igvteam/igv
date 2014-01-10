@@ -11,12 +11,15 @@
 
 package org.broad.igv.sam;
 
+import org.broad.igv.feature.Range;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Convenience class for storing map from group -> list of alignments packed into rows
+ * Can contain discontinuous regions
  * @author jacob
  * @date 2014-Jan-10
  */
@@ -27,9 +30,15 @@ public class PackedAlignments extends LinkedHashMap<String, List<Row>> {
      */
     private AlignmentTrack.RenderOptions renderOptions;
 
-    PackedAlignments(Map<String, List<Row>> packedAlignments, AlignmentTrack.RenderOptions renderOptions){
+    /**
+     *  Set of ranges covered by this instance.
+     */
+    private List<? extends Range> ranges;
+
+    PackedAlignments(List<? extends Range> ranges, Map<String, List<Row>> packedAlignments, AlignmentTrack.RenderOptions renderOptions){
         super(packedAlignments);
         this.renderOptions = renderOptions;
+        this.ranges = ranges;
     }
 
     /**
@@ -45,4 +54,23 @@ public class PackedAlignments extends LinkedHashMap<String, List<Row>> {
         return intervalNLevels;
     }
 
+    /**
+     * Whether any of the ranges contain this interval
+     * @param chr
+     * @param start
+     * @param end
+     * @return
+     */
+    public boolean contains(String chr, int start, int end) {
+        for(Range range: this.ranges){
+            if(range.contains(chr, start, end)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public List<? extends Range> getRanges() {
+        return ranges;
+    }
 }

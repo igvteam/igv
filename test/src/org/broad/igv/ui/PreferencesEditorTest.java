@@ -87,10 +87,10 @@ public class PreferencesEditorTest extends AbstractHeadedTest {
     private AlignmentBlock[] getBlocks(AlignmentTrack alTrack, String chr, int start, int end) {
 
         AlignmentDataManager dataManager = alTrack.getDataManager();
-        AlignmentInterval interval = dataManager.getLoadedInterval(FrameManager.getDefaultFrame().getName());
+        AlignmentInterval interval = dataManager.getLoadedInterval(FrameManager.getDefaultFrame().getCurrentRange());
         if (interval == null) {
             dataManager.loadAlignments(chr, start, end, null, null);
-            interval = dataManager.getLoadedInterval(FrameManager.getDefaultFrame().getName());
+            interval = dataManager.getLoadedInterval(FrameManager.getDefaultFrame().getCurrentRange());
         }
 
         return interval.getAlignmentIterator().next().getAlignmentBlocks();

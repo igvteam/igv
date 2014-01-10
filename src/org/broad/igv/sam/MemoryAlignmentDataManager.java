@@ -11,9 +11,9 @@
 
 package org.broad.igv.sam;
 
+import org.broad.igv.feature.Range;
+
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Implementation of IAlignmentDataManager which simply caches loaded intervals,
@@ -27,19 +27,16 @@ public class MemoryAlignmentDataManager implements IAlignmentDataManager {
 
     private SpliceJunctionHelper.LoadOptions loadOptions;
 
-    private Map<String, AlignmentInterval> loadedIntervalMap = new HashMap<String, AlignmentInterval>();
+    private AlignmentsCache loadedIntervalCache = new AlignmentsCache();
 
     public MemoryAlignmentDataManager(AlignmentDataManager alignmentDataManager, SpliceJunctionHelper.LoadOptions loadOptions) {
         this.loadOptions = loadOptions;
-        for(String intervalName: alignmentDataManager.getLoadedIntervalNames()){
-            this.loadedIntervalMap.put(intervalName, new AlignmentInterval(alignmentDataManager.getLoadedInterval(intervalName)));
-        }
-
+        this.loadedIntervalCache = new AlignmentsCache(alignmentDataManager.getCache());
     }
 
     @Override
-    public AlignmentInterval getLoadedInterval(String intervalName) {
-        return this.loadedIntervalMap.get(intervalName);
+    public AlignmentInterval getLoadedInterval(Range range){
+        return this.loadedIntervalCache.get(range);
     }
 
     @Override
@@ -50,14 +47,14 @@ public class MemoryAlignmentDataManager implements IAlignmentDataManager {
     @Override
     public void setMinJunctionCoverage(int minJunctionCoverage) {
         this.loadOptions = new SpliceJunctionHelper.LoadOptions(minJunctionCoverage, this.loadOptions.minReadFlankingWidth);
-        for (AlignmentInterval interval : getAllLoadedIntervals()) {
+        for (AlignmentInterval interval : getLoadedIntervals()) {
             interval.getSpliceJunctionHelper().setLoadOptions(this.loadOptions);
         }
     }
 
     @Override
-    public Collection<AlignmentInterval> getAllLoadedIntervals() {
-        return loadedIntervalMap.values();
+    public Collection<AlignmentInterval> getLoadedIntervals() {
+        return loadedIntervalCache.getLoadedIntervals();
     }
 
 

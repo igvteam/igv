@@ -336,7 +336,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         // Might be offscreen
         if (!context.getVisibleRect().intersects(downsampleRect)) return;
 
-        final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame().getName());
+        final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame().getCurrentRange());
         if (loadedInterval == null) return;
 
         Graphics2D g = context.getGraphic2DForColor(Color.black);
@@ -437,7 +437,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
      * Sort alignment rows based on alignments that intersect location
      */
     public void sortRows(SortOption option, ReferenceFrame referenceFrame, double location, String tag) {
-        dataManager.sortRows(option, referenceFrame.getName(), location, tag);
+        dataManager.sortRows(option, referenceFrame, location, tag);
     }
 
     /**
@@ -445,17 +445,17 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
      *
      * @param option
      * @param referenceFrame
-     * @see AlignmentDataManager#repackAlignments(String, org.broad.igv.sam.AlignmentTrack.RenderOptions)
+     * @see AlignmentDataManager#repackAlignments(ReferenceFrame, org.broad.igv.sam.AlignmentTrack.RenderOptions)
      */
     public void groupAlignments(GroupOption option, ReferenceFrame referenceFrame) {
         if (renderOptions.groupByOption != option) {
             renderOptions.groupByOption = (option == GroupOption.NONE ? null : option);
-            dataManager.repackAlignments(referenceFrame.getName(), renderOptions);
+            dataManager.repackAlignments(referenceFrame, renderOptions);
         }
     }
 
     public void packAlignments(ReferenceFrame referenceFrame) {
-        dataManager.repackAlignments(referenceFrame.getName(), renderOptions);
+        dataManager.repackAlignments(referenceFrame, renderOptions);
     }
 
     /**
@@ -508,7 +508,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
 
         ArrayList<ArrayList<ReadInfo>> allelereadinfos = new ArrayList<ArrayList<ReadInfo>>();
-        AlignmentInterval interval = dataManager.getLoadedInterval(frame.getName());
+        AlignmentInterval interval = dataManager.getLoadedInterval(frame.getCurrentRange());
         Iterator<Alignment> alignmentIterator = interval.getAlignmentIterator();
         while (alignmentIterator.hasNext()) {
             Alignment alignment = alignmentIterator.next();
@@ -724,7 +724,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
         if (downsampleRect != null && y > downsampleRect.y && y <= downsampleRect.y + downsampleRect.height) {
-            AlignmentInterval loadedInterval = dataManager.getLoadedInterval(frame.getName());
+            AlignmentInterval loadedInterval = dataManager.getLoadedInterval(frame.getCurrentRange());
             if (loadedInterval == null) {
                 return null;
             } else {
@@ -971,7 +971,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         renderOptions.setPairedArcView(option);
         for (ReferenceFrame frame : FrameManager.getFrames()) {
-            dataManager.repackAlignments(frame.getName(), renderOptions);
+            dataManager.repackAlignments(frame, renderOptions);
         }
         refresh();
     }
@@ -1319,7 +1319,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                         MessageUtils.showMessage("Cannot export region more than 1 Megabase");
                         return;
                     }
-                    AlignmentInterval interval = dataManager.getLoadedInterval(frame.getName());
+                    AlignmentInterval interval = dataManager.getLoadedInterval(frame.getCurrentRange());
                     AlignmentCounts counts = interval.getCounts();
                     String text = PFMExporter.createPFMText(counts, frame.getChrName(), start, end);
                     StringUtils.copyTextToClipboard(text);

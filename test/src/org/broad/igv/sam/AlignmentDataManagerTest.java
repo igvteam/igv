@@ -15,6 +15,7 @@ import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Locus;
+import org.broad.igv.feature.Range;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.sam.reader.ReadGroupFilter;
@@ -98,7 +99,8 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
     }
 
     private static void assertManagerHasInterval(AlignmentDataManager manager, String chr, int start, int end) {
-        AlignmentInterval interval = manager.getLoadedInterval(frameName);
+        Range range = new Range(chr, start, end);
+        AlignmentInterval interval = manager.getLoadedInterval(range);
         assertNotNull(interval);
 
         boolean haveInterval = interval.contains(chr, start, end);
@@ -145,7 +147,7 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
             assertManagerHasInterval(manager, chr, locus.getStart(), locus.getEnd());
         }
 
-        return manager.getLoadedInterval(frameName);
+        return manager.getLoadedInterval(frame.getCurrentRange());
 
     }
 

@@ -16,6 +16,7 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.Range;
 import org.broad.igv.feature.Strand;
 
 import java.util.*;
@@ -33,7 +34,7 @@ public class AlignmentPacker {
      * Minimum gap between the end of one alignment and start of another.
      */
     public static final int MIN_ALIGNMENT_SPACING = 5;
-    private final Comparator<Alignment> lengthComparator = new Comparator<Alignment>() {
+    private static final Comparator<Alignment> lengthComparator = new Comparator<Alignment>() {
         public int compare(Alignment row1, Alignment row2) {
             return (row2.getEnd() - row2.getStart()) -
                     (row1.getEnd() - row2.getStart());
@@ -45,12 +46,12 @@ public class AlignmentPacker {
      * Allocates each alignment to the rows such that there is no overlap.
      *
      * @param iter Iterator of alignments, sorted by start position
-     * @param end  Last index of the last alignment
+     * @param ranges  The ranges that {@code iter} spans. We use a list because they can be discontinuous
      * @param renderOptions
      */
     public PackedAlignments packAlignments(
             Iterator<Alignment> iter,
-            int end,
+            List<? extends Range> ranges,
             AlignmentTrack.RenderOptions renderOptions) {
 
         if(renderOptions == null) renderOptions = new AlignmentTrack.RenderOptions();
@@ -59,9 +60,10 @@ public class AlignmentPacker {
         boolean pairAlignments = renderOptions.isViewPairs() || renderOptions.isPairedArcView();
 
         if (iter == null || !iter.hasNext()) {
-            return new PackedAlignments(packedAlignments, renderOptions);
+            return new PackedAlignments(ranges, packedAlignments, renderOptions);
         }
 
+        int end = ranges.get(ranges.size()-1).getEnd();
         if (renderOptions.groupByOption == null) {
             List<Row> alignmentRows = new ArrayList<Row>(10000);
             pack(iter, end, pairAlignments, alignmentRows);
@@ -99,7 +101,7 @@ public class AlignmentPacker {
             packedAlignments.put("", alignmentRows);
         }
 
-        return new PackedAlignments(packedAlignments, renderOptions);
+        return new PackedAlignments(ranges, packedAlignments, renderOptions);
 
     }
 

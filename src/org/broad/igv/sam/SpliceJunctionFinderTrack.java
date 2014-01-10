@@ -23,7 +23,6 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.renderer.DataRange;
@@ -40,7 +39,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -123,7 +121,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
     @Override
     protected void loadFeatures(String chr, int start, int end, RenderContext context) {
         parent = context.getPanel();
-        AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame().getName());
+        AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame().getCurrentRange());
         if (loadedInterval == null) return;
 
         SpliceJunctionHelper helper = loadedInterval.getSpliceJunctionHelper();

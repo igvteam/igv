@@ -18,12 +18,14 @@ package org.broad.igv.sam;
 
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.feature.Range;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,6 +42,7 @@ public class AlignmentPackerTest extends AbstractHeadlessTest {
     String chr = "chr1";
     int start = 151666494;
     int end = start + 1000;
+    final List<Range> ranges = Arrays.asList(new Range(chr, start, end));
     boolean contained = false;
 
 
@@ -63,7 +66,7 @@ public class AlignmentPackerTest extends AbstractHeadlessTest {
         */
         CloseableIterator<Alignment> iter = getAlignments();
 
-        Map<String, List<Row>> result = (new AlignmentPacker()).packAlignments(iter, end,
+        Map<String, List<Row>> result = (new AlignmentPacker()).packAlignments(iter, ranges,
                 new AlignmentTrack.RenderOptions());
         assertEquals(1, result.size());
         for (List<Row> alignmentrows : result.values()) {
@@ -91,7 +94,7 @@ public class AlignmentPackerTest extends AbstractHeadlessTest {
         renderOptions.groupByOption = groupOption;
 
         CloseableIterator<Alignment> iter = getAlignments();
-        Map<String, List<Row>> result = (new AlignmentPacker()).packAlignments(iter, end, renderOptions);
+        Map<String, List<Row>> result = (new AlignmentPacker()).packAlignments(iter, ranges, renderOptions);
         Set<String> names = result.keySet();
         //names.removeAll(Arrays.asList("", null));
 

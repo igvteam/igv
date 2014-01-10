@@ -98,7 +98,7 @@ public class CoverageTrackTest extends AbstractHeadedTest {
     private void checkLocus(AlignmentDataManager dataManager, Locus locus, boolean expectContain) {
         boolean contains = false;
 
-        for (AlignmentInterval interval : dataManager.getAllLoadedIntervals()) {
+        for (AlignmentInterval interval : dataManager.getLoadedIntervals()) {
             contains |= interval.contains(locus.getChr(), locus.getStart(), locus.getEnd());
         }
 

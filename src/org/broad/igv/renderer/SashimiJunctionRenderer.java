@@ -293,7 +293,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 //        if(yOffset != null) return yOffset;
 
         if(dataManager == null) return 0;
-        Collection<AlignmentInterval> intervals = dataManager.getAllLoadedIntervals();
+        Collection<AlignmentInterval> intervals = dataManager.getLoadedIntervals();
         if(intervals == null) return 0;
 
         int buffer = 4;

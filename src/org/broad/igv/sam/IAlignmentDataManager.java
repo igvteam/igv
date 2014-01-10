@@ -11,6 +11,8 @@
 
 package org.broad.igv.sam;
 
+import org.broad.igv.feature.Range;
+
 import java.util.Collection;
 
 /**
@@ -20,17 +22,16 @@ import java.util.Collection;
 public interface IAlignmentDataManager {
 
     /**
-     * Return the loaded interval for the specified frame (by name).  Note this can be null if the interval isn't loaded
-     * yet.
-     *
-     * @param frameName
+     * Return the loaded interval for the specified range.
+     * This can be null if it's not loaded (or if loading is in progress)
+     * @param range
      * @return
      */
-    public AlignmentInterval getLoadedInterval(String frameName);
+    public AlignmentInterval getLoadedInterval(Range range);
 
     SpliceJunctionHelper.LoadOptions getSpliceJunctionLoadOptions();
 
-    Collection<AlignmentInterval> getAllLoadedIntervals();
+    Collection<AlignmentInterval> getLoadedIntervals();
 
     void setMinJunctionCoverage(int newMinJunctionCoverage);
 }
