@@ -144,8 +144,9 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         this.coverageTrack.setColor(color);
         //Don't want to color SNPs, so we just set an impossibly high threshold
         coverageTrack.setSnpThreshold(2.0f);
+
         coverageTrack.setAutoScale(true);
-        coverageTrack.rescale();
+        coverageTrack.setGlobalAutoScale(false);
     }
 
 

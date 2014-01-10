@@ -53,7 +53,6 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
 
     IAlignmentDataManager dataManager;
     PreferenceManager prefs;
-    RenderContext context;
 
     // The "parent" of the track (a DataPanel).  This release of IGV does not support owner-track relationships
     // directory,  so this field might be null at any given time.  It is updated each repaint.

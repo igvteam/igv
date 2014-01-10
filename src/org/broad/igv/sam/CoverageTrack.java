@@ -88,6 +88,12 @@ public class CoverageTrack extends AbstractTrack {
     JMenuItem autoscaleItem;
     Genome genome;
 
+    /**
+     * Whether to autoscale across all ReferenceFrames
+     * Default is true because we usually do, SashimiPlot does not
+     */
+    private boolean globalAutoScale = true;
+
     public void setRenderOptions(AlignmentTrack.RenderOptions renderOptions) {
         this.renderOptions = renderOptions;
     }
@@ -152,13 +158,19 @@ public class CoverageTrack extends AbstractTrack {
      */
     @Subscribe
     public void receiveDataLoaded(DataLoadedEvent e){
-        rescale();
-        e.context.getReferenceFrame().getEventBus().post(new ViewChange.Result());
+        ReferenceFrame frame = e.context.getReferenceFrame();
+        rescale(frame);
+        frame.getEventBus().post(new ViewChange.Result());
     }
 
-    public void rescale() {
-        if (autoScale & dataManager != null) {
-            List<ReferenceFrame> frameList = FrameManager.getFrames();
+    public void rescale(ReferenceFrame iframe) {
+        List<ReferenceFrame> frameList = new ArrayList<ReferenceFrame>();
+        if(iframe != null) frameList.add(iframe);
+        if(globalAutoScale){
+            frameList.addAll(FrameManager.getFrames());
+        }
+
+        if (autoScale && dataManager != null) {
 
             int max = 10;
             for (ReferenceFrame frame : frameList) {
@@ -229,7 +241,7 @@ public class CoverageTrack extends AbstractTrack {
             }
             if (interval != null) {
                 if (interval.contains(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation())) {
-                    if(autoScale) rescale();
+                    if(autoScale) rescale(context.getReferenceFrame());
                     intervalRenderer.paint(context, rect, interval.getCounts());
                     return;
                 }
@@ -677,7 +689,7 @@ public class CoverageTrack extends AbstractTrack {
         popupMenu.add(TrackMenuUtils.getTrackRenameItem(tmp));
         addCopyDetailsItem(popupMenu, te);
 
-        addAutoscaleItem(popupMenu);
+        addAutoscaleItem(popupMenu, te.getFrame());
         addLogScaleItem(popupMenu);
         dataRangeItem = addDataRangeItem(IGV.getMainFrame(), popupMenu, tmp);
 
@@ -807,7 +819,7 @@ public class CoverageTrack extends AbstractTrack {
 
     }
 
-    public void addAutoscaleItem(JPopupMenu menu) {
+    public void addAutoscaleItem(JPopupMenu menu,final ReferenceFrame frame) {
         // Change track height by attribute
         autoscaleItem = new JCheckBoxMenuItem("Autoscale");
         autoscaleItem.setSelected(autoScale);
@@ -818,7 +830,7 @@ public class CoverageTrack extends AbstractTrack {
                 autoScale = autoscaleItem.isSelected();
                 dataRangeItem.setEnabled(!autoScale);
                 if (autoScale) {
-                    rescale();
+                    rescale(frame);
                 }
                 IGV.getInstance().repaintDataPanels();
 
@@ -854,5 +866,8 @@ public class CoverageTrack extends AbstractTrack {
         return (CoverageTrack) IGVSessionReader.getNextTrack();
     }
 
+    public void setGlobalAutoScale(boolean globalAutoScale) {
+        this.globalAutoScale = globalAutoScale;
+    }
 
 }
