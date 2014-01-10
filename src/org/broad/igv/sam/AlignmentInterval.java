@@ -28,26 +28,26 @@ public class AlignmentInterval extends Locus {
 
     Genome genome;
     private AlignmentCounts counts;
-    private LinkedHashMap<String, List<Row>> groupedAlignmentRows;
+    private List<Alignment> alignments;
     private SpliceJunctionHelper spliceJunctionHelper;
     private List<DownsampledInterval> downsampledIntervals;
     private AlignmentTrack.RenderOptions renderOptions;
 
     AlignmentInterval(AlignmentInterval interval) {
         this(interval.getChr(), interval.getStart(), interval.getEnd(),
-                interval.getGroupedAlignments(), interval.getCounts(),
+                interval.getAlignments(), interval.getCounts(),
                 new SpliceJunctionHelper(interval.getSpliceJunctionHelper()), interval.getDownsampledIntervals(), interval.renderOptions);
     }
 
     public AlignmentInterval(String chr, int start, int end,
-                             LinkedHashMap<String, List<Row>> groupedAlignmentRows,
+                             List<Alignment> alignments,
                              AlignmentCounts counts,
                              SpliceJunctionHelper spliceJunctionHelper,
                              List<DownsampledInterval> downsampledIntervals,
                              AlignmentTrack.RenderOptions renderOptions) {
 
         super(chr, start, end);
-        this.groupedAlignmentRows = groupedAlignmentRows;
+        this.alignments = alignments;
         genome = GenomeManager.getInstance().getCurrentGenome();
         this.counts = counts;
 
@@ -90,42 +90,6 @@ public class AlignmentInterval extends Locus {
         }
 
         return null;
-    }
-
-    /**
-     * The "packed" alignments in this interval
-     */
-    public LinkedHashMap<String, List<Row>> getGroupedAlignments() {
-        return groupedAlignmentRows;
-    }
-
-    public int getGroupCount() {
-        return groupedAlignmentRows == null ? 0 : groupedAlignmentRows.size();
-    }
-
-    public void setAlignmentRows(LinkedHashMap<String, List<Row>> alignmentRows, AlignmentTrack.RenderOptions renderOptions) {
-        this.groupedAlignmentRows = alignmentRows;
-        this.renderOptions = renderOptions;
-    }
-
-    /**
-     * Sort rows group by group
-     *
-     * @param option
-     * @param location
-     */
-    public void sortRows(AlignmentTrack.SortOption option, double location, String tag) {
-        if (groupedAlignmentRows == null) {
-            return;
-        }
-
-        for (List<AlignmentInterval.Row> alignmentRows : groupedAlignmentRows.values()) {
-            for (AlignmentInterval.Row row : alignmentRows) {
-                row.updateScore(option, location, this, tag);
-            }
-
-            Collections.sort(alignmentRows);
-        }
     }
 
     public byte getReference(int pos) {
@@ -174,8 +138,12 @@ public class AlignmentInterval extends Locus {
         return 0;
     }
 
+    public List<Alignment> getAlignments(){
+        return Collections.unmodifiableList(this.alignments);
+    }
+
     public Iterator<Alignment> getAlignmentIterator() {
-        return new AlignmentIterator();
+        return alignments.iterator();
     }
 
     public List<DownsampledInterval> getDownsampledIntervals() {
@@ -383,12 +351,12 @@ public class AlignmentInterval extends Locus {
      * repacking.   Using the iterator avoids the need to copy alignments
      * from the rows
      */
-    class AlignmentIterator implements Iterator<Alignment> {
+    static class AlignmentIterator implements Iterator<Alignment> {
 
         PriorityQueue<AlignmentInterval.Row> rows;
         Alignment nextAlignment;
 
-        AlignmentIterator() {
+        AlignmentIterator(Map<String, List<Row>> groupedAlignmentRows) {
             rows = new PriorityQueue(5, new Comparator<AlignmentInterval.Row>() {
 
                 public int compare(AlignmentInterval.Row o1, AlignmentInterval.Row o2) {
