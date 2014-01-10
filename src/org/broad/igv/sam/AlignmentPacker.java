@@ -15,6 +15,8 @@
  */
 package org.broad.igv.sam;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.Strand;
@@ -42,16 +44,19 @@ public class AlignmentPacker {
         }
     };
 
+    private static final String NULL_GROUP_VALUE = "Because google-guava tables don't support a null key, we use a special value" +
+            " for null keys. It doesn't matter much what it is, but we want to avoid collisions. I find it unlikely that " +
+            " this sentence will ever be used as a group value";
+
     /**
      * Allocates each alignment to the rows such that there is no overlap.
      *
-     * @param iter Iterator of alignments, sorted by start position
-     * @param ranges  The ranges that {@code iter} spans. We use a list because they can be discontinuous
+     * @param intervalList The order of this list determines how alignments will be packed
+     *                              Each {@code AlignmentInterval} must have alignments sorted by start position
      * @param renderOptions
      */
     public PackedAlignments packAlignments(
-            Iterator<Alignment> iter,
-            List<? extends Range> ranges,
+            List<AlignmentInterval> intervalList,
             AlignmentTrack.RenderOptions renderOptions) {
 
         if(renderOptions == null) renderOptions = new AlignmentTrack.RenderOptions();
@@ -59,49 +64,218 @@ public class AlignmentPacker {
         LinkedHashMap<String, List<Row>> packedAlignments = new LinkedHashMap<String, List<Row>>();
         boolean pairAlignments = renderOptions.isViewPairs() || renderOptions.isPairedArcView();
 
-        if (iter == null || !iter.hasNext()) {
-            return new PackedAlignments(ranges, packedAlignments, renderOptions);
-        }
+//        if (iter == null || !iter.hasNext()) {
+//            return new PackedAlignments(intervalList, packedAlignments, renderOptions);
+//        }
 
-        int end = ranges.get(ranges.size()-1).getEnd();
         if (renderOptions.groupByOption == null) {
             List<Row> alignmentRows = new ArrayList<Row>(10000);
-            pack(iter, end, pairAlignments, alignmentRows);
+            pack(intervalList, pairAlignments, alignmentRows);
             packedAlignments.put("", alignmentRows);
         } else {
             // Separate alignments into groups.
-            List<Alignment> nullGroup = new ArrayList<Alignment>();
-            HashMap<String, List<Alignment>> groupedAlignments = new HashMap<String, List<Alignment>>();
-            while (iter.hasNext()) {
-                Alignment alignment = iter.next();
-                String groupKey = getGroupValue(alignment, renderOptions);
-                if (groupKey == null) nullGroup.add(alignment);
-                else {
-                    List<Alignment> group = groupedAlignments.get(groupKey);
+            Table<String, Range, List<Alignment>> groupedAlignments = HashBasedTable.create();
+
+            for(AlignmentInterval interval: intervalList){
+                Iterator<Alignment> iter = interval.getAlignmentIterator();
+                while (iter.hasNext()) {
+                    Alignment alignment = iter.next();
+                    String groupKey = getGroupValue(alignment, renderOptions);
+                    if (groupKey == null) {
+                        groupKey = NULL_GROUP_VALUE;
+                    }
+                    List<Alignment> group = groupedAlignments.get(groupKey, interval);
                     if (group == null) {
                         group = new ArrayList<Alignment>(1000);
-                        groupedAlignments.put(groupKey, group);
+                        groupedAlignments.put(groupKey, interval, group);
                     }
                     group.add(alignment);
                 }
             }
 
+
             // Now alphabetize (sort) and pack the groups
-            List<String> keys = new ArrayList<String>(groupedAlignments.keySet());
+            List<String> keys = new ArrayList<String>(groupedAlignments.rowKeySet());
             Comparator<String> groupComparator = getGroupComparator(renderOptions.groupByOption);
             Collections.sort(keys, groupComparator);
+
             for (String key : keys) {
                 List<Row> alignmentRows = new ArrayList<Row>(10000);
-                List<Alignment> group = groupedAlignments.get(key);
-                pack(group.iterator(), end, pairAlignments, alignmentRows);
+                Map<Range, List<Alignment>> group = groupedAlignments.row(key);
+                pack(group, intervalList, pairAlignments, alignmentRows);
                 packedAlignments.put(key, alignmentRows);
             }
+            //Put null valued group at end
             List<Row> alignmentRows = new ArrayList<Row>(10000);
-            pack(nullGroup.iterator(), end, pairAlignments, alignmentRows);
+            Map<Range, List<Alignment>> group = groupedAlignments.row(NULL_GROUP_VALUE);
+            pack(group, intervalList, pairAlignments, alignmentRows);
             packedAlignments.put("", alignmentRows);
         }
+        return new PackedAlignments(intervalList, packedAlignments, renderOptions);
+    }
 
-        return new PackedAlignments(ranges, packedAlignments, renderOptions);
+    private void pack(List<AlignmentInterval> intervalList, boolean pairAlignments,
+                      List<Row> alignmentRows) {
+        Map<Range, List<Alignment>> rangeAlignmentMap = new LinkedHashMap<Range, List<Alignment>>(intervalList.size());
+        for(AlignmentInterval interval: intervalList){
+            rangeAlignmentMap.put(interval, interval.getAlignments());
+        }
+        pack(rangeAlignmentMap, intervalList, pairAlignments, alignmentRows);
+    }
+
+    private void pack(Map<Range, List<Alignment>> rangeAlignmentMap, List<? extends Range> rangeList, boolean pairAlignments,
+        List<Row> alignmentRows) {
+
+        Map<String, PairedAlignment> pairs = null;
+        if (pairAlignments) {
+            pairs = new HashMap<String, PairedAlignment>(1000);
+        }
+
+        int bucketCount = 0;
+        int lastEnd = rangeList.get(rangeList.size() - 1).getEnd();
+        for(Range range: rangeList){
+            bucketCount += range.getLength();
+        }
+
+        // Create buckets.  We use priority queues to keep the buckets sorted by alignment length.  However this
+        // is probably a needless complication,  any collection type would do.
+        PriorityQueue<Alignment> firstBucket = new PriorityQueue<Alignment>(5, lengthComparator);
+
+        // Use dense buckets for < 1,000,000 bp windows sparse otherwise
+        BucketCollection buckets;
+        if (bucketCount < 10000000) {
+            buckets = new DenseBucketCollection(bucketCount);
+        } else {
+            buckets = new SparseBucketCollection();
+        }
+        buckets.set(0, firstBucket);
+
+        //Allocate alignments to buckets based on position
+        int totalCount = 0;
+        //We only allocate enough buckets for each Interval, skip the in-between regions
+        int curBucketStart = 0;
+        for(Range range: rangeList){
+            List<Alignment> alList = rangeAlignmentMap.get(range);
+            if(alList == null || alList.size() == 0) continue;
+
+            for(Alignment al: alList) {
+
+                if (al.isMapped()) {
+                    Alignment alignment = al;
+                    if (pairAlignments && al.isPaired() && al.getMate().isMapped() && al.getChr().equals(al.getMate().getChr())) {
+                        String readName = al.getReadName();
+                        PairedAlignment pair = pairs.get(readName);
+                        if (pair == null) {
+                            pair = new PairedAlignment(al);
+                            pairs.put(readName, pair);
+                            alignment = pair;
+                        } else {
+                            if (al.getChr().equals(pair.getChr())) {
+                                // Add second alignment to pair
+                                pair.setSecondAlignment(al);
+                                pairs.remove(readName);
+                                continue;
+                            }
+
+                        }
+                    }
+
+                    int bucketNumber = al.getStart() - range.getStart() + curBucketStart;
+                    // We can get negative buckets if soft-clipping is on as the alignments are only approximately
+                    // sorted.  Throw all alignments < start in the first bucket.
+                    bucketNumber = Math.max(0, bucketNumber);
+                    if (bucketNumber < bucketCount) {
+                        PriorityQueue<Alignment> bucket = buckets.get(bucketNumber);
+                        if (bucket == null) {
+                            bucket = new PriorityQueue<Alignment>(5, lengthComparator);
+                            buckets.set(bucketNumber, bucket);
+                        }
+                        bucket.add(alignment);
+                        totalCount++;
+                    } else {
+                        log.debug("Alignment out of bounds: " + alignment.getStart() + " (> " + lastEnd);
+                    }
+
+
+                }
+            }
+
+            curBucketStart += range.getLength();
+        }
+
+        buckets.finishedAdding();
+
+        // Allocate alignments to rows
+        long t0 = System.currentTimeMillis();
+        int allocatedCount = 0;
+        int curRangeIndex = 0;
+        Range curRange = rangeList.get(curRangeIndex);
+        curBucketStart = 0;
+        int nextStart = curRange.getStart();
+        Row currentRow = new Row();
+        List<Integer> emptyBuckets = new ArrayList<Integer>(100);
+
+        while (allocatedCount < totalCount) {
+            int currentRangeStart = curRange.getStart();
+
+            // Loop through alignments until we reach the end of the interval
+            while (curRange != null) {
+                PriorityQueue<Alignment> bucket;
+
+                // Advance to next occupied bucket
+                int bucketNumber = nextStart - currentRangeStart + curBucketStart;
+                bucket = buckets.getNextBucket(bucketNumber, emptyBuckets);
+
+                // Pull the next alignment out of the bucket and add to the current row
+                if (bucket == null) {
+                    break;
+                } else {
+                    Alignment alignment = bucket.remove();
+                    currentRow.addAlignment(alignment);
+                    allocatedCount++;
+
+                    nextStart = currentRow.getLastEnd() + MIN_ALIGNMENT_SPACING;
+                    //We have several discontinuous Ranges in the general case
+                    //When we reach the end of one, move to the next
+                    if(nextStart >= curRange.getEnd()){
+                        curBucketStart += curRange.getLength();
+                        curRangeIndex += 1;
+                        if(curRangeIndex >= rangeList.size()){
+                            curRange = null;
+                            break;
+                        }else{
+                            curRange = rangeList.get(curRangeIndex);
+                        }
+
+                    }
+                }
+            }
+
+            // We've reached the end of the interval,  start a new row
+            if (currentRow.alignments.size() > 0) {
+                alignmentRows.add(currentRow);
+            }
+
+            // If we have more than 20 empty buckets remove them.  This has no affect on the dense implementation,
+            // they are removed on the fly, but is needed for the sparse implementation
+            buckets.removeBuckets(emptyBuckets);
+            emptyBuckets.clear();
+            currentRow = new Row();
+            curRangeIndex = 0;
+            curRange = rangeList.get(curRangeIndex);
+            curBucketStart = 0;
+            nextStart = curRange.getStart();
+        }
+        if (log.isDebugEnabled()) {
+            long dt = System.currentTimeMillis() - t0;
+            log.debug("Packed alignments in " + dt);
+        }
+
+        // Add the last row
+        if (currentRow != null && currentRow.alignments.size() > 0) {
+            alignmentRows.add(currentRow);
+        }
+
 
     }
 
@@ -161,157 +335,6 @@ public class AlignmentPacker {
         }
         return null;
     }
-
-    private void pack(Iterator<Alignment> iter, int end, boolean pairAlignments,
-                      List<Row> alignmentRows) {
-
-        if (!iter.hasNext()) {
-            return;
-        }
-
-        Map<String, PairedAlignment> pairs = null;
-        if (pairAlignments) {
-            pairs = new HashMap<String, PairedAlignment>(1000);
-        }
-
-
-        // Strictly speaking we should loop discarding dupes, etc.
-        Alignment firstAlignment = iter.next();
-        if (pairAlignments && firstAlignment.isPaired() && firstAlignment.isProperPair() && firstAlignment.getMate().isMapped()) {
-            String readName = firstAlignment.getReadName();
-            PairedAlignment pair = new PairedAlignment(firstAlignment);
-            pairs.put(readName, pair);
-            firstAlignment = pair;
-        }
-
-        int start = firstAlignment.getStart();
-        int bucketCount = end - start + 1;
-
-        // Create buckets.  We use priority queues to keep the buckets sorted by alignment length.  However this
-        // is probably a needless complication,  any collection type would do.
-        PriorityQueue firstBucket = new PriorityQueue(5, lengthComparator);
-        firstBucket.add(firstAlignment);
-
-        // Use dense buckets for < 1,000,000 bp windows sparse otherwise
-
-        BucketCollection buckets;
-        if (bucketCount < 10000000) {
-            buckets = new DenseBucketCollection(bucketCount);
-        } else {
-            buckets = new SparseBucketCollection();
-        }
-        buckets.set(0, firstBucket);
-
-        int totalCount = 1;
-
-        //Allocate alignments to buckets based on position
-        while (iter.hasNext()) {
-
-            Alignment al = iter.next();
-            String readName = al.getReadName();
-
-            if (al.isMapped()) {
-
-                Alignment alignment = al;
-                if (pairAlignments && al.isPaired() && al.getMate().isMapped() && al.getChr().equals(al.getMate().getChr())) {
-
-                    PairedAlignment pair = pairs.get(readName);
-                    if (pair == null) {
-                        pair = new PairedAlignment(al);
-                        pairs.put(readName, pair);
-                        alignment = pair;
-                    } else {
-                        if (al.getChr().equals(pair.getChr())) {
-                            // Add second alignment to pair
-                            pair.setSecondAlignment(al);
-                            pairs.remove(readName);
-                            continue;
-                        }
-
-                    }
-                }
-
-
-                // We can get negative buckets if soft-clipping is on as the alignments are only approximately
-                // sorted.  Throw all alignments < start in the first bucket.
-                int bucketNumber = Math.max(0, alignment.getStart() - start);
-                if (bucketNumber < bucketCount) {
-                    PriorityQueue bucket = buckets.get(bucketNumber);
-                    if (bucket == null) {
-                        bucket = new PriorityQueue<Alignment>(5, lengthComparator);
-                        buckets.set(bucketNumber, bucket);
-                    }
-                    bucket.add(alignment);
-                    totalCount++;
-                } else {
-                    log.debug("Alignment out of bounds: " + alignment.getStart() + " (> " + end);
-                }
-
-
-            }
-        }
-
-        buckets.finishedAdding();
-
-        // Allocate alignments to rows
-        long t0 = System.currentTimeMillis();
-        int allocatedCount = 0;
-        int nextStart = start;
-        Row currentRow = new Row();
-        List<Integer> emptyBuckets = new ArrayList<Integer>(100);
-        while (allocatedCount < totalCount) { // && alignmentRows.size() < maxLevels) {
-
-            // Loop through alignments until we reach the end of the interval
-            while (nextStart <= end) {
-                PriorityQueue<Alignment> bucket;
-
-                // Advance to next occupied bucket
-                int bucketNumber = nextStart - start;
-                bucket = buckets.getNextBucket(bucketNumber, emptyBuckets);
-
-                // Pull the next alignment out of the bucket and add to the current row
-                if (bucket == null) {
-                    break;
-                } else {
-                    Alignment alignment = bucket.remove();
-                    currentRow.addAlignment(alignment);
-                    nextStart = currentRow.getLastEnd() + MIN_ALIGNMENT_SPACING;
-                    allocatedCount++;
-                }
-
-            }
-
-            // We've reached the end of the interval,  start a new row
-            if (currentRow.alignments.size() > 0) {
-                alignmentRows.add(currentRow);
-            }
-
-            // If we have more than 20 empty buckets remove them.  This has no affect on the "dense" implementation,
-            // they are removed on the fly, but is needed for the sparse implementation
-            buckets.removeBuckets(emptyBuckets);
-            emptyBuckets.clear();
-
-            // We need to keep all the rows,  rows do not == coverage  (rows can be partially empty)
-//            if (alignmentRows.size() >= maxLevels) {
-//                currentRow = null;
-//                break;
-//            }
-
-            currentRow = new Row();
-            nextStart = start;
-        }
-        if (log.isDebugEnabled()) {
-            long dt = System.currentTimeMillis() - t0;
-            log.debug("Packed alignments in " + dt);
-        }
-
-        // Add the last row
-        if (currentRow != null && currentRow.alignments.size() > 0) {
-            alignmentRows.add(currentRow);
-        }
-
-    }
-
 
     static interface BucketCollection {
 

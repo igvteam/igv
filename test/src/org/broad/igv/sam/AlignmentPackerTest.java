@@ -18,17 +18,13 @@ package org.broad.igv.sam;
 
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.feature.Range;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
@@ -42,14 +38,19 @@ public class AlignmentPackerTest extends AbstractHeadlessTest {
     String chr = "chr1";
     int start = 151666494;
     int end = start + 1000;
-    final List<Range> ranges = Arrays.asList(new Range(chr, start, end));
     boolean contained = false;
 
 
-    private CloseableIterator<Alignment> getAlignments() throws Exception {
+    private AlignmentInterval getAlignmentInterval() throws Exception {
         ResourceLocator rl = new ResourceLocator(path);
         AlignmentReader samReader = AlignmentReaderFactory.getReader(rl);
-        return samReader.query(chr, start, end, contained);
+        CloseableIterator<Alignment> iter = samReader.query(chr, start, end, contained);
+        List<Alignment> list = new ArrayList<Alignment>();
+        while(iter.hasNext()){
+            list.add(iter.next());
+        }
+        AlignmentInterval interval = new AlignmentInterval(chr, start, end, list, null, null, null, null);
+        return interval;
     }
 
     /**
@@ -64,9 +65,9 @@ public class AlignmentPackerTest extends AbstractHeadlessTest {
         int qualityThreshold = 0;
         int maxLevels = 1000;
         */
-        CloseableIterator<Alignment> iter = getAlignments();
+        AlignmentInterval interval = getAlignmentInterval();
 
-        Map<String, List<Row>> result = (new AlignmentPacker()).packAlignments(iter, ranges,
+        Map<String, List<Row>> result = (new AlignmentPacker()).packAlignments(Arrays.asList(interval),
                 new AlignmentTrack.RenderOptions());
         assertEquals(1, result.size());
         for (List<Row> alignmentrows : result.values()) {
@@ -93,8 +94,8 @@ public class AlignmentPackerTest extends AbstractHeadlessTest {
         AlignmentTrack.RenderOptions renderOptions = new AlignmentTrack.RenderOptions();
         renderOptions.groupByOption = groupOption;
 
-        CloseableIterator<Alignment> iter = getAlignments();
-        Map<String, List<Row>> result = (new AlignmentPacker()).packAlignments(iter, ranges, renderOptions);
+        AlignmentInterval interval = getAlignmentInterval();
+        Map<String, List<Row>> result = (new AlignmentPacker()).packAlignments(Arrays.asList(interval), renderOptions);
         Set<String> names = result.keySet();
         //names.removeAll(Arrays.asList("", null));
 

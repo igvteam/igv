@@ -24,7 +24,6 @@ import org.broad.igv.ui.event.DataLoadedEvent;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.ProgressMonitor;
-import org.broad.igv.util.ArrayHeapObjectSorter;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ResourceLocator;
@@ -183,70 +182,68 @@ public class AlignmentDataManager implements IAlignmentDataManager {
         if (option == renderOptions.isViewPairs()) {
             return;
         }
-
-        boolean currentPairState = renderOptions.isViewPairs();
         renderOptions.setViewPairs(option);
 
         for (ReferenceFrame frame : FrameManager.getFrames()) {
-            repackAlignments(frame, currentPairState, renderOptions);
-        }
-    }
-
-    private void repackAlignments(ReferenceFrame frame, boolean currentPairState, AlignmentTrack.RenderOptions renderOptions) {
-
-        if (currentPairState) {
-            PackedAlignments packedAlignments = packedAlignmentsMap.get(frame.getName());
-            if (packedAlignments == null) {
-                return;
-            }
-
-            List<Alignment> alignments = new ArrayList<Alignment>(Math.min(50000, packedAlignments.size() * 10000));
-            int intervalEnd = -1;
-            for (List<Row> alignmentRows : packedAlignments.values()) {
-                for (Row row : alignmentRows) {
-                    for (Alignment al : row.alignments) {
-                        intervalEnd = Math.max(intervalEnd, al.getEnd());
-                        if (al instanceof PairedAlignment) {
-                            PairedAlignment pair = (PairedAlignment) al;
-                            alignments.add(pair.firstAlignment);
-                            if (pair.secondAlignment != null) {
-                                alignments.add(pair.secondAlignment);
-                            }
-                        } else {
-                            alignments.add(al);
-                        }
-                    }
-                }
-            }
-
-
-            // ArrayHeapObjectSorter sorts in place (no additional memory required).
-            ArrayHeapObjectSorter<Alignment> heapSorter = new ArrayHeapObjectSorter();
-            heapSorter.sort(alignments, new Comparator<Alignment>() {
-                public int compare(Alignment alignment, Alignment alignment1) {
-                    return alignment.getStart() - alignment1.getStart();
-                }
-            });
-
-            AlignmentPacker packer = new AlignmentPacker();
-            PackedAlignments tmp = packer.packAlignments(
-                    alignments.iterator(),
-                    packedAlignments.getRanges(),
-                    renderOptions);
-
-            packedAlignmentsMap.put(frame.getName(), tmp);
-
-        } else {
             repackAlignments(frame, renderOptions);
         }
     }
+
+//    private void repackAlignments(ReferenceFrame frame, boolean currentPairState, AlignmentTrack.RenderOptions renderOptions) {
+//
+//        if (currentPairState) {
+//            PackedAlignments packedAlignments = packedAlignmentsMap.get(frame.getName());
+//            if (packedAlignments == null) {
+//                return;
+//            }
+//
+//            List<Alignment> alignments = new ArrayList<Alignment>(Math.min(50000, packedAlignments.size() * 10000));
+//            int intervalEnd = -1;
+//            for (List<Row> alignmentRows : packedAlignments.values()) {
+//                for (Row row : alignmentRows) {
+//                    for (Alignment al : row.alignments) {
+//                        intervalEnd = Math.max(intervalEnd, al.getEnd());
+//                        if (al instanceof PairedAlignment) {
+//                            PairedAlignment pair = (PairedAlignment) al;
+//                            alignments.add(pair.firstAlignment);
+//                            if (pair.secondAlignment != null) {
+//                                alignments.add(pair.secondAlignment);
+//                            }
+//                        } else {
+//                            alignments.add(al);
+//                        }
+//                    }
+//                }
+//            }
+//
+//
+//            // ArrayHeapObjectSorter sorts in place (no additional memory required).
+//            ArrayHeapObjectSorter<Alignment> heapSorter = new ArrayHeapObjectSorter();
+//            heapSorter.sort(alignments, new Comparator<Alignment>() {
+//                public int compare(Alignment alignment, Alignment alignment1) {
+//                    return alignment.getStart() - alignment1.getStart();
+//                }
+//            });
+//
+//            AlignmentPacker packer = new AlignmentPacker();
+//            AlignmentInterval oldInterval = packedAlignments
+//            PackedAlignments tmp = packer.packAlignments(
+//                    a,
+//                    renderOptions);
+//
+//            packedAlignmentsMap.put(frame.getName(), tmp);
+//
+//        } else {
+//            repackAlignments(frame, renderOptions);
+//        }
+//    }
 
     /**
      * Repack currently loaded alignments of the provided reference frame
      *
      * @param frame
      * @param renderOptions
-     * @see AlignmentPacker#packAlignments(java.util.Iterator, List, org.broad.igv.sam.AlignmentTrack.RenderOptions)
+     * @see AlignmentPacker#packAlignments(List, org.broad.igv.sam.AlignmentTrack.RenderOptions)
      */
     public void repackAlignments(ReferenceFrame frame, AlignmentTrack.RenderOptions renderOptions) {
 
@@ -255,9 +252,8 @@ public class AlignmentDataManager implements IAlignmentDataManager {
             return;
         }
 
-        Iterator<Alignment> iter = loadedInterval.getAlignmentIterator();
         final AlignmentPacker alignmentPacker = new AlignmentPacker();
-        PackedAlignments packedAlignments = alignmentPacker.packAlignments(iter, Arrays.asList(loadedInterval), renderOptions);
+        PackedAlignments packedAlignments = alignmentPacker.packAlignments(Arrays.asList(loadedInterval), renderOptions);
 
         this.packedAlignmentsMap.put(frame.getName(), packedAlignments);
     }
@@ -331,7 +327,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
 
                 AlignmentInterval loadedInterval = loadInterval(chr, start, end, renderOptions);
                 final AlignmentPacker alignmentPacker = new AlignmentPacker();
-                PackedAlignments packedAlignments = alignmentPacker.packAlignments(loadedInterval.getAlignmentIterator(), Arrays.asList(loadedInterval), renderOptions);
+                PackedAlignments packedAlignments = alignmentPacker.packAlignments(Arrays.asList(loadedInterval), renderOptions);
 
                 ReferenceFrame frame = context != null ? context.getReferenceFrame() : null;
                 addLoadedInterval(frame, loadedInterval, packedAlignments);
