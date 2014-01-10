@@ -1255,7 +1255,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             TrackMenuUtils.addDisplayModeItems(tracks, this);
 
             addSeparator();
-            addSelecteByNameItem();
+            addSelectByNameItem();
             addClearSelectionsMenuItem();
 
             addSeparator();
@@ -1375,7 +1375,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         }
 
-        public void addSelecteByNameItem() {
+        public void addSelectByNameItem() {
             // Change track height by attribute
             JMenuItem item = new JMenuItem("Select by name...");
             item.addActionListener(new ActionListener() {
@@ -1440,9 +1440,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                 public void actionPerformed(ActionEvent aEvt) {
                     String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getGroupByTag());
-                    renderOptions.setGroupByTag(tag);
-                    IGV.getInstance().groupAlignmentTracks(GroupOption.TAG);
-                    refresh();
+                    if(tag != null && tag.trim().length() > 0){
+                        renderOptions.setGroupByTag(tag);
+                        IGV.getInstance().groupAlignmentTracks(GroupOption.TAG);
+                        refresh();
+                    }
 
                 }
             });
@@ -1497,8 +1499,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                 public void actionPerformed(ActionEvent aEvt) {
                     String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getSortByTag());
-                    renderOptions.setSortByTag(tag);
-                    sortAlignmentTracks(SortOption.TAG, tag);
+                    if(tag != null && tag.trim().length() > 0){
+                        renderOptions.setSortByTag(tag);
+                        sortAlignmentTracks(SortOption.TAG, tag);
+                    }
                 }
             });
             sortMenu.add(tagOption);
@@ -1578,9 +1582,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 public void actionPerformed(ActionEvent aEvt) {
                     setColorOption(ColorOption.TAG);
                     String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getColorByTag());
-                    renderOptions.setColorByTag(tag);
-                    PreferenceManager.getInstance();
-                    refresh();
+                    if(tag != null && tag.trim().length() > 0){
+                        renderOptions.setColorByTag(tag);
+                        PreferenceManager.getInstance();
+                        refresh();
+                    }
                 }
             });
             colorMenu.add(tagOption);
