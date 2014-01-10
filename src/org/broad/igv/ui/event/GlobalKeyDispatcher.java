@@ -20,6 +20,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
+import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.AlignmentTrack;
@@ -166,7 +167,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                 if (FrameManager.isGeneListMode()) {
                     return;
                 }
-                ReferenceFrame.Range currentRange = FrameManager.getDefaultFrame().getCurrentRange();
+                Range currentRange = FrameManager.getDefaultFrame().getCurrentRange();
                 RegionOfInterest regionOfInterest =
                         new RegionOfInterest(
                                 currentRange.getChr(),

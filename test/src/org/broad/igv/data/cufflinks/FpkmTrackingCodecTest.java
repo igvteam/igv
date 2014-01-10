@@ -11,7 +11,7 @@
 
 package org.broad.igv.data.cufflinks;
 
-import org.broad.igv.data.Interval;
+import org.broad.igv.feature.Range;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
@@ -30,7 +30,7 @@ public class FpkmTrackingCodecTest {
     public void testsample_genesFPKM() throws Exception{
         String path = TestUtils.DATA_DIR + "cufflinks/sample_genes.fpkm_tracking";
 
-        List<? extends Interval> values = CufflinksParser.parse(path);
+        List<? extends Range> values = CufflinksParser.parse(path);
 
         String[] expGenes = new String[]{"STPG1", "HS3ST1","CFLAR","TFPI", "NDUFAF7"};
         int index = 0;

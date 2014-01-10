@@ -15,6 +15,7 @@ import com.google.common.eventbus.Subscribe;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.renderer.ContinuousColorScale;
@@ -218,7 +219,7 @@ public class Session {
         if (getReferenceFrame().getChrName().equals(Globals.CHR_ALL)) {
             return Globals.CHR_ALL;
         }
-        ReferenceFrame.Range range = getReferenceFrame().getCurrentRange();
+        Range range = getReferenceFrame().getCurrentRange();
         String startStr = String.valueOf(range.getStart());
         String endStr = String.valueOf(range.getEnd());
         String position = range.getChr() + ":" + startStr + "-" + endStr;

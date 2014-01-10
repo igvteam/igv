@@ -15,15 +15,13 @@
  */
 package org.broad.igv.feature;
 
-import org.broad.igv.data.Interval;
-
 import java.text.NumberFormat;
 import java.util.Locale;
 
 /**
  * @author jrobinso
  */
-public class Locus extends Interval implements NamedFeature {
+public class Locus extends Range implements NamedFeature {
 
     private static NumberFormat NUMBER_FORMAT = NumberFormat.getInstance(Locale.US);
 

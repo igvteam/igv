@@ -20,9 +20,9 @@ import com.google.common.eventbus.Subscribe;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.data.Interval;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Locus;
+import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
@@ -733,43 +733,11 @@ public class ReferenceFrame {
         this.name = name;
     }
 
-    public boolean overlaps(Interval interval) {
-        return this.getChrName().equals(interval.getChr()) && this.getOrigin() <= interval.getEnd() && this.getEnd() >= interval.getStart();
-    }
-
     /**
      * Return the current range as a locus string.
      */
     public String getLocusString() {
         return Locus.getFormattedLocusString( chrName , (int) origin, (int) this.getEnd());
-    }
-
-    public static class Range {
-        private String chr;
-        private int start;
-        private int end;
-
-        public Range(String chr, int start, int end) {
-            this.chr = chr;
-            this.start = start;
-            this.end = end;
-        }
-
-        public String getChr() {
-            return chr;
-        }
-
-        public int getStart() {
-            return start;
-        }
-
-        public int getEnd() {
-            return end;
-        }
-
-        public int getLength() {
-            return end - start;
-        }
     }
 
 }

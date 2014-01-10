@@ -23,6 +23,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Locus;
+import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.lists.GeneList;
@@ -659,7 +660,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 String locus1 = frame.getFormattedLocusString();
 
                 // Generate a locus string for the read mate.  Keep the window width (in base pairs) == to the current range
-                ReferenceFrame.Range range = frame.getCurrentRange();
+                Range range = frame.getCurrentRange();
                 int length = range.getLength();
                 int s2 = Math.max(0, mateStart - length / 2);
                 int e2 = s2 + length;

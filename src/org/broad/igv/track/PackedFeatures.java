@@ -12,7 +12,6 @@
 package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.data.Interval;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.tribble.Feature;

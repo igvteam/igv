@@ -11,7 +11,7 @@
 
 package org.broad.igv.data.cufflinks;
 
-import org.broad.igv.data.Interval;
+import org.broad.igv.feature.Range;
 import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.AsciiFeatureCodec;
 
@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class CufflinksParser {
 
-    public static List<? extends Interval> parse(String path) throws IOException {
+    public static List<? extends Range> parse(String path) throws IOException {
 
         final String s = path.toLowerCase();
         if (s.endsWith("fpkm_tracking")) {
@@ -46,7 +46,7 @@ public class CufflinksParser {
 
     }
 
-    public static <T extends Interval> List<T> parse(AsciiFeatureCodec<T> codec, String path) throws IOException {
+    public static <T extends Range> List<T> parse(AsciiFeatureCodec<T> codec, String path) throws IOException {
         List<T> values = new ArrayList<T>();
         AbstractFeatureReader reader = AbstractFeatureReader.getFeatureReader(path, codec, false);
         Iterator<T> iter = reader.iterator();

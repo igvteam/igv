@@ -20,6 +20,7 @@ package org.broad.igv.ui.panel;
 
 import com.google.common.eventbus.Subscribe;
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
@@ -684,7 +685,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
                         "Regions cannot be created in the All Chromosomes view.",
                         "Error", JOptionPane.INFORMATION_MESSAGE);
             } else {
-                ReferenceFrame.Range r = FrameManager.getDefaultFrame().getCurrentRange();
+                Range r = FrameManager.getDefaultFrame().getCurrentRange();
                 RegionOfInterest newRegion = new RegionOfInterest(r.getChr(), r.getStart(), r.getEnd(), "");
                 IGV.getInstance().getSession().addRegionOfInterestWithNoListeners(newRegion);
             }
@@ -740,7 +741,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
                 } else {
                     //Need to preserve current zoom, iff checkbox not selected and only choosing 1
                     RegionOfInterest roi = selectedRegions.get(0);
-                    ReferenceFrame.Range range = FrameManager.getDefaultFrame().getCurrentRange();
+                    Range range = FrameManager.getDefaultFrame().getCurrentRange();
                     int length = range.getLength();
                     int start = roi.getCenter() - length / 2;
                     int end = start + length;
