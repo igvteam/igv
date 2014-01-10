@@ -63,11 +63,11 @@ public class AlignmentPackerTest extends AbstractHeadlessTest {
         */
         CloseableIterator<Alignment> iter = getAlignments();
 
-        Map<String, List<AlignmentInterval.Row>> result = (new AlignmentPacker()).packAlignments(iter, end,
+        Map<String, List<Row>> result = (new AlignmentPacker()).packAlignments(iter, end,
                 new AlignmentTrack.RenderOptions());
         assertEquals(1, result.size());
-        for (List<AlignmentInterval.Row> alignmentrows : result.values()) {
-            for (AlignmentInterval.Row alignmentrow : alignmentrows) {
+        for (List<Row> alignmentrows : result.values()) {
+            for (Row alignmentrow : alignmentrows) {
                 List<Alignment> alignments = alignmentrow.alignments;
                 for (int ii = 1; ii < alignments.size(); ii++) {
                     assertTrue(alignments.get(ii).getAlignmentStart() > alignments.get(ii - 1).getAlignmentStart());
@@ -82,16 +82,16 @@ public class AlignmentPackerTest extends AbstractHeadlessTest {
     @Test
     public void testGroupAlignmentsPairOrientation() throws Exception {
         int expSize = 3; //AlignmentTrack.OrientationType.values().length;
-        Map<String, List<AlignmentInterval.Row>> result = tstGroupAlignments(AlignmentTrack.GroupOption.PAIR_ORIENTATION, expSize);
+        Map<String, List<Row>> result = tstGroupAlignments(AlignmentTrack.GroupOption.PAIR_ORIENTATION, expSize);
     }
 
-    public Map<String, List<AlignmentInterval.Row>> tstGroupAlignments(AlignmentTrack.GroupOption groupOption, int expSize) throws Exception {
+    public Map<String, List<Row>> tstGroupAlignments(AlignmentTrack.GroupOption groupOption, int expSize) throws Exception {
 
         AlignmentTrack.RenderOptions renderOptions = new AlignmentTrack.RenderOptions();
         renderOptions.groupByOption = groupOption;
 
         CloseableIterator<Alignment> iter = getAlignments();
-        Map<String, List<AlignmentInterval.Row>> result = (new AlignmentPacker()).packAlignments(iter, end, renderOptions);
+        Map<String, List<Row>> result = (new AlignmentPacker()).packAlignments(iter, end, renderOptions);
         Set<String> names = result.keySet();
         //names.removeAll(Arrays.asList("", null));
 

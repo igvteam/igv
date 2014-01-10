@@ -13,7 +13,6 @@ package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.Locus;
-import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 
@@ -154,197 +153,6 @@ public class AlignmentInterval extends Locus {
         return this.spliceJunctionHelper;
     }
 
-    public static class Row implements Comparable<Row> {
-        int nextIdx;
-        private double score = 0;
-        List<Alignment> alignments;
-        private int start;
-        private int lastEnd;
-
-        public Row() {
-            nextIdx = 0;
-            this.alignments = new ArrayList(100);
-        }
-
-        public void addAlignment(Alignment alignment) {
-            if (alignments.isEmpty()) {
-                this.start = alignment.getStart();
-            }
-            alignments.add(alignment);
-            lastEnd = alignment.getEnd();
-
-        }
-
-        public void updateScore(AlignmentTrack.SortOption option, double center, AlignmentInterval interval, String tag) {
-            setScore(calculateScore(option, center, interval, tag));
-        }
-
-
-        public double calculateScore(AlignmentTrack.SortOption option, double center, AlignmentInterval interval, String tag) {
-
-            int adjustedCenter = (int) center;
-            Alignment centerAlignment = getFeatureContaining(alignments, adjustedCenter);
-            if (centerAlignment == null) {
-                return Integer.MAX_VALUE;
-            } else {
-                switch (option) {
-                    case START:
-                        return centerAlignment.getStart();
-                    case STRAND:
-                        return centerAlignment.isNegativeStrand() ? -1 : 1;
-                    case FIRST_OF_PAIR_STRAND:
-                        Strand strand = centerAlignment.getFirstOfPairStrand();
-                        int score = 2;
-                        if (strand != Strand.NONE) {
-                            score = strand == Strand.NEGATIVE ? 1 : -1;
-                        }
-                        return score;
-                    case NUCLEOTIDE:
-                        byte base = centerAlignment.getBase(adjustedCenter);
-                        byte ref = interval.getReference(adjustedCenter);
-
-                        // Check insertions
-                        int insertionScore = 0;
-                        AlignmentBlock[] insertions = centerAlignment.getInsertions();
-                        for (AlignmentBlock ins : insertions) {
-                            int s = ins.getStart();
-                            if (s == adjustedCenter || (s - 1) == adjustedCenter) {
-                                insertionScore += ins.getBases().length;
-                            }
-                        }
-
-                        float baseScore;
-                        if (base == 'N' || base == 'n') {
-                            baseScore = 2;  // Base is "n"
-                        } else if (base == ref) {
-                            baseScore = 3;  // Base is reference
-                        } else {
-                            //If base is 0, base not covered (splice junction) or is deletion.
-                            if (base == 0) {
-                                int delCount = interval.getDelCount(adjustedCenter);
-                                if (delCount > 0) {
-                                    baseScore = -delCount;
-                                } else {
-                                    //Base not covered, NOT a deletion
-                                    baseScore = 1;
-                                }
-                            } else {
-                                int count = interval.getCount(adjustedCenter, base);
-                                byte phred = centerAlignment.getPhred(adjustedCenter);
-                                baseScore = -(count + (phred / 1000.0f));   // The second bit will always be < 1
-                            }
-
-
-                        }
-
-                        return baseScore - insertionScore;
-
-                    case QUALITY:
-                        return -centerAlignment.getMappingQuality();
-                    case SAMPLE:
-                        String sample = centerAlignment.getSample();
-                        score = sample == null ? 0 : sample.hashCode();
-                        return score;
-                    case READ_GROUP:
-                        String readGroup = centerAlignment.getReadGroup();
-                        score = readGroup == null ? 0 : readGroup.hashCode();
-                        return score;
-                    case INSERT_SIZE:
-                        return -Math.abs(centerAlignment.getInferredInsertSize());
-                    case MATE_CHR:
-                        ReadMate mate = centerAlignment.getMate();
-                        if (mate == null) {
-                            return Integer.MAX_VALUE;
-                        } else {
-                            if (mate.getChr().equals(centerAlignment.getChr())) {
-                                return Integer.MAX_VALUE - 1;
-                            } else {
-                                return mate.getChr().hashCode();
-                            }
-                        }
-                    case TAG:
-                        Object tagValue = centerAlignment.getAttribute(tag);
-                        score = tagValue == null ? 0 : tagValue.hashCode();
-                        return score;
-                    default:
-                        return Integer.MAX_VALUE;
-                }
-            }
-        }
-
-
-        // Used for iterating over all alignments, e.g. for packing
-
-        public Alignment nextAlignment() {
-            if (nextIdx < alignments.size()) {
-                Alignment tmp = alignments.get(nextIdx);
-                nextIdx++;
-                return tmp;
-            } else {
-                return null;
-            }
-        }
-
-        public int getNextStartPos() {
-            if (nextIdx < alignments.size()) {
-                return alignments.get(nextIdx).getStart();
-            } else {
-                return Integer.MAX_VALUE;
-            }
-        }
-
-        public boolean hasNext() {
-            return nextIdx < alignments.size();
-        }
-
-        public void resetIdx() {
-            nextIdx = 0;
-        }
-
-        public double getScore() {
-            return score;
-        }
-
-        public void setScore(double score) {
-            this.score = score;
-        }
-
-        public int getStart() {
-            return start;
-        }
-
-        public int getLastEnd() {
-            return lastEnd;
-        }
-
-        @Override
-        public int compareTo(Row o) {
-            return (int) Math.signum(getScore() - o.getScore());
-        }
-
-//        @Override
-//        public boolean equals(Object object){
-//            if(!(object instanceof Row)){
-//                return false;
-//            }
-//            Row other = (Row) object;
-//            boolean equals = this.getStart() == other.getStart();
-//            equals &= this.getLastEnd() == other.getLastEnd();
-//            equals &= this.getScore() == other.getScore();
-//
-//            return equals;
-//
-//        }
-//
-//        @Override
-//        public int hashCode(){
-//            int score = (int) getScore();
-//            score = score != 0 ? score : 1;
-//            return (getStart() * getLastEnd() * score);
-//        }
-
-    } // end class row
-
 
     /**
      * An alignment iterator that iterates over packed rows.  Used for
@@ -353,19 +161,19 @@ public class AlignmentInterval extends Locus {
      */
     static class AlignmentIterator implements Iterator<Alignment> {
 
-        PriorityQueue<AlignmentInterval.Row> rows;
+        PriorityQueue<Row> rows;
         Alignment nextAlignment;
 
         AlignmentIterator(Map<String, List<Row>> groupedAlignmentRows) {
-            rows = new PriorityQueue(5, new Comparator<AlignmentInterval.Row>() {
+            rows = new PriorityQueue(5, new Comparator<Row>() {
 
-                public int compare(AlignmentInterval.Row o1, AlignmentInterval.Row o2) {
+                public int compare(Row o1, Row o2) {
                     return o1.getNextStartPos() - o2.getNextStartPos();
                 }
             });
 
-            for (List<AlignmentInterval.Row> alignmentRows : groupedAlignmentRows.values()) {
-                for (AlignmentInterval.Row r : alignmentRows) {
+            for (List<Row> alignmentRows : groupedAlignmentRows.values()) {
+                for (Row r : alignmentRows) {
                     r.resetIdx();
                     rows.add(r);
                 }
@@ -389,7 +197,7 @@ public class AlignmentInterval extends Locus {
         private void advance() {
 
             nextAlignment = null;
-            AlignmentInterval.Row nextRow = null;
+            Row nextRow = null;
             while (nextAlignment == null && !rows.isEmpty()) {
                 while ((nextRow = rows.poll()) != null) {
                     if (nextRow.hasNext()) {

@@ -357,7 +357,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private void renderAlignments(RenderContext context, Rectangle inputRect) {
 
         //log.debug("Render features");
-        Map<String, List<AlignmentInterval.Row>> groups = dataManager.getGroups(context, renderOptions);
+        PackedAlignments groups = dataManager.getGroups(context, renderOptions);
 
         Map<String, PEStats> peStats = dataManager.getPEStats();
         if (peStats != null) {
@@ -397,13 +397,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         Graphics2D groupBorderGraphics = context.getGraphic2DForColor(AlignmentRenderer.GROUP_DIVIDER_COLOR);
         int nGroups = groups.size();
         int groupNumber = 0;
-        for (Map.Entry<String, List<AlignmentInterval.Row>> entry : groups.entrySet()) {
-            String group = entry.getKey();
+        for (Map.Entry<String, List<Row>> entry : groups.entrySet()) {
             groupNumber++;
 
             // Loop through the alignment rows for this group
-            List<AlignmentInterval.Row> rows = entry.getValue();
-            for (AlignmentInterval.Row row : rows) {
+            List<Row> rows = entry.getValue();
+            for (Row row : rows) {
 
                 if ((visibleRect != null && y > visibleRect.getMaxY())) {
                     return;
@@ -772,7 +771,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         if (alignmentsRect == null) {
             return null;   // <= not loaded yet
         }
-        Map<String, List<AlignmentInterval.Row>> groups = dataManager.getGroupedAlignmentsContaining(position, frame);
+        PackedAlignments groups = dataManager.getGroupedAlignmentsContaining(position, frame);
 
         if (groups == null || groups.isEmpty()) {
             return null;
@@ -787,11 +786,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         int startY = alignmentsRect.y;
         final boolean leaveMargin = getDisplayMode() == DisplayMode.EXPANDED;
 
-        for (List<AlignmentInterval.Row> rows : groups.values()) {
+        for (List<Row> rows : groups.values()) {
             int endY = startY + rows.size() * h;
             if (y >= startY && y < endY) {
                 int levelNumber = (y - startY) / h;
-                AlignmentInterval.Row row = rows.get(levelNumber);
+                Row row = rows.get(levelNumber);
                 List<Alignment> features = row.alignments;
 
                 // No buffer for alignments,  you must zoom in far enough for them to be visible

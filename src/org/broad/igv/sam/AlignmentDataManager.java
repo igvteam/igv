@@ -42,7 +42,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
      */
     private Map<String, AlignmentInterval> loadedIntervalMap = new HashMap<String, AlignmentInterval>();
 
-    private Map<String, LinkedHashMap<String, List<AlignmentInterval.Row>>> packedAlignmentsMap = new HashMap<String, LinkedHashMap<String, List<AlignmentInterval.Row>>>();
+    private Map<String, PackedAlignments> packedAlignmentsMap = new HashMap<String, PackedAlignments>();
 
     private HashMap<String, String> chrMappings = new HashMap();
     private volatile boolean isLoading = false;
@@ -175,14 +175,14 @@ public class AlignmentDataManager implements IAlignmentDataManager {
      * @param location
      */
     public void sortRows(SortOption option, String frameName, double location, String tag) {
-        Map<String, List<AlignmentInterval.Row>> groupedAlignmentRows = packedAlignmentsMap.get(frameName);
+        PackedAlignments packedAlignments = packedAlignmentsMap.get(frameName);
         AlignmentInterval interval = loadedIntervalMap.get(frameName);
-        if (groupedAlignmentRows == null || interval == null) {
+        if (packedAlignments == null || interval == null) {
             return;
         }
 
-        for (List<AlignmentInterval.Row> alignmentRows : groupedAlignmentRows.values()) {
-            for (AlignmentInterval.Row row : alignmentRows) {
+        for (List<Row> alignmentRows : packedAlignments.values()) {
+            for (Row row : alignmentRows) {
                 row.updateScore(option, location, interval, tag);
             }
             Collections.sort(alignmentRows);
@@ -205,15 +205,15 @@ public class AlignmentDataManager implements IAlignmentDataManager {
     private void repackAlignments(String frameName, boolean currentPairState, AlignmentTrack.RenderOptions renderOptions) {
 
         if (currentPairState) {
-            Map<String, List<AlignmentInterval.Row>> groupedAlignments = packedAlignmentsMap.get(frameName);
-            if (groupedAlignments == null) {
+            PackedAlignments packedAlignments = packedAlignmentsMap.get(frameName);
+            if (packedAlignments == null) {
                 return;
             }
 
-            List<Alignment> alignments = new ArrayList<Alignment>(Math.min(50000, groupedAlignments.size() * 10000));
+            List<Alignment> alignments = new ArrayList<Alignment>(Math.min(50000, packedAlignments.size() * 10000));
             int intervalEnd = -1;
-            for (List<AlignmentInterval.Row> alignmentRows : groupedAlignments.values()) {
-                for (AlignmentInterval.Row row : alignmentRows) {
+            for (List<Row> alignmentRows : packedAlignments.values()) {
+                for (Row row : alignmentRows) {
                     for (Alignment al : row.alignments) {
                         intervalEnd = Math.max(intervalEnd, al.getEnd());
                         if (al instanceof PairedAlignment) {
@@ -238,7 +238,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
                 }
             });
 
-            LinkedHashMap<String, List<AlignmentInterval.Row>> tmp = (new AlignmentPacker()).packAlignments(
+            PackedAlignments tmp = (new AlignmentPacker()).packAlignments(
                     alignments.iterator(),
                     intervalEnd,
                     renderOptions);
@@ -265,12 +265,12 @@ public class AlignmentDataManager implements IAlignmentDataManager {
         }
 
         Iterator<Alignment> iter = loadedInterval.getAlignmentIterator();
-        LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = (new AlignmentPacker()).packAlignments(
+        PackedAlignments packedAlignments = (new AlignmentPacker()).packAlignments(
                 iter,
                 loadedInterval.getEnd(),
                 renderOptions);
 
-        this.packedAlignmentsMap.put(frameName, alignmentRows);
+        this.packedAlignmentsMap.put(frameName, packedAlignments);
     }
 
 
@@ -307,7 +307,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
         }
     }
 
-    public synchronized LinkedHashMap<String, List<AlignmentInterval.Row>> getGroups(RenderContext context,
+    public synchronized PackedAlignments getGroups(RenderContext context,
                                                                                      AlignmentTrack.RenderOptions renderOptions) {
 
         load(context, renderOptions, false);
@@ -341,10 +341,10 @@ public class AlignmentDataManager implements IAlignmentDataManager {
 
                 AlignmentInterval loadedInterval = loadInterval(chr, start, end, renderOptions);
                 final AlignmentPacker alignmentPacker = new AlignmentPacker();
-                LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = alignmentPacker.packAlignments(loadedInterval.getAlignmentIterator(), end, renderOptions);
+                PackedAlignments packedAlignments = alignmentPacker.packAlignments(loadedInterval.getAlignmentIterator(), end, renderOptions);
 
                 ReferenceFrame frame = context != null ? context.getReferenceFrame() : null;
-                addLoadedInterval(frame, loadedInterval, alignmentRows);
+                addLoadedInterval(frame, loadedInterval, packedAlignments);
 
                 getEventBus().post(new DataLoadedEvent(context));
 
@@ -387,10 +387,10 @@ public class AlignmentDataManager implements IAlignmentDataManager {
         return new AlignmentInterval(chr, start, end, alignments, t.getCounts(), spliceJunctionHelper, downsampledIntervals, renderOptions);
     }
 
-    private void addLoadedInterval(ReferenceFrame frame, AlignmentInterval interval, LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows) {
+    private void addLoadedInterval(ReferenceFrame frame, AlignmentInterval interval, PackedAlignments packedAlignments) {
         String frameName = frame != null ? frame.getName() : FrameManager.DEFAULT_FRAME_NAME;
         loadedIntervalMap.put(frameName, interval);
-        packedAlignmentsMap.put(frameName, alignmentRows);
+        packedAlignmentsMap.put(frameName, packedAlignments);
     }
 
     /**
@@ -401,28 +401,24 @@ public class AlignmentDataManager implements IAlignmentDataManager {
      * @param referenceFrame
      * @return alignmentRows, grouped and ordered by key
      */
-    public Map<String, List<AlignmentInterval.Row>> getGroupedAlignmentsContaining(double position, ReferenceFrame referenceFrame) {
+    public PackedAlignments getGroupedAlignmentsContaining(double position, ReferenceFrame referenceFrame) {
         String chr = referenceFrame.getChrName();
         int start = (int) position;
         int end = start + 1;
         AlignmentInterval loadedInterval = loadedIntervalMap.get(referenceFrame.getName());
         if (loadedInterval == null) return null;
 
-        Map<String, List<AlignmentInterval.Row>> groupedAlignments = packedAlignmentsMap.get(referenceFrame.getName());
-        if (groupedAlignments != null && loadedInterval.contains(chr, start, end)) {
-            return groupedAlignments;
+        PackedAlignments packedAlignments = packedAlignmentsMap.get(referenceFrame.getName());
+        if (packedAlignments != null && loadedInterval.contains(chr, start, end)) {
+            return packedAlignments;
         }
         return null;
     }
 
     public int getNLevels() {
         int nLevels = 0;
-        for (Map<String, List<AlignmentInterval.Row>> groups : packedAlignmentsMap.values()) {
-            int intervalNLevels = 0;
-            Collection<List<AlignmentInterval.Row>> tmp = groups.values();
-            for (List<AlignmentInterval.Row> rows : tmp) {
-                intervalNLevels += rows.size();
-            }
+        for (PackedAlignments packedAlignments : packedAlignmentsMap.values()) {
+            int intervalNLevels = packedAlignments.getNLevels();
             nLevels = Math.max(nLevels, intervalNLevels);
         }
         return nLevels;
@@ -434,8 +430,8 @@ public class AlignmentDataManager implements IAlignmentDataManager {
      */
     public int getMaxGroupCount() {
         int groupCount = 0;
-        for (Map<String, List<AlignmentInterval.Row>> groups : packedAlignmentsMap.values()) {
-            groupCount = Math.max(groupCount, groups.size());
+        for (PackedAlignments packedAlignments : packedAlignmentsMap.values()) {
+            groupCount = Math.max(groupCount, packedAlignments.size());
         }
 
         return groupCount;

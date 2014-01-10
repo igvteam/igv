@@ -17,7 +17,6 @@ package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.Strand;
-import org.broad.igv.sam.AlignmentInterval.Row;
 
 import java.util.*;
 
@@ -49,18 +48,18 @@ public class AlignmentPacker {
      * @param end  Last index of the last alignment
      * @param renderOptions
      */
-    public LinkedHashMap<String, List<AlignmentInterval.Row>> packAlignments(
+    public PackedAlignments packAlignments(
             Iterator<Alignment> iter,
             int end,
             AlignmentTrack.RenderOptions renderOptions) {
 
         if(renderOptions == null) renderOptions = new AlignmentTrack.RenderOptions();
 
-        LinkedHashMap<String, List<AlignmentInterval.Row>> packedAlignments = new LinkedHashMap<String, List<Row>>();
+        LinkedHashMap<String, List<Row>> packedAlignments = new LinkedHashMap<String, List<Row>>();
         boolean pairAlignments = renderOptions.isViewPairs() || renderOptions.isPairedArcView();
 
         if (iter == null || !iter.hasNext()) {
-            return packedAlignments;
+            return new PackedAlignments(packedAlignments, renderOptions);
         }
 
         if (renderOptions.groupByOption == null) {
@@ -100,7 +99,7 @@ public class AlignmentPacker {
             packedAlignments.put("", alignmentRows);
         }
 
-        return packedAlignments;
+        return new PackedAlignments(packedAlignments, renderOptions);
 
     }
 
