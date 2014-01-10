@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * Copyright (c) 2007-2014 The Broad Institute, Inc.
  * SOFTWARE COPYRIGHT NOTICE
  * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
  *
@@ -33,15 +33,14 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.*;
 
-public class AlignmentDataManager implements IAlignmentDataManager{
+public class AlignmentDataManager implements IAlignmentDataManager {
 
     private static Logger log = Logger.getLogger(AlignmentDataManager.class);
 
     /**
      * Map of reference frame name -> alignment interval
      */
-    private Map<String, AlignmentInterval> loadedIntervalMap = new HashMap<String, AlignmentInterval>();//new MapMaker()).softValues().makeMap();
-    //private Cache<String, AlignmentInterval> loadedIntervalMap = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).initialCapacity(1).build();
+    private Map<String, AlignmentInterval> loadedIntervalMap = new HashMap<String, AlignmentInterval>();
 
     private HashMap<String, String> chrMappings = new HashMap();
     private volatile boolean isLoading = false;
@@ -73,12 +72,7 @@ public class AlignmentDataManager implements IAlignmentDataManager{
         initChrMap(genome);
     }
 
-    public void updateGenome(Genome genome) {
-        chrMappings.clear();
-        initChrMap(genome);
-    }
-
-    void initLoadOptions(){
+    void initLoadOptions() {
         this.loadOptions = new SpliceJunctionHelper.LoadOptions();
     }
 
@@ -327,7 +321,6 @@ public class AlignmentDataManager implements IAlignmentDataManager{
             return;
         }
 
-        //log.info("Load alignments.  isLoading=" + isLoading);
         isLoading = true;
 
         NamedRunnable runnable = new NamedRunnable() {
@@ -354,8 +347,6 @@ public class AlignmentDataManager implements IAlignmentDataManager{
 
 
     }
-
-    static int n = 1;
 
     AlignmentInterval loadInterval(String chr, int start, int end, AlignmentTrack.RenderOptions renderOptions) {
 
@@ -491,15 +482,15 @@ public class AlignmentDataManager implements IAlignmentDataManager{
         public DownsampleOptions() {
             PreferenceManager prefs = PreferenceManager.getInstance();
             init(prefs.getAsBoolean(PreferenceManager.SAM_DOWNSAMPLE_READS),
-                 prefs.getAsInt(PreferenceManager.SAM_SAMPLING_WINDOW),
-                 prefs.getAsInt(PreferenceManager.SAM_SAMPLING_COUNT));
+                    prefs.getAsInt(PreferenceManager.SAM_SAMPLING_WINDOW),
+                    prefs.getAsInt(PreferenceManager.SAM_SAMPLING_COUNT));
         }
 
-        DownsampleOptions(boolean downsample, int sampleWindowSize, int maxReadCount){
+        DownsampleOptions(boolean downsample, int sampleWindowSize, int maxReadCount) {
             init(downsample, sampleWindowSize, maxReadCount);
         }
 
-        private void init(boolean downsample, int sampleWindowSize, int maxReadCount){
+        private void init(boolean downsample, int sampleWindowSize, int maxReadCount) {
             this.downsample = downsample;
             this.sampleWindowSize = sampleWindowSize;
             this.maxReadCount = maxReadCount;

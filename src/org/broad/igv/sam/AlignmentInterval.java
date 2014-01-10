@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * Copyright (c) 2007-2014 The Broad Institute, Inc.
  * SOFTWARE COPYRIGHT NOTICE
  * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
  *
@@ -9,10 +9,6 @@
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
@@ -20,7 +16,6 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ui.panel.ReferenceFrame;
 
 import java.util.*;
 
@@ -33,16 +28,17 @@ public class AlignmentInterval extends Locus {
 
     Genome genome;
     private AlignmentCounts counts;
-    private LinkedHashMap<String, List<Row>> groupedAlignmentRows;  // The alignments
+    private LinkedHashMap<String, List<Row>> groupedAlignmentRows;
     private SpliceJunctionHelper spliceJunctionHelper;
     private List<DownsampledInterval> downsampledIntervals;
     private AlignmentTrack.RenderOptions renderOptions;
 
-    AlignmentInterval(AlignmentInterval interval){
+    AlignmentInterval(AlignmentInterval interval) {
         this(interval.getChr(), interval.getStart(), interval.getEnd(),
                 interval.getGroupedAlignments(), interval.getCounts(),
                 new SpliceJunctionHelper(interval.getSpliceJunctionHelper()), interval.getDownsampledIntervals(), interval.renderOptions);
     }
+
     public AlignmentInterval(String chr, int start, int end,
                              LinkedHashMap<String, List<Row>> groupedAlignmentRows,
                              AlignmentCounts counts,
@@ -53,17 +49,11 @@ public class AlignmentInterval extends Locus {
         super(chr, start, end);
         this.groupedAlignmentRows = groupedAlignmentRows;
         genome = GenomeManager.getInstance().getCurrentGenome();
-
-        //reference = genome.getSequence(chr, start, end);
         this.counts = counts;
 
         this.spliceJunctionHelper = spliceJunctionHelper;
         this.downsampledIntervals = downsampledIntervals;
         this.renderOptions = renderOptions;
-    }
-
-    static AlignmentInterval emptyAlignmentInterval(String chr, int start, int end) {
-        return new AlignmentInterval(chr, start, end, null, null, null, null, null);
     }
 
     static Alignment getFeatureContaining(List<Alignment> features, int right) {
@@ -118,13 +108,6 @@ public class AlignmentInterval extends Locus {
         this.renderOptions = renderOptions;
     }
 
-
-    public void sortRows(AlignmentTrack.SortOption option, ReferenceFrame referenceFrame, String tag) {
-        double center = referenceFrame.getCenter();
-        sortRows(option, center, tag);
-    }
-
-
     /**
      * Sort rows group by group
      *
@@ -144,7 +127,6 @@ public class AlignmentInterval extends Locus {
             Collections.sort(alignmentRows);
         }
     }
-
 
     public byte getReference(int pos) {
         if (genome == null) {
@@ -184,34 +166,10 @@ public class AlignmentInterval extends Locus {
         return 0;
     }
 
-    public int getNegCount(int pos, byte b) {
-        AlignmentCounts c = counts;
-        if (pos >= c.getStart() && pos < c.getEnd()) {
-            return c.getNegCount(pos, b);
-        }
-        return 0;
-    }
-
-    public int getPosCount(int pos, byte b) {
-        AlignmentCounts c = counts;
-        if (pos >= c.getStart() && pos < c.getEnd()) {
-            return c.getPosCount(pos, b);
-        }
-        return 0;
-    }
-
     public int getDelCount(int pos) {
         AlignmentCounts c = counts;
         if (pos >= c.getStart() && pos < c.getEnd()) {
             return c.getDelCount(pos);
-        }
-        return 0;
-    }
-
-    public int getInsCount(int pos) {
-        AlignmentCounts c = counts;
-        if (pos >= c.getStart() && pos < c.getEnd()) {
-            return c.getInsCount(pos);
         }
         return 0;
     }
@@ -247,20 +205,6 @@ public class AlignmentInterval extends Locus {
             alignments.add(alignment);
             lastEnd = alignment.getEnd();
 
-        }
-
-        public void updateScore(AlignmentTrack.SortOption option, Locus locus, AlignmentInterval interval, String tag) {
-            double mean = 0;
-            //double sd = 0;
-            int number = 0;
-            for (int center = locus.getStart(); center < locus.getEnd(); center++) {
-                double value = calculateScore(option, center, interval, tag);
-
-                mean = number * (mean / (number + 1)) + (value / (number + 1));
-
-                number++;
-            }
-            setScore(mean);
         }
 
         public void updateScore(AlignmentTrack.SortOption option, double center, AlignmentInterval interval, String tag) {
@@ -389,16 +333,10 @@ public class AlignmentInterval extends Locus {
             nextIdx = 0;
         }
 
-        /**
-         * @return the score
-         */
         public double getScore() {
             return score;
         }
 
-        /**
-         * @param score the score to set
-         */
         public void setScore(double score) {
             this.score = score;
         }
@@ -442,7 +380,7 @@ public class AlignmentInterval extends Locus {
 
     /**
      * An alignment iterator that iterates over packed rows.  Used for
-     * "repacking".   Using the iterator avoids the need to copy alignments
+     * repacking.   Using the iterator avoids the need to copy alignments
      * from the rows
      */
     class AlignmentIterator implements Iterator<Alignment> {
