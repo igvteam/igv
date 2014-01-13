@@ -14,6 +14,7 @@ package org.broad.igv.util.collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Class for case-insensitive collections. Needless to say,
@@ -67,6 +68,11 @@ public class CI {
             super();
         }
 
+        public CIHashMap(Map<String, V> inMap){
+            for(Map.Entry<String, V> entry: inMap.entrySet()){
+                this.put(entry.getKey(), entry.getValue());
+            }
+        }
 
         @Override
         public V put(String key, V value) {

@@ -24,6 +24,7 @@ import org.broad.igv.gs.GSUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.CancellableProgressDialog;
 import org.broad.igv.ui.util.ProgressMonitor;
+import org.broad.igv.util.collections.CI;
 import org.broad.igv.util.ftp.FTPUtils;
 import org.broad.igv.util.stream.IGVSeekableHTTPStream;
 import org.broad.igv.util.stream.IGVUrlHelper;
@@ -227,12 +228,13 @@ public class HttpUtils {
     }
 
     boolean isExpectedRangeMissing(URLConnection conn, Map<String, String> requestProperties){
-        Map<String,List<String>> headerFields = conn.getHeaderFields();
-        final boolean rangeRequested = requestProperties != null && requestProperties.containsKey("Range");
-        final boolean rangeReceived = headerFields != null && headerFields.containsKey("Content-Range");
-        return rangeRequested && !rangeReceived;
-    }
+        final boolean rangeRequested = (requestProperties != null) && (new CI.CIHashMap<String>(requestProperties)).containsKey("Range");
+        if(!rangeRequested) return false;
 
+        Map<String,List<String>> headerFields = conn.getHeaderFields();
+        boolean rangeReceived = (headerFields != null) && (new CI.CIHashMap<List<String>>(headerFields)).containsKey("Content-Range");
+        return !rangeReceived;
+    }
 
     public boolean resourceAvailable(URL url) {
         log.debug("Checking if resource is available: " + url);
