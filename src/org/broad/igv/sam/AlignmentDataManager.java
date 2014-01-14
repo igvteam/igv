@@ -184,9 +184,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
         }
         renderOptions.setViewPairs(option);
 
-        for (ReferenceFrame frame : FrameManager.getFrames()) {
-            repackAlignments(frame, renderOptions);
-        }
+        repackAlignments(FrameManager.getFrames(), renderOptions);
     }
 
 //    private void repackAlignments(ReferenceFrame frame, boolean currentPairState, AlignmentTrack.RenderOptions renderOptions) {
@@ -241,21 +239,27 @@ public class AlignmentDataManager implements IAlignmentDataManager {
     /**
      * Repack currently loaded alignments of the provided reference frame
      *
-     * @param frame
+     * @param frameList
      * @param renderOptions
      * @see AlignmentPacker#packAlignments(List, org.broad.igv.sam.AlignmentTrack.RenderOptions)
      */
-    public void repackAlignments(ReferenceFrame frame, AlignmentTrack.RenderOptions renderOptions) {
+    public void repackAlignments(List<ReferenceFrame> frameList, AlignmentTrack.RenderOptions renderOptions) {
 
-        AlignmentInterval loadedInterval = loadedIntervalCache.get(frame.getCurrentRange());
-        if (loadedInterval == null) {
-            return;
+        List<AlignmentInterval> intervalList = new ArrayList<AlignmentInterval>(frameList.size());
+        for(ReferenceFrame frame: frameList){
+            AlignmentInterval loadedInterval = loadedIntervalCache.get(frame.getCurrentRange());
+
+            if (loadedInterval == null) {
+                return;
+            }
+            intervalList.add(loadedInterval);
         }
 
-        final AlignmentPacker alignmentPacker = new AlignmentPacker();
-        PackedAlignments packedAlignments = alignmentPacker.packAlignments(Arrays.asList(loadedInterval), renderOptions);
 
-        this.packedAlignmentsMap.put(frame.getName(), packedAlignments);
+        final AlignmentPacker alignmentPacker = new AlignmentPacker();
+        PackedAlignments packedAlignments = alignmentPacker.packAlignments(intervalList, renderOptions);
+
+        for(ReferenceFrame frame: frameList) this.packedAlignmentsMap.put(frame.getName(), packedAlignments);
     }
 
 

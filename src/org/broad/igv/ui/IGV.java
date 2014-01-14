@@ -1902,9 +1902,7 @@ public class IGV {
     public void groupAlignmentTracks(AlignmentTrack.GroupOption option) {
         for (Track t : getAllTracks()) {
             if (t instanceof AlignmentTrack) {
-                for (ReferenceFrame frame : FrameManager.getFrames()) {
-                    ((AlignmentTrack) t).groupAlignments(option, frame);
-                }
+                ((AlignmentTrack) t).groupAlignments(option, FrameManager.getFrames());
             }
         }
     }
@@ -1912,9 +1910,7 @@ public class IGV {
     public void packAlignmentTracks() {
         for (Track t : getAllTracks()) {
             if (t instanceof AlignmentTrack) {
-                for (ReferenceFrame frame : FrameManager.getFrames()) {
-                    ((AlignmentTrack) t).packAlignments(frame);
-                }
+                ((AlignmentTrack) t).packAlignments(FrameManager.getFrames());
             }
         }
     }

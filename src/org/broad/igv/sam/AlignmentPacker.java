@@ -158,6 +158,7 @@ public class AlignmentPacker {
             List<Alignment> alList = rangeAlignmentMap.get(range);
             if(alList == null || alList.size() == 0) continue;
 
+            int curRangeStart = range.getStart();
             for(Alignment al: alList) {
 
                 if (al.isMapped()) {
@@ -180,10 +181,12 @@ public class AlignmentPacker {
                         }
                     }
 
-                    int bucketNumber = al.getStart() - range.getStart() + curBucketStart;
+                    int bucketNumber = al.getStart() - curRangeStart;
                     // We can get negative buckets if soft-clipping is on as the alignments are only approximately
-                    // sorted.  Throw all alignments < start in the first bucket.
+                    // sorted.  Throw all alignments < start in the first bucket of this range.
                     bucketNumber = Math.max(0, bucketNumber);
+                    //Offset for start of range
+                    bucketNumber += curBucketStart;
                     if (bucketNumber < bucketCount) {
                         PriorityQueue<Alignment> bucket = buckets.get(bucketNumber);
                         if (bucket == null) {
@@ -199,7 +202,6 @@ public class AlignmentPacker {
 
                 }
             }
-
             curBucketStart += range.getLength();
         }
 
@@ -216,14 +218,13 @@ public class AlignmentPacker {
         List<Integer> emptyBuckets = new ArrayList<Integer>(100);
 
         while (allocatedCount < totalCount) {
-            int currentRangeStart = curRange.getStart();
 
             // Loop through alignments until we reach the end of the interval
             while (curRange != null) {
                 PriorityQueue<Alignment> bucket;
 
                 // Advance to next occupied bucket
-                int bucketNumber = nextStart - currentRangeStart + curBucketStart;
+                int bucketNumber = nextStart - curRange.getStart() + curBucketStart;
                 bucket = buckets.getNextBucket(bucketNumber, emptyBuckets);
 
                 // Pull the next alignment out of the bucket and add to the current row

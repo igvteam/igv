@@ -443,19 +443,20 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     /**
      * Visually regroup alignments by the provided {@code GroupOption}.
      *
+     *
      * @param option
-     * @param referenceFrame
-     * @see AlignmentDataManager#repackAlignments(ReferenceFrame, org.broad.igv.sam.AlignmentTrack.RenderOptions)
+     * @param referenceFrames
+     * @see AlignmentDataManager#repackAlignments
      */
-    public void groupAlignments(GroupOption option, ReferenceFrame referenceFrame) {
+    public void groupAlignments(GroupOption option, List<ReferenceFrame> referenceFrames) {
         if (renderOptions.groupByOption != option) {
             renderOptions.groupByOption = (option == GroupOption.NONE ? null : option);
-            dataManager.repackAlignments(referenceFrame, renderOptions);
+            dataManager.repackAlignments(referenceFrames, renderOptions);
         }
     }
 
-    public void packAlignments(ReferenceFrame referenceFrame) {
-        dataManager.repackAlignments(referenceFrame, renderOptions);
+    public void packAlignments(List<ReferenceFrame> referenceFrames) {
+        dataManager.repackAlignments(referenceFrames, renderOptions);
     }
 
     /**
@@ -970,9 +971,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
 
         renderOptions.setPairedArcView(option);
-        for (ReferenceFrame frame : FrameManager.getFrames()) {
-            dataManager.repackAlignments(frame, renderOptions);
-        }
+        dataManager.repackAlignments(FrameManager.getFrames(), renderOptions);
         refresh();
     }
 
