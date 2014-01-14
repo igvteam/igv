@@ -22,15 +22,7 @@ import java.awt.*;
 
 
 /**
- * @author jrobinso
- *         <p/>
- *         Notes;
- *         <p/>
- *         The painting architecture of Swing requires an opaque JComponent to exist in the containment hieararchy above all
- *         other components. This is typically provided by way of the content pane. If you replace the content pane, it is
- *         recommended that you make the content pane opaque by way of setOpaque(true). Additionally, if the content pane
- *         overrides paintComponent, it will need to completely fill in the background in an opaque color in paintComponent.
- * @date Apr 4, 2011
+ * The content pane for the IGV main window.
  */
 public class IGVContentPane extends JPanel {
 
@@ -48,6 +40,8 @@ public class IGVContentPane extends JPanel {
      * Creates new form IGV
      */
     public IGVContentPane(IGV igv) {
+
+        setOpaque(true);    // Required by Swing
 
         this.igv = igv;
 
