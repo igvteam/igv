@@ -33,7 +33,6 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
-import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -276,6 +275,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     public static final String fileName01 = "test.wig";
     public static final String fileNamePerc = "%test%2D.wig";
     public static final String fileNamePlus = "test+wp.wig";
+    public static final String fileNameCommas = "test,with,commas.wig";
 
 
     @Test
@@ -284,8 +284,13 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     }
 
     @Test
-    public void testLoadFileSpacesPerc() throws Exception {
+         public void testLoadFileSpacesPerc() throws Exception {
         tstLoadFileSpaces(fileNamePerc);
+    }
+
+    @Test
+    public void testLoadFileCommas() throws Exception {
+        tstLoadFileSpaces(fileNameCommas);
     }
 
     @Test
@@ -309,9 +314,14 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         tstLoadFileURLSpaces(fileNamePlus);
     }
 
+    @Test
+    public void testLoadFileURLCommas() throws Exception {
+        tstLoadFileURLSpaces(fileNameCommas);
+    }
+
     private void tstLoadFileURLSpaces(String filename) throws Exception {
         String fileURL = "file://" + org.broad.igv.util.StringUtils.encodeURL(new File(dirPathSpaces, filename).getAbsolutePath());
-        exec.execute("load " + fileURL);
+        exec.execute("load \"" + fileURL + "\"");
         TestUtils.assertTrackLoaded(IGV.getInstance(), filename);
     }
 
