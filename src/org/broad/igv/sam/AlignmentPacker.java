@@ -163,7 +163,7 @@ public class AlignmentPacker {
 
                 if (al.isMapped()) {
                     Alignment alignment = al;
-                    if (pairAlignments && al.isPaired() && al.getMate().isMapped() && al.getChr().equals(al.getMate().getChr())) {
+                    if (pairAlignments && al.isPaired() && al.getMate().isMapped()) {
                         String readName = al.getReadName();
                         PairedAlignment pair = pairs.get(readName);
                         if (pair == null) {
@@ -171,12 +171,10 @@ public class AlignmentPacker {
                             pairs.put(readName, pair);
                             alignment = pair;
                         } else {
-                            if (al.getChr().equals(pair.getChr())) {
-                                // Add second alignment to pair
-                                pair.setSecondAlignment(al);
-                                pairs.remove(readName);
-                                continue;
-                            }
+                            // Add second alignment to pair
+                            pair.setSecondAlignment(al);
+                            pairs.remove(readName);
+                            continue;
 
                         }
                     }
