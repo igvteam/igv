@@ -68,6 +68,7 @@ public class HttpUtils {
 
     // static provided to support unit testing
     private static boolean BYTE_RANGE_DISABLED = false;
+    private Map<URL, Boolean> headURLCache = new HashMap<URL, Boolean>();
 
     /**
      * @return the single instance
@@ -260,12 +261,19 @@ public class HttpUtils {
      * @throws IOException
      */
     private HttpURLConnection openConnectionHeadOrGet(URL url) throws IOException {
-        try {
-            return openConnection(url, null, "HEAD");
-        } catch (IOException e) {
-            log.info("HEAD request failed for url:" + url.getPath() + ".  Trying GET");
-            return openConnection(url, null, "GET");
+        boolean tryHead = headURLCache.containsKey(url) ? headURLCache.get(url) : true;
+
+        if(tryHead){
+            try {
+                HttpURLConnection conn = openConnection(url, null, "HEAD");
+                headURLCache.put(url, true);
+                return conn;
+            } catch (IOException e) {
+                log.info("HEAD request failed for url: " + url.getPath() + ".  Trying GET");
+                headURLCache.put(url, false);
+            }
         }
+        return openConnection(url, null, "GET");
     }
 
     public String getHeaderField(URL url, String key) throws IOException {
