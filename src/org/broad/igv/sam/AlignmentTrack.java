@@ -24,9 +24,9 @@ import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
+import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
-import org.broad.igv.lists.GeneList;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.Session;
@@ -671,26 +671,43 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                 Session currentSession = IGV.getInstance().getSession();
 
-                // If we are already in gene list mode add the mate as another panel, otherwise switch to gl mode
+                // Add the locus to the gene list. This will also add another frame
+                currentSession.addGene(mateLocus);
+                //Need to sort the frames by position, as well as the gene list
+                //without creating a new gene list. We don't want to create a new one
+                //because we cache by frame name and it's easy to get the names wrong (off-by-one)
 
-                List<String> loci = null;
-                if (FrameManager.isGeneListMode()) {
-                    loci = new ArrayList(FrameManager.getFrames().size());
-                    for (ReferenceFrame ref : FrameManager.getFrames()) {
-                        loci.add(ref.getLocusString());
+                Comparator<String> geneListComparator = new Comparator<String>() {
+                    @Override
+                    public int compare(String n0, String n1) {
+                        ReferenceFrame f0 = FrameManager.getFrame(n0);
+                        ReferenceFrame f1 = FrameManager.getFrame(n1);
+                        int chrComp = ChromosomeNameComparator.get().compare(f0.getChrName(), f1.getChrName());
+                        if(chrComp != 0) return chrComp;
+                        return f0.getCurrentRange().getStart() - f1.getCurrentRange().getStart();
                     }
-                    loci.add(mateLocus);
-                } else {
-                    loci = Arrays.asList(locus1, mateLocus);
-                }
-                GeneList.sortByPosition(loci);
-                StringBuffer listName = new StringBuffer();
-                for (String s : loci) {
-                    listName.append(s + "   ");
-                }
+                };
 
-                GeneList geneList = new GeneList(listName.toString(), loci, false);
-                currentSession.setCurrentGeneList(geneList);
+                currentSession.sortGeneList(geneListComparator);
+
+//                List<String> loci = null;
+//                if (FrameManager.isGeneListMode()) {
+//                    loci = new ArrayList(FrameManager.getFrames().size());
+//                    for (ReferenceFrame ref : FrameManager.getFrames()) {
+//                        loci.add(ref.getLocusString());
+//                    }
+//                    loci.add(mateLocus);
+//                } else {
+//                    loci = Arrays.asList(locus1, mateLocus);
+//                }
+//
+//                StringBuffer listName = new StringBuffer();
+//                for (String s : loci) {
+//                    listName.append(s + "   ");
+//                }
+//
+//                GeneList geneList = new GeneList(listName.toString(), loci, false);
+//                currentSession.setCurrentGeneList(geneList);
                 IGV.getInstance().resetFrames();
 
             } else {

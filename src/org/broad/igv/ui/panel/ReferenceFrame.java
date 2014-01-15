@@ -733,11 +733,4 @@ public class ReferenceFrame {
         this.name = name;
     }
 
-    /**
-     * Return the current range as a locus string.
-     */
-    public String getLocusString() {
-        return Locus.getFormattedLocusString( chrName , (int) origin, (int) this.getEnd());
-    }
-
 }

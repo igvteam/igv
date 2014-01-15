@@ -372,6 +372,11 @@ public class Session {
         }
     }
 
+    public void sortGeneList(Comparator<String> comparator){
+        getCurrentGeneList().sort(comparator);
+        this.setCurrentGeneList(getCurrentGeneList());
+    }
+
     public int getVersion() {
         return version;
     }

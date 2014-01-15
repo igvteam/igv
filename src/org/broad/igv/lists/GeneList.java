@@ -11,9 +11,6 @@
 
 package org.broad.igv.lists;
 
-import org.broad.igv.feature.Locus;
-import org.broad.tribble.Feature;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -129,34 +126,36 @@ public class GeneList {
     /**
      * Sort loci by "position".  This only sorts loci of the form chr1:100-200.
      */
-    public static void sortByPosition(List<String> loci) {
-        if (POSITION_COMPARATOR == null) initComparator();
+//    public static void sortByPosition(List<String> loci) {
+//        if (POSITION_COMPARATOR == null) initComparator();
+//
+//        Collections.sort(loci, POSITION_COMPARATOR);
+//    }
+//
+//    private static synchronized void initComparator() {
+//        POSITION_COMPARATOR = new Comparator<String>() {
+//            public int compare(String s1, String s2) {
+//                Locus l1 = Locus.fromString(s1);
+//                Locus l2 = Locus.fromString(s2);
+//                boolean l1Valid = l1 != null;
+//                boolean l2Valid = l2 != null;
+//                if (l1Valid && l2Valid) {
+//                    return 0;
+//                } else if (!l1Valid) {
+//                    return -1;
+//                } else if (!l2Valid) {
+//                    return 1;
+//                } else if (!l1.getChr().equals(l2.getChr())) {
+//                    return l1.getChr().compareTo(l2.getChr());
+//                } else {
+//                    return l1.getStart() - l2.getStart();
+//                }
+//            }
+//
+//        };
+//    }
 
-        Collections.sort(loci, POSITION_COMPARATOR);
+    public void sort(Comparator<String> comparator) {
+        Collections.sort(this.loci, comparator);
     }
-
-
-    private static synchronized void initComparator() {
-        POSITION_COMPARATOR = new Comparator<String>() {
-            public int compare(String s1, String s2) {
-                Locus l1 = Locus.fromString(s1);
-                Locus l2 = Locus.fromString(s2);
-                boolean l1Valid = l1 != null;
-                boolean l2Valid = l2 != null;
-                if (l1Valid && l2Valid) {
-                    return 0;
-                } else if (!l1Valid) {
-                    return -1;
-                } else if (!l2Valid) {
-                    return 1;
-                } else if (!l1.getChr().equals(l2.getChr())) {
-                    return l1.getChr().compareTo(l2.getChr());
-                } else {
-                    return l1.getStart() - l2.getStart();
-                }
-            }
-
-        };
-    }
-
 }
