@@ -163,11 +163,11 @@ public class AlignmentDataManager implements IAlignmentDataManager {
      * @param option
      * @param location
      */
-    public void sortRows(SortOption option, ReferenceFrame frame, double location, String tag) {
+    public boolean sortRows(SortOption option, ReferenceFrame frame, double location, String tag) {
         PackedAlignments packedAlignments = packedAlignmentsMap.get(frame.getName());
         AlignmentInterval interval = loadedIntervalCache.get(frame.getCurrentRange());
         if (packedAlignments == null || interval == null) {
-            return;
+            return false;
         }
 
         for (List<Row> alignmentRows : packedAlignments.values()) {
@@ -176,6 +176,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
             }
             Collections.sort(alignmentRows);
         }
+        return true;
     }
 
     public void setViewAsPairs(boolean option, AlignmentTrack.RenderOptions renderOptions) {
@@ -237,29 +238,40 @@ public class AlignmentDataManager implements IAlignmentDataManager {
 //    }
 
     /**
-     * Repack currently loaded alignments of the provided reference frame
+     * Repack alignments across all frames
+     * @see #repackAlignments(java.util.List, org.broad.igv.sam.AlignmentTrack.RenderOptions)
+     * @param renderOptions
+     */
+    private boolean repackAlignmentsAllFrames(AlignmentTrack.RenderOptions renderOptions){
+        return repackAlignments(FrameManager.getFrames(), renderOptions);
+    }
+
+    /**
+     * Repack currently loaded alignments across provided frames
+     * All relevant intervals must be loaded
      *
      * @param frameList
      * @param renderOptions
+     * @return Whether repacking was performed
      * @see AlignmentPacker#packAlignments(List, org.broad.igv.sam.AlignmentTrack.RenderOptions)
      */
-    public void repackAlignments(List<ReferenceFrame> frameList, AlignmentTrack.RenderOptions renderOptions) {
+    public boolean repackAlignments(List<ReferenceFrame> frameList, AlignmentTrack.RenderOptions renderOptions) {
 
         List<AlignmentInterval> intervalList = new ArrayList<AlignmentInterval>(frameList.size());
         for(ReferenceFrame frame: frameList){
             AlignmentInterval loadedInterval = loadedIntervalCache.get(frame.getCurrentRange());
 
             if (loadedInterval == null) {
-                return;
+                return false;
             }
             intervalList.add(loadedInterval);
         }
-
 
         final AlignmentPacker alignmentPacker = new AlignmentPacker();
         PackedAlignments packedAlignments = alignmentPacker.packAlignments(intervalList, renderOptions);
 
         for(ReferenceFrame frame: frameList) this.packedAlignmentsMap.put(frame.getName(), packedAlignments);
+        return true;
     }
 
 
@@ -280,11 +292,10 @@ public class AlignmentDataManager implements IAlignmentDataManager {
             int expand = Math.max(end - start, windowSize / 2);
 
             if (loadedInterval != null) {
-                // First see if we have a loaded interval that fully contain the requested interval.  If yes we're done
+                // First see if we have a loaded interval that fully contain the requested interval.
+                // If so, we don't need to load it
                 if (loadedInterval.contains(chr, start, end)) {
-                    // Requested interval is fully contained in the existing one, we're done
                     return;
-
                 }
             }
 
@@ -294,12 +305,15 @@ public class AlignmentDataManager implements IAlignmentDataManager {
             }
             loadAlignments(chr, adjustedStart, adjustedEnd, renderOptions, context);
         }
+
     }
 
-    public synchronized PackedAlignments getGroups(RenderContext context,
-                                                                                     AlignmentTrack.RenderOptions renderOptions) {
-
+    public synchronized PackedAlignments getGroups(RenderContext context, AlignmentTrack.RenderOptions renderOptions) {
         load(context, renderOptions, false);
+        String frameName = context.getReferenceFrame().getName();
+        if(!packedAlignmentsMap.containsKey(frameName)){
+            repackAlignmentsAllFrames(renderOptions);
+        }
         return packedAlignmentsMap.get(context.getReferenceFrame().getName());
     }
 
@@ -330,21 +344,15 @@ public class AlignmentDataManager implements IAlignmentDataManager {
                 log.debug("Loading alignments: " + chr + ":" + start + "-" + end + " for " + AlignmentDataManager.this);
 
                 AlignmentInterval loadedInterval = loadInterval(chr, start, end, renderOptions);
-                final AlignmentPacker alignmentPacker = new AlignmentPacker();
-                PackedAlignments packedAlignments = alignmentPacker.packAlignments(Arrays.asList(loadedInterval), renderOptions);
+                loadedIntervalCache.put(loadedInterval);
 
-                ReferenceFrame frame = context != null ? context.getReferenceFrame() : null;
-                addLoadedInterval(frame, loadedInterval, packedAlignments);
-
+                repackAlignments(Arrays.asList(context.getReferenceFrame()), renderOptions);
                 getEventBus().post(new DataLoadedEvent(context));
 
                 isLoading = false;
             }
         };
-
         LongRunningTask.submit(runnable);
-
-
     }
 
     AlignmentInterval loadInterval(String chr, int start, int end, AlignmentTrack.RenderOptions renderOptions) {
@@ -377,9 +385,8 @@ public class AlignmentDataManager implements IAlignmentDataManager {
         return new AlignmentInterval(chr, start, end, alignments, t.getCounts(), spliceJunctionHelper, downsampledIntervals, renderOptions);
     }
 
-    private void addLoadedInterval(ReferenceFrame frame, AlignmentInterval interval, PackedAlignments packedAlignments) {
+    private void addPackedInterval(ReferenceFrame frame, PackedAlignments packedAlignments) {
         String frameName = frame != null ? frame.getName() : FrameManager.DEFAULT_FRAME_NAME;
-        loadedIntervalCache.put(interval);
         packedAlignmentsMap.put(frameName, packedAlignments);
     }
 
