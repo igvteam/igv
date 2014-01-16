@@ -10,7 +10,6 @@
  */
 package org.broad.igv.util.collections;
 
-import java.lang.ref.SoftReference;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -24,7 +23,7 @@ public class LRUCache<K, V> {
 
     private AtomicInteger maxEntries;
 
-    private SoftReference<Map<K, V>> mapReference;
+    private Map<K, V> map;
 
 
     public LRUCache(int max) {
@@ -36,20 +35,20 @@ public class LRUCache<K, V> {
     }
 
     private void createMap() {
-        mapReference = new SoftReference(Collections.synchronizedMap(
+        map = Collections.synchronizedMap(
                 new LinkedHashMap<K, V>(16, 0.75f, true) {
                     @Override
                     protected boolean removeEldestEntry(Map.Entry eldest) {
                         return (size() > maxEntries.get());
                     }
-                }));
+                });
     }
 
     private Map<K, V> getMap() {
-        if (mapReference == null || mapReference.get() == null) {
+        if (map == null) {
             createMap();
         }
-        return mapReference.get();
+        return map;
     }
 
     public V put(K k, V v) {
