@@ -118,7 +118,9 @@ public class AlignmentPacker {
                       List<Row> alignmentRows) {
         Map<Range, List<Alignment>> rangeAlignmentMap = new LinkedHashMap<Range, List<Alignment>>(intervalList.size());
         for(AlignmentInterval interval: intervalList){
-            rangeAlignmentMap.put(interval, interval.getAlignments());
+            if(!rangeAlignmentMap.containsKey(interval)){
+                rangeAlignmentMap.put(interval, interval.getAlignments());
+            }
         }
         pack(rangeAlignmentMap, intervalList, pairAlignments, alignmentRows);
     }

@@ -264,7 +264,9 @@ public class AlignmentDataManager implements IAlignmentDataManager {
             if (loadedInterval == null) {
                 return false;
             }
-            intervalList.add(loadedInterval);
+            if(!intervalList.contains(loadedInterval)){
+                intervalList.add(loadedInterval);
+            }
         }
 
         final AlignmentPacker alignmentPacker = new AlignmentPacker();
