@@ -36,7 +36,6 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.SnapshotUtilities;
 import org.broad.igv.util.*;
-import org.broad.igv.util.collections.LRUCache;
 
 import java.awt.*;
 import java.io.File;
@@ -183,8 +182,7 @@ public class CommandExecutor {
             igv.doRefresh();
 
             if (RuntimeUtils.getAvailableMemoryFraction() < 0.5) {
-                log.debug("Clearing caches");
-                LRUCache.clearCaches();
+                log.debug("Running garbage collection");
                 System.gc();
             }
             log.debug("Finished execution: " + command + "  sleeping ....");

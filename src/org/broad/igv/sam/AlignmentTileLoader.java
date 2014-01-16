@@ -24,7 +24,6 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.ObjectCache;
 import org.broad.igv.util.RuntimeUtils;
-import org.broad.igv.util.collections.LRUCache;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -260,7 +259,6 @@ public class AlignmentTileLoader {
 
     private static synchronized boolean memoryTooLow() {
         if (RuntimeUtils.getAvailableMemoryFraction() < 0.2) {
-            LRUCache.clearCaches();
             System.gc();
             if (RuntimeUtils.getAvailableMemoryFraction() < 0.2) {
                 String msg = "Memory is low, reading terminating.";

@@ -43,7 +43,7 @@ public class TDFDataSource implements CoverageDataSource {
     int maxPrecomputedZoom = 6;
     private int trackNumber = 0;
     String trackName;
-    LRUCache<String, List<LocusScore>> summaryScoreCache = new LRUCache(this, 20);
+    LRUCache<String, List<LocusScore>> summaryScoreCache = new LRUCache(20);
     Genome genome;
     WindowFunction windowFunction = WindowFunction.mean;
     List<WindowFunction> availableFunctions;

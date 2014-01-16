@@ -34,7 +34,7 @@ public abstract class AbstractDataSource implements DataSource {
     // DataManager dataManager;
     boolean cacheSummaryTiles = true;
     WindowFunction windowFunction = WindowFunction.mean;
-    LRUCache<String, SummaryTile> summaryTileCache = new LRUCache(this, 10);
+    LRUCache<String, SummaryTile> summaryTileCache = new LRUCache(10);
     protected Genome genome;
 
     public AbstractDataSource(Genome genome) {

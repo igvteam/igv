@@ -54,7 +54,6 @@ import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.*;
-import org.broad.igv.util.collections.LRUCache;
 import org.broad.igv.variant.VariantTrack;
 
 import javax.swing.*;
@@ -1193,8 +1192,7 @@ public class IGV {
      * @param sessionPath
      */
     public void resetSession(String sessionPath) {
-
-        LRUCache.clearCaches();
+        System.gc();
 
         AttributeManager.getInstance().clearAllAttributes();
 
@@ -1221,6 +1219,7 @@ public class IGV {
 
         doRefresh();
 
+        System.gc();
     }
 
     /**
@@ -1423,7 +1422,7 @@ public class IGV {
 
 
             mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
-            LRUCache.clearCaches();
+            System.gc();
 
 
             double[] dividerFractions = session.getDividerFractions();

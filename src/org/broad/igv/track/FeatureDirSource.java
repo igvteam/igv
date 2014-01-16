@@ -48,7 +48,7 @@ public class FeatureDirSource implements FeatureSource {
 
     public FeatureDirSource(ResourceLocator locator, Genome genome) throws IOException {
         this.genome = genome;
-        featureCache = new LRUCache(this, 3);
+        featureCache = new LRUCache(3);
         rootLocator = locator;
         setRootDir(locator.getPath());
 

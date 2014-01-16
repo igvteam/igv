@@ -50,7 +50,7 @@ public abstract class AbstractCacher {
     protected abstract Iterator<Feature> queryRaw(String chr, int start, int end) throws IOException;
 
     public AbstractCacher(int binCount, int binSize) {
-        this.cache = new LRUCache(this, binCount);
+        this.cache = new LRUCache(binCount);
         this.binSize = binSize;
     }
 

@@ -40,7 +40,7 @@ public class CachingMethylSource implements MethylDataSource {
 
     public CachingMethylSource(MethylDataSource reader, int tileCount, int binSize) {
         this.reader = reader;
-        this.cache = new LRUCache(this, tileCount);
+        this.cache = new LRUCache(tileCount);
         this.binSize = binSize;
     }
 

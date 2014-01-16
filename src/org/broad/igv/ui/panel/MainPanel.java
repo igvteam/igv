@@ -243,10 +243,9 @@ public class MainPanel extends JPanel implements Paintable {
 
 
     /**
-     * Called from IGV.resetSession()
+     * Removes user added panels. Used for resetting sessions
      */
     public void resetPanels() {
-        // Remove user added panels
         for (TrackPanel tp : getTrackPanels()) {
             tp.clearTracks();
             final TrackPanelScrollPane tsp = tp.getScrollPane();
