@@ -27,6 +27,7 @@ import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
+import org.broad.igv.lists.GeneList;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.Session;
@@ -674,11 +675,32 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                 Session currentSession = IGV.getInstance().getSession();
 
-                // Add the locus to the gene list. This will also add another frame
-                currentSession.addGene(mateLocus);
-                //Need to sort the frames by position, as well as the gene list
-                //without creating a new gene list. We don't want to create a new one
-                //because we cache by frame name and it's easy to get the names wrong (off-by-one)
+                List<String> loci = null;
+                if (FrameManager.isGeneListMode()) {
+                    loci = new ArrayList<String>(FrameManager.getFrames().size());
+                    for (ReferenceFrame ref : FrameManager.getFrames()) {
+                        //If the frame-name is a locus, we use it unaltered
+                        //Don't want to reprocess, easy to get off-by-one
+                        String name = ref.getName();
+                        if(Locus.fromString(name) != null){
+                            loci.add(name);
+                        }else{
+                            loci.add(ref.getFormattedLocusString());
+                        }
+
+                    }
+                    loci.add(mateLocus);
+                } else {
+                    loci = Arrays.asList(locus1, mateLocus);
+                }
+
+                StringBuffer listName = new StringBuffer();
+                for (String s : loci) {
+                    listName.append(s + "   ");
+                }
+
+                GeneList geneList = new GeneList(listName.toString(), loci, false);
+                currentSession.setCurrentGeneList(geneList);
 
                 Comparator<String> geneListComparator = new Comparator<String>() {
                     @Override
@@ -691,28 +713,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     }
                 };
 
+                //Need to sort the frames by position
                 currentSession.sortGeneList(geneListComparator);
-
-//                List<String> loci = null;
-//                if (FrameManager.isGeneListMode()) {
-//                    loci = new ArrayList(FrameManager.getFrames().size());
-//                    for (ReferenceFrame ref : FrameManager.getFrames()) {
-//                        loci.add(ref.getLocusString());
-//                    }
-//                    loci.add(mateLocus);
-//                } else {
-//                    loci = Arrays.asList(locus1, mateLocus);
-//                }
-//
-//                StringBuffer listName = new StringBuffer();
-//                for (String s : loci) {
-//                    listName.append(s + "   ");
-//                }
-//
-//                GeneList geneList = new GeneList(listName.toString(), loci, false);
-//                currentSession.setCurrentGeneList(geneList);
                 IGV.getInstance().resetFrames();
-
             } else {
                 MessageUtils.showMessage("Alignment does not have mate, or it is not mapped.");
             }

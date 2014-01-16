@@ -37,7 +37,8 @@ public class Session {
 
     private static Logger log = Logger.getLogger(Session.class);
 
-    public enum GeneListMode {NORMAL, CURSOR};
+    //This doesn't mean genelist or not, the same way it does in FrameManager
+    public enum GeneListMode {NORMAL, CURSOR}
 
     private int version;
     private String path;
