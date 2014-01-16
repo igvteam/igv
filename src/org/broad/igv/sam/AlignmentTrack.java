@@ -366,6 +366,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
 
         if (groups == null) {
+            //Assume we are still loading.
+            //This might not always be true
             return;
         }
 
@@ -435,9 +437,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     /**
      * Sort alignment rows based on alignments that intersect location
+     * @return Whether sorting was performed. If data is still loading, this will return false
      */
-    public void sortRows(SortOption option, ReferenceFrame referenceFrame, double location, String tag) {
-        dataManager.sortRows(option, referenceFrame, location, tag);
+    public boolean sortRows(SortOption option, ReferenceFrame referenceFrame, double location, String tag) {
+        return dataManager.sortRows(option, referenceFrame, location, tag);
     }
 
     /**

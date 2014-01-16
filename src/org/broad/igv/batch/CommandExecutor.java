@@ -856,8 +856,8 @@ public class CommandExecutor {
 
         @Subscribe
         public void received(DataLoadedEvent event){
-            igv.sortAlignmentTracks(sortOption, sortTag);
-            this.bus.unregister(this);
+            boolean sorted = igv.sortAlignmentTracks(sortOption, sortTag);
+            if(sorted) this.bus.unregister(this);
         }
     }
 }
