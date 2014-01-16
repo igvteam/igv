@@ -270,7 +270,10 @@ public class AlignmentDataManager implements IAlignmentDataManager {
         final AlignmentPacker alignmentPacker = new AlignmentPacker();
         PackedAlignments packedAlignments = alignmentPacker.packAlignments(intervalList, renderOptions);
 
-        for(ReferenceFrame frame: frameList) this.packedAlignmentsCache.put(frame.getCurrentRange(), packedAlignments);
+        this.packedAlignmentsCache.clear();
+        //We cache by the interval range because this will generally be buffered/expanded, whereas the frame
+        //will be to-the-pixel (meaning a slight scroll triggers a repack
+        for(AlignmentInterval interval: intervalList) this.packedAlignmentsCache.put(interval.getRange(), packedAlignments);
         return true;
     }
 
