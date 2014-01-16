@@ -14,4 +14,4 @@ exec java -Xmx2000m \
     -Xdock:name="IGV" \
 	-Dapple.laf.useScreenMenuBar=true \
 	-Djava.net.preferIPv4Stack=true \
-	-jar "$prefix"/igv.jar "$@" &
+	-jar "$prefix"/igv.jar "$@"
