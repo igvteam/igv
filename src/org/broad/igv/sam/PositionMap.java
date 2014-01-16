@@ -21,18 +21,18 @@ import java.util.*;
  * @author jacob, jrobinso
  * @date 2014-Jan-10
  */
-public class PositionMap<V> {
+class PositionMap<V> {
 
     /**
      * Map from chr -> objects
      */
     Map<String, List<ValuedRange>> intervals;
 
-    PositionMap() {
+    public PositionMap() {
         intervals = new HashMap<String, List<ValuedRange>>();
     }
 
-    PositionMap(PositionMap<V> cache){
+    public PositionMap(PositionMap<V> cache){
         this.intervals = new HashMap<String, List<ValuedRange>>(cache.intervals);
     }
 
@@ -42,7 +42,7 @@ public class PositionMap<V> {
      * @param value
      * @return The old interval, null if it didn't exist
      */
-    V put(Range range, V value) {
+    public V put(Range range, V value) {
         String chr = range.getChr();
         List<ValuedRange> iList = intervals.get(chr);
         int currentIndex = -1;
@@ -50,7 +50,7 @@ public class PositionMap<V> {
             iList = new ArrayList<ValuedRange>();
             intervals.put(chr, iList);
         } else {
-            currentIndex = getIndexOf(chr, range.getStart(), range.getEnd());
+            currentIndex = getIndexOf(range);
         }
 
         ValuedRange newValue = new ValuedRange(range, value);
@@ -65,28 +65,32 @@ public class PositionMap<V> {
 
     }
 
-    V get(Range range) {
+    public V get(Range range) {
         String chr = range.getChr();
-        int index = getIndexOf(chr, range.getStart(), range.getEnd());
+        int index = getIndexOf(range);
         return index >= 0 ? intervals.get(chr).get(index).value : null;
     }
 
-    private int getIndexOf(String chr, int start, int end) {
-
+    private int getIndexOf(Range range) {
+        String chr = range.getChr();
         List<ValuedRange> iList = intervals.get(chr);
         if (iList != null) {
             for (int ii = 0; ii < iList.size(); ii++) {
                 ValuedRange vr = iList.get(ii);
-                if (vr.contains(chr, start, end)) {
+                if (vr.contains(chr, range.getStart(), range.getEnd())) {
                     return ii;
                 }
             }
         }
         return -1;
-
     }
 
-    public Collection<V> getValues() {
+
+    public boolean contains(Range range) {
+        return getIndexOf(range) >= 0;
+    }
+
+    public Collection<V> values() {
         List<V> values = new ArrayList<V>();
         for(List<ValuedRange> interval: this.intervals.values()){
             for(ValuedRange vr: interval){
