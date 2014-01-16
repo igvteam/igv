@@ -13,6 +13,7 @@ package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.Locus;
+import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 
@@ -151,6 +152,10 @@ public class AlignmentInterval extends Locus {
 
     public SpliceJunctionHelper getSpliceJunctionHelper() {
         return this.spliceJunctionHelper;
+    }
+
+    public Range getRange() {
+        return new Range(getChr(), getStart(), getEnd());
     }
 
 

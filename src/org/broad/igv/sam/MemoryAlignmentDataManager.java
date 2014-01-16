@@ -27,11 +27,11 @@ public class MemoryAlignmentDataManager implements IAlignmentDataManager {
 
     private SpliceJunctionHelper.LoadOptions loadOptions;
 
-    private AlignmentsCache loadedIntervalCache = new AlignmentsCache();
+    private PositionMap<AlignmentInterval> loadedIntervalCache = new PositionMap<AlignmentInterval>();
 
     public MemoryAlignmentDataManager(AlignmentDataManager alignmentDataManager, SpliceJunctionHelper.LoadOptions loadOptions) {
         this.loadOptions = loadOptions;
-        this.loadedIntervalCache = new AlignmentsCache(alignmentDataManager.getCache());
+        this.loadedIntervalCache = new PositionMap(alignmentDataManager.getCache());
     }
 
     @Override
@@ -54,7 +54,7 @@ public class MemoryAlignmentDataManager implements IAlignmentDataManager {
 
     @Override
     public Collection<AlignmentInterval> getLoadedIntervals() {
-        return loadedIntervalCache.getLoadedIntervals();
+        return loadedIntervalCache.getValues();
     }
 
 

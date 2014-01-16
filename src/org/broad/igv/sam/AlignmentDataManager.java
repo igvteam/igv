@@ -41,7 +41,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
      * Map of reference frame name -> alignment interval
      */
     //private Map<String, AlignmentInterval> loadedIntervalMap = new HashMap<String, AlignmentInterval>();
-    private AlignmentsCache loadedIntervalCache = new AlignmentsCache();
+    private PositionMap<AlignmentInterval> loadedIntervalCache = new PositionMap<AlignmentInterval>();
     private Map<String, PackedAlignments> packedAlignmentsMap = new HashMap<String, PackedAlignments>();
 
     private HashMap<String, String> chrMappings = new HashMap();
@@ -150,7 +150,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
     }
 
     public Collection<AlignmentInterval> getLoadedIntervals() {
-        return this.loadedIntervalCache.getLoadedIntervals();
+        return this.loadedIntervalCache.getValues();
     }
 
     public AlignmentInterval getLoadedInterval(Range range) {
@@ -344,7 +344,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
                 log.debug("Loading alignments: " + chr + ":" + start + "-" + end + " for " + AlignmentDataManager.this);
 
                 AlignmentInterval loadedInterval = loadInterval(chr, start, end, renderOptions);
-                loadedIntervalCache.put(loadedInterval);
+                loadedIntervalCache.put(loadedInterval.getRange(), loadedInterval);
 
                 repackAlignments(Arrays.asList(context.getReferenceFrame()), renderOptions);
                 getEventBus().post(new DataLoadedEvent(context));
@@ -468,7 +468,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
         }
     }
 
-    AlignmentsCache getCache() {
+    PositionMap getCache() {
         return this.loadedIntervalCache;
     }
 
