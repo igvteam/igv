@@ -269,7 +269,7 @@ public class HttpUtils {
                 headURLCache.put(url, true);
                 return conn;
             } catch (IOException e) {
-                log.info("HEAD request failed for url: " + url.getPath() + ".  Trying GET");
+                log.info("HEAD request failed for url: " + url.toExternalForm() + ".  Trying GET");
                 headURLCache.put(url, false);
             }
         }
