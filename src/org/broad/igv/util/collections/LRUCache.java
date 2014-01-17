@@ -78,5 +78,13 @@ public class LRUCache<K, V> {
     public Collection<V> values(){
         return getMap().values();
     }
+
+    public void putAll(Map<K, V> map) {
+        getMap().putAll(map);
+    }
+
+    public void putAll(LRUCache<K, V> intervals) {
+        this.putAll(intervals.getMap());
+    }
 }
 

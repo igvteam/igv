@@ -272,7 +272,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
         PackedAlignments packedAlignments = alignmentPacker.packAlignments(intervalList, renderOptions);
 
         this.packedAlignmentsCache.clear();
-        this.packedAlignmentsCache.setMaxEntriesPerChr(2 * intervalList.size());
+        this.packedAlignmentsCache.setMaxEntries(2 * intervalList.size());
         //We cache by the interval range because this will generally be buffered/expanded, whereas the frame
         //will be to-the-pixel (meaning a slight scroll triggers a repack
         for(AlignmentInterval interval: intervalList) this.packedAlignmentsCache.put(interval.getRange(), packedAlignments);
@@ -335,7 +335,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
         if (isLoading || chr.equals(Globals.CHR_ALL)) {
             return;
         }
-        loadedIntervalCache.setMaxEntriesPerChr(2 * FrameManager.getFrames().size());
+        loadedIntervalCache.setMaxEntries(2 * FrameManager.getFrames().size());
         isLoading = true;
 
         NamedRunnable runnable = new NamedRunnable() {

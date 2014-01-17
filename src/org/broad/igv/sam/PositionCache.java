@@ -14,7 +14,8 @@ package org.broad.igv.sam;
 import org.broad.igv.feature.Range;
 import org.broad.igv.util.collections.LRUCache;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Stores objects by position so they can be looked up by inexact position (contains)
@@ -24,62 +25,48 @@ import java.util.*;
  */
 class PositionCache<V> {
 
-    /**
-     * Map from chr -> caches
-     */
-    private Map<String, LRUCache<Range, V>> intervals;
+    private LRUCache<Range, V> intervals;
 
-    private static final int MIN_MAX_ENTRIES = 4;
-    private int maxEntriesPerChr = MIN_MAX_ENTRIES;
+    private static final int MIN_MAX_ENTRIES = 10;
 
     public PositionCache() {
-        intervals = Collections.synchronizedMap(new HashMap<String, LRUCache<Range, V>>());
+        intervals = new LRUCache<Range, V>(MIN_MAX_ENTRIES);
     }
 
     public PositionCache(PositionCache<V> cache){
-        this.intervals = Collections.synchronizedMap(new HashMap<String, LRUCache<Range, V>>(cache.intervals));
+        this.intervals = new LRUCache<Range, V>(MIN_MAX_ENTRIES);
+        this.intervals.putAll(cache.intervals);
     }
 
     /** Add the specified interval to the cache. Replaces any existing interval
-     * which it fully contains.
+     * which contains the given range
      * @param range
      * @param value
      * @return The old interval, null if it didn't exist
      */
     public synchronized V put(Range range, V value) {
-        String chr = range.getChr();
-        LRUCache<Range, V> chrVs = intervals.get(chr);
-        Range currentRangeKey = null;
-        if (chrVs == null) {
-            chrVs = new LRUCache<Range, V>(this.maxEntriesPerChr);
-            intervals.put(chr, chrVs);
-        } else {
-            currentRangeKey = getKeyFor(range);
-        }
-
-        if (currentRangeKey != null) {
-            return chrVs.put(currentRangeKey, value);
-        } else {
-            chrVs.put(range, value);
-            return null;
-        }
+        Range currentRangeKey = getKeyFor(range);
+        Range keyToUse = currentRangeKey != null ? currentRangeKey : range;
+        return intervals.put(keyToUse, value);
 
     }
 
-    public V get(Range range) {
-        String chr = range.getChr();
-        Range keyRange = getKeyFor(range);
-        return keyRange != null ? intervals.get(chr).get(keyRange) : null;
+    public V get(Range range){
+        if(intervals.containsKey(range)){
+            return intervals.get(range);
+        }
+        Range key = getKeyFor(range);
+        return key != null ? intervals.get(key) : null;
     }
 
     private Range getKeyFor(Range range) {
+        if(intervals.containsKey(range)){
+            return range;
+        }
         String chr = range.getChr();
-        LRUCache<Range, V> chrVs = intervals.get(chr);
-        if (chrVs != null) {
-            for (Range cachedRange: chrVs.keySet()) {
-                if (cachedRange.contains(chr, range.getStart(), range.getEnd())) {
-                    return cachedRange;
-                }
+        for (Range cachedRange : intervals.keySet()) {
+            if (cachedRange.contains(chr, range.getStart(), range.getEnd())) {
+                return cachedRange;
             }
         }
         return null;
@@ -91,22 +78,16 @@ class PositionCache<V> {
     }
 
     public Collection<V> values() {
-        List<V> values = new ArrayList<V>();
-        for(LRUCache<Range, V> interval: this.intervals.values()){
-            values.addAll(interval.values());
-        }
-        return values;
+        return new ArrayList<V>(this.intervals.values());
     }
 
     public void clear() {
         this.intervals.clear();
     }
 
-    public synchronized void setMaxEntriesPerChr(int inMaxEntries){
-        this.maxEntriesPerChr = Math.max(MIN_MAX_ENTRIES, inMaxEntries);
-        for(LRUCache<Range, V> cache: this.intervals.values()){
-            cache.setMaxEntries(this.maxEntriesPerChr);
-        }
+    public synchronized void setMaxEntries(int inMaxEntries){
+        int newMax = Math.max(MIN_MAX_ENTRIES, inMaxEntries);
+        intervals.setMaxEntries(newMax);
     }
 
 }
