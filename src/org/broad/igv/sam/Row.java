@@ -25,8 +25,6 @@ public class Row implements Comparable<Row> {
     int nextIdx;
     private double score = 0;
     List<Alignment> alignments;
-    private int start;
-    private int lastEnd;
 
     public Row() {
         nextIdx = 0;
@@ -34,12 +32,7 @@ public class Row implements Comparable<Row> {
     }
 
     public void addAlignment(Alignment alignment) {
-        if (alignments.isEmpty()) {
-            this.start = alignment.getStart();
-        }
         alignments.add(alignment);
-        lastEnd = alignment.getEnd();
-
     }
 
     public void updateScore(AlignmentTrack.SortOption option, double center, AlignmentInterval interval, String tag) {
@@ -171,14 +164,6 @@ public class Row implements Comparable<Row> {
 
     public void setScore(double score) {
         this.score = score;
-    }
-
-    public int getStart() {
-        return start;
-    }
-
-    public int getLastEnd() {
-        return lastEnd;
     }
 
     @Override
