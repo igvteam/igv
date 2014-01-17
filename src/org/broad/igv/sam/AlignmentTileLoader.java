@@ -552,7 +552,7 @@ public class AlignmentTileLoader {
         /**
          * Map-like structure designed to be accessible both by key, and by numeric index
          * Multiple values are stored for each key, and a list is returned
-         * If the key for a value is set as null, nothing can be added
+         * If the value for a key is set as null, nothing can be added
          *
          * Intended to support downsampling, where if a read name is added and then removed
          * we don't want to add the read pair
