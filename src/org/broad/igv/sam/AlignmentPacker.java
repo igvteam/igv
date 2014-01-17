@@ -70,13 +70,14 @@ public class AlignmentPacker {
 
         if (renderOptions.groupByOption == null) {
             List<Row> alignmentRows = new ArrayList<Row>(10000);
-            pack(intervalList, pairAlignments, alignmentRows);
+            packAlignmentInterval(intervalList, pairAlignments, alignmentRows);
             packedAlignments.put("", alignmentRows);
         } else {
             // Separate alignments into groups.
-            Table<String, Range, List<Alignment>> groupedAlignments = HashBasedTable.create();
+            Table<String, Integer, List<Alignment>> groupedAlignments = HashBasedTable.create();
 
-            for(AlignmentInterval interval: intervalList){
+            for(int intervalIndex=0; intervalIndex < intervalList.size(); intervalIndex++){
+                AlignmentInterval interval= intervalList.get(intervalIndex);
                 Iterator<Alignment> iter = interval.getAlignmentIterator();
                 while (iter.hasNext()) {
                     Alignment alignment = iter.next();
@@ -84,12 +85,12 @@ public class AlignmentPacker {
                     if (groupKey == null) {
                         groupKey = NULL_GROUP_VALUE;
                     }
-                    List<Alignment> group = groupedAlignments.get(groupKey, interval);
-                    if (group == null) {
-                        group = new ArrayList<Alignment>(1000);
-                        groupedAlignments.put(groupKey, interval, group);
+                    List<Alignment> groupList = groupedAlignments.get(groupKey, interval);
+                    if (groupList == null) {
+                        groupList = new ArrayList<Alignment>(1000);
+                        groupedAlignments.put(groupKey, intervalIndex, groupList);
                     }
-                    group.add(alignment);
+                    groupList.add(alignment);
                 }
             }
 
@@ -101,42 +102,73 @@ public class AlignmentPacker {
 
             for (String key : keys) {
                 List<Row> alignmentRows = new ArrayList<Row>(10000);
-                Map<Range, List<Alignment>> group = groupedAlignments.row(key);
-                pack(group, intervalList, pairAlignments, alignmentRows);
+                Map<Integer, List<Alignment>> group = groupedAlignments.row(key);
+                pack(group, pairAlignments, alignmentRows);
                 packedAlignments.put(key, alignmentRows);
             }
             //Put null valued group at end
             List<Row> alignmentRows = new ArrayList<Row>(10000);
-            Map<Range, List<Alignment>> group = groupedAlignments.row(NULL_GROUP_VALUE);
-            pack(group, intervalList, pairAlignments, alignmentRows);
+            Map<Integer, List<Alignment>> group = groupedAlignments.row(NULL_GROUP_VALUE);
+            pack(group, pairAlignments, alignmentRows);
             packedAlignments.put("", alignmentRows);
         }
         return new PackedAlignments(intervalList, packedAlignments, renderOptions);
     }
 
-    private void pack(List<AlignmentInterval> intervalList, boolean pairAlignments,
-                      List<Row> alignmentRows) {
-        Map<Range, List<Alignment>> rangeAlignmentMap = new LinkedHashMap<Range, List<Alignment>>(intervalList.size());
-        for(AlignmentInterval interval: intervalList){
-            if(!rangeAlignmentMap.containsKey(interval)){
-                rangeAlignmentMap.put(interval, interval.getAlignments());
-            }
+    /**
+     * Gets the range over which alignmentsList spans. Asssumes all on same chr, and sorted
+     * @param alignmentsList
+     * @return
+     */
+    private Range getAlignmentListRange(List<Alignment> alignmentsList){
+        if(alignmentsList == null || alignmentsList.size() == 0) return null;
+        Alignment firstAlignment = alignmentsList.get(0);
+
+        int minStart = firstAlignment.getStart();
+        int maxEnd = firstAlignment.getAlignmentEnd();
+        for(Alignment alignment: alignmentsList){
+            maxEnd = Math.max(maxEnd, alignment.getEnd());
         }
-        pack(rangeAlignmentMap, intervalList, pairAlignments, alignmentRows);
+        return new Range(firstAlignment.getChr(), minStart,
+                maxEnd);
     }
 
-    private void pack(Map<Range, List<Alignment>> rangeAlignmentMap, List<? extends Range> rangeList, boolean pairAlignments,
+    private void packAlignmentInterval(List<AlignmentInterval> intervalList, boolean pairAlignments,
+                      List<Row> alignmentRows) {
+
+        List<List<Alignment>> alignmentsList = new ArrayList<List<Alignment>>(intervalList.size());
+        for(AlignmentInterval interval: intervalList){
+            alignmentsList.add(interval.getAlignments());
+        }
+        pack(alignmentsList, pairAlignments, alignmentRows);
+    }
+
+    private void pack(Map<Integer, List<Alignment>> alignmentsMap, boolean pairAlignments,
         List<Row> alignmentRows) {
 
+        List<Integer> indices = new ArrayList<Integer>(alignmentsMap.keySet());
+        Collections.sort(indices);
+        List<List<Alignment>> alignmentsList = new ArrayList<List<Alignment>>(alignmentsMap.size());
+        for(Integer key: indices){
+            alignmentsList.add(alignmentsMap.get(key));
+        }
+        pack(alignmentsList, pairAlignments, alignmentRows);
+    }
+
+    private void pack(List<List<Alignment>> listAlignmentsList, boolean pairAlignments, List<Row> alignmentRows){
         Map<String, PairedAlignment> pairs = null;
         if (pairAlignments) {
             pairs = new HashMap<String, PairedAlignment>(1000);
         }
 
         int bucketCount = 0;
-        int lastEnd = rangeList.get(rangeList.size() - 1).getEnd();
-        for(Range range: rangeList){
-            bucketCount += range.getLength();
+
+        List<Range> rangeList = new ArrayList<Range>(listAlignmentsList.size());
+        for(List<Alignment> alignments: listAlignmentsList){
+            Range range = getAlignmentListRange(alignments);
+            //null entries get added to rangeList for book-keeping
+            rangeList.add(range);
+            if(range != null) bucketCount += range.getLength();
         }
 
         // Create buckets.  We use priority queues to keep the buckets sorted by alignment length.  However this
@@ -156,11 +188,12 @@ public class AlignmentPacker {
         int totalCount = 0;
         //We only allocate enough buckets for each Interval, skip the in-between regions
         int curBucketStart = 0;
-        for(Range range: rangeList){
-            List<Alignment> alList = rangeAlignmentMap.get(range);
+        for(int curRangeIndex = 0; curRangeIndex < rangeList.size(); curRangeIndex++){
+            List<Alignment> alList = listAlignmentsList.get(curRangeIndex);
             if(alList == null || alList.size() == 0) continue;
 
-            int curRangeStart = range.getStart();
+            Range curRange = rangeList.get(curRangeIndex);
+            int curRangeStart = curRange.getStart();
             for(Alignment al: alList) {
 
                 if (al.isMapped()) {
@@ -181,12 +214,7 @@ public class AlignmentPacker {
                         }
                     }
 
-                    int bucketNumber = al.getStart() - curRangeStart;
-                    // We can get negative buckets if soft-clipping is on as the alignments are only approximately
-                    // sorted.  Throw all alignments < start in the first bucket of this range.
-                    bucketNumber = Math.max(0, bucketNumber);
-                    //Offset for start of range
-                    bucketNumber += curBucketStart;
+                    int bucketNumber = al.getStart() - curRangeStart + curBucketStart;
                     if (bucketNumber < bucketCount) {
                         PriorityQueue<Alignment> bucket = buckets.get(bucketNumber);
                         if (bucket == null) {
@@ -196,13 +224,13 @@ public class AlignmentPacker {
                         bucket.add(alignment);
                         totalCount++;
                     } else {
-                        log.debug("Alignment out of bounds: " + alignment.getStart() + " (> " + lastEnd);
+                        log.debug("Alignment out of bounds. name: " + alignment.getReadName() + " startPos:" + alignment.getStart() );
                     }
 
 
                 }
             }
-            curBucketStart += range.getLength();
+            curBucketStart += curRange.getLength();
         }
 
         buckets.finishedAdding();
@@ -221,11 +249,9 @@ public class AlignmentPacker {
 
             // Loop through alignments until we reach the end of the interval
             while (curRange != null) {
-                PriorityQueue<Alignment> bucket;
-
                 // Advance to next occupied bucket
                 int bucketNumber = nextStart - curRange.getStart() + curBucketStart;
-                bucket = buckets.getNextBucket(bucketNumber, emptyBuckets);
+                PriorityQueue<Alignment> bucket = buckets.getNextBucket(bucketNumber, emptyBuckets);
 
                 // Pull the next alignment out of the bucket and add to the current row
                 if (bucket == null) {
@@ -235,10 +261,10 @@ public class AlignmentPacker {
                     currentRow.addAlignment(alignment);
                     allocatedCount++;
 
-                    nextStart = currentRow.getLastEnd() + MIN_ALIGNMENT_SPACING;
+                    nextStart = alignment.getEnd() + MIN_ALIGNMENT_SPACING;
                     //We have several discontinuous Ranges in the general case
                     //When we reach the end of one, move to the next
-                    if(nextStart >= curRange.getEnd()){
+                    if(!curRange.overlaps(alignment.getChr(), nextStart, nextStart + 1)){
                         curBucketStart += curRange.getLength();
                         curRangeIndex += 1;
                         if(curRangeIndex >= rangeList.size()){
@@ -246,10 +272,12 @@ public class AlignmentPacker {
                             break;
                         }else{
                             curRange = rangeList.get(curRangeIndex);
+                            //No guarantee that the ranges will be in any order
+                            nextStart = curRange.getStart();
                         }
-
                     }
                 }
+
             }
 
             // We've reached the end of the interval,  start a new row

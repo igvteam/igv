@@ -249,12 +249,9 @@ public class AlignmentRenderer implements FeatureRenderer {
                 double pixelEnd = ((alignment.getEnd() - origin) / locScale);
 
                 // If the any part of the feature fits in the track rectangle draw  it
-                if (pixelEnd < rowRect.x) {
+                if (pixelEnd < rowRect.x || pixelStart > rowRect.getMaxX()) {
                     continue;
-                } else if (pixelStart > rowRect.getMaxX()) {
-                    break;
                 }
-
 
                 // If the alignment is 3 pixels or less,  draw alignment as a single block,
                 // further detail would not be seen and just add to drawing overhead
