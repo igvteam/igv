@@ -38,11 +38,10 @@ public class AlignmentDataManager implements IAlignmentDataManager {
     private static Logger log = Logger.getLogger(AlignmentDataManager.class);
 
     /**
-     * Map of reference frame name -> alignment interval
+     * Caches for loaded alignments and the relevant packing
      */
-    //private Map<String, AlignmentInterval> loadedIntervalMap = new HashMap<String, AlignmentInterval>();
-    private PositionMap<AlignmentInterval> loadedIntervalCache = new PositionMap<AlignmentInterval>();
-    private PositionMap<PackedAlignments> packedAlignmentsCache = new PositionMap<PackedAlignments>();
+    private PositionCache<AlignmentInterval> loadedIntervalCache = new PositionCache<AlignmentInterval>();
+    private PositionCache<PackedAlignments> packedAlignmentsCache = new PositionCache<PackedAlignments>();
 
     private HashMap<String, String> chrMappings = new HashMap();
     private volatile boolean isLoading = false;
@@ -273,6 +272,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
         PackedAlignments packedAlignments = alignmentPacker.packAlignments(intervalList, renderOptions);
 
         this.packedAlignmentsCache.clear();
+        this.packedAlignmentsCache.setMaxEntriesPerChr(2 * intervalList.size());
         //We cache by the interval range because this will generally be buffered/expanded, whereas the frame
         //will be to-the-pixel (meaning a slight scroll triggers a repack
         for(AlignmentInterval interval: intervalList) this.packedAlignmentsCache.put(interval.getRange(), packedAlignments);
@@ -335,7 +335,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
         if (isLoading || chr.equals(Globals.CHR_ALL)) {
             return;
         }
-
+        loadedIntervalCache.setMaxEntriesPerChr(2 * FrameManager.getFrames().size());
         isLoading = true;
 
         NamedRunnable runnable = new NamedRunnable() {
@@ -468,7 +468,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
         }
     }
 
-    PositionMap getCache() {
+    PositionCache getCache() {
         return this.loadedIntervalCache;
     }
 
