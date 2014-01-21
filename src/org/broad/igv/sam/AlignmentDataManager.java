@@ -255,6 +255,9 @@ public class AlignmentDataManager implements IAlignmentDataManager {
      * @see AlignmentPacker#packAlignments(List, org.broad.igv.sam.AlignmentTrack.RenderOptions)
      */
     public boolean repackAlignments(List<ReferenceFrame> frameList, AlignmentTrack.RenderOptions renderOptions) {
+        if(frameList == null){
+            frameList = FrameManager.getFrames();
+        }
 
         List<AlignmentInterval> intervalList = new ArrayList<AlignmentInterval>(frameList.size());
         for(ReferenceFrame frame: frameList){
@@ -351,7 +354,8 @@ public class AlignmentDataManager implements IAlignmentDataManager {
                 AlignmentInterval loadedInterval = loadInterval(chr, start, end, renderOptions);
                 loadedIntervalCache.put(loadedInterval.getRange(), loadedInterval);
 
-                repackAlignments(Arrays.asList(context.getReferenceFrame()), renderOptions);
+                List<ReferenceFrame> frameList = context != null ? Arrays.asList(context.getReferenceFrame()) : null;
+                repackAlignments(frameList, renderOptions);
                 getEventBus().post(new DataLoadedEvent(context));
 
                 isLoading = false;

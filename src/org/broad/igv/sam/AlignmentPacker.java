@@ -182,6 +182,12 @@ public class AlignmentPacker {
         } else {
             buckets = new SparseBucketCollection();
         }
+
+        if(bucketCount == 0){
+            //No range given
+            return;
+        }
+
         buckets.set(0, firstBucket);
 
         //Allocate alignments to buckets based on position
