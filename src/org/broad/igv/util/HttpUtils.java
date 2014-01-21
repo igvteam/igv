@@ -24,6 +24,7 @@ import org.broad.igv.gs.GSUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.CancellableProgressDialog;
 import org.broad.igv.ui.util.ProgressMonitor;
+import org.broad.igv.util.collections.CI;
 import org.broad.igv.util.ftp.FTPUtils;
 import org.broad.igv.util.stream.IGVSeekableHTTPStream;
 import org.broad.igv.util.stream.IGVUrlHelper;
@@ -67,6 +68,7 @@ public class HttpUtils {
 
     // static provided to support unit testing
     private static boolean BYTE_RANGE_DISABLED = false;
+    private Map<URL, Boolean> headURLCache = new HashMap<URL, Boolean>();
 
     /**
      * @return the single instance
@@ -227,12 +229,13 @@ public class HttpUtils {
     }
 
     boolean isExpectedRangeMissing(URLConnection conn, Map<String, String> requestProperties){
-        Map<String,List<String>> headerFields = conn.getHeaderFields();
-        final boolean rangeRequested = requestProperties != null && requestProperties.containsKey("Range");
-        final boolean rangeReceived = headerFields != null && headerFields.containsKey("Content-Range");
-        return rangeRequested && !rangeReceived;
-    }
+        final boolean rangeRequested = (requestProperties != null) && (new CI.CIHashMap<String>(requestProperties)).containsKey("Range");
+        if(!rangeRequested) return false;
 
+        Map<String,List<String>> headerFields = conn.getHeaderFields();
+        boolean rangeReceived = (headerFields != null) && (new CI.CIHashMap<List<String>>(headerFields)).containsKey("Content-Range");
+        return !rangeReceived;
+    }
 
     public boolean resourceAvailable(URL url) {
         log.debug("Checking if resource is available: " + url);
@@ -258,12 +261,19 @@ public class HttpUtils {
      * @throws IOException
      */
     private HttpURLConnection openConnectionHeadOrGet(URL url) throws IOException {
-        try {
-            return openConnection(url, null, "HEAD");
-        } catch (IOException e) {
-            log.info("HEAD request failed for url:" + url.getPath() + ".  Trying GET");
-            return openConnection(url, null, "GET");
+        boolean tryHead = headURLCache.containsKey(url) ? headURLCache.get(url) : true;
+
+        if(tryHead){
+            try {
+                HttpURLConnection conn = openConnection(url, null, "HEAD");
+                headURLCache.put(url, true);
+                return conn;
+            } catch (IOException e) {
+                log.info("HEAD request failed for url: " + url.toExternalForm() + ".  Trying GET");
+                headURLCache.put(url, false);
+            }
         }
+        return openConnection(url, null, "GET");
     }
 
     public String getHeaderField(URL url, String key) throws IOException {

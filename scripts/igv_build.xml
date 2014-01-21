@@ -35,6 +35,28 @@
     <property name="bin.archive.name" value="IGV_${version}"/>
     <property name="bin.archive.zip" value="${download.dir}/${bin.archive.name}.zip"/>
 
+
+    <!--Add permissions attribute to manifest of jars -->
+    <!-- We use exec because it's easier, this will only run on *nix-->
+    <macrodef name="add-perms-macro">
+        <attribute name="jarfile"/>
+        <sequential>
+            <!--Newline is important!-->
+            <echo file="tmp.txt">Permissions: all-permissions${line.separator}</echo>
+            <exec executable="jar">
+                <arg value="ufm"/>
+                <arg value="@{jarfile}"/>
+                <arg value="tmp.txt"/>
+            </exec>
+            <delete file="tmp.txt"/>
+        </sequential>
+    </macrodef>
+
+    <target name="add-perms">
+        <add-perms-macro jarfile="${dist.dir}batik-codec.jar"/>
+        <add-perms-macro jarfile="${dist.dir}goby-io-igv.jar"/>
+    </target>
+
     <!-- Sign all jars if a keystore is defined -->
     <target name="sign-jars" if="keystore">
         <signjar jar="${jar.path}" alias="${alias}" keypass="${key-password}" storepass="${store-password}"
@@ -148,7 +170,7 @@
     </target>
 
 
-    <target name="build-jws" depends="build">
+    <target name="build-jws" depends="build, add-perms">
         <antcall target="sign-jars"/>
     </target>
 

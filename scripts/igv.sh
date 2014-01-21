@@ -10,4 +10,4 @@ prefix=`dirname $(readlink $0 || echo $0)`
 exec java -Xmx2000m \
 	-Dapple.laf.useScreenMenuBar=true \
 	-Djava.net.preferIPv4Stack=true \
-	-jar "$prefix"/igv.jar "$@" &
+	-jar "$prefix"/igv.jar "$@"

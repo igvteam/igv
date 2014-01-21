@@ -80,7 +80,7 @@ public class UCSCGeneTableCodec extends UCSCCodec<BasicFeature> {
      *
      * @param line the input line to decode
      * @return Return the Feature encoded by the line,  or null if the line does not represent a feature (e.g. is
-     *         a comment)
+     * a comment)
      */
     public BasicFeature decode(String line) {
         if (line.startsWith("#")) {
@@ -136,6 +136,12 @@ public class UCSCGeneTableCodec extends UCSCCodec<BasicFeature> {
         if (tokenCount > 8) {
             createExons(tokens, tokenCount, gene, chr, strand);
         }
+
+        // Optional standard name column
+        if (tokenCount > 16) {
+            gene.setAttribute("Standard Name", tokens[16]);
+        }
+
         return gene;
     }
 
