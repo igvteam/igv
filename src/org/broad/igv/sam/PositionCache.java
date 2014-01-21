@@ -44,25 +44,19 @@ class PositionCache<V> {
      * @param value
      * @return The old interval, null if it didn't exist
      */
-    public synchronized V put(Range range, V value) {
-        Range currentRangeKey = getKeyFor(range);
+    public V put(Range range, V value) {
+        Range currentRangeKey = getKeyForRange(range);
         Range keyToUse = currentRangeKey != null ? currentRangeKey : range;
         return intervals.put(keyToUse, value);
 
     }
 
-    public V get(Range range){
-        if(intervals.containsKey(range)){
-            return intervals.get(range);
-        }
-        Range key = getKeyFor(range);
+    public V getForRange(Range range){
+        Range key = getKeyForRange(range);
         return key != null ? intervals.get(key) : null;
     }
 
-    private Range getKeyFor(Range range) {
-        if(intervals.containsKey(range)){
-            return range;
-        }
+    private Range getKeyForRange(Range range) {
         String chr = range.getChr();
         for (Range cachedRange : intervals.keySet()) {
             if (cachedRange.contains(chr, range.getStart(), range.getEnd())) {
@@ -73,8 +67,8 @@ class PositionCache<V> {
     }
 
 
-    public boolean contains(Range range) {
-        return getKeyFor(range) != null;
+    public boolean containsRange(Range range) {
+        return getKeyForRange(range) != null;
     }
 
     public Collection<V> values() {

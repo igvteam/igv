@@ -153,7 +153,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
     }
 
     public AlignmentInterval getLoadedInterval(Range range) {
-        return loadedIntervalCache.get(range);
+        return loadedIntervalCache.getForRange(range);
     }
 
     /**
@@ -163,8 +163,8 @@ public class AlignmentDataManager implements IAlignmentDataManager {
      * @param location
      */
     public boolean sortRows(SortOption option, ReferenceFrame frame, double location, String tag) {
-        PackedAlignments packedAlignments = packedAlignmentsCache.get(frame.getCurrentRange());
-        AlignmentInterval interval = loadedIntervalCache.get(frame.getCurrentRange());
+        PackedAlignments packedAlignments = packedAlignmentsCache.getForRange(frame.getCurrentRange());
+        AlignmentInterval interval = loadedIntervalCache.getForRange(frame.getCurrentRange());
         if (packedAlignments == null || interval == null) {
             return false;
         }
@@ -258,7 +258,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
 
         List<AlignmentInterval> intervalList = new ArrayList<AlignmentInterval>(frameList.size());
         for(ReferenceFrame frame: frameList){
-            AlignmentInterval loadedInterval = loadedIntervalCache.get(frame.getCurrentRange());
+            AlignmentInterval loadedInterval = loadedIntervalCache.getForRange(frame.getCurrentRange());
 
             if (loadedInterval == null) {
                 return false;
@@ -288,7 +288,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
             final String chr = context.getChr();
             final int start = (int) context.getOrigin();
             final int end = (int) context.getEndLocation();
-            AlignmentInterval loadedInterval = loadedIntervalCache.get(context.getReferenceFrame().getCurrentRange());
+            AlignmentInterval loadedInterval = loadedIntervalCache.getForRange(context.getReferenceFrame().getCurrentRange());
 
             int adjustedStart = start;
             int adjustedEnd = end;
@@ -316,10 +316,10 @@ public class AlignmentDataManager implements IAlignmentDataManager {
     public synchronized PackedAlignments getGroups(RenderContext context, AlignmentTrack.RenderOptions renderOptions) {
         load(context, renderOptions, false);
         Range range = context.getReferenceFrame().getCurrentRange();
-        if(!packedAlignmentsCache.contains(range)){
+        if(!packedAlignmentsCache.containsRange(range)){
             repackAlignmentsAllFrames(renderOptions);
         }
-        return packedAlignmentsCache.get(context.getReferenceFrame().getCurrentRange());
+        return packedAlignmentsCache.getForRange(context.getReferenceFrame().getCurrentRange());
     }
 
     public void clear() {
@@ -403,7 +403,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
         int start = (int) position;
         int end = start + 1;
 
-        PackedAlignments packedAlignments = packedAlignmentsCache.get(referenceFrame.getCurrentRange());
+        PackedAlignments packedAlignments = packedAlignmentsCache.getForRange(referenceFrame.getCurrentRange());
         if (packedAlignments != null && packedAlignments.contains(chr, start, end)) {
             return packedAlignments;
         }

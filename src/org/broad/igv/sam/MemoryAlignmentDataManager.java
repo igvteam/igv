@@ -36,7 +36,7 @@ public class MemoryAlignmentDataManager implements IAlignmentDataManager {
 
     @Override
     public AlignmentInterval getLoadedInterval(Range range){
-        return this.loadedIntervalCache.get(range);
+        return this.loadedIntervalCache.getForRange(range);
     }
 
     @Override
