@@ -168,7 +168,7 @@ public class AlignmentPacker {
         for(List<Alignment> alignments: listAlignmentsList){
             Range range = getAlignmentListRange(alignments);
 
-            BucketCollection buckets = null;
+            BucketCollection buckets;
             if(range != null){
                 // Use dense buckets for < 1,000,000 bp windows sparse otherwise
                 int bucketCount = range.getLength();
@@ -178,9 +178,9 @@ public class AlignmentPacker {
                 } else {
                     buckets = new SparseBucketCollection();
                 }
+                rangeBucketsMap.put(range, buckets);
             }
             //Add null to keep the indexing lined up
-            rangeBucketsMap.put(range, buckets);
             rangeList.add(range);
         }
 
