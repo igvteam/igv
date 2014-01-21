@@ -161,45 +161,45 @@ public class AlignmentPacker {
             pairs = new HashMap<String, PairedAlignment>(1000);
         }
 
-        int bucketCount = 0;
-
+        // Create buckets for each range.  We use priority queues to keep the buckets sorted by alignment length.  However this
+        // is probably a needless complication,  any collection type would do.
+        LinkedHashMap<Range, BucketCollection> rangeBucketsMap = new LinkedHashMap<Range, BucketCollection>(listAlignmentsList.size());
         List<Range> rangeList = new ArrayList<Range>(listAlignmentsList.size());
         for(List<Alignment> alignments: listAlignmentsList){
             Range range = getAlignmentListRange(alignments);
-            //null entries get added to rangeList for book-keeping
+
+            BucketCollection buckets = null;
+            if(range != null){
+                // Use dense buckets for < 1,000,000 bp windows sparse otherwise
+                int bucketCount = range.getLength();
+
+                if (bucketCount < 10000000) {
+                    buckets = new DenseBucketCollection(bucketCount);
+                } else {
+                    buckets = new SparseBucketCollection();
+                }
+            }
+            //Add null to keep the indexing lined up
+            rangeBucketsMap.put(range, buckets);
             rangeList.add(range);
-            if(range != null) bucketCount += range.getLength();
         }
 
-        // Create buckets.  We use priority queues to keep the buckets sorted by alignment length.  However this
-        // is probably a needless complication,  any collection type would do.
-        PriorityQueue<Alignment> firstBucket = new PriorityQueue<Alignment>(5, lengthComparator);
 
-        // Use dense buckets for < 1,000,000 bp windows sparse otherwise
-        BucketCollection buckets;
-        if (bucketCount < 10000000) {
-            buckets = new DenseBucketCollection(bucketCount);
-        } else {
-            buckets = new SparseBucketCollection();
-        }
-
-        if(bucketCount == 0){
-            //No range given
+        //No alignments
+        if(rangeList.size() == 0){
             return;
         }
 
-        buckets.set(0, firstBucket);
-
         //Allocate alignments to buckets based on position
         int totalCount = 0;
-        //We only allocate enough buckets for each Interval, skip the in-between regions
-        int curBucketStart = 0;
-        for(int curRangeIndex = 0; curRangeIndex < rangeList.size(); curRangeIndex++){
+        for(int curRangeIndex = 0; curRangeIndex < rangeBucketsMap.size(); curRangeIndex++){
             List<Alignment> alList = listAlignmentsList.get(curRangeIndex);
-            if(alList == null || alList.size() == 0) continue;
-
             Range curRange = rangeList.get(curRangeIndex);
+
+            if(alList == null || alList.size() == 0 || curRange == null) continue;
+
             int curRangeStart = curRange.getStart();
+            BucketCollection buckets = rangeBucketsMap.get(curRange);
             for(Alignment al: alList) {
 
                 if (al.isMapped()) {
@@ -220,8 +220,8 @@ public class AlignmentPacker {
                         }
                     }
 
-                    int bucketNumber = al.getStart() - curRangeStart + curBucketStart;
-                    if (bucketNumber < bucketCount) {
+                    int bucketNumber = al.getStart() - curRangeStart;
+                    if (bucketNumber < buckets.getBucketCount()) {
                         PriorityQueue<Alignment> bucket = buckets.get(bucketNumber);
                         if (bucket == null) {
                             bucket = new PriorityQueue<Alignment>(5, lengthComparator);
@@ -236,70 +236,59 @@ public class AlignmentPacker {
 
                 }
             }
-            curBucketStart += curRange.getLength();
         }
 
-        buckets.finishedAdding();
+        for(BucketCollection buckets: rangeBucketsMap.values()){
+            buckets.finishedAdding();
+        }
 
         // Allocate alignments to rows
         long t0 = System.currentTimeMillis();
         int allocatedCount = 0;
-        int curRangeIndex = 0;
-        Range curRange = rangeList.get(curRangeIndex);
-        curBucketStart = 0;
-        int nextStart = curRange.getStart();
         Row currentRow = new Row();
-        List<Integer> emptyBuckets = new ArrayList<Integer>(100);
 
         while (allocatedCount < totalCount) {
 
-            // Loop through alignments until we reach the end of the interval
-            while (curRange != null) {
-                // Advance to next occupied bucket
-                int bucketNumber = nextStart - curRange.getStart() + curBucketStart;
-                PriorityQueue<Alignment> bucket = buckets.getNextBucket(bucketNumber, emptyBuckets);
+            for(int curRangeIndex = 0; curRangeIndex < rangeBucketsMap.size(); curRangeIndex++){
+                List<Alignment> alList = listAlignmentsList.get(curRangeIndex);
+                Range curRange = rangeList.get(curRangeIndex);
 
-                // Pull the next alignment out of the bucket and add to the current row
-                if (bucket == null) {
-                    break;
-                } else {
-                    Alignment alignment = bucket.remove();
-                    currentRow.addAlignment(alignment);
-                    allocatedCount++;
+                if(alList == null || alList.size() == 0 || curRange == null) continue;
 
-                    nextStart = alignment.getEnd() + MIN_ALIGNMENT_SPACING;
-                    //We have several discontinuous Ranges in the general case
-                    //When we reach the end of one, move to the next
-                    if(!curRange.overlaps(alignment.getChr(), nextStart, nextStart + 1)){
-                        curBucketStart += curRange.getLength();
-                        curRangeIndex += 1;
-                        if(curRangeIndex >= rangeList.size()){
-                            curRange = null;
-                            break;
-                        }else{
-                            curRange = rangeList.get(curRangeIndex);
-                            //No guarantee that the ranges will be in any order
-                            nextStart = curRange.getStart();
-                        }
+                int curRangeStart = curRange.getStart();
+                int nextStart = curRangeStart;
+                BucketCollection buckets = rangeBucketsMap.get(curRange);
+                List<Integer> emptyBuckets = new ArrayList<Integer>(100);
+
+                while(true){
+                    int bucketNumber = nextStart - curRangeStart;
+                    PriorityQueue<Alignment> bucket = buckets.getNextBucket(bucketNumber, emptyBuckets);
+
+                    // Pull the next alignment out of the bucket and add to the current row
+                    if (bucket != null) {
+                        Alignment alignment = bucket.remove();
+                        currentRow.addAlignment(alignment);
+                        allocatedCount++;
+
+                        nextStart = alignment.getEnd() + MIN_ALIGNMENT_SPACING;
+                    }
+
+                    //Reached the end of this range, move to the next
+                    if(bucket == null || nextStart > curRange.getEnd()){
+                        //Remove empty buckets.  This has no affect on the dense implementation,
+                        //they are removed on the fly, but is needed for the sparse implementation
+                        buckets.removeBuckets(emptyBuckets);
+                        emptyBuckets.clear();
+                        break;
                     }
                 }
-
             }
 
             // We've reached the end of the interval,  start a new row
             if (currentRow.alignments.size() > 0) {
                 alignmentRows.add(currentRow);
             }
-
-            // If we have more than 20 empty buckets remove them.  This has no affect on the dense implementation,
-            // they are removed on the fly, but is needed for the sparse implementation
-            buckets.removeBuckets(emptyBuckets);
-            emptyBuckets.clear();
             currentRow = new Row();
-            curRangeIndex = 0;
-            curRange = rangeList.get(curRangeIndex);
-            curBucketStart = 0;
-            nextStart = curRange.getStart();
         }
         if (log.isDebugEnabled()) {
             long dt = System.currentTimeMillis() - t0;
@@ -383,6 +372,7 @@ public class AlignmentPacker {
 
         void finishedAdding();
 
+        int getBucketCount();
     }
 
     /**
@@ -405,6 +395,10 @@ public class AlignmentPacker {
 
         public PriorityQueue<Alignment> get(int idx) {
             return bucketArray[idx];
+        }
+
+        public int getBucketCount(){
+            return this.bucketArray.length;
         }
 
 
@@ -529,6 +523,10 @@ public class AlignmentPacker {
             finished = true;
             keys = new ArrayList<Integer>(buckets.keySet());
             Collections.sort(keys);
+        }
+
+        public int getBucketCount(){
+            return Integer.MAX_VALUE;
         }
     }
 
