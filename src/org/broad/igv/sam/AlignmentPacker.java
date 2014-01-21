@@ -85,7 +85,7 @@ public class AlignmentPacker {
                     if (groupKey == null) {
                         groupKey = NULL_GROUP_VALUE;
                     }
-                    List<Alignment> groupList = groupedAlignments.get(groupKey, interval);
+                    List<Alignment> groupList = groupedAlignments.get(groupKey, intervalIndex);
                     if (groupList == null) {
                         groupList = new ArrayList<Alignment>(1000);
                         groupedAlignments.put(groupKey, intervalIndex, groupList);
