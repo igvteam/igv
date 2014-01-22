@@ -312,9 +312,10 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     final private void drawConnectingLine(int startX, int startY, int endX, int endY, Strand strand, Graphics2D g) {
 
         Graphics2D g2D = (Graphics2D) g.create();
-
-        float lineThickness = ((BasicStroke) g.getStroke()).getLineWidth();
         if (strand == null) {
+
+            BasicStroke befStroke = (BasicStroke) g.getStroke();
+            float lineThickness = befStroke.getLineWidth();
 
             // Double the line thickness
             lineThickness *= NO_STRAND_THICKNESS;
