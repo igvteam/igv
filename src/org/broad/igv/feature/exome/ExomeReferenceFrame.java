@@ -43,12 +43,14 @@ public class ExomeReferenceFrame extends ReferenceFrame {
     public ExomeReferenceFrame(ReferenceFrame otherFrame, FeatureTrack referenceTrack) {
         super(otherFrame);
         init(referenceTrack);
+        this.calculateMaxZoom();
     }
 
 
     public ExomeReferenceFrame(ReferenceFrame otherFrame, Map<String, List<Feature>> featureMap) {
         super(otherFrame);
         init(featureMap);
+        this.calculateMaxZoom();
     }
 
 
@@ -159,12 +161,20 @@ public class ExomeReferenceFrame extends ReferenceFrame {
 
     @Override
     protected synchronized void computeLocationScale() {
-        //TODO What if initialLocus is null?
-        int genomeEnd = this.initialLocus.getEnd();
-        int exomeEnd = Math.max(exomeOrigin + 40, genomeToExomePosition(genomeEnd));
-        int bp = exomeEnd - exomeOrigin;
-        int pw = widthInPixels <= 0 ? 1000 : widthInPixels;
-        this.locationScale = (((double) bp) / pw);
+        if(!this.initialLocus.getChr().equals(getChrName())){
+            this.initialLocus = null;
+        }
+        if(this.initialLocus != null){
+            int genomeEnd = this.initialLocus.getEnd();
+            int exomeEnd = Math.max(exomeOrigin + minBP, genomeToExomePosition(genomeEnd));
+            int bp = exomeEnd - exomeOrigin;
+            int pw = widthInPixels <= 0 ? 1000 : widthInPixels;
+            this.locationScale = (((double) bp) / pw);
+        }else{
+            double visibleRange = minBP*Math.pow(2, maxZoom - zoom);
+            locationScale = (visibleRange) / widthInPixels;
+        }
+
     }
 
     @Override
@@ -210,12 +220,16 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         int delta = (int) (currentBPLength / (2 * zoomFactor));
 
         int exomeCenter = genomeToExomePosition((int) newCenter);
-        exomeOrigin = exomeCenter - delta;
-
+        exomeOrigin = Math.max(0, exomeCenter - delta);
         origin = exomeToGenomePosition(exomeOrigin);
-        locationScale /= zoomFactor;
         zoom = newZoom;
 
+        if(zoom == 0){
+            locationScale = getChromosomeLength() / widthInPixels;
+        }else {
+            double visibleRange = minBP*Math.pow(2, maxZoom - zoom);
+            locationScale = (visibleRange) / widthInPixels;
+        }
         List<ExomeBlock> blocks = getBlocks(chrName);
         firstBlockIdx = getIndexForGenomePosition(blocks, origin);
 

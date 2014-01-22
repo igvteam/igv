@@ -65,10 +65,9 @@ public class ReferenceFrame {
     public int maxZoom = 23;
 
     /**
-     * Minimum allowed scale in base pairs / pixel
-     * TODO Does this ever change, couldn't it be static and/or final?
+     * Minimum allowed range in base-pairs
      */
-    private double minScale = 1.0 / 14;
+    protected static final int minBP = 40;
 
     /**
      * The current zoom level.  Zoom level -1 corresponds to the whole
@@ -126,7 +125,6 @@ public class ReferenceFrame {
         this.chrName = otherFrame.chrName;
         this.initialLocus = otherFrame.initialLocus;
         this.locationScale = otherFrame.locationScale;
-        this.minScale = otherFrame.minScale;
         this.minZoom = otherFrame.minZoom;
         this.name = otherFrame.name;
         this.nTiles = otherFrame.nTiles;
@@ -135,6 +133,7 @@ public class ReferenceFrame {
         //this.setEnd = otherFrame.setEnd;
         this.widthInPixels = otherFrame.widthInPixels;
         this.zoom = otherFrame.zoom;
+        this.maxZoom = otherFrame.maxZoom;
         registerEventBuses();
     }
 
@@ -341,6 +340,7 @@ public class ReferenceFrame {
             chrName = name;
             origin = 0;
             this.locationScale = -1;
+            this.calculateMaxZoom();
 
             this.zoom = -1;
             setZoom(0);
@@ -576,6 +576,10 @@ public class ReferenceFrame {
             resultEvent.setRecordHistory(chromoChangeCause.recordHistory());
             getEventBus().post(resultEvent);
         }
+    }
+
+    protected void calculateMaxZoom() {
+        this.maxZoom = (int) Math.ceil(Math.log(getChromosomeLength() / minBP) / Globals.log2);
     }
 
     public String getChrName() {
