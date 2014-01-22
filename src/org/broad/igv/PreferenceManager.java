@@ -1031,7 +1031,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(DEFAULT_FONT_SIZE, "10");
         defaultValues.put(DEFAULT_FONT_FAMILY, "Arial");
         defaultValues.put(DEFAULT_FONT_ATTRIBUTE, String.valueOf(Font.PLAIN));
-        defaultValues.put(ENABLE_ANTIALISING, "true");
+        defaultValues.put(ENABLE_ANTIALISING, String.valueOf(Globals.IS_MAC));
 
         defaultValues.put(NAME_PANEL_WIDTH, "160");
         defaultValues.put(BACKGROUND_COLOR, "250,250,250");
