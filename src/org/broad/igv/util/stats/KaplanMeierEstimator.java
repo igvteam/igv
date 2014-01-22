@@ -11,6 +11,7 @@
 
 package org.broad.igv.util.stats;
 
+import org.broad.igv.feature.Range;
 import org.broad.igv.util.collections.IntArrayList;
 
 import java.util.ArrayList;
@@ -101,7 +102,7 @@ public class KaplanMeierEstimator {
     }
 
 
-    public static class Interval extends org.broad.igv.data.Interval{
+    public static class Interval extends Range {
         private int numberDied;
         private IntArrayList censored = new IntArrayList();
         private float cumulativeSurvival;

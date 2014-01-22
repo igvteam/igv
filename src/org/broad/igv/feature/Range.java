@@ -9,7 +9,7 @@
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  */
 
-package org.broad.igv.data;
+package org.broad.igv.feature;
 
 import com.google.java.contract.util.Objects;
 import org.broad.tribble.Feature;
@@ -17,17 +17,20 @@ import org.broad.tribble.Feature;
 
 /**
  * Basic class to specify a genomic interval.
+ * Coordinates are intended to be 0-based half-open
+ * Please do not add or remove any fields (want to keep it very simple).
+ * Additional methods for calculating overlap are okay
  *
- * User: jacob
- * Date: 2013-May-20
+ * @author jacob
+ * @author 2013-May-20
  */
-public class Interval implements Feature {
+public class Range implements Feature {
 
     protected String chr = null;
     protected int start = -1;
     protected int end = -1;
 
-    public Interval(String chr, int start, int end){
+    public Range(String chr, int start, int end){
         this.chr = chr;
         this.start = start;
         this.end = end;
@@ -46,11 +49,15 @@ public class Interval implements Feature {
         return end;
     }
 
+    public int getLength(){
+        return end - start;
+    }
+
     /**
      * Determine whether this interval fully contains the specified
      * input interval.
      *
-     * A negative input start position is special meaning.  It is considered within the interval if the interval
+     * A negative input start position has special meaning.  It is considered within the interval if the interval
      * contains position "0".
      *
      * @param chr
@@ -66,6 +73,8 @@ public class Interval implements Feature {
 
     /**
      * Determine whether there is any overlap between this interval and the specified interval
+     *
+     * Negative positions have no special meaning
      * @param chr
      * @param start
      * @param end
@@ -75,6 +84,8 @@ public class Interval implements Feature {
         return Objects.equal(this.chr, chr) && this.start <= end && this.end >= start;
     }
 
-
+    public boolean overlaps(Range range) {
+        return this.overlaps(range.getChr(), range.getStart(), range.getEnd());
+    }
 
 }

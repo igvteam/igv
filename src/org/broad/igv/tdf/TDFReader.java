@@ -50,8 +50,8 @@ public class TDFReader {
     private String trackLine;
     private String[] trackNames;
     private String genomeId;
-    LRUCache<String, TDFGroup> groupCache = new LRUCache(this, 20);
-    LRUCache<String, TDFDataset> datasetCache = new LRUCache(this, 20);
+    LRUCache<String, TDFGroup> groupCache = new LRUCache(20);
+    LRUCache<String, TDFDataset> datasetCache = new LRUCache(20);
     TDFTile wgTile;
 
     Map<WindowFunction, Double> valueCache = new HashMap();

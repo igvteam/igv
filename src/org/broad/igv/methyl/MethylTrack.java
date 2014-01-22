@@ -45,7 +45,7 @@ public class MethylTrack extends AbstractTrack {
     public static final int FIFTY_MB = 50000000;
 
     private MethylDataSource dataSource;
-    private Interval loadedInterval;
+    private Range loadedRange;
     private Renderer renderer;
     private int resolutionThreshold;
     private boolean loading = false;
@@ -67,7 +67,7 @@ public class MethylTrack extends AbstractTrack {
             //dataSource = new BBMethylDataSource(reader, BBMethylDataSource.Type.USC, genome);
         }
 
-        loadedInterval = new Interval("", -1, -1, Collections.<MethylScore>emptyList());
+        loadedRange = new Range("", -1, -1, Collections.<MethylScore>emptyList());
         setDataRange(new DataRange(0, 100));
     }
 
@@ -96,8 +96,8 @@ public class MethylTrack extends AbstractTrack {
         final String chr = context.getChr();
         final int start = (int) context.getOrigin();
         final int end = (int) context.getEndLocation();
-        if (loadedInterval.contains(chr, start, end)) {
-            renderer.render(loadedInterval.scores, context, rect, this);
+        if (loadedRange.contains(chr, start, end)) {
+            renderer.render(loadedRange.scores, context, rect, this);
         } else {
             if (!loading) {
                 loading = true;
@@ -114,7 +114,7 @@ public class MethylTrack extends AbstractTrack {
                             while (iter.hasNext()) {
                                 scores.add(iter.next());
                             }
-                            loadedInterval = new Interval(chr, expandedStart, expandedEnd, scores);
+                            loadedRange = new Range(chr, expandedStart, expandedEnd, scores);
                             context.getPanel().repaint(); //rect);
                         } finally {
                             loading = false;
@@ -130,10 +130,10 @@ public class MethylTrack extends AbstractTrack {
         return renderer;
     }
 
-    static class Interval extends org.broad.igv.data.Interval{
+    static class Range extends org.broad.igv.feature.Range {
         List<MethylScore> scores;
 
-        Interval(String chr, int start, int end, List<MethylScore> scores) {
+        Range(String chr, int start, int end, List<MethylScore> scores) {
             super(chr, start, end);
             this.scores = scores;
         }

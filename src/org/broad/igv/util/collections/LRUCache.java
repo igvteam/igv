@@ -10,60 +10,45 @@
  */
 package org.broad.igv.util.collections;
 
-import org.apache.log4j.Logger;
-
-import java.lang.ref.SoftReference;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * A least-recently-used cache with a maximum size that can be altered.
  * @author jrobinso
  */
 public class LRUCache<K, V> {
 
-    Logger log = Logger.getLogger(LRUCache.class);
+    //Logger log = Logger.getLogger(LRUCache.class);
 
-    private final static Map<Object, LRUCache> instances = Collections.synchronizedMap(new WeakHashMap<Object, LRUCache>());
+    private AtomicInteger maxEntries;
 
-    public static void clearCaches() {
-        synchronized (instances) {
-            for (LRUCache cache : instances.values()) {
-                if (cache != null) {
-                    cache.clear();
-                }
-            }
-        }
+    private Map<K, V> map;
+
+
+    public LRUCache(int max) {
+        this.maxEntries = new AtomicInteger(max);
     }
 
-
-    private final int maxEntries;
-
-    private SoftReference<Map<K, V>> mapReference;
-
-
-    public LRUCache(Object source, int max) {
-        instances.put(source, this);
-        this.maxEntries = max;
-        createMap();
+    public void setMaxEntries(int max){
+        this.maxEntries.set(max);
     }
 
     private void createMap() {
-        mapReference = new SoftReference(Collections.synchronizedMap(
-                new LinkedHashMap<K, V>() {
+        map = Collections.synchronizedMap(
+                new LinkedHashMap<K, V>(16, 0.75f, true) {
                     @Override
                     protected boolean removeEldestEntry(Map.Entry eldest) {
-                        return (size() > maxEntries);
+                        return (size() > maxEntries.get());
                     }
-                }));
+                });
     }
 
     private Map<K, V> getMap() {
-        if (mapReference == null || mapReference.get() == null) {
+        if (map == null) {
             createMap();
         }
-        return mapReference.get();
+        return map;
     }
 
     public V put(K k, V v) {
@@ -86,6 +71,20 @@ public class LRUCache<K, V> {
         getMap().clear();
     }
 
+    public Set<K> keySet() {
+        return getMap().keySet();
+    }
 
+    public Collection<V> values(){
+        return getMap().values();
+    }
+
+    public void putAll(Map<K, V> map) {
+        getMap().putAll(map);
+    }
+
+    public void putAll(LRUCache<K, V> intervals) {
+        this.putAll(intervals.getMap());
+    }
 }
 

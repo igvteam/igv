@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * Copyright (c) 2007-2014 The Broad Institute, Inc.
  * SOFTWARE COPYRIGHT NOTICE
  * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
  *
@@ -14,6 +14,7 @@ import com.google.common.eventbus.EventBus;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.AlignmentTrack.SortOption;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
@@ -23,7 +24,6 @@ import org.broad.igv.ui.event.DataLoadedEvent;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.ProgressMonitor;
-import org.broad.igv.util.ArrayHeapObjectSorter;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ResourceLocator;
@@ -33,15 +33,15 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.*;
 
-public class AlignmentDataManager implements IAlignmentDataManager{
+public class AlignmentDataManager implements IAlignmentDataManager {
 
     private static Logger log = Logger.getLogger(AlignmentDataManager.class);
 
     /**
-     * Map of reference frame name -> alignment interval
+     * Caches for loaded alignments and the relevant packing
      */
-    private Map<String, AlignmentInterval> loadedIntervalMap = new HashMap<String, AlignmentInterval>();//new MapMaker()).softValues().makeMap();
-    //private Cache<String, AlignmentInterval> loadedIntervalMap = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).initialCapacity(1).build();
+    private PositionCache<AlignmentInterval> loadedIntervalCache = new PositionCache<AlignmentInterval>();
+    private PositionCache<PackedAlignments> packedAlignmentsCache = new PositionCache<PackedAlignments>();
 
     private HashMap<String, String> chrMappings = new HashMap();
     private volatile boolean isLoading = false;
@@ -73,12 +73,7 @@ public class AlignmentDataManager implements IAlignmentDataManager{
         initChrMap(genome);
     }
 
-    public void updateGenome(Genome genome) {
-        chrMappings.clear();
-        initChrMap(genome);
-    }
-
-    void initLoadOptions(){
+    void initLoadOptions() {
         this.loadOptions = new SpliceJunctionHelper.LoadOptions();
     }
 
@@ -153,118 +148,138 @@ public class AlignmentDataManager implements IAlignmentDataManager{
         return false;
     }
 
-    public Collection<AlignmentInterval> getAllLoadedIntervals() {
-        return loadedIntervalMap.values();
+    public Collection<AlignmentInterval> getLoadedIntervals() {
+        return this.loadedIntervalCache.values();
     }
 
-    Collection<String> getLoadedIntervalNames() {
-        return loadedIntervalMap.keySet();
+    public AlignmentInterval getLoadedInterval(Range range) {
+        return loadedIntervalCache.getForRange(range);
     }
 
     /**
-     * Return the loaded interval for the specified frame (by name).  Note this can be null if the interval isn't loaded
-     * yet.
+     * Sort rows group by group
      *
-     * @param frameName
-     * @return
+     * @param option
+     * @param location
      */
-    public AlignmentInterval getLoadedInterval(String frameName) {
-        return loadedIntervalMap.get(frameName);
-    }
-
-    public void sortRows(SortOption option, String frameName, double location, String tag) {
-        AlignmentInterval loadedInterval = loadedIntervalMap.get(frameName);
-        if (loadedInterval != null) {
-            loadedInterval.sortRows(option, location, tag);
+    public boolean sortRows(SortOption option, ReferenceFrame frame, double location, String tag) {
+        PackedAlignments packedAlignments = packedAlignmentsCache.getForRange(frame.getCurrentRange());
+        AlignmentInterval interval = loadedIntervalCache.getForRange(frame.getCurrentRange());
+        if (packedAlignments == null || interval == null) {
+            return false;
         }
+
+        for (List<Row> alignmentRows : packedAlignments.values()) {
+            for (Row row : alignmentRows) {
+                row.updateScore(option, location, interval, tag);
+            }
+            Collections.sort(alignmentRows);
+        }
+        return true;
     }
 
     public void setViewAsPairs(boolean option, AlignmentTrack.RenderOptions renderOptions) {
         if (option == renderOptions.isViewPairs()) {
             return;
         }
-
-        boolean currentPairState = renderOptions.isViewPairs();
         renderOptions.setViewPairs(option);
 
-        for (ReferenceFrame frame : FrameManager.getFrames()) {
-            repackAlignments(frame.getName(), currentPairState, renderOptions);
-        }
+        repackAlignments(FrameManager.getFrames(), renderOptions);
     }
 
-    private void repackAlignments(String frameName, boolean currentPairState, AlignmentTrack.RenderOptions renderOptions) {
+//    private void repackAlignments(ReferenceFrame frame, boolean currentPairState, AlignmentTrack.RenderOptions renderOptions) {
+//
+//        if (currentPairState) {
+//            PackedAlignments packedAlignments = packedAlignmentsCache.get(frame.getName());
+//            if (packedAlignments == null) {
+//                return;
+//            }
+//
+//            List<Alignment> alignments = new ArrayList<Alignment>(Math.min(50000, packedAlignments.size() * 10000));
+//            int intervalEnd = -1;
+//            for (List<Row> alignmentRows : packedAlignments.values()) {
+//                for (Row row : alignmentRows) {
+//                    for (Alignment al : row.alignments) {
+//                        intervalEnd = Math.max(intervalEnd, al.getEnd());
+//                        if (al instanceof PairedAlignment) {
+//                            PairedAlignment pair = (PairedAlignment) al;
+//                            alignments.add(pair.firstAlignment);
+//                            if (pair.secondAlignment != null) {
+//                                alignments.add(pair.secondAlignment);
+//                            }
+//                        } else {
+//                            alignments.add(al);
+//                        }
+//                    }
+//                }
+//            }
+//
+//
+//            // ArrayHeapObjectSorter sorts in place (no additional memory required).
+//            ArrayHeapObjectSorter<Alignment> heapSorter = new ArrayHeapObjectSorter();
+//            heapSorter.sort(alignments, new Comparator<Alignment>() {
+//                public int compare(Alignment alignment, Alignment alignment1) {
+//                    return alignment.getStart() - alignment1.getStart();
+//                }
+//            });
+//
+//            AlignmentPacker packer = new AlignmentPacker();
+//            AlignmentInterval oldInterval = packedAlignments
+//            PackedAlignments tmp = packer.packAlignments(
+//                    a,
+//                    renderOptions);
+//
+//            packedAlignmentsCache.put(frame.getName(), tmp);
+//
+//        } else {
+//            repackAlignments(frame, renderOptions);
+//        }
+//    }
 
-        if (currentPairState) {
-            AlignmentInterval loadedInterval = loadedIntervalMap.get(frameName);
-            if (loadedInterval == null) {
-                return;
-            }
-
-
-            Map<String, List<AlignmentInterval.Row>> groupedAlignments = loadedInterval.getGroupedAlignments();
-            List<Alignment> alignments = new ArrayList(Math.min(50000, groupedAlignments.size() * 10000));
-            for (List<AlignmentInterval.Row> alignmentRows : groupedAlignments.values()) {
-                for (AlignmentInterval.Row row : alignmentRows) {
-                    for (Alignment al : row.alignments) {
-                        if (al instanceof PairedAlignment) {
-                            PairedAlignment pair = (PairedAlignment) al;
-                            alignments.add(pair.firstAlignment);
-                            if (pair.secondAlignment != null) {
-                                alignments.add(pair.secondAlignment);
-                            }
-                        } else {
-                            alignments.add(al);
-                        }
-                    }
-                }
-            }
-
-
-            // ArrayHeapObjectSorter sorts in place (no additional memory required).
-            ArrayHeapObjectSorter<Alignment> heapSorter = new ArrayHeapObjectSorter();
-            heapSorter.sort(alignments, new Comparator<Alignment>() {
-                public int compare(Alignment alignment, Alignment alignment1) {
-                    return alignment.getStart() - alignment1.getStart();
-                }
-            });
-
-            // When repacking keep all currently loaded alignments (don't limit to levels)
-            int max = Integer.MAX_VALUE;
-            LinkedHashMap<String, List<AlignmentInterval.Row>> tmp = (new AlignmentPacker()).packAlignments(
-                    alignments.iterator(),
-                    loadedInterval.getEnd(),
-                    renderOptions);
-
-            loadedInterval.setAlignmentRows(tmp, renderOptions);
-        } else {
-            repackAlignments(frameName, renderOptions);
-        }
+    /**
+     * Repack alignments across all frames
+     * @see #repackAlignments(java.util.List, org.broad.igv.sam.AlignmentTrack.RenderOptions)
+     * @param renderOptions
+     */
+    private boolean repackAlignmentsAllFrames(AlignmentTrack.RenderOptions renderOptions){
+        return repackAlignments(FrameManager.getFrames(), renderOptions);
     }
 
     /**
-     * Repack currently loaded alignments of the provided reference frame
+     * Repack currently loaded alignments across provided frames
+     * All relevant intervals must be loaded
      *
-     * @param frameName
+     * @param frameList
      * @param renderOptions
-     * @see AlignmentPacker#packAlignments(java.util.Iterator, int, org.broad.igv.sam.AlignmentTrack.RenderOptions)
+     * @return Whether repacking was performed
+     * @see AlignmentPacker#packAlignments(List, org.broad.igv.sam.AlignmentTrack.RenderOptions)
      */
-    public void repackAlignments(String frameName, AlignmentTrack.RenderOptions renderOptions) {
-
-        AlignmentInterval loadedInterval = loadedIntervalMap.get(frameName);
-        if (loadedInterval == null) {
-            return;
+    public boolean repackAlignments(List<ReferenceFrame> frameList, AlignmentTrack.RenderOptions renderOptions) {
+        if(frameList == null){
+            frameList = FrameManager.getFrames();
         }
 
-        Iterator<Alignment> iter = loadedInterval.getAlignmentIterator();
+        List<AlignmentInterval> intervalList = new ArrayList<AlignmentInterval>(frameList.size());
+        for(ReferenceFrame frame: frameList){
+            AlignmentInterval loadedInterval = loadedIntervalCache.getForRange(frame.getCurrentRange());
 
-        // When repacking keep all currently loaded alignments (don't limit to levels)
-        int max = Integer.MAX_VALUE;
-        LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = (new AlignmentPacker()).packAlignments(
-                iter,
-                loadedInterval.getEnd(),
-                renderOptions);
+            if (loadedInterval == null) {
+                return false;
+            }
+            if(!intervalList.contains(loadedInterval)){
+                intervalList.add(loadedInterval);
+            }
+        }
 
-        loadedInterval.setAlignmentRows(alignmentRows, renderOptions);
+        final AlignmentPacker alignmentPacker = new AlignmentPacker();
+        PackedAlignments packedAlignments = alignmentPacker.packAlignments(intervalList, renderOptions);
+
+        this.packedAlignmentsCache.clear();
+        this.packedAlignmentsCache.setMaxEntries(2 * intervalList.size());
+        //We cache by the interval range because this will generally be buffered/expanded, whereas the frame
+        //will be to-the-pixel (meaning a slight scroll triggers a repack
+        for(AlignmentInterval interval: intervalList) this.packedAlignmentsCache.put(interval.getRange(), packedAlignments);
+        return true;
     }
 
 
@@ -276,7 +291,7 @@ public class AlignmentDataManager implements IAlignmentDataManager{
             final String chr = context.getChr();
             final int start = (int) context.getOrigin();
             final int end = (int) context.getEndLocation();
-            AlignmentInterval loadedInterval = loadedIntervalMap.get(context.getReferenceFrame().getName());
+            AlignmentInterval loadedInterval = loadedIntervalCache.getForRange(context.getReferenceFrame().getCurrentRange());
 
             int adjustedStart = start;
             int adjustedEnd = end;
@@ -285,11 +300,10 @@ public class AlignmentDataManager implements IAlignmentDataManager{
             int expand = Math.max(end - start, windowSize / 2);
 
             if (loadedInterval != null) {
-                // First see if we have a loaded interval that fully contain the requested interval.  If yes we're done
+                // First see if we have a loaded interval that fully contain the requested interval.
+                // If so, we don't need to load it
                 if (loadedInterval.contains(chr, start, end)) {
-                    // Requested interval is fully contained in the existing one, we're done
                     return;
-
                 }
             }
 
@@ -299,24 +313,22 @@ public class AlignmentDataManager implements IAlignmentDataManager{
             }
             loadAlignments(chr, adjustedStart, adjustedEnd, renderOptions, context);
         }
+
     }
 
-    public synchronized LinkedHashMap<String, List<AlignmentInterval.Row>> getGroups(RenderContext context,
-                                                                                     AlignmentTrack.RenderOptions renderOptions) {
-
+    public synchronized PackedAlignments getGroups(RenderContext context, AlignmentTrack.RenderOptions renderOptions) {
         load(context, renderOptions, false);
-
-        AlignmentInterval loadedInterval = loadedIntervalMap.get(context.getReferenceFrame().getName());
-        if (loadedInterval != null) {
-            return loadedInterval.getGroupedAlignments();
-        } else {
-            return null;
+        Range range = context.getReferenceFrame().getCurrentRange();
+        if(!packedAlignmentsCache.containsRange(range)){
+            repackAlignmentsAllFrames(renderOptions);
         }
+        return packedAlignmentsCache.getForRange(context.getReferenceFrame().getCurrentRange());
     }
 
     public void clear() {
         // reader.clearCache();
-        loadedIntervalMap.clear();
+        loadedIntervalCache.clear();
+        packedAlignmentsCache.clear();
     }
 
     public synchronized void loadAlignments(final String chr, final int start, final int end,
@@ -326,8 +338,7 @@ public class AlignmentDataManager implements IAlignmentDataManager{
         if (isLoading || chr.equals(Globals.CHR_ALL)) {
             return;
         }
-
-        //log.info("Load alignments.  isLoading=" + isLoading);
+        loadedIntervalCache.setMaxEntries(2 * FrameManager.getFrames().size());
         isLoading = true;
 
         NamedRunnable runnable = new NamedRunnable() {
@@ -341,21 +352,17 @@ public class AlignmentDataManager implements IAlignmentDataManager{
                 log.debug("Loading alignments: " + chr + ":" + start + "-" + end + " for " + AlignmentDataManager.this);
 
                 AlignmentInterval loadedInterval = loadInterval(chr, start, end, renderOptions);
-                ReferenceFrame frame = context != null ? context.getReferenceFrame() : null;
-                addLoadedInterval(frame, loadedInterval);
+                loadedIntervalCache.put(loadedInterval.getRange(), loadedInterval);
 
+                List<ReferenceFrame> frameList = context != null ? Arrays.asList(context.getReferenceFrame()) : null;
+                repackAlignments(frameList, renderOptions);
                 getEventBus().post(new DataLoadedEvent(context));
 
                 isLoading = false;
             }
         };
-
         LongRunningTask.submit(runnable);
-
-
     }
-
-    static int n = 1;
 
     AlignmentInterval loadInterval(String chr, int start, int end, AlignmentTrack.RenderOptions renderOptions) {
 
@@ -383,21 +390,8 @@ public class AlignmentDataManager implements IAlignmentDataManager{
                 downsampleOptions, peStats, bisulfiteContext, monitor);
 
         List<Alignment> alignments = t.getAlignments();
-
         List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();
-
-        Iterator<Alignment> iter = alignments.iterator();
-
-        final AlignmentPacker alignmentPacker = new AlignmentPacker();
-
-        LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = alignmentPacker.packAlignments(iter, end, renderOptions);
-
-        return new AlignmentInterval(chr, start, end, alignmentRows, t.getCounts(), spliceJunctionHelper, downsampledIntervals, renderOptions);
-    }
-
-    private void addLoadedInterval(ReferenceFrame frame, AlignmentInterval interval) {
-        String frameName = frame != null ? frame.getName() : FrameManager.DEFAULT_FRAME_NAME;
-        loadedIntervalMap.put(frameName, interval);
+        return new AlignmentInterval(chr, start, end, alignments, t.getCounts(), spliceJunctionHelper, downsampledIntervals, renderOptions);
     }
 
     /**
@@ -408,27 +402,22 @@ public class AlignmentDataManager implements IAlignmentDataManager{
      * @param referenceFrame
      * @return alignmentRows, grouped and ordered by key
      */
-    public Map<String, List<AlignmentInterval.Row>> getGroupedAlignmentsContaining(double position, ReferenceFrame referenceFrame) {
+    public PackedAlignments getGroupedAlignmentsContaining(double position, ReferenceFrame referenceFrame) {
         String chr = referenceFrame.getChrName();
         int start = (int) position;
         int end = start + 1;
-        AlignmentInterval loadedInterval = loadedIntervalMap.get(referenceFrame.getName());
-        if (loadedInterval == null) return null;
 
-        if (loadedInterval.getGroupedAlignments() != null && loadedInterval.contains(chr, start, end)) {
-            return loadedInterval.getGroupedAlignments();
+        PackedAlignments packedAlignments = packedAlignmentsCache.getForRange(referenceFrame.getCurrentRange());
+        if (packedAlignments != null && packedAlignments.contains(chr, start, end)) {
+            return packedAlignments;
         }
         return null;
     }
 
     public int getNLevels() {
         int nLevels = 0;
-        for (AlignmentInterval loadedInterval : loadedIntervalMap.values()) {
-            int intervalNLevels = 0;
-            Collection<List<AlignmentInterval.Row>> tmp = loadedInterval.getGroupedAlignments().values();
-            for (List<AlignmentInterval.Row> rows : tmp) {
-                intervalNLevels += rows.size();
-            }
+        for (PackedAlignments packedAlignments : packedAlignmentsCache.values()) {
+            int intervalNLevels = packedAlignments.getNLevels();
             nLevels = Math.max(nLevels, intervalNLevels);
         }
         return nLevels;
@@ -440,8 +429,8 @@ public class AlignmentDataManager implements IAlignmentDataManager{
      */
     public int getMaxGroupCount() {
         int groupCount = 0;
-        for (AlignmentInterval loadedInterval : loadedIntervalMap.values()) {
-            groupCount = Math.max(groupCount, loadedInterval.getGroupCount());
+        for (PackedAlignments packedAlignments : packedAlignmentsCache.values()) {
+            groupCount = Math.max(groupCount, packedAlignments.size());
         }
 
         return groupCount;
@@ -478,9 +467,13 @@ public class AlignmentDataManager implements IAlignmentDataManager{
 
     public void setMinJunctionCoverage(int minJunctionCoverage) {
         this.loadOptions = new SpliceJunctionHelper.LoadOptions(minJunctionCoverage, this.loadOptions.minReadFlankingWidth);
-        for (AlignmentInterval interval : getAllLoadedIntervals()) {
+        for (AlignmentInterval interval : getLoadedIntervals()) {
             interval.getSpliceJunctionHelper().setLoadOptions(this.loadOptions);
         }
+    }
+
+    PositionCache getCache() {
+        return this.loadedIntervalCache;
     }
 
     public static class DownsampleOptions {
@@ -491,15 +484,15 @@ public class AlignmentDataManager implements IAlignmentDataManager{
         public DownsampleOptions() {
             PreferenceManager prefs = PreferenceManager.getInstance();
             init(prefs.getAsBoolean(PreferenceManager.SAM_DOWNSAMPLE_READS),
-                 prefs.getAsInt(PreferenceManager.SAM_SAMPLING_WINDOW),
-                 prefs.getAsInt(PreferenceManager.SAM_SAMPLING_COUNT));
+                    prefs.getAsInt(PreferenceManager.SAM_SAMPLING_WINDOW),
+                    prefs.getAsInt(PreferenceManager.SAM_SAMPLING_COUNT));
         }
 
-        DownsampleOptions(boolean downsample, int sampleWindowSize, int maxReadCount){
+        DownsampleOptions(boolean downsample, int sampleWindowSize, int maxReadCount) {
             init(downsample, sampleWindowSize, maxReadCount);
         }
 
-        private void init(boolean downsample, int sampleWindowSize, int maxReadCount){
+        private void init(boolean downsample, int sampleWindowSize, int maxReadCount) {
             this.downsample = downsample;
             this.sampleWindowSize = sampleWindowSize;
             this.maxReadCount = maxReadCount;

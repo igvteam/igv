@@ -121,6 +121,15 @@ public class FrameManager {
         return frames;
     }
 
+    public static ReferenceFrame getFrame(String frameName){
+        for(ReferenceFrame frame: frames){
+            if(frame.getName().equals(frameName)){
+                return frame;
+            }
+        }
+        return null;
+    }
+
     public static void setFrames(List<ReferenceFrame> f) {
         frames = f;
     }
@@ -140,6 +149,17 @@ public class FrameManager {
         }
         frames.add(getDefaultFrame());
         getDefaultFrame().recordHistory();
+    }
+
+    private static boolean addNewFrame(String searchString){
+        boolean locusAdded = false;
+        Locus locus = getLocus(searchString);
+        if (locus != null) {
+            ReferenceFrame referenceFrame = new ReferenceFrame(searchString);
+            referenceFrame.jumpTo(locus);
+            locusAdded = frames.add(referenceFrame);
+        }
+        return locusAdded;
     }
 
 
@@ -162,13 +182,8 @@ public class FrameManager {
                 }
             } else {
                 for (String searchString : gl.getLoci()) {
-                    Locus locus = getLocus(searchString);
-                    if (locus == null) {
+                    if(!addNewFrame(searchString)){
                         lociNotFound.add(searchString);
-                    } else {
-                        ReferenceFrame referenceFrame = new ReferenceFrame(searchString);
-                        referenceFrame.jumpTo(locus);
-                        frames.add(referenceFrame);
                     }
                 }
             }

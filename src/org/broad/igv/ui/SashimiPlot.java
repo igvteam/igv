@@ -205,6 +205,7 @@ public class SashimiPlot extends JFrame {
 
         getRenderer(trackComponent.track).setDataManager(dataManager);
         getRenderer(trackComponent.track).setCoverageTrack(coverageTrack);
+        getRenderer(trackComponent.track).getCoverageTrack().rescale(trackComponent.frame);
 
         dataManager.setMinJunctionCoverage(minJunctionCoverage);
 
@@ -230,23 +231,11 @@ public class SashimiPlot extends JFrame {
             this.track = track;
         }
 
-
-//        @Override
-//        public String getToolTipText(){
-//            return toolTipText;
-//        }
-
         public void updateToolTipText(TrackClickEvent tce){
             toolTipText = track.getValueStringAt(tce.getFrame().getChrName(), tce.getChromosomePosition(), tce.getMouseEvent().getY(), tce.getFrame());
             toolTipText = "<html>" + toolTipText;
             setToolTipText(toolTipText);
         }
-
-//        @Override
-//        public void setToolTipText(String text){
-//            this.toolTipText = text;
-//            putClientProperty(TOOL_TIP_TEXT_KEY, text);
-//        }
 
         @Override
         public void paintComponent(Graphics g) {

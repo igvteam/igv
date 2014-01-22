@@ -22,6 +22,7 @@ import org.broad.igv.data.CombinedDataSource;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
@@ -553,13 +554,13 @@ public class TrackMenuUtils {
         try {
             AlignmentDataManager dataManager = alignmentTrack.getDataManager();
             ResourceLocator inlocator = dataManager.getLocator();
-            ReferenceFrame.Range range = frame.getCurrentRange();
+            Range range = frame.getCurrentRange();
 
             //Read directly from file
             //return SAMWriter.writeAlignmentFilePicard(inlocator, outPath, range.getChr(), range.getStart(), range.getEnd());
 
             //Export those in memory, overlapping current view
-            return SAMWriter.writeAlignmentFilePicard(dataManager, frame.getName(), outPath, range.getChr(), range.getStart(), range.getEnd());
+            return SAMWriter.writeAlignmentFilePicard(dataManager, outPath, range.getChr(), range.getStart(), range.getEnd());
         } catch (IOException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
@@ -575,7 +576,7 @@ public class TrackMenuUtils {
      * @param tracks
      * @param range
      */
-    static void exportVisibleFeatures(String outPath, Collection<Track> tracks, ReferenceFrame.Range range) {
+    static void exportVisibleFeatures(String outPath, Collection<Track> tracks, Range range) {
         PrintWriter writer;
         try {
             writer = new PrintWriter(outPath);

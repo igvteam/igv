@@ -11,7 +11,7 @@
 
 package org.broad.igv.data.cufflinks;
 
-import org.broad.igv.data.Interval;
+import org.broad.igv.feature.Range;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
@@ -30,13 +30,13 @@ public class ExpDiffCodecTest {
     public void testsamplegene_expdiff() throws Exception{
         String path = TestUtils.DATA_DIR + "cufflinks/sample_gene_exp.diff";
 
-        List<? extends Interval> values = CufflinksParser.parse(path);
+        List<? extends Range> values = CufflinksParser.parse(path);
 
         String[] expGenes = new String[]{"TSPAN6", "TNMD", "DPM1", "SCYL3"};
         int index = 0;
 
         for(String expGene: expGenes){
-            Interval value = values.get(index++);
+            Range value = values.get(index++);
             assertTrue(value instanceof ExpDiffValue);
             assertEquals(expGene, ((ExpDiffValue) value).getGene());
         }

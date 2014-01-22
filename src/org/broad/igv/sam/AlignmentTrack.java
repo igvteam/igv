@@ -23,6 +23,8 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Locus;
+import org.broad.igv.feature.Range;
+import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.lists.GeneList;
@@ -335,7 +337,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         // Might be offscreen
         if (!context.getVisibleRect().intersects(downsampleRect)) return;
 
-        final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame().getName());
+        final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame().getCurrentRange());
         if (loadedInterval == null) return;
 
         Graphics2D g = context.getGraphic2DForColor(Color.black);
@@ -357,7 +359,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private void renderAlignments(RenderContext context, Rectangle inputRect) {
 
         //log.debug("Render features");
-        Map<String, List<AlignmentInterval.Row>> groups = dataManager.getGroups(context, renderOptions);
+        PackedAlignments groups = dataManager.getGroups(context, renderOptions);
 
         Map<String, PEStats> peStats = dataManager.getPEStats();
         if (peStats != null) {
@@ -365,6 +367,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
 
         if (groups == null) {
+            //Assume we are still loading.
+            //This might not always be true
             return;
         }
 
@@ -397,13 +401,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         Graphics2D groupBorderGraphics = context.getGraphic2DForColor(AlignmentRenderer.GROUP_DIVIDER_COLOR);
         int nGroups = groups.size();
         int groupNumber = 0;
-        for (Map.Entry<String, List<AlignmentInterval.Row>> entry : groups.entrySet()) {
-            String group = entry.getKey();
+        for (Map.Entry<String, List<Row>> entry : groups.entrySet()) {
             groupNumber++;
 
             // Loop through the alignment rows for this group
-            List<AlignmentInterval.Row> rows = entry.getValue();
-            for (AlignmentInterval.Row row : rows) {
+            List<Row> rows = entry.getValue();
+            for (Row row : rows) {
 
                 if ((visibleRect != null && y > visibleRect.getMaxY())) {
                     return;
@@ -435,27 +438,29 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     /**
      * Sort alignment rows based on alignments that intersect location
+     * @return Whether sorting was performed. If data is still loading, this will return false
      */
-    public void sortRows(SortOption option, ReferenceFrame referenceFrame, double location, String tag) {
-        dataManager.sortRows(option, referenceFrame.getName(), location, tag);
+    public boolean sortRows(SortOption option, ReferenceFrame referenceFrame, double location, String tag) {
+        return dataManager.sortRows(option, referenceFrame, location, tag);
     }
 
     /**
      * Visually regroup alignments by the provided {@code GroupOption}.
      *
+     *
      * @param option
-     * @param referenceFrame
-     * @see AlignmentDataManager#repackAlignments(String, org.broad.igv.sam.AlignmentTrack.RenderOptions)
+     * @param referenceFrames
+     * @see AlignmentDataManager#repackAlignments
      */
-    public void groupAlignments(GroupOption option, ReferenceFrame referenceFrame) {
+    public void groupAlignments(GroupOption option, List<ReferenceFrame> referenceFrames) {
         if (renderOptions.groupByOption != option) {
             renderOptions.groupByOption = (option == GroupOption.NONE ? null : option);
-            dataManager.repackAlignments(referenceFrame.getName(), renderOptions);
+            dataManager.repackAlignments(referenceFrames, renderOptions);
         }
     }
 
-    public void packAlignments(ReferenceFrame referenceFrame) {
-        dataManager.repackAlignments(referenceFrame.getName(), renderOptions);
+    public void packAlignments(List<ReferenceFrame> referenceFrames) {
+        dataManager.repackAlignments(referenceFrames, renderOptions);
     }
 
     /**
@@ -508,7 +513,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
 
         ArrayList<ArrayList<ReadInfo>> allelereadinfos = new ArrayList<ArrayList<ReadInfo>>();
-        AlignmentInterval interval = dataManager.getLoadedInterval(frame.getName());
+        AlignmentInterval interval = dataManager.getLoadedInterval(frame.getCurrentRange());
         Iterator<Alignment> alignmentIterator = interval.getAlignmentIterator();
         while (alignmentIterator.hasNext()) {
             Alignment alignment = alignmentIterator.next();
@@ -660,7 +665,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 String locus1 = frame.getFormattedLocusString();
 
                 // Generate a locus string for the read mate.  Keep the window width (in base pairs) == to the current range
-                ReferenceFrame.Range range = frame.getCurrentRange();
+                Range range = frame.getCurrentRange();
                 int length = range.getLength();
                 int s2 = Math.max(0, mateStart - length / 2);
                 int e2 = s2 + length;
@@ -670,19 +675,25 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                 Session currentSession = IGV.getInstance().getSession();
 
-                // If we are already in gene list mode add the mate as another panel, otherwise switch to gl mode
-
                 List<String> loci = null;
                 if (FrameManager.isGeneListMode()) {
-                    loci = new ArrayList(FrameManager.getFrames().size());
+                    loci = new ArrayList<String>(FrameManager.getFrames().size());
                     for (ReferenceFrame ref : FrameManager.getFrames()) {
-                        loci.add(ref.getLocusString());
+                        //If the frame-name is a locus, we use it unaltered
+                        //Don't want to reprocess, easy to get off-by-one
+                        String name = ref.getName();
+                        if(Locus.fromString(name) != null){
+                            loci.add(name);
+                        }else{
+                            loci.add(ref.getFormattedLocusString());
+                        }
+
                     }
                     loci.add(mateLocus);
                 } else {
                     loci = Arrays.asList(locus1, mateLocus);
                 }
-                GeneList.sortByPosition(loci);
+
                 StringBuffer listName = new StringBuffer();
                 for (String s : loci) {
                     listName.append(s + "   ");
@@ -690,8 +701,21 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                 GeneList geneList = new GeneList(listName.toString(), loci, false);
                 currentSession.setCurrentGeneList(geneList);
-                IGV.getInstance().resetFrames();
 
+                Comparator<String> geneListComparator = new Comparator<String>() {
+                    @Override
+                    public int compare(String n0, String n1) {
+                        ReferenceFrame f0 = FrameManager.getFrame(n0);
+                        ReferenceFrame f1 = FrameManager.getFrame(n1);
+                        int chrComp = ChromosomeNameComparator.get().compare(f0.getChrName(), f1.getChrName());
+                        if(chrComp != 0) return chrComp;
+                        return f0.getCurrentRange().getStart() - f1.getCurrentRange().getStart();
+                    }
+                };
+
+                //Need to sort the frames by position
+                currentSession.sortGeneList(geneListComparator);
+                IGV.getInstance().resetFrames();
             } else {
                 MessageUtils.showMessage("Alignment does not have mate, or it is not mapped.");
             }
@@ -724,7 +748,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
         if (downsampleRect != null && y > downsampleRect.y && y <= downsampleRect.y + downsampleRect.height) {
-            AlignmentInterval loadedInterval = dataManager.getLoadedInterval(frame.getName());
+            AlignmentInterval loadedInterval = dataManager.getLoadedInterval(frame.getCurrentRange());
             if (loadedInterval == null) {
                 return null;
             } else {
@@ -772,7 +796,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         if (alignmentsRect == null) {
             return null;   // <= not loaded yet
         }
-        Map<String, List<AlignmentInterval.Row>> groups = dataManager.getGroupedAlignmentsContaining(position, frame);
+        PackedAlignments groups = dataManager.getGroupedAlignmentsContaining(position, frame);
 
         if (groups == null || groups.isEmpty()) {
             return null;
@@ -787,11 +811,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         int startY = alignmentsRect.y;
         final boolean leaveMargin = getDisplayMode() == DisplayMode.EXPANDED;
 
-        for (List<AlignmentInterval.Row> rows : groups.values()) {
+        for (List<Row> rows : groups.values()) {
             int endY = startY + rows.size() * h;
             if (y >= startY && y < endY) {
                 int levelNumber = (y - startY) / h;
-                AlignmentInterval.Row row = rows.get(levelNumber);
+                Row row = rows.get(levelNumber);
                 List<Alignment> features = row.alignments;
 
                 // No buffer for alignments,  you must zoom in far enough for them to be visible
@@ -970,9 +994,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
 
         renderOptions.setPairedArcView(option);
-        for (ReferenceFrame frame : FrameManager.getFrames()) {
-            dataManager.repackAlignments(frame.getName(), renderOptions);
-        }
+        dataManager.repackAlignments(FrameManager.getFrames(), renderOptions);
         refresh();
     }
 
@@ -1255,7 +1277,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             TrackMenuUtils.addDisplayModeItems(tracks, this);
 
             addSeparator();
-            addSelecteByNameItem();
+            addSelectByNameItem();
             addClearSelectionsMenuItem();
 
             addSeparator();
@@ -1319,7 +1341,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                         MessageUtils.showMessage("Cannot export region more than 1 Megabase");
                         return;
                     }
-                    AlignmentInterval interval = dataManager.getLoadedInterval(frame.getName());
+                    AlignmentInterval interval = dataManager.getLoadedInterval(frame.getCurrentRange());
                     AlignmentCounts counts = interval.getCounts();
                     String text = PFMExporter.createPFMText(counts, frame.getChrName(), start, end);
                     StringUtils.copyTextToClipboard(text);
@@ -1375,7 +1397,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         }
 
-        public void addSelecteByNameItem() {
+        public void addSelectByNameItem() {
             // Change track height by attribute
             JMenuItem item = new JMenuItem("Select by name...");
             item.addActionListener(new ActionListener() {
@@ -1440,9 +1462,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                 public void actionPerformed(ActionEvent aEvt) {
                     String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getGroupByTag());
-                    renderOptions.setGroupByTag(tag);
-                    IGV.getInstance().groupAlignmentTracks(GroupOption.TAG);
-                    refresh();
+                    if(tag != null && tag.trim().length() > 0){
+                        renderOptions.setGroupByTag(tag);
+                        IGV.getInstance().groupAlignmentTracks(GroupOption.TAG);
+                        refresh();
+                    }
 
                 }
             });
@@ -1497,8 +1521,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                 public void actionPerformed(ActionEvent aEvt) {
                     String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getSortByTag());
-                    renderOptions.setSortByTag(tag);
-                    sortAlignmentTracks(SortOption.TAG, tag);
+                    if(tag != null && tag.trim().length() > 0){
+                        renderOptions.setSortByTag(tag);
+                        sortAlignmentTracks(SortOption.TAG, tag);
+                    }
                 }
             });
             sortMenu.add(tagOption);
@@ -1578,9 +1604,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 public void actionPerformed(ActionEvent aEvt) {
                     setColorOption(ColorOption.TAG);
                     String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getColorByTag());
-                    renderOptions.setColorByTag(tag);
-                    PreferenceManager.getInstance();
-                    refresh();
+                    if(tag != null && tag.trim().length() > 0){
+                        renderOptions.setColorByTag(tag);
+                        PreferenceManager.getInstance();
+                        refresh();
+                    }
                 }
             });
             colorMenu.add(tagOption);

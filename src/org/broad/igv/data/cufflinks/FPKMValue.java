@@ -11,7 +11,7 @@
 
 package org.broad.igv.data.cufflinks;
 
-import org.broad.igv.data.Interval;
+import org.broad.igv.feature.Range;
 
 /**
  * Represents a cufflinks value from any of a fpkm tracking file as described here
@@ -20,7 +20,7 @@ import org.broad.igv.data.Interval;
  *         Date: 3/8/13
  *         Time: 2:37 PM
  */
-public class FPKMValue extends Interval {
+public class FPKMValue extends Range {
 
     float[] fpkm;
     float[] fpkmLo;

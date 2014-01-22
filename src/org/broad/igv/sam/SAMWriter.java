@@ -15,6 +15,7 @@ import com.google.java.contract.util.Objects;
 import net.sf.samtools.*;
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.commons.lang.StringUtils;
+import org.broad.igv.feature.Range;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.util.ResourceLocator;
@@ -226,7 +227,7 @@ public class SAMWriter {
      * @return
      * @throws IOException
      */
-    public static int writeAlignmentFilePicard(AlignmentDataManager dataManager, String frameName, String outPath,
+    public static int writeAlignmentFilePicard(AlignmentDataManager dataManager, String outPath,
                                                String sequence, int start, int end) throws IOException{
 
         ResourceLocator inlocator = dataManager.getLocator();
@@ -234,7 +235,8 @@ public class SAMWriter {
 
         final SAMFileHeader fileHeader = dataManager.getReader().getFileHeader();
 
-        Iterator<Alignment> iter = dataManager.getLoadedInterval(frameName).getAlignmentIterator();
+        Range range = new Range(sequence, start, end);
+        Iterator<Alignment> iter = dataManager.getLoadedInterval(range).getAlignmentIterator();
         Iterator<SamAlignment> samIter = new SamAlignmentIterable(iter, sequence, start, end);
 
         SAMWriter writer = new SAMWriter(fileHeader);

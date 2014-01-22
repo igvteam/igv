@@ -24,7 +24,6 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.ObjectCache;
 import org.broad.igv.util.RuntimeUtils;
-import org.broad.igv.util.collections.LRUCache;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -260,7 +259,6 @@ public class AlignmentTileLoader {
 
     private static synchronized boolean memoryTooLow() {
         if (RuntimeUtils.getAvailableMemoryFraction() < 0.2) {
-            LRUCache.clearCaches();
             System.gc();
             if (RuntimeUtils.getAvailableMemoryFraction() < 0.2) {
                 String msg = "Memory is low, reading terminating.";
@@ -554,7 +552,7 @@ public class AlignmentTileLoader {
         /**
          * Map-like structure designed to be accessible both by key, and by numeric index
          * Multiple values are stored for each key, and a list is returned
-         * If the key for a value is set as null, nothing can be added
+         * If the value for a key is set as null, nothing can be added
          *
          * Intended to support downsampling, where if a read name is added and then removed
          * we don't want to add the read pair

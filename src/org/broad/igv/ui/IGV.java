@@ -54,7 +54,6 @@ import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.*;
-import org.broad.igv.util.collections.LRUCache;
 import org.broad.igv.variant.VariantTrack;
 
 import javax.swing.*;
@@ -1193,8 +1192,7 @@ public class IGV {
      * @param sessionPath
      */
     public void resetSession(String sessionPath) {
-
-        LRUCache.clearCaches();
+        System.gc();
 
         AttributeManager.getInstance().clearAllAttributes();
 
@@ -1221,6 +1219,7 @@ public class IGV {
 
         doRefresh();
 
+        System.gc();
     }
 
     /**
@@ -1423,7 +1422,7 @@ public class IGV {
 
 
             mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
-            LRUCache.clearCaches();
+            System.gc();
 
 
             double[] dividerFractions = session.getDividerFractions();
@@ -1877,20 +1876,22 @@ public class IGV {
     }
 
 
-    public void sortAlignmentTracks(AlignmentTrack.SortOption option, String tag) {
-        sortAlignmentTracks(option, null, tag);
+    public boolean sortAlignmentTracks(AlignmentTrack.SortOption option, String tag) {
+        return sortAlignmentTracks(option, null, tag);
     }
 
-    public void sortAlignmentTracks(AlignmentTrack.SortOption option, Double location, String tag) {
+    public boolean sortAlignmentTracks(AlignmentTrack.SortOption option, Double location, String tag) {
         double actloc;
+        boolean toRet = true;
         for (Track t : getAllTracks()) {
             if (t instanceof AlignmentTrack) {
                 for (ReferenceFrame frame : FrameManager.getFrames()) {
                     actloc = location != null ? location : frame.getCenter();
-                    ((AlignmentTrack) t).sortRows(option, frame, actloc, tag);
+                    toRet &= ((AlignmentTrack) t).sortRows(option, frame, actloc, tag);
                 }
             }
         }
+        return toRet;
     }
 
     /**
@@ -1902,9 +1903,7 @@ public class IGV {
     public void groupAlignmentTracks(AlignmentTrack.GroupOption option) {
         for (Track t : getAllTracks()) {
             if (t instanceof AlignmentTrack) {
-                for (ReferenceFrame frame : FrameManager.getFrames()) {
-                    ((AlignmentTrack) t).groupAlignments(option, frame);
-                }
+                ((AlignmentTrack) t).groupAlignments(option, FrameManager.getFrames());
             }
         }
     }
@@ -1912,9 +1911,7 @@ public class IGV {
     public void packAlignmentTracks() {
         for (Track t : getAllTracks()) {
             if (t instanceof AlignmentTrack) {
-                for (ReferenceFrame frame : FrameManager.getFrames()) {
-                    ((AlignmentTrack) t).packAlignments(frame);
-                }
+                ((AlignmentTrack) t).packAlignments(FrameManager.getFrames());
             }
         }
     }

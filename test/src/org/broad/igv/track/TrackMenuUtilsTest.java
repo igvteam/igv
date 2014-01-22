@@ -14,8 +14,8 @@ package org.broad.igv.track;
 import com.google.common.base.Predicate;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.FeatureUtils;
+import org.broad.igv.feature.Range;
 import org.broad.igv.feature.tribble.CodecFactory;
-import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.AbstractFeatureReader;
@@ -47,7 +47,7 @@ public class TrackMenuUtilsTest extends AbstractHeadlessTest {
         int end = 350;
 
         Predicate<Feature> overlapPred = FeatureUtils.getOverlapPredicate(chr, start, end);
-        ReferenceFrame.Range range = new ReferenceFrame.Range(chr, start, end);
+        Range range = new Range(chr, start, end);
 
         TrackMenuUtils.exportVisibleFeatures(outPath, loadedTrack, range);
 

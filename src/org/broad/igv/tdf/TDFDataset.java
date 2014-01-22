@@ -41,7 +41,7 @@ public class TDFDataset extends TDFEntity {
     long[] tilePositions;  // File position in TDF file
     int[] tileSizes;       // Tile size in bytes
     int nTiles;
-    LRUCache<String, TDFTile> cache = new LRUCache(this, 20);
+    LRUCache<String, TDFTile> cache = new LRUCache(20);
     // TODO -- refactor this dependency out
     TDFReader reader;
 

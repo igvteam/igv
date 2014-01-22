@@ -11,15 +11,15 @@
 
 package org.broad.igv.data.cufflinks;
 
-import org.broad.igv.data.Interval;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.Range;
 
 /**
  * @author jrobinso
  *         Date: 3/8/13
  *         Time: 9:32 PM
  */
-abstract public class CufflinksValue extends Interval implements LocusScore {
+abstract public class CufflinksValue extends Range implements LocusScore {
     String gene;
 
     public CufflinksValue(String chr, int start, int end, String gene) {

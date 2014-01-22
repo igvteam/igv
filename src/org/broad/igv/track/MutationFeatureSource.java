@@ -11,9 +11,9 @@
 
 package org.broad.igv.track;
 
-import org.broad.igv.data.Interval;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Mutation;
+import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.util.ResourceLocator;
@@ -61,7 +61,7 @@ public class MutationFeatureSource implements FeatureSource<Mutation> {
 
     static public class MutationDataManager {
 
-        Interval currentInterval;
+        Range currentRange;
         Map<String, List<Mutation>> featureMap = Collections.synchronizedMap(new HashMap());
         TribbleFeatureSource tribbleFeatureSource;
 
@@ -70,7 +70,7 @@ public class MutationFeatureSource implements FeatureSource<Mutation> {
         }
 
         synchronized Iterator<Mutation> getFeatures(String trackKey, String chr, int start, int end) throws IOException {
-            if (currentInterval == null || !currentInterval.contains(chr, start, end)) {
+            if (currentRange == null || !currentRange.contains(chr, start, end)) {
                 Iterator<Feature> features = tribbleFeatureSource.getFeatures(chr, start, end);
 
                 while (features.hasNext()) {
@@ -82,7 +82,7 @@ public class MutationFeatureSource implements FeatureSource<Mutation> {
                         featureMap.put(thisKey, keyFeatures);
                     }
                     keyFeatures.add(feat);
-                    currentInterval = new Interval(chr, start, end);
+                    currentRange = new Range(chr, start, end);
                 }
 
             }
