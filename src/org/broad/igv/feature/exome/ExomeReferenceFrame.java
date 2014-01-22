@@ -60,7 +60,7 @@ public class ExomeReferenceFrame extends ReferenceFrame {
             String chr = chromosome.getName();
             List<Feature> features = geneTrack.getFeatures(chr, 0, chromosome.getLength());
             if (features != null && features.size() > 0) {
-                createExomBlockData(chr, features);
+                createExomeBlockData(chr, features);
             }
 
         }
@@ -70,13 +70,13 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         for (String chr : featureMap.keySet()) {
             List<Feature> features = featureMap.get(chr);
             if (features.size() > 0) {
-                createExomBlockData(chr, features);
+                createExomeBlockData(chr, features);
             }
 
         }
     }
 
-    private void createExomBlockData(String chr, List<Feature> features) {
+    private void createExomeBlockData(String chr, List<Feature> features) {
         List<ExomeBlock> blocks = ExomeUtils.collapseTranscripts(features);
         List<Gene> genes = ExomeUtils.collapseToGenes(features);
         ExomeData exomeData = new ExomeData(blocks, genes);
