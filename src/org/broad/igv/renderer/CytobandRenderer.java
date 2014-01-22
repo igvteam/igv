@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 /*
@@ -26,12 +19,11 @@
  */
 package org.broad.igv.renderer;
 
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Cytoband;
-import org.broad.igv.ui.panel.FrameManager;
-import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.ReferenceFrame;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -59,43 +51,29 @@ public class CytobandRenderer {
                 String locus = frame.getChrName();
                 if (locus != null) {
                     Graphics g2 = g2D.create();
-
-                    //Color c = ChromosomeColors.getColor(locus);
-                    //g2.setColor(c);
                     g2.setFont(FontManager.getFont(Font.BOLD, 11));
                     g2.drawString(locus, 3, 11);
-
-
-                    /*int range = frame.getCurrentRange().getLength();
-                    RulerPanel.TickSpacing ts = RulerPanel.findSpacing(frame, range);
-                    String rangeString = RulerPanel.formatNumber((double) range / ts.getUnitMultiplier()) + " " + ts.getMajorUnit();
-                    FontMetrics fm = g2.getFontMetrics();
-                    int rw = (int) fm.getStringBounds(rangeString, g2).getWidth();
-                    int rx = frame.getWidthInPixels() - rw - 3;
-                    g2.drawString(rangeString, rx, 11);
-                    */
-
                     g2.dispose();
                 }
 
             }
 
             // Draw Cytoband
-            drawBands(data, g2D, graphicRect, frame);
+            drawBands(data, g2D, graphicRect, frame.getMaxCoordinate());
 
             // Draw Cytoband Labels
             if (drawLabels && !FrameManager.isGeneListMode()) {
-                drawLabels(g2D, graphicRect, frame);
+                drawLabels(g2D, graphicRect, data, frame.getMaxCoordinate());
             }
         }
     }
 
-    public void drawBands(List<Cytoband> data, Graphics g2D, Rectangle graphicRect, ReferenceFrame frame) {
+    public void drawBands(List<Cytoband> data, Graphics g2D, Rectangle graphicRect, int chromoLength) {
 
         int[] xC = new int[3];
         int[] yC = new int[3];
 
-        double scale = graphicRect.getWidth() / frame.getChromosomeLength();
+        double scale = graphicRect.getWidth() / chromoLength;
 
         int lastPX = -1;
         for (Cytoband cytoband : data) {
@@ -139,7 +117,7 @@ public class CytobandRenderer {
         }
     }
 
-    private void drawLabels(final Graphics g, Rectangle graphicRect, ReferenceFrame frame) {
+    private void drawLabels(final Graphics g, Rectangle graphicRect, List<Cytoband> cytobands, int chromoLength) {
 
         double width = graphicRect.getWidth();
         int y = (int) graphicRect.getY() + LABEL_OFFSET;
@@ -149,9 +127,8 @@ public class CytobandRenderer {
         FontMetrics fm = g.getFontMetrics();
         int minSpacing = 10;
         int prevEnd = 0;
-        double sc = width / frame.getChromosomeLength();
+        double sc = width / chromoLength;
         int adjustedY = y;
-        final List<Cytoband> cytobands = frame.getChromosome().getCytobands();
         if (cytobands != null) {
             for (Cytoband cytoband : cytobands) {
                 int s = (int) (sc * cytoband.getStart());

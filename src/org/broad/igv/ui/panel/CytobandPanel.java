@@ -86,10 +86,6 @@ public class CytobandPanel extends JPanel {
         }
 
         if (frame.getChrName().equals(Globals.CHR_ALL) || getWidth() < 10) {
-            //Graphics g2 = g.create();
-            //g2.setFont(FontManager.getScalableFont(Font.ITALIC, 12));
-            //String text = "Whole genome view.  To jump to a chromosome click on its label.";
-            //g2.drawString(text, 20, getHeight() - 5);
             return;
         }
 
@@ -107,30 +103,29 @@ public class CytobandPanel extends JPanel {
 
         cytobandRenderer.draw(currentCytobands, g, cytoRect, frame);
 
-        int chromosomeLength = getReferenceFrame().getChromosomeLength();
+        int chromosomeLength = getReferenceFrame().getMaxCoordinate();
         cytobandScale = ((double) chromosomeLength) / dataPanelWidth;
 
         // The test is true if we are zoomed in
         if (getReferenceFrame().getZoom() > 0) {
 
-            double scale = getReferenceFrame().getScale();
-
             double origin = isDragging ? viewOrigin : getReferenceFrame().getOrigin();
+            double end = isDragging ? viewEnd : getReferenceFrame().getEnd();
 
-            int start = (int) (origin / cytobandScale);
-            double scaledDataPanelWidth = dataPanelWidth * scale;
-            int span = (int) (scaledDataPanelWidth / cytobandScale);
+            int pixelStart = (int) (origin / cytobandScale);
+            int pixelEnd = (int) (end / cytobandScale);
+            int pixelSpan = Math.max(0, pixelEnd - pixelStart);
 
             // Draw Cytoband current region viewer
             int height = (int) cytoRect.getHeight();
             g.setColor(Color.RED);
             int y = (int) (cytoRect.getY()) + CytobandRenderer.CYTOBAND_Y_OFFSET;
-            currentRegionRect = new Rectangle(start - 2, y, span + 4, height);
-            g.drawRect(start, y, span, height);
-            g.drawRect(start - 1, (y - 1), span + 2, height + 2);
-            g.drawRect(start - 2, (y - 2), span + 4, height + 4);
-            if (span < 2) {
-                g.drawRect(start - 2, (y - 2), span + 4, height + 4);
+            currentRegionRect = new Rectangle(pixelStart - 2, y, pixelSpan + 4, height);
+            g.drawRect(pixelStart, y, pixelSpan, height);
+            g.drawRect(pixelStart - 1, (y - 1), pixelSpan + 2, height + 2);
+            g.drawRect(pixelStart - 2, (y - 2), pixelSpan + 4, height + 4);
+            if (pixelSpan < 2) {
+                g.drawRect(pixelStart - 2, (y - 2), pixelSpan + 4, height + 4);
             }
         }
     }
