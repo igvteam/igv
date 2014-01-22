@@ -47,6 +47,8 @@ public class VariantReviewPlugin implements IGVPlugin{
 
     private static boolean hasReviewTrack = false;
     private static boolean showReviewOption = Boolean.parseBoolean(IGV.getInstance().getSession().getPersistent(SHOW_REVIEW_KEY, "false"));
+    private static final String VARIANT_DB_EXT = "variant.db.json";
+    private static ResourceLocator defaultLocator;
 
     @Override
     public void init(){
@@ -61,7 +63,7 @@ public class VariantReviewPlugin implements IGVPlugin{
             NA12878DBArgumentCollection col = new NA12878DBArgumentCollection();
             initMenuItems();
 
-            TrackLoader.registerHandler("variant.db.json", new TrackLoadHandler());
+            TrackLoader.registerHandler(VARIANT_DB_EXT, new TrackLoadHandler());
         }
     }
 
@@ -78,11 +80,11 @@ public class VariantReviewPlugin implements IGVPlugin{
         return (track instanceof VariantTrack);
     }
 
-    private static void loadVariantReviewTrack(String dbSpecPath,java.util.List<Track> newTracks, String trackName){
+    private static ResourceLocator loadVariantReviewTrack(String dbSpecPath,java.util.List<Track> newTracks, String trackName){
         ResourceLocator locator = new ResourceLocator(dbSpecPath);
         locator.setName(trackName);
         VariantReviewSource.loadVariantReview(locator, newTracks);
-
+        return locator;
     }
 
     private void initMenuItems() {
@@ -94,7 +96,8 @@ public class VariantReviewPlugin implements IGVPlugin{
             @Override
             public void actionPerformed(ActionEvent e) {
                 java.util.List<Track> newTracks = new ArrayList<Track>(1);
-                loadVariantReviewTrack(VariantReviewPlugin.getDbSpecPath(), newTracks, "NA12878 KB");
+                ResourceLocator locator = loadVariantReviewTrack(VariantReviewPlugin.getDbSpecPath(), newTracks, "NA12878 KB");
+                if(defaultLocator == null) defaultLocator = locator;
                 IGV.getInstance().addTracks(newTracks, PanelName.DATA_PANEL);
                 hasReviewTrack = true;
                 loadReviewTrackItem.setEnabled(!hasReviewTrack);
@@ -114,13 +117,19 @@ public class VariantReviewPlugin implements IGVPlugin{
                 final VariantTrack vTrack = (VariantTrack) track;
                 final Variant variant = vTrack.getSelectedVariant(te);
 
-                String dbName = vTrack.getResourceLocator().getName();
+                ResourceLocator trackLocator = vTrack.getResourceLocator();
+                //If the track isn't connected to a database, use the default
+                if(!trackLocator.getPath().toLowerCase().endsWith(VARIANT_DB_EXT) && defaultLocator != null){
+                    trackLocator = defaultLocator;
+                }
+                String dbName = trackLocator.getName();
+                final String dbSpecPath = trackLocator.getPath();
                 JMenuItem addReviewMenuItem = new JMenuItem("Submit Review to " + dbName);
                 addReviewMenuItem.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         VariantContext vc = VCFVariant.getVariantContext(variant);
-                        (new VariantReviewDialog(IGV.getMainFrame(), vc, vTrack.getResourceLocator().getPath())).setVisible(true);
+                        (new VariantReviewDialog(IGV.getMainFrame(), vc, dbSpecPath)).setVisible(true);
                     }
                 });
                 addReviewMenuItem.setEnabled(variant != null);
@@ -164,7 +173,8 @@ public class VariantReviewPlugin implements IGVPlugin{
         public void load(String path, List<Track> newTracks) throws IOException {
             //TODO Put the track name in the dbSpec
             String name = Utilities.getFileNameFromURL(path);
-            loadVariantReviewTrack(path, newTracks, name);
+            ResourceLocator locator = loadVariantReviewTrack(path, newTracks, name);
+            if(defaultLocator == null) defaultLocator = locator;
         }
     }
 
