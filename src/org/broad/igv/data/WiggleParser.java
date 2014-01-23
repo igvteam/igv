@@ -46,6 +46,9 @@ public class WiggleParser {
 
     protected Genome genome;
 
+    /**
+     * Parset dataset. Chromosome names have been aliased using the input genome
+     */
     WiggleDataset dataset;
     /**
      * The type of wiggle locator (see UCSC documentation).
@@ -65,6 +68,9 @@ public class WiggleParser {
     IntArrayList endLocations = null;
     FloatArrayList data = null;
     protected ResourceLocator resourceLocator;
+    /**
+     * Set of unsorted chromosomes, BEFORE ALIASING
+     */
     protected Set<String> unsortedChromosomes;
     int estArraySize;
     Map<String, Integer> longestFeatureMap = new HashMap();
@@ -188,7 +194,6 @@ public class WiggleParser {
                                 chr = tokens[1].trim();
                                 if (!chr.equals(lastChr)) {
                                     changedChromosome(dataset, lastChr);
-
                                 }
                                 lastChr = chr;
 
@@ -221,6 +226,11 @@ public class WiggleParser {
                                 chr = tokens[chrColumn].trim();
                                 if (!chr.equals(lastChr)) {
                                     changedChromosome(dataset, lastChr);
+                                    //If we are seeing this chromosome again with something
+                                    //in-between, assume it's unsorted
+                                    if(dataset.containsChromosome(chr)){
+                                        unsortedChromosomes.add(chr);
+                                    }
 
                                 }
                                 lastChr = chr;

@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 /*
  * To change this template, choose Tools | Templates
@@ -24,12 +17,12 @@ package org.broad.igv.data;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.util.collections.FloatArrayList;
-import org.broad.igv.util.collections.IntArrayList;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.ArrayHeapIntSorter;
 import org.broad.igv.util.IntComparator;
+import org.broad.igv.util.collections.FloatArrayList;
+import org.broad.igv.util.collections.IntArrayList;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -62,13 +55,9 @@ public class WiggleDataset implements Dataset {
 
     }
 
-
-    // TODO -- keep track of sortedness as data is loaded and skip this sort if unneccessary.
-
     public void sort(Set<String> unsortedChromosomes) {
         for (String c : unsortedChromosomes) {
             String chr = genome.getChromosomeAlias(c);
-
 
             final IntArrayList starts = startLocationsMap.get(chr);
             int sz = starts.size();
@@ -181,6 +170,11 @@ public class WiggleDataset implements Dataset {
 
     public String[] getChromosomes() {
         return startLocationsMap.keySet().toArray(new String[]{});
+    }
+
+    boolean containsChromosome(String chr){
+        String datChr = this.genome != null ? genome.getChromosomeAlias(chr) : chr;
+        return startLocationsMap.containsKey(datChr);
     }
 
 
