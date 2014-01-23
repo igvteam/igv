@@ -52,7 +52,6 @@ public class WiggleDataset implements Dataset {
         this.genome = genome;
         this.name = name;
         this.trackProperties = new TrackProperties();
-
     }
 
     public void sort(Set<String> unsortedChromosomes) {
@@ -62,12 +61,12 @@ public class WiggleDataset implements Dataset {
             final IntArrayList starts = startLocationsMap.get(chr);
             int sz = starts.size();
 
-            int[] indeces = new int[sz];
-            for (int i = 0; i < indeces.length; i++) {
-                indeces[i] = i;
+            int[] indices = new int[sz];
+            for (int i = 0; i < indices.length; i++) {
+                indices[i] = i;
             }
 
-            (new ArrayHeapIntSorter()).sort(indeces, new IntComparator() {
+            (new ArrayHeapIntSorter()).sort(indices, new IntComparator() {
 
                 public int compare(int arg0, int arg1) {
                     return starts.get(arg0) - starts.get(arg1);
@@ -75,9 +74,9 @@ public class WiggleDataset implements Dataset {
             });
 
 
-            int[] sortedStarts = reorder(indeces, startLocationsMap.get(chr));
-            int[] sortedEnds = reorder(indeces, endLocationsMap.get(chr));
-            float[] sortedData = reorder(indeces, dataMap.get(chr));
+            int[] sortedStarts = reorder(indices, startLocationsMap.get(chr));
+            int[] sortedEnds = reorder(indices, endLocationsMap.get(chr));
+            float[] sortedData = reorder(indices, dataMap.get(chr));
 
             startLocationsMap.put(chr, new IntArrayList(sortedStarts));
             endLocationsMap.put(chr, new IntArrayList(sortedEnds));
@@ -86,28 +85,28 @@ public class WiggleDataset implements Dataset {
 
     }
 
-    private float[] reorder(int[] indeces, FloatArrayList values) {
+    private float[] reorder(int[] indices, FloatArrayList values) {
         int size = values.size();
-        if (indeces.length != size) {
+        if (indices.length != size) {
             throw new IllegalArgumentException(
                     "Index array length not equal to size");
         }
         float[] reorderedValues = new float[size];
         for (int i = 0; i < size; i++) {
-            reorderedValues[i] = values.get(indeces[i]);
+            reorderedValues[i] = values.get(indices[i]);
         }
         return reorderedValues;
     }
 
-    private int[] reorder(int[] indeces, IntArrayList values) {
+    private int[] reorder(int[] indices, IntArrayList values) {
         int size = values.size();
-        if (indeces.length != size) {
+        if (indices.length != size) {
             throw new IllegalArgumentException(
                     "Index array length not equal to size");
         }
         int[] reorderedValues = new int[size];
         for (int i = 0; i < size; i++) {
-            reorderedValues[i] = values.get(indeces[i]);
+            reorderedValues[i] = values.get(indices[i]);
         }
         return reorderedValues;
     }
@@ -118,7 +117,6 @@ public class WiggleDataset implements Dataset {
         if (startLocations == null) {
             this.startLocationsMap.put(chr, starts);
         } else {
-            //starts.trimToSize();
             startLocations.addAll(starts);
         }
 
@@ -127,7 +125,6 @@ public class WiggleDataset implements Dataset {
             if (endLocations == null) {
                 this.endLocationsMap.put(chr, ends);
             } else {
-                //ends.trimToSize();
                 endLocations.addAll(ends);
             }
         }
