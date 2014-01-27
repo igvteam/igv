@@ -412,9 +412,15 @@ public class DirectoryManager {
     public static void initializeLog() {
 
         Logger logger = Logger.getRootLogger();
-
+        ConsoleAppender consoleAppender = new ConsoleAppender();
+        //Add console appender so we at least do some logging, somewhere,
+        //during this initialization process
         PatternLayout layout = new PatternLayout();
         layout.setConversionPattern("%p [%d{ISO8601}] [%F:%L]  %m%n");
+        consoleAppender.setLayout(layout);
+        consoleAppender.setThreshold(Level.ALL);
+        logger.addAppender(consoleAppender);
+
 
         // Create a log file that is ready to have text appended to it
         try {
@@ -429,13 +435,12 @@ public class DirectoryManager {
             appender.setAppend(true);
             appender.activateOptions();
             logger.addAppender(appender);
-
+            //If we make it here, we don't need to log to console
+            logger.removeAppender(consoleAppender);
         } catch (IOException e) {
             // Can't create log file, just log to console
             System.err.println("Error creating log file");
             e.printStackTrace();
-            ConsoleAppender consoleAppender = new ConsoleAppender();
-            logger.addAppender(consoleAppender);
         }
     }
 }
