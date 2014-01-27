@@ -55,7 +55,7 @@ public class DirectoryManager {
      */
     public static synchronized File getUserDirectory() {
         if (USER_DIRECTORY == null) {
-            System.out.print("Fetching user directory... ");
+            log.info("Fetching user directory... ");
             USER_DIRECTORY = FileSystemView.getFileSystemView().getDefaultDirectory();
             //Mostly for testing, in some environments USER_DIRECTORY can be null
             if (USER_DIRECTORY == null) {
@@ -104,7 +104,7 @@ public class DirectoryManager {
                     try {
                         boolean wasSuccessful = IGV_DIRECTORY.mkdir();
                         if (!wasSuccessful) {
-                            System.err.println("Failed to create user directory!");
+                            log.error("Failed to create user directory!");
                             IGV_DIRECTORY = null;
                         }
                     } catch (Exception e) {
@@ -168,8 +168,7 @@ public class DirectoryManager {
         } catch (Exception e) {
             userPrefs.remove(IGV_DIR_USERPREF);
             override = null;
-            System.err.println("Error creating user directory");
-            e.printStackTrace();
+            log.error("Error creating user directory", e);
         }
         return override;
     }
@@ -412,15 +411,13 @@ public class DirectoryManager {
     public static void initializeLog() {
 
         Logger logger = Logger.getRootLogger();
-        ConsoleAppender consoleAppender = new ConsoleAppender();
-        //Add console appender so we at least do some logging, somewhere,
-        //during this initialization process
         PatternLayout layout = new PatternLayout();
         layout.setConversionPattern("%p [%d{ISO8601}] [%F:%L]  %m%n");
-        consoleAppender.setLayout(layout);
-        consoleAppender.setThreshold(Level.ALL);
-        logger.addAppender(consoleAppender);
 
+        //Temp appender just used while initializing log
+        //If something goes wrong here we want a log of it
+        ConsoleAppender tempAppender = new ConsoleAppender(layout, "System.err");
+        logger.addAppender(tempAppender);
 
         // Create a log file that is ready to have text appended to it
         try {
@@ -428,6 +425,7 @@ public class DirectoryManager {
             RollingFileAppender appender = new RollingFileAppender();
             appender.setName("IGV_ROLLING_APPENDER");
             appender.setFile(logFile.getAbsolutePath());
+            //Will actually inherit from root logger
             appender.setThreshold(Level.ALL);
             appender.setMaxFileSize("1000KB");
             appender.setMaxBackupIndex(1);
@@ -435,12 +433,10 @@ public class DirectoryManager {
             appender.setAppend(true);
             appender.activateOptions();
             logger.addAppender(appender);
-            //If we make it here, we don't need to log to console
-            logger.removeAppender(consoleAppender);
+            logger.removeAppender(tempAppender);
         } catch (IOException e) {
-            // Can't create log file, just log to console
-            System.err.println("Error creating log file");
-            e.printStackTrace();
+            // Can't create log file, just log to console as set in log4j.properties
+            log.error("Error creating log file", e);
         }
     }
 }
