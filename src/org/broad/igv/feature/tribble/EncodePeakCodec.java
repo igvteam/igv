@@ -40,12 +40,12 @@ public class EncodePeakCodec extends UCSCCodec {
     }
 
     public EncodePeakCodec(Genome genome) {
-        super(BasicFeature.class);
+        super(EncodePeakFeature.class);
         this.genome = genome;
     }
 
     @Override
-    public Feature decode(String nextLine) {
+    public EncodePeakFeature decode(String nextLine) {
 
 
         if (nextLine.trim().length() == 0) {
@@ -60,8 +60,6 @@ public class EncodePeakCodec extends UCSCCodec {
 
         int tokenCount = tokens.length;
 
-        // The first 3 columns are non optional for BED.  We will relax this
-        // and only require 2.
 
         if (tokenCount < 9) {
             return null;
@@ -94,20 +92,9 @@ public class EncodePeakCodec extends UCSCCodec {
 
 
         // Store the remaining features in description string */
-        StringBuffer desc = new StringBuffer();
-        desc.append("Signal value: " + tokens[6]);
-        desc.append("<br>P value: " + tokens[7]);
-        desc.append("<br>Q value: " + tokens[8]);
-        if (tokens.length > 9) {
-            int peakOffset = Integer.parseInt(tokens[9]);
-            if (peakOffset >= 0) {
-                final int peakPosition = feature.getStart() + peakOffset;
-                feature.setPeakPosition(peakPosition);
-                desc.append("<br>Peak: " + (peakPosition + 1));
-
-            }
-        }
-        feature.setDescription(desc.toString());
+        feature.setSignal((float) Double.parseDouble(tokens[6]));
+        feature.setPValue((float) Double.parseDouble(tokens[6]));
+        feature.setQValue((float) Double.parseDouble(tokens[6]));
 
         return feature;
     }
