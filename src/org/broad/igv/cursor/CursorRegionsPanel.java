@@ -1,17 +1,10 @@
 package org.broad.igv.cursor;
 
-import org.broad.igv.feature.*;
-import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.igv.util.Pair;
-import org.broad.tribble.Feature;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -21,7 +14,7 @@ import java.util.List;
  */
 public class CursorRegionsPanel extends JComponent implements Serializable {
 
-    Cursor model;
+    CursorModel model;
     Color regionGray = new Color(193, 193, 193);
     Color lightBlue = new Color(0, 0, 150);
     private CursorMainPanel mainPanel;
@@ -35,7 +28,7 @@ public class CursorRegionsPanel extends JComponent implements Serializable {
     }
 
 
-    public void setModel(Cursor model) {
+    public void setModel(CursorModel model) {
         this.model = model;
     }
 
@@ -45,7 +38,7 @@ public class CursorRegionsPanel extends JComponent implements Serializable {
 
         if (model == null) return;
 
-        List<CursorFrame> frameList = model.getFrames();
+        List<CursorRegion> frameList = model.getFrames();
         int frameMargin = model.getFrameMargin();
 
         if(frameList == null) return;
@@ -65,7 +58,7 @@ public class CursorRegionsPanel extends JComponent implements Serializable {
 
             if (frameNumber > end) break;
 
-            CursorFrame frame = frameList.get(frameNumber);
+            CursorRegion frame = frameList.get(frameNumber);
             double pxStart = (frameNumber - origin) * framePixelWidth;
             double pxEnd = pxStart + framePixelWidth;
 

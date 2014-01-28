@@ -1,11 +1,12 @@
 package org.broad.igv.cursor;
 
-import com.jidesoft.swing.JideButton;
 import org.broad.igv.feature.*;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.Serializable;
@@ -18,13 +19,13 @@ import java.util.List;
  */
 public class CursorTrackPanel extends JComponent implements Serializable {
 
-    Cursor model;
+    CursorModel model;
     CursorTrack track;
     private CursorMainPanel mainPanel;
 
-    public CursorTrackPanel(CursorTrack t, Cursor cursor, CursorMainPanel mainPanel) {
+    public CursorTrackPanel(CursorTrack t, CursorModel cursorModel, CursorMainPanel mainPanel) {
         this.track = t;
-        this.model = cursor;
+        this.model = cursorModel;
         this.mainPanel = mainPanel;
         MouseAdapter ma = new MouseHandler();
         addMouseListener(ma);
@@ -51,6 +52,25 @@ public class CursorTrackPanel extends JComponent implements Serializable {
     }
 
 
+    private void showPopup(int x, int y) {
+
+        JPopupMenu menu = new JPopupMenu(); //track.getName());
+
+        JMenuItem setFramesItem = new JMenuItem("Set frames");
+        setFramesItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                model.setFrames(CursorUtils.createRegions(track));
+                mainPanel.repaint();
+            }
+        });
+        menu.add(setFramesItem);
+
+        menu.show(this, x, y);
+
+    }
+
+
     @Override
     protected void paintComponent(Graphics graphics) {
 
@@ -58,7 +78,7 @@ public class CursorTrackPanel extends JComponent implements Serializable {
 
         if (model == null || track == null) return;
 
-        List<CursorFrame> frameList = model.getFrames();
+        List<CursorRegion> frameList = model.getFrames();
         if (frameList == null) return;
 
         int frameMargin = model.getFrameMargin();
@@ -79,7 +99,7 @@ public class CursorTrackPanel extends JComponent implements Serializable {
 
             if (frameNumber > end) break;
 
-            CursorFrame frame = frameList.get(frameNumber);
+            CursorRegion frame = frameList.get(frameNumber);
             String chr = frame.getChr();
 
             double bpStart = frame.getLocation() - frameBPWidth / 2;
@@ -87,7 +107,7 @@ public class CursorTrackPanel extends JComponent implements Serializable {
             double pxStart = (frameNumber - origin) * framePixelWidth;
             double pxEnd = pxStart + framePixelWidth;
 
-            int maxFeatureHeight = h;
+            int maxFeatureHeight = h-10;
 
             // Region block
 
@@ -116,7 +136,9 @@ public class CursorTrackPanel extends JComponent implements Serializable {
 
                     float score = f.getScore();
                     float alpha = Float.isNaN(score) ? 1 : getAlpha(min, max, score);
-                    c = ColorUtilities.getCompositeColor(c, alpha);
+                    if (alpha < 1) {
+                        c = ColorUtilities.getCompositeColor(c, alpha);
+                    }
                     graphics.setColor(c);
 
                     int pw = pEnd == pStart ? 1 : pEnd - pStart;
@@ -128,6 +150,9 @@ public class CursorTrackPanel extends JComponent implements Serializable {
                 }
             }
 
+            graphics.setColor(Color.black);
+            graphics.drawString(track.getName(), 10, 12);
+
         }
     }
 
@@ -137,9 +162,16 @@ public class CursorTrackPanel extends JComponent implements Serializable {
         int mouseX;
 
         @Override
-        public void mousePressed(MouseEvent mouseEvent) {
-            mouseX = mouseEvent.getX();
+        public void mousePressed(MouseEvent e) {
+            mouseX = e.getX();
+            evaluatePopup(e);
         }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            evaluatePopup(e);
+        }
+
 
         @Override
         public void mouseDragged(MouseEvent mouseEvent) {
@@ -151,6 +183,13 @@ public class CursorTrackPanel extends JComponent implements Serializable {
 
             mainPanel.repaint();
 
+        }
+    }
+
+
+    private void evaluatePopup(MouseEvent e) {
+        if (e.isPopupTrigger()) {
+            showPopup(e.getX(), e.getY());
         }
     }
 

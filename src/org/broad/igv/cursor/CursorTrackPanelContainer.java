@@ -11,8 +11,8 @@ import java.io.Serializable;
  */
 public class CursorTrackPanelContainer extends JPanel implements Serializable {
 
-    int trackHeight = 40;
-
+    int trackHeight = 60;
+    int vmargin = 0;
 
     @Override
     public void doLayout() {
@@ -20,11 +20,15 @@ public class CursorTrackPanelContainer extends JPanel implements Serializable {
             int top = 0;
             final int width = getWidth();
             for (Component c : this.getComponents()) {
-                c.setBounds(0, top, width, trackHeight);
+                c.setBounds(0, top + vmargin, width, trackHeight - 2*vmargin);
                 top += trackHeight;
 
             }
         }
+    }
+
+    public void setVmargin(int vmargin) {
+        this.vmargin = vmargin;
     }
 
 //    @Override

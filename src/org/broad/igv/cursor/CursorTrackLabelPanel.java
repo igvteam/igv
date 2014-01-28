@@ -14,14 +14,14 @@ import java.io.Serializable;
  */
 public class CursorTrackLabelPanel extends JComponent implements Serializable {
 
-    final Cursor model;
+    final CursorModel model;
     final CursorTrack track;
     int sortDirection = 1;
 
     JButton sortButton;
     CursorIdeogramPanel ideogramPanel;
 
-    public CursorTrackLabelPanel(final CursorTrack track, final Cursor model, final CursorMainPanel mainPanel) {
+    public CursorTrackLabelPanel(final CursorTrack track, final CursorModel model, final CursorMainPanel mainPanel) {
 
         this.track = track;
         this.model = model;
@@ -37,7 +37,7 @@ public class CursorTrackLabelPanel extends JComponent implements Serializable {
         add(sortButton);
 
         ideogramPanel = new CursorIdeogramPanel();
-        ideogramPanel.setTrack(track);
+        ideogramPanel.addTrack(track);
         ideogramPanel.setModel(model);
         ideogramPanel.setDrawViewRect(false);
         add(ideogramPanel);
