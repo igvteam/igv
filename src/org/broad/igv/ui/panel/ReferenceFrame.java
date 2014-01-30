@@ -500,7 +500,7 @@ public class ReferenceFrame {
      * @param locus
      */
     protected void beforeScaleZoom(Locus locus) {
-        //pass
+        calculateMaxZoom();
     }
 
     /**

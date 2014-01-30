@@ -136,6 +136,7 @@ public class ExomeReferenceFrame extends ReferenceFrame {
 
     @Override
     protected void beforeScaleZoom(Locus locus){
+        super.calculateMaxZoom();
         calcExomeOrigin();
     }
 
