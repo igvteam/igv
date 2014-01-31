@@ -357,26 +357,17 @@ public class CommandExecutor {
     /**
      * Load function for port and batch script
      *
-     * @param fileList
+     * @param fileString
      * @param param2
      * @param param3
      * @return
      * @throws IOException
      */
-    private String load(String fileList, String param2, String param3) throws IOException {
-
-        String fileString = fileList.replace("\"", "").replace("'", "");  // Todo <= what is this for?
+    private String load(String fileString, String param2, String param3) throws IOException {
 
         // Default for merge is "true" for session files,  "false" otherwise
-        String file = fileString;
-        boolean merge;
-        if (file.endsWith(".xml") || file.endsWith(".php") || file.endsWith(".php3")) {
-            // Session file
-            merge = false;
-        } else {
-            // Data file
-            merge = true;
-        }
+        String tmpFile = fileString.replace("\"", "").replace("'", "");
+        boolean merge = !(tmpFile.endsWith(".xml") || tmpFile.endsWith(".php") || tmpFile.endsWith(".php3"));
 
         // remaining parameters might be "merge", "name", or "index"
         String name = null;
@@ -436,35 +427,39 @@ public class CommandExecutor {
 
         log.debug("Run load files");
 
-        String[] files = fileString.split(",");
-        String[] names = nameString != null ? nameString.split(",") : null;
-        String[] indexFiles = indexString != null ? indexString.split(",") : null;
-        String[] coverageFiles =  coverageString != null ? coverageString.split(",") : null;
+        List<String> files= StringUtils.breakQuotedString(fileString, ',');
+        List<String> names = StringUtils.breakQuotedString(nameString,',');
+        List<String> indexFiles = StringUtils.breakQuotedString(indexString,',');
+        List<String> coverageFiles =  StringUtils.breakQuotedString(coverageString,',');
 
-        if (files.length == 1) {
+        if (files.size() == 1) {
             // String might be URL encoded
-            files = fileString.split("%2C");
-            names = nameString != null ? nameString.split("%2C") : null;
-            indexFiles = indexString != null ? indexString.split("%2C") : null;
+            files = StringUtils.breakQuotedString(fileString.replaceAll("%2C", ","), ',');
+            names = nameString != null ? StringUtils.breakQuotedString(nameString.replaceAll("%2C", ","), ',') : null;
+            indexFiles = indexString != null ? StringUtils.breakQuotedString(indexString.replaceAll("%2C", ","), ',') : null;
+            coverageFiles = coverageString != null ? StringUtils.breakQuotedString(coverageString.replaceAll("%2C", ","), ',') : null;
         }
 
-        if (names != null && names.length != files.length) {
+        if (names != null && names.size() != files.size()) {
             return "Error: If file is a comma-separated list, names must also be a comma-separated list of the same length";
         }
 
-        if (indexFiles != null && indexFiles.length != files.length) {
+        if (indexFiles != null && indexFiles.size() != files.size()) {
             return "Error: If file is a comma-separated list, index must also be a comma-separated list of the same length";
         }
 
 
         // Must decode URLs (local or remote), but leave local file paths only
-        for (int ii = 0; ii < files.length; ii++) {
-            files[ii] = decodeFileString(files[ii]);
+        for (int ii = 0; ii < files.size(); ii++) {
+            files.set(ii, decodeFileString(files.get(ii).replace("\"", "")));
+            if(names != null){
+                names.set(ii, names.get(ii).replace("\"", ""));
+            }
             if(indexFiles != null){
-                indexFiles[ii] = decodeFileString(indexFiles[ii]);
+                indexFiles.set(ii, decodeFileString(indexFiles.get(ii).replace("\"", "")));
             }
             if(coverageFiles != null) {
-                coverageFiles[ii] = decodeFileString(coverageFiles[ii]);
+                coverageFiles.set(ii, decodeFileString(coverageFiles.get(ii).replace("\"", "")));
             }
         }
 
@@ -491,9 +486,9 @@ public class CommandExecutor {
         }
 
         // Loop through files
-        for (int fi=0; fi<files.length; fi++) {
+        for (int fi=0; fi < files.size(); fi++) {
 
-            String f = files[fi];
+            String f = files.get(fi);
 
             // Skip already loaded files TODO -- make this optional?  Check for change?
             if (loadedFiles.contains(f)) continue;
@@ -511,13 +506,13 @@ public class CommandExecutor {
                 }
 
                 if (names != null) {
-                    rl.setName(names[fi]);
+                    rl.setName(names.get(fi));
                 }
                 if(indexFiles != null) {
-                    rl.setIndexPath(indexFiles[fi]);
+                    rl.setIndexPath(indexFiles.get(fi));
                 }
                 if(coverageFiles != null) {
-                    rl.setCoverage(coverageFiles[fi]);
+                    rl.setCoverage(coverageFiles.get(fi));
                 }
                 if (params != null) {
                     String trackLine = createTrackLine(params);

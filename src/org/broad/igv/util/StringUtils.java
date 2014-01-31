@@ -55,8 +55,8 @@ public class StringUtils {
 
 
     public static List<String> breakQuotedString(String string, char splitToken) {
-
-        ArrayList<String> strings = new ArrayList();
+        if(string == null) return null;
+        ArrayList<String> strings = new ArrayList<String >();
         if (string.length() == 0) {
             return strings;
         }
