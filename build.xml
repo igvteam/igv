@@ -439,7 +439,10 @@
                        identifier="${main-class}"
                        shortversion="${version}"
                        applicationCategory="public.app-category.developer-tools"
-                       mainclassname="${main-class}">
+                       mainclassname="${main-class}"
+                        icon="${basedir}/resources/IGV_64.icns">
+                <!-- Bundle JRE located at dir-->
+                <!--runtime dir="${env.JAVA_HOME}" /-->
                 <classpath dir="@{dist.dir}">
                     <include name="@{jar.name}"/>
                     <include name="batik-codec.jar"/>
