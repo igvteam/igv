@@ -284,7 +284,7 @@ public class IGVMenuBar extends JMenuBar {
         //-------------------------------------//
 
         //-----------SQL DB Tools--------------//
-        boolean showDBEditor = Boolean.parseBoolean(System.getProperty(DBProfileEditor.ENABLE_EDITOR_PROPERTY, "false"));
+        boolean showDBEditor = Globals.isDevelopment();
         if (showDBEditor) {
             JMenu sqlDBProfileEditor = new JMenu("SQL DB Profile Editor");
             JMenuItem createNewProfile = new JMenuItem("Create New Profile");

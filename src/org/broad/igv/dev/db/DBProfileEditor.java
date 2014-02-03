@@ -45,8 +45,6 @@ import java.util.Map;
  */
 public class DBProfileEditor extends JDialog {
 
-    public static final String ENABLE_EDITOR_PROPERTY = "enableDBProfileEditor";
-
     private DBProfile profile = new DBProfile();
     private String profilePath = null;
 
