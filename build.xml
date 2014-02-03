@@ -440,7 +440,7 @@
                        shortversion="${version}"
                        applicationCategory="public.app-category.developer-tools"
                        mainclassname="${main-class}"
-                        icon="${basedir}/resources/IGV_64.icns">
+                       icon="${basedir}/resources/igv_icon.icns">
                 <!-- Bundle JRE located at dir-->
                 <!--runtime dir="${env.JAVA_HOME}" /-->
                 <classpath dir="@{dist.dir}">
