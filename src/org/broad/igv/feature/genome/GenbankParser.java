@@ -1,5 +1,6 @@
 package org.broad.igv.feature.genome;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
 import org.broad.igv.util.ParsingUtils;
@@ -7,6 +8,7 @@ import org.broad.tribble.Feature;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,6 +19,9 @@ import java.util.List;
  */
 public class GenbankParser {
 
+    private static Logger log = Logger.getLogger(GenbankParser.class);
+
+    private String path;
     private String accession;
     private byte[] sequence;
     private List<Feature> features;
@@ -26,15 +31,20 @@ public class GenbankParser {
     /**
      * @param path
      */
-    GenbankParser(String path) throws IOException {
+    public GenbankParser(String path) throws IOException {
 
+        this.path = path;
+        readFeatures(true);
+    }
+
+    public void readFeatures(boolean readSequence) throws IOException {
         BufferedReader reader = null;
         try {
             reader = ParsingUtils.openBufferedReader(path);
             readLocus(reader);
             readAccession(reader);
             readFeatures(reader);
-            readOriginSequence(reader);
+            if(readSequence) readOriginSequence(reader);
         } finally {
             if (reader != null) reader.close();
         }
@@ -85,23 +95,28 @@ public class GenbankParser {
     /**
      * Read the acession line
      * ACCESSION   K03160
+     *
      * @param reader
      * @throws IOException
      */
-    private void readAccession(BufferedReader reader) throws  IOException {
+    private void readAccession(BufferedReader reader) throws IOException {
 
         String line = null;
-        do  {
+        do {
             line = reader.readLine();
         }
-        while(!line.startsWith("ACCESSION"));
+        while (!line.startsWith("ACCESSION"));
 
-        if(line == null) {
-            // TODO - throw exception, missing accession
+        if (line == null) {
+            log.info("Genbank file missing ACCESSION line. ");
+        } else {
+            String[] tokens = Globals.whitespacePattern.split(line);
+            if (tokens.length < 2) {
+                log.info("Genbank file missing ACCESSION number.");
+            } else {
+                accession = tokens[1].trim();
+            }
         }
-
-        String[] tokens = Globals.whitespacePattern.split(line);
-        accession = tokens[1].trim();
 
     }
 
@@ -131,6 +146,16 @@ public class GenbankParser {
         sequence = buffer.toByteArray();
     }
 
+
+    /**
+     * Return a string representing the chromosome/contig/sequence.  We use the accession if it is defined, otherwise
+     * the first word in the LOCUS field.
+     *
+     * @return
+     */
+    public String getChr() {
+        return accession == null ? locusName : accession;
+    }
 
     /**
      * FEATURES             Location/Qualifiers
@@ -165,6 +190,8 @@ public class GenbankParser {
         }
         while (!nextLine.startsWith("FEATURES"));
 
+        String chr = getChr();
+
         //Process features until "ORIGIN"
         features = new ArrayList<Feature>();
         BasicFeature f = null;
@@ -182,7 +209,7 @@ public class GenbankParser {
             if (nextLine.charAt(5) != ' ') {
                 String featureType = nextLine.substring(5, 21).trim();
                 f = new BasicFeature();
-                f.setChr(accession);
+                f.setChr(chr);
                 f.setType(featureType);
                 currentLocQualifier = nextLine.substring(21);
 

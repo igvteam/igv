@@ -12,6 +12,7 @@
 package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.bigwig.BigWigDataSource;
@@ -36,8 +37,7 @@ import org.broad.igv.feature.CachingFeatureSource;
 import org.broad.igv.feature.GisticFileParser;
 import org.broad.igv.feature.MutationTrackLoader;
 import org.broad.igv.feature.dranger.DRangerParser;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.genome.*;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
@@ -147,6 +147,8 @@ public class TrackLoader {
                 loadRnaiGctFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".gct") || typeString.endsWith("res") || typeString.endsWith("tab")) {
                 loadGctFile(locator, newTracks, genome);
+            } else if (typeString.endsWith(".gbk")) {
+                loadGbkFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".cn") || typeString.endsWith(".xcn") || typeString.endsWith(".snp") ||
                     typeString.endsWith(".igv") || typeString.endsWith(".loh")) {
                 loadIGVFile(locator, newTracks, genome);
@@ -252,8 +254,8 @@ public class TrackLoader {
 
     private boolean forceNotTribble(String typeString) {
         List<String> nonTribble = Arrays.asList("fpkm_tracking", "exp_diff", "_exp.diff");
-        for(String s: nonTribble){
-            if(typeString.endsWith(s)){
+        for (String s : nonTribble) {
+            if (typeString.endsWith(s)) {
                 return true;
             }
         }
@@ -477,6 +479,23 @@ public class TrackLoader {
         }
 
 
+    }
+
+    /**
+     * Load features from a genbank (.gbk)file.  This method ignores the fasta section.  To define a genome from
+     * a genbank file use GenomeManager.
+     *
+     * @param newTracks
+     * @param genome
+     * @throws IOException
+     */
+    private void loadGbkFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+
+        GenbankParser genbankParser = new GenbankParser(locator.getPath());
+        genbankParser.readFeatures(false);
+        FeatureCollectionSource src = new FeatureCollectionSource(genbankParser.getFeatures(), genome);
+        FeatureTrack track = new FeatureTrack(locator, src);
+        newTracks.add(track);
     }
 
     private void loadIGVFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {

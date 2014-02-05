@@ -55,10 +55,10 @@ public class GenomeManager {
     private static final String ACT_USER_DEFINED_GENOME_LIST_FILE = "user-defined-genomes.txt";
     public static final String TEST_USER_DEFINED_GENOME_LIST_FILE = "test-user-defined-genomes.txt";
 
-    public static String getUserDefinedGenomeListFile(){
-        if(Globals.isTesting()){
+    public static String getUserDefinedGenomeListFile() {
+        if (Globals.isTesting()) {
             return TEST_USER_DEFINED_GENOME_LIST_FILE;
-        }else{
+        } else {
             return ACT_USER_DEFINED_GENOME_LIST_FILE;
         }
 
@@ -110,15 +110,15 @@ public class GenomeManager {
         return serverGenomeListUnreachable;
     }
 
-    public Genome loadGenome(String genomePath, ProgressMonitor monitor) throws IOException{
+    public Genome loadGenome(String genomePath, ProgressMonitor monitor) throws IOException {
         return loadGenome(genomePath, monitor, true);
     }
 
     /**
      * Load a genome from the given path.  Could be a .genome, .gbk, chrom.sizes, or fasta file
      *
-     * @param genomePath File, http, or ftp path to the .genome or indexed fasta file
-     * @param monitor    ProgressMonitor  Monitor object, can be null
+     * @param genomePath     File, http, or ftp path to the .genome or indexed fasta file
+     * @param monitor        ProgressMonitor  Monitor object, can be null
      * @param addGenomeTrack Whether to add the genomeTrack to IGV
      * @return Genome
      * @throws FileNotFoundException
@@ -152,13 +152,13 @@ public class GenomeManager {
             // Load alias files from genome source directory, if any
             String aliasPath = FileUtils.getParent(genomePath) + "/" + newGenome.getId() + "_alias.tab";
             Collection<Collection<String>> aliases = loadChrAliases(aliasPath);
-            if(aliases != null) newGenome.addChrAliases(aliases);
+            if (aliases != null) newGenome.addChrAliases(aliases);
 
 
             // Load user-defined chr aliases, if any.  This is done last so they have priority
             aliasPath = (new File(DirectoryManager.getGenomeCacheDirectory(), newGenome.getId() + "_alias.tab")).getAbsolutePath();
             aliases = loadChrAliases(aliasPath);
-            if(aliases != null) newGenome.addChrAliases(aliases);
+            if (aliases != null) newGenome.addChrAliases(aliases);
 
             if (monitor != null) {
                 monitor.fireProgressChange(25);
@@ -206,9 +206,11 @@ public class GenomeManager {
     private Genome loadGenbankFile(String genomePath) throws IOException {
         Genome newGenome;
         GenbankParser genbankParser = new GenbankParser(genomePath);
+        genbankParser.readFeatures(true);
 
-        String chr = genbankParser.getAccession();
         String name = genbankParser.getLocusName();
+        String chr = genbankParser.getChr();
+
         if (!name.equals(chr)) {
             name = name + " (" + chr + ")";
         }
@@ -272,8 +274,8 @@ public class GenomeManager {
 
     private Collection<Collection<String>> loadChrAliases(String path) {
 
-       // String id = genome.getId();
-       // File aliasFile = new File(DirectoryManager.getGenomeCacheDirectory(), id + "_alias.tab");
+        // String id = genome.getId();
+        // File aliasFile = new File(DirectoryManager.getGenomeCacheDirectory(), id + "_alias.tab");
         File aliasFile = new File(path);
 
         if (aliasFile.exists()) {
@@ -304,7 +306,7 @@ public class GenomeManager {
     /**
      * @param path
      * @return GenomeListItem representing this path, or null
-     *         if it's a local path which doesn't exist (we don't check for existence of remote file)
+     * if it's a local path which doesn't exist (we don't check for existence of remote file)
      */
     public static GenomeListItem buildFromPath(String path) {
 
@@ -839,7 +841,7 @@ public class GenomeManager {
     }
 
     static GenomeListItem searchGenomeList(String genomeId, Iterable<GenomeListItem> genomeList) {
-        if(genomeList == null) return null;
+        if (genomeList == null) return null;
         for (GenomeListItem item : genomeList) {
             if (item.getId().equals(genomeId)) {
                 return item;
@@ -897,7 +899,7 @@ public class GenomeManager {
                 genomeListItem = buildFromPath(id);
             }
 
-            if(genomeListItem == null){
+            if (genomeListItem == null) {
                 /**
                  * The {@code id} isn't in {@code genomeListItems},
                  * and it's not a remote path or an existing local path
@@ -962,8 +964,12 @@ public class GenomeManager {
                         continue;
                     }
 
-                    GenomeListItem item = new GenomeListItem(fields[0], file, fields[2]);
-                    userDefinedGenomeArchiveList.add(item);
+                    try {
+                        GenomeListItem item = new GenomeListItem(fields[0], file, fields[2]);
+                        userDefinedGenomeArchiveList.add(item);
+                    } catch (Exception e) {
+                        log.error("Error updating user genome list line '" + nextLine + "'", e);
+                    }
                 }
             } catch (FileNotFoundException e) {
                 //We swallow this because the user may not have the file,
@@ -1206,29 +1212,29 @@ public class GenomeManager {
     /**
      * Downloads .genome file, INCLUDING fasta file it points to,
      * and rewrites the property.txt file to point to the local version
+     *
      * @param srcPath
      * @param targetDir
-     *
      * @throws IOException
      */
-    public RunnableResult downloadWholeGenome(String srcPath, File targetDir, Frame dialogsParent) throws IOException{
+    public RunnableResult downloadWholeGenome(String srcPath, File targetDir, Frame dialogsParent) throws IOException {
 
         //Whether the srcGenome is simply a fasta file
         boolean isFastaFile = FastaUtils.isFastaPath(srcPath);
         boolean showProgressDialog = !Globals.isHeadless() && !Globals.isBatch();
         String srcFileName = Utilities.getFileNameFromURL(srcPath);
 
-        if(isFastaFile){
+        if (isFastaFile) {
             //Simple case, just need to copy fasta and create index
-            return downloadFasta(srcPath, targetDir, srcFileName , dialogsParent);
+            return downloadFasta(srcPath, targetDir, srcFileName, dialogsParent);
 
-        }else if(srcFileName.endsWith(Globals.GENOME_FILE_EXTENSION)){
+        } else if (srcFileName.endsWith(Globals.GENOME_FILE_EXTENSION)) {
             //Most useful case of a .genome file, which contains nearly everything in it, except the
             //sequence which is a fasta file stored elsewhere
             String genomeName = Utilities.getFileNameFromURL(srcPath);
             File srcGenomeArchive = new File(targetDir, genomeName);
             RunnableResult genomeResult = HttpUtils.getInstance().downloadFile(srcPath, srcGenomeArchive);
-            if(!genomeResult.isSuccess()) return genomeResult;
+            if (!genomeResult.isSuccess()) return genomeResult;
 
             GenomeDescriptor descriptor = parseGenomeArchiveFile(srcGenomeArchive);
 
@@ -1236,7 +1242,7 @@ public class GenomeManager {
             String sequencePath = descriptor.getSequenceLocation();
 
             boolean seqIsFasta = FastaUtils.isFastaPath(sequencePath);
-            if(!seqIsFasta){
+            if (!seqIsFasta) {
                 String msg = ("This genome sequence is not available for download. \n" +
                         "Please contact the igv team at https://groups.google.com/forum/#!forum/igv-help for further assistance");
                 MessageUtils.showMessage(msg);
@@ -1249,12 +1255,12 @@ public class GenomeManager {
             // Copy file directly from the server to local area
             // Shows cancellable dialog
             RunnableResult fastaResult = downloadFasta(sequencePath, targetDir, sequenceFileName, dialogsParent);
-            if(fastaResult.isSuccess()){
+            if (fastaResult.isSuccess()) {
                 //Rewrite properties file to point to local fasta
                 rewriteSequenceLocation(targetGenomeFile, localSequenceFile.getAbsolutePath());
             }
             return fastaResult;
-        }else{
+        } else {
             throw new IllegalArgumentException("Unknown file type. Cannot download " + srcPath);
         }
     }
@@ -1263,30 +1269,31 @@ public class GenomeManager {
     /**
      * Download a fasta file. Also attempts to download the index, and create an index
      * if that download fails
-     * @param fastaPath  Full source path of fasta
-     * @param targetDir  Destination directory for fasta file
-     * @param targetName Destination file name for fasta file
+     *
+     * @param fastaPath     Full source path of fasta
+     * @param targetDir     Destination directory for fasta file
+     * @param targetName    Destination file name for fasta file
      * @param dialogsParent Parent of progress dialog shown. None shown if null
      * @return
      * @throws IOException
      */
-    private RunnableResult downloadFasta(String fastaPath, File targetDir, String targetName, Frame dialogsParent) throws IOException{
+    private RunnableResult downloadFasta(String fastaPath, File targetDir, String targetName, Frame dialogsParent) throws IOException {
         //Simple case, just need to copy fasta and create index
         File destFile = new File(targetDir, targetName);
         //TODO PROMPT TO OVERWRITE IF FILE EXISTS
         HttpUtils.URLDownloader urlDownloader = HttpUtils.getInstance().downloadFile(fastaPath, destFile, dialogsParent, "Downloading genome sequence");
         RunnableResult fastaResult = urlDownloader.getResult();
         //If not successful for whatever reason, we don't get the index
-        if(!fastaResult.isSuccess()) return fastaResult;
+        if (!fastaResult.isSuccess()) return fastaResult;
 
         File destIndexFile = new File(destFile.getAbsolutePath() + ".fai");
         String srcIndexPath = fastaPath + ".fai";
         RunnableResult idxResult = null;
-        if(ParsingUtils.resourceExists(srcIndexPath)){
+        if (ParsingUtils.resourceExists(srcIndexPath)) {
             idxResult = HttpUtils.getInstance().downloadFile(srcIndexPath, destIndexFile);
         }
         //If remote fasta doesn't exist or download failed, we create our own index
-        if(idxResult == null || idxResult == RunnableResult.FAILURE){
+        if (idxResult == null || idxResult == RunnableResult.FAILURE) {
             FastaUtils.createIndexFile(destFile.getAbsolutePath(), destIndexFile.getAbsolutePath());
         }
 
@@ -1296,12 +1303,13 @@ public class GenomeManager {
     /**
      * Rewrite the {@link Globals#GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY} property to equal
      * the specified {@code newSequencePath}. Works by creating a temp file and renaming
-     * @param targetFile A .genome file, in zip format
+     *
+     * @param targetFile      A .genome file, in zip format
      * @param newSequencePath
      * @return boolean indicating success or failure.
      * @throws IOException
      */
-    static boolean rewriteSequenceLocation(File targetFile, String newSequencePath) throws IOException{
+    static boolean rewriteSequenceLocation(File targetFile, String newSequencePath) throws IOException {
 
         ZipFile targetZipFile = new ZipFile(targetFile);
         boolean success = false;
@@ -1314,7 +1322,7 @@ public class GenomeManager {
         Properties inputProperties = new Properties();
 
 
-        try{
+        try {
             propertyInputStream = targetZipFile.getInputStream(propEntry);
             BufferedReader reader = new BufferedReader(new InputStreamReader(propertyInputStream));
 
@@ -1334,17 +1342,17 @@ public class GenomeManager {
 
             Enumeration<? extends ZipEntry> entries = targetZipFile.entries();
             zipOutputStream = new ZipOutputStream(new FileOutputStream(tmpZipFile));
-            while(entries.hasMoreElements()){
+            while (entries.hasMoreElements()) {
                 ZipEntry curEntry = entries.nextElement();
                 ZipEntry writeEntry = null;
 
-                if(curEntry.getName().equals(Globals.GENOME_ARCHIVE_PROPERTY_FILE_NAME)){
+                if (curEntry.getName().equals(Globals.GENOME_ARCHIVE_PROPERTY_FILE_NAME)) {
                     writeEntry = new ZipEntry(Globals.GENOME_ARCHIVE_PROPERTY_FILE_NAME);
                     writeEntry.setSize(newPropertyBytes.length);
                     zipOutputStream.putNextEntry(writeEntry);
                     zipOutputStream.write(newPropertyBytes);
                     continue;
-                }else{
+                } else {
                     //Because the compressed size can vary,
                     //we generate a new ZipEntry and copy some attributes
                     writeEntry = new ZipEntry(curEntry.getName());
@@ -1355,21 +1363,21 @@ public class GenomeManager {
 
                 zipOutputStream.putNextEntry(writeEntry);
                 InputStream tmpIS = null;
-                try{
+                try {
                     tmpIS = targetZipFile.getInputStream(writeEntry);
                     int bytes = IOUtils.copy(tmpIS, zipOutputStream);
                     log.debug(bytes + " bytes written to " + targetFile);
-                }finally{
-                    if(tmpIS != null) tmpIS.close();
+                } finally {
+                    if (tmpIS != null) tmpIS.close();
                 }
 
             }
-        }catch(Exception e){
+        } catch (Exception e) {
             tmpZipFile.delete();
             throw new RuntimeException(e.getMessage(), e);
-        }finally{
-            if(propertyInputStream != null) propertyInputStream.close();
-            if(zipOutputStream != null){
+        } finally {
+            if (propertyInputStream != null) propertyInputStream.close();
+            if (zipOutputStream != null) {
                 zipOutputStream.flush();
                 zipOutputStream.finish();
                 zipOutputStream.close();
@@ -1382,14 +1390,14 @@ public class GenomeManager {
         //This is a hack. I don't know why it's necessary,
         //but for some reason the output zip file seems to be corrupt
         //at least when called from GenomeManager.refreshArchive
-        try{
+        try {
             Thread.sleep(1500);
         } catch (InterruptedException e) {
             //
         }
 
         //Rename tmp file
-        if(success){
+        if (success) {
             targetFile.delete();
             FileUtils.copyFile(tmpZipFile, targetFile);
             success = targetFile.exists();
@@ -1416,7 +1424,7 @@ public class GenomeManager {
     public void addGenomeItems(Collection<GenomeListItem> genomeListItems, boolean userDefined) {
         for (GenomeListItem genomeListItem : genomeListItems) {
             genomeItemMap.put(genomeListItem.getId(), genomeListItem);
-            if(userDefined) userDefinedGenomeArchiveList.add(genomeListItem);
+            if (userDefined) userDefinedGenomeArchiveList.add(genomeListItem);
         }
         PreferenceManager.getInstance().saveGenomeIdDisplayList(genomeItemMap.values());
         updateImportedGenomePropertyFile();
@@ -1425,7 +1433,7 @@ public class GenomeManager {
     public void addGenomeItem(GenomeListItem genomeListItem, boolean userDefined) {
         genomeItemMap.put(genomeListItem.getId(), genomeListItem);
         PreferenceManager.getInstance().saveGenomeIdDisplayList(genomeItemMap.values());
-        if(userDefined) userDefinedGenomeArchiveList.add(genomeListItem);
+        if (userDefined) userDefinedGenomeArchiveList.add(genomeListItem);
         updateImportedGenomePropertyFile();
     }
 
@@ -1552,20 +1560,21 @@ public class GenomeManager {
     /**
      * Delete the specified .genome files and their sequences, only if they were downloaded from the
      * server. Doesn't touch user defined genomes
+     *
      * @param removedValuesList
      */
-    public void deleteDownloadedGenomes(List<GenomeListItem> removedValuesList) throws IOException{
+    public void deleteDownloadedGenomes(List<GenomeListItem> removedValuesList) throws IOException {
         Collection<GenomeListItem> userDefinedGenomes = getUserDefinedGenomeArchiveList();
-        for(GenomeListItem item: removedValuesList){
-            if(userDefinedGenomes.contains(item)){
+        for (GenomeListItem item : removedValuesList) {
+            if (userDefinedGenomes.contains(item)) {
                 continue;
             }
 
             String loc = item.getLocation();
-            if(!HttpUtils.isRemoteURL(loc)){
+            if (!HttpUtils.isRemoteURL(loc)) {
                 File genFile = new File(loc);
                 GenomeDescriptor descriptor = parseGenomeArchiveFile(genFile);
-                if(!HttpUtils.isRemoteURL(descriptor.getSequenceLocation())){
+                if (!HttpUtils.isRemoteURL(descriptor.getSequenceLocation())) {
                     File seqFile = new File(descriptor.getSequenceLocation());
                     seqFile.delete();
                     File indexFile = new File(seqFile.getAbsolutePath() + ".fai");
