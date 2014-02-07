@@ -466,9 +466,9 @@ public class DataPanel extends JComponent implements Paintable {
                     zoomIncr = -1;
                     showWaitCursor = true;
                 } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-                    shiftOriginPixels = 5;
+                    shiftOriginPixels = 50;
                 } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-                    shiftOriginPixels = -5;
+                    shiftOriginPixels = -50;
                 } else if (e.getKeyCode() == KeyEvent.VK_HOME) {
                     shiftOriginPixels = -getWidth();
                     showWaitCursor = true;
