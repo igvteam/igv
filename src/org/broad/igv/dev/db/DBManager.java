@@ -43,6 +43,8 @@ public class DBManager {
         driverMap = new HashMap<String, String>(2);
         driverMap.put("mysql", "com.mysql.jdbc.Driver");
         driverMap.put("sqlite", "org.sqlite.JDBC");
+        driverMap.put("oracle:thin", "oracle.jdbc.driver.OracleDriver");
+        driverMap.put("oracle", "oracle.jdbc.driver.OracleDriver");
     }
 
     public static Connection getConnection(ResourceLocator locator) {
@@ -155,9 +157,13 @@ public class DBManager {
     public static String createConnectionURL(String subprotocol, String host, String db, String port) {
         createDriver(subprotocol);
 
-        //If the host is a local file, don't want the leading "//"
-        if (!(new File(host)).exists()) {
+        //If the host is a local file or oracle, don't want the leading "//"
+        boolean isOracle = subprotocol.toLowerCase().contains("oracle");
+        if (!isOracle && !(new File(host)).exists()) {
             host = "//" + host;
+        }
+        if(isOracle){
+            host = "@" + subprotocol;
         }
         String url = "jdbc:" + subprotocol + ":" + host;
         if (port != null && !port.equals("")) {
