@@ -178,16 +178,12 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                 boolean hasExons = false;
                 if (feature instanceof BasicFeature) {
                     BasicFeature bf = (BasicFeature) feature;
-                    pixelThickStart = (int) Math.max(trackRectangleX, (bf.getThickStart() - origin) / locScale);
-                    pixelThickEnd = (int) Math.min(trackRectangleMaxX, (bf.getThickEnd() - origin) / locScale);
+                    pixelThickStart = (int) Math.max(trackRectangleX, Math.round((bf.getThickStart() - origin) / locScale));
+                    pixelThickEnd = (int) Math.min(trackRectangleMaxX, Math.round((bf.getThickEnd() - origin) / locScale));
                     hasExons = bf.hasExons();
                 }
 
-                // Trim ends by a pixel, so adjacent features have some whitespace between them
-                pixelEnd = Math.max(pixelStart + 1, pixelEnd - 1);
-                pixelThickEnd = Math.max(pixelThickStart + 1, pixelThickEnd - 1);
-
-                // Add directional arrows and exons, if there is room.
+                 // Add directional arrows and exons, if there is room.
                 int pixelYCenter = trackRectangle.y + NORMAL_STRAND_Y_OFFSET / 2;
 
                 if (hasExons) {
