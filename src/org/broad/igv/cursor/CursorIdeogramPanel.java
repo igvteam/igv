@@ -35,9 +35,9 @@ public class CursorIdeogramPanel extends JComponent implements Serializable {
             paintBackground(graphics);
         }
 
-        if (model != null && model.getFrames() != null && drawViewRect) {
+        if (model != null && model.getFilteredRegions() != null && drawViewRect) {
 
-            int length = model.getFrames().size();
+            int length = model.getFilteredRegions().size();
             if (length == 0) return;
 
             int px = (int) ((model.getOrigin() / length) * getWidth());
@@ -59,7 +59,7 @@ public class CursorIdeogramPanel extends JComponent implements Serializable {
 
         if (model == null || tracks.isEmpty()) return;
 
-        List<CursorRegion> frameList = model.getFrames();
+        List<CursorRegion> frameList = model.getFilteredRegions();
         if (frameList == null) return;
 
         // We'll sample frames and give each 1 pixel
@@ -111,7 +111,7 @@ public class CursorIdeogramPanel extends JComponent implements Serializable {
 
                         // Height proportional to score
                         int fh = f.getScore() == 0 ? 0 : Math.max(1, (int) ((f.getScore() / 1000) * maxFeatureHeight));
-                        graphics.drawLine(px, (int) base - fh, px, (int) base);
+                        graphics.drawLine(px, (int) base - maxFeatureHeight, px, (int) base);
 
                     }
                 }

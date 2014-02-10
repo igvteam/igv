@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 import javax.swing.*;
 
 /**
@@ -39,15 +40,15 @@ public class CursorMainWindow extends JFrame {
 
 
     private void updateRegionsLabel() {
-        int visibleRegionCount = getWidth() / cursorModel.getFramePixelWidth() + 1;
-        regionsLabel.setText("CURrent Set Of Regions (" + visibleRegionCount + " / " + cursorModel.getFrames().size() + ")");
+        int visibleRegionCount = (int) (getWidth() / cursorModel.getFramePixelWidth()) + 1;
+        regionsLabel.setText("CURrent Set Of Regions (" + visibleRegionCount + " / " + cursorModel.getFilteredRegions().size() + ")");
 
     }
 
 
     private void frameWidthFieldActionPerformed(ActionEvent e) {
         try {
-            int newWidth = Integer.parseInt(frameWidthField.getText().trim());
+            double newWidth = Double.parseDouble(frameWidthField.getText().trim());
             if (newWidth > 0) cursorModel.setFramePixelWidth(newWidth);
             cursorMainPanel1.repaint();
             updateRegionsLabel();
@@ -72,83 +73,65 @@ public class CursorMainWindow extends JFrame {
         }
     }
 
-    private void loadEncodeMenuItemActionPerformed(ActionEvent e) {
+    private void loadTracks(final Collection<EncodeFileRecord> records) {
 
-        try {
-            EncodeFileBrowser browser = EncodeFileBrowser.getInstance("hg19");
+        Runnable runnable = new Runnable() {
+            public void run() {
+                try {
+                    startWaitCursor();
+                    for (EncodeFileRecord record : records) {
 
-            browser.setVisible(true);
-            if (browser.isCanceled()) return;
-
-            final java.util.List<EncodeFileRecord> records = browser.getSelectedRecords();
-            if (records.size() > 0) {
-                Runnable runnable = new Runnable() {
-                    public void run() {
-                        for (EncodeFileRecord record : records) {
-
-                            String path = record.getPath();
-                            String name = record.getTrackName();
-                            Color color = null;
-                            final String antibody = record.getAttributeValue("antibody");
-                            if (antibody != null) {
-                                color = colors.get(antibody.toUpperCase());
-                            }
-
-                            String pathLC = path.toLowerCase();
-                            if (pathLC.endsWith(".gz")) pathLC = pathLC.substring(0, pathLC.length() - 3);
-                            boolean loadable = pathLC.endsWith(".bed") || pathLC.endsWith(".narrowpeak") || pathLC.endsWith("broadpeak");
-
-                            if (loadable) {
-                                try {
-                                    CursorTrack t = CursorUtils.loadPeakTrack(path);
-                                    if (t != null) {
-                                        if (name != null) t.setName(name);
-                                        if (color != null) t.setColor(color);
-                                        cursorModel.addTrack(t);
-                                        if (cursorModel.getFrames() == null || cursorModel.getFrames().isEmpty()) {
-                                            cursorModel.setFrames(CursorUtils.createRegions(t));
-                                        }
-
-                                        cursorMainPanel1.addTrack(t);
-                                    }
-                                } catch (IOException e1) {
-                                    e1.printStackTrace();
-                                }
-                            }
-
-                            //
-                            //                    for (String name : visibleAttributes) {
-                            //                        String value = record.getAttributeValue(name);
-                            //                        if (value != null) {
-                            //                            AttributeManager.getInstance().addAttribute(rl.getName(), name, value);
-                            //                        }
-                            //                    }
-
-
+                        String path = record.getPath();
+                        String name = record.getTrackName();
+                        Color color = null;
+                        final String antibody = record.getAttributeValue("antibody");
+                        if (antibody != null) {
+                            color = colors.get(antibody.toUpperCase());
                         }
 
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                cursorMainPanel1.revalidate();
-                                setCursor(Cursor.getDefaultCursor());
+                        String pathLC = path.toLowerCase();
+                        if (pathLC.endsWith(".gz")) pathLC = pathLC.substring(0, pathLC.length() - 3);
+                        boolean loadable = pathLC.endsWith(".bed") || pathLC.endsWith(".narrowpeak") || pathLC.endsWith("broadpeak");
+
+                        if (loadable) {
+                            try {
+                                CursorTrack t = CursorUtils.loadTrack(path);
+                                if (t != null) {
+                                    if (name != null) t.setName(name);
+                                    if (color != null) t.setColor(color);
+                                    cursorModel.addTrack(t);
+                                    if (cursorModel.getFilteredRegions() == null || cursorModel.getFilteredRegions().isEmpty()) {
+                                        cursorModel.setRegions(CursorUtils.createRegions(t));
+                                    }
+
+                                    cursorMainPanel1.addTrack(t);
+                                }
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
                             }
-                        });
+                        }
                     }
-                };
 
-                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                (new Thread(runnable)).start();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            cursorMainPanel1.tracksAdded();
+                            cursorMainPanel1.revalidate();
+                            cursorMainPanel1.repaint();
+                        }
+                    });
+
+                } finally {
+                    stopWaitCursor();
+                }
             }
-
-
-        } catch (IOException ex) {
-            //log.error("Error opening Encode browser", e);
-        }
+        };
+        (new Thread(runnable)).start();
 
     }
 
-    private void loadFIleMenuItemActionPerformed(ActionEvent e) {
+
+    private void loadFileMenuItemActionPerformed(ActionEvent e) {
 
         File lastDirectoryFile = PreferenceManager.getInstance().getLastTrackDirectory();
 
@@ -164,27 +147,52 @@ public class CursorMainWindow extends JFrame {
 
         if (trackFiles == null || trackFiles.length == 0) return;
         PreferenceManager.getInstance().setLastTrackDirectory(trackFiles[0]);
-        try {
-            for (File f : trackFiles) {
-                CursorTrack t = CursorUtils.loadPeakTrack(f.getAbsolutePath());
-                if (t != null) {
-                    cursorModel.addTrack(t);
-                    if (cursorModel.getFrames() == null || cursorModel.getFrames().isEmpty()) {
-                        cursorModel.setFrames(CursorUtils.createRegions(t));
-                    }
-
-                    cursorMainPanel1.addTrack(t);
-                }
-            }
-            cursorMainPanel1.revalidate();
-            cursorMainPanel1.repaint();
-
-
-            // cursor.setFrames(CursorUtils.loadFrames(frameFile.getAbsolutePath()));
-        } catch (IOException e1) {
-            JOptionPane.showMessageDialog(this, "Error loading file: " + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        List<EncodeFileRecord> records = new ArrayList<EncodeFileRecord>();
+        for (File f : trackFiles) {
+            records.add(new EncodeFileRecord(f.getPath(), new HashMap()));
         }
+        loadTracks(records);
+
+
     }
+
+    private void loadEncodeMenuItemActionPerformed(ActionEvent e) {
+
+        try {
+            EncodeFileBrowser browser = EncodeFileBrowser.getInstance("hg19");
+
+            browser.setVisible(true);
+            if (browser.isCanceled()) return;
+
+            final java.util.List<EncodeFileRecord> records = browser.getSelectedRecords();
+            if (records.size() > 0) {
+                loadTracks(records);
+
+            }
+
+
+        } catch (IOException ex) {
+            //log.error("Error opening Encode browser", e);
+        }
+
+    }
+
+
+    private void startWaitCursor() {
+        getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        getGlassPane().addMouseListener(nullMouseAdapter);
+        getGlassPane().setVisible(true);
+    }
+
+    private void stopWaitCursor() {
+        getGlassPane().setCursor(Cursor.getDefaultCursor());
+        getGlassPane().removeMouseListener(nullMouseAdapter);
+        getGlassPane().setVisible(false);
+    }
+
+
+    private static MouseAdapter nullMouseAdapter = new MouseAdapter() {
+    };
 
     private static Map<String, Color> colors = new HashMap<String, Color>();
 
@@ -235,7 +243,7 @@ public class CursorMainWindow extends JFrame {
                 loadFileMenuItem.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        loadFIleMenuItemActionPerformed(e);
+                        loadFileMenuItemActionPerformed(e);
                     }
                 });
                 menu1.add(loadFileMenuItem);

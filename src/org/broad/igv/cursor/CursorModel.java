@@ -11,11 +11,14 @@ import java.util.*;
  */
 public class CursorModel {
 
+    public static int frameBPWidth = 1000;
+
     private List<CursorTrack> tracks;
-    private List<CursorRegion> cursorRegions;
-    private int framePixelWidth = 24;
+    private List<CursorRegion> regions;
+    private List<CursorRegion> filteredRegions;
+    private RegionFilter filter;
+    private double framePixelWidth = 24;
     int frameMargin = 6;
-    private int frameBPWidth = 1000;
     private double origin = 0;
     private int framePixelHeight = 50;
     CursorTrack sortedTrack;
@@ -28,21 +31,41 @@ public class CursorModel {
         this.tracks = tracks;
     }
 
-    public List<CursorRegion> getFrames() {
-        return cursorRegions;
+    public void setRegions(List<CursorRegion> frames) {
+        this.regions = frames;
+        updateFilteredRegions();
     }
 
-    public void setFrames(List<CursorRegion> frames) {
-        this.cursorRegions = frames;
+    private void updateFilteredRegions() {
+        if(filter == null || regions == null) filteredRegions = null;
+        else {
+            filteredRegions = new ArrayList<CursorRegion>();
+            for(CursorRegion r : regions) {
+                if(filter.pass(r)) filteredRegions.add(r);
+            }
+        }
     }
 
-    public int getFramePixelWidth() {
+    public List<CursorRegion> getFilteredRegions() {
+        return filteredRegions == null ? regions : filteredRegions;
+    }
+
+    public RegionFilter getFilter() {
+        return filter;
+    }
+
+    public void setFilter(RegionFilter filter) {
+        this.filter = filter;
+        updateFilteredRegions();
+    }
+
+    public double getFramePixelWidth() {
         return framePixelWidth;
     }
 
-    public void setFramePixelWidth(int framePixelWidth) {
+    public void setFramePixelWidth(double framePixelWidth) {
         this.framePixelWidth = framePixelWidth;
-        this.frameMargin = Math.min(8, Math.max(1, framePixelWidth / 4));
+        this.frameMargin = (int) Math.min(8, framePixelWidth / 4);
     }
 
     public int getFrameBPWidth() {
@@ -80,14 +103,16 @@ public class CursorModel {
         sortedTrack = t;
         // First, randomize the frames to prevent memory from previous sorts.  There are many ties (e.g. zeroes)
         // so a stable sort carries a lot of memory, which can be confusing and imply correlations where none exist.
-        Collections.shuffle(cursorRegions);
-
-        Collections.sort(cursorRegions, new Comparator<CursorRegion>() {
+        Collections.shuffle(regions);
+        Collections.sort(regions, new Comparator<CursorRegion>() {
 
             @Override
             public int compare(CursorRegion cursorRegion1, CursorRegion cursorRegion2) {
-                double s1 = cursorRegion1.getScore(t.getFeatures(cursorRegion1.getChr()));
-                double s2 = cursorRegion2.getScore(t.getFeatures(cursorRegion2.getChr()));
+
+                int l1 = t.getLongestFeatureLength(cursorRegion1.getChr());
+                int l2 = t.getLongestFeatureLength(cursorRegion2.getChr());
+                double s1 = cursorRegion1.getScore(t.getFeatures(cursorRegion1.getChr()), l1, frameBPWidth);
+                double s2 = cursorRegion2.getScore(t.getFeatures(cursorRegion2.getChr()), l2, frameBPWidth);
                 return sortDirection * (s1 == s2 ? 0 : (s1 > s2 ? -1 : 1));
 
             }

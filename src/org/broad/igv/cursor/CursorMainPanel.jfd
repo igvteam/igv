@@ -53,7 +53,7 @@ new FormModel {
 							"border": sfield com.jformdesigner.model.FormObject NULL_VALUE
 							"background": sfield java.awt.SystemColor window
 						}, new FormLayoutConstraints( class java.lang.String ) {
-							"value": "Center"
+							"value": "North"
 						} )
 					}, new FormLayoutConstraints( class java.lang.String ) {
 						"value": "Center"

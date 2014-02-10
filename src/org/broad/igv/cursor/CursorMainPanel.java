@@ -41,6 +41,15 @@ public class CursorMainPanel extends JPanel implements Serializable {
         this.cursorIdeogramPanel1.addTrack(track);
     }
 
+    @Override
+    public void revalidate() {
+        super.revalidate();
+    }
+
+    public void tracksAdded() {
+        if(this.scrollPane1 != null) this.scrollPane1.revalidate();
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
@@ -94,7 +103,7 @@ public class CursorMainPanel extends JPanel implements Serializable {
                     //---- trackPanel ----
                     trackPanel.setBorder(null);
                     trackPanel.setBackground(SystemColor.window);
-                    cursorDataPanel1.add(trackPanel, BorderLayout.CENTER);
+                    cursorDataPanel1.add(trackPanel, BorderLayout.NORTH);
                 }
                 panel1.add(cursorDataPanel1, BorderLayout.CENTER);
             }
