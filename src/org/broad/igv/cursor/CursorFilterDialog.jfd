@@ -24,6 +24,7 @@ new FormModel {
 							name: "matchAllRB"
 							"text": "Match all of the following"
 							"$buttonGroup": new FormReference( "buttonGroup1" )
+							"selected": true
 						} )
 						add( new FormComponent( "javax.swing.JRadioButton" ) {
 							name: "matchAnyRB"

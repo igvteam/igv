@@ -19,6 +19,9 @@ public class CursorFilterDialog extends JDialog {
 
     java.util.List<CursorTrack> tracks;
     RegionFilter filter;
+    boolean canceled;
+
+    String[] trackNames;
 
     public static void main(String[] args) {
 
@@ -35,6 +38,18 @@ public class CursorFilterDialog extends JDialog {
         initComponents();
 
         this.tracks = tracks;
+        if (tracks == null || tracks.isEmpty()) {
+            this.trackNames = new String[]{};
+        } else {
+            this.trackNames = new String[tracks.size()];
+            for (int i = 0; i < tracks.size(); i++) {
+                trackNames[i] = tracks.get(i).getName();
+            }
+        }
+
+        if (filter == null) {
+            filter = new RegionFilter();
+        }
         java.util.List<RegionFilter.Clause> clauses = filter.getClauses();
         if (clauses == null || clauses.isEmpty()) {
             addFilter(null);
@@ -48,11 +63,17 @@ public class CursorFilterDialog extends JDialog {
     private void okButtonActionPerformed(ActionEvent e) {
 
         // TODO -- create RegionFilter and update model
+        canceled = false;
         setVisible(false);
     }
 
     private void cancelButtonActionPerformed(ActionEvent e) {
+        canceled = true;
         setVisible(false);
+    }
+
+    public boolean isCanceled() {
+        return canceled;
     }
 
     private void addFilter(RegionFilter.Clause clause) {
@@ -61,8 +82,11 @@ public class CursorFilterDialog extends JDialog {
         p.setMaximumSize(new Dimension(1000, 30));
         p.setLayout(new JideBoxLayout(p, BoxLayout.X_AXIS));
 
-        JComboBox trackCB = new JComboBox(new String[]{"Track 1", "Track2"});
+        JComboBox trackCB = new JComboBox(trackNames);
         p.add(trackCB, JideBoxLayout.VARY);
+
+        JComboBox signalCB = new JComboBox(new String[] {"Score", "Signal"});
+        p.add(signalCB, JideBoxLayout.FIX);
 
         JComboBox predCB = new JComboBox(new String[]{"is greater than", "is less than"});
         predCB.setSize(new Dimension(100, 20));
@@ -138,6 +162,7 @@ public class CursorFilterDialog extends JDialog {
 
                     //---- matchAllRB ----
                     matchAllRB.setText("Match all of the following");
+                    matchAllRB.setSelected(true);
                     panel1.add(matchAllRB);
 
                     //---- matchAnyRB ----

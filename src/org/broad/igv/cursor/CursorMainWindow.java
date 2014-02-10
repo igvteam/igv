@@ -32,16 +32,19 @@ public class CursorMainWindow extends JFrame {
 
     public CursorMainWindow() {
         initComponents();
-        cursorModel = new CursorModel();
+        cursorModel = new CursorModel(this);
         cursorMainPanel1.setModel(cursorModel);
         frameWidthField.setText(String.valueOf(cursorModel.getFramePixelWidth()));
         regionSizeTextField.setText(String.valueOf(cursorModel.getFrameBPWidth()));
     }
 
 
-    private void updateRegionsLabel() {
+    void updateRegionsLabel() {
         int visibleRegionCount = (int) (getWidth() / cursorModel.getFramePixelWidth()) + 1;
-        regionsLabel.setText("CURrent Set Of Regions (" + visibleRegionCount + " / " + cursorModel.getFilteredRegions().size() + ")");
+        final List<CursorRegion> filteredRegions = cursorModel.getFilteredRegions();
+        if (filteredRegions != null) {
+            regionsLabel.setText(" (" + visibleRegionCount + " / " + filteredRegions.size() + ")");
+        }
 
     }
 
@@ -118,6 +121,7 @@ public class CursorMainWindow extends JFrame {
                             cursorMainPanel1.tracksAdded();
                             cursorMainPanel1.revalidate();
                             cursorMainPanel1.repaint();
+                            updateRegionsLabel();
                         }
                     });
 
@@ -130,31 +134,6 @@ public class CursorMainWindow extends JFrame {
 
     }
 
-
-    private void loadFileMenuItemActionPerformed(ActionEvent e) {
-
-        File lastDirectoryFile = PreferenceManager.getInstance().getLastTrackDirectory();
-
-
-        // Tracks.  Simulates multi-file select
-        File[] trackFiles = FileDialogUtils.chooseMultiple("Select Files", lastDirectoryFile, new FilenameFilter() {
-
-            @Override
-            public boolean accept(File file, String s) {
-                return true;//  return file.getName().toLowerCase().endsWith("peak") || file.getName().toLowerCase().endsWith("peak.gz");
-            }
-        });
-
-        if (trackFiles == null || trackFiles.length == 0) return;
-        PreferenceManager.getInstance().setLastTrackDirectory(trackFiles[0]);
-        List<EncodeFileRecord> records = new ArrayList<EncodeFileRecord>();
-        for (File f : trackFiles) {
-            records.add(new EncodeFileRecord(f.getPath(), new HashMap()));
-        }
-        loadTracks(records);
-
-
-    }
 
     private void loadEncodeMenuItemActionPerformed(ActionEvent e) {
 
@@ -190,6 +169,37 @@ public class CursorMainWindow extends JFrame {
         getGlassPane().setVisible(false);
     }
 
+    private void loadFIleMenuItemActionPerformed(ActionEvent e) {
+        File lastDirectoryFile = PreferenceManager.getInstance().getLastTrackDirectory();
+
+
+        // Tracks.  Simulates multi-file select
+        File[] trackFiles = FileDialogUtils.chooseMultiple("Select Files", lastDirectoryFile, new FilenameFilter() {
+
+            @Override
+            public boolean accept(File file, String s) {
+                return true;//  return file.getName().toLowerCase().endsWith("peak") || file.getName().toLowerCase().endsWith("peak.gz");
+            }
+        });
+
+        if (trackFiles == null || trackFiles.length == 0) return;
+        PreferenceManager.getInstance().setLastTrackDirectory(trackFiles[0]);
+        List<EncodeFileRecord> records = new ArrayList<EncodeFileRecord>();
+        for (File f : trackFiles) {
+            records.add(new EncodeFileRecord(f.getPath(), new HashMap()));
+        }
+        loadTracks(records);
+    }
+
+    private void filterMenuItemActionPerformed(ActionEvent e) {
+
+        CursorFilterDialog dlg = new CursorFilterDialog(this, cursorModel.getTracks(), cursorModel.getFilter());
+        dlg.setVisible(true);
+        if(!dlg.isCanceled()) {
+
+        }
+    }
+
 
     private static MouseAdapter nullMouseAdapter = new MouseAdapter() {
     };
@@ -212,16 +222,18 @@ public class CursorMainWindow extends JFrame {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
         menuBar1 = new JMenuBar();
-        menu1 = new JMenu();
+        fileMenu = new JMenu();
         loadFileMenuItem = new JMenuItem();
         loadEncodeMenuItem = new JMenuItem();
         exitMenuItem = new JMenuItem();
+        regionsMenu = new JMenu();
+        filterMenuItem = new JMenuItem();
         cursorMainPanel1 = new CursorMainPanel();
         panel1 = new JPanel();
-        regionsLabel = new JLabel();
         panel2 = new JPanel();
         label2 = new JLabel();
         regionSizeTextField = new JTextField();
+        regionsLabel = new JLabel();
         panel3 = new JPanel();
         label1 = new JLabel();
         frameWidthField = new JTextField();
@@ -234,19 +246,19 @@ public class CursorMainWindow extends JFrame {
         //======== menuBar1 ========
         {
 
-            //======== menu1 ========
+            //======== fileMenu ========
             {
-                menu1.setText("File");
+                fileMenu.setText("File");
 
                 //---- loadFileMenuItem ----
                 loadFileMenuItem.setText("Load from file...");
                 loadFileMenuItem.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        loadFileMenuItemActionPerformed(e);
+                        loadFIleMenuItemActionPerformed(e);
                     }
                 });
-                menu1.add(loadFileMenuItem);
+                fileMenu.add(loadFileMenuItem);
 
                 //---- loadEncodeMenuItem ----
                 loadEncodeMenuItem.setText("Load from ENCODE...");
@@ -256,8 +268,8 @@ public class CursorMainWindow extends JFrame {
                         loadEncodeMenuItemActionPerformed(e);
                     }
                 });
-                menu1.add(loadEncodeMenuItem);
-                menu1.addSeparator();
+                fileMenu.add(loadEncodeMenuItem);
+                fileMenu.addSeparator();
 
                 //---- exitMenuItem ----
                 exitMenuItem.setText("Exit");
@@ -267,9 +279,25 @@ public class CursorMainWindow extends JFrame {
                         exitMenuItemActionPerformed(e);
                     }
                 });
-                menu1.add(exitMenuItem);
+                fileMenu.add(exitMenuItem);
             }
-            menuBar1.add(menu1);
+            menuBar1.add(fileMenu);
+
+            //======== regionsMenu ========
+            {
+                regionsMenu.setText("Regions");
+
+                //---- filterMenuItem ----
+                filterMenuItem.setText("Filter...");
+                filterMenuItem.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        filterMenuItemActionPerformed(e);
+                    }
+                });
+                regionsMenu.add(filterMenuItem);
+            }
+            menuBar1.add(regionsMenu);
         }
         setJMenuBar(menuBar1);
 
@@ -280,10 +308,6 @@ public class CursorMainWindow extends JFrame {
         //======== panel1 ========
         {
             panel1.setLayout(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-
-            //---- regionsLabel ----
-            regionsLabel.setHorizontalAlignment(SwingConstants.LEFT);
-            panel1.add(regionsLabel);
 
             //======== panel2 ========
             {
@@ -304,6 +328,13 @@ public class CursorMainWindow extends JFrame {
                 panel2.add(regionSizeTextField);
             }
             panel1.add(panel2);
+
+            //---- regionsLabel ----
+            regionsLabel.setHorizontalAlignment(SwingConstants.LEFT);
+            regionsLabel.setMaximumSize(new Dimension(200, 0));
+            regionsLabel.setPreferredSize(new Dimension(100, 28));
+            regionsLabel.setHorizontalTextPosition(SwingConstants.LEFT);
+            panel1.add(regionsLabel);
 
             //======== panel3 ========
             {
@@ -335,16 +366,18 @@ public class CursorMainWindow extends JFrame {
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
     private JMenuBar menuBar1;
-    private JMenu menu1;
+    private JMenu fileMenu;
     private JMenuItem loadFileMenuItem;
     private JMenuItem loadEncodeMenuItem;
     private JMenuItem exitMenuItem;
+    private JMenu regionsMenu;
+    private JMenuItem filterMenuItem;
     private CursorMainPanel cursorMainPanel1;
     private JPanel panel1;
-    private JLabel regionsLabel;
     private JPanel panel2;
     private JLabel label2;
     private JTextField regionSizeTextField;
+    private JLabel regionsLabel;
     private JPanel panel3;
     private JLabel label1;
     private JTextField frameWidthField;

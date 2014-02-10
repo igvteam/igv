@@ -36,7 +36,7 @@ new FormModel {
 					name: "panel1"
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 						name: "cursorAttributePanel1"
-						"border": new javax.swing.border.LineBorder( sfield java.awt.Color black, 1, false )
+						"border": new javax.swing.border.LineBorder( sfield java.awt.Color gray, 1, false )
 						"preferredSize": new java.awt.Dimension( 100, 42 )
 						add( new FormComponent( "org.broad.igv.cursor.CursorTrackPanelContainer" ) {
 							name: "trackLabelPanel"
@@ -48,6 +48,7 @@ new FormModel {
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 						name: "cursorDataPanel1"
+						"border": new javax.swing.border.LineBorder( sfield java.awt.Color gray, 1, false )
 						add( new FormComponent( "org.broad.igv.cursor.CursorTrackPanelContainer" ) {
 							name: "trackPanel"
 							"border": sfield com.jformdesigner.model.FormObject NULL_VALUE

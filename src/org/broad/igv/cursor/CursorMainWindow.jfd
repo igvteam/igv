@@ -21,10 +21,6 @@ new FormModel {
 				"hgap": 10
 			} ) {
 				name: "panel1"
-				add( new FormComponent( "javax.swing.JLabel" ) {
-					name: "regionsLabel"
-					"horizontalAlignment": 2
-				} )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) {
 					"vgap": 0
 				} ) {
@@ -38,6 +34,13 @@ new FormModel {
 						"preferredSize": new java.awt.Dimension( 60, 28 )
 						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "regionSizeTextFieldActionPerformed", true ) )
 					} )
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "regionsLabel"
+					"horizontalAlignment": 2
+					"maximumSize": new java.awt.Dimension( 200, 0 )
+					"preferredSize": new java.awt.Dimension( 100, 28 )
+					"horizontalTextPosition": 2
 				} )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) {
 					"vgap": 0
@@ -60,7 +63,7 @@ new FormModel {
 			menuBar: new FormContainer( "javax.swing.JMenuBar", new FormLayoutManager( class javax.swing.JMenuBar ) ) {
 				name: "menuBar1"
 				add( new FormContainer( "javax.swing.JMenu", new FormLayoutManager( class javax.swing.JMenu ) ) {
-					name: "menu1"
+					name: "fileMenu"
 					"text": "File"
 					add( new FormComponent( "javax.swing.JMenuItem" ) {
 						name: "loadFileMenuItem"
@@ -79,6 +82,15 @@ new FormModel {
 						name: "exitMenuItem"
 						"text": "Exit"
 						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "exitMenuItemActionPerformed", true ) )
+					} )
+				} )
+				add( new FormContainer( "javax.swing.JMenu", new FormLayoutManager( class javax.swing.JMenu ) ) {
+					name: "regionsMenu"
+					"text": "Regions"
+					add( new FormComponent( "javax.swing.JMenuItem" ) {
+						name: "filterMenuItem"
+						"text": "Filter..."
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "filterMenuItemActionPerformed", true ) )
 					} )
 				} )
 			}

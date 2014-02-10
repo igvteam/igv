@@ -22,6 +22,11 @@ public class CursorModel {
     private double origin = 0;
     private int framePixelHeight = 50;
     CursorTrack sortedTrack;
+    CursorMainWindow mainWindow;
+
+    public CursorModel(CursorMainWindow cursorMainWindow) {
+         this.mainWindow = cursorMainWindow;
+    }
 
     public List<CursorTrack> getTracks() {
         return tracks;
@@ -34,6 +39,7 @@ public class CursorModel {
     public void setRegions(List<CursorRegion> frames) {
         this.regions = frames;
         updateFilteredRegions();
+
     }
 
     private void updateFilteredRegions() {
@@ -44,6 +50,7 @@ public class CursorModel {
                 if(filter.pass(r)) filteredRegions.add(r);
             }
         }
+        mainWindow.updateRegionsLabel();
     }
 
     public List<CursorRegion> getFilteredRegions() {
@@ -66,6 +73,7 @@ public class CursorModel {
     public void setFramePixelWidth(double framePixelWidth) {
         this.framePixelWidth = framePixelWidth;
         this.frameMargin = (int) Math.min(8, framePixelWidth / 4);
+        mainWindow.updateRegionsLabel();
     }
 
     public int getFrameBPWidth() {
@@ -74,6 +82,7 @@ public class CursorModel {
 
     public void setFrameBPWidth(int frameBPWidth) {
         this.frameBPWidth = frameBPWidth;
+        mainWindow.updateRegionsLabel();
     }
 
     public double getOrigin() {
