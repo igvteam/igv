@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 import javax.swing.*;
 
 /**
@@ -31,23 +32,26 @@ public class CursorMainWindow extends JFrame {
 
     public CursorMainWindow() {
         initComponents();
-        cursorModel = new CursorModel();
+        cursorModel = new CursorModel(this);
         cursorMainPanel1.setModel(cursorModel);
         frameWidthField.setText(String.valueOf(cursorModel.getFramePixelWidth()));
         regionSizeTextField.setText(String.valueOf(cursorModel.getFrameBPWidth()));
     }
 
 
-    private void updateRegionsLabel() {
-        int visibleRegionCount = getWidth() / cursorModel.getFramePixelWidth() + 1;
-        regionsLabel.setText("CURrent Set Of Regions (" + visibleRegionCount + " / " + cursorModel.getFrames().size() + ")");
+    void updateRegionsLabel() {
+        int visibleRegionCount = (int) (getWidth() / cursorModel.getFramePixelWidth()) + 1;
+        final List<CursorRegion> filteredRegions = cursorModel.getFilteredRegions();
+        if (filteredRegions != null) {
+            regionsLabel.setText(" (" + visibleRegionCount + " / " + filteredRegions.size() + ")");
+        }
 
     }
 
 
     private void frameWidthFieldActionPerformed(ActionEvent e) {
         try {
-            int newWidth = Integer.parseInt(frameWidthField.getText().trim());
+            double newWidth = Double.parseDouble(frameWidthField.getText().trim());
             if (newWidth > 0) cursorModel.setFramePixelWidth(newWidth);
             cursorMainPanel1.repaint();
             updateRegionsLabel();
@@ -72,6 +76,65 @@ public class CursorMainWindow extends JFrame {
         }
     }
 
+    private void loadTracks(final Collection<EncodeFileRecord> records) {
+
+        Runnable runnable = new Runnable() {
+            public void run() {
+                try {
+                    startWaitCursor();
+                    for (EncodeFileRecord record : records) {
+
+                        String path = record.getPath();
+                        String name = record.getTrackName();
+                        Color color = null;
+                        final String antibody = record.getAttributeValue("antibody");
+                        if (antibody != null) {
+                            color = colors.get(antibody.toUpperCase());
+                        }
+
+                        String pathLC = path.toLowerCase();
+                        if (pathLC.endsWith(".gz")) pathLC = pathLC.substring(0, pathLC.length() - 3);
+                        boolean loadable = pathLC.endsWith(".bed") || pathLC.endsWith(".narrowpeak") || pathLC.endsWith("broadpeak");
+
+                        if (loadable) {
+                            try {
+                                CursorTrack t = CursorUtils.loadTrack(path);
+                                if (t != null) {
+                                    if (name != null) t.setName(name);
+                                    if (color != null) t.setColor(color);
+                                    cursorModel.addTrack(t);
+                                    if (cursorModel.getFilteredRegions() == null || cursorModel.getFilteredRegions().isEmpty()) {
+                                        cursorModel.setRegions(CursorUtils.createRegions(t));
+                                    }
+
+                                    cursorMainPanel1.addTrack(t);
+                                }
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
+                    }
+
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            cursorMainPanel1.tracksAdded();
+                            cursorMainPanel1.revalidate();
+                            cursorMainPanel1.repaint();
+                            updateRegionsLabel();
+                        }
+                    });
+
+                } finally {
+                    stopWaitCursor();
+                }
+            }
+        };
+        (new Thread(runnable)).start();
+
+    }
+
+
     private void loadEncodeMenuItemActionPerformed(ActionEvent e) {
 
         try {
@@ -82,63 +145,8 @@ public class CursorMainWindow extends JFrame {
 
             final java.util.List<EncodeFileRecord> records = browser.getSelectedRecords();
             if (records.size() > 0) {
-                Runnable runnable = new Runnable() {
-                    public void run() {
-                        for (EncodeFileRecord record : records) {
+                loadTracks(records);
 
-                            String path = record.getPath();
-                            String name = record.getTrackName();
-                            Color color = null;
-                            final String antibody = record.getAttributeValue("antibody");
-                            if (antibody != null) {
-                                color = colors.get(antibody.toUpperCase());
-                            }
-
-                            String pathLC = path.toLowerCase();
-                            if (pathLC.endsWith(".gz")) pathLC = pathLC.substring(0, pathLC.length() - 3);
-                            boolean loadable = pathLC.endsWith(".bed") || pathLC.endsWith(".narrowpeak") || pathLC.endsWith("broadpeak");
-
-                            if (loadable) {
-                                try {
-                                    CursorTrack t = CursorUtils.loadPeakTrack(path);
-                                    if (t != null) {
-                                        if (name != null) t.setName(name);
-                                        if (color != null) t.setColor(color);
-                                        cursorModel.addTrack(t);
-                                        if (cursorModel.getFrames() == null || cursorModel.getFrames().isEmpty()) {
-                                            cursorModel.setFrames(CursorUtils.createRegions(t));
-                                        }
-
-                                        cursorMainPanel1.addTrack(t);
-                                    }
-                                } catch (IOException e1) {
-                                    e1.printStackTrace();
-                                }
-                            }
-
-                            //
-                            //                    for (String name : visibleAttributes) {
-                            //                        String value = record.getAttributeValue(name);
-                            //                        if (value != null) {
-                            //                            AttributeManager.getInstance().addAttribute(rl.getName(), name, value);
-                            //                        }
-                            //                    }
-
-
-                        }
-
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                cursorMainPanel1.revalidate();
-                                setCursor(Cursor.getDefaultCursor());
-                            }
-                        });
-                    }
-                };
-
-                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                (new Thread(runnable)).start();
             }
 
 
@@ -148,8 +156,20 @@ public class CursorMainWindow extends JFrame {
 
     }
 
-    private void loadFIleMenuItemActionPerformed(ActionEvent e) {
 
+    private void startWaitCursor() {
+        getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        getGlassPane().addMouseListener(nullMouseAdapter);
+        getGlassPane().setVisible(true);
+    }
+
+    private void stopWaitCursor() {
+        getGlassPane().setCursor(Cursor.getDefaultCursor());
+        getGlassPane().removeMouseListener(nullMouseAdapter);
+        getGlassPane().setVisible(false);
+    }
+
+    private void loadFIleMenuItemActionPerformed(ActionEvent e) {
         File lastDirectoryFile = PreferenceManager.getInstance().getLastTrackDirectory();
 
 
@@ -164,27 +184,25 @@ public class CursorMainWindow extends JFrame {
 
         if (trackFiles == null || trackFiles.length == 0) return;
         PreferenceManager.getInstance().setLastTrackDirectory(trackFiles[0]);
-        try {
-            for (File f : trackFiles) {
-                CursorTrack t = CursorUtils.loadPeakTrack(f.getAbsolutePath());
-                if (t != null) {
-                    cursorModel.addTrack(t);
-                    if (cursorModel.getFrames() == null || cursorModel.getFrames().isEmpty()) {
-                        cursorModel.setFrames(CursorUtils.createRegions(t));
-                    }
+        List<EncodeFileRecord> records = new ArrayList<EncodeFileRecord>();
+        for (File f : trackFiles) {
+            records.add(new EncodeFileRecord(f.getPath(), new HashMap()));
+        }
+        loadTracks(records);
+    }
 
-                    cursorMainPanel1.addTrack(t);
-                }
-            }
-            cursorMainPanel1.revalidate();
-            cursorMainPanel1.repaint();
+    private void filterMenuItemActionPerformed(ActionEvent e) {
 
+        CursorFilterDialog dlg = new CursorFilterDialog(this, cursorModel.getTracks(), cursorModel.getFilter());
+        dlg.setVisible(true);
+        if(!dlg.isCanceled()) {
 
-            // cursor.setFrames(CursorUtils.loadFrames(frameFile.getAbsolutePath()));
-        } catch (IOException e1) {
-            JOptionPane.showMessageDialog(this, "Error loading file: " + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+
+    private static MouseAdapter nullMouseAdapter = new MouseAdapter() {
+    };
 
     private static Map<String, Color> colors = new HashMap<String, Color>();
 
@@ -204,16 +222,18 @@ public class CursorMainWindow extends JFrame {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
         menuBar1 = new JMenuBar();
-        menu1 = new JMenu();
+        fileMenu = new JMenu();
         loadFileMenuItem = new JMenuItem();
         loadEncodeMenuItem = new JMenuItem();
         exitMenuItem = new JMenuItem();
+        regionsMenu = new JMenu();
+        filterMenuItem = new JMenuItem();
         cursorMainPanel1 = new CursorMainPanel();
         panel1 = new JPanel();
-        regionsLabel = new JLabel();
         panel2 = new JPanel();
         label2 = new JLabel();
         regionSizeTextField = new JTextField();
+        regionsLabel = new JLabel();
         panel3 = new JPanel();
         label1 = new JLabel();
         frameWidthField = new JTextField();
@@ -226,9 +246,9 @@ public class CursorMainWindow extends JFrame {
         //======== menuBar1 ========
         {
 
-            //======== menu1 ========
+            //======== fileMenu ========
             {
-                menu1.setText("File");
+                fileMenu.setText("File");
 
                 //---- loadFileMenuItem ----
                 loadFileMenuItem.setText("Load from file...");
@@ -238,7 +258,7 @@ public class CursorMainWindow extends JFrame {
                         loadFIleMenuItemActionPerformed(e);
                     }
                 });
-                menu1.add(loadFileMenuItem);
+                fileMenu.add(loadFileMenuItem);
 
                 //---- loadEncodeMenuItem ----
                 loadEncodeMenuItem.setText("Load from ENCODE...");
@@ -248,8 +268,8 @@ public class CursorMainWindow extends JFrame {
                         loadEncodeMenuItemActionPerformed(e);
                     }
                 });
-                menu1.add(loadEncodeMenuItem);
-                menu1.addSeparator();
+                fileMenu.add(loadEncodeMenuItem);
+                fileMenu.addSeparator();
 
                 //---- exitMenuItem ----
                 exitMenuItem.setText("Exit");
@@ -259,9 +279,25 @@ public class CursorMainWindow extends JFrame {
                         exitMenuItemActionPerformed(e);
                     }
                 });
-                menu1.add(exitMenuItem);
+                fileMenu.add(exitMenuItem);
             }
-            menuBar1.add(menu1);
+            menuBar1.add(fileMenu);
+
+            //======== regionsMenu ========
+            {
+                regionsMenu.setText("Regions");
+
+                //---- filterMenuItem ----
+                filterMenuItem.setText("Filter...");
+                filterMenuItem.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        filterMenuItemActionPerformed(e);
+                    }
+                });
+                regionsMenu.add(filterMenuItem);
+            }
+            menuBar1.add(regionsMenu);
         }
         setJMenuBar(menuBar1);
 
@@ -272,10 +308,6 @@ public class CursorMainWindow extends JFrame {
         //======== panel1 ========
         {
             panel1.setLayout(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-
-            //---- regionsLabel ----
-            regionsLabel.setHorizontalAlignment(SwingConstants.LEFT);
-            panel1.add(regionsLabel);
 
             //======== panel2 ========
             {
@@ -296,6 +328,13 @@ public class CursorMainWindow extends JFrame {
                 panel2.add(regionSizeTextField);
             }
             panel1.add(panel2);
+
+            //---- regionsLabel ----
+            regionsLabel.setHorizontalAlignment(SwingConstants.LEFT);
+            regionsLabel.setMaximumSize(new Dimension(200, 0));
+            regionsLabel.setPreferredSize(new Dimension(100, 28));
+            regionsLabel.setHorizontalTextPosition(SwingConstants.LEFT);
+            panel1.add(regionsLabel);
 
             //======== panel3 ========
             {
@@ -327,16 +366,18 @@ public class CursorMainWindow extends JFrame {
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
     private JMenuBar menuBar1;
-    private JMenu menu1;
+    private JMenu fileMenu;
     private JMenuItem loadFileMenuItem;
     private JMenuItem loadEncodeMenuItem;
     private JMenuItem exitMenuItem;
+    private JMenu regionsMenu;
+    private JMenuItem filterMenuItem;
     private CursorMainPanel cursorMainPanel1;
     private JPanel panel1;
-    private JLabel regionsLabel;
     private JPanel panel2;
     private JLabel label2;
     private JTextField regionSizeTextField;
+    private JLabel regionsLabel;
     private JPanel panel3;
     private JLabel label1;
     private JTextField frameWidthField;

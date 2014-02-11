@@ -19,6 +19,7 @@ public class CursorTrackLabelPanel extends JComponent implements Serializable {
     int sortDirection = 1;
 
     JButton sortButton;
+    JRadioButton selectButton;
     CursorIdeogramPanel ideogramPanel;
 
     public CursorTrackLabelPanel(final CursorTrack track, final CursorModel model, final CursorMainPanel mainPanel) {
@@ -36,11 +37,26 @@ public class CursorTrackLabelPanel extends JComponent implements Serializable {
         });
         add(sortButton);
 
-        ideogramPanel = new CursorIdeogramPanel();
-        ideogramPanel.addTrack(track);
-        ideogramPanel.setModel(model);
-        ideogramPanel.setDrawViewRect(false);
-        add(ideogramPanel);
+        selectButton = new JRadioButton();
+        add(selectButton);
+        mainPanel.addTrackSelectionButton(selectButton);
+
+        selectButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(selectButton.isSelected()) {
+                    model.setRegions(CursorUtils.createRegions(track));
+                    mainPanel.repaint();
+
+                }
+            }
+        });
+
+//        ideogramPanel = new CursorIdeogramPanel();
+//        ideogramPanel.addTrack(track);
+//        ideogramPanel.setModel(model);
+//        ideogramPanel.setDrawViewRect(false);
+//        add(ideogramPanel);
     }
 
 
@@ -49,7 +65,8 @@ public class CursorTrackLabelPanel extends JComponent implements Serializable {
         synchronized (this.getTreeLock()) {
             Rectangle bound = getBounds();
             sortButton.setBounds(0, 0, 50, bound.height);
-            ideogramPanel.setBounds(50, 0, bound.width - 50, bound.height);
+
+            selectButton.setBounds(60, 0, bound.width - 40, bound.height);
         }
     }
 }

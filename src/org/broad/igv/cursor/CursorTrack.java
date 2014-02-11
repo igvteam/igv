@@ -3,6 +3,7 @@ package org.broad.igv.cursor;
 import org.broad.igv.feature.BasicFeature;
 
 import java.awt.*;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +16,7 @@ public class CursorTrack {
 
 
     Map<String, List<BasicFeature>> featureMap;
+    Map<String, Integer> longestFeature;
     private Color color = new Color(0, 0, 150);
     private String name;
     Class featureType;
@@ -22,11 +24,28 @@ public class CursorTrack {
     public CursorTrack(Map<String, List<BasicFeature>> featureMap, Class featureType) {
         this.featureMap = featureMap;
         this.featureType = featureType;
+        this.longestFeature = new HashMap();
+        for(Map.Entry<String, List<BasicFeature>> entry : featureMap.entrySet()) {
+            String chr = entry.getKey();
+            List<BasicFeature> features = entry.getValue();
+            int longest = 0;
+            for(BasicFeature f : features) {
+                final int length = f.getLength();
+                if(length > longest) longest = length;
+            }
+            longestFeature.put(chr, longest);
+        }
     }
 
     public List<BasicFeature> getFeatures(String chr) {
         return featureMap.get(chr);
     }
+
+    public int getLongestFeatureLength(String chr) {
+        Integer lf = longestFeature.get(chr);
+        return lf == null ? -1 : lf;
+    }
+
 
     public Map<String, List<BasicFeature>> getFeatureMap() {
         return featureMap;

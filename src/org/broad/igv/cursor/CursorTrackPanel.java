@@ -60,7 +60,7 @@ public class CursorTrackPanel extends JComponent implements Serializable {
         setFramesItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                model.setFrames(CursorUtils.createRegions(track));
+                model.setRegions(CursorUtils.createRegions(track));
                 mainPanel.repaint();
             }
         });
@@ -78,73 +78,84 @@ public class CursorTrackPanel extends JComponent implements Serializable {
 
         if (model == null || track == null) return;
 
-        List<CursorRegion> frameList = model.getFrames();
-        if (frameList == null) return;
+        List<CursorRegion> regionsList = model.getFilteredRegions();
+        if (regionsList == null) return;
 
         int frameMargin = model.getFrameMargin();
 
-        int framePixelWidth = model.getFramePixelWidth();
+        double framePixelWidth = model.getFramePixelWidth();
         int frameBPWidth = model.getFrameBPWidth();
         double scale = ((double) frameBPWidth) / (framePixelWidth - frameMargin);
         double origin = model.getOrigin();   // In frame units
         double end = origin + ((double) getWidth()) / framePixelWidth;
 
+
+        int startRegionNumber = (int) origin;
+        if (startRegionNumber >= regionsList.size()) return;
+
         int h = getHeight();
+        int sampleInterval = Math.max(1, (int) Math.round(1.0 / framePixelWidth));
+        for (int regionNumber = startRegionNumber; regionNumber < regionsList.size(); regionNumber += sampleInterval) {
 
+            if (regionNumber > end) break;     // Absolutely critical for performance
 
-        int startFrameNumber = (int) origin;
-        if (startFrameNumber >= frameList.size()) return;
+            CursorRegion region = regionsList.get(regionNumber);
+            String chr = region.getChr();
 
-        for (int frameNumber = startFrameNumber; frameNumber < frameList.size(); frameNumber++) {
+            double bpStart = region.getLocation() - frameBPWidth / 2;
+            double bpEnd = region.getLocation() + frameBPWidth / 2;
+            int pxStart = (int) ((regionNumber - origin) * framePixelWidth + frameMargin / 2);
+            int pxEnd = (int) (framePixelWidth > 1 ? pxStart + framePixelWidth :
+                    (regionNumber + 1 - origin) * frameBPWidth) - frameMargin;
+            int pxWidth = pxEnd - pxStart;
 
-            if (frameNumber > end) break;
-
-            CursorRegion frame = frameList.get(frameNumber);
-            String chr = frame.getChr();
-
-            double bpStart = frame.getLocation() - frameBPWidth / 2;
-            double bpEnd = frame.getLocation() + frameBPWidth / 2;
-            double pxStart = (frameNumber - origin) * framePixelWidth;
-            double pxEnd = pxStart + framePixelWidth;
-
-            int maxFeatureHeight = h-10;
+            int maxFeatureHeight = h - 10;
 
             // Region block
 
             graphics.setColor(Color.white);
-            graphics.fillRect((int) (pxStart + frameMargin / 2), 0, framePixelWidth - frameMargin, h);
+            graphics.fillRect(pxStart, 0, pxWidth, h);
 
             List<BasicFeature> features = track.getFeatures(chr);
             if (features == null) continue;
 
-            int i0 = FeatureUtils.getIndexBefore(bpStart, features);
+
+            int l2 = track.getLongestFeatureLength(chr);
+            double s0 = l2 < 0 ? 0 : bpStart - l2;
+            int i0 = FeatureUtils.getIndexBefore(s0, features);
             if (i0 < 0) continue;
 
             for (int fIdx = i0; fIdx < features.size(); fIdx++) {
 
-                LocusScore f = features.get(fIdx);
-                if (f.getStart() > bpEnd) break;
-                else if (f.getEnd() < bpStart) continue;
-                else {
+                LocusScore feature = features.get(fIdx);
+                if (feature.getStart() >= bpEnd) break;
+                else if (feature.getEnd() > bpStart && feature.getStart() <= bpEnd) {
 
-                    int pStart = (int) Math.max(pxStart + frameMargin / 2, pxStart + frameMargin / 2 + (f.getStart() - bpStart) / scale);
-                    int pEnd = (int) Math.min(pxEnd - frameMargin / 2, pxStart + frameMargin / 2 + (f.getEnd() - bpStart) / scale);
+
+                    /*// For debugging.
+                    int l1 = track.getLongestFeatureLength(region.getChr());
+                    float score = (float) region.getScore(features, l1, frameBPWidth);
+                    int pStart = pxStart;
+                    int pEnd = pxEnd;*/
+
+                    float score = feature.getScore();
+                    int pStart = (int) Math.max(pxStart, pxStart + (feature.getStart() - bpStart) / scale);
+                    int pEnd = (int) Math.min(pxEnd, pxStart + (feature.getEnd() - bpStart) / scale);
 
                     Color c = track.getColor();
                     float min = 0;
                     float max = 1000;
 
-                    float score = f.getScore();
-                    float alpha = Float.isNaN(score) ? 1 : getAlpha(min, max, score);
-                    if (alpha < 1) {
-                        c = ColorUtilities.getCompositeColor(c, alpha);
-                    }
+                   // float alpha = Float.isNaN(score) ? 1 : getAlpha(min, max, score);
+                   // if (alpha < 1) {
+                   //     c = ColorUtilities.getCompositeColor(c, alpha);
+                   // }
                     graphics.setColor(c);
 
-                    int pw = pEnd == pStart ? 1 : pEnd - pStart;
+                    int pw = Math.max(1, pEnd - pStart);
 
                     // Height proportional to score
-                    int fh = Math.max(10, (int) ((f.getScore() / 1000) * maxFeatureHeight));
+                    int fh = (int) ((score / max) * maxFeatureHeight);
                     graphics.fillRect(pStart, h - fh, pw, fh);
 
                 }

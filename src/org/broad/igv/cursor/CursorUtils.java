@@ -40,7 +40,8 @@ public class CursorUtils {
 
     }
 
-    public static CursorTrack loadPeakTrack(String peakFile) throws IOException {
+
+    public static CursorTrack loadTrack(String peakFile) throws IOException {
 
         AsciiFeatureCodec codec = (AsciiFeatureCodec) CodecFactory.getCodec(new ResourceLocator(peakFile), null);
 //        if(codec == null) {

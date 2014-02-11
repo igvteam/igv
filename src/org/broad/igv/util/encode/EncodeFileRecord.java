@@ -16,7 +16,7 @@ public class EncodeFileRecord {
     Map<String, String> attributes;
     String trackName;
 
-    EncodeFileRecord(String path, Map<String, String> attributes) {
+    public EncodeFileRecord(String path, Map<String, String> attributes) {
         this.path = path;
         this.attributes = attributes;
     }

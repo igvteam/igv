@@ -16,7 +16,7 @@ public class CursorRegion implements Feature {
 
     String chr;  //
     int location;  // Genomic location in BP.  Zero based coords
-    private int MAGIC_NUMBER_CHANGE_ME = 500;
+
 
     public CursorRegion(String chr, int location) {
         this.chr = chr;
@@ -42,21 +42,23 @@ public class CursorRegion implements Feature {
         return location;
     }
 
-    public double getScore(List<BasicFeature> features) {
+    public double getScore(List<BasicFeature> features, int longest, int frameBPWidth) {
 
-        double score = 0;
+        double score = -1;
 
-        int bpStart = location - MAGIC_NUMBER_CHANGE_ME;
-        int bpEnd = location + MAGIC_NUMBER_CHANGE_ME;
+        int bpStart = location - frameBPWidth/2;
+        int bpEnd = location + frameBPWidth+2;
 
-        int i0 = FeatureUtils.getIndexBefore(location - MAGIC_NUMBER_CHANGE_ME, features);
-        if (i0 > 0) {
+        // We have to look back at least as far as the longest feature for overlap.
+        int s0 = longest < 0 ? 0 : bpStart - longest;
+        int i0 = FeatureUtils.getIndexBefore(s0, features);
+        if (i0 >= 0) {
 
             // Just use max
             for (int fIdx = i0; fIdx < features.size(); fIdx++) {
                 BasicFeature f = features.get(fIdx);
                 if (f.getStart() > bpEnd) break;
-                else if (f.getEnd() < bpStart) continue;
+                else if (f.getEnd() <= bpStart) continue;
                 else {
                     // score = Math.max(f instanceof EncodePeakFeature ? ((EncodePeakFeature) f).getSignal() : f.getScore(), score);
                     score = Math.max(f.getScore(), score);
@@ -72,12 +74,16 @@ public class CursorRegion implements Feature {
 //                else if (f.getEnd() < bpStart) continue;
 //                else {
 //                    count++;
-//                    double weight = Math.min(1, ((double) f.getLength()) / (2*MAGIC_NUMBER_CHANGE_ME));
+//                    double weight = Math.min(1, ((double) f.getLength()) / (2*frameBPWidth));
 //                    score +=  weight * f.getScore();
 //                }
 //            }
 //            if(count > 0) score /= count;
         }
         return score;
+    }
+
+    public double getBPEnd() {
+        return 0;
     }
 }

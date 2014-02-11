@@ -11,30 +11,36 @@ import java.io.Serializable;
  */
 public class CursorTrackPanelContainer extends JPanel implements Serializable {
 
+    int height;
     int trackHeight = 60;
     int vmargin = 0;
 
     @Override
     public void doLayout() {
+        height = 0;
         synchronized (this.getTreeLock()) {
-            int top = 0;
             final int width = getWidth();
             for (Component c : this.getComponents()) {
-                c.setBounds(0, top + vmargin, width, trackHeight - 2*vmargin);
-                top += trackHeight;
-
+                c.setBounds(0, height, width, trackHeight - 2*vmargin);
+                height += trackHeight + vmargin;
             }
         }
+    }
+
+    @Override
+    public int getHeight() {
+        return height;
+    }
+
+    @Override
+    public Component add(Component comp) {
+        int sz = (this.getComponents().length + 1) * trackHeight;
+        setPreferredSize(new Dimension(getWidth(), sz));
+        return super.add(comp);
     }
 
     public void setVmargin(int vmargin) {
         this.vmargin = vmargin;
     }
-
-//    @Override
-//    public int getHeight() {
-//        return this.getComponents().length * trackHeight;
-//    }
-
 
 }

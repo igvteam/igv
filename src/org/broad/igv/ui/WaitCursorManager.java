@@ -21,7 +21,7 @@ import java.util.Set;
 
 
 /**
- * Utility class for managing IGV cursors.  The batch purpose of the class is to centrally manage
+ * Utility class for managing IGV cursors.  The main purpose of the class is to centrally manage
  * a global wait cursor.  When in "wait" mode component set cursor events are ignored, or rather
  * saved in a cached until the wait cursor is removed.
  *

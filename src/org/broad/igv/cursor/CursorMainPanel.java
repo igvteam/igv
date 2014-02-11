@@ -17,11 +17,22 @@ public class CursorMainPanel extends JPanel implements Serializable {
 
     private CursorModel model;
 
+    ButtonGroup trackSelectionButtonGroup;
+
+
     public CursorMainPanel() {
         initComponents();
+        trackSelectionButtonGroup = new ButtonGroup();
         //this.trackLabelPanel.setVmargin(10);
     }
 
+
+    public void addTrackSelectionButton(JRadioButton button) {
+        if(trackSelectionButtonGroup.getButtonCount() == 0) {
+            button.setSelected(true);
+        }
+        trackSelectionButtonGroup.add(button);
+    }
 
     public void setModel(CursorModel model) {
         this.model = model;
@@ -39,6 +50,15 @@ public class CursorMainPanel extends JPanel implements Serializable {
         this.trackLabelPanel.add(labelPanel);
 
         this.cursorIdeogramPanel1.addTrack(track);
+    }
+
+    @Override
+    public void revalidate() {
+        super.revalidate();
+    }
+
+    public void tracksAdded() {
+        if(this.scrollPane1 != null) this.scrollPane1.revalidate();
     }
 
     private void initComponents() {
@@ -80,7 +100,7 @@ public class CursorMainPanel extends JPanel implements Serializable {
 
                 //======== cursorAttributePanel1 ========
                 {
-                    cursorAttributePanel1.setBorder(LineBorder.createBlackLineBorder());
+                    cursorAttributePanel1.setBorder(LineBorder.createGrayLineBorder());
                     cursorAttributePanel1.setPreferredSize(new Dimension(100, 42));
                     cursorAttributePanel1.setLayout(new BorderLayout());
                     cursorAttributePanel1.add(trackLabelPanel, BorderLayout.CENTER);
@@ -89,12 +109,13 @@ public class CursorMainPanel extends JPanel implements Serializable {
 
                 //======== cursorDataPanel1 ========
                 {
+                    cursorDataPanel1.setBorder(LineBorder.createGrayLineBorder());
                     cursorDataPanel1.setLayout(new BorderLayout());
 
                     //---- trackPanel ----
                     trackPanel.setBorder(null);
                     trackPanel.setBackground(SystemColor.window);
-                    cursorDataPanel1.add(trackPanel, BorderLayout.CENTER);
+                    cursorDataPanel1.add(trackPanel, BorderLayout.NORTH);
                 }
                 panel1.add(cursorDataPanel1, BorderLayout.CENTER);
             }

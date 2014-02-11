@@ -33,7 +33,7 @@ public class FeatureUtils {
         Predicate<Feature> overlapPredicate = new Predicate<Feature>() {
             @Override
             public boolean apply(Feature object) {
-                return chr.equals(object.getChr()) && object.getStart() <= end && object.getEnd() >= start;
+                return chr.equals(object.getChr()) && object.getStart() <= end && object.getEnd() > start;
             }
         };
         return overlapPredicate;
