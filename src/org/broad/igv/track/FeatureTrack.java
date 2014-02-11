@@ -121,6 +121,10 @@ public class FeatureTrack extends AbstractTrack {
 
     private static Object loadLock = new Object();
 
+    //Force this track to load data synchronously.
+    //With this set to false, it chooses depending on the source
+    private boolean forceLoadSync = false;
+
     // TODO -- there are WAY too many constructors for this class
 
     /**
@@ -833,9 +837,7 @@ public class FeatureTrack extends AbstractTrack {
      */
     protected void loadFeatures(final String chr, final int start, final int end, final RenderContext context) {
 
-        // TODO -- improve or remove the need for this test.  We know that FeatureCollectionSource has all the data
-        // in memory, and can by run synchronously
-        boolean aSync = !(source instanceof FeatureCollectionSource);
+        boolean aSync = !forceLoadSync && !(source instanceof FeatureCollectionSource);
 
 
         NamedRunnable runnable = new NamedRunnable() {
@@ -909,6 +911,10 @@ public class FeatureTrack extends AbstractTrack {
             runnable.run();
         }
 
+    }
+
+    public void setForceLoadSync(boolean forceLoadSync){
+        this.forceLoadSync = forceLoadSync;
     }
 
     /**
@@ -1090,5 +1096,6 @@ public class FeatureTrack extends AbstractTrack {
     public void clearPackedFeatures() {
         this.packedFeaturesMap.clear();
     }
+
 }
 

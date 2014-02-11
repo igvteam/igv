@@ -181,9 +181,9 @@ public class SashimiPlot extends JFrame {
 
         geneTrack.setDisplayMode(Track.DisplayMode.SQUISHED);
 
-        //Hacky way of clearing packed features
-        geneTrack.setVisibilityWindow(geneTrack.getVisibilityWindow());
+        geneTrack.clearPackedFeatures();
         RenderContext context = new RenderContextImpl(geneComponent, null, frame, null);
+        geneTrack.setForceLoadSync(true);
         geneTrack.load(context);
 
 
