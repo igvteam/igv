@@ -705,7 +705,7 @@ public class HttpUtils {
                 String newLocation = conn.getHeaderField("Location");
                 log.debug("Redirecting to " + newLocation);
 
-                return openConnection(new URL(newLocation), requestProperties, method, redirectCount++);
+                return openConnection(new URL(newLocation), requestProperties, method, ++redirectCount);
             }
 
             // TODO -- handle other response codes.
