@@ -515,7 +515,7 @@ public class ReferenceFrame {
         return (int) Math.round((Math.log((getChromosomeLength() / (end - start)) * (((double) widthInPixels) / binsPerTile)) / Globals.log2));
     }
 
-    protected Genome getGenome() {
+    protected static Genome getGenome() {
         return GenomeManager.getInstance().getCurrentGenome();
     }
 
@@ -636,8 +636,8 @@ public class ReferenceFrame {
         return this.getChromosomeLength();
     }
 
-    private int getMaxCoordinate(String chrName){
-        return this.getChromosomeLength(chrName);
+    private static int getMaxCoordinate(String chrName){
+        return getChromosomeLength(chrName);
     }
 
     /**
@@ -650,7 +650,7 @@ public class ReferenceFrame {
         return getChromosomeLength(this.chrName);
     }
 
-    public int getChromosomeLength(String chrName) {
+    private static int getChromosomeLength(String chrName) {
         Genome genome = getGenome();
 
         if (genome == null) {
@@ -661,7 +661,8 @@ public class ReferenceFrame {
             // TODO -- remove the hardcoded unit divider ("1000")
             return (int) (genome.getNominalLength() / 1000);
         } else {
-            if (getChromosome() == null) {
+            Chromosome chromosome = genome.getChromosome(chrName);
+            if (chromosome == null) {
                 log.error("Null chromosome: " + chrName);
                 if (genome.getChromosomes().size() == 0) {
                     return 1;
@@ -669,7 +670,7 @@ public class ReferenceFrame {
                     return genome.getChromosomes().iterator().next().getLength();
                 }
             }
-            return getChromosome().getLength();
+            return chromosome.getLength();
         }
     }
 
