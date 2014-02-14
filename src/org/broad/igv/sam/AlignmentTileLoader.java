@@ -456,31 +456,40 @@ public class AlignmentTileLoader {
         private void incrementDownsampledIntervals(List<Alignment> removedValues) {
             if(removedValues == null) return;
             for(Alignment al: removedValues){
-                DownsampledInterval interval = findDownsampledInterval(al, downsampledIntervals.size() / 2);
+                DownsampledInterval interval = findDownsampledInterval(al);
                 if(interval != null) interval.incCount();
             }
         }
 
-        private DownsampledInterval findDownsampledInterval(Alignment al, int startInd) {
-            //Attempt to find by binary search
-            DownsampledInterval curInterval = downsampledIntervals.get(startInd);
+        private DownsampledInterval findDownsampledInterval(Alignment al){
+            return findDownsampledInterval(al, 0, downsampledIntervals.size());
+        }
+
+        /**
+         * Attempt to find appropriate DownsampledInterval by recursive binary search
+         * @param al
+         * @param startInd Start search index, 0-based inclusive
+         * @param endInd   End search index, 0-based exclusive
+         * @return
+         */
+        private DownsampledInterval findDownsampledInterval(Alignment al, int startInd, int endInd) {
+            //Length-0 search space
+            if(startInd == endInd){
+                return null;
+            }
+            final int midInd = (startInd + endInd) / 2;
+            final DownsampledInterval curInterval = downsampledIntervals.get(midInd);
             if (al.getStart() >= curInterval.getStart() && al.getStart() < curInterval.getEnd()) {
                 //Found
                 return curInterval;
             }
 
-            int sz = downsampledIntervals.size();
-            int newStart = -1;
             if(al.getStart() >= curInterval.getEnd()){
-                // startInd + (sz - startInd)/2 = (sz + startInd)/2
-                newStart = (sz + startInd)/2;
+                startInd = midInd + 1;
             }else{
-                // startInd - (startInd)/2 = startInd/2
-                newStart = startInd/2;
+                endInd = midInd;
             }
-            //This would be infinite regress, we give up
-            if(newStart == startInd) return null;
-            return findDownsampledInterval(al, newStart);
+            return findDownsampledInterval(al, startInd, endInd);
         }
 
         /**
