@@ -76,8 +76,8 @@
                 <include name="**/*.jar"/>
                 <exclude name="appbundler*.jar"/>
                 <exclude name="**/*junit*.jar"/>
-                <exclude name="**/batik-codec.jar"/>
-                <exclude name="**/goby-io-igv.jar"/>
+                <exclude name="**/batik-codec__V1.7.jar"/>
+                <exclude name="**/goby-io-igv__V1.0.jar"/>
                 <exclude name="**/*AppleJavaExtensions.jar"/>
             </fileset>
         </unzip>
@@ -177,8 +177,8 @@
 
                 </manifest>
             </jar>
-            <copy file="${lib.dir}batik-codec.jar" tofile="${dist.dir}batik-codec.jar" overwrite="true"/>
-            <copy file="${lib.dir}goby-io-igv.jar" tofile="${dist.dir}goby-io-igv.jar" overwrite="true"/>
+            <copy file="${lib.dir}batik-codec__V1.7.jar" tofile="${dist.dir}batik-codec__V1.7.jar" overwrite="true"/>
+            <copy file="${lib.dir}goby-io-igv__V1.0.jar" tofile="${dist.dir}goby-io-igv__V1.0.jar" overwrite="true"/>
         </sequential>
     </macrodef>
 
@@ -200,7 +200,7 @@
             <root classname="${main-class}"/>
         </classfileset>
 
-        <property name="class-path" value="batik-codec.jar goby-io-igv.jar"/>
+        <property name="class-path" value="batik-codec__V1.7.jar goby-io-igv__V1.0.jar"/>
 
         <build includedFileset="files"/>
     </target>
@@ -445,8 +445,8 @@
                 <!--runtime dir="${env.JAVA_HOME}" /-->
                 <classpath dir="@{dist.dir}">
                     <include name="@{jar.name}"/>
-                    <include name="batik-codec.jar"/>
-                    <include name="goby-io-igv.jar"/>
+                    <include name="batik-codec__V1.7.jar"/>
+                    <include name="goby-io-igv__V1.0.jar"/>
                 </classpath>
                 <option value="-Dapple.laf.useScreenMenuBar=true"/>
                 <argument value="-Xmx2g"/>
