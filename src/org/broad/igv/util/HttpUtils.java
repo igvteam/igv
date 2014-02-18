@@ -261,6 +261,8 @@ public class HttpUtils {
      * @throws IOException
      */
     private HttpURLConnection openConnectionHeadOrGet(URL url) throws IOException {
+
+        // Keep track of urls for which "HEAD" does not work (e.g. Amazon with signed urls).
         boolean tryHead = headURLCache.containsKey(url) ? headURLCache.get(url) : true;
 
         if(tryHead){
@@ -269,6 +271,9 @@ public class HttpUtils {
                 headURLCache.put(url, true);
                 return conn;
             } catch (IOException e) {
+                if(e instanceof FileNotFoundException) {
+                    throw e;
+                }
                 log.info("HEAD request failed for url: " + url.toExternalForm() + ".  Trying GET");
                 headURLCache.put(url, false);
             }
