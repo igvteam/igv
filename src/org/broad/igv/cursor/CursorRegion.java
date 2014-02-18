@@ -5,6 +5,9 @@ import org.broad.igv.feature.EncodePeakFeature;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.tribble.Feature;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -16,7 +19,7 @@ public class CursorRegion implements Feature {
 
     String chr;  //
     int location;  // Genomic location in BP.  Zero based coords
-
+    float tmp;
 
     public CursorRegion(String chr, int location) {
         this.chr = chr;
@@ -45,45 +48,79 @@ public class CursorRegion implements Feature {
     public double getScore(List<BasicFeature> features, int longest, int frameBPWidth) {
 
         double score = -1;
+        if (features == null) return score;
 
-        int bpStart = location - frameBPWidth/2;
-        int bpEnd = location + frameBPWidth+2;
-
-        // We have to look back at least as far as the longest feature for overlap.
-        int s0 = longest < 0 ? 0 : bpStart - longest;
-        int i0 = FeatureUtils.getIndexBefore(s0, features);
-        if (i0 >= 0) {
-
-            // Just use max
-            for (int fIdx = i0; fIdx < features.size(); fIdx++) {
-                BasicFeature f = features.get(fIdx);
-                if (f.getStart() > bpEnd) break;
-                else if (f.getEnd() <= bpStart) continue;
-                else {
-                    // score = Math.max(f instanceof EncodePeakFeature ? ((EncodePeakFeature) f).getSignal() : f.getScore(), score);
-                    score = Math.max(f.getScore(), score);
-                }
-            }
-
-            // Do a weighted average
-//            int count = 0;
-//            for (int fIdx = i0; fIdx < features.size(); fIdx++) {
-//
-//                EncodePeakFeature f = features.get(fIdx);
-//                if (f.getStart() > bpEnd) break;
-//                else if (f.getEnd() < bpStart) continue;
-//                else {
-//                    count++;
-//                    double weight = Math.min(1, ((double) f.getLength()) / (2*frameBPWidth));
-//                    score +=  weight * f.getScore();
-//                }
-//            }
-//            if(count > 0) score /= count;
+        FeatureIterator iter = getFeatureIterator(features, longest, frameBPWidth);
+        while (iter.hasNext()) {
+            BasicFeature f = iter.next();
+            score = Math.max(f.getScore(), score);
         }
+        tmp = (float) score;
         return score;
     }
 
-    public double getBPEnd() {
-        return 0;
+    public FeatureIterator getFeatureIterator(List<BasicFeature> features, int longest, int frameBPWidth) {
+        return new FeatureIterator(features, longest, frameBPWidth);
     }
+
+    public float getTmp() {
+        return tmp;
+    }
+
+
+    class FeatureIterator implements Iterator<BasicFeature> {
+
+        int bpStart;
+        int bpEnd;
+        int longest;
+        BasicFeature nextFeature;
+        Iterator<BasicFeature> features;
+
+        FeatureIterator(List<BasicFeature> features, int longest, int frameBPWidth) {
+            this.longest = longest;
+            bpStart = location - frameBPWidth / 2;
+            bpEnd = location + frameBPWidth/2;
+
+            int s0 = longest < 0 ? 0 : bpStart - longest;
+            int startIdx = FeatureUtils.getIndexBefore(s0, features);
+            this.features = (features.subList(startIdx, features.size())).iterator();
+            advance();
+
+
+        }
+
+        private void advance() {
+            // We have to look back at least as far as the longest feature for overlap.
+            nextFeature = null;
+            while (features.hasNext()) {
+                BasicFeature f = features.next();
+                if (f.getStart() >= bpEnd) {
+                    break;
+                }
+
+                if (f.getEnd() >= bpStart && f.getStart() < bpEnd) {
+                    nextFeature = f;
+                    break;
+                }
+            }
+        }
+
+        @Override
+        public boolean hasNext() {
+            return nextFeature != null;
+        }
+
+        @Override
+        public BasicFeature next() {
+            BasicFeature retValue = nextFeature;
+            advance();
+            return retValue;
+        }
+
+        @Override
+        public void remove() {
+
+        }
+    }
+
 }

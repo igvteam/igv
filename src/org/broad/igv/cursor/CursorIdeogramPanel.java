@@ -1,14 +1,13 @@
 package org.broad.igv.cursor;
 
 import org.broad.igv.feature.BasicFeature;
-import org.broad.igv.feature.FeatureUtils;
-import org.broad.igv.feature.LocusScore;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -23,8 +22,14 @@ public class CursorIdeogramPanel extends JComponent implements Serializable {
     boolean drawViewRect = true;
 
     public CursorIdeogramPanel() {
-   //     setBorder(BorderFactory.createLineBorder(Color.black));
+        //     setBorder(BorderFactory.createLineBorder(Color.black));
 
+    }
+
+    public static float getAlpha(float minRange, float maxRange, float value) {
+        float binWidth = (maxRange - minRange) / 9;
+        int binNumber = (int) ((value - minRange) / binWidth);
+        return Math.min(1.0f, 0.2f + (binNumber * 0.8f) / 9);
     }
 
     @Override
@@ -51,7 +56,7 @@ public class CursorIdeogramPanel extends JComponent implements Serializable {
 
             graphics.setColor(Color.black);
             graphics.drawRect(px, 0, width, getHeight() - 1);
-            graphics.drawRect(px+1, 1, width-2, getHeight()-2);
+            graphics.drawRect(px + 1, 1, width - 2, getHeight() - 2);
         }
 
     }
@@ -71,56 +76,41 @@ public class CursorIdeogramPanel extends JComponent implements Serializable {
         // We'll sample frames and give each 1 pixel
         double sampleInterval = ((double) frameList.size()) / getWidth();
 
-        // TODO -- sampleInterval < 1;
-
-        int frameBPWidth = model.getFrameBPWidth();
-        int bh = getHeight()-2;
+        int bh = getHeight() - 2;
         double dh = ((double) bh) / tracks.size();
         int px = 0;
         for (double frameNumber = 0; frameNumber < frameList.size(); frameNumber += sampleInterval) {
 
             CursorRegion frame = frameList.get((int) frameNumber);
             String chr = frame.getChr();
-
             int maxFeatureHeight = (int) dh;
 
             graphics.setColor(Color.white);
             graphics.drawLine(px, 0, px, getHeight());
 
-            double base = dh+1;
+            double base = dh + 1;
             for (CursorTrack track : tracks) {
 
                 List<BasicFeature> features = track.getFeatures(chr);
                 if (features == null) continue;
 
-                double bpStart = frame.getLocation() - frameBPWidth / 2;
-                double bpEnd = frame.getLocation() + frameBPWidth / 2;
-                int i0 = FeatureUtils.getIndexBefore(bpStart, features);
-                if (i0 < 0) continue;
+                int l2 = track.getLongestFeatureLength(chr);
+                Iterator<BasicFeature> regionFeatures = frame.getFeatureIterator(features, l2, model.getFrameBPWidth());
 
-                for (int fIdx = i0; fIdx < features.size(); fIdx++) {
+                while (regionFeatures.hasNext()) {
+                    BasicFeature f = regionFeatures.next();
 
-                    LocusScore f = features.get(fIdx);
-                    if (f.getStart() > bpEnd) break;
-                    else if (f.getEnd() < bpStart) continue;
-                    else {
+                    Color c = track.getColor();
+                    float min = 0;
+                    float max = 1000;
 
+                    float score = f.getScore();
+                    float alpha = Float.isNaN(score) ? 1 : getAlpha(min, max, score);
+                    c = ColorUtilities.getCompositeColor(c, alpha);
+                    graphics.setColor(c);
 
-                        Color c = track.getColor();
-                        float min = 0;
-                        float max = 1000;
+                    graphics.drawLine(px, (int) base - maxFeatureHeight, px, (int) base);
 
-                        float score = f.getScore();
-                        float alpha = Float.isNaN(score) ? 1 : CursorTrackPanel.getAlpha(min, max, score);
-                        c = ColorUtilities.getCompositeColor(c, alpha);
-                        graphics.setColor(c);
-
-
-                        // Height proportional to score
-                        int fh = f.getScore() == 0 ? 0 : Math.max(1, (int) ((f.getScore() / 1000) * maxFeatureHeight));
-                        graphics.drawLine(px, (int) base - maxFeatureHeight, px, (int) base);
-
-                    }
                 }
                 base += dh;
             }
@@ -132,7 +122,4 @@ public class CursorIdeogramPanel extends JComponent implements Serializable {
         this.tracks.add(track);
     }
 
-    public void setDrawViewRect(boolean drawViewRect) {
-        this.drawViewRect = drawViewRect;
-    }
 }

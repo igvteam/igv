@@ -10,6 +10,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -23,6 +25,8 @@ public class CursorTrackPanel extends JComponent implements Serializable {
     CursorTrack track;
     private CursorMainPanel mainPanel;
 
+    private List<RegionFrame> renderedFrames;
+
     public CursorTrackPanel(CursorTrack t, CursorModel cursorModel, CursorMainPanel mainPanel) {
         this.track = t;
         this.model = cursorModel;
@@ -30,21 +34,8 @@ public class CursorTrackPanel extends JComponent implements Serializable {
         MouseAdapter ma = new MouseHandler();
         addMouseListener(ma);
         addMouseMotionListener(ma);
-    }
-
-    public static float getAlpha(float minRange, float maxRange, float value) {
-        float binWidth = (maxRange - minRange) / 9;
-        int binNumber = (int) ((value - minRange) / binWidth);
-        return Math.min(1.0f, 0.2f + (binNumber * 0.8f) / 9);
-    }
-
-
-    public void setMainPanel(CursorMainPanel mainPanel) {
-        this.mainPanel = mainPanel;
-    }
-
-    public CursorMainPanel getMainPanel() {
-        return mainPanel;
+        setToolTipText("");
+        ToolTipManager.sharedInstance().setDismissDelay(20000);
     }
 
     public void setTrack(CursorTrack track) {
@@ -56,12 +47,11 @@ public class CursorTrackPanel extends JComponent implements Serializable {
 
         JPopupMenu menu = new JPopupMenu(); //track.getName());
 
-        JMenuItem setFramesItem = new JMenuItem("Set frames");
+        JMenuItem setFramesItem = new JMenuItem("Check sort");
         setFramesItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                model.setRegions(CursorUtils.createRegions(track));
-                mainPanel.repaint();
+                checkSort();
             }
         });
         menu.add(setFramesItem);
@@ -76,12 +66,21 @@ public class CursorTrackPanel extends JComponent implements Serializable {
 
         super.paintComponent(graphics);
 
+        renderedFrames = new ArrayList<RegionFrame>(1000);
+
         if (model == null || track == null) return;
 
         List<CursorRegion> regionsList = model.getFilteredRegions();
         if (regionsList == null) return;
 
         int frameMargin = model.getFrameMargin();
+        if (frameMargin < 1) {
+            graphics.setColor(Color.white);
+            graphics.fillRect(0, 0, getWidth(), getHeight());
+        }
+
+        Color c = track.getColor();
+        graphics.setColor(c);
 
         double framePixelWidth = model.getFramePixelWidth();
         int frameBPWidth = model.getFrameBPWidth();
@@ -104,69 +103,83 @@ public class CursorTrackPanel extends JComponent implements Serializable {
 
             double bpStart = region.getLocation() - frameBPWidth / 2;
             double bpEnd = region.getLocation() + frameBPWidth / 2;
-            int pxStart = (int) ((regionNumber - origin) * framePixelWidth + frameMargin / 2);
-            int pxEnd = (int) (framePixelWidth > 1 ? pxStart + framePixelWidth :
-                    (regionNumber + 1 - origin) * frameBPWidth) - frameMargin;
-            int pxWidth = pxEnd - pxStart;
+
+            int pxStart = (int) ((regionNumber - origin) * framePixelWidth);
+            int pxEnd = (int) (pxStart + framePixelWidth);
+            renderedFrames.add(new RegionFrame(pxStart, pxEnd, region));
 
             int maxFeatureHeight = h - 10;
+            float max = 1000;
 
             // Region block
-
-            graphics.setColor(Color.white);
-            graphics.fillRect(pxStart, 0, pxWidth, h);
+            if (frameMargin > 0) {
+                int pxWidth = pxEnd - pxStart;
+                graphics.setColor(Color.white);
+                graphics.fillRect(pxStart, 0, pxWidth, h);
+            }
 
             List<BasicFeature> features = track.getFeatures(chr);
             if (features == null) continue;
 
-
             int l2 = track.getLongestFeatureLength(chr);
-            double s0 = l2 < 0 ? 0 : bpStart - l2;
-            int i0 = FeatureUtils.getIndexBefore(s0, features);
-            if (i0 < 0) continue;
+            Iterator<BasicFeature> regionFeatures = region.getFeatureIterator(features, l2, model.getFrameBPWidth());
 
-            for (int fIdx = i0; fIdx < features.size(); fIdx++) {
+            while (regionFeatures.hasNext()) {
+                BasicFeature feature = regionFeatures.next();
+                float score = feature.getScore();
+                if (Float.isNaN(score)) continue;
 
-                LocusScore feature = features.get(fIdx);
-                if (feature.getStart() >= bpEnd) break;
-                else if (feature.getEnd() > bpStart && feature.getStart() <= bpEnd) {
+                int pStart = (int) Math.min(pxEnd, Math.max(pxStart, pxStart + (feature.getStart() - bpStart) / scale));
+                int pEnd = (int) Math.min(pxEnd, pxStart + (feature.getEnd() - bpStart) / scale);
+                int pw = Math.max(1, pEnd - pStart);
 
+                graphics.setColor(c);
 
-                    /*// For debugging.
-                    int l1 = track.getLongestFeatureLength(region.getChr());
-                    float score = (float) region.getScore(features, l1, frameBPWidth);
-                    int pStart = pxStart;
-                    int pEnd = pxEnd;*/
+                // Height proportional to score
+                int fh = (int) ((score / max) * maxFeatureHeight);
+                graphics.fillRect(pStart, h - fh, pw, fh);
 
-                    float score = feature.getScore();
-                    int pStart = (int) Math.max(pxStart, pxStart + (feature.getStart() - bpStart) / scale);
-                    int pEnd = (int) Math.min(pxEnd, pxStart + (feature.getEnd() - bpStart) / scale);
-
-                    Color c = track.getColor();
-                    float min = 0;
-                    float max = 1000;
-
-                   // float alpha = Float.isNaN(score) ? 1 : getAlpha(min, max, score);
-                   // if (alpha < 1) {
-                   //     c = ColorUtilities.getCompositeColor(c, alpha);
-                   // }
-                    graphics.setColor(c);
-
-                    int pw = Math.max(1, pEnd - pStart);
-
-                    // Height proportional to score
-                    int fh = (int) ((score / max) * maxFeatureHeight);
-                    graphics.fillRect(pStart, h - fh, pw, fh);
-
-                }
             }
-
-            graphics.setColor(Color.black);
-            graphics.drawString(track.getName(), 10, 12);
-
         }
+
+
+        graphics.setColor(Color.black);
+        graphics.drawString(track.getName(), 10, 12);
+
+
     }
 
+    @Override
+    public String getToolTipText(MouseEvent event) {
+
+        if (renderedFrames != null) {
+            for (RegionFrame f : renderedFrames) {
+                if (event.getX() > f.pxStart && event.getX() <= f.pxEnd) {
+
+                    int bpw = model.getFrameBPWidth();
+                    int center = f.region.getLocation();
+                    int start = center - bpw / 2;
+                    int end = center + bpw / 2;
+                    StringBuffer sb = new StringBuffer("<html>");
+                    sb.append("Region " + f.region.getChr() + ":" + start + "-" + end + " : " + f.region.getTmp());
+
+                    String chr = f.region.chr;
+                    List<BasicFeature> features = track.getFeatures(chr);
+                    if (features != null) {
+                        int longest = track.getLongestFeatureLength(chr);
+                        Iterator<BasicFeature> iter = f.region.getFeatureIterator(features, longest, bpw);
+                        while (iter.hasNext()) {
+                            BasicFeature rf = iter.next();
+                            sb.append("<br/>" + rf.getChr() + ":" + rf.getStart() + "-" + rf.getEnd() + " : " + rf.getScore());
+                        }
+                    }
+
+                    return sb.toString();
+                }
+            }
+        }
+        return "";
+    }
 
     class MouseHandler extends MouseAdapter {
 
@@ -205,4 +218,53 @@ public class CursorTrackPanel extends JComponent implements Serializable {
     }
 
 
+    protected void checkSort() {
+
+
+        if (model == null || track == null) return;
+
+        List<CursorRegion> regionsList = model.getFilteredRegions();
+        if (regionsList == null) return;
+
+
+        double framePixelWidth = model.getFramePixelWidth();
+        int frameBPWidth = model.getFrameBPWidth();
+        double origin = model.getOrigin();   // In frame units
+        double end = origin + ((double) getWidth()) / framePixelWidth;
+
+
+        int startRegionNumber = (int) origin;
+        if (startRegionNumber >= regionsList.size()) return;
+
+        int sampleInterval = Math.max(1, (int) Math.round(1.0 / framePixelWidth));
+        double lastScore = -Double.MAX_VALUE;
+        for (int regionNumber = startRegionNumber; regionNumber < regionsList.size(); regionNumber += sampleInterval) {
+
+            if (regionNumber > end) break;     // Absolutely critical for performance
+
+            CursorRegion region = regionsList.get(regionNumber);
+            String chr = region.getChr();
+            // Region block
+
+            List<BasicFeature> features = track.getFeatures(chr);
+            int l1 = track.getLongestFeatureLength(region.getChr());
+            double score = region.getScore(features, l1, frameBPWidth);
+            if (score < lastScore) {
+                System.out.println(score);
+            }
+            lastScore = score;
+        }
+    }
+
+    static class RegionFrame {
+        int pxStart;
+        int pxEnd;
+        CursorRegion region;
+
+        RegionFrame(int pxStart, int pxEnd, CursorRegion region) {
+            this.pxStart = pxStart;
+            this.pxEnd = pxEnd;
+            this.region = region;
+        }
+    }
 }
