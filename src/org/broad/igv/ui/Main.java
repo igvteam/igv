@@ -73,7 +73,7 @@ public class Main {
 
         long mem = RuntimeUtils.getAvailableMemory();
         int MB = 1000000;
-        if(mem < 600*MB) {
+        if(mem < 400*MB) {
             int mb = (int) (mem / MB);
             JOptionPane.showMessageDialog(null, "Warning: IGV is running with minimal available memory (" + mb + " mb)");
         }
