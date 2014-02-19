@@ -18,7 +18,6 @@
 package org.broad.igv.ui;
 
 import org.broad.igv.DirectoryManager;
-import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.util.MessageUtils;
@@ -64,7 +63,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
 
         initData(inputListItems);
 
-        downloadSequenceCB.setVisible(Globals.isDevelopment() && listSelectionMode == ListSelectionModel.SINGLE_SELECTION);
+        downloadSequenceCB.setVisible(listSelectionMode == ListSelectionModel.SINGLE_SELECTION);
     }
 
     private void initData(Collection<GenomeListItem> inputListItems) {
