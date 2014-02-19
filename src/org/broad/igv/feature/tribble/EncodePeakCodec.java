@@ -93,8 +93,8 @@ public class EncodePeakCodec extends UCSCCodec {
 
         // Store the remaining features in description string */
         feature.setSignal((float) Double.parseDouble(tokens[6]));
-        feature.setPValue((float) Double.parseDouble(tokens[6]));
-        feature.setQValue((float) Double.parseDouble(tokens[6]));
+        feature.setPValue((float) Double.parseDouble(tokens[7]));
+        feature.setQValue((float) Double.parseDouble(tokens[8]));
 
         return feature;
     }

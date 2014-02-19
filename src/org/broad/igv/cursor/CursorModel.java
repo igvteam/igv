@@ -1,5 +1,8 @@
 package org.broad.igv.cursor;
 
+import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.SignalFeature;
+
 import java.util.*;
 
 /**
@@ -21,11 +24,12 @@ public class CursorModel {
     int frameMargin = 6;
     private double origin = 0;
     private int framePixelHeight = 50;
+
     CursorTrack sortedTrack;
     CursorMainWindow mainWindow;
 
     public CursorModel(CursorMainWindow cursorMainWindow) {
-         this.mainWindow = cursorMainWindow;
+        this.mainWindow = cursorMainWindow;
     }
 
     public List<CursorTrack> getTracks() {
@@ -43,11 +47,11 @@ public class CursorModel {
     }
 
     private void updateFilteredRegions() {
-        if(filter == null || regions == null) filteredRegions = null;
+        if (filter == null || regions == null) filteredRegions = null;
         else {
             filteredRegions = new ArrayList<CursorRegion>();
-            for(CursorRegion r : regions) {
-                if(filter.pass(r)) filteredRegions.add(r);
+            for (CursorRegion r : regions) {
+                if (filter.pass(r)) filteredRegions.add(r);
             }
         }
         mainWindow.updateRegionsLabel();
@@ -102,7 +106,7 @@ public class CursorModel {
     }
 
     public void addTrack(CursorTrack t) {
-        if(tracks == null) tracks = new ArrayList<CursorTrack>();
+        if (tracks == null) tracks = new ArrayList<CursorTrack>();
         tracks.add(t);
     }
 
@@ -118,10 +122,8 @@ public class CursorModel {
             @Override
             public int compare(CursorRegion cursorRegion1, CursorRegion cursorRegion2) {
 
-                int l1 = t.getLongestFeatureLength(cursorRegion1.getChr());
-                int l2 = t.getLongestFeatureLength(cursorRegion2.getChr());
-                double s1 = cursorRegion1.getScore(t.getFeatures(cursorRegion1.getChr()), l1, frameBPWidth);
-                double s2 = cursorRegion2.getScore(t.getFeatures(cursorRegion2.getChr()), l2, frameBPWidth);
+                double s1 = cursorRegion1.getScore(t, frameBPWidth);
+                double s2 = cursorRegion2.getScore(t, frameBPWidth);
                 return sortDirection * (s1 == s2 ? 0 : (s1 > s2 ? -1 : 1));
 
             }
@@ -142,5 +144,6 @@ public class CursorModel {
     public CursorTrack getSortedTrack() {
         return sortedTrack;
     }
+
 
 }

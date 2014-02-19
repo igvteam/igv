@@ -60,7 +60,7 @@ public class RegionFilter {
 
             List<BasicFeature> features = track.getFeatures(region.getChr());
             int lf = track.getLongestFeatureLength(region.getChr());
-            double score = region.getScore(features, lf, CursorModel.frameBPWidth);
+            double score = region.getScore(track, CursorModel.frameBPWidth);
 
             if (score < 0) return false;
             else {

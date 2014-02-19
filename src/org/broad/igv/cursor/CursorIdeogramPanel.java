@@ -26,10 +26,10 @@ public class CursorIdeogramPanel extends JComponent implements Serializable {
 
     }
 
-    public static float getAlpha(float minRange, float maxRange, float value) {
-        float binWidth = (maxRange - minRange) / 9;
+    public static double getAlpha(double minRange, double maxRange, double value) {
+        double binWidth = (maxRange - minRange) / 9;
         int binNumber = (int) ((value - minRange) / binWidth);
-        return Math.min(1.0f, 0.2f + (binNumber * 0.8f) / 9);
+        return Math.min(1.0, 0.2 + (binNumber * 0.8) / 9);
     }
 
     @Override
@@ -89,7 +89,12 @@ public class CursorIdeogramPanel extends JComponent implements Serializable {
             graphics.drawLine(px, 0, px, getHeight());
 
             double base = dh + 1;
+
             for (CursorTrack track : tracks) {
+
+                CursorTrack.Range yScale = track.getScale();
+                double min = yScale.getMin();
+                double max = yScale.getMax();
 
                 List<BasicFeature> features = track.getFeatures(chr);
                 if (features == null) continue;
@@ -101,12 +106,10 @@ public class CursorIdeogramPanel extends JComponent implements Serializable {
                     BasicFeature f = regionFeatures.next();
 
                     Color c = track.getColor();
-                    float min = 0;
-                    float max = 1000;
 
-                    float score = f.getScore();
-                    float alpha = Float.isNaN(score) ? 1 : getAlpha(min, max, score);
-                    c = ColorUtilities.getCompositeColor(c, alpha);
+                    float score = track.getSignal(f);
+                    double alpha = Float.isNaN(score) ? 1 : getAlpha(min, max, score);
+                    c = ColorUtilities.getCompositeColor(c, (float) alpha);
                     graphics.setColor(c);
 
                     graphics.drawLine(px, (int) base - maxFeatureHeight, px, (int) base);

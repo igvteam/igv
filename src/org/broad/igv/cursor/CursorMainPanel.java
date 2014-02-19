@@ -61,6 +61,10 @@ public class CursorMainPanel extends JPanel implements Serializable {
         if(this.scrollPane1 != null) this.scrollPane1.revalidate();
     }
 
+    public int getDataPanelWidth() {
+        return dataPanel.getWidth();
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
@@ -69,9 +73,9 @@ public class CursorMainPanel extends JPanel implements Serializable {
         panel3 = new JLabel();
         scrollPane1 = new JScrollPane();
         panel1 = new JPanel();
-        cursorAttributePanel1 = new JPanel();
+        attributePanel = new JPanel();
         trackLabelPanel = new CursorTrackPanelContainer();
-        cursorDataPanel1 = new JPanel();
+        dataPanel = new JPanel();
         trackPanel = new CursorTrackPanelContainer();
 
         //======== this ========
@@ -98,26 +102,26 @@ public class CursorMainPanel extends JPanel implements Serializable {
             {
                 panel1.setLayout(new BorderLayout(4, 4));
 
-                //======== cursorAttributePanel1 ========
+                //======== attributePanel ========
                 {
-                    cursorAttributePanel1.setBorder(LineBorder.createGrayLineBorder());
-                    cursorAttributePanel1.setPreferredSize(new Dimension(100, 42));
-                    cursorAttributePanel1.setLayout(new BorderLayout());
-                    cursorAttributePanel1.add(trackLabelPanel, BorderLayout.CENTER);
+                    attributePanel.setBorder(LineBorder.createGrayLineBorder());
+                    attributePanel.setPreferredSize(new Dimension(100, 42));
+                    attributePanel.setLayout(new BorderLayout());
+                    attributePanel.add(trackLabelPanel, BorderLayout.CENTER);
                 }
-                panel1.add(cursorAttributePanel1, BorderLayout.WEST);
+                panel1.add(attributePanel, BorderLayout.WEST);
 
-                //======== cursorDataPanel1 ========
+                //======== dataPanel ========
                 {
-                    cursorDataPanel1.setBorder(LineBorder.createGrayLineBorder());
-                    cursorDataPanel1.setLayout(new BorderLayout());
+                    dataPanel.setBorder(LineBorder.createGrayLineBorder());
+                    dataPanel.setLayout(new BorderLayout());
 
                     //---- trackPanel ----
                     trackPanel.setBorder(null);
                     trackPanel.setBackground(SystemColor.window);
-                    cursorDataPanel1.add(trackPanel, BorderLayout.NORTH);
+                    dataPanel.add(trackPanel, BorderLayout.NORTH);
                 }
-                panel1.add(cursorDataPanel1, BorderLayout.CENTER);
+                panel1.add(dataPanel, BorderLayout.CENTER);
             }
             scrollPane1.setViewportView(panel1);
         }
@@ -132,9 +136,9 @@ public class CursorMainPanel extends JPanel implements Serializable {
     private JLabel panel3;
     private JScrollPane scrollPane1;
     private JPanel panel1;
-    private JPanel cursorAttributePanel1;
+    private JPanel attributePanel;
     private CursorTrackPanelContainer trackLabelPanel;
-    private JPanel cursorDataPanel1;
+    private JPanel dataPanel;
     private CursorTrackPanelContainer trackPanel;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

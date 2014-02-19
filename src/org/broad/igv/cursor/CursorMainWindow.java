@@ -36,6 +36,7 @@ public class CursorMainWindow extends JFrame {
         cursorMainPanel1.setModel(cursorModel);
         frameWidthField.setText(String.valueOf(cursorModel.getFramePixelWidth()));
         regionSizeTextField.setText(String.valueOf(cursorModel.getFrameBPWidth()));
+        ToolTipManager.sharedInstance().setDismissDelay(20000);
     }
 
 
@@ -52,6 +53,12 @@ public class CursorMainWindow extends JFrame {
     private void frameWidthFieldActionPerformed(ActionEvent e) {
         try {
             double newWidth = Double.parseDouble(frameWidthField.getText().trim());
+            final int regionCount = cursorModel.getFilteredRegions().size();
+            if (regionCount > 0) {
+                double minWidth = ((double) cursorMainPanel1.getDataPanelWidth()) / regionCount;
+                newWidth = Math.max(newWidth, minWidth);
+                frameWidthField.setText(String.valueOf(newWidth));
+            }
             if (newWidth > 0) cursorModel.setFramePixelWidth(newWidth);
             cursorMainPanel1.repaint();
             updateRegionsLabel();
@@ -195,7 +202,7 @@ public class CursorMainWindow extends JFrame {
 
         CursorFilterDialog dlg = new CursorFilterDialog(this, cursorModel.getTracks(), cursorModel.getFilter());
         dlg.setVisible(true);
-        if(!dlg.isCanceled()) {
+        if (!dlg.isCanceled()) {
 
         }
     }
@@ -233,10 +240,10 @@ public class CursorMainWindow extends JFrame {
         panel2 = new JPanel();
         label2 = new JLabel();
         regionSizeTextField = new JTextField();
-        regionsLabel = new JLabel();
         panel3 = new JPanel();
         label1 = new JLabel();
         frameWidthField = new JTextField();
+        regionsLabel = new JLabel();
 
         //======== this ========
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -329,13 +336,6 @@ public class CursorMainWindow extends JFrame {
             }
             panel1.add(panel2);
 
-            //---- regionsLabel ----
-            regionsLabel.setHorizontalAlignment(SwingConstants.LEFT);
-            regionsLabel.setMaximumSize(new Dimension(200, 0));
-            regionsLabel.setPreferredSize(new Dimension(100, 28));
-            regionsLabel.setHorizontalTextPosition(SwingConstants.LEFT);
-            panel1.add(regionsLabel);
-
             //======== panel3 ========
             {
                 panel3.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
@@ -354,6 +354,13 @@ public class CursorMainWindow extends JFrame {
                     }
                 });
                 panel3.add(frameWidthField);
+
+                //---- regionsLabel ----
+                regionsLabel.setHorizontalAlignment(SwingConstants.LEFT);
+                regionsLabel.setMaximumSize(new Dimension(200, 0));
+                regionsLabel.setPreferredSize(new Dimension(200, 28));
+                regionsLabel.setHorizontalTextPosition(SwingConstants.LEFT);
+                panel3.add(regionsLabel);
             }
             panel1.add(panel3);
         }
@@ -377,9 +384,9 @@ public class CursorMainWindow extends JFrame {
     private JPanel panel2;
     private JLabel label2;
     private JTextField regionSizeTextField;
-    private JLabel regionsLabel;
     private JPanel panel3;
     private JLabel label1;
     private JTextField frameWidthField;
+    private JLabel regionsLabel;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

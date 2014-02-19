@@ -11,7 +11,7 @@ import org.broad.igv.track.WindowFunction;
  *         Date: 11/5/13
  *         Time: 1:11 PM
  */
-public class EncodePeakFeature extends BasicFeature {
+public class EncodePeakFeature extends BasicFeature implements SignalFeature {
 
     private int peakPosition = -1;
     private float signal;

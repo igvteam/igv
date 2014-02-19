@@ -1,6 +1,10 @@
 package org.broad.igv.cursor;
 
+import org.apache.commons.math.stat.StatUtils;
 import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.EncodePeakFeature;
+import org.broad.igv.feature.SignalFeature;
+import org.broad.igv.util.collections.DoubleArrayList;
 
 import java.awt.*;
 import java.util.HashMap;
@@ -15,26 +19,89 @@ import java.util.Map;
 public class CursorTrack {
 
 
+    public enum SignalField {Score, Signal, PValue, QValue}
+
+
     Map<String, List<BasicFeature>> featureMap;
     Map<String, Integer> longestFeature;
     private Color color = new Color(0, 0, 150);
     private String name;
     Class featureType;
+    boolean hasScore = false;
+    private SignalField signalField = SignalField.Score;
+    private Map<SignalField, Range> scales;
+
+    public static class Range {
+        double min;
+        double max;
+
+        private Range(double min, double max) {
+            this.min = min;
+            this.max = max;
+        }
+
+        public double getMax() {
+            return max;
+        }
+
+        public double getMin() {
+            return min;
+        }
+    }
 
     public CursorTrack(Map<String, List<BasicFeature>> featureMap, Class featureType) {
         this.featureMap = featureMap;
         this.featureType = featureType;
         this.longestFeature = new HashMap();
-        for(Map.Entry<String, List<BasicFeature>> entry : featureMap.entrySet()) {
+
+        // Gather statistics for setting scales.
+        boolean isEncodePeak = featureType == EncodePeakFeature.class;
+        DoubleArrayList signals = isEncodePeak ? new DoubleArrayList(50000) : null;
+        DoubleArrayList qvalues = isEncodePeak ? new DoubleArrayList(50000) : null;
+        DoubleArrayList pvalues = isEncodePeak ? new DoubleArrayList(50000) : null;
+
+        for (Map.Entry<String, List<BasicFeature>> entry : featureMap.entrySet()) {
             String chr = entry.getKey();
             List<BasicFeature> features = entry.getValue();
             int longest = 0;
-            for(BasicFeature f : features) {
+            for (BasicFeature f : features) {
+
+                float s = f.getScore();
+                hasScore = hasScore || !Float.isNaN(s);
+                if (isEncodePeak) {
+                    EncodePeakFeature pf = (EncodePeakFeature) f;
+                    signals.add(pf.getSignal());
+                    qvalues.add(pf.getQValue());
+                    pvalues.add(pf.getPValue());
+                }
+
                 final int length = f.getLength();
-                if(length > longest) longest = length;
+                if (length > longest) longest = length;
+
+
             }
             longestFeature.put(chr, longest);
         }
+
+        scales = new HashMap<SignalField, Range>();
+        scales.put(SignalField.Score, new Range(0, 1000));
+
+        double[] s = signals.toArray();
+        double sMin = 0;
+        double sMax = StatUtils.percentile(s, 90);
+        scales.put(SignalField.Signal, new Range(sMin, sMax));
+
+        double[] q = qvalues.toArray();
+        scales.put(SignalField.QValue, new Range(0, StatUtils.percentile(q, 90)));
+
+        double[] p = pvalues.toArray();
+        scales.put(SignalField.PValue, new Range(0, StatUtils.percentile(p, 90)));
+
+    }
+
+
+    public Range getScale() {
+        return scales.get(signalField);
     }
 
     public List<BasicFeature> getFeatures(String chr) {
@@ -45,7 +112,6 @@ public class CursorTrack {
         Integer lf = longestFeature.get(chr);
         return lf == null ? -1 : lf;
     }
-
 
     public Map<String, List<BasicFeature>> getFeatureMap() {
         return featureMap;
@@ -67,5 +133,45 @@ public class CursorTrack {
         return name;
     }
 
+    public SignalField getSignalField() {
+        return signalField;
+    }
 
+    public void setSignalField(SignalField signalField) {
+        System.out.println("Set signal field: " + signalField);
+        this.signalField = signalField;
+    }
+
+    public SignalField[] getAllSignalFields() {
+        if (!hasScore) return noSignalsArray;
+        else if (featureType == EncodePeakFeature.class) return signalsArray;
+        else return scoreOnlyArray;
+    }
+
+
+    public float getSignal(BasicFeature feature) {
+
+        if (signalField == SignalField.Score) {
+            return feature.getScore();
+        } else {
+            SignalFeature sf = (SignalFeature) feature;
+            switch (signalField) {
+                case Signal:
+                    return sf.getSignal();
+                case QValue:
+                    return sf.getQValue();
+                case PValue:
+                    return sf.getPValue();
+                default:
+                    return feature.getScore();
+
+            }
+        }
+    }
+
+    // Some static arrays for effecienty
+    private static SignalField[] noSignalsArray = new SignalField[0];
+    private static SignalField[] scoreOnlyArray = new SignalField[]{SignalField.Score};
+    private static SignalField[] signalsArray = new SignalField[]{
+            SignalField.Score, SignalField.Signal, SignalField.PValue, SignalField.QValue};
 }

@@ -19,7 +19,6 @@ public class CursorRegion implements Feature {
 
     String chr;  //
     int location;  // Genomic location in BP.  Zero based coords
-    float tmp;
 
     public CursorRegion(String chr, int location) {
         this.chr = chr;
@@ -45,7 +44,10 @@ public class CursorRegion implements Feature {
         return location;
     }
 
-    public double getScore(List<BasicFeature> features, int longest, int frameBPWidth) {
+    public double getScore(CursorTrack t,  int frameBPWidth) {
+
+        int longest = t.getLongestFeatureLength(chr);
+        List<BasicFeature> features = t.getFeatures(chr);
 
         double score = -1;
         if (features == null) return score;
@@ -53,20 +55,14 @@ public class CursorRegion implements Feature {
         FeatureIterator iter = getFeatureIterator(features, longest, frameBPWidth);
         while (iter.hasNext()) {
             BasicFeature f = iter.next();
-            score = Math.max(f.getScore(), score);
+            score = Math.max(t.getSignal(f), score);
         }
-        tmp = (float) score;
         return score;
     }
 
     public FeatureIterator getFeatureIterator(List<BasicFeature> features, int longest, int frameBPWidth) {
         return new FeatureIterator(features, longest, frameBPWidth);
     }
-
-    public float getTmp() {
-        return tmp;
-    }
-
 
     class FeatureIterator implements Iterator<BasicFeature> {
 
