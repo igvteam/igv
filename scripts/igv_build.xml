@@ -53,7 +53,7 @@
     </macrodef>
 
     <target name="add-perms">
-        <add-perms-macro jarfile="${dist.dir}batik-code__V1.7.jar"/>
+        <add-perms-macro jarfile="${dist.dir}${batik-codec-finame}"/>
         <add-perms-macro jarfile="${dist.dir}goby-io-igv__V1.0.jar"/>
     </target>
 
@@ -61,7 +61,7 @@
     <target name="sign-jars" if="keystore">
         <signjar jar="${jar.path}" alias="${alias}" keypass="${key-password}" storepass="${store-password}"
                  keystore="${keystore}"/>
-        <signjar jar="${dist.dir}batik-code__V1.7.jar" alias="${alias}" keypass="${key-password}"
+        <signjar jar="${dist.dir}${batik-codec-finame}" alias="${alias}" keypass="${key-password}"
                  storepass="${store-password}" keystore="${keystore}"/>
         <signjar jar="${dist.dir}goby-io-igv__V1.0.jar" alias="${alias}" keypass="${key-password}"
                  storepass="${store-password}" keystore="${keystore}"/>
@@ -80,7 +80,7 @@
                 <include name="lib/**"/>
             </fileset>
             <fileset file="${dist.dir}${jar.name}"/>
-            <fileset file="${dist.dir}batik-code__V1.7.jar"/>
+            <fileset file="${dist.dir}${batik-codec-finame}"/>
             <fileset file="${dist.dir}goby-io-igv__V1.0.jar"/>
             <fileset refid="scripts"/>
             <fileset file="docs/readme.txt"/>
@@ -98,7 +98,7 @@
 
             <!-- Copy files to directory -->
             <copy todir="${tmp.dir}/@{bin.dirname}" file="${dist.dir}igv.jar"/>
-            <copy todir="${tmp.dir}/@{bin.dirname}" file="${dist.dir}batik-code__V1.7.jar"/>
+            <copy todir="${tmp.dir}/@{bin.dirname}" file="${dist.dir}${batik-codec-finame}"/>
             <copy todir="${tmp.dir}/@{bin.dirname}" file="${dist.dir}goby-io-igv__V1.0.jar"/>
 
             <zip destfile="@{zip.dest}" update="@{update}" duplicate="fail">
