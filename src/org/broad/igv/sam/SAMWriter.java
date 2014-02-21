@@ -220,14 +220,14 @@ public class SAMWriter {
     /**
      * Use Picard to write alignments which are already stored in memory
      * @param dataManager
-     * @param outPath
+     * @param outFile
      * @param sequence
      * @param start
      * @param end
      * @return
      * @throws IOException
      */
-    public static int writeAlignmentFilePicard(AlignmentDataManager dataManager, String outPath,
+    public static int writeAlignmentFilePicard(AlignmentDataManager dataManager, File outFile,
                                                String sequence, int start, int end) throws IOException{
 
         ResourceLocator inlocator = dataManager.getLocator();
@@ -240,7 +240,7 @@ public class SAMWriter {
         Iterator<SamAlignment> samIter = new SamAlignmentIterable(iter, sequence, start, end);
 
         SAMWriter writer = new SAMWriter(fileHeader);
-        return writer.writeToFile(new File(outPath), samIter, true);
+        return writer.writeToFile(outFile, samIter, true);
     }
 
     /**

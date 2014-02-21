@@ -53,7 +53,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.List;
@@ -551,6 +550,8 @@ public class TrackMenuUtils {
 
         if(alignmentTrack == null) return -1;
 
+
+        File outFile = new File(outPath);
         try {
             AlignmentDataManager dataManager = alignmentTrack.getDataManager();
             ResourceLocator inlocator = dataManager.getLocator();
@@ -560,10 +561,14 @@ public class TrackMenuUtils {
             //return SAMWriter.writeAlignmentFilePicard(inlocator, outPath, range.getChr(), range.getStart(), range.getEnd());
 
             //Export those in memory, overlapping current view
-            return SAMWriter.writeAlignmentFilePicard(dataManager, outPath, range.getChr(), range.getStart(), range.getEnd());
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException(e);
+            return SAMWriter.writeAlignmentFilePicard(dataManager, outFile, range.getChr(), range.getStart(), range.getEnd());
+//        } catch (IOException e) {
+//            log.error(e.getMessage(), e);
+//            throw new RuntimeException(e);
+        }catch (Exception e){
+            MessageUtils.showErrorMessage("Error writing alignments: " + e.getMessage(), e);
+            outFile.delete();
+            return -1;
         }
     }
 
