@@ -566,7 +566,8 @@ public class TrackMenuUtils {
 //            log.error(e.getMessage(), e);
 //            throw new RuntimeException(e);
         }catch (Exception e){
-            MessageUtils.showErrorMessage("Error writing alignments: " + e.getMessage(), e);
+            MessageUtils.showErrorMessage("Error writing alignments: " + e.getMessage() +".\n This" +
+                    " may indicate a malformed input file", e);
             outFile.delete();
             return -1;
         }
