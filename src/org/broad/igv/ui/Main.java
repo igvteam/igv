@@ -27,7 +27,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -117,7 +116,7 @@ public class Main {
         int connectTimeout = Globals.CONNECT_TIMEOUT;
 
         try {
-            Version thisVersion =  Version.getServerVersion("2.2.26");//    Version.getInternalVersion(Globals.versionString());
+            Version thisVersion =  Version.getVersion(Globals.VERSION);
             if (thisVersion == null) return;  // Can't compare
 
             Globals.CONNECT_TIMEOUT = 5000;
@@ -129,7 +128,7 @@ public class Main {
             HashSet<String> skipVersion = new HashSet<String>(Arrays.asList(skipString.split(",")));
             if (skipVersion.contains(serverVersionString)) return;
 
-            Version serverVersion = Version.getServerVersion(serverVersionString.trim());
+            Version serverVersion = Version.getVersion(serverVersionString.trim());
             if(serverVersion == null) return;
 
             if (thisVersion.lessThan(serverVersion)) {
@@ -266,14 +265,7 @@ public class Main {
         private int minor;
         private int build;
 
-        public static Version getInternalVersion(String versionString) {
-
-            String[] tmp = Globals.whitespacePattern.split(versionString);
-            return getServerVersion(tmp[0]);
-
-        }
-
-        public static Version getServerVersion(String versionString) {
+        public static Version getVersion(String versionString) {
             String[] tokens = versionString.split("\\.");
             if (tokens.length < 2) {
                 return null;   // Unknown version

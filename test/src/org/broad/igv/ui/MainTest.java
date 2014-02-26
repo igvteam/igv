@@ -204,21 +204,21 @@ public class MainTest {
     }
 
 
-    /* Example internal version string:  2.3.27 (31)02/18/2014 11:42 PM
-     * Example server version string:  2.3.27
+    /*
+     * Example  version string:  2.3.27
      */
     @Test
     public void testVersionComparisons() throws Exception {
 
-        String v1 = "2.3.27 (31)02/18/2014 11:42 PM";
+        String v1 = "2.3.27";
 
-        Main.Version version1 = Main.Version.getInternalVersion(v1);
+        Main.Version version1 = Main.Version.getVersion(v1);
         assertEquals(2, version1.getMajor());
         assertEquals(3, version1.getMinor());
         assertEquals(27, version1.getBuild());
 
         String v2 = "2.3.27";
-        Main.Version version2 = Main.Version.getServerVersion(v2);
+        Main.Version version2 = Main.Version.getVersion(v2);
         assertEquals(2, version2.getMajor());
         assertEquals(3, version2.getMinor());
         assertEquals(27, version2.getBuild());
@@ -227,11 +227,11 @@ public class MainTest {
         assertFalse(version2.lessThan(version1));
 
         String v3 = "2.3.26";
-        Main.Version version3 = Main.Version.getServerVersion(v3);
+        Main.Version version3 = Main.Version.getVersion(v3);
         assertFalse(version1.lessThan(version3));
 
         String v4 = "2.3.28";
-        Main.Version version4 = Main.Version.getServerVersion(v4);
+        Main.Version version4 = Main.Version.getVersion(v4);
         assertTrue(version1.lessThan(version4));
 
     }
