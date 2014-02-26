@@ -54,7 +54,7 @@
 
     <target name="add-perms">
         <add-perms-macro jarfile="${dist.dir}${batik-codec-finame}"/>
-        <add-perms-macro jarfile="${dist.dir}goby-io-igv__V1.0.jar"/>
+        <add-perms-macro jarfile="${dist.dir}${goby-io-finame}"/>
     </target>
 
     <!-- Sign all jars if a keystore is defined -->
@@ -63,7 +63,7 @@
                  keystore="${keystore}"/>
         <signjar jar="${dist.dir}${batik-codec-finame}" alias="${alias}" keypass="${key-password}"
                  storepass="${store-password}" keystore="${keystore}"/>
-        <signjar jar="${dist.dir}goby-io-igv__V1.0.jar" alias="${alias}" keypass="${key-password}"
+        <signjar jar="${dist.dir}${goby-io-finame}" alias="${alias}" keypass="${key-password}"
                  storepass="${store-password}" keystore="${keystore}"/>
     </target>
 
@@ -81,7 +81,7 @@
             </fileset>
             <fileset file="${dist.dir}${jar.name}"/>
             <fileset file="${dist.dir}${batik-codec-finame}"/>
-            <fileset file="${dist.dir}goby-io-igv__V1.0.jar"/>
+            <fileset file="${dist.dir}${goby-io-finame}"/>
             <fileset refid="scripts"/>
             <fileset file="docs/readme.txt"/>
         </copy>
@@ -99,7 +99,7 @@
             <!-- Copy files to directory -->
             <copy todir="${tmp.dir}/@{bin.dirname}" file="${dist.dir}igv.jar"/>
             <copy todir="${tmp.dir}/@{bin.dirname}" file="${dist.dir}${batik-codec-finame}"/>
-            <copy todir="${tmp.dir}/@{bin.dirname}" file="${dist.dir}goby-io-igv__V1.0.jar"/>
+            <copy todir="${tmp.dir}/@{bin.dirname}" file="${dist.dir}${goby-io-finame}"/>
 
             <zip destfile="@{zip.dest}" update="@{update}" duplicate="fail">
                 <zipfileset dir="${tmp.dir}" filemode="755">
