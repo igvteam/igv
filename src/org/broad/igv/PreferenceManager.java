@@ -42,6 +42,8 @@ public class PreferenceManager implements PropertyManager {
     private static Logger log = Logger.getLogger(PreferenceManager.class);
 
 
+    public static final String SKIP_VERSION = "SKIP_VERSION";
+
     public static final String INITIAL_TRACK_HEIGHT = "15";
 
     public static final String TOOLTIP_INITIAL_DELAY = "TOOLTIP.INITIAL_DELAY";
@@ -1077,6 +1079,8 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(DETAILS_BEHAVIOR_KEY, IGVCommandBar.SHOW_DETAILS_BEHAVIOR.HOVER.name());
 
         defaultValues.put(SHOW_SIZE_WARNING, "true");
+
+        defaultValues.put(SKIP_VERSION, "");
     }
 
     /**

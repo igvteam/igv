@@ -54,7 +54,7 @@ public class VariantReviewPlugin implements IGVPlugin{
     public void init(){
         if (showReviewOption) {
             //Test loading a class, won't work if running old Java
-            if(!Globals.isVersionOrHigher("1.7")){
+            if(!Globals.checkJavaVersion("1.7")){
                 log.error("VariantReviewPlugin requires Java 7 or higher. This plugin will be disabled");
                 return;
             }

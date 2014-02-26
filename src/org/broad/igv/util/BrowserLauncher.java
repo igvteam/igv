@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 
 /**
  * @author Joshua Gould
@@ -96,6 +97,25 @@ public class BrowserLauncher {
         } else {
             try {
                 Desktop.getDesktop().browse(new URI(url));
+            } catch (URISyntaxException e) {
+                log.error("Error opening url " + url, e);
+            }
+
+        }
+    }
+
+    /**
+     * Attempts to open the default web browser to the given URL.
+     *
+     * @param url The URL to open
+     * @throws IOException If the web browser could not be located or does not run
+     */
+    public static void openURL(URL url) throws IOException {
+        if (!(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))) {
+            openURL_old(url.toExternalForm());
+        } else {
+            try {
+                Desktop.getDesktop().browse(url.toURI());
             } catch (URISyntaxException e) {
                 log.error("Error opening url " + url, e);
             }

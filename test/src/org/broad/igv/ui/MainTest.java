@@ -45,7 +45,7 @@ public class MainTest {
     }
 
     @Before
-    public void setUp() throws Exception{
+    public void setUp() throws Exception {
         AbstractHeadedTest.stopGUI();
     }
 
@@ -90,7 +90,7 @@ public class MainTest {
     }
 
     @Test
-    public void testFileWithSpaces() throws Exception{
+    public void testFileWithSpaces() throws Exception {
         String trackName = "test.wig";
         String filePath = TestUtils.DATA_DIR + "folder with spaces/" + trackName;
         String[] args = new String[]{filePath};
@@ -102,7 +102,7 @@ public class MainTest {
     }
 
     @Test
-    public void testFileURLWithSpaces() throws Exception{
+    public void testFileURLWithSpaces() throws Exception {
         String trackName = "test.wig";
         String dir = StringUtils.encodeURL("folder with spaces");
         String absFilePath = (new File(TestUtils.DATA_DIR)).getAbsolutePath();
@@ -117,7 +117,7 @@ public class MainTest {
     }
 
     @Test
-    public void testRemoteURLWithSpaces() throws Exception{
+    public void testRemoteURLWithSpaces() throws Exception {
         String trackName = "test.wig";
         String dir = StringUtils.encodeURL("folder with spaces");
         String absFilePath = "www.broadinstitute.org/igvdata/unit_test_files";
@@ -201,6 +201,39 @@ public class MainTest {
         IGV igv = startMain(args, 5000);
 
         assertEquals(igv.getGenomeManager().getGenomeId(), genomeFiName);
+    }
+
+
+    /* Example internal version string:  2.3.27 (31)02/18/2014 11:42 PM
+     * Example server version string:  2.3.27
+     */
+    @Test
+    public void testVersionComparisons() throws Exception {
+
+        String v1 = "2.3.27 (31)02/18/2014 11:42 PM";
+
+        Main.Version version1 = Main.Version.getInternalVersion(v1);
+        assertEquals(2, version1.getMajor());
+        assertEquals(3, version1.getMinor());
+        assertEquals(27, version1.getBuild());
+
+        String v2 = "2.3.27";
+        Main.Version version2 = Main.Version.getServerVersion(v2);
+        assertEquals(2, version2.getMajor());
+        assertEquals(3, version2.getMinor());
+        assertEquals(27, version2.getBuild());
+
+        assertFalse(version1.lessThan(version2));
+        assertFalse(version2.lessThan(version1));
+
+        String v3 = "2.3.26";
+        Main.Version version3 = Main.Version.getServerVersion(v3);
+        assertFalse(version1.lessThan(version3));
+
+        String v4 = "2.3.28";
+        Main.Version version4 = Main.Version.getServerVersion(v4);
+        assertTrue(version1.lessThan(version4));
+
     }
 
     private IGV startMain(String[] args, long timeout) {

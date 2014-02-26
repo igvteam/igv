@@ -115,6 +115,8 @@ public class Globals {
     public static boolean toolsMenuEnabled = false;
     public static boolean development;
 
+    public static String versionURL = "http://www.broadinstitute.org/igv/projects/current/version.txt";
+    public static String downloadURL = "http://www.broadinstitute.org/igv/download";
     static {
         Properties properties = new Properties();
         try {
@@ -203,11 +205,19 @@ public class Globals {
      * @param minVersion
      * @return
      */
-    public static boolean isVersionOrHigher(String minVersion) {
+    public static boolean checkJavaVersion(String minVersion) {
         String curVersion = System.getProperty(JAVA_VERSION_STRING);
         if (curVersion.length() >= minVersion.length()) {
             curVersion = curVersion.substring(0, minVersion.length());
         }
         return curVersion.compareTo(minVersion) >= 0;
+    }
+
+    /**
+     * Return the URL to fetch the current IGV version (note:  not Java version)
+     * @return
+     */
+    public static String getVersionURL() {
+        return versionURL;
     }
 }

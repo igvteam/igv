@@ -27,6 +27,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.HashSet;
 
 
 /**
@@ -73,7 +77,7 @@ public class Main {
 
         long mem = RuntimeUtils.getAvailableMemory();
         int MB = 1000000;
-        if(mem < 400*MB) {
+        if (mem < 400 * MB) {
             int mb = (int) (mem / MB);
             JOptionPane.showMessageDialog(null, "Warning: IGV is running with minimal available memory (" + mb + " mb)");
         }
@@ -93,6 +97,8 @@ public class Main {
         System.setProperty("awt.useSystemAAFontSettings", "on");
         System.setProperty("swing.aatext", "true");
 
+        checkVersion();
+
 
     }
 
@@ -102,6 +108,52 @@ public class Main {
         ToolTipManager.sharedInstance().setInitialDelay(prefMgr.getAsInt(PreferenceManager.TOOLTIP_INITIAL_DELAY));
         ToolTipManager.sharedInstance().setReshowDelay(prefMgr.getAsInt(PreferenceManager.TOOLTIP_RESHOW_DELAY));
         ToolTipManager.sharedInstance().setDismissDelay(prefMgr.getAsInt(PreferenceManager.TOOLTIP_DISMISS_DELAY));
+
+    }
+
+    private static void checkVersion() {
+
+        int readTimeout = Globals.READ_TIMEOUT;
+        int connectTimeout = Globals.CONNECT_TIMEOUT;
+
+        try {
+            Version thisVersion =  Version.getServerVersion("2.2.26");//    Version.getInternalVersion(Globals.versionString());
+            if (thisVersion == null) return;  // Can't compare
+
+            Globals.CONNECT_TIMEOUT = 5000;
+            Globals.READ_TIMEOUT = 1000;
+            final String serverVersionString = HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
+            // See if user has specified to skip this update
+
+            final String skipString = PreferenceManager.getInstance().get(PreferenceManager.SKIP_VERSION);
+            HashSet<String> skipVersion = new HashSet<String>(Arrays.asList(skipString.split(",")));
+            if (skipVersion.contains(serverVersionString)) return;
+
+            Version serverVersion = Version.getServerVersion(serverVersionString.trim());
+            if(serverVersion == null) return;
+
+            if (thisVersion.lessThan(serverVersion)) {
+
+                final VersionUpdateDialog dlg = new VersionUpdateDialog(serverVersionString);
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        dlg.setVisible(true);
+                        if (dlg.isSkipVersion()) {
+                            String newSkipString =   skipString + "," + serverVersionString;
+                            PreferenceManager.getInstance().put(PreferenceManager.SKIP_VERSION, newSkipString);
+                        }
+                    }
+                });
+
+            }
+
+        } catch (Exception e) {
+            log.error("Error checking version", e);
+        }
+        finally {
+            Globals.CONNECT_TIMEOUT = connectTimeout;
+            Globals.READ_TIMEOUT = readTimeout;
+        }
 
     }
 
@@ -198,6 +250,72 @@ public class Main {
         }
         // Todo -- what does this do?
         LookAndFeelFactory.installJideExtension();
+    }
+
+
+    /**
+     * Class to represent the IGV version. The version numbering follows Microsoft conventions.  This class is public
+     * to allow unit tests.
+     * <p/>
+     * Example internal version string:  2.3.27 (31)02/18/2014 11:42 PM
+     * Example server version string:  2.3.27
+     */
+    public static class Version {
+
+        private int major;
+        private int minor;
+        private int build;
+
+        public static Version getInternalVersion(String versionString) {
+
+            String[] tmp = Globals.whitespacePattern.split(versionString);
+            return getServerVersion(tmp[0]);
+
+        }
+
+        public static Version getServerVersion(String versionString) {
+            String[] tokens = versionString.split("\\.");
+            if (tokens.length < 2) {
+                return null;   // Unknown version
+            } else {
+                try {
+                    int major = Integer.parseInt(tokens[0]);
+                    int minor = Integer.parseInt(tokens[1]);
+                    int build = tokens.length <= 2 ? 0 : Integer.parseInt(tokens[2]);
+                    return new Version(major, minor, build);
+
+                } catch (NumberFormatException e) {
+                    log.error("Error parsing version string: " + versionString);
+                    return null;
+                }
+            }
+        }
+
+        private Version(int major, int minor, int build) {
+            this.major = major;
+            this.minor = minor;
+            this.build = build;
+        }
+
+        public int getMajor() {
+            return major;
+        }
+
+        public int getMinor() {
+            return minor;
+        }
+
+        public int getBuild() {
+            return build;
+        }
+
+        public boolean lessThan(Version anotherVersion) {
+            if (anotherVersion.major > this.major) return true;
+            else if (anotherVersion.major < this.major) return false;
+            else if (anotherVersion.minor > this.minor) return true;
+            else if (anotherVersion.minor < this.minor) return false;
+            else return anotherVersion.build > this.build;
+        }
     }
 
     /**
