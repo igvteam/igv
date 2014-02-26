@@ -11,9 +11,9 @@
 
 package org.broad.igv.dev.db;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.StringUtils;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -44,7 +44,7 @@ public class DBReader {
             for (Map.Entry<Integer, String> entry : columnLabelMap.entrySet()) {
                 colNames[entry.getKey()] = entry.getValue();
             }
-            colListing = StringUtils.join(colNames, ',');
+            colListing = StringUtils.join(colNames, ",");
         }
         return String.format("SELECT %s FROM %s", colListing, tableName);
     }

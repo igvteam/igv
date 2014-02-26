@@ -11,7 +11,6 @@
 
 package org.broad.igv.track;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
@@ -19,6 +18,7 @@ import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.RuntimeUtils;
+import org.broad.igv.util.StringUtils;
 import org.broad.tribble.Feature;
 
 import java.io.*;
@@ -177,7 +177,7 @@ public class CombinedFeatureSource implements FeatureSource {
         String[] fiNames = tempFiles.keySet().toArray(new String[0]);
         if (operation == Operation.MULTIINTER) {
             assert tempFiles.size() >= 2;
-            cmd += " -i " + StringUtils.join(tempFiles.keySet(), " ");
+            cmd += " -i " + StringUtils.join(tempFiles.keySet().toArray(), " ");
         } else {
             assert tempFiles.size() == 2;
             cmd += " -a " + fiNames[0] + " -b " + fiNames[1];

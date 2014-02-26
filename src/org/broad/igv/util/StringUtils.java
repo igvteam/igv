@@ -207,7 +207,7 @@ public class StringUtils {
                 }
                 encParms[ii++] = encString;
             }
-            String encQuery = org.apache.commons.lang.StringUtils.join(encParms, "&");
+            String encQuery = StringUtils.join(encParms, "&");
             String newPath = parts[0] + "?" + encQuery;
             url = new URL(newPath);
         }
@@ -249,6 +249,27 @@ public class StringUtils {
             capNext = " ".equals(s);
         }
         return res;
+    }
+
+    public static String join(List list, String separator) {
+        return join(list.toArray(), separator);
+    }
+
+    /**
+     * Join the objects in {@code array} with the given {@code separator}
+     * Useful for making a comma separated list, or URL query string
+     * @param array
+     * @param separator
+     * @return
+     */
+    public static String join(Object[] array, String separator) {
+        int num = array.length;
+        if(num == 0) return "";
+        String out = array[0].toString();
+        for(int ii=1; ii < num; ii++) {
+            out += (separator + array[ii].toString());
+        }
+        return out;
     }
 
 

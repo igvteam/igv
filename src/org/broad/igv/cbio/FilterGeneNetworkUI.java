@@ -15,7 +15,6 @@
 
 package org.broad.igv.cbio;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.PreferenceManager;
@@ -25,6 +24,7 @@ import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.util.BrowserLauncher;
 import org.broad.igv.util.LongRunningTask;
+import org.broad.igv.util.StringUtils;
 import org.w3c.dom.Node;
 
 import javax.swing.*;
@@ -139,12 +139,12 @@ public class FilterGeneNetworkUI extends JDialog {
                     token = WaitCursorManager.showWaitCursor();
                     network = GeneNetwork.getFromCBIO(geneLoci);
                     if (network.vertexSet().size() == 0) {
-                        MessageUtils.showMessage("No results found for " + org.apache.commons.lang.StringUtils.join(geneLoci, ", "));
+                        MessageUtils.showMessage("No results found for " + StringUtils.join(geneLoci, ", "));
                     } else {
                         network.annotateAll(IGV.getInstance().getAllTracks());
                         UIUtilities.invokeOnEventThread(updateUI);
                     }
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     e.printStackTrace();
                     log.error(e.getMessage());
                     MessageUtils.showMessage("Error loading data: " + e.getMessage());

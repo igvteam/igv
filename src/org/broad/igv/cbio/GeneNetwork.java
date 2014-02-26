@@ -316,13 +316,13 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
      * @param geneList
      * @return
      */
-    static String getURLForGeneList(Iterable<String> geneList) {
-        String query = org.apache.commons.lang.StringUtils.join(geneList.iterator(), ",");
+    static String getURLForGeneList(List<String> geneList) {
+        String query = StringUtils.join(geneList, ",");
         String url = BASE_URL + "?" + GENE_LIST + "=" + query + "&" + common_parms;
         return url;
     }
 
-    public static GeneNetwork getFromCBIO(Iterable<String> geneList) throws IOException {
+    public static GeneNetwork getFromCBIO(List<String> geneList) throws IOException {
         String url = getURLForGeneList(geneList);
 
         File cachedFile = getCachedFile(url);

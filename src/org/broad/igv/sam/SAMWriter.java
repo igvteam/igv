@@ -14,11 +14,11 @@ package org.broad.igv.sam;
 import com.google.java.contract.util.Objects;
 import net.sf.samtools.*;
 import net.sf.samtools.util.CloseableIterator;
-import org.apache.commons.lang.StringUtils;
 import org.broad.igv.feature.Range;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;

@@ -11,12 +11,12 @@
 
 package org.broad.igv.dev.db;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.track.FeatureSource;
+import org.broad.igv.util.StringUtils;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
@@ -243,7 +243,7 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
             if (useBinning) {
                 String[] qs = new String[MAX_BINS];
                 Arrays.fill(qs, "?");
-                String binnedQueryString = queryString + String.format(" AND %s IN (%s) %s", binColName, StringUtils.join(qs, ','), orderClause);
+                String binnedQueryString = queryString + String.format(" AND %s IN (%s) %s", binColName, StringUtils.join(qs, ","), orderClause);
                 queryStatement = DBManager.getConnection(locator).prepareStatement(binnedQueryString);
             } else {
                 queryStatement = DBManager.getConnection(locator).prepareStatement(queryString + " " + orderClause);

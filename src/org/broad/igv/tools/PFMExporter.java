@@ -11,8 +11,8 @@
 
 package org.broad.igv.tools;
 
-import org.apache.commons.lang.StringUtils;
 import org.broad.igv.sam.AlignmentCounts;
+import org.broad.igv.util.StringUtils;
 
 import java.util.ArrayList;
 

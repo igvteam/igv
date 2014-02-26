@@ -15,7 +15,6 @@
 
 package org.broad.igv.cli_plugin.ui;
 
-import org.apache.commons.lang.WordUtils;
 import org.broad.igv.cli_plugin.Argument;
 
 import javax.swing.*;
@@ -78,19 +77,6 @@ public class ArgumentPanel extends JPanel {
         }
         return panel;
 
-    }
-
-    /**
-     * Capitalizes each word of {@code inValues}, IN PLACE
-     * @param values
-     * @return The capitalized array, for chaining
-     *
-     */
-    private String[] capWords(String[] values){
-        for(int ii = 0; ii < values.length; ii++){
-            values[ii] = WordUtils.capitalize(values[ii]);
-        }
-        return values;
     }
 
     protected final void initCommon(Argument argument) {

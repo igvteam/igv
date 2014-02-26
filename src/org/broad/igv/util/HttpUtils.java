@@ -744,7 +744,7 @@ public class HttpUtils {
         Map<String, List<String>> headerFields = conn.getHeaderFields();
         log.debug("Headers for " + conn.getURL());
         for (Map.Entry<String, List<String>> header : headerFields.entrySet()) {
-            log.debug(header.getKey() + ": " + org.apache.commons.lang.StringUtils.join(header.getValue(), ','));
+            log.debug(header.getKey() + ": " + StringUtils.join(header.getValue(), ","));
         }
     }
 

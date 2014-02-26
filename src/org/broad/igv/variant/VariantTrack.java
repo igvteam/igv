@@ -14,7 +14,6 @@
 
 package org.broad.igv.variant;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.IGVFeature;
@@ -28,10 +27,7 @@ import org.broad.igv.ui.event.TrackGroupEvent;
 import org.broad.igv.ui.event.TrackGroupEventListener;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.*;
 import org.broad.tribble.Feature;
 import org.broadinstitute.variant.variantcontext.GenotypeType;
 
