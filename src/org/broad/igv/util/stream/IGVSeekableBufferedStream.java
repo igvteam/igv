@@ -215,8 +215,9 @@ public class IGVSeekableBufferedStream extends SeekableStream {
             //we just re-read everything.
             // Fill request: xxxxxxxxxxxx...
             // Buffer data:      xxxxxxxxxxx...
-            int szOverlap = (int) (position + bytesRemaining - bufferStartPosition);
-            arraycopy(buffer, 0, buffer, bufferSize - szOverlap, szOverlap);
+            int szOverlap = (int) (requiredEnd - bufferStartPosition);
+            int destPos = (int) (bufferStartPosition - position);
+            arraycopy(buffer, 0, buffer, destPos, szOverlap);
 
             //Don't skip any bytes, just trim from the number requested
             bytesRemaining -= szOverlap;
