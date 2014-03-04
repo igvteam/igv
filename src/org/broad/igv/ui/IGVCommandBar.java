@@ -239,7 +239,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
                         monitor.fireProgressChange(25);
 
-                        FrameManager.getDefaultFrame().setChromosomeName(Globals.CHR_ALL, true);
+                        FrameManager.getDefaultFrame().setChromosomeName(genome.getHomeChromosome(), true);
                         IGV.getInstance().doRefresh();
 
                     } catch (GenomeServerException e) {
