@@ -117,7 +117,9 @@ public class CytoBandFileParser {
             } else {
                 cytoData.setType(tokens[4].charAt(1));
                 if (cytoData.getType() == 'p') {
-                    cytoData.setStain(Short.parseShort(tokens[4].substring(4).trim()));
+                    String stainString = tokens[4].substring(4).trim();
+                    short stain = stainString.length() == 0 ? 100 : Short.parseShort(stainString);
+                    cytoData.setStain(stain);
                 }
             }
         }
