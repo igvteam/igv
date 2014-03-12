@@ -37,7 +37,7 @@ public class SVGTest {
 
     public static void main(String[] args) throws IOException {
 
-        test2();
+        test1();
 
 
     }
