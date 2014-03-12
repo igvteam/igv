@@ -95,31 +95,6 @@ public class SVGGraphics extends Graphics2D {
     }
 
     @Override
-    public void draw(Shape shape) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public boolean drawImage(Image image, AffineTransform affineTransform, ImageObserver imageObserver) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void drawImage(BufferedImage bufferedImage, BufferedImageOp bufferedImageOp, int i, int i1) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void drawRenderedImage(RenderedImage renderedImage, AffineTransform affineTransform) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void drawRenderableImage(RenderableImage renderableImage, AffineTransform affineTransform) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
     public void drawString(String s, int x, int y) {
 
         int tx = translateX + x;
@@ -152,84 +127,7 @@ public class SVGGraphics extends Graphics2D {
         outputStream.println("</text>");
     }
 
-    @Override
-    public void drawString(String s, float v, float v1) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
 
-    @Override
-    public void drawString(AttributedCharacterIterator attributedCharacterIterator, int i, int i1) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public boolean drawImage(Image image, int i, int i1, ImageObserver imageObserver) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public boolean drawImage(Image image, int i, int i1, int i2, int i3, ImageObserver imageObserver) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public boolean drawImage(Image image, int i, int i1, Color color, ImageObserver imageObserver) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public boolean drawImage(Image image, int i, int i1, int i2, int i3, Color color, ImageObserver imageObserver) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public boolean drawImage(Image image, int i, int i1, int i2, int i3, int i4, int i5, int i6, int i7, ImageObserver imageObserver) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public boolean drawImage(Image image, int i, int i1, int i2, int i3, int i4, int i5, int i6, int i7, Color color, ImageObserver imageObserver) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void dispose() {
-    }
-
-    @Override
-    public void drawString(AttributedCharacterIterator attributedCharacterIterator, float v, float v1) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void drawGlyphVector(GlyphVector glyphVector, float v, float v1) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void fill(Shape shape) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public boolean hit(Rectangle rectangle, Shape shape, boolean b) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public GraphicsConfiguration getDeviceConfiguration() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void setComposite(Composite composite) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void setPaint(Paint paint) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
 
     @Override
     public void setStroke(Stroke stroke) {
@@ -237,31 +135,6 @@ public class SVGGraphics extends Graphics2D {
             // throw exception
         }
         this.stroke = (BasicStroke) stroke;
-    }
-
-    @Override
-    public void setRenderingHint(RenderingHints.Key key, Object o) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public Object getRenderingHint(RenderingHints.Key key) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void setRenderingHints(Map<?, ?> map) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void addRenderingHints(Map<?, ?> map) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public RenderingHints getRenderingHints() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
@@ -273,65 +146,6 @@ public class SVGGraphics extends Graphics2D {
     public void translate(int x, int y) {
         translateX += x;
         translateY += y;
-    }
-
-
-    @Override
-    public void translate(double x, double y) {
-        System.out.println("Translate " + x + " " + y);
-    }
-    
-
-    @Override
-    public Color getColor() {
-        return color;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void setColor(Color color) {
-        this.color = color;
-    }
-
-    @Override
-    public void setPaintMode() {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void setXORMode(Color color) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-
-    @Override
-    public Font getFont() {
-        return font;
-    }
-
-    @Override
-    public void setFont(Font font) {
-        this.font = font;
-        fontMetrics = component.getFontMetrics(font);
-    }
-
-    @Override
-    public FontMetrics getFontMetrics() {
-        return fontMetrics;
-    }
-
-    @Override
-    public FontMetrics getFontMetrics(Font font) {
-        return component.getFontMetrics(font);
-    }
-
-    @Override
-    public Rectangle getClipBounds() {
-        return clip.getBounds();
-    }
-
-    @Override
-    public void clipRect(int x, int y, int w, int h) {
-        setClip(x, y, w, h);
     }
 
 
@@ -352,24 +166,6 @@ public class SVGGraphics extends Graphics2D {
 
     private static synchronized String  getClipId() {
           return "clip_" + clipNumber++;
-    }
-
-
-
-
-    @Override
-    public Shape getClip() {
-        return clip;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void setClip(Shape shape) {
-        this.clip = shape;
-    }
-
-    @Override
-    public void copyArea(int i, int i1, int i2, int i3, int i4, int i5) {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
@@ -420,11 +216,6 @@ public class SVGGraphics extends Graphics2D {
         applyTransform();
 
         outputStream.println("\"/>");
-    }
-
-    private String getRGBString() {
-        String rgbString = ColorUtilities.colorToString(color);
-        return "(" + rgbString + ")";
     }
 
     @Override
@@ -521,6 +312,118 @@ public class SVGGraphics extends Graphics2D {
         }
     }
 
+
+    @Override
+    public void transform(AffineTransform affineTransform) {
+        if (transform == null) {
+            setTransform(affineTransform);
+        } else {
+            transform.concatenate(affineTransform);
+        }
+    }
+
+
+    private void applyTransform() {
+        if (transform != null) {
+
+            // TODO -- cache the matrix
+            double[] matrix = new double[6];
+            transform.getMatrix(matrix);
+            outputStream.print(" transform=\"matrix(");
+            for (int i = 0; i < matrix.length; i++) {
+                outputStream.print(matrix[i]);
+                if (i < matrix.length - 1) outputStream.print(" ");
+            }
+            outputStream.println(")\" ");
+
+
+        }
+    }
+
+
+    private String getRGBString() {
+        String rgbString = ColorUtilities.colorToString(color);
+        return "(" + rgbString + ")";
+    }
+
+    @Override
+    public Shape getClip() {
+        return clip;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void setClip(Shape shape) {
+        this.clip = shape;
+    }
+
+    @Override
+    public void setTransform(AffineTransform affineTransform) {
+        this.transform = affineTransform;
+    }
+
+    @Override
+    public FontMetrics getFontMetrics() {
+        return fontMetrics;
+    }
+
+    @Override
+    public FontMetrics getFontMetrics(Font font) {
+        return component.getFontMetrics(font);
+    }
+
+    @Override
+    public Rectangle getClipBounds() {
+        return clip.getBounds();
+    }
+
+    @Override
+    public void clipRect(int x, int y, int w, int h) {
+        setClip(x, y, w, h);
+    }
+
+
+    @Override
+    public void translate(double x, double y) {
+        System.out.println("Translate " + x + " " + y);
+    }
+
+    @Override
+    public Color getColor() {
+        return color;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void setColor(Color color) {
+        this.color = color;
+    }
+
+    @Override
+    public Font getFont() {
+        return font;
+    }
+
+    @Override
+    public void setFont(Font font) {
+        this.font = font;
+        fontMetrics = component.getFontMetrics(font);
+    }
+
+    @Override
+    public void setPaintMode() {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void setXORMode(Color color) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+
+    @Override
+    public void copyArea(int i, int i1, int i2, int i3, int i4, int i5) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
     @Override
     public void drawRoundRect(int i, int i1, int i2, int i3, int i4, int i5) {
         //To change body of implemented methods use File | Settings | File Templates.
@@ -576,37 +479,131 @@ public class SVGGraphics extends Graphics2D {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-
     @Override
-    public void transform(AffineTransform affineTransform) {
-        if (transform == null) {
-            setTransform(affineTransform);
-        } else {
-            transform.concatenate(affineTransform);
-        }
+    public void setRenderingHint(RenderingHints.Key key, Object o) {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public void setTransform(AffineTransform affineTransform) {
-        this.transform = affineTransform;
+    public Object getRenderingHint(RenderingHints.Key key) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
+    public void setRenderingHints(Map<?, ?> map) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
 
-    private void applyTransform() {
-        if (transform != null) {
+    @Override
+    public void addRenderingHints(Map<?, ?> map) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
 
-            // TODO -- cache the matrix
-            double[] matrix = new double[6];
-            transform.getMatrix(matrix);
-            outputStream.print(" transform=\"matrix(");
-            for (int i = 0; i < matrix.length; i++) {
-                outputStream.print(matrix[i]);
-                if (i < matrix.length - 1) outputStream.print(" ");
-            }
-            outputStream.println(")\" ");
+    @Override
+    public RenderingHints getRenderingHints() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
 
+    @Override
+    public void draw(Shape shape) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
 
-        }
+    @Override
+    public boolean drawImage(Image image, AffineTransform affineTransform, ImageObserver imageObserver) {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void drawImage(BufferedImage bufferedImage, BufferedImageOp bufferedImageOp, int i, int i1) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void drawRenderedImage(RenderedImage renderedImage, AffineTransform affineTransform) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void drawRenderableImage(RenderableImage renderableImage, AffineTransform affineTransform) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }    @Override
+         public void drawString(String s, float v, float v1) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void drawString(AttributedCharacterIterator attributedCharacterIterator, int i, int i1) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public boolean drawImage(Image image, int i, int i1, ImageObserver imageObserver) {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public boolean drawImage(Image image, int i, int i1, int i2, int i3, ImageObserver imageObserver) {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public boolean drawImage(Image image, int i, int i1, Color color, ImageObserver imageObserver) {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public boolean drawImage(Image image, int i, int i1, int i2, int i3, Color color, ImageObserver imageObserver) {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public boolean drawImage(Image image, int i, int i1, int i2, int i3, int i4, int i5, int i6, int i7, ImageObserver imageObserver) {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public boolean drawImage(Image image, int i, int i1, int i2, int i3, int i4, int i5, int i6, int i7, Color color, ImageObserver imageObserver) {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void dispose() {
+    }
+
+    @Override
+    public void drawString(AttributedCharacterIterator attributedCharacterIterator, float v, float v1) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void drawGlyphVector(GlyphVector glyphVector, float v, float v1) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void fill(Shape shape) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public boolean hit(Rectangle rectangle, Shape shape, boolean b) {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public GraphicsConfiguration getDeviceConfiguration() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void setComposite(Composite composite) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void setPaint(Paint paint) {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override

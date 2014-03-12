@@ -438,6 +438,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     /**
      * Sort alignment rows based on alignments that intersect location
+     *
      * @return Whether sorting was performed. If data is still loading, this will return false
      */
     public boolean sortRows(SortOption option, ReferenceFrame referenceFrame, double location, String tag) {
@@ -446,7 +447,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     /**
      * Visually regroup alignments by the provided {@code GroupOption}.
-     *
      *
      * @param option
      * @param referenceFrames
@@ -682,9 +682,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                         //If the frame-name is a locus, we use it unaltered
                         //Don't want to reprocess, easy to get off-by-one
                         String name = ref.getName();
-                        if(Locus.fromString(name) != null){
+                        if (Locus.fromString(name) != null) {
                             loci.add(name);
-                        }else{
+                        } else {
                             loci.add(ref.getFormattedLocusString());
                         }
 
@@ -708,7 +708,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                         ReferenceFrame f0 = FrameManager.getFrame(n0);
                         ReferenceFrame f1 = FrameManager.getFrame(n1);
                         int chrComp = ChromosomeNameComparator.get().compare(f0.getChrName(), f1.getChrName());
-                        if(chrComp != 0) return chrComp;
+                        if (chrComp != 0) return chrComp;
                         return f0.getCurrentRange().getStart() - f1.getCurrentRange().getStart();
                     }
                 };
@@ -1462,7 +1462,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                 public void actionPerformed(ActionEvent aEvt) {
                     String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getGroupByTag());
-                    if(tag != null && tag.trim().length() > 0){
+                    if (tag != null && tag.trim().length() > 0) {
                         renderOptions.setGroupByTag(tag);
                         IGV.getInstance().groupAlignmentTracks(GroupOption.TAG);
                         refresh();
@@ -1521,7 +1521,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                 public void actionPerformed(ActionEvent aEvt) {
                     String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getSortByTag());
-                    if(tag != null && tag.trim().length() > 0){
+                    if (tag != null && tag.trim().length() > 0) {
                         renderOptions.setSortByTag(tag);
                         sortAlignmentTracks(SortOption.TAG, tag);
                     }
@@ -1604,7 +1604,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 public void actionPerformed(ActionEvent aEvt) {
                     setColorOption(ColorOption.TAG);
                     String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getColorByTag());
-                    if(tag != null && tag.trim().length() > 0){
+                    if (tag != null && tag.trim().length() > 0) {
                         renderOptions.setColorByTag(tag);
                         PreferenceManager.getInstance();
                         refresh();
@@ -1751,15 +1751,31 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 item.setEnabled(false);
             } else {
                 double location = frame.getChromosomePosition(e.getX());
-                final Alignment alignment = getAlignmentAt(location, e.getY(), frame);
 
+                Alignment clickedAlignment = getAlignmentAt(location, e.getY(), frame);
+
+                if (clickedAlignment instanceof PairedAlignment) {
+                    Alignment first = ((PairedAlignment) clickedAlignment).getFirstAlignment();
+                    Alignment second = ((PairedAlignment) clickedAlignment).getSecondAlignment();
+                    if (first.contains(location)) {
+                        clickedAlignment = first;
+
+                    } else if (second.contains(location)) {
+                        clickedAlignment = second;
+
+                    } else {
+                        clickedAlignment = null;
+
+                    }
+                }
+
+                final Alignment alignment = clickedAlignment;
                 item.addActionListener(new ActionListener() {
-
                     public void actionPerformed(ActionEvent aEvt) {
                         splitScreenMate(te, alignment);
                     }
                 });
-                if (alignment == null || !alignment.isPaired() || !alignment.getMate().isMapped()) {
+                if (alignment == null || !alignment.isPaired() || !alignment.getMate().isMapped()){
                     item.setEnabled(false);
                 }
             }
