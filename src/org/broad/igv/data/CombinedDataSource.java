@@ -11,6 +11,7 @@
 
 package org.broad.igv.data;
 
+import com.google.common.collect.Iterators;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.session.IGVSessionReader;
@@ -25,10 +26,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Data source which combines two other DataSources
@@ -107,86 +105,84 @@ public class CombinedDataSource implements DataSource {
         if(innerScores.size() == 0) return outerScores;
         if(outerScores.size() == 0) return innerScores;
 
+
         /**
-         * Pretty simple algorithm.  Maybe not super-efficient
-         * TODO Check efficiency
-         * Assume the following tiles (no breaks)
-         * outerScores: |----|--------|--------------|-------|-----------|
-         * innerScores: yyyyyxxxxx|-----|-----|--------|-----------|-----------|---------|
-         * combined:    |----|----|---|-|-----|------|-|-----|-----|-----|-----|---------|
+         * We first generate the chunks which will need to be calculated separately
+         * This is the set of all start/end positions of outerScores and innerScores
+         * We could be a bit smarter, but this is simpler and there's no problem with
+         * skipping over intervals which don't have data later.
          *
-         * for each outerScore in outerScores:
-         *      add in regions which come before innerScores.first
-         *      for each innerScore in innerScores:
-         *          identify overlap between innerScore and outerScore
-         *          combine that score
-         *          add to overall list
+         * Following that, for each interval generated, we search outerScores and innerScores
+         * for the unique LocusScore which contains the generated interval.
          */
 
+        //Generate the boundaries for the new combined regions
+        Set<Integer> boundariesSet = new LinkedHashSet<Integer>(2*initialSize);
+        Iterator<LocusScore> dualIter = Iterators.mergeSorted(Arrays.asList(innerScores.iterator(), outerScores.iterator()),
+                new Comparator<LocusScore>() {
 
-        //We must have the outerScores variable to start not later than innerScores
-        if(outerScores.get(0).getStart() > innerScores.get(0).getStart()){
-            List<LocusScore> tmp = innerScores;
-            innerScores = outerScores;
-            outerScores = tmp;
+                    @Override
+                    public int compare(LocusScore o1, LocusScore o2) {
+                        return o1.getStart() - o2.getStart();
+                    }
+                });
+        while(dualIter.hasNext()){
+            LocusScore score = dualIter.next();
+            boundariesSet.add(score.getStart());
+            boundariesSet.add(score.getEnd());
         }
+        Integer[] boundariesArray = boundariesSet.toArray(new Integer[0]);
+        Arrays.sort(boundariesArray);
 
-        int firstInnerStart = innerScores.get(0).getStart();
+        int outerScoreInd = 0;
+        int innerScoreInd = 0;
+        //Calculate value for each interval
+        for(int bb=0; bb < boundariesArray.length-1; bb++){
+            int start = boundariesArray[bb];
+            int end = boundariesArray[bb+1];
+            //It shouldn't be possible for more than one LocusScore of either
+            //tracks to overlap each interval, since the start/ends
+            //were based on all start/ends of the inputs
+            outerScoreInd = findContains(start, end, outerScores, Math.max(outerScoreInd, 0));
+            innerScoreInd = findContains(start, end, innerScores, Math.max(innerScoreInd, 0));
+            LocusScore outerScore = getContains(outerScores, outerScoreInd);
+            LocusScore innerScore = getContains(innerScores, innerScoreInd);
 
-        LocusScore lastScoreAdded = null;
-        int highestInnerIdx = -1;
-
-        for(LocusScore outerScore: outerScores){
-
-            int outerStart = outerScore.getStart();
-            int outerEnd = outerScore.getEnd();
-            highestInnerIdx = -1;
-
-            //Add in regions where outerScores has data but innerScores doesn't
-            if(firstInnerStart > outerStart){
-                int newEnd = Math.min(outerEnd, firstInnerStart);
-                float newVal = combineScores(outerScore, null);
-                lastScoreAdded = new BasicScore(outerStart, newEnd, newVal);
-                combinedScoresList.add(lastScoreAdded);
-                if(firstInnerStart >= outerEnd){
-                    //No overlap; region marked "y" in above diagram
-                    continue;
-                }
-            }
-
-            for(LocusScore innerScore: innerScores){
-                //Past the overlapping region, stop
-                if(innerScore.getStart() >= outerEnd) break;
-
-                highestInnerIdx++;
-
-                //Have not yet reached overlapping region, keep going
-                if(innerScore.getEnd() <= outerStart) continue;
-
-                int nextStart = Math.max(outerStart, innerScore.getStart());
-                int nextEnd = Math.min(outerEnd, innerScore.getEnd());
-                float nextVal = combineScores(outerScore, innerScore);
-
-                lastScoreAdded = new BasicScore(nextStart, nextEnd, nextVal);
-                combinedScoresList.add(lastScoreAdded);
-
-            }
+            if(outerScore == null && innerScore == null) continue;
+            float score = combineScores(outerScore,  innerScore);
+            BasicScore newScore = new BasicScore(start, end, score);
+            combinedScoresList.add(newScore);
         }
-
-        //Get the remaining innerScores.
-        //Only do this if there is a section at the end which was not included
-        LocusScore innerTail = innerScores.get(highestInnerIdx);
-        if(lastScoreAdded != null && lastScoreAdded.getEnd() < innerTail.getEnd()){
-            int combinedStart = Math.min(lastScoreAdded.getEnd(), innerTail.getEnd());
-            BasicScore newTail = new BasicScore(combinedStart, innerTail.getEnd(), innerTail.getScore());
-            combinedScoresList.add(newTail);
-            for(LocusScore innerScore: innerScores.subList(highestInnerIdx + 1, innerScores.size())){
-                float newVal = combineScores(null, innerScore);
-                combinedScoresList.add(new BasicScore(innerScore.getStart(), innerScore.getEnd(), newVal));
-            }
-        }
-
         return combinedScoresList;
+    }
+
+    /**
+     * Search {@code scoresList} (must be sorted by start position) for a score which contains the interval specified
+     * by start/end. The first one which satisfies this requirement is returned.
+     *
+     * @param start
+     * @param end
+     * @param scoresList
+     * @param startIndex Optimization, where to start searching in {@code scoresList}
+     **/
+    private int findContains(int start, int end, List<LocusScore> scoresList, int startIndex) {
+        for(int ii=startIndex; ii < scoresList.size(); ii++){
+            LocusScore score = scoresList.get(ii);
+            if(score.getStart() <= start && score.getEnd() >= end){
+                return ii;
+            }else if(score.getStart() >= end){
+                return -1;
+            }
+        }
+        return -1;
+    }
+
+    private LocusScore getContains(List<LocusScore> scores, int index){
+        if(index >= 0 && index < scores.size()){
+            return scores.get(index);
+        }else{
+            return null;
+        }
     }
 
     /**
@@ -222,57 +218,12 @@ public class CombinedDataSource implements DataSource {
         }
     }
 
-    /**
-     * Iterator which returns combined iterators sorted by start position.
-     * i1 comes first in case of ties
-     */
-    static class MergedIterator implements Iterator<LocusScore> {
-
-        Iterator i1;
-        Iterator i2;
-        LocusScore next1;
-        LocusScore next2;
-
-        MergedIterator(Iterator<LocusScore> i1, Iterator<LocusScore> i2) {
-            this.i1 = i1;
-            this.i2 = i2;
-
-            if (i1.hasNext()) {
-                next1 = i1.next();
-            }
-
-            if (i2.hasNext()) {
-                next2 = i2.next();
-            }
-        }
-
-        public boolean hasNext() {
-            return next1 != null || next2 != null;
-        }
-
-        public LocusScore next() {
-            if (next1 == null) {
-                return next2;
-            } else if (next2 == null) {
-                return next1;
-            } else if (next2.getStart() < next1.getStart()) {
-                return next2;
-            } else {
-                return next1;
-            }
-        }
-
-        public void remove() {
-            //ignore
-        }
-    }
-
     public double getDataMax() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        return 0;
     }
 
     public double getDataMin() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        return 0;
     }
 
     public TrackType getTrackType() {
@@ -284,7 +235,7 @@ public class CombinedDataSource implements DataSource {
     }
 
     public boolean isLogNormalized() {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return false;
     }
 
     public WindowFunction getWindowFunction() {
