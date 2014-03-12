@@ -66,6 +66,8 @@ public class CombinedDataSourceDialog extends JDialog {
 
         trackABox.setModel(new DefaultComboBoxModel(visibleTracks.toArray()));
         trackBBox.setModel(new DefaultComboBoxModel(visibleTracks.toArray()));
+        //Show 1st and 2nd track by default
+        if(visibleTracks.size() >= 2) trackBBox.setSelectedIndex(1);
 
         operation.setRenderer(new OperationComboBoxRenderer());
 
