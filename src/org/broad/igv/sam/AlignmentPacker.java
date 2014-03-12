@@ -125,7 +125,7 @@ public class AlignmentPacker {
         Alignment firstAlignment = alignmentsList.get(0);
 
         int minStart = firstAlignment.getStart();
-        int maxEnd = firstAlignment.getAlignmentEnd();
+        int maxEnd = firstAlignment.getEnd();
         for(Alignment alignment: alignmentsList){
             maxEnd = Math.max(maxEnd, alignment.getEnd());
         }
