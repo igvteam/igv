@@ -190,7 +190,7 @@ public class AlignmentPacker {
             return;
         }
 
-        //Allocate alignments to buckets based on position
+        //Allocate alignments to buckets based on position.
         int totalCount = 0;
         for(int curRangeIndex = 0; curRangeIndex < rangeBucketsMap.size(); curRangeIndex++){
             List<Alignment> alList = listAlignmentsList.get(curRangeIndex);
@@ -220,7 +220,8 @@ public class AlignmentPacker {
                         }
                     }
 
-                    int bucketNumber = al.getStart() - curRangeStart;
+                    // Negative "bucketNumbers" can arise with soft clips at the left edge of the chromosome.
+                    int bucketNumber = Math.max(0, al.getStart() - curRangeStart);
                     if (bucketNumber < buckets.getBucketCount()) {
                         PriorityQueue<Alignment> bucket = buckets.get(bucketNumber);
                         if (bucket == null) {
