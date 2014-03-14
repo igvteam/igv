@@ -381,18 +381,17 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
         public String[] getParentIds(MultiMap<String, String> attributes, String attributeString) {
 
-            String[] parentIds = new String[1];
-            if (attributes.size() == 0) {
-                parentIds[0] = attributeString;
-            } else {
+            if (attributes.size() > 0) {
                 for (String possName : possParentNames) {
                     if (attributes.containsKey(possName)) {
-                        parentIds[0] = attributes.get(possName);
-                        break;
+                        String parent = attributes.get(possName).trim();
+                        if (parent.length() > 0) {
+                            return new String[] {parent};
+                        }
                     }
                 }
             }
-            return parentIds;
+            return null;
         }
 
 
@@ -400,17 +399,23 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
             //Search for an attribute == type,  take this as ID
             String id = attributes.get(type);
-            if (id != null) {
+            if (id != null && id.length() > 0) {
                 return id;
             }
 
             for (String nf : idFields) {
                 if (attributes.containsKey(nf)) {
-                    return attributes.get(nf);
+                    String tmp = attributes.get(nf).trim();
+                    if(tmp.length() > 0) return tmp;
                 }
             }
 
-            return getName(attributes);
+            String tmp = getName(attributes);
+            if(tmp != null && tmp.trim().length() > 0) {
+                return tmp.trim();
+            }
+
+            return null;
         }
 
         public String getName(MultiMap<String, String> attributes) {
