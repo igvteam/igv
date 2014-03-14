@@ -83,7 +83,9 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
             }
         }
 
-        AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(locator.getPath(), idxPath, codec, indexRequired);
+        //We make sure to require and index if one exists, so it gets loaded
+        //TODO Temporary, shouldn't be necessary pending a tribble update
+        AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(locator.getPath(), idxPath, codec, indexRequired || indexExists);
 
         if (basicReader.hasIndex()) {
             return new IndexedFeatureSource(basicReader, codec, locator, genome, useCache);
