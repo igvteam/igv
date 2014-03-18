@@ -64,12 +64,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
         FeatureCodec codec = CodecFactory.getCodec(locator, genome);
         String idxPath = ResourceLocator.indexFile(locator);
-        boolean indexExists = false;
-        try{
-            indexExists = (new File(idxPath)).canRead();
-        }catch (Exception e){
-            //pass
-        }
+        boolean indexExists = FileUtils.resourceExists(idxPath);
 
         // Optionally let the user create an index.
         final int tenMB = 10000000;
