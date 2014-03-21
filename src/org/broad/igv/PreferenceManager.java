@@ -95,7 +95,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_SAMPLING_COUNT = "SAM.MAX_LEVELS"; // Sampling count
     public static final String SAM_SAMPLING_WINDOW = "SAM.SAMPLING_WINDOW";
     public static final String SAM_DOWNSAMPLE_READS = "SAM.DOWNSAMPLE_READS";
-    public static final String SAM_SORT_OPTION = "SAM>SORT_OPTION";
+    public static final String SAM_SORT_OPTION = "SAM.SORT_OPTION";
 
     public static final String SAM_COLOR_BY = "SAM.COLOR_BY";
     public static final String SAM_COLOR_BY_TAG = "SAM.COLOR_BY_TAG";

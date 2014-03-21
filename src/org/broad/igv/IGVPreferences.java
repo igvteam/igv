@@ -38,6 +38,12 @@ public class IGVPreferences {
      */
     static Hashtable<String, String> sessionCache = new Hashtable();
 
+    static Hashtable<String, String> aliasTable = new Hashtable<String, String>();
+
+    static {
+        aliasTable.put("SAM>SORT_OPTION", "SAM.SORT_OPTION");
+    }
+
     Hashtable<String, String> userPreferences = null;
 
     private File prefFile;
@@ -55,6 +61,9 @@ public class IGVPreferences {
         // Remove from session only, explicitly setting this overrides
         sessionCache.remove(key);
 
+        if (aliasTable.containsKey(key)) {
+            key = aliasTable.get(key);
+        }
         if (userPreferences == null) {
             loadUserPreferences();
         }
@@ -132,7 +141,9 @@ public class IGVPreferences {
             for (String kvPair : kvPairs) {
                 String[] kv = kvPair.split("=");
                 if (kv.length == 2) {
-                    override(kv[0], kv[1], override);
+                    String key = kv[0];
+                    String value = kv[1];
+                    override(key, value, override);
                 }
             }
 
@@ -165,6 +176,9 @@ public class IGVPreferences {
     }
 
     private void override(String key, String value, boolean override) {
+        if (aliasTable.containsKey(key)) {
+            key = aliasTable.get(key);
+        }
         if (!value.equals("null")) {
             if (override) {
                 log.info("Overriding preference: " + key + "=" + value);
@@ -183,7 +197,7 @@ public class IGVPreferences {
     private synchronized void storePreferences() {
 
         if (userPreferences != null) {
-            FileWriter fileWriter  = null;
+            FileWriter fileWriter = null;
             try {
                 fileWriter = new FileWriter(prefFile);
                 PrintWriter pw = new PrintWriter(new BufferedWriter(fileWriter));
