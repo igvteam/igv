@@ -17,6 +17,7 @@ import org.broadinstitute.variant.variantcontext.Genotype;
 import org.broadinstitute.variant.variantcontext.GenotypeType;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,21 +28,49 @@ import java.util.Map;
 public class VCFGenotype implements org.broad.igv.variant.Genotype {
 
     Genotype vcfGenotype;
+    Map<String, Object> attributes;
     List<org.broad.igv.variant.Allele> alleles;
 
     public VCFGenotype(Genotype wrappedGenotype) {
         vcfGenotype = wrappedGenotype;
-    }
+        attributes = new HashMap<String, Object>();
 
-    public String getAttributeAsString(String key) {
-        Object x = vcfGenotype.getExtendedAttribute(key);
-        if (x == null) return null;
-        if (x instanceof String) return (String) x;
-        return String.valueOf(x); // throws an exception if this isn't a string
+
+        if (vcfGenotype.hasDP()) {
+            attributes.put("DP", vcfGenotype.getDP());
+        }
+
+        if (vcfGenotype.hasAD()) {
+            String adString = "";
+            int[] ad = vcfGenotype.getAD();
+            for (int i = 0; i < ad.length; i++) {
+                if (i != 0) adString += ",";
+                adString += String.valueOf(ad[i]);
+            }
+            attributes.put("AD", adString);
+        }
+
+        if (vcfGenotype.hasGQ()) {
+            attributes.put("GQ", vcfGenotype.getGQ());
+        }
+
+        if (vcfGenotype.hasPL()) {
+            String plString = "";
+            int[] pl = vcfGenotype.getPL();
+            for (int i = 0; i < pl.length; i++) {
+                if (i != 0) plString += ",";
+                plString += String.valueOf(pl[i]);
+
+            }
+            attributes.put("PL", plString);
+        }
+
+
+        attributes.putAll(vcfGenotype.getExtendedAttributes());
     }
 
     public Map<String, Object> getAttributes() {
-        return vcfGenotype.getExtendedAttributes();
+        return attributes;
     }
 
     public String getGenotypeString() {

@@ -47,13 +47,6 @@ public interface Genotype {
      */
     Map<String, Object> getAttributes();
 
-    /**
-     * Return the attribute as a string.  Can be null.
-     *
-     * @param key
-     * @return attribute
-     */
-    String getAttributeAsString(String key);
 
     /**
      * Return the attribute as a double,  or NaN if the attribute does not exist or cannot be converted to

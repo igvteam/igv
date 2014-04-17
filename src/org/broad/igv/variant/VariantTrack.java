@@ -472,7 +472,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                     //feature and the previous one, but only if they don't
                     //actually overlap and the current size is reasonably large
                     int spacing = x - lastEndX;
-                    if(spacing > 0 && spacing < minSpacing && w > 2*minSpacing){
+                    if (spacing > 0 && spacing < minSpacing && w > 2 * minSpacing) {
                         x += minSpacing - spacing;
                     }
 
@@ -985,7 +985,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         }
 
         toolTip.append("<br><b>Genotypes:</b>");
-        toolTip.append(getGenotypeToolTip(variant) + "<br>");
+        toolTip.append(getGenotypesSummaryTooltip(variant) + "<br>");
         toolTip.append(getVariantInfo(variant) + "<br>");
         return toolTip.toString();
     }
@@ -1036,16 +1036,13 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         return IGV.getInstance().isShowDetailsOnHover() ? MAX_FILTER_LINES : 1000;
     }
 
-    private String getSampleInfo(Genotype genotype) {
-        Set<String> keys = genotype.getAttributes().keySet();
+    private String getGenotypeInfo(Genotype genotype) {
+        final Map<String, Object> attributes = genotype.getAttributes();
+        Set<String> keys = attributes.keySet();
         if (keys.size() > 0) {
-            String tooltip = "<br><b>Sample Attributes</b>";
+            String tooltip = "<br><b>Genotype Attributes</b>";
             for (String key : keys) {
-                try {
-                    tooltip = tooltip.concat("<br>" + getFullName(key) + ": " + genotype.getAttributeAsString(key));
-                } catch (IllegalArgumentException iae) {
-                    tooltip = tooltip.concat("<br>" + key + ": " + genotype.getAttributeAsString(key));
-                }
+                tooltip = tooltip.concat("<br>" + getFullName(key) + ": " + attributes.get(key));
             }
             return tooltip;
         }
@@ -1123,12 +1120,12 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         toolTip = toolTip.append("Chr: " + variant.getChr());
         toolTip = toolTip.append("<br>Position: " + variant.getPositionString());
         toolTip = toolTip.append("<br>ID: " + id + "<br>");
-        toolTip = toolTip.append("<br><b>Sample Information</b>");
+        toolTip = toolTip.append("<br><b>Genotype Information</b>");
         toolTip = toolTip.append("<br>Sample: " + sample);
 
         Genotype genotype = variant.getGenotype(sample);
         if (genotype != null) {
-            toolTip = toolTip.append("<br>Bases: " + genotype.getGenotypeString());
+            toolTip = toolTip.append("<br>Genotype: " + genotype.getGenotypeString());
             toolTip = toolTip.append("<br>Quality: " + numFormat.format(genotype.getPhredScaledQual()));
             toolTip = toolTip.append("<br>Type: " + genotype.getTypeString());
         }
@@ -1140,7 +1137,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         }
 
         if (genotype != null) {
-            String sInfoStr = getSampleInfo(genotype);
+            String sInfoStr = getGenotypeInfo(genotype);
             if (sInfoStr != null) {
                 toolTip = toolTip.append(sInfoStr + "<br>");
             }
@@ -1170,7 +1167,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         return toolTip;
     }
 
-    private String getGenotypeToolTip(Variant counts) {
+    private String getGenotypesSummaryTooltip(Variant counts) {
         int noCall = counts.getNoCallCount();
         int homRef = counts.getHomRefCount();
         int nonVar = noCall + homRef;
