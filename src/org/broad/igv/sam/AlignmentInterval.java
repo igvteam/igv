@@ -31,20 +31,12 @@ public class AlignmentInterval extends Locus {
     private List<Alignment> alignments;
     private SpliceJunctionHelper spliceJunctionHelper;
     private List<DownsampledInterval> downsampledIntervals;
-    private AlignmentTrack.RenderOptions renderOptions;
-
-    AlignmentInterval(AlignmentInterval interval) {
-        this(interval.getChr(), interval.getStart(), interval.getEnd(),
-                interval.getAlignments(), interval.getCounts(),
-                new SpliceJunctionHelper(interval.getSpliceJunctionHelper()), interval.getDownsampledIntervals(), interval.renderOptions);
-    }
 
     public AlignmentInterval(String chr, int start, int end,
                              List<Alignment> alignments,
                              AlignmentCounts counts,
                              SpliceJunctionHelper spliceJunctionHelper,
-                             List<DownsampledInterval> downsampledIntervals,
-                             AlignmentTrack.RenderOptions renderOptions) {
+                             List<DownsampledInterval> downsampledIntervals) {
 
         super(chr, start, end);
         this.alignments = alignments;
@@ -53,7 +45,6 @@ public class AlignmentInterval extends Locus {
 
         this.spliceJunctionHelper = spliceJunctionHelper;
         this.downsampledIntervals = downsampledIntervals;
-        this.renderOptions = renderOptions;
     }
 
     static Alignment getFeatureContaining(List<Alignment> features, int right) {
@@ -139,11 +130,11 @@ public class AlignmentInterval extends Locus {
     }
 
     public List<Alignment> getAlignments(){
-        return Collections.unmodifiableList(this.alignments);
+        return alignments == null ? Collections.<Alignment>emptyList() : Collections.unmodifiableList(alignments);
     }
 
     public Iterator<Alignment> getAlignmentIterator() {
-        return alignments.iterator();
+        return alignments == null ? Collections.<Alignment>emptyIterator() : alignments.iterator();
     }
 
     public List<DownsampledInterval> getDownsampledIntervals() {

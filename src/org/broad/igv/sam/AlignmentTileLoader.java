@@ -70,7 +70,7 @@ public class AlignmentTileLoader {
         reader.close();
     }
 
-    public SAMFileHeader getFileHeader(){
+    public SAMFileHeader getFileHeader() {
         return this.reader.getFileHeader();
     }
 
@@ -178,11 +178,11 @@ public class AlignmentTileLoader {
                     if (cancel) return null;
                     String msg = "Reads loaded: " + alignmentCount;
                     MessageUtils.setStatusBarMessage(msg);
-                    if(monitor != null){
+                    if (monitor != null) {
                         monitor.updateStatus(msg);
                     }
                     if (memoryTooLow()) {
-                        if(monitor != null) monitor.fireProgressChange(100);
+                        if (monitor != null) monitor.fireProgressChange(100);
                         cancelReaders();
                         t.finish();
                         return t;        // <=  TODO need to cancel all readers
@@ -217,33 +217,32 @@ public class AlignmentTileLoader {
             // Clean up any remaining unmapped mate sequences
             for (String mappedMateName : mappedMates.getKeys()) {
                 Alignment mappedMate = mappedMates.get(mappedMateName);
-                Alignment mate = unmappedMates.get(mappedMate.getReadName());
-                if (mate != null) {
-                    mappedMate.setMateSequence(mate.getReadSequence());
+                if (mappedMate != null) {
+                    Alignment mate = unmappedMates.get(mappedMate.getReadName());
+                    if (mate != null) {
+                        mappedMate.setMateSequence(mate.getReadSequence());
+                    }
                 }
             }
             t.finish();
 
-            return t;
 
         } catch (java.nio.BufferUnderflowException e) {
             // This almost always indicates a corrupt BAM index, or less frequently a corrupt bam file
             corruptIndex = true;
             MessageUtils.showMessage("<html>Error encountered querying alignments: " + e.toString() +
                     "<br>This is often caused by a corrupt index file.");
-            return null;
 
         } catch (Exception e) {
             log.error("Error loading alignment data", e);
             MessageUtils.showMessage("<html>Error encountered querying alignments: " + e.toString());
-            return null;
         } finally {
             // reset cancel flag.  It doesn't matter how we got here,  the read is complete and this flag is reset
             // for the next time
             cancel = false;
             activeLoaders.remove(ref);
 
-            if(monitor != null){
+            if (monitor != null) {
                 monitor.fireProgressChange(100);
             }
 
@@ -254,6 +253,9 @@ public class AlignmentTileLoader {
                 IGV.getInstance().resetStatusMessage();
             }
         }
+
+        return t;
+
     }
 
 
@@ -347,9 +349,9 @@ public class AlignmentTileLoader {
 
             this.spliceJunctionHelper = spliceJunctionHelper;
 
-            if(this.downsample){
+            if (this.downsample) {
                 imAlignments = new IndexableMap<String, Alignment>(8000);
-            }else{
+            } else {
                 alignments = new ArrayList<Alignment>(16000);
             }
         }
@@ -400,6 +402,7 @@ public class AlignmentTileLoader {
          * or chimeric read.
          * If we haven't seen another read like that, the record is added with some probability according to
          * reservoir sampling
+         *
          * @param alignment
          */
         private void attemptAddRecordDownsampled(Alignment alignment) {
@@ -411,16 +414,16 @@ public class AlignmentTileLoader {
             //There are 3 possibilities: other-kept, other-rejected, other-unknown (haven't seen)
             //If we kept or rejected the another read with the same name, we do the same for this one
             boolean hasRead = imAlignments.containsKey(readName);
-            if(hasRead){
+            if (hasRead) {
                 List<Alignment> mateAlignments = imAlignments.get(readName);
                 boolean haveOther = mateAlignments != null;
-                if(haveOther){
+                if (haveOther) {
                     //We keep the alignment if others have been kept
                     imAlignments.append(readName, alignment);
-                }else{
+                } else {
                     currentDownsampledInterval.incCount();
                 }
-            }else{
+            } else {
                 if (curEffSamplingWindowDepth < samplingDepth) {
                     imAlignments.append(readName, alignment);
                     curEffSamplingWindowDepth++;
@@ -432,7 +435,7 @@ public class AlignmentTileLoader {
                         // Replace random record with this one
                         List<Alignment> removedValues = imAlignments.replace(idx, readName, alignment);
                         incrementDownsampledIntervals(removedValues);
-                    }else{
+                    } else {
                         //Mark that record was not kept
                         imAlignments.markNull(readName);
                         currentDownsampledInterval.incCount();
@@ -454,19 +457,20 @@ public class AlignmentTileLoader {
         }
 
         private void incrementDownsampledIntervals(List<Alignment> removedValues) {
-            if(removedValues == null) return;
-            for(Alignment al: removedValues){
+            if (removedValues == null) return;
+            for (Alignment al : removedValues) {
                 DownsampledInterval interval = findDownsampledInterval(al);
-                if(interval != null) interval.incCount();
+                if (interval != null) interval.incCount();
             }
         }
 
-        private DownsampledInterval findDownsampledInterval(Alignment al){
+        private DownsampledInterval findDownsampledInterval(Alignment al) {
             return findDownsampledInterval(al, 0, downsampledIntervals.size());
         }
 
         /**
          * Attempt to find appropriate DownsampledInterval by recursive binary search
+         *
          * @param al
          * @param startInd Start search index, 0-based inclusive
          * @param endInd   End search index, 0-based exclusive
@@ -474,7 +478,7 @@ public class AlignmentTileLoader {
          */
         private DownsampledInterval findDownsampledInterval(Alignment al, int startInd, int endInd) {
             //Length-0 search space
-            if(startInd == endInd){
+            if (startInd == endInd) {
                 return null;
             }
             final int midInd = (startInd + endInd) / 2;
@@ -484,9 +488,9 @@ public class AlignmentTileLoader {
                 return curInterval;
             }
 
-            if(al.getStart() >= curInterval.getEnd()){
+            if (al.getStart() >= curInterval.getEnd()) {
                 startInd = midInd + 1;
-            }else{
+            } else {
                 endInd = midInd;
             }
             return findDownsampledInterval(al, startInd, endInd);
@@ -496,10 +500,9 @@ public class AlignmentTileLoader {
          * Sort the alignments by start position, and filter {@code downsampledIntervals}.
          * This will have the same results as if no downsampling occurred, although will incur
          * extra computational cost
-         *
          */
         private void sortFilterDownsampled() {
-            if((this.alignments == null || this.alignments.size() == 0) && this.downsample){
+            if ((this.alignments == null || this.alignments.size() == 0) && this.downsample) {
                 this.alignments = imAlignments.getAllValues();
                 imAlignments.clear();
             }
@@ -513,8 +516,8 @@ public class AlignmentTileLoader {
 
             //Only keep the intervals for which count > 0
             List<DownsampledInterval> tmp = new ArrayList<DownsampledInterval>(this.downsampledIntervals.size());
-            for(DownsampledInterval interval: this.downsampledIntervals){
-                if(interval.getCount() > 0){
+            for (DownsampledInterval interval : this.downsampledIntervals) {
+                if (interval.getCount() > 0) {
                     tmp.add(interval);
                 }
             }
@@ -522,6 +525,10 @@ public class AlignmentTileLoader {
         }
 
         public List<Alignment> getAlignments() {
+
+            if(alignments == null) {
+                finish();   // TODO -- I'm not sure this should ever happen
+            }
             return alignments;
         }
 
@@ -550,7 +557,7 @@ public class AlignmentTileLoader {
         }
 
         public List<SpliceJunctionFeature> getSpliceJunctionFeatures() {
-            if(spliceJunctionHelper == null) return null;
+            if (spliceJunctionHelper == null) return null;
             return spliceJunctionHelper.getFilteredJunctions();
         }
 
@@ -562,22 +569,23 @@ public class AlignmentTileLoader {
          * Map-like structure designed to be accessible both by key, and by numeric index
          * Multiple values are stored for each key, and a list is returned
          * If the value for a key is set as null, nothing can be added
-         *
+         * <p/>
          * Intended to support downsampling, where if a read name is added and then removed
          * we don't want to add the read pair
+         *
          * @param <K>
          * @param <V>
          */
-        private class IndexableMap<K, V>{
+        private class IndexableMap<K, V> {
             private HashMap<K, List<V>> map;
             private List<K> list;
 
-            IndexableMap(int size){
+            IndexableMap(int size) {
                 this.map = new HashMap<K, List<V>>(size);
                 this.list = new ArrayList<K>(size);
             }
 
-            public List<V> get(K key){
+            public List<V> get(K key) {
                 return map.get(key);
             }
 
@@ -585,26 +593,27 @@ public class AlignmentTileLoader {
              * Append a value for the specified key, unless
              * the current value is null. If the current value is
              * null, it's a no-op.
+             *
              * @param key
              * @param value
              * @return Whether the element was added
              */
-            public boolean append(K key, V value){
-                if(!map.containsKey(key)){
+            public boolean append(K key, V value) {
+                if (!map.containsKey(key)) {
                     addNewValueToMap(key, value);
                     return list.add(key);
-                }else{
+                } else {
                     List<V> curList = map.get(key);
-                    if(curList == null) return false;
+                    if (curList == null) return false;
                     return curList.add(value);
                 }
             }
 
-            public List<V> markNull(K key){
+            public List<V> markNull(K key) {
                 return map.put(key, null);
             }
 
-            private void addNewValueToMap(K key, V value){
+            private void addNewValueToMap(K key, V value) {
                 List<V> curList = new ArrayList<V>(2);
                 curList.add(value);
                 map.put(key, curList);
@@ -613,42 +622,43 @@ public class AlignmentTileLoader {
             /**
              * Place the specified {@code key} and {@code value} in the map,
              * at index {@code index}.
-             *
+             * <p/>
              * In the unlikely event that {@code key} is already
              * at {@code index}, {@code value} will be appended
+             *
              * @param index
              * @param key
              * @param value
              * @return Whether the replacement actually happened
              */
-            public List<V> replace(int index, K key, V value){
+            public List<V> replace(int index, K key, V value) {
                 checkSize(index);
                 K oldKey = list.get(index);
-                if(!oldKey.equals(key)){
+                if (!oldKey.equals(key)) {
                     //Remove the old key from map, and make sure nothing else gets put there
                     List<V> oldValue = markNull(oldKey);
                     addNewValueToMap(key, value);
                     list.set(index, key);
                     return oldValue;
-                }else{
+                } else {
                     append(key, value);
                     return null;
                 }
             }
 
-            public int size(){
+            public int size() {
                 return list.size();
             }
 
-            private void checkSize(int index){
-                if(index >= size()){
+            private void checkSize(int index) {
+                if (index >= size()) {
                     throw new IllegalArgumentException("index " + index + " greater than current size" + size());
                 }
             }
 
             public List<V> getAllValues() {
-                List<V> allValues = new ArrayList<V>(2*size());
-                for(K k: list){
+                List<V> allValues = new ArrayList<V>(2 * size());
+                for (K k : list) {
                     allValues.addAll(map.get(k));
                 }
                 return allValues;

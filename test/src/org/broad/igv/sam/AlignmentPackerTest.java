@@ -49,7 +49,7 @@ public class AlignmentPackerTest extends AbstractHeadlessTest {
         while(iter.hasNext()){
             list.add(iter.next());
         }
-        AlignmentInterval interval = new AlignmentInterval(chr, start, end, list, null, null, null, null);
+        AlignmentInterval interval = new AlignmentInterval(chr, start, end, list, null, null, null);
         return interval;
     }
 
