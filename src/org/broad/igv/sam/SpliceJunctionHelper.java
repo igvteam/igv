@@ -52,22 +52,6 @@ public class SpliceJunctionHelper {
 
     private LoadOptions loadOptions;
 
-    /**
-     * Create a new SpliceJunctionHelper from the raw data of the old one. New filtered
-     * lists are created based on the raw (data)
-     *
-     * @param spliceJunctionHelper
-     */
-    SpliceJunctionHelper(SpliceJunctionHelper spliceJunctionHelper) {
-        this(spliceJunctionHelper.getLoadOptions());
-        this.allSpliceJunctionFeatures = spliceJunctionHelper.allSpliceJunctionFeatures;
-        this.posStartEndJunctionsMap = spliceJunctionHelper.posStartEndJunctionsMap;
-        this.negStartEndJunctionsMap = spliceJunctionHelper.negStartEndJunctionsMap;
-
-        this.filteredSpliceJunctionFeatures = null;
-        this.filteredCombinedFeatures = null;
-    }
-
     public SpliceJunctionHelper(LoadOptions loadOptions) {
         this.loadOptions = loadOptions;
     }
@@ -221,10 +205,6 @@ public class SpliceJunctionHelper {
 
         filteredCombinedFeatures = new ArrayList<SpliceJunctionFeature>(combinedStartEndJunctionsMap.values());
         FeatureUtils.sortFeatureList(filteredCombinedFeatures);
-    }
-
-    public LoadOptions getLoadOptions() {
-        return loadOptions;
     }
 
     public static class LoadOptions {

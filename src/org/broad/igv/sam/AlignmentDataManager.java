@@ -48,7 +48,6 @@ public class AlignmentDataManager implements IAlignmentDataManager {
     private AlignmentTileLoader reader;
     private CoverageTrack coverageTrack;
 
-    private static final int MAX_ROWS = 1000000;
     private Map<String, PEStats> peStats;
 
     private AlignmentTrack.ExperimentType experimentType;
