@@ -75,6 +75,8 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
     protected boolean isGenotypeRenderer = false;
 
+    private static final int MAX_NAME_LENGTH = 60;
+
 
     /**
      * Note:  assumption is that featureList is sorted by start position.
@@ -225,6 +227,11 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                 if (displayMode != Track.DisplayMode.SQUISHED) {
                     String name = feature.getName();
                     if (name != null) {
+                        // Limit name display length
+                        if (name.length() >= MAX_NAME_LENGTH) {
+                            name = name.substring(0, MAX_NAME_LENGTH - 3) + " ...";
+                        }
+
                         LineMetrics lineMetrics = font.getLineMetrics(name, g2D.getFontRenderContext());
                         int fontHeight = (int) Math.ceil(lineMetrics.getHeight());
 

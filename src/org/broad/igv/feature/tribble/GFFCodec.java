@@ -487,10 +487,6 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
                     if (useUrlDecoding) {
                         key = StringUtils.decodeURL(key);
                         value = StringUtils.decodeURL(value);
-                        // Limit values to 50 characters
-                        if (value.length() > 50) {
-                            value = value.substring(0, 50) + " ...";
-                        }
                     }
                     kvalues.put(StringUtils.intern(key), value);
                 } else {
