@@ -184,8 +184,9 @@ public class CoverageTrack extends AbstractTrack {
                 max = intervalMax > max ? intervalMax : max;
             }
 
-            boolean isLog = (getDataRange().getType()) == DataRange.Type.LOG;
-            super.setDataRange(new DataRange(0, 0, max, isLog));
+            DataRange newRange = new DataRange(0, max);
+            newRange.setType(getDataRange().getType());
+            super.setDataRange(newRange);
 
         }
     }
