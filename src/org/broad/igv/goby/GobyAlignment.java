@@ -741,8 +741,8 @@ public class GobyAlignment implements Alignment {
 
         if (this.isPaired()) {
             buffer.append("----------------------" + "<br>");
-            buffer.append("Pair start = " + getMate().positionString() + "<br>");
-            buffer.append("Pair is mapped = " + (getMate().isMapped() ? "yes" : "no") + "<br>");
+            buffer.append("Mate start = " + getMate().positionString() + "<br>");
+            buffer.append("Mate is mapped = " + (getMate().isMapped() ? "yes" : "no") + "<br>");
             //buf.append("Pair is proper = " + (getProperPairFlag() ? "yes" : "no") + "<br>");
             if (getChr().equals(getMate().getChr())) {
                 buffer.append("Insert size = " + getInferredInsertSize() + "<br>");
