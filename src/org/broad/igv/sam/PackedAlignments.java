@@ -25,19 +25,14 @@ import java.util.Map;
  */
 public class PackedAlignments extends LinkedHashMap<String, List<Row>> {
 
-    /**
-     * Options of how the alignments were packed
-     */
-    private AlignmentTrack.RenderOptions renderOptions;
 
     /**
      *  Set of ranges covered by this instance.
      */
     private List<? extends Range> ranges;
 
-    PackedAlignments(List<? extends Range> ranges, Map<String, List<Row>> packedAlignments, AlignmentTrack.RenderOptions renderOptions){
+    PackedAlignments(List<? extends Range> ranges, Map<String, List<Row>> packedAlignments){
         super(packedAlignments);
-        this.renderOptions = renderOptions;
         this.ranges = ranges;
     }
 
@@ -70,7 +65,4 @@ public class PackedAlignments extends LinkedHashMap<String, List<Row>> {
         return false;
     }
 
-    public List<? extends Range> getRanges() {
-        return ranges;
-    }
 }
