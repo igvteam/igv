@@ -394,6 +394,10 @@ public abstract class DataTrack extends AbstractTrack {
                     if ((score.getEnd() >= start) && (score.getStart() <= end)) {
                         int interval = Math.min(end, score.getEnd()) - Math.max(start, score.getStart());
                         float value = score.getScore();
+                        //For sorting it makes sense to skip NaNs. Not sure about other contexts
+                        if(Float.isNaN(value)){
+                            continue;
+                        }
                         regionScore += value * interval;
                         intervalSum += interval;
                     }
