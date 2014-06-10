@@ -390,12 +390,14 @@ public abstract class DataTrack extends AbstractTrack {
             } else {
                 float regionScore = 0;
                 int intervalSum = 0;
+                boolean hasNan = false;
                 for (LocusScore score : scores) {
                     if ((score.getEnd() >= start) && (score.getStart() <= end)) {
                         int interval = Math.min(end, score.getEnd()) - Math.max(start, score.getStart());
                         float value = score.getScore();
                         //For sorting it makes sense to skip NaNs. Not sure about other contexts
                         if(Float.isNaN(value)){
+                            hasNan = true;
                             continue;
                         }
                         regionScore += value * interval;
@@ -403,8 +405,13 @@ public abstract class DataTrack extends AbstractTrack {
                     }
                 }
                 if (intervalSum <= 0) {
-                    // No scores in interval
-                    return -Float.MAX_VALUE;
+                    if(hasNan){
+                        //If the only existing scores are NaN, the overall score should be NaN
+                        return Float.NaN;
+                    }else{
+                        // No scores in interval
+                        return -Float.MAX_VALUE;
+                    }
                 } else {
                     regionScore /= intervalSum;
                     return (type == RegionScoreType.DELETION) ? -regionScore : regionScore;
