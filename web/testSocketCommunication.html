@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+
+<script type="application/javascript">
+
+    if ("WebSocket" in window) {
+        var ws = new WebSocket("ws://localhost:60151/");
+        ws.onopen = function() {
+            console.log("send echo");
+            ws.send("echo");
+        }
+
+        ws.onmessage = function (e) {
+            console.log("recieved: " + e.data);
+        }
+
+        ws.onclose = function() {
+            console.log("close");
+        };
+
+    } else {
+        console.log('no websocket support');
+    }
+
+
+</script>
+
+</body>
+</html>

@@ -10,6 +10,7 @@
  */
 package org.broad.igv.batch;
 
+import biz.source_code.base64Coder.Base64Coder;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -17,14 +18,13 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.util.StringUtils;
 
 import java.awt.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
 import java.nio.channels.ClosedByInterruptException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 public class CommandListener implements Runnable {
@@ -32,12 +32,14 @@ public class CommandListener implements Runnable {
     private static Logger log = Logger.getLogger(CommandListener.class);
 
     private static CommandListener listener;
+    private static final String CRNL = "\r\n";
 
     private int port = -1;
     private ServerSocket serverSocket = null;
     private Socket clientSocket = null;
     private Thread listenerThread;
     boolean halt = false;
+
 
     /**
      * Different keys which can be used to specify a file to load
@@ -129,54 +131,68 @@ public class CommandListener implements Runnable {
 
                 String cmd = inputLine;
                 if (cmd.startsWith("GET")) {
-                    //TODO Set to debug?
-                    log.info(cmd);
-                    String command = null;
-                    Map<String, String> params = null;
-                    String[] tokens = inputLine.split(" ");
-                    if (tokens.length < 2) {
-                        sendHTTPResponse(out, "ERROR unexpected command line: " + inputLine);
-                        return;
-                    } else {
-                        String[] parts = tokens[1].split("\\?");
-                        if (parts.length < 2) {
-                            sendHTTPResponse(out, "ERROR unexpected command line: " + inputLine);
-                            return;
-                        } else {
-                            command = parts[0];
-                            params = parseParameters(parts[1]);
-                        }
-                    }
 
-                    // Consume the remainder of the request, if any.  This is important to free the connection.
+                    // Consume the remainder of the request, if any.   This is important to free the connection.
+                    Map<String, String> headers = new HashMap<String, String>();
                     String nextLine = in.readLine();
                     while (nextLine != null && nextLine.length() > 0) {
                         nextLine = in.readLine();
+                        String [] tokens = Globals.colonPattern.split(nextLine, 2);
+                        if(tokens.length == 2) {
+                            headers.put(tokens[0].trim(), tokens[1].trim());
+                        }
                     }
+                    if(headers.containsKey("Sec-WebSocket-Key"))
+                    {
+                        establishWebSocketConnection(out, headers);
 
-                    // If a callback (javascript) function is specified write it back immediately.  This function
-                    // is used to cancel a timeout handler
-                    String callback = params.get("callback");
-                    if (callback != null) {
-                        sendHTTPResponse(out, callback);
                     }
+                    else {
+                        log.info(cmd);
 
-                    processGet(command, params, cmdExe);
 
-                    // If no callback was specified write back a "no response" header
-                    if (callback == null) {
-                        sendHTTPResponse(out, null);
+                        String command = null;
+                        Map<String, String> params = null;
+                        String[] tokens = inputLine.split(" ");
+                        if (tokens.length < 2) {
+                            sendHTTPResponse(out, "ERROR unexpected command line: " + inputLine);
+                            return;
+                        } else {
+                            String[] parts = tokens[1].split("\\?");
+                            if (parts.length < 2) {
+                                sendHTTPResponse(out, "ERROR unexpected command line: " + inputLine);
+                                return;
+                            } else {
+                                command = parts[0];
+                                params = parseParameters(parts[1]);
+                            }
+                        }
+
+
+                        // If a callback (javascript) function is specified write it back immediately.  This function
+                        // is used to cancel a timeout handler
+                        String callback = params.get("callback");
+                        if (callback != null) {
+                            sendHTTPResponse(out, callback);
+                        }
+
+                        processGet(command, params, cmdExe);
+
+                        // If no callback was specified write back a "no response" header
+                        if (callback == null) {
+                            sendHTTPResponse(out, null);
+                        }
+
+                        // http sockets are used for one request only
+                        return;
                     }
-
-                    // http sockets are used for one request only
-                    return;
 
                 } else {
                     // Port command
                     Globals.setBatch(true);
                     Globals.setSuppressMessages(true);
                     final String response = cmdExe.execute(inputLine);
-                    out.println(response);
+                    out.print(response + "\r\n");
                 }
             }
         } catch (IOException e) {
@@ -187,6 +203,32 @@ public class CommandListener implements Runnable {
             if (out != null) out.close();
             if (in != null) in.close();
         }
+    }
+
+    private void establishWebSocketConnection(PrintWriter out, Map<String, String> headers) {
+
+        String clientKey = headers.get("Sec-WebSocket-Key").trim();
+        String guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+
+        try {
+            String responseKey = this.computeResponseKey(clientKey + guid);
+            out.print("HTTP/1.1 101 Switching Protocols" + CRNL);
+            out.print("Upgrade: websocket" + CRNL);
+            out.print("Connection: Upgrade" + CRNL);
+            out.print("Sec-WebSocket-Accept: " + responseKey + CRNL);
+            if(headers.containsKey("Sec-WebSocket-Protocol")) {
+                out.print("Sec-WebSocket-Protocol: " + headers.get("Sec-WebSocket-Protocol") + CRNL);
+            }
+            out.print(CRNL);
+            out.flush();
+
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void closeSockets() {
@@ -209,7 +251,7 @@ public class CommandListener implements Runnable {
         }
     }
 
-    private static final String CRNL = "\r\n";
+
     private static final String CONTENT_TYPE = "Content-Type: ";
     private static final String HTTP_RESPONSE = "HTTP/1.1 200 OK";
     private static final String HTTP_NO_RESPONSE = "HTTP/1.1 204 No Response";
@@ -221,7 +263,10 @@ public class CommandListener implements Runnable {
     private void sendHTTPResponse(PrintWriter out, String result) {
 
         out.println(result == null ? HTTP_NO_RESPONSE : HTTP_RESPONSE);
+        out.print(CRNL);
         if (result != null) {
+            out.print("Access-Control-Allow-Origin: *");
+            out.print(CRNL);
             out.print(CONTENT_TYPE + CONTENT_TYPE_TEXT_HTML);
             out.print(CRNL);
             out.print(CONTENT_LENGTH + (result.length()));
@@ -356,5 +401,26 @@ public class CommandListener implements Runnable {
         }
         return params;
 
+    }
+
+
+    /**
+     * Compute a socket key according to the WebSocket RFC.  This method is here because this is the only class that uses it.
+     *
+     * @param input
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
+    static String computeResponseKey(String input) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+
+        java.security.MessageDigest digest = null;
+
+        digest = java.security.MessageDigest.getInstance("SHA-1");
+
+        digest.reset();
+
+        digest.update(input.getBytes("UTF-8"));
+
+        return new String(Base64Coder.encode(digest.digest()));
     }
 }

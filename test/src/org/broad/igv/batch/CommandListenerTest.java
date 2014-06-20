@@ -11,6 +11,7 @@
 
 package org.broad.igv.batch;
 
+import biz.source_code.base64Coder.Base64Coder;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.AbstractHeadedTest;
@@ -174,6 +175,21 @@ public class CommandListenerTest extends AbstractHeadedTest {
         conn.connect();
         System.out.println(conn.getResponseCode() + ":" + conn.getResponseMessage());
         return conn;
+    }
+
+    @Test
+    public void testSHA1() throws Exception {
+
+        // Example from WebSocket RFC
+        String guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+        String clientSocketKey = "dGhlIHNhbXBsZSBub25jZQ==";
+        String serverSocketKey = "s3pPLMBiTxaQ9kYGzzhZRbK+xOo=";
+
+        String generatedKey = CommandListener.computeResponseKey(clientSocketKey + guid);
+
+        assertEquals(new String(generatedKey), serverSocketKey);
+
+
     }
 
 
