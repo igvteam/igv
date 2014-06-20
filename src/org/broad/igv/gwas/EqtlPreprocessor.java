@@ -2,6 +2,7 @@ package org.broad.igv.gwas;
 
 import org.broad.igv.tdf.BufferedByteWriter;
 import org.broad.igv.tdf.TDFReader;
+import org.broad.igv.tools.sort.Sorter;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.CompressionUtils;
@@ -16,6 +17,9 @@ import java.util.Map;
  * <p/>
  * SNP	SNP_Chr	SNP_Pos	Gen_ID	Gene_Name	Gene_Pos	T_Stat	P_Val	Q_Val
  * rs3094317	1	739528	ENSG00000237491.2	RP11-206L10.6	714162	-4.41310870534187	3.457968769964e-05	0.0254439762182497
+ *
+ SNP	SNP_Chr	SNP_Pos	Gen_ID	Gene_Name	Gene_Pos	T_Stat	Beta	P_Val	min(p)	EmpP	nom_thresh
+ chr2:202672143:I	2	202672143	ENSG00000003393.10	ALS2	202645912	-4.90641599377695	-0.410144871510459	4.16077158322729e-06	4.1199296E-8	9 *
  */
 public class EqtlPreprocessor {
 
@@ -46,7 +50,12 @@ public class EqtlPreprocessor {
         File[] files = (new File(args[0])).listFiles();
         for (File file : files) {
             if (file.getName().endsWith(".eqtl")) {
-                (new EqtlPreprocessor()).process(file.getAbsolutePath(), file.getAbsolutePath() + ".bin");
+
+                File sortedFile = new File(file.getAbsolutePath() + ".sorted.eqtl");
+                Sorter sorter = Sorter.getSorter(file, sortedFile);
+                sorter.run();
+
+                (new EqtlPreprocessor()).process(sortedFile.getAbsolutePath(), file.getAbsolutePath() + ".bin");
             }
         }
     }

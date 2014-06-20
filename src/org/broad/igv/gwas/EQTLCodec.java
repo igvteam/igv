@@ -31,6 +31,9 @@ import java.util.Map;
  * <p/>
  * SNP	SNP_Chr	SNP_Pos	Gen_ID	Gene_Name	Gene_Pos	T_Stat	P_Val	Q_Val
  * rs1569471	1	169564130	ENSG00000000460.11	C1orf112	169631245	-4.187361378	7.79E-05	0.04794564
+  SNP	SNP_Chr	SNP_Pos	Gen_ID	Gene_Name	Gene_Pos	T_Stat	Beta	P_Val	min(p)	EmpP	nom_thresh
+ chr2:202672143:I	2	202672143	ENSG00000003393.10	ALS2	202645912	-4.90641599377695	-0.410144871510459	4.16077158322729e-06	4.1199296E-8	9 *
+
  */
 public class EQTLCodec extends AsciiFeatureCodec<EQTLFeature> {
 
@@ -63,6 +66,7 @@ public class EQTLCodec extends AsciiFeatureCodec<EQTLFeature> {
             columnNames = tokens;
             return null;
         }
+//  SNP	SNP_Chr	SNP_Pos	Gen_ID	Gene_Name	Gene_Pos	T_Stat	Beta	P_Val	min(p)	EmpP	nom_thresh
 
         String snp = tokens[0];
         String chr = genome == null ? StringUtils.intern(tokens[1]) : genome.getChromosomeAlias(tokens[1]);
@@ -70,13 +74,15 @@ public class EQTLCodec extends AsciiFeatureCodec<EQTLFeature> {
         int position = Integer.parseInt(tokens[2]) - 1;
         String geneId = tokens[3];
         String geneName = tokens[4];
-        float tStart = Float.parseFloat(tokens[6]);
 
-        double tmp = Double.parseDouble(tokens[7]);
+        //float tStat = Float.parseFloat(tokens[6]);
+        //float beta = Float.parseFloat(tokens[6]);
+
+        double tmp = Double.parseDouble(tokens[8]);
         float pValue = tmp < Float.MIN_VALUE ? Float.MIN_VALUE : (float) tmp;
 
 
-        float qValue = tokens.length > 8 ? Float.parseFloat(tokens[8]) : 0f;
+        //float qValue = tokens.length > 8 ? Float.parseFloat(tokens[8]) : 0f;
 
         Map<String, String> attributes = null;
         if (columnNames != null) {
@@ -89,7 +95,7 @@ public class EQTLCodec extends AsciiFeatureCodec<EQTLFeature> {
         }
 
 
-        return new EQTLFeature(snp, chr, position, geneId, geneName, tStart, pValue, qValue);
+        return new EQTLFeature(snp, chr, position, geneId, geneName, pValue);
     }
 
 
