@@ -36,6 +36,8 @@
     <property name="docs.dir" value="${basedir}/docs"/>
     <property name="api.docs.dir" value="${docs.dir}/api"/>
 
+    <property name="javac.nowarn" value="off"/>
+
     <property name="batik-codec-finame" value="batik-codec__V1.7.jar"/>
     <property name="goby-io-finame" value="goby-io-igv__V1.0.jar"/>
 
@@ -125,7 +127,7 @@
     tests later. -->
     <target name="compile" depends="init" description="Compile main source files to temp directory">
         <javac srcdir="${src.dir}" debug="on" destdir="${tmp.dir}" encoding="${java.encoding}"
-               target="${javac.target}" source="${javac.target}">
+               target="${javac.target}" source="${javac.target}" nowarn="${javac.nowarn}">
             <classpath refid="@jars"/>
         </javac>
         <!--
@@ -149,7 +151,7 @@
 
     <target name="compileTests" if="compile.tests" description="Compile test files to testtmp directory, WITHOUT compiling main source files">
         <javac srcdir="${testsrc.dir}" debug="on" destdir="${testtmp.dir}" includeantruntime="true"
-               target="${javac.target}" source="${javac.target}" encoding="${java.encoding}">
+               target="${javac.target}" source="${javac.target}" encoding="${java.encoding}" nowarn="${javac.nowarn}">
             <classpath refid="test.classpath"/>
         </javac>
     </target>
