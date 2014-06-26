@@ -134,7 +134,7 @@ public class AlignmentInterval extends Locus {
     }
 
     public Iterator<Alignment> getAlignmentIterator() {
-        return alignments == null ? Collections.<Alignment>emptyIterator() : alignments.iterator();
+        return alignments == null ? Collections.<Alignment>emptyList().iterator() : alignments.iterator();
     }
 
     public List<DownsampledInterval> getDownsampledIntervals() {
