@@ -56,6 +56,17 @@ public class EQTLCodec extends AsciiFeatureCodec<EQTLFeature> {
         return new BasicFeature(chr, position, position + 1);
     }
 
+    /*
+            var snp = parser.getString();
+        var chr = parser.getString();
+        var position = parser.getInt();
+        var geneId = parser.getString();
+        var geneName = parser.getString();
+        //var genePosition = -1;
+        //var fStat = parser.getFloat();
+        var pValue = parser.getFloat();
+
+     */
 
     @Override
     public EQTLFeature decode(String s) {
@@ -78,7 +89,7 @@ public class EQTLCodec extends AsciiFeatureCodec<EQTLFeature> {
         //float tStat = Float.parseFloat(tokens[6]);
         //float beta = Float.parseFloat(tokens[6]);
 
-        double tmp = Double.parseDouble(tokens[8]);
+        double tmp = Double.parseDouble(tokens[5]);
         float pValue = tmp < Float.MIN_VALUE ? Float.MIN_VALUE : (float) tmp;
 
 
