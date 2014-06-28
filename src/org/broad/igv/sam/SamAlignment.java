@@ -16,7 +16,6 @@ import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.SAMReadGroupRecord;
 import net.sf.samtools.SAMRecord;
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -24,8 +23,6 @@ import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -35,36 +32,19 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
     private static Logger log = Logger.getLogger(SamAlignment.class);
 
-    public static final char DELETE_CHAR = '-';
-    public static final char SKIP_CHAR = '=';
-    public static final char MATCH = 'M';
-    public static final char PERFECT_MATCH = '=';
-    public static final char MISMATCH = 'X';
-    public static final char INSERTION = 'I';
-    public static final char DELETION = 'D';
-    public static final char SKIPPED_REGION = 'N';
-    public static final char SOFT_CLIP = 'S';
-    public static final char HARD_CLIP = 'H';
-    public static final char PADDING = 'P';
-    public static final char ZERO_GAP = 'O';
-
-    private static final String FLOW_SIGNAL_TAG = "ZF";
-    private int start;  // <= Might differ from alignment start if soft clipping is considered
-    private int end;    // ditto
     private int alignmentStart;
     private int alignmentEnd;
 
     /**
      * Picard object upon which this SamAlignment is based
      */
-    private SAMRecord record;
+   // private SAMRecord record;
     private String mateSequence = null;
     private String pairOrientation = "";
     private Color color = null;
     private String readGroup;
     private String library;
     private String sample;
-
     private Strand firstOfPairStrand;
     private Strand secondOfPairStrand;
 
@@ -90,12 +70,21 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
             'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N'
     };
 
-    public static final String REDUCE_READS_TAG = "RR";
-
     public SamAlignment(SAMRecord record) {
         String keySequence = null;
 
-        this.record = record;
+        this.negativeStrand = record.getReadNegativeStrandFlag();
+        this.duplicate = record.getDuplicateReadFlag();
+        this.mapped =  !record.getReadUnmappedFlag();
+        this.readLength = record.getReadLength();
+        this.paired = record.getReadPairedFlag();
+        this.properPair = record.getProperPairFlag();
+        this.firstOfPair = record.getFirstOfPairFlag();
+        this.secondOfPair = record.getSecondOfPairFlag();
+        this.cigarString = record.getCigarString();
+        this.readSequence = record.getReadString();
+        this.primary =   !record.getNotPrimaryAlignmentFlag();
+        this.supplementary = record.getSupplementaryAlignmentFlag();
 
         String refName = record.getReferenceName();
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
@@ -242,255 +231,38 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         }
     }
 
-    /**
-     * Create the alignment blocks from the read bases and alignment information in the CIGAR
-     * string.  The CIGAR string encodes insertions, deletions, skipped regions, and padding.
-     *
-     * @param cigarString
-     * @param readBases
-     * @param readBaseQualities
-     */
-    private void createAlignmentBlocks(String cigarString, byte[] readBases, byte[] readBaseQualities) {
-        createAlignmentBlocks(cigarString, readBases, readBaseQualities, null, null, null, -1);
-    }
-
-    /**
-     * Create the alignment blocks from the read bases and alignment information in the CIGAR
-     * string.  The CIGAR string encodes insertions, deletions, skipped regions, and padding.
-     *
-     * @param cigarString
-     * @param readBases
-     * @param readBaseQualities
-     * @param readRepresentativeCounts the representative counts of each base in the read (translated from the reduce reads tag)
-     * @param flowSignals              from the FZ tag, null if not present
-     * @param flowOrder                from the RG.FO header tag, null if not present
-     * @param flowOrderStart
-     */
-    private void createAlignmentBlocks(String cigarString, byte[] readBases, byte[] readBaseQualities, short[] readRepresentativeCounts,
-                                       short[] flowSignals, String flowOrder, int flowOrderStart) {
-
-        boolean showSoftClipped = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED);
-
-        int nInsertions = 0;
-        int nBlocks = 0;
-
-        List<CigarOperator> operators = new ArrayList();
-        StringBuffer buffer = new StringBuffer(4);
-
-        if (cigarString.equals("*")) {
-            alignmentBlocks = new AlignmentBlock[1];
-            alignmentBlocks[0] = new AlignmentBlock(getChr(), getStart(), readBases, readBaseQualities);
-            return;
-        }
-
-        // Create list of cigar operators
-        boolean firstOperator = true;
-        int softClippedBaseCount = 0;
-        int nGaps = 0;
-        char prevOp = 0;
-        for (int i = 0; i < cigarString.length(); i++) {
-            char next = cigarString.charAt(i);
-            if (Character.isDigit(next)) {
-                buffer.append(next);
-            } else {
-                char op = next;
-                if (op == HARD_CLIP) {
-                    buffer = new StringBuffer(4);
-                    continue;  // Just skip hardclips
-                }
-                int nBases = Integer.parseInt(buffer.toString());
-                if (operatorIsMatch(showSoftClipped, op)) {
-                    if (operatorIsMatch(showSoftClipped, prevOp)) {
-                        nGaps++;   // Consecutive Ms
-                    }
-                    nBlocks++;
-
-                } else if (op == DELETION || op == SKIPPED_REGION) {
-                    nGaps++;
-                } else if (op == INSERTION) {
-                    nInsertions++;
-                    nGaps++; // "virtual" gap, account for artificial block split @ insertion
-                } else if (op == PADDING) {
-                    nGaps++;
-                }
-
-
-                if (firstOperator && op == SOFT_CLIP) {
-                    softClippedBaseCount += nBases;
-                }
-
-                operators.add(new CigarOperator(nBases, op));
-                buffer = new StringBuffer(4);
-
-                prevOp = op;
-                firstOperator = false;
-            }
-        }
-
-        alignmentBlocks = new AlignmentBlock[nBlocks];
-        insertions = new AlignmentBlock[nInsertions];
-        if (nGaps > 0) {
-            gapTypes = new char[nGaps];
-        }
-
-        // Adjust start to include soft clipped bases a
-        if (showSoftClipped) {
-            start -= softClippedBaseCount;
-        }
-        int fromIdx = showSoftClipped ? 0 : softClippedBaseCount;
-        int blockStart = start;
-
-        // Create blocks
-        int blockIdx = 0;
-        int insertionIdx = 0;
-        int gapIdx = 0;
-        FlowSignalContextBuilder fBlockBuilder = null;
-        if (null != flowSignals) {
-            if (0 < readBases.length) {
-                fBlockBuilder = new FlowSignalContextBuilder(flowSignals, flowOrder, flowOrderStart, readBases, fromIdx, this.isNegativeStrand());
-            }
-        }
-        prevOp = 0;
-        for (CigarOperator op : operators) {
-            try {
-
-                if (op.operator == HARD_CLIP) {
-                    continue;
-                }
-                if (operatorIsMatch(showSoftClipped, op.operator)) {
-
-                    AlignmentBlock block = buildAlignmentBlock(fBlockBuilder, readBases, readBaseQualities,
-                            readRepresentativeCounts, getChr(), blockStart, fromIdx, op.nBases, true);
-
-                    if (op.operator == SOFT_CLIP) {
-                        block.setSoftClipped(true);
-                    }
-                    alignmentBlocks[blockIdx++] = block;
-
-                    fromIdx += op.nBases;
-                    blockStart += op.nBases;
-
-                    if (operatorIsMatch(showSoftClipped, prevOp)) {
-                        gapTypes[gapIdx++] = ZERO_GAP;
-                    }
-
-                } else if (op.operator == DELETION || op.operator == SKIPPED_REGION ) {
-                    blockStart += op.nBases;
-                    gapTypes[gapIdx++] = op.operator;
-                } else if (op.operator == INSERTION) {
-                    // This gap is between blocks split by insertion.   It is a zero
-                    // length gap but must be accounted for.
-                    gapTypes[gapIdx++] = ZERO_GAP;
-                    AlignmentBlock block = buildAlignmentBlock(fBlockBuilder, readBases, readBaseQualities,
-                            readRepresentativeCounts, getChr(), blockStart, fromIdx, op.nBases, false);
-
-                    insertions[insertionIdx++] = block;
-                    fromIdx += op.nBases;
-                } else if (op.operator == PADDING){
-                    //Padding represents a deletion against the padded reference
-                    //But we don't have the padded reference
-                    gapTypes[gapIdx++] = ZERO_GAP;
-                }
-            } catch (Exception e) {
-                log.error("Error processing CIGAR string", e);
-            }
-            prevOp = op.operator;
-        }
-
-        // Check for soft clipping at end
-        if (showSoftClipped && operators.size() > 0) {
-            CigarOperator last = operators.get(operators.size() - 1);
-            if (last.operator == SOFT_CLIP) {
-                end += last.nBases;
-            }
-        }
-    }
-
-    private static AlignmentBlock buildAlignmentBlock(FlowSignalContextBuilder fBlockBuilder, byte[] readBases,
-                                               byte[] readBaseQualities,
-                                               short[] readRepresentativeCounts, String chr, int blockStart,
-                                               int fromIdx, int nBases, boolean checkNBasesAvailable){
-
-        byte[] blockBases = new byte[nBases];
-        byte[] blockQualities = new byte[nBases];
-        short[] blockCounts = new short[nBases];
-
-        // TODO -- represent missing sequence ("*") explicitly for efficiency.
-        int nBasesAvailable = nBases;
-        if(checkNBasesAvailable){
-            nBasesAvailable = readBases.length - fromIdx;
-        }
-        if (readBases == null || readBases.length == 0) {
-            Arrays.fill(blockBases, (byte) '=');
-        } else if (nBasesAvailable < nBases) {
-            Arrays.fill(blockBases, (byte) '?');
-        } else {
-            System.arraycopy(readBases, fromIdx, blockBases, 0, nBases);
-        }
-
-        nBasesAvailable = nBases;
-        if(checkNBasesAvailable){
-            nBasesAvailable = readBaseQualities.length - fromIdx;
-        }
-        if (readBaseQualities == null || readBaseQualities.length == 0 || nBasesAvailable < nBases) {
-            Arrays.fill(blockQualities, (byte) 126);
-        } else {
-            System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, nBases);
-        }
-
-        if (readRepresentativeCounts != null) {
-            System.arraycopy(readRepresentativeCounts, fromIdx, blockCounts, 0, nBases);
-        }
-
-        AlignmentBlock block;
-        if (fBlockBuilder != null) {
-            block = AlignmentBlock.getInstance(chr, blockStart, blockBases, blockQualities,
-                    fBlockBuilder.getFlowSignalContext(readBases, fromIdx, nBases));
-        } else {
-            block = AlignmentBlock.getInstance(chr, blockStart, blockBases, blockQualities);
-        }
-        if (readRepresentativeCounts != null) {
-            block.setCounts(blockCounts);
-        }
-        return block;
-    }
-
-    private boolean operatorIsMatch(boolean showSoftClipped, char operator) {
-        return operator == MATCH || operator == PERFECT_MATCH || operator == MISMATCH
-                || (showSoftClipped && operator == SOFT_CLIP);
-    }
 
     public boolean isNegativeStrand() {
-        return record.getReadNegativeStrandFlag();
+        return negativeStrand;
     }
 
     public boolean isDuplicate() {
-        return this.record.getDuplicateReadFlag();
+        return duplicate;
     }
 
     public boolean isMapped() {
-        return !this.record.getReadUnmappedFlag();
+        return  mapped;
     }
 
     @Override
     public int getReadLength() {
-        return this.record.getReadLength();
+        return readLength;
     }
 
     public boolean isPaired() {
-        return this.record.getReadPairedFlag();
+        return paired;
     }
 
     public boolean isProperPair() {
-        return isPaired() && this.record.getProperPairFlag();
+        return paired && properPair;
     }
 
     public boolean isFirstOfPair() {
-        return isPaired() && this.record.getFirstOfPairFlag();
+        return paired && firstOfPair;
     }
 
     public boolean isSecondOfPair() {
-        return isPaired() && this.record.getSecondOfPairFlag();
+        return paired && this.secondOfPair;
     }
 
     /**
@@ -501,11 +273,11 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     }
 
     public String getCigarString() {
-        return this.record.getCigarString();
+        return cigarString;
     }
 
     public String getReadSequence() {
-        return this.record.getReadString();
+        return readSequence;
     }
 
     /**
@@ -524,12 +296,12 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
     @Override
     public boolean isPrimary() {
-        return !this.record.getNotPrimaryAlignmentFlag();
+        return primary;
     }
 
     @Override
     public boolean isSupplementary() {
-        return this.record.getSupplementaryAlignmentFlag();
+        return supplementary;
     }
 
     /**
@@ -571,7 +343,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
      * @return The SAMRecord which created this SamAlignment
      */
     public SAMRecord getRecord() {
-        return this.record;
+        return null; //this.record;
     }
 
     @Override
@@ -740,23 +512,6 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
      */
     public Strand getSecondOfPairStrand() {
         return secondOfPairStrand;
-    }
-
-    static class CigarOperator {
-
-        int nBases;
-        char operator;
-
-        /**
-         * Constructs ...
-         *
-         * @param nBases
-         * @param operator
-         */
-        public CigarOperator(int nBases, char operator) {
-            this.nBases = nBases;
-            this.operator = operator;
-        }
     }
 
     /**

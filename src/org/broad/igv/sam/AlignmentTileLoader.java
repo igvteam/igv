@@ -297,7 +297,6 @@ public class AlignmentTileLoader {
         private List<Alignment> alignments;
         private List<DownsampledInterval> downsampledIntervals;
         private SpliceJunctionHelper spliceJunctionHelper;
-        private boolean isPairedEnd;
 
         private static final Random RAND = new Random();
 
@@ -374,7 +373,6 @@ public class AlignmentTileLoader {
         public void addRecord(Alignment alignment) {
 
             counts.incCounts(alignment);
-            isPairedEnd |= alignment.isPaired();
 
             if (spliceJunctionHelper != null) {
                 spliceJunctionHelper.addAlignment(alignment);

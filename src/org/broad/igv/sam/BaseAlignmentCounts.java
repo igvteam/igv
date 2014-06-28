@@ -117,7 +117,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
                     if (gapTypes != null
                             && (lastBlockEnd >= 0)
                             && (gapIdx < gapTypes.length)) {
-                        if (gapTypes[gapIdx] == SamAlignment.DELETION) {
+                        if (gapTypes[gapIdx] == AbstractAlignment.DELETION) {
                             for (int pos = lastBlockEnd; pos < b.getStart(); pos++) {
                                 incrementDeletion(pos, isNegativeStrand);
                             }

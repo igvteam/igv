@@ -78,8 +78,8 @@ public class GFFtoBed {
 
 
     public static void main(String [] args) {
-        File gffFile = new File("test/data/gff/gene.gff3");
-        File bedFile = new File("test/data/gff/gene.bed");
+        File gffFile = new File("/Users/jrobinso/projects/igv-js/igv/assets/hg19/gencode.v18.transcripts.patched_contigs.gtf");
+        File bedFile = new File("/Users/jrobinso/projects/igv-js/igv/assets/hg19/gencode.v18.transcripts.patched_contigs.bed");
         convert(gffFile, bedFile);
     }
 }

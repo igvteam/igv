@@ -47,20 +47,7 @@ public class SamAlignmentEncoder implements FeatureEncoder<SamAlignment> {
         return null;
     }
 
-    private String encode(Alignment feature) {
-        if (feature instanceof SamAlignment) {
-            SamAlignment alignment = (SamAlignment) feature;
-            String out = "";
-            //TODO This is a hack, but in theory should work.
-//            if(!headerWritten){
-//                out = alignment.getRecord().getHeader().getTextHeader() + "\n";
-//                headerWritten = true;
-//            }
-            out += alignment.getRecord().getSAMString();
-            return out;
-        }
-        return SAMWriter.getSAMString(feature);
-    }
+
 
     @Override
     public void setInputs(List<String> commands, Map<Argument, Object> argumentMap, Argument argument) {

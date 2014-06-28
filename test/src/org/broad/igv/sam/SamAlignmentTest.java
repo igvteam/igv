@@ -147,13 +147,13 @@ public class SamAlignmentTest extends AbstractHeadlessTest {
         record.setBaseQualities(quals);
         record.setReadBases(bases);
 
-        record.setAttribute(SamAlignment.REDUCE_READS_TAG, compressedCountsBytes);
+        record.setAttribute(AbstractAlignment.REDUCE_READS_TAG, compressedCountsBytes);
         Assert.assertArrayEquals(expCountsBytes, SamAlignment.decodeReduceCounts(record));
 
-        record.setAttribute(SamAlignment.REDUCE_READS_TAG, compressedCountsShorts);
+        record.setAttribute(AbstractAlignment.REDUCE_READS_TAG, compressedCountsShorts);
         Assert.assertArrayEquals(expCountsShorts, SamAlignment.decodeReduceCounts(record));
 
-        record.setAttribute(SamAlignment.REDUCE_READS_TAG, "not meaningful");
+        record.setAttribute(AbstractAlignment.REDUCE_READS_TAG, "not meaningful");
         Assert.assertNull(SamAlignment.decodeReduceCounts(record));
     }
 

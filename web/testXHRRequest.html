@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+<script type="application/javascript">
+
+    var oReq = new XMLHttpRequest();
+
+    oReq.open("GET", "http://localhost:60151/execute?echo");
+
+
+
+    oReq.onload = function (event) {
+
+        var status = oReq.status;
+        var data = oReq.responseText;
+        console.log("Status=" + status + "  Response=" + response);
+    }
+
+    oReq.onerror = function (event) {
+        console.log("Error: " + event);
+    }
+
+    oReq.send();
+
+
+</script>
+</body>
+</html>

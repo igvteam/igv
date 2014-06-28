@@ -99,7 +99,7 @@ public class SpliceJunctionHelper {
         for (AlignmentBlock block : blocks) {
             int flankingEnd = block.getEnd();
             int junctionEnd = block.getStart();
-            if (junctionStart != -1 && gapCount < gapTypes.length && gapTypes[gapCount] == SamAlignment.SKIPPED_REGION) {
+            if (junctionStart != -1 && gapCount < gapTypes.length && gapTypes[gapCount] == AbstractAlignment.SKIPPED_REGION) {
 
                 //only proceed if the flanking regions are both bigger than the minimum
                 if (loadOptions.minReadFlankingWidth == 0 ||
