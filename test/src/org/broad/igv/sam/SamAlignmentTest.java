@@ -148,13 +148,13 @@ public class SamAlignmentTest extends AbstractHeadlessTest {
         record.setReadBases(bases);
 
         record.setAttribute(AbstractAlignment.REDUCE_READS_TAG, compressedCountsBytes);
-        Assert.assertArrayEquals(expCountsBytes, SamAlignment.decodeReduceCounts(record));
+        Assert.assertArrayEquals(expCountsBytes, AbstractAlignment.decodeReduceCounts(record));
 
         record.setAttribute(AbstractAlignment.REDUCE_READS_TAG, compressedCountsShorts);
-        Assert.assertArrayEquals(expCountsShorts, SamAlignment.decodeReduceCounts(record));
+        Assert.assertArrayEquals(expCountsShorts, AbstractAlignment.decodeReduceCounts(record));
 
         record.setAttribute(AbstractAlignment.REDUCE_READS_TAG, "not meaningful");
-        Assert.assertNull(SamAlignment.decodeReduceCounts(record));
+        Assert.assertNull(AbstractAlignment.decodeReduceCounts(record));
     }
 
     @Ignore("Don't store hard clipped bases in blocks")
