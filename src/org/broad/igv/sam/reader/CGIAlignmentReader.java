@@ -21,7 +21,7 @@ import net.sf.samtools.util.LineReader;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.SamAlignment;
+import org.broad.igv.sam.PicardAlignment;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.*;
@@ -155,7 +155,7 @@ public class CGIAlignmentReader implements AlignmentReader {
         return header;
     }
 
-    public CloseableIterator<SamAlignment> iterator() {
+    public CloseableIterator<PicardAlignment> iterator() {
         try {
             URL url = new URL(getQueryURL());
             InputStream is = HttpUtils.getInstance().openConnectionStream(url);
@@ -170,7 +170,7 @@ public class CGIAlignmentReader implements AlignmentReader {
         }
     }
 
-    public CloseableIterator<SamAlignment> query(String sequence, int start, int end, boolean contained) throws IOException {
+    public CloseableIterator<PicardAlignment> query(String sequence, int start, int end, boolean contained) throws IOException {
         try {
             //
             final String parameters = "&chr=" + sequence + "&start=" + start + "&end=" + end +
@@ -200,7 +200,7 @@ public class CGIAlignmentReader implements AlignmentReader {
         String chr = "gi|66043271|ref|NC_007005.1|";
         int start = 800;
         int end = 900;
-        CloseableIterator<SamAlignment> iter = reader.query(chr, start, end, false);
+        CloseableIterator<PicardAlignment> iter = reader.query(chr, start, end, false);
         while (iter.hasNext()) {
             Alignment a = iter.next();
             System.out.println(a);

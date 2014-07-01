@@ -35,7 +35,7 @@ public class BisulfiteBaseInfoTest {
 
 
 
-    static class TestAlignment extends AbstractAlignment {
+    static class TestAlignment extends SAMAlignment {
 
         boolean isNegativeStrand = false;
         private Strand firstOfPairStrand;
@@ -84,6 +84,11 @@ public class BisulfiteBaseInfoTest {
             return null;  //To change body of implemented methods use File | Settings | File Templates.
         }
 
+        @Override
+        public Object getAttribute(String key) {
+            return null;
+        }
+
         public Strand getFragmentStrand(int read) {
             return null;  //To change body of implemented methods use File | Settings | File Templates.
         }
@@ -123,7 +128,7 @@ public class BisulfiteBaseInfoTest {
          * Set the strands of first and second in pair.  Used for strand specific libraries to recover strand of
          * originating fragment.
          */
-        private void setPairStrands() {
+        protected void setPairStrands() {
 
             if (isPaired()) {
                 if (isFirstOfPair()) {

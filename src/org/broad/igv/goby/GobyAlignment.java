@@ -223,7 +223,7 @@ public class GobyAlignment implements Alignment {
                 if (spliceHeadAlignment.gapTypes == null) {
                     spliceHeadAlignment.gapTypes = new CharArrayList(10);
                 }
-                spliceHeadAlignment.gapTypes.add(AbstractAlignment.SKIPPED_REGION);
+                spliceHeadAlignment.gapTypes.add(SAMAlignment.SKIPPED_REGION);
 
                 // Since the previous alignment carries this information, we clear up block and insertionBlock
                 // in this alignment, but keep any softClips:

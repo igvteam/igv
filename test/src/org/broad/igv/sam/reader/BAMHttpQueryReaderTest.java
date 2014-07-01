@@ -21,7 +21,7 @@ import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.SamAlignment;
+import org.broad.igv.sam.PicardAlignment;
 import org.broad.igv.util.ResourceLocator;
 import org.junit.*;
 
@@ -71,7 +71,7 @@ public class BAMHttpQueryReaderTest extends AbstractHeadlessTest {
 
     @Test
     public void testIterator() {
-        CloseableIterator<SamAlignment> iter = reader.iterator();
+        CloseableIterator<PicardAlignment> iter = reader.iterator();
         //This takes a long time. We just look for a minimum number
         int minnum = 1000000;
         int actnum = 0;
@@ -99,7 +99,7 @@ public class BAMHttpQueryReaderTest extends AbstractHeadlessTest {
     }
 
     private void checkNumber(String chr, int start, int end, int expected_count) throws IOException {
-        CloseableIterator<SamAlignment> iter = reader.query(chr, start, end, false);
+        CloseableIterator<PicardAlignment> iter = reader.query(chr, start, end, false);
         int counted = 0;
         while (iter.hasNext()) {
             Alignment a = iter.next();
@@ -117,7 +117,7 @@ public class BAMHttpQueryReaderTest extends AbstractHeadlessTest {
 
         assertTrue(indexFile.exists());
 
-        CloseableIterator<SamAlignment> iter = reader.query("Y", 10000000, 10004000, false);
+        CloseableIterator<PicardAlignment> iter = reader.query("Y", 10000000, 10004000, false);
         int max = 100;
         int counted = 0;
         while (iter.hasNext()) {

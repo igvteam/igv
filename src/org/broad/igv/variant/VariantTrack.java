@@ -196,9 +196,9 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         }
 
         // If sample->bam list file is supplied enable vcfToBamMode.
-        String bamListPath = path != null ? path + ".mapping" : null;
-        if (ParsingUtils.pathExists(bamListPath)) {
-            loadAlignmentMappings(bamListPath);
+        String vcfToBamMapping = path != null ? path + ".mapping" : null;
+        if (ParsingUtils.pathExists(vcfToBamMapping)) {
+            loadAlignmentMappings(vcfToBamMapping);
         }
 
         // Set visibility window.  These values are appropriate for human dbsnp/1kg files, probably conservative otherwise

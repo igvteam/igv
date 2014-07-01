@@ -23,7 +23,7 @@ import net.sf.samtools.SAMSequenceRecord;
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.sam.EmptyAlignmentIterator;
-import org.broad.igv.sam.SamAlignment;
+import org.broad.igv.sam.PicardAlignment;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.io.File;
@@ -35,7 +35,7 @@ import java.util.Set;
 /**
  * @author jrobinso
  */
-public class BAMFileReader implements AlignmentReader<SamAlignment> {
+public class BAMFileReader implements AlignmentReader<PicardAlignment> {
 
     private static Logger log = Logger.getLogger(BAMFileReader.class);
     SAMFileReader reader;
@@ -92,7 +92,7 @@ public class BAMFileReader implements AlignmentReader<SamAlignment> {
         return reader.hasIndex();
     }
 
-    public CloseableIterator<SamAlignment> query(String sequence, int start, int end, boolean contained) {
+    public CloseableIterator<PicardAlignment> query(String sequence, int start, int end, boolean contained) {
         SAMRecordIterator query = null;
         try {
             query = reader.query(sequence, start + 1, end, contained);
@@ -106,7 +106,7 @@ public class BAMFileReader implements AlignmentReader<SamAlignment> {
 
     }
 
-    public CloseableIterator<SamAlignment> iterator() {
+    public CloseableIterator<PicardAlignment> iterator() {
         return new WrappedIterator(reader.iterator());
     }
 

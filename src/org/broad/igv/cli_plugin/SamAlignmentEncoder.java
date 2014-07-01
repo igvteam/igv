@@ -14,9 +14,7 @@ package org.broad.igv.cli_plugin;
 import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.SAMFileWriterImpl;
 import net.sf.samtools.SAMTextWriter;
-import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.SAMWriter;
-import org.broad.igv.sam.SamAlignment;
+import org.broad.igv.sam.PicardAlignment;
 
 import java.io.OutputStream;
 import java.util.Iterator;
@@ -28,14 +26,14 @@ import java.util.Map;
  * @author jacob
  * @since 2012-Sep-27
  */
-public class SamAlignmentEncoder implements FeatureEncoder<SamAlignment> {
+public class SamAlignmentEncoder implements FeatureEncoder<PicardAlignment> {
 
     private boolean headerSet = false;
 
-    public Map<String, Object> encodeAll(OutputStream stream, Iterator<? extends SamAlignment> alignments) {
+    public Map<String, Object> encodeAll(OutputStream stream, Iterator<? extends PicardAlignment> alignments) {
         SAMFileWriterImpl writer = new SAMTextWriter(stream);
         while (alignments.hasNext()) {
-            SamAlignment samAl = alignments.next();
+            PicardAlignment samAl = alignments.next();
             if (!headerSet) {
                 writer.setSortOrder(SAMFileHeader.SortOrder.unsorted, true);
                 writer.setHeader(samAl.getRecord().getHeader());

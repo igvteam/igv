@@ -17,7 +17,7 @@ package org.broad.igv.sam;
 
 import net.sf.samtools.util.CloseableIterator;
 
-public class EmptyAlignmentIterator implements CloseableIterator<SamAlignment> {
+public class EmptyAlignmentIterator implements CloseableIterator<PicardAlignment> {
 
     static EmptyAlignmentIterator instance = new EmptyAlignmentIterator();
 
@@ -36,7 +36,7 @@ public class EmptyAlignmentIterator implements CloseableIterator<SamAlignment> {
         return false;
     }
 
-    public SamAlignment next() {
+    public PicardAlignment next() {
         return null;
     }
 

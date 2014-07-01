@@ -68,7 +68,7 @@ public class SamQueryTextReaderTest {
         // Test posA query that includes overlaps (contained == false)
         boolean contained = false;
         SAMReader reader = new SAMReader(testFile);
-        CloseableIterator<SamAlignment> iter = reader.query(chr, start, end, contained);
+        CloseableIterator<PicardAlignment> iter = reader.query(chr, start, end, contained);
         int count = 0;
         while (iter.hasNext()) {
             Alignment record = iter.next();
@@ -101,7 +101,7 @@ public class SamQueryTextReaderTest {
         // Test posA query that includes overlaps (contained == false)
         boolean contained = false;
         SAMReader reader = new SAMReader(testFile);
-        CloseableIterator<SamAlignment> iter = reader.query(chr, start, end, contained);
+        CloseableIterator<PicardAlignment> iter = reader.query(chr, start, end, contained);
         int count = 0;
         while (iter.hasNext()) {
             Alignment record = iter.next();
@@ -135,7 +135,7 @@ public class SamQueryTextReaderTest {
         // Test posA query that includes overlaps (contained == false)
         boolean contained = false;
         SAMReader reader = new SAMReader(testFile);
-        CloseableIterator<SamAlignment> iter = reader.query(chr, start, end, contained);
+        CloseableIterator<PicardAlignment> iter = reader.query(chr, start, end, contained);
         int count = 0;
         while (iter.hasNext()) {
             Alignment record = iter.next();
@@ -161,7 +161,7 @@ public class SamQueryTextReaderTest {
         boolean contained = false;
 
         SAMReader reader = new SAMReader(testFile);
-        CloseableIterator<SamAlignment> iter = reader.query(chr, start, end, contained);
+        CloseableIterator<PicardAlignment> iter = reader.query(chr, start, end, contained);
         int count = 0;
         while (iter.hasNext()) {
             Alignment record = iter.next();

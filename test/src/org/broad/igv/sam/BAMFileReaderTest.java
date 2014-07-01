@@ -59,7 +59,7 @@ public class BAMFileReaderTest {
         int stopafter = 10;
         int counter = 0;
         BAMFileReader bamreader = new BAMFileReader(new File(bamfile));
-        CloseableIterator<SamAlignment> bamiter = bamreader.query(chr, start, end, true);
+        CloseableIterator<PicardAlignment> bamiter = bamreader.query(chr, start, end, true);
         while (bamiter.hasNext()) {
             Alignment bamrecord = bamiter.next();
             if (counter >= stopafter) {
@@ -71,7 +71,7 @@ public class BAMFileReaderTest {
         bamreader.close();
         boolean closeSucceeded = false;
         try {
-            CloseableIterator<SamAlignment> bamiter2 = bamreader.query(chr, start, end, true);
+            CloseableIterator<PicardAlignment> bamiter2 = bamreader.query(chr, start, end, true);
         } catch (NullPointerException npe) {
             closeSucceeded = true;
         }
@@ -94,8 +94,8 @@ public class BAMFileReaderTest {
 
         BAMFileReader bamreader = new BAMFileReader(new File(bamfile));
         SAMReader samreader = new SAMReader(samfile);
-        CloseableIterator<SamAlignment> bamiter = bamreader.query(chr, start, end, true);
-        CloseableIterator<SamAlignment> samiter = samreader.iterator();
+        CloseableIterator<PicardAlignment> bamiter = bamreader.query(chr, start, end, true);
+        CloseableIterator<PicardAlignment> samiter = samreader.iterator();
         int count = 0;
         while (bamiter.hasNext()) {
             Alignment bamrecord = bamiter.next();

@@ -23,7 +23,7 @@ import net.sf.samtools.seekablestream.SeekableStream;
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.sam.EmptyAlignmentIterator;
-import org.broad.igv.sam.SamAlignment;
+import org.broad.igv.sam.PicardAlignment;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
@@ -40,7 +40,7 @@ import java.util.Set;
  *
  * @author jrobinso
  */
-public class SAMReader implements AlignmentReader<SamAlignment> {
+public class SAMReader implements AlignmentReader<PicardAlignment> {
 
     static Logger log = Logger.getLogger(SAMReader.class);
     String samFile;
@@ -99,7 +99,7 @@ public class SAMReader implements AlignmentReader<SamAlignment> {
         }
     }
 
-    public CloseableIterator<SamAlignment> query(final String sequence, final int start, final int end, final boolean contained) {
+    public CloseableIterator<PicardAlignment> query(final String sequence, final int start, final int end, final boolean contained) {
 
         if (featureIndex == null) {
             featureIndex = SamUtils.getIndexFor(samFile);
@@ -160,7 +160,7 @@ public class SAMReader implements AlignmentReader<SamAlignment> {
 
     }
 
-    public CloseableIterator<SamAlignment> iterator() {
+    public CloseableIterator<PicardAlignment> iterator() {
         SAMFileReader reader = getSAMFileReader(samFile, -1);
         CloseableIterator<SAMRecord> iter = reader.iterator();
         return new SAMQueryIterator(iter);
@@ -177,7 +177,7 @@ public class SAMReader implements AlignmentReader<SamAlignment> {
 
             //Need to keep the file source, if loading lazily
             //TODO Can't reload from SAM files. See SAMTextReader.getIterator
-            //reader.enableFileSource(SamAlignment.DEFAULT_LAZY_LOAD);
+            //reader.enableFileSource(PicardAlignment.DEFAULT_LAZY_LOAD);
 
             return reader;
         } catch (IOException ex) {
