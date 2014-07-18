@@ -39,6 +39,8 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
 
         this.record = record;
 
+        this.flags = record.getFlags();
+
         String refName = record.getReferenceName();
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
         this.chr = genome == null ? refName : genome.getChromosomeAlias(refName);
@@ -52,19 +54,9 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
         this.mappingQuality = record.getMappingQuality();
         this.readName = record.getReadName().trim();
         this.inferredInsertSize = record.getInferredInsertSize();
-        this.negativeStrand = record.getReadNegativeStrandFlag();
-        this.duplicate = record.getDuplicateReadFlag();
-        this.mapped = !record.getReadUnmappedFlag();
-        this.readLength = record.getReadLength();
-        this.paired = record.getReadPairedFlag();
-        this.properPair = isPaired() && record.getProperPairFlag();
-        this.firstOfPair = isPaired() && record.getFirstOfPairFlag();
-        this.secondOfPair = isPaired() && record.getSecondOfPairFlag();
+
         this.cigarString = record.getCigarString();
         this.readSequence = record.getReadString();
-        this.primary = !record.getNotPrimaryAlignmentFlag();
-        this.supplementary = record.getSupplementaryAlignmentFlag();
-        this.vendorFailedRead = record.getReadFailsVendorQualityCheckFlag();
 
         if (record.getReadPairedFlag()) {
             String mateReferenceName = record.getMateReferenceName();
@@ -74,10 +66,6 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
                     record.getMateNegativeStrandFlag(),
                     record.getMateUnmappedFlag()));
         }
-
-
-        setPairOrientation();
-        setPairStrands();
 
         String keySequence = null;
         SAMFileHeader header = record.getHeader();
@@ -95,9 +83,6 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
             }
         }
 
-        createAlignmentBlocks(record.getCigarString(), record.getReadBases(), record.getBaseQualities(), decodeReduceCounts(record),
-                getFlowSignals(flowOrder, keySequence), flowOrder, this.getFlowSignalsStart());
-
         Object colorTag = record.getAttribute("YC");
         if (colorTag != null) {
             try {
@@ -106,6 +91,13 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
                 log.error("Error interpreting color tag: " + colorTag, e);
             }
         }
+
+        setPairOrientation();
+        setPairStrands();
+        createAlignmentBlocks(record.getCigarString(), record.getReadBases(), record.getBaseQualities(),
+                getFlowSignals(flowOrder, keySequence), flowOrder, this.getFlowSignalsStart());
+
+
     }      // End constructor
 
     /**
@@ -125,67 +117,6 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
     @Override
     public String toString() {
         return record.getSAMString();
-    }
-
-    protected void setMatePair(Genome genome) {
-        SAMRecord record = getRecord();
-        if (record.getReadPairedFlag()) {
-            String mateReferenceName = record.getMateReferenceName();
-            String mateChr = genome == null ? mateReferenceName : genome.getChromosomeAlias(mateReferenceName);
-            this.setMate(new ReadMate(mateChr,
-                    record.getMateAlignmentStart() - 1,
-                    record.getMateNegativeStrandFlag(),
-                    record.getMateUnmappedFlag()));
-        }
-
-    }
-
-    protected void setPairOrientation() {
-        SAMRecord record = getRecord();
-        if (record.getReadPairedFlag() &&
-                !record.getReadUnmappedFlag() &&
-                !record.getMateUnmappedFlag() &&
-                record.getReferenceName().equals(record.getMateReferenceName())) {
-
-            char s1 = record.getReadNegativeStrandFlag() ? 'R' : 'F';
-            char s2 = record.getMateNegativeStrandFlag() ? 'R' : 'F';
-            char o1 = ' ';
-            char o2 = ' ';
-            if (record.getFirstOfPairFlag()) {
-                o1 = '1';
-                o2 = '2';
-            } else if (record.getSecondOfPairFlag()) {
-                o1 = '2';
-                o2 = '1';
-            }
-
-            final char[] tmp = new char[4];
-            int isize = record.getInferredInsertSize();
-            int estReadLen = record.getAlignmentEnd() - record.getAlignmentStart() + 1;
-            if (isize == 0) {
-                //isize not recorded.  Need to estimate.  This calculation was validated against an Illumina
-                // -> <- library bam.
-                int estMateEnd = record.getAlignmentStart() < record.getMateAlignmentStart() ?
-                        record.getMateAlignmentStart() + estReadLen : record.getMateAlignmentStart() - estReadLen;
-                isize = estMateEnd - record.getAlignmentStart();
-            }
-
-            //if (isize > estReadLen) {
-            if (isize > 0) {
-                tmp[0] = s1;
-                tmp[1] = o1;
-                tmp[2] = s2;
-                tmp[3] = o2;
-
-            } else {
-                tmp[2] = s1;
-                tmp[3] = o1;
-                tmp[0] = s2;
-                tmp[1] = o2;
-            }
-            // }
-            pairOrientation = new String(tmp);
-        }
     }
 
     public String getClipboardString(double location) {

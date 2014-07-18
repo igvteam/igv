@@ -15,7 +15,6 @@
  */
 package org.broad.igv.sam;
 
-import net.sf.samtools.SAMRecord;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
@@ -47,6 +46,19 @@ public abstract class SAMAlignment implements Alignment {
     public static final char PADDING = 'P';
     public static final char ZERO_GAP = 'O';
     public static final String REDUCE_READS_TAG = "RR";
+
+    private static final int READ_PAIRED_FLAG = 0x1;
+    private static final int PROPER_PAIR_FLAG = 0x2;
+    private static final int READ_UNMAPPED_FLAG = 0x4;
+    protected static final int MATE_UNMAPPED_FLAG = 0x8;
+    private static final int READ_STRAND_FLAG = 0x10;
+    protected static final int MATE_STRAND_FLAG = 0x20;
+    private static final int FIRST_OF_PAIR_FLAG = 0x40;
+    private static final int SECOND_OF_PAIR_FLAG = 0x80;
+    private static final int NOT_PRIMARY_ALIGNMENT_FLAG = 0x100;
+    private static final int READ_FAILS_VENDOR_QUALITY_CHECK_FLAG = 0x200;
+    private static final int DUPLICATE_READ_FLAG = 0x400;
+    private static final int SUPPLEMENTARY_ALIGNMENT_FLAG = 0x800;
     /**
      * Converts a DNA integer value to its reverse compliment integer value.
      */
@@ -69,14 +81,19 @@ public abstract class SAMAlignment implements Alignment {
             'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N'
     };
     private static final String FLOW_SIGNAL_TAG = "ZF";
+
+    protected int flags;
+
     protected int start;  // <= Might differ from alignment start if soft clipping is considered
     protected int end;    // ditto
     protected int alignmentStart;
     protected int alignmentEnd;
     protected Color color = null;
+
     protected String readGroup;
     protected String library;
     protected String sample;
+
     String chr;
     int inferredInsertSize;
     int mappingQuality = 255;  // 255 by default
@@ -86,71 +103,18 @@ public abstract class SAMAlignment implements Alignment {
     AlignmentBlock[] insertions;
     char[] gapTypes;
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
-    public boolean negativeStrand;
-    public boolean duplicate;
-    public boolean mapped;
-    public int readLength;
-    public boolean paired;
-    public boolean properPair;
-    public boolean firstOfPair;
-    public boolean secondOfPair;
-    public String cigarString;
-    public String readSequence;
-    public boolean primary;
-    public boolean supplementary;
+
+    protected String cigarString;
+    protected String readSequence;
+
     protected String mateSequence = null;
     protected String pairOrientation = "";
     private Strand firstOfPairStrand;
     private Strand secondOfPairStrand;
-    protected boolean vendorFailedRead;
 
     public SAMAlignment() {
     }
 
-    /**
-     * Reduced reads are stored in an array, where the actual
-     * number of reads is stored as an offset from the first location.
-     * Here we decode that array, so it becomes an array where the value
-     * at each location
-     *
-     * @param record the sam record for this read
-     * @return a byte array with the representative counts of each base in this read, or null if this is not a reduced read
-     */
-    static short[] decodeReduceCounts(SAMRecord record) {
-        Object reducedReadsVal = record.getAttribute(REDUCE_READS_TAG);
-        // in case this read doesn't have the RR tag (is not a reduced read) return null
-        // so the subsequent routines know that this is not a reduced read
-        if (reducedReadsVal == null)
-            return null;
-
-        short[] encodedCounts;
-        if (reducedReadsVal instanceof short[]) {
-            encodedCounts = (short[]) reducedReadsVal;
-        } else if (reducedReadsVal instanceof byte[]) {
-            byte[] rrArr = (byte[]) reducedReadsVal;
-            int len = rrArr.length;
-            encodedCounts = new short[len];
-            for (int ii = 0; ii < len; ii++) {
-                encodedCounts[ii] = (short) rrArr[ii];
-            }
-        } else {
-            log.info("Found reduced reads tag, but was unexpected type " + reducedReadsVal.getClass());
-            return null;
-        }
-
-        short[] decodedCounts = new short[encodedCounts.length];
-        short startVal = encodedCounts[0];
-        decodedCounts[0] = startVal;
-        for (int ii = 1; ii < decodedCounts.length; ii++) {
-            decodedCounts[ii] = (short) Math.min(startVal + encodedCounts[ii], Short.MAX_VALUE);
-        }
-        return decodedCounts;
-
-    }
-
-    public String getChromosome() {
-        return getChr();
-    }
 
     public String getChr() {
         return chr;
@@ -188,7 +152,37 @@ public abstract class SAMAlignment implements Alignment {
         return insertions;
     }
 
+    public boolean isNegativeStrand() {
+        return (flags & READ_STRAND_FLAG) != 0;
+    }
 
+    public boolean contains(double location) {
+        return location >= getStart() && location < getEnd();
+    }
+
+    public byte getBase(double position) {
+        int basePosition = (int) position;
+        for (AlignmentBlock block : this.alignmentBlocks) {
+            if (block.contains(basePosition)) {
+                int offset = basePosition - block.getStart();
+                byte base = block.getBases()[offset];
+                return base;
+            }
+        }
+        return 0;
+    }
+
+    public byte getPhred(double position) {
+        int basePosition = (int) position;
+        for (AlignmentBlock block : this.alignmentBlocks) {
+            if (block.contains(basePosition)) {
+                int offset = basePosition - block.getStart();
+                byte qual = block.getQuality(offset);
+                return qual;
+            }
+        }
+        return 0;
+    }
     /**
      * Set pair strands.  Used for strand specific libraries to recover strand of
      * originating fragment.
@@ -229,6 +223,13 @@ public abstract class SAMAlignment implements Alignment {
     }
 
 
+    private static boolean operatorIsMatch(boolean showSoftClipped, char operator) {
+        return operator == MATCH || operator == PERFECT_MATCH || operator == MISMATCH
+                || (showSoftClipped && operator == SOFT_CLIP);
+    }
+
+
+
     /**
      * Create the alignment blocks from the read bases and alignment information in the CIGAR
      * string.  The CIGAR string encodes insertions, deletions, skipped regions, and padding.
@@ -236,12 +237,11 @@ public abstract class SAMAlignment implements Alignment {
      * @param cigarString
      * @param readBases
      * @param readBaseQualities
-     * @param readRepresentativeCounts the representative counts of each base in the read (translated from the reduce reads tag)
      * @param flowSignals              from the FZ tag, null if not present
      * @param flowOrder                from the RG.FO header tag, null if not present
      * @param flowOrderStart
      */
-    protected void createAlignmentBlocks(String cigarString, byte[] readBases, byte[] readBaseQualities, short[] readRepresentativeCounts,
+    protected void createAlignmentBlocks(String cigarString, byte[] readBases, byte[] readBaseQualities,
                                          short[] flowSignals, String flowOrder, int flowOrderStart) {
 
         boolean showSoftClipped = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED);
@@ -335,7 +335,7 @@ public abstract class SAMAlignment implements Alignment {
                 if (operatorIsMatch(showSoftClipped, op.operator)) {
 
                     AlignmentBlock block = buildAlignmentBlock(fBlockBuilder, readBases, readBaseQualities,
-                            readRepresentativeCounts, getChr(), blockStart, fromIdx, op.nBases, true);
+                            getChr(), blockStart, fromIdx, op.nBases, true);
 
                     if (op.operator == SOFT_CLIP) {
                         block.setSoftClipped(true);
@@ -357,7 +357,7 @@ public abstract class SAMAlignment implements Alignment {
                     // length gap but must be accounted for.
                     gapTypes[gapIdx++] = ZERO_GAP;
                     AlignmentBlock block = buildAlignmentBlock(fBlockBuilder, readBases, readBaseQualities,
-                            readRepresentativeCounts, getChr(), blockStart, fromIdx, op.nBases, false);
+                            getChr(), blockStart, fromIdx, op.nBases, false);
 
                     insertions[insertionIdx++] = block;
                     fromIdx += op.nBases;
@@ -382,8 +382,7 @@ public abstract class SAMAlignment implements Alignment {
     }
 
     private static AlignmentBlock buildAlignmentBlock(FlowSignalContextBuilder fBlockBuilder, byte[] readBases,
-                                                      byte[] readBaseQualities,
-                                                      short[] readRepresentativeCounts, String chr, int blockStart,
+                                                      byte[] readBaseQualities, String chr, int blockStart,
                                                       int fromIdx, int nBases, boolean checkNBasesAvailable) {
 
         byte[] blockBases = new byte[nBases];
@@ -413,10 +412,6 @@ public abstract class SAMAlignment implements Alignment {
             System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, nBases);
         }
 
-        if (readRepresentativeCounts != null) {
-            System.arraycopy(readRepresentativeCounts, fromIdx, blockCounts, 0, nBases);
-        }
-
         AlignmentBlock block;
         if (fBlockBuilder != null) {
             block = AlignmentBlock.getInstance(chr, blockStart, blockBases, blockQualities,
@@ -424,54 +419,12 @@ public abstract class SAMAlignment implements Alignment {
         } else {
             block = AlignmentBlock.getInstance(chr, blockStart, blockBases, blockQualities);
         }
-        if (readRepresentativeCounts != null) {
-            block.setCounts(blockCounts);
-        }
+
         return block;
     }
 
-    private boolean operatorIsMatch(boolean showSoftClipped, char operator) {
-        return operator == MATCH || operator == PERFECT_MATCH || operator == MISMATCH
-                || (showSoftClipped && operator == SOFT_CLIP);
-    }
 
-    public boolean isNegativeStrand() {
-        return negativeStrand;
-    }
-
-    public void setNegativeStrand(boolean negativeStrand) {
-        this.negativeStrand = negativeStrand;
-    }
-
-    public boolean contains(double location) {
-        return location >= getStart() && location < getEnd();
-    }
-
-    public byte getBase(double position) {
-        int basePosition = (int) position;
-        for (AlignmentBlock block : this.alignmentBlocks) {
-            if (block.contains(basePosition)) {
-                int offset = basePosition - block.getStart();
-                byte base = block.getBases()[offset];
-                return base;
-            }
-        }
-        return 0;
-    }
-
-    public byte getPhred(double position) {
-        int basePosition = (int) position;
-        for (AlignmentBlock block : this.alignmentBlocks) {
-            if (block.contains(basePosition)) {
-                int offset = basePosition - block.getStart();
-                byte qual = block.getQuality(offset);
-                return qual;
-            }
-        }
-        return 0;
-    }
-
-    private void bufAppendFlowSignals(AlignmentBlock block, StringBuffer buf, int offset) {
+    private static void bufAppendFlowSignals(AlignmentBlock block, StringBuffer buf, int offset) {
         if (block.hasFlowSignals()) {
             // flow signals
             int i, j, n = 0;
@@ -607,11 +560,11 @@ public abstract class SAMAlignment implements Alignment {
     }
 
     public boolean isFirstOfPair() {
-        return firstOfPair;
+        return  isPaired() && (flags & FIRST_OF_PAIR_FLAG) != 0;
     }
 
     public boolean isSecondOfPair() {
-        return secondOfPair;
+        return isPaired() && (flags & SECOND_OF_PAIR_FLAG) != 0;
     }
 
     /**
@@ -624,25 +577,25 @@ public abstract class SAMAlignment implements Alignment {
     public String getCigarString() {
         return cigarString;
     }
+    public int getReadLength() {
+        return readSequence.length();
+    }
 
     public boolean isDuplicate() {
-        return duplicate;
+        return (flags & DUPLICATE_READ_FLAG) != 0;
     }
 
     public boolean isMapped() {
-        return mapped;
+        return (flags & READ_UNMAPPED_FLAG) == 0;
     }
 
-    public int getReadLength() {
-        return readLength;
-    }
 
     public boolean isPaired() {
-        return paired;
+        return (flags & READ_PAIRED_FLAG) != 0;
     }
 
-    public boolean isProperPair() {
-        return properPair;
+    public boolean isProperPair(){
+      return  ((flags & READ_PAIRED_FLAG) != 0) && ((flags & PROPER_PAIR_FLAG) != 0);
     }
 
     public boolean isSmallInsert() {
@@ -655,20 +608,6 @@ public abstract class SAMAlignment implements Alignment {
     }
 
     /**
-     * @param mappingQuality the mappingQuality to set
-     */
-    public void setMappingQuality(int mappingQuality) {
-        this.mappingQuality = mappingQuality;
-    }
-
-    /**
-     * @param inferredInsertSize the inferredInsertSize to set
-     */
-    public void setInferredInsertSize(int inferredInsertSize) {
-        this.inferredInsertSize = inferredInsertSize;
-    }
-
-    /**
      * @param mate the mate to set
      */
     public void setMate(ReadMate mate) {
@@ -677,7 +616,7 @@ public abstract class SAMAlignment implements Alignment {
 
     @Override
     public boolean isSupplementary() {
-        return supplementary;
+        return (flags & SUPPLEMENTARY_ALIGNMENT_FLAG) != 0;
     }
 
     /**
@@ -718,16 +657,10 @@ public abstract class SAMAlignment implements Alignment {
         return library;
     }
 
-
     @Override
     public char[] getGapTypes() {
         return gapTypes;
     }
-
-    public String getMateSequence() {
-        return this.mateSequence;
-    }
-
 
 
     @Override
@@ -741,7 +674,7 @@ public abstract class SAMAlignment implements Alignment {
 
 
     public boolean isVendorFailedRead() {
-        return vendorFailedRead;
+        return (flags & READ_FAILS_VENDOR_QUALITY_CHECK_FLAG) != 0;
     }
 
     public Strand getReadStrand() {
@@ -776,7 +709,7 @@ public abstract class SAMAlignment implements Alignment {
 
     @Override
     public boolean isPrimary() {
-        return primary;
+        return (flags & NOT_PRIMARY_ALIGNMENT_FLAG) == 0;
     }
 
 
@@ -818,6 +751,53 @@ public abstract class SAMAlignment implements Alignment {
         }
         return toRet;
     }
+
+
+    protected void setPairOrientation() {
+
+        if (isPaired() && isMapped() && mate.isMapped()) {   // && name === mate.name
+
+            char s1 = isNegativeStrand() ? 'R' : 'F';
+            char s2 = mate.isNegativeStrand() ? 'R' : 'F';
+            char o1 = ' ';
+            char o2 = ' ';
+            if (isFirstOfPair() ) {
+                o1 = '1';
+                o2 = '2';
+            } else if (isSecondOfPair()) {
+                o1 = '2';
+                o2 = '1';
+            }
+
+            final char[] tmp = new char[4];
+            int isize = inferredInsertSize;
+            int estReadLen = getAlignmentEnd() - getAlignmentStart();
+            if (isize == 0) {
+                //isize not recorded.  Need to estimate.  This calculation was validated against an Illumina
+                // -> <- library bam.
+                int estMateEnd = getAlignmentStart() < mate.getStart() ?
+                        getMate().getStart() + estReadLen : mate.getStart() - estReadLen;
+                isize = estMateEnd - getAlignmentStart();
+            }
+
+            //if (isize > estReadLen) {
+            if (isize > 0) {
+                tmp[0] = s1;
+                tmp[1] = o1;
+                tmp[2] = s2;
+                tmp[3] = o2;
+
+            } else {
+                tmp[2] = s1;
+                tmp[3] = o1;
+                tmp[0] = s2;
+                tmp[1] = o2;
+            }
+            // }
+            pairOrientation = new String(tmp);
+        }
+    }
+
 
 
     static class CigarOperator {

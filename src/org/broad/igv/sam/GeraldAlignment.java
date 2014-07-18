@@ -67,11 +67,6 @@ public class GeraldAlignment implements Alignment {
     }
 
     @Override
-    public String getChromosome() {
-        return null;
-    }
-
-    @Override
     public String getChr() {
         return null;
     }

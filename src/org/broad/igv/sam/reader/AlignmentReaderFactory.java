@@ -15,6 +15,7 @@ import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMReadGroupRecord;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.ga4gh.Ga4ghTextReader;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
@@ -90,7 +91,11 @@ public class AlignmentReaderFactory {
                 throw new RuntimeException("Cannot load Goby alignment " + locator.getPath(), e);
 
             }
-        } else {
+        } else if (Ga4ghTextReader.supportsFileType(locator.getPath())) {
+            return new Ga4ghTextReader(locator.getPath());
+        }
+
+        else {
             throw new RuntimeException("Cannot find reader for aligment file: " + locator.getPath());
         }
 

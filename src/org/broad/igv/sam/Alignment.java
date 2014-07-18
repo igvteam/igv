@@ -29,13 +29,12 @@ public interface Alignment extends LocusScore {
 
     String getReadSequence();
 
-    // For legacy apps
-
-    String getChromosome();
-
     String getChr();
 
     int getAlignmentStart();
+
+    int getAlignmentEnd();
+
 
     boolean contains(double location);
 
@@ -43,15 +42,17 @@ public interface Alignment extends LocusScore {
 
     AlignmentBlock[] getInsertions();
 
-    char[] getGapTypes();
-
     String getCigarString();
+
+    char[] getGapTypes();
 
     int getInferredInsertSize();
 
     int getMappingQuality();
 
     ReadMate getMate();
+
+    Strand getReadStrand();
 
     boolean isProperPair();
 
@@ -63,29 +64,27 @@ public interface Alignment extends LocusScore {
 
     boolean isSecondOfPair(); // Ben Berman
 
-    Strand getFirstOfPairStrand();
-
-    Strand getSecondOfPairStrand();
-
     boolean isNegativeStrand();
 
     boolean isDuplicate();
 
-    int getAlignmentEnd();
+    boolean isPrimary();
+
+    boolean isSupplementary();
 
     byte getBase(double position);
 
     byte getPhred(double position);
-
-    String getSample();
-
-    String getReadGroup();
 
     Object getAttribute(String key);
 
     void setMateSequence(String sequence);
 
     String getPairOrientation();
+
+    Strand getFirstOfPairStrand();
+
+    Strand getSecondOfPairStrand();
 
     boolean isSmallInsert();
 
@@ -97,15 +96,14 @@ public interface Alignment extends LocusScore {
      */
     Color getColor();
 
+    String getSample();
+
+    String getReadGroup();
+
     String getLibrary();
 
     String getClipboardString(double location);
 
-    Strand getReadStrand();
 
     void finish();
-
-    boolean isPrimary();
-
-    boolean isSupplementary();
 }

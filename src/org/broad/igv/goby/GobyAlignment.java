@@ -414,7 +414,7 @@ public class GobyAlignment implements Alignment {
     /**
      * Get the reference id from the iterator, prepend "chr".
      */
-    public String getChromosome() {
+    public String getChr() {
         return getChromosome(entry.getTargetIndex());
     }
 
@@ -425,11 +425,6 @@ public class GobyAlignment implements Alignment {
      */
     public String getChromosome(int targetIndex) {
         return "chr" + iterator.getId(targetIndex).toString();
-    }
-
-    public String getChr() {
-        //LOG.info("getChr");
-        return getChromosome();
     }
 
     public int getAlignmentStart() {

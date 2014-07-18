@@ -432,7 +432,7 @@ public class GobyAlignmentQueryReaderTest extends AbstractHeadlessTest{
     private static class MockGobyAlignment extends GobyAlignment{
 
         @Override
-        public String getChromosome() {
+        public String getChr() {
             return "chrMock";
         }
 

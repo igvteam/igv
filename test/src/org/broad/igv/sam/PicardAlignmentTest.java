@@ -123,39 +123,6 @@ public class PicardAlignmentTest extends AbstractHeadlessTest {
     }
 
 
-    @Test
-    public void testReduceReadDecoding() {
-        final byte[] quals = {60, 60, 60, 60, 60, 60};
-        final byte[] bases = {'A', 'A', 'A', 'A', 'A', 'A'};
-
-        final short[] expCountsBytes = {10, 11, 9, 10, 18, 25, 130};
-        final short[] expCountsShorts = {10, 11, 9, 10, 18, 25, 130, Short.MAX_VALUE};
-
-        final byte[] compressedCountsBytes = {10, 1, -1, 0, 8, 15, 120};
-        final short[] compressedCountsShorts = {10, 1, -1, 0, 8, 15, 120, (short) (Short.MAX_VALUE - expCountsShorts[0] + 1)};
-        final int chromosomeSize = 1000;
-        SAMFileHeader header = new SAMFileHeader();
-        header.setSortOrder(net.sf.samtools.SAMFileHeader.SortOrder.coordinate);
-        SAMSequenceDictionary dict = new SAMSequenceDictionary();
-        for (int x = 0; x < 10; x++) {
-            SAMSequenceRecord rec = new SAMSequenceRecord("chr" + (x), chromosomeSize /* size */);
-            rec.setSequenceLength(chromosomeSize);
-            dict.addSequence(rec);
-        }
-        header.setSequenceDictionary(dict);
-        SAMRecord record = new SAMRecord(header);
-        record.setBaseQualities(quals);
-        record.setReadBases(bases);
-
-        record.setAttribute(SAMAlignment.REDUCE_READS_TAG, compressedCountsBytes);
-        Assert.assertArrayEquals(expCountsBytes, SAMAlignment.decodeReduceCounts(record));
-
-        record.setAttribute(SAMAlignment.REDUCE_READS_TAG, compressedCountsShorts);
-        Assert.assertArrayEquals(expCountsShorts, SAMAlignment.decodeReduceCounts(record));
-
-        record.setAttribute(SAMAlignment.REDUCE_READS_TAG, "not meaningful");
-        Assert.assertNull(SAMAlignment.decodeReduceCounts(record));
-    }
 
     @Ignore("Don't store hard clipped bases in blocks")
     @Test

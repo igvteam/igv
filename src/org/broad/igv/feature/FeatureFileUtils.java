@@ -128,7 +128,7 @@ public class FeatureFileUtils {
 
 
     public static void main(String [] args) throws IOException {
-        createCanonicalGeneFile("/Users/jrobinso/projects/igv-js/igv/assets/hg19/gencode.v19.refGene", "/Users/jrobinso/projects/igv-js/igv/assets/hg19/gencode.v19.collapsed.bed");
+        createCanonicalGeneFile(args[0], args[1]);
     }
 
     /**
