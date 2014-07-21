@@ -1,0 +1,225 @@
+JFDML JFormDesigner: "5.2.0.0.54" Java: "1.6.0_37" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+			name: "this"
+			"$sizePolicy": 1
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+				name: "dialogPane"
+				"border": new javax.swing.border.EmptyBorder( 12, 12, 12, 12 )
+				"preferredSize": new java.awt.Dimension( 600, 150 )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
+					name: "contentPanel"
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+						"axis": 3
+					} ) {
+						name: "panel1"
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label4"
+							"text": "Callset"
+							"horizontalAlignment": 0
+							"maximumSize": &Dimension0 new java.awt.Dimension( 80, 16 )
+							"alignmentX": 0.5f
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "callsetField"
+							"maximumSize": new java.awt.Dimension( 200, 1000 )
+							"minimumSize": new java.awt.Dimension( 100, 28 )
+							"preferredSize": new java.awt.Dimension( 100, 28 )
+						} )
+					} )
+					add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
+						name: "hSpacer1"
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+						"axis": 1
+					} ) {
+						name: "panel2"
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label5"
+							"text": "Truth"
+							"horizontalAlignment": 0
+							"labelFor": new FormReference( "truthField" )
+							"horizontalTextPosition": 0
+							"alignmentX": 0.5f
+						} )
+						add( new FormComponent( "javax.swing.JComboBox" ) {
+							name: "truthField"
+							addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "truthFieldItemStateChanged", true ) )
+						} )
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+						"axis": 1
+					} ) {
+						name: "panel3"
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label6"
+							"text": "Genotype"
+							"horizontalAlignment": 0
+							"alignmentX": 0.5f
+						} )
+						add( new FormComponent( "javax.swing.JComboBox" ) {
+							name: "genotypeTypeField"
+						} )
+					} )
+					add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
+						name: "hSpacer2"
+						"minimumSize": new java.awt.Dimension( 20, 12 )
+						"preferredSize": new java.awt.Dimension( 20, 10 )
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+						"axis": 1
+					} ) {
+						name: "panel7"
+						"maximumSize": new java.awt.Dimension( 46, 1000 )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label10"
+							"text": "Mut"
+							"horizontalAlignment": 2
+							"maximumSize": #Dimension0
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "mutField"
+							"text": "A/G"
+							"maximumSize": new java.awt.Dimension( 46, 1000 )
+						} )
+					} )
+					add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
+						name: "hSpacer5"
+						"minimumSize": &Dimension1 new java.awt.Dimension( 20, 12 )
+						"preferredSize": &Dimension2 new java.awt.Dimension( 20, 10 )
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+						"axis": 1
+					} ) {
+						name: "panel4"
+						"maximumSize": new java.awt.Dimension( 46, 1000 )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label7"
+							"text": "Chr"
+							"horizontalAlignment": 2
+							"verticalAlignment": 1
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "chrField"
+							"text": "testChr"
+							"alignmentY": 0.0f
+							"maximumSize": new java.awt.Dimension( 46, 1000 )
+						} )
+					} )
+					add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
+						name: "hSpacer3"
+						"minimumSize": new java.awt.Dimension( 20, 12 )
+						"preferredSize": new java.awt.Dimension( 20, 10 )
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+						"axis": 1
+					} ) {
+						name: "panel5"
+						"maximumSize": new java.awt.Dimension( 500, 1000 )
+						"minimumSize": new java.awt.Dimension( 80, 32 )
+						"preferredSize": new java.awt.Dimension( 80, 32 )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label8"
+							"text": "Start"
+							"horizontalAlignment": 2
+							"maximumSize": new java.awt.Dimension( 100, 16 )
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "startField"
+							"text": "54321"
+							"maximumSize": new java.awt.Dimension( 500, 1000 )
+							"minimumSize": new java.awt.Dimension( 80, 16 )
+							"preferredSize": new java.awt.Dimension( 80, 16 )
+							"horizontalTextPosition": 2
+							"horizontalAlignment": 2
+						} )
+					} )
+					add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
+						name: "hSpacer4"
+						"minimumSize": #Dimension1
+						"preferredSize": #Dimension2
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+						"axis": 1
+					} ) {
+						name: "panel6"
+						"maximumSize": new java.awt.Dimension( 500, 1000 )
+						"minimumSize": new java.awt.Dimension( 100, 32 )
+						"preferredSize": new java.awt.Dimension( 100, 32 )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label9"
+							"text": "Stop"
+							"horizontalAlignment": 2
+							"maximumSize": new java.awt.Dimension( 100, 16 )
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "stopField"
+							"text": "12345"
+							"maximumSize": new java.awt.Dimension( 500, 1000 )
+							"horizontalTextPosition": 10
+							"horizontalAlignment": 2
+							"minimumSize": new java.awt.Dimension( 100, 16 )
+							"preferredSize": new java.awt.Dimension( 100, 16 )
+						} )
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "North"
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+					"axis": 0
+				} ) {
+					name: "panel8"
+					add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
+						name: "hSpacer6"
+						"maximumSize": new java.awt.Dimension( 300, 32767 )
+						"preferredSize": new java.awt.Dimension( 115, 10 )
+					} )
+					add( new FormComponent( "javax.swing.JCheckBox" ) {
+						name: "isComplexEventCB"
+						"text": "Complex Event"
+					} )
+					add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
+						name: "hSpacer7"
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "Center"
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
+					"$columnSpecs": "0:1.0, 80, 80"
+					"$rowSpecs": "0"
+					"$hGap": 5
+					"$vGap": 5
+				} ) {
+					name: "buttonBar"
+					"border": new javax.swing.border.EmptyBorder( 12, 0, 0, 0 )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "okButton"
+						"text": "Save"
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "okButtonActionPerformed", true ) )
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+						"gridx": 1
+						"gridy": 0
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "cancelButton"
+						"text": "Cancel"
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "cancelButtonActionPerformed", true ) )
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+						"gridx": 2
+						"gridy": 0
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "South"
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 700, 160 )
+		} )
+	}
+}
