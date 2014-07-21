@@ -20,14 +20,14 @@ import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.variant.VariantTrack;
-import org.broad.tribble.util.ParsingUtils;
+import htsjdk.tribble.util.ParsingUtils;
 import org.broadinstitute.gatk.tools.walkers.na12878kb.core.MongoVariantContext;
 import org.broadinstitute.gatk.tools.walkers.na12878kb.core.NA12878DBArgumentCollection;
 import org.broadinstitute.gatk.tools.walkers.na12878kb.core.NA12878KnowledgeBase;
 import org.broadinstitute.gatk.tools.walkers.na12878kb.core.TruthStatus;
-import org.broadinstitute.variant.variantcontext.Genotype;
-import org.broadinstitute.variant.variantcontext.GenotypeType;
-import org.broadinstitute.variant.variantcontext.VariantContext;
+import htsjdk.variant.variantcontext.Genotype;
+import htsjdk.variant.variantcontext.GenotypeType;
+import htsjdk.variant.variantcontext.VariantContext;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
