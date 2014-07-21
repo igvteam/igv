@@ -114,7 +114,7 @@ public abstract class AbstractATMUtilsTest extends AbstractHeadlessTest{
             toolMap.put(wt.getName(), wt);
         }
 
-        String toolname = ("UCSC Genome Browser");
+        String toolname = ("UCSC Table Browser");
         WebToolDescriptor ucscDesc = ATMUtils.getWebTool(toolname);
         checkWebToolDescriptor(ucscDesc);
 
