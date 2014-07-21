@@ -19,7 +19,7 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.session.Session;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.io.BufferedReader;
 import java.io.IOException;

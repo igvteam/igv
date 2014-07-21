@@ -11,8 +11,8 @@
 
 package org.broad.igv.sam.reader;
 
-import net.sf.samtools.SAMRecord;
-import net.sf.samtools.util.CloseableIterator;
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.sam.PicardAlignment;
 
 /**

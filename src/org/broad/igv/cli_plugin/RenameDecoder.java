@@ -12,7 +12,7 @@
 package org.broad.igv.cli_plugin;
 
 import org.broad.igv.feature.BasicFeature;
-import org.broad.tribble.AsciiFeatureCodec;
+import htsjdk.tribble.AsciiFeatureCodec;
 
 /**
  * The purpose of this class is to rename incoming features, if we don't like the

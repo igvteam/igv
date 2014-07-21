@@ -21,7 +21,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

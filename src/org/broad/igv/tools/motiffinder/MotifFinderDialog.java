@@ -15,7 +15,7 @@
 
 package org.broad.igv.tools.motiffinder;
 
-import net.sf.samtools.util.SequenceUtil;
+import htsjdk.samtools.util.SequenceUtil;
 import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;

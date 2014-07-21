@@ -15,7 +15,7 @@ import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.broadinstitute.variant.variantcontext.VariantContext;
+import htsjdk.variant.variantcontext.VariantContext;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

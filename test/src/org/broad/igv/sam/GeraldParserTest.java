@@ -17,7 +17,7 @@
 package org.broad.igv.sam;
 
 import org.broad.igv.sam.reader.GeraldParser;
-import org.broad.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.AsciiLineReader;
 import org.junit.*;
 
 import java.io.FileInputStream;

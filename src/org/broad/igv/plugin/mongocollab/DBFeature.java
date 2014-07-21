@@ -17,7 +17,7 @@ import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.awt.*;
 

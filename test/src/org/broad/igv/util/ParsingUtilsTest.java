@@ -223,7 +223,7 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
 
             @Override
             public Void apply(String input) {
-                int count = org.broad.tribble.util.ParsingUtils.split(input, buffer, cdelim);
+                int count = htsjdk.tribble.util.ParsingUtils.split(input, buffer, cdelim);
                 return null;
             }
         };
@@ -275,7 +275,7 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
 
                 return null;
 
-                //String res = org.broad.tribble.util.ParsingUtils.join(sdelim, input);
+                //String res = htsjdk.tribble.util.ParsingUtils.join(sdelim, input);
                 //return true;
             }
         };

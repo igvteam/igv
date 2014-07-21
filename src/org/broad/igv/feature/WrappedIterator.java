@@ -11,7 +11,7 @@
 
 package org.broad.igv.feature;
 
-import org.broad.tribble.CloseableTribbleIterator;
+import htsjdk.tribble.CloseableTribbleIterator;
 
 import java.util.Iterator;
 

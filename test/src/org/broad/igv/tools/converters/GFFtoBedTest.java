@@ -16,7 +16,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 import org.junit.Test;
 
 import java.io.BufferedReader;

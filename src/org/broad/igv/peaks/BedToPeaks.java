@@ -20,7 +20,7 @@ package org.broad.igv.peaks;
 
 import org.broad.igv.tdf.BufferedByteWriter;
 import org.broad.igv.util.CompressionUtils;
-import org.broad.tribble.util.LittleEndianOutputStream;
+import htsjdk.tribble.util.LittleEndianOutputStream;
 
 import java.io.*;
 import java.util.*;

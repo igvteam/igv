@@ -12,8 +12,8 @@
 package org.broad.igv.sam;
 
 import com.google.java.contract.util.Objects;
-import net.sf.samtools.*;
-import net.sf.samtools.util.CloseableIterator;
+import htsjdk.samtools.*;
+import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.feature.Range;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
@@ -54,14 +54,15 @@ public class SAMWriter {
     public int writeToStream(OutputStream stream, Iterator<PicardAlignment> alignments, boolean bam) {
 
         SAMFileWriterImpl writer;
-        if (bam) {
-            writer = new BAMFileWriter(stream, null);
-        } else {
+       // if (bam) {
+       //     return 0;   // Don't know how to output bams
+       //     //writer = new BAMFileWriter(stream, null);
+       // } else {
             writer = new SAMTextWriter(stream);
-        }
 
-        writer.setHeader(header);
-        return writeAlignments(writer, alignments);
+            writer.setHeader(header);
+            return writeAlignments(writer, alignments);
+       // }
     }
 
     private int writeAlignments(SAMFileWriter writer, Iterator<PicardAlignment> alignments) {

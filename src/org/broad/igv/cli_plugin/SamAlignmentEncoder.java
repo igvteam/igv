@@ -11,9 +11,9 @@
 
 package org.broad.igv.cli_plugin;
 
-import net.sf.samtools.SAMFileHeader;
-import net.sf.samtools.SAMFileWriterImpl;
-import net.sf.samtools.SAMTextWriter;
+import htsjdk.samtools.SAMFileHeader;
+import htsjdk.samtools.SAMFileWriterImpl;
+import htsjdk.samtools.SAMTextWriter;
 import org.broad.igv.sam.PicardAlignment;
 
 import java.io.OutputStream;

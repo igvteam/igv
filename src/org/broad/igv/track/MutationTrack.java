@@ -23,7 +23,7 @@ import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;

@@ -15,10 +15,10 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.variant.Variant;
 import org.broad.igv.variant.vcf.VCFVariant;
-import org.broad.tribble.AsciiFeatureCodec;
-import org.broad.tribble.Feature;
-import org.broad.tribble.readers.LineIterator;
-import org.broadinstitute.variant.variantcontext.VariantContext;
+import htsjdk.tribble.AsciiFeatureCodec;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.readers.LineIterator;
+import htsjdk.variant.variantcontext.VariantContext;
 
 import java.io.IOException;
 

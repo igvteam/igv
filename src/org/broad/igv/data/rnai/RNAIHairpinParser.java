@@ -22,7 +22,7 @@ package org.broad.igv.data.rnai;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

@@ -11,7 +11,8 @@
 
 package org.broad.igv.cli_plugin;
 
-import net.sf.samtools.SAMFileReader;
+import htsjdk.samtools.SAMFileReader;
+import htsjdk.samtools.ValidationStringency;
 import org.broad.igv.sam.PicardAlignment;
 import org.broad.igv.sam.reader.WrappedIterator;
 
@@ -30,8 +31,8 @@ public class AlignmentDecoder implements FeatureDecoder<PicardAlignment> {
     @Override
     public Iterator<PicardAlignment> decodeAll(InputStream is, boolean strictParsing) throws IOException {
         SAMFileReader reader = new SAMFileReader(is);
-        SAMFileReader.ValidationStringency stringency =
-                strictParsing ? SAMFileReader.ValidationStringency.STRICT : SAMFileReader.ValidationStringency.SILENT;
+        ValidationStringency stringency =
+                strictParsing ? ValidationStringency.STRICT : ValidationStringency.SILENT;
         reader.setValidationStringency(stringency);
         return new WrappedIterator(reader.iterator());
     }

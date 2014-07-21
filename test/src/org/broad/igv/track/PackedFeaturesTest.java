@@ -14,9 +14,9 @@ package org.broad.igv.track;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.util.TestUtils;
-import org.broad.tribble.AbstractFeatureReader;
-import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureCodec;
+import htsjdk.tribble.AbstractFeatureReader;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.FeatureCodec;
 import org.junit.Test;
 
 import java.util.Arrays;

@@ -21,7 +21,7 @@ package org.broad.igv.peaks;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.WindowFunction;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 /**
  * Note:  implementing tribble.Feature will allow us to index these files in the future.
@@ -29,7 +29,7 @@ import org.broad.tribble.Feature;
  * @author jrobinso
  * @date Apr 22, 2011
  */
-public class Peak implements LocusScore, org.broad.tribble.Feature {
+public class Peak implements LocusScore, htsjdk.tribble.Feature {
 
     String chr;
     int start;

@@ -16,7 +16,7 @@
 
 package org.broad.igv.sam;
 
-import net.sf.samtools.util.CloseableIterator;
+import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
 import org.broad.igv.sam.reader.BAMFileReader;
 import org.broad.igv.sam.reader.SAMReader;

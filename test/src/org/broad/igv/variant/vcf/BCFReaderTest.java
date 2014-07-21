@@ -16,9 +16,9 @@ import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.broad.tribble.Feature;
-import org.broad.tribble.readers.PositionalBufferedStream;
-import org.broadinstitute.variant.bcf2.BCF2Codec;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.readers.PositionalBufferedStream;
+import htsjdk.variant.bcf2.BCF2Codec;
 import org.junit.Ignore;
 import org.junit.Test;
 

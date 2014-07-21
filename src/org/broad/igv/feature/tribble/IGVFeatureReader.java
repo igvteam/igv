@@ -14,7 +14,7 @@ package org.broad.igv.feature.tribble;
 
 
 
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.io.IOException;
 import java.util.Iterator;

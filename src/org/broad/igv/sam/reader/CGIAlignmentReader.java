@@ -11,13 +11,10 @@
 
 package org.broad.igv.sam.reader;
 
-import net.sf.samtools.SAMFileHeader;
-import net.sf.samtools.SAMFileReader;
-import net.sf.samtools.SAMRecord;
-import net.sf.samtools.SAMTextHeaderCodec;
-import net.sf.samtools.util.BufferedLineReader;
-import net.sf.samtools.util.CloseableIterator;
-import net.sf.samtools.util.LineReader;
+import htsjdk.samtools.*;
+import htsjdk.samtools.util.BufferedLineReader;
+import htsjdk.samtools.util.CloseableIterator;
+import htsjdk.samtools.util.LineReader;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.sam.Alignment;
@@ -161,7 +158,7 @@ public class CGIAlignmentReader implements AlignmentReader {
             InputStream is = HttpUtils.getInstance().openConnectionStream(url);
 
             SAMFileReader reader = new SAMFileReader(new BufferedInputStream(is, 500000));
-            reader.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+            reader.setValidationStringency(ValidationStringency.SILENT);
             CloseableIterator<SAMRecord> iter = reader.iterator();
             return new SAMQueryIterator(iter);
         } catch (IOException e) {
@@ -180,7 +177,7 @@ public class CGIAlignmentReader implements AlignmentReader {
             InputStream is = HttpUtils.getInstance().openConnectionStream(url);
 
             SAMFileReader reader = new SAMFileReader(new BufferedInputStream(is, 500000));
-            reader.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+            reader.setValidationStringency(ValidationStringency.SILENT);
             CloseableIterator<SAMRecord> iter = reader.iterator();
             return new SAMQueryIterator(sequence, start, end, contained, iter);
 

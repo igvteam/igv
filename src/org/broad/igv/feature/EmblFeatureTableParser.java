@@ -81,7 +81,7 @@ public class EmblFeatureTableParser implements FeatureParser {
         try {
             reader = ParsingUtils.openBufferedReader(locator);
 
-            List<org.broad.tribble.Feature> features = loadFeatures(reader, genome);
+            List<htsjdk.tribble.Feature> features = loadFeatures(reader, genome);
 
             if (features.isEmpty()) {
                 return null;
@@ -119,7 +119,7 @@ public class EmblFeatureTableParser implements FeatureParser {
      * @param reader
      * @return
      */
-    public List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome) {
+    public List<htsjdk.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome) {
 
         List<BasicFeature> features = new ArrayList();
 
@@ -198,9 +198,9 @@ public class EmblFeatureTableParser implements FeatureParser {
 
     // Combine the constituitve gene parts into a single feature (3', 5', and cds).  This is
     // necccessary with the current IGV gene model, which is heavily influence by ucsc conventions
-    static List<org.broad.tribble.Feature> combineGeneParts(List<BasicFeature> features) {
+    static List<htsjdk.tribble.Feature> combineGeneParts(List<BasicFeature> features) {
 
-        List<org.broad.tribble.Feature> newFeatureList = new ArrayList(features.size());
+        List<htsjdk.tribble.Feature> newFeatureList = new ArrayList(features.size());
         Map<String, BasicFeature> genes = new HashMap();
 
         // Step 1 -- find the coding regions

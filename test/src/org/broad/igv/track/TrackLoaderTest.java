@@ -20,7 +20,7 @@ import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.igv.variant.VariantTrack;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

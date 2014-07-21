@@ -2,8 +2,8 @@ package org.broad.igv.sam;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.sf.samtools.Cigar;
-import net.sf.samtools.TextCigarCodec;
+import htsjdk.samtools.Cigar;
+import htsjdk.samtools.TextCigarCodec;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;

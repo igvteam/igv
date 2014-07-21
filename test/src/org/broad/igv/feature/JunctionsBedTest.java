@@ -14,7 +14,7 @@ package org.broad.igv.feature;
 
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.util.TestUtils;
-import org.broad.tribble.AbstractFeatureReader;
+import htsjdk.tribble.AbstractFeatureReader;
 import org.junit.AfterClass;
 
 import static org.junit.Assert.*;

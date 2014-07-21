@@ -19,7 +19,7 @@
 package org.broad.igv.bbfile;
 
 import org.apache.log4j.Logger;
-import org.broad.tribble.util.LittleEndianInputStream;
+import htsjdk.tribble.util.LittleEndianInputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;

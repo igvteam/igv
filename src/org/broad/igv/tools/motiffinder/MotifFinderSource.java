@@ -12,7 +12,7 @@
 package org.broad.igv.tools.motiffinder;
 
 import com.google.common.collect.Iterators;
-import net.sf.samtools.util.SequenceUtil;
+import htsjdk.samtools.util.SequenceUtil;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
@@ -21,7 +21,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.session.SessionXmlAdapters;
 import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.track.FeatureSource;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

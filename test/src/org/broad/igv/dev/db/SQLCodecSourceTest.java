@@ -16,9 +16,9 @@ import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.igv.variant.vcf.VCFVariant;
-import org.broad.tribble.AbstractFeatureReader;
-import org.broad.tribble.AsciiFeatureCodec;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.AbstractFeatureReader;
+import htsjdk.tribble.AsciiFeatureCodec;
+import htsjdk.tribble.Feature;
 import org.junit.Test;
 
 import java.io.File;

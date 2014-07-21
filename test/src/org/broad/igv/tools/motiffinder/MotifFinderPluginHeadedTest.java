@@ -21,7 +21,7 @@ import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.TestUtils;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 import org.junit.Test;
 
 import javax.swing.*;

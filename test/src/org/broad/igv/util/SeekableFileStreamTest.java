@@ -11,8 +11,8 @@
 
 package org.broad.igv.util;
 
-import net.sf.samtools.seekablestream.SeekableFileStream;
-import org.broad.tribble.readers.AsciiLineReader;
+import htsjdk.samtools.seekablestream.SeekableFileStream;
+import htsjdk.tribble.readers.AsciiLineReader;
 import org.junit.Test;
 
 import java.io.File;

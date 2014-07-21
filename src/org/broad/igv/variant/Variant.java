@@ -11,7 +11,7 @@
 
 package org.broad.igv.variant;
 
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.util.Collection;
 import java.util.List;

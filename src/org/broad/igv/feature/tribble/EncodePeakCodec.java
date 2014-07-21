@@ -3,8 +3,8 @@ package org.broad.igv.feature.tribble;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.tribble.Feature;
-import org.broad.tribble.util.ParsingUtils;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.util.ParsingUtils;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;

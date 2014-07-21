@@ -19,9 +19,9 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.feature.genome.Genome;
-import org.broad.tribble.AsciiFeatureCodec;
-import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureCodec;
+import htsjdk.tribble.AsciiFeatureCodec;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.FeatureCodec;
 
 /**
  * FeatureParser which reads features using a codec.

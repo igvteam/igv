@@ -45,7 +45,7 @@ import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.util.collections.CollUtils;
 import org.broad.igv.util.stats.KMPlotFrame;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import javax.swing.*;
 import java.awt.*;
@@ -508,7 +508,7 @@ public class TrackMenuUtils {
         JMenuItem exportData = null;
 
         if(ft instanceof FeatureTrack){
-            exportData = new JMenuItem("Export To BED File");
+            exportData = new JMenuItem("Export Features...");
             exportData.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -521,7 +521,7 @@ public class TrackMenuUtils {
                 }
             });
         }else if(ft instanceof AlignmentTrack){
-            exportData = new JMenuItem("Export Alignments");
+            exportData = new JMenuItem("Export Alignments...");
             exportData.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {

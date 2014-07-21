@@ -31,7 +31,7 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.variant.VariantTrack;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import javax.swing.*;
 import java.awt.*;

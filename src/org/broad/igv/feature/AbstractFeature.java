@@ -14,7 +14,7 @@ package org.broad.igv.feature;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.util.collections.MultiMap;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.awt.*;
 import java.util.List;
@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * @author jrobinso
  */
-abstract public class AbstractFeature implements IGVFeature, org.broad.tribble.Feature {
+abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feature {
 
     private static Logger log = Logger.getLogger(AbstractFeature.class);
     protected Strand strand = Strand.NONE;

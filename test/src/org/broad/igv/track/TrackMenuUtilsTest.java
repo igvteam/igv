@@ -18,8 +18,8 @@ import org.broad.igv.feature.Range;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.broad.tribble.AbstractFeatureReader;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.AbstractFeatureReader;
+import htsjdk.tribble.Feature;
 import org.junit.Test;
 
 import java.util.Iterator;

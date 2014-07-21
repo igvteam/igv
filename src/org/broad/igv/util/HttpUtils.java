@@ -12,9 +12,9 @@
 package org.broad.igv.util;
 
 import biz.source_code.base64Coder.Base64Coder;
-import net.sf.samtools.seekablestream.SeekableStream;
-import net.sf.samtools.util.ftp.FTPClient;
-import net.sf.samtools.util.ftp.FTPStream;
+import htsjdk.samtools.seekablestream.SeekableStream;
+import htsjdk.samtools.util.ftp.FTPClient;
+import htsjdk.samtools.util.ftp.FTPStream;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.HttpDate;
 import org.broad.igv.Globals;
@@ -82,7 +82,7 @@ public class HttpUtils {
 
     private HttpUtils() {
 
-        org.broad.tribble.util.ParsingUtils.registerHelperClass(IGVUrlHelper.class);
+        htsjdk.tribble.util.ParsingUtils.registerHelperClass(IGVUrlHelper.class);
 
         disableCertificateValidation();
         CookieHandler.setDefault(new IGVCookieManager());

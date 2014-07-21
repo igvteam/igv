@@ -13,11 +13,11 @@ package org.broad.igv.dev.db;
 
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
-import org.broad.tribble.AsciiFeatureCodec;
-import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureCodec;
-import org.broad.tribble.example.ExampleBinaryCodec;
-import org.broad.tribble.readers.PositionalBufferedStream;
+import htsjdk.tribble.AsciiFeatureCodec;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.FeatureCodec;
+import htsjdk.tribble.example.ExampleBinaryCodec;
+import htsjdk.tribble.readers.PositionalBufferedStream;
 import org.junit.Test;
 
 import java.io.BufferedReader;

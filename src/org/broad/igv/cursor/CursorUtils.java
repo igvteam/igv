@@ -5,7 +5,7 @@ import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.AsciiFeatureCodec;
+import htsjdk.tribble.AsciiFeatureCodec;
 
 import java.awt.*;
 import java.io.BufferedReader;

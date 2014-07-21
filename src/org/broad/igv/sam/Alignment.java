@@ -35,7 +35,6 @@ public interface Alignment extends LocusScore {
 
     int getAlignmentEnd();
 
-
     boolean contains(double location);
 
     AlignmentBlock[] getAlignmentBlocks();
@@ -85,8 +84,6 @@ public interface Alignment extends LocusScore {
     Strand getFirstOfPairStrand();
 
     Strand getSecondOfPairStrand();
-
-    boolean isSmallInsert();
 
     boolean isVendorFailedRead();
 

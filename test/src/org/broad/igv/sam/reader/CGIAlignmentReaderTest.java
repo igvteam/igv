@@ -1,6 +1,6 @@
 package org.broad.igv.sam.reader;
 
-import net.sf.samtools.util.CloseableIterator;
+import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
 import org.broad.igv.sam.Alignment;
 import org.junit.BeforeClass;

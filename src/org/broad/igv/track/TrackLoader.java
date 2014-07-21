@@ -68,8 +68,8 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.util.PedigreeUtils;
-import org.broad.tribble.AsciiFeatureCodec;
-import org.broadinstitute.variant.vcf.VCFHeader;
+import htsjdk.tribble.AsciiFeatureCodec;
+import htsjdk.variant.vcf.VCFHeader;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -330,7 +330,7 @@ public class TrackLoader {
     private void loadSyntentyMapping(ResourceLocator locator, List<Track> newTracks) {
 
         List<BlastMapping> mappings = (new BlastParser()).parse(locator.getPath());
-        List<org.broad.tribble.Feature> features = new ArrayList<org.broad.tribble.Feature>(mappings.size());
+        List<htsjdk.tribble.Feature> features = new ArrayList<htsjdk.tribble.Feature>(mappings.size());
         features.addAll(mappings);
 
         Genome genome = GenomeManager.getInstance().getCurrentGenome();

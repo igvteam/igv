@@ -19,7 +19,7 @@ package org.broad.igv.feature;
 import com.google.common.base.Predicate;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.util.*;
 
@@ -254,7 +254,7 @@ public class FeatureUtils {
 
         int index = getIndexBefore(position, features);
         while (index >= 0) {
-            org.broad.tribble.Feature f = features.get(index);
+            htsjdk.tribble.Feature f = features.get(index);
             if (f.getStart() < position) {
                 return f;
             }
@@ -264,15 +264,15 @@ public class FeatureUtils {
 
     }
 
-    public static Feature getFeatureClosest(double position, List<? extends org.broad.tribble.Feature> features) {
+    public static Feature getFeatureClosest(double position, List<? extends htsjdk.tribble.Feature> features) {
         // look for exact match at position:
-        org.broad.tribble.Feature f0 = getFeatureAt(position, features);
+        htsjdk.tribble.Feature f0 = getFeatureAt(position, features);
         if (f0 != null) {
             return f0;
         }
         // otherwise look for features on either side and return the closest:
-        org.broad.tribble.Feature f1 = getFeatureBefore(position, features);
-        org.broad.tribble.Feature f2 = getFeatureAfter(position, features);
+        htsjdk.tribble.Feature f1 = getFeatureBefore(position, features);
+        htsjdk.tribble.Feature f2 = getFeatureAfter(position, features);
 
         double d1 = f1 == null ? Double.MAX_VALUE : Math.abs(position - f1.getEnd());
         double d2 = f2 == null ? Double.MAX_VALUE : Math.abs(f2.getStart() - position);
@@ -365,7 +365,7 @@ public class FeatureUtils {
     public static List<Feature> getAllFeaturesAt(double position,
                                                  double maxLength,
                                                  double minWidth,
-                                                 List<? extends org.broad.tribble.Feature> features) {
+                                                 List<? extends htsjdk.tribble.Feature> features) {
 
         List<Feature> returnList = null;
 

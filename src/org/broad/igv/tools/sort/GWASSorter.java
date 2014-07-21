@@ -13,7 +13,7 @@ package org.broad.igv.tools.sort;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.gwas.GWASParser;
-import org.broad.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.*;
 import java.util.ArrayList;

@@ -20,11 +20,11 @@ import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.TestUtils;
 import org.broad.igv.variant.vcf.VCFVariant;
-import org.broad.tribble.AbstractFeatureReader;
-import org.broad.tribble.CloseableTribbleIterator;
-import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureCodec;
-import org.broadinstitute.variant.vcf.VCFCodec;
+import htsjdk.tribble.AbstractFeatureReader;
+import htsjdk.tribble.CloseableTribbleIterator;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.FeatureCodec;
+import htsjdk.variant.vcf.VCFCodec;
 import org.junit.*;
 
 import java.io.IOException;

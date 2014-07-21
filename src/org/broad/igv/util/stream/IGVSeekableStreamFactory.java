@@ -11,9 +11,9 @@
 
 package org.broad.igv.util.stream;
 
-import net.sf.samtools.seekablestream.ISeekableStreamFactory;
-import net.sf.samtools.seekablestream.SeekableFileStream;
-import net.sf.samtools.seekablestream.SeekableStream;
+import htsjdk.samtools.seekablestream.ISeekableStreamFactory;
+import htsjdk.samtools.seekablestream.SeekableFileStream;
+import htsjdk.samtools.seekablestream.SeekableStream;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.File;

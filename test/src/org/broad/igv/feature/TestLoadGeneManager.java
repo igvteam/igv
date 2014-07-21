@@ -17,7 +17,7 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 import org.junit.Test;
 
 import java.io.IOException;

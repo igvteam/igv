@@ -17,7 +17,7 @@ package org.broad.igv.renderer;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.IGVFeature;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 /**
  * @author jrobinso

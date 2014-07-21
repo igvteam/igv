@@ -18,8 +18,8 @@ import org.broad.igv.util.TestUtils;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.vcf.VCFVariant;
 import org.broad.igv.variant.vcf.VCFWriterTest;
-import org.broad.tribble.Feature;
-import org.broadinstitute.variant.vcf.VCFHeader;
+import htsjdk.tribble.Feature;
+import htsjdk.variant.vcf.VCFHeader;
 import org.junit.Test;
 
 import java.io.FileOutputStream;

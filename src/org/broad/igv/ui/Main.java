@@ -13,7 +13,7 @@ package org.broad.igv.ui;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
 import jargs.gnu.CmdLineParser;
-import net.sf.samtools.seekablestream.SeekableStreamFactory;
+import htsjdk.samtools.seekablestream.SeekableStreamFactory;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;

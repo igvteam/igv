@@ -18,7 +18,7 @@
 
 package org.broad.igv.track;
 
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 import org.broad.igv.feature.LocusScore;
 
 import java.io.IOException;

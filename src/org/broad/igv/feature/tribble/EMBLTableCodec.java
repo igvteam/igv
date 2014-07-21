@@ -1,12 +1,13 @@
 package org.broad.igv.feature.tribble;
 
+import htsjdk.samtools.util.LocationAware;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.Strand;
-import org.broad.tribble.AbstractFeatureCodec;
-import org.broad.tribble.FeatureCodecHeader;
-import org.broad.tribble.readers.*;
+import htsjdk.tribble.AbstractFeatureCodec;
+import htsjdk.tribble.FeatureCodecHeader;
+import htsjdk.tribble.readers.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -32,7 +32,7 @@ import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,7 +69,7 @@ public class DRangerParser {
 
         List<FeatureTrack> tracks = new ArrayList();
         AsciiLineReader reader = null;
-        List<org.broad.tribble.Feature> features = new ArrayList(5000);
+        List<htsjdk.tribble.Feature> features = new ArrayList(5000);
 
         int parseColumn = -1;
         String nextLine = null;

@@ -59,7 +59,7 @@ abstract public class TrackPanelComponent extends JPanel {
         initKeyDispatcher();
     }
 
-    private void initKeyDispatcher(){
+    private void initKeyDispatcher() {
         final Action delTracksAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -68,7 +68,7 @@ abstract public class TrackPanelComponent extends JPanel {
         };
 
 
-        if(Globals.isDevelopment()){
+        if (Globals.isDevelopment()) {
             final KeyStroke delKey = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0, false);
             final KeyStroke backspaceKey = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0, false);
 
@@ -208,12 +208,9 @@ abstract public class TrackPanelComponent extends JPanel {
         menu.add(item);
 
         // Add export features
-        if(Globals.isDevelopment()){
-            ReferenceFrame frame = FrameManager.getDefaultFrame();
-            JMenuItem exportFeats = getExportFeatures(selectedTracks, frame);
-            if (exportFeats != null) menu.add(exportFeats);
-        }
-
+        ReferenceFrame frame = FrameManager.getDefaultFrame();
+        JMenuItem exportFeats = getExportFeatures(selectedTracks, frame);
+        if (exportFeats != null) menu.add(exportFeats);
 
         if (menu != null) {
             menu.show(e.getComponent(), e.getX(), e.getY());

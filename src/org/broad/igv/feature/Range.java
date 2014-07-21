@@ -12,7 +12,7 @@
 package org.broad.igv.feature;
 
 import com.google.java.contract.util.Objects;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 
 /**

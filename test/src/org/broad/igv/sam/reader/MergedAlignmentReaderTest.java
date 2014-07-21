@@ -11,7 +11,7 @@
 
 package org.broad.igv.sam.reader;
 
-import net.sf.samtools.util.CloseableIterator;
+import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.tools.IGVToolsTest;

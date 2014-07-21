@@ -31,7 +31,7 @@ import org.broad.igv.sam.IAlignmentDataManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.awt.*;
 import java.awt.geom.Ellipse2D;

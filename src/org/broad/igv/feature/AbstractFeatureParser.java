@@ -27,10 +27,10 @@ import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.AbstractFeatureReader;
-import org.broad.tribble.AsciiFeatureCodec;
-import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureCodec;
+import htsjdk.tribble.AbstractFeatureReader;
+import htsjdk.tribble.AsciiFeatureCodec;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.FeatureCodec;
 
 import java.io.BufferedReader;
 import java.io.FileWriter;
@@ -75,7 +75,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
      * @param reader
      * @return
      */
-    public List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome) {
+    public List<htsjdk.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome) {
         return loadFeatures(reader, genome, -1);
     }
 
@@ -87,9 +87,9 @@ public abstract class AbstractFeatureParser implements FeatureParser {
      * @param maxLines
      * @return
      */
-    public List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome, int maxLines) {
+    public List<htsjdk.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome, int maxLines) {
 
-        List<org.broad.tribble.Feature> features = new ArrayList<org.broad.tribble.Feature>();
+        List<htsjdk.tribble.Feature> features = new ArrayList<htsjdk.tribble.Feature>();
         String nextLine = null;
 
         int maxLogErrors = 10;

@@ -11,8 +11,8 @@
 
 package org.broad.igv.util;
 
-import org.broad.tribble.util.LittleEndianInputStream;
-import org.broad.tribble.util.LittleEndianOutputStream;
+import htsjdk.tribble.util.LittleEndianInputStream;
+import htsjdk.tribble.util.LittleEndianOutputStream;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

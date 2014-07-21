@@ -33,7 +33,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.*;
 import org.broad.igv.util.collections.CI;
-import org.broad.tribble.util.ParsingUtils;
+import htsjdk.tribble.util.ParsingUtils;
 
 import java.awt.*;
 import java.io.*;
@@ -1510,7 +1510,7 @@ public class GenomeManager {
                 MessageUtils.showMessage("ERROR: Unrecognized annotation file format: " + geneFileName +
                         "<br>Annotations for genome: " + genome.getId() + " will not be loaded.");
             } else {
-                List<org.broad.tribble.Feature> genes = parser.loadFeatures(reader, genome);
+                List<htsjdk.tribble.Feature> genes = parser.loadFeatures(reader, genome);
                 String name = geneTrackName;
                 if (name == null) name = "Genes";
 
@@ -1536,7 +1536,7 @@ public class GenomeManager {
      * @param genome
      * @param features
      */
-    public FeatureTrack createGeneTrack(Genome genome, List<org.broad.tribble.Feature> features) {
+    public FeatureTrack createGeneTrack(Genome genome, List<htsjdk.tribble.Feature> features) {
 
         FeatureDB.clearFeatures();
         FeatureTrack geneFeatureTrack = null;

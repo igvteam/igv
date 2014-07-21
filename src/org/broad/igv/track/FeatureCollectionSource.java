@@ -22,7 +22,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.collections.CollUtils;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.util.*;
 
@@ -38,7 +38,7 @@ public class FeatureCollectionSource implements FeatureSource {
 
     private TrackType type;
 
-    private Map<String, List<org.broad.tribble.Feature>> featureMap;
+    private Map<String, List<htsjdk.tribble.Feature>> featureMap;
 
     CoverageDataSource coverageData;
 

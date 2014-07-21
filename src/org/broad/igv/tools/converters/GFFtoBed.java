@@ -17,7 +17,7 @@ import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.io.*;
 import java.util.List;

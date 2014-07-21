@@ -19,7 +19,7 @@ import org.broad.igv.ui.util.CancellableProgressDialog;
 import org.broad.igv.ui.util.IndefiniteProgressMonitor;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.LongRunningTask;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

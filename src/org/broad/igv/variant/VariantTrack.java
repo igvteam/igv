@@ -28,8 +28,8 @@ import org.broad.igv.ui.event.TrackGroupEventListener;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
-import org.broad.tribble.Feature;
-import org.broadinstitute.variant.variantcontext.GenotypeType;
+import htsjdk.tribble.Feature;
+import htsjdk.variant.variantcontext.GenotypeType;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;

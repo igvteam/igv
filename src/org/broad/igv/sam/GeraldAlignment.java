@@ -297,13 +297,6 @@ public class GeraldAlignment implements Alignment {
         return "";
     }
 
-    @Override
-    public boolean isSmallInsert() {
-        int absISize = Math.abs(getInferredInsertSize());
-        return absISize > 0 && absISize <= getReadLength();
-    }
-
-
     public int getReadLength() {
         return getReadSequence().length();
     }

@@ -17,7 +17,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.LoadResourceFromServerException;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
-import org.broad.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.FileInputStream;
 import java.io.IOException;

@@ -11,7 +11,7 @@
 
 package org.broad.igv.feature.tribble;
 
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 /**
  * A minimal representation of a Feature.

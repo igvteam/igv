@@ -16,7 +16,7 @@ import org.broad.igv.cli_plugin.PluginSpecReader;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.ui.AbstractHeadedTest;
 import org.broad.igv.ui.IGV;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 import org.junit.Test;
 
 import java.util.List;

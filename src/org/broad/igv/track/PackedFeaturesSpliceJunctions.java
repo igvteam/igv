@@ -26,7 +26,7 @@ import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.util.*;
 

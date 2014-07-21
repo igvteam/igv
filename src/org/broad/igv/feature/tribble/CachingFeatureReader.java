@@ -14,9 +14,9 @@ package org.broad.igv.feature.tribble;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.AbstractCacher;
-import org.broad.tribble.CloseableTribbleIterator;
-import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureReader;
+import htsjdk.tribble.CloseableTribbleIterator;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.FeatureReader;
 
 import java.io.IOException;
 import java.util.ArrayList;

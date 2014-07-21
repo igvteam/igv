@@ -16,8 +16,8 @@ import org.broad.igv.variant.Allele;
 import org.broad.igv.variant.Genotype;
 import org.broad.igv.variant.Variant;
 import org.broad.igv.variant.VariantTrack;
-import org.broadinstitute.variant.variantcontext.VariantContext;
-import org.broadinstitute.variant.variantcontext.VariantContextBuilder;
+import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.variantcontext.VariantContextBuilder;
 
 import java.util.*;
 
@@ -53,7 +53,7 @@ public class VCFVariant implements Variant {
         // Copy the genotype map.  Calls to variantContext.getGenotype() are expensive
         genotypeMap = new HashMap<String, VCFGenotype>();
         for (String sample : getSampleNames()) {
-            org.broadinstitute.variant.variantcontext.Genotype genotype = variantContext.getGenotype(sample);
+            htsjdk.variant.variantcontext.Genotype genotype = variantContext.getGenotype(sample);
             VCFGenotype vcfGenotype = genotype == null ? null : new VCFGenotype(genotype);
             genotypeMap.put(sample, vcfGenotype);
         }
@@ -138,9 +138,9 @@ public class VCFVariant implements Variant {
 
     public List<Allele> getAlternateAlleles() {
         if (alternateAlleles == null) {
-            List<org.broadinstitute.variant.variantcontext.Allele> tmp = variantContext.getAlternateAlleles();
+            List<htsjdk.variant.variantcontext.Allele> tmp = variantContext.getAlternateAlleles();
             alternateAlleles = new ArrayList<Allele>(tmp.size());
-            for (org.broadinstitute.variant.variantcontext.Allele a : tmp) {
+            for (htsjdk.variant.variantcontext.Allele a : tmp) {
                 alternateAlleles.add(new VCFAllele(a.getBases()));
             }
         }
@@ -276,10 +276,10 @@ public class VCFVariant implements Variant {
         if (variant instanceof VCFVariant) {
             return ((VCFVariant) variant).getVariantContext();
         } else {
-            List<org.broadinstitute.variant.variantcontext.Allele> alleleList = new ArrayList<org.broadinstitute.variant.variantcontext.Allele>(variant.getAlternateAlleles().size() + 1);
-            alleleList.add(org.broadinstitute.variant.variantcontext.Allele.create(variant.getReference(), true));
+            List<htsjdk.variant.variantcontext.Allele> alleleList = new ArrayList<htsjdk.variant.variantcontext.Allele>(variant.getAlternateAlleles().size() + 1);
+            alleleList.add(htsjdk.variant.variantcontext.Allele.create(variant.getReference(), true));
             for (Allele all : variant.getAlternateAlleles()) {
-                alleleList.add(org.broadinstitute.variant.variantcontext.Allele.create(all.getBases(), false));
+                alleleList.add(htsjdk.variant.variantcontext.Allele.create(all.getBases(), false));
             }
             VariantContextBuilder vcb = new VariantContextBuilder(variant.getID(), variant.getChr(), variant.getStart(), variant.getEnd(), alleleList);
             return vcb.make();

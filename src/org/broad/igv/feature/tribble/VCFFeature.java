@@ -31,7 +31,7 @@ import java.util.*;
 /**
  * @author jrobinso
  */
-public class VCFFeature implements IGVFeature, org.broad.tribble.Feature {
+public class VCFFeature implements IGVFeature, htsjdk.tribble.Feature {
 
     private String chr;
     private int start;

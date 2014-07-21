@@ -11,7 +11,7 @@
 
 package org.broad.igv.maf;
 
-import net.sf.samtools.seekablestream.SeekableStream;
+import htsjdk.samtools.seekablestream.SeekableStream;
 import org.broad.igv.Globals;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.index.Interval;

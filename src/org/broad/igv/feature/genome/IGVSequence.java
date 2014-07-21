@@ -11,7 +11,7 @@
 
 package org.broad.igv.feature.genome;
 
-import net.sf.samtools.seekablestream.SeekableStream;
+import htsjdk.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;

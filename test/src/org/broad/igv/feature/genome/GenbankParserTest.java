@@ -2,7 +2,7 @@ package org.broad.igv.feature.genome;
 
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.util.TestUtils;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 import org.junit.Test;
 
 import java.util.List;

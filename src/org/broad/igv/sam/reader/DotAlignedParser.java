@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.sam.DotAlignedAlignment;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.IOException;
 
