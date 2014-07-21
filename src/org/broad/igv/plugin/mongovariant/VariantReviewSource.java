@@ -11,8 +11,8 @@
 
 package org.broad.igv.plugin.mongovariant;
 
-import net.sf.samtools.SAMSequenceDictionary;
-import net.sf.samtools.SAMSequenceRecord;
+import htsjdk.samtools.SAMSequenceDictionary;
+import htsjdk.samtools.SAMSequenceRecord;
 import org.apache.log4j.Logger;
 import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.feature.Chromosome;
@@ -27,9 +27,9 @@ import org.broadinstitute.gatk.tools.walkers.na12878kb.core.*;
 import org.broadinstitute.gatk.utils.GenomeLoc;
 import org.broadinstitute.gatk.utils.GenomeLocParser;
 import org.broadinstitute.gatk.utils.GenomeLocSortedSet;
-import org.broadinstitute.variant.variantcontext.Allele;
-import org.broadinstitute.variant.variantcontext.Genotype;
-import org.broadinstitute.variant.variantcontext.VariantContext;
+import htsjdk.variant.variantcontext.Allele;
+import htsjdk.variant.variantcontext.Genotype;
+import htsjdk.variant.variantcontext.VariantContext;
 
 import java.io.IOException;
 import java.util.ArrayList;

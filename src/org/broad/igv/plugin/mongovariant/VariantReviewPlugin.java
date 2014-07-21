@@ -24,7 +24,7 @@ import org.broad.igv.variant.Variant;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.vcf.VCFVariant;
 import org.broadinstitute.gatk.tools.walkers.na12878kb.core.NA12878DBArgumentCollection;
-import org.broadinstitute.variant.variantcontext.VariantContext;
+import htsjdk.variant.variantcontext.VariantContext;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
