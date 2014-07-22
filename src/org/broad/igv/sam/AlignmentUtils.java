@@ -11,13 +11,22 @@
 
 package org.broad.igv.sam;
 
-import org.broad.igv.sam.reader.GeraldParser;
 
 /**
  * @author Jim Robinson
  * @date 12/6/11
  */
 public class AlignmentUtils {
+
+    public static final byte a = 'a';
+    public static final byte c = 'c';
+    public static final byte g = 'g';
+    public static final byte t = 't';
+    public static final byte A = 'A';
+    public static final byte C = 'C';
+    public static final byte G = 'G';
+    public static final byte T = 'T';
+    
     /**
      * Return true if the two bases can be considered a match.  The comparison is case-insensitive, and
      * considers ambiguity codes in the reference.
@@ -140,22 +149,22 @@ public class AlignmentUtils {
      */
     public static final byte complement(final byte b) {
         switch (b) {
-            case GeraldParser.a:
-                return GeraldParser.t;
-            case GeraldParser.c:
-                return GeraldParser.g;
-            case GeraldParser.g:
-                return GeraldParser.c;
-            case GeraldParser.t:
-                return GeraldParser.a;
-            case GeraldParser.A:
-                return GeraldParser.T;
-            case GeraldParser.C:
-                return GeraldParser.G;
-            case GeraldParser.G:
-                return GeraldParser.C;
-            case GeraldParser.T:
-                return GeraldParser.A;
+            case a:
+                return t;
+            case c:
+                return g;
+            case g:
+                return c;
+            case t:
+                return a;
+            case A:
+                return T;
+            case C:
+                return G;
+            case G:
+                return C;
+            case T:
+                return A;
             default:
                 return b;
         }
