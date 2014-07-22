@@ -59,6 +59,7 @@ public class VCFWriterTest extends AbstractHeadlessTest {
 
         VariantContextWriter writer = getWriter();
         writer.writeHeader(header0);
+        writer.close();
 
         AbstractFeatureReader<Feature, ?> bfs1 = AbstractFeatureReader.getFeatureReader(outFile.getAbsolutePath(), codec, false);
         VCFHeader header1 = (VCFHeader) bfs1.getHeader();
@@ -77,12 +78,10 @@ public class VCFWriterTest extends AbstractHeadlessTest {
 
         VariantContextWriter writer = getWriter();
         writer.writeHeader(header0);
-
         for (VCFVariant var : iter0) {
             writer.add(var.getVariantContext());
             list0.add(var);
         }
-
         writer.close();
 
         AbstractFeatureReader<VCFVariant, ?> bfs1 = AbstractFeatureReader.getFeatureReader(outFile.getAbsolutePath(), codec, false);

@@ -180,7 +180,7 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
     @Test
     public void testGetIGVExtension() {
 
-        path = "/foo/bar/mydata.igv";
+        String path = "/foo/bar/mydata.igv";
         assertEquals("igv", ParsingUtils.getIGVExtension(path));
 
         path = "/foo/bar/mydata.igv.gz";
