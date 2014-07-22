@@ -755,7 +755,15 @@ public abstract class SAMAlignment implements Alignment {
 
     protected void setPairOrientation() {
 
-        if (isPaired() && isMapped() && mate.isMapped()) {   // && name === mate.name
+        /*
+                if (record.getReadPairedFlag() &&
+                !record.getReadUnmappedFlag() &&
+                !record.getMateUnmappedFlag() &&
+                record.getReferenceName().equals(record.getMateReferenceName())) {
+
+         */
+
+        if (isPaired() && isMapped() && mate.isMapped() && getChr().equals(mate.getChr())) {   // && name === mate.name
 
             char s1 = isNegativeStrand() ? 'R' : 'F';
             char s2 = mate.isNegativeStrand() ? 'R' : 'F';
