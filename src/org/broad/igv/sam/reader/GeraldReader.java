@@ -65,7 +65,7 @@ public class GeraldReader implements AlignmentReader {
         } else if (fn.endsWith(".psl") || fn.endsWith(".psxl")) {
             return new PSLAlignmentParser();
         } else {
-            return new GeraldParser();
+            throw new RuntimeException("Unknown alignment file type: " + fn);
         }
     }
 

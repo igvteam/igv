@@ -40,7 +40,7 @@ public class AlignmentFileFilter extends FileFilter implements java.io.FileFilte
 
             return extension.equalsIgnoreCase("entries") ||
                     extension.equalsIgnoreCase("bam") || extension.equals("sam") ||
-                    file.getName().endsWith(".sorted.txt") || extension.equals("aligned");
+                    extension.equals("aligned");
         } else {
             return false;
         }

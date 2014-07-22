@@ -517,11 +517,6 @@ public class ParsingUtils {
      */
     public static String getIGVExtension(String path) {
 
-        // _sorted.txt is an old alignment format.
-        if (path.endsWith("_sorted.txt")) {
-            return "_sorted.txt";
-        }
-
         // String off gzip first
         if (path.endsWith(".gz")) path = path.substring(0, path.length() - 3);
 

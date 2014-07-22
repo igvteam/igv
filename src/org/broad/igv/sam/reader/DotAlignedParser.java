@@ -35,7 +35,7 @@ import java.io.IOException;
  */
 public class DotAlignedParser implements AlignmentParser {
 
-    private static Logger log = Logger.getLogger(GeraldParser.class);
+    private static Logger log = Logger.getLogger(DotAlignedParser.class);
 
     public static int CHROMOSOME_COLUMN = 0;
     private static int START_COLUMN = 1;

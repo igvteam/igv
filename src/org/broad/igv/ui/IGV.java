@@ -1799,7 +1799,7 @@ public class IGV {
             return getTrackPanel(DATA_PANEL_NAME);
         } else if (path.endsWith(".sam") || path.endsWith(".bam") ||
                 path.endsWith(".sam.list") || path.endsWith(".bam.list") ||
-                path.endsWith(".aligned") || path.endsWith(".sorted.txt")) {
+                path.endsWith(".aligned")) {
 
             String newPanelName = "Panel" + System.currentTimeMillis();
             return addDataPanel(newPanelName).getTrackPanel();

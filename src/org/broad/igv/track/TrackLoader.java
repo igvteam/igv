@@ -168,7 +168,6 @@ public class TrackLoader {
                 loadSyntentyMapping(locator, newTracks);
             } else if (typeString.endsWith(".sam") || typeString.endsWith(".bam") ||
                     typeString.endsWith(".sam.list") || typeString.endsWith(".bam.list") ||
-                    typeString.endsWith("_sorted.txt") ||
                     typeString.endsWith(".aligned") || typeString.endsWith(".sai") ||
                     typeString.endsWith(".bai") || typeString.equals("alist") ||
                     typeString.endsWith(".ga4gh")) {

@@ -707,7 +707,7 @@ public class Preprocessor implements DataConsumer {
 
     public static boolean isAlignmentFile(String ext) {
         return ext.equalsIgnoreCase(".bam") || ext.equalsIgnoreCase(".sam") ||
-                ext.equalsIgnoreCase(".aligned") || ext.equalsIgnoreCase(".sorted.txt") ||
+                ext.equalsIgnoreCase(".aligned") ||
                 ext.equalsIgnoreCase(".bedz") || ext.equalsIgnoreCase(".bed");
     }
 
@@ -745,10 +745,7 @@ public class Preprocessor implements DataConsumer {
             filename = filename.substring(0, filename.length() - 3);
         }
 
-        //Special case for "sorted.txt"
-        if (filename.toLowerCase().endsWith(".sorted.txt")) {
-            return ".sorted.txt";
-        } else if (filename.toLowerCase().endsWith(".txt")) {
+        if (filename.toLowerCase().endsWith(".txt")) {
             filename = filename.substring(0, filename.length() - 4);
         }
 

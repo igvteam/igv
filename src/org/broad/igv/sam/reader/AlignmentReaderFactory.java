@@ -63,8 +63,7 @@ public class AlignmentReaderFactory {
         } else if (typeString.endsWith(".sam")) {
             reader = new SAMReader(samFile, requireIndex);
 
-        } else if (typeString.endsWith("sorted.txt")
-                || typeString.endsWith(".aligned")
+        } else if (typeString.endsWith(".aligned")
                 || typeString.endsWith(".aligned.txt")
                 || typeString.endsWith("bedz")
                 || typeString.endsWith("bed")

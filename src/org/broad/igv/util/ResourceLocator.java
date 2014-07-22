@@ -125,6 +125,7 @@ public class ResourceLocator {
     /**
      * Return a string suitable for determining file type based on extension
      * May or may not be a full, readable path. txt and gz extensions are stripped
+     *
      * @return
      */
     public String getTypeString() {
@@ -161,9 +162,8 @@ public class ResourceLocator {
             }
 
             // Strip .txt, .gz, and .xls extensions.  (So  foo.cn.gz => a .cn file)
-            if (!typeString.endsWith("_sorted.txt") &&
-                    (typeString.endsWith(".txt") || typeString.endsWith(
-                            ".xls") || typeString.endsWith(".gz"))) {
+            if ((typeString.endsWith(".txt") || typeString.endsWith(
+                    ".xls") || typeString.endsWith(".gz"))) {
                 typeString = typeString.substring(0, typeString.lastIndexOf("."));
             }
 
@@ -176,6 +176,7 @@ public class ResourceLocator {
      * Returns the portion of the contained path before the query string.
      * If there is no query string, or if the path is not a url,
      * this will be the same as #getPath()
+     *
      * @return
      */
     public String getURLPath() {
@@ -185,11 +186,12 @@ public class ResourceLocator {
     /**
      * Returns the portion of the contained path after the query string.
      * If there is no query string, this will return an empty string
+     *
      * @return
      */
-    public String getURLQueryString(){
-        String[] tmp  = getPath().split("\\?", 2);
-        if(tmp.length == 1){
+    public String getURLQueryString() {
+        String[] tmp = getPath().split("\\?", 2);
+        if (tmp.length == 1) {
             return "";
         }
         return tmp[1];
@@ -370,6 +372,7 @@ public class ResourceLocator {
     /**
      * Add the {@code indexExtension} to the path in locator, preserving
      * query string elements if present
+     *
      * @param locator
      * @param indexExtension
      * @return
@@ -377,21 +380,20 @@ public class ResourceLocator {
     public static String appendToPath(ResourceLocator locator, String indexExtension) {
         String indexFile = locator.getURLPath() + indexExtension;
         String qs = locator.getURLQueryString();
-        if(qs != null && qs.length() > 0){
+        if (qs != null && qs.length() > 0) {
             indexFile += "?" + qs;
         }
         return indexFile;
     }
 
     /**
-     *
      * @param locator
-     * @return  locator.getIndexPath() if not null, otherwise
-     *          {@link #appendToPath(ResourceLocator, String)}
-     *          where the second argument is .idx or tbi, depending on the resource
+     * @return locator.getIndexPath() if not null, otherwise
+     * {@link #appendToPath(ResourceLocator, String)}
+     * where the second argument is .idx or tbi, depending on the resource
      */
-    public static String indexFile(ResourceLocator locator){
-        if(locator.getIndexPath() != null){
+    public static String indexFile(ResourceLocator locator) {
+        if (locator.getIndexPath() != null) {
             return locator.getIndexPath();
         }
         String indexExtension = locator.getPath().toLowerCase().endsWith(".gz") ? ".tbi" : Tribble.STANDARD_INDEX_EXTENSION;

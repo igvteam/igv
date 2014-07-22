@@ -116,8 +116,6 @@ public abstract class Sorter {
             return new SAMSorter(inputFile, outputFile);
         } else if (shortFN.endsWith(".aligned") || shortFN.endsWith(".bed") || shortFN.endsWith(".bedgraph")) {
             return new BedSorter(inputFile, outputFile);
-        } else if (shortFN.endsWith(".sorted")) {
-            return new SortedTxtSorter(inputFile, outputFile);
         } else if (GFFFeatureSource.isGFF(shortFN)) {
             return new GFFSorter(inputFile, outputFile);
         } else if (shortFN.endsWith(".vcf")) {
