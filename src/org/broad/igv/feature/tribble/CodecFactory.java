@@ -11,7 +11,7 @@
 
 package org.broad.igv.feature.tribble;
 
-import net.sf.samtools.util.BlockCompressedInputStream;
+import htsjdk.samtools.util.BlockCompressedInputStream;
 import org.apache.log4j.Logger;
 import org.broad.igv.data.cufflinks.FPKMTrackingCodec;
 import org.broad.igv.feature.genome.Genome;
@@ -19,11 +19,11 @@ import org.broad.igv.gwas.EQTLCodec;
 import org.broad.igv.peaks.PeakCodec;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.AsciiFeatureCodec;
-import org.broad.tribble.FeatureCodec;
-import org.broadinstitute.variant.bcf2.BCF2Codec;
-import org.broadinstitute.variant.vcf.VCF3Codec;
-import org.broadinstitute.variant.vcf.VCFCodec;
+import htsjdk.tribble.AsciiFeatureCodec;
+import htsjdk.tribble.FeatureCodec;
+import htsjdk.variant.bcf2.BCF2Codec;
+import htsjdk.variant.vcf.VCF3Codec;
+import htsjdk.variant.vcf.VCFCodec;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -137,7 +137,7 @@ public class CodecFactory {
             if (locator.getURLPath().toLowerCase().endsWith(".gz")) {
                 // NOTE:  MUST USE THE PICARD VERSION OF ParsingUtils.  The IGV version will return a gzip stream.
                 reader = new BufferedReader(new InputStreamReader(new BlockCompressedInputStream(
-                        org.broad.tribble.util.ParsingUtils.openInputStream(path))));
+                        htsjdk.tribble.util.ParsingUtils.openInputStream(path))));
             } else {
                 reader = ParsingUtils.openBufferedReader(path);
             }

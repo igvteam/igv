@@ -16,7 +16,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.io.*;
 import java.util.*;
@@ -127,6 +127,10 @@ public class FeatureFileUtils {
     }
 
 
+    public static void main(String [] args) throws IOException {
+        createCanonicalGeneFile(args[0], args[1]);
+    }
+
     /**
      * Create a "canonical" gene file from an annotation UCSC refseq type annotation file.  The "canonical" file
      * represents all the isoforms of a gene as a single feature containing the union of all exons from the
@@ -232,10 +236,6 @@ public class FeatureFileUtils {
             if (br != null) br.close();
             if (pw != null) pw.close();
         }
-    }
-
-    public static void main(String [] args) throws IOException {
-        createTSSFile("/Users/jrobinso/igv/tmp/refGene.txt", "/Users/jrobinso/tss.refSeq.hg19.bed");
     }
 
 

@@ -24,7 +24,7 @@
 package org.broad.igv.sam.reader;
 
 import org.broad.igv.sam.Alignment;
-import org.broad.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.IOException;
 

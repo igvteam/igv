@@ -50,7 +50,7 @@ public class AlignmentPacker {
     public static final int tenMB = 10000000;
 
     /**
-     * Allocates each alignment to the rows such that there is no overlap.
+     * Allocates each alignment to row such that there is no overlap.
      *
      * @param intervalList  The order of this list determines how alignments will be packed
      *                      Each {@code AlignmentInterval} must have alignments sorted by start position
@@ -63,11 +63,9 @@ public class AlignmentPacker {
         if (renderOptions == null) renderOptions = new AlignmentTrack.RenderOptions();
 
         LinkedHashMap<String, List<Row>> packedAlignments = new LinkedHashMap<String, List<Row>>();
+
         boolean pairAlignments = renderOptions.isViewPairs() || renderOptions.isPairedArcView();
 
-//        if (iter == null || !iter.hasNext()) {
-//            return new PackedAlignments(intervalList, packedAlignments, renderOptions);
-//        }
 
         if (renderOptions.groupByOption == null) {
             List<Row> alignmentRows = new ArrayList<Row>(10000);
@@ -113,6 +111,7 @@ public class AlignmentPacker {
             pack(group, pairAlignments, alignmentRows);
             packedAlignments.put("", alignmentRows);
         }
+
         return new PackedAlignments(intervalList, packedAlignments);
     }
 
@@ -145,8 +144,7 @@ public class AlignmentPacker {
         pack(alignmentsList, pairAlignments, alignmentRows);
     }
 
-    private void pack(Map<Integer, List<Alignment>> alignmentsMap, boolean pairAlignments,
-                      List<Row> alignmentRows) {
+    private void pack(Map<Integer, List<Alignment>> alignmentsMap, boolean pairAlignments,  List<Row> alignmentRows) {
 
         List<Integer> indices = new ArrayList<Integer>(alignmentsMap.keySet());
         Collections.sort(indices);
@@ -158,6 +156,7 @@ public class AlignmentPacker {
     }
 
     private void pack(List<List<Alignment>> listAlignmentsList, boolean pairAlignments, List<Row> alignmentRows) {
+
         Map<String, PairedAlignment> pairs = null;
         if (pairAlignments) {
             pairs = new HashMap<String, PairedAlignment>(1000);

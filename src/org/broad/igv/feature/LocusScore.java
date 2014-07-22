@@ -20,7 +20,7 @@ import org.broad.igv.track.WindowFunction;
 /**
  * @author jrobinso
  */
-public interface LocusScore extends org.broad.tribble.Feature {
+public interface LocusScore extends htsjdk.tribble.Feature {
 
     public void setStart(int start);
 

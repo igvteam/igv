@@ -20,7 +20,7 @@ import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import java.io.IOException;

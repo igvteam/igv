@@ -11,17 +11,17 @@
 
 package org.broad.igv.sam.reader;
 
-import net.sf.samtools.SAMFileHeader;
-import net.sf.samtools.SAMFileReader;
-import net.sf.samtools.SAMRecord;
-import net.sf.samtools.SAMSequenceRecord;
-import net.sf.samtools.seekablestream.SeekableStream;
-import net.sf.samtools.util.CloseableIterator;
+import htsjdk.samtools.SAMFileHeader;
+import htsjdk.samtools.SAMFileReader;
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.SAMSequenceRecord;
+import htsjdk.samtools.seekablestream.SeekableStream;
+import htsjdk.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.sam.SamAlignment;
+import org.broad.igv.sam.PicardAlignment;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
@@ -43,7 +43,7 @@ import java.util.Set;
  * Time: 2:21:04 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BAMHttpReader implements AlignmentReader<SamAlignment> {
+public class BAMHttpReader implements AlignmentReader<PicardAlignment> {
 
     static Logger log = Logger.getLogger(BAMHttpReader.class);
 
@@ -118,7 +118,7 @@ public class BAMHttpReader implements AlignmentReader<SamAlignment> {
     }
 
 
-    public CloseableIterator<SamAlignment> iterator() {
+    public CloseableIterator<PicardAlignment> iterator() {
         try {
             if (reader == null) {
                 InputStream is = HttpUtils.getInstance().openConnectionStream(url);
@@ -132,7 +132,7 @@ public class BAMHttpReader implements AlignmentReader<SamAlignment> {
 
     }
 
-    public CloseableIterator<SamAlignment> query(String sequence, int start, int end, boolean contained) {
+    public CloseableIterator<PicardAlignment> query(String sequence, int start, int end, boolean contained) {
         try {
             if (reader == null) {
                 SeekableStream ss = new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(url));

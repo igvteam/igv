@@ -11,17 +11,17 @@
 
 package org.broad.igv.feature.tribble;
 
+import htsjdk.samtools.util.LocationAware;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.variant.vcf.VCFVariant;
-import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureCodec;
-import org.broad.tribble.FeatureCodecHeader;
-import org.broad.tribble.readers.AsciiLineReader;
-import org.broad.tribble.readers.AsciiLineReaderIterator;
-import org.broad.tribble.readers.LocationAware;
-import org.broad.tribble.readers.PositionalBufferedStream;
-import org.broadinstitute.variant.variantcontext.VariantContext;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.FeatureCodec;
+import htsjdk.tribble.FeatureCodecHeader;
+import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.AsciiLineReaderIterator;
+import htsjdk.tribble.readers.PositionalBufferedStream;
+import htsjdk.variant.variantcontext.VariantContext;
 
 import java.io.IOException;
 import java.io.InputStream;

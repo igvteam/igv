@@ -12,7 +12,7 @@
 package org.broad.igv.util;
 
 import junit.framework.TestCase;
-import net.sf.samtools.seekablestream.SeekableHTTPStream;
+import htsjdk.samtools.seekablestream.SeekableHTTPStream;
 import org.broad.igv.util.stream.IGVSeekableHTTPStream;
 import org.broad.igv.util.stream.SeekableServiceStream;
 import org.junit.Test;

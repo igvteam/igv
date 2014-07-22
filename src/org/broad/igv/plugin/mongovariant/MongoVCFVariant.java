@@ -13,8 +13,8 @@ package org.broad.igv.plugin.mongovariant;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.variant.vcf.VCFVariant;
-import org.broadinstitute.sting.gatk.walkers.na12878kb.core.MongoVariantContext;
-import org.broadinstitute.sting.gatk.walkers.na12878kb.core.TruthStatus;
+import org.broadinstitute.gatk.tools.walkers.na12878kb.core.MongoVariantContext;
+import org.broadinstitute.gatk.tools.walkers.na12878kb.core.TruthStatus;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

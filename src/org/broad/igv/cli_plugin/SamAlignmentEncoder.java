@@ -11,12 +11,10 @@
 
 package org.broad.igv.cli_plugin;
 
-import net.sf.samtools.SAMFileHeader;
-import net.sf.samtools.SAMFileWriterImpl;
-import net.sf.samtools.SAMTextWriter;
-import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.SAMWriter;
-import org.broad.igv.sam.SamAlignment;
+import htsjdk.samtools.SAMFileHeader;
+import htsjdk.samtools.SAMFileWriterImpl;
+import htsjdk.samtools.SAMTextWriter;
+import org.broad.igv.sam.PicardAlignment;
 
 import java.io.OutputStream;
 import java.util.Iterator;
@@ -28,14 +26,14 @@ import java.util.Map;
  * @author jacob
  * @since 2012-Sep-27
  */
-public class SamAlignmentEncoder implements FeatureEncoder<SamAlignment> {
+public class SamAlignmentEncoder implements FeatureEncoder<PicardAlignment> {
 
     private boolean headerSet = false;
 
-    public Map<String, Object> encodeAll(OutputStream stream, Iterator<? extends SamAlignment> alignments) {
+    public Map<String, Object> encodeAll(OutputStream stream, Iterator<? extends PicardAlignment> alignments) {
         SAMFileWriterImpl writer = new SAMTextWriter(stream);
         while (alignments.hasNext()) {
-            SamAlignment samAl = alignments.next();
+            PicardAlignment samAl = alignments.next();
             if (!headerSet) {
                 writer.setSortOrder(SAMFileHeader.SortOrder.unsorted, true);
                 writer.setHeader(samAl.getRecord().getHeader());
@@ -47,20 +45,7 @@ public class SamAlignmentEncoder implements FeatureEncoder<SamAlignment> {
         return null;
     }
 
-    private String encode(Alignment feature) {
-        if (feature instanceof SamAlignment) {
-            SamAlignment alignment = (SamAlignment) feature;
-            String out = "";
-            //TODO This is a hack, but in theory should work.
-//            if(!headerWritten){
-//                out = alignment.getRecord().getHeader().getTextHeader() + "\n";
-//                headerWritten = true;
-//            }
-            out += alignment.getRecord().getSAMString();
-            return out;
-        }
-        return SAMWriter.getSAMString(feature);
-    }
+
 
     @Override
     public void setInputs(List<String> commands, Map<Argument, Object> argumentMap, Argument argument) {

@@ -12,7 +12,7 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.track.FeatureSource;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.io.IOException;
 import java.util.Iterator;

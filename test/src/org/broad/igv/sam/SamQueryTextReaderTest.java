@@ -15,7 +15,7 @@
  */
 package org.broad.igv.sam;
 
-import net.sf.samtools.util.CloseableIterator;
+import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
 import org.broad.igv.sam.reader.AlignmentIndexer;
 import org.broad.igv.sam.reader.SAMReader;
@@ -68,7 +68,7 @@ public class SamQueryTextReaderTest {
         // Test posA query that includes overlaps (contained == false)
         boolean contained = false;
         SAMReader reader = new SAMReader(testFile);
-        CloseableIterator<SamAlignment> iter = reader.query(chr, start, end, contained);
+        CloseableIterator<PicardAlignment> iter = reader.query(chr, start, end, contained);
         int count = 0;
         while (iter.hasNext()) {
             Alignment record = iter.next();
@@ -101,7 +101,7 @@ public class SamQueryTextReaderTest {
         // Test posA query that includes overlaps (contained == false)
         boolean contained = false;
         SAMReader reader = new SAMReader(testFile);
-        CloseableIterator<SamAlignment> iter = reader.query(chr, start, end, contained);
+        CloseableIterator<PicardAlignment> iter = reader.query(chr, start, end, contained);
         int count = 0;
         while (iter.hasNext()) {
             Alignment record = iter.next();
@@ -135,7 +135,7 @@ public class SamQueryTextReaderTest {
         // Test posA query that includes overlaps (contained == false)
         boolean contained = false;
         SAMReader reader = new SAMReader(testFile);
-        CloseableIterator<SamAlignment> iter = reader.query(chr, start, end, contained);
+        CloseableIterator<PicardAlignment> iter = reader.query(chr, start, end, contained);
         int count = 0;
         while (iter.hasNext()) {
             Alignment record = iter.next();
@@ -161,7 +161,7 @@ public class SamQueryTextReaderTest {
         boolean contained = false;
 
         SAMReader reader = new SAMReader(testFile);
-        CloseableIterator<SamAlignment> iter = reader.query(chr, start, end, contained);
+        CloseableIterator<PicardAlignment> iter = reader.query(chr, start, end, contained);
         int count = 0;
         while (iter.hasNext()) {
             Alignment record = iter.next();

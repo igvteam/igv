@@ -26,7 +26,7 @@ import org.broad.igv.ui.AbstractHeadedTest;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.TestUtils;
 import org.broad.igv.variant.VariantTrack;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Test;

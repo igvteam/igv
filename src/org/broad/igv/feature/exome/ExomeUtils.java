@@ -5,7 +5,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.ui.IGV;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.util.*;
 

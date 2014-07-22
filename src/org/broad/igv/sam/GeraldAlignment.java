@@ -18,15 +18,28 @@ package org.broad.igv.sam;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
 
+import java.awt.*;
+import java.text.DecimalFormat;
+
 /**
  * @author jrobinso
  */
-public class GeraldAlignment extends AbstractAlignment implements Alignment {
+public class GeraldAlignment implements Alignment {
 
     private boolean passedFilter;
     private String readSequence = null;
     private int start;
     private int end;
+    String chr;
+    int inferredInsertSize;
+    int mappingQuality = 255;  // 255 by default
+    ReadMate mate;
+    String readName;
+    AlignmentBlock[] alignmentBlocks;
+    AlignmentBlock[] insertions;
+    char[] gapTypes;
+    private boolean negativeStrand;
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
 
     public GeraldAlignment(String name) {
         this.readName = name;
@@ -41,6 +54,11 @@ public class GeraldAlignment extends AbstractAlignment implements Alignment {
         this.end = start + reads.length;
     }
 
+    @Override
+    public String getReadName() {
+        return null;
+    }
+
     public String getReadSequence() {
         if (readSequence == null) {
             readSequence = new String(this.alignmentBlocks[0].getBases());
@@ -49,20 +67,127 @@ public class GeraldAlignment extends AbstractAlignment implements Alignment {
     }
 
     @Override
-    public String getValueString(double position, WindowFunction windowFunction) {
-        String str = super.getValueString(position, windowFunction);
-        if (!passedFilter) {
-            str += "<br>--------------<br>" + "FAILED QUALITY FILTERING";
-        }
-        return str;
+    public String getChr() {
+        return null;
     }
+
+    public String getValueString(double position, WindowFunction windowFunction) {
+        StringBuffer buf = null;
+
+        // First check insertions.  Position is zero based, block coords 1 based
+        if (this.insertions != null) {
+            for (AlignmentBlock block : this.insertions) {
+                double insertionLeft = block.getStart() - .25;
+                double insertionRight = block.getStart() + .25;
+                if (position > insertionLeft && position < insertionRight) {
+                    if (block.hasFlowSignals()) {
+                        int offset;
+                        buf = new StringBuffer();
+                        buf.append("Insertion: " + new String(block.getBases()) + "<br>");
+                        buf.append("Base phred quality = ");
+                        for (offset = 0; offset < block.getLength(); offset++) {
+                            byte quality = block.getQuality(offset);
+                            if (0 < offset) {
+                                buf.append(",");
+                            }
+                            buf.append(quality);
+                        }
+                        buf.append("<br>");
+                        for (offset = 0; offset < block.getLength(); offset++) {
+                            byte base = block.getBase(offset);
+                            buf.append((char) base + ": ");
+                        }
+                        buf.append("----------------------"); // NB: no <br> required
+                        return buf.toString();
+                    } else {
+                        return "Insertion: " + new String(block.getBases());
+                    }
+                }
+            }
+        }
+
+        buf = new StringBuffer();
+
+        String sample = getSample();
+        if (sample != null) {
+            buf.append("Sample = " + sample + "<br>");
+        }
+        String readGroup = getReadGroup();
+        if (sample != null) {
+            buf.append("Read group = " + readGroup + "<br>");
+        }
+        buf.append("----------------------" + "<br>");
+
+        int basePosition = (int) position;
+        buf.append("Read name = " + getReadName() + "<br>");
+        buf.append("Location = " + getChr() + ":" + DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
+        buf.append("Alignment start = " + DECIMAL_FORMAT.format(getAlignmentStart() + 1) + " (" + (isNegativeStrand() ? "-" : "+") + ")<br>");
+        buf.append("Cigar = " + getCigarString() + "<br>");
+        buf.append("Mapped = " + (isMapped() ? "yes" : "no") + "<br>");
+        buf.append("Mapping quality = " + getMappingQuality() + "<br>");
+        buf.append("----------------------" + "<br>");
+
+        for (AlignmentBlock block : this.alignmentBlocks) {
+            if (block.contains(basePosition)) {
+                int offset = basePosition - block.getStart();
+                byte base = block.getBase(offset);
+                byte quality = block.getQuality(offset);
+                buf.append("Base = " + (char) base + "<br>");
+                buf.append("Base phred quality = " + quality + "<br>");
+                if (block.hasCounts()) {
+                    buf.append("Count = " + block.getCount(offset) + "<br>");
+                }
+            }
+        }
+
+        if (this.isPaired()) {
+            buf.append("----------------------" + "<br>");
+            buf.append("Mate start = " + getMate().positionString() + "<br>");
+            buf.append("Mate is mapped = " + (getMate().isMapped() ? "yes" : "no") + "<br>");
+            //buf.append("Pair is proper = " + (getProperPairFlag() ? "yes" : "no") + "<br>");
+            if (getChr().equals(getMate().getChr())) {
+                buf.append("Insert size = " + getInferredInsertSize() + "<br>");
+            }
+            if (getPairOrientation().length() > 0) {
+                buf.append("Pair orientation = " + getPairOrientation() + "<br>");
+            }
+        }
+        buf.append("----------------------");
+
+        if (!passedFilter) {
+            buf.append("<br>--------------<br>" + "FAILED QUALITY FILTERING");
+        }
+
+        return buf.toString();
+    }
+
 
     public String getCigarString() {
         return "*";
     }
 
+    @Override
+    public int getInferredInsertSize() {
+        return 0;
+    }
+
+    @Override
+    public int getMappingQuality() {
+        return 0;
+    }
+
+    @Override
+    public ReadMate getMate() {
+        return null;
+    }
+
     public AlignmentBlock[] getInsertions() {
         return insertions;
+    }
+
+    @Override
+    public char[] getGapTypes() {
+        return new char[0];
     }
 
     public boolean isProperPair() {
@@ -71,6 +196,16 @@ public class GeraldAlignment extends AbstractAlignment implements Alignment {
 
     public int getAlignmentStart() {
         return alignmentBlocks[0].getStart();
+    }
+
+    @Override
+    public boolean contains(double location) {
+        return false;
+    }
+
+    @Override
+    public AlignmentBlock[] getAlignmentBlocks() {
+        return new AlignmentBlock[0];
     }
 
     public boolean isDuplicate() {
@@ -103,6 +238,16 @@ public class GeraldAlignment extends AbstractAlignment implements Alignment {
         return end;
     }
 
+    @Override
+    public byte getBase(double position) {
+        return 0;
+    }
+
+    @Override
+    public byte getPhred(double position) {
+        return 0;
+    }
+
     public int getStart() {
         return start;
     }
@@ -119,11 +264,86 @@ public class GeraldAlignment extends AbstractAlignment implements Alignment {
         this.end = end;
     }
 
+
+
+
+    @Override
+
+    public float getScore() {
+        return getMappingQuality();
+    }
+
     public String getSample() {
         return null;
     }
 
-	public boolean isFirstOfPair() {
+    @Override
+    public String getReadGroup() {
+        return null;
+    }
+
+    @Override
+    public Object getAttribute(String key) {
+        return null;
+    }
+
+    @Override
+    public void setMateSequence(String sequence) {
+
+    }
+
+    @Override
+    public String getPairOrientation() {
+        return "";
+    }
+
+    public int getReadLength() {
+        return getReadSequence().length();
+    }
+
+    @Override
+    public boolean isVendorFailedRead() {
+        return false;
+    }
+
+    @Override
+    public Color getColor() {
+        return null;
+    }
+
+    @Override
+    public String getLibrary() {
+        return null;
+    }
+
+    @Override
+
+    public String getClipboardString(double location) {
+        return getValueString(location, null);
+    }
+
+    @Override
+
+    public Strand getReadStrand() {
+        return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
+    }
+
+    @Override
+    public void finish() {
+
+    }
+
+    @Override
+    public boolean isPrimary() {
+        return true;
+    }
+
+    @Override
+    public boolean isSupplementary() {
+        return false;
+    }
+
+    public boolean isFirstOfPair() {
 		return false;
 	}
 
@@ -139,4 +359,24 @@ public class GeraldAlignment extends AbstractAlignment implements Alignment {
        return Strand.NONE;
     }
 
+    @Override
+    public boolean isNegativeStrand() {
+        return negativeStrand;
+    }
+
+    public void setMappingQuality(int mappingQuality) {
+        this.mappingQuality = mappingQuality;
+    }
+
+    public void setNegativeStrand(boolean negativeStrand) {
+        this.negativeStrand = negativeStrand;
+    }
+
+    public void setInferredInsertSize(int inferredInsertSize) {
+        this.inferredInsertSize = inferredInsertSize;
+    }
+
+    public void setMate(ReadMate mate) {
+        this.mate = mate;
+    }
 }

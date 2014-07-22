@@ -2,9 +2,9 @@ package org.broad.igv.feature.tribble;
 
 import org.broad.igv.feature.EncodePeakFeature;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.AsciiFeatureCodec;
-import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureCodec;
+import htsjdk.tribble.AsciiFeatureCodec;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.FeatureCodec;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;

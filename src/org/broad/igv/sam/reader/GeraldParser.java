@@ -15,7 +15,7 @@
  */
 package org.broad.igv.sam.reader;
 
-import net.sf.samtools.SAMRecord;
+import htsjdk.samtools.SAMRecord;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
@@ -23,7 +23,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.AlignmentUtils;
 import org.broad.igv.sam.GeraldAlignment;
 import org.broad.igv.sam.ReadMate;
-import org.broad.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.BufferedReader;
 import java.io.File;

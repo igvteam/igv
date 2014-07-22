@@ -22,7 +22,7 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.DownsampledDoubleArrayList;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
-import org.broad.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.util.HashMap;
 import java.util.HashSet;

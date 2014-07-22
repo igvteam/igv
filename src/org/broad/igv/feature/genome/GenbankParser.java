@@ -4,7 +4,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;

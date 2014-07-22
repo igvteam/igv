@@ -12,9 +12,9 @@
 package org.broad.igv.cli_plugin;
 
 import org.apache.log4j.Logger;
-import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureCodec;
-import org.broad.tribble.readers.PositionalBufferedStream;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.FeatureCodec;
+import htsjdk.tribble.readers.PositionalBufferedStream;
 
 import java.io.IOException;
 import java.io.InputStream;

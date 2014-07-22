@@ -14,7 +14,7 @@ package org.broad.igv.feature.tribble.reader;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.AbstractFeatureReader;
+import htsjdk.tribble.AbstractFeatureReader;
 
 import java.io.IOException;
 import java.net.URL;

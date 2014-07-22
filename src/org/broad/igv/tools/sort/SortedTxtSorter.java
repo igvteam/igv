@@ -18,7 +18,7 @@
 
 package org.broad.igv.tools.sort;
 
-import org.broad.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.File;
 import java.io.PrintWriter;

@@ -16,9 +16,9 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.TestUtils;
-import org.broad.tribble.AbstractFeatureReader;
-import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureCodec;
+import htsjdk.tribble.AbstractFeatureReader;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.FeatureCodec;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

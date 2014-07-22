@@ -11,7 +11,7 @@
 
 package org.broad.igv.cli_plugin;
 
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.io.IOException;
 import java.io.OutputStream;

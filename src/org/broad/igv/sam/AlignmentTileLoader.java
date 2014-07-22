@@ -11,8 +11,8 @@
 
 package org.broad.igv.sam;
 
-import net.sf.samtools.SAMFileHeader;
-import net.sf.samtools.util.CloseableIterator;
+import htsjdk.samtools.SAMFileHeader;
+import htsjdk.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -297,7 +297,6 @@ public class AlignmentTileLoader {
         private List<Alignment> alignments;
         private List<DownsampledInterval> downsampledIntervals;
         private SpliceJunctionHelper spliceJunctionHelper;
-        private boolean isPairedEnd;
 
         private static final Random RAND = new Random();
 
@@ -374,7 +373,6 @@ public class AlignmentTileLoader {
         public void addRecord(Alignment alignment) {
 
             counts.incCounts(alignment);
-            isPairedEnd |= alignment.isPaired();
 
             if (spliceJunctionHelper != null) {
                 spliceJunctionHelper.addAlignment(alignment);

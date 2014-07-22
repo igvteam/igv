@@ -19,7 +19,7 @@ import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.IndefiniteProgressMonitor;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.io.IOException;
 import java.util.Iterator;

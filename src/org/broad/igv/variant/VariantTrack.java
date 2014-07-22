@@ -28,8 +28,8 @@ import org.broad.igv.ui.event.TrackGroupEventListener;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
-import org.broad.tribble.Feature;
-import org.broadinstitute.variant.variantcontext.GenotypeType;
+import htsjdk.tribble.Feature;
+import htsjdk.variant.variantcontext.GenotypeType;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
@@ -196,9 +196,9 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         }
 
         // If sample->bam list file is supplied enable vcfToBamMode.
-        String bamListPath = path != null ? path + ".mapping" : null;
-        if (ParsingUtils.pathExists(bamListPath)) {
-            loadAlignmentMappings(bamListPath);
+        String vcfToBamMapping = path != null ? path + ".mapping" : null;
+        if (ParsingUtils.pathExists(vcfToBamMapping)) {
+            loadAlignmentMappings(vcfToBamMapping);
         }
 
         // Set visibility window.  These values are appropriate for human dbsnp/1kg files, probably conservative otherwise

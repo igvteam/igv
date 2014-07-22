@@ -12,7 +12,7 @@
 package org.broad.igv.util.stream;
 
 
-import net.sf.samtools.seekablestream.SeekableStream;
+import htsjdk.samtools.seekablestream.SeekableStream;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -26,7 +26,7 @@ import java.io.IOException;
  * @deprecated Should no longer be necessary since tribble and picard were merged
  */
 @Deprecated
-public class SeekablePicardStream extends net.sf.samtools.seekablestream.SeekableStream {
+public class SeekablePicardStream extends htsjdk.samtools.seekablestream.SeekableStream {
 
     public static final int DEFAULT_BUFFER_SIZE = 1024000;
 

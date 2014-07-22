@@ -20,10 +20,10 @@ import org.broad.igv.sam.reader.AlignmentIndexer;
 import org.broad.igv.sam.reader.FeatureIndex;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.FeatureCodec;
-import org.broad.tribble.TribbleException;
-import org.broad.tribble.index.Index;
-import org.broad.tribble.index.IndexFactory;
+import htsjdk.tribble.FeatureCodec;
+import htsjdk.tribble.TribbleException;
+import htsjdk.tribble.index.Index;
+import htsjdk.tribble.index.IndexFactory;
 
 import java.awt.*;
 import java.awt.event.*;

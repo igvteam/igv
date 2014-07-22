@@ -11,17 +11,14 @@
 
 package org.broad.igv.sam.reader;
 
-import net.sf.samtools.SAMFileHeader;
-import net.sf.samtools.SAMFileReader;
-import net.sf.samtools.SAMRecord;
-import net.sf.samtools.SAMTextHeaderCodec;
-import net.sf.samtools.util.BufferedLineReader;
-import net.sf.samtools.util.CloseableIterator;
-import net.sf.samtools.util.LineReader;
+import htsjdk.samtools.*;
+import htsjdk.samtools.util.BufferedLineReader;
+import htsjdk.samtools.util.CloseableIterator;
+import htsjdk.samtools.util.LineReader;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.SamAlignment;
+import org.broad.igv.sam.PicardAlignment;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.*;
@@ -155,13 +152,13 @@ public class CGIAlignmentReader implements AlignmentReader {
         return header;
     }
 
-    public CloseableIterator<SamAlignment> iterator() {
+    public CloseableIterator<PicardAlignment> iterator() {
         try {
             URL url = new URL(getQueryURL());
             InputStream is = HttpUtils.getInstance().openConnectionStream(url);
 
             SAMFileReader reader = new SAMFileReader(new BufferedInputStream(is, 500000));
-            reader.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+            reader.setValidationStringency(ValidationStringency.SILENT);
             CloseableIterator<SAMRecord> iter = reader.iterator();
             return new SAMQueryIterator(iter);
         } catch (IOException e) {
@@ -170,7 +167,7 @@ public class CGIAlignmentReader implements AlignmentReader {
         }
     }
 
-    public CloseableIterator<SamAlignment> query(String sequence, int start, int end, boolean contained) throws IOException {
+    public CloseableIterator<PicardAlignment> query(String sequence, int start, int end, boolean contained) throws IOException {
         try {
             //
             final String parameters = "&chr=" + sequence + "&start=" + start + "&end=" + end +
@@ -180,7 +177,7 @@ public class CGIAlignmentReader implements AlignmentReader {
             InputStream is = HttpUtils.getInstance().openConnectionStream(url);
 
             SAMFileReader reader = new SAMFileReader(new BufferedInputStream(is, 500000));
-            reader.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+            reader.setValidationStringency(ValidationStringency.SILENT);
             CloseableIterator<SAMRecord> iter = reader.iterator();
             return new SAMQueryIterator(sequence, start, end, contained, iter);
 
@@ -200,7 +197,7 @@ public class CGIAlignmentReader implements AlignmentReader {
         String chr = "gi|66043271|ref|NC_007005.1|";
         int start = 800;
         int end = 900;
-        CloseableIterator<SamAlignment> iter = reader.query(chr, start, end, false);
+        CloseableIterator<PicardAlignment> iter = reader.query(chr, start, end, false);
         while (iter.hasNext()) {
             Alignment a = iter.next();
             System.out.println(a);

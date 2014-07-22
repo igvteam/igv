@@ -19,7 +19,7 @@ import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.StringUtils;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.io.*;
 import java.util.*;

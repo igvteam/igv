@@ -1,0 +1,2995 @@
+{
+ "reads": [
+  {
+   "id": "",
+   "name": "SRR062634.3899514",
+   "readsetId": "",
+   "flags": 121,
+   "referenceSequenceName": "1",
+   "position": 70230915,
+   "mappingQuality": 37,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70230915,
+   "templateLength": 0,
+   "originalBases": "AATTGACTTTCCTTAGGCCACATGGCATGTTAGAGTCCTATCCAAAATTATTACCAAAGACTATGTATTAGGAAAGGAGAGGTTATGCTGCAGTAAAAAC",
+   "alignedBases": "AATTGACTTTCCTTAGGCCACATGGCATGTTAGAGTCCTATCCAAAATTATTACCAAAGACTATGTATTAGGAAAGGAGAGGTTATGCTGCAGTAAAAAC",
+   "baseQuality": "@ABD?DB?AEDHGILIEFKKDCFDE;\u003eKGFGKHKIEICBHHDJHQGPHFHH?CHHKGIFAFDFIFPJQDRRPPPFRQRQRQPQCPRDIQFCGHHID@@A/",
+   "tags": {
+    "AM": [
+     "0"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062634"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062635.6496865",
+   "readsetId": "",
+   "flags": 99,
+   "referenceSequenceName": "1",
+   "position": 70230918,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70230996,
+   "templateLength": 177,
+   "originalBases": "TGACTTTCCTTAGGCCACATGGCATGTTAGAGTCCTATCCAAAATTATTACCAAAGACTATGTATTAGGAAAGGAGAGGTTATGCTGCAGTAAAAACAAA",
+   "alignedBases": "TGACTTTCCTTAGGCCACATGGCATGTTAGAGTCCTATCCAAAATTATTACCAAAGACTATGTATTAGGAAAGGAGAGGTTATGCTGCAGTAAAAACAAA",
+   "baseQuality": "0KLLPOOPQRPOQRQQRPQPQRQRPQPPPRQQPQRRPPQRRRRQPQKPPPQRRQHRIQRGHRFGLQLMRIJJRRIIJRJJQHPNILRQKEHCIHGFGFD@",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@AB@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062635"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062634.15001580",
+   "readsetId": "",
+   "flags": 163,
+   "referenceSequenceName": "1",
+   "position": 70230920,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231026,
+   "templateLength": 200,
+   "originalBases": "ACTTTCCTTAGGCCACATGGCATGTTAGAGTCCTATCCAAAATTATTACCAAAGACTATGTATTAGGAAAGGAGAGGTTATGCTGCAGTAAAAACAAATC",
+   "alignedBases": "ACTTTCCTTAGGCCACATGGCATGTTAGAGTCCTATCCAAAATTATTACCAAAGACTATGTATTAGGAAAGGAGAGGTTATGCTGCAGTAAAAACAAATC",
+   "baseQuality": "0JMCDNHPNNIPEPQOQDQQDKOQPPDDQQPPJRCPQ?HQQ?JP@QGFF9JD=GCQMPPGLKLL@5C?\u003eBDIDGEMNJAPL\u003eH=I?HEEF1AE@\u003eF@BBB",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062634"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.22431631",
+   "readsetId": "",
+   "flags": 147,
+   "referenceSequenceName": "1",
+   "position": 70230925,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70230855,
+   "templateLength": -169,
+   "originalBases": "CCTTAGGCCACATGGCATGTTAGAGTCCTATCCAAAATTATTACCAAAGACTATGTATTAGGAAAGGAGAGGTTATGCTGCAGTAAAAACAAATCAGAAT",
+   "alignedBases": "CCTTAGGCCACATGGCATGTTAGAGTCCTATCCAAAATTATTACCAAAGACTATGTATTAGGAAAGGAGAGGTTATGCTGCAGTAAAAACAAATCAGAAT",
+   "baseQuality": "KJEAMMMHOOPLRSJQHRPRPSQSLMRMLMQHIQIPPIPQRPQSRPPSQQREPMPPPQPSRPKPSQPRPRQPQPPQQQQQQRPOOOOOOFNDNOOOMLF0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "IE@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.20183001",
+   "readsetId": "",
+   "flags": 147,
+   "referenceSequenceName": "1",
+   "position": 70230944,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70230870,
+   "templateLength": -173,
+   "originalBases": "TTAGAGTCCTATCCAAAATTATTACCAAAGACTATGTATTAGGAAAGGAGAGGTTATGCTGCAGTAAAAACAAATCAGAATCTCAGTGGATAACTGAACA",
+   "alignedBases": "TTAGAGTCCTATCCAAAATTATTACCAAAGACTATGTATTAGGAAAGGAGAGGTTATGCTGCAGTAAAAACAAATCAGAATCTCAGTGGATAACTGAACA",
+   "baseQuality": "CEDFGGFEAC@BNNKMIPNFPNDQSEPQSQIR\u003cQNGBHE\u003cSFQHLSRQJQSRPQPPRQRRLKRPPPPPPPQPPFKQRPPPJQEQRIQPOONNNOOMLLL0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "A@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.24947881",
+   "readsetId": "",
+   "flags": 83,
+   "referenceSequenceName": "1",
+   "position": 70230946,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70230849,
+   "templateLength": -196,
+   "originalBases": "AGAGTCCTATCCAAAATTATTACCAAAGACTATGTATTAGGAAAGGAGAGGTTATGCTGCAGTAAAAACAAATCAGAATCTCAGTGGATAACTGAACAGA",
+   "alignedBases": "AGAGTCCTATCCAAAATTATTACCAAAGACTATGTATTAGGAAAGGAGAGGTTATGCTGCAGTAAAAACAAATCAGAATCTCAGTGGATAACTGAACAGA",
+   "baseQuality": "ECFBBJCIHIDJIJDPGPQRMKNNNMS?KMLQRQQLIPNSQQQSRKSQNIPRPFRHRRRRRPPQPPPPRPPPKQSQPP@QQQRPRJPPOPPQQPOFFMJ0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.23804629",
+   "readsetId": "",
+   "flags": 83,
+   "referenceSequenceName": "1",
+   "position": 70230957,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70230880,
+   "templateLength": -176,
+   "originalBases": "CAAAATTATTACCAAAGACTATGTATTAGGAAAGGAGAGGTTATGCTGCAGTAAAAACAAATCAGAATCTCAGTGGATAACTGAACAGAAATTTTGCTTT",
+   "alignedBases": "CAAAATTATTACCAAAGACTATGTATTAGGAAAGGAGAGGTTATGCTGCAGTAAAAACAAATCAGAATCTCAGTGGATAACTGAACAGAAATTTTGCTTT",
+   "baseQuality": "#BC?ACCD9DF6KNNKCBC;HHBIEN:S=QMMJJFN\u003eSRENHQRELCFBND?\u003eB\u003eGCIGGFQLMQLF\u003eKGALBLJ=JDJKDRPPPQRIPDOPQDQ;8LK0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@NP@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062634.17863595",
+   "readsetId": "",
+   "flags": 99,
+   "referenceSequenceName": "1",
+   "position": 70230984,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231070,
+   "templateLength": 185,
+   "originalBases": "TGGAAAGGAGAGGTTATGCTGCAGTAAAAACAAATCAGAATCTCAGTGGATAACTGAACAGAAATTTTGCTTTTTGTCCATTAGTGCTGGCAGGGACCAC",
+   "alignedBases": "TGGAAAGGAGAGGTTATGCTGCAGTAAAAACAAATCAGAATCTCAGTGGATAACTGAACAGAAATTTTGCTTTTTGTCCATTAGTGCTGGCAGGGACCAC",
+   "baseQuality": "0KMMOPIQPIPQQMPOPQQRQQRQPIQQQQPLQGPQRQQQPQRQRRIRRLQPMPRRHRQRR=IEPQMAMQSPPIMRKHJKIMIEFKIKF@IHE\u003c@D?@;;",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@LH@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "0A99"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "1"
+    ],
+    "RG": [
+     "SRR062634"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062635.6496865",
+   "readsetId": "",
+   "flags": 147,
+   "referenceSequenceName": "1",
+   "position": 70230996,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70230918,
+   "templateLength": -177,
+   "originalBases": "GTTATGCTGCAGTAAAAACAAATCAGAATCTCAGTGGATAACTGAACAGAAATTTTGCTTTTTGTCCATTAGTGCTGGCAGGGACCACTGCTCTTCACGA",
+   "alignedBases": "GTTATGCTGCAGTAAAAACAAATCAGAATCTCAGTGGATAACTGAACAGAAATTTTGCTTTTTGTCCATTAGTGCTGGCAGGGACCACTGCTCTTCACGA",
+   "baseQuality": "BDCFGEEHHJMHIIIDHFRIDHDKKGMHCMHJSLKRGPKMLLRQPILRQLPKQMHRLQGQQQGPQGQPKJRPQQQQQQQRQQPPQPOPPIPEIONILCK0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062635"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062634.6574736",
+   "readsetId": "",
+   "flags": 163,
+   "referenceSequenceName": "1",
+   "position": 70231022,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231120,
+   "templateLength": 197,
+   "originalBases": "AATCTCAGTGGATAACTGAACAGAAATTTTGCTTTTTGTCCATTAGTGCTGGCAGGGACCACTGCTCTTCACGAGCCCATCCTAACAAGTAGTTCAACTT",
+   "alignedBases": "AATCTCAGTGGATAACTGAACAGAAATTTTGCTTTTTGTCCATTAGTGCTGGCAGGGACCACTGCTCTTCACGAGCCCATCCTAACAAGTAGTTCAACTT",
+   "baseQuality": "0LKMONJHIOPOOOJOQQPQPQPPQKPPPPQQRJPPPQHPRRFKJRIQQILRQEQRR\u003eGRJLJIHEGFHKNH=EBRGINCLA@GFII9D\u003eBB\u003eA?CBBD@",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@G@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@FE"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062634"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062634.15001580",
+   "readsetId": "",
+   "flags": 83,
+   "referenceSequenceName": "1",
+   "position": 70231026,
+   "mappingQuality": 60,
+   "cigar": "5S95M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70230920,
+   "templateLength": -200,
+   "originalBases": "GAATCTCAGTGGATAACTGAACAGAAATTTTGCTTTTTGTCCATTAGTGCTGGCAGGGACCACTGCTCTTCACGAGCCCATCCTAACAAGTAGTTCAACT",
+   "alignedBases": "TCAGTGGATAACTGAACAGAAATTTTGCTTTTTGTCCATTAGTGCTGGCAGGGACCACTGCTCTTCACGAGCCCATCCTAACAAGTAGTTCAACT",
+   "baseQuality": "######CE\u003eD0GEEJEEDDFEAICC?H?JJJ@HJJEEJ9HIMHIHJHRIHJLFHGH@BAHK\u003eDLDQKFQQKPAQRQRFQPJRQHPP=PROOQOPPOLDK0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "95"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062634"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XC": [
+     "95"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062634.17863595",
+   "readsetId": "",
+   "flags": 147,
+   "referenceSequenceName": "1",
+   "position": 70231070,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70230984,
+   "templateLength": -185,
+   "originalBases": "CTGGCAGGGACCACTGCTCTTCACGAGCCCATCCTAACAAGTAGTTCAACTTTCCACCCAATGCAGAATCATATGCTTATTATTTCTCTTGCAATGGTCA",
+   "alignedBases": "CTGGCAGGGACCACTGCTCTTCACGAGCCCATCCTAACAAGTAGTTCAACTTTCCACCCAATGCAGAATCATATGCTTATTATTTCTCTTGCAATGGTCA",
+   "baseQuality": "BDCCE\u003e?G=BIJHIKAFFIKFJE@LJMIIEGIILPGIDQRGPSKRKILLFCQHRLPLRQPPCGQRIPPQQPOPQKQQIPKOPFPPIPPPPOFNNOELLL0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062634"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062634.6574736",
+   "readsetId": "",
+   "flags": 83,
+   "referenceSequenceName": "1",
+   "position": 70231120,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231022,
+   "templateLength": -197,
+   "originalBases": "TTTCCACCCAATGCAGAATCATATGCTTATTATTTCTCTTGCAATGGTCACCCAAGCTCTTTGTGAATATTTTTAGCAATGGAAAAAAATCACTAATTTA",
+   "alignedBases": "TTTCCACCCAATGCAGAATCATATGCTTATTATTTCTCTTGCAATGGTCACCCAAGCTCTTTGTGAATATTTTTAGCAATGGAAAAAAATCACTAATTTA",
+   "baseQuality": "ACACCA?HHIDGJKKPIMRQPBIRIQQPLRCMERJQQMIJMRHLSQBLRIRGRGMLQBQHQRPRQPPPPLQQQPRQQPPRQHPJPPDPPPIF=HINMLI0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@A@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062634"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.1118435",
+   "readsetId": "",
+   "flags": 99,
+   "referenceSequenceName": "1",
+   "position": 70231264,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231310,
+   "templateLength": 145,
+   "originalBases": "ACTCTGTAATATGTTAATGATGTTTGCCTATTTCCATCCATCTATCTATCCATTCAACACTTGGCTAGGAGCTCAGGGTGATACAAATTATTAAGGTATG",
+   "alignedBases": "ACTCTGTAATATGTTAATGATGTTTGCCTATTTCCATCCATCTATCTATCCATTCAACACTTGGCTAGGAGCTCAGGGTGATACAAATTATTAAGGTATG",
+   "baseQuality": "0JMMQPPOPOOPQPPPFIQJPRPPPRKRSPPPPQLMQQRGPQSPPQSPLQMDHMQDECFGSQMNQN?RRHIHKHKJC?HJGJF?DEFD6DGEDD@D8AAB",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "11C88"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "1"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.1118435",
+   "readsetId": "",
+   "flags": 147,
+   "referenceSequenceName": "1",
+   "position": 70231310,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231264,
+   "templateLength": -145,
+   "originalBases": "TATCCATTCAACACTTGGCTAGGAGCTCAGGGTGATACAAATTATTAAGGTATGCCTTCACTGAACAAGAAACTATGCATTCATCGTCACTGTCTTAATC",
+   "alignedBases": "TATCCATTCAACACTTGGCTAGGAGCTCAGGGTGATACAAATTATTAAGGTATGCCTTCACTGAACAAGAAACTATGCATTCATCGTCACTGTCTTAATC",
+   "baseQuality": "BD:FHDCEHDMJCILKC;IPKMLONHIMKNIQRQQPJRQQPRKQRPMSMQPKRQMQQQLHQLQKQQPRPPPGQPPQQQPKPQPJGOPPOPPNEOOMLKK0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.9471771",
+   "readsetId": "",
+   "flags": 163,
+   "referenceSequenceName": "1",
+   "position": 70231404,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231478,
+   "templateLength": 173,
+   "originalBases": "TTAATCCTTCAAATATTTTTAAAAACTCAGGTACTTGCTTAAGGGTTCTCCTTTCTAAGACAAGTTTCCAACTTCTCTTGACTATTTTTCAGACATGCTA",
+   "alignedBases": "TTAATCCTTCAAATATTTTTAAAAACTCAGGTACTTGCTTAAGGGTTCTCCTTTCTAAGACAAGTTTCCAACTTCTCTTGACTATTTTTCAGACATGCTA",
+   "baseQuality": "0KKMMNOQNOPPPOOOPPPPPQQQQPRQRQRGPPRPQKRPPQRRRIPQSQRSQPQSPMRQKRRRIHQQRJIQKPQSQRMHJPLGPQIPH9@EECGEEDEB",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@F@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "96T3"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "1"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062635.2371279",
+   "readsetId": "",
+   "flags": 99,
+   "referenceSequenceName": "1",
+   "position": 70231410,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231472,
+   "templateLength": 161,
+   "originalBases": "CTTCAAATATTTTTAAAAACTCAGGTACTTGCTTAAGGGTTCTCCTTTCTAAGACAAGTTTCCAACTTCTCTTGACTATTTTTCAGACATGCTATCTAGA",
+   "alignedBases": "CTTCAAATATTTTTAAAAACTCAGGTACTTGCTTAAGGGTTCTCCTTTCTAAGACAAGTTTCCAACTTCTCTTGACTATTTTTCAGACATGCTATCTAGA",
+   "baseQuality": "0LKMPPPOOOPPPPOQQQQPRQRQRHPPRPQQRPPHQMMHQQSQRSQPQRPRFHPRRRJPMQRJEHKMPKRNIDIIODIHJIIHGAGEHCFHGCDBD=BB",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "90T9"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "1"
+    ],
+    "RG": [
+     "SRR062635"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062634.9958151",
+   "readsetId": "",
+   "flags": 99,
+   "referenceSequenceName": "1",
+   "position": 70231446,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231528,
+   "templateLength": 181,
+   "originalBases": "GGGTTCTCCTTTCTAAGACAAGTTTCCAACTTCTCTTGACTATTTTTCAGACATGCTATCTAGACTCCTAACCATCATAGTTACTTTCTTCTGCACAGAT",
+   "alignedBases": "GGGTTCTCCTTTCTAAGACAAGTTTCCAACTTCTCTTGACTATTTTTCAGACATGCTATCTAGACTCCTAACCATCATAGTTACTTTCTTCTGCACAGAT",
+   "baseQuality": "0EMLNOQPQRPPPOPQQQPRKQGDPQQRQPRPQRPRPGQPSPPPPQPQRLRQRFMMJKQKKLHIPKQRSGRIQRHCLIDEKIIPKJIPKGOPGLMEGBAA",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@CH@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@C"
+    ],
+    "MD": [
+     "54T45"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "1"
+    ],
+    "RG": [
+     "SRR062634"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.7756249",
+   "readsetId": "",
+   "flags": 163,
+   "referenceSequenceName": "1",
+   "position": 70231451,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231530,
+   "templateLength": 178,
+   "originalBases": "CTCCTTTCTAAGACAAGTTTCCAACTTCTCTTGACTATTTTTCAGACATGCTATCTAGACTCCTAACCATCATAGTTACTTTCTTCTGCACAGATTGCAG",
+   "alignedBases": "CTCCTTTCTAAGACAAGTTTCCAACTTCTCTTGACTATTTTTCAGACATGCTATCTAGACTCCTAACCATCATAGTTACTTTCTTCTGCACAGATTGCAG",
+   "baseQuality": "0D@\u003cJII\u003cKHEDBEHFDJJJIJLKIHFEHFLKK=CB\u003c?@\u003eK?FMGLKM@LBHKLKN8AGDEEIE\u003cNEJ@MHGLCLKNLLNIMGOMIGJ\u003eGHCFCAEH?CD",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "49T50"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "1"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.20017211",
+   "readsetId": "",
+   "flags": 99,
+   "referenceSequenceName": "1",
+   "position": 70231463,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231543,
+   "templateLength": 179,
+   "originalBases": "ACAAGTTTCCAACTTCTCTTGACTATTTTTCAGACATGCTATCTAGACTCCTAACCATCATAGTTACTTTCTTCTGCACAGATTGCAGTTGTTAGCTTGG",
+   "alignedBases": "ACAAGTTTCCAACTTCTCTTGACTATTTTTCAGACATGCTATCTAGACTCCTAACCATCATAGTTACTTTCTTCTGCACAGATTGCAGTTGTTAGCTTGG",
+   "baseQuality": "/CFFHFOCPQQKPRDPRPKPGQPSP\u003ePQQPJMRQCRQRLIPQQSEGCKJLSSHNKRRQQRC\u003cIEHLQEIPQLPQSFNLGFJEFFFJLEGEEG\u003cB@B?B3B",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "37T62"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "1"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062635.2371279",
+   "readsetId": "",
+   "flags": 147,
+   "referenceSequenceName": "1",
+   "position": 70231472,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231410,
+   "templateLength": -161,
+   "originalBases": "CAACTTCTCTTGACTATTTTTCAGACATGCTATCTAGACTCCTAACCATCATAGTTACTTTCTCCTGCACAGATTGCAGTTGTTAGCTTGGTTTTAGATA",
+   "alignedBases": "CAACTTCTCTTGACTATTTTTCAGACATGCTATCTAGACTCCTAACCATCATAGTTACTTTCTCCTGCACAGATTGCAGTTGTTAGCTTGGTTTTAGATA",
+   "baseQuality": "GIEDEHLMOIGPKRQHQQNKMHKLJRPRRRPLQRKRQIRQRQKGIRQPQRPPRPQPHQLQPQFRQRQQPQRPPQQQQRPQQOQIQPPPPPNOOOMOLKJ0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "B@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "28T34T36"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "2"
+    ],
+    "RG": [
+     "SRR062635"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062634.2605723",
+   "readsetId": "",
+   "flags": 163,
+   "referenceSequenceName": "1",
+   "position": 70231476,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231585,
+   "templateLength": 208,
+   "originalBases": "TTCTCTTGACTATTTTTCAGACATGCTATCTAGACTCCTAACCATCATAGTTACTTTCTCCTGCACAGATTGCAGTTGTTAGCTTGGTTTTAGATATTGC",
+   "alignedBases": "TTCTCTTGACTATTTTTCAGACATGCTATCTAGACTCCTAACCATCATAGTTACTTTCTCCTGCACAGATTGCAGTTGTTAGCTTGGTTTTAGATATTGC",
+   "baseQuality": "0C8FAG?FEAGDDEEEDBHE\u003cEHEGFHEFEHEFGFHE?GE=DHIFFIG=F@GEDIGGGHFIJIHJHKH?GIJCDHB@EBEBI@B?IJA??C?CDADACDC",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "24T34T40"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "2"
+    ],
+    "RG": [
+     "SRR062634"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.9471771",
+   "readsetId": "",
+   "flags": 83,
+   "referenceSequenceName": "1",
+   "position": 70231478,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231404,
+   "templateLength": -173,
+   "originalBases": "CTCTTGACTATTTTTCAGACATGCTATCTAGACTCCTAACCATCATAGTTACTTTCTCCTGCACAGATTGCAGTTGTTAGCTTGGTTTTAGATATTGCAT",
+   "alignedBases": "CTCTTGACTATTTTTCAGACATGCTATCTAGACTCCTAACCATCATAGTTACTTTCTCCTGCACAGATTGCAGTTGTTAGCTTGGTTTTAGATATTGCAT",
+   "baseQuality": "CBCBCDDBBIHIJKJJLIKKPLJJIHJIILHFMFJMDMGJQPIJQBSLHHIRHHHKGRRMQRHRSJPLRKRSPQRPQPSQQQRRPQQQORPOOOPPNLJ0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "22T34T42"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "2"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062635.2089613",
+   "readsetId": "",
+   "flags": 163,
+   "referenceSequenceName": "1",
+   "position": 70231506,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231609,
+   "templateLength": 202,
+   "originalBases": "TAGACTCCTAACCATCATAGTTACTTTCTCCTGCACAGATTGCAGTTGTTAGCTTGGTTTTAGATATTGCATTATCAAATAAAAATATTTATCCAAGTGA",
+   "alignedBases": "TAGACTCCTAACCATCATAGTTACTTTCTCCTGCACAGATTGCAGTTGTTAGCTTGGTTTTAGATATTGCATTATCAAATAAAAATATTTATCCAAGTGA",
+   "baseQuality": "0JMHMPBOPDPNPQOPQOOQPPOORPJPRIKRHQRPHKGFPQQRQPGQPPPRQMLRMIPGCFHGLPLHMQKLPHPHRRNPPRQQI?LPOHNJMFLLLEGG",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@I"
+    ],
+    "MD": [
+     "29T70"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "1"
+    ],
+    "RG": [
+     "SRR062635"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.2735292",
+   "readsetId": "",
+   "flags": 99,
+   "referenceSequenceName": "1",
+   "position": 70231514,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231575,
+   "templateLength": 160,
+   "originalBases": "TAACCATCATAGTTACTTTCTCCTGCACAGATTGCAGTTGTTAGCTTGGTTTTAGATATTGCATTATCAAATAAAAATATTTATCCAAGTGAAAGTACTC",
+   "alignedBases": "TAACCATCATAGTTACTTTCTCCTGCACAGATTGCAGTTGTTAGCTTGGTTTTAGATATTGCATTATCAAATAAAAATATTTATCCAAGTGAAAGTACTC",
+   "baseQuality": "0JLLPQOPQOOQPPPPRPPQRQRSRRRJRRQPPQQRRQPQQLPRQSQRNIQQHPRRLPPPRRNPPQQLKRRQPRIROMMPIQPPLKLJIHJHGFEDDCFB",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@D"
+    ],
+    "MD": [
+     "21T78"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "1"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062634.9958151",
+   "readsetId": "",
+   "flags": 147,
+   "referenceSequenceName": "1",
+   "position": 70231528,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231446,
+   "templateLength": -181,
+   "originalBases": "ACTTTCTTCTGCACAGATTGCAGTTGTTAGCTTGGTTTTAGATATTGCATTATCAAATAAAAATATTTATCCAAGTGAAAGTACTCCAAAAAGCAATAAA",
+   "alignedBases": "ACTTTCTTCTGCACAGATTGCAGTTGTTAGCTTGGTTTTAGATATTGCATTATCAAATAAAAATATTTATCCAAGTGAAAGTACTCCAAAAAGCAATAAA",
+   "baseQuality": "DFHFHLMHOPPQIMOPPQRRMRQJRPRLSRQQKRQQQIPRQLPPRRRQPRPPQHQPPJKPPPPJPQQOPQEQPRPQPOPROOIPPEPOONNPOOMMLKJ0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@FH@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062634"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.7756249",
+   "readsetId": "",
+   "flags": 83,
+   "referenceSequenceName": "1",
+   "position": 70231530,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231451,
+   "templateLength": -178,
+   "originalBases": "TTTCTTCTGCACAGATTGCAGTTGTTAGCTTGGTTTTAGATATTGCATTATCAAATAAAAATATTTATCCAAGTGAAAGTACTCCAAAAAGCAATAAACA",
+   "alignedBases": "TTTCTTCTGCACAGATTGCAGTTGTTAGCTTGGTTTTAGATATTGCATTATCAAATAAAAATATTTATCCAAGTGAAAGTACTCCAAAAAGCAATAAACA",
+   "baseQuality": "47?@;@B@?EBFGBE1E8GLHAHIAHKDIBD\u003cFAFIAEHIGH\u003eKIMH=GLMILHL\u003c?GGGF@CBGFFA=HFI=BBEEHBEG:\u003cCDD@DDE;\u003e\u003cBC\u003c9\u003cA/",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.20017211",
+   "readsetId": "",
+   "flags": 147,
+   "referenceSequenceName": "1",
+   "position": 70231543,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231463,
+   "templateLength": -179,
+   "originalBases": "GATTGCAGTTGTTAGCTTGGTTTTAGATATTGCATTATCAAATAAAAATATTTATCCAAGTGAAAGTACTCCAAAAAGCAATAAACAAAATGTAATCAAA",
+   "alignedBases": "GATTGCAGTTGTTAGCTTGGTTTTAGATATTGCATTATCAAATAAAAATATTTATCCAAGTGAAAGTACTCCAAAAAGCAATAAACAAAATGTAATCAAA",
+   "baseQuality": "BIDFEIBFIKKPPONQNRRLINCIGQPCQRRMRQNPGHRQGQGQQPPLKQMMPKQRQPRPRPPPSPPAKKRFPPPPRQQPPO:PJQOOOOANHNNNMLK0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@GI@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.20308800",
+   "readsetId": "",
+   "flags": 99,
+   "referenceSequenceName": "1",
+   "position": 70231558,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231651,
+   "templateLength": 192,
+   "originalBases": "CTTGGTTTTAGATATTGCATTATCAAATAAAAATATTTATCCAAGTGAAAGTACTCCAAAAAGCAATAAACAAAATGTAATCAAACTCAGGAGAGGAGTC",
+   "alignedBases": "CTTGGTTTTAGATATTGCATTATCAAATAAAAATATTTATCCAAGTGAAAGTACTCCAAAAAGCAATAAACAAAATGTAATCAAACTCAGGAGAGGAGTC",
+   "baseQuality": "0LKNPOOPOOQQPPPPQQRPPPPQRRQPPRRQQPPPQQPPQRRRQLRRRQRQQQNQRRRQRRRQJNQLRRQSRRCQJMOQQQLOQPDPQMPFN?LMEKEB",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.2735292",
+   "readsetId": "",
+   "flags": 147,
+   "referenceSequenceName": "1",
+   "position": 70231575,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231514,
+   "templateLength": -160,
+   "originalBases": "CATTATCAAATAAAAATATTTATCCAAGTGAAAGTACTCCAAAAAGCAATAAACAAAATGTAATCAAACTCAGGAGAGGAGTCATAGTTGGAGACAGATA",
+   "alignedBases": "CATTATCAAATAAAAATATTTATCCAAGTGAAAGTACTCCAAAAAGCAATAAACAAAATGTAATCAAACTCAGGAGAGGAGTCATAGTTGGAGACAGATA",
+   "baseQuality": "DCDDEEGJKHGMPQQMLIANHHJJNPNHKQPQSHCMRIHRPQQQSQMQQGPPQRPPPPIPPPPGRPPPQGQRRQRPRQPROPQPOROPPPOPONOOMKJ0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062634.2605723",
+   "readsetId": "",
+   "flags": 83,
+   "referenceSequenceName": "1",
+   "position": 70231585,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231476,
+   "templateLength": -208,
+   "originalBases": "TAAAAATATTTATCCAAGTGAAAGTACTCCAAAAAGCAATAAACAAAATGTAATCAAACTCAGGAGAGGAGTCATAGTTGGAGACAGATATTTAACAGTC",
+   "alignedBases": "TAAAAATATTTATCCAAGTGAAAGTACTCCAAAAAGCAATAAACAAAATGTAATCAAACTCAGGAGAGGAGTCATAGTTGGAGACAGATATTTAACAGTC",
+   "baseQuality": ";:A?BBABADAE?GFHK\u003cFCB@E5\u003eEH9DKHIHIKHIHH@@HJGHGHHI=GGHHHFGHG?EIGFIEHDEH:?GDEHEFGCEHBGGHCIHHDEDDEBC@@/",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062634"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062634.8034931",
+   "readsetId": "",
+   "flags": 163,
+   "referenceSequenceName": "1",
+   "position": 70231596,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231693,
+   "templateLength": 181,
+   "originalBases": "ATCCAAGTGAAAGTACTCCAAAAAGCAATAAACAAAATGTAATCAAACTCAGGAGAGGAGTCATAGTTGGAGACAGATATTTAACAGTCATCCTTTCAAG",
+   "alignedBases": "ATCCAAGTGAAAGTACTCCAAAAAGCAATAAACAAAATGTAATCAAACTCAGGAGAGGAGTCATAGTTGGAGACAGATATTTAACAGTCATCCTTTCAAG",
+   "baseQuality": "0JLMNOOIOOPPPFOOQPQQQQQBQQQQPPQQPRQQQPQGPQPPRRQPRQRRMHQIQRHQIGJGKLGHGMIMIHNRJHHPIEHIHLIJHJHFGGDDCFDB",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062634"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.15417583",
+   "readsetId": "",
+   "flags": 99,
+   "referenceSequenceName": "1",
+   "position": 70231596,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231675,
+   "templateLength": 176,
+   "originalBases": "ATCCAAGTGAAAGTACTCCAAAAAGCAATAAACAAAATGTAATCAAACTCAGGAGAGGAGTCATAGTTGGAGACAGATATTTAACAGTCATCCTTTCAAG",
+   "alignedBases": "ATCCAAGTGAAAGTACTCCAAAAAGCAATAAACAAAATGTAATCAAACTCAGGAGAGGAGTCATAGTTGGAGACAGATATTTAACAGTCATCCTTTCAAG",
+   "baseQuality": "0JKNPPQPQPQQQPPPRPRRQQQQRRLRPPRQPRQRRQRPPRQQRRRQHQSRSRRRRSQQJQRPPRKPRRERJMORRIBPIIPKBRMJONIGHHDFKFFC",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062634.23790774",
+   "readsetId": "",
+   "flags": 163,
+   "referenceSequenceName": "1",
+   "position": 70231597,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231687,
+   "templateLength": 170,
+   "originalBases": "TCCAAGTGAAAGTACTCCAAAAAGCAATAAACAAAATGTAATCAAACTCAGGAGAGGAGTCATAGTTGGAGACAGATATTTAACAGTCATCCTTTCAAGA",
+   "alignedBases": "TCCAAGTGAAAGTACTCCAAAAAGCAATAAACAAAATGTAATCAAACTCAGGAGAGGAGTCATAGTTGGAGACAGATATTTAACAGTCATCCTTTCAAGA",
+   "baseQuality": "0KMNNNNOOOPPOOHQPQQFQQQQQQQPOQKPQQQQPQPOLPQQQRPRFMRRQQKRHQRLQNPKQJQQRHRRLORRLLPHQPJHRQKLJGGIHEHDFDCC",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@E"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062634"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062635.7767844",
+   "readsetId": "",
+   "flags": 163,
+   "referenceSequenceName": "1",
+   "position": 70231605,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231704,
+   "templateLength": 185,
+   "originalBases": "AAAGTACTCCAAAAAGCAATAAACAAAATGTAATCAAACTCAGGAGAGGAGTCATAGTTGGAGACAGATATTTAACAGTCATCCTTTCAAGAAGTGAGTT",
+   "alignedBases": "AAAGTACTCCAAAAAGCAATAAACAAAATGTAATCAAACTCAGGAGAGGAGTCATAGTTGGAGACAGATATTTAACAGTCATCCTTTCAAGAAGTGAGTT",
+   "baseQuality": "0LMHHMNPNPPPPPPQQQQOOQFOLQQQPQPPQPPRQQPRQRQRQRQQMGRIQRKKRILRNQHQGRGEH@IHHHNHKIJGKIQIKIILKHHHEFCFCCA@",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@JH@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062635"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062635.19302116",
+   "readsetId": "",
+   "flags": 163,
+   "referenceSequenceName": "1",
+   "position": 70231606,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231700,
+   "templateLength": 193,
+   "originalBases": "AAGTACTCCAAAAAGCAATAAACAAAATGTAATCAAACTCAGGAGAGGAGTCATAGTTGGAGACAGATATTTAACAGTCATCCTTTCAAGAAGTGAGTTA",
+   "alignedBases": "AAGTACTCCAAAAAGCAATAAACAAAATGTAATCAAACTCAGGAGAGGAGTCATAGTTGGAGACAGATATTTAACAGTCATCCTTTCAAGAAGTGAGTTA",
+   "baseQuality": "0LMLLMPNOPPPPPPPQQOOQQOKQQFPQGPQPPRQQPRPMQRQQHQRQQLQMGKRFHLHIRQKRRIHBPMHHNPNIELJIHJJDIQKIHIIGBFEGECB",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@N@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@D"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062635"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062635.2089613",
+   "readsetId": "",
+   "flags": 83,
+   "referenceSequenceName": "1",
+   "position": 70231609,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231506,
+   "templateLength": -202,
+   "originalBases": "TACTCCAAAAAGCAATAAACAAAATGTAATCAAACTCAGGAGAGGAGTCATAGTTGGAGACAGATATTTAACAGTCATCCTTTCAAGAAGTGAGTTAAAA",
+   "alignedBases": "TACTCCAAAAAGCAATAAACAAAATGTAATCAAACTCAGGAGAGGAGTCATAGTTGGAGACAGATATTTAACAGTCATCCTTTCAAGAAGTGAGTTAAAA",
+   "baseQuality": "BEDDAFLFGLJHKPP?HIKFPPIPLHHQIJQPPJIHMRRQEQSRQRPHMQKRKNRRQSQQLRQPJPRQPPQQRJQQPQKDQKQQPRPPROQPQOPNLKJ0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@GIJ@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062635"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062635.21764864",
+   "readsetId": "",
+   "flags": 163,
+   "referenceSequenceName": "1",
+   "position": 70231627,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231719,
+   "templateLength": 156,
+   "originalBases": "ACAAAATGTAATCAAACTCAGGAGAGGAGTCATAGTTGGAGACAGATATTTAACAGTCATCCTTTCAAGAAGTGAGTTAAAATCAACAGACCAAAAAAAA",
+   "alignedBases": "ACAAAATGTAATCAAACTCAGGAGAGGAGTCATAGTTGGAGACAGATATTTAACAGTCATCCTTTCAAGAAGTGAGTTAAAATCAACAGACCAAAAAAAA",
+   "baseQuality": "0JMMNONONNJNOQPPORPQQQPQPQRPQPPRPPQPPQRPQQPRQQPPPPPPQPRRLKRPQRRPPQRRRMFMGMMRJMLNRRPPQJIRHHOHKFEEKDDC",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@MKLMTNNN"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062635"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.18651403",
+   "readsetId": "",
+   "flags": 99,
+   "referenceSequenceName": "1",
+   "position": 70231641,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231708,
+   "templateLength": 166,
+   "originalBases": "AACTCAGGAGAGGAGTCATAGTTGGAGACAGATATTTAACAGTCATCCTTTCAAGAAGTGAGTTAAAATCAACAGACCAAAAAAAAAAAAATGTCCTTAG",
+   "alignedBases": "AACTCAGGAGAGGAGTCATAGTTGGAGACAGATATTTAACAGTCATCCTTTCAAGAAGTGAGTTAAAATCAACAGACCAAAAAAAAAAAAATGTCCTTAG",
+   "baseQuality": "/KKFHKEDJIDIRJQPPRCPQJPRRKRQPRRKJPPLQKMPMRQQRFQLNBQREILHIMJNERMPPECNHLOJLOCJMMOJ\u003eGOKFFBEAEBAG\u003c@,C\u003e?@",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@M@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062635.13601685",
+   "readsetId": "",
+   "flags": 163,
+   "referenceSequenceName": "1",
+   "position": 70231647,
+   "mappingQuality": 60,
+   "cigar": "72M1D28M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231712,
+   "templateLength": 165,
+   "originalBases": "TGAGAGGAGTCATAGTTGGAGACAGATATTTAACAGTCATCCTTTCAAGAAGTGAGTTAAAATCAACAGACCAAAAAAAAAAAATGTCCTTAGAAAGGAA",
+   "alignedBases": "TGAGAGGAGTCATAGTTGGAGACAGATATTTAACAGTCATCCTTTCAAGAAGTGAGTTAAAATCAACAGACC-AAAAAAAAAAAATGTCCTTAGAAAGGAA",
+   "baseQuality": "0LLMNOPOOOOPOOPOOQQPQPOQQQPOPPPPQPRQPPRPQRRPPQRQQQRRIQQRIQPMRIPQRRQRMQPRRRQRRNRQRJQIHKBICJDF@FEGG\u003cEE",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@O@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@qqpqqmnllch]@@@@@@@@@@@@@@GJ"
+    ],
+    "MD": [
+     "0G71^A28"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "2"
+    ],
+    "RG": [
+     "SRR062635"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.20308800",
+   "readsetId": "",
+   "flags": 147,
+   "referenceSequenceName": "1",
+   "position": 70231651,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231558,
+   "templateLength": -192,
+   "originalBases": "AGGAGTCATAGTTGGAGACAGATATTTAACAGTCATCCTTTCAAGAAGTGAGTTAAAATCAACAGACCAAAAAAAAAAAAATGTCCTTAGAAAGGAAAAA",
+   "alignedBases": "AGGAGTCATAGTTGGAGACAGATATTTAACAGTCATCCTTTCAAGAAGTGAGTTAAAATCAACAGACCAAAAAAAAAAAAATGTCCTTAGAAAGGAAAAA",
+   "baseQuality": "DCBD?CFEBGEAIGFF\u003cEBG?FBFDE?AEDDAE\u003eD8DH\u003eI@CBG4BG9\u003c=B1CCBFGG;BBB\u003eA5FLHPPPPPPPPPPPPPQPPQQPNQONNQONMLLK0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@HJLL@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.15417583",
+   "readsetId": "",
+   "flags": 147,
+   "referenceSequenceName": "1",
+   "position": 70231675,
+   "mappingQuality": 60,
+   "cigar": "3S44M1D53M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231596,
+   "templateLength": -176,
+   "originalBases": "ATATTTAACAGTCATCCTTTCAAGAAGTGAGTTAAAAACAACAGACCAAAAAAAAAAAATGTCCTTAGAAAGGAAAAAGACAATTGCAGAGAAAAAAATA",
+   "alignedBases": "TTTAACAGTCATCCTTTCAAGAAGTGAGTTAAAAACAACAGACC-AAAAAAAAAAAATGTCCTTAGAAAGGAAAAAGACAATTGCAGAGAAAAAAATA",
+   "baseQuality": "####A:@C@A6@@;0FCGGF7?B1?B595B2;:%8C\u003e/7=?=\u003e*;9?GQQPPQPPPPPPMPQRQGORPPPRRQPPPPRPPQPPQQQPQOQONNNNMLKJ0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@fppooplkjigd@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "34T9^A53"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "2"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XC": [
+     "97"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062634.23790774",
+   "readsetId": "",
+   "flags": 83,
+   "referenceSequenceName": "1",
+   "position": 70231687,
+   "mappingQuality": 60,
+   "cigar": "19S81M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231597,
+   "templateLength": -170,
+   "originalBases": "ACAGATATTTAACAGTCATCCTTTCAAGAAGTGAGTTAAAATCAACAGACCAAAAAAAAAAAAATGTCCTTAGAAAGGAAAAAGACAATTGCAGAGAAAA",
+   "alignedBases": "CCTTTCAAGAAGTGAGTTAAAATCAACAGACCAAAAAAAAAAAAATGTCCTTAGAAAGGAAAAAGACAATTGCAGAGAAAA",
+   "baseQuality": "####################A0AD7;B3\u003eC4=5B9@@DHHC2;?B\u003e@.@\u003c\u003cGQPLPPPPPPPPPRPGRQQPRIPPRRQPPPPRPJFMPQQQPQPQOLKJ0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@NPQ@"
+    ],
+    "MD": [
+     "81"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062634"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XC": [
+     "81"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062634.8034931",
+   "readsetId": "",
+   "flags": 83,
+   "referenceSequenceName": "1",
+   "position": 70231693,
+   "mappingQuality": 60,
+   "cigar": "15S85M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231596,
+   "templateLength": -181,
+   "originalBases": "AACAAGCATCCTTGCAAGAAGTGAGTTAAAATCAACAGACCAAAAAAAAAAAAATGTCCTTAGAAAGGAAAAAGACAATTGCAGAGAAAAAAATATTAAA",
+   "alignedBases": "AAGAAGTGAGTTAAAATCAACAGACCAAAAAAAAAAAAATGTCCTTAGAAAGGAAAAAGACAATTGCAGAGAAAAAAATATTAAA",
+   "baseQuality": "################C7?F/:9C8?@?DBA?=@C:\u003c4\u003e@\u003eHQHQPPQQQPPQPJPHRQHPRQPPRRQPPPPRQGQPPQRQQRPRPMPPPPOOOOOKKJ0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@FH@"
+    ],
+    "MD": [
+     "85"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062634"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XC": [
+     "85"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062635.19302116",
+   "readsetId": "",
+   "flags": 83,
+   "referenceSequenceName": "1",
+   "position": 70231700,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231606,
+   "templateLength": -193,
+   "originalBases": "GAGTTAAAATCAACAGACCAAAAAAAAAAAAATGTCCTTAGAAAGGAAAAAGACAATTGCAGAGAAAAAAATATTAAACTTAGAAAGTGAAATGATAGTA",
+   "alignedBases": "GAGTTAAAATCAACAGACCAAAAAAAAAAAAATGTCCTTAGAAAGGAAAAAGACAATTGCAGAGAAAAAAATATTAAACTTAGAAAGTGAAATGATAGTA",
+   "baseQuality": "AEDADFIFHFB@C2E?JJIEPIPIQPPQMQPHOFNRMICSQPQSRPPPQQRQIRQPQMRRRQRQPPPPPPPJPQPPPPQQPRPPPRPQPPPOQPONNKI0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062635"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062635.7767844",
+   "readsetId": "",
+   "flags": 83,
+   "referenceSequenceName": "1",
+   "position": 70231704,
+   "mappingQuality": 60,
+   "cigar": "12S15M1I72M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231605,
+   "templateLength": -185,
+   "originalBases": "CAGAAAGTGAGTTAAAATCAACAGACCAAAAAAAAAAAAAATGTCCTTAGAAAGGAAAAAGACAATTGCAGAGAAAAAAATATTAAACTTAGAAAGTGAA",
+   "alignedBases": "TAAAATCAACAGACCAAAAAAAAAAAAAATGTCCTTAGAAAGGAAAAAGACAATTGCAGAGAAAAAAATATTAAACTTAGAAAGTGAA",
+   "baseQuality": "#############AB@@08;CA@0\u003c56DPQPPPPQPHPMQLJLENCHGSKPPJRQPPPQSJHRLPQRQQIQRQPPPPPPPPPQPPPPQQORPOOQNNKJ0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@opoooomkcjeh`@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@L@"
+    ],
+    "MD": [
+     "87"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "1"
+    ],
+    "RG": [
+     "SRR062635"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XC": [
+     "88"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062635.15855758",
+   "readsetId": "",
+   "flags": 163,
+   "referenceSequenceName": "1",
+   "position": 70231705,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231801,
+   "templateLength": 195,
+   "originalBases": "AAAATCAACAGACCAAAAAAAAAAAAATGTCCTTAGAAAGGAAAAAGACAATTGCAGAGAAAAAAATATTAAACTTAGAAAGTGAAATGATAGTATAAAC",
+   "alignedBases": "AAAATCAACAGACCAAAAAAAAAAAAATGTCCTTAGAAAGGAAAAAGACAATTGCAGAGAAAAAAATATTAAACTTAGAAAGTGAAATGATAGTATAAAC",
+   "baseQuality": "0LMMMNOONPPOOPKPQQQPQQQQQQF@KGPKRJ=@KLGFMFQQQMB@BMHGP=HEEBHHNMNRD@\u003c\u003e?:HIICJFE;EJAC8?EFDEFBDCD6@=??A#",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@LKH@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062635"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.18651403",
+   "readsetId": "",
+   "flags": 147,
+   "referenceSequenceName": "1",
+   "position": 70231708,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231641,
+   "templateLength": -166,
+   "originalBases": "ATCAACAGACCAAAAAAAAAAAAATGTCCTTAGAAAGGAAAAAGACAATTGCAGAGAAAAAAATATTAAACTTAGAAAGTGAAATGATAGTATAAACTCA",
+   "alignedBases": "ATCAACAGACCAAAAAAAAAAAAATGTCCTTAGAAAGGAAAAAGACAATTGCAGAGAAAAAAATATTAAACTTAGAAAGTGAAATGATAGTATAAACTCA",
+   "baseQuality": "?2C?ACE@F6@JPQNPPPQMPPPQOHM?M\u003cPNQQQRRHQMLQIGQIPQHSRMSKSQPPAPPKPFP?PKPPJKJL\u003eJJLIK5:JIKBDEJHCC\u003eD?DCCC0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062635.13601685",
+   "readsetId": "",
+   "flags": 83,
+   "referenceSequenceName": "1",
+   "position": 70231712,
+   "mappingQuality": 60,
+   "cigar": "7M1D93M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231647,
+   "templateLength": -165,
+   "originalBases": "ACAGACCAAAAAAAAAAAATGTCCTTAGAAAGGAAAAAGACAATTGCAGAGAAAAAAATATTAAACTTAGAAAGTGAAATGATAGTATAAACTCACTGCT",
+   "alignedBases": "ACAGACC-AAAAAAAAAAAATGTCCTTAGAAAGGAAAAAGACAATTGCAGAGAAAAAAATATTAAACTTAGAAAGTGAAATGATAGTATAAACTCACTGCT",
+   "baseQuality": "DEFDE@GLNONOOPPOPPPRPFRRJPRQPQRQQPQPPRQQRPQRRQQRQSQPPQQPPPGPQPPPQQRPRQPPRPRQPPPRPPPRPOPOPPPQPPOPNLK0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@kmnmnnlkiigd@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "7^A93"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "1"
+    ],
+    "RG": [
+     "SRR062635"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062635.21764864",
+   "readsetId": "",
+   "flags": 83,
+   "referenceSequenceName": "1",
+   "position": 70231719,
+   "mappingQuality": 60,
+   "cigar": "35S65M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231627,
+   "templateLength": -156,
+   "originalBases": "CATCCTTTCAAAAAGGGAGTTAAAAACAACAAACCAAAAAAAAAAAAATGTCCTTAGAAAGGAAAAAGACAATTGCAGAGAAAAAAATATTAAACTTAGA",
+   "alignedBases": "AAAAAAAAAAAAATGTCCTTAGAAAGGAAAAAGACAATTGCAGAGAAAAAAATATTAAACTTAGA",
+   "baseQuality": "####################################PPQQPPQQQPPPRQGRRRPRQPQSRQPPPPSQKLPPQRQQRQRQPPPPPPPOPQOOOOPPLMJ0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@CCDDCCDCB@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "65"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062635"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XC": [
+     "65"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.18013079",
+   "readsetId": "",
+   "flags": 163,
+   "referenceSequenceName": "1",
+   "position": 70231728,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231804,
+   "templateLength": 175,
+   "originalBases": "AAAATGTCCTTAGAAAGGAAAAAGACAATTGCAGAGAAAAAAATATTAAACTTAGAAAGTGAAATGATAGTATAAACTCACTGCTGGAACTTGCCCAGAA",
+   "alignedBases": "AAAATGTCCTTAGAAAGGAAAAAGACAATTGCAGAGAAAAAAATATTAAACTTAGAAAGTGAAATGATAGTATAAACTCACTGCTGGAACTTGCCCAGAA",
+   "baseQuality": "0LMIMONHFEOHPFPQEEFQQQQQPIRQPPKQRQQKKQQGGQQKPKPPMMQSGGLHIMLAJBIIHRRIPMJLQPRRQBLKQLRQGIK0@AGCGB?ACD2A",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@SRK@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.7175364",
+   "readsetId": "",
+   "flags": 163,
+   "referenceSequenceName": "1",
+   "position": 70231776,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231871,
+   "templateLength": 194,
+   "originalBases": "AACTTAGAAAGTGAAATGATAGTATAAACTCACTGCTGGAACTTGCCCAGAAGTTATTTGTGTTTCCCCCAGCAGTCATGACAACTTTGCATACAGAGGC",
+   "alignedBases": "AACTTAGAAAGTGAAATGATAGTATAAACTCACTGCTGGAACTTGCCCAGAAGTTATTTGTGTTTCCCCCAGCAGTCATGACAACTTTGCATACAGAGGC",
+   "baseQuality": "0LKNMMOOOPPGPPPQPQJPPQPOPPQQPRJLPRQRRLRQRPRPQRRRJGCNRGPGQQHRJRIHPLGRIRKIMKLBEGFHNICQLLIIJG@DFEGEEDDC",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@N@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "87C12"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "1"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.12053342",
+   "readsetId": "",
+   "flags": 99,
+   "referenceSequenceName": "1",
+   "position": 70231778,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231843,
+   "templateLength": 164,
+   "originalBases": "CTTAGAAAGTGAAATGATAGTATAAACTCACTGCTGGAACTTGCCCAGAAGTTATTTGTGTTTCCCCCAGCAGTCATGACAACTTTGCATACAGAGGCAA",
+   "alignedBases": "CTTAGAAAGTGAAATGATAGTATAAACTCACTGCTGGAACTTGCCCAGAAGTTATTTGTGTTTCCCCCAGCAGTCATGACAACTTTGCATACAGAGGCAA",
+   "baseQuality": "0LKLPPPQQJQJQQPQQPEQPPJJRRPSQRPSQQRRRQMPSQRRLRJRHNRIHPLMQRJQJIDLIJSRKHNKIKHLJKFHLOILFJNJHCHGIFEECBD\u003e",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@FC"
+    ],
+    "MD": [
+     "85C14"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "1"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062635.15855758",
+   "readsetId": "",
+   "flags": 83,
+   "referenceSequenceName": "1",
+   "position": 70231801,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231705,
+   "templateLength": -195,
+   "originalBases": "AAACTCACTGCTGGAACTTGCCCAGAAGTTATTTGTGTTTCCCCCAGCAGTCATGACAACTTTGCATACAGAGGCAAAATTGGGAAATTTTATTACGCTC",
+   "alignedBases": "AAACTCACTGCTGGAACTTGCCCAGAAGTTATTTGTGTTTCCCCCAGCAGTCATGACAACTTTGCATACAGAGGCAAAATTGGGAAATTTTATTACGCTC",
+   "baseQuality": "E\u003cDEDFCEGDBKJIMJIFKKIJKRANK\u003eJQHINKQFHIIIRISERRQRSQMQPRKPRPIRQGRQRPPHLRQLRQKPPPPQLQQQPPPQQQOOPOOFMLJ/",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "D@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "62C37"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "1"
+    ],
+    "RG": [
+     "SRR062635"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.18013079",
+   "readsetId": "",
+   "flags": 83,
+   "referenceSequenceName": "1",
+   "position": 70231804,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231728,
+   "templateLength": -175,
+   "originalBases": "CTCACTGCTGGAACTTGCCCAGAAGTTATTTGTGTTTCCCCCAGCAGTCATGACAACTTTGCATACAGAGGCAAAATTGGGAAATTTTATTACGCTCATG",
+   "alignedBases": "CTCACTGCTGGAACTTGCCCAGAAGTTATTTGTGTTTCCCCCAGCAGTCATGACAACTTTGCATACAGAGGCAAAATTGGGAAATTTTATTACGCTCATG",
+   "baseQuality": "GEHDHE@@FAB6GJJKEORRKCDJB=DEEK9LCGNB@NNJRMS9RHQMGQRQQRPPRHRRQLQPQHLJAKKEQPFPQRRRIPPPKEEOPJDP@QI?FKK0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "B@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "59C40"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "1"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062635.6685727",
+   "readsetId": "",
+   "flags": 99,
+   "referenceSequenceName": "1",
+   "position": 70231815,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231890,
+   "templateLength": 174,
+   "originalBases": "AACTTGCCCAGAAGTTATTTGTGTTTCCCCCAGCAGTCATGACAACTTTGCATACAGAGGCAAAATTGGGAAATTTTATTACGCTCATGAAGCCAAAAAA",
+   "alignedBases": "AACTTGCCCAGAAGTTATTTGTGTTTCCCCCAGCAGTCATGACAACTTTGCATACAGAGGCAAAATTGGGAAATTTTATTACGCTCATGAAGCCAAAAAA",
+   "baseQuality": "0KKNNPPFQQQPQQPPPPPPQPQPPPQRQRRRLRRRHQRPRHPRQPSGPIRJDGLKMIHIMKEIHMCKJIJJ@HHIIIIHII\u003cIFILIJHIH?IFFEE\u003eC",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@F@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ADDF@E"
+    ],
+    "MD": [
+     "48C51"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "1"
+    ],
+    "RG": [
+     "SRR062635"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.12053342",
+   "readsetId": "",
+   "flags": 147,
+   "referenceSequenceName": "1",
+   "position": 70231843,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231778,
+   "templateLength": -164,
+   "originalBases": "CCCAGCAGTCATGACAACTTTGCATACAGAGGCAAAATTGGGAAATTTTATTACGCTCATGAAGCCAAAAAATCTCTCCATGGATGAGAGGAATGCAACA",
+   "alignedBases": "CCCAGCAGTCATGACAACTTTGCATACAGAGGCAAAATTGGGAAATTTTATTACGCTCATGAAGCCAAAAAATCTCTCCATGGATGAGAGGAATGCAACA",
+   "baseQuality": "CACD@FHFHIHE@HKHBMJJKRJQHJCNRKIMJQMHPIRSRQQMQMQRPQMPIHRLG\u003ePRFPRK@QPPPPPJKEQJQRQIQQPIGPKOQPONNPEFLLG0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "HFE@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "20C79"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "1"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.7175364",
+   "readsetId": "",
+   "flags": 83,
+   "referenceSequenceName": "1",
+   "position": 70231871,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231776,
+   "templateLength": -194,
+   "originalBases": "GAGGCAAAATTGGGAAATTTTATTACGCTCATGAAGCCAAAAAATCTCTCCATGGATGAGAGGAATGCAACATCCCAACTGATTTTGATCTGGGTTTCTA",
+   "alignedBases": "GAGGCAAAATTGGGAAATTTTATTACGCTCATGAAGCCAAAAAATCTCTCCATGGATGAGAGGAATGCAACATCCCAACTGATTTTGATCTGGGTTTCTA",
+   "baseQuality": "BFD\u003cFBBCFBJJD\u003eEHIJRJHIGIIDDRJKHKLIKQ=RQQPQQHIRIRHSGPRRQPMQSQRRQLPRGQPQRPQGRRPPJRQPQQQRPPQQQQQOPPMLJ0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@A@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.24108249",
+   "readsetId": "",
+   "flags": 99,
+   "referenceSequenceName": "1",
+   "position": 70231880,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231901,
+   "templateLength": 120,
+   "originalBases": "TTGGGAAATTTTATTACGCTCATGAAGCCAAAAAATCTCTCCATGGATGAGAGGAATGCAACATCCCAACTGATTTTGATCTGGGTTTCTATAACTTATA",
+   "alignedBases": "TTGGGAAATTTTATTACGCTCATGAAGCCAAAAAATCTCTCCATGGATGAGAGGAATGCAACATCCCAACTGATTTTGATCTGGGTTTCTATAACTTATA",
+   "baseQuality": "0JLNPIPQOOPPOPPPPHQLQLPRQREGRGRQQGMPQSQRQRRKQRHFRQRRRSQRHNRNRQKPQRSGIHOMQIMQI?JHIHK\u003cDEEIHJCJF@CJCACC",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@E@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@E"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062635.6685727",
+   "readsetId": "",
+   "flags": 147,
+   "referenceSequenceName": "1",
+   "position": 70231890,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231815,
+   "templateLength": -174,
+   "originalBases": "TTATTACGCTCATGAAGCCAAAAAATCTCTCCATGGATGAGAGGAATGCAACATCCCAACTGATTTTGATCTGGGTTTCTATAACTTATAAAACCTATTT",
+   "alignedBases": "TTATTACGCTCATGAAGCCAAAAAATCTCTCCATGGATGAGAGGAATGCAACATCCCAACTGATTTTGATCTGGGTTTCTATAACTTATAAAACCTATTT",
+   "baseQuality": "HBCDDC\u003cEGFMHKFIRIJRIHHQQIHRIRQRRPRRQPNQSQRRQPPRQRPPQPLRRQPPQQPPQQQRPPQQQQQPQQPQEOOOPQPOONNNNNPOLLML0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "KD@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@HJ@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062635"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062641.24108249",
+   "readsetId": "",
+   "flags": 147,
+   "referenceSequenceName": "1",
+   "position": 70231901,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70231880,
+   "templateLength": -120,
+   "originalBases": "ATGAAGCCAAAAAATCTCTCCATGGATGAGAGGAATGCAACATCCCAACTGATTTTGATCTGGGTTTCTATAACTTATAAAACCTATTTGCTCTAATGAA",
+   "alignedBases": "ATGAAGCCAAAAAATCTCTCCATGGATGAGAGGAATGCAACATCCCAACTGATTTTGATCTGGGTTTCTATAACTTATAAAACCTATTTGCTCTAATGAA",
+   "baseQuality": "IEJDDLFHHODDDGCQMRQNQHRRQDKQSQRMQQQRQRQQRFHSRRPQRJQPRMRRQPQRRRKPQQQQPPPPPQQOJOPPPPRQOOPPPPPOPNNMNLK0",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "D@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@F@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062641"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  },
+  {
+   "id": "",
+   "name": "SRR062634.10376981",
+   "readsetId": "",
+   "flags": 99,
+   "referenceSequenceName": "1",
+   "position": 70231953,
+   "mappingQuality": 60,
+   "cigar": "100M",
+   "mateReferenceSequenceName": "1",
+   "matePosition": 70232030,
+   "templateLength": 176,
+   "originalBases": "TTTTGATCTGGGTTTCTATAACTTATAAAACCTATTTGCTCTAATGAACAGAAGACAAAGAGAGCAATTTACTGTGTAACACTTTCAAAGCTAATTCTAG",
+   "alignedBases": "TTTTGATCTGGGTTTCTATAACTTATAAAACCTATTTGCTCTAATGAACAGAAGACAAAGAGAGCAATTTACTGTGTAACACTTTCAAAGCTAATTCTAG",
+   "baseQuality": "0JKLOPOPQQQQIMPPRPPPQPRPPPPQQQPRRPPPPQQLQSPLPRLMPRRMRQQKJIRQQRMLQKJLHPLPRQJRKIJPLQLIJLLFAGDCBCDCDFFD",
+   "tags": {
+    "AM": [
+     "37"
+    ],
+    "BQ": [
+     "@JIG@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    ],
+    "MD": [
+     "100"
+    ],
+    "MQ": [
+     "60"
+    ],
+    "NM": [
+     "0"
+    ],
+    "RG": [
+     "SRR062634"
+    ],
+    "SM": [
+     "37"
+    ],
+    "X0": [
+     "1"
+    ],
+    "X1": [
+     "0"
+    ],
+    "XT": [
+     "U"
+    ]
+   }
+  }
+ ]
+}

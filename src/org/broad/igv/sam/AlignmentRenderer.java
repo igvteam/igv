@@ -620,7 +620,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 Stroke stroke;
                 int gapIdx = blockNumber - 1;
                 Color gapLineColor = deletionColor;
-                if (gapTypes != null && gapIdx < gapTypes.length && gapTypes[gapIdx] == SamAlignment.SKIPPED_REGION) {
+                if (gapTypes != null && gapIdx < gapTypes.length && gapTypes[gapIdx] == SAMAlignment.SKIPPED_REGION) {
                     gLine = context.getGraphic2DForColor(skippedColor);
                     stroke = gLine.getStroke();
                 } else {

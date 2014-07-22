@@ -12,11 +12,11 @@
 package org.broad.igv.peaks;
 
 
-import net.sf.samtools.seekablestream.SeekableStream;
+import htsjdk.samtools.seekablestream.SeekableStream;
 import org.broad.igv.util.CompressionUtils;
 import org.broad.igv.util.stream.IGVSeekableBufferedStream;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
-import org.broad.tribble.util.LittleEndianInputStream;
+import htsjdk.tribble.util.LittleEndianInputStream;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;

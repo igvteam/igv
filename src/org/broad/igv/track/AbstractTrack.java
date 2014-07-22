@@ -33,7 +33,7 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.Utilities;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 import org.w3c.dom.Node;
 
 import javax.xml.bind.JAXBException;

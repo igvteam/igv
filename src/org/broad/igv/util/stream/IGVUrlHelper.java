@@ -13,7 +13,7 @@ package org.broad.igv.util.stream;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.util.HttpUtils;
-import org.broad.tribble.util.URLHelper;
+import htsjdk.tribble.util.URLHelper;
 
 import java.io.IOException;
 import java.io.InputStream;

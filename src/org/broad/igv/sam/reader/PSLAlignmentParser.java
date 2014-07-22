@@ -25,8 +25,8 @@ import org.broad.igv.peaks.Peak;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.FeatureWrappedAlignment;
 import org.broad.igv.feature.tribble.PSLCodec;
-import org.broad.tribble.Feature;
-import org.broad.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.IOException;
 

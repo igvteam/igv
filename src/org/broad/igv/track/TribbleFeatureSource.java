@@ -30,8 +30,8 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.collections.CollUtils;
 import org.broad.igv.variant.VariantTrack;
-import org.broad.tribble.*;
-import org.broad.tribble.index.Index;
+import htsjdk.tribble.*;
+import htsjdk.tribble.index.Index;
 
 import java.io.File;
 import java.io.IOException;
@@ -231,7 +231,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
             else {
 
             }
-            CloseableTribbleIterator<org.broad.tribble.Feature> iter = null;
+            CloseableTribbleIterator<htsjdk.tribble.Feature> iter = null;
 
             try {
                 double mem = RuntimeUtils.getAvailableMemory();
@@ -239,13 +239,13 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                 if (iter.hasNext()) {
 
                     int nSamples = 1000;
-                    org.broad.tribble.Feature firstFeature = iter.next();
-                    org.broad.tribble.Feature lastFeature = firstFeature;
+                    htsjdk.tribble.Feature firstFeature = iter.next();
+                    htsjdk.tribble.Feature lastFeature = firstFeature;
                     String chr = firstFeature.getChr();
                     int n = 1;
                     long len = 0;
                     while (iter.hasNext() && n < nSamples) {
-                        org.broad.tribble.Feature f = iter.next();
+                        htsjdk.tribble.Feature f = iter.next();
                         if (f != null) {
                             n++;
                             if (f.getChr().equals(chr)) {

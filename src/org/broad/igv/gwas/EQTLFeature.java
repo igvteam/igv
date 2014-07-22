@@ -7,7 +7,7 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.tdf.BufferedByteWriter;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.collections.MultiMap;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.awt.*;
 import java.io.IOException;

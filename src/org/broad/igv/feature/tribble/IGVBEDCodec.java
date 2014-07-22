@@ -20,8 +20,8 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.collections.MultiMap;
-import org.broad.tribble.Feature;
-import org.broad.tribble.util.ParsingUtils;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.util.ParsingUtils;
 
 import java.util.List;
 import java.util.Map;

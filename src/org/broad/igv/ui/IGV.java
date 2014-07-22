@@ -24,7 +24,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.eventbus.Subscribe;
 import com.jidesoft.swing.JideSplitPane;
-import net.sf.samtools.seekablestream.SeekableFileStream;
+import htsjdk.samtools.seekablestream.SeekableFileStream;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
@@ -2609,6 +2609,7 @@ public class IGV {
             }
             pluginClassNames.addAll(Arrays.asList(PreferenceManager.getInstance().getIGVPluginList()));
             for (String classname : pluginClassNames) {
+                if(classname.startsWith("#")) continue;
                 try {
                     Class clazz = Class.forName(classname);
                     IGVPlugin plugin = (IGVPlugin) clazz.newInstance();

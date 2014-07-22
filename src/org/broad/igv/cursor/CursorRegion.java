@@ -3,7 +3,7 @@ package org.broad.igv.cursor;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.EncodePeakFeature;
 import org.broad.igv.feature.FeatureUtils;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -17,7 +17,7 @@ import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.io.IOException;
 import java.util.*;

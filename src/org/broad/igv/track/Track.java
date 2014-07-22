@@ -23,7 +23,7 @@ import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.MouseableRegion;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;

@@ -21,7 +21,7 @@ import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.BufferedReader;
 import java.io.File;

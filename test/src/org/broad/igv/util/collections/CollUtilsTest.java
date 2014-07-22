@@ -2,7 +2,7 @@ package org.broad.igv.util.collections;
 
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.FeatureUtils;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 import org.junit.Test;
 
 import java.util.ArrayList;

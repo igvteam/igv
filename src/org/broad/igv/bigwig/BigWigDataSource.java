@@ -26,7 +26,7 @@ import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.io.IOException;
 import java.util.*;

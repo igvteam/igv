@@ -10,11 +10,13 @@
  */
 package org.broad.igv.sam.reader;
 
-import net.sf.samtools.SAMFileHeader;
-import net.sf.samtools.SAMFileReader;
-import net.sf.samtools.SAMReadGroupRecord;
+import htsjdk.samtools.SAMFileHeader;
+import htsjdk.samtools.SAMFileReader;
+import htsjdk.samtools.SAMReadGroupRecord;
+import htsjdk.samtools.ValidationStringency;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.ga4gh.Ga4ghTextReader;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
@@ -34,7 +36,7 @@ public class AlignmentReaderFactory {
     private static Logger log = Logger.getLogger(AlignmentReaderFactory.class);
 
     static {
-        SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+        SAMFileReader.setDefaultValidationStringency(ValidationStringency.SILENT);
     }
 
     public static AlignmentReader getReader(String path, boolean requireIndex) throws IOException {
@@ -90,7 +92,11 @@ public class AlignmentReaderFactory {
                 throw new RuntimeException("Cannot load Goby alignment " + locator.getPath(), e);
 
             }
-        } else {
+        } else if (Ga4ghTextReader.supportsFileType(locator.getPath())) {
+            return new Ga4ghTextReader(locator.getPath());
+        }
+
+        else {
             throw new RuntimeException("Cannot find reader for aligment file: " + locator.getPath());
         }
 

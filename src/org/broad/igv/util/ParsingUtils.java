@@ -10,8 +10,8 @@
  */
 package org.broad.igv.util;
 
-import net.sf.samtools.util.ftp.FTPClient;
-import net.sf.samtools.util.ftp.FTPReply;
+import htsjdk.samtools.util.ftp.FTPClient;
+import htsjdk.samtools.util.ftp.FTPReply;
 import org.broad.igv.util.ftp.FTPUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
@@ -21,7 +21,7 @@ import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.awt.*;
 import java.io.*;

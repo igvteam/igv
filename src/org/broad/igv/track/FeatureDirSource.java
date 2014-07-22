@@ -22,7 +22,7 @@ import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.LRUCache;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.io.BufferedReader;
 import java.io.File;

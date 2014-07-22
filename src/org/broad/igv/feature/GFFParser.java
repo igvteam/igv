@@ -22,8 +22,8 @@ import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureCodec;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.FeatureCodec;
 
 import java.io.*;
 import java.util.*;
@@ -40,11 +40,11 @@ public class GFFParser implements FeatureParser {
 
     private TrackProperties trackProperties = null;
 
-    public List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome) {
+    public List<htsjdk.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome) {
           return loadFeatures(reader, genome, new GFFCodec(genome));
     }
 
-    public List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome, GFFCodec codec) {
+    public List<htsjdk.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome, GFFCodec codec) {
         String line = null;
         int lineNumber = 0;
         GFFFeatureSource.GFFCombiner combiner = new GFFFeatureSource.GFFCombiner();

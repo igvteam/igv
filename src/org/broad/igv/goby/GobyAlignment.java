@@ -31,10 +31,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.CharArrayList;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
-import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.AlignmentBlock;
-import org.broad.igv.sam.ReadMate;
-import org.broad.igv.sam.SamAlignment;
+import org.broad.igv.sam.*;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
@@ -226,7 +223,7 @@ public class GobyAlignment implements Alignment {
                 if (spliceHeadAlignment.gapTypes == null) {
                     spliceHeadAlignment.gapTypes = new CharArrayList(10);
                 }
-                spliceHeadAlignment.gapTypes.add(SamAlignment.SKIPPED_REGION);
+                spliceHeadAlignment.gapTypes.add(SAMAlignment.SKIPPED_REGION);
 
                 // Since the previous alignment carries this information, we clear up block and insertionBlock
                 // in this alignment, but keep any softClips:
@@ -417,7 +414,7 @@ public class GobyAlignment implements Alignment {
     /**
      * Get the reference id from the iterator, prepend "chr".
      */
-    public String getChromosome() {
+    public String getChr() {
         return getChromosome(entry.getTargetIndex());
     }
 
@@ -428,11 +425,6 @@ public class GobyAlignment implements Alignment {
      */
     public String getChromosome(int targetIndex) {
         return "chr" + iterator.getId(targetIndex).toString();
-    }
-
-    public String getChr() {
-        //LOG.info("getChr");
-        return getChromosome();
     }
 
     public int getAlignmentStart() {

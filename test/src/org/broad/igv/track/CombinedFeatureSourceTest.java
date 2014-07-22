@@ -18,7 +18,7 @@ import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.TestUtils;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Ignore;

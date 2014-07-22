@@ -17,7 +17,7 @@ import org.broad.igv.ui.FontManager;
 import org.broad.igv.variant.Variant;
 import org.broad.igv.variant.VariantRenderer;
 import org.broad.igv.variant.VariantTrack;
-import org.broadinstitute.sting.gatk.walkers.na12878kb.core.TruthStatus;
+import org.broadinstitute.gatk.tools.walkers.na12878kb.core.TruthStatus;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;

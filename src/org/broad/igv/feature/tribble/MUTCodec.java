@@ -19,10 +19,10 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.MultiMap;
-import org.broad.tribble.AsciiFeatureCodec;
-import org.broad.tribble.readers.AsciiLineReader;
-import org.broad.tribble.readers.LineIterator;
-import org.broad.tribble.readers.LineIteratorImpl;
+import htsjdk.tribble.AsciiFeatureCodec;
+import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.LineIterator;
+import htsjdk.tribble.readers.LineIteratorImpl;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -13,7 +13,7 @@ package org.broad.igv.sam.reader;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.util.IndexCreatorDialog;
 import org.broad.igv.ui.util.UIUtilities;
-import org.broad.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import javax.swing.*;
 import java.io.*;

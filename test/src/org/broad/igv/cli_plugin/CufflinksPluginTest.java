@@ -19,7 +19,7 @@ import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.GFFFeatureSource;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

@@ -43,7 +43,7 @@ public class FlowSignalContextBuilder {
             this.incorporations = new boolean[this.flowSignals.length];
             // go to the end of the signals to find the first sequenced base
             for (i=readBases.length-1;0<=i;i--) {
-                while (this.flowOrder.charAt(this.flowOrderIndex) != SamAlignment.NT2COMP[readBases[i]]) {
+                while (this.flowOrder.charAt(this.flowOrderIndex) != SAMAlignment.NT2COMP[readBases[i]]) {
                     this.flowOrderIndex++;
                     this.flowSignalsIndex++;
                     this.incorporations[this.flowSignalsIndex] = false;
@@ -83,7 +83,7 @@ public class FlowSignalContextBuilder {
                         // for the next flow that matches our next read base (we would place the A incorporation flow in the fourth flow,
                         // which is wrong).
                         while (!this.incorporations[this.flowSignalsIndex] ||
-                                this.flowOrder.charAt(this.flowOrderIndex) != SamAlignment.NT2COMP[readBases[j]]) { // NB: malicious input can cause infinite loops here
+                                this.flowOrder.charAt(this.flowOrderIndex) != PicardAlignment.NT2COMP[readBases[j]]) { // NB: malicious input can cause infinite loops here
                             this.flowOrderIndex--;
                             this.flowSignalsIndex--;
                             if (this.flowOrderIndex < 0) {
@@ -154,7 +154,7 @@ public class FlowSignalContextBuilder {
                     // for the next flow that matches our next read base (we would place the A incorporation flow in the fourth flow,
                     // which is wrong).
                     while (!this.incorporations[this.flowSignalsIndex] ||
-                            this.flowOrder.charAt(this.flowOrderIndex) != SamAlignment.NT2COMP[readBases[basepos]]) { // NB: malicious input can cause infinite loops here
+                            this.flowOrder.charAt(this.flowOrderIndex) != SAMAlignment.NT2COMP[readBases[basepos]]) { // NB: malicious input can cause infinite loops here
                         this.flowOrderIndex--;
                         this.flowSignalsIndex--;
                         if (this.flowOrderIndex < 0) {

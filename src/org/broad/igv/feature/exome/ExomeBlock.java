@@ -1,7 +1,7 @@
 package org.broad.igv.feature.exome;
 
 
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 /**
  * @author Jim Robinson

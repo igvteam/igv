@@ -121,11 +121,11 @@ public class CommandListener implements Runnable {
     private void processClientSession(CommandExecutor cmdExe) throws IOException {
         PrintWriter out = null;
         BufferedReader in = null;
-
         try {
             out = new PrintWriter(clientSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             String inputLine;
+
 
             while (!halt && (inputLine = in.readLine()) != null) {
 
@@ -137,55 +137,46 @@ public class CommandListener implements Runnable {
                     String nextLine = in.readLine();
                     while (nextLine != null && nextLine.length() > 0) {
                         nextLine = in.readLine();
-                        String [] tokens = Globals.colonPattern.split(nextLine, 2);
-                        if(tokens.length == 2) {
+                        String[] tokens = Globals.colonPattern.split(nextLine, 2);
+                        if (tokens.length == 2) {
                             headers.put(tokens[0].trim(), tokens[1].trim());
                         }
                     }
-                    if(headers.containsKey("Sec-WebSocket-Key"))
-                    {
-                        establishWebSocketConnection(out, headers);
 
-                    }
-                    else {
-                        log.info(cmd);
+                    log.info(cmd);
 
-
-                        String command = null;
-                        Map<String, String> params = null;
-                        String[] tokens = inputLine.split(" ");
-                        if (tokens.length < 2) {
-                            sendHTTPResponse(out, "ERROR unexpected command line: " + inputLine);
-                            return;
-                        } else {
-                            String[] parts = tokens[1].split("\\?");
-                            if (parts.length < 2) {
-                                sendHTTPResponse(out, "ERROR unexpected command line: " + inputLine);
-                                return;
-                            } else {
-                                command = parts[0];
-                                params = parseParameters(parts[1]);
-                            }
-                        }
-
-
-                        // If a callback (javascript) function is specified write it back immediately.  This function
-                        // is used to cancel a timeout handler
-                        String callback = params.get("callback");
-                        if (callback != null) {
-                            sendHTTPResponse(out, callback);
-                        }
-
-                        processGet(command, params, cmdExe);
-
-                        // If no callback was specified write back a "no response" header
-                        if (callback == null) {
-                            sendHTTPResponse(out, null);
-                        }
-
-                        // http sockets are used for one request only
+                    String command = null;
+                    Map<String, String> params = null;
+                    String[] tokens = inputLine.split(" ");
+                    if (tokens.length < 2) {
+                        sendHTTPResponse(out, "ERROR unexpected command line: " + inputLine);
                         return;
+                    } else {
+                        String[] parts = tokens[1].split("\\?");
+
+                        command = parts[0];
+                        params = parts.length < 2 ? new HashMap() : parseParameters(parts[1]);
+
                     }
+
+
+                    // If a callback (javascript) function is specified write it back immediately.  This function
+                    // is used to cancel a timeout handler
+                    String callback = params.get("callback");
+                    if (callback != null) {
+                        sendHTTPResponse(out, callback);
+                    }
+
+                    processGet(command, params, cmdExe);
+
+                    // If no callback was specified write back a "no response" header
+                    if (callback == null) {
+                        sendHTTPResponse(out, null);
+                    }
+
+                    // http sockets are used for one request only
+                    return;
+                    // }
 
                 } else {
                     // Port command
@@ -216,7 +207,7 @@ public class CommandListener implements Runnable {
             out.print("Upgrade: websocket" + CRNL);
             out.print("Connection: Upgrade" + CRNL);
             out.print("Sec-WebSocket-Accept: " + responseKey + CRNL);
-            if(headers.containsKey("Sec-WebSocket-Protocol")) {
+            if (headers.containsKey("Sec-WebSocket-Protocol")) {
                 out.print("Sec-WebSocket-Protocol: " + headers.get("Sec-WebSocket-Protocol") + CRNL);
             }
             out.print(CRNL);

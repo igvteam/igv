@@ -11,8 +11,8 @@
 
 package org.broad.igv.sam.reader;
 
-import net.sf.picard.sam.BuildBamIndex;
-import net.sf.samtools.SAMFileReader;
+import picard.sam.BuildBamIndex;
+import htsjdk.samtools.SAMFileReader;
 import org.broad.igv.ui.util.IndexCreatorDialog;
 
 import javax.swing.*;
@@ -53,10 +53,4 @@ public class SamIndexer extends AlignmentIndexer {
         return (flags & READ_UNMAPPED_FLAG) == 0;
     }
 
-    //TODO MOVE THIS SOMEWHERE ELSE, LIKELY BamIndexer class
-    //TODO Or maybe remove completely
-    public static void createBAMIndex(File inputBam, File outputBam){
-        SAMFileReader reader = new SAMFileReader(inputBam);
-        BuildBamIndex.createIndex(reader, outputBam);
-    }
 }

@@ -19,11 +19,11 @@ package org.broad.igv.sam.reader;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import net.sf.samtools.*;
-import net.sf.samtools.util.CloseableIterator;
+import htsjdk.samtools.*;
+import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.*;
 
@@ -89,7 +89,7 @@ public class SAMReaderTest {
     }
 
     public static void extractRearrangments(File f, File outputFile, boolean xOnly, int nLimit) {
-        SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+        SAMFileReader.setDefaultValidationStringency(ValidationStringency.SILENT);
         SAMFileReader reader = new SAMFileReader(f);
         SAMFileHeader header = reader.getFileHeader();
 
@@ -112,7 +112,7 @@ public class SAMReaderTest {
     }
 
     public static void testReadRecords(File f, int nRecords) {
-        SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+        SAMFileReader.setDefaultValidationStringency(ValidationStringency.SILENT);
         SAMFileReader reader = new SAMFileReader(f);
         // SAMFileHeader header = reader.getFileHeader();
         // for (SAMSequenceRecord rec : header.getSequenceDictionary().getSequences()) {

@@ -11,8 +11,8 @@
 
 package org.broad.igv.cli_plugin;
 
-import org.broad.tribble.Feature;
-import org.broad.tribble.readers.LineIterator;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.readers.LineIterator;
 
 import java.io.IOException;
 
@@ -25,10 +25,10 @@ public interface LineFeatureDecoder<T extends Feature> {
 
     /**
      * Read the header AND NO MORE from the {@code reader}.
-     * {@link org.broad.tribble.readers.LineIterator#peek()} can be
+     * {@link htsjdk.tribble.readers.LineIterator#peek()} can be
      * used to make sure no more than the header is consumed.
      *
-     * @see org.broad.tribble.FeatureCodec#readHeader(Object)
+     * @see htsjdk.tribble.FeatureCodec#readHeader(Object)
      *
      * @param reader
      * @return

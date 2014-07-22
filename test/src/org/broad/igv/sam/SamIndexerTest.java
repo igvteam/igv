@@ -16,7 +16,7 @@
 
 package org.broad.igv.sam;
 
-import net.sf.samtools.util.CloseableIterator;
+import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.sam.reader.*;
 import org.broad.igv.util.TestUtils;
@@ -58,26 +58,7 @@ public class SamIndexerTest extends AbstractHeadlessTest{
         assertAlignmentQueryValid(reader, chr, start, end);
     }
 
-    @Test
-    public void createBamIndex() throws Exception{
-        String bamFilePath = TestUtils.DATA_DIR + "bam/chr1_chr2.hg18.bam";
-        File bamFile = new File(bamFilePath);
 
-        String bamIndexPath = bamFilePath + ".bai";
-        File bamIndex = new File(bamIndexPath);
-        bamIndex.deleteOnExit();
-        SamIndexer.createBAMIndex(bamFile, bamIndex);
-
-        BAMFileReader reader = new BAMFileReader(bamFile);
-
-        assertTrue("No index found", reader.hasIndex());
-
-        String chr = "chr1";
-        int start = 155743955 - 100;
-        int end = start + 300;
-
-        assertAlignmentQueryValid(reader, chr, start, end);
-    }
 
     private void assertAlignmentQueryValid(AlignmentReader reader, String chr, int start, int end) throws IOException{
 

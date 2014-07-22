@@ -18,7 +18,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.util.collections.MultiMap;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.util.*;
 
@@ -157,8 +157,8 @@ public class FeatureDB {
     }
 
 
-    public static void addFeatures(List<org.broad.tribble.Feature> features, Genome genome) {
-        for (org.broad.tribble.Feature feature : features) {
+    public static void addFeatures(List<htsjdk.tribble.Feature> features, Genome genome) {
+        for (htsjdk.tribble.Feature feature : features) {
             if (feature instanceof IGVFeature)
                 addFeature((IGVFeature) feature, genome);
         }

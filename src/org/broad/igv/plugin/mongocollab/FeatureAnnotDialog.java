@@ -21,7 +21,7 @@ import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorChooserPanel;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

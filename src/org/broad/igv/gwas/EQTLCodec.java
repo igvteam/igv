@@ -19,9 +19,9 @@ import org.broad.igv.tdf.BufferedByteWriter;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.util.StringUtils;
-import org.broad.tribble.AsciiFeatureCodec;
-import org.broad.tribble.Feature;
-import org.broad.tribble.readers.LineIterator;
+import htsjdk.tribble.AsciiFeatureCodec;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.readers.LineIterator;
 
 import java.util.HashMap;
 import java.util.Map;

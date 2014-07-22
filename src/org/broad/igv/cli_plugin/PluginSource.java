@@ -24,11 +24,11 @@ import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.RuntimeUtils;
-import org.broad.tribble.AsciiFeatureCodec;
-import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureCodec;
-import org.broad.tribble.bed.SimpleBEDFeature;
-import org.broad.tribble.readers.PositionalBufferedStream;
+import htsjdk.tribble.AsciiFeatureCodec;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.FeatureCodec;
+import htsjdk.tribble.bed.SimpleBEDFeature;
+import htsjdk.tribble.readers.PositionalBufferedStream;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlAdapter;

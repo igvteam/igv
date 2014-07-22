@@ -26,9 +26,9 @@ package org.broad.igv.util.stream;
 
 
 import com.google.common.primitives.Ints;
-import net.sf.samtools.seekablestream.SeekableFileStream;
-import net.sf.samtools.seekablestream.SeekableHTTPStream;
-import net.sf.samtools.seekablestream.SeekableStream;
+import htsjdk.samtools.seekablestream.SeekableFileStream;
+import htsjdk.samtools.seekablestream.SeekableHTTPStream;
+import htsjdk.samtools.seekablestream.SeekableStream;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.util.TestUtils;
 import org.junit.Assume;

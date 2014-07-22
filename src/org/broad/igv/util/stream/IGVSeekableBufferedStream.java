@@ -25,7 +25,7 @@
 package org.broad.igv.util.stream;
 
 import com.google.common.primitives.Ints;
-import net.sf.samtools.seekablestream.SeekableStream;
+import htsjdk.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;

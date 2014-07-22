@@ -11,9 +11,9 @@
 
 package org.broad.igv.sam.reader;
 
-import net.sf.picard.sam.SamFileHeaderMerger;
-import net.sf.samtools.SAMFileHeader;
-import net.sf.samtools.util.CloseableIterator;
+import htsjdk.samtools.SamFileHeaderMerger;
+import htsjdk.samtools.SAMFileHeader;
+import htsjdk.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;

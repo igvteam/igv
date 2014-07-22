@@ -42,7 +42,7 @@ public interface FeatureParser {
      * @param reader
      * @return
      */
-    List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome);
+    List<htsjdk.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome);
 
 
     public TrackProperties getTrackProperties();

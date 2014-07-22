@@ -18,10 +18,10 @@ package org.broad.igv.sam;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import net.sf.samtools.SAMFileHeader;
-import net.sf.samtools.SAMRecord;
-import net.sf.samtools.SAMSequenceDictionary;
-import net.sf.samtools.SAMSequenceRecord;
+import htsjdk.samtools.SAMFileHeader;
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.SAMSequenceDictionary;
+import htsjdk.samtools.SAMSequenceRecord;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
@@ -38,7 +38,7 @@ import static junit.framework.Assert.assertEquals;
 /**
  * @author jrobinso
  */
-public class SamAlignmentTest extends AbstractHeadlessTest {
+public class PicardAlignmentTest extends AbstractHeadlessTest {
 
 
     @Ignore
@@ -52,7 +52,7 @@ public class SamAlignmentTest extends AbstractHeadlessTest {
                         .getBytes();
         String cigarString = "46M1I29M";
 
-//        SamAlignment instance = new SamAlignment();
+//        PicardAlignment instance = new PicardAlignment();
 //        instance.createAlignmentBlocks(cigarString, readBases, readBaseQualities);
 //
 //        byte[] adjustedBases = new byte[75];
@@ -82,15 +82,15 @@ public class SamAlignmentTest extends AbstractHeadlessTest {
                         .getBytes();
         String cigarString = "53M4D23M";
 
-//        SamAlignment instance = new SamAlignment();
+//        PicardAlignment instance = new PicardAlignment();
 //        instance.createAlignmentBlocks(cigarString, readBases, readBaseQualities);
 //
 //        byte[] adjustedBases = new byte[80];
 //        System.arraycopy(readBases, 0, adjustedBases, 0, 53);
-//        adjustedBases[53] = SamAlignment.DELETE_CHAR;
-//        adjustedBases[54] = SamAlignment.DELETE_CHAR;
-//        adjustedBases[55] = SamAlignment.DELETE_CHAR;
-//        adjustedBases[56] = SamAlignment.DELETE_CHAR;
+//        adjustedBases[53] = PicardAlignment.DELETE_CHAR;
+//        adjustedBases[54] = PicardAlignment.DELETE_CHAR;
+//        adjustedBases[55] = PicardAlignment.DELETE_CHAR;
+//        adjustedBases[56] = PicardAlignment.DELETE_CHAR;
 //        System.arraycopy(readBases, 53, adjustedBases, 57, 23);
 //
 //        assertEquals(adjustedBases.length, instance.getReadLength());
@@ -114,7 +114,7 @@ public class SamAlignmentTest extends AbstractHeadlessTest {
         int[] expFlowStarts = new int[]{-1, 5, -1};
         int row = 0;
         while (iter.hasNext()) {
-            SamAlignment alignment = (SamAlignment) iter.next();
+            PicardAlignment alignment = (PicardAlignment) iter.next();
 
             assertEquals(expFlowStarts[row], alignment.getFlowSignalsStart());
 
@@ -123,39 +123,6 @@ public class SamAlignmentTest extends AbstractHeadlessTest {
     }
 
 
-    @Test
-    public void testReduceReadDecoding() {
-        final byte[] quals = {60, 60, 60, 60, 60, 60};
-        final byte[] bases = {'A', 'A', 'A', 'A', 'A', 'A'};
-
-        final short[] expCountsBytes = {10, 11, 9, 10, 18, 25, 130};
-        final short[] expCountsShorts = {10, 11, 9, 10, 18, 25, 130, Short.MAX_VALUE};
-
-        final byte[] compressedCountsBytes = {10, 1, -1, 0, 8, 15, 120};
-        final short[] compressedCountsShorts = {10, 1, -1, 0, 8, 15, 120, (short) (Short.MAX_VALUE - expCountsShorts[0] + 1)};
-        final int chromosomeSize = 1000;
-        SAMFileHeader header = new SAMFileHeader();
-        header.setSortOrder(net.sf.samtools.SAMFileHeader.SortOrder.coordinate);
-        SAMSequenceDictionary dict = new SAMSequenceDictionary();
-        for (int x = 0; x < 10; x++) {
-            SAMSequenceRecord rec = new SAMSequenceRecord("chr" + (x), chromosomeSize /* size */);
-            rec.setSequenceLength(chromosomeSize);
-            dict.addSequence(rec);
-        }
-        header.setSequenceDictionary(dict);
-        SAMRecord record = new SAMRecord(header);
-        record.setBaseQualities(quals);
-        record.setReadBases(bases);
-
-        record.setAttribute(SamAlignment.REDUCE_READS_TAG, compressedCountsBytes);
-        Assert.assertArrayEquals(expCountsBytes, SamAlignment.decodeReduceCounts(record));
-
-        record.setAttribute(SamAlignment.REDUCE_READS_TAG, compressedCountsShorts);
-        Assert.assertArrayEquals(expCountsShorts, SamAlignment.decodeReduceCounts(record));
-
-        record.setAttribute(SamAlignment.REDUCE_READS_TAG, "not meaningful");
-        Assert.assertNull(SamAlignment.decodeReduceCounts(record));
-    }
 
     @Ignore("Don't store hard clipped bases in blocks")
     @Test
@@ -164,7 +131,7 @@ public class SamAlignmentTest extends AbstractHeadlessTest {
         Iterator<Alignment> iter = dataManager.getReader().iterator();
 
         while(iter.hasNext()){
-            SamAlignment al = (SamAlignment) iter.next();
+            PicardAlignment al = (PicardAlignment) iter.next();
             assertEquals(al.getRecord().getReadString(), al.buildReadSequenceFromBlocks());
         }
     }

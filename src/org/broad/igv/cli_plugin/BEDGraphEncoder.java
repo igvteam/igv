@@ -13,7 +13,7 @@ package org.broad.igv.cli_plugin;
 
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.util.StringUtils;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.util.List;
 import java.util.Map;

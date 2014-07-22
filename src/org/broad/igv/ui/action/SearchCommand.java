@@ -27,7 +27,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import javax.swing.*;
 import java.awt.*;

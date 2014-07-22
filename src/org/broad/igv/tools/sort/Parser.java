@@ -12,7 +12,7 @@
 package org.broad.igv.tools.sort;
 
 import org.broad.igv.Globals;
-import org.broad.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.IOException;
 

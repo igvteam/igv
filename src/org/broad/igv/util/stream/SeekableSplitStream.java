@@ -12,7 +12,7 @@
 package org.broad.igv.util.stream;
 
 
-import net.sf.samtools.seekablestream.SeekableStream;
+import htsjdk.samtools.seekablestream.SeekableStream;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 

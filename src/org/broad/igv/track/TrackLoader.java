@@ -68,8 +68,8 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.util.PedigreeUtils;
-import org.broad.tribble.AsciiFeatureCodec;
-import org.broadinstitute.variant.vcf.VCFHeader;
+import htsjdk.tribble.AsciiFeatureCodec;
+import htsjdk.variant.vcf.VCFHeader;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -170,7 +170,8 @@ public class TrackLoader {
                     typeString.endsWith(".sam.list") || typeString.endsWith(".bam.list") ||
                     typeString.endsWith("_sorted.txt") ||
                     typeString.endsWith(".aligned") || typeString.endsWith(".sai") ||
-                    typeString.endsWith(".bai") || typeString.equals("alist")) {
+                    typeString.endsWith(".bai") || typeString.equals("alist") ||
+                    typeString.endsWith(".ga4gh")) {
                 loadAlignmentsTrack(locator, newTracks, genome);
             } else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) ||
                     typeString.endsWith("cpg.txt") || typeString.endsWith(".expr")) {
@@ -329,7 +330,7 @@ public class TrackLoader {
     private void loadSyntentyMapping(ResourceLocator locator, List<Track> newTracks) {
 
         List<BlastMapping> mappings = (new BlastParser()).parse(locator.getPath());
-        List<org.broad.tribble.Feature> features = new ArrayList<org.broad.tribble.Feature>(mappings.size());
+        List<htsjdk.tribble.Feature> features = new ArrayList<htsjdk.tribble.Feature>(mappings.size());
         features.addAll(mappings);
 
         Genome genome = GenomeManager.getInstance().getCurrentGenome();

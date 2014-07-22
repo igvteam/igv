@@ -15,7 +15,7 @@ import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.IExon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.renderer.SelectableFeatureRenderer;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 
 import java.awt.event.MouseEvent;
 import java.util.HashSet;

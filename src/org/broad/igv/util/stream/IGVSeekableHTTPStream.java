@@ -11,9 +11,9 @@
 
 package org.broad.igv.util.stream;
 
-import net.sf.samtools.seekablestream.SeekableStream;
+import htsjdk.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
-import org.broad.tribble.util.URLHelper;
+import htsjdk.tribble.util.URLHelper;
 
 import java.io.EOFException;
 import java.io.IOException;

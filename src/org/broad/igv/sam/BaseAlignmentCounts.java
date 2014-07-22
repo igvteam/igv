@@ -19,7 +19,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -117,7 +117,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
                     if (gapTypes != null
                             && (lastBlockEnd >= 0)
                             && (gapIdx < gapTypes.length)) {
-                        if (gapTypes[gapIdx] == SamAlignment.DELETION) {
+                        if (gapTypes[gapIdx] == SAMAlignment.DELETION) {
                             for (int pos = lastBlockEnd; pos < b.getStart(); pos++) {
                                 incrementDeletion(pos, isNegativeStrand);
                             }

@@ -13,7 +13,7 @@ package org.broad.igv.cli_plugin;
 
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.SamAlignment;
+import org.broad.igv.sam.PicardAlignment;
 import org.broad.igv.sam.reader.SAMReader;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
@@ -37,21 +37,21 @@ public class AlignmentIOTest extends AbstractHeadlessTest {
         String testFile = TestUtils.DATA_DIR + "sam/NA12878.muc1.test.sam";
         SAMReader reader = new SAMReader(testFile);
 
-        Iterator<SamAlignment> inputAlignmentIterator = reader.iterator();
-        ArrayList<SamAlignment> inputAlignmentList = new ArrayList<SamAlignment>();
+        Iterator<PicardAlignment> inputAlignmentIterator = reader.iterator();
+        ArrayList<PicardAlignment> inputAlignmentList = new ArrayList<PicardAlignment>();
 
         while (inputAlignmentIterator.hasNext()) {
-            SamAlignment al = inputAlignmentIterator.next();
+            PicardAlignment al = inputAlignmentIterator.next();
             inputAlignmentList.add(al);
         }
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        FeatureEncoder<SamAlignment> alignmentEncoder = new SamAlignmentEncoder();
+        FeatureEncoder<PicardAlignment> alignmentEncoder = new SamAlignmentEncoder();
         alignmentEncoder.encodeAll(bos, reader.iterator());
 
         ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
 
-        FeatureDecoder<SamAlignment> alignmentDecoder = new AlignmentDecoder();
-        Iterator<SamAlignment> decodedAlignments = alignmentDecoder.decodeAll(bis, false);
+        FeatureDecoder<PicardAlignment> alignmentDecoder = new AlignmentDecoder();
+        Iterator<PicardAlignment> decodedAlignments = alignmentDecoder.decodeAll(bis, false);
 
         int ind = 0;
         while (decodedAlignments.hasNext()) {

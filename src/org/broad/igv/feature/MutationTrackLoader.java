@@ -18,8 +18,8 @@ import org.broad.igv.feature.tribble.MUTCodec;
 import org.broad.igv.track.*;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.Feature;
-import org.broad.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -64,7 +64,7 @@ public class MutationTrackLoader {
             }
 
         } else {
-            Map<String, List<org.broad.tribble.Feature>> features = loadMutations();
+            Map<String, List<htsjdk.tribble.Feature>> features = loadMutations();
             for (String sampleId : features.keySet()) {
                 String id = locator.getPath() + "_" + sampleId;
                 MutationTrack track = new MutationTrack(locator, id, new FeatureCollectionSource(features.get(sampleId), genome));
@@ -118,7 +118,7 @@ public class MutationTrackLoader {
      *
      * @return
      */
-    private Map<String, List<org.broad.tribble.Feature>> loadMutations() {
+    private Map<String, List<htsjdk.tribble.Feature>> loadMutations() {
         AsciiLineReader reader = null;
         String nextLine = null;
 
@@ -126,7 +126,7 @@ public class MutationTrackLoader {
 
             if (codec == null) codec = new MUTCodec(locator.getPath(), genome);
 
-            Map<String, List<org.broad.tribble.Feature>> mutationMap = new LinkedHashMap();
+            Map<String, List<htsjdk.tribble.Feature>> mutationMap = new LinkedHashMap();
 
             reader = ParsingUtils.openAsciiReader(locator);
 
@@ -143,7 +143,7 @@ public class MutationTrackLoader {
 
                 if (mut != null) {
                     String sampleId = mut.getSampleId();
-                    List<org.broad.tribble.Feature> features = mutationMap.get(sampleId);
+                    List<htsjdk.tribble.Feature> features = mutationMap.get(sampleId);
                     if (features == null) {
                         features = new ArrayList<Feature>();
                         mutationMap.put(sampleId, features);

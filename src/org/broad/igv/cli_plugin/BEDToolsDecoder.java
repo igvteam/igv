@@ -14,7 +14,7 @@ package org.broad.igv.cli_plugin;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
-import org.broad.tribble.readers.LineIterator;
+import htsjdk.tribble.readers.LineIterator;
 
 import java.io.IOException;
 import java.util.Arrays;

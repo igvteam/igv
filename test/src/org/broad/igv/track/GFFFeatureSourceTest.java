@@ -22,7 +22,7 @@ import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.broad.tribble.Feature;
+import htsjdk.tribble.Feature;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -379,7 +379,7 @@ chr1	.	CDS	7000	7600	.	+	1	ID=cds00004;Parent=mRNA00003;Name=edenprotein.4
                     new GFFFeatureSource(TribbleFeatureSource.getFeatureSource(new ResourceLocator(file), genome));
 
             Iterator<Feature> iter = source.getFeatures("chr1", 0, Integer.MAX_VALUE);
-            List<org.broad.tribble.Feature> features = new ArrayList<Feature>();
+            List<htsjdk.tribble.Feature> features = new ArrayList<Feature>();
             while (iter.hasNext()) {
                 features.add(iter.next());
             }
