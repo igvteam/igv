@@ -38,7 +38,7 @@ public class AbstractHeadlessTest {
     protected PrintStream oldOut = System.out;
 
     @Rule
-    public TestRule testTimeout = new Timeout((int) 30e3);
+    public TestRule testTimeout = new Timeout((int) 30e9);
 
     @BeforeClass
     public static void setUpClass() throws Exception {
