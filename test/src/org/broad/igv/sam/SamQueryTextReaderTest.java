@@ -72,6 +72,8 @@ public class SamQueryTextReaderTest {
         int count = 0;
         while (iter.hasNext()) {
             Alignment record = iter.next();
+            if(record.isMapped()) continue;
+
             assertEquals(chr, record.getChr());
             assertTrue(record.getEnd() >= start);
             assertTrue(record.getStart() <= end);
