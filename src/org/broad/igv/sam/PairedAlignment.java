@@ -27,11 +27,9 @@ public class PairedAlignment implements Alignment {
     String chr;
     int start;
     int end;
-    boolean negativeStrand;
     Alignment firstAlignment;
     Alignment secondAlignment;
 
-    AlignmentBlock[] blocks;
 
 
     public PairedAlignment(Alignment firstAlignment) {
@@ -311,7 +309,7 @@ public class PairedAlignment implements Alignment {
 
     @Override
     public boolean isSupplementary() {
-        return firstAlignment.isSupplementary() && secondAlignment.isSupplementary();
+        return firstAlignment.isSupplementary() && (secondAlignment == null || secondAlignment.isSupplementary());
     }
 
 }

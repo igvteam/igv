@@ -192,7 +192,7 @@ public class AlignmentPacker {
 
                 if (al.isMapped()) {
                     Alignment alignment = al;
-                    if (pairAlignments && al.isPaired() && al.getMate().isMapped()) {
+                    if (pairAlignments && al.isPaired() && al.getMate().isMapped() && al.getMate().getChr().equals(al.getChr())) {
                         String readName = al.getReadName();
                         PairedAlignment pair = pairs.get(readName);
                         if (pair == null) {
@@ -200,7 +200,7 @@ public class AlignmentPacker {
                             pairs.put(readName, pair);
                             alignment = pair;
                         } else {
-                            // Add second alignment to pair
+                            // Add second alignment to pair.
                             pair.setSecondAlignment(al);
                             pairs.remove(readName);
                             continue;
@@ -254,6 +254,7 @@ public class AlignmentPacker {
                         allocatedCount++;
 
                         nextStart = alignment.getEnd() + MIN_ALIGNMENT_SPACING;
+
                     }
 
                     //Reached the end of this range, move to the next
@@ -406,6 +407,11 @@ public class AlignmentPacker {
 
             PriorityQueue<Alignment> bucket = null;
             while (bucketNumber < bucketArray.length) {
+
+                if(bucketNumber < 0) {
+                    System.out.println();
+                }
+
                 bucket = bucketArray[bucketNumber];
                 if (bucket != null) {
                     if (bucket.isEmpty()) {
