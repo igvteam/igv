@@ -18,6 +18,14 @@ import java.awt.*;
  */
 public class Ga4ghAlignment extends SAMAlignment {
 
+    protected int alignmentStart;
+    protected int alignmentEnd;
+    int inferredInsertSize;
+    int mappingQuality = 255;  // 255 by default
+    String readName;
+    protected String cigarString;
+    protected String readSequence;
+
     public Ga4ghAlignment(JsonObject json) {
 
         String refName = json.get("referenceSequenceName").getAsString();
@@ -68,6 +76,45 @@ public class Ga4ghAlignment extends SAMAlignment {
                 null, null, -1);
 
     }
+
+    /**
+     * @return the unclippedStart
+     */
+    public int getAlignmentStart() {
+        return alignmentStart;
+    }
+
+
+    public int getAlignmentEnd() {
+
+        return alignmentEnd;
+    }
+
+
+    public String getReadName() {
+        return readName;
+    }
+
+    public int getMappingQuality() {
+        return mappingQuality;
+    }
+
+    public int getInferredInsertSize() {
+        return inferredInsertSize;
+    }
+
+
+    public String getCigarString() {
+        return cigarString;
+    }
+    public int getReadLength() {
+        return readSequence.length();
+    }
+
+    public String getReadSequence() {
+        return readSequence;
+    }
+
 
     @Override
     public Object getAttribute(String key) {

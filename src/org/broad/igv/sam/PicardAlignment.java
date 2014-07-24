@@ -47,16 +47,9 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
 
         // SAMRecord is 1 based inclusive.  IGV is 0 based exclusive.
 
-        this.alignmentStart = record.getAlignmentStart() - 1;
-        this.alignmentEnd = Math.max(alignmentStart, record.getAlignmentEnd());
-        this.end = alignmentEnd;   // might be modified later for soft clipping
-        this.start = this.alignmentStart;   // might be modified later for soft clipping
-        this.mappingQuality = record.getMappingQuality();
-        this.readName = record.getReadName().trim();
-        this.inferredInsertSize = record.getInferredInsertSize();
+        this.end = record.getAlignmentEnd();   // might be modified later for soft clipping
+        this.start = record.getAlignmentStart() - 1;   // might be modified later for soft clipping
 
-        this.cigarString = record.getCigarString();
-        this.readSequence = record.getReadString();
 
         if (record.getReadPairedFlag()) {
             String mateReferenceName = record.getMateReferenceName();
@@ -119,8 +112,49 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
         return record.getSAMString();
     }
 
+
+    @Override
+    public String getReadName() {
+        return record.getReadName();
+    }
+
+    @Override
+    public int getMappingQuality() {
+        return record.getMappingQuality();
+    }
+
+    @Override
+    public int getInferredInsertSize() {
+        return record.getInferredInsertSize();
+    }
+
+    @Override
+    public String getCigarString() {
+        return record.getCigarString();
+    }
+
+    @Override
+    public int getReadLength() {
+        return record.getReadString().length();
+    }
+
+    @Override
+    public String getReadSequence() {
+        return record.getReadString();
+    }
+
     public String getClipboardString(double location) {
         return getValueStringImpl(location, false);
+    }
+
+    @Override
+    public int getAlignmentStart() {
+        return record.getAlignmentStart() - 1;
+    }
+
+    @Override
+    public int getAlignmentEnd() {
+        return record.getAlignmentEnd();
     }
 
     String getValueStringImpl(double position, boolean truncate) {
@@ -150,7 +184,7 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
             }
         }
 
-        if(record.getSupplementaryAlignmentFlag()){
+        if (record.getSupplementaryAlignmentFlag()) {
             buf.append("<br>Supplementary alignment (chimeric)");
         }
 

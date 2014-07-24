@@ -50,8 +50,28 @@ public class BisulfiteBaseInfoTest {
         }
 
         @Override
+        public String getReadName() {
+            return null;
+        }
+
+        @Override
+        public int getMappingQuality() {
+            return 0;
+        }
+
+        @Override
+        public int getInferredInsertSize() {
+            return 0;
+        }
+
+        @Override
         public String getCigarString() {
             return null;  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        @Override
+        public int getReadLength() {
+            return 0;
         }
 
         @Override

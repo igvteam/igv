@@ -84,28 +84,20 @@ public abstract class SAMAlignment implements Alignment {
 
     protected int flags;
 
+    String chr;
     protected int start;  // <= Might differ from alignment start if soft clipping is considered
     protected int end;    // ditto
-    protected int alignmentStart;
-    protected int alignmentEnd;
     protected Color color = null;
 
     protected String readGroup;
     protected String library;
     protected String sample;
 
-    String chr;
-    int inferredInsertSize;
-    int mappingQuality = 255;  // 255 by default
     ReadMate mate;
-    String readName;
     AlignmentBlock[] alignmentBlocks;
     AlignmentBlock[] insertions;
     char[] gapTypes;
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
-
-    protected String cigarString;
-    protected String readSequence;
 
     protected String mateSequence = null;
     protected String pairOrientation = "";
@@ -132,17 +124,17 @@ public abstract class SAMAlignment implements Alignment {
         return color;
     }
 
-    public String getReadName() {
-        return readName;
-    }
+    abstract public String getReadName();
 
-    public int getMappingQuality() {
-        return mappingQuality;
-    }
+    abstract public int getMappingQuality();
 
-    public int getInferredInsertSize() {
-        return inferredInsertSize;
-    }
+    abstract public int getInferredInsertSize();
+
+
+    abstract public String getCigarString();
+    abstract public int getReadLength();
+
+    abstract public String getReadSequence();
 
     public AlignmentBlock[] getAlignmentBlocks() {
         return alignmentBlocks;
@@ -570,16 +562,9 @@ public abstract class SAMAlignment implements Alignment {
     /**
      * @return the unclippedStart
      */
-    public int getAlignmentStart() {
-        return alignmentStart;
-    }
+    abstract public int getAlignmentStart();
 
-    public String getCigarString() {
-        return cigarString;
-    }
-    public int getReadLength() {
-        return readSequence.length();
-    }
+    abstract public int getAlignmentEnd();
 
     public boolean isDuplicate() {
         return (flags & DUPLICATE_READ_FLAG) != 0;
@@ -617,13 +602,6 @@ public abstract class SAMAlignment implements Alignment {
     @Override
     public boolean isSupplementary() {
         return (flags & SUPPLEMENTARY_ALIGNMENT_FLAG) != 0;
-    }
-
-    /**
-     * @return the alignmentEnd
-     */
-    public int getAlignmentEnd() {
-        return alignmentEnd;
     }
 
     public int getStart() {
@@ -687,9 +665,6 @@ public abstract class SAMAlignment implements Alignment {
     }
 
 
-    public String getReadSequence() {
-        return readSequence;
-    }
 
     /**
      * Use blocks to recreate read sequence.
@@ -778,7 +753,7 @@ public abstract class SAMAlignment implements Alignment {
             }
 
             final char[] tmp = new char[4];
-            int isize = inferredInsertSize;
+            int isize = getInferredInsertSize();
             int estReadLen = getAlignmentEnd() - getAlignmentStart();
             if (isize == 0) {
                 //isize not recorded.  Need to estimate.  This calculation was validated against an Illumina
