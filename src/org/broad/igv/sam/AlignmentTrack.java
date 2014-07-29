@@ -104,11 +104,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     public enum SortOption {
-        START, STRAND, NUCLEOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FIRST_OF_PAIR_STRAND, MATE_CHR, TAG;
+        START, STRAND, NUCLEOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FIRST_OF_PAIR_STRAND, MATE_CHR, TAG, SUPPLEMENTARY;
     }
 
     public enum GroupOption {
-        STRAND, SAMPLE, READ_GROUP, FIRST_OF_PAIR_STRAND, TAG, PAIR_ORIENTATION, MATE_CHROMOSOME, NONE
+        STRAND, SAMPLE, READ_GROUP, FIRST_OF_PAIR_STRAND, TAG, PAIR_ORIENTATION, MATE_CHROMOSOME, NONE, SUPPLEMENTARY
     }
 
     public enum BisulfiteContext {
@@ -1444,12 +1444,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             mappings.put("sample", GroupOption.SAMPLE);
             mappings.put("read group", GroupOption.READ_GROUP);
             mappings.put("chromosome of mate", GroupOption.MATE_CHROMOSOME);
+            mappings.put("pair orientation", GroupOption.PAIR_ORIENTATION);
+            mappings.put("supplementary flag", GroupOption.SUPPLEMENTARY);
 
-            String addExtraStr = System.getProperty("enable.groupby.extras", "false");
-            boolean addExtras = Boolean.parseBoolean(addExtraStr);
-            if (addExtras) {
-                mappings.put("pair orientation", GroupOption.PAIR_ORIENTATION);
-            }
 
             for (Map.Entry<String, GroupOption> el : mappings.entrySet()) {
                 JCheckBoxMenuItem mi = getGroupMenuItem(el.getKey(), el.getValue());
@@ -1511,10 +1508,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 mappings.put("insert size", SortOption.INSERT_SIZE);
                 mappings.put("chromosome of mate", SortOption.MATE_CHR);
             }
+           // mappings.put("supplementary flag", SortOption.SUPPLEMENTARY);
 
             for (Map.Entry<String, SortOption> el : mappings.entrySet()) {
                 sortMenu.add(getSortMenuItem(el.getKey(), el.getValue()));
             }
+
 
             JMenuItem tagOption = new JMenuItem("tag");
             tagOption.addActionListener(new ActionListener() {

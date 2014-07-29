@@ -18,9 +18,10 @@ import java.util.List;
 
 /**
  * A row of alignments, packed to minimize empty space
-* @author jacob
-* @date 2014-Jan-10
-*/
+ *
+ * @author jacob
+ * @date 2014-Jan-10
+ */
 public class Row implements Comparable<Row> {
     int nextIdx;
     private double score = 0;
@@ -122,6 +123,8 @@ public class Row implements Comparable<Row> {
                             return mate.getChr().hashCode();
                         }
                     }
+                case SUPPLEMENTARY:
+                    return centerAlignment.isSupplementary() ? 0 : 1;
                 case TAG:
                     Object tagValue = centerAlignment.getAttribute(tag);
                     score = tagValue == null ? 0 : tagValue.hashCode();
