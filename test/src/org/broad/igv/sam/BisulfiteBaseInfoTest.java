@@ -183,6 +183,11 @@ public class BisulfiteBaseInfoTest {
             }
         }
 
+        @Override
+        protected String getAttributeString(boolean truncate) {
+            return "";
+        }
+
         /**
          * Return the strand of the read marked "first-in-pair" for a paired alignment. This method can return
          * Strand.NONE if the end marked first is unmapped.

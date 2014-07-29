@@ -115,6 +115,12 @@ public class Ga4ghAlignment extends SAMAlignment {
         return readSequence;
     }
 
+    // TODO -- implement
+    @Override
+    protected String getAttributeString(boolean truncate) {
+        return "";
+    }
+
 
     @Override
     public Object getAttribute(String key) {

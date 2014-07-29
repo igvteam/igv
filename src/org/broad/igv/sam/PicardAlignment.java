@@ -143,10 +143,6 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
         return record.getReadString();
     }
 
-    public String getClipboardString(double location) {
-        return getValueStringImpl(location, false);
-    }
-
     @Override
     public int getAlignmentStart() {
         return record.getAlignmentStart() - 1;
@@ -157,37 +153,10 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
         return record.getAlignmentEnd();
     }
 
-    String getValueStringImpl(double position, boolean truncate) {
+    protected String getAttributeString(boolean truncate) {
 
-        StringBuffer buf = new StringBuffer(super.getValueString(position, null));
+        StringBuffer buf = new StringBuffer();
         SAMRecord record = getRecord();
-        if (isPaired()) {
-            boolean sectionBreak = false;
-            if (record.getFirstOfPairFlag()) {
-                buf.append("<br>First in pair");
-                sectionBreak = true;
-            }
-            if (record.getSecondOfPairFlag()) {
-                buf.append("<br>Second in pair");
-                sectionBreak = true;
-            }
-            if (record.getNotPrimaryAlignmentFlag()) {
-                buf.append("<br>Alignment NOT primary");
-                sectionBreak = true;
-            }
-            if (record.getReadFailsVendorQualityCheckFlag()) {
-                buf.append("<br>FAILED Vendor quality check");
-                sectionBreak = true;
-            }
-            if (sectionBreak) {
-                buf.append("<br>-------------------");
-            }
-        }
-
-        if (record.getSupplementaryAlignmentFlag()) {
-            buf.append("<br>Supplementary alignment (chimeric)");
-        }
-
         List<SAMRecord.SAMTagAndValue> attributes = record.getAttributes();
         if (attributes != null && !attributes.isEmpty()) {
 
@@ -230,11 +199,6 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
                 }
 
             }
-            buf.append("<br>-------------------");
-        }
-
-        if (mateSequence != null) {
-            buf.append("<br>Unmapped mate sequence: " + mateSequence);
             buf.append("<br>-------------------");
         }
         return buf.toString();

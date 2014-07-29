@@ -130,8 +130,8 @@ public abstract class SAMAlignment implements Alignment {
 
     abstract public int getInferredInsertSize();
 
-
     abstract public String getCigarString();
+
     abstract public int getReadLength();
 
     abstract public String getReadSequence();
@@ -175,6 +175,7 @@ public abstract class SAMAlignment implements Alignment {
         }
         return 0;
     }
+
     /**
      * Set pair strands.  Used for strand specific libraries to recover strand of
      * originating fragment.
@@ -221,7 +222,6 @@ public abstract class SAMAlignment implements Alignment {
     }
 
 
-
     /**
      * Create the alignment blocks from the read bases and alignment information in the CIGAR
      * string.  The CIGAR string encodes insertions, deletions, skipped regions, and padding.
@@ -229,8 +229,8 @@ public abstract class SAMAlignment implements Alignment {
      * @param cigarString
      * @param readBases
      * @param readBaseQualities
-     * @param flowSignals              from the FZ tag, null if not present
-     * @param flowOrder                from the RG.FO header tag, null if not present
+     * @param flowSignals       from the FZ tag, null if not present
+     * @param flowOrder         from the RG.FO header tag, null if not present
      * @param flowOrderStart
      */
     protected void createAlignmentBlocks(String cigarString, byte[] readBases, byte[] readBaseQualities,
@@ -458,11 +458,41 @@ public abstract class SAMAlignment implements Alignment {
     }
 
     public String getClipboardString(double location) {
-        return getValueString(location, null);
+        return getValueStringImpl(location, false);
     }
 
+
     public String getValueString(double position, WindowFunction windowFunction) {
-        StringBuffer buf = null;
+        return getValueStringImpl(position, true);
+    }
+
+    private String getValueStringImpl(double position, boolean truncate) {
+
+        StringBuffer buf = new StringBuffer();
+
+        buf.append("Read name = " + getReadName() + "<br>");
+
+        String sample = getSample();
+        if (sample != null) {
+            buf.append("Sample = " + sample + "<br>");
+        }
+        String readGroup = getReadGroup();
+        if (sample != null) {
+            buf.append("Read group = " + readGroup + "<br>");
+        }
+
+        buf.append("----------------------" + "<br>");
+        int basePosition = (int) position;
+        buf.append("Location = " + getChr() + ":" + DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
+        buf.append("Alignment start = " + DECIMAL_FORMAT.format(getAlignmentStart() + 1) + " (" + (isNegativeStrand() ? "-" : "+") + ")<br>");
+        buf.append("Cigar = " + getCigarString() + "<br>");
+        buf.append("Mapped = " + (isMapped() ? "yes" : "no") + "<br>");
+        buf.append("Mapping quality = " + getMappingQuality() + "<br>");
+        buf.append("Secondary = " + (isPrimary() ? "no" : "yes") + "<br>");
+        buf.append("Supplementary = " + (isSupplementary() ? "yes" : "no") + "<br>");
+        buf.append("Duplicate = " + (isDuplicate() ? "yes" : "no") + "<br>");
+        buf.append("Failed QC = " + (isVendorFailedRead() ? "yes" : "no") + "<br>");
+        buf.append("----------------------<br>");
 
         // First check insertions.  Position is zero based, block coords 1 based
         if (this.insertions != null) {
@@ -497,27 +527,6 @@ public abstract class SAMAlignment implements Alignment {
             }
         }
 
-        buf = new StringBuffer();
-
-        String sample = getSample();
-        if (sample != null) {
-            buf.append("Sample = " + sample + "<br>");
-        }
-        String readGroup = getReadGroup();
-        if (sample != null) {
-            buf.append("Read group = " + readGroup + "<br>");
-        }
-        buf.append("----------------------" + "<br>");
-
-        int basePosition = (int) position;
-        buf.append("Read name = " + getReadName() + "<br>");
-        buf.append("Location = " + getChr() + ":" + DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
-        buf.append("Alignment start = " + DECIMAL_FORMAT.format(getAlignmentStart() + 1) + " (" + (isNegativeStrand() ? "-" : "+") + ")<br>");
-        buf.append("Cigar = " + getCigarString() + "<br>");
-        buf.append("Mapped = " + (isMapped() ? "yes" : "no") + "<br>");
-        buf.append("Mapping quality = " + getMappingQuality() + "<br>");
-        buf.append("----------------------" + "<br>");
-
         for (AlignmentBlock block : this.alignmentBlocks) {
             if (block.contains(basePosition)) {
                 int offset = basePosition - block.getStart();
@@ -536,23 +545,45 @@ public abstract class SAMAlignment implements Alignment {
         }
 
         if (this.isPaired()) {
-            buf.append("----------------------" + "<br>");
-            buf.append("Mate start = " + getMate().positionString() + "<br>");
+            buf.append("----------------------<br>");
             buf.append("Mate is mapped = " + (getMate().isMapped() ? "yes" : "no") + "<br>");
-            //buf.append("Pair is proper = " + (getProperPairFlag() ? "yes" : "no") + "<br>");
-            if (getChr().equals(getMate().getChr())) {
-                buf.append("Insert size = " + getInferredInsertSize() + "<br>");
+            if (getMate().isMapped()) {
+                buf.append("Mate start = " + getMate().positionString() + "<br>");
+                //buf.append("Pair is proper = " + (getProperPairFlag() ? "yes" : "no") + "<br>");
+                if (getChr().equals(getMate().getChr())) {
+                    buf.append("Insert size = " + getInferredInsertSize() + "<br>");
+                }
+            }
+            if (isFirstOfPair()) {
+                buf.append("First in pair<br>");
+            }
+            if (isSecondOfPair()) {
+                buf.append("Second in pair<br>");
             }
             if (getPairOrientation().length() > 0) {
                 buf.append("Pair orientation = " + getPairOrientation() + "<br>");
             }
         }
-        buf.append("----------------------");
+
+        String attributeString = getAttributeString(truncate);
+        if (attributeString != null && attributeString.length() > 0) {
+            buf.append("----------------------");
+            buf.append(getAttributeString(truncate));
+        }
+
+
+        if (mateSequence != null) {
+            buf.append("----------------------<br>");
+            buf.append("Mate sequence: " + mateSequence);
+        }
         return buf.toString();
     }
 
+    protected abstract String getAttributeString(boolean truncate);
+
+
     public boolean isFirstOfPair() {
-        return  isPaired() && (flags & FIRST_OF_PAIR_FLAG) != 0;
+        return isPaired() && (flags & FIRST_OF_PAIR_FLAG) != 0;
     }
 
     public boolean isSecondOfPair() {
@@ -579,8 +610,8 @@ public abstract class SAMAlignment implements Alignment {
         return (flags & READ_PAIRED_FLAG) != 0;
     }
 
-    public boolean isProperPair(){
-      return  ((flags & READ_PAIRED_FLAG) != 0) && ((flags & PROPER_PAIR_FLAG) != 0);
+    public boolean isProperPair() {
+        return ((flags & READ_PAIRED_FLAG) != 0) && ((flags & PROPER_PAIR_FLAG) != 0);
     }
 
     public boolean isSmallInsert() {
@@ -665,7 +696,6 @@ public abstract class SAMAlignment implements Alignment {
     }
 
 
-
     /**
      * Use blocks to recreate read sequence.
      * As of this comment writing, we don't keep a block
@@ -686,7 +716,6 @@ public abstract class SAMAlignment implements Alignment {
     public boolean isPrimary() {
         return (flags & NOT_PRIMARY_ALIGNMENT_FLAG) == 0;
     }
-
 
 
     @Override
@@ -744,7 +773,7 @@ public abstract class SAMAlignment implements Alignment {
             char s2 = mate.isNegativeStrand() ? 'R' : 'F';
             char o1 = ' ';
             char o2 = ' ';
-            if (isFirstOfPair() ) {
+            if (isFirstOfPair()) {
                 o1 = '1';
                 o2 = '2';
             } else if (isSecondOfPair()) {
@@ -780,7 +809,6 @@ public abstract class SAMAlignment implements Alignment {
             pairOrientation = new String(tmp);
         }
     }
-
 
 
     static class CigarOperator {
