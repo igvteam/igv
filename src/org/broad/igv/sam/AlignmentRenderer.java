@@ -77,6 +77,7 @@ public class AlignmentRenderer implements FeatureRenderer {
     private final Color LL_COLOR = new Color(0, 150, 150);
 
     private final Color OUTLINE_COLOR = new Color(185, 185, 185);
+    private static final Color SUPPLEMENTARY_OUTLINE_COLOR = Color.black;
 
     private static Map<String, AlignmentTrack.OrientationType> frOrientationTypes;
     private static Map<String, AlignmentTrack.OrientationType> f1f2OrientationTypes;
@@ -591,6 +592,10 @@ public class AlignmentRenderer implements FeatureRenderer {
                 if (renderOptions.flagUnmappedPairs && alignment.isPaired() && !alignment.getMate().isMapped()) {
                     Graphics2D cRed = context.getGraphic2DForColor(Color.red);
                     cRed.draw(blockShape);
+                }
+
+                if(alignment.isSupplementary()) {
+                    context.getGraphic2DForColor(SUPPLEMENTARY_OUTLINE_COLOR).draw(blockShape);
                 }
 
                 if (selectedReadNames.containsKey(alignment.getReadName())) {
