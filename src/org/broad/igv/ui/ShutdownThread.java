@@ -31,7 +31,7 @@ import java.util.Collection;
 public class ShutdownThread extends Thread {
 
     private static Logger log = Logger.getLogger(ShutdownThread.class);
-
+    private static long oneDayMS = 24 * 60 * 60 * 1000;
 
     public static void runS() {
         // Cleanup jnlp files
@@ -57,8 +57,12 @@ public class ShutdownThread extends Thread {
 
     private static void cleanupBamIndexCache() {
         File dir = DirectoryManager.getCacheDirectory();
+        long currentTime = System.currentTimeMillis();
         for (File f : dir.listFiles()) {
-            f.delete();
+            long dt = currentTime - f.lastModified();
+            if(dt > oneDayMS) {
+                f.delete();
+            }
         }
     }
 
