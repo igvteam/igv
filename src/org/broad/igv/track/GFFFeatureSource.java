@@ -231,6 +231,9 @@ public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
                     int exonNumber = bf.getStrand() == Strand.NEGATIVE ? exons.size() : 1;
                     int increment = bf.getStrand() == Strand.NEGATIVE ? -1 : 1;
                     for (Exon ex : exons) {
+
+                        if(ex.getCodingLength() == 0) continue;
+
                         ex.setNumber(exonNumber);
                         exonNumber += increment;
                     }

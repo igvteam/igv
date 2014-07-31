@@ -250,7 +250,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
         String[] exonSizes = Globals.commaPattern.split(tokens[10]);
         String[] startsBuffer = Globals.commaPattern.split(tokens[11]);
 
-        int exonNumber = (strand == Strand.NEGATIVE ? exonCount : 1);
+        int exonNumber = 0;
 
         if (startsBuffer.length == exonSizes.length) {
             for (int i = 0; i < startsBuffer.length; i++) {
@@ -259,13 +259,19 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
                 Exon exon = new Exon(chr, exonStart, exonEnd, strand);
                 exon.setCodingStart(cdStart);
                 exon.setCodingEnd(cdEnd);
-                exon.setNumber(exonNumber);
                 gene.addExon(exon);
 
-                if (strand == Strand.NEGATIVE) {
-                    exonNumber--;
+                if (exon.getCodingLength() == 0) {
+                    exon.setNumber(0);
                 } else {
-                    exonNumber++;
+                    if (exonNumber == 0) exonNumber = (strand == Strand.NEGATIVE ? exonCount : 1);
+
+                    exon.setNumber(exonNumber);
+                    if (strand == Strand.NEGATIVE) {
+                        exonNumber--;
+                    } else {
+                        exonNumber++;
+                    }
                 }
             }
         }

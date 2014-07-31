@@ -53,15 +53,19 @@ public class EmblFeatureTableParser implements FeatureParser {
         int endIndex = (gene.getStrand() == Strand.POSITIVE) ? exons.size() : -1;
         int increment = (gene.getStrand() == Strand.POSITIVE) ? 1 : -1;
         int cds = 0;
-        int exonNumber = 1;
+        int exonNumber = 0;
         for (int i = startIndex; i != endIndex; i += increment) {
-            org.broad.igv.feature.Exon exon = exons.get(i);
+             org.broad.igv.feature.Exon exon = exons.get(i);
+
+            if(exonNumber == 1 && exon.getCodingLength() == 0) continue;  // Skip until we find the coding start
+
+            exonNumber++;
             exon.setNumber(exonNumber);
             int modCds = cds % 3;
             int phase = (modCds == 0) ? 0 : 3 - modCds;
             exon.setPhase(phase);
             cds += exon.getCodingLength();
-            exonNumber++;
+
         }
     }
 

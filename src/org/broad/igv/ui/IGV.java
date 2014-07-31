@@ -316,7 +316,6 @@ public class IGV {
 
         mainFrame.setExtendedState(state);
         mainFrame.setBounds(applicationBounds);
-=
     }
 
 

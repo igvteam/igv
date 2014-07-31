@@ -25,6 +25,7 @@ import org.broad.igv.track.WindowFunction;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -808,6 +809,11 @@ public abstract class SAMAlignment implements Alignment {
             // }
             pairOrientation = new String(tmp);
         }
+    }
+
+    //SA = X,82962991,+,18S51M31S,0,0;
+    static List<ReadMate> parseSupplementaryTag(String sa) {
+return null;
     }
 
 
