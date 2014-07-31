@@ -316,8 +316,7 @@ public class IGV {
 
         mainFrame.setExtendedState(state);
         mainFrame.setBounds(applicationBounds);
-
-        BAMHttpReader.cleanTempDir(BAMHttpReader.oneDay * 5);
+=
     }
 
 

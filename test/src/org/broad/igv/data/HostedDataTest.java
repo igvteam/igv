@@ -171,9 +171,7 @@ public class HostedDataTest extends AbstractHeadlessTest {
                         }
 
                         counter = (counter + 1) % clearInterval;
-                        if (counter == 0) {
-                            BAMHttpReader.cleanTempDir(1l);
-                        }
+
                     }
 
                 } catch (Exception e) {

@@ -18,6 +18,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.dev.db.DBManager;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.sam.reader.BAMHttpReader;
 import org.broad.igv.track.Track;
 import org.broad.igv.util.FileUtils;
 
@@ -41,7 +42,6 @@ public class ShutdownThread extends Thread {
 
         DBManager.shutdown();
         CommandListener.halt();
-        cleanupBamIndexCache();
         if (IGV.hasInstance()) {
             IGV.getInstance().saveStateForExit();
             for(Track t : IGV.getInstance().getAllTracks()) {
@@ -53,17 +53,6 @@ public class ShutdownThread extends Thread {
     @Override
     public void run() {
         runS();
-    }
-
-    private static void cleanupBamIndexCache() {
-        File dir = DirectoryManager.getCacheDirectory();
-        long currentTime = System.currentTimeMillis();
-        for (File f : dir.listFiles()) {
-            long dt = currentTime - f.lastModified();
-            if(dt > oneDayMS) {
-                f.delete();
-            }
-        }
     }
 
     private static void writeRegionsOfInterestFile(File roiFile) {

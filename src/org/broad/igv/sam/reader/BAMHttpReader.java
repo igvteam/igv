@@ -146,28 +146,6 @@ public class BAMHttpReader implements AlignmentReader<PicardAlignment> {
         }
     }
 
-    /**
-     * Delete temporary files which are older than timeLimit.
-     *
-     * @param timeLimit Minimum age (in milliseconds) to delete. If null, default is 1 day
-     * @throws IOException
-     */
-    public static void cleanTempDir(Long timeLimit) {
-        if (timeLimit == null) {
-            timeLimit = oneDay;
-        }
-        File dir = DirectoryManager.getCacheDirectory();
-        File[] files = dir.listFiles();
-
-        long time = System.currentTimeMillis();
-        for (File f : files) {
-            long age = time - f.lastModified();
-            if (age > timeLimit) {
-                f.delete();
-            }
-        }
-    }
-
     File getIndexFile(ResourceLocator locator) throws IOException {
 
         log.debug("Getting index for " + url + ". Index path " + locator.getBamIndexPath());
