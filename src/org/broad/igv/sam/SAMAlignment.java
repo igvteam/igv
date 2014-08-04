@@ -16,6 +16,7 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
@@ -811,9 +812,23 @@ public abstract class SAMAlignment implements Alignment {
         }
     }
 
+     //(String chr, int start, boolean negativeStrand,boolean isReadUnmappedFlag) {
     //SA = X,82962991,+,18S51M31S,0,0;
     static List<ReadMate> parseSupplementaryTag(String sa) {
-return null;
+
+        List<ReadMate> mates = new ArrayList();
+        String [] records = Globals.semicolonPattern.split(sa);
+        for(String rec : records) {
+            String [] tokens = Globals.commaPattern.split(rec);
+            String seq = tokens[0];
+            int pos = Integer.parseInt(tokens[1]);
+            boolean negStrand = tokens[2].equals("-");
+            String cigar = tokens[3];
+            int mapQ = Integer.parseInt(tokens[4]);
+            int numMismatches = Integer.parseInt(tokens[5]);
+            mates.add(new ReadMate(seq, pos, negStrand, true));
+        }
+        return mates;
     }
 
 
