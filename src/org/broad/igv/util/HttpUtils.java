@@ -111,41 +111,6 @@ public class HttpUtils {
         BYTE_RANGE_DISABLED = b;
     }
 
-
-    /**
-     * @param elements
-     * @param joiner
-     * @return
-     * @deprecated HttpUtils.openConnection does URL encoding itself
-     * <p/>
-     * Join the {@code elements} with the character {@code joiner},
-     * URLencoding the {@code elements} along the way. {@code joiner}
-     * is NOT URLEncoded
-     * Example:
-     * String[] parm_list = new String[]{"app les", "oranges", "bananas"};
-     * String formatted = buildURLString(Arrays.asList(parm_list), "+");
-     * <p/>
-     * formatted will be "app%20les+oranges+bananas"
-     */
-    @Deprecated
-    public static String buildURLString(Iterable<String> elements, String joiner) {
-
-        Iterator<String> iter = elements.iterator();
-        if (!iter.hasNext()) {
-            return "";
-        }
-        String wholequery = iter.next();
-        try {
-            while (iter.hasNext()) {
-                wholequery += joiner + URLEncoder.encode(iter.next(), "UTF-8");
-            }
-            return wholequery;
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalArgumentException("Bad argument in genelist: " + e.getMessage());
-        }
-    }
-
-
     /**
      * Return the contents of the url as a String.  This method should only be used for queries expected to return
      * a small amount of data.
@@ -162,6 +127,9 @@ public class HttpUtils {
             is = conn.getInputStream();
             return readContents(is);
 
+        } catch (IOException e) {
+            readErrorStream(conn);  // Consume content
+            throw e;
         } finally {
             if (is != null) is.close();
         }
@@ -177,6 +145,9 @@ public class HttpUtils {
             is = conn.getInputStream();
             return readContents(is);
 
+        } catch (IOException e) {
+            readErrorStream(conn);  // Consume content
+            throw e;
         } finally {
             if (is != null) is.close();
         }
@@ -213,7 +184,7 @@ public class HttpUtils {
         }
 
         boolean rangeRequestedNotReceived = isExpectedRangeMissing(conn, requestProperties);
-        if(rangeRequestedNotReceived) {
+        if (rangeRequestedNotReceived) {
             String msg = "Byte range requested, but no Content-Range header in response";
             log.error(msg);
 //            if(Globals.isTesting()){
@@ -221,18 +192,23 @@ public class HttpUtils {
 //            }
         }
 
-        InputStream input = conn.getInputStream();
-        if ("gzip".equals(conn.getContentEncoding())) {
-            input = new GZIPInputStream(input);
+        try {
+            InputStream input = conn.getInputStream();
+            if ("gzip".equals(conn.getContentEncoding())) {
+                input = new GZIPInputStream(input);
+            }
+            return input;
+        } catch (IOException e) {
+            readErrorStream(conn);  // Consume content
+            throw e;
         }
-        return input;
     }
 
-    boolean isExpectedRangeMissing(URLConnection conn, Map<String, String> requestProperties){
+    boolean isExpectedRangeMissing(URLConnection conn, Map<String, String> requestProperties) {
         final boolean rangeRequested = (requestProperties != null) && (new CI.CIHashMap<String>(requestProperties)).containsKey("Range");
-        if(!rangeRequested) return false;
+        if (!rangeRequested) return false;
 
-        Map<String,List<String>> headerFields = conn.getHeaderFields();
+        Map<String, List<String>> headerFields = conn.getHeaderFields();
         boolean rangeReceived = (headerFields != null) && (new CI.CIHashMap<List<String>>(headerFields)).containsKey("Content-Range");
         return !rangeReceived;
     }
@@ -265,13 +241,13 @@ public class HttpUtils {
         // Keep track of urls for which "HEAD" does not work (e.g. Amazon with signed urls).
         boolean tryHead = headURLCache.containsKey(url) ? headURLCache.get(url) : true;
 
-        if(tryHead){
+        if (tryHead) {
             try {
                 HttpURLConnection conn = openConnection(url, null, "HEAD");
                 headURLCache.put(url, true);
                 return conn;
             } catch (IOException e) {
-                if(e instanceof FileNotFoundException) {
+                if (e instanceof FileNotFoundException) {
                     throw e;
                 }
                 log.info("HEAD request failed for url: " + url.toExternalForm() + ".  Trying GET");
@@ -1105,6 +1081,9 @@ public class HttpUtils {
                     }
                 }
                 log.info("Download complete.  Total bytes downloaded = " + downloaded);
+            } catch (IOException e) {
+                readErrorStream(conn);
+                throw e;
             } finally {
                 if (is != null) is.close();
                 if (out != null) {
