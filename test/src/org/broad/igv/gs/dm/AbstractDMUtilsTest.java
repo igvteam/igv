@@ -130,6 +130,9 @@ public abstract class AbstractDMUtilsTest extends AbstractHeadlessTest{
         File localFile = new File(TestUtils.DATA_DIR + "bed", locName);
         String remPath = IGV_TEST_DIR + locName;
 
+        // Delete, in case the file is there from a previous test run
+        DMUtils.deleteFileOrDirectory(fileURL + remPath);
+
         assertFileStatus(locName, false);
 
         DMUtils.uploadFile(localFile, remPath);
