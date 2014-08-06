@@ -99,14 +99,15 @@ public class ImportRegionsMenuAction extends MenuAction {
                         }
                     }
                     String[] data = dataRecord.split("\t");
-                    if (data.length >= 3) {
+                    if (data.length >= 2) {
                         try {
                             String name = data.length > 3 ? data[3] : null;
                             int start = Integer.parseInt(data[1]) - coordConvention;
-                            int end = Integer.parseInt(data[2]);
+                            int end = data.length > 2 ? Integer.parseInt(data[2]) : start + 1;
                             RegionOfInterest regionOfInterest = new RegionOfInterest(data[0], start, end, name);
                             mainFrame.addRegionOfInterest(regionOfInterest);
                         } catch (NumberFormatException numberFormatException) {
+                            log.error("Error importing regions of interest", numberFormatException);
                         }
                     }
                 }
