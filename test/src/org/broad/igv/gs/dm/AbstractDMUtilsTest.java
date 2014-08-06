@@ -25,6 +25,7 @@ import org.junit.rules.Timeout;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -131,7 +132,11 @@ public abstract class AbstractDMUtilsTest extends AbstractHeadlessTest{
         String remPath = IGV_TEST_DIR + locName;
 
         // Delete, in case the file is there from a previous test run
-        DMUtils.deleteFileOrDirectory(fileURL + remPath);
+        try {
+            DMUtils.deleteFileOrDirectory(fileURL + remPath);
+        } catch (IOException e) {
+            // Ignore -- expected 
+        }
 
         assertFileStatus(locName, false);
 
