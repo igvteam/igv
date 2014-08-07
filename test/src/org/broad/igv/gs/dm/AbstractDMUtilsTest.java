@@ -135,7 +135,7 @@ public abstract class AbstractDMUtilsTest extends AbstractHeadlessTest{
         try {
             DMUtils.deleteFileOrDirectory(fileURL + remPath);
         } catch (IOException e) {
-            // Ignore -- expected 
+            // Ignore -- expected
         }
 
         assertFileStatus(locName, false);

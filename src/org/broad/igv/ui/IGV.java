@@ -1909,7 +1909,7 @@ public class IGV {
     public void packAlignmentTracks() {
         for (Track t : getAllTracks()) {
             if (t instanceof AlignmentTrack) {
-                ((AlignmentTrack) t).packAlignments(FrameManager.getFrames());
+                ((AlignmentTrack) t).packAlignments();
             }
         }
     }

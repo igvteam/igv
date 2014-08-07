@@ -67,8 +67,7 @@ public class AlignmentPackerTest extends AbstractHeadlessTest {
         */
         AlignmentInterval interval = getAlignmentInterval();
 
-        Map<String, List<Row>> result = (new AlignmentPacker()).packAlignments(Arrays.asList(interval),
-                new AlignmentTrack.RenderOptions());
+        Map<String, List<Row>> result = (new AlignmentPacker()).packAlignments(interval, new AlignmentTrack.RenderOptions());
         assertEquals(1, result.size());
         for (List<Row> alignmentrows : result.values()) {
             for (Row alignmentrow : alignmentrows) {
@@ -95,7 +94,7 @@ public class AlignmentPackerTest extends AbstractHeadlessTest {
         renderOptions.groupByOption = groupOption;
 
         AlignmentInterval interval = getAlignmentInterval();
-        Map<String, List<Row>> result = (new AlignmentPacker()).packAlignments(Arrays.asList(interval), renderOptions);
+        Map<String, List<Row>> result = (new AlignmentPacker()).packAlignments(interval, renderOptions);
         Set<String> names = result.keySet();
         //names.removeAll(Arrays.asList("", null));
 

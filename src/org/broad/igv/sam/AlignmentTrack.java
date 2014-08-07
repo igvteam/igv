@@ -360,18 +360,16 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         //log.debug("Render features");
         PackedAlignments groups = dataManager.getGroups(context, renderOptions);
-
-        Map<String, PEStats> peStats = dataManager.getPEStats();
-        if (peStats != null) {
-            renderOptions.peStats = peStats;
-        }
-
         if (groups == null) {
             //Assume we are still loading.
             //This might not always be true
             return;
         }
 
+        Map<String, PEStats> peStats = dataManager.getPEStats();
+        if (peStats != null) {
+            renderOptions.peStats = peStats;
+        }
 
         Rectangle visibleRect = context.getVisibleRect();
         final boolean leaveMargin = getDisplayMode() == DisplayMode.EXPANDED;
@@ -450,17 +448,17 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
      *
      * @param option
      * @param referenceFrames
-     * @see AlignmentDataManager#repackAlignments
+     * @see AlignmentDataManager#packAlignments
      */
     public void groupAlignments(GroupOption option, List<ReferenceFrame> referenceFrames) {
         if (renderOptions.groupByOption != option) {
             renderOptions.groupByOption = (option == GroupOption.NONE ? null : option);
-            dataManager.repackAlignments(referenceFrames, renderOptions);
+            dataManager.packAlignments(renderOptions);
         }
     }
 
-    public void packAlignments(List<ReferenceFrame> referenceFrames) {
-        dataManager.repackAlignments(referenceFrames, renderOptions);
+    public void packAlignments() {
+        dataManager.packAlignments(renderOptions);
     }
 
     /**
@@ -994,7 +992,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
 
         renderOptions.setPairedArcView(option);
-        dataManager.repackAlignments(FrameManager.getFrames(), renderOptions);
+        dataManager.packAlignments(renderOptions);
         refresh();
     }
 
