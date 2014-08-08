@@ -82,4 +82,17 @@ public abstract class ViewChange {
         }
     }
 
+    public static class LocusChangeResult extends Result {
+
+        public final String chrName;
+        public final double start;
+        public final double end;
+
+        public LocusChangeResult(String chrName, double start, double end) {
+            this.chrName = chrName;
+            this.start = start;
+            this.end = end;
+        }
+    }
+
 }

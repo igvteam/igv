@@ -65,7 +65,7 @@ public class AlignmentPacker {
 
         if (renderOptions.groupByOption == null) {
             List<Row> alignmentRows = new ArrayList<Row>(10000);
-            packInterval(interval, isPairedAlignments, alignmentRows);
+            pack(interval.getAlignments(), isPairedAlignments, alignmentRows);
             packedAlignments.put("", alignmentRows);
         } else {
 
@@ -109,13 +109,6 @@ public class AlignmentPacker {
         List<AlignmentInterval> tmp = new ArrayList<AlignmentInterval>();
         tmp.add(interval);
         return new PackedAlignments(tmp, packedAlignments);
-    }
-
-
-    private void packInterval(AlignmentInterval interval, boolean pairAlignments,
-                              List<Row> alignmentRows) {
-
-        pack(interval.getAlignments(), pairAlignments, alignmentRows);
     }
 
 

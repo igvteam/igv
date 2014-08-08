@@ -104,7 +104,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     public enum SortOption {
-        START, STRAND, NUCLEOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FIRST_OF_PAIR_STRAND, MATE_CHR, TAG, SUPPLEMENTARY;
+        START, STRAND, NUCLEOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FIRST_OF_PAIR_STRAND, MATE_CHR, TAG, SUPPLEMENTARY, NONE;
     }
 
     public enum GroupOption {
@@ -145,6 +145,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     static final ColorOption DEFAULT_COLOR_OPTION = ColorOption.INSERT_SIZE;
     static final boolean DEFAULT_SHOWALLBASES = false;
     static final BisulfiteContext DEFAULT_BISULFITE_CONTEXT = BisulfiteContext.CG;
+
     private boolean ionTorrent;
     private SequenceTrack sequenceTrack;
     private CoverageTrack coverageTrack;
@@ -257,7 +258,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             spliceJunctionTrack.setVisible(false);
         }
     }
-
 
     @Override
     public IGVPopupMenu getPopupMenu(TrackClickEvent te) {

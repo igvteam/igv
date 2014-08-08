@@ -436,7 +436,7 @@ public class ReferenceFrame {
     public void centerOnLocation(double chrLocation) {
         double windowWidth = (widthInPixels * getScale()) / 2;
         setOrigin(Math.round(chrLocation - windowWidth));
-        getEventBus().post(new ViewChange.Result());
+        getEventBus().post(new ViewChange.LocusChangeResult(chrName, origin, chrLocation + windowWidth));
     }
 
     public boolean windowAtEnd() {
@@ -491,7 +491,7 @@ public class ReferenceFrame {
             log.debug("Scale = " + locationScale);
         }
 
-        getEventBus().post(new ViewChange.Result());
+        getEventBus().post(new ViewChange.LocusChangeResult(chrName, start, end));
     }
 
     /**

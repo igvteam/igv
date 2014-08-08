@@ -77,7 +77,7 @@ public class AlignmentRenderer implements FeatureRenderer {
     private final Color LL_COLOR = new Color(0, 150, 150);
 
     private final Color OUTLINE_COLOR = new Color(185, 185, 185);
-    private static final Color SUPPLEMENTARY_OUTLINE_COLOR = Color.black;
+    private static final Color SUPPLEMENTARY_OUTLINE_COLOR = Color.blue;
 
     private static Map<String, AlignmentTrack.OrientationType> frOrientationTypes;
     private static Map<String, AlignmentTrack.OrientationType> f1f2OrientationTypes;

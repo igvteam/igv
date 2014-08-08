@@ -180,17 +180,18 @@ public class SearchCommand {
 
     public void showSearchResult(List<SearchResult> results) {
         int origZoom = referenceFrame.getZoom();
-        SearchResult result = new SearchResult();
         if (results == null || results.size() == 0) {
             results = new ArrayList<SearchResult>();
-            results.add(result);
+
+            results.add(new SearchResult());
         }
+
         boolean showMessage = false;
         boolean success = true;
         String message = "Invalid search string: " + searchString;
 
         if (results.size() == 1) {
-            result = results.get(0);
+            SearchResult result = results.get(0);
             if (result.type != ResultType.ERROR) {//FrameManager.isGeneListMode()) {
                 IGV.getInstance().getSession().setCurrentGeneList(null);
             }
