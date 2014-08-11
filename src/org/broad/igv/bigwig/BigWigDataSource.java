@@ -69,7 +69,8 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
         this.reader = reader;
         levels = reader.getZoomLevels();
-        initMinMax();
+
+        if(reader.isBigWigFile()) initMinMax();
 
         // Assume 1000 pixel screen, pick visibility level to be @ highest resolution zoom.
         // TODO -- something smarter, like scaling by actual density
@@ -96,6 +97,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
      * Set the "min" and "max" from 1MB resolutiond data.  Read a maximum of 10,000 points for this
      */
     private void initMinMax() {
+
         final int oneMB = 1000000;
         final BBZoomLevelHeader zoomLevelHeader = getZoomLevelForScale(oneMB);
 
