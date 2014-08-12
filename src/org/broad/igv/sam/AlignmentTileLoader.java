@@ -105,6 +105,7 @@ public class AlignmentTileLoader {
         final PreferenceManager prefMgr = PreferenceManager.getInstance();
         boolean filterFailedReads = prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_FAILED_READS);
         boolean filterSecondaryAlignments = prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_SECONDARY_ALIGNMENTS);
+        boolean filterSupplementaryAlignments = prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS);
         ReadGroupFilter filter = ReadGroupFilter.getFilter();
         boolean showDuplicates = prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_DUPLICATES);
         int qualityThreshold = prefMgr.getAsInt(PreferenceManager.SAM_QUALITY_THRESHOLD);
@@ -165,6 +166,7 @@ public class AlignmentTileLoader {
                 if (!record.isMapped() || (!showDuplicates && record.isDuplicate()) ||
                         (filterFailedReads && record.isVendorFailedRead()) ||
                         (filterSecondaryAlignments && !record.isPrimary()) ||
+                        (filterSupplementaryAlignments && record.isSupplementary()) ||
                         record.getMappingQuality() < qualityThreshold ||
                         (filter != null && filter.filterAlignment(record))) {
                     continue;

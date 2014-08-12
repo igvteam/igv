@@ -749,8 +749,8 @@ public class CommandExecutor {
         igv.repaintDataPanels();
     }
 
-    private void group(String sortArg) {
-        igv.groupAlignmentTracks(getAlignmentGroupOption(sortArg));
+    private void group(String groupArg) {
+        igv.groupAlignmentTracks(getAlignmentGroupOption(groupArg));
         igv.repaintDataPanels();
     }
 

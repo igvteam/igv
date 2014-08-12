@@ -87,6 +87,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_BASE_QUALITY_MAX = "SAM.BASE_QUALITY_MAX";
     public static final String SAM_FILTER_ALIGNMENTS = "SAM.FILTER_ALIGNMENTS";
     public static final String SAM_FILTER_SECONDARY_ALIGNMENTS = "SAM.FILTER_SECONDARY_ALIGNMENTS";
+    public static final String SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS = "SAM.FILTER_SUPPLEMENTARY_ALIGNMENTS";
     public static final String SAM_FILTER_URL = "SAM.FILTER_URL";
     public static final String SAM_MAX_VISIBLE_RANGE = "SAM.MAX_VISIBLE_RANGE";
     public static final String SAM_SHOW_DUPLICATES = "SAM.SHOW_DUPLICATES";
@@ -966,6 +967,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_SHADE_BASES, ShadeBasesOption.QUALITY.toString());
         defaultValues.put(SAM_FILTER_ALIGNMENTS, "false");
         defaultValues.put(SAM_FILTER_SECONDARY_ALIGNMENTS, "false");
+        defaultValues.put(SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS, "false");
         defaultValues.put(SAM_FILTER_FAILED_READS, "true");
         defaultValues.put(SAM_DOWNSAMPLE_READS, "true");
         defaultValues.put(SAM_SAMPLING_WINDOW, "50");
