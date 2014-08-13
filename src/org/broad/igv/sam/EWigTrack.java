@@ -15,10 +15,10 @@
  */
 package org.broad.igv.sam;
 
-import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.DataRange;
+import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
@@ -80,12 +80,15 @@ public class EWigTrack extends AbstractTrack {
                 (int) context.getEndLocation(),
                 context.getZoom());
         Map<Character, List<LocusScore>> nScores = new HashMap();
+
         for (Character c : nucleotides) {
             nScores.put(c, baseSources.get(c).getSummaryScoresForRange(context.getChr(),
                     (int) context.getOrigin(),
                     (int) context.getEndLocation(),
                     context.getZoom()));
         }
+
+        Map<Character, Color> nucleotideColors = SequenceRenderer.getNucleotideColors();
 
         for (int idx = 0; idx < scores.size(); idx++) {
 
@@ -122,7 +125,7 @@ public class EWigTrack extends AbstractTrack {
                     float count = ns.getScore() * totalCount;
 
                     //pY = drawBar(context, idx, rect, dataMax, pY, pX, dX, c, count);
-                    Graphics2D tGraphics = context.getGraphic2DForColor(Globals.nucleotideColors.get(c));
+                    Graphics2D tGraphics = context.getGraphic2DForColor(nucleotideColors.get(c));
 
                     int h = (int) Math.round(count * height / totalCount);
                     h = Math.min(pY - rect.y, h);

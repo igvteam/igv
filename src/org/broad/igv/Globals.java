@@ -12,8 +12,8 @@
 package org.broad.igv;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.renderer.SequenceRenderer;
 
-import java.awt.*;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
@@ -70,7 +70,6 @@ public class Globals {
      */
     public static final String GENOME_ARCHIVE_CUSTOM_SEQUENCE_LOCATION_KEY = "customSequenceLocation";
     public static final String GENOME_CHR_ALIAS_FILE_KEY = "chrAliasFile";
-    public static final String DEFAULT_GENOME = "hg18";
 
     // Default user folder
 
@@ -104,7 +103,6 @@ public class Globals {
             System.getProperty("webstart.version", null) != null || System.getProperty("javawebstart.version", null) != null;
 
     public static final String JAVA_VERSION_STRING = "java.version";
-    public static Map<Character, Color> nucleotideColors;
 
     //Location of bedtools executable
     //Note: It is recommended you use an absolute path here.
@@ -127,21 +125,9 @@ public class Globals {
         VERSION = properties.getProperty("version", "???");
         BUILD = properties.getProperty("build", "???");
         TIMESTAMP = properties.getProperty("timestamp", "???");
-
-        nucleotideColors = new HashMap();
-        nucleotideColors.put('A', Color.GREEN);
-        nucleotideColors.put('a', Color.GREEN);
-        nucleotideColors.put('C', Color.BLUE);
-        nucleotideColors.put('c', Color.BLUE);
-        nucleotideColors.put('T', Color.RED);
-        nucleotideColors.put('t', Color.RED);
-        nucleotideColors.put('G', new Color(209, 113, 5));
-        nucleotideColors.put('g', new Color(209, 113, 5));
-        nucleotideColors.put('N', Color.gray.brighter());
-        nucleotideColors.put('n', Color.gray.brighter());
-
         BEDtoolsPath = System.getProperty("BEDtoolsPath", BEDtoolsPath);
-        //Runtime property overrides compile-time property, if both exist.
+
+         //Runtime property overrides compile-time property, if both exist.
         //If neither exist we default to false
         final String prodProperty = System.getProperty("development", properties.getProperty("development", "false"));
         development = Boolean.parseBoolean(prodProperty);

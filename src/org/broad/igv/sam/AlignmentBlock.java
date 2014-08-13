@@ -160,7 +160,7 @@ public class AlignmentBlock {
         this.genome = genome;
         byte[] refBases = genome.getSequence(this.chr, getStart(), getEnd());
         //null refBases mostly happens in testing, but if we have no reference can't create mismatch
-        if(refBases != null){
+        if(refBases != null && this.bases != null){
             boolean match = false;
             for(int idx = 0; idx < refBases.length; idx++){
                 match = refBases[idx] == this.bases[idx];

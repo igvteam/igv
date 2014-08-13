@@ -512,7 +512,7 @@ public class CoverageTrack extends AbstractTrack {
 
             int count = interval.getCount(pos, (byte) nucleotide);
 
-            Color c = Globals.nucleotideColors.get(nucleotide);
+            Color c = AlignmentRenderer.nucleotideColors.get(nucleotide);
 
             Graphics2D tGraphics = context.getGraphic2DForColor(c);
 
@@ -622,7 +622,7 @@ public class CoverageTrack extends AbstractTrack {
 
         for (char nucleotide : nucleotides) {
 
-            Color c = Globals.nucleotideColors.get(nucleotide);
+            Color c = AlignmentRenderer.nucleotideColors.get(nucleotide);
             Graphics2D tGraphics = context.getGraphic2DForColor(c);
 
             int count = isPositive ? interval.getPosCount(pos, (byte) nucleotide) :

@@ -85,8 +85,11 @@ public class AlignmentRenderer implements FeatureRenderer {
     private static Map<String, AlignmentTrack.OrientationType> rfOrientationTypes;
     private Map<AlignmentTrack.OrientationType, Color> typeToColorMap;
 
+    public static HashMap<Character, Color> nucleotideColors;
+
     static {
         initializeTagTypes();
+        setNucleotideColors();
     }
 
     PreferenceManager prefs;
@@ -96,6 +99,31 @@ public class AlignmentRenderer implements FeatureRenderer {
     private TreeSet<Shape> arcsByStart;
     private TreeSet<Shape> arcsByEnd;
     private HashMap<Shape, Alignment> curveMap;
+
+    private static void setNucleotideColors() {
+
+        PreferenceManager prefs = PreferenceManager.getInstance();
+
+        nucleotideColors = new HashMap();
+
+        Color a = ColorUtilities.stringToColor(prefs.get(PreferenceManager.SAM_COLOR_A),  Color.green);
+        Color c = ColorUtilities.stringToColor(prefs.get(PreferenceManager.SAM_COLOR_C),  Color.blue);
+        Color t = ColorUtilities.stringToColor(prefs.get(PreferenceManager.SAM_COLOR_T),  Color.red);
+        Color g = ColorUtilities.stringToColor(prefs.get(PreferenceManager.SAM_COLOR_G),  Color.gray);
+        Color n = ColorUtilities.stringToColor(prefs.get(PreferenceManager.SAM_COLOR_N),  Color.gray);
+
+        nucleotideColors.put('A', a);
+        nucleotideColors.put('a', a);
+        nucleotideColors.put('C', c);
+        nucleotideColors.put('c', c);
+        nucleotideColors.put('T', t);
+        nucleotideColors.put('t', t);
+        nucleotideColors.put('G', g);
+        nucleotideColors.put('g', g);
+        nucleotideColors.put('N', n);
+        nucleotideColors.put('n', n);
+
+    }
 
     public static AlignmentRenderer getInstance() {
         if (instance == null) {
@@ -757,7 +785,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                     (bisulfiteMode && (!DisplayStatus.NOTHING.equals(bisinfo.getDisplayStatus(idx))))) {
                 char c = (char) read[idx];
 
-                Color color = Globals.nucleotideColors.get(c);
+                Color color = nucleotideColors.get(c);
                 if (bisulfiteMode) color = bisinfo.getDisplayColor(idx);
                 if (color == null) {
                     color = Color.black;

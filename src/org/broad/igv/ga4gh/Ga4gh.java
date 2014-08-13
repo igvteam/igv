@@ -2,6 +2,7 @@ package org.broad.igv.ga4gh;
 
 import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
+import org.broad.igv.PreferenceManager;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
@@ -32,15 +33,17 @@ public class Ga4gh {
 
     public static void main(String[] args) throws IOException {
 
-        //datasets();
+        datasets();
         //readset();
         //readsetSearch();
-        reads();
+        //reads();
     }
 
     public static void datasets() throws IOException {
 
-        String baseURL = "https://www.googleapis.com/genomics/v1beta/datasets/376902546192?key=AIzaSyC-dujgw4P1QvNd8i_c-I-S_P1uxVZzn0w";
+        String authKey = PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_API_KEY);
+
+        String baseURL = "https://www.googleapis.com/genomics/v1beta/datasets/376902546192?key=" + authKey;
 
 
         // Create a URLConnection
@@ -63,7 +66,8 @@ public class Ga4gh {
 
     public static void readset() throws IOException {
 
-        String baseURL = "https://www.googleapis.com/genomics/v1beta/readsets/CJDmkYn8ChCcnc7i4KaWqmQ?key=AIzaSyC-dujgw4P1QvNd8i_c-I-S_P1uxVZzn0w";
+        String authKey = PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_API_KEY);
+        String baseURL = "https://www.googleapis.com/genomics/v1beta/readsets/CJDmkYn8ChCcnc7i4KaWqmQ?key=" + authKey;
 
 
         // Create a URLConnection
@@ -87,8 +91,8 @@ public class Ga4gh {
 
     public static void reads() throws IOException {
 
-        URL baseURL = new URL("https://www.googleapis.com/genomics/v1beta/reads/search?key=AIzaSyC-dujgw4P1QvNd8i_c-I-S_P1uxVZzn0w");
-        String key = "AIzaSyC-dujgw4P1QvNd8i_c-I-S_P1uxVZzn0w";
+        String authKey = PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_API_KEY);
+        URL baseURL = new URL("https://www.googleapis.com/genomics/v1beta/reads/search?key=" + authKey);
         String datasetId = "376902546192";
 
         // JSON content to post
@@ -130,8 +134,8 @@ public class Ga4gh {
 
     public static void readsetSearch() throws IOException {
 
-        URL baseURL = new URL("https://www.googleapis.com/genomics/v1beta/readsets/search?key=AIzaSyC-dujgw4P1QvNd8i_c-I-S_P1uxVZzn0w");
-        String key = "AIzaSyC-dujgw4P1QvNd8i_c-I-S_P1uxVZzn0w";
+        String authKey = PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_API_KEY);
+        URL baseURL = new URL("https://www.googleapis.com/genomics/v1beta/readsets/search?key=" + authKey);
         String datasetId = "376902546192";
 
         // JSON content to post

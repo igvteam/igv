@@ -41,6 +41,7 @@ public class PreferenceManager implements PropertyManager {
 
     private static Logger log = Logger.getLogger(PreferenceManager.class);
 
+    public static final String DEFAULT_GENOME = "hg18";
 
     public static final String SKIP_VERSION = "SKIP_VERSION";
 
@@ -119,24 +120,34 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_FLAG_LARGE_INSERTIONS = "SAM.FLAG_LARGE_INSERTIONS";
     public static final String SAM_LARGE_INSERTIONS_THRESHOLD = "SAM.LARGE_INSERTIONS_THRESOLD";
 
+    public static final String COLOR_A = "COLOR.A";
+    public static final String COLOR_C = "COLOR.C";
+    public static final String COLOR_T = "COLOR.T";
+    public static final String COLOR_G = "COLOR.G";
+    public static final String COLOR_N = "COLOR.N";
+    public static final String SAM_COLOR_A = "SAM.COLOR.A";
+    public static final String SAM_COLOR_C = "SAM.COLOR.C";
+    public static final String SAM_COLOR_T = "SAM.COLOR.T";
+    public static final String SAM_COLOR_G = "SAM.COLOR.G";
+    public static final String SAM_COLOR_N = "SAM.COLOR.N";
 
     public static final String EXPAND_FEAUTRE_TRACKS = "EXPAND_FEATURE_TRACKS";
     public static final String PORT_ENABLED = "PORT_ENABLED";
     public static final String PORT_NUMBER = "PORT_NUMBER";
     public static final String COLOR_SCALE_KEY = "COLOR_SCALE_";
-    final public static String FRAME_BOUNDS_KEY = "IGV.Bounds";
-    final public static String FRAME_STATE_KEY = "IGV.Frame.ExtendedState";
-    final public static String RECENT_SESSION_KEY = "IGV.Session.recent.sessions";
-    final public static String TRACK_HEIGHT_KEY = "IGV.track.height";
-    final public static String CHART_TRACK_HEIGHT_KEY = "IGV.chart.track.height";
-    final public static String CHART_SHOW_ALL_HEATMAP = "CHART.SHOW_ALL_HEATMAP";
-    final public static String SHOW_MISSING_DATA_KEY = "IGV.track.show.missing.data";
-    final public static String SHOW_ATTRIBUTE_VIEWS_KEY = "IGV.track.show.attribute.views";
-    final public static String SHOW_SINGLE_TRACK_PANE_KEY = "IGV.single.track.pane";
-    final public static String GENOMES_SERVER_URL = "IGV.genome.sequence.dir";
-    final public static String JOIN_ADJACENT_SEGMENTS_KEY = "IGV.join.adjacent.segments";
-    final public static String SHOW_REGION_BARS = "SHOW_REGION_BARS";
-    final public static String LAST_EXPORTED_REGION_DIRECTORY = "LAST_EXPORTED_REGION_DIRECTORY";
+    public static final String FRAME_BOUNDS_KEY = "IGV.Bounds";
+    public static final String FRAME_STATE_KEY = "IGV.Frame.ExtendedState";
+    public static final String RECENT_SESSION_KEY = "IGV.Session.recent.sessions";
+    public static final String TRACK_HEIGHT_KEY = "IGV.track.height";
+    public static final String CHART_TRACK_HEIGHT_KEY = "IGV.chart.track.height";
+    public static final String CHART_SHOW_ALL_HEATMAP = "CHART.SHOW_ALL_HEATMAP";
+    public static final String SHOW_MISSING_DATA_KEY = "IGV.track.show.missing.data";
+    public static final String SHOW_ATTRIBUTE_VIEWS_KEY = "IGV.track.show.attribute.views";
+    public static final String SHOW_SINGLE_TRACK_PANE_KEY = "IGV.single.track.pane";
+    public static final String GENOMES_SERVER_URL = "IGV.genome.sequence.dir";
+    public static final String JOIN_ADJACENT_SEGMENTS_KEY = "IGV.join.adjacent.segments";
+    public static final String SHOW_REGION_BARS = "SHOW_REGION_BARS";
+    public static final String LAST_EXPORTED_REGION_DIRECTORY = "LAST_EXPORTED_REGION_DIRECTORY";
     final static public String LAST_TRACK_DIRECTORY = "LAST_TRACK_DIRECTORY";
     final static public String LAST_SNAPSHOT_DIRECTORY = "LAST_SNAPSHOT_DIRECTORY";
     final static public String LAST_GENOME_IMPORT_DIRECTORY = "LAST_GENOME_IMPORT_DIRECTORY";
@@ -147,46 +158,46 @@ public class PreferenceManager implements PropertyManager {
     final static public String GENOME_ID_DISPLAY_LIST_KEY = "GENOME_LIST";
     final static public String DETAILS_BEHAVIOR_KEY = "DETAILS_BEHAVIOR";
 
-    final public static String MUTATION_COLOR_TABLE = "MUTATION_COLOR_TABLE";
-    final public static String MUTATION_INDEL_COLOR_KEY = "MUTATION_INDEL_COLOR_KEY";
-    final public static String MUTATION_MISSENSE_COLOR_KEY = "MUTATION_MISSENSE_COLOR_KEY";
-    final public static String MUTATION_NONSENSE_COLOR_KEY = "MUTATION_NONSENSE_COLOR_KEY";
-    final public static String MUTATION_SPLICE_SITE_COLOR_KEY = "MUTATION_SPLICE_SITE_COLOR_KEY";
-    final public static String MUTATION_SYNONYMOUS_COLOR_KEY = "MUTATION_SYNONYMOUS_COLOR_KEY";
-    final public static String MUTATION_TARGETED_REGION_COLOR_KEY = "MUTATION_TARGETED_REGION_COLOR_KEY";
-    final public static String MUTATION_UNKNOWN_COLOR_KEY = "MUTATION_UNKNOWN_COLOR_KEY";
-    final public static String OVERLAY_MUTATION_TRACKS = "OVERLAY_TRACKS_KEY";
-    final public static String SHOW_ORPHANED_MUTATIONS = "SHOW_ORPHANED_MUTATIONS";
-    final public static String OVERLAY_ATTRIBUTE_KEY = "OVERLAY_ATTRIBUTE_KEY";
-    final public static String OVERLAY_MUTATIONS_WHOLE_GENOME = "OVERLAY_MUTATIONS_WHOLE_GENOME";
-    final public static String COLOR_MUTATIONS = "COVER_OVERLAY_KEY";
-    final public static String TRACK_ATTRIBUTE_NAME_KEY = "TRACK_ATTRIBUTE_NAME_KEY";
-    final public static String DATA_SERVER_URL_KEY = "MASTER_RESOURCE_FILE_KEY";
-    //final public static String CHECKED_RESOURCES_KEY = "CHECKED_RESOURCES_KEY";
-    final public static String DEFINE_GENOME_INPUT_DIRECTORY_KEY = "DEFINE_GENOME_INPUT_DIRECTORY_KEY";
+    public static final String MUTATION_COLOR_TABLE = "MUTATION_COLOR_TABLE";
+    public static final String MUTATION_INDEL_COLOR_KEY = "MUTATION_INDEL_COLOR_KEY";
+    public static final String MUTATION_MISSENSE_COLOR_KEY = "MUTATION_MISSENSE_COLOR_KEY";
+    public static final String MUTATION_NONSENSE_COLOR_KEY = "MUTATION_NONSENSE_COLOR_KEY";
+    public static final String MUTATION_SPLICE_SITE_COLOR_KEY = "MUTATION_SPLICE_SITE_COLOR_KEY";
+    public static final String MUTATION_SYNONYMOUS_COLOR_KEY = "MUTATION_SYNONYMOUS_COLOR_KEY";
+    public static final String MUTATION_TARGETED_REGION_COLOR_KEY = "MUTATION_TARGETED_REGION_COLOR_KEY";
+    public static final String MUTATION_UNKNOWN_COLOR_KEY = "MUTATION_UNKNOWN_COLOR_KEY";
+    public static final String OVERLAY_MUTATION_TRACKS = "OVERLAY_TRACKS_KEY";
+    public static final String SHOW_ORPHANED_MUTATIONS = "SHOW_ORPHANED_MUTATIONS";
+    public static final String OVERLAY_ATTRIBUTE_KEY = "OVERLAY_ATTRIBUTE_KEY";
+    public static final String OVERLAY_MUTATIONS_WHOLE_GENOME = "OVERLAY_MUTATIONS_WHOLE_GENOME";
+    public static final String COLOR_MUTATIONS = "COVER_OVERLAY_KEY";
+    public static final String TRACK_ATTRIBUTE_NAME_KEY = "TRACK_ATTRIBUTE_NAME_KEY";
+    public static final String DATA_SERVER_URL_KEY = "MASTER_RESOURCE_FILE_KEY";
+    //public static final String CHECKED_RESOURCES_KEY = "CHECKED_RESOURCES_KEY";
+    public static final String DEFINE_GENOME_INPUT_DIRECTORY_KEY = "DEFINE_GENOME_INPUT_DIRECTORY_KEY";
 
-    final public static String PROBE_MAPPING_KEY = "PROBE_MAPPING_KEY";
-    final public static String PROBE_MAPPING_FILE = "PROBE_MAPPING_FILE";
-    final public static String USE_PROBE_MAPPING_FILE = "USE_PROBE_MAPPING_FILE";
+    public static final String PROBE_MAPPING_KEY = "PROBE_MAPPING_KEY";
+    public static final String PROBE_MAPPING_FILE = "PROBE_MAPPING_FILE";
+    public static final String USE_PROBE_MAPPING_FILE = "USE_PROBE_MAPPING_FILE";
 
-    final public static String SEARCH_ZOOM = "SEARCH_ZOOM";
-    final public static String NORMALIZE_COVERAGE = "NORMALIZE_COVERAGE";
+    public static final String SEARCH_ZOOM = "SEARCH_ZOOM";
+    public static final String NORMALIZE_COVERAGE = "NORMALIZE_COVERAGE";
     public static final String SHOW_EXPAND_ICON = "SHOW_EXPAND_ICON";
-    final public static String SHOW_DEFAULT_TRACK_ATTRIBUTES = "SHOW_DEFAULT_TRACK_ATTRIBUTES";
+    public static final String SHOW_DEFAULT_TRACK_ATTRIBUTES = "SHOW_DEFAULT_TRACK_ATTRIBUTES";
 
     public static final String SHOW_SIZE_WARNING = "SHOW_SIZE_WARNING";
     public static final String SHOW_GENOME_SERVER_WARNING = "SHOW_GENOME_SERVER_WARNING";
 
-    final public static String USE_PROXY = "PROXY.USE";
-    final public static String PROXY_HOST = "PROXY.HOST";
-    final public static String PROXY_PORT = "PROXY.PORT";
-    final public static String PROXY_AUTHENTICATE = "PROXY.AUTHENTICATE";
-    final public static String PROXY_NTLM = "PROXY.NTLM";
-    final public static String PROXY_USER = "PROXY.USERNAME";
-    final public static String PROXY_PW = "PROXY.PW";
-    final public static String PROXY_TYPE = "PROXY.TYPE";
+    public static final String USE_PROXY = "PROXY.USE";
+    public static final String PROXY_HOST = "PROXY.HOST";
+    public static final String PROXY_PORT = "PROXY.PORT";
+    public static final String PROXY_AUTHENTICATE = "PROXY.AUTHENTICATE";
+    public static final String PROXY_NTLM = "PROXY.NTLM";
+    public static final String PROXY_USER = "PROXY.USERNAME";
+    public static final String PROXY_PW = "PROXY.PW";
+    public static final String PROXY_TYPE = "PROXY.TYPE";
 
-    final public static String KNOWN_SNPS = "KNOWN_SNPS_FILE";
+    public static final String KNOWN_SNPS = "KNOWN_SNPS_FILE";
 
     public static final String FLANKING_REGION = "FLAKING_REGIONS";
 
@@ -195,16 +206,16 @@ public class PreferenceManager implements PropertyManager {
 
     public static final String AUTO_UPDATE_GENOMES = "AUTO_UPDATE_GENOMES";
 
-    final public static String GWAS_TRACK_HEIGHT = "GWAS_TRACK_HEIGHT";
-    final public static String GWAS_DESCRIPTION_CACHE_SIZE = "GWAS_DESCRIPTION_CACHE_SIZE";
-    final public static String GWAS_MIN_POINT_SIZE = "GWAS_MIN_POINT_SIZE";
-    final public static String GWAS_MAX_POINT_SIZE = "GWAS_MAX_POINT_SIZE";
-    final public static String GWAS_USE_CHR_COLORS = "GWAS_USE_CHR_COLORS";
-    final public static String GWAS_SINGLE_COLOR = "GWAS_SINGLE_COLOR";
-    final public static String GWAS_ALTERNATING_COLORS = "GWAS_ALTERNATING_COLORS";
-    final public static String GWAS_PRIMARY_COLOR = "GWAS_PRIMARY_COLOR";
-    final public static String GWAS_SECONDARY_COLOR = "GWAS_SECONDARY_COLOR";
-    final public static String GWAS_SHOW_AXIS = "GWAS_SHOW_AXIS";
+    public static final String GWAS_TRACK_HEIGHT = "GWAS_TRACK_HEIGHT";
+    public static final String GWAS_DESCRIPTION_CACHE_SIZE = "GWAS_DESCRIPTION_CACHE_SIZE";
+    public static final String GWAS_MIN_POINT_SIZE = "GWAS_MIN_POINT_SIZE";
+    public static final String GWAS_MAX_POINT_SIZE = "GWAS_MAX_POINT_SIZE";
+    public static final String GWAS_USE_CHR_COLORS = "GWAS_USE_CHR_COLORS";
+    public static final String GWAS_SINGLE_COLOR = "GWAS_SINGLE_COLOR";
+    public static final String GWAS_ALTERNATING_COLORS = "GWAS_ALTERNATING_COLORS";
+    public static final String GWAS_PRIMARY_COLOR = "GWAS_PRIMARY_COLOR";
+    public static final String GWAS_SECONDARY_COLOR = "GWAS_SECONDARY_COLOR";
+    public static final String GWAS_SHOW_AXIS = "GWAS_SHOW_AXIS";
 
     public static final String DEFAULT_FONT_SIZE = "DEFAULT_FONT_SIZE";
     public static final String DEFAULT_FONT_FAMILY = "DEFAULT_FONT_FAMILY";
@@ -232,10 +243,12 @@ public class PreferenceManager implements PropertyManager {
     public static final String DB_HOST = "DB_HOST";
     public static final String DB_NAME = "DB_NAME";
     public static final String DB_PORT = "DB_PORT";
-    final public static String DEFAULT_GENOME_URL = "http://igv.broadinstitute.org/genomes/genomes.txt";
-    final public static String DEFAULT_DATA_URL = "http://www.broadinstitute.org/igvdata/$$_dataServerRegistry.txt";
+    public static final String DEFAULT_GENOME_URL = "http://igv.broadinstitute.org/genomes/genomes.txt";
+    public static final String DEFAULT_DATA_URL = "http://www.broadinstitute.org/igvdata/$$_dataServerRegistry.txt";
 
     public static final String IGV_PLUGIN_LIST_KEY = "IGV_PLUGIN_LIST";
+
+    public static final String GOOGLE_API_KEY = "GOOGLE_API_KEY";
 
     IGVPreferences preferences;
     Map<String, String> defaultValues;
@@ -684,7 +697,7 @@ public class PreferenceManager implements PropertyManager {
 
     public String getDefaultGenome() {
 
-        String genome = get(DEFAULT_GENOME_KEY, Globals.DEFAULT_GENOME);
+        String genome = get(DEFAULT_GENOME_KEY, DEFAULT_GENOME);
         return genome;
     }
 
@@ -1008,7 +1021,7 @@ public class PreferenceManager implements PropertyManager {
 
         defaultValues.put(GENOMES_SERVER_URL, DEFAULT_GENOME_URL);
         defaultValues.put(OVERLAY_ATTRIBUTE_KEY, "LINKING_ID");
-        defaultValues.put(DEFAULT_GENOME_KEY, Globals.DEFAULT_GENOME);
+        defaultValues.put(DEFAULT_GENOME_KEY, DEFAULT_GENOME);
 
         defaultValues.put(USE_PROXY, "false");
         defaultValues.put(PROXY_AUTHENTICATE, "false");
@@ -1035,7 +1048,9 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(DEFAULT_FONT_SIZE, "10");
         defaultValues.put(DEFAULT_FONT_FAMILY, "Arial");
         defaultValues.put(DEFAULT_FONT_ATTRIBUTE, String.valueOf(Font.PLAIN));
-        defaultValues.put(ENABLE_ANTIALISING, String.valueOf(Globals.IS_MAC));
+
+        boolean isMac = System.getProperty("os.name").toLowerCase().startsWith("mac");
+        defaultValues.put(ENABLE_ANTIALISING, String.valueOf(isMac));
 
         defaultValues.put(NAME_PANEL_WIDTH, "160");
         defaultValues.put(BACKGROUND_COLOR, "250,250,250");
@@ -1083,6 +1098,18 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SHOW_SIZE_WARNING, "true");
 
         defaultValues.put(SKIP_VERSION, "");
+
+        defaultValues.put(COLOR_A, "0,150,0");
+        defaultValues.put(COLOR_C,"0,0,255");
+        defaultValues.put(COLOR_T, "255,0,0");
+        defaultValues.put(COLOR_G, "209,113,5");
+        defaultValues.put(COLOR_N, ColorUtilities.colorToString(Color.gray));
+        defaultValues.put(SAM_COLOR_A, "0,255,0");
+        defaultValues.put(SAM_COLOR_C,"0,0,255");
+        defaultValues.put(SAM_COLOR_T, "255,0,0");
+        defaultValues.put(SAM_COLOR_G, "209,113,5");
+        defaultValues.put(SAM_COLOR_N, ColorUtilities.colorToString(Color.gray.brighter()));
+
     }
 
     /**

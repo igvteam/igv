@@ -20,12 +20,12 @@ package org.broad.igv.maf;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.SequenceRenderer;
+import org.broad.igv.sam.AlignmentRenderer;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
 
 import java.awt.*;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -99,6 +99,8 @@ public class MAFRenderer {
             Rectangle trackRectangle,
             Track track) {
 
+        Map<Character, Color> nucleotideColors = SequenceRenderer.getNucleotideColors();
+
         double origin = context.getOrigin();
         double locScale = context.getScale();
 
@@ -153,7 +155,7 @@ public class MAFRenderer {
 
                 char charToDraw = misMatch || reference == alignedSequence ? c : '.';
 
-                Color color = SequenceRenderer.nucleotideColors.get(charToDraw);
+                Color color = nucleotideColors.get(charToDraw);
 
                 if ((dX >= 8) && (dY >= 12) || charToDraw == '.') {
 

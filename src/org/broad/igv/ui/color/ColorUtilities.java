@@ -170,16 +170,20 @@ public class ColorUtilities {
     }
 
     public static Color stringToColor(String string) {
+       return stringToColor(string, Color.black);
+    }
+
+    public static Color stringToColor(String string, Color defaultColor) {
         try {
             Color c = stringToColorNoDefault(string);
             if (c == null) {
-                c = Color.black;
+                c = defaultColor;
             }
             colorCache.put(string, c);
             return c;
         } catch (NumberFormatException numberFormatException) {
             log.error("Error in color string. ", numberFormatException);
-            return Color.black;
+            return defaultColor;
         }
     }
 

@@ -26,6 +26,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.SOLIDUtils;
 
 import java.awt.*;
@@ -34,33 +35,20 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+
 /**
  * @author jrobinso
  */
 public class SequenceRenderer {
+
 
     private static Logger log = Logger.getLogger(SequenceRenderer.class);
 
     //Maximum scale at which the track is displayed
     //public static final int MAX_SCALE_FOR_RENDER = 1000;
     public static final int AMINO_ACID_RESOLUTION = 5;
-    public static Map<Character, Color> nucleotideColors = new HashMap();
 
-
-    static {
-        Color AColor = new Color(0, 150, 0);
-        nucleotideColors.put('A', AColor);
-        nucleotideColors.put('a', AColor);
-        nucleotideColors.put('C', Color.BLUE);
-        nucleotideColors.put('c', Color.BLUE);
-        nucleotideColors.put('T', Color.RED);
-        nucleotideColors.put('t', Color.RED);
-        Color GColor = new Color(209, 113, 5);
-        nucleotideColors.put('G', GColor);
-        nucleotideColors.put('g', GColor);
-        nucleotideColors.put('N', Color.gray);
-        nucleotideColors.put('n', Color.gray);
-    }
+    private static Map<Character, Color> nucleotideColors;
 
     protected TranslatedSequenceDrawer translatedSequenceDrawer;
 
@@ -71,7 +59,43 @@ public class SequenceRenderer {
     private boolean hasSequence = true;
 
     public SequenceRenderer() {
+
+        if(nucleotideColors == null) setNucleotideColors();
+
         translatedSequenceDrawer = new TranslatedSequenceDrawer();
+    }
+
+
+    public static Map<Character, Color> getNucleotideColors() {
+
+        if(nucleotideColors == null) setNucleotideColors();
+        return nucleotideColors;
+
+    }
+
+    public static void setNucleotideColors() {
+
+        PreferenceManager prefs = PreferenceManager.getInstance();
+
+        nucleotideColors = new HashMap();
+
+        Color a = ColorUtilities.stringToColor(prefs.get(PreferenceManager.COLOR_A), new Color(0, 150, 0));
+        Color c = ColorUtilities.stringToColor(prefs.get(PreferenceManager.COLOR_C), Color.blue);
+        Color t = ColorUtilities.stringToColor(prefs.get(PreferenceManager.COLOR_T),  Color.red);
+        Color g = ColorUtilities.stringToColor(prefs.get(PreferenceManager.COLOR_G),  Color.gray);
+        Color n = ColorUtilities.stringToColor(prefs.get(PreferenceManager.COLOR_N),  Color.gray);
+
+        nucleotideColors.put('A', a);
+        nucleotideColors.put('a', a);
+        nucleotideColors.put('C', c);
+        nucleotideColors.put('c', c);
+        nucleotideColors.put('T', t);
+        nucleotideColors.put('t', t);
+        nucleotideColors.put('G', g);
+        nucleotideColors.put('g', g);
+        nucleotideColors.put('N', n);
+        nucleotideColors.put('n', n);
+
     }
 
     /**
