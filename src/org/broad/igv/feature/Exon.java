@@ -116,7 +116,6 @@ public class Exon extends AbstractFeature implements IExon {
     }
 
 
-
     public Exon(BasicFeature bf) {
         this.start = bf.getStart();
         this.end = bf.getEnd();
@@ -187,16 +186,16 @@ public class Exon extends AbstractFeature implements IExon {
         return noncoding ? 0 : Math.max(0, codingEnd - codingStart);
     }
 
-    public AminoAcidSequence getAminoAcidSequence(Genome genome) {
+    public AminoAcidSequence getAminoAcidSequence(Genome genome, Exon prevExon, Exon nextExon) {
         if (aminoAcidSequence == null ||
                 //If the stored sequence was computed with a different codon table, we reset
                 !(Objects.equal(aminoAcidSequence.getCodonTableKey(), AminoAcidManager.getInstance().getCodonTable().getKey()))) {
-            computeAminoAcidSequence(genome);
+            computeAminoAcidSequence(genome, prevExon, nextExon);
         }
         return aminoAcidSequence;
     }
 
-    private void computeAminoAcidSequence(Genome genome) {
+    private void computeAminoAcidSequence(Genome genome, Exon prevExon, Exon nextExon) {
         if (noncoding) {
             return;
         }
@@ -204,13 +203,35 @@ public class Exon extends AbstractFeature implements IExon {
         int end = getEnd();
         String chr = getChr();
         if (readingFrame >= 0) {
-            int readStart = (codingStart > start) ? codingStart : start + readingFrame;
+            int readStart = (codingStart > start) ? codingStart : start;
             int readEnd = Math.min(end, codingEnd);
             if (readEnd > readStart + 3) {
                 if (seqBytes == null) {
                     seqBytes = genome.getSequence(chr, readStart, readEnd);
                 }
                 if (seqBytes != null) {
+
+                    // Grab nucleotides from previous exon if needed to complete first codon
+                    if (readingFrame > 0 && prevExon != null) {
+                        int diff = 3 - readingFrame;
+                        byte [] d = genome.getSequence(chr, prevExon.getCdEnd() - diff, prevExon.getCdEnd());
+                        byte [] tmp = new byte[d.length + seqBytes.length];
+                        System.arraycopy(d, 0, tmp, 0, diff);
+                        System.arraycopy(seqBytes, 0, tmp, diff, seqBytes.length);
+                        seqBytes = tmp;
+                        readStart -= diff;
+                    }
+
+                    // Grab nucleotides from next exon if needed for last codon
+                    int diff = 3 - ((readEnd - (codingStart + readingFrame)) %3);
+                    if(diff != 0 && nextExon != null) {
+                        byte [] d = genome.getSequence(chr, nextExon.getCdStart(), nextExon.getCdStart() + diff);
+                        byte [] tmp = new byte[d.length + seqBytes.length];
+                        System.arraycopy(seqBytes, 0, tmp, 0, seqBytes.length);
+                        System.arraycopy(d, 0, tmp, seqBytes.length, d.length);
+                        seqBytes = tmp;
+                    }
+
                     aminoAcidSequence = AminoAcidManager.getInstance().getAminoAcidSequence(getStrand(), readStart, seqBytes);
                 }
             }

@@ -381,7 +381,13 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         IExon lastExon = null;
 
         exonGraph.startFeature();
-        for (Exon exon : gene.getExons()) {
+
+
+        int exonCount = gene.getExons().size();
+
+        for (int idx = 0; idx < exonCount; idx++) {
+
+            Exon exon = gene.getExons().get(idx);
 
             // Parse expression from tags, if available
             //Credit Michael Poidinger and Solomonraj Wilson, Singapore Immunology Network.
@@ -492,7 +498,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
                 if (locationScale < 0.25) {
                     labelAminoAcids(pStart, fontGraphics, theOrigin, context, gene, locationScale,
-                            curYOffset, exon, trackRectangle);
+                            curYOffset, trackRectangle, idx);
                 }
 
                 if (FrameManager.isExomeMode()) {
@@ -612,51 +618,36 @@ public class IGVFeatureRenderer extends FeatureRenderer {
      * @param gene
      * @param locationScale
      * @param yOffset
-     * @param exon
      * @param trackRectangle
+     * @param idx  exon index
      */
     public void labelAminoAcids(int pStart, Graphics2D fontGraphics, double theOrigin,
                                 RenderContext context, IGVFeature gene, double locationScale,
-                                int yOffset, Exon exon, Rectangle trackRectangle) {
+                                int yOffset, Rectangle trackRectangle, int idx) {
 
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        AminoAcidSequence aaSequence = exon.getAminoAcidSequence(genome);
+        Exon exon = gene.getExons().get(idx);
+
+        Exon prevExon = idx == 0 ? null : gene.getExons().get(idx-1);
+        Exon nextExon = (idx+1) < gene.getExons().size() ?gene.getExons().get(idx+1) : null;
+
+        AminoAcidSequence aaSequence = exon.getAminoAcidSequence(genome, prevExon, nextExon);
+
         if ((aaSequence != null) && aaSequence.hasNonNullSequence()) {
             Rectangle aaRect = new Rectangle(pStart, yOffset - blockHeight / 2, 1, blockHeight);
 
             int aaSeqStartPosition = aaSequence.getStartPosition();
-            int firstFullAcidIndex = (int) Math.floor((aaSeqStartPosition - exon.getReadingFrame()) / 3);
-            //calculated oddness or evenness of first amino acid. This is also done independently in SequenceRenderer
-            boolean odd = (firstFullAcidIndex % 2) == 1;
-
-            if (aaSeqStartPosition > exon.getStart()) {
-
-                // The codon for the first amino acid is split between this and the previous exon
-                // TODO -- get base from previous exon and compute aaSequence.  For now skipping drawing
-                // the AA label
-                int cdStart = Math.max(exon.getCdStart(), exon.getStart());
-                aaRect.x = getPixelFromChromosomeLocation(exon.getChr(), cdStart, theOrigin,
-                        locationScale);
-                aaRect.width = getPixelFromChromosomeLocation(exon.getChr(),
-                        aaSeqStartPosition, theOrigin, locationScale) - aaRect.x;
-
-                if (trackRectangle.intersects(aaRect)) {
-                    //use opposite color from first AA color
-                    Graphics2D bgGraphics = context.getGraphic2DForColor(!odd ? AA_COLOR_1 : AA_COLOR_2);
-                    bgGraphics.fill(aaRect);
-                }
-            }
-
+            boolean odd =  exon.getAminoAcidNumber(exon.getCdStart()) % 2 == 1;
 
             for (AminoAcid acid : aaSequence.getSequence()) {
                 if (acid != null) {
 
-                    int px = getPixelFromChromosomeLocation(exon.getChr(), aaSeqStartPosition, theOrigin, locationScale);
-                    int px2 = getPixelFromChromosomeLocation(exon.getChr(), aaSeqStartPosition + 3, theOrigin, locationScale);
+                    int start = Math.max(exon.getStart(), aaSeqStartPosition);
+                    int end = Math.min(exon.getEnd(), aaSeqStartPosition + 3);
+                    int px = getPixelFromChromosomeLocation(exon.getChr(), start, theOrigin, locationScale);
+                    int px2 = getPixelFromChromosomeLocation(exon.getChr(), end, theOrigin, locationScale);
 
                     if ((px <= trackRectangle.getMaxX()) && (px2 >= trackRectangle.getX())) {
-
-                        // {
 
                         aaRect.x = px;
                         aaRect.width = px2 - px;

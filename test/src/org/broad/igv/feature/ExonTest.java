@@ -72,15 +72,17 @@ public class ExonTest extends AbstractHeadlessTest {
 
         BasicFeature lancl = (BasicFeature) FeatureDB.getFeature(geneId);
         Exon testExon = lancl.getExons().get(exonNum);
-        AminoAcidSequence seq = testExon.getAminoAcidSequence(genome);
+        Exon prevExon = lancl.getExons().get(exonNum-1);
+        Exon nextExon = lancl.getExons().get(exonNum+1);
+        AminoAcidSequence seq = testExon.getAminoAcidSequence(genome, prevExon, nextExon);
         assertEquals('I', seq.getSequence().get(0).getSymbol());
 
         AminoAcidManager.getInstance().setCodonTable(AminoAcidManager.DEFAULT_CODON_TABLE_PATH, 2);
 
-        seq = testExon.getAminoAcidSequence(genome);
+        seq = testExon.getAminoAcidSequence(genome, prevExon, nextExon);
         assertEquals('M', seq.getSequence().get(0).getSymbol());
 
-        AminoAcidSequence seq2 = testExon.getAminoAcidSequence(genome);
+        AminoAcidSequence seq2 = testExon.getAminoAcidSequence(genome, prevExon, nextExon);
 
         //Shouldn't refetch
         assertEquals(seq, seq2);
