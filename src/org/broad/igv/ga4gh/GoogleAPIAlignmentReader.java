@@ -6,13 +6,15 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.util.CloseableIterator;
+import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.Ga4ghAlignment;
 import org.broad.igv.sam.reader.AlignmentReader;
+import org.broad.igv.util.HttpUtils;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.net.URL;
 import java.util.*;
 
 /**
@@ -21,20 +23,15 @@ import java.util.*;
  * Created by jrobinso on 7/18/14.
  */
 
-public class Ga4ghTextReader implements AlignmentReader<Alignment> {
+public class GoogleAPIAlignmentReader implements AlignmentReader<Alignment> {
 
-    String path;
-    List<Alignment> alignmentList;
+    private static Logger log = Logger.getLogger(GoogleAPIAlignmentReader.class);
+
+    String readsetId;
     List<String> sequenceNames;
 
-    public Ga4ghTextReader(String path) {
-        this.path = path;
-
-        try {
-            loadAll();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public GoogleAPIAlignmentReader(String readsetId) {
+        this.readsetId = readsetId;
     }
 
     @Override
@@ -44,6 +41,14 @@ public class Ga4ghTextReader implements AlignmentReader<Alignment> {
 
     @Override
     public List<String> getSequenceNames() {
+
+        if (sequenceNames == null) {
+            try {
+                loadMetadata();
+            } catch (IOException e) {
+                log.error("Error fetching metadata", e);
+            }
+        }
         return sequenceNames;
     }
 
@@ -59,37 +64,18 @@ public class Ga4ghTextReader implements AlignmentReader<Alignment> {
 
     @Override
     public CloseableIterator<Alignment> iterator() {
-        return new MIterator();
+        throw new RuntimeException("Iterating over ga4gh datasets is not supported");
     }
 
     @Override
     public CloseableIterator<Alignment> query(String sequence, int start, int end, boolean contained) throws IOException {
-        return new MIterator();
-    }
 
-    @Override
-    public boolean hasIndex() {
-        return true;
-    }
+        List<Alignment> alignmentList = new ArrayList<Alignment>();
 
-    private void loadAll() throws IOException {
-
-
-        alignmentList = new ArrayList<Alignment>();
-       HashSet<String> seqNames = new HashSet<String>();
-
-        BufferedReader br;
-        StringBuffer sb = new StringBuffer();
-        String line;
-
-        br = new BufferedReader(new FileReader(path));
-
-        while ((line = br.readLine()) != null) {
-            sb.append(line + "\n");
-        }
+        String readString = GoogleAPIHelper.reads(readsetId, sequence, start, end);
 
         JsonParser parser = new JsonParser();
-        JsonObject obj = parser.parse(sb.toString()).getAsJsonObject();
+        JsonObject obj = parser.parse(readString).getAsJsonObject();
 
         JsonArray reads = obj.getAsJsonArray("reads");
 
@@ -97,11 +83,33 @@ public class Ga4ghTextReader implements AlignmentReader<Alignment> {
         while (iter.hasNext()) {
             JsonElement next = iter.next();
             Ga4ghAlignment alignment = new Ga4ghAlignment(next.getAsJsonObject());
-            seqNames.add(alignment.getChr());
             alignmentList.add(alignment);
         }
 
-        this.sequenceNames = new ArrayList(seqNames);
+        return new MIterator(alignmentList);
+    }
+
+    @Override
+    public boolean hasIndex() {
+        return true;
+    }
+
+    private void loadMetadata() throws IOException {
+
+        String authKey = PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_API_KEY);
+        String baseURL = PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_BASE_URL);
+        URL url = new URL(baseURL + "/readsets/" + readsetId + "key=" + authKey);   // TODO -- field selection?
+
+        String result = HttpUtils.getInstance().getContentsAsString(url);
+        JsonParser parser = new JsonParser();
+        JsonObject root = parser.parse(result).getAsJsonObject();
+        JsonArray refSequences = root.getAsJsonObject("fileData").getAsJsonArray("refSequences");
+
+        ArrayList<String> sequenceNames = new ArrayList(refSequences.size());
+        Iterator<JsonElement> iter = refSequences.iterator();
+        while (iter.hasNext()) {
+            sequenceNames.add(iter.next().getAsJsonObject().get("name").getAsString());
+        }
     }
 
     public static boolean supportsFileType(String path) {
@@ -112,7 +120,7 @@ public class Ga4ghTextReader implements AlignmentReader<Alignment> {
 
         Iterator<Alignment> iter;
 
-        MIterator() {
+        MIterator(List<Alignment> alignmentList) {
             iter = alignmentList.iterator();
         }
 

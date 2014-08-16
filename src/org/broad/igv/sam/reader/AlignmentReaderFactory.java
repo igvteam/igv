@@ -16,10 +16,9 @@ import htsjdk.samtools.SAMReadGroupRecord;
 import htsjdk.samtools.ValidationStringency;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.ga4gh.Ga4ghTextReader;
+import org.broad.igv.ga4gh.GoogleAPIAlignmentReader;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
@@ -91,8 +90,8 @@ public class AlignmentReaderFactory {
                 throw new RuntimeException("Cannot load Goby alignment " + locator.getPath(), e);
 
             }
-        } else if (Ga4ghTextReader.supportsFileType(locator.getPath())) {
-            return new Ga4ghTextReader(locator.getPath());
+        } else if (GoogleAPIAlignmentReader.supportsFileType(locator.getPath())) {
+            return new GoogleAPIAlignmentReader(locator.getPath());
         }
 
         else {
