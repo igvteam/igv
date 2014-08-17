@@ -224,7 +224,7 @@ public class Exon extends AbstractFeature implements IExon {
 
                     // Grab nucleotides from next exon if needed for last codon
                     int diff = 3 - ((readEnd - (codingStart + readingFrame)) %3);
-                    if(diff != 0 && nextExon != null) {
+                    if(diff > 0 && diff < 3 && nextExon != null) {
                         byte [] d = genome.getSequence(chr, nextExon.getCdStart(), nextExon.getCdStart() + diff);
                         byte [] tmp = new byte[d.length + seqBytes.length];
                         System.arraycopy(seqBytes, 0, tmp, 0, seqBytes.length);

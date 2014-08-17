@@ -164,7 +164,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
     @Test
     public void testNegativeGeneMidExon2() {
         String expectedSeq = "QLSYV";
-        String expectedEndSeq = "GSVV";
+        String expectedEndSeq = "GSVVR";
         IGVFeature fbxw7 = (IGVFeature) FeatureDB.getFeature("FBXW7");
 
         Exon exon = fbxw7.getExons().get(2);
