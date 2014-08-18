@@ -69,11 +69,13 @@ public class Ga4ghAlignment extends SAMAlignment {
 //            }
 //        }
 
-        String baseQualities = json.get("baseQuality").toString();
+        String baseQualityString = json.get("baseQuality").getAsString();
+        byte [] baseQualities = baseQualityString.getBytes();
+        for(int i=0; i<baseQualities.length; i++) baseQualities[i] -= 33;
+
         setPairOrientation();
         setPairStrands();
-        createAlignmentBlocks(this.cigarString, this.readSequence.getBytes(), baseQualities.getBytes(),
-                null, null, -1);
+        createAlignmentBlocks(this.cigarString, this.readSequence.getBytes(), baseQualities, null, null, -1);
 
     }
 

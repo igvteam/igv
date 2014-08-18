@@ -41,6 +41,7 @@ import org.broad.igv.feature.genome.*;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
+import org.broad.igv.ga4gh.GoogleAPIHelper;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.gwas.GWASData;
@@ -170,7 +171,7 @@ public class TrackLoader {
                     typeString.endsWith(".sam.list") || typeString.endsWith(".bam.list") ||
                     typeString.endsWith(".aligned") || typeString.endsWith(".sai") ||
                     typeString.endsWith(".bai") || typeString.equals("alist") ||
-                    typeString.endsWith(".ga4gh")) {
+                    typeString.equals(GoogleAPIHelper.RESOURCE_TYPE)) {
                 loadAlignmentsTrack(locator, newTracks, genome);
             } else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) ||
                     typeString.endsWith("cpg.txt") || typeString.endsWith(".expr")) {
@@ -892,26 +893,28 @@ public class TrackLoader {
             covTrack.setDataManager(dataManager);
             dataManager.setCoverageTrack(covTrack);
 
-            // Search for precalculated coverage data   -- DON'T DO THIS FOR CGI READER
-            String covPath = locator.getCoverage();
-            if (covPath == null) {
-                String path = locator.getPath();
-                if (!path.contains("/query.cgi?")) {
-                    covPath = path + ".tdf";
-                }
-                //Hack to deal with su2c
-                if (path.contains("dataformat=.bam")) {
-                    covPath = null;
-                }
-            }
-            if (covPath != null) {
-                if (FileUtils.resourceExists(covPath)) {
-                    log.debug("Loading TDF for coverage: " + covPath);
-                    TDFReader reader = TDFReader.getReader(covPath);
-                    TDFDataSource ds = new TDFDataSource(reader, 0, alignmentTrack.getName() + " coverage", genome);
-                    covTrack.setDataSource(ds);
-                }
+            // Search for precalculated coverage data
+            // Skip for GA4GH & SU2C resources
+            if (!(GoogleAPIHelper.RESOURCE_TYPE.equals(locator.getType()) ||
+                   locator.getPath().contains("dataformat=.bam"))) {
 
+                String covPath = locator.getCoverage();
+                if (covPath == null) {
+                    String path = locator.getPath();
+                    if (!path.contains("/query.cgi?")) {
+                        covPath = path + ".tdf";
+                    }
+
+                }
+                if (covPath != null) {
+                    if (FileUtils.resourceExists(covPath)) {
+                        log.debug("Loading TDF for coverage: " + covPath);
+                        TDFReader reader = TDFReader.getReader(covPath);
+                        TDFDataSource ds = new TDFDataSource(reader, 0, alignmentTrack.getName() + " coverage", genome);
+                        covTrack.setDataSource(ds);
+                    }
+
+                }
             }
 
             boolean showSpliceJunctionTrack = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);

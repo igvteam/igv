@@ -2,13 +2,16 @@ package org.broad.igv.ga4gh;
 
 import com.google.gson.*;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.Pair;
 
+import java.awt.*;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -17,6 +20,7 @@ import java.util.zip.GZIPInputStream;
  * Created by jrobinso on 8/15/14.
  */
 public class GoogleAPIHelper {
+    public static final String RESOURCE_TYPE = "ga4gh";
 
     // Magic dataset id (1000 genomes)
 
@@ -30,6 +34,15 @@ public class GoogleAPIHelper {
 //        (new GoogleAPILoadDialog(null, idNamePairs)).setVisible(true);
 //    }
 
+
+    public static void openLoadDialog(IGV igv, Frame frame) throws IOException {
+
+        List<Pair<String, String>> idNamePairs = readsetSearch(datasetId);
+        GoogleAPILoadDialog dlg = (new GoogleAPILoadDialog(frame, idNamePairs));
+        dlg.setModal(true);
+        dlg.setVisible(true);
+        dlg.dispose();
+    }
 
     public static List<Pair<String, String>> readsetSearch(String datasetId) throws IOException {
 
@@ -52,6 +65,9 @@ public class GoogleAPIHelper {
                 idNamePairs.add(new Pair(jobj.get("id").getAsString(), jobj.get("name").getAsString()));
             }
 
+            // Hack to work around api bug?
+            idNamePairs.add(new Pair("CJDmkYn8ChCcnc7i4KaWqmQ","HG00096"));
+
             Collections.sort(idNamePairs, new Comparator<Pair<String, String>>() {
                 @Override
                 public int compare(Pair<String, String> o1, Pair<String, String> o2) {
@@ -68,7 +84,7 @@ public class GoogleAPIHelper {
 
     public static String reads(String readsetId, String chr, int start, int end) throws IOException {
 
-        String contentToPost = "{readsetIds: [" + readsetId + "], " +
+        String contentToPost = "{readsetIds: [\"" + readsetId + "\"], " +
                 "sequenceName: " + chr + ", " +
                 "sequenceStart: " + start + ", " +
                 "sequenceEnd: " + end + "}";

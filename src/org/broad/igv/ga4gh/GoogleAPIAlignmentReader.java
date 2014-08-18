@@ -98,22 +98,29 @@ public class GoogleAPIAlignmentReader implements AlignmentReader<Alignment> {
 
         String authKey = PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_API_KEY);
         String baseURL = PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_BASE_URL);
-        URL url = new URL(baseURL + "/readsets/" + readsetId + "key=" + authKey);   // TODO -- field selection?
+        URL url = new URL(baseURL + "/readsets/" + readsetId + "?key=" + authKey);   // TODO -- field selection?
 
         String result = HttpUtils.getInstance().getContentsAsString(url);
         JsonParser parser = new JsonParser();
         JsonObject root = parser.parse(result).getAsJsonObject();
-        JsonArray refSequences = root.getAsJsonObject("fileData").getAsJsonArray("refSequences");
 
-        ArrayList<String> sequenceNames = new ArrayList(refSequences.size());
-        Iterator<JsonElement> iter = refSequences.iterator();
-        while (iter.hasNext()) {
-            sequenceNames.add(iter.next().getAsJsonObject().get("name").getAsString());
+        sequenceNames = new ArrayList();
+        JsonArray fileData = root.getAsJsonArray("fileData");
+        Iterator<JsonElement> fileIter = fileData.iterator();
+        while (fileIter.hasNext()) {
+
+            JsonObject fileObject = fileIter.next().getAsJsonObject();
+            JsonArray refSequences = fileObject.getAsJsonArray("refSequences");
+
+            Iterator<JsonElement> iter = refSequences.iterator();
+            while (iter.hasNext()) {
+                sequenceNames.add(iter.next().getAsJsonObject().get("name").getAsString());
+            }
         }
     }
 
-    public static boolean supportsFileType(String path) {
-        return path.contains("ga4gh");
+    public static boolean supportsFileType(String type) {
+        return type.equals(GoogleAPIHelper.RESOURCE_TYPE);
     }
 
     class MIterator implements CloseableIterator<Alignment> {

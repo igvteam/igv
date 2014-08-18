@@ -11,6 +11,7 @@
 package org.broad.igv.util;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.ga4gh.GoogleAPIHelper;
 import org.broad.igv.gs.GSUtils;
 import htsjdk.tribble.Tribble;
 
@@ -44,18 +45,25 @@ public class ResourceLocator {
      */
     String dbURL;
 
-
     /**
      * Optional path to an associated index file
      */
     String indexPath;
 
+    /**
+     * URL to a page with general information about the resource
+     */
+    String trackInforURL;
 
-    String trackInforURL; // A hyperlink to general information about the track.
+    /**
+     * A URL pattern (UCSC convention) to a specific URL applicable to each feature
+     */
+    String featureInfoURL;
 
-    String featureInfoURL; //A URL pattern (UCSC convention) to a specific URL applicable to each feature
-
-    String description; //Descriptive text
+    /**
+     * Descriptive text
+     */
+    String description;
 
     /**
      * The type of resource (generally this refers to the file format)
@@ -76,7 +84,6 @@ public class ResourceLocator {
      * Color for features or data.  Somewhat redundant with trackLine.
      */
     Color color;
-
 
     String sampleId;
 
@@ -215,7 +222,7 @@ public class ResourceLocator {
     }
 
     public boolean isLocal() {
-        return dbURL == null && !(FileUtils.isRemote(path));
+        return dbURL == null && !FileUtils.isRemote(path) && !type.equals(GoogleAPIHelper.RESOURCE_TYPE);
     }
 
     public void setTrackInforURL(String trackInforURL) {

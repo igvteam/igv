@@ -90,7 +90,7 @@ public class AlignmentReaderFactory {
                 throw new RuntimeException("Cannot load Goby alignment " + locator.getPath(), e);
 
             }
-        } else if (GoogleAPIAlignmentReader.supportsFileType(locator.getPath())) {
+        } else if (GoogleAPIAlignmentReader.supportsFileType(locator.getType())) {
             return new GoogleAPIAlignmentReader(locator.getPath());
         }
 

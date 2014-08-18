@@ -391,6 +391,11 @@ public class IGVMenuBar extends JMenuBar {
             menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         }
 
+        if(PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_API_KEY) != null) {
+            menuAction = new BrowseGoogleAPIAction("Load from Google...", KeyEvent.VK_G, igv);
+            menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        }
+
         //Disable loading if no genome loaded. Something of an edge case
         if (!genomeLoaded) {
             for (JComponent menuItem : menuItems) {

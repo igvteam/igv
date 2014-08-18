@@ -4,10 +4,13 @@
 
 package org.broad.igv.ga4gh;
 
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.Pair;
+import org.broad.igv.util.ResourceLocator;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Arrays;
 import javax.swing.*;
 import javax.swing.border.*;
 
@@ -17,6 +20,7 @@ import javax.swing.border.*;
 public class GoogleAPILoadDialog extends JDialog {
 
     java.util.List<Pair<String, String>> idNamePairs;
+    String selectedId;
 
     public GoogleAPILoadDialog(Frame owner, java.util.List<Pair<String, String>> idNamePairs) {
         super(owner);
@@ -34,15 +38,24 @@ public class GoogleAPILoadDialog extends JDialog {
     private void loadButtonActionPerformed(ActionEvent e) {
 
         int idx = this.readsetSelectComboBox.getSelectedIndex();
-        String id = idNamePairs.get(idx).getFirst();
-
-        System.out.println(id);
-
+        Pair<String, String> idName = idNamePairs.get(idx);
         setVisible(false);
+        loadTrack(idName.getFirst(), idName.getSecond());
     }
 
     private void cancelButtonActionPerformed(ActionEvent e) {
+        selectedId = null;
         setVisible(false);
+    }
+
+
+    private void loadTrack(String readsetId, String name) {
+
+        ResourceLocator locator = new ResourceLocator(readsetId);
+        locator.setName(name);
+        locator.setType(GoogleAPIHelper.RESOURCE_TYPE);
+        IGV.getInstance().loadTracks(Arrays.asList(locator));
+
     }
 
     private void initComponents() {
