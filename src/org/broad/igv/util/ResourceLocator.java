@@ -222,7 +222,7 @@ public class ResourceLocator {
     }
 
     public boolean isLocal() {
-        return dbURL == null && !FileUtils.isRemote(path) && !type.equals(GoogleAPIHelper.RESOURCE_TYPE);
+        return dbURL == null && !FileUtils.isRemote(path) && !GoogleAPIHelper.RESOURCE_TYPE.equals(type);
     }
 
     public void setTrackInforURL(String trackInforURL) {
