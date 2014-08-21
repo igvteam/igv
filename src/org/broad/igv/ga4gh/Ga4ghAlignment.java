@@ -1,4 +1,4 @@
-package org.broad.igv.sam;
+package org.broad.igv.ga4gh;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -7,6 +7,8 @@ import htsjdk.samtools.TextCigarCodec;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.sam.ReadMate;
+import org.broad.igv.sam.SAMAlignment;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
@@ -31,7 +33,7 @@ public class Ga4ghAlignment extends SAMAlignment {
         String refName = json.get("referenceSequenceName").getAsString();
 
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        this.chr = genome == null ? refName : genome.getChromosomeAlias(refName);
+        this.setChr(genome == null ? refName : genome.getChromosomeAlias(refName));
 
         // SAMRecord is 1 based inclusive.  IGV is 0 based exclusive.
         this.readName = json.get("name").getAsString();

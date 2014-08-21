@@ -831,6 +831,10 @@ public abstract class SAMAlignment implements Alignment {
         return mates;
     }
 
+    public void setChr(String chr) {
+        this.chr = chr;
+    }
+
 
     static class CigarOperator {
 

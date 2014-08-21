@@ -5,7 +5,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.Ga4ghAlignment;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
@@ -14,8 +13,6 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import static org.junit.Assert.*;
 
 public class Ga4ghTest {
 

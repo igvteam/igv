@@ -2,6 +2,7 @@ package org.broad.igv.ga4gh;
 
 import com.google.gson.*;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.sam.Alignment;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.Pair;
 
@@ -47,26 +48,37 @@ public class GoogleAPIHelper {
     public static List<Pair<String, String>> readsetSearch(String datasetId) throws IOException {
 
         List<Pair<String, String>> idNamePairs = readsetCache.get(datasetId);
-        if(idNamePairs == null) {
+        if (idNamePairs == null) {
 
-            String contentToPost = "{datasetIds: [" + datasetId + "]}";
-            String result = doPost("/readsets/search", contentToPost, "&fields=readsets(id,name)");
+            idNamePairs = new ArrayList();
 
-            JsonParser parser = new JsonParser();
-            JsonObject obj = parser.parse(result).getAsJsonObject();
-            JsonArray readsets = obj.getAsJsonArray("readsets");
+            // Loop through pages
+            int maxPages = 100;
+            JsonPrimitive pageToken = null;
+            while (maxPages-- > 0) {
+                String contentToPost = "{" +
+                        "\"datasetIds\": [" + datasetId + "]" +
+                        (pageToken == null ? "" : ", \"pageToken\": " + pageToken) +
+                        ", \"maxResults\": 256" +
+                        "}";
 
-            Iterator<JsonElement> iter = readsets.iterator();
-            idNamePairs = new ArrayList(readsets.size());
+                String result = doPost("/readsets/search", contentToPost, "&fields=readsets(id,name),nextPageToken");
 
-            while (iter.hasNext()) {
-                JsonElement next = iter.next();
-                JsonObject jobj = next.getAsJsonObject();
-                idNamePairs.add(new Pair(jobj.get("id").getAsString(), jobj.get("name").getAsString()));
+                JsonParser parser = new JsonParser();
+                JsonObject obj = parser.parse(result).getAsJsonObject();
+                JsonArray readsets = obj.getAsJsonArray("readsets");
+
+                Iterator<JsonElement> iter = readsets.iterator();
+
+                while (iter.hasNext()) {
+                    JsonElement next = iter.next();
+                    JsonObject jobj = next.getAsJsonObject();
+                    idNamePairs.add(new Pair(jobj.get("id").getAsString(), jobj.get("name").getAsString()));
+                }
+
+                pageToken = obj.getAsJsonPrimitive("nextPageToken");
+                if (pageToken == null) break;
             }
-
-            // Hack to work around api bug?
-            idNamePairs.add(new Pair("CJDmkYn8ChCcnc7i4KaWqmQ","HG00096"));
 
             Collections.sort(idNamePairs, new Comparator<Pair<String, String>>() {
                 @Override
@@ -82,15 +94,44 @@ public class GoogleAPIHelper {
     }
 
 
-    public static String reads(String readsetId, String chr, int start, int end) throws IOException {
+    public static List<Alignment> reads(String readsetId, String chr, int start, int end) throws IOException {
 
-        String contentToPost = "{readsetIds: [\"" + readsetId + "\"], " +
-                "sequenceName: " + chr + ", " +
-                "sequenceStart: " + start + ", " +
-                "sequenceEnd: " + end + "}";
+        List<Alignment> alignments = new ArrayList<Alignment>(10000);
+        int maxPages = 10000;
+        JsonPrimitive pageToken = null;
+        StringBuffer result = new StringBuffer();
 
-        String str = doPost("/reads/search", contentToPost, "");
-        return str;
+        while (maxPages-- > 0) {
+            String contentToPost = "{" +
+                    "readsetIds: [\"" + readsetId + "\"]" +
+                    ", sequenceName: " + chr +
+                    ", sequenceStart: " + start +
+                    ", sequenceEnd: " + end +
+                    (pageToken == null ? "" : ", \"pageToken\": " + pageToken) +
+                    "}";
+
+            String readString =  doPost("/reads/search", contentToPost, "");
+
+            JsonParser parser = new JsonParser();
+            JsonObject obj = parser.parse(readString).getAsJsonObject();
+
+            JsonArray reads = obj.getAsJsonArray("reads");
+
+            Iterator<JsonElement> iter = reads.iterator();
+            while (iter.hasNext()) {
+                JsonElement next = iter.next();
+                Ga4ghAlignment alignment = new Ga4ghAlignment(next.getAsJsonObject());
+                alignments.add(alignment);
+            }
+
+            pageToken = obj.getAsJsonPrimitive("nextPageToken");
+            if (pageToken == null) break;
+
+        }
+
+        System.out.println("# pages= " + (10000 - maxPages));
+
+        return alignments;
 
     }
 
@@ -132,7 +173,6 @@ public class GoogleAPIHelper {
 
         return sb.toString();
     }
-
 
 
 }

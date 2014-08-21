@@ -9,7 +9,6 @@ import htsjdk.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.Ga4ghAlignment;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.util.HttpUtils;
 
@@ -70,21 +69,7 @@ public class GoogleAPIAlignmentReader implements AlignmentReader<Alignment> {
     @Override
     public CloseableIterator<Alignment> query(String sequence, int start, int end, boolean contained) throws IOException {
 
-        List<Alignment> alignmentList = new ArrayList<Alignment>();
-
-        String readString = GoogleAPIHelper.reads(readsetId, sequence, start, end);
-
-        JsonParser parser = new JsonParser();
-        JsonObject obj = parser.parse(readString).getAsJsonObject();
-
-        JsonArray reads = obj.getAsJsonArray("reads");
-
-        Iterator<JsonElement> iter = reads.iterator();
-        while (iter.hasNext()) {
-            JsonElement next = iter.next();
-            Ga4ghAlignment alignment = new Ga4ghAlignment(next.getAsJsonObject());
-            alignmentList.add(alignment);
-        }
+        List<Alignment> alignmentList =  GoogleAPIHelper.reads(readsetId, sequence, start, end);
 
         return new MIterator(alignmentList);
     }
