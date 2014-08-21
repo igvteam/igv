@@ -338,7 +338,7 @@ public class CoverageTrack extends AbstractTrack {
             Graphics2D graphics = context.getGraphic2DForColor(color);
 
             DataRange range = getDataRange();
-            double maxRange = range.isLog() ? Math.log10(range.getMaximum()) : range.getMaximum();
+            double maxRange = range.isLog() ? Math.log10(range.getMaximum() + 1) : range.getMaximum();
 
             final double rectX = rect.getX();
             final double rectMaxX = rect.getMaxX();
@@ -373,7 +373,7 @@ public class CoverageTrack extends AbstractTrack {
                 if (pX + dX > lastpX) {
                     int pY = (int) rectMaxY - 1;
                     int totalCount = alignmentCounts.getTotalCount(pos);
-                    double tmp = range.isLog() ? Math.log10(totalCount) / maxRange : totalCount / maxRange;
+                    double tmp = range.isLog() ? Math.log10(totalCount + 1) / maxRange : totalCount / maxRange;
                     int height = (int) (tmp * rectHeight);
 
                     height = Math.min(height, rect.height - 1);
@@ -453,7 +453,7 @@ public class CoverageTrack extends AbstractTrack {
                     int pY = (int) rectMaxY - 1;
 
                     int totalCount = alignmentCounts.getTotalCount(pos);
-                    double tmp = range.isLog() ? Math.log10(totalCount) / maxRange : totalCount / maxRange;
+                    double tmp = range.isLog() ? Math.log10(totalCount + 1) / maxRange : totalCount / maxRange;
                     int height = (int) (tmp * rectHeight);
 
                     height = Math.min(height, rect.height - 1);
@@ -517,7 +517,7 @@ public class CoverageTrack extends AbstractTrack {
             Graphics2D tGraphics = context.getGraphic2DForColor(c);
 
             double tmp = isLog ?
-                    (count / totalCount) * Math.log10(totalCount) / max :
+                    (count / totalCount) * Math.log10(totalCount + 1) / max :
                     count / max;
             int height = (int) (tmp * rect.getHeight());
 
@@ -566,7 +566,7 @@ public class CoverageTrack extends AbstractTrack {
         // unMethylated *= mult;
 
         double tmp = isLog ?
-                (nMethylated / totalCount) * Math.log10(totalCount) / maxRange :
+                (nMethylated / totalCount) * Math.log10(totalCount + 1) / maxRange :
                 nMethylated / maxRange;
         int height = (int) (tmp * rect.getHeight());
 
@@ -581,7 +581,7 @@ public class CoverageTrack extends AbstractTrack {
         tGraphics = context.getGraphic2DForColor(c);
 
         tmp = isLog ?
-                (unMethylated / totalCount) * Math.log10(totalCount) / maxRange :
+                (unMethylated / totalCount) * Math.log10(totalCount + 1) / maxRange :
                 unMethylated / maxRange;
         height = (int) (tmp * rect.getHeight());
 
