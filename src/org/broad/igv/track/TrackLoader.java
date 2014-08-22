@@ -12,7 +12,6 @@
 package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.bigwig.BigWigDataSource;
@@ -41,7 +40,7 @@ import org.broad.igv.feature.genome.*;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
-import org.broad.igv.ga4gh.GoogleAPIHelper;
+import org.broad.igv.ga4gh.Ga4ghAPIHelper;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.gwas.GWASData;
@@ -171,7 +170,7 @@ public class TrackLoader {
                     typeString.endsWith(".sam.list") || typeString.endsWith(".bam.list") ||
                     typeString.endsWith(".aligned") || typeString.endsWith(".sai") ||
                     typeString.endsWith(".bai") || typeString.equals("alist") ||
-                    typeString.equals(GoogleAPIHelper.RESOURCE_TYPE)) {
+                    typeString.equals(Ga4ghAPIHelper.RESOURCE_TYPE)) {
                 loadAlignmentsTrack(locator, newTracks, genome);
             } else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) ||
                     typeString.endsWith("cpg.txt") || typeString.endsWith(".expr")) {
@@ -895,7 +894,7 @@ public class TrackLoader {
 
             // Search for precalculated coverage data
             // Skip for GA4GH & SU2C resources
-            if (!(GoogleAPIHelper.RESOURCE_TYPE.equals(locator.getType()) ||
+            if (!(Ga4ghAPIHelper.RESOURCE_TYPE.equals(locator.getType()) ||
                    locator.getPath().contains("dataformat=.bam"))) {
 
                 String covPath = locator.getCoverage();

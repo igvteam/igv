@@ -20,7 +20,7 @@ import java.util.zip.GZIPInputStream;
  * <p/>
  * Created by jrobinso on 8/15/14.
  */
-public class GoogleAPIHelper {
+public class Ga4ghAPIHelper {
     public static final String RESOURCE_TYPE = "ga4gh";
 
     // Magic dataset id (1000 genomes)
@@ -39,7 +39,7 @@ public class GoogleAPIHelper {
     public static void openLoadDialog(IGV igv, Frame frame) throws IOException {
 
         List<Pair<String, String>> idNamePairs = readsetSearch(datasetId);
-        GoogleAPILoadDialog dlg = (new GoogleAPILoadDialog(frame, idNamePairs));
+        Ga4ghLoadDialog dlg = (new Ga4ghLoadDialog(frame, idNamePairs));
         dlg.setModal(true);
         dlg.setVisible(true);
         dlg.dispose();

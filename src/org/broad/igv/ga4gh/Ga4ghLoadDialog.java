@@ -17,12 +17,12 @@ import javax.swing.border.*;
 /**
  * @author James Robinson
  */
-public class GoogleAPILoadDialog extends JDialog {
+public class Ga4ghLoadDialog extends JDialog {
 
     java.util.List<Pair<String, String>> idNamePairs;
     String selectedId;
 
-    public GoogleAPILoadDialog(Frame owner, java.util.List<Pair<String, String>> idNamePairs) {
+    public Ga4ghLoadDialog(Frame owner, java.util.List<Pair<String, String>> idNamePairs) {
         super(owner);
         initComponents();
 
@@ -53,7 +53,7 @@ public class GoogleAPILoadDialog extends JDialog {
 
         ResourceLocator locator = new ResourceLocator(readsetId);
         locator.setName(name);
-        locator.setType(GoogleAPIHelper.RESOURCE_TYPE);
+        locator.setType(Ga4ghAPIHelper.RESOURCE_TYPE);
         IGV.getInstance().loadTracks(Arrays.asList(locator));
 
     }

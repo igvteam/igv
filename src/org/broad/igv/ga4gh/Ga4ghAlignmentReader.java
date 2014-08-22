@@ -22,14 +22,14 @@ import java.util.*;
  * Created by jrobinso on 7/18/14.
  */
 
-public class GoogleAPIAlignmentReader implements AlignmentReader<Alignment> {
+public class Ga4ghAlignmentReader implements AlignmentReader<Alignment> {
 
-    private static Logger log = Logger.getLogger(GoogleAPIAlignmentReader.class);
+    private static Logger log = Logger.getLogger(Ga4ghAlignmentReader.class);
 
     String readsetId;
     List<String> sequenceNames;
 
-    public GoogleAPIAlignmentReader(String readsetId) {
+    public Ga4ghAlignmentReader(String readsetId) {
         this.readsetId = readsetId;
     }
 
@@ -69,7 +69,7 @@ public class GoogleAPIAlignmentReader implements AlignmentReader<Alignment> {
     @Override
     public CloseableIterator<Alignment> query(String sequence, int start, int end, boolean contained) throws IOException {
 
-        List<Alignment> alignmentList =  GoogleAPIHelper.reads(readsetId, sequence, start, end);
+        List<Alignment> alignmentList =  Ga4ghAPIHelper.reads(readsetId, sequence, start, end);
 
         return new MIterator(alignmentList);
     }
@@ -105,7 +105,7 @@ public class GoogleAPIAlignmentReader implements AlignmentReader<Alignment> {
     }
 
     public static boolean supportsFileType(String type) {
-        return type.equals(GoogleAPIHelper.RESOURCE_TYPE);
+        return type.equals(Ga4ghAPIHelper.RESOURCE_TYPE);
     }
 
     class MIterator implements CloseableIterator<Alignment> {
