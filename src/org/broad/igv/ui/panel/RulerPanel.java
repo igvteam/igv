@@ -385,6 +385,9 @@ public class RulerPanel extends JPanel {
         List<ExomeReferenceFrame.Gene> genes = frame.getGenes(chr);
 
         int idx = FeatureUtils.getIndexBefore(frame.getOrigin(), genes);
+
+        if(idx < 0) idx = 0;
+
         Rectangle visibleRect = this.getVisibleRect();
         FontMetrics fm = g.getFontMetrics();
 
