@@ -75,12 +75,12 @@ public class ExonTest extends AbstractHeadlessTest {
         Exon prevExon = lancl.getExons().get(exonNum-1);
         Exon nextExon = lancl.getExons().get(exonNum+1);
         AminoAcidSequence seq = testExon.getAminoAcidSequence(genome, prevExon, nextExon);
-        assertEquals('I', seq.getSequence().get(0).getSymbol());
+        assertEquals('I', seq.getSequence().get(1).getSymbol());
 
         AminoAcidManager.getInstance().setCodonTable(AminoAcidManager.DEFAULT_CODON_TABLE_PATH, 2);
 
         seq = testExon.getAminoAcidSequence(genome, prevExon, nextExon);
-        assertEquals('M', seq.getSequence().get(0).getSymbol());
+        assertEquals('H', seq.getSequence().get(1).getSymbol());
 
         AminoAcidSequence seq2 = testExon.getAminoAcidSequence(genome, prevExon, nextExon);
 

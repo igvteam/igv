@@ -357,7 +357,6 @@ public class RulerPanel extends JPanel {
 
                 Graphics2D exomeGraphics = (Graphics2D) g.create();
 
-//Shape clip = exomeGraphics.getClip();
 
                 Color c = idx % 2 == 0 ? grey1 : grey2;
 
