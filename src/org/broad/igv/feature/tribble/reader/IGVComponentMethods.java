@@ -33,7 +33,7 @@ public class IGVComponentMethods extends AbstractFeatureReader.ComponentMethods 
                 tabxIndex = locator.getPath() + ".tbi";
             }
         }
-        boolean isTabix =  locator.getPath().endsWith(".gz") && FileUtils.resourceExists(tabxIndex);
+        boolean isTabix =  (locator.getPath().endsWith(".gz") || locator.getPath().endsWith(".bgz")) && FileUtils.resourceExists(tabxIndex);
         if(isTabix) {
             locator.setIndexPath(tabxIndex);
         }

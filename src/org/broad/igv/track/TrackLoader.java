@@ -574,7 +574,7 @@ public class TrackLoader {
         final String path = locator.getPath();
         long size = FileUtils.getLength(path);
         int maxSize = 50000000;  // 50 mb
-        if (path.endsWith(".gz")) {
+        if (path.endsWith(".gz") || path.endsWith(".bgz")) {
             maxSize /= 4;
         }
 

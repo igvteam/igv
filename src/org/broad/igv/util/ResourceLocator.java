@@ -170,7 +170,7 @@ public class ResourceLocator {
 
             // Strip .txt, .gz, and .xls extensions.  (So  foo.cn.gz => a .cn file)
             if ((typeString.endsWith(".txt") || typeString.endsWith(
-                    ".xls") || typeString.endsWith(".gz"))) {
+                    ".xls") || typeString.endsWith(".gz") || typeString.endsWith(".bgz"))) {
                 typeString = typeString.substring(0, typeString.lastIndexOf("."));
             }
 
@@ -403,7 +403,7 @@ public class ResourceLocator {
         if (locator.getIndexPath() != null) {
             return locator.getIndexPath();
         }
-        String indexExtension = locator.getPath().toLowerCase().endsWith(".gz") ? ".tbi" : Tribble.STANDARD_INDEX_EXTENSION;
+        String indexExtension = (locator.getPath().toLowerCase().endsWith(".gz") || locator.getPath().toLowerCase().endsWith(".bgz")) ? ".tbi" : Tribble.STANDARD_INDEX_EXTENSION;
         return appendToPath(locator, indexExtension);
     }
 
