@@ -43,10 +43,20 @@ public class GenbankParser {
         try {
             reader = ParsingUtils.openBufferedReader(path);
             readLocus(reader);
-            readAccession(reader);
-            readAliases(reader);
+
+            String line = null;
+            do {
+                line = reader.readLine();
+                if (line.startsWith("ACCESSION")) {
+                    readAccession(line);
+                } else if (line.startsWith("ALIASES")) {
+                    readAliases(line);
+                }
+            }
+            while (line != null && !line.startsWith("FEATURES"));
+
             readFeatures(reader);
-            if(readSequence) readOriginSequence(reader);
+            if (readSequence) readOriginSequence(reader);
         } finally {
             if (reader != null) reader.close();
         }
@@ -98,54 +108,33 @@ public class GenbankParser {
      * Read the acession line
      * ACCESSION   K03160
      *
-     * @param reader
      * @throws IOException
      */
-    private void readAccession(BufferedReader reader) throws IOException {
+    private void readAccession(String line) {
 
-        String line = null;
-        do {
-            line = reader.readLine();
-        }
-        while (!line.startsWith("ACCESSION"));
-
-        if (line == null) {
-            log.info("Genbank file missing ACCESSION line. ");
+        String[] tokens = Globals.whitespacePattern.split(line);
+        if (tokens.length < 2) {
+            log.info("Genbank file missing ACCESSION number.");
         } else {
-            String[] tokens = Globals.whitespacePattern.split(line);
-            if (tokens.length < 2) {
-                log.info("Genbank file missing ACCESSION number.");
-            } else {
-                accession = tokens[1].trim();
-            }
+            accession = tokens[1].trim();
         }
     }
+
 
     /**
      * Read the sequence aliases line  -- Note: this is an IGV extension
      * ACCESSION   K03160
      *
-     * @param reader
      * @throws IOException
      */
-    private void readAliases(BufferedReader reader) throws IOException {
-
-        String line = null;
-        do {
-            line = reader.readLine();
-        }
-        while (!line.startsWith("ALIASES"));
-
-        if (line != null) {
-            String[] tokens = Globals.whitespacePattern.split(line);
-            if (tokens.length < 2) {
-                //log.info("Genbank file missing ACCESSION number.");
-            } else {
-                aliases = Globals.commaPattern.split(tokens[1]);
-            }
+    private void readAliases(String line) {
+        String[] tokens = Globals.whitespacePattern.split(line);
+        if (tokens.length < 2) {
+            //log.info("Genbank file missing ACCESSION number.");
+        } else {
+            aliases = Globals.commaPattern.split(tokens[1]);
         }
     }
-
 
 
     /**
@@ -210,12 +199,6 @@ public class GenbankParser {
      */
     private void readFeatures(BufferedReader reader) throws IOException {
 
-        // Skip to "FEATURES" section
-        String nextLine;
-        do {
-            nextLine = reader.readLine();
-        }
-        while (!nextLine.startsWith("FEATURES"));
 
         String chr = getChr();
 
@@ -223,6 +206,7 @@ public class GenbankParser {
         features = new ArrayList<Feature>();
         BasicFeature f = null;
         String currentLocQualifier = null;
+        String nextLine = null;
         do {
             nextLine = reader.readLine();
 
