@@ -41,7 +41,7 @@ public class CachingFeatureReaderTest {
     public void setUp() throws IOException {
         Genome genome = null; // <= don't do chromosome alias conversion
         FeatureCodec codec = CodecFactory.getCodec(path, null);
-        baseReader = AbstractFeatureReader.getFeatureReader(path, codec);
+        baseReader =    AbstractFeatureReader.getFeatureReader(path, path + ".tbi", codec, true);
         cacheReader = new CachingFeatureReader(baseReader);
 
     }
