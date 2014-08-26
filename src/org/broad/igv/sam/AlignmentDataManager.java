@@ -232,8 +232,8 @@ public class AlignmentDataManager implements IAlignmentDataManager {
 
             int adjustedStart = start;
             int adjustedEnd = end;
-            // Expand the interval by the lesser of  +/- a 1 screen, or max visible range
-            int windowSize = Math.min(2*(end - start), PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MAX_VISIBLE_RANGE) * 1000);
+            // Expand the interval by the lesser of  +/- a 2 screens, or max visible range
+            int windowSize = Math.min(4*(end - start), PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MAX_VISIBLE_RANGE) * 1000);
             int center = (end + start) / 2;
             int expand = Math.max(end - start, windowSize / 2);
 
