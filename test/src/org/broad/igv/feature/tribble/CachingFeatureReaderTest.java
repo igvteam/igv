@@ -33,7 +33,7 @@ import static junit.framework.Assert.assertTrue;
  */
 public class CachingFeatureReaderTest {
 
-    String path = TestUtils.LARGE_DATA_DIR + "CEU.SRP000032.2010_03.genotypes.vcf.bgz";
+    String path = TestUtils.LARGE_DATA_DIR + "CEU.SRP000032.2010_03.genotypes.vcf.gz";
     AbstractFeatureReader baseReader;
     CachingFeatureReader cacheReader;
 
