@@ -4,12 +4,15 @@
 
 package org.broad.igv.ga4gh;
 
+import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.util.Pair;
+import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ResourceLocator;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
 import java.util.Arrays;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -19,17 +22,17 @@ import javax.swing.border.*;
  */
 public class Ga4ghLoadDialog extends JDialog {
 
-    java.util.List<Pair<String, String>> idNamePairs;
+    java.util.List<Ga4ghReadset> readsets;
     String selectedId;
 
-    public Ga4ghLoadDialog(Frame owner, java.util.List<Pair<String, String>> idNamePairs) {
+    public Ga4ghLoadDialog(Frame owner, java.util.List<Ga4ghReadset> readsets) {
         super(owner);
         initComponents();
 
-        this.idNamePairs = idNamePairs;
-        String [] names = new String[idNamePairs.size()];
-        for(int i=0; i<names.length; i++) {
-            names[i] = idNamePairs.get(i).getSecond();
+        this.readsets = readsets;
+        String[] names = new String[readsets.size()];
+        for (int i = 0; i < names.length; i++) {
+            names[i] = readsets.get(i).getName();
         }
         readsetSelectComboBox.setModel(new DefaultComboBoxModel(names));
 
@@ -38,9 +41,16 @@ public class Ga4ghLoadDialog extends JDialog {
     private void loadButtonActionPerformed(ActionEvent e) {
 
         int idx = this.readsetSelectComboBox.getSelectedIndex();
-        Pair<String, String> idName = idNamePairs.get(idx);
+        final Ga4ghReadset readSet = readsets.get(idx);
         setVisible(false);
-        loadTrack(idName.getFirst(), idName.getSecond());
+
+        Runnable runnable = new Runnable() {
+            public void run() {
+                setGenome(readSet.getGenomeId());
+                loadTrack(readSet.getId(), readSet.getName());
+            }
+        };
+        LongRunningTask.submit(runnable);
     }
 
     private void cancelButtonActionPerformed(ActionEvent e) {
@@ -55,6 +65,22 @@ public class Ga4ghLoadDialog extends JDialog {
         locator.setName(name);
         locator.setType(Ga4ghAPIHelper.RESOURCE_TYPE);
         IGV.getInstance().loadTracks(Arrays.asList(locator));
+
+    }
+
+    private void setGenome(String genomeId) {
+
+        if (genomeId != null && !genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
+            try {
+                GenomeListItem item = GenomeManager.getInstance().findGenomeListItemById(genomeId);
+                if (item != null) {
+                   IGV.getInstance().loadGenomeById(genomeId);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
 
     }
 
@@ -105,8 +131,8 @@ public class Ga4ghLoadDialog extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
 
                 //---- loadButton ----
                 loadButton.setText("Load");
@@ -117,8 +143,8 @@ public class Ga4ghLoadDialog extends JDialog {
                     }
                 });
                 buttonBar.add(loadButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -129,8 +155,8 @@ public class Ga4ghLoadDialog extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }

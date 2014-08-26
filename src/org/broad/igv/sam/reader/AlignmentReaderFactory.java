@@ -16,6 +16,7 @@ import htsjdk.samtools.SAMReadGroupRecord;
 import htsjdk.samtools.ValidationStringency;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.ga4gh.Ga4ghAPIHelper;
 import org.broad.igv.ga4gh.Ga4ghAlignmentReader;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.util.FileUtils;
@@ -91,7 +92,7 @@ public class AlignmentReaderFactory {
 
             }
         } else if (Ga4ghAlignmentReader.supportsFileType(locator.getType())) {
-            return new Ga4ghAlignmentReader(locator.getPath());
+            return new Ga4ghAlignmentReader(Ga4ghAPIHelper.PROVIDER, locator.getPath());
         }
 
         else {

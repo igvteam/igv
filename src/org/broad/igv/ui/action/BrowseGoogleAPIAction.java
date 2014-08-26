@@ -2,6 +2,7 @@ package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.ga4gh.Ga4ghAPIHelper;
+import org.broad.igv.ga4gh.Ga4ghProvider;
 import org.broad.igv.ui.IGV;
 
 import java.awt.event.ActionEvent;
@@ -27,7 +28,7 @@ public class BrowseGoogleAPIAction  extends MenuAction {
     public void actionPerformed(ActionEvent event) {
 
         try {
-            Ga4ghAPIHelper.openLoadDialog(this.igv, IGV.getMainFrame());
+            Ga4ghAPIHelper.openLoadDialog(Ga4ghAPIHelper.PROVIDER, this.igv, IGV.getMainFrame());
 
         } catch (IOException e) {
             log.error("Error opening Encode browser", e);

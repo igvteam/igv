@@ -1,0 +1,52 @@
+{
+    "providers": [
+        {
+            "name": "Google",
+            "baseURL": "https://www.googleapis.com/genomics/v1beta",
+            "datasets": [
+                {
+                    "id": "376902546192",
+                    "name": "1000 Genomes"
+                },
+                {
+                    "id": "383928317087",
+                    "name": "PGP"
+                },
+                {
+                    "id": "461916304629",
+                    "name": "Simons Foundation"
+                },
+                {
+                    "id": "376902546192",
+                    "name": "DREAM SMC Challenge"
+                }]
+
+        },
+        {
+            "name": "NCBI",
+            "baseURL": "http://trace.ncbi.nlm.nih.gov/Traces/gg",
+            "datasets": [
+                {
+                    "id": "SRP034507",
+                    "name": "SRP034507"
+                },
+                {
+                    "id": "SRP029392",
+                    "name": "SRP029392"
+                }
+            ]
+
+        },
+        {
+            "name": "EBI",
+            "baseURL": "http://193.62.52.16/",
+            "datasets": [
+                {
+                    "id": "data",
+                    "name": "data"
+                }
+            ]
+
+        }
+    ]
+}

@@ -26,6 +26,7 @@ public class GenbankParser {
     private byte[] sequence;
     private List<Feature> features;
     private String locusName;
+    private String[] aliases;
 
 
     /**
@@ -43,6 +44,7 @@ public class GenbankParser {
             reader = ParsingUtils.openBufferedReader(path);
             readLocus(reader);
             readAccession(reader);
+            readAliases(reader);
             readFeatures(reader);
             if(readSequence) readOriginSequence(reader);
         } finally {
@@ -117,8 +119,33 @@ public class GenbankParser {
                 accession = tokens[1].trim();
             }
         }
-
     }
+
+    /**
+     * Read the sequence aliases line  -- Note: this is an IGV extension
+     * ACCESSION   K03160
+     *
+     * @param reader
+     * @throws IOException
+     */
+    private void readAliases(BufferedReader reader) throws IOException {
+
+        String line = null;
+        do {
+            line = reader.readLine();
+        }
+        while (!line.startsWith("ALIASES"));
+
+        if (line != null) {
+            String[] tokens = Globals.whitespacePattern.split(line);
+            if (tokens.length < 2) {
+                //log.info("Genbank file missing ACCESSION number.");
+            } else {
+                aliases = Globals.commaPattern.split(tokens[1]);
+            }
+        }
+    }
+
 
 
     /**
@@ -322,5 +349,9 @@ public class GenbankParser {
 
     public String getLocusName() {
         return locusName;
+    }
+
+    public String[] getAliases() {
+        return aliases;
     }
 }

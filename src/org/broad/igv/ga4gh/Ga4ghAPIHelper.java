@@ -21,80 +21,93 @@ import java.util.zip.GZIPInputStream;
  * Created by jrobinso on 8/15/14.
  */
 public class Ga4ghAPIHelper {
+
     public static final String RESOURCE_TYPE = "ga4gh";
+
+    public static final Ga4ghProvider PROVIDER = new Ga4ghProvider("NCBI", "http://trace.ncbi.nlm.nih.gov/Traces/gg", null);
+//public static final Ga4ghProvider PROVIDER = new Ga4ghProvider("Google", "https://www.googleapis.com/genomics/v1beta", "AIzaSyC-dujgw4P1QvNd8i_c-I-S_P1uxVZzn0w");
 
     // Magic dataset id (1000 genomes)
 
-    final static String datasetId = "376902546192";
+    //final static String datasetId = "376902546192";  // 1KG
+    //final static String datasetId =  "383928317087"; // PGP
+    //  final static String datasetId = "461916304629";  // Simons Foundation
+    //final static String datasetId = "337315832689"; //  DREAM SMC
+    //final static String datasetId = "SRP034507";
+    final static String datasetId = "SRP029392";
 
-    final static Map<String, List<Pair<String, String>>> readsetCache = new HashMap<String, List<Pair<String, String>>>();
+    final static Map<String, List<Ga4ghReadset>> readsetCache = new HashMap<String, List<Ga4ghReadset>>();
 
 //
 //    public static void main(String[] args) throws IOException {
-//        List<Pair<String, String>> idNamePairs = readsetSearch(datasetId);
-//        (new GoogleAPILoadDialog(null, idNamePairs)).setVisible(true);
+//        List<Pair<String, String>> readsets = readsetSearch(datasetId);
+//        (new GoogleAPILoadDialog(null, readsets)).setVisible(true);
 //    }
 
 
-    public static void openLoadDialog(IGV igv, Frame frame) throws IOException {
+    public static void openLoadDialog(Ga4ghProvider provider, IGV igv, Frame frame) throws IOException {
 
-        List<Pair<String, String>> idNamePairs = readsetSearch(datasetId);
+        List<Ga4ghReadset> idNamePairs = readsetSearch(provider, datasetId);
         Ga4ghLoadDialog dlg = (new Ga4ghLoadDialog(frame, idNamePairs));
         dlg.setModal(true);
         dlg.setVisible(true);
         dlg.dispose();
     }
 
-    public static List<Pair<String, String>> readsetSearch(String datasetId) throws IOException {
+    public static List<Ga4ghReadset> readsetSearch(Ga4ghProvider provider, String datasetId) throws IOException {
 
-        List<Pair<String, String>> idNamePairs = readsetCache.get(datasetId);
-        if (idNamePairs == null) {
+        List<Ga4ghReadset> readsets = readsetCache.get(datasetId);
 
-            idNamePairs = new ArrayList();
+        if (readsets == null) {
+
+            readsets = new ArrayList();
+
+            String genomeId = genomeIdMap.get(provider.getName() + " " + datasetId); // Hack until meta data on readsets is available
 
             // Loop through pages
             int maxPages = 100;
             JsonPrimitive pageToken = null;
             while (maxPages-- > 0) {
                 String contentToPost = "{" +
-                        "\"datasetIds\": [" + datasetId + "]" +
+                        "\"datasetIds\": [\"" + datasetId + "\"]" +
                         (pageToken == null ? "" : ", \"pageToken\": " + pageToken) +
-                        ", \"maxResults\": 256" +
+                        ", \"maxResults\": \"256\"" +
                         "}";
 
-                String result = doPost("/readsets/search", contentToPost, "&fields=readsets(id,name),nextPageToken");
+                String result = doPost(provider, "/readsets/search", contentToPost, null); //"fields=readsets(id,name, fileData),nextPageToken");
 
                 JsonParser parser = new JsonParser();
                 JsonObject obj = parser.parse(result).getAsJsonObject();
-                JsonArray readsets = obj.getAsJsonArray("readsets");
 
-                Iterator<JsonElement> iter = readsets.iterator();
+                Iterator<JsonElement> iter = obj.getAsJsonArray("readsets").iterator();
 
                 while (iter.hasNext()) {
                     JsonElement next = iter.next();
                     JsonObject jobj = next.getAsJsonObject();
-                    idNamePairs.add(new Pair(jobj.get("id").getAsString(), jobj.get("name").getAsString()));
+                    String id = jobj.get("id").getAsString();
+                    String name = jobj.get("name").getAsString();
+                    readsets.add(new Ga4ghReadset(id, name, genomeId));
                 }
 
                 pageToken = obj.getAsJsonPrimitive("nextPageToken");
                 if (pageToken == null) break;
             }
 
-            Collections.sort(idNamePairs, new Comparator<Pair<String, String>>() {
+            Collections.sort(readsets, new Comparator<Ga4ghReadset>() {
                 @Override
-                public int compare(Pair<String, String> o1, Pair<String, String> o2) {
-                    return o1.getSecond().compareTo(o2.getSecond());
+                public int compare(Ga4ghReadset o1, Ga4ghReadset o2) {
+                    return o1.getName().compareTo(o2.getName());
                 }
             });
 
-            readsetCache.put(datasetId, idNamePairs);
+            readsetCache.put(datasetId, readsets);
         }
 
-        return idNamePairs;
+        return readsets;
     }
 
 
-    public static List<Alignment> reads(String readsetId, String chr, int start, int end) throws IOException {
+    public static List<Alignment> reads(Ga4ghProvider provider, String readsetId, String chr, int start, int end) throws IOException {
 
         List<Alignment> alignments = new ArrayList<Alignment>(10000);
         int maxPages = 10000;
@@ -103,14 +116,15 @@ public class Ga4ghAPIHelper {
 
         while (maxPages-- > 0) {
             String contentToPost = "{" +
-                    "readsetIds: [\"" + readsetId + "\"]" +
-                    ", sequenceName: " + chr +
-                    ", sequenceStart: " + start +
-                    ", sequenceEnd: " + end +
+                    "\"readsetIds\": [\"" + readsetId + "\"]" +
+                    ", \"sequenceName\": \"" + chr + "\"" +
+                    ", \"sequenceStart\": \"" + start + "\"" +
+                    ", \"sequenceEnd\": \"" + end + "\"" +
+                    ", \"maxResults\": \"10000\"" +
                     (pageToken == null ? "" : ", \"pageToken\": " + pageToken) +
                     "}";
 
-            String readString =  doPost("/reads/search", contentToPost, "");
+            String readString = doPost(provider, "/reads/search", contentToPost, "");
 
             JsonParser parser = new JsonParser();
             JsonObject obj = parser.parse(readString).getAsJsonObject();
@@ -124,6 +138,8 @@ public class Ga4ghAPIHelper {
                 alignments.add(alignment);
             }
 
+            System.out.println("# reads = " + reads.size());
+
             pageToken = obj.getAsJsonPrimitive("nextPageToken");
             if (pageToken == null) break;
 
@@ -135,11 +151,18 @@ public class Ga4ghAPIHelper {
 
     }
 
-    private static String doPost(String command, String content, String fields) throws IOException {
+    private static String doPost(Ga4ghProvider provider, String command, String content, String fields) throws IOException {
 
-        String authKey = PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_API_KEY);
-        String baseURL = PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_BASE_URL);
-        URL url = new URL(baseURL + command + "?key=" + authKey + fields);
+        String authKey = provider.getAuthKey();
+        String baseURL = provider.getBaseURL();
+
+        String fullUrl = baseURL + command;
+        if (authKey != null) fullUrl += "?key=" + authKey;
+        if (fields != null) {
+            fullUrl += (authKey == null ? "?" : "&") + fields;
+        }
+
+        URL url = new URL(fullUrl);
 
 
         byte[] bytes = content.getBytes();
@@ -172,6 +195,21 @@ public class Ga4ghAPIHelper {
         br.close();
 
         return sb.toString();
+    }
+
+
+    static Map<String, String> genomeIdMap = new HashMap<String, String>();  // A hack until readset meta data is available
+
+    static {
+        genomeIdMap = new HashMap<String, String>();
+        genomeIdMap.put("Google 376902546192", "hg19");
+        genomeIdMap.put("Google 383928317087", "hg19");
+        genomeIdMap.put("Google 461916304629", "hg19");
+        genomeIdMap.put("Google 376902546192", "hg19");
+
+        genomeIdMap.put("NCBI SRP034507", "M74568");
+        genomeIdMap.put("NCBI SRP029392", "http://igv.broadinstitute.org/genomes/seq/NC_004917/NC_004917.1.fa");
+
     }
 
 

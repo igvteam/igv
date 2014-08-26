@@ -28,8 +28,10 @@ public class Ga4ghAlignmentReader implements AlignmentReader<Alignment> {
 
     String readsetId;
     List<String> sequenceNames;
+    Ga4ghProvider provider;
 
-    public Ga4ghAlignmentReader(String readsetId) {
+    public Ga4ghAlignmentReader(Ga4ghProvider provider, String readsetId) {
+        this.provider = provider;
         this.readsetId = readsetId;
     }
 
@@ -69,7 +71,7 @@ public class Ga4ghAlignmentReader implements AlignmentReader<Alignment> {
     @Override
     public CloseableIterator<Alignment> query(String sequence, int start, int end, boolean contained) throws IOException {
 
-        List<Alignment> alignmentList =  Ga4ghAPIHelper.reads(readsetId, sequence, start, end);
+        List<Alignment> alignmentList =  Ga4ghAPIHelper.reads(provider, readsetId, sequence, start, end);
 
         return new MIterator(alignmentList);
     }
@@ -81,9 +83,9 @@ public class Ga4ghAlignmentReader implements AlignmentReader<Alignment> {
 
     private void loadMetadata() throws IOException {
 
-        String authKey = PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_API_KEY);
-        String baseURL = PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_BASE_URL);
-        URL url = new URL(baseURL + "/readsets/" + readsetId + "?key=" + authKey);   // TODO -- field selection?
+        String authKey = provider.authKey;
+        String baseURL = provider.baseURL;
+        URL url = new URL(baseURL + "/readsets/" + readsetId + (authKey == null ? "" : "?key=" + authKey));   // TODO -- field selection?
 
         String result = HttpUtils.getInstance().getContentsAsString(url);
         JsonParser parser = new JsonParser();

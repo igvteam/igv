@@ -218,6 +218,18 @@ public class GenomeManager {
         byte[] seq = genbankParser.getSequence();
         Sequence sequence = new InMemorySequence(chr, seq);
         newGenome = new Genome(chr, name, sequence, true);
+
+        String [] aliases = genbankParser.getAliases();
+        if(aliases != null) {
+            List<String> aliasList = new ArrayList<String>();
+            aliasList.add(chr);
+            for(String a : aliases) {
+                aliasList.add(a);
+            }
+            newGenome.addChrAliases(Arrays.<Collection<String>>asList(aliasList));
+        }
+
+
         setCurrentGenome(newGenome);
 
         if (IGV.hasInstance() && !Globals.isHeadless()) {
