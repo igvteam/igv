@@ -24,8 +24,9 @@ public class Ga4ghAPIHelper {
 
     public static final String RESOURCE_TYPE = "ga4gh";
 
-    public static final Ga4ghProvider PROVIDER = new Ga4ghProvider("NCBI", "http://trace.ncbi.nlm.nih.gov/Traces/gg", null);
+//    public static final Ga4ghProvider PROVIDER = new Ga4ghProvider("EBI", "http://193.62.52.16", null);
 //public static final Ga4ghProvider PROVIDER = new Ga4ghProvider("Google", "https://www.googleapis.com/genomics/v1beta", "AIzaSyC-dujgw4P1QvNd8i_c-I-S_P1uxVZzn0w");
+public static final Ga4ghProvider PROVIDER = new Ga4ghProvider("NCBI", "http://trace.ncbi.nlm.nih.gov/Traces/gg", null);
 
     // Magic dataset id (1000 genomes)
 
@@ -35,6 +36,7 @@ public class Ga4ghAPIHelper {
     //final static String datasetId = "337315832689"; //  DREAM SMC
     //final static String datasetId = "SRP034507";
     final static String datasetId = "SRP029392";
+    //final static String datasetId = "data";
 
     final static Map<String, List<Ga4ghReadset>> readsetCache = new HashMap<String, List<Ga4ghReadset>>();
 
@@ -71,7 +73,7 @@ public class Ga4ghAPIHelper {
                 String contentToPost = "{" +
                         "\"datasetIds\": [\"" + datasetId + "\"]" +
                         (pageToken == null ? "" : ", \"pageToken\": " + pageToken) +
-                        ", \"maxResults\": \"256\"" +
+                        ", \"maxResults\": 1000" +
                         "}";
 
                 String result = doPost(provider, "/readsets/search", contentToPost, null); //"fields=readsets(id,name, fileData),nextPageToken");
@@ -208,7 +210,7 @@ public class Ga4ghAPIHelper {
         genomeIdMap.put("Google 376902546192", "hg19");
 
         genomeIdMap.put("NCBI SRP034507", "M74568");
-        genomeIdMap.put("NCBI SRP029392", "http://igv.broadinstitute.org/genomes/seq/NC_004917/NC_004917.1.fa");
+        genomeIdMap.put("NCBI SRP029392", "NC_004917");
 
     }
 

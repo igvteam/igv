@@ -6,10 +6,7 @@ import org.broad.igv.feature.*;
 import org.broad.igv.util.ParsingUtils;
 import htsjdk.tribble.Feature;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -38,28 +35,47 @@ public class GenbankParser {
         readFeatures(true);
     }
 
+    public GenbankParser() throws IOException {
+
+    }
+
+
     public void readFeatures(boolean readSequence) throws IOException {
         BufferedReader reader = null;
         try {
             reader = ParsingUtils.openBufferedReader(path);
-            readLocus(reader);
-
-            String line = null;
-            do {
-                line = reader.readLine();
-                if (line.startsWith("ACCESSION")) {
-                    readAccession(line);
-                } else if (line.startsWith("ALIASES")) {
-                    readAliases(line);
-                }
-            }
-            while (line != null && !line.startsWith("FEATURES"));
-
-            readFeatures(reader);
-            if (readSequence) readOriginSequence(reader);
+            readFeatures_(readSequence, reader);
         } finally {
             if (reader != null) reader.close();
         }
+    }
+
+    public void readFeatures(InputStream inputStream, boolean readSequence) throws IOException {
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new InputStreamReader(inputStream));
+            readFeatures_(readSequence, reader);
+        } finally {
+            if (reader != null) reader.close();
+        }
+    }
+
+    private void readFeatures_(boolean readSequence, BufferedReader reader) throws IOException {
+        readLocus(reader);
+
+        String line = null;
+        do {
+            line = reader.readLine();
+            if (line.startsWith("ACCESSION")) {
+                readAccession(line);
+            } else if (line.startsWith("ALIASES")) {
+                readAliases(line);
+            }
+        }
+        while (line != null && !line.startsWith("FEATURES"));
+
+        readFeatures(reader);
+        if (readSequence) readOriginSequence(reader);
     }
 
 

@@ -219,11 +219,11 @@ public class GenomeManager {
         Sequence sequence = new InMemorySequence(chr, seq);
         newGenome = new Genome(chr, name, sequence, true);
 
-        String [] aliases = genbankParser.getAliases();
-        if(aliases != null) {
+        String[] aliases = genbankParser.getAliases();
+        if (aliases != null) {
             List<String> aliasList = new ArrayList<String>();
             aliasList.add(chr);
-            for(String a : aliases) {
+            for (String a : aliases) {
                 aliasList.add(a);
             }
             newGenome.addChrAliases(Arrays.<Collection<String>>asList(aliasList));
@@ -396,15 +396,23 @@ public class GenomeManager {
         }
 
         InputStream geneStream = null;
-        if (genomeDescriptor.getGeneFileName() != null) {
+        String geneFileName = genomeDescriptor.getGeneFileName();
+        if (geneFileName != null) {
             try {
                 geneStream = genomeDescriptor.getGeneStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(geneStream));
-                FeatureTrack geneFeatureTrack = createGeneTrack(newGenome, reader,
-                        genomeDescriptor.getGeneFileName(), genomeDescriptor.getGeneTrackName(),
-                        genomeDescriptor.getUrl());
+                if (geneFileName.endsWith(".gbk")) {
+                    GenbankParser genbankParser = new GenbankParser();
+                    genbankParser.readFeatures(geneStream, false);
+                    FeatureTrack geneFeatureTrack = createGeneTrack(newGenome, genbankParser.getFeatures());
+                    newGenome.setGeneTrack(geneFeatureTrack);
+                } else {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(geneStream));
+                    FeatureTrack geneFeatureTrack = createGeneTrack(newGenome, reader,
+                            geneFileName, genomeDescriptor.getGeneTrackName(),
+                            genomeDescriptor.getUrl());
 
-                newGenome.setGeneTrack(geneFeatureTrack);
+                    newGenome.setGeneTrack(geneFeatureTrack);
+                }
             } finally {
                 if (geneStream != null) geneStream.close();
             }
@@ -790,7 +798,7 @@ public class GenomeManager {
                 serverGenomeArchiveList = null;
                 log.error("Error fetching genome list: ", e);
                 ConfirmDialog.optionallyShowInfoDialog("Warning: could not connect to the genome server (" +
-                        genomeListURLString + ").    Only locally defined genomes will be available.",
+                                genomeListURLString + ").    Only locally defined genomes will be available.",
                         PreferenceManager.SHOW_GENOME_SERVER_WARNING);
 
             } finally {
