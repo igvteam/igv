@@ -29,10 +29,7 @@ import org.broad.igv.util.ftp.FTPUtils;
 import org.broad.igv.util.stream.IGVSeekableHTTPStream;
 import org.broad.igv.util.stream.IGVUrlHelper;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -542,6 +539,17 @@ public class HttpUtils {
         } catch (NoSuchAlgorithmException e) {
         } catch (KeyManagementException e) {
         }
+
+        // Install a callback to allow the igv Amazon and local hosts
+        HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier()
+        {
+            public boolean verify(String hostname, SSLSession session)
+            {
+                if (hostname.equals("igv.broadinstitute.org") || hostname.equals("igvdata.broadinstitute.org") || hostname.equals("localhost") )
+                    return true;
+                return false;
+            }
+        });
 
     }
 
