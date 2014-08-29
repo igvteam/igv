@@ -31,8 +31,7 @@ import java.lang.reflect.Proxy;
 public class Exon extends AbstractFeature implements IExon {
 
     /**
-     * The index of the exon relative to the start codon.  The exon with the start
-     * codon is number "1".
+     * Index relative to the 5' end.
      */
     private int number;
 
@@ -214,8 +213,8 @@ public class Exon extends AbstractFeature implements IExon {
                     // Grab nucleotides from previous exon if needed to complete first codon
                     if (readingFrame > 0 && prevExon != null) {
                         int diff = 3 - readingFrame;
-                        byte [] d = genome.getSequence(chr, prevExon.getCdEnd() - diff, prevExon.getCdEnd());
-                        byte [] tmp = new byte[d.length + seqBytes.length];
+                        byte[] d = genome.getSequence(chr, prevExon.getCdEnd() - diff, prevExon.getCdEnd());
+                        byte[] tmp = new byte[d.length + seqBytes.length];
                         System.arraycopy(d, 0, tmp, 0, diff);
                         System.arraycopy(seqBytes, 0, tmp, diff, seqBytes.length);
                         seqBytes = tmp;
@@ -223,10 +222,10 @@ public class Exon extends AbstractFeature implements IExon {
                     }
 
                     // Grab nucleotides from next exon if needed for last codon
-                    int diff = 3 - ((readEnd - (codingStart + readingFrame)) %3);
-                    if(diff > 0 && diff < 3 && nextExon != null) {
-                        byte [] d = genome.getSequence(chr, nextExon.getCdStart(), nextExon.getCdStart() + diff);
-                        byte [] tmp = new byte[d.length + seqBytes.length];
+                    int diff = 3 - ((readEnd - (codingStart + readingFrame)) % 3);
+                    if (diff > 0 && diff < 3 && nextExon != null) {
+                        byte[] d = genome.getSequence(chr, nextExon.getCdStart(), nextExon.getCdStart() + diff);
+                        byte[] tmp = new byte[d.length + seqBytes.length];
                         System.arraycopy(seqBytes, 0, tmp, 0, seqBytes.length);
                         System.arraycopy(d, 0, tmp, seqBytes.length, d.length);
                         seqBytes = tmp;
@@ -251,18 +250,21 @@ public class Exon extends AbstractFeature implements IExon {
     }
 
     public String getValueString(double position, WindowFunction windowFunction) {
-        String msg = number > 0 ? "Exon number: " + number : "";
+
+        StringBuffer buffer = new StringBuffer();
+
+        if (number > 0) buffer.append("Exon number: " + number + "<br>");
         int aaNumber = this.getAminoAcidNumber((int) position);
         if (aaNumber > 0) {
-            msg += "<br>Amino acid number: " + aaNumber;
+            buffer.append("Amino acid codingNumber: " + aaNumber + "<br>");
         }
-        msg += "<br>" + getLocusString();
-        if (description != null) msg += "<br>" + description;
+        buffer.append(getLocusString());
+        if (description != null) buffer.append("<br>" + description);
         if (attributes != null) {
-            msg += getAttributeString();
+            buffer.append(getAttributeString());
         }
 
-        return msg;
+        return buffer.toString();
     }
 
     public void setNumber(int number) {

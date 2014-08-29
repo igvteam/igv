@@ -175,7 +175,9 @@ public class UCSCGeneTableCodec extends UCSCCodec<BasicFeature> {
         String[] endsBuffer = Globals.commaPattern.split(tokens[endsBufferColumn]);
 
         if (startsBuffer.length == endsBuffer.length) {
-            int exonNumber = 0;
+
+            int exonNumber = (strand == Strand.NEGATIVE ? exonCount : 1);
+
             for (int i = 0; i < startsBuffer.length; i++) {
                 int exonStart = Integer.parseInt(startsBuffer[i]);
                 int exonEnd = Integer.parseInt(endsBuffer[i]);
@@ -184,18 +186,13 @@ public class UCSCGeneTableCodec extends UCSCCodec<BasicFeature> {
                 exon.setCodingEnd(cdEnd);
                 gene.addExon(exon);
 
-                if (exon.getCodingLength() == 0) {
-                    exon.setNumber(0);
+                exon.setNumber(exonNumber);
+                if (strand == Strand.NEGATIVE) {
+                    exonNumber--;
                 } else {
-                    if (exonNumber == 0) exonNumber = (strand == Strand.NEGATIVE ? exonCount : 1);
-
-                    exon.setNumber(exonNumber);
-                    if (strand == Strand.NEGATIVE) {
-                        exonNumber--;
-                    } else {
-                        exonNumber++;
-                    }
+                    exonNumber++;
                 }
+
             }
         }
 

@@ -53,18 +53,18 @@ public class EmblFeatureTableParser implements FeatureParser {
         int endIndex = (gene.getStrand() == Strand.POSITIVE) ? exons.size() : -1;
         int increment = (gene.getStrand() == Strand.POSITIVE) ? 1 : -1;
         int cds = 0;
-        int exonNumber = 0;
+        int exonNumber = 1;
         for (int i = startIndex; i != endIndex; i += increment) {
-             org.broad.igv.feature.Exon exon = exons.get(i);
 
-            if(exonNumber == 1 && exon.getCodingLength() == 0) continue;  // Skip until we find the coding start
+            Exon exon = exons.get(i);
+            exon.setNumber(exonNumber++);
 
-            exonNumber++;
-            exon.setNumber(exonNumber);
-            int modCds = cds % 3;
-            int phase = (modCds == 0) ? 0 : 3 - modCds;
-            exon.setPhase(phase);
-            cds += exon.getCodingLength();
+            if (exon.getCodingLength() > 0 || cds > 0) {  // Skip until we find the coding start
+                int modCds = cds % 3;
+                int phase = (modCds == 0) ? 0 : 3 - modCds;
+                exon.setPhase(phase);
+                cds += exon.getCodingLength();
+            }
 
         }
     }
@@ -239,11 +239,10 @@ public class EmblFeatureTableParser implements FeatureParser {
                     exon.setNonCoding(true);
                     boolean plus = (type.equals("5'UTR") && feature.getStrand() == Strand.POSITIVE) ||
                             (type.equals("3'UTR") && feature.getStrand() == Strand.NEGATIVE);
-                    if(plus) {
+                    if (plus) {
                         exon.setCodingStart(feature.getEnd());
                         exon.setCodingEnd(feature.getEnd());
-                    }
-                    else {
+                    } else {
                         exon.setCodingStart(feature.getStart());
                         exon.setCodingEnd(feature.getStart());
                     }

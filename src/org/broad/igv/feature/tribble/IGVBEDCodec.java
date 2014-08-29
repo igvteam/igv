@@ -21,7 +21,6 @@ import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.collections.MultiMap;
 import htsjdk.tribble.Feature;
-import htsjdk.tribble.util.ParsingUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -250,7 +249,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
         String[] exonSizes = Globals.commaPattern.split(tokens[10]);
         String[] startsBuffer = Globals.commaPattern.split(tokens[11]);
 
-        int exonNumber = 0;
+        int exonNumber = (strand == Strand.NEGATIVE ? exonCount : 1);
 
         if (startsBuffer.length == exonSizes.length) {
             for (int i = 0; i < startsBuffer.length; i++) {
@@ -261,18 +260,13 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
                 exon.setCodingEnd(cdEnd);
                 gene.addExon(exon);
 
-                if (exon.getCodingLength() == 0) {
-                    exon.setNumber(0);
+                exon.setNumber(exonNumber);
+                if (strand == Strand.NEGATIVE) {
+                    exonNumber--;
                 } else {
-                    if (exonNumber == 0) exonNumber = (strand == Strand.NEGATIVE ? exonCount : 1);
-
-                    exon.setNumber(exonNumber);
-                    if (strand == Strand.NEGATIVE) {
-                        exonNumber--;
-                    } else {
-                        exonNumber++;
-                    }
+                    exonNumber++;
                 }
+
             }
         }
     }

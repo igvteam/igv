@@ -13,8 +13,6 @@ package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.util.ResourceLocator;
 import htsjdk.tribble.Feature;
 
 import java.io.IOException;
@@ -69,7 +67,7 @@ public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
 
     @Override
     public void setFeatureWindowSize(int size) {
-       wrappedSource.setFeatureWindowSize(size);
+        wrappedSource.setFeatureWindowSize(size);
     }
 
     /**
@@ -231,9 +229,6 @@ public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
                     int exonNumber = bf.getStrand() == Strand.NEGATIVE ? exons.size() : 1;
                     int increment = bf.getStrand() == Strand.NEGATIVE ? -1 : 1;
                     for (Exon ex : exons) {
-
-                        if(ex.getCodingLength() == 0) continue;
-
                         ex.setNumber(exonNumber);
                         exonNumber += increment;
                     }
