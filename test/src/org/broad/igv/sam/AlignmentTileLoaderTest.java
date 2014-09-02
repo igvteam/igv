@@ -35,24 +35,6 @@ import static org.junit.Assert.*;
 public class AlignmentTileLoaderTest extends AbstractHeadlessTest {
 
 
-    /**
-     * Test that sampling keeps pairs together.
-     *
-     * @throws Exception
-     */
-    @Test
-    //@Ignore("Not implemented yet")
-    public void testKeepPairsDownsample_01() throws Exception {
-        String path = "http://1000genomes.s3.amazonaws.com/data/NA12878/high_coverage_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130520.bam";
-
-        String sequence = "1";
-        int start = 10000-1;
-        int end = 11000;
-        int maxDepth = -1;
-
-        AlignmentTileLoader.AlignmentTile tile = tstKeepPairsDownsample(path, sequence, start, end, maxDepth);
-        assertTrue(tile.getDownsampledIntervals().size() > 0);
-    }
 
     /**
      * Test that sampling keeps pairs together.
