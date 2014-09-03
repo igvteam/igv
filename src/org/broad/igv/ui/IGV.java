@@ -1797,7 +1797,7 @@ public class IGV {
             return getTrackPanel(DATA_PANEL_NAME);
         } else if (path.endsWith(".sam") || path.endsWith(".bam") ||
                 path.endsWith(".sam.list") || path.endsWith(".bam.list") ||
-                path.endsWith(".aligned")) {
+                path.endsWith(".aligned") || locator.getType().equals("ga4gh")) {
 
             String newPanelName = "Panel" + System.currentTimeMillis();
             return addDataPanel(newPanelName).getTrackPanel();

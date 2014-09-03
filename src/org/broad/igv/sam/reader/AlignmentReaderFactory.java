@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.ga4gh.Ga4ghAPIHelper;
 import org.broad.igv.ga4gh.Ga4ghAlignmentReader;
+import org.broad.igv.ga4gh.Ga4ghProvider;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
@@ -92,7 +93,8 @@ public class AlignmentReaderFactory {
 
             }
         } else if (Ga4ghAlignmentReader.supportsFileType(locator.getType())) {
-            return new Ga4ghAlignmentReader(Ga4ghAPIHelper.PROVIDER, locator.getPath());
+            Ga4ghProvider provider = (Ga4ghProvider) locator.getAttribute("provider");
+            return new Ga4ghAlignmentReader(provider, locator.getPath());
         }
 
         else {

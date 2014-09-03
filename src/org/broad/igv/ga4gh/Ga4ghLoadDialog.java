@@ -16,41 +16,80 @@ import java.io.IOException;
 import java.util.Arrays;
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 
 /**
  * @author James Robinson
  */
 public class Ga4ghLoadDialog extends JDialog {
 
-    java.util.List<Ga4ghReadset> readsets;
+    private final DefaultTreeModel treeModel;
+    Ga4ghProvider[] providers;
     String selectedId;
 
-    public Ga4ghLoadDialog(Frame owner, java.util.List<Ga4ghReadset> readsets) {
+    public Ga4ghLoadDialog(Frame owner, Ga4ghProvider[] providers) {
+
         super(owner);
+
         initComponents();
 
-        this.readsets = readsets;
-        String[] names = new String[readsets.size()];
-        for (int i = 0; i < names.length; i++) {
-            names[i] = readsets.get(i).getName();
-        }
-        readsetSelectComboBox.setModel(new DefaultComboBoxModel(names));
+        this.providers = providers;
 
+        treeModel = new DefaultTreeModel(createNodes(providers));
+
+        this.selectionTree.setModel(treeModel);
+    }
+
+    private DefaultMutableTreeNode createNodes(Ga4ghProvider[] providers) {
+
+        DefaultMutableTreeNode top = new DefaultMutableTreeNode("Ga4gh");
+
+        for (Ga4ghProvider provider : providers) {
+
+            DefaultMutableTreeNode providerNode = new DefaultMutableTreeNode(provider.getName());
+            top.add(providerNode);
+
+            for (Ga4ghDataset dataset : provider.getDatasets()) {
+
+                DefaultMutableTreeNode datasetNode = new DefaultMutableTreeNode(dataset.getName());
+                providerNode.add(datasetNode);
+
+                for (Ga4ghReadset readset : dataset.getReadsets()) {
+
+                    DefaultMutableTreeNode readsetNode = new DefaultMutableTreeNode(new LeafNode(provider, readset) );
+                    datasetNode.add(readsetNode);
+
+                }
+
+            }
+        }
+        return top;
     }
 
     private void loadButtonActionPerformed(ActionEvent e) {
 
-        int idx = this.readsetSelectComboBox.getSelectedIndex();
-        final Ga4ghReadset readSet = readsets.get(idx);
         setVisible(false);
 
-        Runnable runnable = new Runnable() {
+        LongRunningTask.submit(new Runnable() {
             public void run() {
-                setGenome(readSet.getGenomeId());
-                loadTrack(readSet.getId(), readSet.getName());
+                TreePath[] paths = selectionTree.getSelectionPaths();
+
+                for (TreePath path : paths) {
+                    DefaultMutableTreeNode obj = (DefaultMutableTreeNode) path.getLastPathComponent();
+                    Object userObject = obj.getUserObject();
+                    if (userObject instanceof LeafNode) {
+                            Ga4ghProvider provider = ((LeafNode) userObject).provider;
+                            Ga4ghReadset readSet = ((LeafNode) userObject).readset;
+                            setGenome(readSet.getGenomeId());
+                            loadTrack(readSet.getId(), provider, readSet.getName());
+
+                    }
+                }
             }
-        };
-        LongRunningTask.submit(runnable);
+        });
     }
 
     private void cancelButtonActionPerformed(ActionEvent e) {
@@ -58,12 +97,24 @@ public class Ga4ghLoadDialog extends JDialog {
         setVisible(false);
     }
 
+    class LeafNode {
+        Ga4ghProvider provider;
+        Ga4ghReadset readset;
 
-    private void loadTrack(String readsetId, String name) {
+        LeafNode(Ga4ghProvider provider, Ga4ghReadset readset) {
+            this.provider = provider;
+            this.readset = readset;
+        }
+
+        public String toString() {return readset.getName();}
+    }
+
+    private void loadTrack(String readsetId, Ga4ghProvider provider, String name) {
 
         ResourceLocator locator = new ResourceLocator(readsetId);
         locator.setName(name);
         locator.setType(Ga4ghAPIHelper.RESOURCE_TYPE);
+        locator.setAttribute("provider", provider);
         IGV.getInstance().loadTracks(Arrays.asList(locator));
 
     }
@@ -74,7 +125,7 @@ public class Ga4ghLoadDialog extends JDialog {
             try {
                 GenomeListItem item = GenomeManager.getInstance().findGenomeListItemById(genomeId);
                 if (item != null) {
-                   IGV.getInstance().loadGenomeById(genomeId);
+                    IGV.getInstance().loadGenomeById(genomeId);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -86,14 +137,15 @@ public class Ga4ghLoadDialog extends JDialog {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-        // Generated using JFormDesigner Evaluation license - James Robinson
+        // Generated using JFormDesigner non-commercial license
         dialogPane = new JPanel();
         contentPanel = new JPanel();
-        readsetSelectComboBox = new JComboBox();
-        label1 = new JLabel();
+        scrollPane1 = new JScrollPane();
+        selectionTree = new JTree();
         buttonBar = new JPanel();
         loadButton = new JButton();
         cancelButton = new JButton();
+        label1 = new JLabel();
 
         //======== this ========
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -104,26 +156,17 @@ public class Ga4ghLoadDialog extends JDialog {
         //======== dialogPane ========
         {
             dialogPane.setBorder(new EmptyBorder(12, 12, 12, 12));
-
-            // JFormDesigner evaluation mark
-           /* dialogPane.setBorder(new javax.swing.border.CompoundBorder(
-                new javax.swing.border.TitledBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 0),
-                    "JFormDesigner Evaluation", javax.swing.border.TitledBorder.CENTER,
-                    javax.swing.border.TitledBorder.BOTTOM, new java.awt.Font("Dialog", java.awt.Font.BOLD, 12),
-                    java.awt.Color.red), dialogPane.getBorder())); dialogPane.addPropertyChangeListener(new java.beans.PropertyChangeListener(){public void propertyChange(java.beans.PropertyChangeEvent e){if("border".equals(e.getPropertyName()))throw new RuntimeException();}});
-*/
             dialogPane.setLayout(new BorderLayout());
 
             //======== contentPanel ========
             {
-                contentPanel.setLayout(null);
-                contentPanel.add(readsetSelectComboBox);
-                readsetSelectComboBox.setBounds(15, 60, 345, readsetSelectComboBox.getPreferredSize().height);
+                contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.X_AXIS));
 
-                //---- label1 ----
-                label1.setText("Select a readset to load");
-                contentPanel.add(label1);
-                label1.setBounds(new Rectangle(new Point(15, 20), label1.getPreferredSize()));
+                //======== scrollPane1 ========
+                {
+                    scrollPane1.setViewportView(selectionTree);
+                }
+                contentPanel.add(scrollPane1);
             }
             dialogPane.add(contentPanel, BorderLayout.CENTER);
 
@@ -159,21 +202,26 @@ public class Ga4ghLoadDialog extends JDialog {
                         new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
+
+            //---- label1 ----
+            label1.setText("Select a readset to load");
+            dialogPane.add(label1, BorderLayout.NORTH);
         }
         contentPane.add(dialogPane, BorderLayout.CENTER);
-        setSize(400, 225);
+        setSize(795, 690);
         setLocationRelativeTo(getOwner());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    // Generated using JFormDesigner Evaluation license - James Robinson
+    // Generated using JFormDesigner non-commercial license
     private JPanel dialogPane;
     private JPanel contentPanel;
-    private JComboBox readsetSelectComboBox;
-    private JLabel label1;
+    private JScrollPane scrollPane1;
+    private JTree selectionTree;
     private JPanel buttonBar;
     private JButton loadButton;
     private JButton cancelButton;
+    private JLabel label1;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

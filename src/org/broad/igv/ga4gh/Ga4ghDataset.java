@@ -1,15 +1,18 @@
 package org.broad.igv.ga4gh;
 
+import java.util.List;
+
 /**
- * Minimal representation of a readset for prototype purposes.
+ * Created by jrobinso on 9/3/14.
  */
-public class Ga4ghReadset {
+public class Ga4ghDataset {
 
     String id;
     String name;
     String genomeId;
+    List<Ga4ghReadset> readsets;
 
-    public Ga4ghReadset(String id, String name, String genomeId) {
+    public Ga4ghDataset(String id, String name, String genomeId) {
         this.id = id;
         this.name = name;
         this.genomeId = genomeId;
@@ -27,7 +30,11 @@ public class Ga4ghReadset {
         return genomeId;
     }
 
-    public String toString() {
-        return name;
+    public List<Ga4ghReadset> getReadsets() {
+        return readsets;
+    }
+
+    public void setReadsets(List<Ga4ghReadset> readsets) {
+        this.readsets = readsets;
     }
 }

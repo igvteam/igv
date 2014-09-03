@@ -19,6 +19,7 @@ import java.awt.*;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -90,6 +91,8 @@ public class ResourceLocator {
     String username;
 
     String password;
+
+    private HashMap attributes = new HashMap();
 
     /**
      * Constructor for local files
@@ -405,6 +408,14 @@ public class ResourceLocator {
         }
         String indexExtension = (locator.getPath().toLowerCase().endsWith(".gz") || locator.getPath().toLowerCase().endsWith(".bgz")) ? ".tbi" : Tribble.STANDARD_INDEX_EXTENSION;
         return appendToPath(locator, indexExtension);
+    }
+
+    public void setAttribute(String key, Object value) {
+        this.attributes.put(key, value);
+    }
+
+    public Object getAttribute(String key) {
+        return attributes.get(key);
     }
 
 

@@ -17,6 +17,7 @@ import java.util.zip.GZIPInputStream;
 
 /**
  * Helper class for  Google API prototype
+ *
  * <p/>
  * Created by jrobinso on 8/15/14.
  */
@@ -24,40 +25,30 @@ public class Ga4ghAPIHelper {
 
     public static final String RESOURCE_TYPE = "ga4gh";
 
-//    public static final Ga4ghProvider PROVIDER = new Ga4ghProvider("EBI", "http://193.62.52.16", null);
-//public static final Ga4ghProvider PROVIDER = new Ga4ghProvider("Google", "https://www.googleapis.com/genomics/v1beta", "AIzaSyC-dujgw4P1QvNd8i_c-I-S_P1uxVZzn0w");
-public static final Ga4ghProvider PROVIDER = new Ga4ghProvider("NCBI", "http://trace.ncbi.nlm.nih.gov/Traces/gg", null);
+    public static final Ga4ghProvider[] providers = {
+            //     new Ga4ghProvider("EBI", "http://193.62.52.16", null, Arrays.asList(new Ga4ghDataset("data", "data"))),
+            new Ga4ghProvider(
+                    "Google",
+                    "https://www.googleapis.com/genomics/v1beta",
+                    "AIzaSyC-dujgw4P1QvNd8i_c-I-S_P1uxVZzn0w",
+                    Arrays.asList(
+                            new Ga4ghDataset("376902546192", "1000 Genomes", "hg19"),
+                            new Ga4ghDataset("383928317087", "PGP", "hg19"),
+                            new Ga4ghDataset("461916304629", "Simons Foundation", "hg19")
+                    )),
+            new Ga4ghProvider("NCBI", "http://trace.ncbi.nlm.nih.gov/Traces/gg", null,
+                    Arrays.asList(
+                            new Ga4ghDataset("SRP034507", "SRP034507", "M74568"),
+                            new Ga4ghDataset("SRP029392", "SRP029392", "NC_004917")
+                    ))};
 
-    // Magic dataset id (1000 genomes)
-
-    //final static String datasetId = "376902546192";  // 1KG
-    //final static String datasetId =  "383928317087"; // PGP
-    //  final static String datasetId = "461916304629";  // Simons Foundation
-    //final static String datasetId = "337315832689"; //  DREAM SMC
-    //final static String datasetId = "SRP034507";
-    final static String datasetId = "SRP029392";
-    //final static String datasetId = "data";
 
     final static Map<String, List<Ga4ghReadset>> readsetCache = new HashMap<String, List<Ga4ghReadset>>();
 
-//
-//    public static void main(String[] args) throws IOException {
-//        List<Pair<String, String>> readsets = readsetSearch(datasetId);
-//        (new GoogleAPILoadDialog(null, readsets)).setVisible(true);
-//    }
 
+    public static List<Ga4ghReadset> readsetSearch(Ga4ghProvider provider, Ga4ghDataset dataset, int maxResults) throws IOException {
 
-    public static void openLoadDialog(Ga4ghProvider provider, IGV igv, Frame frame) throws IOException {
-
-        List<Ga4ghReadset> idNamePairs = readsetSearch(provider, datasetId);
-        Ga4ghLoadDialog dlg = (new Ga4ghLoadDialog(frame, idNamePairs));
-        dlg.setModal(true);
-        dlg.setVisible(true);
-        dlg.dispose();
-    }
-
-    public static List<Ga4ghReadset> readsetSearch(Ga4ghProvider provider, String datasetId) throws IOException {
-
+        String datasetId = dataset.getId();
         List<Ga4ghReadset> readsets = readsetCache.get(datasetId);
 
         if (readsets == null) {
@@ -73,7 +64,7 @@ public static final Ga4ghProvider PROVIDER = new Ga4ghProvider("NCBI", "http://t
                 String contentToPost = "{" +
                         "\"datasetIds\": [\"" + datasetId + "\"]" +
                         (pageToken == null ? "" : ", \"pageToken\": " + pageToken) +
-                        ", \"maxResults\": 1000" +
+                        ", \"maxResults\":" + maxResults +
                         "}";
 
                 String result = doPost(provider, "/readsets/search", contentToPost, null); //"fields=readsets(id,name, fileData),nextPageToken");
@@ -90,6 +81,8 @@ public static final Ga4ghProvider PROVIDER = new Ga4ghProvider("NCBI", "http://t
                     String name = jobj.get("name").getAsString();
                     readsets.add(new Ga4ghReadset(id, name, genomeId));
                 }
+
+                if(readsets.size() >= maxResults) break;
 
                 pageToken = obj.getAsJsonPrimitive("nextPageToken");
                 if (pageToken == null) break;

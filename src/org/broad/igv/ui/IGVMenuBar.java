@@ -392,7 +392,7 @@ public class IGVMenuBar extends JMenuBar {
         }
 
         if(PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_API_KEY) != null) {
-            menuAction = new BrowseGoogleAPIAction("Load from Google...", KeyEvent.VK_G, igv);
+            menuAction = new BrowseGa4ghAction("Load from Ga4gh...", KeyEvent.VK_G, igv);
             menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         }
 

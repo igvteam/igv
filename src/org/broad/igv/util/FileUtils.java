@@ -35,44 +35,6 @@ public class FileUtils {
     final static String[] igvJnlpPrefixes = {"igv", "ichip", "29mammals", "hic"};
 
 
-    /**
-     * Replace all occurences of str1 with str2 in all files in inputDirectory.  Write the modified files
-     * to outputDirectory.  Note: assumption is all files are text.
-     *
-     * @param inputDirectory
-     * @param outputDirectory
-     * @param str1
-     * @param str2
-     */
-    public static void searchAndReplace(File inputDirectory, File outputDirectory, String str1, String str2)
-            throws IOException {
-
-        for (File in : inputDirectory.listFiles()) {
-            if (!in.isDirectory() && !in.isHidden()) {
-
-                File of = new File(outputDirectory, in.getName());
-                BufferedReader reader = null;
-                PrintWriter pw = null;
-
-                try {
-                    reader = new BufferedReader(new FileReader(in));
-                    pw = new PrintWriter(new BufferedWriter(new FileWriter(of)));
-                    String nextLine;
-                    while ((nextLine = reader.readLine()) != null) {
-                        nextLine = nextLine.replaceAll(str1, str2);
-                        pw.println(nextLine);
-                    }
-                } finally {
-                    reader.close();
-                    pw.close();
-
-                }
-
-
-            }
-        }
-
-    }
 
     public static boolean resourceExists(String path) {
         try {
@@ -241,58 +203,6 @@ public class FileUtils {
     }
 
 
-    public static void fixEOL(String ifile, String ofile) {
-        BufferedReader br = null;
-        PrintWriter pw = null;
-        try {
-            br = new BufferedReader(new FileReader(ifile));
-            pw = new PrintWriter(new FileWriter(ofile));
-            String nextLine;
-            while ((nextLine = br.readLine()) != null) {
-                pw.println(nextLine);
-            }
-
-            br.close();
-            pw.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-
-        }
-    }
-
-    /**
-     * Test to see if a file is ascii by sampling the first few bytes.  Not perfect (obviously) but usually works
-     */
-    public static boolean isAscii(ResourceLocator loc) throws IOException {
-
-        InputStream in = null;
-        CharsetDecoder d = Charset.forName("US-ASCII").newDecoder();
-        try {
-            in = ParsingUtils.openInputStreamGZ(loc);
-
-            byte[] bytes = new byte[1024]; //do a peek
-            int nBytes = in.read(bytes);
-
-            while (nBytes > 0) {
-                for (int i = 0; i < nBytes; i++) {
-                    int j = (int) bytes[i];
-                    if (j < 1 || j > 127) {
-                        return false;
-                    }
-                }
-                nBytes = in.read(bytes);
-            }
-            return true;
-        } finally {
-            if (in != null) {
-                in.close();
-            }
-        }
-    }
-
-
     /**
      * Test to see if the ascii file is tab delimited, with the
      * given number of minimum columns.
@@ -363,29 +273,6 @@ public class FileUtils {
         }
     }
 
-
-    public static void replaceStrings(File inputFile, File outputFile, Map<String, String> replace) throws IOException {
-
-        BufferedReader reader = null;
-        PrintWriter writer = null;
-
-        try {
-            reader = new BufferedReader(new FileReader(inputFile));
-            writer = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
-            String nextLine;
-            while ((nextLine = reader.readLine()) != null) {
-                for (Map.Entry<String, String> entry : replace.entrySet()) {
-                    nextLine = nextLine.replace(entry.getKey(), entry.getValue());
-                }
-                writer.println(nextLine);
-            }
-
-        } finally {
-            reader.close();
-            writer.close();
-
-        }
-    }
 
     /**
      * Cleanup extra jnlp files.  This method is written specifcally for Mac OS.
@@ -546,29 +433,7 @@ public class FileUtils {
         return fullPath;
     }
 
-    /**
-     * Convert a list of ":" separated paths, relative to rootPath,
-     * into file URLs
-     *
-     * @param libs
-     * @param rootPath
-     * @return
-     */
-    public static URL[] getURLsFromString(String libs, String rootPath) {
-        String[] sLibs = libs.split(":");
-        List<URL> libURLList = new ArrayList<URL>(sLibs.length);
-        String pluginDir = (new File(rootPath)).getParent();
-        for (String s : sLibs) {
-            File fi = new File(pluginDir, s);
-            try {
-                libURLList.add(new URL("file:" + fi.getAbsolutePath()));
-            } catch (MalformedURLException e) {
-                log.error("Error adding to libs: " + fi.getAbsolutePath());
-                log.error(e);
-            }
-        }
-        return libURLList.toArray(new URL[0]);
-    }
+
 
     /**
      * Return the length of the file, which might be remote.
