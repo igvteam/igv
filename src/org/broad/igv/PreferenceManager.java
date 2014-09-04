@@ -249,7 +249,6 @@ public class PreferenceManager implements PropertyManager {
     public static final String IGV_PLUGIN_LIST_KEY = "IGV_PLUGIN_LIST";
 
     public static final String GOOGLE_API_KEY = "GOOGLE_API_KEY";
-    public static final String GOOGLE_BASE_URL = "GOOGLE_BASE_URL";
 
     IGVPreferences preferences;
     Map<String, String> defaultValues;
