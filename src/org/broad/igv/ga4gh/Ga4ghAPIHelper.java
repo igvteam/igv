@@ -32,7 +32,7 @@ public class Ga4ghAPIHelper {
                     "https://www.googleapis.com/genomics/v1beta",
                     "AIzaSyC-dujgw4P1QvNd8i_c-I-S_P1uxVZzn0w",
                     Arrays.asList(
-                            new Ga4ghDataset("376902546192", "1000 Genomes", "hg19"),
+                            new Ga4ghDataset("10473108253681171589", "1000 Genomes", "hg19"),
                             new Ga4ghDataset("383928317087", "PGP", "hg19"),
                             new Ga4ghDataset("461916304629", "Simons Foundation", "hg19")
                     )),
@@ -197,10 +197,10 @@ public class Ga4ghAPIHelper {
 
     static {
         genomeIdMap = new HashMap<String, String>();
-        genomeIdMap.put("Google 376902546192", "hg19");
+        genomeIdMap.put("Google 10473108253681171589", "hg19");
         genomeIdMap.put("Google 383928317087", "hg19");
         genomeIdMap.put("Google 461916304629", "hg19");
-        genomeIdMap.put("Google 376902546192", "hg19");
+        genomeIdMap.put("Google 337315832689", "hg19");
 
         genomeIdMap.put("NCBI SRP034507", "M74568");
         genomeIdMap.put("NCBI SRP029392", "NC_004917");
