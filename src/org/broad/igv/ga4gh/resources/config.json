@@ -5,7 +5,7 @@
             "baseURL": "https://www.googleapis.com/genomics/v1beta",
             "datasets": [
                 {
-                    "id": "376902546192",
+                    "id": "10473108253681171589",
                     "name": "1000 Genomes"
                 },
                 {
@@ -17,7 +17,7 @@
                     "name": "Simons Foundation"
                 },
                 {
-                    "id": "376902546192",
+                    "id": "337315832689",
                     "name": "DREAM SMC Challenge"
                 }]
 
