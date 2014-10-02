@@ -141,8 +141,6 @@ public class TrackLoader {
                 VariantListManager.loadVariants(locator);
             } else if (typeString.endsWith("samplepathmap")) {
                 VariantListManager.loadSamplePathMap(locator);
-            } else if (typeString.endsWith("h5") || typeString.endsWith("hbin")) {
-                throw new DataLoadException("HDF5 files are no longer supported");
             } else if (typeString.endsWith(".rnai.gct")) {
                 loadRnaiGctFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".gct") || typeString.endsWith("res") || typeString.endsWith("tab")) {
