@@ -183,7 +183,8 @@ public class CommandListener implements Runnable {
                     Globals.setBatch(true);
                     Globals.setSuppressMessages(true);
                     final String response = cmdExe.execute(inputLine);
-                    out.print(response + "\r\n");
+                    out.println(response);
+                    out.flush();
                 }
             }
         } catch (IOException e) {
@@ -196,31 +197,6 @@ public class CommandListener implements Runnable {
         }
     }
 
-    private void establishWebSocketConnection(PrintWriter out, Map<String, String> headers) {
-
-        String clientKey = headers.get("Sec-WebSocket-Key").trim();
-        String guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-
-        try {
-            String responseKey = this.computeResponseKey(clientKey + guid);
-            out.print("HTTP/1.1 101 Switching Protocols" + CRNL);
-            out.print("Upgrade: websocket" + CRNL);
-            out.print("Connection: Upgrade" + CRNL);
-            out.print("Sec-WebSocket-Accept: " + responseKey + CRNL);
-            if (headers.containsKey("Sec-WebSocket-Protocol")) {
-                out.print("Sec-WebSocket-Protocol: " + headers.get("Sec-WebSocket-Protocol") + CRNL);
-            }
-            out.print(CRNL);
-            out.flush();
-
-
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-
-    }
 
     private void closeSockets() {
         if (clientSocket != null) {
