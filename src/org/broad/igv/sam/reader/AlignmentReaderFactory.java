@@ -123,6 +123,8 @@ public class AlignmentReaderFactory {
                     }
                 } else {
                     String f = nextLine.trim();
+                    if(f.length() == 0) continue;  // Empty line
+                    
                     for (Map.Entry<String, String> entry : replacements.entrySet()) {
                         f = f.replace(entry.getKey(), entry.getValue());
                     }
