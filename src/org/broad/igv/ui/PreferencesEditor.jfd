@@ -752,7 +752,7 @@
               <string>javax.swing.JLabel</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>&lt;html&gt;&lt;i&gt;Distinguish regions with zero values from regions with no data on plots (e.g. bar charts).  Regions with no data are indicated with a gray background.&lt;/b&gt;</string> 
+               <string>&lt;html&gt;&lt;i&gt;Distinguish regions with zero values from regions with  no data on plots (e.g. bar charts).  Regions with no data are indicated with a gray background.&lt;/b&gt;</string> 
               </void> 
               <void property="name"> 
                <string>label32</string> 
