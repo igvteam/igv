@@ -691,8 +691,6 @@ public class CommandExecutor {
         if (param1.startsWith("\"")) param1 = param1.substring(1);
         if (param1.endsWith("\"")) param1 = param1.substring(0, param1.lastIndexOf('"'));
         URI outputURI = new URI(("file://" + param1.replaceAll(" ", "%20")));
-
-
         return new File(outputURI);
     }
 
@@ -783,7 +781,20 @@ public class CommandExecutor {
             filename = locus.replaceAll(":", "_").replace("-", "_") + ".png";
         }
 
-        File file = snapshotDirectory == null ? new File(filename) : new File(snapshotDirectory, filename);
+        File file;
+        if(snapshotDirectory == null) {
+            try {
+                file = getFile(filename);
+                if(!file.getParentFile().exists()) {
+                    createParents(file);
+                }
+            } catch (URISyntaxException e) {
+                log.error("Error parsing directory path: " + filename, e);
+                return "Error parsing directory path: " + filename;
+            }
+        } else {
+            file = new File(snapshotDirectory, filename);
+        }
         System.out.println("Snapshot: " + file.getAbsolutePath());
 
 
