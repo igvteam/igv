@@ -40,6 +40,8 @@ import org.broad.igv.util.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -76,7 +78,7 @@ public class CommandExecutor {
             Object ocmmand = RuntimeUtils.loadInstanceForName(cmd, null);
             Command command = (Command) ocmmand;
             return command.run(subArgs);
-        }catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             return null;
         } catch (Exception e) {
             return e.getMessage();
@@ -203,9 +205,9 @@ public class CommandExecutor {
     }
 
     private String removeTrack(String trackName) {
-        if(trackName == null) return "Error: NULL TRACK NAME";
-        for(Track track: igv.getAllTracks()){
-            if(track.getName().equals(trackName)){
+        if (trackName == null) return "Error: NULL TRACK NAME";
+        for (Track track : igv.getAllTracks()) {
+            if (track.getName().equals(trackName)) {
                 igv.removeTracks(Arrays.asList(track));
                 return "OK";
             }
@@ -380,7 +382,7 @@ public class CommandExecutor {
                 String mergeString = param.substring(6);
                 merge = mergeString.equalsIgnoreCase("true");
             } else if (param != null && param.startsWith("index=")) {
-                 index = param.substring(6);
+                index = param.substring(6);
             } else if (param != null && param.startsWith("coverage=")) {
                 coverage = param.substring(9);
             }
@@ -388,7 +390,7 @@ public class CommandExecutor {
         // Locus is not specified from port commands
         String locus = null;
         Map<String, String> params = null;
-        return loadFiles(fileString, index, coverage,name, locus, merge,  params);
+        return loadFiles(fileString, index, coverage, name, locus, merge, params);
     }
 
     String loadFiles(final String fileString,
@@ -410,7 +412,7 @@ public class CommandExecutor {
      * @param nameString
      * @param params
      * @param sort
-     * @param sortTag Used iff sort == SortOption.TAG
+     * @param sortTag    Used iff sort == SortOption.TAG
      * @return
      * @throws IOException
      */
@@ -427,10 +429,10 @@ public class CommandExecutor {
 
         log.debug("Run load files");
 
-        List<String> files= StringUtils.breakQuotedString(fileString, ',');
-        List<String> names = StringUtils.breakQuotedString(nameString,',');
-        List<String> indexFiles = StringUtils.breakQuotedString(indexString,',');
-        List<String> coverageFiles =  StringUtils.breakQuotedString(coverageString,',');
+        List<String> files = StringUtils.breakQuotedString(fileString, ',');
+        List<String> names = StringUtils.breakQuotedString(nameString, ',');
+        List<String> indexFiles = StringUtils.breakQuotedString(indexString, ',');
+        List<String> coverageFiles = StringUtils.breakQuotedString(coverageString, ',');
 
         if (files.size() == 1) {
             // String might be URL encoded
@@ -452,13 +454,13 @@ public class CommandExecutor {
         // Must decode URLs (local or remote), but leave local file paths only
         for (int ii = 0; ii < files.size(); ii++) {
             files.set(ii, decodeFileString(files.get(ii).replace("\"", "")));
-            if(names != null){
+            if (names != null) {
                 names.set(ii, names.get(ii).replace("\"", ""));
             }
-            if(indexFiles != null){
+            if (indexFiles != null) {
                 indexFiles.set(ii, decodeFileString(indexFiles.get(ii).replace("\"", "")));
             }
-            if(coverageFiles != null) {
+            if (coverageFiles != null) {
                 coverageFiles.set(ii, decodeFileString(coverageFiles.get(ii).replace("\"", "")));
             }
         }
@@ -486,7 +488,7 @@ public class CommandExecutor {
         }
 
         // Loop through files
-        for (int fi=0; fi < files.size(); fi++) {
+        for (int fi = 0; fi < files.size(); fi++) {
 
             String f = files.get(fi);
 
@@ -508,10 +510,10 @@ public class CommandExecutor {
                 if (names != null) {
                     rl.setName(names.get(fi));
                 }
-                if(indexFiles != null) {
+                if (indexFiles != null) {
                     rl.setIndexPath(indexFiles.get(fi));
                 }
-                if(coverageFiles != null) {
+                if (coverageFiles != null) {
                     rl.setCoverage(coverageFiles.get(fi));
                 }
                 if (params != null) {
@@ -531,12 +533,12 @@ public class CommandExecutor {
         if (locus != null && !locus.equals("null")) {
             igv.goToLocus(locus);
             //If locus is a single base, we sort by base
-            String[] tokens= locus.split(":", 2);
-            if(tokens.length == 2){
+            String[] tokens = locus.split(":", 2);
+            if (tokens.length == 2) {
                 String chr = tokens[0];
                 try {
                     int pos = Integer.parseInt(tokens[1].replace(",", ""));
-                    if(pos >= 0 && sort == null) sort = "base";
+                    if (pos >= 0 && sort == null) sort = "base";
 
                 } catch (Exception e) {
                     //pass
@@ -560,7 +562,7 @@ public class CommandExecutor {
                 try {
                     //We need to wait until the track is loaded. If loadTask is null,
                     //it was loaded synchronously
-                    if(loadTask != null){
+                    if (loadTask != null) {
                         Object res = loadTask.get();
                     }
                     //Thought we were done waiting, huh? Guess again
@@ -590,27 +592,28 @@ public class CommandExecutor {
     /**
      * If {@code fileString} is a URL and can be decoded,
      * return the decoded version. Otherwise return the original.
+     *
      * @param fileString
      * @return
      */
-    static String decodeFileString(String fileString){
+    static String decodeFileString(String fileString) {
         if (needsDecode(fileString)) {
             return StringUtils.decodeURL(fileString);
-        }else{
+        } else {
             return fileString;
         }
     }
 
-    static boolean needsDecode(String fileString){
+    static boolean needsDecode(String fileString) {
         String decodedString = decodeSafe(fileString);
         return (decodedString != null && (HttpUtils.isURL(fileString) || HttpUtils.isURL(decodedString)));
     }
 
-    private static String decodeSafe(String string){
+    private static String decodeSafe(String string) {
         String tmp = null;
-        try{
+        try {
             tmp = StringUtils.decodeURL(string);
-        }catch (Exception e){
+        } catch (Exception e) {
             log.warn(e.getMessage());
         }
         return tmp;
@@ -652,26 +655,45 @@ public class CommandExecutor {
      * @return
      */
     String setSnapshotDirectory(String param1) {
+
         if (param1 == null) {
             return "ERROR: missing directory parameter";
         }
 
+        File parentDir = null;
+        try {
+            parentDir = getFile(param1);
+        } catch (URISyntaxException e) {
+            log.error("Error parsing directory path: " + param1, e);
+            return "Error parsing directory path: " + param1;
+        }
+
         String result;
-        File parentDir = new File(param1);
         if (parentDir.exists()) {
             snapshotDirectory = parentDir;
             result = "OK";
         } else {
+            createParents(parentDir);
             parentDir.mkdir();
             if (parentDir.exists()) {
                 snapshotDirectory = parentDir;
                 result = "OK";
             } else {
-
                 result = "ERROR: directory: " + param1 + " does not exist";
             }
         }
         return result;
+    }
+
+    private File getFile(String param1) throws URISyntaxException {
+
+        // Strip trailing & leading quotes
+        if (param1.startsWith("\"")) param1 = param1.substring(1);
+        if (param1.endsWith("\"")) param1 = param1.substring(0, param1.lastIndexOf('"'));
+        URI outputURI = new URI(("file://" + param1.replaceAll(" ", "%20")));
+
+
+        return new File(outputURI);
     }
 
     private String goto1(List<String> args) {
@@ -786,6 +808,15 @@ public class CommandExecutor {
         }
     }
 
+
+    private static void createParents(File outputFile) {
+        File parent = outputFile.getParentFile();
+        if (!parent.exists()) {
+            parent.mkdirs();
+        }
+
+    }
+
     private static RegionScoreType getRegionSortOption(String str) {
         if (str == null) return null;
         String option = str.toUpperCase();
@@ -833,14 +864,14 @@ public class CommandExecutor {
         return AlignmentTrack.GroupOption.NONE;
     }
 
-    private static class SortAlignmentsHandler{
+    private static class SortAlignmentsHandler {
 
         private IGV igv = null;
         private EventBus bus = null;
         private AlignmentTrack.SortOption sortOption;
         private String sortTag;
 
-        SortAlignmentsHandler(IGV igv, EventBus bus, AlignmentTrack.SortOption sortOption, String sortTag){
+        SortAlignmentsHandler(IGV igv, EventBus bus, AlignmentTrack.SortOption sortOption, String sortTag) {
             this.igv = igv;
             this.bus = bus;
             this.sortOption = sortOption;
@@ -848,9 +879,10 @@ public class CommandExecutor {
         }
 
         @Subscribe
-        public void received(DataLoadedEvent event){
+        public void received(DataLoadedEvent event) {
             boolean sorted = igv.sortAlignmentTracks(sortOption, sortTag);
-            if(sorted) this.bus.unregister(this);
+            if (sorted) this.bus.unregister(this);
         }
+
     }
 }
