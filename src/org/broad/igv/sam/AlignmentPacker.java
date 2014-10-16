@@ -93,6 +93,7 @@ public class AlignmentPacker {
             Collections.sort(keys, groupComparator);
 
             for (String key : keys) {
+                if(key.equals(NULL_GROUP_VALUE)) continue;
                 List<Row> alignmentRows = new ArrayList<Row>(10000);
                 List<Alignment> group = groupedAlignments.get(key);
                 pack(group, isPairedAlignments, alignmentRows);
@@ -301,6 +302,7 @@ public class AlignmentPacker {
             case FIRST_OF_PAIR_STRAND:
                 Strand strand = al.getFirstOfPairStrand();
                 String strandString = strand == Strand.NONE ? null : strand.toString();
+                System.out.println(strandString);
                 return strandString;
             case PAIR_ORIENTATION:
                 PEStats peStats = AlignmentRenderer.getPEStats(al, renderOptions);
