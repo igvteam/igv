@@ -690,6 +690,8 @@ public class CommandExecutor {
         // Strip trailing & leading quotes
         if (param1.startsWith("\"")) param1 = param1.substring(1);
         if (param1.endsWith("\"")) param1 = param1.substring(0, param1.lastIndexOf('"'));
+
+
         URI outputURI = new URI(("file://" + param1.replaceAll(" ", "%20")));
         return new File(outputURI);
     }
@@ -782,16 +784,8 @@ public class CommandExecutor {
         }
 
         File file;
-        if(snapshotDirectory == null) {
-            try {
-                file = getFile(filename);
-                if(!file.getParentFile().exists()) {
-                    createParents(file);
-                }
-            } catch (URISyntaxException e) {
-                log.error("Error parsing directory path: " + filename, e);
-                return "Error parsing directory path: " + filename;
-            }
+        if (snapshotDirectory == null) {
+            file = new File(filename);
         } else {
             file = new File(snapshotDirectory, filename);
         }
