@@ -691,9 +691,20 @@ public class CommandExecutor {
         if (param1.startsWith("\"")) param1 = param1.substring(1);
         if (param1.endsWith("\"")) param1 = param1.substring(0, param1.lastIndexOf('"'));
 
-
-        URI outputURI = new URI(("file://" + param1.replaceAll(" ", "%20")));
-        return new File(outputURI);
+        // See if file contains spaces, if not no special treatment is required
+        if (param1.indexOf(' ') < 0) {
+            return new File(param1);
+        } else {
+            // If file is absolute use a URI,
+            File f = new File(param1);
+            if(f.isAbsolute()) {
+                URI outputURI = new URI(("file://" + param1.replaceAll(" ", "%20")));
+                return new File(outputURI);
+            }
+            else {
+                return f;
+            }
+        }
     }
 
     private String goto1(List<String> args) {
@@ -785,7 +796,15 @@ public class CommandExecutor {
 
         File file;
         if (snapshotDirectory == null) {
-            file = new File(filename);
+            try {
+                file = getFile(filename);
+                if (!file.getAbsoluteFile().getParentFile().exists()) {
+                    createParents(file);
+                }
+            } catch (URISyntaxException e) {
+                log.error("Error parsing directory path: " + filename, e);
+                return "Error parsing directory path: " + filename;
+            }
         } else {
             file = new File(snapshotDirectory, filename);
         }
