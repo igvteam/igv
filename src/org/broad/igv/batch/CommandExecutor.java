@@ -216,7 +216,7 @@ public class CommandExecutor {
     }
 
     static String parseTrackName(String param1) {
-        return param1 == null ? null : param1.replace("\"", "").replace("'", "");
+        return param1 == null ? null : stripQuotes(param1);
     }
 
     private String overridePreference(String prefKey, String prefVal) {
@@ -368,7 +368,7 @@ public class CommandExecutor {
     private String load(String fileString, String param2, String param3) throws IOException {
 
         // Default for merge is "true" for session files,  "false" otherwise
-        String tmpFile = fileString.replace("\"", "").replace("'", "");
+        String tmpFile = stripQuotes(fileString);
         boolean merge = !(tmpFile.endsWith(".xml") || tmpFile.endsWith(".php") || tmpFile.endsWith(".php3"));
 
         // remaining parameters might be "merge", "name", or "index"
@@ -391,6 +391,17 @@ public class CommandExecutor {
         String locus = null;
         Map<String, String> params = null;
         return loadFiles(fileString, index, coverage, name, locus, merge, params);
+    }
+
+    private static String stripQuotes(String fileString) {
+        // Strip trailing or leading quotes
+        if(fileString.startsWith("\"") || fileString.startsWith("'")) {
+            fileString = fileString.substring(1);
+        }
+        if(fileString.endsWith("\"") || fileString.endsWith("'")) {
+            fileString = fileString.substring(0, fileString.length()-1);
+        }
+        return fileString;
     }
 
     String loadFiles(final String fileString,
@@ -660,6 +671,8 @@ public class CommandExecutor {
             return "ERROR: missing directory parameter";
         }
 
+        param1 = stripQuotes(param1);
+
         File parentDir = null;
         try {
             parentDir = getFile(param1);
@@ -789,9 +802,13 @@ public class CommandExecutor {
 
 
     private String createSnapshot(String filename, String region) {
+
         if (filename == null) {
             String locus = FrameManager.getDefaultFrame().getFormattedLocusString();
             filename = locus.replaceAll(":", "_").replace("-", "_") + ".png";
+        }
+        else {
+            filename = stripQuotes(filename);
         }
 
         File file;
