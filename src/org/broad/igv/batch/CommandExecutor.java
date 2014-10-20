@@ -395,11 +395,9 @@ public class CommandExecutor {
 
     private static String stripQuotes(String fileString) {
         // Strip trailing or leading quotes
-        if(fileString.startsWith("\"") || fileString.startsWith("'")) {
-            fileString = fileString.substring(1);
-        }
-        if(fileString.endsWith("\"") || fileString.endsWith("'")) {
-            fileString = fileString.substring(0, fileString.length()-1);
+        if ((fileString.startsWith("\"") && fileString.endsWith("\"")) ||
+                (fileString.startsWith("'") && fileString.endsWith("'"))) {
+            fileString = fileString.substring(1, fileString.length() - 1);
         }
         return fileString;
     }
@@ -710,11 +708,10 @@ public class CommandExecutor {
         } else {
             // If file is absolute use a URI,
             File f = new File(param1);
-            if(f.isAbsolute()) {
+            if (f.isAbsolute()) {
                 URI outputURI = new URI(("file://" + param1.replaceAll(" ", "%20")));
                 return new File(outputURI);
-            }
-            else {
+            } else {
                 return f;
             }
         }
@@ -806,8 +803,7 @@ public class CommandExecutor {
         if (filename == null) {
             String locus = FrameManager.getDefaultFrame().getFormattedLocusString();
             filename = locus.replaceAll(":", "_").replace("-", "_") + ".png";
-        }
-        else {
+        } else {
             filename = stripQuotes(filename);
         }
 
