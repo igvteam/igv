@@ -154,9 +154,9 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     }
                 }
 
-                // Draw a maximum of "maxOcclusions" features on top of each other.
+                // Draw a maximum of "maxOcclusion" small features on top of each other.
                 if (pixelEnd <= lastPixelEnd) {
-                    if (occludedCount >= maxOcclusions) {
+                    if (occludedCount >= maxOcclusions && (pixelEnd - pixelStart) < 3) {
                         continue;
                     } else {
                         occludedCount++;
