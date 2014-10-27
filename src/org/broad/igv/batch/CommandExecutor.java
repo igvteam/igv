@@ -393,8 +393,13 @@ public class CommandExecutor {
         return loadFiles(fileString, index, coverage, name, locus, merge, params);
     }
 
+    /**
+     * Strips quotation marks from string.  Quotes can be single or double, but must match each other.
+     *
+     * @param fileString
+     * @return
+     */
     private static String stripQuotes(String fileString) {
-        // Strip trailing or leading quotes
         if ((fileString.startsWith("\"") && fileString.endsWith("\"")) ||
                 (fileString.startsWith("'") && fileString.endsWith("'"))) {
             fileString = fileString.substring(1, fileString.length() - 1);
