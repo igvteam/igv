@@ -219,7 +219,7 @@ public class HttpUtils {
                 HttpURLConnection conn = openConnectionHeadOrGet(url);
                 int code = conn.getResponseCode();
                 return code >= 200 && code < 300;
-            } catch (IOException e) {
+            } catch (Exception e) {
                 return false;
             }
         }
