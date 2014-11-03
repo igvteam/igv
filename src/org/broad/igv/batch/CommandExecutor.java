@@ -216,7 +216,7 @@ public class CommandExecutor {
     }
 
     static String parseTrackName(String param1) {
-        return param1 == null ? null : stripQuotes(param1);
+        return param1 == null ? null : StringUtils.stripQuotes(param1);
     }
 
     private String overridePreference(String prefKey, String prefVal) {
@@ -368,7 +368,7 @@ public class CommandExecutor {
     private String load(String fileString, String param2, String param3) throws IOException {
 
         // Default for merge is "true" for session files,  "false" otherwise
-        String tmpFile = stripQuotes(fileString);
+        String tmpFile = StringUtils.stripQuotes(fileString);
         boolean merge = !(tmpFile.endsWith(".xml") || tmpFile.endsWith(".php") || tmpFile.endsWith(".php3"));
 
         // remaining parameters might be "merge", "name", or "index"
@@ -391,20 +391,6 @@ public class CommandExecutor {
         String locus = null;
         Map<String, String> params = null;
         return loadFiles(fileString, index, coverage, name, locus, merge, params);
-    }
-
-    /**
-     * Strips quotation marks from string.  Quotes can be single or double, but must match each other.
-     *
-     * @param fileString
-     * @return
-     */
-    private static String stripQuotes(String fileString) {
-        if ((fileString.startsWith("\"") && fileString.endsWith("\"")) ||
-                (fileString.startsWith("'") && fileString.endsWith("'"))) {
-            fileString = fileString.substring(1, fileString.length() - 1);
-        }
-        return fileString;
     }
 
     String loadFiles(final String fileString,
@@ -674,7 +660,7 @@ public class CommandExecutor {
             return "ERROR: missing directory parameter";
         }
 
-        param1 = stripQuotes(param1);
+        param1 = StringUtils.stripQuotes(param1);
 
         File parentDir = null;
         try {
@@ -809,7 +795,7 @@ public class CommandExecutor {
             String locus = FrameManager.getDefaultFrame().getFormattedLocusString();
             filename = locus.replaceAll(":", "_").replace("-", "_") + ".png";
         } else {
-            filename = stripQuotes(filename);
+            filename = StringUtils.stripQuotes(filename);
         }
 
         File file;

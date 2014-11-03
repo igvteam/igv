@@ -5,6 +5,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
 import org.broad.igv.util.ParsingUtils;
 import htsjdk.tribble.Feature;
+import org.broad.igv.util.StringUtils;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -24,6 +25,8 @@ public class GenbankParser {
     private List<Feature> features;
     private String locusName;
     private String[] aliases;
+
+    private static List<String> nameFields = Arrays.asList("gene");
 
 
     /**
@@ -253,7 +256,11 @@ public class GenbankParser {
                             String[] tokens = Globals.equalPattern.split(currentLocQualifier, 2);
                             if (tokens.length > 1) {
                                 String keyName = tokens[0].length() > 1 ? tokens[0].substring(1) : "";
-                                f.setAttribute(keyName, tokens[1]);
+                                String value = StringUtils.stripQuotes(tokens[1]);
+                                f.setAttribute(keyName, value);
+                                if (nameFields.contains(keyName)) {
+                                    f.setName(value);
+                                }
                             } else {
                                 // TODO -- don't know how to interpret, log?
                             }

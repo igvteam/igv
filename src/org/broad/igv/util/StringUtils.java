@@ -289,4 +289,18 @@ public class StringUtils {
         return cnt;
 
     }
+
+    /**
+     * Strips quotation marks from string.  Quotes can be single or double, but must match each other.
+     *
+     * @param fileString
+     * @return
+     */
+    public static String stripQuotes(String fileString) {
+        if ((fileString.startsWith("\"") && fileString.endsWith("\"")) ||
+                (fileString.startsWith("'") && fileString.endsWith("'"))) {
+            fileString = fileString.substring(1, fileString.length() - 1);
+        }
+        return fileString;
+    }
 }
