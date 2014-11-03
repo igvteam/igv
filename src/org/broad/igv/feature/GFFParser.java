@@ -29,7 +29,7 @@ import java.io.*;
 import java.util.*;
 
 /**
- * @deprecated   use org.broad.igv.track.GFFFeatureSource
+ * @deprecated use org.broad.igv.track.GFFFeatureSource
  * User: jrobinso
  */
 
@@ -41,7 +41,7 @@ public class GFFParser implements FeatureParser {
     private TrackProperties trackProperties = null;
 
     public List<htsjdk.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome) {
-          return loadFeatures(reader, genome, new GFFCodec(genome));
+        return loadFeatures(reader, genome, new GFFCodec(genome));
     }
 
     public List<htsjdk.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome, GFFCodec codec) {
@@ -81,9 +81,7 @@ public class GFFParser implements FeatureParser {
         //Combine the features
         List<Feature> iFeatures = combiner.combineFeatures();
 
-        if (IGV.hasInstance()) {
-            FeatureDB.addFeatures(iFeatures, genome);
-        }
+        FeatureDB.addFeatures(iFeatures, genome);
 
         return iFeatures;
     }

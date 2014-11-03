@@ -237,6 +237,8 @@ public class GenomeManager {
             newGenome.setGeneTrack(geneFeatureTrack);
         }
 
+        FeatureDB.addFeatures(genbankParser.getFeatures(), newGenome);
+
         return newGenome;
     }
 
