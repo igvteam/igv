@@ -229,11 +229,11 @@ public class CommandListener implements Runnable {
 
     private void sendHTTPResponse(PrintWriter out, String result) {
 
-        out.println(result == null ? HTTP_NO_RESPONSE : HTTP_RESPONSE);
+        out.print(result == null ? HTTP_NO_RESPONSE : HTTP_RESPONSE);
+        out.print(CRNL);
+        out.print("Access-Control-Allow-Origin: *");
         out.print(CRNL);
         if (result != null) {
-            out.print("Access-Control-Allow-Origin: *");
-            out.print(CRNL);
             out.print(CONTENT_TYPE + CONTENT_TYPE_TEXT_HTML);
             out.print(CRNL);
             out.print(CONTENT_LENGTH + (result.length()));
