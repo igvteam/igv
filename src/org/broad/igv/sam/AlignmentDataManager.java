@@ -414,6 +414,10 @@ public class AlignmentDataManager implements IAlignmentDataManager {
         return this.loadedIntervalCache;
     }
 
+    public void alleleThresholdChanged() {
+        coverageTrack.setSnpThreshold(PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD));
+    }
+
     public static class DownsampleOptions {
         private boolean downsample;
         private int sampleWindowSize;

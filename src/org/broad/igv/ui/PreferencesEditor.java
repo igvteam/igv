@@ -3924,11 +3924,16 @@ public class PreferencesEditor extends javax.swing.JDialog {
         WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
         try {
             boolean reloadSAM = false;
+            boolean updateCoverage = false;
             for (String key : SAM_PREFERENCE_KEYS) {
                 if (updatedPreferenceMap.containsKey(key)) {
                     reloadSAM = true;
                     break;
                 }
+
+            }
+            if(updatedPreferenceMap.containsKey(PreferenceManager.SAM_ALLELE_THRESHOLD)) {
+                updateCoverage = true;
             }
 
             boolean updateSpliceJunctions = false;
@@ -3949,6 +3954,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.VISIBILITY_WINDOW);
                 }
                 igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.RELOAD);
+            }
+            if(updateCoverage) {
+                igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.ALLELE_THRESHOLD);
             }
         } finally {
             WaitCursorManager.removeWaitCursor(token);

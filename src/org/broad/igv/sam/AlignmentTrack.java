@@ -839,6 +839,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             case VISIBILITY_WINDOW:
                 visibilityWindowChanged();
                 break;
+            case ALLELE_THRESHOLD:
+                this.dataManager.alleleThresholdChanged();
+                break;
             case RELOAD:
             case SPLICE_JUNCTION:
                 dataManager.initLoadOptions();
