@@ -66,6 +66,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     boolean proxySettingsChanged = false;
     boolean tooltipSettingsChanged = false;
     private File newIGVDirectory;
+    private boolean updateCoverageTrack = false;
 
 
     private void backgroundColorPanelMouseClicked(MouseEvent e) {
@@ -183,6 +184,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private void showMissingDataCBActionPerformed(ActionEvent e) {
         updatedPreferenceMap.put(PreferenceManager.SHOW_MISSING_DATA_KEY, String.valueOf(
                 showMissingDataCB.isSelected()));
+    }
+
+    private void useAlleleQualityCBActionPerformed(ActionEvent e) {
+        updatedPreferenceMap.put(PreferenceManager.SAM_ALLELE_USE_QUALITY, String.valueOf(
+                useAlleleQualityCB.isSelected()));
+        this.updateCoverageTrack = true;
     }
 
 
@@ -314,10 +321,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
         mappingQualityThresholdField = new JTextField();
         filterSecondaryAlignmentsCB = new JCheckBox();
         samFlagInsertionsCB = new JCheckBox();
-        filterURL2 = new JTextField();
         samFlagInsertionsThresholdField = new JTextField();
         label31 = new JLabel();
         filterSupplementaryAlignmentsCB = new JCheckBox();
+        useAlleleQualityCB = new JCheckBox();
         panel2 = new JPanel();
         isizeComputeCB = new JCheckBox();
         jLabel17 = new JLabel();
@@ -1282,12 +1289,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(snpThresholdField);
-                    snpThresholdField.setBounds(240, 20, 80, snpThresholdField.getPreferredSize().height);
+                    snpThresholdField.setBounds(265, 30, 80, snpThresholdField.getPreferredSize().height);
 
                     //---- jLabel26 ----
-                    jLabel26.setText("Coverage allele-freq threshold");
+                    jLabel26.setText("Coverage allele-fraction threshold:");
                     jPanel12.add(jLabel26);
-                    jLabel26.setBounds(32, 25, 200, jLabel26.getPreferredSize().height);
+                    jLabel26.setBounds(35, 35, 225, jLabel26.getPreferredSize().height);
 
                     //---- samMinBaseQualityField ----
                     samMinBaseQualityField.setText("0");
@@ -1304,7 +1311,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(samMinBaseQualityField);
-                    samMinBaseQualityField.setBounds(265, 160, 55, samMinBaseQualityField.getPreferredSize().height);
+                    samMinBaseQualityField.setBounds(265, 192, 55, samMinBaseQualityField.getPreferredSize().height);
 
                     //---- samShadeMismatchedBaseCB ----
                     samShadeMismatchedBaseCB.setText("Shade mismatched bases by quality:");
@@ -1315,7 +1322,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(samShadeMismatchedBaseCB);
-                    samShadeMismatchedBaseCB.setBounds(5, 160, 264, samShadeMismatchedBaseCB.getPreferredSize().height);
+                    samShadeMismatchedBaseCB.setBounds(5, 195, 264, samShadeMismatchedBaseCB.getPreferredSize().height);
 
                     //---- samMaxBaseQualityField ----
                     samMaxBaseQualityField.setText("0");
@@ -1332,7 +1339,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(samMaxBaseQualityField);
-                    samMaxBaseQualityField.setBounds(370, 160, 55, samMaxBaseQualityField.getPreferredSize().height);
+                    samMaxBaseQualityField.setBounds(370, 192, 55, samMaxBaseQualityField.getPreferredSize().height);
 
                     //---- showCovTrackCB ----
                     showCovTrackCB.setText("Show coverage track");
@@ -1343,7 +1350,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(showCovTrackCB);
-                    showCovTrackCB.setBounds(360, 78, 270, showCovTrackCB.getPreferredSize().height);
+                    showCovTrackCB.setBounds(425, 88, 270, showCovTrackCB.getPreferredSize().height);
 
                     //---- samFilterDuplicatesCB ----
                     samFilterDuplicatesCB.setText("Filter duplicate reads");
@@ -1354,7 +1361,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(samFilterDuplicatesCB);
-                    samFilterDuplicatesCB.setBounds(5, 50, 290, samFilterDuplicatesCB.getPreferredSize().height);
+                    samFilterDuplicatesCB.setBounds(5, 57, 290, samFilterDuplicatesCB.getPreferredSize().height);
 
                     //---- filterCB ----
                     filterCB.setText("Filter alignments by read group");
@@ -1365,7 +1372,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(filterCB);
-                    filterCB.setBounds(5, 215, 244, filterCB.getPreferredSize().height);
+                    filterCB.setBounds(5, 253, 244, filterCB.getPreferredSize().height);
 
                     //---- filterURL ----
                     filterURL.setText("URL or path to filter file");
@@ -1383,7 +1390,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(filterURL);
-                    filterURL.setBounds(265, 216, 440, filterURL.getPreferredSize().height);
+                    filterURL.setBounds(265, 250, 440, filterURL.getPreferredSize().height);
 
                     //---- samFlagUnmappedPairCB ----
                     samFlagUnmappedPairCB.setText("Flag unmapped pairs");
@@ -1394,7 +1401,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(samFlagUnmappedPairCB);
-                    samFlagUnmappedPairCB.setBounds(360, 134, 310, samFlagUnmappedPairCB.getPreferredSize().height);
+                    samFlagUnmappedPairCB.setBounds(425, 144, 310, samFlagUnmappedPairCB.getPreferredSize().height);
 
                     //---- filterFailedReadsCB ----
                     filterFailedReadsCB.setText("Filter vendor failed reads");
@@ -1405,12 +1412,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(filterFailedReadsCB);
-                    filterFailedReadsCB.setBounds(new Rectangle(new Point(5, 78), filterFailedReadsCB.getPreferredSize()));
+                    filterFailedReadsCB.setBounds(new Rectangle(new Point(5, 86), filterFailedReadsCB.getPreferredSize()));
 
                     //---- label2 ----
                     label2.setText("to");
                     jPanel12.add(label2);
-                    label2.setBounds(330, 166, 25, label2.getPreferredSize().height);
+                    label2.setBounds(330, 198, 25, label2.getPreferredSize().height);
 
                     //---- showSoftClippedCB ----
                     showSoftClippedCB.setText("Show soft-clipped bases");
@@ -1421,7 +1428,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(showSoftClippedCB);
-                    showSoftClippedCB.setBounds(new Rectangle(new Point(360, 106), showSoftClippedCB.getPreferredSize()));
+                    showSoftClippedCB.setBounds(new Rectangle(new Point(425, 116), showSoftClippedCB.getPreferredSize()));
 
                     //---- showCenterLineCB ----
                     showCenterLineCB.setText("Show center line");
@@ -1432,12 +1439,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(showCenterLineCB);
-                    showCenterLineCB.setBounds(360, 50, 199, showCenterLineCB.getPreferredSize().height);
+                    showCenterLineCB.setBounds(425, 60, 199, showCenterLineCB.getPreferredSize().height);
 
                     //---- jLabel15 ----
                     jLabel15.setText("Mapping quality threshold:");
                     jPanel12.add(jLabel15);
-                    jLabel15.setBounds(new Rectangle(new Point(367, 25), jLabel15.getPreferredSize()));
+                    jLabel15.setBounds(new Rectangle(new Point(35, 173), jLabel15.getPreferredSize()));
 
                     //---- mappingQualityThresholdField ----
                     mappingQualityThresholdField.setText("0");
@@ -1454,7 +1461,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(mappingQualityThresholdField);
-                    mappingQualityThresholdField.setBounds(550, 20, 80, mappingQualityThresholdField.getPreferredSize().height);
+                    mappingQualityThresholdField.setBounds(265, 167, 80, mappingQualityThresholdField.getPreferredSize().height);
 
                     //---- filterSecondaryAlignmentsCB ----
                     filterSecondaryAlignmentsCB.setText("Filter secondary alignments");
@@ -1465,7 +1472,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(filterSecondaryAlignmentsCB);
-                    filterSecondaryAlignmentsCB.setBounds(new Rectangle(new Point(5, 106), filterSecondaryAlignmentsCB.getPreferredSize()));
+                    filterSecondaryAlignmentsCB.setBounds(new Rectangle(new Point(5, 115), filterSecondaryAlignmentsCB.getPreferredSize()));
 
                     //---- samFlagInsertionsCB ----
                     samFlagInsertionsCB.setText("Flag insertions larger than: ");
@@ -1476,25 +1483,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(samFlagInsertionsCB);
-                    samFlagInsertionsCB.setBounds(new Rectangle(new Point(5, 188), samFlagInsertionsCB.getPreferredSize()));
-
-                    //---- filterURL2 ----
-                    filterURL2.setText("URL or path to filter file");
-                    filterURL2.setEnabled(false);
-                    filterURL2.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            filterURLActionPerformed(e);
-                        }
-                    });
-                    filterURL2.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            filterURLFocusLost(e);
-                        }
-                    });
-                    jPanel12.add(filterURL2);
-                    filterURL2.setBounds(0, 248, 440, 28);
+                    samFlagInsertionsCB.setBounds(new Rectangle(new Point(5, 224), samFlagInsertionsCB.getPreferredSize()));
 
                     //---- samFlagInsertionsThresholdField ----
                     samFlagInsertionsThresholdField.addActionListener(new ActionListener() {
@@ -1510,12 +1499,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(samFlagInsertionsThresholdField);
-                    samFlagInsertionsThresholdField.setBounds(265, 188, 165, samFlagInsertionsThresholdField.getPreferredSize().height);
+                    samFlagInsertionsThresholdField.setBounds(265, 221, 165, samFlagInsertionsThresholdField.getPreferredSize().height);
 
                     //---- label31 ----
                     label31.setText("bases");
                     jPanel12.add(label31);
-                    label31.setBounds(450, 195, 60, label31.getPreferredSize().height);
+                    label31.setBounds(450, 227, 60, label31.getPreferredSize().height);
 
                     //---- filterSupplementaryAlignmentsCB ----
                     filterSupplementaryAlignmentsCB.setText("Filter supplementary alignments");
@@ -1526,7 +1515,18 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel12.add(filterSupplementaryAlignmentsCB);
-                    filterSupplementaryAlignmentsCB.setBounds(new Rectangle(new Point(5, 134), filterSupplementaryAlignmentsCB.getPreferredSize()));
+                    filterSupplementaryAlignmentsCB.setBounds(new Rectangle(new Point(5, 144), filterSupplementaryAlignmentsCB.getPreferredSize()));
+
+                    //---- useAlleleQualityCB ----
+                    useAlleleQualityCB.setText("Quality weight allele fraction");
+                    useAlleleQualityCB.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            useAlleleQualityCBActionPerformed(e);
+                        }
+                    });
+                    jPanel12.add(useAlleleQualityCB);
+                    useAlleleQualityCB.setBounds(new Rectangle(new Point(425, 32), useAlleleQualityCB.getPreferredSize()));
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
@@ -1543,7 +1543,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     }
                 }
                 alignmentPanel.add(jPanel12);
-                jPanel12.setBounds(10, 120, 755, 250);
+                jPanel12.setBounds(10, 120, 755, 295);
 
                 //======== panel2 ========
                 {
@@ -1690,7 +1690,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     }
                 }
                 alignmentPanel.add(panel2);
-                panel2.setBounds(10, 470, 755, 145);
+                panel2.setBounds(10, 525, 755, 145);
 
                 //======== panel3 ========
                 {
@@ -1776,7 +1776,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     }
                 }
                 alignmentPanel.add(panel3);
-                panel3.setBounds(10, 380, 755, 85);
+                panel3.setBounds(10, 425, 755, 85);
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
@@ -2625,7 +2625,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
             }
             tabbedPane.addTab("IonTorrent", ionTorrentPanel);
         }
-        contentPane.add(tabbedPane, BorderLayout.CENTER);
+        contentPane.add(tabbedPane, BorderLayout.NORTH);
 
         //======== okCancelButtonPanel ========
         {
@@ -2651,7 +2651,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
             okCancelButtonPanel.add(cancelButton);
         }
         contentPane.add(okCancelButtonPanel, BorderLayout.SOUTH);
-        setSize(830, 720);
+        setSize(830, 785);
         setLocationRelativeTo(getOwner());
 
         //---- buttonGroup1 ----
@@ -3814,6 +3814,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
         snpThresholdField.setText((String.valueOf(prefMgr.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD))));
         //samShowZeroQualityCB.setSelected(samPrefs.isShowZeroQuality());
+        useAlleleQualityCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_ALLELE_USE_QUALITY));
         samFilterDuplicatesCB.setSelected(!prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_DUPLICATES));
         filterFailedReadsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_FAILED_READS));
         filterSecondaryAlignmentsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_SECONDARY_ALIGNMENTS));
@@ -3924,7 +3925,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
         try {
             boolean reloadSAM = false;
-            boolean updateCoverage = false;
             for (String key : SAM_PREFERENCE_KEYS) {
                 if (updatedPreferenceMap.containsKey(key)) {
                     reloadSAM = true;
@@ -3933,7 +3933,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
             }
             if(updatedPreferenceMap.containsKey(PreferenceManager.SAM_ALLELE_THRESHOLD)) {
-                updateCoverage = true;
+                updateCoverageTrack = true;
             }
 
             boolean updateSpliceJunctions = false;
@@ -3955,8 +3955,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 }
                 igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.RELOAD);
             }
-            if(updateCoverage) {
+            if(updateCoverageTrack) {
                 igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.ALLELE_THRESHOLD);
+                updateCoverageTrack = false;
             }
         } finally {
             WaitCursorManager.removeWaitCursor(token);
@@ -4103,10 +4104,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JTextField mappingQualityThresholdField;
     private JCheckBox filterSecondaryAlignmentsCB;
     private JCheckBox samFlagInsertionsCB;
-    private JTextField filterURL2;
     private JTextField samFlagInsertionsThresholdField;
     private JLabel label31;
     private JCheckBox filterSupplementaryAlignmentsCB;
+    private JCheckBox useAlleleQualityCB;
     private JPanel panel2;
     private JCheckBox isizeComputeCB;
     private JLabel jLabel17;

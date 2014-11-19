@@ -94,16 +94,13 @@ public class CoverageTrack extends AbstractTrack {
      */
     private boolean globalAutoScale = true;
 
-    public void setRenderOptions(AlignmentTrack.RenderOptions renderOptions) {
-        this.renderOptions = renderOptions;
-    }
-
-    AlignmentTrack.RenderOptions getRenderOptions(){
-        return this.renderOptions;
-    }
-
     private AlignmentTrack.RenderOptions renderOptions = null;
 
+    /**
+     * Copy constructor.  Used for Sashimi plot.
+     *
+     * @param track
+     */
     public CoverageTrack(CoverageTrack track){
         this(track.getResourceLocator(), track.getName(), track.genome);
         if(track.dataManager != null) this.setDataManager(track.dataManager);
@@ -150,6 +147,15 @@ public class CoverageTrack extends AbstractTrack {
 
     public boolean isShowReference() {
         return showReference;
+    }
+
+
+    public void setRenderOptions(AlignmentTrack.RenderOptions renderOptions) {
+        this.renderOptions = renderOptions;
+    }
+
+    AlignmentTrack.RenderOptions getRenderOptions(){
+        return this.renderOptions;
     }
 
     /**

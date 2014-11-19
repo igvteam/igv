@@ -73,6 +73,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String IONTORRENT_RESULTS = "IONTORRENT.RESULTS";
 
     public static final String SAM_ALLELE_THRESHOLD = "SAM.ALLELE_THRESHOLD";
+    public static final String SAM_ALLELE_USE_QUALITY = "SAM.ALLELE_USE_QUALITY";
     public static final String SAM_QUALITY_THRESHOLD = "SAM.QUALITY_THRESHOLD";
     public static final String SAM_MAX_INSERT_SIZE_THRESHOLD = "SAM.INSERT_SIZE_THRESHOLD";
     public static final String SAM_MIN_INSERT_SIZE_THRESHOLD = "SAM.MIN_INSERT_SIZE_THRESHOLD";
@@ -990,6 +991,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_FILTER_URL, null);
         defaultValues.put(SAM_QUALITY_THRESHOLD, "0");
         defaultValues.put(SAM_ALLELE_THRESHOLD, "0.2f");
+        defaultValues.put(SAM_ALLELE_USE_QUALITY, "true");
         defaultValues.put(SAM_MIN_INSERT_SIZE_THRESHOLD, "50");
         defaultValues.put(SAM_MAX_INSERT_SIZE_THRESHOLD, "1000");
         defaultValues.put(SAM_MIN_INSERT_SIZE_PERCENTILE, "0.5");

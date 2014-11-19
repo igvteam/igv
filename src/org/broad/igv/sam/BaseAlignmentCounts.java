@@ -178,17 +178,20 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
 
     public boolean isMismatch(int pos, byte ref, String chr, float snpThreshold) {
 
+        boolean qualityWeight = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_ALLELE_USE_QUALITY);
+
         Set<Integer> filteredSnps = knownSnps == null ? null : knownSnps.get(chr);
+
         if (filteredSnps == null || !filteredSnps.contains(pos + 1)) {
 
-            float threshold = snpThreshold * getTotalQuality(pos);
+            float threshold = snpThreshold * (qualityWeight ? getTotalQuality(pos) : getTotalCount(pos));
             float mismatchQualitySum = 0;
 
             if (ref > 0) {
                 if (ref < 96) ref += 32;  // a fast "toLowercase"
                 for (char c : nucleotides) {
                     if (c != ref && c != 'n') {
-                        mismatchQualitySum += getQuality(pos, (byte) c);
+                        mismatchQualitySum += (qualityWeight ? getQuality(pos, (byte) c) : getCount(pos, (byte) c));
                     }
 
                 }
