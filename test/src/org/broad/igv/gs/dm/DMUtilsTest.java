@@ -13,6 +13,7 @@ package org.broad.igv.gs.dm;
 
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.gs.GSTestAuthenticator;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
@@ -26,6 +27,7 @@ import org.junit.rules.Timeout;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.Authenticator;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -38,8 +40,8 @@ import static junit.framework.Assert.*;
  * @author Jim Robinson
  * @date 1/16/12
  */
-@Ignore
-public abstract class AbstractDMUtilsTest extends AbstractHeadlessTest{
+
+public class DMUtilsTest extends AbstractHeadlessTest{
 
     @Rule
     public TestRule testTimeout = new Timeout((int) 30e4);
@@ -62,7 +64,7 @@ public abstract class AbstractDMUtilsTest extends AbstractHeadlessTest{
         //as long as HttpUtils is initialized so it doesn't get initialized later
         HttpUtils.getInstance().resetAuthenticator();
 
-        initAuth();
+        Authenticator.setDefault(new GSTestAuthenticator());
 
         try {
             String defaultURLStr = PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER);
@@ -83,15 +85,13 @@ public abstract class AbstractDMUtilsTest extends AbstractHeadlessTest{
         }
     }
 
-    protected abstract void initAuth();
-
     @After
     public void tearDown() {
         GSUtils.logout();
         HttpUtils.getInstance().resetAuthenticator();
     }
 
-    //@Test
+    @Test
     public void testGetDirectoryListing() throws Exception {
         final String testFileName = "Broad.080528.subtypes.seg.gz";
         boolean found = dirContainsFile(personaldirectoryURL, testFileName);
@@ -124,7 +124,7 @@ public abstract class AbstractDMUtilsTest extends AbstractHeadlessTest{
      * uploading and delete it afterwards anyway, figured we might as well combine these.
      * @throws Exception
      */
-    //@Test
+    @Ignore
     public void testUploadDeleteFile() throws Exception {
 
         String locName = "test2.bed";
@@ -149,7 +149,7 @@ public abstract class AbstractDMUtilsTest extends AbstractHeadlessTest{
         assertFileStatus(locName, false);
     }
 
-    //@Test
+    @Test
     public void testCreateDeleteDirectory() throws Exception {
 
         assertFileStatus(delDirName, false);
@@ -177,7 +177,7 @@ public abstract class AbstractDMUtilsTest extends AbstractHeadlessTest{
      * We also make sure to use token authentication
      * @throws Exception
      */
-    //@Test
+    @Test
     public void testLoadFiles() throws Exception{
 
         GSDirectoryListing dirListing = DMUtils.getDirectoryListing(personaldirectoryURL);
