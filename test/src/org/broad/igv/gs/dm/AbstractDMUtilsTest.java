@@ -91,7 +91,7 @@ public abstract class AbstractDMUtilsTest extends AbstractHeadlessTest{
         HttpUtils.getInstance().resetAuthenticator();
     }
 
-    @Test
+    //@Test
     public void testGetDirectoryListing() throws Exception {
         final String testFileName = "Broad.080528.subtypes.seg.gz";
         boolean found = dirContainsFile(personaldirectoryURL, testFileName);
@@ -124,7 +124,7 @@ public abstract class AbstractDMUtilsTest extends AbstractHeadlessTest{
      * uploading and delete it afterwards anyway, figured we might as well combine these.
      * @throws Exception
      */
-    @Test
+    //@Test
     public void testUploadDeleteFile() throws Exception {
 
         String locName = "test2.bed";
@@ -149,7 +149,7 @@ public abstract class AbstractDMUtilsTest extends AbstractHeadlessTest{
         assertFileStatus(locName, false);
     }
 
-    @Test
+    //@Test
     public void testCreateDeleteDirectory() throws Exception {
 
         assertFileStatus(delDirName, false);
@@ -177,7 +177,7 @@ public abstract class AbstractDMUtilsTest extends AbstractHeadlessTest{
      * We also make sure to use token authentication
      * @throws Exception
      */
-    @Test
+    //@Test
     public void testLoadFiles() throws Exception{
 
         GSDirectoryListing dirListing = DMUtils.getDirectoryListing(personaldirectoryURL);
