@@ -551,7 +551,7 @@ public class CommandExecutor {
             submitPerformSort(loadTask, sort, sortTag);
         }
 
-        return "OK";
+        return CommandListener.OK;
     }
 
     private void submitPerformSort(final Future loadTask, final String sort, final String sortTag) {

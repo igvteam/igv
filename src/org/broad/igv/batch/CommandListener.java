@@ -14,6 +14,7 @@ import biz.source_code.base64Coder.Base64Coder;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.ga4gh.GoogleUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.StringUtils;
 
@@ -29,6 +30,7 @@ import java.util.*;
 
 public class CommandListener implements Runnable {
 
+    public static final String OK = "OK";
     private static Logger log = Logger.getLogger(CommandListener.class);
 
     private static CommandListener listener;
@@ -153,25 +155,36 @@ public class CommandListener implements Runnable {
                         return;
                     } else {
                         String[] parts = tokens[1].split("\\?");
-
                         command = parts[0];
                         params = parts.length < 2 ? new HashMap() : parseParameters(parts[1]);
-
                     }
 
-
-                    // If a callback (javascript) function is specified write it back immediately.  This function
-                    // is used to cancel a timeout handler
-                    String callback = params.get("callback");
-                    if (callback != null) {
-                        sendHTTPResponse(out, callback);
+                    // Detect google oauth callback
+                    if(command.equals("/") && params.containsKey("code")) {
+                        GoogleUtils.setAuthorizationCode(params.get("code"));
+                        sendHTTPResponse(out, "OK");
                     }
 
-                    processGet(command, params, cmdExe);
+                    else {
 
-                    // If no callback was specified write back a "no response" header
-                    if (callback == null) {
-                        sendHTTPResponse(out, null);
+                        // If a callback (javascript) function is specified write it back immediately.  This function
+                        // is used to cancel a timeout handler
+                        String callback = params.get("callback");
+                        if (callback != null) {
+                            sendHTTPResponse(out, callback);
+                        }
+
+                        // Process the request.
+
+
+                        String result = processGet(command, params, cmdExe);
+
+                        // If no callback was specified write back response now
+                        if (callback == null) {
+                            // We send no response if result is "ok".
+                            if(result.equals(OK)) result = null;
+                            sendHTTPResponse(out, result);
+                        }
                     }
 
                     // http sockets are used for one request only
@@ -255,7 +268,7 @@ public class CommandListener implements Runnable {
 
     private String processGet(String command, Map<String, String> params, CommandExecutor cmdExe) throws IOException {
 
-        String result = "OK";
+        String result = OK;
         final Frame mainFrame = IGV.getMainFrame();
 
         // Trick to force window to front, the setAlwaysOnTop works on a Mac,  toFront() does nothing.
