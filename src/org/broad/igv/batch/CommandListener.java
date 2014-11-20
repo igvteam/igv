@@ -163,6 +163,9 @@ public class CommandListener implements Runnable {
                     if(command.equals("/") && params.containsKey("code")) {
                         GoogleUtils.setAuthorizationCode(params.get("code"));
                         sendHTTPResponse(out, "OK");
+
+                        // Now get the tokens
+                        GoogleUtils.getTokens();
                     }
 
                     else {

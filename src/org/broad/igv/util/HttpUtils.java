@@ -150,6 +150,35 @@ public class HttpUtils {
         }
     }
 
+
+    public String doPost(URL url, Map<String, String> params) throws IOException {
+
+        StringBuilder postData = new StringBuilder();
+
+        for (Map.Entry<String,String> param : params.entrySet()) {
+            if (postData.length() != 0) postData.append('&');
+            postData.append(param.getKey());
+            postData.append('=');
+            postData.append(param.getValue());
+        }
+        byte[] postDataBytes = postData.toString().getBytes();
+
+        HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        //conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
+        conn.setDoOutput(true);
+        conn.getOutputStream().write(postDataBytes);
+
+        StringBuilder response = new StringBuilder();
+        Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+        for (int c; (c = in.read()) >= 0; ) {
+            response.append((char) c);
+        }
+        return response.toString();
+
+    }
+
     /**
      * Open a connection stream for the URL.
      *
