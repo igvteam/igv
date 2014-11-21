@@ -14,7 +14,7 @@ import biz.source_code.base64Coder.Base64Coder;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.ga4gh.GoogleUtils;
+import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.StringUtils;
 
@@ -24,7 +24,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
 import java.nio.channels.ClosedByInterruptException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
@@ -160,15 +159,14 @@ public class CommandListener implements Runnable {
                     }
 
                     // Detect google oauth callback
-                    if(command.equals("/") && params.containsKey("code")) {
-                        GoogleUtils.setAuthorizationCode(params.get("code"));
+                    if (command.equals("/oauthCallback")) {
+                        if (params.containsKey("code")) {
+                            OAuthUtils.getInstance().setAuthorizationCode(params.get("code"));
+                        } else if (params.containsKey("token")) {
+                            OAuthUtils.getInstance().setAccessToken(params.get("token"));
+                        }
                         sendHTTPResponse(out, "OK");
-
-                        // Now get the tokens
-                        GoogleUtils.getTokens();
-                    }
-
-                    else {
+                    } else {
 
                         // If a callback (javascript) function is specified write it back immediately.  This function
                         // is used to cancel a timeout handler
@@ -185,7 +183,7 @@ public class CommandListener implements Runnable {
                         // If no callback was specified write back response now
                         if (callback == null) {
                             // We send no response if result is "ok".
-                            if(result.equals(OK)) result = null;
+                            if (result.equals(OK)) result = null;
                             sendHTTPResponse(out, result);
                         }
                     }

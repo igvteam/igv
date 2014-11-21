@@ -250,6 +250,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String IGV_PLUGIN_LIST_KEY = "IGV_PLUGIN_LIST";
 
     public static final String GOOGLE_API_KEY = "GOOGLE_API_KEY";
+    public static final String ENABLE_GOOGLE_MENU = "ENABLE_GOOGLE_MENU";
 
     IGVPreferences preferences;
     Map<String, String> defaultValues;
@@ -1111,6 +1112,8 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_COLOR_T, "255,0,0");
         defaultValues.put(SAM_COLOR_G, "209,113,5");
         defaultValues.put(SAM_COLOR_N, ColorUtilities.colorToString(Color.gray.brighter()));
+
+        defaultValues.put(ENABLE_GOOGLE_MENU, "false");
 
     }
 

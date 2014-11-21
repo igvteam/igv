@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
@@ -8,6 +19,7 @@ import org.broad.igv.util.LongRunningTask;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,28 +44,42 @@ public class BrowseGa4ghAction extends MenuAction {
         LongRunningTask.submit(new Runnable() {
             public void run() {
                 try {
-                    for (Ga4ghProvider provider : Ga4ghAPIHelper.providers) {
+                    final List<Ga4ghProvider> validProviders = new ArrayList<Ga4ghProvider>();
 
+                    for (Ga4ghProvider provider : Ga4ghAPIHelper.providers) {
+                        boolean valid = true;
                         for (Ga4ghDataset ds : provider.getDatasets()) {
 
                             List<Ga4ghReadset> readsets = Ga4ghAPIHelper.readsetSearch(provider, ds, 10);
 
+                            if (readsets == null) {
+                                log.error("No readsets returned for dataset: " + ds.getName());
+                                valid = false;
+                                // TODO -- for now, just exit, its confusing to bring up a partial list of providers
+                                return;
+
+                                //break;    // Something's wrong, probably authorization
+                            }
+
                             ds.setReadsets(readsets);
 
                         }
+                        if (valid) validProviders.add(provider);
+
                     }
 
-                    UIUtilities.invokeOnEventThread(new Runnable() {
+                    if (validProviders.size() > 0) {
+                        UIUtilities.invokeOnEventThread(new Runnable() {
 
-                        @Override
-                        public void run() {
-                            Ga4ghLoadDialog dlg = (new Ga4ghLoadDialog(IGV.getMainFrame(), Ga4ghAPIHelper.providers));
-                            dlg.setModal(true);
-                            dlg.setVisible(true);
-                            dlg.dispose();
-                        }
-
-                    });
+                            @Override
+                            public void run() {
+                                Ga4ghLoadDialog dlg = (new Ga4ghLoadDialog(IGV.getMainFrame(), validProviders.toArray(new Ga4ghProvider[]{})));
+                                dlg.setModal(true);
+                                dlg.setVisible(true);
+                                dlg.dispose();
+                            }
+                        });
+                    }
                 } catch (IOException e) {
                     log.error("Error opening Ga4gh dialog", e);
                 }

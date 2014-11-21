@@ -24,6 +24,8 @@ import org.broad.igv.cli_plugin.ui.SetPluginPathDialog;
 import org.broad.igv.dev.db.DBProfileEditor;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ga4gh.Ga4ghAPIHelper;
+import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.gs.GSOpenSessionMenuAction;
 import org.broad.igv.gs.GSSaveSessionMenuAction;
 import org.broad.igv.gs.GSUtils;
@@ -39,9 +41,12 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.ReorderPanelsDialog;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.util.BrowserLauncher;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.encode.EncodeFileBrowser;
 
 import javax.swing.*;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 import javax.swing.plaf.basic.BasicBorders;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -51,6 +56,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.broad.igv.ui.UIConstants.*;
@@ -153,6 +159,11 @@ public class IGVMenuBar extends JMenuBar {
         extrasMenu = createExtrasMenu();
         //extrasMenu.setVisible(false);
         menus.add(extrasMenu);
+
+        if (PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_API_KEY) != null ||
+                PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_GOOGLE_MENU)) {
+            menus.add(createGoogleMenu());
+        }
 
         menus.add(createHelpMenu());
 
@@ -391,7 +402,7 @@ public class IGVMenuBar extends JMenuBar {
             menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         }
 
-        if(PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_API_KEY) != null) {
+        if (PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_API_KEY) != null) {
             menuAction = new BrowseGa4ghAction("Load from Ga4gh...", KeyEvent.VK_G, igv);
             menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         }
@@ -1058,6 +1069,73 @@ public class IGVMenuBar extends JMenuBar {
         return menu;
     }
 
+    private JMenu createGoogleMenu() {
+
+        final JMenu menu = new JMenu("Google");
+
+        final JMenuItem login = new JMenuItem("Login ... ");
+        login.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    OAuthUtils.getInstance().fetchAuthCode();
+                } catch (Exception ex) {
+                    MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
+                    log.error("Error fetching oAuth tokens", ex);
+                }
+
+            }
+        });
+        menu.add(login);
+
+
+        final JMenuItem logout = new JMenuItem("Logout ");
+        logout.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                OAuthUtils.getInstance().logout();
+            }
+        });
+        menu.add(logout);
+
+        final JMenuItem loadReadset = new JMenuItem("Load readset... ");
+        loadReadset.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String readsetId = MessageUtils.showInputDialog("Enter readset id: ");
+                if (readsetId != null) {
+                    ResourceLocator locator = new ResourceLocator(readsetId);
+                    locator.setName(readsetId);
+                    locator.setType(Ga4ghAPIHelper.RESOURCE_TYPE);
+                    locator.setAttribute("provider", Ga4ghAPIHelper.GA4GH_GOOGLE_PROVIDER);
+                    IGV.getInstance().loadTracks(Arrays.asList(locator));
+                }
+            }
+        });
+        menu.add(loadReadset);
+
+        menu.addMenuListener(new MenuListener() {
+            @Override
+            public void menuSelected(MenuEvent e) {
+                boolean loggedIn = OAuthUtils.getInstance().isLoggedIn();
+                login.setEnabled(!loggedIn);
+                logout.setEnabled(loggedIn);
+                loadReadset.setEnabled(loggedIn);
+            }
+
+            @Override
+            public void menuDeselected(MenuEvent e) {
+
+            }
+
+            @Override
+            public void menuCanceled(MenuEvent e) {
+
+            }
+        });
+
+        return menu;
+    }
 
 //    public void enableRemoveGenomes() {
 //        if (removeImportedGenomeAction != null) {
