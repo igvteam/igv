@@ -7,6 +7,7 @@ import org.broad.igv.util.HttpUtils;
 
 import java.awt.*;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -22,25 +23,26 @@ public class OAuthUtils {
     private static Logger log = Logger.getLogger(OAuthUtils.class);
 
     private static final String REFRESH_TOKEN_KEY = "oauth_refresh_token";
-    private static String oauthURL = "https://accounts.google.com/o/oauth2/";
-    private static String authEndpoint = "auth";
-    private static String tokenEndpoint = "token";
-    private static String scope = "https://www.googleapis.com/auth/genomics";
-    private static String state = "%2Fprofile";
-    private static String clientId = "661332306814-7kotci54n0tr4fdbrff0u79u1m8f7grf.apps.googleusercontent.com";
-    private static String clientSecret = "bDph_1LPw3YEZEvHKP2CEBRi";
-    private static String redirectURI = "http%3A%2F%2Flocalhost%3A60151%2FoauthCallback";
+    private static final String PROPERTIES_URL = "https://igvdata.broadinstitute.org/app/oauth_native.json";
+    private String scope = "https://www.googleapis.com/auth/genomics";
+    private String state = "%2Fprofile";
+    private String redirectURI = "http%3A%2F%2Flocalhost%3A60151%2FoauthCallback";
+    private String clientId;
+    private String clientSecret;
+    private String authURI;
+    private String tokenURI;
 
-    private  String authorizationCode;
-    private  String accessToken;
-    private  String refreshToken;
-    private  long expirationTime;
+    private String authorizationCode;
+    private String accessToken;
+    private String refreshToken;
+    private long expirationTime;
 
     private static OAuthUtils theInstance;
 
+
     public static synchronized OAuthUtils getInstance() {
 
-        if(theInstance == null) {
+        if (theInstance == null) {
             theInstance = new OAuthUtils();
         }
 
@@ -56,9 +58,23 @@ public class OAuthUtils {
         }
     }
 
-    public  void fetchAuthCode() throws IOException, URISyntaxException {
+    private void fetchOauthProperties() throws IOException {
 
-        String url = oauthURL + authEndpoint + "?" +
+        String propString = HttpUtils.getInstance().getContentsAsString(new URL(PROPERTIES_URL));
+        JsonParser parser = new JsonParser();
+        JsonObject obj = parser.parse(propString).getAsJsonObject().get("installed").getAsJsonObject();
+        authURI = obj.get("auth_uri").getAsString();
+        clientSecret = obj.get("client_secret").getAsString();
+        tokenURI = obj.get("token_uri").getAsString();
+        clientId = obj.get("client_id").getAsString();
+        System.out.println(obj);
+    }
+
+    public void fetchAuthCode() throws IOException, URISyntaxException {
+
+        if(clientId == null) fetchOauthProperties();
+
+        String url = authURI + "?" +
                 "scope=" + scope + "&" +
                 "state=" + state + "&" +
                 "redirect_uri=" + redirectURI + "&" +
@@ -70,14 +86,16 @@ public class OAuthUtils {
     }
 
     // Called from HttpUtils upon receiving the redirect uri.
-    public  void setAuthorizationCode(String ac) throws IOException {
+    public void setAuthorizationCode(String ac) throws IOException {
         authorizationCode = ac;
         fetchTokens();
     }
 
-    public  void fetchTokens() throws IOException {
+    public void fetchTokens() throws IOException {
 
-        URL url = new URL(oauthURL + tokenEndpoint);
+        if(clientId == null) fetchOauthProperties();
+
+        URL url = new URL(tokenURI);
 
         Map<String, String> params = new HashMap<String, String>();
         params.put("code", authorizationCode);
@@ -108,7 +126,10 @@ public class OAuthUtils {
      * @throws IOException
      */
     public void fetchAccessToken() throws IOException {
-        URL url = new URL(oauthURL + tokenEndpoint);
+
+        if(clientId == null) fetchOauthProperties();
+
+        URL url = new URL(tokenURI);
 
         Map<String, String> params = new HashMap<String, String>();
         params.put("refresh_token", refreshToken);
@@ -132,11 +153,11 @@ public class OAuthUtils {
 
     }
 
-    public  String getAccessToken() {
+    public String getAccessToken() {
 
         // Check expiration time, with 1 minute cushion
-        if(accessToken == null || (System.currentTimeMillis() > (expirationTime - 60*1000))) {
-            if(refreshToken != null) {
+        if (accessToken == null || (System.currentTimeMillis() > (expirationTime - 60 * 1000))) {
+            if (refreshToken != null) {
                 try {
                     this.fetchAccessToken();
                 } catch (IOException e) {
@@ -148,15 +169,15 @@ public class OAuthUtils {
         return accessToken;
     }
 
-    public  void setAccessToken(String accessToken) {
+    public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
     }
 
-    public  boolean isLoggedIn() {
+    public boolean isLoggedIn() {
         return getAccessToken() != null;
     }
 
-    public  void logout() {
+    public void logout() {
         accessToken = null;
         refreshToken = null;
         expirationTime = -1;
