@@ -131,6 +131,7 @@ public class IGV {
             Collections.synchronizedCollection(new ArrayList<SoftReference<AlignmentTrackEventListener>>());
 
     private List<JComponent> otherToolMenus = new ArrayList<JComponent>();
+    private boolean rulerEnabled;
 
     /**
      * Add an entry to the "Tools" menu
@@ -2385,6 +2386,14 @@ public class IGV {
         }
 
         return LongRunningTask.submit(new StartupRunnable(igvArgs));
+    }
+
+    public void setRulerEnabled(boolean rulerEnabled) {
+        this.rulerEnabled = rulerEnabled;
+    }
+
+    public boolean isRulerEnabled() {
+        return rulerEnabled;
     }
 
     /**

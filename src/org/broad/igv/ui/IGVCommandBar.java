@@ -81,6 +81,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     private JideButton refreshButton;
     private JideToggleButton roiToggleButton;
     private JideButton detailsBehaviorButton;
+    private JideToggleButton rulerLineButton;
     private JTextField searchTextField;
     private JPanel toolPanel;
     private JPanel zoomControl;
@@ -130,6 +131,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
                 getPopupMenuToolTipBehavior().show(e.getComponent(), e.getX(), e.getY());
             }
         });
+
+
 
         getDefaultReferenceFrame().getEventBus().register(this);
     }
@@ -782,6 +785,23 @@ public class IGVCommandBar extends javax.swing.JPanel {
         detailsBehaviorButton.setMinimumSize(new java.awt.Dimension(32, 32));
         detailsBehaviorButton.setPreferredSize(new java.awt.Dimension(32, 32));
         toolPanel.add(detailsBehaviorButton, JideBoxLayout.FIX);
+
+        rulerLineButton = new JideToggleButton("I");
+        //roiToggleButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
+        //roiToggleButton.setBorder(toolButtonBorder);
+        rulerLineButton.setAlignmentX(RIGHT_ALIGNMENT);
+        rulerLineButton.setToolTipText("Enable ruler line in data panels");
+        rulerLineButton.setMaximumSize(new java.awt.Dimension(32, 32));
+        rulerLineButton.setMinimumSize(new java.awt.Dimension(32, 32));
+        rulerLineButton.setPreferredSize(new java.awt.Dimension(32, 32));
+        rulerLineButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                IGV.getInstance().setRulerEnabled(rulerLineButton.isSelected());
+                IGV.getInstance().repaintDataPanels();
+            }
+        });
+        toolPanel.add(rulerLineButton, JideBoxLayout.FIX);
+
 
         boolean showExomeButton = Globals.isDevelopment();
         if (showExomeButton) {

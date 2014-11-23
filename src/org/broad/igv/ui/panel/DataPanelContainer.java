@@ -125,6 +125,17 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
         //super.paintBorder(g);
     }
 
+    @Override
+    protected void paintChildren(Graphics g) {
+        super.paintChildren(g);
+        if(IGV.getInstance().isRulerEnabled()) {
+            int start = MouseInfo.getPointerInfo().getLocation().x - getLocationOnScreen().x;
+            g.setColor(Color.BLACK);
+            g.drawLine(start, 0, start, getHeight());
+        }
+    }
+
+
 
     private class FileDropTargetListener implements DropTargetListener {
 

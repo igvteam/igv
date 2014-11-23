@@ -564,6 +564,10 @@ public class DataPanel extends JComponent implements Paintable {
             }
             updateTooltipText(e.getX(), e.getY());
 
+            if(IGV.getInstance().isRulerEnabled()) {
+                IGV.getInstance().repaintDataPanels();
+            }
+
         }
 
         /**
