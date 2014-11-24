@@ -186,6 +186,13 @@ public class Genome {
                 // NCBI
                 String alias = getNCBIName(name);
                 autoAliases.put(alias, name);
+
+                // Also strip version number out, if present
+                int dotIndex = alias.lastIndexOf('.');
+                if(dotIndex > 0) {
+                    alias = alias.substring(0, dotIndex);
+                    autoAliases.put(alias, name);
+                }
             }
         }
 
