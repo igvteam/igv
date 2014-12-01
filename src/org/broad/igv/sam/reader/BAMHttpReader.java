@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Created by IntelliJ IDEA.
@@ -194,18 +195,26 @@ public class BAMHttpReader implements AlignmentReader<PicardAlignment> {
                 try {
                     is = org.broad.igv.util.HttpUtils.getInstance().openConnectionStream(indexURL);
                 } catch (FileNotFoundException e1) {
+                    // Try gzipped
+                    indexPath = indexPath.replace(".bai", ".bam.bai.gz");
+                    indexURL = new URL(indexPath);
+                    try {
+                        is = new GZIPInputStream(HttpUtils.getInstance().openConnectionStream(indexURL));
+                    } catch (FileNotFoundException e2) {
 
-                    if (!Globals.isHeadless() && IGV.hasInstance()) {
-                        String tmp = MessageUtils.showInputDialog("Index file not found. Enter path to index file", indexPath);
-                        if (tmp != null) {
-                            try {
-                                indexURL = new URL(tmp);
-                                is = org.broad.igv.util.HttpUtils.getInstance().openConnectionStream(indexURL);
-                            } catch (FileNotFoundException e2) {
+
+                        if (!Globals.isHeadless() && IGV.hasInstance()) {
+                            String tmp = MessageUtils.showInputDialog("Index file not found. Enter path to index file", indexPath);
+                            if (tmp != null) {
+                                try {
+                                    indexURL = new URL(tmp);
+                                    is = org.broad.igv.util.HttpUtils.getInstance().openConnectionStream(indexURL);
+                                } catch (FileNotFoundException e3) {
+                                    foundIndex = false;
+                                }
+                            } else {
                                 foundIndex = false;
                             }
-                        } else {
-                            foundIndex = false;
                         }
                     }
                 }
