@@ -183,23 +183,25 @@ public class BAMHttpReader implements AlignmentReader<PicardAlignment> {
         OutputStream os = null;
 
         try {
-            URL indexURL = new URL(indexPath);
+            // Look for gzipped file first
+            String gzippedPath = indexPath + ".gz";
+            URL indexURL = new URL(gzippedPath);
             os = new FileOutputStream(indexFile);
             boolean foundIndex = true;
+
             try {
-                is = HttpUtils.getInstance().openConnectionStream(indexURL);
-            } catch (FileNotFoundException e) {
-                // Try other index convention
-                indexPath = indexPath.replace(".bam.bai", ".bai");
+                is = new GZIPInputStream(HttpUtils.getInstance().openConnectionStream(indexURL));
+            } catch (Exception e) {
+                // Try non-gzipped
                 indexURL = new URL(indexPath);
                 try {
                     is = org.broad.igv.util.HttpUtils.getInstance().openConnectionStream(indexURL);
                 } catch (FileNotFoundException e1) {
                     // Try gzipped
-                    indexPath = indexPath.replace(".bai", ".bam.bai.gz");
+                    indexPath = indexPath.replace(".bam.bai", ".bai");
                     indexURL = new URL(indexPath);
                     try {
-                        is = new GZIPInputStream(HttpUtils.getInstance().openConnectionStream(indexURL));
+                        is = HttpUtils.getInstance().openConnectionStream(indexURL);
                     } catch (FileNotFoundException e2) {
 
 
