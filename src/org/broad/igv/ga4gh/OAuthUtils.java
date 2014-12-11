@@ -67,7 +67,6 @@ public class OAuthUtils {
         clientSecret = obj.get("client_secret").getAsString();
         tokenURI = obj.get("token_uri").getAsString();
         clientId = obj.get("client_id").getAsString();
-        System.out.println(obj);
     }
 
     public void fetchAuthCode() throws IOException, URISyntaxException {

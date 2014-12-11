@@ -121,7 +121,7 @@ public class HttpUtils {
         InputStream is = null;
         HttpURLConnection conn = openConnection(url, null);
         try {
-            is = conn.getInputStream();
+            is = getInputStream(conn);
             return readContents(is);
 
         } catch (IOException e) {
@@ -139,7 +139,7 @@ public class HttpUtils {
         reqProperties.put("Accept", "application/json,text/plain");
         HttpURLConnection conn = openConnection(url, reqProperties);
         try {
-            is = conn.getInputStream();
+            is = getInputStream(conn);
             return readContents(is);
 
         } catch (IOException e) {
@@ -171,7 +171,7 @@ public class HttpUtils {
         conn.getOutputStream().write(postDataBytes);
 
         StringBuilder response = new StringBuilder();
-        Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+        Reader in = new BufferedReader(new InputStreamReader(getInputStream(conn), "UTF-8"));
         for (int c; (c = in.read()) >= 0; ) {
             response.append((char) c);
         }
@@ -219,15 +219,20 @@ public class HttpUtils {
         }
 
         try {
-            InputStream input = conn.getInputStream();
-            if ("gzip".equals(conn.getContentEncoding())) {
-                input = new GZIPInputStream(input);
-            }
+            InputStream input = getInputStream(conn);
             return input;
         } catch (IOException e) {
             readErrorStream(conn);  // Consume content
             throw e;
         }
+    }
+
+    private InputStream getInputStream(HttpURLConnection conn) throws IOException {
+        InputStream input = conn.getInputStream();
+        if ("gzip".equals(conn.getContentEncoding())) {
+            input = new GZIPInputStream(input);
+        }
+        return input;
     }
 
     boolean isExpectedRangeMissing(URLConnection conn, Map<String, String> requestProperties) {
@@ -520,7 +525,7 @@ public class HttpUtils {
         InputStream inputStream;
 
         if (responseCode >= 200 && responseCode < 300) {
-            inputStream = urlconnection.getInputStream();
+            inputStream = getInputStream(urlconnection);
         } else {
             inputStream = urlconnection.getErrorStream();
         }
@@ -679,6 +684,7 @@ public class HttpUtils {
             conn.setRequestProperty("Accept", "application/json,text/plain");
         } else {
             conn.setRequestProperty("Accept", "text/plain");
+            conn.setRequestProperty("Accept-encoding", "gzip");
         }
 
         //------//
@@ -1095,7 +1101,7 @@ public class HttpUtils {
             String msg1 = String.format("downloaded of %s total", contentLength >= 0 ? bytesToByteCountString(contentLength) : "unknown");
             int perc = 0;
             try {
-                is = conn.getInputStream();
+                is = getInputStream(conn);
                 out = new FileOutputStream(outputFile);
 
                 byte[] buf = new byte[64 * 1024];
