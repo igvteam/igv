@@ -316,13 +316,15 @@ public class ExpressionFileParser {
         if (loci != null) {
             for (Locus locus : loci) {
                 if ((locus != null) && locus.isValid()) {
-                    List<Row> rows = rowMap.get(locus.getChr());
+
+                    String chr = genome == null ? locus.getChr() : genome.getChromosomeAlias(locus.getChr());
+
+                    List<Row> rows = rowMap.get(chr);
                     if (rows == null) {
                         rows = new ArrayList();
-                        rowMap.put(locus.getChr(), rows);
+                        rowMap.put(chr, rows);
                     }
 
-                    String chr = locus.getChr();
                     int length = locus.getEnd() - locus.getStart();
                     if (longestProbeMap.containsKey(chr)) {
                         longestProbeMap.put(chr, Math.max(longestProbeMap.get(chr), length));
@@ -330,7 +332,7 @@ public class ExpressionFileParser {
                         longestProbeMap.put(chr, length);
                     }
 
-                    rows.add(new Row(probeId, locus.getChr(), locus.getStart(), locus.getEnd(), values));
+                    rows.add(new Row(probeId, chr, locus.getStart(), locus.getEnd(), values));
 
                 }
             }
