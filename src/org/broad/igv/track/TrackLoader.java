@@ -145,7 +145,7 @@ public class TrackLoader {
                 loadRnaiGctFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".gct") || typeString.endsWith("res") || typeString.endsWith("tab")) {
                 loadGctFile(locator, newTracks, genome);
-            } else if (typeString.endsWith(".gbk")) {
+            } else if (typeString.endsWith(".gbk") || typeString.endsWith(".gb")) {
                 loadGbkFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".cn") || typeString.endsWith(".xcn") || typeString.endsWith(".snp") ||
                     typeString.endsWith(".igv") || typeString.endsWith(".loh")) {

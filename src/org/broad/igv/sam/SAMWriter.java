@@ -11,7 +11,6 @@
 
 package org.broad.igv.sam;
 
-import com.google.java.contract.util.Objects;
 import htsjdk.samtools.*;
 import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.feature.Range;
@@ -19,6 +18,7 @@ import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
+import org.broad.igv.util.Utilities;
 
 import java.io.File;
 import java.io.IOException;
@@ -214,7 +214,7 @@ public class SAMWriter {
          * Determine whether there is any overlap between this interval and the specified interval
          */
         private boolean overlaps(String chr, int start, int end) {
-            return Objects.equal(this.chr, chr) && this.start <= end && this.end >= start;
+            return Utilities.objectEqual(this.chr, chr) && this.start <= end && this.end >= start;
         }
     }
 

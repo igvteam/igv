@@ -11,8 +11,8 @@
 
 package org.broad.igv.feature;
 
-import com.google.java.contract.util.Objects;
 import htsjdk.tribble.Feature;
+import org.broad.igv.util.Utilities;
 
 
 /**
@@ -66,7 +66,7 @@ public class Range implements Feature {
      * @return
      */
     public boolean contains(String chr, int start, int end) {
-        return Objects.equal(this.chr, chr)
+        return Utilities.objectEqual(this.chr, chr)
                 && this.start <= (start < 0 ? 0 : start)
                 && this.end >= end;
     }
@@ -81,7 +81,7 @@ public class Range implements Feature {
      * @return
      */
     public boolean overlaps(String chr, int start, int end) {
-        return Objects.equal(this.chr, chr) && this.start <= end && this.end >= start;
+        return Utilities.objectEqual(this.chr, chr) && this.start <= end && this.end >= start;
     }
 
     public boolean overlaps(Range range) {

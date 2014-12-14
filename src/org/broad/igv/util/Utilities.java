@@ -217,4 +217,17 @@ public class Utilities {
         return fileName;
     }
 
+    public static boolean objectEqual(Object str1, Object str2) {
+
+        if(str1 == null) {
+            return str2 == null;
+        }
+        else if(str2 == null) {
+            return str1 == null;
+        }
+        else {
+            return str1.equals(str2);
+        }
+
+    }
 }

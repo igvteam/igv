@@ -11,9 +11,9 @@
 
 package org.broad.igv.cli_plugin;
 
-import com.google.java.contract.util.Objects;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.util.TestUtils;
+import org.broad.igv.util.Utilities;
 import org.junit.Test;
 
 import java.io.File;
@@ -39,13 +39,13 @@ public class ArgumentTest extends AbstractHeadlessTest{
     }
 
     private boolean argumentsEqual(Argument a0, Argument a1) throws Exception{
-        boolean eq = Objects.equal(a0.getType(), a1.getType()) &&
-                Objects.equal(a0.getCmdArg(), a1.getCmdArg()) &&
-                Objects.equal(a0.getDefaultValue(), a1.getDefaultValue()) &&
-                Objects.equal(a0.getEncodingCodec(), a1.getEncodingCodec()) &&
-                Objects.equal(a0.getId(), a1.getId()) &&
-                Objects.equal(a0.getName(), a1.getName()) &&
-                Objects.equal(a0.isOutput(), a1.isOutput());
+        boolean eq = Utilities.objectEqual(a0.getType(), a1.getType()) &&
+                Utilities.objectEqual(a0.getCmdArg(), a1.getCmdArg()) &&
+                Utilities.objectEqual(a0.getDefaultValue(), a1.getDefaultValue()) &&
+                Utilities.objectEqual(a0.getEncodingCodec(), a1.getEncodingCodec()) &&
+                Utilities.objectEqual(a0.getId(), a1.getId()) &&
+                Utilities.objectEqual(a0.getName(), a1.getName()) &&
+                Utilities.objectEqual(a0.isOutput(), a1.isOutput());
 
         eq &= Arrays.deepEquals(a0.getLibPaths(), a1.getLibPaths());
         return eq;
