@@ -103,23 +103,23 @@ public class FeatureCollectionSource implements FeatureSource {
     private void initFeatures(Iterable<? extends Feature> allFeatures) {
         // Separate features by chromosome
 
-        featureMap = new HashMap();
-        for (Feature f : allFeatures) {
-            List<Feature> fList = featureMap.get(f.getChr());
-            if (fList == null) {
-                fList = new ArrayList();
-                featureMap.put(f.getChr(), fList);
+            featureMap = new HashMap();
+            for (Feature f : allFeatures) {
+                List<Feature> fList = featureMap.get(f.getChr());
+                if (fList == null) {
+                    fList = new ArrayList();
+                    featureMap.put(f.getChr(), fList);
+                }
+                fList.add(f);
             }
-            fList.add(f);
-        }
 
-        for (List<Feature> featureList : featureMap.values()) {
-            FeatureUtils.sortFeatureList(featureList);
-        }
+            for (List<Feature> featureList : featureMap.values()) {
+                FeatureUtils.sortFeatureList(featureList);
+            }
 
-        if (featureMap.size() < 100) {
-            sampleGenomeFeatures();
-        }
+            if (featureMap.size() < 100) {
+                sampleGenomeFeatures();
+            }
     }
 
 
@@ -137,6 +137,9 @@ public class FeatureCollectionSource implements FeatureSource {
     }
 
     protected void sampleGenomeFeatures() {
+
+        if(genome == null) return;
+
         List<Feature> chrAllFeatures = new ArrayList(1000);
         int sampleLength = (int) ((double) genome.getNominalLength() / (1000 * 700));
         int lastFeaturePosition = -1;
