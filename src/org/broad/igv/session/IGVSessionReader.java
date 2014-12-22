@@ -45,6 +45,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
@@ -89,7 +90,7 @@ public class IGVSessionReader implements SessionReader {
      */
     private final Map<String, List<Track>> allTracks = Collections.synchronizedMap(new LinkedHashMap<String, List<Track>>());
 
-    public List<Track> getTracksById(String trackId){
+    public List<Track> getTracksById(String trackId) {
         return allTracks.get(trackId);
     }
 
@@ -335,9 +336,11 @@ public class IGVSessionReader implements SessionReader {
             MessageUtils.showMessage("Session files must begin with a \"Global\" or \"Session\" element.  Found: " + nodeName);
             return;
         }
-        process(session, node, additionalInformation, rootPath);
 
         Element element = (Element) node;
+        String alternateRootPath = getAttribute(element, SessionAttribute.PATH.getText());
+
+        process(session, node, additionalInformation, rootPath, alternateRootPath);
 
         String versionString = getAttribute(element, SessionAttribute.VERSION.getText());
         try {
@@ -350,19 +353,19 @@ public class IGVSessionReader implements SessionReader {
         String genomeId = getAttribute(element, SessionAttribute.GENOME.getText());
         String hasGeneTrackStr = getAttribute(element, SessionAttribute.HAS_GENE_TRACK.getText());
         boolean hasGeneTrack = true;
-        if(hasGeneTrackStr != null){
+        if (hasGeneTrackStr != null) {
             hasGeneTrack = Boolean.parseBoolean(hasGeneTrackStr);
         }
         boolean hasSeqTrack = hasGeneTrack;
         String hasSeqTrackStr = getAttribute(element, SessionAttribute.HAS_SEQ_TRACK.getText());
-        if(hasSeqTrackStr != null){
+        if (hasSeqTrackStr != null) {
             hasSeqTrack = Boolean.parseBoolean(hasSeqTrackStr);
         }
 
         if (genomeId != null && genomeId.length() > 0) {
             if (genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
                 // We don't have to reload the genome, but the gene track for the current genome should be restored.
-                if(hasGeneTrack || hasSeqTrack){
+                if (hasGeneTrack || hasSeqTrack) {
                     Genome genome = GenomeManager.getInstance().getCurrentGenome();
                     FeatureTrack geneTrack = hasGeneTrack ? genome.getGeneTrack() : null;
                     IGV.getInstance().setGenomeTracks(geneTrack);
@@ -376,7 +379,7 @@ public class IGVSessionReader implements SessionReader {
                 if (!genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
                     String genomePath = genomeId;
                     if (!ParsingUtils.pathExists(genomePath)) {
-                        genomePath = FileUtils.getAbsolutePath(genomeId, session.getPath());
+                        genomePath = FileUtils.getAbsolutePath(session.getPath(), genomeId);
                     }
                     if (ParsingUtils.pathExists(genomePath)) {
                         try {
@@ -394,20 +397,20 @@ public class IGVSessionReader implements SessionReader {
 
         //TODO Remove these nearly identical if/then statements
 
-        if(!hasGeneTrack && igv.hasGeneTrack()){
+        if (!hasGeneTrack && igv.hasGeneTrack()) {
             //Need to remove gene track if it was loaded because it's not supposed to be in the session
             igv.removeTracks(Arrays.<Track>asList(GenomeManager.getInstance().getCurrentGenome().getGeneTrack()));
             geneTrack = null;
-        }else{
+        } else {
             //For later lookup and to prevent dual adding, we keep a reference to the gene track
             geneTrack = GenomeManager.getInstance().getCurrentGenome().getGeneTrack();
-            if(geneTrack != null){
+            if (geneTrack != null) {
                 allTracks.put(geneTrack.getId(), Arrays.asList(geneTrack));
             }
         }
 
         SequenceTrack tmpSeqTrack = igv.getSequenceTrack();
-        if(hasSeqTrack && !igv.hasSequenceTrack()){
+        if (hasSeqTrack && !igv.hasSequenceTrack()) {
             //This will create a sequence track
             IGV.getInstance().setGenomeTracks(null);
         } else if (!hasSeqTrack && igv.hasSequenceTrack()) {
@@ -438,7 +441,7 @@ public class IGVSessionReader implements SessionReader {
         session.setVersion(version);
 
         NodeList elements = element.getChildNodes();
-        process(session, elements, additionalInformation, rootPath);
+        process(session, elements, additionalInformation, rootPath, alternateRootPath);
 
         // ReferenceFrame.getInstance().invalidateLocationScale();
     }
@@ -452,7 +455,7 @@ public class IGVSessionReader implements SessionReader {
 
             //For resetting track panels later
             List<Map<TrackPanelScrollPane, Integer>> trackPanelAttrs = null;
-            if(IGV.hasInstance()){
+            if (IGV.hasInstance()) {
                 trackPanelAttrs = IGV.getInstance().getTrackPanelAttrs();
             }
 
@@ -470,7 +473,7 @@ public class IGVSessionReader implements SessionReader {
                 }
             }
 
-            if(IGV.hasInstance()){
+            if (IGV.hasInstance()) {
                 IGV.getInstance().resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
             }
         }
@@ -484,7 +487,7 @@ public class IGVSessionReader implements SessionReader {
      * @param session
      * @param element
      */
-    private void process(Session session, Node element, HashMap additionalInformation, String rootPath) {
+    private void process(Session session, Node element, HashMap additionalInformation, String rootPath, String alternateRootPath) {
 
         if ((element == null) || (session == null)) {
             return;
@@ -494,30 +497,30 @@ public class IGVSessionReader implements SessionReader {
 
         if (nodeName.equalsIgnoreCase(SessionElement.RESOURCES.getText()) ||
                 nodeName.equalsIgnoreCase(SessionElement.FILES.getText())) {
-            processResources(session, (Element) element, additionalInformation, rootPath);
+            processResources(session, (Element) element, additionalInformation, rootPath, alternateRootPath);
         } else if (nodeName.equalsIgnoreCase(SessionElement.RESOURCE.getText()) ||
                 nodeName.equalsIgnoreCase(SessionElement.DATA_FILE.getText())) {
-            processResource(session, (Element) element, additionalInformation, rootPath);
+            processResource(session, (Element) element, additionalInformation, rootPath, alternateRootPath);
         } else if (nodeName.equalsIgnoreCase(SessionElement.REGIONS.getText())) {
-            processRegions(session, (Element) element, additionalInformation, rootPath);
+            processRegions(session, (Element) element, additionalInformation, rootPath, alternateRootPath);
         } else if (nodeName.equalsIgnoreCase(SessionElement.REGION.getText())) {
-            processRegion(session, (Element) element, additionalInformation, rootPath);
+            processRegion(session, (Element) element, additionalInformation, rootPath, alternateRootPath);
         } else if (nodeName.equalsIgnoreCase(SessionElement.GENE_LIST.getText())) {
             processGeneList(session, (Element) element, additionalInformation);
         } else if (nodeName.equalsIgnoreCase(SessionElement.FILTER.getText())) {
-            processFilter(session, (Element) element, additionalInformation, rootPath);
+            processFilter(session, (Element) element, additionalInformation, rootPath, alternateRootPath);
         } else if (nodeName.equalsIgnoreCase(SessionElement.FILTER_ELEMENT.getText())) {
-            processFilterElement(session, (Element) element, additionalInformation, rootPath);
+            processFilterElement(session, (Element) element, additionalInformation, rootPath, alternateRootPath);
         } else if (nodeName.equalsIgnoreCase(SessionElement.COLOR_SCALES.getText())) {
-            processColorScales(session, (Element) element, additionalInformation, rootPath);
+            processColorScales(session, (Element) element, additionalInformation, rootPath, alternateRootPath);
         } else if (nodeName.equalsIgnoreCase(SessionElement.COLOR_SCALE.getText())) {
-            processColorScale(session, (Element) element, additionalInformation, rootPath);
+            processColorScale(session, (Element) element, additionalInformation, rootPath, alternateRootPath);
         } else if (nodeName.equalsIgnoreCase(SessionElement.PREFERENCES.getText())) {
             processPreferences(session, (Element) element, additionalInformation);
         } else if (nodeName.equalsIgnoreCase(SessionElement.DATA_TRACKS.getText()) ||
                 nodeName.equalsIgnoreCase(SessionElement.FEATURE_TRACKS.getText()) ||
                 nodeName.equalsIgnoreCase(SessionElement.PANEL.getText())) {
-            processPanel(session, (Element) element, additionalInformation, rootPath);
+            processPanel(session, (Element) element, additionalInformation, rootPath, alternateRootPath);
         } else if (nodeName.equalsIgnoreCase(SessionElement.PANEL_LAYOUT.getText())) {
             processPanelLayout(session, (Element) element, additionalInformation);
         } else if (nodeName.equalsIgnoreCase(SessionElement.HIDDEN_ATTRIBUTES.getText())) {
@@ -528,11 +531,11 @@ public class IGVSessionReader implements SessionReader {
 
     }
 
-    private void processResources(Session session, Element element, HashMap additionalInformation, String rootPath) {
+    private void processResources(Session session, Element element, HashMap additionalInformation, String rootPath, String alternateRootPath) {
         dataFiles = new ArrayList();
         missingDataFiles = new ArrayList();
         NodeList elements = element.getChildNodes();
-        process(session, elements, additionalInformation, rootPath);
+        process(session, elements, additionalInformation, rootPath, alternateRootPath);
 
         if (missingDataFiles.size() > 0) {
             StringBuffer message = new StringBuffer();
@@ -589,9 +592,9 @@ public class IGVSessionReader implements SessionReader {
                                     continue;
                                 }
 
-                                if (relPath != null) {
-                                    id = id.replace(suppliedPath, relPath);
-                                }
+                               // if (relPath != null) {
+                               //     id = id.replace(suppliedPath, relPath);
+                               // }
 
                                 List<Track> trackList = leftoverTrackDictionary.get(id);
                                 if (trackList == null) {
@@ -664,7 +667,7 @@ public class IGVSessionReader implements SessionReader {
      * @param element
      * @param additionalInformation
      */
-    void processResource(Session session, Element element, HashMap additionalInformation, String rootPath) {
+    void processResource(Session session, Element element, HashMap additionalInformation, String rootPath, String alternateRootPath) {
 
         String nodeName = element.getNodeName();
         boolean oldSession = nodeName.equals(SessionElement.DATA_FILE.getText());
@@ -679,8 +682,7 @@ public class IGVSessionReader implements SessionReader {
         String colorString = getAttribute(element, SessionAttribute.COLOR.getText());
         String index = getAttribute(element, SessionAttribute.INDEX.getText());
 
-        //String relPathValue = getAttribute(element, SessionAttribute.RELATIVE_PATH.getText());
-        //boolean isRelativePath = ((relPathValue != null) && relPathValue.equalsIgnoreCase("true"));
+        // URL to a database or webservice
         String serverURL = getAttribute(element, SessionAttribute.SERVER_URL.getText());
 
         // Older sessions used the "name" attribute for the path.
@@ -699,15 +701,17 @@ public class IGVSessionReader implements SessionReader {
             MessageUtils.showMessage("Unexpected error loading session: null root path");
             return;
         }
-        String absolutePath = FileUtils.getAbsolutePath(path, rootPath);
+
+        String absolutePath = getAbsolutePath(path, rootPath, alternateRootPath);
+
         fullToRelPathMap.put(absolutePath, path);
 
         ResourceLocator resourceLocator = new ResourceLocator(serverURL, absolutePath);
 
-        if(index != null) resourceLocator.setIndexPath(index);
+        if (index != null) resourceLocator.setIndexPath(index);
 
         if (coverage != null) {
-            String absoluteCoveragePath = FileUtils.getAbsolutePath(coverage, rootPath);
+            String absoluteCoveragePath = getAbsolutePath(coverage, rootPath, alternateRootPath);
             resourceLocator.setCoverage(absoluteCoveragePath);
         }
 
@@ -755,18 +759,30 @@ public class IGVSessionReader implements SessionReader {
         dataFiles.add(resourceLocator);
 
         NodeList elements = element.getChildNodes();
-        process(session, elements, additionalInformation, rootPath);
+        process(session, elements, additionalInformation, rootPath, alternateRootPath);
 
     }
 
-    private void processRegions(Session session, Element element, HashMap additionalInformation, String rootPath) {
+    private String getAbsolutePath(String path, String rootPath, String alternateRootPath) {
+
+        String absolutePath = FileUtils.getAbsolutePath(path, rootPath);
+
+        // Session file might have been moved, try to correct if the path is a local file (not an http or ftp url)
+        if (alternateRootPath != null && !FileUtils.isRemote(absolutePath) && !(new File(absolutePath).exists())) {
+            absolutePath = FileUtils.getAbsolutePath(path, alternateRootPath);
+        }
+
+        return absolutePath;
+    }
+
+    private void processRegions(Session session, Element element, HashMap additionalInformation, String rootPath, String alternateRootPath) {
 
         session.clearRegionsOfInterest();
         NodeList elements = element.getChildNodes();
-        process(session, elements, additionalInformation, rootPath);
+        process(session, elements, additionalInformation, rootPath, alternateRootPath);
     }
 
-    private void processRegion(Session session, Element element, HashMap additionalInformation, String rootPath) {
+    private void processRegion(Session session, Element element, HashMap additionalInformation, String rootPath, String alternateRootPath) {
 
         String chromosome = getAttribute(element, SessionAttribute.CHROMOSOME.getText());
         String start = getAttribute(element, SessionAttribute.START_INDEX.getText());
@@ -777,7 +793,7 @@ public class IGVSessionReader implements SessionReader {
         IGV.getInstance().addRegionOfInterest(region);
 
         NodeList elements = element.getChildNodes();
-        process(session, elements, additionalInformation, rootPath);
+        process(session, elements, additionalInformation, rootPath, alternateRootPath);
     }
 
 
@@ -881,7 +897,7 @@ public class IGVSessionReader implements SessionReader {
         IGV.getInstance().resetFrames();
     }
 
-    private void processFilter(Session session, Element element, HashMap additionalInformation, String rootPath) {
+    private void processFilter(Session session, Element element, HashMap additionalInformation, String rootPath, String alternateRootPath) {
 
         String match = getAttribute(element, SessionAttribute.FILTER_MATCH.getText());
         String showAllTracks = getAttribute(element, SessionAttribute.FILTER_SHOW_ALL_TRACKS.getText());
@@ -891,7 +907,7 @@ public class IGVSessionReader implements SessionReader {
         additionalInformation.put(SessionElement.FILTER, filter);
 
         NodeList elements = element.getChildNodes();
-        process(session, elements, additionalInformation, rootPath);
+        process(session, elements, additionalInformation, rootPath, alternateRootPath);
 
         // Save the filter
         session.setFilter(filter);
@@ -911,7 +927,7 @@ public class IGVSessionReader implements SessionReader {
     }
 
     private void processFilterElement(Session session, Element element,
-                                      HashMap additionalInformation, String rootPath) {
+                                      HashMap additionalInformation, String rootPath, String alternateRootPath) {
 
         TrackFilter filter = (TrackFilter) additionalInformation.get(SessionElement.FILTER);
         String item = getAttribute(element, SessionAttribute.ITEM.getText());
@@ -926,7 +942,7 @@ public class IGVSessionReader implements SessionReader {
         filter.add(trackFilterElement);
 
         NodeList elements = element.getChildNodes();
-        process(session, elements, additionalInformation, rootPath);
+        process(session, elements, additionalInformation, rootPath, alternateRootPath);
     }
 
     /**
@@ -935,17 +951,16 @@ public class IGVSessionReader implements SessionReader {
     private int panelCounter = 1;
 
     /**
-     *
      * @param node
      * @return Whether this node is a track
      */
-    private static boolean nodeIsTrack(Node node){
+    private static boolean nodeIsTrack(Node node) {
         return node.getNodeName() != null &&
                 (node.getNodeName().equalsIgnoreCase(SessionElement.DATA_TRACK.getText()) ||
-                node.getNodeName().equalsIgnoreCase(SessionElement.TRACK.getText()));
+                        node.getNodeName().equalsIgnoreCase(SessionElement.TRACK.getText()));
     }
 
-    private void processPanel(Session session, Element element, HashMap additionalInformation, String rootPath) {
+    private void processPanel(Session session, Element element, HashMap additionalInformation, String rootPath, String alternateRootPath) {
         panelElementPresent = true;
         String panelName = element.getAttribute("name");
         if (panelName == null) {
@@ -957,23 +972,23 @@ public class IGVSessionReader implements SessionReader {
         for (int i = 0; i < elements.getLength(); i++) {
             Node childNode = elements.item(i);
             if (nodeIsTrack(childNode)) {
-                List<Track> tracks = processTrack(session, (Element) childNode, additionalInformation, rootPath);
+                List<Track> tracks = processTrack(session, (Element) childNode, additionalInformation, rootPath, alternateRootPath);
                 if (tracks != null) {
                     panelTracks.addAll(tracks);
                 }
             } else {
-                process(session, childNode, additionalInformation, rootPath);
+                process(session, childNode, additionalInformation, rootPath, alternateRootPath);
             }
         }
 
         //We make a second pass through, resolving references to tracks which may have been processed afterwards.
         //For instance if Track 2 referenced Track 4
         //TODO Make this less hacky
-        for (Track track: panelTracks){
-            if(track instanceof FeatureTrack){
+        for (Track track : panelTracks) {
+            if (track instanceof FeatureTrack) {
                 FeatureTrack featureTrack = (FeatureTrack) track;
                 featureTrack.updateTrackReferences(panelTracks);
-            }else if(track instanceof DataSourceTrack){
+            } else if (track instanceof DataSourceTrack) {
                 DataSourceTrack dataTrack = (DataSourceTrack) track;
                 dataTrack.updateTrackReferences(panelTracks);
             }
@@ -1019,7 +1034,7 @@ public class IGVSessionReader implements SessionReader {
      * @return
      */
 
-    private List<Track> processTrack(Session session, Element element, HashMap additionalInformation, String rootPath) {
+    private List<Track> processTrack(Session session, Element element, HashMap additionalInformation, String rootPath, String alternateRootPath) {
 
         String id = getAttribute(element, SessionAttribute.ID.getText());
 
@@ -1033,18 +1048,17 @@ public class IGVSessionReader implements SessionReader {
             //We try anyway, some tracks can be reconstructed without a resource element
             //They must have children in that case though, either a source (analysis tracks)
             //or another track (MergedTracks)
-            try{
-                if(className != null && element.hasChildNodes()){
+            try {
+                if (className != null && element.hasChildNodes()) {
                     Track track = null;
-                    if(className.contains("FeatureTrack") || className.contains("DataSourceTrack")){
+                    if (className.contains("FeatureTrack") || className.contains("DataSourceTrack")) {
                         Class clazz = Class.forName(className);
                         Unmarshaller u = getJAXBContext().createUnmarshaller();
                         track = unmarshalTrackElement(u, element, null, clazz);
                         matchedTracks = new ArrayList<Track>(Arrays.asList(track));
-                    }
-                    else if(className.contains("MergedTracks")){
+                    } else if (className.contains("MergedTracks")) {
                         List<Track> childTracks = processChildTracks(session, element,
-                                additionalInformation, rootPath);
+                                additionalInformation, rootPath, alternateRootPath);
                         List<DataTrack> memberTracks = new ArrayList<DataTrack>(childTracks.size());
 
                         for (Track aTrack : childTracks) {
@@ -1084,7 +1098,7 @@ public class IGVSessionReader implements SessionReader {
         }
 
         NodeList elements = element.getChildNodes();
-        process(session, elements, additionalInformation, rootPath);
+        process(session, elements, additionalInformation, rootPath, alternateRootPath);
 
         return matchedTracks;
     }
@@ -1092,21 +1106,22 @@ public class IGVSessionReader implements SessionReader {
     /**
      * Recursively loop through children of {@code element}, and process them as tracks iff they are determined
      * to be so
+     *
      * @param session
      * @param element
      * @param additionalInformation
      * @param rootPath
      * @return List of processed tracks.
      */
-    private List<Track> processChildTracks(Session session, Element element, HashMap additionalInformation, String rootPath) {
+    private List<Track> processChildTracks(Session session, Element element, HashMap additionalInformation, String rootPath, String alternateRootPath) {
 
         NodeList memberTrackNodes = element.getChildNodes();
         List<Track> memberTracks = new ArrayList<Track>(memberTrackNodes.getLength());
-        for(int index=0; index < memberTrackNodes.getLength(); index++){
+        for (int index = 0; index < memberTrackNodes.getLength(); index++) {
             Node memberNode = memberTrackNodes.item(index);
-            if(nodeIsTrack(memberNode)){
-                List<Track> addedTracks = processTrack(session, (Element) memberNode, additionalInformation, rootPath);
-                if(addedTracks != null){
+            if (nodeIsTrack(memberNode)) {
+                List<Track> addedTracks = processTrack(session, (Element) memberNode, additionalInformation, rootPath, alternateRootPath);
+                if (addedTracks != null) {
                     memberTracks.addAll(addedTracks);
                 }
 
@@ -1115,44 +1130,45 @@ public class IGVSessionReader implements SessionReader {
         return memberTracks;
     }
 
-    private static void setNextTrack(AbstractTrack track){
+    private static void setNextTrack(AbstractTrack track) {
         nextTrack = track;
     }
 
     /**
      * Used for unmarshalling track; JAXB needs a static no-arg factory method
+     *
      * @return
      */
-    public static AbstractTrack getNextTrack(){
+    public static AbstractTrack getNextTrack() {
         return nextTrack;
     }
 
     /**
      * Unmarshal element into specified class
+     *
      * @param u
      * @param e
      * @param track
      * @return
      * @throws JAXBException
      */
-    protected Track unmarshalTrackElement(Unmarshaller u, Element e, AbstractTrack track) throws JAXBException{
+    protected Track unmarshalTrackElement(Unmarshaller u, Element e, AbstractTrack track) throws JAXBException {
         return unmarshalTrackElement(u, e, track, track.getClass());
     }
 
     /**
-     *
      * @param u
      * @param element
-     * @param track The track into which to unmarshal. Can be null if the relevant static factory method can handle
-     *              creating a new instance
+     * @param track      The track into which to unmarshal. Can be null if the relevant static factory method can handle
+     *                   creating a new instance
      * @param trackClass Class of track to use for unmarshalling
      * @return The unmarshalled track
      * @throws JAXBException
      */
-    protected Track unmarshalTrackElement(Unmarshaller u, Element element, AbstractTrack track, Class trackClass) throws JAXBException{
+    protected Track unmarshalTrackElement(Unmarshaller u, Element element, AbstractTrack track, Class trackClass) throws JAXBException {
         AbstractTrack ut;
 
-        synchronized (IGVSessionReader.class){
+        synchronized (IGVSessionReader.class) {
             setNextTrack(track);
             ut = unmarshalTrack(u, element, trackClass, trackClass);
         }
@@ -1160,13 +1176,13 @@ public class IGVSessionReader implements SessionReader {
         return ut;
     }
 
-    private void processColorScales(Session session, Element element, HashMap additionalInformation, String rootPath) {
+    private void processColorScales(Session session, Element element, HashMap additionalInformation, String rootPath, String alternateRootPath) {
 
         NodeList elements = element.getChildNodes();
-        process(session, elements, additionalInformation, rootPath);
+        process(session, elements, additionalInformation, rootPath, alternateRootPath);
     }
 
-    private void processColorScale(Session session, Element element, HashMap additionalInformation, String rootPath) {
+    private void processColorScale(Session session, Element element, HashMap additionalInformation, String rootPath, String alternateRootPath) {
 
         String trackType = getAttribute(element, SessionAttribute.TYPE.getText());
         String value = getAttribute(element, SessionAttribute.VALUE.getText());
@@ -1174,7 +1190,7 @@ public class IGVSessionReader implements SessionReader {
         setColorScaleSet(session, trackType, value);
 
         NodeList elements = element.getChildNodes();
-        process(session, elements, additionalInformation, rootPath);
+        process(session, elements, additionalInformation, rootPath, alternateRootPath);
     }
 
     private void processPreferences(Session session, Element element, HashMap additionalInformation) {
@@ -1198,10 +1214,10 @@ public class IGVSessionReader implements SessionReader {
      * @param session
      * @param elements
      */
-    private void process(Session session, NodeList elements, HashMap additionalInformation, String rootPath) {
+    private void process(Session session, NodeList elements, HashMap additionalInformation, String rootPath, String alternateRootPath) {
         for (int i = 0; i < elements.getLength(); i++) {
             Node childNode = elements.item(i);
-            process(session, childNode, additionalInformation, rootPath);
+            process(session, childNode, additionalInformation, rootPath, alternateRootPath);
         }
     }
 
@@ -1234,8 +1250,9 @@ public class IGVSessionReader implements SessionReader {
 
 
     private static JAXBContext jc = null;
+
     public static synchronized JAXBContext getJAXBContext() throws JAXBException {
-        if(jc == null){
+        if (jc == null) {
             jc = JAXBContext.newInstance(registeredClasses.toArray(new Class[0]), new HashMap<String, Object>());
         }
         return jc;
@@ -1244,10 +1261,11 @@ public class IGVSessionReader implements SessionReader {
     /**
      * Register this class with JAXB, so it can be saved and restored to a session.
      * The class must conform the JAXBs requirements (e.g. no-arg constructor or factory method)
+     *
      * @param clazz
      */
     //@api
-    public static synchronized void registerClass(Class clazz){
+    public static synchronized void registerClass(Class clazz) {
         registeredClasses.add(clazz);
         jc = null;
     }
@@ -1259,17 +1277,16 @@ public class IGVSessionReader implements SessionReader {
      *
      * @param node
      * @param unmarshalClass Class to which to use for unmarshalling
-     * @param firstClass The first class used for invocation. For helpful error message only
-     *
+     * @param firstClass     The first class used for invocation. For helpful error message only
      * @return
      */
-    public static AbstractTrack unmarshalTrack(Unmarshaller u, Node node, Class unmarshalClass, Class firstClass) throws JAXBException{
+    public static AbstractTrack unmarshalTrack(Unmarshaller u, Node node, Class unmarshalClass, Class firstClass) throws JAXBException {
 
-        if(unmarshalClass == null || unmarshalClass.equals(Object.class)){
+        if (unmarshalClass == null || unmarshalClass.equals(Object.class)) {
             throw new JAXBException(firstClass + " and none of its superclasses are known");
         }
 
-        if(AbstractTrack.knownUnknownTrackClasses.contains(unmarshalClass)){
+        if (AbstractTrack.knownUnknownTrackClasses.contains(unmarshalClass)) {
             return unmarshalTrack(u, node, firstClass, unmarshalClass.getSuperclass());
         }
 
@@ -1286,20 +1303,22 @@ public class IGVSessionReader implements SessionReader {
     /**
      * Uses {@link #currentReader} to lookup matching tracks by id, or
      * searches allTracks if sessionReader is null
+     *
      * @param trackId
      * @param allTracks
      * @return
      */
-    public static Track getMatchingTrack(String trackId, List<Track> allTracks){
+    public static Track getMatchingTrack(String trackId, List<Track> allTracks) {
         IGVSessionReader reader = currentReader.get();
         List<Track> matchingTracks;
-        if(reader != null){
+        if (reader != null) {
             matchingTracks = reader.getTracksById(trackId);
-        }else{
-            if(allTracks == null) throw new IllegalStateException("No session reader and no tracks to search to resolve Track references");
+        } else {
+            if (allTracks == null)
+                throw new IllegalStateException("No session reader and no tracks to search to resolve Track references");
             matchingTracks = new ArrayList<Track>();
-            for(Track track: allTracks){
-                if(trackId.equals(track.getId())){
+            for (Track track : allTracks) {
+                if (trackId.equals(track.getId())) {
                     matchingTracks.add(track);
                     break;
                 }
@@ -1308,7 +1327,7 @@ public class IGVSessionReader implements SessionReader {
         if (matchingTracks == null || matchingTracks.size() == 0) {
             //Either the session file is corrupted, or we just haven't loaded the relevant track yet
             return null;
-        }else if (matchingTracks.size() >= 2) {
+        } else if (matchingTracks.size() >= 2) {
             log.debug("Found multiple tracks with id  " + trackId + ", using the first");
         }
         return matchingTracks.get(0);

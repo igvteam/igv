@@ -36,6 +36,14 @@ public class FileUtilsTest {
 
 
     @Test
+    public void testFindRelativeHttpPath() throws IOException {
+        String basePath = "http://foo.bar.com/baseDir/";
+        String targetPath = "http://foo.bar.com/baseDir/dir/test.txt";
+        String relPath = FileUtils.getRelativePath(basePath, targetPath, "/");
+       System.out.println(relPath);
+    }
+
+    @Test
     public void testFindRelativePath() throws IOException {
         String sep = System.getProperty("file.separator");
         File basePath = new File("src");
@@ -109,6 +117,16 @@ public class FileUtilsTest {
 
         String httpPath = "http://host:port/subdir/foo.txt";
         assertEquals("http://host:port/subdir", FileUtils.getParent(httpPath));
+    }
+
+    @Test
+    public void testGetAbsolutePath() throws Exception {
+
+        String inputPath = "test/mysession.xml";
+        String referencePath = "http://foo.bar.com/bob/data/otherdata.xml";
+        String absolutePath = "http://foo.bar.com/bob/data/test/mysession.xml";
+        assertEquals(absolutePath, FileUtils.getAbsolutePath(inputPath, referencePath));
+
     }
 
 }

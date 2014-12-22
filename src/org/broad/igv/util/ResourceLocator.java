@@ -232,7 +232,7 @@ public class ResourceLocator {
         this.trackInforURL = trackInforURL;
     }
 
-    public String getTrackInforURL() {
+    public String getTrackInfoURL() {
         return trackInforURL;
     }
 

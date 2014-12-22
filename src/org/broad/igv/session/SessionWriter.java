@@ -25,6 +25,7 @@ import org.broad.igv.ui.TrackFilterElement;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.TrackPanel;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.Utilities;
 import org.w3c.dom.DOMException;
@@ -128,6 +129,8 @@ public class SessionWriter {
 
             globalElement.setAttribute(SessionAttribute.HAS_GENE_TRACK.getText(), "" + IGV.getInstance().hasGeneTrack());
             globalElement.setAttribute(SessionAttribute.HAS_SEQ_TRACK.getText(), "" + IGV.getInstance().hasSequenceTrack());
+
+            globalElement.setAttribute("path", outputFile.getAbsolutePath());
 
 
             // Resource Files
@@ -297,7 +300,9 @@ public class SessionWriter {
                     Element dataFileElement = document.createElement(SessionElement.RESOURCE.getText());
 
                     //REQUIRED ATTRIBUTES - Cannot be null
-                    dataFileElement.setAttribute(SessionAttribute.PATH.getText(), resourceLocator.getPath());
+                    String relativePath = FileUtils.getRelativePath(outputFile.getAbsolutePath(), resourceLocator.getPath());
+
+                    dataFileElement.setAttribute(SessionAttribute.PATH.getText(), relativePath);
 
                     //OPTIONAL ATTRIBUTES
 
@@ -307,8 +312,8 @@ public class SessionWriter {
                     if (resourceLocator.getDBUrl() != null) {
                         dataFileElement.setAttribute(SessionAttribute.SERVER_URL.getText(), resourceLocator.getDBUrl());
                     }
-                    if (resourceLocator.getTrackInforURL() != null) {
-                        dataFileElement.setAttribute(SessionAttribute.HYPERLINK.getText(), resourceLocator.getTrackInforURL());
+                    if (resourceLocator.getTrackInfoURL() != null) {
+                        dataFileElement.setAttribute(SessionAttribute.HYPERLINK.getText(), resourceLocator.getTrackInfoURL());
                     }
                     if (resourceLocator.getFeatureInfoURL() != null) {
                         dataFileElement.setAttribute(SessionAttribute.FEATURE_URL.getText(), resourceLocator.getFeatureInfoURL());
