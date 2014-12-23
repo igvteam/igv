@@ -149,7 +149,7 @@ public class DMUtilsTest extends AbstractHeadlessTest{
         assertFileStatus(locName, false);
     }
 
-    @Test
+    //@Test
     public void testCreateDeleteDirectory() throws Exception {
 
         assertFileStatus(delDirName, false);
