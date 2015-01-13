@@ -82,8 +82,6 @@ public abstract class AbstractCacher {
      */
     public Iterator<Feature> queryCached(String chr, int start, int end) throws IOException {
 
-        if(binSize <= 0) binSize = Integer.MAX_VALUE;
-
         int  startBin = start / binSize;
         int endBin = end / binSize;    // <= inclusive
 
