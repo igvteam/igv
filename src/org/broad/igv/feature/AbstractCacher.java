@@ -35,9 +35,14 @@ public abstract class AbstractCacher {
 
     private static Logger log = Logger.getLogger(AbstractCacher.class);
 
-    protected int binSize;
+    protected int binSize = Integer.MAX_VALUE;
     protected LRUCache<String, Bin> cache;
 
+
+    public AbstractCacher(int binCount, int binSize) {
+        this.cache = new LRUCache(binCount);
+        setBinSize(binSize);
+    }
 
     /**
      * Obtain data from underlying source
@@ -49,10 +54,6 @@ public abstract class AbstractCacher {
      */
     protected abstract Iterator<Feature> queryRaw(String chr, int start, int end) throws IOException;
 
-    public AbstractCacher(int binCount, int binSize) {
-        this.cache = new LRUCache(binCount);
-        this.binSize = binSize;
-    }
 
 
     /**
@@ -61,7 +62,7 @@ public abstract class AbstractCacher {
      * @param newSize
      */
     public void setBinSize(int newSize) {
-        this.binSize = newSize == 0 ? Integer.MAX_VALUE : 0;  // A binSize of zero => use a single bin for the entire chromosome
+        this.binSize = newSize == 0 ? Integer.MAX_VALUE : newSize;  // A binSize of zero => use a single bin for the entire chromosome
         cache.clear();
 
     }
@@ -81,13 +82,11 @@ public abstract class AbstractCacher {
      */
     public Iterator<Feature> queryCached(String chr, int start, int end) throws IOException {
 
+        if(binSize <= 0) binSize = Integer.MAX_VALUE;
 
-        int startBin = 0;
-        int endBin = 0;    // <= inclusive
-        if (binSize > 0) {
-            startBin = start / binSize;
-            endBin = end / binSize;    // <= inclusive
-        }
+        int  startBin = start / binSize;
+        int endBin = end / binSize;    // <= inclusive
+
         List<Bin> tiles = getBins(chr, startBin, endBin);
 
         if (tiles.size() == 0) {
