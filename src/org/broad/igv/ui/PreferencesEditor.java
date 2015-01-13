@@ -121,6 +121,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         label32 = new JLabel();
         textField1 = new JLabel();
         featureVisibilityWindowField = new JTextField();
+        zoomToFeatureExplanation3 = new JLabel();
         tracksPanel = new JPanel();
         jPanel6 = new JPanel();
         jLabel5 = new JLabel();
@@ -499,11 +500,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     label32.setBounds(250, -2, 545, 47);
 
                     //---- textField1 ----
-                    textField1.setText("Default visibility window (kilo-bases):");
+                    textField1.setText("Default visibility window (kilobases):");
+                    textField1.setToolTipText("A value > 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.   The threshold (\"visibility window\") can be overriden explicitly for individual tracks via the track menu.");
                     jPanel10.add(textField1);
                     textField1.setBounds(new Rectangle(new Point(35, 422), textField1.getPreferredSize()));
 
                     //---- featureVisibilityWindowField ----
+                    featureVisibilityWindowField.setToolTipText("A value > 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.   The threshold (\"visibility window\") can be overriden explicitly for individual tracks via the track menu.");
                     featureVisibilityWindowField.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -518,6 +521,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     });
                     jPanel10.add(featureVisibilityWindowField);
                     featureVisibilityWindowField.setBounds(315, 416, 190, featureVisibilityWindowField.getPreferredSize().height);
+
+                    //---- zoomToFeatureExplanation3 ----
+                    zoomToFeatureExplanation3.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
+                    zoomToFeatureExplanation3.setText("<html><i>&lt; 0 disables visibility window.</b>");
+                    zoomToFeatureExplanation3.setVerticalAlignment(SwingConstants.TOP);
+                    jPanel10.add(zoomToFeatureExplanation3);
+                    zoomToFeatureExplanation3.setBounds(515, 419, 275, 23);
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
@@ -4064,6 +4074,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JLabel label32;
     private JLabel textField1;
     private JTextField featureVisibilityWindowField;
+    private JLabel zoomToFeatureExplanation3;
     private JPanel tracksPanel;
     private JPanel jPanel6;
     private JLabel jLabel5;

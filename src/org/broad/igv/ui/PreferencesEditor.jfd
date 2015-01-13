@@ -311,7 +311,7 @@
               <string>javax.swing.JLabel</string> 
               <void method="setProperty"> 
                <string>font</string> 
-               <object class="java.awt.Font"> 
+               <object id="Font0" class="java.awt.Font"> 
                 <string>Lucida Grande</string> 
                 <int>2</int> 
                 <int>12</int> 
@@ -741,7 +741,11 @@
               <string>javax.swing.JLabel</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>Default visibility window (kilo-bases):</string> 
+               <string>Default visibility window (kilobases):</string> 
+              </void> 
+              <void method="setProperty"> 
+               <string>toolTipText</string> 
+               <string>A value &gt; 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.   The threshold (&quot;visibility window&quot;) can be overriden explicitly for individual tracks via the track menu.</string> 
               </void> 
               <void property="name"> 
                <string>textField1</string> 
@@ -762,6 +766,10 @@
             <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
               <string>javax.swing.JTextField</string> 
+              <void method="setProperty"> 
+               <string>toolTipText</string> 
+               <string>A value &gt; 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.   The threshold (&quot;visibility window&quot;) can be overriden explicitly for individual tracks via the track menu.</string> 
+              </void> 
               <void property="name"> 
                <string>featureVisibilityWindowField</string> 
               </void> 
@@ -795,6 +803,45 @@
               <void method="setProperty"> 
                <string>width</string> 
                <int>190</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JLabel</string> 
+              <void method="setProperty"> 
+               <string>font</string> 
+               <object idref="Font0"/> 
+              </void> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>&lt;html&gt;&lt;i&gt;&amp;lt; 0 disables visibility window.&lt;/b&gt;</string> 
+              </void> 
+              <void method="setProperty"> 
+               <string>verticalAlignment</string> 
+               <int>1</int> 
+              </void> 
+              <void property="name"> 
+               <string>zoomToFeatureExplanation3</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>275</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>height</string> 
+               <int>23</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>515</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>419</int> 
               </void> 
              </object> 
             </void> 
