@@ -61,7 +61,7 @@ public abstract class AbstractCacher {
      * @param newSize
      */
     public void setBinSize(int newSize) {
-        this.binSize = newSize;
+        this.binSize = newSize == 0 ? Integer.MAX_VALUE : 0;  // A binSize of zero => use a single bin for the entire chromosome
         cache.clear();
 
     }
@@ -81,7 +81,7 @@ public abstract class AbstractCacher {
      */
     public Iterator<Feature> queryCached(String chr, int start, int end) throws IOException {
 
-        // A binSize of zero => use a single bin for the entire chromosome
+
         int startBin = 0;
         int endBin = 0;    // <= inclusive
         if (binSize > 0) {

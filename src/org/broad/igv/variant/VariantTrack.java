@@ -15,6 +15,7 @@
 package org.broad.igv.variant;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.renderer.GraphicUtils;
@@ -205,8 +206,13 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         // Ugly test on source is to avoid having to add "isIndexed" to a zillion feature source classes.  The intent
         // is to skip this if using a non-indexed source.
         if (!(source instanceof TribbleFeatureSource && ((TribbleFeatureSource) source).isIndexed() == false)) {
-            int vw = Math.max(10000, 2000000 - 2000 * allSamples.size());
-            setVisibilityWindow(vw);
+            int defVisibilityWindow = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_VISIBILITY_WINDOW);
+            if (defVisibilityWindow > 0) {
+                setVisibilityWindow(defVisibilityWindow * 1000);
+            } else {
+                int vw = Math.max(10000, 2000000 - 2000 * allSamples.size());
+                setVisibilityWindow(vw);
+            }
         }
 
     }
@@ -533,7 +539,9 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                 }
             }
         } else {
+
             for (String sample : allSamples) {
+
                 if (tmpRect.intersects(visibleRectangle)) {
                     renderer.renderGenotypeBandSNP(variant, context, tmpRect, x, w, sample, coloring, hideFiltered);
                 }
@@ -1109,6 +1117,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
 
     private String getSampleToolTip(String sample, Variant variant) {
+
         if (variant == null) return null;
         double goodBaseCount = variant.getGenotype(sample).getAttributeAsDouble("GB");
         if (Double.isNaN(goodBaseCount)) goodBaseCount = 0;

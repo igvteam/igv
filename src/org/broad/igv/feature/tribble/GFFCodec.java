@@ -329,7 +329,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
     public static class GFF2Helper implements Helper {
 
         //TODO Almost identical
-        static String[] DEFAULT_NAME_FIELDS = {"alias", "gene", "ID", "Locus", "locus", "Name", "name", "primary_name", "systematic_id", "transcript_id"};
+        static String[] DEFAULT_NAME_FIELDS = {"alias", "gene", "ID", "Locus", "locus", "Name", "name", "gene_name", "primary_name", "systematic_id", "transcript_id"};
         static List<String> idFields = new ArrayList<String>(Arrays.asList(DEFAULT_NAME_FIELDS));
 
         static {

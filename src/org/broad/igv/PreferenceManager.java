@@ -158,6 +158,7 @@ public class PreferenceManager implements PropertyManager {
     final static public String HISTORY_DELIMITER = ";";
     final static public String GENOME_ID_DISPLAY_LIST_KEY = "GENOME_LIST";
     final static public String DETAILS_BEHAVIOR_KEY = "DETAILS_BEHAVIOR";
+    final static public String DEFAULT_VISIBILITY_WINDOW = "DEFAULT_VISIBILITY_WINDOW";
 
     public static final String MUTATION_COLOR_TABLE = "MUTATION_COLOR_TABLE";
     public static final String MUTATION_INDEL_COLOR_KEY = "MUTATION_INDEL_COLOR_KEY";
@@ -1114,6 +1115,8 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_COLOR_N, ColorUtilities.colorToString(Color.gray.brighter()));
 
         defaultValues.put(ENABLE_GOOGLE_MENU, "false");
+
+        defaultValues.put(DEFAULT_VISIBILITY_WINDOW, "-1");
 
     }
 

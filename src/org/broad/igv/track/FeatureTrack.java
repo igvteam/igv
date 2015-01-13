@@ -13,6 +13,7 @@ package org.broad.igv.track;
 import com.google.common.eventbus.Subscribe;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.cli_plugin.PluginFeatureSource;
 import org.broad.igv.cli_plugin.PluginSource;
 import org.broad.igv.feature.*;
@@ -202,8 +203,15 @@ public class FeatureTrack extends AbstractTrack {
         setColor(Color.blue.darker());
 
         coverageRenderer = new BarChartRenderer();
-        if (source.getFeatureWindowSize() > 0) {
-            visibilityWindow = source.getFeatureWindowSize();
+
+        int sourceFeatureWindowSize = source.getFeatureWindowSize();
+        if (sourceFeatureWindowSize > 0) {  // Only apply a default if the feature source supports visibility window.
+            int defVisibilityWindow = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_VISIBILITY_WINDOW);
+            if (defVisibilityWindow > 0) {
+                setVisibilityWindow(defVisibilityWindow * 1000);
+            } else {
+                visibilityWindow = sourceFeatureWindowSize;
+            }
         }
 
         this.renderer = path != null && path.endsWith("junctions.bed") ?
@@ -913,7 +921,7 @@ public class FeatureTrack extends AbstractTrack {
 
     }
 
-    public void setForceLoadSync(boolean forceLoadSync){
+    public void setForceLoadSync(boolean forceLoadSync) {
         this.forceLoadSync = forceLoadSync;
     }
 

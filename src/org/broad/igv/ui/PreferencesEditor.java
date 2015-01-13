@@ -10,6 +10,8 @@
  */
 package org.broad.igv.ui;
 
+import java.beans.*;
+
 import com.jidesoft.dialog.ButtonPanel;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.PreferenceManager;
@@ -68,132 +70,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private File newIGVDirectory;
     private boolean updateCoverageTrack = false;
 
-
-    private void backgroundColorPanelMouseClicked(MouseEvent e) {
-        final PreferenceManager prefMgr = PreferenceManager.getInstance();
-        Color backgroundColor = UIUtilities.showColorChooserDialog("Choose background color",
-                prefMgr.getAsColor(PreferenceManager.BACKGROUND_COLOR));
-        if (backgroundColor != null) {
-            prefMgr.put(PreferenceManager.BACKGROUND_COLOR, ColorUtilities.colorToString(backgroundColor));
-            IGV.getInstance().getMainPanel().setBackground(backgroundColor);
-            backgroundColorPanel.setBackground(backgroundColor);
-        }
-
-    }
-
-    private void extractBinSize() {
-        String sbin = this.binSizeText.getText();
-        if (sbin != null) {
-            sbin = sbin.trim();
-            try {
-                Integer.parseInt(sbin);
-                updatedPreferenceMap.put(PreferenceManager.IONTORRENT_FLOWDIST_BINSIZE, sbin);
-            } catch (NumberFormatException numberFormatException) {
-                inputValidated = false;
-                MessageUtils.showMessage(
-                        "Bin size must be an integer.");
-            }
-        }
-    }
-
-    private void resetBackgroundButtonActionPerformed(ActionEvent e) {
-        final PreferenceManager prefMgr = PreferenceManager.getInstance();
-        prefMgr.remove(PreferenceManager.BACKGROUND_COLOR);
-        Color backgroundColor = prefMgr.getAsColor(PreferenceManager.BACKGROUND_COLOR);
-        if (backgroundColor != null) {
-            prefMgr.put(PreferenceManager.BACKGROUND_COLOR, ColorUtilities.colorToString(backgroundColor));
-            IGV.getInstance().getMainPanel().setBackground(backgroundColor);
-            backgroundColorPanel.setBackground(backgroundColor);
-        }
-
-    }
-
-    private void binSizeTextActionPerformed(ActionEvent e) {
-        extractBinSize();
-    }
-
-    private void hideFirstHPActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(
-                PreferenceManager.IONTORRENT_FLOWDIST_HIDE_FIRST_HP,
-                String.valueOf(this.hideFirstHP.isSelected()));
-    }
-
-    private void radioButton1ActionPerformed(ActionEvent e) {
-        if (this.radioLine.isSelected()) {
-            updatedPreferenceMap.put(PreferenceManager.IONTORRENT_FLOWDIST_CHARTTYPE, "LINE");
-        }
-    }
-
-    private void radioLineActionPerformed(ActionEvent e) {
-        if (this.radioLine.isSelected()) {
-            updatedPreferenceMap.put(PreferenceManager.IONTORRENT_FLOWDIST_CHARTTYPE, "LINE");
-        }
-    }
-
-    private void radioAreaActionPerformed(ActionEvent e) {
-        if (this.radioArea.isSelected()) {
-            updatedPreferenceMap.put(PreferenceManager.IONTORRENT_FLOWDIST_CHARTTYPE, "AREA");
-        }
-    }
-
-    private void radioBarActionPerformed(ActionEvent e) {
-        if (this.radioBar.isSelected()) {
-            updatedPreferenceMap.put(PreferenceManager.IONTORRENT_FLOWDIST_CHARTTYPE, "BAR");
-        }
-    }
-
-
-    private void radioStackedActionPerformed(ActionEvent e) {
-        if (this.radioStacked.isSelected()) {
-            updatedPreferenceMap.put(PreferenceManager.IONTORRENT_FLOWDIST_CHARTTYPE, "STACKED");
-        }
-    }
-
-    private void textServerActionPerformed(ActionEvent e) {
-        String server = this.textServer.getText();
-        if (server != null) {
-            server = server.trim();
-            updatedPreferenceMap.put(PreferenceManager.IONTORRENT_SERVER, server);
-        }
-    }
-
-    private void binSizeTextFocusLost(FocusEvent e) {
-        extractBinSize();
-    }
-
-    private void filterSecondaryAlignmentsCBActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(
-                PreferenceManager.SAM_FILTER_SECONDARY_ALIGNMENTS,
-                String.valueOf(filterSecondaryAlignmentsCB.isSelected()));
-    }
-
-
-    private void filterSupplementaryAlignmentsCBActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(
-                PreferenceManager.SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS,
-                String.valueOf(filterSupplementaryAlignmentsCB.isSelected()));
-    }
-
-    private void antialiasingCBActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(
-                PreferenceManager.ENABLE_ANTIALISING,
-                String.valueOf(antialiasingCB.isSelected()));
-
-    }
-
-    private void showMissingDataCBActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(PreferenceManager.SHOW_MISSING_DATA_KEY, String.valueOf(
-                showMissingDataCB.isSelected()));
-    }
-
-    private void useAlleleQualityCBActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(PreferenceManager.SAM_ALLELE_USE_QUALITY, String.valueOf(
-                useAlleleQualityCB.isSelected()));
-        this.updateCoverageTrack = true;
-    }
-
-
-
     public PreferencesEditor(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -229,11 +105,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
         combinePanelsCB = new JCheckBox();
         showAttributesDisplayCheckBox = new JCheckBox();
         searchZoomCB = new JCheckBox();
-        zoomToFeatureExplanation = new JLabel();
         label4 = new JLabel();
         geneListFlankingField = new JTextField();
         zoomToFeatureExplanation2 = new JLabel();
-        label5 = new JLabel();
         label6 = new JLabel();
         seqResolutionThreshold = new JTextField();
         label10 = new JLabel();
@@ -245,6 +119,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
         resetBackgroundButton = new JButton();
         showMissingDataCB = new JCheckBox();
         label32 = new JLabel();
+        textField1 = new JLabel();
+        featureVisibilityWindowField = new JTextField();
         tracksPanel = new JPanel();
         jPanel6 = new JPanel();
         jLabel5 = new JLabel();
@@ -440,12 +316,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     //---- missingDataExplanation ----
                     missingDataExplanation.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
-                    missingDataExplanation.setText("Display default track attributes (NAME, DATA_TYPE, and DATA_FILE) in the attribute panel.");
+                    missingDataExplanation.setText("(NAME, DATA_TYPE, and DATA_FILE).");
                     jPanel10.add(missingDataExplanation);
-                    missingDataExplanation.setBounds(55, 190, 565, missingDataExplanation.getPreferredSize().height);
+                    missingDataExplanation.setBounds(280, 178, 355, 40);
 
                     //---- showDefaultTrackAttributesCB ----
                     showDefaultTrackAttributesCB.setText("Show default track attributes");
+                    showDefaultTrackAttributesCB.setToolTipText("Display default track attributes (NAME, DATA_TYPE, and DATA_FILE) in the attribute panel.");
                     showDefaultTrackAttributesCB.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -453,7 +330,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(showDefaultTrackAttributesCB);
-                    showDefaultTrackAttributesCB.setBounds(new Rectangle(new Point(10, 160), showDefaultTrackAttributesCB.getPreferredSize()));
+                    showDefaultTrackAttributesCB.setBounds(new Rectangle(new Point(10, 187), showDefaultTrackAttributesCB.getPreferredSize()));
 
                     //---- combinePanelsCB ----
                     combinePanelsCB.setText("Display all tracks in a single panel");
@@ -464,7 +341,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(combinePanelsCB);
-                    combinePanelsCB.setBounds(new Rectangle(new Point(10, 90), combinePanelsCB.getPreferredSize()));
+                    combinePanelsCB.setBounds(new Rectangle(new Point(10, 69), combinePanelsCB.getPreferredSize()));
 
                     //---- showAttributesDisplayCheckBox ----
                     showAttributesDisplayCheckBox.setText("Show attribute panel");
@@ -475,10 +352,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(showAttributesDisplayCheckBox);
-                    showAttributesDisplayCheckBox.setBounds(new Rectangle(new Point(10, 125), showAttributesDisplayCheckBox.getPreferredSize()));
+                    showAttributesDisplayCheckBox.setBounds(new Rectangle(new Point(10, 128), showAttributesDisplayCheckBox.getPreferredSize()));
 
                     //---- searchZoomCB ----
                     searchZoomCB.setText("Zoom to features");
+                    searchZoomCB.setToolTipText("This option controls the behavior of feature searchs.  If true, the zoom level is changed as required to size the view to the feature size.  If false the zoom level is unchanged.");
                     searchZoomCB.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -486,21 +364,16 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(searchZoomCB);
-                    searchZoomCB.setBounds(new Rectangle(new Point(10, 260), searchZoomCB.getPreferredSize()));
-
-                    //---- zoomToFeatureExplanation ----
-                    zoomToFeatureExplanation.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
-                    zoomToFeatureExplanation.setText("<html>This option controls the behavior of feature searchs.  If true, the zoom level is changed as required to size the view to the feature size.  If false the zoom level is unchanged.");
-                    zoomToFeatureExplanation.setVerticalAlignment(SwingConstants.TOP);
-                    jPanel10.add(zoomToFeatureExplanation);
-                    zoomToFeatureExplanation.setBounds(50, 285, 644, 50);
+                    searchZoomCB.setBounds(new Rectangle(new Point(10, 305), searchZoomCB.getPreferredSize()));
 
                     //---- label4 ----
                     label4.setText("Feature flanking region (bp or %): ");
+                    label4.setToolTipText("Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.  A negative number is interpreted as a percentage.");
                     jPanel10.add(label4);
-                    label4.setBounds(new Rectangle(new Point(15, 420), label4.getPreferredSize()));
+                    label4.setBounds(35, 365, 260, label4.getPreferredSize().height);
 
                     //---- geneListFlankingField ----
+                    geneListFlankingField.setToolTipText("Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.  A negative number is interpreted as a percentage.");
                     geneListFlankingField.addFocusListener(new FocusAdapter() {
                         @Override
                         public void focusLost(FocusEvent e) {
@@ -514,25 +387,19 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(geneListFlankingField);
-                    geneListFlankingField.setBounds(235, 415, 255, geneListFlankingField.getPreferredSize().height);
+                    geneListFlankingField.setBounds(315, 359, 190, geneListFlankingField.getPreferredSize().height);
 
                     //---- zoomToFeatureExplanation2 ----
                     zoomToFeatureExplanation2.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
-                    zoomToFeatureExplanation2.setText("<html><i>Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.<b> A negative number is interpreted as a percentage.</b>");
+                    zoomToFeatureExplanation2.setText("<html><i>&lt; 0 is interpreted as a percentage.</b>");
                     zoomToFeatureExplanation2.setVerticalAlignment(SwingConstants.TOP);
                     jPanel10.add(zoomToFeatureExplanation2);
-                    zoomToFeatureExplanation2.setBounds(45, 450, 637, 50);
-
-                    //---- label5 ----
-                    label5.setText("<html><i>Resolution in base-pairs per pixel at which sequence track becomes visible. ");
-                    label5.setFont(new Font("Lucida Grande", Font.PLAIN, 12));
-                    jPanel10.add(label5);
-                    label5.setBounds(new Rectangle(new Point(50, 375), label5.getPreferredSize()));
+                    zoomToFeatureExplanation2.setBounds(515, 362, 275, 23);
 
                     //---- label6 ----
                     label6.setText("Sequence resolution threshold (bp/pixel):");
                     jPanel10.add(label6);
-                    label6.setBounds(new Rectangle(new Point(15, 345), label6.getPreferredSize()));
+                    label6.setBounds(new Rectangle(new Point(35, 480), label6.getPreferredSize()));
 
                     //---- seqResolutionThreshold ----
                     seqResolutionThreshold.addFocusListener(new FocusAdapter() {
@@ -548,18 +415,18 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(seqResolutionThreshold);
-                    seqResolutionThreshold.setBounds(315, 340, 105, seqResolutionThreshold.getPreferredSize().height);
+                    seqResolutionThreshold.setBounds(315, 474, 190, seqResolutionThreshold.getPreferredSize().height);
 
                     //---- label10 ----
                     label10.setText("Default font: ");
                     label10.setLabelFor(defaultFontField);
                     jPanel10.add(label10);
-                    label10.setBounds(new Rectangle(new Point(15, 585), label10.getPreferredSize()));
+                    label10.setBounds(new Rectangle(new Point(35, 532), label10.getPreferredSize()));
 
                     //---- defaultFontField ----
                     defaultFontField.setEditable(false);
                     jPanel10.add(defaultFontField);
-                    defaultFontField.setBounds(105, 580, 238, defaultFontField.getPreferredSize().height);
+                    defaultFontField.setBounds(145, 525, 238, defaultFontField.getPreferredSize().height);
 
                     //---- fontChangeButton ----
                     fontChangeButton.setText("Change...");
@@ -570,7 +437,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(fontChangeButton);
-                    fontChangeButton.setBounds(360, 580, 97, fontChangeButton.getPreferredSize().height);
+                    fontChangeButton.setBounds(400, 525, 97, fontChangeButton.getPreferredSize().height);
 
                     //---- showRegionBoundariesCB ----
                     showRegionBoundariesCB.setText("Show region boundaries");
@@ -581,12 +448,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(showRegionBoundariesCB);
-                    showRegionBoundariesCB.setBounds(10, 220, 275, 23);
+                    showRegionBoundariesCB.setBounds(10, 246, 275, 23);
 
                     //---- label7 ----
                     label7.setText("Background color click to change): ");
                     jPanel10.add(label7);
-                    label7.setBounds(15, 535, 235, label7.getPreferredSize().height);
+                    label7.setBounds(35, 584, 235, label7.getPreferredSize().height);
 
                     //======== backgroundColorPanel ========
                     {
@@ -601,7 +468,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         backgroundColorPanel.setLayout(null);
                     }
                     jPanel10.add(backgroundColorPanel);
-                    backgroundColorPanel.setBounds(255, 530, 30, 29);
+                    backgroundColorPanel.setBounds(295, 578, 30, 29);
 
                     //---- resetBackgroundButton ----
                     resetBackgroundButton.setText("Reset to default");
@@ -612,10 +479,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(resetBackgroundButton);
-                    resetBackgroundButton.setBounds(315, 530, 150, resetBackgroundButton.getPreferredSize().height);
+                    resetBackgroundButton.setBounds(350, 578, 150, resetBackgroundButton.getPreferredSize().height);
 
                     //---- showMissingDataCB ----
                     showMissingDataCB.setText("Distinguish missing data");
+                    showMissingDataCB.setToolTipText("Distinguish regions with zero values from regions with  no data on plots (e.g. bar charts).  Regions with no data are indicated with a gray background.");
                     showMissingDataCB.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -623,12 +491,33 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(showMissingDataCB);
-                    showMissingDataCB.setBounds(10, 10, 248, 23);
+                    showMissingDataCB.setBounds(10, 10, 225, 23);
 
                     //---- label32 ----
-                    label32.setText("<html><i>Distinguish regions with zero values from regions with  no data on plots (e.g. bar charts).  Regions with no data are indicated with a gray background.</b>");
+                    label32.setText("<html><i>Distinguish regions with value of zero from regions with  no data.  ");
                     jPanel10.add(label32);
-                    label32.setBounds(45, 35, 700, 47);
+                    label32.setBounds(250, -2, 545, 47);
+
+                    //---- textField1 ----
+                    textField1.setText("Default visibility window (kilo-bases):");
+                    jPanel10.add(textField1);
+                    textField1.setBounds(new Rectangle(new Point(35, 422), textField1.getPreferredSize()));
+
+                    //---- featureVisibilityWindowField ----
+                    featureVisibilityWindowField.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            featureVisibilityWindowFieldActionPerformed(e);
+                        }
+                    });
+                    featureVisibilityWindowField.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            featureVisibilityWindowFieldFocusLost(e);
+                        }
+                    });
+                    jPanel10.add(featureVisibilityWindowField);
+                    featureVisibilityWindowField.setBounds(315, 416, 190, featureVisibilityWindowField.getPreferredSize().height);
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
@@ -2664,6 +2553,151 @@ public class PreferencesEditor extends javax.swing.JDialog {
         buttonGroup1.add(radioStacked);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void backgroundColorPanelMouseClicked(MouseEvent e) {
+        final PreferenceManager prefMgr = PreferenceManager.getInstance();
+        Color backgroundColor = UIUtilities.showColorChooserDialog("Choose background color",
+                prefMgr.getAsColor(PreferenceManager.BACKGROUND_COLOR));
+        if (backgroundColor != null) {
+            prefMgr.put(PreferenceManager.BACKGROUND_COLOR, ColorUtilities.colorToString(backgroundColor));
+            IGV.getInstance().getMainPanel().setBackground(backgroundColor);
+            backgroundColorPanel.setBackground(backgroundColor);
+        }
+
+    }
+
+    private void extractBinSize() {
+        String sbin = this.binSizeText.getText();
+        if (sbin != null) {
+            sbin = sbin.trim();
+            try {
+                Integer.parseInt(sbin);
+                updatedPreferenceMap.put(PreferenceManager.IONTORRENT_FLOWDIST_BINSIZE, sbin);
+            } catch (NumberFormatException numberFormatException) {
+                inputValidated = false;
+                MessageUtils.showMessage(
+                        "Bin size must be an integer.");
+            }
+        }
+    }
+
+    private void resetBackgroundButtonActionPerformed(ActionEvent e) {
+        final PreferenceManager prefMgr = PreferenceManager.getInstance();
+        prefMgr.remove(PreferenceManager.BACKGROUND_COLOR);
+        Color backgroundColor = prefMgr.getAsColor(PreferenceManager.BACKGROUND_COLOR);
+        if (backgroundColor != null) {
+            prefMgr.put(PreferenceManager.BACKGROUND_COLOR, ColorUtilities.colorToString(backgroundColor));
+            IGV.getInstance().getMainPanel().setBackground(backgroundColor);
+            backgroundColorPanel.setBackground(backgroundColor);
+        }
+
+    }
+
+    private void binSizeTextActionPerformed(ActionEvent e) {
+        extractBinSize();
+    }
+
+    private void hideFirstHPActionPerformed(ActionEvent e) {
+        updatedPreferenceMap.put(
+                PreferenceManager.IONTORRENT_FLOWDIST_HIDE_FIRST_HP,
+                String.valueOf(this.hideFirstHP.isSelected()));
+    }
+
+    private void radioButton1ActionPerformed(ActionEvent e) {
+        if (this.radioLine.isSelected()) {
+            updatedPreferenceMap.put(PreferenceManager.IONTORRENT_FLOWDIST_CHARTTYPE, "LINE");
+        }
+    }
+
+    private void radioLineActionPerformed(ActionEvent e) {
+        if (this.radioLine.isSelected()) {
+            updatedPreferenceMap.put(PreferenceManager.IONTORRENT_FLOWDIST_CHARTTYPE, "LINE");
+        }
+    }
+
+    private void radioAreaActionPerformed(ActionEvent e) {
+        if (this.radioArea.isSelected()) {
+            updatedPreferenceMap.put(PreferenceManager.IONTORRENT_FLOWDIST_CHARTTYPE, "AREA");
+        }
+    }
+
+    private void radioBarActionPerformed(ActionEvent e) {
+        if (this.radioBar.isSelected()) {
+            updatedPreferenceMap.put(PreferenceManager.IONTORRENT_FLOWDIST_CHARTTYPE, "BAR");
+        }
+    }
+
+
+    private void radioStackedActionPerformed(ActionEvent e) {
+        if (this.radioStacked.isSelected()) {
+            updatedPreferenceMap.put(PreferenceManager.IONTORRENT_FLOWDIST_CHARTTYPE, "STACKED");
+        }
+    }
+
+    private void textServerActionPerformed(ActionEvent e) {
+        String server = this.textServer.getText();
+        if (server != null) {
+            server = server.trim();
+            updatedPreferenceMap.put(PreferenceManager.IONTORRENT_SERVER, server);
+        }
+    }
+
+    private void binSizeTextFocusLost(FocusEvent e) {
+        extractBinSize();
+    }
+
+    private void filterSecondaryAlignmentsCBActionPerformed(ActionEvent e) {
+        updatedPreferenceMap.put(
+                PreferenceManager.SAM_FILTER_SECONDARY_ALIGNMENTS,
+                String.valueOf(filterSecondaryAlignmentsCB.isSelected()));
+    }
+
+
+    private void filterSupplementaryAlignmentsCBActionPerformed(ActionEvent e) {
+        updatedPreferenceMap.put(
+                PreferenceManager.SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS,
+                String.valueOf(filterSupplementaryAlignmentsCB.isSelected()));
+    }
+
+    private void antialiasingCBActionPerformed(ActionEvent e) {
+        updatedPreferenceMap.put(
+                PreferenceManager.ENABLE_ANTIALISING,
+                String.valueOf(antialiasingCB.isSelected()));
+
+    }
+
+    private void showMissingDataCBActionPerformed(ActionEvent e) {
+        updatedPreferenceMap.put(PreferenceManager.SHOW_MISSING_DATA_KEY, String.valueOf(
+                showMissingDataCB.isSelected()));
+    }
+
+    private void useAlleleQualityCBActionPerformed(ActionEvent e) {
+        updatedPreferenceMap.put(PreferenceManager.SAM_ALLELE_USE_QUALITY, String.valueOf(
+                useAlleleQualityCB.isSelected()));
+        this.updateCoverageTrack = true;
+    }
+
+    private void featureVisibilityWindowFieldActionPerformed(ActionEvent e) {
+        boolean valid = false;
+        String vw = featureVisibilityWindowField.getText().trim();
+        try {
+            double val = Double.parseDouble(vw);
+            valid = true;
+            updatedPreferenceMap.put(PreferenceManager.DEFAULT_VISIBILITY_WINDOW, vw);
+        } catch (NumberFormatException numberFormatException) {
+            valid = false;
+        }
+        if (!valid && e != null) {
+            junctionFlankingTextField.setText(prefMgr.get(PreferenceManager.DEFAULT_VISIBILITY_WINDOW));
+            MessageUtils.showMessage("Visibility window must be a number");
+        }
+    }
+
+
+    private void featureVisibilityWindowFieldFocusLost(FocusEvent e) {
+        this.featureVisibilityWindowFieldActionPerformed(null);
+    }
+
+
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         canceled = true;
         setVisible(false);
@@ -3874,7 +3908,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         proxyPasswordField.setText(Utilities.base64Decode(pwCoded));
 
         String proxyTypeString = prefMgr.get(PreferenceManager.PROXY_TYPE, null);
-        if(proxyTypeString != null) {
+        if (proxyTypeString != null) {
             proxyTypeCB.setSelectedItem(proxyTypeString);
         }
 
@@ -3897,6 +3931,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
         tooltipDismissDelayField.setText(prefMgr.get(PreferenceManager.TOOLTIP_DISMISS_DELAY));
         tooltipReshowDelayField.setText(prefMgr.get(PreferenceManager.TOOLTIP_RESHOW_DELAY));
         toolTipInitialDelayField.setText(prefMgr.get(PreferenceManager.TOOLTIP_INITIAL_DELAY));
+
+        featureVisibilityWindowField.setText(prefMgr.get(PreferenceManager.DEFAULT_VISIBILITY_WINDOW));
 
         updateFontField();
 
@@ -3932,7 +3968,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 }
 
             }
-            if(updatedPreferenceMap.containsKey(PreferenceManager.SAM_ALLELE_THRESHOLD)) {
+            if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_ALLELE_THRESHOLD)) {
                 updateCoverageTrack = true;
             }
 
@@ -3955,7 +3991,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 }
                 igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.RELOAD);
             }
-            if(updateCoverageTrack) {
+            if (updateCoverageTrack) {
                 igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.ALLELE_THRESHOLD);
                 updateCoverageTrack = false;
             }
@@ -4012,11 +4048,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox combinePanelsCB;
     private JCheckBox showAttributesDisplayCheckBox;
     private JCheckBox searchZoomCB;
-    private JLabel zoomToFeatureExplanation;
     private JLabel label4;
     private JTextField geneListFlankingField;
     private JLabel zoomToFeatureExplanation2;
-    private JLabel label5;
     private JLabel label6;
     private JTextField seqResolutionThreshold;
     private JLabel label10;
@@ -4028,6 +4062,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JButton resetBackgroundButton;
     private JCheckBox showMissingDataCB;
     private JLabel label32;
+    private JLabel textField1;
+    private JTextField featureVisibilityWindowField;
     private JPanel tracksPanel;
     private JPanel jPanel6;
     private JLabel jLabel5;

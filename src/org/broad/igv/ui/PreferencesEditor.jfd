@@ -74,7 +74,7 @@
               </void> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>Display default track attributes (NAME, DATA_TYPE, and DATA_FILE) in the attribute panel.</string> 
+               <string>(NAME, DATA_TYPE, and DATA_FILE).</string> 
               </void> 
               <void property="name"> 
                <string>missingDataExplanation</string> 
@@ -84,15 +84,19 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>55</int> 
+               <int>280</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>190</int> 
+               <int>178</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
-               <int>565</int> 
+               <int>355</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>height</string> 
+               <int>40</int> 
               </void> 
              </object> 
             </void> 
@@ -102,6 +106,10 @@
               <void method="setProperty"> 
                <string>text</string> 
                <string>Show default track attributes</string> 
+              </void> 
+              <void method="setProperty"> 
+               <string>toolTipText</string> 
+               <string>Display default track attributes (NAME, DATA_TYPE, and DATA_FILE) in the attribute panel.</string> 
               </void> 
               <void property="name"> 
                <string>showDefaultTrackAttributesCB</string> 
@@ -123,7 +131,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>160</int> 
+               <int>187</int> 
               </void> 
              </object> 
             </void> 
@@ -154,7 +162,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>90</int> 
+               <int>69</int> 
               </void> 
              </object> 
             </void> 
@@ -185,7 +193,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>125</int> 
+               <int>128</int> 
               </void> 
              </object> 
             </void> 
@@ -195,6 +203,10 @@
               <void method="setProperty"> 
                <string>text</string> 
                <string>Zoom to features</string> 
+              </void> 
+              <void method="setProperty"> 
+               <string>toolTipText</string> 
+               <string>This option controls the behavior of feature searchs.  If true, the zoom level is changed as required to size the view to the feature size.  If false the zoom level is unchanged.</string> 
               </void> 
               <void property="name"> 
                <string>searchZoomCB</string> 
@@ -216,50 +228,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>260</int> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JLabel</string> 
-              <void method="setProperty"> 
-               <string>font</string> 
-               <object id="Font0" class="java.awt.Font"> 
-                <string>Lucida Grande</string> 
-                <int>2</int> 
-                <int>12</int> 
-               </object> 
-              </void> 
-              <void method="setProperty"> 
-               <string>text</string> 
-               <string>&lt;html&gt;This option controls the behavior of feature searchs.  If true, the zoom level is changed as required to size the view to the feature size.  If false the zoom level is unchanged.</string> 
-              </void> 
-              <void method="setProperty"> 
-               <string>verticalAlignment</string> 
-               <int>1</int> 
-              </void> 
-              <void property="name"> 
-               <string>zoomToFeatureExplanation</string> 
-              </void> 
-             </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>com.jformdesigner.runtime.NullConstraints</class> 
-              <void method="setProperty"> 
-               <string>x</string> 
-               <int>50</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>y</string> 
-               <int>285</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>width</string> 
-               <int>644</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>height</string> 
-               <int>50</int> 
+               <int>305</int> 
               </void> 
              </object> 
             </void> 
@@ -270,6 +239,10 @@
                <string>text</string> 
                <string>Feature flanking region (bp or %): </string> 
               </void> 
+              <void method="setProperty"> 
+               <string>toolTipText</string> 
+               <string>Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.  A negative number is interpreted as a percentage.</string> 
+              </void> 
               <void property="name"> 
                <string>label4</string> 
               </void> 
@@ -278,17 +251,25 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>15</int> 
+               <int>35</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>420</int> 
+               <int>365</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>260</int> 
               </void> 
              </object> 
             </void> 
             <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
               <string>javax.swing.JTextField</string> 
+              <void method="setProperty"> 
+               <string>toolTipText</string> 
+               <string>Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.  A negative number is interpreted as a percentage.</string> 
+              </void> 
               <void property="name"> 
                <string>geneListFlankingField</string> 
               </void> 
@@ -313,15 +294,15 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>235</int> 
+               <int>315</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>415</int> 
+               <int>359</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
-               <int>255</int> 
+               <int>190</int> 
               </void> 
              </object> 
             </void> 
@@ -330,11 +311,15 @@
               <string>javax.swing.JLabel</string> 
               <void method="setProperty"> 
                <string>font</string> 
-               <object idref="Font0"/> 
+               <object class="java.awt.Font"> 
+                <string>Lucida Grande</string> 
+                <int>2</int> 
+                <int>12</int> 
+               </object> 
               </void> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>&lt;html&gt;&lt;i&gt;Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.&lt;b&gt; A negative number is interpreted as a percentage.&lt;/b&gt;</string> 
+               <string>&lt;html&gt;&lt;i&gt;&amp;lt; 0 is interpreted as a percentage.&lt;/b&gt;</string> 
               </void> 
               <void method="setProperty"> 
                <string>verticalAlignment</string> 
@@ -348,50 +333,19 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>45</int> 
+               <int>515</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>450</int> 
+               <int>362</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
-               <int>637</int> 
+               <int>275</int> 
               </void> 
               <void method="setProperty"> 
                <string>height</string> 
-               <int>50</int> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JLabel</string> 
-              <void method="setProperty"> 
-               <string>text</string> 
-               <string>&lt;html&gt;&lt;i&gt;Resolution in base-pairs per pixel at which sequence track becomes visible. </string> 
-              </void> 
-              <void method="setProperty"> 
-               <string>font</string> 
-               <object class="java.awt.Font"> 
-                <string>Lucida Grande</string> 
-                <int>0</int> 
-                <int>12</int> 
-               </object> 
-              </void> 
-              <void property="name"> 
-               <string>label5</string> 
-              </void> 
-             </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>com.jformdesigner.runtime.NullConstraints</class> 
-              <void method="setProperty"> 
-               <string>x</string> 
-               <int>50</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>y</string> 
-               <int>375</int> 
+               <int>23</int> 
               </void> 
              </object> 
             </void> 
@@ -410,11 +364,11 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>15</int> 
+               <int>35</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>345</int> 
+               <int>480</int> 
               </void> 
              </object> 
             </void> 
@@ -449,11 +403,11 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>340</int> 
+               <int>474</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
-               <int>105</int> 
+               <int>190</int> 
               </void> 
              </object> 
             </void> 
@@ -478,11 +432,11 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>15</int> 
+               <int>35</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>585</int> 
+               <int>532</int> 
               </void> 
              </object> 
             </void> 
@@ -501,11 +455,11 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>105</int> 
+               <int>145</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>580</int> 
+               <int>525</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
@@ -536,11 +490,11 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>360</int> 
+               <int>400</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>580</int> 
+               <int>525</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
@@ -583,7 +537,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>220</int> 
+               <int>246</int> 
               </void> 
              </object> 
             </void> 
@@ -602,11 +556,11 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>15</int> 
+               <int>35</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>535</int> 
+               <int>584</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
@@ -657,11 +611,11 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>255</int> 
+               <int>295</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>530</int> 
+               <int>578</int> 
               </void> 
               <void method="setProperty"> 
                <string>height</string> 
@@ -696,11 +650,11 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>315</int> 
+               <int>350</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>530</int> 
+               <int>578</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
@@ -714,6 +668,10 @@
               <void method="setProperty"> 
                <string>text</string> 
                <string>Distinguish missing data</string> 
+              </void> 
+              <void method="setProperty"> 
+               <string>toolTipText</string> 
+               <string>Distinguish regions with zero values from regions with  no data on plots (e.g. bar charts).  Regions with no data are indicated with a gray background.</string> 
               </void> 
               <void property="name"> 
                <string>showMissingDataCB</string> 
@@ -731,7 +689,7 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>width</string> 
-               <int>248</int> 
+               <int>225</int> 
               </void> 
               <void method="setProperty"> 
                <string>height</string> 
@@ -752,7 +710,7 @@
               <string>javax.swing.JLabel</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>&lt;html&gt;&lt;i&gt;Distinguish regions with zero values from regions with  no data on plots (e.g. bar charts).  Regions with no data are indicated with a gray background.&lt;/b&gt;</string> 
+               <string>&lt;html&gt;&lt;i&gt;Distinguish regions with value of zero from regions with  no data.  </string> 
               </void> 
               <void property="name"> 
                <string>label32</string> 
@@ -762,19 +720,81 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>45</int> 
+               <int>250</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>35</int> 
+               <int>-2</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
-               <int>700</int> 
+               <int>545</int> 
               </void> 
               <void method="setProperty"> 
                <string>height</string> 
                <int>47</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JLabel</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>Default visibility window (kilo-bases):</string> 
+              </void> 
+              <void property="name"> 
+               <string>textField1</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>35</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>422</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JTextField</string> 
+              <void property="name"> 
+               <string>featureVisibilityWindowField</string> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.ActionListener</string> 
+                <string>actionPerformed</string> 
+                <string>featureVisibilityWindowFieldActionPerformed</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.FocusListener</string> 
+                <string>focusLost</string> 
+                <string>featureVisibilityWindowFieldFocusLost</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>315</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>416</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>190</int> 
               </void> 
              </object> 
             </void> 
