@@ -33,7 +33,7 @@ public class CommandListener implements Runnable {
     private static Logger log = Logger.getLogger(CommandListener.class);
 
     private static CommandListener listener;
-    private static final String CRNL = "\r\n";
+    private static final String CRLF = "\r\n";
 
     private int port = -1;
     private ServerSocket serverSocket = null;
@@ -150,7 +150,7 @@ public class CommandListener implements Runnable {
                     Map<String, String> params = null;
                     String[] tokens = inputLine.split(" ");
                     if (tokens.length < 2) {
-                        sendHTTPResponse(out, "ERROR unexpected command line: " + inputLine);
+                        sendTextResponse(out, "ERROR unexpected command line: " + inputLine);
                         return;
                     } else {
                         String[] parts = tokens[1].split("\\?");
@@ -165,14 +165,14 @@ public class CommandListener implements Runnable {
                         } else if (params.containsKey("token")) {
                             OAuthUtils.getInstance().setAccessToken(params.get("token"));
                         }
-                        sendHTTPResponse(out, "OK");
+                        sendTextResponse(out, "OK");
                     } else {
 
                         // If a callback (javascript) function is specified write it back immediately.  This function
                         // is used to cancel a timeout handler
                         String callback = params.get("callback");
                         if (callback != null) {
-                            sendHTTPResponse(out, callback);
+                            sendJavascriptResponse(out, callback);
                         }
 
                         // Process the request.
@@ -184,7 +184,7 @@ public class CommandListener implements Runnable {
                         if (callback == null) {
                             // We send no response if result is "ok".
                             if (result.equals(OK)) result = null;
-                            sendHTTPResponse(out, result);
+                            sendTextResponse(out, result);
                         }
                     }
 
@@ -233,32 +233,39 @@ public class CommandListener implements Runnable {
     }
 
 
-    private static final String CONTENT_TYPE = "Content-Type: ";
     private static final String HTTP_RESPONSE = "HTTP/1.1 200 OK";
     private static final String HTTP_NO_RESPONSE = "HTTP/1.1 204 No Response";
-    private static final String CONTENT_LENGTH = "Content-Length: ";
-    private static final String CONTENT_TYPE_TEXT_HTML = "text/html";
     private static final String CONNECTION_CLOSE = "Connection: close";
     private static final String NO_CACHE = "Cache-Control: no-cache, no-store";
+    private static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin: *";
 
-    private void sendHTTPResponse(PrintWriter out, String result) {
+    private void sendJavascriptResponse(PrintWriter out, String result) {
+        sendHTTPResponse(out, result, "application/javascript");
+
+    }
+
+    private void sendTextResponse(PrintWriter out, String result) {
+        sendHTTPResponse(out, result, "text/html");
+    }
+
+    private void sendHTTPResponse(PrintWriter out, String result, String contentType) {
 
         out.print(result == null ? HTTP_NO_RESPONSE : HTTP_RESPONSE);
-        out.print(CRNL);
-        out.print("Access-Control-Allow-Origin: *");
-        out.print(CRNL);
+        out.print(CRLF);
+        out.print(ACCESS_CONTROL_ALLOW_ORIGIN);
+        out.print(CRLF);
         if (result != null) {
-            out.print(CONTENT_TYPE + CONTENT_TYPE_TEXT_HTML);
-            out.print(CRNL);
-            out.print(CONTENT_LENGTH + (result.length()));
-            out.print(CRNL);
+            out.print("Content-Type: " + contentType);
+            out.print(CRLF);
+            out.print("Content-Length: " + (result.length()));
+            out.print(CRLF);
             out.print(NO_CACHE);
-            out.print(CRNL);
+            out.print(CRLF);
             out.print(CONNECTION_CLOSE);
-            out.print(CRNL);
-            out.print(CRNL);
+            out.print(CRLF);
+            out.print(CRLF);
             out.print(result);
-            out.print(CRNL);
+            out.print(CRLF);
         }
         out.close();
     }
