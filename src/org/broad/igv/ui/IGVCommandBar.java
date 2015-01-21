@@ -133,7 +133,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
         });
 
 
-
         getDefaultReferenceFrame().getEventBus().register(this);
     }
 
@@ -254,7 +253,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                         int choice =
                                 JOptionPane.showConfirmDialog(
                                         IGV.getMainFrame(), "The genome file [" + genomeListItem.getLocation() +
-                                        "] could not be read. Would you like to remove the selected entry?",
+                                                "] could not be read. Would you like to remove the selected entry?",
                                         "", JOptionPane.OK_CANCEL_OPTION);
 
                         if (choice == JOptionPane.OK_OPTION) {
@@ -868,6 +867,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     /**
      * Adjust the popup for the combobox to be at least as wide as
      * the widest item.
+     *
      * @param box
      */
     private void adjustPopupWidth(JComboBox box) {
@@ -878,16 +878,16 @@ public class IGVCommandBar extends javax.swing.JPanel {
         }
         JPopupMenu popup = (JPopupMenu) comp;
         JScrollPane scrollPane = null;
-        for(Component scomp: popup.getComponents()){
-            if(scomp instanceof JScrollPane){
+        for (Component scomp : popup.getComponents()) {
+            if (scomp instanceof JScrollPane) {
                 scrollPane = (JScrollPane) scomp;
             }
         }
-        if(scrollPane == null) return;
+        if (scrollPane == null) return;
 
         //Loop through and set width to widest component, plus some padding
         int rendererWidth = box.getWidth();
-        for(int index=0; index < box.getItemCount(); index++){
+        for (int index = 0; index < box.getItemCount(); index++) {
             Object value = box.getItemAt(index);
             Component rendererComp = box.getRenderer().getListCellRendererComponent(null, value, index, false, false);
         }
@@ -907,7 +907,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
         if (genome != null) {
             String chrName = genome.getHomeChromosome();
             if (chrName != null && !chrName.equals(chromosomeComboBox.getSelectedItem())) {
-                ViewChange.ChromosomeChangeCause cause = new ViewChange.ChromosomeChangeCause(evt.getSource(), chrName);
+                Object source = (evt == null ? null : evt.getSource());
+                ViewChange.ChromosomeChangeCause cause = new ViewChange.ChromosomeChangeCause(source, chrName);
                 cause.setRecordHistory(true);
                 getDefaultReferenceFrame().getEventBus().post(cause);
             }
@@ -960,8 +961,13 @@ public class IGVCommandBar extends javax.swing.JPanel {
         }
 
         if ((searchText != null) && (searchText.length() > 0)) {
-            searchTextField.setText(searchText);
-            (new SearchCommand(getDefaultReferenceFrame(), searchText)).execute();
+            String homeChr = IGV.getInstance().getGenomeManager().getCurrentGenome().getHomeChromosome();
+            if (searchText.equalsIgnoreCase("home") || searchText.equalsIgnoreCase(homeChr)) {
+                homeButtonActionPerformed(null);
+            } else {
+                searchTextField.setText(searchText);
+                (new SearchCommand(getDefaultReferenceFrame(), searchText)).execute();
+            }
             //This is not necessary, since we receive a ViewChange.Result later
             //chromosomeComboBox.setSelectedItem(getDefaultReferenceFrame().getChrName());
         }
