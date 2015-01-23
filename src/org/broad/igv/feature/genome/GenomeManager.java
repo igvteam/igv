@@ -137,7 +137,7 @@ public class GenomeManager {
 
             if (genomePath.endsWith(".genome")) {
                 newGenome = loadDotGenomeFile(genomePath);
-            } else if (genomePath.endsWith(".gbk")) {
+            } else if (genomePath.endsWith(".gbk") || genomePath.endsWith(".gb")) {
                 newGenome = loadGenbankFile(genomePath);
             } else if (genomePath.endsWith(".chrom.sizes")) {
                 newGenome = loadChromSizes(genomePath);
