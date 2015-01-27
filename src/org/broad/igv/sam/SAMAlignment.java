@@ -49,18 +49,6 @@ public abstract class SAMAlignment implements Alignment {
     public static final char ZERO_GAP = 'O';
     public static final String REDUCE_READS_TAG = "RR";
 
-    private static final int READ_PAIRED_FLAG = 0x1;
-    private static final int PROPER_PAIR_FLAG = 0x2;
-    private static final int READ_UNMAPPED_FLAG = 0x4;
-    protected static final int MATE_UNMAPPED_FLAG = 0x8;
-    private static final int READ_STRAND_FLAG = 0x10;
-    protected static final int MATE_STRAND_FLAG = 0x20;
-    private static final int FIRST_OF_PAIR_FLAG = 0x40;
-    private static final int SECOND_OF_PAIR_FLAG = 0x80;
-    private static final int NOT_PRIMARY_ALIGNMENT_FLAG = 0x100;
-    private static final int READ_FAILS_VENDOR_QUALITY_CHECK_FLAG = 0x200;
-    private static final int DUPLICATE_READ_FLAG = 0x400;
-    private static final int SUPPLEMENTARY_ALIGNMENT_FLAG = 0x800;
     /**
      * Converts a DNA integer value to its reverse compliment integer value.
      */
@@ -84,7 +72,6 @@ public abstract class SAMAlignment implements Alignment {
     };
     private static final String FLOW_SIGNAL_TAG = "ZF";
 
-    protected int flags;
 
     String chr;
     protected int start;  // <= Might differ from alignment start if soft clipping is considered
@@ -146,9 +133,7 @@ public abstract class SAMAlignment implements Alignment {
         return insertions;
     }
 
-    public boolean isNegativeStrand() {
-        return (flags & READ_STRAND_FLAG) != 0;
-    }
+    public abstract boolean isNegativeStrand();
 
     public boolean contains(double location) {
         return location >= getStart() && location < getEnd();
@@ -202,7 +187,7 @@ public abstract class SAMAlignment implements Alignment {
                 secondOfPairStrand = isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
             } else {
                 ReadMate mate = getMate();
-                if (mate.isMapped() && isProperPair()) {
+                if (mate != null && mate.isMapped() && isProperPair()) {
                     secondOfPairStrand = mate.isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
                 } else {
                     // No Mate, or mate is not mapped, FOP strand is not defined
@@ -583,14 +568,23 @@ public abstract class SAMAlignment implements Alignment {
 
     protected abstract String getAttributeString(boolean truncate);
 
+    public abstract boolean isFirstOfPair();
 
-    public boolean isFirstOfPair() {
-        return isPaired() && (flags & FIRST_OF_PAIR_FLAG) != 0;
-    }
+    public abstract boolean isSecondOfPair();
 
-    public boolean isSecondOfPair() {
-        return isPaired() && (flags & SECOND_OF_PAIR_FLAG) != 0;
-    }
+    public abstract boolean isDuplicate() ;
+
+    public abstract boolean isMapped();
+
+    public abstract boolean isPaired();
+
+    public abstract boolean isProperPair() ;
+
+    public abstract boolean isSupplementary();
+
+    public abstract boolean isVendorFailedRead();
+
+    public abstract boolean isPrimary();
 
     /**
      * @return the unclippedStart
@@ -599,22 +593,6 @@ public abstract class SAMAlignment implements Alignment {
 
     abstract public int getAlignmentEnd();
 
-    public boolean isDuplicate() {
-        return (flags & DUPLICATE_READ_FLAG) != 0;
-    }
-
-    public boolean isMapped() {
-        return (flags & READ_UNMAPPED_FLAG) == 0;
-    }
-
-
-    public boolean isPaired() {
-        return (flags & READ_PAIRED_FLAG) != 0;
-    }
-
-    public boolean isProperPair() {
-        return ((flags & READ_PAIRED_FLAG) != 0) && ((flags & PROPER_PAIR_FLAG) != 0);
-    }
 
     public boolean isSmallInsert() {
         int absISize = Math.abs(getInferredInsertSize());
@@ -632,10 +610,6 @@ public abstract class SAMAlignment implements Alignment {
         this.mate = mate;
     }
 
-    @Override
-    public boolean isSupplementary() {
-        return (flags & SUPPLEMENTARY_ALIGNMENT_FLAG) != 0;
-    }
 
     public int getStart() {
         return start;
@@ -684,9 +658,6 @@ public abstract class SAMAlignment implements Alignment {
     }
 
 
-    public boolean isVendorFailedRead() {
-        return (flags & READ_FAILS_VENDOR_QUALITY_CHECK_FLAG) != 0;
-    }
 
     public Strand getReadStrand() {
         return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
@@ -713,11 +684,6 @@ public abstract class SAMAlignment implements Alignment {
         return readSeq;
     }
 
-
-    @Override
-    public boolean isPrimary() {
-        return (flags & NOT_PRIMARY_ALIGNMENT_FLAG) == 0;
-    }
 
 
     @Override
@@ -769,7 +735,7 @@ public abstract class SAMAlignment implements Alignment {
 
          */
 
-        if (isPaired() && isMapped() && mate.isMapped() && getChr().equals(mate.getChr())) {   // && name === mate.name
+        if (isPaired() && isMapped() && mate != null && mate.isMapped() && getChr().equals(mate.getChr())) {   // && name === mate.name
 
             char s1 = isNegativeStrand() ? 'R' : 'F';
             char s2 = mate.isNegativeStrand() ? 'R' : 'F';

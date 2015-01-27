@@ -11,14 +11,11 @@
 
 package org.broad.igv.ga4gh;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.util.HttpUtils;
@@ -82,7 +79,7 @@ public class Ga4ghAlignmentReader implements AlignmentReader<Alignment> {
     @Override
     public CloseableIterator<Alignment> query(String sequence, int start, int end, boolean contained) throws IOException {
 
-        List<Alignment> alignmentList =  Ga4ghAPIHelper.reads(provider, readsetId, sequence, start, end);
+        List<Alignment> alignmentList = Ga4ghAPIHelper.searchReads(provider, readsetId, sequence, start, end);
 
         return alignmentList == null ? null : new MIterator(alignmentList);
     }
@@ -96,24 +93,21 @@ public class Ga4ghAlignmentReader implements AlignmentReader<Alignment> {
 
         String authKey = provider.authKey;
         String baseURL = provider.baseURL;
-        URL url = new URL(baseURL + "/readsets/" + readsetId + (authKey == null ? "" : "?key=" + authKey));   // TODO -- field selection?
+        URL url = new URL(baseURL + "/readgroupsets/" + readsetId + (authKey == null ? "" : "?key=" + authKey));   // TODO -- field selection?
 
         String result = HttpUtils.getInstance().getContentsAsString(url);
         JsonParser parser = new JsonParser();
         JsonObject root = parser.parse(result).getAsJsonObject();
 
+        String referenceSetId = root.getAsJsonPrimitive("referenceSetId").getAsString();
+
+        List<JsonObject> refererences = Ga4ghAPIHelper.searchReferences(provider, referenceSetId, 1000);
+
         sequenceNames = new ArrayList();
-        JsonArray fileData = root.getAsJsonArray("fileData");
-        Iterator<JsonElement> fileIter = fileData.iterator();
-        while (fileIter.hasNext()) {
 
-            JsonObject fileObject = fileIter.next().getAsJsonObject();
-            JsonArray refSequences = fileObject.getAsJsonArray("refSequences");
+        for (JsonObject refObject : refererences) {
+            sequenceNames.add(refObject.getAsJsonPrimitive("name").getAsString());
 
-            Iterator<JsonElement> iter = refSequences.iterator();
-            while (iter.hasNext()) {
-                sequenceNames.add(iter.next().getAsJsonObject().get("name").getAsString());
-            }
         }
     }
 

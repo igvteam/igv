@@ -29,6 +29,22 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
 
     private static Logger log = Logger.getLogger(PicardAlignment.class);
 
+    private static final int READ_PAIRED_FLAG = 0x1;
+    private static final int PROPER_PAIR_FLAG = 0x2;
+    private static final int READ_UNMAPPED_FLAG = 0x4;
+    private static final int MATE_UNMAPPED_FLAG = 0x8;
+    private static final int READ_STRAND_FLAG = 0x10;
+    protected static final int MATE_STRAND_FLAG = 0x20;
+    private static final int FIRST_OF_PAIR_FLAG = 0x40;
+    private static final int SECOND_OF_PAIR_FLAG = 0x80;
+    private static final int NOT_PRIMARY_ALIGNMENT_FLAG = 0x100;
+    private static final int READ_FAILS_VENDOR_QUALITY_CHECK_FLAG = 0x200;
+    private static final int DUPLICATE_READ_FLAG = 0x400;
+    private static final int SUPPLEMENTARY_ALIGNMENT_FLAG = 0x800;
+
+
+    private int flags;
+
     /**
      * Picard object upon which this PicardAlignment is based
      */
@@ -107,11 +123,53 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
     }
 
 
+    public boolean isFirstOfPair() {
+        return isPaired() && (flags & FIRST_OF_PAIR_FLAG) != 0;
+    }
+
+    public boolean isSecondOfPair() {
+        return isPaired() && (flags & SECOND_OF_PAIR_FLAG) != 0;
+    }
+
+    public boolean isDuplicate() {
+        return (flags & DUPLICATE_READ_FLAG) != 0;
+    }
+
+    public boolean isMapped() {
+        return (flags & READ_UNMAPPED_FLAG) == 0;
+    }
+
+
+    public boolean isPaired() {
+        return (flags & READ_PAIRED_FLAG) != 0;
+    }
+
+    public boolean isProperPair() {
+        return ((flags & READ_PAIRED_FLAG) != 0) && ((flags & PROPER_PAIR_FLAG) != 0);
+    }
+
+    public boolean isNegativeStrand() {
+        return (flags & READ_STRAND_FLAG) != 0;
+    }
+
+    @Override
+    public boolean isSupplementary() {
+        return (flags & SUPPLEMENTARY_ALIGNMENT_FLAG) != 0;
+    }
+
+
+    public boolean isVendorFailedRead() {
+        return (flags & READ_FAILS_VENDOR_QUALITY_CHECK_FLAG) != 0;
+    }
+    @Override
+    public boolean isPrimary() {
+        return (flags & NOT_PRIMARY_ALIGNMENT_FLAG) == 0;
+    }
+
     @Override
     public String toString() {
         return record.getSAMString();
     }
-
 
     @Override
     public String getReadName() {
@@ -271,6 +329,5 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
 
         return r;
     }
-
 
 }

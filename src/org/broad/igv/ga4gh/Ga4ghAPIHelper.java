@@ -42,7 +42,7 @@ public class Ga4ghAPIHelper {
 
     public static final Ga4ghProvider GA4GH_GOOGLE_PROVIDER = new Ga4ghProvider(
             "Google",
-            "https://www.googleapis.com/genomics/v1beta",
+            "https://www.googleapis.com/genomics/v1beta2",
             "AIzaSyC-dujgw4P1QvNd8i_c-I-S_P1uxVZzn0w",
             Arrays.asList(
                     new Ga4ghDataset("10473108253681171589", "1000 Genomes", "hg19"),
@@ -58,16 +58,16 @@ public class Ga4ghAPIHelper {
 
     public static final Ga4ghProvider[] providers = {
             //     new Ga4ghProvider("EBI", "http://193.62.52.16", null, Arrays.asList(new Ga4ghDataset("data", "data"))),
-            GA4GH_GOOGLE_PROVIDER,
-            GA4GH_NCBI_PROVIDER};
+            GA4GH_GOOGLE_PROVIDER};
 
 
     final static Map<String, List<Ga4ghReadset>> readsetCache = new HashMap<String, List<Ga4ghReadset>>();
 
+    final static Map<String, List<JsonObject>> referenceCache = new HashMap<String, List<JsonObject>>();
 
-    public static List<Ga4ghReadset> readsetSearch(Ga4ghProvider provider, Ga4ghDataset dataset, int maxResults) throws IOException {
 
-        String datasetId = dataset.getId();
+    public static List<Ga4ghReadset> searchReadGroupsets(Ga4ghProvider provider, String datasetId, int maxResults) throws IOException {
+
         List<Ga4ghReadset> readsets = readsetCache.get(datasetId);
 
         if (readsets == null) {
@@ -83,17 +83,17 @@ public class Ga4ghAPIHelper {
                 String contentToPost = "{" +
                         "\"datasetIds\": [\"" + datasetId + "\"]" +
                         (pageToken == null ? "" : ", \"pageToken\": " + pageToken) +
-                        ", \"maxResults\":" + maxResults +
+                        ", \"pageSize\":" + maxResults +
                         "}";
 
-                String result = doPost(provider, "/readsets/search", contentToPost, null); //"fields=readsets(id,name, fileData),nextPageToken");
+                String result = doPost(provider, "/readgroupsets/search", contentToPost, null); //"fields=readsets(id,name, fileData),nextPageToken");
 
                 if(result == null) return null;
 
                 JsonParser parser = new JsonParser();
                 JsonObject obj = parser.parse(result).getAsJsonObject();
 
-                Iterator<JsonElement> iter = obj.getAsJsonArray("readsets").iterator();
+                Iterator<JsonElement> iter = obj.getAsJsonArray("readGroupSets").iterator();
 
                 while (iter.hasNext()) {
                     JsonElement next = iter.next();
@@ -123,7 +123,52 @@ public class Ga4ghAPIHelper {
     }
 
 
-    public static List<Alignment> reads(Ga4ghProvider provider, String readsetId, String chr, int start, int end) throws IOException {
+    public static List<JsonObject> searchReferences(Ga4ghProvider provider, String referenceSetId, int maxResults) throws IOException {
+
+        List<JsonObject> references = referenceCache.get(referenceSetId);
+
+        if (references == null) {
+
+            references = new ArrayList();
+
+            // Loop through pages
+            int maxPages = 100;
+            JsonPrimitive pageToken = null;
+            while (maxPages-- > 0) {
+                String contentToPost = "{" +
+                        "\"referenceSetId\": \"" + referenceSetId + "\"" +
+                        (pageToken == null ? "" : ", \"pageToken\": " + pageToken) +
+                        ", \"pageSize\":" + maxResults +
+                        "}";
+
+                String result = doPost(provider, "/references/search", contentToPost, null); //"fields=readsets(id,name, fileData),nextPageToken");
+
+                if(result == null) return null;
+
+                JsonParser parser = new JsonParser();
+                JsonObject obj = parser.parse(result).getAsJsonObject();
+
+                Iterator<JsonElement> iter = obj.getAsJsonArray("references").iterator();
+
+                while (iter.hasNext()) {
+                    JsonElement next = iter.next();
+                    references.add(next.getAsJsonObject());
+                }
+
+                if (references.size() >= maxResults) break;
+
+                pageToken = obj.getAsJsonPrimitive("nextPageToken");
+                if (pageToken == null) break;
+            }
+
+            referenceCache.put(referenceSetId, references);
+        }
+
+        return references;
+    }
+
+
+    public static List<Alignment> searchReads(Ga4ghProvider provider, String readGroupSetId, String chr, int start, int end) throws IOException {
 
         List<Alignment> alignments = new ArrayList<Alignment>(10000);
         int maxPages = 10000;
@@ -132,12 +177,12 @@ public class Ga4ghAPIHelper {
 
         while (maxPages-- > 0) {
             String contentToPost = "{" +
-                    "\"readsetIds\": [\"" + readsetId + "\"]" +
-                    ", \"sequenceName\": \"" + chr + "\"" +
-                    ", \"sequenceStart\": \"" + start + "\"" +
-                    ", \"sequenceEnd\": \"" + end + "\"" +
-                    ", \"maxResults\": \"10000\"" +
-                    // (pageToken == null ? "" : ", \"pageToken\": " + pageToken) +
+                    "\"readGroupSetIds\": [\"" + readGroupSetId + "\"]" +
+                    ", \"referenceName\": \"" + chr + "\"" +
+                    ", \"start\": \"" + start + "\"" +
+                    ", \"end\": \"" + end + "\"" +
+                    ", \"pageSize\": \"10000\"" +
+                     (pageToken == null ? "" : ", \"pageToken\": " + pageToken) +
                     "}";
 
             String readString = doPost(provider, "/reads/search", contentToPost, "");
@@ -149,7 +194,7 @@ public class Ga4ghAPIHelper {
             JsonParser parser = new JsonParser();
             JsonObject obj = parser.parse(readString).getAsJsonObject();
 
-            JsonArray reads = obj.getAsJsonArray("reads");
+            JsonArray reads = obj.getAsJsonArray("alignments");
 
             Iterator<JsonElement> iter = reads.iterator();
             while (iter.hasNext()) {
@@ -170,6 +215,7 @@ public class Ga4ghAPIHelper {
         return alignments;
 
     }
+
 
     private static String doPost(Ga4ghProvider provider, String command, String content, String fields) throws IOException {
 
@@ -230,7 +276,10 @@ public class Ga4ghAPIHelper {
         } catch (IOException e) {
 
             int rs = connection.getResponseCode();
-            if (rs >= 400 && rs < 500) {
+            if(rs == 404) {
+                MessageUtils.showErrorMessage("The requested resource was not found<br>" + url, e);
+            }
+            else if (rs == 401 || rs == 403) {
                 displayAuthorizationDialog(url.getHost());
             } else {
                 MessageUtils.showErrorMessage("Error accessing resource", e);
@@ -275,9 +324,6 @@ public class Ga4ghAPIHelper {
         genomeIdMap.put("Google 383928317087", "hg19");
         genomeIdMap.put("Google 461916304629", "hg19");
         genomeIdMap.put("Google 337315832689", "hg19");
-
-        genomeIdMap.put("NCBI SRP034507", "M74568");
-        genomeIdMap.put("NCBI SRP029392", "NC_004917");
 
     }
 

@@ -50,7 +50,7 @@ public class BrowseGa4ghAction extends MenuAction {
                         boolean valid = true;
                         for (Ga4ghDataset ds : provider.getDatasets()) {
 
-                            List<Ga4ghReadset> readsets = Ga4ghAPIHelper.readsetSearch(provider, ds, 10);
+                            List<Ga4ghReadset> readsets = Ga4ghAPIHelper.searchReadGroupsets(provider, ds.getId(), 10);
 
                             if (readsets == null) {
                                 log.error("No readsets returned for dataset: " + ds.getName());

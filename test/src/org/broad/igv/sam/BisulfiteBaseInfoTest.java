@@ -118,6 +118,21 @@ public class BisulfiteBaseInfoTest {
             return false;  //To change body of implemented methods use File | Settings | File Templates.
         }
 
+        @Override
+        public boolean isSupplementary() {
+            return false;
+        }
+
+        @Override
+        public boolean isVendorFailedRead() {
+            return false;
+        }
+
+        @Override
+        public boolean isPrimary() {
+            return false;
+        }
+
         public void setStart(int start) {
             //To change body of implemented methods use File | Settings | File Templates.
         }
@@ -206,6 +221,10 @@ public class BisulfiteBaseInfoTest {
          */
         public Strand getSecondOfPairStrand() {
             return secondOfPairStrand;
+        }
+
+        public boolean isNegativeStrand() {
+            return false;
         }
     }
 }
