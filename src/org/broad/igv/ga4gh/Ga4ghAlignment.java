@@ -92,7 +92,7 @@ public class Ga4ghAlignment extends SAMAlignment {
 
         JsonObject mateObject = json.getAsJsonObject("nextMatePosition");
         if (mateObject == null) {
-            this.setMate(new ReadMate("*", 0, false, false));
+            this.setMate(new ReadMate("*", 0, false, true));
         } else {
             String mateReferenceName = mateObject.get("referenceName").getAsString();
             String mateChr = genome == null ? mateReferenceName : genome.getChromosomeAlias(mateReferenceName);
@@ -101,7 +101,7 @@ public class Ga4ghAlignment extends SAMAlignment {
             this.setMate(new ReadMate(mateChr,
                     matePosition,
                     mateNegStrand,
-                    true));           // Assuming mate is mapped
+                    false));           // Assuming mate is mapped
 
         }
 
