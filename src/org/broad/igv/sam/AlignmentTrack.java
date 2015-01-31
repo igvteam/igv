@@ -705,9 +705,15 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     public int compare(String n0, String n1) {
                         ReferenceFrame f0 = FrameManager.getFrame(n0);
                         ReferenceFrame f1 = FrameManager.getFrame(n1);
-                        int chrComp = ChromosomeNameComparator.get().compare(f0.getChrName(), f1.getChrName());
+
+                        String chr0 = f0 == null ? "" : f0.getChrName();
+                        String chr1 = f1 == null ? "" : f1.getChrName();
+                        int s0 = f0 == null ? 0 : f0.getCurrentRange().getStart();
+                        int s1 = f1 == null ? 0 : f1.getCurrentRange().getStart();
+
+                        int chrComp = ChromosomeNameComparator.get().compare(chr0, chr1);
                         if (chrComp != 0) return chrComp;
-                        return f0.getCurrentRange().getStart() - f1.getCurrentRange().getStart();
+                        return s0 - s1;
                     }
                 };
 
