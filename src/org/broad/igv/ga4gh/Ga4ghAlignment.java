@@ -88,7 +88,7 @@ public class Ga4ghAlignment extends SAMAlignment {
         this.secondaryAlignment = json.has("secondaryAlignment") ? json.get("secondaryAlignment").getAsBoolean() : false;
         this.supplementaryAlignment = json.has("supplementaryAlignment") ? json.get("supplementaryAlignment").getAsBoolean() : false;
         this.readSequence = json.has("alignedSequence") ? json.get("alignedSequence").getAsString() : null;
-        byte[] baseQualities = generateBaseQualities(json.getAsJsonArray("alignedQuality"));
+        byte[] baseQualities = json.has("alignedQuality") ? generateBaseQualities(json.getAsJsonArray("alignedQuality")) : null;
 
         JsonObject mateObject = json.getAsJsonObject("nextMatePosition");
         if (mateObject == null) {

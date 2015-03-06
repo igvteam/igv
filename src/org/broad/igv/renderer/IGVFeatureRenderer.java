@@ -70,7 +70,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     //Map from Exon to y offset
     //Could use more coordinates, but they are all contained in the Exon
     private Map<IExon, Integer> exonMap = new HashMap<IExon, Integer>(100);
-    private AlternativeSpliceGraph<Integer> exonGraph = new AlternativeSpliceGraph<Integer>();
     private Set<String> drawnNames = new HashSet<String>(100);
 
     protected boolean isGenotypeRenderer = false;
@@ -200,7 +199,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     drawFeatureBlock(pixelStart, pixelEnd, pixelThickStart, pixelThickEnd, pixelYCenter, g2D);
                     Graphics2D arrowGraphics = context.getGraphic2DForColor(Color.WHITE);
                     drawStrandArrows(feature.getStrand(), pixelStart, pixelEnd, pixelYCenter, 0,
-                            displayMode, arrowGraphics);
+                            displayMode, trackRectangle, arrowGraphics);
 
                     // This is ugly, but alternatives are probably worse
                     if (feature instanceof EncodePeakFeature && pixelWidth > 5) {
@@ -380,9 +379,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         int maxLineEndX = Integer.MIN_VALUE;
         IExon lastExon = null;
 
-        exonGraph.startFeature();
-
-
         int exonCount = gene.getExons().size();
 
         for (int idx = 0; idx < exonCount; idx++) {
@@ -421,18 +417,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             int curYOffset = yOffset;
             boolean drawConnectingLine = true;
 
-            if (mode == Track.DisplayMode.ALTERNATIVE_SPLICE) {
-
-                IExon eProx = Exon.getExonProxy(exon);
-                drawConnectingLine = !exonGraph.containsEdge(lastExon, eProx);
-                if (exonGraph.hasParameter(eProx)) {
-                    curYOffset = exonGraph.getParameter(eProx);
-                } else {
-                    exonGraph.put(eProx, curYOffset);
-                }
-                lastExon = eProx;
-            }
-
             int pStart = getPixelFromChromosomeLocation(exon.getChr(), exon.getStart(), theOrigin, locationScale);
             int pEnd = getPixelFromChromosomeLocation(exon.getChr(), exon.getEnd(), theOrigin, locationScale);
 
@@ -444,7 +428,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     && lastExonEndX >= maxLineEndX) {
                 drawConnectingLine(lastExonEndX, lastY, pStart, curYOffset, exon.getStrand(), blockGraphics);
                 double angle = Math.atan(-(curYOffset - lastY) / ((pStart - lastExonEndX) + 1e-12));
-                drawStrandArrows(gene.getStrand(), lastExonEndX, pStart, lastY, angle, mode, arrowGraphics);
+                drawStrandArrows(gene.getStrand(), lastExonEndX, pStart, lastY, angle, mode, trackRectangle, arrowGraphics);
                 maxLineEndX = Math.max(maxLineEndX, pStart);
             }
             lastExonEndX = pEnd;
@@ -494,7 +478,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
                 Graphics2D whiteArrowGraphics = context.getGraphic2DForColor(Color.white);
                 drawStrandArrows(gene.getStrand(), pStart + ARROW_SPACING / 2, pEnd, curYOffset, 0, mode,
-                        whiteArrowGraphics);
+                        trackRectangle, whiteArrowGraphics);
 
                 if (locationScale < 0.25) {
                     labelAminoAcids(pStart, fontGraphics, theOrigin, context, gene, locationScale,
@@ -537,8 +521,15 @@ public class IGVFeatureRenderer extends FeatureRenderer {
      * @param mode
      * @param g2D
      */
-    protected void drawStrandArrows(Strand strand, int startX, int endX, int startY, double angle, Track.DisplayMode mode,
+    protected void drawStrandArrows(Strand strand,
+                                    int startX,
+                                    int endX,
+                                    int startY,
+                                    double angle,
+                                    Track.DisplayMode mode,
+                                    Rectangle trackRectangle,
                                     Graphics2D g2D) {
+
 
         //Don't draw arrows if we don't have a strand
         if (!strand.equals(Strand.POSITIVE) && !strand.equals(Strand.NEGATIVE)) {
@@ -546,30 +537,35 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         }
 
         // Don't draw strand arrows for very small regions
-        int distance = endX - startX;
-        if ((distance < 6)) {
+        // Limit drawing to visible region, we don't really know the viewport pEnd,
+        if ((endX - startX)  < 6) {
             return;
         }
 
         Graphics2D g = (Graphics2D) g2D.create();
 
-        // Limit drawing to visible region, we don't really know the viewport pEnd,
-        int vStart = 0;
-        int vEnd = 10000;
 
         // Draw the directional arrows on the feature
         int sz = mode == Track.DisplayMode.EXPANDED ? 3 : 2;
         sz = strand.equals(Strand.POSITIVE) ? -sz : sz;
-
         final int asz = Math.abs(sz);
 
         /*
          We draw arrows in a translated and rotated frame.
          This is to deal with alternative splice
          */
-        g.translate(startX, startY);
+
+        int delta = startX < trackRectangle.x ? (int) ((trackRectangle.x - startX) % ARROW_SPACING) : 0;
+        startX = Math.max(startX, trackRectangle.x);
+        endX = Math.min(endX, trackRectangle.x + trackRectangle.width);
+
+        int distance = endX - startX;
+
+        g.translate(startX - delta, startY);
         g.rotate(-angle);
         double endXInFrame = distance / Math.cos(angle);
+
+        System.out.println(delta);
 
         for (int ii = ARROW_SPACING / 2; ii < endXInFrame; ii += ARROW_SPACING) {
 
@@ -584,7 +580,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                                       int textBaselineY) {
 
         String name = feature.getName();
-        if (name == null || (drawnNames.contains(name) && mode == Track.DisplayMode.ALTERNATIVE_SPLICE)) {
+        if (name == null) {
             return lastFeatureEndedAtPixelX;
         }
 
@@ -756,7 +752,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     @Override
     public void reset() {
         exonMap.clear();
-        exonGraph = new AlternativeSpliceGraph<Integer>();
         drawnNames.clear();
     }
 }

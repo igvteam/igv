@@ -880,10 +880,7 @@ public class TrackMenuUtils {
         modes.put("Collapsed", Track.DisplayMode.COLLAPSED);
         modes.put("Expanded", Track.DisplayMode.EXPANDED);
         modes.put("Squished", Track.DisplayMode.SQUISHED);
-        boolean showAS = Boolean.parseBoolean(System.getProperty("showAS", "false"));
-        if (showAS) {
-            modes.put("Alternative Splice", Track.DisplayMode.ALTERNATIVE_SPLICE);
-        }
+
         for (final Map.Entry<String, Track.DisplayMode> entry : modes.entrySet()) {
             JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
             mm.setSelected(currentMode == entry.getValue());
