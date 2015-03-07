@@ -785,9 +785,10 @@ public class IGVCommandBar extends javax.swing.JPanel {
         detailsBehaviorButton.setPreferredSize(new java.awt.Dimension(32, 32));
         toolPanel.add(detailsBehaviorButton, JideBoxLayout.FIX);
 
-        rulerLineButton = new JideToggleButton("I");
+        rulerLineButton = new JideToggleButton();
         //roiToggleButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
         //roiToggleButton.setBorder(toolButtonBorder);
+        rulerLineButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/vertical-line.gif")));
         rulerLineButton.setAlignmentX(RIGHT_ALIGNMENT);
         rulerLineButton.setToolTipText("Enable ruler line in data panels");
         rulerLineButton.setMaximumSize(new java.awt.Dimension(32, 32));
