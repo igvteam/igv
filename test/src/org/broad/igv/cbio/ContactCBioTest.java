@@ -14,10 +14,7 @@ package org.broad.igv.cbio;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
-import org.junit.After;
-import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +30,7 @@ import static org.junit.Assert.*;
  * User: jacob
  * Date: 2012/02/02
  */
+@Ignore
 public class ContactCBioTest extends AbstractHeadlessTest {
 
     @BeforeClass
