@@ -60,7 +60,6 @@ public class SashimiPlot extends JFrame {
     private final double maxEnd;
 
 
-
     private static final List<Color> plotColors;
 
     static {
@@ -89,7 +88,7 @@ public class SashimiPlot extends JFrame {
         spliceJunctionTracks = new ArrayList<SpliceJunctionFinderTrack>(alignmentTracks.size());
         int colorInd = 0;
 
-        for(AlignmentTrack alignmentTrack: alignmentTracks){
+        for (AlignmentTrack alignmentTrack : alignmentTracks) {
 
 
             AlignmentDataManager oldDataManager = alignmentTrack.getDataManager();
@@ -155,7 +154,7 @@ public class SashimiPlot extends JFrame {
         return controlPanel;
     }
 
-    private static void setFixedSize(Component component, Dimension dimension){
+    private static void setFixedSize(Component component, Dimension dimension) {
         component.setPreferredSize(dimension);
         component.setMinimumSize(dimension);
         component.setMaximumSize(dimension);
@@ -231,7 +230,7 @@ public class SashimiPlot extends JFrame {
             this.track = track;
         }
 
-        public void updateToolTipText(TrackClickEvent tce){
+        public void updateToolTipText(TrackClickEvent tce) {
             toolTipText = track.getValueStringAt(tce.getFrame().getChrName(), tce.getChromosomePosition(), tce.getMouseEvent().getY(), tce.getFrame());
             toolTipText = "<html>" + toolTipText;
             setToolTipText(toolTipText);
@@ -249,13 +248,13 @@ public class SashimiPlot extends JFrame {
 
     /**
      * Set the minimum junction coverage, per trac,k and is not persistent
-     *
+     * <p/>
      * Our "Set Max Junction Coverage Range" just changes the view scaling, it doesn't
      * filter anything, which is different behavior than the minimum. This might be confusing.
      *
      * @param trackComponent
      * @param newMinJunctionCoverage
-     **/
+     */
     private void setMinJunctionCoverage(TrackComponent<SpliceJunctionFinderTrack> trackComponent, int newMinJunctionCoverage) {
         IAlignmentDataManager dataManager = getRenderer(trackComponent.track).getDataManager();
         dataManager.setMinJunctionCoverage(newMinJunctionCoverage);
@@ -268,6 +267,7 @@ public class SashimiPlot extends JFrame {
     /**
      * Set the max coverage depth, which is a graphical scaling parameter for determining how
      * thick the junction arcs will be
+     *
      * @param trackComponent
      * @param newMaxDepth
      */
@@ -290,6 +290,17 @@ public class SashimiPlot extends JFrame {
         @Override
         protected IGVPopupMenu getPopupMenu(MouseEvent e) {
             IGVPopupMenu menu = new IGVPopupMenu();
+
+            final JCheckBoxMenuItem showCoverageData = new JCheckBoxMenuItem("Show Coverage Data");
+            showCoverageData.setSelected(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SASHIMI_SHOW_COVERAGE));
+            showCoverageData.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    PreferenceManager.getInstance().put(PreferenceManager.SASHIMI_SHOW_COVERAGE, showCoverageData.isSelected());
+                    SashimiPlot.this.repaint();
+                }
+            });
+            menu.add(showCoverageData);
 
             CoverageTrack covTrack = getRenderer(this.trackComponent.track).getCoverageTrack();
             JMenuItem setCoverageDataRange = CoverageTrack.addDataRangeItem(SashimiPlot.this, null, Arrays.asList(covTrack));

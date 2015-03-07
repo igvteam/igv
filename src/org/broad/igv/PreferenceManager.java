@@ -250,6 +250,8 @@ public class PreferenceManager implements PropertyManager {
 
     public static final String IGV_PLUGIN_LIST_KEY = "IGV_PLUGIN_LIST";
 
+    public static final String SASHIMI_SHOW_COVERAGE = "SASHIMI.SHOW_COVERAGE";
+
     public static final String GOOGLE_API_KEY = "GOOGLE_API_KEY";
     public static final String ENABLE_GOOGLE_MENU = "ENABLE_GOOGLE_MENU";
 
@@ -1104,15 +1106,17 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SKIP_VERSION, "");
 
         defaultValues.put(COLOR_A, "0,150,0");
-        defaultValues.put(COLOR_C,"0,0,255");
+        defaultValues.put(COLOR_C, "0,0,255");
         defaultValues.put(COLOR_T, "255,0,0");
         defaultValues.put(COLOR_G, "209,113,5");
         defaultValues.put(COLOR_N, ColorUtilities.colorToString(Color.gray));
         defaultValues.put(SAM_COLOR_A, "0,255,0");
-        defaultValues.put(SAM_COLOR_C,"0,0,255");
+        defaultValues.put(SAM_COLOR_C, "0,0,255");
         defaultValues.put(SAM_COLOR_T, "255,0,0");
         defaultValues.put(SAM_COLOR_G, "209,113,5");
         defaultValues.put(SAM_COLOR_N, ColorUtilities.colorToString(Color.gray.brighter()));
+
+        defaultValues.put(SASHIMI_SHOW_COVERAGE, "true");
 
         defaultValues.put(ENABLE_GOOGLE_MENU, "false");
 
@@ -1208,7 +1212,7 @@ public class PreferenceManager implements PropertyManager {
         return String.format("%s:%s:%s", pluginId, toolName.replace(' ', '_'), key.replace(' ', '_'));
     }
 
-    public void putArgumentValue(String pluginId, String toolName, String command, String argName, String argValue){
+    public void putArgumentValue(String pluginId, String toolName, String command, String argName, String argValue) {
         String key = genArgKey(pluginId, toolName, command, argName);
         put(key, argValue);
     }
@@ -1217,7 +1221,7 @@ public class PreferenceManager implements PropertyManager {
         return get(genArgKey(pluginId, toolName, commandName, argId));
     }
 
-    private String genArgKey(String pluginId, String toolName, String command, String argId){
+    private String genArgKey(String pluginId, String toolName, String command, String argId) {
         return genToolKey(pluginId, toolName, String.format("%s:%s", command, argId));
     }
 

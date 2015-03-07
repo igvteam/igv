@@ -22,6 +22,7 @@ package org.broad.igv.renderer;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.IExon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.SpliceJunctionFeature;
@@ -169,7 +170,9 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
         Rectangle coverageRectangle = new Rectangle(trackRectangle);
 
-        if(coverageTrack != null){
+        final boolean showCoverage = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SASHIMI_SHOW_COVERAGE);
+
+        if(coverageTrack != null && showCoverage){
             //Only want the coverage track to go so high so that the arcs still have room
             int newHeight = coverageRectangle.height / 2;
             int newY = coverageRectangle.y + coverageRectangle.height / 2 - newHeight;
@@ -260,7 +263,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
                     int pixelYstart = 0;
                     int pixelYend = 0;
 
-                    if(coverageTrack != null){
+                    if(coverageTrack != null && showCoverage){
                         pixelYstart = getYOffset(coverageRectangle, coverageTrack.getDataRange() ,getCoverage(junctionStart));
                         pixelYend = getYOffset(coverageRectangle, coverageTrack.getDataRange() ,getCoverage(junctionEnd));
                     }

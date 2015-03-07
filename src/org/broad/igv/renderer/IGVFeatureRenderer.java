@@ -565,8 +565,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         g.rotate(-angle);
         double endXInFrame = distance / Math.cos(angle);
 
-        System.out.println(delta);
-
         for (int ii = ARROW_SPACING / 2; ii < endXInFrame; ii += ARROW_SPACING) {
 
             g.drawLine(ii, 0, ii + sz, +asz);
