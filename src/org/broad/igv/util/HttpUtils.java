@@ -229,9 +229,9 @@ public class HttpUtils {
 
     private InputStream getInputStream(HttpURLConnection conn) throws IOException {
         InputStream input = conn.getInputStream();
-      //  if ("gzip".equals(conn.getContentEncoding())) {
-      //      input = new GZIPInputStream(input);
-      //  }
+        //  if ("gzip".equals(conn.getContentEncoding())) {
+        //      input = new GZIPInputStream(input);
+        //  }
         return input;
     }
 
@@ -575,11 +575,9 @@ public class HttpUtils {
         }
 
         // Install a callback to allow the igv Amazon and local hosts
-        HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier()
-        {
-            public boolean verify(String hostname, SSLSession session)
-            {
-                if (hostname.equals("igv.broadinstitute.org") || hostname.equals("igvdata.broadinstitute.org") || hostname.equals("localhost") )
+        HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+            public boolean verify(String hostname, SSLSession session) {
+                if (hostname.equals("igv.broadinstitute.org") || hostname.equals("igvdata.broadinstitute.org") || hostname.equals("localhost"))
                     return true;
                 return false;
             }
@@ -683,8 +681,8 @@ public class HttpUtils {
         if (GSUtils.isGenomeSpace(url)) {
             conn.setRequestProperty("Accept", "application/json,text/plain");
         } else {
-            conn.setRequestProperty("Accept", "text/plain");
-            conn.setRequestProperty("Accept-encoding", "gzip");
+            if (!"HEAD".equals(method))
+                conn.setRequestProperty("Accept", "text/plain");
         }
 
         //------//
