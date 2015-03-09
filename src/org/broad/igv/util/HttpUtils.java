@@ -155,7 +155,7 @@ public class HttpUtils {
 
         StringBuilder postData = new StringBuilder();
 
-        for (Map.Entry<String,String> param : params.entrySet()) {
+        for (Map.Entry<String, String> param : params.entrySet()) {
             if (postData.length() != 0) postData.append('&');
             postData.append(param.getKey());
             postData.append('=');
@@ -163,7 +163,7 @@ public class HttpUtils {
         }
         byte[] postDataBytes = postData.toString().getBytes();
 
-        HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         //conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
