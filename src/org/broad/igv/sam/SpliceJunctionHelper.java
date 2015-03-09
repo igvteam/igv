@@ -85,7 +85,12 @@ public class SpliceJunctionHelper {
         if (strandAttr != null) {
             isNegativeStrand = strandAttr.toString().charAt(0) == '-';
         } else {
-            isNegativeStrand = alignment.isNegativeStrand(); // <= TODO -- this isn't correct for all libraries.
+            if(alignment.isPaired()) {
+                isNegativeStrand = alignment.getFirstOfPairStrand() == Strand.NEGATIVE;
+            }
+            else {
+                isNegativeStrand = alignment.isNegativeStrand(); // <= TODO -- this isn't correct for all libraries.
+            }
         }
 
         Table<Integer, Integer, SpliceJunctionFeature> startEndJunctionsTableThisStrand =
