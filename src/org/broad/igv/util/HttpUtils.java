@@ -229,9 +229,9 @@ public class HttpUtils {
 
     private InputStream getInputStream(HttpURLConnection conn) throws IOException {
         InputStream input = conn.getInputStream();
-        if ("gzip".equals(conn.getContentEncoding())) {
-            input = new GZIPInputStream(input);
-        }
+      //  if ("gzip".equals(conn.getContentEncoding())) {
+      //      input = new GZIPInputStream(input);
+      //  }
         return input;
     }
 
