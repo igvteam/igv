@@ -1234,6 +1234,7 @@ public class HttpUtils {
                 if (token != null) {
                     List<String> cookieList = headers.get("Cookie");
                     boolean needsTokenCookie = true;
+                    boolean needsToolCookie = true;
                     if (cookieList == null) {
                         cookieList = new ArrayList<String>(1);
                         headers.put("Cookie", cookieList);
@@ -1242,11 +1243,15 @@ public class HttpUtils {
                     for (String cookie : cookieList) {
                         if (cookie.startsWith("gs-token")) {
                             needsTokenCookie = false;
-                            break;
+                        } else if (cookie.startsWith("gs-toolname")) {
+                            needsToolCookie = false;
                         }
                     }
                     if (needsTokenCookie) {
                         cookieList.add("gs-token=" + token);
+                    }
+                    if (needsToolCookie) {
+                        cookieList.add("gs-toolname=IGV");
                     }
                 }
             }
