@@ -50,9 +50,9 @@ public class Parser {
             e.printStackTrace();
             return null;
         }
-        if (nextLine == null || nextLine.trim().length() == 0) {
+        if (nextLine == null) {
             return null;
-        } else if (nextLine.startsWith(commentPrefix)) {
+        } else if (nextLine.trim().length() == 0 || nextLine.startsWith(commentPrefix)) {
             return readNextRecord(reader);
         }
 

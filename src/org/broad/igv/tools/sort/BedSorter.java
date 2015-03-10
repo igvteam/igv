@@ -55,15 +55,23 @@ public class BedSorter extends Sorter {
     @Override
     String writeHeader(AsciiLineReader reader, PrintWriter writer) throws IOException {
         String nextLine = reader.readLine();
+
+        if (nextLine.startsWith("psLayout")) {
+            do {
+                writer.println(nextLine);
+                nextLine = reader.readLine();
+            } while (!nextLine.startsWith("-"));
+
+        }
         // TODO -- check "browser" line syntax,  is it a multi-line directive?
         while (nextLine.startsWith("#") ||
                 nextLine.startsWith("browser") ||
                 nextLine.startsWith("track") ||
                 nextLine.trim().length() == 0) {
             writer.println(nextLine);
-            nextLine = reader.readLine();
         }
 
+        nextLine = reader.readLine();
         return nextLine;
 
 
