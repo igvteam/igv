@@ -77,9 +77,13 @@ public class PSLCodec extends UCSCCodec<BasicFeature> {
 
         PSLRecord f = null;
         try {
-            if (line.trim().length() == 0 || line.startsWith("#") || line.startsWith("track") ||
+            if (line.trim().length() == 0 ||
+                    line.startsWith("#") ||
+                    line.startsWith("track") ||
                     line.startsWith("browser") ||
-                    line.startsWith("psLayout") || line.startsWith("match") || line.startsWith("---")) {
+                    line.startsWith("psLayout") ||
+                    line.startsWith("match") ||
+                    line.startsWith("---")) {
                 return null;
             }
 
