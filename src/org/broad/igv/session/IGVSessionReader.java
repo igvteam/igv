@@ -89,6 +89,7 @@ public class IGVSessionReader implements SessionReader {
      * Map of id -> track, for second pass through when tracks reference each other
      */
     private final Map<String, List<Track>> allTracks = Collections.synchronizedMap(new LinkedHashMap<String, List<Track>>());
+    private String rootPath;
 
     public List<Track> getTracksById(String trackId) {
         return allTracks.get(trackId);
@@ -303,6 +304,7 @@ public class IGVSessionReader implements SessionReader {
             nodes = document.getElementsByTagName(SessionElement.SESSION.getText());
         }
 
+        this.rootPath = sessionPath;
         processRootNode(session, nodes.item(0), additionalInformation, sessionPath);
 
         // Add tracks not explicitly allocated to panels.  It is legal to define sessions with the Resources
@@ -592,9 +594,9 @@ public class IGVSessionReader implements SessionReader {
                                     continue;
                                 }
 
-                               // if (relPath != null) {
-                               //     id = id.replace(suppliedPath, relPath);
-                               // }
+                                // if (relPath != null) {
+                                //     id = id.replace(suppliedPath, relPath);
+                                // }
 
                                 List<Track> trackList = leftoverTrackDictionary.get(id);
                                 if (trackList == null) {
@@ -1042,6 +1044,12 @@ public class IGVSessionReader implements SessionReader {
         List<Track> matchedTracks = allTracks.get(id);
 
         if (matchedTracks == null) {
+            //Try creating an "absolute" path for the id
+            matchedTracks = allTracks.get(getAbsolutePath(id, rootPath, alternateRootPath));
+        }
+
+        if (matchedTracks == null) {
+
             log.info("Warning.  No tracks were found with id: " + id + " in session file");
             String className = getAttribute(element, "clazz");
 
@@ -1077,6 +1085,7 @@ public class IGVSessionReader implements SessionReader {
             } catch (ClassNotFoundException e) {
                 //pass
             }
+
 
         } else {
 

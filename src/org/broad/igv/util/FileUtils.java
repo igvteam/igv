@@ -386,8 +386,13 @@ public class FileUtils {
         } else {
             File parent = new File(referencePath).getParentFile();
             File file = new File(parent, inputPath);
-            absolutePath = file.getAbsolutePath();
+            try {
+                absolutePath = file.getCanonicalPath();
+            } catch (IOException e) {
+                absolutePath = file.getAbsolutePath();
+            }
         }
+
         return absolutePath;
     }
 
