@@ -153,23 +153,6 @@ public class GSUtils {
         if (tokenFile.exists()) {
             tokenFile.delete();
         }
-
-
-        try {
-            URI gsURI = new URI(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER));
-            CookieManager manager = (CookieManager) CookieManager.getDefault();
-            if (manager == null) return;
-            final CookieStore cookieStore = manager.getCookieStore();
-            List<HttpCookie> cookies = new ArrayList<HttpCookie>(cookieStore.get(gsURI));
-            for (HttpCookie cookie : cookies) {
-                final String name = cookie.getName();
-                if (name.equals("gs-token") || name.equals("gs-username")) {
-                    cookieStore.remove(gsURI, cookie);
-                }
-            }
-        } catch (URISyntaxException e) {
-            log.error("Error creating GS URI", e);
-        }
     }
 
     private static void writeToFile(String line, File aFile) {
@@ -191,9 +174,9 @@ public class GSUtils {
 
 
     public static boolean isGenomeSpace(URL url) {
-        String dmServer = getDMHost();
-        String atmServer = getATMHost();
-        return url.getHost().contains(dmServer) || url.getHost().contains(atmServer);
+        //String dmServer = getDMHost();
+        //String atmServer = getATMHost();
+        return url.getHost().contains("genomespace.org");
     }
 
     private synchronized static String getDMHost() {

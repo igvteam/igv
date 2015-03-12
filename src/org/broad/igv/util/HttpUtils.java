@@ -1221,13 +1221,20 @@ public class HttpUtils {
      * gs-token=HnR9rBShNO4dTXk8cKXVJT98Oe0jWVY+; Domain=.genomespace.org; Expires=Mon, 21-Jul-2031 03:27:23 GMT; Path=/
      */
 
-    static class IGVCookieManager extends CookieManager {
+    static class IGVCookieManager extends CookieHandler {
+
+
+        CookieManager wrappedManager;
+
+        public IGVCookieManager() {
+            wrappedManager = new CookieManager();
+        }
 
         @Override
         public Map<String, List<String>> get(URI uri, Map<String, List<String>> requestHeaders) throws IOException {
-            Map<String, List<String>> headers = new HashMap<String, List<String>>();
-            headers.putAll(super.get(uri, requestHeaders));
 
+            Map<String, List<String>> headers = new HashMap<String, List<String>>();
+            headers.putAll(wrappedManager.get(uri, requestHeaders));
 
             if (GSUtils.isGenomeSpace(uri.toURL())) {
                 String token = GSUtils.getGSToken();
@@ -1281,8 +1288,10 @@ public class HttpUtils {
                     }
                 }
             }
-            super.put(uri, responseHeaders);
+            wrappedManager.put(uri, responseHeaders);
         }
     }
+
+
 
 }
