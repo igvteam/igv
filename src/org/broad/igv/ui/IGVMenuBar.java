@@ -333,17 +333,17 @@ public class IGVMenuBar extends JMenuBar {
 
 
         //DataTrack Math------------------------//
-        if (Globals.isDevelopment()) {
-            JMenuItem combineDataItem = new JMenuItem("Combine Data Tracks");
-            combineDataItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    CombinedDataSourceDialog dialog = new CombinedDataSourceDialog(IGV.getMainFrame());
-                    dialog.setVisible(true);
-                }
-            });
-            menuItems.add(combineDataItem);
-        }
+
+        JMenuItem combineDataItem = new JMenuItem("Combine Data Tracks");
+        combineDataItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                CombinedDataSourceDialog dialog = new CombinedDataSourceDialog(IGV.getMainFrame());
+                dialog.setVisible(true);
+            }
+        });
+        menuItems.add(combineDataItem);
+
 
         //-------------------------------------//
 
