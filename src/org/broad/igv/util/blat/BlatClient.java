@@ -12,6 +12,7 @@
 package org.broad.igv.util.blat;
 
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.PSLRecord;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -47,19 +48,6 @@ public class BlatClient {
     static String hgsid;  // cached, not sure what this is for but apparently its best to reuse it.
     static long lastQueryTime = 0;
 
-    static void Usage() {
-        System.out.println("usage: BlatBot <organism> <db> <searchType> <sortOrder>");
-        System.out.println(" <outputType> <querySequence>");
-        System.out.println("\tSpecify organism using the common name with first letter");
-        System.out.println("capitalized.");
-        System.out.println("\te.g. Human, Mouse, Rat etc.");
-        System.out.println("\tDb is database or assembly name e.g hg17, mm5, rn3 etc.");
-        System.out.println("\tsearchType can be BLATGuess, DNA, RNA, transDNA or transRNA");
-        System.out.println("\tsortOrder can be query,score; query,start; chrom,score");
-        System.out.println("\tchrom,start; score.");
-        System.out.println("\toutputType can be pslNoHeader, psl or hyperlink.");
-        System.out.println("\tblats will be run in groups of $batchCount sequences, all");
-    }
 
 
     public static void main(String[] args) throws IOException {
@@ -76,10 +64,22 @@ public class BlatClient {
         String outputType = args[4];
         String userSeq = args[5];
 
-
         blat(org, db, searchType, sortOrder, outputType, userSeq);
 
+    }
 
+    static void Usage() {
+        System.out.println("usage: BlatBot <organism> <db> <searchType> <sortOrder>");
+        System.out.println(" <outputType> <querySequence>");
+        System.out.println("\tSpecify organism using the common name with first letter");
+        System.out.println("capitalized.");
+        System.out.println("\te.g. Human, Mouse, Rat etc.");
+        System.out.println("\tDb is database or assembly name e.g hg17, mm5, rn3 etc.");
+        System.out.println("\tsearchType can be BLATGuess, DNA, RNA, transDNA or transRNA");
+        System.out.println("\tsortOrder can be query,score; query,start; chrom,score");
+        System.out.println("\tchrom,start; score.");
+        System.out.println("\toutputType can be pslNoHeader, psl or hyperlink.");
+        System.out.println("\tblats will be run in groups of $batchCount sequences, all");
     }
 
     public static List<String> blat(String org, String db, String userSeq) throws IOException {
@@ -116,7 +116,7 @@ public class BlatClient {
         }
 
         //$response;
-        String $url = "http://genome.cse.ucsc.edu/cgi-bin/hgBlat";
+        String $url = PreferenceManager.getInstance().get(PreferenceManager.BLAT_URL);
 
         //if an hgsid was obtained from the output of the first batch
         //then use this.
@@ -202,6 +202,11 @@ public class BlatClient {
 
     public static void doBlatQuery(final String chr, final int start, final int end) {
 
+        if((end - start) > 8000) {
+            MessageUtils.showMessage("BLAT searches are limited to 8kb.  Please try a shorter sequence.");
+            return;
+        }
+
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
         final byte[] seqBytes = genome.getSequence(chr, start, end);
         String userSeq = new String(seqBytes);
@@ -210,6 +215,7 @@ public class BlatClient {
     }
 
     public static void doBlatQuery(final String userSeq) {
+
         LongRunningTask.submit(new NamedRunnable() {
             public String getName() {
                 return "Blat sequence";
@@ -250,18 +256,6 @@ public class BlatClient {
                         BlatQueryWindow win = new BlatQueryWindow(userSeq, features);
                         win.setVisible(true);
 
-
-//
-//                        // Create gene list from top 10 hits -- assumed these are sorted by score
-//                        ArrayList<String> loci = new ArrayList(10);
-//                        for ( Feature f : features) {
-//                            String l = f.getChr() + ":" + f.getStart() + "-" + f.getEnd();
-//                            loci.add(l);
-//                            if (loci.size() == 10) break;
-//                        }
-//                        GeneList gl = new GeneList("Blat", loci);
-//                        GeneListManager.getInstance().addGeneList(gl);
-//                        IGV.getInstance().setGeneList("Blat");
                     }
                 } catch (IOException e1) {
 

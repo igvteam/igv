@@ -5407,748 +5407,6 @@
          <object class="com.jformdesigner.model.FormContainer"> 
           <string>javax.swing.JPanel</string> 
           <object class="com.jformdesigner.model.FormLayoutManager"> 
-           <class>com.jformdesigner.runtime.NullLayout</class> 
-          </object> 
-          <void method="setProperty"> 
-           <string>border</string> 
-           <object class="javax.swing.border.EmptyBorder"> 
-            <int>1</int> 
-            <int>10</int> 
-            <int>1</int> 
-            <int>10</int> 
-           </object> 
-          </void> 
-          <void property="name"> 
-           <string>advancedPanel</string> 
-          </void> 
-          <void method="add"> 
-           <object class="com.jformdesigner.model.FormComponent"> 
-            <string>javax.swing.JButton</string> 
-            <void method="setProperty"> 
-             <string>text</string> 
-             <string>Clear  Genome Cache</string> 
-            </void> 
-            <void property="name"> 
-             <string>clearGenomeCacheButton</string> 
-            </void> 
-            <void method="addEvent"> 
-             <object class="com.jformdesigner.model.FormEvent"> 
-              <string>java.awt.event.ActionListener</string> 
-              <string>actionPerformed</string> 
-              <string>clearGenomeCacheButtonActionPerformed</string> 
-              <boolean>true</boolean> 
-             </object> 
-            </void> 
-           </object> 
-           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-            <class>com.jformdesigner.runtime.NullConstraints</class> 
-            <void method="setProperty"> 
-             <string>x</string> 
-             <int>390</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>y</string> 
-             <int>95</int> 
-            </void> 
-           </object> 
-          </void> 
-          <void method="add"> 
-           <object class="com.jformdesigner.model.FormComponent"> 
-            <string>javax.swing.JCheckBox</string> 
-            <void method="setProperty"> 
-             <string>text</string> 
-             <string>Enable port</string> 
-            </void> 
-            <void property="name"> 
-             <string>enablePortCB</string> 
-            </void> 
-            <void method="addEvent"> 
-             <object class="com.jformdesigner.model.FormEvent"> 
-              <string>java.awt.event.ActionListener</string> 
-              <string>actionPerformed</string> 
-              <string>enablePortCBActionPerformed</string> 
-              <boolean>true</boolean> 
-             </object> 
-            </void> 
-           </object> 
-           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-            <class>com.jformdesigner.runtime.NullConstraints</class> 
-            <void method="setProperty"> 
-             <string>x</string> 
-             <int>35</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>y</string> 
-             <int>30</int> 
-            </void> 
-           </object> 
-          </void> 
-          <void method="add"> 
-           <object class="com.jformdesigner.model.FormComponent"> 
-            <string>javax.swing.JTextField</string> 
-            <void method="setProperty"> 
-             <string>text</string> 
-             <string>60151</string> 
-            </void> 
-            <void property="name"> 
-             <string>portField</string> 
-            </void> 
-            <void method="addEvent"> 
-             <object class="com.jformdesigner.model.FormEvent"> 
-              <string>java.awt.event.ActionListener</string> 
-              <string>actionPerformed</string> 
-              <string>portFieldActionPerformed</string> 
-              <boolean>true</boolean> 
-             </object> 
-            </void> 
-            <void method="addEvent"> 
-             <object class="com.jformdesigner.model.FormEvent"> 
-              <string>java.awt.event.FocusListener</string> 
-              <string>focusLost</string> 
-              <string>portFieldFocusLost</string> 
-              <boolean>true</boolean> 
-             </object> 
-            </void> 
-           </object> 
-           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-            <class>com.jformdesigner.runtime.NullConstraints</class> 
-            <void method="setProperty"> 
-             <string>width</string> 
-             <int>126</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>x</string> 
-             <int>175</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>y</string> 
-             <int>27</int> 
-            </void> 
-           </object> 
-          </void> 
-          <void method="add"> 
-           <object class="com.jformdesigner.model.FormComponent"> 
-            <string>javax.swing.JLabel</string> 
-            <void method="setProperty"> 
-             <string>font</string> 
-             <object class="java.awt.Font"> 
-              <string>Lucida Grande</string> 
-              <int>2</int> 
-              <int>13</int> 
-             </object> 
-            </void> 
-            <void method="setProperty"> 
-             <string>text</string> 
-             <string>Enable port to send commands and http requests to IGV. </string> 
-            </void> 
-            <void property="name"> 
-             <string>jLabel22</string> 
-            </void> 
-           </object> 
-           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-            <class>com.jformdesigner.runtime.NullConstraints</class> 
-            <void method="setProperty"> 
-             <string>x</string> 
-             <int>315</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>y</string> 
-             <int>33</int> 
-            </void> 
-           </object> 
-          </void> 
-          <void method="add"> 
-           <object class="com.jformdesigner.model.FormComponent"> 
-            <string>javax.swing.JCheckBox</string> 
-            <void method="setProperty"> 
-             <string>text</string> 
-             <string>&lt;html&gt;Automatically check for updated genomes.    &amp;nbsp;&amp;nbsp;&amp;nbsp;   &lt;i&gt;Most users should leave this checked.</string> 
-            </void> 
-            <void property="name"> 
-             <string>genomeUpdateCB</string> 
-            </void> 
-            <void method="addEvent"> 
-             <object class="com.jformdesigner.model.FormEvent"> 
-              <string>java.awt.event.ActionListener</string> 
-              <string>actionPerformed</string> 
-              <string>genomeUpdateCBActionPerformed</string> 
-              <boolean>true</boolean> 
-             </object> 
-            </void> 
-           </object> 
-           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-            <class>com.jformdesigner.runtime.NullConstraints</class> 
-            <void method="setProperty"> 
-             <string>x</string> 
-             <int>35</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>y</string> 
-             <int>205</int> 
-            </void> 
-           </object> 
-          </void> 
-          <void method="add"> 
-           <object class="com.jformdesigner.model.FormComponent"> 
-            <string>javax.swing.JLabel</string> 
-            <void method="setProperty"> 
-             <string>text</string> 
-             <string>Data Registry URL</string> 
-            </void> 
-            <void property="name"> 
-             <string>jLabel6</string> 
-            </void> 
-           </object> 
-           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-            <class>com.jformdesigner.runtime.NullConstraints</class> 
-            <void method="setProperty"> 
-             <string>x</string> 
-             <int>70</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>y</string> 
-             <int>170</int> 
-            </void> 
-           </object> 
-          </void> 
-          <void method="add"> 
-           <object class="com.jformdesigner.model.FormComponent"> 
-            <string>javax.swing.JTextField</string> 
-            <void method="setProperty"> 
-             <string>enabled</string> 
-             <boolean>false</boolean> 
-            </void> 
-            <void property="name"> 
-             <string>dataServerURLTextField</string> 
-            </void> 
-            <void method="addEvent"> 
-             <object class="com.jformdesigner.model.FormEvent"> 
-              <string>java.awt.event.ActionListener</string> 
-              <string>actionPerformed</string> 
-              <string>dataServerURLTextFieldActionPerformed</string> 
-              <boolean>true</boolean> 
-             </object> 
-            </void> 
-            <void method="addEvent"> 
-             <object class="com.jformdesigner.model.FormEvent"> 
-              <string>java.awt.event.FocusListener</string> 
-              <string>focusLost</string> 
-              <string>dataServerURLTextFieldFocusLost</string> 
-              <boolean>true</boolean> 
-             </object> 
-            </void> 
-           </object> 
-           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-            <class>com.jformdesigner.runtime.NullConstraints</class> 
-            <void method="setProperty"> 
-             <string>x</string> 
-             <int>225</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>y</string> 
-             <int>165</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>width</string> 
-             <int>494</int> 
-            </void> 
-           </object> 
-          </void> 
-          <void method="add"> 
-           <object class="com.jformdesigner.model.FormComponent"> 
-            <string>javax.swing.JLabel</string> 
-            <void method="setProperty"> 
-             <string>text</string> 
-             <string>Genome Server URL</string> 
-            </void> 
-            <void property="name"> 
-             <string>jLabel1</string> 
-            </void> 
-           </object> 
-           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-            <class>com.jformdesigner.runtime.NullConstraints</class> 
-            <void method="setProperty"> 
-             <string>x</string> 
-             <int>70</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>y</string> 
-             <int>135</int> 
-            </void> 
-           </object> 
-          </void> 
-          <void method="add"> 
-           <object class="com.jformdesigner.model.FormComponent"> 
-            <string>javax.swing.JTextField</string> 
-            <void method="setProperty"> 
-             <string>text</string> 
-             <string>jTextField1</string> 
-            </void> 
-            <void method="setProperty"> 
-             <string>enabled</string> 
-             <boolean>false</boolean> 
-            </void> 
-            <void property="name"> 
-             <string>genomeServerURLTextField</string> 
-            </void> 
-            <void method="addEvent"> 
-             <object class="com.jformdesigner.model.FormEvent"> 
-              <string>java.awt.event.ActionListener</string> 
-              <string>actionPerformed</string> 
-              <string>genomeServerURLTextFieldActionPerformed</string> 
-              <boolean>true</boolean> 
-             </object> 
-            </void> 
-            <void method="addEvent"> 
-             <object class="com.jformdesigner.model.FormEvent"> 
-              <string>java.awt.event.FocusListener</string> 
-              <string>focusLost</string> 
-              <string>genomeServerURLTextFieldFocusLost</string> 
-              <boolean>true</boolean> 
-             </object> 
-            </void> 
-           </object> 
-           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-            <class>com.jformdesigner.runtime.NullConstraints</class> 
-            <void method="setProperty"> 
-             <string>x</string> 
-             <int>225</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>y</string> 
-             <int>130</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>width</string> 
-             <int>494</int> 
-            </void> 
-           </object> 
-          </void> 
-          <void method="add"> 
-           <object class="com.jformdesigner.model.FormComponent"> 
-            <string>javax.swing.JCheckBox</string> 
-            <void method="setProperty"> 
-             <string>text</string> 
-             <string>Edit server properties</string> 
-            </void> 
-            <void property="name"> 
-             <string>editServerPropertiesCB</string> 
-            </void> 
-            <void method="addEvent"> 
-             <object class="com.jformdesigner.model.FormEvent"> 
-              <string>java.awt.event.ActionListener</string> 
-              <string>actionPerformed</string> 
-              <string>editServerPropertiesCBActionPerformed</string> 
-              <boolean>true</boolean> 
-             </object> 
-            </void> 
-           </object> 
-           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-            <class>com.jformdesigner.runtime.NullConstraints</class> 
-            <void method="setProperty"> 
-             <string>x</string> 
-             <int>35</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>y</string> 
-             <int>95</int> 
-            </void> 
-           </object> 
-          </void> 
-          <void method="add"> 
-           <object class="com.jformdesigner.model.FormComponent"> 
-            <string>javax.swing.JButton</string> 
-            <void method="setProperty"> 
-             <string>text</string> 
-             <string>Reset to Defaults</string> 
-            </void> 
-            <void property="name"> 
-             <string>jButton1</string> 
-            </void> 
-            <void method="addEvent"> 
-             <object class="com.jformdesigner.model.FormEvent"> 
-              <string>java.awt.event.ActionListener</string> 
-              <string>actionPerformed</string> 
-              <string>jButton1ActionPerformed</string> 
-              <boolean>true</boolean> 
-             </object> 
-            </void> 
-           </object> 
-           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-            <class>com.jformdesigner.runtime.NullConstraints</class> 
-            <void method="setProperty"> 
-             <string>x</string> 
-             <int>225</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>y</string> 
-             <int>95</int> 
-            </void> 
-           </object> 
-          </void> 
-          <void method="add"> 
-           <object class="com.jformdesigner.model.FormComponent"> 
-            <string>javax.swing.JButton</string> 
-            <void method="setProperty"> 
-             <string>text</string> 
-             <string>Move...</string> 
-            </void> 
-            <void property="name"> 
-             <string>igvDirectoryButton</string> 
-            </void> 
-            <void method="addEvent"> 
-             <object class="com.jformdesigner.model.FormEvent"> 
-              <string>java.awt.event.ActionListener</string> 
-              <string>actionPerformed</string> 
-              <string>igvDirectoryButtonActionPerformed</string> 
-              <boolean>true</boolean> 
-             </object> 
-            </void> 
-           </object> 
-           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-            <class>com.jformdesigner.runtime.NullConstraints</class> 
-            <void method="setProperty"> 
-             <string>x</string> 
-             <int>610</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>y</string> 
-             <int>495</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>width</string> 
-             <int>100</int> 
-            </void> 
-           </object> 
-          </void> 
-          <void method="add"> 
-           <object class="com.jformdesigner.model.FormComponent"> 
-            <string>javax.swing.JLabel</string> 
-            <void method="setProperty"> 
-             <string>border</string> 
-             <object class="javax.swing.border.BevelBorder"> 
-              <int>1</int> 
-              <null/> 
-              <null/> 
-              <null/> 
-              <null/> 
-             </object> 
-            </void> 
-            <void property="name"> 
-             <string>igvDirectoryField</string> 
-            </void> 
-           </object> 
-           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-            <class>com.jformdesigner.runtime.NullConstraints</class> 
-            <void method="setProperty"> 
-             <string>x</string> 
-             <int>55</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>y</string> 
-             <int>495</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>width</string> 
-             <int>550</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>height</string> 
-             <int>25</int> 
-            </void> 
-           </object> 
-          </void> 
-          <void method="add"> 
-           <object class="com.jformdesigner.model.FormComponent"> 
-            <string>javax.swing.JLabel</string> 
-            <void method="setProperty"> 
-             <string>text</string> 
-             <string>IGV Directory: </string> 
-            </void> 
-            <void property="name"> 
-             <string>label21</string> 
-            </void> 
-           </object> 
-           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-            <class>com.jformdesigner.runtime.NullConstraints</class> 
-            <void method="setProperty"> 
-             <string>x</string> 
-             <int>45</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>y</string> 
-             <int>460</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>width</string> 
-             <int>105</int> 
-            </void> 
-           </object> 
-          </void> 
-          <void method="add"> 
-           <object class="com.jformdesigner.model.FormContainer"> 
-            <string>javax.swing.JPanel</string> 
-            <object class="com.jformdesigner.model.FormLayoutManager"> 
-             <class>com.jformdesigner.runtime.NullLayout</class> 
-            </object> 
-            <void property="name"> 
-             <string>tooltipOptionsPanel</string> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JLabel</string> 
-              <void method="setProperty"> 
-               <string>text</string> 
-               <string>Tooltip initial delay (ms)</string> 
-              </void> 
-              <void property="name"> 
-               <string>label24</string> 
-              </void> 
-             </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>com.jformdesigner.runtime.NullConstraints</class> 
-              <void method="setProperty"> 
-               <string>width</string> 
-               <int>185</int> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JLabel</string> 
-              <void method="setProperty"> 
-               <string>text</string> 
-               <string>Tooltip reshow delay (ms)</string> 
-              </void> 
-              <void property="name"> 
-               <string>label25</string> 
-              </void> 
-             </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>com.jformdesigner.runtime.NullConstraints</class> 
-              <void method="setProperty"> 
-               <string>width</string> 
-               <int>185</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>height</string> 
-               <int>23</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>y</string> 
-               <int>32</int> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JLabel</string> 
-              <void method="setProperty"> 
-               <string>text</string> 
-               <string>Tooltip dismiss delay (ms)</string> 
-              </void> 
-              <void property="name"> 
-               <string>label26</string> 
-              </void> 
-             </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>com.jformdesigner.runtime.NullConstraints</class> 
-              <void method="setProperty"> 
-               <string>width</string> 
-               <int>185</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>height</string> 
-               <int>16</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>y</string> 
-               <int>70</int> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JTextField</string> 
-              <void property="name"> 
-               <string>toolTipInitialDelayField</string> 
-              </void> 
-              <void method="addEvent"> 
-               <object class="com.jformdesigner.model.FormEvent"> 
-                <string>java.awt.event.ActionListener</string> 
-                <string>actionPerformed</string> 
-                <string>toolTipInitialDelayFieldActionPerformed</string> 
-                <boolean>true</boolean> 
-               </object> 
-              </void> 
-              <void method="addEvent"> 
-               <object class="com.jformdesigner.model.FormEvent"> 
-                <string>java.awt.event.FocusListener</string> 
-                <string>focusLost</string> 
-                <string>toolTipInitialDelayFieldFocusLost</string> 
-                <boolean>true</boolean> 
-               </object> 
-              </void> 
-             </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>com.jformdesigner.runtime.NullConstraints</class> 
-              <void method="setProperty"> 
-               <string>x</string> 
-               <int>220</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>y</string> 
-               <int>-6</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>width</string> 
-               <int>455</int> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JTextField</string> 
-              <void property="name"> 
-               <string>tooltipReshowDelayField</string> 
-              </void> 
-              <void method="addEvent"> 
-               <object class="com.jformdesigner.model.FormEvent"> 
-                <string>java.awt.event.ActionListener</string> 
-                <string>actionPerformed</string> 
-                <string>tooltipReshowDelayFieldActionPerformed</string> 
-                <boolean>true</boolean> 
-               </object> 
-              </void> 
-              <void method="addEvent"> 
-               <object class="com.jformdesigner.model.FormEvent"> 
-                <string>java.awt.event.FocusListener</string> 
-                <string>focusLost</string> 
-                <string>tooltipReshowDelayFieldFocusLost</string> 
-                <boolean>true</boolean> 
-               </object> 
-              </void> 
-             </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>com.jformdesigner.runtime.NullConstraints</class> 
-              <void method="setProperty"> 
-               <string>width</string> 
-               <int>455</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>height</string> 
-               <int>28</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>x</string> 
-               <int>220</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>y</string> 
-               <int>29</int> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JTextField</string> 
-              <void property="name"> 
-               <string>tooltipDismissDelayField</string> 
-              </void> 
-              <void method="addEvent"> 
-               <object class="com.jformdesigner.model.FormEvent"> 
-                <string>java.awt.event.ActionListener</string> 
-                <string>actionPerformed</string> 
-                <string>tooltipDismissDelayFieldActionPerformed</string> 
-                <boolean>true</boolean> 
-               </object> 
-              </void> 
-              <void method="addEvent"> 
-               <object class="com.jformdesigner.model.FormEvent"> 
-                <string>java.awt.event.FocusListener</string> 
-                <string>focusLost</string> 
-                <string>tooltipDismissDelayFieldFocusLost</string> 
-                <boolean>true</boolean> 
-               </object> 
-              </void> 
-             </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>com.jformdesigner.runtime.NullConstraints</class> 
-              <void method="setProperty"> 
-               <string>width</string> 
-               <int>455</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>height</string> 
-               <int>28</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>x</string> 
-               <int>220</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>y</string> 
-               <int>64</int> 
-              </void> 
-             </object> 
-            </void> 
-           </object> 
-           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-            <class>com.jformdesigner.runtime.NullConstraints</class> 
-            <void method="setProperty"> 
-             <string>x</string> 
-             <int>45</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>y</string> 
-             <int>320</int> 
-            </void> 
-           </object> 
-          </void> 
-          <void method="add"> 
-           <object class="com.jformdesigner.model.FormComponent"> 
-            <string>javax.swing.JCheckBox</string> 
-            <void method="setProperty"> 
-             <string>text</string> 
-             <string>Enable antialiasing</string> 
-            </void> 
-            <void property="name"> 
-             <string>antialiasingCB</string> 
-            </void> 
-            <void method="addEvent"> 
-             <object class="com.jformdesigner.model.FormEvent"> 
-              <string>java.awt.event.ActionListener</string> 
-              <string>actionPerformed</string> 
-              <string>antialiasingCBActionPerformed</string> 
-              <boolean>true</boolean> 
-             </object> 
-            </void> 
-           </object> 
-           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-            <class>com.jformdesigner.runtime.NullConstraints</class> 
-            <void method="setProperty"> 
-             <string>x</string> 
-             <int>35</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>y</string> 
-             <int>250</int> 
-            </void> 
-           </object> 
-          </void> 
-         </object> 
-         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-          <null/> 
-          <void method="setProperty"> 
-           <string>title</string> 
-           <string>Advanced</string> 
-          </void> 
-         </object> 
-        </void> 
-        <void method="add"> 
-         <object class="com.jformdesigner.model.FormContainer"> 
-          <string>javax.swing.JPanel</string> 
-          <object class="com.jformdesigner.model.FormLayoutManager"> 
            <class>javax.swing.BoxLayout</class> 
            <void method="setProperty"> 
             <string>axis</string> 
@@ -6615,6 +5873,826 @@
           </void> 
          </object> 
         </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormContainer"> 
+          <string>javax.swing.JPanel</string> 
+          <object class="com.jformdesigner.model.FormLayoutManager"> 
+           <class>com.jformdesigner.runtime.NullLayout</class> 
+          </object> 
+          <void method="setProperty"> 
+           <string>border</string> 
+           <object class="javax.swing.border.EmptyBorder"> 
+            <int>1</int> 
+            <int>10</int> 
+            <int>1</int> 
+            <int>10</int> 
+           </object> 
+          </void> 
+          <void property="name"> 
+           <string>advancedPanel</string> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JButton</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Clear  Genome Cache</string> 
+            </void> 
+            <void property="name"> 
+             <string>clearGenomeCacheButton</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>clearGenomeCacheButtonActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>390</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>95</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JCheckBox</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Enable port</string> 
+            </void> 
+            <void property="name"> 
+             <string>enablePortCB</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>enablePortCBActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>35</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>30</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JTextField</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>60151</string> 
+            </void> 
+            <void property="name"> 
+             <string>portField</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>portFieldActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.FocusListener</string> 
+              <string>focusLost</string> 
+              <string>portFieldFocusLost</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>width</string> 
+             <int>126</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>175</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>27</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JLabel</string> 
+            <void method="setProperty"> 
+             <string>font</string> 
+             <object class="java.awt.Font"> 
+              <string>Lucida Grande</string> 
+              <int>2</int> 
+              <int>13</int> 
+             </object> 
+            </void> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Enable port to send commands and http requests to IGV. </string> 
+            </void> 
+            <void property="name"> 
+             <string>jLabel22</string> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>315</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>33</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JCheckBox</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>&lt;html&gt;Automatically check for updated genomes.    &amp;nbsp;&amp;nbsp;&amp;nbsp;   &lt;i&gt;Most users should leave this checked.</string> 
+            </void> 
+            <void property="name"> 
+             <string>genomeUpdateCB</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>genomeUpdateCBActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>35</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>205</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JLabel</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Data Registry URL</string> 
+            </void> 
+            <void property="name"> 
+             <string>jLabel6</string> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>70</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>170</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JTextField</string> 
+            <void method="setProperty"> 
+             <string>enabled</string> 
+             <boolean>false</boolean> 
+            </void> 
+            <void property="name"> 
+             <string>dataServerURLTextField</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>dataServerURLTextFieldActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.FocusListener</string> 
+              <string>focusLost</string> 
+              <string>dataServerURLTextFieldFocusLost</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>225</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>165</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>width</string> 
+             <int>494</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JLabel</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Genome Server URL</string> 
+            </void> 
+            <void property="name"> 
+             <string>jLabel1</string> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>70</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>135</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JTextField</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>jTextField1</string> 
+            </void> 
+            <void method="setProperty"> 
+             <string>enabled</string> 
+             <boolean>false</boolean> 
+            </void> 
+            <void property="name"> 
+             <string>genomeServerURLTextField</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>genomeServerURLTextFieldActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.FocusListener</string> 
+              <string>focusLost</string> 
+              <string>genomeServerURLTextFieldFocusLost</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>225</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>130</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>width</string> 
+             <int>494</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JCheckBox</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Edit server properties</string> 
+            </void> 
+            <void property="name"> 
+             <string>editServerPropertiesCB</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>editServerPropertiesCBActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>35</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>95</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JButton</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Reset to Defaults</string> 
+            </void> 
+            <void property="name"> 
+             <string>jButton1</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>jButton1ActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>225</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>95</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JButton</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Move...</string> 
+            </void> 
+            <void property="name"> 
+             <string>igvDirectoryButton</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>igvDirectoryButtonActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>615</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>510</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>width</string> 
+             <int>100</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JLabel</string> 
+            <void method="setProperty"> 
+             <string>border</string> 
+             <object class="javax.swing.border.BevelBorder"> 
+              <int>1</int> 
+              <null/> 
+              <null/> 
+              <null/> 
+              <null/> 
+             </object> 
+            </void> 
+            <void property="name"> 
+             <string>igvDirectoryField</string> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>55</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>515</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>width</string> 
+             <int>550</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>height</string> 
+             <int>25</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JLabel</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>IGV Directory: </string> 
+            </void> 
+            <void property="name"> 
+             <string>label21</string> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>45</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>485</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>width</string> 
+             <int>105</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormContainer"> 
+            <string>javax.swing.JPanel</string> 
+            <object class="com.jformdesigner.model.FormLayoutManager"> 
+             <class>com.jformdesigner.runtime.NullLayout</class> 
+            </object> 
+            <void property="name"> 
+             <string>tooltipOptionsPanel</string> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JLabel</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>Tooltip initial delay (ms)</string> 
+              </void> 
+              <void property="name"> 
+               <string>label24</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>185</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>0</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>11</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JLabel</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>Tooltip reshow delay (ms)</string> 
+              </void> 
+              <void property="name"> 
+               <string>label25</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>185</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>height</string> 
+               <int>23</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>38</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>0</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JLabel</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>Tooltip dismiss delay (ms)</string> 
+              </void> 
+              <void property="name"> 
+               <string>label26</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>185</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>height</string> 
+               <int>16</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>70</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JTextField</string> 
+              <void property="name"> 
+               <string>toolTipInitialDelayField</string> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.ActionListener</string> 
+                <string>actionPerformed</string> 
+                <string>toolTipInitialDelayFieldActionPerformed</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.FocusListener</string> 
+                <string>focusLost</string> 
+                <string>toolTipInitialDelayFieldFocusLost</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>220</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>5</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>455</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JTextField</string> 
+              <void property="name"> 
+               <string>tooltipReshowDelayField</string> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.ActionListener</string> 
+                <string>actionPerformed</string> 
+                <string>tooltipReshowDelayFieldActionPerformed</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.FocusListener</string> 
+                <string>focusLost</string> 
+                <string>tooltipReshowDelayFieldFocusLost</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>455</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>height</string> 
+               <int>28</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>220</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>35</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JTextField</string> 
+              <void property="name"> 
+               <string>tooltipDismissDelayField</string> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.ActionListener</string> 
+                <string>actionPerformed</string> 
+                <string>tooltipDismissDelayFieldActionPerformed</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.FocusListener</string> 
+                <string>focusLost</string> 
+                <string>tooltipDismissDelayFieldFocusLost</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>455</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>height</string> 
+               <int>28</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>220</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>64</int> 
+              </void> 
+             </object> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>45</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>295</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>height</string> 
+             <int>105</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JCheckBox</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Enable antialiasing</string> 
+            </void> 
+            <void property="name"> 
+             <string>antialiasingCB</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>antialiasingCBActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>35</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>250</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JLabel</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>BLAT URL</string> 
+            </void> 
+            <void property="name"> 
+             <string>label5</string> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>45</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>435</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JTextField</string> 
+            <void property="name"> 
+             <string>blatURLField</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.FocusListener</string> 
+              <string>focusLost</string> 
+              <string>blatURLFieldFocusLost</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>blatURLFieldActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>139</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>430</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>width</string> 
+             <int>580</int> 
+            </void> 
+           </object> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <null/> 
+          <void method="setProperty"> 
+           <string>title</string> 
+           <string>Advanced</string> 
+          </void> 
+         </object> 
+        </void> 
        </object> 
        <object class="com.jformdesigner.model.FormLayoutConstraints"> 
         <class>java.lang.String</class> 
@@ -6703,7 +6781,7 @@
        <string>location</string> 
        <object class="java.awt.Point"> 
         <int>0</int> 
-        <int>15</int> 
+        <int>25</int> 
        </object> 
       </void> 
      </object> 

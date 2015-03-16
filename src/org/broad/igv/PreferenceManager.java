@@ -255,6 +255,9 @@ public class PreferenceManager implements PropertyManager {
     public static final String GOOGLE_API_KEY = "GOOGLE_API_KEY";
     public static final String ENABLE_GOOGLE_MENU = "ENABLE_GOOGLE_MENU";
 
+    public static final String BLAT_URL = "BLAT_URL";
+
+
     IGVPreferences preferences;
     Map<String, String> defaultValues;
 
@@ -1121,6 +1124,8 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(ENABLE_GOOGLE_MENU, "false");
 
         defaultValues.put(DEFAULT_VISIBILITY_WINDOW, "-1");
+
+        defaultValues.put(BLAT_URL, "http://genome.cse.ucsc.edu/cgi-bin/hgBlat");
 
     }
 

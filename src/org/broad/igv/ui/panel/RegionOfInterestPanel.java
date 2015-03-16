@@ -180,19 +180,15 @@ public class RegionOfInterestPanel extends JPanel {
         }
         popupMenu.add(item);
 
+        item = new JMenuItem("Blat sequence");
+        item.addActionListener(new ActionListener() {
 
-        if (Globals.isDevelopment()) {
-            item = new JMenuItem("Blat sequence");
-            item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                BlatClient.doBlatQuery(roi.getChr(), roi.getStart(), roi.getEnd());
+            }
+        });
+        popupMenu.add(item);
 
-                public void actionPerformed(ActionEvent e) {
-
-                    BlatClient.doBlatQuery(roi.getChr(), roi.getStart(), roi.getEnd());
-
-                }
-            });
-            popupMenu.add(item);
-        }
 
         popupMenu.add(new JSeparator());
 

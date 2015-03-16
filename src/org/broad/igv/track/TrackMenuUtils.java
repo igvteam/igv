@@ -341,22 +341,21 @@ public class TrackMenuUtils {
         menu.add(unmergeItem);
 
         Track firstTrack = tracks.iterator().next();
-        if(tracks.size() == 1 && firstTrack instanceof MergedTracks) {
+        if (tracks.size() == 1 && firstTrack instanceof MergedTracks) {
 
-        unmergeItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Track firstTrack = tracks.iterator().next();
-                TrackPanel panel = TrackPanel.getParentPanel(firstTrack);
-                final MergedTracks mergedTracks = (MergedTracks) firstTrack;
-                mergedTracks.setTrackAlphas(255);
-                panel.addTracks(mergedTracks.getMemberTracks());
-                panel.moveSelectedTracksTo(mergedTracks.getMemberTracks(), mergedTracks, true);
-                IGV.getInstance().removeTracks(Arrays.asList(mergedTracks));
-            }
-        });
-        }
-        else {
+            unmergeItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Track firstTrack = tracks.iterator().next();
+                    TrackPanel panel = TrackPanel.getParentPanel(firstTrack);
+                    final MergedTracks mergedTracks = (MergedTracks) firstTrack;
+                    mergedTracks.setTrackAlphas(255);
+                    panel.addTracks(mergedTracks.getMemberTracks());
+                    panel.moveSelectedTracksTo(mergedTracks.getMemberTracks(), mergedTracks, true);
+                    IGV.getInstance().removeTracks(Arrays.asList(mergedTracks));
+                }
+            });
+        } else {
             unmergeItem.setEnabled(false);
         }
 
@@ -455,10 +454,8 @@ public class TrackMenuUtils {
 
                 featurePopupMenu.add(getCopyDetailsItem(f, te));
                 featurePopupMenu.add(getCopySequenceItem(f));
+                featurePopupMenu.add(getBlatItem(f));
 
-                if (Globals.isDevelopment()) {
-                    featurePopupMenu.add(getBlatItem(f));
-                }
 
             }
             if (Globals.isDevelopment()) {
@@ -507,7 +504,7 @@ public class TrackMenuUtils {
         }
         JMenuItem exportData = null;
 
-        if(ft instanceof FeatureTrack){
+        if (ft instanceof FeatureTrack) {
             exportData = new JMenuItem("Export Features...");
             exportData.addActionListener(new ActionListener() {
                 @Override
@@ -520,7 +517,7 @@ public class TrackMenuUtils {
                     exportVisibleFeatures(outFile.getAbsolutePath(), tracks, frame.getCurrentRange());
                 }
             });
-        }else if(ft instanceof AlignmentTrack){
+        } else if (ft instanceof AlignmentTrack) {
             exportData = new JMenuItem("Export Alignments...");
             exportData.addActionListener(new ActionListener() {
                 @Override
@@ -540,16 +537,16 @@ public class TrackMenuUtils {
         return exportData;
     }
 
-    static int exportVisibleAlignments(String outPath, Collection<Track> tracks, ReferenceFrame frame){
+    static int exportVisibleAlignments(String outPath, Collection<Track> tracks, ReferenceFrame frame) {
         AlignmentTrack alignmentTrack = null;
-        for(Track track: tracks){
-            if(track instanceof AlignmentTrack){
+        for (Track track : tracks) {
+            if (track instanceof AlignmentTrack) {
                 alignmentTrack = (AlignmentTrack) track;
                 break;
             }
         }
 
-        if(alignmentTrack == null) return -1;
+        if (alignmentTrack == null) return -1;
 
 
         File outFile = new File(outPath);

@@ -70,6 +70,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private File newIGVDirectory;
     private boolean updateCoverageTrack = false;
 
+
     public PreferencesEditor(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -257,6 +258,19 @@ public class PreferencesEditor extends javax.swing.JDialog {
         dbPortField = new JTextField();
         dbNameField = new JTextField();
         label20 = new JLabel();
+        ionTorrentPanel = new JPanel();
+        panel6 = new JPanel();
+        hideFirstHP = new JCheckBox();
+        binSizeText = new JTextField();
+        label28 = new JLabel();
+        label29 = new JLabel();
+        radioLine = new JRadioButton();
+        radioArea = new JRadioButton();
+        radioBar = new JRadioButton();
+        radioStacked = new JRadioButton();
+        panel7 = new JPanel();
+        label30 = new JLabel();
+        textServer = new JTextField();
         advancedPanel = new JPanel();
         clearGenomeCacheButton = new JButton();
         enablePortCB = new JCheckBox();
@@ -280,19 +294,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
         tooltipReshowDelayField = new JTextField();
         tooltipDismissDelayField = new JTextField();
         antialiasingCB = new JCheckBox();
-        ionTorrentPanel = new JPanel();
-        panel6 = new JPanel();
-        hideFirstHP = new JCheckBox();
-        binSizeText = new JTextField();
-        label28 = new JLabel();
-        label29 = new JLabel();
-        radioLine = new JRadioButton();
-        radioArea = new JRadioButton();
-        radioBar = new JRadioButton();
-        radioStacked = new JRadioButton();
-        panel7 = new JPanel();
-        label30 = new JLabel();
-        textServer = new JTextField();
+        label5 = new JLabel();
+        blatURLField = new JTextField();
         okCancelButtonPanel = new ButtonPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -2109,266 +2112,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
             }
             tabbedPane.addTab("Database", dbPanel);
 
-            //======== advancedPanel ========
-            {
-                advancedPanel.setBorder(new EmptyBorder(1, 10, 1, 10));
-                advancedPanel.setLayout(null);
-
-                //---- clearGenomeCacheButton ----
-                clearGenomeCacheButton.setText("Clear  Genome Cache");
-                clearGenomeCacheButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        clearGenomeCacheButtonActionPerformed(e);
-                    }
-                });
-                advancedPanel.add(clearGenomeCacheButton);
-                clearGenomeCacheButton.setBounds(new Rectangle(new Point(390, 95), clearGenomeCacheButton.getPreferredSize()));
-
-                //---- enablePortCB ----
-                enablePortCB.setText("Enable port");
-                enablePortCB.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        enablePortCBActionPerformed(e);
-                    }
-                });
-                advancedPanel.add(enablePortCB);
-                enablePortCB.setBounds(new Rectangle(new Point(35, 30), enablePortCB.getPreferredSize()));
-
-                //---- portField ----
-                portField.setText("60151");
-                portField.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        portFieldActionPerformed(e);
-                    }
-                });
-                portField.addFocusListener(new FocusAdapter() {
-                    @Override
-                    public void focusLost(FocusEvent e) {
-                        portFieldFocusLost(e);
-                    }
-                });
-                advancedPanel.add(portField);
-                portField.setBounds(175, 27, 126, portField.getPreferredSize().height);
-
-                //---- jLabel22 ----
-                jLabel22.setFont(new Font("Lucida Grande", Font.ITALIC, 13));
-                jLabel22.setText("Enable port to send commands and http requests to IGV. ");
-                advancedPanel.add(jLabel22);
-                jLabel22.setBounds(new Rectangle(new Point(315, 33), jLabel22.getPreferredSize()));
-
-                //---- genomeUpdateCB ----
-                genomeUpdateCB.setText("<html>Automatically check for updated genomes.    &nbsp;&nbsp;&nbsp;   <i>Most users should leave this checked.");
-                genomeUpdateCB.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        genomeUpdateCBActionPerformed(e);
-                    }
-                });
-                advancedPanel.add(genomeUpdateCB);
-                genomeUpdateCB.setBounds(new Rectangle(new Point(35, 205), genomeUpdateCB.getPreferredSize()));
-
-                //---- jLabel6 ----
-                jLabel6.setText("Data Registry URL");
-                advancedPanel.add(jLabel6);
-                jLabel6.setBounds(new Rectangle(new Point(70, 170), jLabel6.getPreferredSize()));
-
-                //---- dataServerURLTextField ----
-                dataServerURLTextField.setEnabled(false);
-                dataServerURLTextField.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        dataServerURLTextFieldActionPerformed(e);
-                    }
-                });
-                dataServerURLTextField.addFocusListener(new FocusAdapter() {
-                    @Override
-                    public void focusLost(FocusEvent e) {
-                        dataServerURLTextFieldFocusLost(e);
-                    }
-                });
-                advancedPanel.add(dataServerURLTextField);
-                dataServerURLTextField.setBounds(225, 165, 494, dataServerURLTextField.getPreferredSize().height);
-
-                //---- jLabel1 ----
-                jLabel1.setText("Genome Server URL");
-                advancedPanel.add(jLabel1);
-                jLabel1.setBounds(new Rectangle(new Point(70, 135), jLabel1.getPreferredSize()));
-
-                //---- genomeServerURLTextField ----
-                genomeServerURLTextField.setText("jTextField1");
-                genomeServerURLTextField.setEnabled(false);
-                genomeServerURLTextField.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        genomeServerURLTextFieldActionPerformed(e);
-                    }
-                });
-                genomeServerURLTextField.addFocusListener(new FocusAdapter() {
-                    @Override
-                    public void focusLost(FocusEvent e) {
-                        genomeServerURLTextFieldFocusLost(e);
-                    }
-                });
-                advancedPanel.add(genomeServerURLTextField);
-                genomeServerURLTextField.setBounds(225, 130, 494, genomeServerURLTextField.getPreferredSize().height);
-
-                //---- editServerPropertiesCB ----
-                editServerPropertiesCB.setText("Edit server properties");
-                editServerPropertiesCB.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        editServerPropertiesCBActionPerformed(e);
-                    }
-                });
-                advancedPanel.add(editServerPropertiesCB);
-                editServerPropertiesCB.setBounds(new Rectangle(new Point(35, 95), editServerPropertiesCB.getPreferredSize()));
-
-                //---- jButton1 ----
-                jButton1.setText("Reset to Defaults");
-                jButton1.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        jButton1ActionPerformed(e);
-                    }
-                });
-                advancedPanel.add(jButton1);
-                jButton1.setBounds(new Rectangle(new Point(225, 95), jButton1.getPreferredSize()));
-
-                //---- igvDirectoryButton ----
-                igvDirectoryButton.setText("Move...");
-                igvDirectoryButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        igvDirectoryButtonActionPerformed(e);
-                    }
-                });
-                advancedPanel.add(igvDirectoryButton);
-                igvDirectoryButton.setBounds(610, 495, 100, igvDirectoryButton.getPreferredSize().height);
-
-                //---- igvDirectoryField ----
-                igvDirectoryField.setBorder(new BevelBorder(BevelBorder.LOWERED));
-                advancedPanel.add(igvDirectoryField);
-                igvDirectoryField.setBounds(55, 495, 550, 25);
-
-                //---- label21 ----
-                label21.setText("IGV Directory: ");
-                advancedPanel.add(label21);
-                label21.setBounds(45, 460, 105, label21.getPreferredSize().height);
-
-                //======== tooltipOptionsPanel ========
-                {
-                    tooltipOptionsPanel.setLayout(null);
-
-                    //---- label24 ----
-                    label24.setText("Tooltip initial delay (ms)");
-                    tooltipOptionsPanel.add(label24);
-                    label24.setBounds(0, 0, 185, label24.getPreferredSize().height);
-
-                    //---- label25 ----
-                    label25.setText("Tooltip reshow delay (ms)");
-                    tooltipOptionsPanel.add(label25);
-                    label25.setBounds(0, 32, 185, 23);
-
-                    //---- label26 ----
-                    label26.setText("Tooltip dismiss delay (ms)");
-                    tooltipOptionsPanel.add(label26);
-                    label26.setBounds(0, 70, 185, 16);
-
-                    //---- toolTipInitialDelayField ----
-                    toolTipInitialDelayField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            toolTipInitialDelayFieldActionPerformed(e);
-                        }
-                    });
-                    toolTipInitialDelayField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            toolTipInitialDelayFieldFocusLost(e);
-                        }
-                    });
-                    tooltipOptionsPanel.add(toolTipInitialDelayField);
-                    toolTipInitialDelayField.setBounds(220, -6, 455, toolTipInitialDelayField.getPreferredSize().height);
-
-                    //---- tooltipReshowDelayField ----
-                    tooltipReshowDelayField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            tooltipReshowDelayFieldActionPerformed(e);
-                        }
-                    });
-                    tooltipReshowDelayField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            tooltipReshowDelayFieldFocusLost(e);
-                        }
-                    });
-                    tooltipOptionsPanel.add(tooltipReshowDelayField);
-                    tooltipReshowDelayField.setBounds(220, 29, 455, 28);
-
-                    //---- tooltipDismissDelayField ----
-                    tooltipDismissDelayField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            tooltipDismissDelayFieldActionPerformed(e);
-                        }
-                    });
-                    tooltipDismissDelayField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            tooltipDismissDelayFieldFocusLost(e);
-                        }
-                    });
-                    tooltipOptionsPanel.add(tooltipDismissDelayField);
-                    tooltipDismissDelayField.setBounds(220, 64, 455, 28);
-
-                    { // compute preferred size
-                        Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < tooltipOptionsPanel.getComponentCount(); i++) {
-                            Rectangle bounds = tooltipOptionsPanel.getComponent(i).getBounds();
-                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                        }
-                        Insets insets = tooltipOptionsPanel.getInsets();
-                        preferredSize.width += insets.right;
-                        preferredSize.height += insets.bottom;
-                        tooltipOptionsPanel.setMinimumSize(preferredSize);
-                        tooltipOptionsPanel.setPreferredSize(preferredSize);
-                    }
-                }
-                advancedPanel.add(tooltipOptionsPanel);
-                tooltipOptionsPanel.setBounds(new Rectangle(new Point(45, 320), tooltipOptionsPanel.getPreferredSize()));
-
-                //---- antialiasingCB ----
-                antialiasingCB.setText("Enable antialiasing");
-                antialiasingCB.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        antialiasingCBActionPerformed(e);
-                    }
-                });
-                advancedPanel.add(antialiasingCB);
-                antialiasingCB.setBounds(new Rectangle(new Point(35, 250), antialiasingCB.getPreferredSize()));
-
-                { // compute preferred size
-                    Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < advancedPanel.getComponentCount(); i++) {
-                        Rectangle bounds = advancedPanel.getComponent(i).getBounds();
-                        preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                        preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                    }
-                    Insets insets = advancedPanel.getInsets();
-                    preferredSize.width += insets.right;
-                    preferredSize.height += insets.bottom;
-                    advancedPanel.setMinimumSize(preferredSize);
-                    advancedPanel.setPreferredSize(preferredSize);
-                }
-            }
-            tabbedPane.addTab("Advanced", advancedPanel);
-
             //======== ionTorrentPanel ========
             {
                 ionTorrentPanel.setLayout(new BoxLayout(ionTorrentPanel, BoxLayout.Y_AXIS));
@@ -2523,6 +2266,287 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 ionTorrentPanel.add(panel7);
             }
             tabbedPane.addTab("IonTorrent", ionTorrentPanel);
+
+            //======== advancedPanel ========
+            {
+                advancedPanel.setBorder(new EmptyBorder(1, 10, 1, 10));
+                advancedPanel.setLayout(null);
+
+                //---- clearGenomeCacheButton ----
+                clearGenomeCacheButton.setText("Clear  Genome Cache");
+                clearGenomeCacheButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        clearGenomeCacheButtonActionPerformed(e);
+                    }
+                });
+                advancedPanel.add(clearGenomeCacheButton);
+                clearGenomeCacheButton.setBounds(new Rectangle(new Point(390, 95), clearGenomeCacheButton.getPreferredSize()));
+
+                //---- enablePortCB ----
+                enablePortCB.setText("Enable port");
+                enablePortCB.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        enablePortCBActionPerformed(e);
+                    }
+                });
+                advancedPanel.add(enablePortCB);
+                enablePortCB.setBounds(new Rectangle(new Point(35, 30), enablePortCB.getPreferredSize()));
+
+                //---- portField ----
+                portField.setText("60151");
+                portField.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        portFieldActionPerformed(e);
+                    }
+                });
+                portField.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        portFieldFocusLost(e);
+                    }
+                });
+                advancedPanel.add(portField);
+                portField.setBounds(175, 27, 126, portField.getPreferredSize().height);
+
+                //---- jLabel22 ----
+                jLabel22.setFont(new Font("Lucida Grande", Font.ITALIC, 13));
+                jLabel22.setText("Enable port to send commands and http requests to IGV. ");
+                advancedPanel.add(jLabel22);
+                jLabel22.setBounds(new Rectangle(new Point(315, 33), jLabel22.getPreferredSize()));
+
+                //---- genomeUpdateCB ----
+                genomeUpdateCB.setText("<html>Automatically check for updated genomes.    &nbsp;&nbsp;&nbsp;   <i>Most users should leave this checked.");
+                genomeUpdateCB.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        genomeUpdateCBActionPerformed(e);
+                    }
+                });
+                advancedPanel.add(genomeUpdateCB);
+                genomeUpdateCB.setBounds(new Rectangle(new Point(35, 205), genomeUpdateCB.getPreferredSize()));
+
+                //---- jLabel6 ----
+                jLabel6.setText("Data Registry URL");
+                advancedPanel.add(jLabel6);
+                jLabel6.setBounds(new Rectangle(new Point(70, 170), jLabel6.getPreferredSize()));
+
+                //---- dataServerURLTextField ----
+                dataServerURLTextField.setEnabled(false);
+                dataServerURLTextField.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        dataServerURLTextFieldActionPerformed(e);
+                    }
+                });
+                dataServerURLTextField.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        dataServerURLTextFieldFocusLost(e);
+                    }
+                });
+                advancedPanel.add(dataServerURLTextField);
+                dataServerURLTextField.setBounds(225, 165, 494, dataServerURLTextField.getPreferredSize().height);
+
+                //---- jLabel1 ----
+                jLabel1.setText("Genome Server URL");
+                advancedPanel.add(jLabel1);
+                jLabel1.setBounds(new Rectangle(new Point(70, 135), jLabel1.getPreferredSize()));
+
+                //---- genomeServerURLTextField ----
+                genomeServerURLTextField.setText("jTextField1");
+                genomeServerURLTextField.setEnabled(false);
+                genomeServerURLTextField.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        genomeServerURLTextFieldActionPerformed(e);
+                    }
+                });
+                genomeServerURLTextField.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        genomeServerURLTextFieldFocusLost(e);
+                    }
+                });
+                advancedPanel.add(genomeServerURLTextField);
+                genomeServerURLTextField.setBounds(225, 130, 494, genomeServerURLTextField.getPreferredSize().height);
+
+                //---- editServerPropertiesCB ----
+                editServerPropertiesCB.setText("Edit server properties");
+                editServerPropertiesCB.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        editServerPropertiesCBActionPerformed(e);
+                    }
+                });
+                advancedPanel.add(editServerPropertiesCB);
+                editServerPropertiesCB.setBounds(new Rectangle(new Point(35, 95), editServerPropertiesCB.getPreferredSize()));
+
+                //---- jButton1 ----
+                jButton1.setText("Reset to Defaults");
+                jButton1.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        jButton1ActionPerformed(e);
+                    }
+                });
+                advancedPanel.add(jButton1);
+                jButton1.setBounds(new Rectangle(new Point(225, 95), jButton1.getPreferredSize()));
+
+                //---- igvDirectoryButton ----
+                igvDirectoryButton.setText("Move...");
+                igvDirectoryButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        igvDirectoryButtonActionPerformed(e);
+                    }
+                });
+                advancedPanel.add(igvDirectoryButton);
+                igvDirectoryButton.setBounds(615, 510, 100, igvDirectoryButton.getPreferredSize().height);
+
+                //---- igvDirectoryField ----
+                igvDirectoryField.setBorder(new BevelBorder(BevelBorder.LOWERED));
+                advancedPanel.add(igvDirectoryField);
+                igvDirectoryField.setBounds(55, 515, 550, 25);
+
+                //---- label21 ----
+                label21.setText("IGV Directory: ");
+                advancedPanel.add(label21);
+                label21.setBounds(45, 485, 105, label21.getPreferredSize().height);
+
+                //======== tooltipOptionsPanel ========
+                {
+                    tooltipOptionsPanel.setLayout(null);
+
+                    //---- label24 ----
+                    label24.setText("Tooltip initial delay (ms)");
+                    tooltipOptionsPanel.add(label24);
+                    label24.setBounds(0, 11, 185, label24.getPreferredSize().height);
+
+                    //---- label25 ----
+                    label25.setText("Tooltip reshow delay (ms)");
+                    tooltipOptionsPanel.add(label25);
+                    label25.setBounds(0, 38, 185, 23);
+
+                    //---- label26 ----
+                    label26.setText("Tooltip dismiss delay (ms)");
+                    tooltipOptionsPanel.add(label26);
+                    label26.setBounds(0, 70, 185, 16);
+
+                    //---- toolTipInitialDelayField ----
+                    toolTipInitialDelayField.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            toolTipInitialDelayFieldActionPerformed(e);
+                        }
+                    });
+                    toolTipInitialDelayField.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            toolTipInitialDelayFieldFocusLost(e);
+                        }
+                    });
+                    tooltipOptionsPanel.add(toolTipInitialDelayField);
+                    toolTipInitialDelayField.setBounds(220, 5, 455, toolTipInitialDelayField.getPreferredSize().height);
+
+                    //---- tooltipReshowDelayField ----
+                    tooltipReshowDelayField.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            tooltipReshowDelayFieldActionPerformed(e);
+                        }
+                    });
+                    tooltipReshowDelayField.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            tooltipReshowDelayFieldFocusLost(e);
+                        }
+                    });
+                    tooltipOptionsPanel.add(tooltipReshowDelayField);
+                    tooltipReshowDelayField.setBounds(220, 35, 455, 28);
+
+                    //---- tooltipDismissDelayField ----
+                    tooltipDismissDelayField.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            tooltipDismissDelayFieldActionPerformed(e);
+                        }
+                    });
+                    tooltipDismissDelayField.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            tooltipDismissDelayFieldFocusLost(e);
+                        }
+                    });
+                    tooltipOptionsPanel.add(tooltipDismissDelayField);
+                    tooltipDismissDelayField.setBounds(220, 64, 455, 28);
+
+                    { // compute preferred size
+                        Dimension preferredSize = new Dimension();
+                        for(int i = 0; i < tooltipOptionsPanel.getComponentCount(); i++) {
+                            Rectangle bounds = tooltipOptionsPanel.getComponent(i).getBounds();
+                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                        }
+                        Insets insets = tooltipOptionsPanel.getInsets();
+                        preferredSize.width += insets.right;
+                        preferredSize.height += insets.bottom;
+                        tooltipOptionsPanel.setMinimumSize(preferredSize);
+                        tooltipOptionsPanel.setPreferredSize(preferredSize);
+                    }
+                }
+                advancedPanel.add(tooltipOptionsPanel);
+                tooltipOptionsPanel.setBounds(45, 295, tooltipOptionsPanel.getPreferredSize().width, 105);
+
+                //---- antialiasingCB ----
+                antialiasingCB.setText("Enable antialiasing");
+                antialiasingCB.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        antialiasingCBActionPerformed(e);
+                    }
+                });
+                advancedPanel.add(antialiasingCB);
+                antialiasingCB.setBounds(new Rectangle(new Point(35, 250), antialiasingCB.getPreferredSize()));
+
+                //---- label5 ----
+                label5.setText("BLAT URL");
+                advancedPanel.add(label5);
+                label5.setBounds(new Rectangle(new Point(45, 435), label5.getPreferredSize()));
+
+                //---- blatURLField ----
+                blatURLField.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        blatURLFieldFocusLost(e);
+                    }
+                });
+                blatURLField.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        blatURLFieldActionPerformed(e);
+                    }
+                });
+                advancedPanel.add(blatURLField);
+                blatURLField.setBounds(139, 430, 580, blatURLField.getPreferredSize().height);
+
+                { // compute preferred size
+                    Dimension preferredSize = new Dimension();
+                    for(int i = 0; i < advancedPanel.getComponentCount(); i++) {
+                        Rectangle bounds = advancedPanel.getComponent(i).getBounds();
+                        preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                        preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                    }
+                    Insets insets = advancedPanel.getInsets();
+                    preferredSize.width += insets.right;
+                    preferredSize.height += insets.bottom;
+                    advancedPanel.setMinimumSize(preferredSize);
+                    advancedPanel.setPreferredSize(preferredSize);
+                }
+            }
+            tabbedPane.addTab("Advanced", advancedPanel);
         }
         contentPane.add(tabbedPane, BorderLayout.NORTH);
 
@@ -2872,6 +2896,16 @@ public class PreferencesEditor extends javax.swing.JDialog {
         updatedPreferenceMap.put(PreferenceManager.GENOMES_SERVER_URL, attributeName);
     }
 
+
+    private void blatURLFieldFocusLost(FocusEvent e) {
+        String attributeName = blatURLField.getText().trim();
+        updatedPreferenceMap.put(PreferenceManager.BLAT_URL, attributeName);
+
+    }
+
+    private void blatURLFieldActionPerformed(ActionEvent e) {
+       blatURLFieldFocusLost(null);
+    }
 
     private void expandIconCBActionPerformed(ActionEvent e) {
         updatedPreferenceMap.put(PreferenceManager.SHOW_EXPAND_ICON, String.valueOf(expandIconCB.isSelected()));
@@ -3805,6 +3839,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
         genomeServerURLTextField.setText(prefMgr.getGenomeListURL());
         dataServerURLTextField.setText(prefMgr.getDataServerURL());
 
+        blatURLField.setText(prefMgr.get(PreferenceManager.BLAT_URL));
+
         // Chart panel
         topBorderCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.CHART_DRAW_TOP_BORDER));
         bottomBorderCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.CHART_DRAW_BOTTOM_BORDER));
@@ -4210,6 +4246,19 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JTextField dbPortField;
     private JTextField dbNameField;
     private JLabel label20;
+    private JPanel ionTorrentPanel;
+    private JPanel panel6;
+    private JCheckBox hideFirstHP;
+    private JTextField binSizeText;
+    private JLabel label28;
+    private JLabel label29;
+    private JRadioButton radioLine;
+    private JRadioButton radioArea;
+    private JRadioButton radioBar;
+    private JRadioButton radioStacked;
+    private JPanel panel7;
+    private JLabel label30;
+    private JTextField textServer;
     private JPanel advancedPanel;
     private JButton clearGenomeCacheButton;
     private JCheckBox enablePortCB;
@@ -4233,19 +4282,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JTextField tooltipReshowDelayField;
     private JTextField tooltipDismissDelayField;
     private JCheckBox antialiasingCB;
-    private JPanel ionTorrentPanel;
-    private JPanel panel6;
-    private JCheckBox hideFirstHP;
-    private JTextField binSizeText;
-    private JLabel label28;
-    private JLabel label29;
-    private JRadioButton radioLine;
-    private JRadioButton radioArea;
-    private JRadioButton radioBar;
-    private JRadioButton radioStacked;
-    private JPanel panel7;
-    private JLabel label30;
-    private JTextField textServer;
+    private JLabel label5;
+    private JTextField blatURLField;
     private ButtonPanel okCancelButtonPanel;
     JButton okButton;
     private JButton cancelButton;

@@ -1289,9 +1289,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             addSeparator();
             addCopySequenceItem(e);
-            if (Globals.isDevelopment()) {
-                addBlatItem(e);
-            }
+            addBlatItem(e);
             addConsensusSequence(e);
 
             boolean showSashimi = true;//Globals.isDevelopment();
