@@ -184,6 +184,8 @@
             </jar>
             <copy file="${lib.dir}${batik-codec-finame}" tofile="${dist.dir}${batik-codec-finame}" overwrite="true"/>
             <copy file="${lib.dir}${goby-io-finame}" tofile="${dist.dir}${goby-io-finame}" overwrite="true"/>
+            <delete dir="${tmp.dir}"/>
+            <delete dir="${testtmp.dir}"/>
         </sequential>
     </macrodef>
 
