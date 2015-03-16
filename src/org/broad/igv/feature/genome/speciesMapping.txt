@@ -23,5 +23,3 @@ danRer	Zebrafish
 strPur	S. purpuratus
 dm	D. melanogaster
 ce	C. elegans
-
-

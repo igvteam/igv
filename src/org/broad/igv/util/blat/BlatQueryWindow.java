@@ -9,6 +9,7 @@ import org.broad.igv.feature.PSLRecord;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.LongRunningTask;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -25,7 +26,9 @@ public class BlatQueryWindow extends JFrame {
 
     BlatTableModel model;
 
-    public BlatQueryWindow(String querySequence, java.util.List<PSLRecord> records) {
+    public BlatQueryWindow(Component parent, String querySequence, java.util.List<PSLRecord> records) {
+
+        if(parent != null) this.setLocationRelativeTo(parent);
 
         model = new BlatTableModel(records);
         initComponents();
@@ -51,16 +54,21 @@ public class BlatQueryWindow extends JFrame {
                 ListSelectionModel lsm = (ListSelectionModel) e.getSource();
                 if (!lsm.isSelectionEmpty()) {
                     int selectedRow = lsm.getMinSelectionIndex();
-                    String chr = model.getChr(selectedRow);
+                    final String chr = model.getChr(selectedRow);
                     int start = model.getStart(selectedRow);
                     int end = model.getEnd(selectedRow);
 
                     // Expand region slightly for context
                     int w = (end - start) / 4;
-                    start = Math.max(0, start - w);
-                    end = end + w;
+                    final int estart = Math.max(0, start - w);
+                    final int eend = end + w;
 
-                    IGV.getInstance().goToLocus(chr + ":" + start + "-" + end);
+                    LongRunningTask.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            IGV.getInstance().goToLocus(chr + ":" + estart + "-" + eend);
+                        }
+                    });
                 }
             }
         });

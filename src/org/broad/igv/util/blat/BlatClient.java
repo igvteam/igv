@@ -22,6 +22,7 @@ import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.LongRunningTask;
@@ -230,7 +231,10 @@ public class BlatClient {
                     // TODO -- something better than this!
                     String db = genome.getId();
                     String species = genome.getSpecies();
-                    if (species == null) species = genome.getDisplayName();
+                    if (species == null) {
+                        MessageUtils.showMessage("Cannot determine species name for genome: " + genome.getDisplayName());
+                        return;
+                    }
 
                     List<String> tokensList = blat(species, db, userSeq);
 
@@ -253,7 +257,8 @@ public class BlatClient {
                         newTrack.setDisplayMode(Track.DisplayMode.SQUISHED);
                         IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
 
-                        BlatQueryWindow win = new BlatQueryWindow(userSeq, features);
+
+                        BlatQueryWindow win = new BlatQueryWindow(IGV.getMainFrame(), userSeq, features);
                         win.setVisible(true);
 
                     }
