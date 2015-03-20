@@ -81,7 +81,7 @@ public class HttpUtils {
 
         htsjdk.tribble.util.ParsingUtils.registerHelperClass(IGVUrlHelper.class);
 
-        disableCertificateValidation();
+       // disableCertificateValidation();
         CookieHandler.setDefault(new IGVCookieManager());
         Authenticator.setDefault(new IGVAuthenticator());
 
@@ -579,7 +579,7 @@ public class HttpUtils {
             public boolean verify(String hostname, SSLSession session) {
                 if (hostname.equals("igv.broadinstitute.org") || hostname.equals("igvdata.broadinstitute.org") || hostname.equals("localhost"))
                     return true;
-                return false;
+                return true;
             }
         });
 
