@@ -81,7 +81,9 @@ public class HttpUtils {
 
         htsjdk.tribble.util.ParsingUtils.registerHelperClass(IGVUrlHelper.class);
 
-       // disableCertificateValidation();
+        if(!Globals.checkJavaVersion("1.8")) {
+            disableCertificateValidation();
+        }
         CookieHandler.setDefault(new IGVCookieManager());
         Authenticator.setDefault(new IGVAuthenticator());
 
