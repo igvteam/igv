@@ -174,7 +174,7 @@ public class ResourceLocator {
             // Strip .txt, .gz, and .xls extensions.  (So  foo.cn.gz => a .cn file)
             if ((typeString.endsWith(".txt") || typeString.endsWith(
                     ".xls") || typeString.endsWith(".gz") || typeString.endsWith(".bgz"))) {
-                typeString = typeString.substring(0, typeString.lastIndexOf("."));
+                typeString = typeString.substring(0, typeString.lastIndexOf(".")).trim();
             }
 
             return typeString;

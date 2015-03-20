@@ -108,7 +108,7 @@ public class TrackLoader {
      */
     public List<Track> load(ResourceLocator locator, Genome genome) throws DataLoadException {
 
-        final String path = locator.getPath();
+        final String path = locator.getPath().trim();
         log.info("Loading resource, path " + path);
         try {
             String typeString = locator.getTypeString();
