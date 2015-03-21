@@ -48,32 +48,17 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
 
     private static Logger log = Logger.getLogger(GlobalKeyDispatcher.class);
 
-    private final InputMap keyStrokes = new InputMap();
-    private final ActionMap actions = new ActionMap();
+    private final InputMap inputMap = new InputMap();
+    private final ActionMap actionMap = new ActionMap();
 
     public GlobalKeyDispatcher() {
         init();
     }
 
-    public InputMap getInputMap() {
-        return keyStrokes;
-    }
-
-    public ActionMap getActionMap() {
-        return actions;
-    }
-
     public boolean dispatchKeyEvent(KeyEvent event) {
 
-        if (event.getKeyCode() == KeyEvent.VK_ESCAPE) {
-            IGV.getInstance().clearSelections();
-            IGV.getInstance().repaint();
-            return true;
-        }
-
         KeyStroke ks = KeyStroke.getKeyStrokeForEvent(event);
-        String actionKey = (String) keyStrokes.get(ks);
-
+        String actionKey = (String) inputMap.get(ks);
 
         // Disable tooltip if any modifier control key is pressed
         if (event.getKeyCode() == KeyEvent.VK_CONTROL || event.getKeyCode() == KeyEvent.VK_ALT) {
@@ -81,9 +66,15 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
             ToolTipManager.sharedInstance().setEnabled(flag);
         }
 
-        if (actionKey != null) {
+        if (event.getKeyCode() == KeyEvent.VK_ESCAPE) {
+            IGV.getInstance().clearSelections();
+            IGV.getInstance().repaint();
+            return true;
+        }
 
-            Action action = actions.get(actionKey);
+
+        if (actionKey != null) {
+            Action action = actionMap.get(actionKey);
             if (action != null && action.isEnabled()) {
                 // I'm not sure about the parameters
                 action.actionPerformed(
@@ -96,71 +87,68 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         return false;
     }
 
+    /**
+     * Initialize the input and action map.   The indirection here strikes me as odd but it is apparently the standard pattern.
+     */
     public void init() {
 
+        final IGV igv = IGV.getInstance();
+        final PreferenceManager prefMgr = PreferenceManager.getInstance();
+
+        // Next feature
         final KeyStroke nextKey = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_MASK, false);
-        final KeyStroke prevKey = KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.CTRL_MASK, false);
-        final KeyStroke toolsKey = KeyStroke.getKeyStroke(KeyEvent.VK_T, KeyEvent.ALT_MASK, false);
-        final KeyStroke regionKey = KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.CTRL_MASK, false);
-        final KeyStroke regionCenterKey = KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.CTRL_MASK + KeyEvent.SHIFT_MASK, false);
-
-        //dhmay adding 20101222
-        final KeyStroke nextExonKey = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_MASK + KeyEvent.SHIFT_MASK, false);
-        final KeyStroke prevExonKey = KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.CTRL_MASK + KeyEvent.SHIFT_MASK, false);
-
-
-        final KeyStroke backKey1 = KeyStroke.getKeyStroke(KeyEvent.VK_CLOSE_BRACKET, KeyEvent.META_DOWN_MASK, false);
-        final KeyStroke backKey2 = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_DOWN_MASK, false);
-        final KeyStroke forwardKey1 = KeyStroke.getKeyStroke(KeyEvent.VK_OPEN_BRACKET, KeyEvent.META_DOWN_MASK, false);
-        final KeyStroke forwardKey2 = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_DOWN_MASK, false);
-
-        //This was never implemented properly and now it seems pointless since we have the window on click
-        //final KeyStroke statusWindowKey = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK, false);
-        ////////////
-
-        final KeyStroke scatterplotKey = KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_MASK, false);
-        final KeyStroke sortByLastKey = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK, false);
-
-        final Action toolAction = new EnableWrappedAction(new AbstractAction() {
-
-            public void actionPerformed(ActionEvent e) {
-                IGV.getInstance().enableExtrasMenu();
-            }
-        });
-
-        final Action statusWindowAction = new EnableWrappedAction(new AbstractAction() {
-
-            public void actionPerformed(ActionEvent e) {
-                IGV.getInstance().openStatusWindow();
-            }
-        });
-
         final Action nextAction = new EnableWrappedAction(new AbstractAction() {
-
             public void actionPerformed(ActionEvent e) {
                 nextFeature(true);
             }
         });
+        inputMap.put(nextKey, "nextFeature");
+        actionMap.put("nextFeature", nextAction);
+
+        // Previous feature
+        final KeyStroke prevKey = KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.CTRL_MASK, false);
         final Action prevAction = new EnableWrappedAction(new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
                 nextFeature(false);
             }
         });
+        inputMap.put(prevKey, "prevFeature");
+        actionMap.put("prevFeature", prevAction);
 
+        // Next exon
+        final KeyStroke nextExonKey = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_MASK + KeyEvent.SHIFT_MASK, false);
         final Action nextExonAction = new EnableWrappedAction(new AbstractAction() {
-
             public void actionPerformed(ActionEvent e) {
                 nextExon(true);
             }
         });
+        inputMap.put(nextExonKey, "nextExon");
+        actionMap.put("nextExon", nextExonAction);
+
+        // Previous exon
+        final KeyStroke prevExonKey = KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.CTRL_MASK + KeyEvent.SHIFT_MASK, false);
         final Action prevExonAction = new EnableWrappedAction(new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
                 nextExon(false);
             }
         });
+        inputMap.put(prevExonKey, "prevExon");
+        actionMap.put("prevExon", prevExonAction);
 
+        // Show extras menu
+        final KeyStroke extrasKey = KeyStroke.getKeyStroke(KeyEvent.VK_T, KeyEvent.ALT_MASK, false);
+        final Action extrasAction = new EnableWrappedAction(new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                igv.enableExtrasMenu();
+            }
+        });
+        inputMap.put(extrasKey, "tools");
+        actionMap.put("tools", extrasAction);
+
+        // Create region-on-interest
+        final KeyStroke regionKey = KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.CTRL_MASK, false);
         final Action regionAction = new EnableWrappedAction(new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
@@ -174,10 +162,14 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                                 currentRange.getStart(),
                                 currentRange.getEnd(),
                                 null);
-                IGV.getInstance().addRegionOfInterest(regionOfInterest);
+                igv.addRegionOfInterest(regionOfInterest);
             }
         });
+        inputMap.put(regionKey, "region");
+        actionMap.put("region", regionAction);
 
+        // Create region-of-interest at center of view (1 bp wide)
+        final KeyStroke regionCenterKey = KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.CTRL_MASK + KeyEvent.SHIFT_MASK, false);
         final Action regionCenterAction = new EnableWrappedAction(new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
@@ -191,24 +183,36 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                                 center,
                                 center + 1,
                                 null);
-                IGV.getInstance().addRegionOfInterest(regionOfInterest);
+                igv.addRegionOfInterest(regionOfInterest);
             }
         });
+        inputMap.put(regionCenterKey, "regionCenter");
+        actionMap.put("regionCenter", regionCenterAction);
 
-        final Action backAction = new AbstractAction() {
-
+        // Sort alignments
+        final KeyStroke sortByLastKey = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK, false);
+        final Action sorAlignmentTracksAction = new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                IGV.getInstance().getSession().getHistory().back();
+                String sortOptionString = prefMgr.get(PreferenceManager.SAM_SORT_OPTION);
+                if (sortOptionString != null) {
+                    try {
+                        AlignmentTrack.SortOption option = AlignmentTrack.SortOption.valueOf(sortOptionString);
+                        String lastSortTag = prefMgr.get(PreferenceManager.SAM_SORT_BY_TAG);
+
+                        igv.sortAlignmentTracks(option, lastSortTag);
+                        igv.repaintDataPanels();
+                    } catch (IllegalArgumentException e1) {
+                        log.error("Unrecognized sort option: " + sortOptionString);
+                    }
+                }
             }
         };
+        inputMap.put(sortByLastKey, "sortByLast");
+        actionMap.put("sortByLast", sorAlignmentTracksAction);
 
-        final Action forwardAction = new AbstractAction() {
-
-            public void actionPerformed(ActionEvent e) {
-                IGV.getInstance().getSession().getHistory().forward();
-            }
-        };
-
+        // Open scatter plot
+        final KeyStroke scatterplotKey = KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_MASK, false);
         final Action scatterplotAction = new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
@@ -222,54 +226,47 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                 }
             }
         };
+        inputMap.put(scatterplotKey, "scatterPlot");
+        actionMap.put("scatterPlot", scatterplotAction);
 
-        final Action sorAlignmentTracksAction = new AbstractAction() {
+        // Back button
+        final KeyStroke backKey1 = KeyStroke.getKeyStroke(KeyEvent.VK_CLOSE_BRACKET, KeyEvent.META_DOWN_MASK, false);
+        final KeyStroke backKey2 = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_DOWN_MASK, false);
+        final Action backAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String sortOptionString = PreferenceManager.getInstance().get(PreferenceManager.SAM_SORT_OPTION);
-                if (sortOptionString != null) {
-                    try {
-                        AlignmentTrack.SortOption option = AlignmentTrack.SortOption.valueOf(sortOptionString);
-                        String lastSortTag = PreferenceManager.getInstance().get(PreferenceManager.SAM_SORT_BY_TAG);
-                        IGV.getInstance().sortAlignmentTracks(option, lastSortTag);
-                        IGV.getInstance().repaintDataPanels();
-                    } catch (IllegalArgumentException e1) {
-                        log.error("Unrecognized sort option: " + sortOptionString);
-                    }
-                }
+                igv.getSession().getHistory().back();
             }
         };
+        inputMap.put(backKey1, "back");
 
-        getInputMap().put(nextKey, "nextFeature");
-        getActionMap().put("nextFeature", nextAction);
-        getInputMap().put(prevKey, "prevFeature");
-        getActionMap().put("prevFeature", prevAction);
+        inputMap.put(backKey2, "back");
+        actionMap.put("back", backAction);
 
-        //dhmay adding 20101222
-        getInputMap().put(nextExonKey, "nextExon");
-        getActionMap().put("nextExon", nextExonAction);
-        getInputMap().put(prevExonKey, "prevExon");
-        getActionMap().put("prevExon", prevExonAction);
+        // Forward button
+        final KeyStroke forwardKey1 = KeyStroke.getKeyStroke(KeyEvent.VK_OPEN_BRACKET, KeyEvent.META_DOWN_MASK, false);
+        final KeyStroke forwardKey2 = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_DOWN_MASK, false);
+        final Action forwardAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                igv.getSession().getHistory().forward();
+            }
+        };
+        inputMap.put(forwardKey1, "forward");
 
-        getInputMap().put(toolsKey, "tools");
-        getActionMap().put("tools", toolAction);
-        getInputMap().put(regionKey, "region");
-        getActionMap().put("region", regionAction);
-        getInputMap().put(regionCenterKey, "regionCenter");
-        getActionMap().put("regionCenter", regionCenterAction);
+        // Toggle alignment "complete read only" option
+        final KeyStroke completeReadKey = KeyStroke.getKeyStroke(KeyEvent.VK_1, KeyEvent.CTRL_DOWN_MASK, false);
+        final Action completeReadAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                boolean currentSetting = prefMgr.getAsBoolean(PreferenceManager.SAM_COMPLETE_READS_ONLY);
+                prefMgr.put(PreferenceManager.SAM_COMPLETE_READS_ONLY, !currentSetting);
+                igv.repaintDataPanels();
+            }
+        };
+        inputMap.put(completeReadKey, "completeReads");
+        actionMap.put("completeReads", completeReadAction);
 
-        getInputMap().put(sortByLastKey, "sortByLast");
-        getActionMap().put("sortByLast", sorAlignmentTracksAction);
-
-        getInputMap().put(scatterplotKey, "scatterPlot");
-        getActionMap().put("scatterPlot", scatterplotAction);
-
-        getInputMap().put(backKey1, "back");
-        getInputMap().put(backKey2, "back");
-        getActionMap().put("back", backAction);
-        getInputMap().put(forwardKey1, "forward");
-        getInputMap().put(forwardKey2, "forward");
-        getActionMap().put("forward", forwardAction);
 
     }
 
