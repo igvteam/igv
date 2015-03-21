@@ -81,7 +81,7 @@ public class HttpUtils {
 
         htsjdk.tribble.util.ParsingUtils.registerHelperClass(IGVUrlHelper.class);
 
-        if(!Globals.checkJavaVersion("1.8")) {
+        if (!Globals.checkJavaVersion("1.8")) {
             disableCertificateValidation();
         }
         CookieHandler.setDefault(new IGVCookieManager());
@@ -637,6 +637,9 @@ public class HttpUtils {
     private HttpURLConnection openConnection(
             URL url, Map<String, String> requestProperties, String method, int redirectCount) throws IOException {
 
+        // Map amazon cname aliases to the full hosts -- neccessary to avoid ssl certificate errors in Java 1.8
+        url = mapCname(url);
+
         //Encode query string portions
         url = StringUtils.encodeURLQueryString(url);
         if (log.isTraceEnabled()) {
@@ -756,6 +759,22 @@ public class HttpUtils {
             }
         }
         return conn;
+    }
+
+    private URL mapCname(URL url) {
+
+        String host = url.getHost();
+        try {
+            if (host.equals("igv.broadinstitute.org")) {
+                url = new URL(url.toExternalForm().replace("igv.broadinstitute.org", "s3.amazonaws.com/igv.broadinstitute.org"));
+            }
+            else if (host.equals("igvdata.broadinstitute.org")) {
+                url = new URL(url.toExternalForm().replace("igvdata.broadinstitute.org", "dn7ywbm9isq8j.cloudfront.net"));
+            }
+        } catch (MalformedURLException e) {
+            log.error("Error modifying url", e);
+        }
+        return url;
     }
 
     //Used for testing sometimes, please do not delete
@@ -1293,7 +1312,6 @@ public class HttpUtils {
             wrappedManager.put(uri, responseHeaders);
         }
     }
-
 
 
 }
