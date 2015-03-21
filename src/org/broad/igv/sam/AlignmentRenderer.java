@@ -106,11 +106,11 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         nucleotideColors = new HashMap();
 
-        Color a = ColorUtilities.stringToColor(prefs.get(PreferenceManager.SAM_COLOR_A),  Color.green);
-        Color c = ColorUtilities.stringToColor(prefs.get(PreferenceManager.SAM_COLOR_C),  Color.blue);
-        Color t = ColorUtilities.stringToColor(prefs.get(PreferenceManager.SAM_COLOR_T),  Color.red);
-        Color g = ColorUtilities.stringToColor(prefs.get(PreferenceManager.SAM_COLOR_G),  Color.gray);
-        Color n = ColorUtilities.stringToColor(prefs.get(PreferenceManager.SAM_COLOR_N),  Color.gray);
+        Color a = ColorUtilities.stringToColor(prefs.get(PreferenceManager.SAM_COLOR_A), Color.green);
+        Color c = ColorUtilities.stringToColor(prefs.get(PreferenceManager.SAM_COLOR_C), Color.blue);
+        Color t = ColorUtilities.stringToColor(prefs.get(PreferenceManager.SAM_COLOR_T), Color.red);
+        Color g = ColorUtilities.stringToColor(prefs.get(PreferenceManager.SAM_COLOR_G), Color.gray);
+        Color n = ColorUtilities.stringToColor(prefs.get(PreferenceManager.SAM_COLOR_N), Color.gray);
 
         nucleotideColors.put('A', a);
         nucleotideColors.put('a', a);
@@ -267,6 +267,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         double origin = context.getOrigin();
         double locScale = context.getScale();
         Font font = FontManager.getFont(10);
+        boolean completeReadsOnly = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_COMPLETE_READS_ONLY);
 
         if ((alignments != null) && (alignments.size() > 0)) {
 
@@ -277,9 +278,16 @@ public class AlignmentRenderer implements FeatureRenderer {
                 double pixelStart = ((alignment.getStart() - origin) / locScale);
                 double pixelEnd = ((alignment.getEnd() - origin) / locScale);
 
-                // If the any part of the feature fits in the track rectangle draw  it
+                // If any any part of the feature fits in the track rectangle draw  it
                 if (pixelEnd < rowRect.x || pixelStart > rowRect.getMaxX()) {
                     continue;
+                }
+
+                // Optionally only draw alignments that are completely in view
+                if (completeReadsOnly) {
+                    if (pixelStart < rowRect.x || pixelEnd > rowRect.getMaxX()) {
+                        continue;
+                    }
                 }
 
                 // If the alignment is 3 pixels or less,  draw alignment as a single block,
@@ -622,7 +630,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                     cRed.draw(blockShape);
                 }
 
-                if(alignment.isSupplementary()) {
+                if (alignment.isSupplementary()) {
                     context.getGraphic2DForColor(SUPPLEMENTARY_OUTLINE_COLOR).draw(blockShape);
                 }
 
@@ -720,7 +728,6 @@ public class AlignmentRenderer implements FeatureRenderer {
         boolean isSoftClipped = block.isSoftClipped();
 
 
-
         // Get the base qualities, start/end,  and reference sequence
         String chr = context.getChr();
         final int start = block.getStart();
@@ -743,9 +750,9 @@ public class AlignmentRenderer implements FeatureRenderer {
         }
 
         byte[] read;
-        if(haveBases){
+        if (haveBases) {
             read = block.getBases();
-        }else{
+        } else {
             read = reference;
         }
 
@@ -996,7 +1003,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
 
         Color color = alignment.getColor();
-        if(color != null) return color;   // Color has been explicitly set
+        if (color != null) return color;   // Color has been explicitly set
 
         Color c = alignment.isSupplementary() ? Color.darkGray : grey1;
 
@@ -1130,7 +1137,7 @@ public class AlignmentRenderer implements FeatureRenderer {
      * @param alignment
      * @param renderOptions
      * @return -1 if unknown (stats not computed), 0 if not
-     *         an outlier, 1 if outlier
+     * an outlier, 1 if outlier
      */
     private int getOutlierStatus(Alignment alignment, RenderOptions renderOptions) {
         PEStats peStats = getPEStats(alignment, renderOptions);
