@@ -201,7 +201,7 @@ public class PreferenceManager implements PropertyManager {
 
     public static final String KNOWN_SNPS = "KNOWN_SNPS_FILE";
 
-    public static final String FLANKING_REGION = "FLAKING_REGIONS";
+    public static final String FLANKING_REGION = "FLANKING_REGION";
 
     public static final String SHOW_SEQUENCE_TRANSLATION = "SHOW_SEQUENCE_TRANSLATION";
     public static final String MAX_SEQUENCE_RESOLUTION = "MAX_SEQUENCE_RESOLUTION";

@@ -42,6 +42,7 @@ public class IGVPreferences {
 
     static {
         aliasTable.put("SAM>SORT_OPTION", "SAM.SORT_OPTION");
+        aliasTable.put("FLAKING_REGIONS", "FLANKING_REGION");
     }
 
     Hashtable<String, String> userPreferences = null;
