@@ -121,6 +121,8 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_FLAG_LARGE_INSERTIONS = "SAM.FLAG_LARGE_INSERTIONS";
     public static final String SAM_LARGE_INSERTIONS_THRESHOLD = "SAM.LARGE_INSERTIONS_THRESOLD";
 
+    public static final String SAM_SHOW_GROUP_SEPARATOR = "SAM.SHOW_GROUP_SEPARATOR";
+
     public static final String COLOR_A = "COLOR.A";
     public static final String COLOR_C = "COLOR.C";
     public static final String COLOR_T = "COLOR.T";
@@ -1020,6 +1022,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_FLAG_LARGE_INSERTIONS, "false");
         defaultValues.put(SAM_LARGE_INSERTIONS_THRESHOLD, "1");
         defaultValues.put(SAM_SORT_OPTION, "NUCLEOTIDE");
+        defaultValues.put(SAM_SHOW_GROUP_SEPARATOR, "true");
 
         defaultValues.put(NORMALIZE_COVERAGE, "false");
 

@@ -423,9 +423,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             }
 
             // Draw a subtle divider line between groups
-            if (groupNumber < nGroups) {
-                int borderY = (int) y + GROUP_MARGIN / 2;
-                groupBorderGraphics.drawLine(inputRect.x, borderY, inputRect.width, borderY);
+            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_GROUP_SEPARATOR)) {
+                if (groupNumber < nGroups) {
+                    int borderY = (int) y + GROUP_MARGIN / 2;
+                    groupBorderGraphics.drawLine(inputRect.x, borderY, inputRect.width, borderY);
+                }
             }
             y += GROUP_MARGIN;
         }
@@ -1513,7 +1515,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 mappings.put("insert size", SortOption.INSERT_SIZE);
                 mappings.put("chromosome of mate", SortOption.MATE_CHR);
             }
-           // mappings.put("supplementary flag", SortOption.SUPPLEMENTARY);
+            // mappings.put("supplementary flag", SortOption.SUPPLEMENTARY);
 
             for (Map.Entry<String, SortOption> el : mappings.entrySet()) {
                 sortMenu.add(getSortMenuItem(el.getKey(), el.getValue()));
@@ -1779,7 +1781,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                         splitScreenMate(te, alignment);
                     }
                 });
-                if (alignment == null || !alignment.isPaired() || !alignment.getMate().isMapped()){
+                if (alignment == null || !alignment.isPaired() || !alignment.getMate().isMapped()) {
                     item.setEnabled(false);
                 }
             }
