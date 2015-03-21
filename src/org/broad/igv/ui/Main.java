@@ -91,7 +91,7 @@ public class Main {
         Runtime.getRuntime().addShutdownHook(new ShutdownThread());
 
         updateTooltipSettings();
-        
+
         System.setProperty ("jsse.enableSNIExtension", "false");
 
         // Anti alias settings.   TODO = Are these neccessary anymore ?
