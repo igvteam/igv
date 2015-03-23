@@ -50,6 +50,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
 
     private static Logger log = Logger.getLogger(SpliceJunctionFinderTrack.class);
 
+    public enum StrandOption {IGNORE, FORWARD, REVERSE, BOTH};
 
     IAlignmentDataManager dataManager;
     PreferenceManager prefs;
@@ -58,16 +59,16 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
     // directory,  so this field might be null at any given time.  It is updated each repaint.
     JComponent parent;
 
-    boolean ignoreStrand;
+    StrandOption strandOption;
 
-    public SpliceJunctionFinderTrack(ResourceLocator locator, String name, IAlignmentDataManager dataManager, boolean ignoreStrand) {
+    public SpliceJunctionFinderTrack(ResourceLocator locator, String name, IAlignmentDataManager dataManager, StrandOption ignoreStrand) {
         super(locator, locator.getPath() + "_junctions", name);
 
         super.setDataRange(new DataRange(0, 0, 60));
         setRendererClass(SpliceJunctionRenderer.class);
         this.dataManager = dataManager;
         prefs = PreferenceManager.getInstance();
-        this.ignoreStrand = ignoreStrand;
+        this.strandOption = ignoreStrand;
         // Register track
         IGV.getInstance().addAlignmentTrackEventListener(this);
     }
@@ -77,6 +78,17 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
         float minVisibleScale = (maxRange * 1000) / 700;
         return context.getScale() < minVisibleScale;
+    }
+
+
+    public void setStrandOption(StrandOption strandOption) {
+        this.packedFeaturesMap.clear();
+        this.strandOption = strandOption;
+    }
+
+
+    public StrandOption getStrandOption() {
+        return strandOption;
     }
 
 
@@ -124,7 +136,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         if (loadedInterval == null) return;
 
         SpliceJunctionHelper helper = loadedInterval.getSpliceJunctionHelper();
-        List<SpliceJunctionFeature> features = ignoreStrand ? helper.getFilteredJunctionsIgnoreStrand() : helper.getFilteredJunctions();
+        List<SpliceJunctionFeature> features =  helper.getFilteredJunctions(strandOption);
         if (features == null) {
             features = Collections.emptyList();
         }

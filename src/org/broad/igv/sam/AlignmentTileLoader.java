@@ -552,18 +552,10 @@ public class AlignmentTileLoader {
 
         private void finalizeSpliceJunctions() {
             if (spliceJunctionHelper != null) {
-                spliceJunctionHelper.finish();
+           //     spliceJunctionHelper.finish();
             }
         }
 
-        public List<SpliceJunctionFeature> getSpliceJunctionFeatures() {
-            if (spliceJunctionHelper == null) return null;
-            return spliceJunctionHelper.getFilteredJunctions();
-        }
-
-        public SpliceJunctionHelper getSpliceJunctionHelper() {
-            return spliceJunctionHelper;
-        }
 
         /**
          * Map-like structure designed to be accessible both by key, and by numeric index

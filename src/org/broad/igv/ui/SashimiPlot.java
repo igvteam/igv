@@ -94,7 +94,8 @@ public class SashimiPlot extends JFrame {
             AlignmentDataManager oldDataManager = alignmentTrack.getDataManager();
             MemoryAlignmentDataManager dataManager = new MemoryAlignmentDataManager(oldDataManager, oldDataManager.getSpliceJunctionLoadOptions());
 
-            SpliceJunctionFinderTrack spliceJunctionTrack = new SpliceJunctionFinderTrack(alignmentTrack.getResourceLocator(), alignmentTrack.getName(), dataManager, true);
+            SpliceJunctionFinderTrack spliceJunctionTrack =
+                    new SpliceJunctionFinderTrack(alignmentTrack.getResourceLocator(), alignmentTrack.getName(), dataManager, SpliceJunctionFinderTrack.StrandOption.IGNORE);
 
             spliceJunctionTrack.setRendererClass(SashimiJunctionRenderer.class);
 
@@ -291,7 +292,7 @@ public class SashimiPlot extends JFrame {
         protected IGVPopupMenu getPopupMenu(MouseEvent e) {
             IGVPopupMenu menu = new IGVPopupMenu();
 
-            final JCheckBoxMenuItem showCoverageData = new JCheckBoxMenuItem("Show Coverage Data");
+            final JCheckBoxMenuItem showCoverageData = new JCheckBoxMenuItem("Show Exon Coverage Data");
             showCoverageData.setSelected(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SASHIMI_SHOW_COVERAGE));
             showCoverageData.addActionListener(new ActionListener() {
                 @Override
@@ -304,10 +305,26 @@ public class SashimiPlot extends JFrame {
 
             CoverageTrack covTrack = getRenderer(this.trackComponent.track).getCoverageTrack();
             JMenuItem setCoverageDataRange = CoverageTrack.addDataRangeItem(SashimiPlot.this, null, Arrays.asList(covTrack));
-            setCoverageDataRange.setText("Set Coverage Data Range");
+            setCoverageDataRange.setText("Set Exon Coverage Max");
             menu.add(setCoverageDataRange);
 
-            JMenuItem minJunctionCoverage = new JMenuItem("Set Min Junction Coverage");
+            JMenuItem maxJunctionCoverageRange = new JMenuItem("Set Junction Coverage Max");
+            maxJunctionCoverageRange.setToolTipText("The thickness of each line will be proportional to the coverage, up until this value");
+
+            maxJunctionCoverageRange.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    String input = JOptionPane.showInputDialog("Set Max Junction Coverage", getRenderer(trackComponent.track).getMaxDepth());
+                    if (input == null || input.length() == 0) return;
+                    try {
+                        int newMaxDepth = Integer.parseInt(input);
+                        setMaxCoverageDepth(JunctionTrackMouseAdapter.this.trackComponent, newMaxDepth);
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(SashimiPlot.this, input + " is not an integer");
+                    }
+                }
+            });
+            JMenuItem minJunctionCoverage = new JMenuItem("Set Junction Coverage Min");
             minJunctionCoverage.setToolTipText("Junctions below this threshold will be removed from view");
             minJunctionCoverage.addActionListener(new ActionListener() {
                 @Override
@@ -327,22 +344,6 @@ public class SashimiPlot extends JFrame {
                 }
             });
 
-            JMenuItem maxJunctionCoverageRange = new JMenuItem("Set Max Junction Coverage Range");
-            maxJunctionCoverageRange.setToolTipText("The thickness of each line will be proportional to the coverage, up until this value");
-
-            maxJunctionCoverageRange.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    String input = JOptionPane.showInputDialog("Set Max Junction Coverage", getRenderer(trackComponent.track).getMaxDepth());
-                    if (input == null || input.length() == 0) return;
-                    try {
-                        int newMaxDepth = Integer.parseInt(input);
-                        setMaxCoverageDepth(JunctionTrackMouseAdapter.this.trackComponent, newMaxDepth);
-                    } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(SashimiPlot.this, input + " is not an integer");
-                    }
-                }
-            });
 
             JMenuItem colorItem = new JMenuItem("Set Color");
             colorItem.addActionListener(new ActionListener() {
@@ -357,6 +358,7 @@ public class SashimiPlot extends JFrame {
                 }
             });
 
+
             JMenuItem saveImageItem = new JMenuItem("Save Image...");
             saveImageItem.addActionListener(new ActionListener() {
                 @Override
@@ -369,9 +371,44 @@ public class SashimiPlot extends JFrame {
             menu.add(minJunctionCoverage);
             menu.add(maxJunctionCoverageRange);
             menu.add(colorItem);
+
+            menu.addSeparator();
+
+            ButtonGroup strandGroup = new ButtonGroup();
+
+            JRadioButtonMenuItem bothStrands = getStrandRadioButton("Both Strands", SpliceJunctionFinderTrack.StrandOption.IGNORE);
+            strandGroup.add(bothStrands);
+            menu.add(bothStrands);
+
+            JRadioButtonMenuItem plusStrand = getStrandRadioButton("Forward Strand", SpliceJunctionFinderTrack.StrandOption.FORWARD);
+            strandGroup.add(plusStrand);
+            menu.add(plusStrand);
+
+            JRadioButtonMenuItem minusStrand = getStrandRadioButton("Reverse Strand", SpliceJunctionFinderTrack.StrandOption.REVERSE);
+            strandGroup.add(minusStrand);
+            menu.add(minusStrand);
+
+            menu.addSeparator();
+
             menu.add(saveImageItem);
 
             return menu;
+        }
+
+        private JRadioButtonMenuItem getStrandRadioButton(String label, final SpliceJunctionFinderTrack.StrandOption option ) {
+
+            JRadioButtonMenuItem item = new JRadioButtonMenuItem(label);
+            item.setSelected(spliceJunctionTracks.get(0).getStrandOption() == option);
+            item.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    for (SpliceJunctionFinderTrack t : spliceJunctionTracks) {
+                        t.setStrandOption(option);
+                        trackComponent.repaint();
+                    }
+                }
+            });
+            return item;
         }
     }
 

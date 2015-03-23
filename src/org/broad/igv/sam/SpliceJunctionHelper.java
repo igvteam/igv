@@ -44,7 +44,7 @@ public class SpliceJunctionHelper {
     static Logger log = Logger.getLogger(SpliceJunctionHelper.class);
 
     List<SpliceJunctionFeature> allSpliceJunctionFeatures = new ArrayList<SpliceJunctionFeature>();
-    List<SpliceJunctionFeature> filteredSpliceJunctionFeatures = null;
+    //  List<SpliceJunctionFeature> filteredSpliceJunctionFeatures = null;
     List<SpliceJunctionFeature> filteredCombinedFeatures = null;
 
     Table<Integer, Integer, SpliceJunctionFeature> posStartEndJunctionsMap = HashBasedTable.create();
@@ -56,20 +56,28 @@ public class SpliceJunctionHelper {
         this.loadOptions = loadOptions;
     }
 
-    public List<SpliceJunctionFeature> getFilteredJunctions() {
-        if (filteredSpliceJunctionFeatures == null) {
-            filteredSpliceJunctionFeatures = filterJunctionList(this.loadOptions, allSpliceJunctionFeatures);
-        }
-        return filteredSpliceJunctionFeatures;
+    public List<SpliceJunctionFeature> getFilteredJunctions(SpliceJunctionFinderTrack.StrandOption strandOption) {
 
-    }
+        List<SpliceJunctionFeature> junctions;
 
-    public List<SpliceJunctionFeature> getFilteredJunctionsIgnoreStrand() {
-        if (filteredCombinedFeatures == null) {
-            combineStrandJunctionsMaps();
-            filteredCombinedFeatures = filterJunctionList(this.loadOptions, filteredCombinedFeatures);
+        switch (strandOption) {
+            case FORWARD:
+                junctions = new ArrayList<SpliceJunctionFeature>(posStartEndJunctionsMap.values());
+            case REVERSE:
+                junctions = new ArrayList<SpliceJunctionFeature>(negStartEndJunctionsMap.values());
+            case IGNORE:
+                junctions = combineStrandJunctionsMaps();
+            default:
+                junctions = new ArrayList<SpliceJunctionFeature>(posStartEndJunctionsMap.values());
+                junctions.addAll(negStartEndJunctionsMap.values());
         }
-        return filteredCombinedFeatures;
+
+        filterJunctionList(this.loadOptions, junctions);
+
+        FeatureUtils.sortFeatureList(junctions);
+
+        return junctions;
+
     }
 
     public void addAlignment(Alignment alignment) {
@@ -85,10 +93,9 @@ public class SpliceJunctionHelper {
         if (strandAttr != null) {
             isNegativeStrand = strandAttr.toString().charAt(0) == '-';
         } else {
-            if(alignment.isPaired()) {
+            if (alignment.isPaired()) {
                 isNegativeStrand = alignment.getFirstOfPairStrand() == Strand.NEGATIVE;
-            }
-            else {
+            } else {
                 isNegativeStrand = alignment.isNegativeStrand(); // <= TODO -- this isn't correct for all libraries.
             }
         }
@@ -129,6 +136,7 @@ public class SpliceJunctionHelper {
     }
 
     private static List<SpliceJunctionFeature> filterJunctionList(LoadOptions loadOptions, List<SpliceJunctionFeature> unfiltered) {
+
         if (loadOptions.minJunctionCoverage > 1) {
             List<SpliceJunctionFeature> coveredFeatures = new ArrayList<SpliceJunctionFeature>(unfiltered.size());
             for (SpliceJunctionFeature feature : unfiltered) {
@@ -142,28 +150,6 @@ public class SpliceJunctionHelper {
         }
     }
 
-    /**
-     * Apply filters to any currently non-null filtered lists.
-     * It may not be necessary to create a given filtered list, we use it being non-null as an indicator
-     * of usefulness. If a filtered list is null, it will be generated and properly filtered later by
-     * the appropriate getter.
-     *
-     * @param checkFilteredOnly
-     */
-    private void filterJunctionsByCoverage(boolean checkFilteredOnly) {
-
-        if (filteredSpliceJunctionFeatures != null) {
-            List<SpliceJunctionFeature> unfiltered = checkFilteredOnly ? filteredSpliceJunctionFeatures : allSpliceJunctionFeatures;
-            filteredSpliceJunctionFeatures = filterJunctionList(this.loadOptions, unfiltered);
-        }
-
-        if (filteredCombinedFeatures != null) {
-            if (!checkFilteredOnly) {
-                combineStrandJunctionsMaps();
-            }
-            filteredCombinedFeatures = filterJunctionList(this.loadOptions, filteredCombinedFeatures);
-        }
-    }
 
     void setLoadOptions(LoadOptions loadOptions) {
         int oldMinJunctionCoverage = this.loadOptions.minJunctionCoverage;
@@ -171,27 +157,21 @@ public class SpliceJunctionHelper {
         assert this.loadOptions.minReadFlankingWidth == loadOptions.minReadFlankingWidth;
         this.loadOptions = loadOptions;
 
-
-        if (oldMinJunctionCoverage == loadOptions.minJunctionCoverage) return;
-        boolean increasing = oldMinJunctionCoverage < loadOptions.minJunctionCoverage;
-        filterJunctionsByCoverage(increasing);
     }
 
-
-    public void finish() {
-        //Sort by increasing beginning of start flanking region, as required by the renderer
-        //We sort first so filteredSpliceJunctionFeatures will also be sorted
-        FeatureUtils.sortFeatureList(allSpliceJunctionFeatures);
-    }
 
     /**
      * We keep separate splice junction information by strand.
-     * This combines both strand information
+     * This combines both strand information.  Used for Sashimi plot,
      */
-    private void combineStrandJunctionsMaps() {
+    private List<SpliceJunctionFeature> combineStrandJunctionsMaps() {
+
+        // Start with all + junctions
         Table<Integer, Integer, SpliceJunctionFeature> combinedStartEndJunctionsMap = HashBasedTable.create(posStartEndJunctionsMap);
 
+        // Merge in - junctions
         for (Table.Cell<Integer, Integer, SpliceJunctionFeature> negJunctionCell : negStartEndJunctionsMap.cellSet()) {
+
             int junctionStart = negJunctionCell.getRowKey();
             int junctionEnd = negJunctionCell.getColumnKey();
             SpliceJunctionFeature negFeat = negJunctionCell.getValue();
@@ -199,17 +179,16 @@ public class SpliceJunctionHelper {
             SpliceJunctionFeature junction = combinedStartEndJunctionsMap.get(junctionStart, junctionEnd);
 
             if (junction == null) {
-                junction = new SpliceJunctionFeature(negFeat.getChr(), junctionStart, junctionEnd, Strand.POSITIVE);
+                // No existing (+) junction here, just add the (-) one
+                junction = new SpliceJunctionFeature(negFeat.getChr(), junctionStart, junctionEnd, Strand.NONE);
                 combinedStartEndJunctionsMap.put(junctionStart, junctionEnd, junction);
+            } else {
+                int newJunctionDepth = junction.getJunctionDepth() + negFeat.getJunctionDepth();
+                junction.setJunctionDepth(newJunctionDepth);
             }
-
-            int newJunctionDepth = junction.getJunctionDepth() + negFeat.getJunctionDepth();
-            junction.addRead(negFeat.getStart(), negFeat.getEnd());
-            junction.setJunctionDepth(newJunctionDepth);
         }
 
-        filteredCombinedFeatures = new ArrayList<SpliceJunctionFeature>(combinedStartEndJunctionsMap.values());
-        FeatureUtils.sortFeatureList(filteredCombinedFeatures);
+        return new ArrayList<SpliceJunctionFeature>(combinedStartEndJunctionsMap.values());
     }
 
     public static class LoadOptions {
