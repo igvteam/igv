@@ -92,8 +92,6 @@ public class Main {
 
         updateTooltipSettings();
 
-        System.setProperty ("jsse.enableSNIExtension", "false");
-
         // Anti alias settings.   TODO = Are these neccessary anymore ?
         System.setProperty("awt.useSystemAAFontSettings", "on");
         System.setProperty("swing.aatext", "true");
