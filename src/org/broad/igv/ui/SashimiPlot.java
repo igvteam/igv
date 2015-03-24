@@ -95,7 +95,7 @@ public class SashimiPlot extends JFrame {
             MemoryAlignmentDataManager dataManager = new MemoryAlignmentDataManager(oldDataManager, oldDataManager.getSpliceJunctionLoadOptions());
 
             SpliceJunctionFinderTrack spliceJunctionTrack =
-                    new SpliceJunctionFinderTrack(alignmentTrack.getResourceLocator(), alignmentTrack.getName(), dataManager, SpliceJunctionFinderTrack.StrandOption.IGNORE);
+                    new SpliceJunctionFinderTrack(alignmentTrack.getResourceLocator(), alignmentTrack.getName(), dataManager, SpliceJunctionFinderTrack.StrandOption.COMBINE);
 
             spliceJunctionTrack.setRendererClass(SashimiJunctionRenderer.class);
 
@@ -376,9 +376,14 @@ public class SashimiPlot extends JFrame {
 
             ButtonGroup strandGroup = new ButtonGroup();
 
-            JRadioButtonMenuItem bothStrands = getStrandRadioButton("Both Strands", SpliceJunctionFinderTrack.StrandOption.IGNORE);
-            strandGroup.add(bothStrands);
-            menu.add(bothStrands);
+            JRadioButtonMenuItem combineStrands = getStrandRadioButton("Combine Strands", SpliceJunctionFinderTrack.StrandOption.COMBINE);
+            combineStrands.setToolTipText("Combine junctions from both strands -- best for non-strand preserving libraries.");
+            strandGroup.add(combineStrands);
+            menu.add(combineStrands);
+
+          //  JRadioButtonMenuItem bothStrands = getStrandRadioButton("Both Strands", SpliceJunctionFinderTrack.StrandOption.BOTH);
+          //  strandGroup.add(bothStrands);
+          //  menu.add(bothStrands);
 
             JRadioButtonMenuItem plusStrand = getStrandRadioButton("Forward Strand", SpliceJunctionFinderTrack.StrandOption.FORWARD);
             plusStrand.setToolTipText("Show only junctions on the forward read strand  (of first-in-pair for paired reads)");

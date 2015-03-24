@@ -67,9 +67,12 @@ public class SpliceJunctionHelper {
             case REVERSE:
                 junctions = new ArrayList<SpliceJunctionFeature>(negStartEndJunctionsMap.values());
                 break;
-            default:
+            case BOTH:
                 junctions = new ArrayList<SpliceJunctionFeature>(posStartEndJunctionsMap.values());
                 junctions.addAll(negStartEndJunctionsMap.values());
+                break;
+            default:
+                junctions = combineStrandJunctionsMaps();
         }
 
         filterJunctionList(this.loadOptions, junctions);
@@ -149,6 +152,38 @@ public class SpliceJunctionHelper {
             return unfiltered;
         }
     }
+
+
+    /**
+     * Combine junctions from both strands.  Used for Sashimi plot.
+     * Note: Flanking depth arrays are not combined.
+     */
+    private List<SpliceJunctionFeature> combineStrandJunctionsMaps() {
+
+        // Start with all + junctions
+        Table<Integer, Integer, SpliceJunctionFeature> combinedStartEndJunctionsMap = HashBasedTable.create(posStartEndJunctionsMap);
+
+        // Merge in - junctions
+        for (Table.Cell<Integer, Integer, SpliceJunctionFeature> negJunctionCell : negStartEndJunctionsMap.cellSet()) {
+
+            int junctionStart = negJunctionCell.getRowKey();
+            int junctionEnd = negJunctionCell.getColumnKey();
+            SpliceJunctionFeature negFeat = negJunctionCell.getValue();
+
+            SpliceJunctionFeature junction = combinedStartEndJunctionsMap.get(junctionStart, junctionEnd);
+
+            if (junction == null) {
+                // No existing (+) junction here, just add the (-) one\
+                combinedStartEndJunctionsMap.put(junctionStart, junctionEnd, negFeat);
+            } else {
+                int newJunctionDepth = junction.getJunctionDepth() + negFeat.getJunctionDepth();
+                junction.setJunctionDepth(newJunctionDepth);
+            }
+        }
+
+        return new ArrayList<SpliceJunctionFeature>(combinedStartEndJunctionsMap.values());
+    }
+
 
     void setLoadOptions(LoadOptions loadOptions) {
         int oldMinJunctionCoverage = this.loadOptions.minJunctionCoverage;

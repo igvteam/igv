@@ -29,6 +29,7 @@ import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.SashimiPlot;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
 import org.broad.igv.ui.event.AlignmentTrackEventListener;
 import org.broad.igv.ui.panel.IGVPopupMenu;
@@ -50,7 +51,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
 
     private static Logger log = Logger.getLogger(SpliceJunctionFinderTrack.class);
 
-    public enum StrandOption {IGNORE, FORWARD, REVERSE, BOTH};
+    public enum StrandOption {COMBINE, FORWARD, REVERSE, BOTH};
 
     IAlignmentDataManager dataManager;
     PreferenceManager prefs;
@@ -117,6 +118,17 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
 
         popupMenu.addSeparator();
         popupMenu.add(getChangeAutoScale());
+
+
+        popupMenu.addSeparator();
+        JMenuItem sashimi = new JMenuItem("Sashimi Plot");
+        sashimi.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SashimiPlot.getSashimiPlot(null);
+            }
+        });
+        popupMenu.add(sashimi);
 
         return popupMenu;
     }
