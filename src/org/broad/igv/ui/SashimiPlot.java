@@ -381,10 +381,12 @@ public class SashimiPlot extends JFrame {
             menu.add(bothStrands);
 
             JRadioButtonMenuItem plusStrand = getStrandRadioButton("Forward Strand", SpliceJunctionFinderTrack.StrandOption.FORWARD);
+            plusStrand.setToolTipText("Show only junctions on the forward read strand  (of first-in-pair for paired reads)");
             strandGroup.add(plusStrand);
             menu.add(plusStrand);
 
             JRadioButtonMenuItem minusStrand = getStrandRadioButton("Reverse Strand", SpliceJunctionFinderTrack.StrandOption.REVERSE);
+            plusStrand.setToolTipText("Show only junctions on the reverse read strand  (of first-in-pair for paired reads)");
             strandGroup.add(minusStrand);
             menu.add(minusStrand);
 

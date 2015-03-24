@@ -63,10 +63,10 @@ public class SpliceJunctionHelper {
         switch (strandOption) {
             case FORWARD:
                 junctions = new ArrayList<SpliceJunctionFeature>(posStartEndJunctionsMap.values());
+                break;
             case REVERSE:
                 junctions = new ArrayList<SpliceJunctionFeature>(negStartEndJunctionsMap.values());
-            case IGNORE:
-                junctions = combineStrandJunctionsMaps();
+                break;
             default:
                 junctions = new ArrayList<SpliceJunctionFeature>(posStartEndJunctionsMap.values());
                 junctions.addAll(negStartEndJunctionsMap.values());
@@ -150,45 +150,12 @@ public class SpliceJunctionHelper {
         }
     }
 
-
     void setLoadOptions(LoadOptions loadOptions) {
         int oldMinJunctionCoverage = this.loadOptions.minJunctionCoverage;
         //Can't change this, need to reload everything
         assert this.loadOptions.minReadFlankingWidth == loadOptions.minReadFlankingWidth;
         this.loadOptions = loadOptions;
 
-    }
-
-
-    /**
-     * We keep separate splice junction information by strand.
-     * This combines both strand information.  Used for Sashimi plot,
-     */
-    private List<SpliceJunctionFeature> combineStrandJunctionsMaps() {
-
-        // Start with all + junctions
-        Table<Integer, Integer, SpliceJunctionFeature> combinedStartEndJunctionsMap = HashBasedTable.create(posStartEndJunctionsMap);
-
-        // Merge in - junctions
-        for (Table.Cell<Integer, Integer, SpliceJunctionFeature> negJunctionCell : negStartEndJunctionsMap.cellSet()) {
-
-            int junctionStart = negJunctionCell.getRowKey();
-            int junctionEnd = negJunctionCell.getColumnKey();
-            SpliceJunctionFeature negFeat = negJunctionCell.getValue();
-
-            SpliceJunctionFeature junction = combinedStartEndJunctionsMap.get(junctionStart, junctionEnd);
-
-            if (junction == null) {
-                // No existing (+) junction here, just add the (-) one
-                junction = new SpliceJunctionFeature(negFeat.getChr(), junctionStart, junctionEnd, Strand.NONE);
-                combinedStartEndJunctionsMap.put(junctionStart, junctionEnd, junction);
-            } else {
-                int newJunctionDepth = junction.getJunctionDepth() + negFeat.getJunctionDepth();
-                junction.setJunctionDepth(newJunctionDepth);
-            }
-        }
-
-        return new ArrayList<SpliceJunctionFeature>(combinedStartEndJunctionsMap.values());
     }
 
     public static class LoadOptions {
