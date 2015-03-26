@@ -51,7 +51,10 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
 
     private static Logger log = Logger.getLogger(SpliceJunctionFinderTrack.class);
 
-    public enum StrandOption {COMBINE, FORWARD, REVERSE, BOTH};
+    public enum StrandOption {COMBINE, FORWARD, REVERSE, BOTH}
+
+    // Strand option is shared by all tracks
+    private static StrandOption strandOption;
 
     IAlignmentDataManager dataManager;
     PreferenceManager prefs;
@@ -60,7 +63,6 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
     // directory,  so this field might be null at any given time.  It is updated each repaint.
     JComponent parent;
 
-    StrandOption strandOption;
 
     public SpliceJunctionFinderTrack(ResourceLocator locator, String name, IAlignmentDataManager dataManager, StrandOption ignoreStrand) {
         super(locator, locator.getPath() + "_junctions", name);
@@ -82,14 +84,17 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
     }
 
 
-    public void setStrandOption(StrandOption strandOption) {
-        this.packedFeaturesMap.clear();
-        this.strandOption = strandOption;
+    public static void setStrandOption(StrandOption so) {
+        strandOption = so;
     }
 
 
-    public StrandOption getStrandOption() {
+    public static StrandOption getStrandOption() {
         return strandOption;
+    }
+
+    public void clear() {
+        this.packedFeaturesMap.clear();
     }
 
 
@@ -148,7 +153,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         if (loadedInterval == null) return;
 
         SpliceJunctionHelper helper = loadedInterval.getSpliceJunctionHelper();
-        List<SpliceJunctionFeature> features =  helper.getFilteredJunctions(strandOption);
+        List<SpliceJunctionFeature> features = helper.getFilteredJunctions(strandOption);
         if (features == null) {
             features = Collections.emptyList();
         }

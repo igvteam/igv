@@ -71,6 +71,7 @@ public class TrackSelectionDialog<T extends Track> extends JDialog {
 
         java.util.List<TrackWrapper> wrappers = TrackWrapper.wrapTracks(tracks);
         trackList.setListData(wrappers.toArray());
+        trackList.selectAll();
     }
 
     public Collection<T> getSelectedTracks() {

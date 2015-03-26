@@ -20,7 +20,7 @@ import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 
 import java.awt.*;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * Dialog used for selecting a single FeatureTrack
@@ -30,6 +30,10 @@ public class FeatureTrackSelectionDialog extends TrackSelectionDialog {
 
     public FeatureTrackSelectionDialog(Frame owner) {
         super(owner, SelectionMode.SINGLE, IGV.getInstance().getFeatureTracks());
+    }
+
+    public FeatureTrackSelectionDialog(Frame owner, java.util.List<FeatureTrack> tracks) {
+        super(owner, SelectionMode.SINGLE, tracks);
     }
 
     /**

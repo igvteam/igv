@@ -301,12 +301,10 @@ public class SashimiPlot extends JFrame {
                     SashimiPlot.this.repaint();
                 }
             });
-            menu.add(showCoverageData);
 
             CoverageTrack covTrack = getRenderer(this.trackComponent.track).getCoverageTrack();
             JMenuItem setCoverageDataRange = CoverageTrack.addDataRangeItem(SashimiPlot.this, null, Arrays.asList(covTrack));
             setCoverageDataRange.setText("Set Exon Coverage Max");
-            menu.add(setCoverageDataRange);
 
             JMenuItem maxJunctionCoverageRange = new JMenuItem("Set Junction Coverage Max");
             maxJunctionCoverageRange.setToolTipText("The thickness of each line will be proportional to the coverage, up until this value");
@@ -358,6 +356,43 @@ public class SashimiPlot extends JFrame {
                 }
             });
 
+            ButtonGroup shapeGroup = new ButtonGroup();
+
+            JRadioButtonMenuItem textShape = getJunctionCoverageRadioButton("Text", SashimiJunctionRenderer.ShapeType.TEXT);
+            textShape.setToolTipText("Show junction coverage as text");
+            shapeGroup.add(textShape);
+
+            JRadioButtonMenuItem circleShape = getJunctionCoverageRadioButton("Circle", SashimiJunctionRenderer.ShapeType.CIRCLE);
+            circleShape.setToolTipText("Show junction coverage as a circle");
+            shapeGroup.add(circleShape);
+
+            JRadioButtonMenuItem ellipseShape = getJunctionCoverageRadioButton("Ellipse", SashimiJunctionRenderer.ShapeType.ELLIPSE);
+            ellipseShape.setToolTipText("Show junction coverage as an ellipse");
+            shapeGroup.add(ellipseShape);
+
+            JRadioButtonMenuItem noShape = getJunctionCoverageRadioButton("None", SashimiJunctionRenderer.ShapeType.NONE);
+            ellipseShape.setToolTipText("Show junction coverage as an ellipse");
+            shapeGroup.add(ellipseShape);
+
+
+            ButtonGroup strandGroup = new ButtonGroup();
+
+            JRadioButtonMenuItem combineStrands = getStrandRadioButton("Combine Strands", SpliceJunctionFinderTrack.StrandOption.COMBINE);
+            combineStrands.setToolTipText("Combine junctions from both strands -- best for non-strand preserving libraries.");
+            strandGroup.add(combineStrands);
+
+            //  JRadioButtonMenuItem bothStrands = getStrandRadioButton("Both Strands", SpliceJunctionFinderTrack.StrandOption.BOTH);
+            //  strandGroup.add(bothStrands);
+            //  menu.add(bothStrands);
+
+            JRadioButtonMenuItem plusStrand = getStrandRadioButton("Forward Strand", SpliceJunctionFinderTrack.StrandOption.FORWARD);
+            plusStrand.setToolTipText("Show only junctions on the forward read strand  (of first-in-pair for paired reads)");
+            strandGroup.add(plusStrand);
+
+            JRadioButtonMenuItem minusStrand = getStrandRadioButton("Reverse Strand", SpliceJunctionFinderTrack.StrandOption.REVERSE);
+            plusStrand.setToolTipText("Show only junctions on the reverse read strand  (of first-in-pair for paired reads)");
+            strandGroup.add(minusStrand);
+
 
             JMenuItem saveImageItem = new JMenuItem("Save Image...");
             saveImageItem.addActionListener(new ActionListener() {
@@ -368,33 +403,28 @@ public class SashimiPlot extends JFrame {
                 }
             });
 
+            // Coverage ranges -- these apply to current plot only
+            menu.add(new JLabel("Junction Coverage Display"));
+            menu.add(setCoverageDataRange);
             menu.add(minJunctionCoverage);
             menu.add(maxJunctionCoverageRange);
             menu.add(colorItem);
 
+            // Coverage data  -- applies to all plots
+            menu.add(showCoverageData);
+
+            // Shape options -- all plots
             menu.addSeparator();
+            menu.add(textShape);
+            menu.add(circleShape);
+           // menu.add(ellipseShape);
+            menu.add(noShape);
 
-            ButtonGroup strandGroup = new ButtonGroup();
-
-            JRadioButtonMenuItem combineStrands = getStrandRadioButton("Combine Strands", SpliceJunctionFinderTrack.StrandOption.COMBINE);
-            combineStrands.setToolTipText("Combine junctions from both strands -- best for non-strand preserving libraries.");
-            strandGroup.add(combineStrands);
+            // Strand options -- applies to all plots
+            menu.addSeparator();
             menu.add(combineStrands);
-
-          //  JRadioButtonMenuItem bothStrands = getStrandRadioButton("Both Strands", SpliceJunctionFinderTrack.StrandOption.BOTH);
-          //  strandGroup.add(bothStrands);
-          //  menu.add(bothStrands);
-
-            JRadioButtonMenuItem plusStrand = getStrandRadioButton("Forward Strand", SpliceJunctionFinderTrack.StrandOption.FORWARD);
-            plusStrand.setToolTipText("Show only junctions on the forward read strand  (of first-in-pair for paired reads)");
-            strandGroup.add(plusStrand);
             menu.add(plusStrand);
-
-            JRadioButtonMenuItem minusStrand = getStrandRadioButton("Reverse Strand", SpliceJunctionFinderTrack.StrandOption.REVERSE);
-            plusStrand.setToolTipText("Show only junctions on the reverse read strand  (of first-in-pair for paired reads)");
-            strandGroup.add(minusStrand);
             menu.add(minusStrand);
-
             menu.addSeparator();
 
             menu.add(saveImageItem);
@@ -402,17 +432,33 @@ public class SashimiPlot extends JFrame {
             return menu;
         }
 
-        private JRadioButtonMenuItem getStrandRadioButton(String label, final SpliceJunctionFinderTrack.StrandOption option ) {
+        private JRadioButtonMenuItem getJunctionCoverageRadioButton(String label, final SashimiJunctionRenderer.ShapeType shapeType) {
+
 
             JRadioButtonMenuItem item = new JRadioButtonMenuItem(label);
-            item.setSelected(spliceJunctionTracks.get(0).getStrandOption() == option);
+            item.setSelected(SashimiJunctionRenderer.getShapeType() == shapeType);
             item.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    SashimiJunctionRenderer.setShapeType(shapeType);
+                    SashimiPlot.this.repaint();
+                }
+            });
+            return item;
+        }
+
+        private JRadioButtonMenuItem getStrandRadioButton(String label, final SpliceJunctionFinderTrack.StrandOption option) {
+
+            JRadioButtonMenuItem item = new JRadioButtonMenuItem(label);
+            item.setSelected(SpliceJunctionFinderTrack.getStrandOption() == option);
+            item.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    SpliceJunctionFinderTrack.setStrandOption(option);
                     for (SpliceJunctionFinderTrack t : spliceJunctionTracks) {
-                        t.setStrandOption(option);
-                        trackComponent.repaint();
+                        t.clear();
                     }
+                    repaint();
                 }
             });
             return item;
@@ -542,10 +588,17 @@ public class SashimiPlot extends JFrame {
     public static void getSashimiPlot(SashimiPlot sashimiPlot) {
         if (sashimiPlot == null) {
             FeatureTrack geneTrack = null;
-            if (IGV.getInstance().getFeatureTracks().size() == 1) {
-                geneTrack = IGV.getInstance().getFeatureTracks().get(0);
+
+            List<FeatureTrack> nonJunctionTracks = new ArrayList(IGV.getInstance().getFeatureTracks());
+            Iterator iter = nonJunctionTracks.iterator();
+            while(iter.hasNext()) {
+                if(iter.next() instanceof SpliceJunctionFinderTrack) iter.remove();
+            }
+
+            if (nonJunctionTracks.size() == 1) {
+                geneTrack = nonJunctionTracks.get(0);
             } else {
-                FeatureTrackSelectionDialog dlg = new FeatureTrackSelectionDialog(IGV.getMainFrame());
+                FeatureTrackSelectionDialog dlg = new FeatureTrackSelectionDialog(IGV.getMainFrame(), nonJunctionTracks);
                 dlg.setTitle("Select Gene Track");
                 dlg.setVisible(true);
                 if (dlg.getIsCancelled()) return;
@@ -560,7 +613,8 @@ public class SashimiPlot extends JFrame {
             }
 
             if (alignmentTracks.size() > 1) {
-                TrackSelectionDialog<AlignmentTrack> alDlg = new TrackSelectionDialog<AlignmentTrack>(IGV.getMainFrame(), TrackSelectionDialog.SelectionMode.MULTIPLE, alignmentTracks);
+                TrackSelectionDialog<AlignmentTrack> alDlg =
+                        new TrackSelectionDialog<AlignmentTrack>(IGV.getMainFrame(), TrackSelectionDialog.SelectionMode.MULTIPLE, alignmentTracks);
                 alDlg.setTitle("Select Alignment Tracks");
                 alDlg.setVisible(true);
                 if (alDlg.getIsCancelled()) return;

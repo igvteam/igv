@@ -52,6 +52,18 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
     private static Logger log = Logger.getLogger(SashimiJunctionRenderer.class);
 
+    public enum ShapeType{
+        CIRCLE,
+        ELLIPSE,
+        TEXT,
+        NONE
+    }
+
+
+    // Static -- property is shared by all instances
+    private static ShapeType shapeType = ShapeType.TEXT;
+
+
     Color ARC_COLOR_POS = new Color(150, 50, 50, 140); //transparent dull red
 
     private Color color = ARC_COLOR_POS;
@@ -63,7 +75,6 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
     //this depth and deeper will all look the same
     protected int DEFAULT_MAX_DEPTH = 50;
     protected int maxDepth = DEFAULT_MAX_DEPTH;
-    private ShapeType shapeType = ShapeType.TEXT;
     private Set<IExon> selectedExons;
 
     private CoverageTrack coverageTrack = null;
@@ -109,12 +120,6 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         return coverageTrack;
     }
 
-    public enum ShapeType{
-        CIRCLE,
-        ELLIPSE,
-        TEXT
-    }
-
     public int getMaxDepth() {
         return maxDepth;
     }
@@ -123,11 +128,11 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         this.maxDepth = maxDepth;
     }
 
-    public void setShapeType(ShapeType shapeType){
-        this.shapeType = shapeType;
+    public static void setShapeType(ShapeType st){
+        shapeType = st;
     }
 
-    public ShapeType getShapeType() {
+    public static ShapeType getShapeType() {
         return shapeType;
     }
 
@@ -416,15 +421,18 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 //        strGraphics.drawString("" + depth, midX, arcPeakY);
 
         double actArcPeakY = arcBeginY + yPosModifier * Math.pow(0.5, 3) * (6) * arcHeight;
-
+        int maxPossibleArcHeight = (trackRectangle.height - 1) / 4;
+        float depthProportionOfMax = Math.min(1, depth / maxDepth);
+        float maxPossibleShapeHeight = maxPossibleArcHeight / 2;
         Shape shape = null;
+
         switch(shapeType){
-//            case CIRCLE:
-//                shape = createDepthCircle(maxPossibleShapeHeight, depthProportionOfMax, midX, actArcPeakY);
-//                break;
-//            case ELLIPSE:
-//                shape = createDepthEllipse(maxPossibleShapeHeight, depthProportionOfMax, midX, actArcPeakY);
-//                break;
+            case CIRCLE:
+                shape = createDepthCircle(maxPossibleShapeHeight, depthProportionOfMax, midX, actArcPeakY);
+                break;
+            case ELLIPSE:
+                shape = createDepthEllipse(maxPossibleShapeHeight, depthProportionOfMax, midX, actArcPeakY);
+                break;
             case TEXT:
                 String text = "" + depth;
                 Rectangle2D textBounds = g2D.getFontMetrics().getStringBounds(text, g2D);
