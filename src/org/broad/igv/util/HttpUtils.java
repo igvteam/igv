@@ -81,9 +81,9 @@ public class HttpUtils {
 
         htsjdk.tribble.util.ParsingUtils.registerHelperClass(IGVUrlHelper.class);
 
-        if (!Globals.checkJavaVersion("1.8")) {
+       // if (!Globals.checkJavaVersion("1.8")) {
             disableCertificateValidation();
-        }
+       // }
         CookieHandler.setDefault(new IGVCookieManager());
         Authenticator.setDefault(new IGVAuthenticator());
 
@@ -554,7 +554,7 @@ public class HttpUtils {
         TrustManager[] trustAllCerts = new TrustManager[]{
                 new X509TrustManager() {
                     public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                        return new java.security.cert.X509Certificate[0];
+                        return null;
                     }
 
                     public void checkClientTrusted(
@@ -576,14 +576,6 @@ public class HttpUtils {
         } catch (KeyManagementException e) {
         }
 
-        // Install a callback to allow the igv Amazon and local hosts
-        HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
-            public boolean verify(String hostname, SSLSession session) {
-                if (hostname.equals("igv.broadinstitute.org") || hostname.equals("igvdata.broadinstitute.org") || hostname.equals("localhost"))
-                    return true;
-                return true;
-            }
-        });
 
     }
 
