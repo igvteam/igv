@@ -534,7 +534,14 @@ public class SearchCommand {
 
         if (chromosome != null && !searchString.equals(Globals.CHR_ALL)) {
             if (startEnd != null) {
-                return new SearchResult(ResultType.LOCUS, chr, startEnd[0], startEnd[1]);
+                if(startEnd[1] >= startEnd[0]) {
+                    return new SearchResult(ResultType.LOCUS, chr, startEnd[0], startEnd[1]);
+                }
+                else {
+                    SearchResult error = new SearchResult(ResultType.ERROR, chr, startEnd[0], startEnd[1]);
+                    error.setMessage("End must be greater than start");
+                    return error;
+                }
             }
             return new SearchResult(ResultType.CHROMOSOME, chr, 0, chromosome.getLength() - 1);
         }
@@ -574,7 +581,7 @@ public class SearchCommand {
         try {
             String[] posTokens = posString.split("-");
             String startString = posTokens[0].replaceAll(",", "");
-            int start = Math.max(0, Integer.parseInt(startString)) - 1;
+            int start = Math.max(0, Integer.parseInt(startString));
 
             // Default value for end
             int end = start + 1;
@@ -583,7 +590,7 @@ public class SearchCommand {
                 end = Integer.parseInt(endString);
             }
 
-            if (posTokens.length == 1 || (end - start) < 10) {
+            if (posTokens.length == 1 || (end >= start && (end - start) < 10)) {
                 int center = (start + end) / 2;
                 int widen = 20;
                 start = center - widen;
@@ -591,7 +598,7 @@ public class SearchCommand {
                 end = center + widen + 1;
             }
 
-            return new int[]{Math.min(start, end), Math.max(start, end)};
+            return new int[]{Math.min(start, end)-1, Math.max(start, end)};
         } catch (NumberFormatException numberFormatException) {
             return null;
         }
