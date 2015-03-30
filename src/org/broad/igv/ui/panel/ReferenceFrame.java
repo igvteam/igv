@@ -579,7 +579,8 @@ public class ReferenceFrame {
     }
 
     protected void calculateMaxZoom() {
-        this.maxZoom = (int) Math.ceil(Math.log(getChromosomeLength() / minBP) / Globals.log2);
+        this.maxZoom = Globals.CHR_ALL.equals(this.chrName) ? 0 :
+                (int) Math.ceil(Math.log(getChromosomeLength() / minBP) / Globals.log2);
     }
 
     public String getChrName() {
