@@ -124,17 +124,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
         featureVisibilityWindowField = new JTextField();
         zoomToFeatureExplanation3 = new JLabel();
         tracksPanel = new JPanel();
-        jPanel6 = new JPanel();
+        vSpacer1 = new JPanel(null);
         jLabel5 = new JLabel();
         defaultChartTrackHeightField = new JTextField();
         trackNameAttributeLabel = new JLabel();
         trackNameAttributeField = new JTextField();
-        missingDataExplanation2 = new JLabel();
         jLabel8 = new JLabel();
         defaultTrackHeightField = new JTextField();
-        missingDataExplanation4 = new JLabel();
-        missingDataExplanation5 = new JLabel();
-        missingDataExplanation3 = new JLabel();
+        hSpacer1 = new JPanel(null);
         expandCB = new JCheckBox();
         normalizeCoverageCB = new JCheckBox();
         missingDataExplanation8 = new JLabel();
@@ -172,49 +169,58 @@ public class PreferencesEditor extends javax.swing.JDialog {
         jLabel11 = new JLabel();
         samMaxWindowSizeField = new JTextField();
         jLabel12 = new JLabel();
-        jLabel14 = new JLabel();
-        jLabel16 = new JLabel();
         panel4 = new JPanel();
         downsampleReadsCB = new JCheckBox();
+        hSpacer3 = new JPanel(null);
         label23 = new JLabel();
         samDownsampleCountField = new JTextField();
         jLabel13 = new JLabel();
         samSamplingWindowField = new JTextField();
         jPanel12 = new JPanel();
-        snpThresholdField = new JTextField();
+        panel8 = new JPanel();
+        panel5 = new JPanel();
         jLabel26 = new JLabel();
-        samMinBaseQualityField = new JTextField();
-        samShadeMismatchedBaseCB = new JCheckBox();
-        samMaxBaseQualityField = new JTextField();
+        snpThresholdField = new JTextField();
+        hSpacer2 = new JPanel(null);
         showCovTrackCB = new JCheckBox();
         samFilterDuplicatesCB = new JCheckBox();
-        filterCB = new JCheckBox();
-        filterURL = new JTextField();
         samFlagUnmappedPairCB = new JCheckBox();
         filterFailedReadsCB = new JCheckBox();
-        label2 = new JLabel();
         showSoftClippedCB = new JCheckBox();
         showCenterLineCB = new JCheckBox();
+        filterSecondaryAlignmentsCB = new JCheckBox();
+        filterSupplementaryAlignmentsCB = new JCheckBox();
+        useAlleleQualityCB = new JCheckBox();
+        panel13 = new JPanel();
+        panel12 = new JPanel();
         jLabel15 = new JLabel();
         mappingQualityThresholdField = new JTextField();
-        filterSecondaryAlignmentsCB = new JCheckBox();
+        panel11 = new JPanel();
+        samShadeMismatchedBaseCB = new JCheckBox();
+        samMinBaseQualityField = new JTextField();
+        label2 = new JLabel();
+        samMaxBaseQualityField = new JTextField();
+        panel9 = new JPanel();
+        filterCB = new JCheckBox();
+        filterURL = new JTextField();
+        panel10 = new JPanel();
         samFlagInsertionsCB = new JCheckBox();
         samFlagInsertionsThresholdField = new JTextField();
         label31 = new JLabel();
-        filterSupplementaryAlignmentsCB = new JCheckBox();
-        useAlleleQualityCB = new JCheckBox();
         panel2 = new JPanel();
-        isizeComputeCB = new JCheckBox();
-        jLabel17 = new JLabel();
-        insertSizeMinThresholdField = new JTextField();
-        jLabel20 = new JLabel();
-        insertSizeThresholdField = new JTextField();
-        jLabel30 = new JLabel();
-        jLabel18 = new JLabel();
-        insertSizeMinPercentileField = new JTextField();
-        insertSizeMaxPercentileField = new JTextField();
         label8 = new JLabel();
+        panel16 = new JPanel();
         label9 = new JLabel();
+        jLabel20 = new JLabel();
+        insertSizeMinThresholdField = new JTextField();
+        jLabel17 = new JLabel();
+        insertSizeThresholdField = new JTextField();
+        panel15 = new JPanel();
+        isizeComputeCB = new JCheckBox();
+        jLabel30 = new JLabel();
+        insertSizeMinPercentileField = new JTextField();
+        jLabel18 = new JLabel();
+        insertSizeMaxPercentileField = new JTextField();
         panel3 = new JPanel();
         showJunctionTrackCB = new JCheckBox();
         showJunctionFlankingRegionsCB = new JCheckBox();
@@ -224,14 +230,17 @@ public class PreferencesEditor extends javax.swing.JDialog {
         junctionCoverageTextField = new JTextField();
         expressionPane = new JPanel();
         jPanel8 = new JPanel();
-        expMapToGeneCB = new JRadioButton();
+        panel18 = new JPanel();
         jLabel24 = new JLabel();
-        expMapToLociCB = new JRadioButton();
         jLabel21 = new JLabel();
-        probeMappingFileTextField = new JTextField();
-        label22 = new JLabel();
-        probeMappingBrowseButton = new JButton();
+        expMapToLociCB = new JRadioButton();
+        expMapToGeneCB = new JRadioButton();
+        panel17 = new JPanel();
         useProbeMappingCB = new JCheckBox();
+        label22 = new JLabel();
+        panel14 = new JPanel();
+        probeMappingFileTextField = new JTextField();
+        probeMappingBrowseButton = new JButton();
         proxyPanel = new JPanel();
         jPanel15 = new JPanel();
         jPanel16 = new JPanel();
@@ -250,14 +259,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         label27 = new JLabel();
         label3 = new JLabel();
         clearProxySettingsButton = new JButton();
-        dbPanel = new JPanel();
-        label17 = new JLabel();
-        label18 = new JLabel();
-        label19 = new JLabel();
-        dbHostField = new JTextField();
-        dbPortField = new JTextField();
-        dbNameField = new JTextField();
-        label20 = new JLabel();
         ionTorrentPanel = new JPanel();
         panel6 = new JPanel();
         hideFirstHP = new JCheckBox();
@@ -296,6 +297,15 @@ public class PreferencesEditor extends javax.swing.JDialog {
         antialiasingCB = new JCheckBox();
         label5 = new JLabel();
         blatURLField = new JTextField();
+        dbPanel = new JPanel();
+        label20 = new JLabel();
+        panel21 = new JPanel();
+        label17 = new JLabel();
+        label19 = new JLabel();
+        dbNameField = new JTextField();
+        dbHostField = new JTextField();
+        label18 = new JLabel();
+        dbPortField = new JTextField();
         okCancelButtonPanel = new ButtonPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -316,13 +326,18 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 //======== jPanel10 ========
                 {
                     jPanel10.setBorder(new BevelBorder(BevelBorder.RAISED));
-                    jPanel10.setLayout(null);
+                    jPanel10.setLayout(new GridBagLayout());
+                    ((GridBagLayout)jPanel10.getLayout()).columnWidths = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0};
+                    ((GridBagLayout)jPanel10.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                    ((GridBagLayout)jPanel10.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                    ((GridBagLayout)jPanel10.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
                     //---- missingDataExplanation ----
                     missingDataExplanation.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                     missingDataExplanation.setText("(NAME, DATA_TYPE, and DATA_FILE).");
-                    jPanel10.add(missingDataExplanation);
-                    missingDataExplanation.setBounds(280, 178, 355, 40);
+                    jPanel10.add(missingDataExplanation, new GridBagConstraints(3, 3, 5, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 15, 0), 0, 0));
 
                     //---- showDefaultTrackAttributesCB ----
                     showDefaultTrackAttributesCB.setText("Show default track attributes");
@@ -333,8 +348,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             showDefaultTrackAttributesCBActionPerformed(e);
                         }
                     });
-                    jPanel10.add(showDefaultTrackAttributesCB);
-                    showDefaultTrackAttributesCB.setBounds(new Rectangle(new Point(10, 187), showDefaultTrackAttributesCB.getPreferredSize()));
+                    jPanel10.add(showDefaultTrackAttributesCB, new GridBagConstraints(0, 3, 2, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 15, 5), 0, 0));
 
                     //---- combinePanelsCB ----
                     combinePanelsCB.setText("Display all tracks in a single panel");
@@ -344,8 +360,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             combinePanelsCBActionPerformed(e);
                         }
                     });
-                    jPanel10.add(combinePanelsCB);
-                    combinePanelsCB.setBounds(new Rectangle(new Point(10, 69), combinePanelsCB.getPreferredSize()));
+                    jPanel10.add(combinePanelsCB, new GridBagConstraints(0, 1, 3, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 15, 5), 0, 0));
 
                     //---- showAttributesDisplayCheckBox ----
                     showAttributesDisplayCheckBox.setText("Show attribute panel");
@@ -355,8 +372,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             showAttributesDisplayCheckBoxActionPerformed(e);
                         }
                     });
-                    jPanel10.add(showAttributesDisplayCheckBox);
-                    showAttributesDisplayCheckBox.setBounds(new Rectangle(new Point(10, 128), showAttributesDisplayCheckBox.getPreferredSize()));
+                    jPanel10.add(showAttributesDisplayCheckBox, new GridBagConstraints(0, 2, 2, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 15, 5), 0, 0));
 
                     //---- searchZoomCB ----
                     searchZoomCB.setText("Zoom to features");
@@ -367,14 +385,16 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             searchZoomCBActionPerformed(e);
                         }
                     });
-                    jPanel10.add(searchZoomCB);
-                    searchZoomCB.setBounds(new Rectangle(new Point(10, 305), searchZoomCB.getPreferredSize()));
+                    jPanel10.add(searchZoomCB, new GridBagConstraints(0, 5, 2, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 15, 5), 0, 0));
 
                     //---- label4 ----
                     label4.setText("Feature flanking region (bp or %): ");
                     label4.setToolTipText("Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.  A negative number is interpreted as a percentage.");
-                    jPanel10.add(label4);
-                    label4.setBounds(35, 365, 260, label4.getPreferredSize().height);
+                    jPanel10.add(label4, new GridBagConstraints(0, 6, 4, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 15, 5), 0, 0));
 
                     //---- geneListFlankingField ----
                     geneListFlankingField.setToolTipText("Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.  A negative number is interpreted as a percentage.");
@@ -390,20 +410,23 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             geneListFlankingFieldActionPerformed(e);
                         }
                     });
-                    jPanel10.add(geneListFlankingField);
-                    geneListFlankingField.setBounds(315, 359, 190, geneListFlankingField.getPreferredSize().height);
+                    jPanel10.add(geneListFlankingField, new GridBagConstraints(4, 6, 3, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 15, 5), 0, 0));
 
                     //---- zoomToFeatureExplanation2 ----
                     zoomToFeatureExplanation2.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                     zoomToFeatureExplanation2.setText("<html><i>&lt; 0 is interpreted as a percentage.</b>");
                     zoomToFeatureExplanation2.setVerticalAlignment(SwingConstants.TOP);
-                    jPanel10.add(zoomToFeatureExplanation2);
-                    zoomToFeatureExplanation2.setBounds(515, 362, 275, 23);
+                    jPanel10.add(zoomToFeatureExplanation2, new GridBagConstraints(7, 6, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 15, 0), 0, 0));
 
                     //---- label6 ----
                     label6.setText("Sequence resolution threshold (bp/pixel):");
-                    jPanel10.add(label6);
-                    label6.setBounds(new Rectangle(new Point(35, 480), label6.getPreferredSize()));
+                    jPanel10.add(label6, new GridBagConstraints(0, 8, 4, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 15, 5), 0, 0));
 
                     //---- seqResolutionThreshold ----
                     seqResolutionThreshold.addFocusListener(new FocusAdapter() {
@@ -418,19 +441,22 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             seqResolutionThresholdActionPerformed(e);
                         }
                     });
-                    jPanel10.add(seqResolutionThreshold);
-                    seqResolutionThreshold.setBounds(315, 474, 190, seqResolutionThreshold.getPreferredSize().height);
+                    jPanel10.add(seqResolutionThreshold, new GridBagConstraints(4, 8, 3, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 15, 5), 0, 0));
 
                     //---- label10 ----
                     label10.setText("Default font: ");
                     label10.setLabelFor(defaultFontField);
-                    jPanel10.add(label10);
-                    label10.setBounds(new Rectangle(new Point(35, 532), label10.getPreferredSize()));
+                    jPanel10.add(label10, new GridBagConstraints(0, 9, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 15, 5), 0, 0));
 
                     //---- defaultFontField ----
                     defaultFontField.setEditable(false);
-                    jPanel10.add(defaultFontField);
-                    defaultFontField.setBounds(145, 525, 238, defaultFontField.getPreferredSize().height);
+                    jPanel10.add(defaultFontField, new GridBagConstraints(1, 9, 5, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 15, 5), 0, 0));
 
                     //---- fontChangeButton ----
                     fontChangeButton.setText("Change...");
@@ -440,8 +466,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             fontChangeButtonActionPerformed(e);
                         }
                     });
-                    jPanel10.add(fontChangeButton);
-                    fontChangeButton.setBounds(400, 525, 97, fontChangeButton.getPreferredSize().height);
+                    jPanel10.add(fontChangeButton, new GridBagConstraints(6, 9, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 15, 5), 0, 0));
 
                     //---- showRegionBoundariesCB ----
                     showRegionBoundariesCB.setText("Show region boundaries");
@@ -451,13 +478,15 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             showRegionBoundariesCBActionPerformed(e);
                         }
                     });
-                    jPanel10.add(showRegionBoundariesCB);
-                    showRegionBoundariesCB.setBounds(10, 246, 275, 23);
+                    jPanel10.add(showRegionBoundariesCB, new GridBagConstraints(0, 4, 4, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 15, 5), 0, 0));
 
                     //---- label7 ----
                     label7.setText("Background color click to change): ");
-                    jPanel10.add(label7);
-                    label7.setBounds(35, 584, 235, label7.getPreferredSize().height);
+                    jPanel10.add(label7, new GridBagConstraints(0, 10, 3, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                     //======== backgroundColorPanel ========
                     {
@@ -471,8 +500,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         });
                         backgroundColorPanel.setLayout(null);
                     }
-                    jPanel10.add(backgroundColorPanel);
-                    backgroundColorPanel.setBounds(295, 578, 30, 29);
+                    jPanel10.add(backgroundColorPanel, new GridBagConstraints(3, 10, 2, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                     //---- resetBackgroundButton ----
                     resetBackgroundButton.setText("Reset to default");
@@ -482,8 +512,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             resetBackgroundButtonActionPerformed(e);
                         }
                     });
-                    jPanel10.add(resetBackgroundButton);
-                    resetBackgroundButton.setBounds(350, 578, 150, resetBackgroundButton.getPreferredSize().height);
+                    jPanel10.add(resetBackgroundButton, new GridBagConstraints(5, 10, 2, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                     //---- showMissingDataCB ----
                     showMissingDataCB.setText("Distinguish missing data");
@@ -494,19 +525,22 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             showMissingDataCBActionPerformed(e);
                         }
                     });
-                    jPanel10.add(showMissingDataCB);
-                    showMissingDataCB.setBounds(10, 10, 225, 23);
+                    jPanel10.add(showMissingDataCB, new GridBagConstraints(0, 0, 2, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 15, 5), 0, 0));
 
                     //---- label32 ----
                     label32.setText("<html><i>Distinguish regions with value of zero from regions with  no data.  ");
-                    jPanel10.add(label32);
-                    label32.setBounds(250, -2, 545, 47);
+                    jPanel10.add(label32, new GridBagConstraints(2, 0, 6, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 15, 0), 0, 0));
 
                     //---- textField1 ----
                     textField1.setText("Default visibility window (kilobases):");
                     textField1.setToolTipText("A value > 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.   The threshold (\"visibility window\") can be overriden explicitly for individual tracks via the track menu.");
-                    jPanel10.add(textField1);
-                    textField1.setBounds(new Rectangle(new Point(35, 422), textField1.getPreferredSize()));
+                    jPanel10.add(textField1, new GridBagConstraints(0, 7, 3, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 15, 5), 0, 0));
 
                     //---- featureVisibilityWindowField ----
                     featureVisibilityWindowField.setToolTipText("A value > 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.   The threshold (\"visibility window\") can be overriden explicitly for individual tracks via the track menu.");
@@ -522,29 +556,17 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             featureVisibilityWindowFieldFocusLost(e);
                         }
                     });
-                    jPanel10.add(featureVisibilityWindowField);
-                    featureVisibilityWindowField.setBounds(315, 416, 190, featureVisibilityWindowField.getPreferredSize().height);
+                    jPanel10.add(featureVisibilityWindowField, new GridBagConstraints(4, 7, 3, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 15, 5), 0, 0));
 
                     //---- zoomToFeatureExplanation3 ----
                     zoomToFeatureExplanation3.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                     zoomToFeatureExplanation3.setText("<html><i>&lt; 0 disables visibility window.</b>");
                     zoomToFeatureExplanation3.setVerticalAlignment(SwingConstants.TOP);
-                    jPanel10.add(zoomToFeatureExplanation3);
-                    zoomToFeatureExplanation3.setBounds(515, 419, 275, 23);
-
-                    { // compute preferred size
-                        Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < jPanel10.getComponentCount(); i++) {
-                            Rectangle bounds = jPanel10.getComponent(i).getBounds();
-                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                        }
-                        Insets insets = jPanel10.getInsets();
-                        preferredSize.width += insets.right;
-                        preferredSize.height += insets.bottom;
-                        jPanel10.setMinimumSize(preferredSize);
-                        jPanel10.setPreferredSize(preferredSize);
-                    }
+                    jPanel10.add(zoomToFeatureExplanation3, new GridBagConstraints(7, 7, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 15, 0), 0, 0));
                 }
                 generalPanel.add(jPanel10, BorderLayout.CENTER);
             }
@@ -552,179 +574,144 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
             //======== tracksPanel ========
             {
-                tracksPanel.setLayout(null);
+                tracksPanel.setMinimumSize(new Dimension(700, 407));
+                tracksPanel.setLayout(new GridBagLayout());
+                ((GridBagLayout)tracksPanel.getLayout()).columnWidths = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0};
+                ((GridBagLayout)tracksPanel.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                ((GridBagLayout)tracksPanel.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                ((GridBagLayout)tracksPanel.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                tracksPanel.add(vSpacer1, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 15, 10), 0, 0));
 
-                //======== jPanel6 ========
-                {
-                    jPanel6.setLayout(null);
+                //---- jLabel5 ----
+                jLabel5.setText("Default Track Height, Charts (Pixels)");
+                tracksPanel.add(jLabel5, new GridBagConstraints(2, 1, 2, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 15, 10), 0, 0));
 
-                    //---- jLabel5 ----
-                    jLabel5.setText("Default Track Height, Charts (Pixels)");
-                    jPanel6.add(jLabel5);
-                    jLabel5.setBounds(new Rectangle(new Point(10, 12), jLabel5.getPreferredSize()));
-
-                    //---- defaultChartTrackHeightField ----
-                    defaultChartTrackHeightField.setText("40");
-                    defaultChartTrackHeightField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            defaultChartTrackHeightFieldActionPerformed(e);
-                        }
-                    });
-                    defaultChartTrackHeightField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            defaultChartTrackHeightFieldFocusLost(e);
-                        }
-                    });
-                    jPanel6.add(defaultChartTrackHeightField);
-                    defaultChartTrackHeightField.setBounds(271, 6, 57, defaultChartTrackHeightField.getPreferredSize().height);
-
-                    //---- trackNameAttributeLabel ----
-                    trackNameAttributeLabel.setText("Track Name Attribute");
-                    jPanel6.add(trackNameAttributeLabel);
-                    trackNameAttributeLabel.setBounds(new Rectangle(new Point(10, 120), trackNameAttributeLabel.getPreferredSize()));
-
-                    //---- trackNameAttributeField ----
-                    trackNameAttributeField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            trackNameAttributeFieldActionPerformed(e);
-                        }
-                    });
-                    trackNameAttributeField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            trackNameAttributeFieldFocusLost(e);
-                        }
-                    });
-                    jPanel6.add(trackNameAttributeField);
-                    trackNameAttributeField.setBounds(150, 115, 216, trackNameAttributeField.getPreferredSize().height);
-
-                    //---- missingDataExplanation2 ----
-                    missingDataExplanation2.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
-                    missingDataExplanation2.setText("<html>Name of an attribute to be used to label  tracks.  If provided tracks will be labeled with the corresponding attribute values from the sample information file");
-                    missingDataExplanation2.setVerticalAlignment(SwingConstants.TOP);
-                    jPanel6.add(missingDataExplanation2);
-                    missingDataExplanation2.setBounds(40, 170, 578, 54);
-
-                    //---- jLabel8 ----
-                    jLabel8.setText("Default Track Height, Other (Pixels)");
-                    jPanel6.add(jLabel8);
-                    jLabel8.setBounds(new Rectangle(new Point(10, 45), jLabel8.getPreferredSize()));
-
-                    //---- defaultTrackHeightField ----
-                    defaultTrackHeightField.setText("15");
-                    defaultTrackHeightField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            defaultTrackHeightFieldActionPerformed(e);
-                        }
-                    });
-                    defaultTrackHeightField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            defaultTrackHeightFieldFocusLost(e);
-                        }
-                    });
-                    jPanel6.add(defaultTrackHeightField);
-                    defaultTrackHeightField.setBounds(271, 39, 57, defaultTrackHeightField.getPreferredSize().height);
-
-                    //---- missingDataExplanation4 ----
-                    missingDataExplanation4.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
-                    missingDataExplanation4.setText("<html>Default height of chart tracks (barcharts, scatterplots, etc)");
-                    jPanel6.add(missingDataExplanation4);
-                    missingDataExplanation4.setBounds(350, 5, 354, 25);
-
-                    //---- missingDataExplanation5 ----
-                    missingDataExplanation5.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
-                    missingDataExplanation5.setText("<html>Default height of all other tracks");
-                    jPanel6.add(missingDataExplanation5);
-                    missingDataExplanation5.setBounds(350, 41, 1141, 25);
-
-                    //---- missingDataExplanation3 ----
-                    missingDataExplanation3.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
-                    missingDataExplanation3.setText("<html><i> If selected feature tracks are expanded by default.");
-                    jPanel6.add(missingDataExplanation3);
-                    missingDataExplanation3.setBounds(new Rectangle(new Point(876, 318), missingDataExplanation3.getPreferredSize()));
-
-                    //---- expandCB ----
-                    expandCB.setText("Expand Feature Tracks");
-                    expandCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            expandCBActionPerformed(e);
-                        }
-                    });
-                    jPanel6.add(expandCB);
-                    expandCB.setBounds(new Rectangle(new Point(6, 272), expandCB.getPreferredSize()));
-
-                    //---- normalizeCoverageCB ----
-                    normalizeCoverageCB.setText("Normalize Coverage Data");
-                    normalizeCoverageCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            normalizeCoverageCBActionPerformed(e);
-                        }
-                    });
-                    normalizeCoverageCB.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            normalizeCoverageCBFocusLost(e);
-                        }
-                    });
-                    jPanel6.add(normalizeCoverageCB);
-                    normalizeCoverageCB.setBounds(new Rectangle(new Point(6, 372), normalizeCoverageCB.getPreferredSize()));
-
-                    //---- missingDataExplanation8 ----
-                    missingDataExplanation8.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
-                    missingDataExplanation8.setText("<html><i> Applies to coverage tracks computed with igvtools (.tdf files).  If selected coverage values are scaled by (1,000,000 / totalCount),  where totalCount is the total number of features or alignments.");
-                    missingDataExplanation8.setVerticalAlignment(SwingConstants.TOP);
-                    jPanel6.add(missingDataExplanation8);
-                    missingDataExplanation8.setBounds(50, 413, 608, 52);
-
-                    //---- expandIconCB ----
-                    expandIconCB.setText("Show Expand Icon");
-                    expandIconCB.setToolTipText("If checked displays an expand/collapse icon on feature tracks.");
-                    expandIconCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            expandIconCBActionPerformed(e);
-                        }
-                    });
-                    jPanel6.add(expandIconCB);
-                    expandIconCB.setBounds(new Rectangle(new Point(6, 318), expandIconCB.getPreferredSize()));
-
-                    { // compute preferred size
-                        Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < jPanel6.getComponentCount(); i++) {
-                            Rectangle bounds = jPanel6.getComponent(i).getBounds();
-                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                        }
-                        Insets insets = jPanel6.getInsets();
-                        preferredSize.width += insets.right;
-                        preferredSize.height += insets.bottom;
-                        jPanel6.setMinimumSize(preferredSize);
-                        jPanel6.setPreferredSize(preferredSize);
+                //---- defaultChartTrackHeightField ----
+                defaultChartTrackHeightField.setText("40");
+                defaultChartTrackHeightField.setMinimumSize(new Dimension(60, 28));
+                defaultChartTrackHeightField.setToolTipText("Default height of chart tracks (barcharts, scatterplots, etc)");
+                defaultChartTrackHeightField.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        defaultChartTrackHeightFieldActionPerformed(e);
                     }
-                }
-                tracksPanel.add(jPanel6);
-                jPanel6.setBounds(40, 20, 725, 480);
-
-                { // compute preferred size
-                    Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < tracksPanel.getComponentCount(); i++) {
-                        Rectangle bounds = tracksPanel.getComponent(i).getBounds();
-                        preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                        preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                });
+                defaultChartTrackHeightField.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        defaultChartTrackHeightFieldFocusLost(e);
                     }
-                    Insets insets = tracksPanel.getInsets();
-                    preferredSize.width += insets.right;
-                    preferredSize.height += insets.bottom;
-                    tracksPanel.setMinimumSize(preferredSize);
-                    tracksPanel.setPreferredSize(preferredSize);
-                }
+                });
+                tracksPanel.add(defaultChartTrackHeightField, new GridBagConstraints(4, 1, 2, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 15, 10), 0, 0));
+
+                //---- trackNameAttributeLabel ----
+                trackNameAttributeLabel.setText("Track Name Attribute");
+                trackNameAttributeLabel.setToolTipText("Name of an attribute to be used to label  tracks.  If provided tracks will be labeled with the corresponding attribute values from the sample information file");
+                tracksPanel.add(trackNameAttributeLabel, new GridBagConstraints(2, 3, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 15, 10), 0, 0));
+
+                //---- trackNameAttributeField ----
+                trackNameAttributeField.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        trackNameAttributeFieldActionPerformed(e);
+                    }
+                });
+                trackNameAttributeField.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        trackNameAttributeFieldFocusLost(e);
+                    }
+                });
+                tracksPanel.add(trackNameAttributeField, new GridBagConstraints(3, 3, 3, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 15, 10), 0, 0));
+
+                //---- jLabel8 ----
+                jLabel8.setText("Default Track Height, Other (Pixels)");
+                tracksPanel.add(jLabel8, new GridBagConstraints(2, 2, 2, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 15, 10), 0, 0));
+
+                //---- defaultTrackHeightField ----
+                defaultTrackHeightField.setText("15");
+                defaultTrackHeightField.setMinimumSize(new Dimension(60, 28));
+                defaultTrackHeightField.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        defaultTrackHeightFieldActionPerformed(e);
+                    }
+                });
+                defaultTrackHeightField.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        defaultTrackHeightFieldFocusLost(e);
+                    }
+                });
+                tracksPanel.add(defaultTrackHeightField, new GridBagConstraints(4, 2, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 15, 10), 0, 0));
+                tracksPanel.add(hSpacer1, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 15, 10), 0, 0));
+
+                //---- expandCB ----
+                expandCB.setText("Expand Feature Tracks");
+                expandCB.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        expandCBActionPerformed(e);
+                    }
+                });
+                tracksPanel.add(expandCB, new GridBagConstraints(2, 5, 2, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 15, 10), 0, 0));
+
+                //---- normalizeCoverageCB ----
+                normalizeCoverageCB.setText("Normalize Coverage Data");
+                normalizeCoverageCB.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        normalizeCoverageCBActionPerformed(e);
+                    }
+                });
+                normalizeCoverageCB.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        normalizeCoverageCBFocusLost(e);
+                    }
+                });
+                tracksPanel.add(normalizeCoverageCB, new GridBagConstraints(2, 7, 2, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 15, 10), 0, 0));
+
+                //---- missingDataExplanation8 ----
+                missingDataExplanation8.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
+                missingDataExplanation8.setText("<html><i> Applies to coverage tracks computed with igvtools (.tdf files).  If selected coverage values are scaled by (1,000,000 / totalCount),  where totalCount is the total number of features or alignments.");
+                missingDataExplanation8.setVerticalAlignment(SwingConstants.TOP);
+                tracksPanel.add(missingDataExplanation8, new GridBagConstraints(2, 8, 6, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 15, 0), 0, 0));
+
+                //---- expandIconCB ----
+                expandIconCB.setText("Show Expand Icon");
+                expandIconCB.setToolTipText("If checked displays an expand/collapse icon on feature tracks.");
+                expandIconCB.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        expandIconCBActionPerformed(e);
+                    }
+                });
+                tracksPanel.add(expandIconCB, new GridBagConstraints(2, 6, 2, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 15, 10), 0, 0));
             }
             tabbedPane.addTab("Tracks", tracksPanel);
 
@@ -1034,17 +1021,16 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
             //======== alignmentPanel ========
             {
-                alignmentPanel.setLayout(null);
+                alignmentPanel.setLayout(new BoxLayout(alignmentPanel, BoxLayout.Y_AXIS));
 
                 //======== jPanel11 ========
                 {
                     jPanel11.setBorder(new TitledBorder(""));
-                    jPanel11.setLayout(null);
+                    jPanel11.setLayout(new BoxLayout(jPanel11, BoxLayout.X_AXIS));
 
                     //---- jLabel11 ----
                     jLabel11.setText("Visibility range threshold (kb):");
                     jPanel11.add(jLabel11);
-                    jLabel11.setBounds(new Rectangle(new Point(10, 12), jLabel11.getPreferredSize()));
 
                     //---- samMaxWindowSizeField ----
                     samMaxWindowSizeField.setText("jTextField1");
@@ -1061,44 +1047,17 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel11.add(samMaxWindowSizeField);
-                    samMaxWindowSizeField.setBounds(new Rectangle(new Point(220, 6), samMaxWindowSizeField.getPreferredSize()));
 
                     //---- jLabel12 ----
-                    jLabel12.setText("<html><i>Nominal window size at which alignments become visible");
+                    jLabel12.setText("<html><i>Range at which alignments become visible");
                     jPanel11.add(jLabel12);
-                    jLabel12.setBounds(new Rectangle(new Point(320, 12), jLabel12.getPreferredSize()));
-
-                    //---- jLabel14 ----
-                    jLabel14.setText("<html><i>Nominal window size at which alignments become visible");
-                    jPanel11.add(jLabel14);
-                    jLabel14.setBounds(0, 108, 363, 16);
-
-                    //---- jLabel16 ----
-                    jLabel16.setText("<html><i>Nominal window size at which alignments become visible");
-                    jPanel11.add(jLabel16);
-                    jLabel16.setBounds(0, 129, 363, 16);
-
-                    { // compute preferred size
-                        Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < jPanel11.getComponentCount(); i++) {
-                            Rectangle bounds = jPanel11.getComponent(i).getBounds();
-                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                        }
-                        Insets insets = jPanel11.getInsets();
-                        preferredSize.width += insets.right;
-                        preferredSize.height += insets.bottom;
-                        jPanel11.setMinimumSize(preferredSize);
-                        jPanel11.setPreferredSize(preferredSize);
-                    }
                 }
                 alignmentPanel.add(jPanel11);
-                jPanel11.setBounds(10, 5, 755, 45);
 
                 //======== panel4 ========
                 {
                     panel4.setBorder(new TitledBorder(""));
-                    panel4.setLayout(null);
+                    panel4.setLayout(new FlowLayout(FlowLayout.LEFT));
 
                     //---- downsampleReadsCB ----
                     downsampleReadsCB.setText("Downsample reads");
@@ -1109,14 +1068,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     panel4.add(downsampleReadsCB);
-                    downsampleReadsCB.setBounds(new Rectangle(new Point(5, 13), downsampleReadsCB.getPreferredSize()));
+                    panel4.add(hSpacer3);
 
                     //---- label23 ----
                     label23.setText("Max read count:");
                     panel4.add(label23);
-                    label23.setBounds(new Rectangle(new Point(195, 16), label23.getPreferredSize()));
 
                     //---- samDownsampleCountField ----
+                    samDownsampleCountField.setPreferredSize(new Dimension(100, 28));
                     samDownsampleCountField.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -1130,15 +1089,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     panel4.add(samDownsampleCountField);
-                    samDownsampleCountField.setBounds(300, 10, 80, 28);
 
                     //---- jLabel13 ----
                     jLabel13.setText("per window size (bases):");
                     panel4.add(jLabel13);
-                    jLabel13.setBounds(new Rectangle(new Point(420, 16), jLabel13.getPreferredSize()));
 
                     //---- samSamplingWindowField ----
                     samSamplingWindowField.setText("jTextField1");
+                    samSamplingWindowField.setPreferredSize(new Dimension(100, 28));
                     samSamplingWindowField.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -1152,452 +1110,485 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     panel4.add(samSamplingWindowField);
-                    samSamplingWindowField.setBounds(580, 10, 80, 28);
-
-                    { // compute preferred size
-                        Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < panel4.getComponentCount(); i++) {
-                            Rectangle bounds = panel4.getComponent(i).getBounds();
-                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                        }
-                        Insets insets = panel4.getInsets();
-                        preferredSize.width += insets.right;
-                        preferredSize.height += insets.bottom;
-                        panel4.setMinimumSize(preferredSize);
-                        panel4.setPreferredSize(preferredSize);
-                    }
                 }
                 alignmentPanel.add(panel4);
-                panel4.setBounds(10, 62, 755, 48);
 
                 //======== jPanel12 ========
                 {
                     jPanel12.setBorder(new TitledBorder("Filter and shading options"));
-                    jPanel12.setLayout(null);
+                    jPanel12.setLayout(new BoxLayout(jPanel12, BoxLayout.Y_AXIS));
 
-                    //---- snpThresholdField ----
-                    snpThresholdField.setText("0");
-                    snpThresholdField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            snpThresholdFieldActionPerformed(e);
-                        }
-                    });
-                    snpThresholdField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            snpThresholdFieldFocusLost(e);
-                        }
-                    });
-                    jPanel12.add(snpThresholdField);
-                    snpThresholdField.setBounds(265, 30, 80, snpThresholdField.getPreferredSize().height);
+                    //======== panel8 ========
+                    {
+                        panel8.setLayout(new GridLayout(5, 1));
 
-                    //---- jLabel26 ----
-                    jLabel26.setText("Coverage allele-fraction threshold:");
-                    jPanel12.add(jLabel26);
-                    jLabel26.setBounds(35, 35, 225, jLabel26.getPreferredSize().height);
+                        //======== panel5 ========
+                        {
+                            panel5.setLayout(new FlowLayout());
 
-                    //---- samMinBaseQualityField ----
-                    samMinBaseQualityField.setText("0");
-                    samMinBaseQualityField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            samMinBaseQualityFieldActionPerformed(e);
-                        }
-                    });
-                    samMinBaseQualityField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            samMinBaseQualityFieldFocusLost(e);
-                        }
-                    });
-                    jPanel12.add(samMinBaseQualityField);
-                    samMinBaseQualityField.setBounds(265, 192, 55, samMinBaseQualityField.getPreferredSize().height);
+                            //---- jLabel26 ----
+                            jLabel26.setText("Coverage allele-fraction threshold:");
+                            panel5.add(jLabel26);
 
-                    //---- samShadeMismatchedBaseCB ----
-                    samShadeMismatchedBaseCB.setText("Shade mismatched bases by quality:");
-                    samShadeMismatchedBaseCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            samShadeMismatchedBaseCBActionPerformed(e);
-                        }
-                    });
-                    jPanel12.add(samShadeMismatchedBaseCB);
-                    samShadeMismatchedBaseCB.setBounds(5, 195, 264, samShadeMismatchedBaseCB.getPreferredSize().height);
+                            //---- snpThresholdField ----
+                            snpThresholdField.setText("0");
+                            snpThresholdField.setPreferredSize(new Dimension(60, 28));
+                            snpThresholdField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    snpThresholdFieldActionPerformed(e);
+                                }
+                            });
+                            snpThresholdField.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    snpThresholdFieldFocusLost(e);
+                                }
+                            });
+                            panel5.add(snpThresholdField);
 
-                    //---- samMaxBaseQualityField ----
-                    samMaxBaseQualityField.setText("0");
-                    samMaxBaseQualityField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            samMaxBaseQualityFieldActionPerformed(e);
+                            //---- hSpacer2 ----
+                            hSpacer2.setPreferredSize(new Dimension(50, 10));
+                            panel5.add(hSpacer2);
                         }
-                    });
-                    samMaxBaseQualityField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            samMaxBaseQualityFieldFocusLost(e);
-                        }
-                    });
-                    jPanel12.add(samMaxBaseQualityField);
-                    samMaxBaseQualityField.setBounds(370, 192, 55, samMaxBaseQualityField.getPreferredSize().height);
+                        panel8.add(panel5);
 
-                    //---- showCovTrackCB ----
-                    showCovTrackCB.setText("Show coverage track");
-                    showCovTrackCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            showCovTrackCBActionPerformed(e);
-                        }
-                    });
-                    jPanel12.add(showCovTrackCB);
-                    showCovTrackCB.setBounds(425, 88, 270, showCovTrackCB.getPreferredSize().height);
+                        //---- showCovTrackCB ----
+                        showCovTrackCB.setText("Show coverage track");
+                        showCovTrackCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                showCovTrackCBActionPerformed(e);
+                            }
+                        });
+                        panel8.add(showCovTrackCB);
 
-                    //---- samFilterDuplicatesCB ----
-                    samFilterDuplicatesCB.setText("Filter duplicate reads");
-                    samFilterDuplicatesCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            samShowDuplicatesCBActionPerformed(e);
-                        }
-                    });
-                    jPanel12.add(samFilterDuplicatesCB);
-                    samFilterDuplicatesCB.setBounds(5, 57, 290, samFilterDuplicatesCB.getPreferredSize().height);
+                        //---- samFilterDuplicatesCB ----
+                        samFilterDuplicatesCB.setText("Filter duplicate reads");
+                        samFilterDuplicatesCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                samShowDuplicatesCBActionPerformed(e);
+                            }
+                        });
+                        panel8.add(samFilterDuplicatesCB);
 
-                    //---- filterCB ----
-                    filterCB.setText("Filter alignments by read group");
-                    filterCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            filterCBActionPerformed(e);
-                        }
-                    });
-                    jPanel12.add(filterCB);
-                    filterCB.setBounds(5, 253, 244, filterCB.getPreferredSize().height);
+                        //---- samFlagUnmappedPairCB ----
+                        samFlagUnmappedPairCB.setText("Flag unmapped pairs");
+                        samFlagUnmappedPairCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                samFlagUnmappedPairCBActionPerformed(e);
+                            }
+                        });
+                        panel8.add(samFlagUnmappedPairCB);
 
-                    //---- filterURL ----
-                    filterURL.setText("URL or path to filter file");
-                    filterURL.setEnabled(false);
-                    filterURL.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            filterURLActionPerformed(e);
-                        }
-                    });
-                    filterURL.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            filterURLFocusLost(e);
-                        }
-                    });
-                    jPanel12.add(filterURL);
-                    filterURL.setBounds(265, 250, 440, filterURL.getPreferredSize().height);
+                        //---- filterFailedReadsCB ----
+                        filterFailedReadsCB.setText("Filter vendor failed reads");
+                        filterFailedReadsCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                filterVendorFailedReadsCBActionPerformed(e);
+                            }
+                        });
+                        panel8.add(filterFailedReadsCB);
 
-                    //---- samFlagUnmappedPairCB ----
-                    samFlagUnmappedPairCB.setText("Flag unmapped pairs");
-                    samFlagUnmappedPairCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            samFlagUnmappedPairCBActionPerformed(e);
-                        }
-                    });
-                    jPanel12.add(samFlagUnmappedPairCB);
-                    samFlagUnmappedPairCB.setBounds(425, 144, 310, samFlagUnmappedPairCB.getPreferredSize().height);
+                        //---- showSoftClippedCB ----
+                        showSoftClippedCB.setText("Show soft-clipped bases");
+                        showSoftClippedCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                showSoftClippedCBActionPerformed(e);
+                            }
+                        });
+                        panel8.add(showSoftClippedCB);
 
-                    //---- filterFailedReadsCB ----
-                    filterFailedReadsCB.setText("Filter vendor failed reads");
-                    filterFailedReadsCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            filterVendorFailedReadsCBActionPerformed(e);
-                        }
-                    });
-                    jPanel12.add(filterFailedReadsCB);
-                    filterFailedReadsCB.setBounds(new Rectangle(new Point(5, 86), filterFailedReadsCB.getPreferredSize()));
+                        //---- showCenterLineCB ----
+                        showCenterLineCB.setText("Show center line");
+                        showCenterLineCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                showCenterLineCBActionPerformed(e);
+                            }
+                        });
+                        panel8.add(showCenterLineCB);
 
-                    //---- label2 ----
-                    label2.setText("to");
-                    jPanel12.add(label2);
-                    label2.setBounds(330, 198, 25, label2.getPreferredSize().height);
+                        //---- filterSecondaryAlignmentsCB ----
+                        filterSecondaryAlignmentsCB.setText("Filter secondary alignments");
+                        filterSecondaryAlignmentsCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                filterSecondaryAlignmentsCBActionPerformed(e);
+                            }
+                        });
+                        panel8.add(filterSecondaryAlignmentsCB);
 
-                    //---- showSoftClippedCB ----
-                    showSoftClippedCB.setText("Show soft-clipped bases");
-                    showSoftClippedCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            showSoftClippedCBActionPerformed(e);
-                        }
-                    });
-                    jPanel12.add(showSoftClippedCB);
-                    showSoftClippedCB.setBounds(new Rectangle(new Point(425, 116), showSoftClippedCB.getPreferredSize()));
+                        //---- filterSupplementaryAlignmentsCB ----
+                        filterSupplementaryAlignmentsCB.setText("Filter supplementary alignments");
+                        filterSupplementaryAlignmentsCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                filterSupplementaryAlignmentsCBActionPerformed(e);
+                            }
+                        });
+                        panel8.add(filterSupplementaryAlignmentsCB);
 
-                    //---- showCenterLineCB ----
-                    showCenterLineCB.setText("Show center line");
-                    showCenterLineCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            showCenterLineCBActionPerformed(e);
-                        }
-                    });
-                    jPanel12.add(showCenterLineCB);
-                    showCenterLineCB.setBounds(425, 60, 199, showCenterLineCB.getPreferredSize().height);
-
-                    //---- jLabel15 ----
-                    jLabel15.setText("Mapping quality threshold:");
-                    jPanel12.add(jLabel15);
-                    jLabel15.setBounds(new Rectangle(new Point(35, 173), jLabel15.getPreferredSize()));
-
-                    //---- mappingQualityThresholdField ----
-                    mappingQualityThresholdField.setText("0");
-                    mappingQualityThresholdField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            mappingQualityThresholdFieldActionPerformed(e);
-                        }
-                    });
-                    mappingQualityThresholdField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            mappingQualityThresholdFieldFocusLost(e);
-                        }
-                    });
-                    jPanel12.add(mappingQualityThresholdField);
-                    mappingQualityThresholdField.setBounds(265, 167, 80, mappingQualityThresholdField.getPreferredSize().height);
-
-                    //---- filterSecondaryAlignmentsCB ----
-                    filterSecondaryAlignmentsCB.setText("Filter secondary alignments");
-                    filterSecondaryAlignmentsCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            filterSecondaryAlignmentsCBActionPerformed(e);
-                        }
-                    });
-                    jPanel12.add(filterSecondaryAlignmentsCB);
-                    filterSecondaryAlignmentsCB.setBounds(new Rectangle(new Point(5, 115), filterSecondaryAlignmentsCB.getPreferredSize()));
-
-                    //---- samFlagInsertionsCB ----
-                    samFlagInsertionsCB.setText("Flag insertions larger than: ");
-                    samFlagInsertionsCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            samFlagInsertionsCBActionPerformed(e);
-                        }
-                    });
-                    jPanel12.add(samFlagInsertionsCB);
-                    samFlagInsertionsCB.setBounds(new Rectangle(new Point(5, 224), samFlagInsertionsCB.getPreferredSize()));
-
-                    //---- samFlagInsertionsThresholdField ----
-                    samFlagInsertionsThresholdField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            samFlagInsertionsThresholdFieldActionPerformed(e);
-                        }
-                    });
-                    samFlagInsertionsThresholdField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            samFlagInsertionsThresholdFieldFocusLost(e);
-                        }
-                    });
-                    jPanel12.add(samFlagInsertionsThresholdField);
-                    samFlagInsertionsThresholdField.setBounds(265, 221, 165, samFlagInsertionsThresholdField.getPreferredSize().height);
-
-                    //---- label31 ----
-                    label31.setText("bases");
-                    jPanel12.add(label31);
-                    label31.setBounds(450, 227, 60, label31.getPreferredSize().height);
-
-                    //---- filterSupplementaryAlignmentsCB ----
-                    filterSupplementaryAlignmentsCB.setText("Filter supplementary alignments");
-                    filterSupplementaryAlignmentsCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            filterSupplementaryAlignmentsCBActionPerformed(e);
-                        }
-                    });
-                    jPanel12.add(filterSupplementaryAlignmentsCB);
-                    filterSupplementaryAlignmentsCB.setBounds(new Rectangle(new Point(5, 144), filterSupplementaryAlignmentsCB.getPreferredSize()));
-
-                    //---- useAlleleQualityCB ----
-                    useAlleleQualityCB.setText("Quality weight allele fraction");
-                    useAlleleQualityCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            useAlleleQualityCBActionPerformed(e);
-                        }
-                    });
-                    jPanel12.add(useAlleleQualityCB);
-                    useAlleleQualityCB.setBounds(new Rectangle(new Point(425, 32), useAlleleQualityCB.getPreferredSize()));
-
-                    { // compute preferred size
-                        Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < jPanel12.getComponentCount(); i++) {
-                            Rectangle bounds = jPanel12.getComponent(i).getBounds();
-                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                        }
-                        Insets insets = jPanel12.getInsets();
-                        preferredSize.width += insets.right;
-                        preferredSize.height += insets.bottom;
-                        jPanel12.setMinimumSize(preferredSize);
-                        jPanel12.setPreferredSize(preferredSize);
+                        //---- useAlleleQualityCB ----
+                        useAlleleQualityCB.setText("Quality weight allele fraction");
+                        useAlleleQualityCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                useAlleleQualityCBActionPerformed(e);
+                            }
+                        });
+                        panel8.add(useAlleleQualityCB);
                     }
+                    jPanel12.add(panel8);
+
+                    //======== panel13 ========
+                    {
+                        panel13.setLayout(new BoxLayout(panel13, BoxLayout.Y_AXIS));
+
+                        //======== panel12 ========
+                        {
+                            panel12.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+                            //---- jLabel15 ----
+                            jLabel15.setText("Mapping quality threshold:");
+                            panel12.add(jLabel15);
+
+                            //---- mappingQualityThresholdField ----
+                            mappingQualityThresholdField.setText("0");
+                            mappingQualityThresholdField.setPreferredSize(new Dimension(60, 28));
+                            mappingQualityThresholdField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    mappingQualityThresholdFieldActionPerformed(e);
+                                }
+                            });
+                            mappingQualityThresholdField.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    mappingQualityThresholdFieldFocusLost(e);
+                                }
+                            });
+                            panel12.add(mappingQualityThresholdField);
+                        }
+                        panel13.add(panel12);
+
+                        //======== panel11 ========
+                        {
+                            panel11.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+                            //---- samShadeMismatchedBaseCB ----
+                            samShadeMismatchedBaseCB.setText("Shade mismatched bases by quality:");
+                            samShadeMismatchedBaseCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    samShadeMismatchedBaseCBActionPerformed(e);
+                                }
+                            });
+                            panel11.add(samShadeMismatchedBaseCB);
+
+                            //---- samMinBaseQualityField ----
+                            samMinBaseQualityField.setText("0");
+                            samMinBaseQualityField.setPreferredSize(new Dimension(60, 28));
+                            samMinBaseQualityField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    samMinBaseQualityFieldActionPerformed(e);
+                                }
+                            });
+                            samMinBaseQualityField.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    samMinBaseQualityFieldFocusLost(e);
+                                }
+                            });
+                            panel11.add(samMinBaseQualityField);
+
+                            //---- label2 ----
+                            label2.setText("to");
+                            panel11.add(label2);
+
+                            //---- samMaxBaseQualityField ----
+                            samMaxBaseQualityField.setText("0");
+                            samMaxBaseQualityField.setPreferredSize(new Dimension(60, 28));
+                            samMaxBaseQualityField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    samMaxBaseQualityFieldActionPerformed(e);
+                                }
+                            });
+                            samMaxBaseQualityField.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    samMaxBaseQualityFieldFocusLost(e);
+                                }
+                            });
+                            panel11.add(samMaxBaseQualityField);
+                        }
+                        panel13.add(panel11);
+
+                        //======== panel9 ========
+                        {
+                            panel9.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+                            //---- filterCB ----
+                            filterCB.setText("Filter alignments by read group");
+                            filterCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    filterCBActionPerformed(e);
+                                }
+                            });
+                            panel9.add(filterCB);
+
+                            //---- filterURL ----
+                            filterURL.setText("URL or path to filter file");
+                            filterURL.setEnabled(false);
+                            filterURL.setPreferredSize(new Dimension(500, 28));
+                            filterURL.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    filterURLActionPerformed(e);
+                                }
+                            });
+                            filterURL.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    filterURLFocusLost(e);
+                                }
+                            });
+                            panel9.add(filterURL);
+                        }
+                        panel13.add(panel9);
+
+                        //======== panel10 ========
+                        {
+                            panel10.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+                            //---- samFlagInsertionsCB ----
+                            samFlagInsertionsCB.setText("Flag insertions larger than: ");
+                            samFlagInsertionsCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    samFlagInsertionsCBActionPerformed(e);
+                                }
+                            });
+                            panel10.add(samFlagInsertionsCB);
+
+                            //---- samFlagInsertionsThresholdField ----
+                            samFlagInsertionsThresholdField.setPreferredSize(new Dimension(60, 28));
+                            samFlagInsertionsThresholdField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    samFlagInsertionsThresholdFieldActionPerformed(e);
+                                }
+                            });
+                            samFlagInsertionsThresholdField.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    samFlagInsertionsThresholdFieldFocusLost(e);
+                                }
+                            });
+                            panel10.add(samFlagInsertionsThresholdField);
+
+                            //---- label31 ----
+                            label31.setText("bases");
+                            panel10.add(label31);
+                        }
+                        panel13.add(panel10);
+                    }
+                    jPanel12.add(panel13);
                 }
                 alignmentPanel.add(jPanel12);
-                jPanel12.setBounds(10, 120, 755, 295);
 
                 //======== panel2 ========
                 {
                     panel2.setBorder(new TitledBorder("Insert Size Options"));
-                    panel2.setLayout(null);
-
-                    //---- isizeComputeCB ----
-                    isizeComputeCB.setText("Compute");
-                    isizeComputeCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            isizeComputeCBActionPerformed(e);
-                            isizeComputeCBActionPerformed(e);
-                            isizeComputeCBActionPerformed(e);
-                        }
-                    });
-                    panel2.add(isizeComputeCB);
-                    isizeComputeCB.setBounds(new Rectangle(new Point(360, 76), isizeComputeCB.getPreferredSize()));
-
-                    //---- jLabel17 ----
-                    jLabel17.setText("Maximum (bp):");
-                    panel2.add(jLabel17);
-                    jLabel17.setBounds(100, 110, 110, jLabel17.getPreferredSize().height);
-
-                    //---- insertSizeMinThresholdField ----
-                    insertSizeMinThresholdField.setText("0");
-                    insertSizeMinThresholdField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            insertSizeThresholdFieldActionPerformed(e);
-                            insertSizeMinThresholdFieldActionPerformed(e);
-                            insertSizeMinThresholdFieldActionPerformed(e);
-                            insertSizeMinThresholdFieldActionPerformed(e);
-                        }
-                    });
-                    insertSizeMinThresholdField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            insertSizeThresholdFieldFocusLost(e);
-                            insertSizeMinThresholdFieldFocusLost(e);
-                        }
-                    });
-                    panel2.add(insertSizeMinThresholdField);
-                    insertSizeMinThresholdField.setBounds(220, 75, 80, 28);
-
-                    //---- jLabel20 ----
-                    jLabel20.setText("Minimum (bp):");
-                    panel2.add(jLabel20);
-                    jLabel20.setBounds(100, 80, 110, 16);
-
-                    //---- insertSizeThresholdField ----
-                    insertSizeThresholdField.setText("0");
-                    insertSizeThresholdField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            insertSizeThresholdFieldActionPerformed(e);
-                            insertSizeThresholdFieldActionPerformed(e);
-                        }
-                    });
-                    insertSizeThresholdField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            insertSizeThresholdFieldFocusLost(e);
-                        }
-                    });
-                    panel2.add(insertSizeThresholdField);
-                    insertSizeThresholdField.setBounds(220, 105, 80, insertSizeThresholdField.getPreferredSize().height);
-
-                    //---- jLabel30 ----
-                    jLabel30.setText("Minimum (percentile):");
-                    panel2.add(jLabel30);
-                    jLabel30.setBounds(460, 80, 155, 16);
-
-                    //---- jLabel18 ----
-                    jLabel18.setText("Maximum (percentile):");
-                    panel2.add(jLabel18);
-                    jLabel18.setBounds(460, 110, 155, 16);
-
-                    //---- insertSizeMinPercentileField ----
-                    insertSizeMinPercentileField.setText("0");
-                    insertSizeMinPercentileField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            insertSizeThresholdFieldActionPerformed(e);
-                            insertSizeMinThresholdFieldActionPerformed(e);
-                            insertSizeMinThresholdFieldActionPerformed(e);
-                            insertSizeMinThresholdFieldActionPerformed(e);
-                            insertSizeMinPercentileFieldActionPerformed(e);
-                        }
-                    });
-                    insertSizeMinPercentileField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            insertSizeThresholdFieldFocusLost(e);
-                            insertSizeMinThresholdFieldFocusLost(e);
-                            insertSizeMinPercentileFieldFocusLost(e);
-                        }
-                    });
-                    panel2.add(insertSizeMinPercentileField);
-                    insertSizeMinPercentileField.setBounds(625, 75, 80, 28);
-
-                    //---- insertSizeMaxPercentileField ----
-                    insertSizeMaxPercentileField.setText("0");
-                    insertSizeMaxPercentileField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            insertSizeThresholdFieldActionPerformed(e);
-                            insertSizeThresholdFieldActionPerformed(e);
-                            insertSizeMaxPercentileFieldActionPerformed(e);
-                        }
-                    });
-                    insertSizeMaxPercentileField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            insertSizeThresholdFieldFocusLost(e);
-                            insertSizeMaxPercentileFieldFocusLost(e);
-                        }
-                    });
-                    panel2.add(insertSizeMaxPercentileField);
-                    insertSizeMaxPercentileField.setBounds(625, 105, 80, 28);
+                    panel2.setLayout(new GridBagLayout());
+                    ((GridBagLayout)panel2.getLayout()).columnWidths = new int[] {0, 0, 0, 0};
+                    ((GridBagLayout)panel2.getLayout()).rowHeights = new int[] {0, 0, 0};
+                    ((GridBagLayout)panel2.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 1.0E-4};
+                    ((GridBagLayout)panel2.getLayout()).rowWeights = new double[] {0.0, 0.0, 1.0E-4};
 
                     //---- label8 ----
                     label8.setText("<html><i>These options control the color coding of paired alignments by inferred insert size.   Base pair values set default values.  If \"compute\" is selected  values are computed from the actual size distribution of each library.");
-                    panel2.add(label8);
-                    label8.setBounds(5, 15, 735, 55);
+                    panel2.add(label8, new GridBagConstraints(0, 0, 3, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 5, 0), 0, 0));
 
-                    //---- label9 ----
-                    label9.setText("Defaults ");
-                    panel2.add(label9);
-                    label9.setBounds(new Rectangle(new Point(15, 80), label9.getPreferredSize()));
+                    //======== panel16 ========
+                    {
+                        panel16.setLayout(new GridBagLayout());
+                        ((GridBagLayout)panel16.getLayout()).columnWidths = new int[] {0, 0, 0, 0};
+                        ((GridBagLayout)panel16.getLayout()).rowHeights = new int[] {0, 0, 0};
+                        ((GridBagLayout)panel16.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 1.0E-4};
+                        ((GridBagLayout)panel16.getLayout()).rowWeights = new double[] {0.0, 0.0, 1.0E-4};
 
-                    { // compute preferred size
-                        Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < panel2.getComponentCount(); i++) {
-                            Rectangle bounds = panel2.getComponent(i).getBounds();
-                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                        }
-                        Insets insets = panel2.getInsets();
-                        preferredSize.width += insets.right;
-                        preferredSize.height += insets.bottom;
-                        panel2.setMinimumSize(preferredSize);
-                        panel2.setPreferredSize(preferredSize);
+                        //---- label9 ----
+                        label9.setText("Defaults ");
+                        panel16.add(label9, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
+
+                        //---- jLabel20 ----
+                        jLabel20.setText("Minimum (bp):");
+                        panel16.add(jLabel20, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
+
+                        //---- insertSizeMinThresholdField ----
+                        insertSizeMinThresholdField.setText("0");
+                        insertSizeMinThresholdField.setPreferredSize(new Dimension(60, 28));
+                        insertSizeMinThresholdField.setMinimumSize(new Dimension(60, 28));
+                        insertSizeMinThresholdField.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                insertSizeThresholdFieldActionPerformed(e);
+                                insertSizeMinThresholdFieldActionPerformed(e);
+                                insertSizeMinThresholdFieldActionPerformed(e);
+                                insertSizeMinThresholdFieldActionPerformed(e);
+                            }
+                        });
+                        insertSizeMinThresholdField.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                insertSizeThresholdFieldFocusLost(e);
+                                insertSizeMinThresholdFieldFocusLost(e);
+                            }
+                        });
+                        panel16.add(insertSizeMinThresholdField, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 0), 0, 0));
+
+                        //---- jLabel17 ----
+                        jLabel17.setText("Maximum (bp):");
+                        panel16.add(jLabel17, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 0, 5), 0, 0));
+
+                        //---- insertSizeThresholdField ----
+                        insertSizeThresholdField.setText("0");
+                        insertSizeThresholdField.setPreferredSize(new Dimension(60, 28));
+                        insertSizeThresholdField.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                insertSizeThresholdFieldActionPerformed(e);
+                                insertSizeThresholdFieldActionPerformed(e);
+                            }
+                        });
+                        insertSizeThresholdField.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                insertSizeThresholdFieldFocusLost(e);
+                            }
+                        });
+                        panel16.add(insertSizeThresholdField, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 0, 0), 0, 0));
                     }
+                    panel2.add(panel16, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
+
+                    //======== panel15 ========
+                    {
+                        panel15.setLayout(new GridBagLayout());
+                        ((GridBagLayout)panel15.getLayout()).columnWidths = new int[] {0, 0, 0, 0};
+                        ((GridBagLayout)panel15.getLayout()).rowHeights = new int[] {0, 0, 0};
+                        ((GridBagLayout)panel15.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 1.0E-4};
+                        ((GridBagLayout)panel15.getLayout()).rowWeights = new double[] {0.0, 0.0, 1.0E-4};
+
+                        //---- isizeComputeCB ----
+                        isizeComputeCB.setText("Compute");
+                        isizeComputeCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                isizeComputeCBActionPerformed(e);
+                                isizeComputeCBActionPerformed(e);
+                                isizeComputeCBActionPerformed(e);
+                            }
+                        });
+                        panel15.add(isizeComputeCB, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
+
+                        //---- jLabel30 ----
+                        jLabel30.setText("Minimum (percentile):");
+                        panel15.add(jLabel30, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
+
+                        //---- insertSizeMinPercentileField ----
+                        insertSizeMinPercentileField.setText("0");
+                        insertSizeMinPercentileField.setPreferredSize(new Dimension(60, 28));
+                        insertSizeMinPercentileField.setMinimumSize(new Dimension(60, 28));
+                        insertSizeMinPercentileField.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                insertSizeThresholdFieldActionPerformed(e);
+                                insertSizeMinThresholdFieldActionPerformed(e);
+                                insertSizeMinThresholdFieldActionPerformed(e);
+                                insertSizeMinThresholdFieldActionPerformed(e);
+                                insertSizeMinPercentileFieldActionPerformed(e);
+                            }
+                        });
+                        insertSizeMinPercentileField.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                insertSizeThresholdFieldFocusLost(e);
+                                insertSizeMinThresholdFieldFocusLost(e);
+                                insertSizeMinPercentileFieldFocusLost(e);
+                            }
+                        });
+                        panel15.add(insertSizeMinPercentileField, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 0), 0, 0));
+
+                        //---- jLabel18 ----
+                        jLabel18.setText("Maximum (percentile):");
+                        panel15.add(jLabel18, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 0, 5), 0, 0));
+
+                        //---- insertSizeMaxPercentileField ----
+                        insertSizeMaxPercentileField.setText("0");
+                        insertSizeMaxPercentileField.setPreferredSize(new Dimension(60, 28));
+                        insertSizeMaxPercentileField.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                insertSizeThresholdFieldActionPerformed(e);
+                                insertSizeThresholdFieldActionPerformed(e);
+                                insertSizeMaxPercentileFieldActionPerformed(e);
+                            }
+                        });
+                        insertSizeMaxPercentileField.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                insertSizeThresholdFieldFocusLost(e);
+                                insertSizeMaxPercentileFieldFocusLost(e);
+                            }
+                        });
+                        panel15.add(insertSizeMaxPercentileField, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 0, 0), 0, 0));
+                    }
+                    panel2.add(panel15, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
                 }
                 alignmentPanel.add(panel2);
-                panel2.setBounds(10, 525, 755, 145);
 
                 //======== panel3 ========
                 {
                     panel3.setBorder(new TitledBorder("Splice Junction Track Options"));
-                    panel3.setLayout(null);
+                    panel3.setLayout(new GridBagLayout());
+                    ((GridBagLayout)panel3.getLayout()).columnWidths = new int[] {0, 0, 0, 0, 0, 0};
+                    ((GridBagLayout)panel3.getLayout()).rowHeights = new int[] {0, 0, 0};
+                    ((GridBagLayout)panel3.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                    ((GridBagLayout)panel3.getLayout()).rowWeights = new double[] {0.0, 0.0, 1.0E-4};
 
                     //---- showJunctionTrackCB ----
                     showJunctionTrackCB.setText("Show junction track");
@@ -1607,8 +1598,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             showJunctionTrackCBActionPerformed(e);
                         }
                     });
-                    panel3.add(showJunctionTrackCB);
-                    showJunctionTrackCB.setBounds(new Rectangle(new Point(5, 25), showJunctionTrackCB.getPreferredSize()));
+                    panel3.add(showJunctionTrackCB, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 5, 5), 0, 0));
 
                     //---- showJunctionFlankingRegionsCB ----
                     showJunctionFlankingRegionsCB.setText("Show flanking regions");
@@ -1618,10 +1610,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             showJunctionFlankingRegionsCBActionPerformed(e);
                         }
                     });
-                    panel3.add(showJunctionFlankingRegionsCB);
-                    showJunctionFlankingRegionsCB.setBounds(new Rectangle(new Point(5, 50), showJunctionFlankingRegionsCB.getPreferredSize()));
+                    panel3.add(showJunctionFlankingRegionsCB, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                     //---- junctionFlankingTextField ----
+                    junctionFlankingTextField.setPreferredSize(new Dimension(80, 28));
                     junctionFlankingTextField.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -1634,20 +1628,24 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             junctionFlankingTextFieldFocusLost(e);
                         }
                     });
-                    panel3.add(junctionFlankingTextField);
-                    junctionFlankingTextField.setBounds(325, 25, 80, junctionFlankingTextField.getPreferredSize().height);
+                    panel3.add(junctionFlankingTextField, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 5, 5), 0, 0));
 
                     //---- label15 ----
                     label15.setText("Min flanking width:");
-                    panel3.add(label15);
-                    label15.setBounds(185, 30, 125, label15.getPreferredSize().height);
+                    panel3.add(label15, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 5, 5), 0, 0));
 
                     //---- label16 ----
                     label16.setText("Min junction coverage:");
-                    panel3.add(label16);
-                    label16.setBounds(new Rectangle(new Point(460, 30), label16.getPreferredSize()));
+                    panel3.add(label16, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 5, 5), 0, 0));
 
                     //---- junctionCoverageTextField ----
+                    junctionCoverageTextField.setPreferredSize(new Dimension(80, 28));
                     junctionCoverageTextField.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -1660,39 +1658,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             junctionCoverageTextFieldFocusLost(e);
                         }
                     });
-                    panel3.add(junctionCoverageTextField);
-                    junctionCoverageTextField.setBounds(615, 25, 80, 28);
-
-                    { // compute preferred size
-                        Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < panel3.getComponentCount(); i++) {
-                            Rectangle bounds = panel3.getComponent(i).getBounds();
-                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                        }
-                        Insets insets = panel3.getInsets();
-                        preferredSize.width += insets.right;
-                        preferredSize.height += insets.bottom;
-                        panel3.setMinimumSize(preferredSize);
-                        panel3.setPreferredSize(preferredSize);
-                    }
+                    panel3.add(junctionCoverageTextField, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 5, 0), 0, 0));
                 }
                 alignmentPanel.add(panel3);
-                panel3.setBounds(10, 425, 755, 85);
-
-                { // compute preferred size
-                    Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < alignmentPanel.getComponentCount(); i++) {
-                        Rectangle bounds = alignmentPanel.getComponent(i).getBounds();
-                        preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                        preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                    }
-                    Insets insets = alignmentPanel.getInsets();
-                    preferredSize.width += insets.right;
-                    preferredSize.height += insets.bottom;
-                    alignmentPanel.setMinimumSize(preferredSize);
-                    alignmentPanel.setPreferredSize(preferredSize);
-                }
             }
             tabbedPane.addTab("Alignments", alignmentPanel);
 
@@ -1704,81 +1674,121 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 {
                     jPanel8.setLayout(null);
 
-                    //---- expMapToGeneCB ----
-                    expMapToGeneCB.setText("Map probes to genes");
-                    expMapToGeneCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            expMapToGeneCBActionPerformed(e);
-                            expMapToGeneCBActionPerformed(e);
+                    //======== panel18 ========
+                    {
+                        panel18.setLayout(new GridBagLayout());
+                        ((GridBagLayout)panel18.getLayout()).columnWidths = new int[] {0, 0};
+                        ((GridBagLayout)panel18.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0};
+                        ((GridBagLayout)panel18.getLayout()).columnWeights = new double[] {0.0, 1.0E-4};
+                        ((GridBagLayout)panel18.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 1.0E-4};
+
+                        //---- jLabel24 ----
+                        jLabel24.setText("Expression probe mapping options: ");
+                        panel18.add(jLabel24, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 0), 0, 0));
+
+                        //---- jLabel21 ----
+                        jLabel21.setText("<html><i>Note: Changes will not affect currently loaded datasets.");
+                        panel18.add(jLabel21, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 0), 0, 0));
+
+                        //---- expMapToLociCB ----
+                        expMapToLociCB.setText("<html>Map probes to target loci");
+                        expMapToLociCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                expMapToLociCBActionPerformed(e);
+                            }
+                        });
+                        panel18.add(expMapToLociCB, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 0), 0, 0));
+
+                        //---- expMapToGeneCB ----
+                        expMapToGeneCB.setText("Map probes to genes");
+                        expMapToGeneCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                expMapToGeneCBActionPerformed(e);
+                                expMapToGeneCBActionPerformed(e);
+                            }
+                        });
+                        panel18.add(expMapToGeneCB, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 0, 0), 0, 0));
+                    }
+                    jPanel8.add(panel18);
+                    panel18.setBounds(new Rectangle(new Point(20, 20), panel18.getPreferredSize()));
+
+                    //======== panel17 ========
+                    {
+                        panel17.setLayout(new GridLayout(3, 1));
+
+                        //---- useProbeMappingCB ----
+                        useProbeMappingCB.setText("Use probe mapping file");
+                        useProbeMappingCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                useProbeMappingCBActionPerformed(e);
+                            }
+                        });
+                        panel17.add(useProbeMappingCB);
+
+                        //---- label22 ----
+                        label22.setText("<html><i>File path or URL to BED file containing genomic locations of probes:");
+                        panel17.add(label22);
+
+                        //======== panel14 ========
+                        {
+                            panel14.setLayout(null);
+
+                            //---- probeMappingFileTextField ----
+                            probeMappingFileTextField.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    probeMappingFileTextFieldFocusLost(e);
+                                }
+                            });
+                            probeMappingFileTextField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    probeMappingFileTextFieldActionPerformed(e);
+                                }
+                            });
+                            panel14.add(probeMappingFileTextField);
+                            probeMappingFileTextField.setBounds(0, 0, 581, probeMappingFileTextField.getPreferredSize().height);
+
+                            //---- probeMappingBrowseButton ----
+                            probeMappingBrowseButton.setText("Browse");
+                            probeMappingBrowseButton.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    probeMappingBrowseButtonActionPerformed(e);
+                                }
+                            });
+                            panel14.add(probeMappingBrowseButton);
+                            probeMappingBrowseButton.setBounds(new Rectangle(new Point(592, 0), probeMappingBrowseButton.getPreferredSize()));
+
+                            { // compute preferred size
+                                Dimension preferredSize = new Dimension();
+                                for(int i = 0; i < panel14.getComponentCount(); i++) {
+                                    Rectangle bounds = panel14.getComponent(i).getBounds();
+                                    preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                                    preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                                }
+                                Insets insets = panel14.getInsets();
+                                preferredSize.width += insets.right;
+                                preferredSize.height += insets.bottom;
+                                panel14.setMinimumSize(preferredSize);
+                                panel14.setPreferredSize(preferredSize);
+                            }
                         }
-                    });
-                    jPanel8.add(expMapToGeneCB);
-                    expMapToGeneCB.setBounds(new Rectangle(new Point(45, 129), expMapToGeneCB.getPreferredSize()));
-
-                    //---- jLabel24 ----
-                    jLabel24.setText("Expression probe mapping options: ");
-                    jPanel8.add(jLabel24);
-                    jLabel24.setBounds(new Rectangle(new Point(20, 20), jLabel24.getPreferredSize()));
-
-                    //---- expMapToLociCB ----
-                    expMapToLociCB.setText("<html>Map probes to target loci");
-                    expMapToLociCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            expMapToLociCBActionPerformed(e);
-                        }
-                    });
-                    jPanel8.add(expMapToLociCB);
-                    expMapToLociCB.setBounds(new Rectangle(new Point(45, 92), expMapToLociCB.getPreferredSize()));
-
-                    //---- jLabel21 ----
-                    jLabel21.setText("<html><i>Note: Changes will not affect currently loaded datasets.");
-                    jPanel8.add(jLabel21);
-                    jLabel21.setBounds(44, 44, 497, 44);
-
-                    //---- probeMappingFileTextField ----
-                    probeMappingFileTextField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            probeMappingFileTextFieldFocusLost(e);
-                        }
-                    });
-                    probeMappingFileTextField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            probeMappingFileTextFieldActionPerformed(e);
-                        }
-                    });
-                    jPanel8.add(probeMappingFileTextField);
-                    probeMappingFileTextField.setBounds(45, 322, 581, probeMappingFileTextField.getPreferredSize().height);
-
-                    //---- label22 ----
-                    label22.setText("<html><i>File path or URL to BED file containing genomic locations of probes.");
-                    jPanel8.add(label22);
-                    label22.setBounds(new Rectangle(new Point(45, 288), label22.getPreferredSize()));
-
-                    //---- probeMappingBrowseButton ----
-                    probeMappingBrowseButton.setText("Browse");
-                    probeMappingBrowseButton.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            probeMappingBrowseButtonActionPerformed(e);
-                        }
-                    });
-                    jPanel8.add(probeMappingBrowseButton);
-                    probeMappingBrowseButton.setBounds(new Rectangle(new Point(637, 322), probeMappingBrowseButton.getPreferredSize()));
-
-                    //---- useProbeMappingCB ----
-                    useProbeMappingCB.setText("Use probe mapping file");
-                    useProbeMappingCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            useProbeMappingCBActionPerformed(e);
-                        }
-                    });
-                    jPanel8.add(useProbeMappingCB);
-                    useProbeMappingCB.setBounds(new Rectangle(new Point(20, 247), useProbeMappingCB.getPreferredSize()));
+                        panel17.add(panel14);
+                    }
+                    jPanel8.add(panel17);
+                    panel17.setBounds(20, 247, 735, panel17.getPreferredSize().height);
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
@@ -1823,11 +1833,16 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     //======== jPanel16 ========
                     {
-                        jPanel16.setLayout(null);
+                        jPanel16.setLayout(new GridBagLayout());
+                        ((GridBagLayout)jPanel16.getLayout()).columnWidths = new int[] {0, 0, 0};
+                        ((GridBagLayout)jPanel16.getLayout()).rowHeights = new int[] {0, 0, 0, 0};
+                        ((GridBagLayout)jPanel16.getLayout()).columnWeights = new double[] {0.0, 0.0, 1.0E-4};
+                        ((GridBagLayout)jPanel16.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 1.0E-4};
 
                         //---- proxyUsernameField ----
                         proxyUsernameField.setText("jTextField1");
                         proxyUsernameField.setEnabled(false);
+                        proxyUsernameField.setPreferredSize(new Dimension(500, 28));
                         proxyUsernameField.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
@@ -1840,13 +1855,15 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 proxyUsernameFieldFocusLost(e);
                             }
                         });
-                        jPanel16.add(proxyUsernameField);
-                        proxyUsernameField.setBounds(127, 45, 261, proxyUsernameField.getPreferredSize().height);
+                        jPanel16.add(proxyUsernameField, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 20, 0), 0, 0));
 
                         //---- jLabel28 ----
                         jLabel28.setText("Username:");
-                        jPanel16.add(jLabel28);
-                        jLabel28.setBounds(new Rectangle(new Point(28, 51), jLabel28.getPreferredSize()));
+                        jPanel16.add(jLabel28, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 20, 5), 0, 0));
 
                         //---- authenticateProxyCB ----
                         authenticateProxyCB.setText("Authentication required");
@@ -1856,13 +1873,15 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 authenticateProxyCBActionPerformed(e);
                             }
                         });
-                        jPanel16.add(authenticateProxyCB);
-                        authenticateProxyCB.setBounds(new Rectangle(new Point(17, 17), authenticateProxyCB.getPreferredSize()));
+                        jPanel16.add(authenticateProxyCB, new GridBagConstraints(0, 0, 2, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 20, 0), 0, 0));
 
                         //---- jLabel29 ----
                         jLabel29.setText("Password:");
-                        jPanel16.add(jLabel29);
-                        jLabel29.setBounds(new Rectangle(new Point(28, 87), jLabel29.getPreferredSize()));
+                        jPanel16.add(jLabel29, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 0, 5), 0, 0));
 
                         //---- proxyPasswordField ----
                         proxyPasswordField.setText("jPasswordField1");
@@ -1873,32 +1892,24 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 proxyPasswordFieldFocusLost(e);
                             }
                         });
-                        jPanel16.add(proxyPasswordField);
-                        proxyPasswordField.setBounds(127, 81, 261, proxyPasswordField.getPreferredSize().height);
-
-                        { // compute preferred size
-                            Dimension preferredSize = new Dimension();
-                            for(int i = 0; i < jPanel16.getComponentCount(); i++) {
-                                Rectangle bounds = jPanel16.getComponent(i).getBounds();
-                                preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                                preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                            }
-                            Insets insets = jPanel16.getInsets();
-                            preferredSize.width += insets.right;
-                            preferredSize.height += insets.bottom;
-                            jPanel16.setMinimumSize(preferredSize);
-                            jPanel16.setPreferredSize(preferredSize);
-                        }
+                        jPanel16.add(proxyPasswordField, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 0, 0), 0, 0));
                     }
                     jPanel15.add(jPanel16);
                     jPanel16.setBounds(20, 315, 741, jPanel16.getPreferredSize().height);
 
                     //======== jPanel17 ========
                     {
-                        jPanel17.setLayout(null);
+                        jPanel17.setLayout(new GridBagLayout());
+                        ((GridBagLayout)jPanel17.getLayout()).columnWidths = new int[] {0, 0, 0};
+                        ((GridBagLayout)jPanel17.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0};
+                        ((GridBagLayout)jPanel17.getLayout()).columnWeights = new double[] {0.0, 0.0, 1.0E-4};
+                        ((GridBagLayout)jPanel17.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
                         //---- proxyHostField ----
                         proxyHostField.setText("jTextField1");
+                        proxyHostField.setPreferredSize(new Dimension(500, 28));
                         proxyHostField.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
@@ -1911,8 +1922,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 proxyHostFieldFocusLost(e);
                             }
                         });
-                        jPanel17.add(proxyHostField);
-                        proxyHostField.setBounds(115, 70, 485, proxyHostField.getPreferredSize().height);
+                        jPanel17.add(proxyHostField, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 20, 0), 0, 0));
 
                         //---- proxyPortField ----
                         proxyPortField.setText("jTextField1");
@@ -1928,18 +1940,21 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 proxyPortFieldFocusLost(e);
                             }
                         });
-                        jPanel17.add(proxyPortField);
-                        proxyPortField.setBounds(115, 106, 108, proxyPortField.getPreferredSize().height);
+                        jPanel17.add(proxyPortField, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 20, 0), 0, 0));
 
                         //---- jLabel27 ----
                         jLabel27.setText("Proxy port:");
-                        jPanel17.add(jLabel27);
-                        jLabel27.setBounds(20, 108, 95, 25);
+                        jPanel17.add(jLabel27, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 20, 5), 0, 0));
 
                         //---- jLabel23 ----
                         jLabel23.setText("Proxy host:");
-                        jPanel17.add(jLabel23);
-                        jLabel23.setBounds(20, 72, 95, 25);
+                        jPanel17.add(jLabel23, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 20, 5), 0, 0));
 
                         //---- useProxyCB ----
                         useProxyCB.setText("Use proxy");
@@ -1949,8 +1964,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 useProxyCBActionPerformed(e);
                             }
                         });
-                        jPanel17.add(useProxyCB);
-                        useProxyCB.setBounds(new Rectangle(new Point(9, 29), useProxyCB.getPreferredSize()));
+                        jPanel17.add(useProxyCB, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 20, 5), 0, 0));
 
                         //---- proxyTypeCB ----
                         proxyTypeCB.setModel(new DefaultComboBoxModel(new String[] {
@@ -1964,30 +1980,18 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 proxyTypeCBActionPerformed(e);
                             }
                         });
-                        jPanel17.add(proxyTypeCB);
-                        proxyTypeCB.setBounds(new Rectangle(new Point(115, 145), proxyTypeCB.getPreferredSize()));
+                        jPanel17.add(proxyTypeCB, new GridBagConstraints(1, 3, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 0, 0), 0, 0));
 
                         //---- label27 ----
                         label27.setText("Proxy type:");
-                        jPanel17.add(label27);
-                        label27.setBounds(20, 145, 95, 25);
-
-                        { // compute preferred size
-                            Dimension preferredSize = new Dimension();
-                            for(int i = 0; i < jPanel17.getComponentCount(); i++) {
-                                Rectangle bounds = jPanel17.getComponent(i).getBounds();
-                                preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                                preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                            }
-                            Insets insets = jPanel17.getInsets();
-                            preferredSize.width += insets.right;
-                            preferredSize.height += insets.bottom;
-                            jPanel17.setMinimumSize(preferredSize);
-                            jPanel17.setPreferredSize(preferredSize);
-                        }
+                        jPanel17.add(label27, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 0, 5), 0, 0));
                     }
                     jPanel15.add(jPanel17);
-                    jPanel17.setBounds(20, 91, jPanel17.getPreferredSize().width, 199);
+                    jPanel17.setBounds(20, 91, 770, 199);
 
                     //---- label3 ----
                     label3.setText("<html>Note:  do not use these settings unless you receive error or warning messages about server connections.  On most systems the correct settings will be automatically copied from your web browser.");
@@ -2003,7 +2007,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel15.add(clearProxySettingsButton);
-                    clearProxySettingsButton.setBounds(new Rectangle(new Point(35, 475), clearProxySettingsButton.getPreferredSize()));
+                    clearProxySettingsButton.setBounds(new Rectangle(new Point(10, 485), clearProxySettingsButton.getPreferredSize()));
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
@@ -2022,95 +2026,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 proxyPanel.add(jPanel15);
             }
             tabbedPane.addTab("Proxy", proxyPanel);
-
-            //======== dbPanel ========
-            {
-                dbPanel.setLayout(null);
-
-                //---- label17 ----
-                label17.setText("Host:");
-                dbPanel.add(label17);
-                label17.setBounds(new Rectangle(new Point(45, 76), label17.getPreferredSize()));
-
-                //---- label18 ----
-                label18.setText("Port (Optional)");
-                dbPanel.add(label18);
-                label18.setBounds(new Rectangle(new Point(45, 205), label18.getPreferredSize()));
-
-                //---- label19 ----
-                label19.setText("Name:");
-                dbPanel.add(label19);
-                label19.setBounds(new Rectangle(new Point(45, 115), label19.getPreferredSize()));
-
-                //---- dbHostField ----
-                dbHostField.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        dbHostFieldActionPerformed(e);
-                    }
-                });
-                dbHostField.addFocusListener(new FocusAdapter() {
-                    @Override
-                    public void focusLost(FocusEvent e) {
-                        dbHostFieldFocusLost(e);
-                    }
-                });
-                dbPanel.add(dbHostField);
-                dbHostField.setBounds(110, 70, 430, dbHostField.getPreferredSize().height);
-
-                //---- dbPortField ----
-                dbPortField.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        dbPortFieldActionPerformed(e);
-                    }
-                });
-                dbPortField.addFocusListener(new FocusAdapter() {
-                    @Override
-                    public void focusLost(FocusEvent e) {
-                        dbPortFieldFocusLost(e);
-                    }
-                });
-                dbPanel.add(dbPortField);
-                dbPortField.setBounds(155, 200, 130, 28);
-
-                //---- dbNameField ----
-                dbNameField.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        dbNameFieldActionPerformed(e);
-                    }
-                });
-                dbNameField.addFocusListener(new FocusAdapter() {
-                    @Override
-                    public void focusLost(FocusEvent e) {
-                        dbNameFieldFocusLost(e);
-                    }
-                });
-                dbPanel.add(dbNameField);
-                dbNameField.setBounds(110, 110, 430, 28);
-
-                //---- label20 ----
-                label20.setText("<html><b>Database configuration  <i>(experimental, subject to change)");
-                label20.setFont(new Font("Lucida Grande", Font.PLAIN, 14));
-                dbPanel.add(label20);
-                label20.setBounds(new Rectangle(new Point(50, 20), label20.getPreferredSize()));
-
-                { // compute preferred size
-                    Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < dbPanel.getComponentCount(); i++) {
-                        Rectangle bounds = dbPanel.getComponent(i).getBounds();
-                        preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                        preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                    }
-                    Insets insets = dbPanel.getInsets();
-                    preferredSize.width += insets.right;
-                    preferredSize.height += insets.bottom;
-                    dbPanel.setMinimumSize(preferredSize);
-                    dbPanel.setPreferredSize(preferredSize);
-                }
-            }
-            tabbedPane.addTab("Database", dbPanel);
 
             //======== ionTorrentPanel ========
             {
@@ -2547,6 +2462,115 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 }
             }
             tabbedPane.addTab("Advanced", advancedPanel);
+
+            //======== dbPanel ========
+            {
+                dbPanel.setLayout(null);
+
+                //---- label20 ----
+                label20.setText("<html><b>Database configuration  <i>(experimental, subject to change)");
+                label20.setFont(new Font("Lucida Grande", Font.PLAIN, 14));
+                dbPanel.add(label20);
+                label20.setBounds(new Rectangle(new Point(50, 20), label20.getPreferredSize()));
+
+                //======== panel21 ========
+                {
+                    panel21.setLayout(new GridBagLayout());
+                    ((GridBagLayout)panel21.getLayout()).columnWidths = new int[] {0, 0, 0};
+                    ((GridBagLayout)panel21.getLayout()).rowHeights = new int[] {0, 0, 0, 0};
+                    ((GridBagLayout)panel21.getLayout()).columnWeights = new double[] {0.0, 0.0, 1.0E-4};
+                    ((GridBagLayout)panel21.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 1.0E-4};
+
+                    //---- label17 ----
+                    label17.setText("Host:");
+                    panel21.add(label17, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 5, 5), 0, 0));
+
+                    //---- label19 ----
+                    label19.setText("Name:");
+                    panel21.add(label19, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 5, 5), 0, 0));
+
+                    //---- dbNameField ----
+                    dbNameField.setPreferredSize(new Dimension(500, 28));
+                    dbNameField.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            dbNameFieldActionPerformed(e);
+                        }
+                    });
+                    dbNameField.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            dbNameFieldFocusLost(e);
+                        }
+                    });
+                    panel21.add(dbNameField, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 5, 0), 0, 0));
+
+                    //---- dbHostField ----
+                    dbHostField.setPreferredSize(new Dimension(500, 28));
+                    dbHostField.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            dbHostFieldActionPerformed(e);
+                        }
+                    });
+                    dbHostField.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            dbHostFieldFocusLost(e);
+                        }
+                    });
+                    panel21.add(dbHostField, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 5, 0), 0, 0));
+
+                    //---- label18 ----
+                    label18.setText("Port:");
+                    panel21.add(label18, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
+
+                    //---- dbPortField ----
+                    dbPortField.setPreferredSize(new Dimension(500, 28));
+                    dbPortField.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            dbPortFieldActionPerformed(e);
+                        }
+                    });
+                    dbPortField.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            dbPortFieldFocusLost(e);
+                        }
+                    });
+                    panel21.add(dbPortField, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
+                }
+                dbPanel.add(panel21);
+                panel21.setBounds(new Rectangle(new Point(20, 76), panel21.getPreferredSize()));
+
+                { // compute preferred size
+                    Dimension preferredSize = new Dimension();
+                    for(int i = 0; i < dbPanel.getComponentCount(); i++) {
+                        Rectangle bounds = dbPanel.getComponent(i).getBounds();
+                        preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                        preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                    }
+                    Insets insets = dbPanel.getInsets();
+                    preferredSize.width += insets.right;
+                    preferredSize.height += insets.bottom;
+                    dbPanel.setMinimumSize(preferredSize);
+                    dbPanel.setPreferredSize(preferredSize);
+                }
+            }
+            tabbedPane.addTab("Database", dbPanel);
         }
         contentPane.add(tabbedPane, BorderLayout.NORTH);
 
@@ -2574,13 +2598,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
             okCancelButtonPanel.add(cancelButton);
         }
         contentPane.add(okCancelButtonPanel, BorderLayout.SOUTH);
-        setSize(830, 785);
+        setSize(830, 840);
         setLocationRelativeTo(getOwner());
 
         //---- buttonGroup1 ----
         ButtonGroup buttonGroup1 = new ButtonGroup();
-        buttonGroup1.add(expMapToGeneCB);
         buttonGroup1.add(expMapToLociCB);
+        buttonGroup1.add(expMapToGeneCB);
         buttonGroup1.add(radioLine);
         buttonGroup1.add(radioArea);
         buttonGroup1.add(radioBar);
@@ -4112,17 +4136,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JTextField featureVisibilityWindowField;
     private JLabel zoomToFeatureExplanation3;
     private JPanel tracksPanel;
-    private JPanel jPanel6;
+    private JPanel vSpacer1;
     private JLabel jLabel5;
     private JTextField defaultChartTrackHeightField;
     private JLabel trackNameAttributeLabel;
     private JTextField trackNameAttributeField;
-    private JLabel missingDataExplanation2;
     private JLabel jLabel8;
     private JTextField defaultTrackHeightField;
-    private JLabel missingDataExplanation4;
-    private JLabel missingDataExplanation5;
-    private JLabel missingDataExplanation3;
+    private JPanel hSpacer1;
     private JCheckBox expandCB;
     private JCheckBox normalizeCoverageCB;
     private JLabel missingDataExplanation8;
@@ -4160,49 +4181,58 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JLabel jLabel11;
     private JTextField samMaxWindowSizeField;
     private JLabel jLabel12;
-    private JLabel jLabel14;
-    private JLabel jLabel16;
     private JPanel panel4;
     private JCheckBox downsampleReadsCB;
+    private JPanel hSpacer3;
     private JLabel label23;
     private JTextField samDownsampleCountField;
     private JLabel jLabel13;
     private JTextField samSamplingWindowField;
     private JPanel jPanel12;
-    private JTextField snpThresholdField;
+    private JPanel panel8;
+    private JPanel panel5;
     private JLabel jLabel26;
-    private JTextField samMinBaseQualityField;
-    private JCheckBox samShadeMismatchedBaseCB;
-    private JTextField samMaxBaseQualityField;
+    private JTextField snpThresholdField;
+    private JPanel hSpacer2;
     private JCheckBox showCovTrackCB;
     private JCheckBox samFilterDuplicatesCB;
-    private JCheckBox filterCB;
-    private JTextField filterURL;
     private JCheckBox samFlagUnmappedPairCB;
     private JCheckBox filterFailedReadsCB;
-    private JLabel label2;
     private JCheckBox showSoftClippedCB;
     private JCheckBox showCenterLineCB;
+    private JCheckBox filterSecondaryAlignmentsCB;
+    private JCheckBox filterSupplementaryAlignmentsCB;
+    private JCheckBox useAlleleQualityCB;
+    private JPanel panel13;
+    private JPanel panel12;
     private JLabel jLabel15;
     private JTextField mappingQualityThresholdField;
-    private JCheckBox filterSecondaryAlignmentsCB;
+    private JPanel panel11;
+    private JCheckBox samShadeMismatchedBaseCB;
+    private JTextField samMinBaseQualityField;
+    private JLabel label2;
+    private JTextField samMaxBaseQualityField;
+    private JPanel panel9;
+    private JCheckBox filterCB;
+    private JTextField filterURL;
+    private JPanel panel10;
     private JCheckBox samFlagInsertionsCB;
     private JTextField samFlagInsertionsThresholdField;
     private JLabel label31;
-    private JCheckBox filterSupplementaryAlignmentsCB;
-    private JCheckBox useAlleleQualityCB;
     private JPanel panel2;
-    private JCheckBox isizeComputeCB;
-    private JLabel jLabel17;
-    private JTextField insertSizeMinThresholdField;
-    private JLabel jLabel20;
-    private JTextField insertSizeThresholdField;
-    private JLabel jLabel30;
-    private JLabel jLabel18;
-    private JTextField insertSizeMinPercentileField;
-    private JTextField insertSizeMaxPercentileField;
     private JLabel label8;
+    private JPanel panel16;
     private JLabel label9;
+    private JLabel jLabel20;
+    private JTextField insertSizeMinThresholdField;
+    private JLabel jLabel17;
+    private JTextField insertSizeThresholdField;
+    private JPanel panel15;
+    private JCheckBox isizeComputeCB;
+    private JLabel jLabel30;
+    private JTextField insertSizeMinPercentileField;
+    private JLabel jLabel18;
+    private JTextField insertSizeMaxPercentileField;
     private JPanel panel3;
     private JCheckBox showJunctionTrackCB;
     private JCheckBox showJunctionFlankingRegionsCB;
@@ -4212,14 +4242,17 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JTextField junctionCoverageTextField;
     private JPanel expressionPane;
     private JPanel jPanel8;
-    private JRadioButton expMapToGeneCB;
+    private JPanel panel18;
     private JLabel jLabel24;
-    private JRadioButton expMapToLociCB;
     private JLabel jLabel21;
-    private JTextField probeMappingFileTextField;
-    private JLabel label22;
-    private JButton probeMappingBrowseButton;
+    private JRadioButton expMapToLociCB;
+    private JRadioButton expMapToGeneCB;
+    private JPanel panel17;
     private JCheckBox useProbeMappingCB;
+    private JLabel label22;
+    private JPanel panel14;
+    private JTextField probeMappingFileTextField;
+    private JButton probeMappingBrowseButton;
     private JPanel proxyPanel;
     private JPanel jPanel15;
     private JPanel jPanel16;
@@ -4238,14 +4271,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JLabel label27;
     private JLabel label3;
     private JButton clearProxySettingsButton;
-    private JPanel dbPanel;
-    private JLabel label17;
-    private JLabel label18;
-    private JLabel label19;
-    private JTextField dbHostField;
-    private JTextField dbPortField;
-    private JTextField dbNameField;
-    private JLabel label20;
     private JPanel ionTorrentPanel;
     private JPanel panel6;
     private JCheckBox hideFirstHP;
@@ -4284,6 +4309,15 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox antialiasingCB;
     private JLabel label5;
     private JTextField blatURLField;
+    private JPanel dbPanel;
+    private JLabel label20;
+    private JPanel panel21;
+    private JLabel label17;
+    private JLabel label19;
+    private JTextField dbNameField;
+    private JTextField dbHostField;
+    private JLabel label18;
+    private JTextField dbPortField;
     private ButtonPanel okCancelButtonPanel;
     JButton okButton;
     private JButton cancelButton;
