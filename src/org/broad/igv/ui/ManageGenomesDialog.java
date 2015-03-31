@@ -109,10 +109,10 @@ public class ManageGenomesDialog extends JDialog {
 
     private void removeSelected() {
         List<GenomeListItem> selectedValuesList = genomeList.getSelectedValuesList();
-        if (selectedValuesList.contains(currentGenomeItem)) {
-            MessageUtils.showMessage("Cannot remove currently selected genome " + currentGenomeItem.getDisplayableName());
-            return;
-        }
+//        if (selectedValuesList.contains(currentGenomeItem)) {
+//            MessageUtils.showMessage("Cannot remove currently selected genome " + currentGenomeItem.getDisplayableName());
+//            return;
+//        }
         removedValuesList.addAll(selectedValuesList);
         allListItems.removeAll(selectedValuesList);
         buildList();
