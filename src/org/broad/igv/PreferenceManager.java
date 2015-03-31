@@ -22,6 +22,7 @@ import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.AboutDialog;
+import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGVCommandBar;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.color.ColorUtilities;
@@ -1059,7 +1060,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(GWAS_SECONDARY_COLOR, "250,169,10");
         defaultValues.put(GWAS_SHOW_AXIS, "true");
 
-        defaultValues.put(DEFAULT_FONT_SIZE, "10");
+        defaultValues.put(DEFAULT_FONT_SIZE, String.valueOf(FontManager.INITIAL_FONT_SIZE));
         defaultValues.put(DEFAULT_FONT_FAMILY, "Arial");
         defaultValues.put(DEFAULT_FONT_ATTRIBUTE, String.valueOf(Font.PLAIN));
 

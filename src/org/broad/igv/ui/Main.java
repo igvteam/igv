@@ -30,6 +30,7 @@ import java.awt.event.WindowEvent;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -116,7 +117,7 @@ public class Main {
         int connectTimeout = Globals.CONNECT_TIMEOUT;
 
         try {
-            Version thisVersion =  Version.getVersion(Globals.VERSION);
+            Version thisVersion = Version.getVersion(Globals.VERSION);
             if (thisVersion == null) return;  // Can't compare
 
             Globals.CONNECT_TIMEOUT = 5000;
@@ -129,7 +130,7 @@ public class Main {
             if (skipVersion.contains(serverVersionString)) return;
 
             Version serverVersion = Version.getVersion(serverVersionString.trim());
-            if(serverVersion == null) return;
+            if (serverVersion == null) return;
 
             if (thisVersion.lessThan(serverVersion)) {
 
@@ -138,7 +139,7 @@ public class Main {
                     public void run() {
                         dlg.setVisible(true);
                         if (dlg.isSkipVersion()) {
-                            String newSkipString =   skipString + "," + serverVersionString;
+                            String newSkipString = skipString + "," + serverVersionString;
                             PreferenceManager.getInstance().put(PreferenceManager.SKIP_VERSION, newSkipString);
                         }
                     }
@@ -148,8 +149,7 @@ public class Main {
 
         } catch (Exception e) {
             log.error("Error checking version", e);
-        }
-        finally {
+        } finally {
             Globals.CONNECT_TIMEOUT = connectTimeout;
             Globals.READ_TIMEOUT = readTimeout;
         }
@@ -232,8 +232,15 @@ public class Main {
         try {
             String lnf = UIManager.getSystemLookAndFeelClassName();
             UIManager.setLookAndFeel(lnf);
+
+
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+        int fs = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
+        if (fs != FontManager.INITIAL_FONT_SIZE) {
+            FontManager.updateSystemFontSize(fs);
         }
 
         if (Globals.IS_LINUX) {

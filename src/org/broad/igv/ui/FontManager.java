@@ -25,8 +25,10 @@ package org.broad.igv.ui;
 
 import org.broad.igv.PreferenceManager;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.Hashtable;
+import java.util.Set;
 
 /**
  * @author eflakes
@@ -34,7 +36,10 @@ import java.util.Hashtable;
 public class FontManager {
 
 
+    public static int INITIAL_FONT_SIZE = 10;
+
     private static Font defaultFont;
+    private static int currentFontSize = INITIAL_FONT_SIZE;
 
     static Hashtable<String, Font> fontCache = new Hashtable();
 
@@ -78,6 +83,34 @@ public class FontManager {
         int fontSize = prefManager.getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
         int attribute = prefManager.getAsInt(PreferenceManager.DEFAULT_FONT_ATTRIBUTE);
         defaultFont = new Font(fontFamily, attribute, fontSize);
+
+        if (fontSize != currentFontSize) {
+            updateSystemFontSize(fontSize);
+        }
+
+    }
+
+
+    public static void updateSystemFontSize(int size) {
+
+        currentFontSize = size;
+
+        Set<Object> keySet = UIManager.getLookAndFeelDefaults().keySet();
+        Object[] keys = keySet.toArray(new Object[keySet.size()]);
+
+        for (Object key : keys) {
+
+            if (key != null && key.toString().toLowerCase().contains("font")) {
+
+                Font font = UIManager.getDefaults().getFont(key);
+                if (font != null) {
+                    font = font.deriveFont((float) size);
+                    UIManager.put(key, font);
+                }
+
+            }
+
+        }
 
     }
 }
