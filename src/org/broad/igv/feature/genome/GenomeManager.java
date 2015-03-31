@@ -135,6 +135,9 @@ public class GenomeManager {
                 monitor.fireProgressChange(25);
             }
 
+            // Clear Feature DB
+            FeatureDB.clearFeatures();
+
             if (genomePath.endsWith(".genome")) {
                 newGenome = loadDotGenomeFile(genomePath);
             } else if (genomePath.endsWith(".gbk") || genomePath.endsWith(".gb")) {
