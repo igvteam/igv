@@ -326,7 +326,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             // Optionally draw a border around the center base
             boolean showCenterLine = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_CENTER_LINE);
             final int bottom = rowRect.y + rowRect.height;
-            if (locScale < 5 && showCenterLine) {
+            if (showCenterLine) {
                 // Calculate center lines
                 double center = (int) (context.getReferenceFrame().getCenter() - origin);
                 int centerLeftP = (int) (center / locScale);
