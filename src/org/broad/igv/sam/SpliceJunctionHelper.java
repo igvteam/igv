@@ -75,11 +75,11 @@ public class SpliceJunctionHelper {
                 junctions = combineStrandJunctionsMaps();
         }
 
-        filterJunctionList(this.loadOptions, junctions);
+        List<SpliceJunctionFeature> filteredJunctions = filterJunctionList(this.loadOptions, junctions);
 
-        FeatureUtils.sortFeatureList(junctions);
+        FeatureUtils.sortFeatureList(filteredJunctions);
 
-        return junctions;
+        return filteredJunctions;
 
     }
 

@@ -261,8 +261,7 @@ public class SashimiPlot extends JFrame {
     private void setMinJunctionCoverage(TrackComponent<SpliceJunctionFinderTrack> trackComponent, int newMinJunctionCoverage) {
         IAlignmentDataManager dataManager = getRenderer(trackComponent.track).getDataManager();
         dataManager.setMinJunctionCoverage(newMinJunctionCoverage);
-        trackComponent.track.onAlignmentTrackEvent(
-                new AlignmentTrackEvent(this, AlignmentTrackEvent.Type.SPLICE_JUNCTION));
+        trackComponent.track.clear();
         trackComponent.repaint();
     }
 

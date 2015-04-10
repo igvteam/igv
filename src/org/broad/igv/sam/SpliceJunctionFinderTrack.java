@@ -47,7 +47,7 @@ import java.util.List;
  * @author dhmay
  *         Finds splice junctions in real time and renders them as Features
  */
-public class SpliceJunctionFinderTrack extends FeatureTrack implements AlignmentTrackEventListener {
+public class SpliceJunctionFinderTrack extends FeatureTrack {
 
     private static Logger log = Logger.getLogger(SpliceJunctionFinderTrack.class);
 
@@ -73,7 +73,6 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         prefs = PreferenceManager.getInstance();
         this.strandOption = ignoreStrand;
         // Register track
-        IGV.getInstance().addAlignmentTrackEventListener(this);
     }
 
     @Override
@@ -171,15 +170,6 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         if (parent != null) parent.repaint();
 
         return result;
-    }
-
-    public void onAlignmentTrackEvent(AlignmentTrackEvent e) {
-        AlignmentTrackEvent.Type type = e.getType();
-        switch (type) {
-            case SPLICE_JUNCTION:
-                packedFeaturesMap.clear();
-        }
-
     }
 
     // Start of Roche-Tessella modification
