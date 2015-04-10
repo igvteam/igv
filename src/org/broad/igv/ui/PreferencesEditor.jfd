@@ -2228,13 +2228,6 @@
           <void method="add"> 
            <object class="com.jformdesigner.model.FormComponent"> 
             <string>com.jformdesigner.designer.wrapper.VSpacer</string> 
-            <void method="setProperty"> 
-             <string>preferredSize</string> 
-             <object class="java.awt.Dimension"> 
-              <int>10</int> 
-              <int>20</int> 
-             </object> 
-            </void> 
             <void property="name"> 
              <string>vSpacer2</string> 
             </void> 
@@ -2330,13 +2323,6 @@
           <void method="add"> 
            <object class="com.jformdesigner.model.FormComponent"> 
             <string>com.jformdesigner.designer.wrapper.VSpacer</string> 
-            <void method="setProperty"> 
-             <string>preferredSize</string> 
-             <object class="java.awt.Dimension"> 
-              <int>10</int> 
-              <int>20</int> 
-             </object> 
-            </void> 
             <void property="name"> 
              <string>vSpacer3</string> 
             </void> 
@@ -2484,13 +2470,6 @@
           <void method="add"> 
            <object class="com.jformdesigner.model.FormComponent"> 
             <string>com.jformdesigner.designer.wrapper.VSpacer</string> 
-            <void method="setProperty"> 
-             <string>preferredSize</string> 
-             <object class="java.awt.Dimension"> 
-              <int>10</int> 
-              <int>20</int> 
-             </object> 
-            </void> 
             <void property="name"> 
              <string>vSpacer4</string> 
             </void> 
@@ -3142,7 +3121,7 @@
              <string>preferredSize</string> 
              <object class="java.awt.Dimension"> 
               <int>10</int> 
-              <int>20</int> 
+              <int>5</int> 
              </object> 
             </void> 
             <void property="name"> 
@@ -3362,7 +3341,7 @@
              <string>preferredSize</string> 
              <object class="java.awt.Dimension"> 
               <int>10</int> 
-              <int>20</int> 
+              <int>5</int> 
              </object> 
             </void> 
             <void property="name"> 
@@ -6456,8 +6435,8 @@
       <void method="setProperty"> 
        <string>size</string> 
        <object class="java.awt.Dimension"> 
-        <int>830</int> 
-        <int>840</int> 
+        <int>805</int> 
+        <int>775</int> 
        </object> 
       </void> 
       <void method="setProperty"> 

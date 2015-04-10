@@ -87,6 +87,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         }
 
         setLocationRelativeTo(parent);
+        getRootPane().setDefaultButton(okButton);
     }
 
     /**
@@ -1032,9 +1033,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
             //======== alignmentPanel ========
             {
                 alignmentPanel.setLayout(new BoxLayout(alignmentPanel, BoxLayout.Y_AXIS));
-
-                //---- vSpacer2 ----
-                vSpacer2.setPreferredSize(new Dimension(10, 20));
                 alignmentPanel.add(vSpacer2);
 
                 //======== jPanel11 ========
@@ -1069,9 +1067,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     jPanel11.add(jLabel12);
                 }
                 alignmentPanel.add(jPanel11);
-
-                //---- vSpacer3 ----
-                vSpacer3.setPreferredSize(new Dimension(10, 20));
                 alignmentPanel.add(vSpacer3);
 
                 //======== panel4 ========
@@ -1132,9 +1127,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     panel4.add(samSamplingWindowField);
                 }
                 alignmentPanel.add(panel4);
-
-                //---- vSpacer4 ----
-                vSpacer4.setPreferredSize(new Dimension(10, 20));
                 alignmentPanel.add(vSpacer4);
 
                 //======== jPanel12 ========
@@ -1429,7 +1421,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 alignmentPanel.add(jPanel12);
 
                 //---- vSpacer5 ----
-                vSpacer5.setPreferredSize(new Dimension(10, 20));
+                vSpacer5.setPreferredSize(new Dimension(10, 5));
                 alignmentPanel.add(vSpacer5);
 
                 //======== panel3 ========
@@ -1516,7 +1508,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 alignmentPanel.add(panel3);
 
                 //---- vSpacer6 ----
-                vSpacer6.setPreferredSize(new Dimension(10, 20));
+                vSpacer6.setPreferredSize(new Dimension(10, 5));
                 alignmentPanel.add(vSpacer6);
 
                 //======== panel2 ========
@@ -2624,7 +2616,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
             okCancelButtonPanel.add(cancelButton);
         }
         contentPane.add(okCancelButtonPanel, BorderLayout.SOUTH);
-        setSize(830, 840);
+        setSize(805, 775);
         setLocationRelativeTo(getOwner());
 
         //---- buttonGroup1 ----
