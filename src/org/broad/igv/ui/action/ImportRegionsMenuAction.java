@@ -67,12 +67,12 @@ public class ImportRegionsMenuAction extends MenuAction {
     private void readRegionsOfInterestFile(File roiFile) {
 
         if (roiFile == null) {
-            log.info("A blank Region of Interest import file was supplied!");
+            log.info("No regions found in file");
             return;
         }
 
         if (!roiFile.exists()) {
-            MessageUtils.showMessage("Region of Interest export file not found!");
+            MessageUtils.showMessage(roiFile.getAbsolutePath() + "  not found");
             return;
         }
         try {
