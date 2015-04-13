@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_20" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_65" class="java.beans.XMLDecoder"> 
  <object class="com.jformdesigner.model.FormModel"> 
   <void property="contentType"> 
    <string>form/swing</string> 
@@ -16,6 +16,10 @@
        <string>modal</string> 
        <boolean>true</boolean> 
       </void> 
+      <void method="setProperty"> 
+       <string>$sizePolicy</string> 
+       <int>1</int> 
+      </void> 
       <void method="add"> 
        <object class="com.jformdesigner.model.FormContainer"> 
         <string>javax.swing.JPanel</string> 
@@ -25,12 +29,10 @@
         <void method="setProperty"> 
          <string>border</string> 
          <object class="javax.swing.border.EmptyBorder"> 
-          <object class="java.awt.Insets"> 
-           <int>12</int> 
-           <int>12</int> 
-           <int>12</int> 
-           <int>12</int> 
-          </object> 
+          <int>12</int> 
+          <int>12</int> 
+          <int>12</int> 
+          <int>12</int> 
          </object> 
         </void> 
         <void property="name"> 
@@ -42,6 +44,13 @@
           <object class="com.jformdesigner.model.FormLayoutManager"> 
            <class>com.jformdesigner.runtime.NullLayout</class> 
           </object> 
+          <void method="setProperty"> 
+           <string>preferredSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>435</int> 
+            <int>600</int> 
+           </object> 
+          </void> 
           <void property="name"> 
            <string>contentPanel</string> 
           </void> 
@@ -60,17 +69,28 @@
             <class>com.jformdesigner.runtime.NullConstraints</class> 
             <void method="setProperty"> 
              <string>x</string> 
-             <int>10</int> 
+             <int>5</int> 
             </void> 
             <void method="setProperty"> 
              <string>y</string> 
-             <int>10</int> 
+             <int>15</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>height</string> 
+             <int>15</int> 
             </void> 
            </object> 
           </void> 
           <void method="add"> 
            <object class="com.jformdesigner.model.FormComponent"> 
             <string>javax.swing.JTextField</string> 
+            <void method="setProperty"> 
+             <string>preferredSize</string> 
+             <object class="java.awt.Dimension"> 
+              <int>520</int> 
+              <int>28</int> 
+             </object> 
+            </void> 
             <void property="name"> 
              <string>listNameField</string> 
             </void> 
@@ -79,15 +99,11 @@
             <class>com.jformdesigner.runtime.NullConstraints</class> 
             <void method="setProperty"> 
              <string>x</string> 
-             <int>55</int> 
+             <int>65</int> 
             </void> 
             <void method="setProperty"> 
              <string>y</string> 
-             <int>5</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>width</string> 
-             <int>380</int> 
+             <int>9</int> 
             </void> 
            </object> 
           </void> 
@@ -106,11 +122,11 @@
             <class>com.jformdesigner.runtime.NullConstraints</class> 
             <void method="setProperty"> 
              <string>x</string> 
-             <int>10</int> 
+             <int>5</int> 
             </void> 
             <void method="setProperty"> 
              <string>y</string> 
-             <int>135</int> 
+             <int>155</int> 
             </void> 
             <void method="setProperty"> 
              <string>width</string> 
@@ -144,19 +160,19 @@
             <class>com.jformdesigner.runtime.NullConstraints</class> 
             <void method="setProperty"> 
              <string>x</string> 
-             <int>10</int> 
+             <int>6</int> 
             </void> 
             <void method="setProperty"> 
              <string>y</string> 
-             <int>175</int> 
+             <int>195</int> 
             </void> 
             <void method="setProperty"> 
              <string>width</string> 
-             <int>425</int> 
+             <int>579</int> 
             </void> 
             <void method="setProperty"> 
              <string>height</string> 
-             <int>320</int> 
+             <int>415</int> 
             </void> 
            </object> 
           </void> 
@@ -182,19 +198,19 @@
             <class>com.jformdesigner.runtime.NullConstraints</class> 
             <void method="setProperty"> 
              <string>x</string> 
-             <int>10</int> 
+             <int>5</int> 
             </void> 
             <void method="setProperty"> 
              <string>y</string> 
-             <int>70</int> 
+             <int>75</int> 
             </void> 
             <void method="setProperty"> 
              <string>width</string> 
-             <int>425</int> 
+             <int>579</int> 
             </void> 
             <void method="setProperty"> 
              <string>height</string> 
-             <int>60</int> 
+             <int>70</int> 
             </void> 
            </object> 
           </void> 
@@ -213,11 +229,34 @@
             <class>com.jformdesigner.runtime.NullConstraints</class> 
             <void method="setProperty"> 
              <string>x</string> 
-             <int>10</int> 
+             <int>5</int> 
             </void> 
             <void method="setProperty"> 
              <string>y</string> 
-             <int>45</int> 
+             <int>50</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JCheckBox</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>BED format</string> 
+            </void> 
+            <void property="name"> 
+             <string>bedCB</string> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>475</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>160</int> 
             </void> 
            </object> 
           </void> 
@@ -255,12 +294,10 @@
           <void method="setProperty"> 
            <string>border</string> 
            <object class="javax.swing.border.EmptyBorder"> 
-            <object class="java.awt.Insets"> 
-             <int>12</int> 
-             <int>0</int> 
-             <int>0</int> 
-             <int>0</int> 
-            </object> 
+            <int>12</int> 
+            <int>0</int> 
+            <int>0</int> 
+            <int>0</int> 
            </object> 
           </void> 
           <void property="name"> 
@@ -362,8 +399,8 @@
       <void method="setProperty"> 
        <string>size</string> 
        <object class="java.awt.Dimension"> 
-        <int>545</int> 
-        <int>595</int> 
+        <int>650</int> 
+        <int>710</int> 
        </object> 
       </void> 
      </object> 

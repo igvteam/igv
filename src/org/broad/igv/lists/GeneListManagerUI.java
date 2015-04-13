@@ -183,7 +183,7 @@ public class GeneListManagerUI extends JDialog {
             lociJList.updateUI();
 
             editButton.setEnabled(gl.isEditable());
-            deleteButton.setEnabled(gl.isEditable());
+            //deleteButton.setEnabled(gl.isEditable());
         }
     }
 
@@ -769,7 +769,6 @@ public class GeneListManagerUI extends JDialog {
                                 //---- deleteButton ----
                                 deleteButton.setIcon(null);
                                 deleteButton.setText("Delete");
-                                deleteButton.setEnabled(false);
                                 deleteButton.addActionListener(new ActionListener() {
                                     @Override
                                     public void actionPerformed(ActionEvent e) {

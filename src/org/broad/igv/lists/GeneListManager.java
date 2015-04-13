@@ -465,7 +465,7 @@ public class GeneListManager {
 
 
         File f = importedFiles.get(listName);
-        if (f.exists()) {
+        if (f != null && f.exists()) {
             f.delete();
         }
         importedFiles.remove(listName);

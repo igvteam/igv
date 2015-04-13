@@ -29,6 +29,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -75,15 +76,35 @@ public class GeneListEditDialog extends JDialog {
         if (name == null || name.length() == 0) {
             MessageUtils.showMessage("Name is required");
             return;
+        } else if (bedCB.isSelected()) {
+            saveGeneList(name.trim(), parseBed(genesField.getText()));
         } else {
             String[] genes = parseGenes(genesField.getText());
             if (genes != null & genes.length == 0) {
                 MessageUtils.showMessage("Lists must contain at least 1 locus");
                 return;
             }
-            saveGeneList(name.trim(), genes);
+            saveGeneList(name.trim(), Arrays.asList(genes));
         }
         setVisible(false);
+    }
+
+    private java.util.List<String> parseBed(String string) {
+
+        java.util.List<String> loci = new ArrayList<String>();
+        BufferedReader br = new BufferedReader(new StringReader(string));
+        String nextLine;
+        try {
+            while ((nextLine = br.readLine()) != null) {
+                String[] tokens = nextLine.split("\\s+");
+                if (tokens.length > 2) {
+                    loci.add(tokens[0] + ":" + (Integer.parseInt(tokens[1]) + 1) + "-" + tokens[2]);
+                }
+            }
+        } catch (IOException e) {
+            MessageUtils.showErrorMessage("Error parsing bed data", e);
+        }
+        return loci;
     }
 
     private void cancelButtonActionPerformed(ActionEvent e) {
@@ -103,6 +124,7 @@ public class GeneListEditDialog extends JDialog {
         scrollPane2 = new JScrollPane();
         descriptionField = new JTextArea();
         label3 = new JLabel();
+        bedCB = new JCheckBox();
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -119,38 +141,47 @@ public class GeneListEditDialog extends JDialog {
 
             //======== contentPanel ========
             {
+                contentPanel.setPreferredSize(new Dimension(435, 600));
                 contentPanel.setLayout(null);
 
                 //---- label1 ----
                 label1.setText("Name: ");
                 contentPanel.add(label1);
-                label1.setBounds(new Rectangle(new Point(10, 10), label1.getPreferredSize()));
+                label1.setBounds(5, 15, label1.getPreferredSize().width, 15);
+
+                //---- listNameField ----
+                listNameField.setPreferredSize(new Dimension(520, 28));
                 contentPanel.add(listNameField);
-                listNameField.setBounds(55, 5, 380, listNameField.getPreferredSize().height);
+                listNameField.setBounds(new Rectangle(new Point(65, 9), listNameField.getPreferredSize()));
 
                 //---- label2 ----
                 label2.setText("<html>Enter or paste genes or loci below &nbsp;&nbsp;<i>(e.g EGFR or chr1:1000-2000)");
                 contentPanel.add(label2);
-                label2.setBounds(10, 135, 425, 37);
+                label2.setBounds(5, 155, 425, 37);
 
                 //======== scrollPane1 ========
                 {
                     scrollPane1.setViewportView(genesField);
                 }
                 contentPanel.add(scrollPane1);
-                scrollPane1.setBounds(10, 175, 425, 320);
+                scrollPane1.setBounds(6, 195, 579, 415);
 
                 //======== scrollPane2 ========
                 {
                     scrollPane2.setViewportView(descriptionField);
                 }
                 contentPanel.add(scrollPane2);
-                scrollPane2.setBounds(10, 70, 425, 60);
+                scrollPane2.setBounds(5, 75, 579, 70);
 
                 //---- label3 ----
                 label3.setText("Description: ");
                 contentPanel.add(label3);
-                label3.setBounds(new Rectangle(new Point(10, 45), label3.getPreferredSize()));
+                label3.setBounds(new Rectangle(new Point(5, 50), label3.getPreferredSize()));
+
+                //---- bedCB ----
+                bedCB.setText("BED format");
+                contentPanel.add(bedCB);
+                bedCB.setBounds(new Rectangle(new Point(475, 160), bedCB.getPreferredSize()));
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
@@ -178,6 +209,7 @@ public class GeneListEditDialog extends JDialog {
                 //---- okButton ----
                 okButton.setText("OK");
                 okButton.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         okButtonActionPerformed(e);
                     }
@@ -189,6 +221,7 @@ public class GeneListEditDialog extends JDialog {
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
                 cancelButton.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         cancelButtonActionPerformed(e);
                     }
@@ -200,7 +233,7 @@ public class GeneListEditDialog extends JDialog {
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
         contentPane.add(dialogPane, BorderLayout.CENTER);
-        pack();
+        setSize(650, 710);
         setLocationRelativeTo(getOwner());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
@@ -217,16 +250,17 @@ public class GeneListEditDialog extends JDialog {
     private JScrollPane scrollPane2;
     private JTextArea descriptionField;
     private JLabel label3;
+    private JCheckBox bedCB;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
 
-    private void saveGeneList(String name, String[] genes) {
+    private void saveGeneList(String name, java.util.List<String> genes) {
         canceled = false;
         geneList.setName(name);
-        geneList.setLoci(Arrays.asList(genes));
+        geneList.setLoci(genes);
         geneList.setDescription(descriptionField.getText().trim());
         GeneListManager.getInstance().saveGeneList(geneList);
     }
