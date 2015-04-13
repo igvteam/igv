@@ -87,7 +87,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         }
 
         setLocationRelativeTo(parent);
-        getRootPane().setDefaultButton(okButton);
+        //getRootPane().setDefaultButton(okButton);
     }
 
     /**
@@ -330,7 +330,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         //======== this ========
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         Container contentPane = getContentPane();
-        contentPane.setLayout(new BorderLayout(0, 10));
+        contentPane.setLayout(new BorderLayout());
 
         //======== tabbedPane ========
         {
@@ -723,10 +723,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     //---- missingDataExplanation8 ----
                     missingDataExplanation8.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                     missingDataExplanation8.setText("<html><i> Applies to coverage tracks computed with igvtools (.tdf files).  If selected coverage values are scaled by (1,000,000 / totalCount),  where totalCount is the total number of features or alignments.");
-                    missingDataExplanation8.setVerticalAlignment(SwingConstants.TOP);
-                    tracksPanel.add(missingDataExplanation8, new GridBagConstraints(2, 8, 6, 1, 0.0, 0.0,
+                    missingDataExplanation8.setMaximumSize(new Dimension(500, 2147483647));
+                    missingDataExplanation8.setPreferredSize(new Dimension(500, 50));
+                    tracksPanel.add(missingDataExplanation8, new GridBagConstraints(2, 8, 6, 2, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 15, 0), 0, 0));
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                     //---- expandIconCB ----
                     expandIconCB.setText("Show Expand Icon");
@@ -892,7 +893,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     //======== jPanel4 ========
                     {
-                        jPanel4.setBorder(LineBorder.createBlackLineBorder());
+                        jPanel4.setBorder(null);
                         jPanel4.setLayout(null);
 
                         //---- topBorderCB ----
@@ -1014,7 +1015,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     //======== panel1 ========
                     {
-                        panel1.setBorder(LineBorder.createBlackLineBorder());
+                        panel1.setBorder(null);
                         panel1.setLayout(null);
 
                         //---- label13 ----
@@ -1080,16 +1081,16 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         //---- samMaxWindowSizeField ----
                         samMaxWindowSizeField.setText("jTextField1");
                         samMaxWindowSizeField.setPreferredSize(new Dimension(80, 28));
-                        samMaxWindowSizeField.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                samMaxWindowSizeFieldActionPerformed(e);
-                            }
-                        });
                         samMaxWindowSizeField.addFocusListener(new FocusAdapter() {
                             @Override
                             public void focusLost(FocusEvent e) {
                                 samMaxWindowSizeFieldFocusLost(e);
+                            }
+                        });
+                        samMaxWindowSizeField.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                samMaxWindowSizeFieldActionPerformed(e);
                             }
                         });
                         jPanel11.add(samMaxWindowSizeField);
@@ -2653,6 +2654,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
         //======== okCancelButtonPanel ========
         {
+            okCancelButtonPanel.setPreferredSize(new Dimension(178, 29));
+            okCancelButtonPanel.setGroupGap(0);
 
             //---- okButton ----
             okButton.setText("OK");
@@ -2675,7 +2678,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
             okCancelButtonPanel.add(cancelButton);
         }
         contentPane.add(okCancelButtonPanel, BorderLayout.SOUTH);
-        setSize(805, 775);
+        pack();
         setLocationRelativeTo(getOwner());
 
         //---- buttonGroup1 ----
@@ -3321,7 +3324,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
 
     private void seqResolutionThresholdActionPerformed(ActionEvent e) {
-        samMaxWindowSizeFieldFocusLost(null);
+        //samMaxWindowSizeFieldFocusLost(null);
     }
 
     private void seqResolutionThresholdFocusLost(FocusEvent e) {
@@ -4080,6 +4083,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
         toolTipInitialDelayField.setText(prefMgr.get(PreferenceManager.TOOLTIP_INITIAL_DELAY));
 
         featureVisibilityWindowField.setText(prefMgr.get(PreferenceManager.DEFAULT_VISIBILITY_WINDOW));
+
+        samFlagInsertionsThresholdField.setText(prefMgr.get(PreferenceManager.SAM_LARGE_INSERTIONS_THRESHOLD));
+        samFlagInsertionsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FLAG_LARGE_INSERTIONS));
 
         updateFontField();
 

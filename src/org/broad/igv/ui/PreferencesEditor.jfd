@@ -11,10 +11,6 @@
       <string>javax.swing.JDialog</string> 
       <object class="com.jformdesigner.model.FormLayoutManager"> 
        <class>java.awt.BorderLayout</class> 
-       <void method="setProperty"> 
-        <string>vgap</string> 
-        <int>10</int> 
-       </void> 
       </object> 
       <void method="setProperty"> 
        <string>defaultCloseOperation</string> 
@@ -22,7 +18,7 @@
       </void> 
       <void method="setProperty"> 
        <string>$sizePolicy</string> 
-       <int>1</int> 
+       <int>0</int> 
       </void> 
       <void method="add"> 
        <object class="com.jformdesigner.model.FormContainer"> 
@@ -1251,8 +1247,18 @@
                <string>&lt;html&gt;&lt;i&gt; Applies to coverage tracks computed with igvtools (.tdf files).  If selected coverage values are scaled by (1,000,000 / totalCount),  where totalCount is the total number of features or alignments.</string> 
               </void> 
               <void method="setProperty"> 
-               <string>verticalAlignment</string> 
-               <int>1</int> 
+               <string>maximumSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>500</int> 
+                <int>2147483647</int> 
+               </object> 
+              </void> 
+              <void method="setProperty"> 
+               <string>preferredSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>500</int> 
+                <int>50</int> 
+               </object> 
               </void> 
               <void property="name"> 
                <string>missingDataExplanation8</string> 
@@ -1270,6 +1276,10 @@
               </void> 
               <void method="setProperty"> 
                <string>gridx</string> 
+               <int>2</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>gridheight</string> 
                <int>2</int> 
               </void> 
              </object> 
@@ -1741,11 +1751,7 @@
               </object> 
               <void method="setProperty"> 
                <string>border</string> 
-               <object class="javax.swing.border.LineBorder"> 
-                <object class="java.awt.Color" field="black"/> 
-                <int>1</int> 
-                <boolean>false</boolean> 
-               </object> 
+               <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
               </void> 
               <void property="name"> 
                <string>jPanel4</string> 
@@ -2118,11 +2124,7 @@
               </object> 
               <void method="setProperty"> 
                <string>border</string> 
-               <object class="javax.swing.border.LineBorder"> 
-                <object class="java.awt.Color" field="black"/> 
-                <int>1</int> 
-                <boolean>false</boolean> 
-               </object> 
+               <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
               </void> 
               <void property="name"> 
                <string>panel1</string> 
@@ -2339,17 +2341,17 @@
                 </void> 
                 <void method="addEvent"> 
                  <object class="com.jformdesigner.model.FormEvent"> 
-                  <string>java.awt.event.ActionListener</string> 
-                  <string>actionPerformed</string> 
-                  <string>samMaxWindowSizeFieldActionPerformed</string> 
+                  <string>java.awt.event.FocusListener</string> 
+                  <string>focusLost</string> 
+                  <string>samMaxWindowSizeFieldFocusLost</string> 
                   <boolean>true</boolean> 
                  </object> 
                 </void> 
                 <void method="addEvent"> 
                  <object class="com.jformdesigner.model.FormEvent"> 
-                  <string>java.awt.event.FocusListener</string> 
-                  <string>focusLost</string> 
-                  <string>samMaxWindowSizeFieldFocusLost</string> 
+                  <string>java.awt.event.ActionListener</string> 
+                  <string>actionPerformed</string> 
+                  <string>samMaxWindowSizeFieldActionPerformed</string> 
                   <boolean>true</boolean> 
                  </object> 
                 </void> 
@@ -6474,6 +6476,17 @@
        <object class="com.jformdesigner.model.FormContainer"> 
         <string>com.jidesoft.dialog.ButtonPanel</string> 
         <null/> 
+        <void method="setProperty"> 
+         <string>preferredSize</string> 
+         <object class="java.awt.Dimension"> 
+          <int>178</int> 
+          <int>29</int> 
+         </object> 
+        </void> 
+        <void method="setProperty"> 
+         <string>groupGap</string> 
+         <int>0</int> 
+        </void> 
         <void property="name"> 
          <string>okCancelButtonPanel</string> 
         </void> 
@@ -6542,7 +6555,7 @@
        <string>size</string> 
        <object class="java.awt.Dimension"> 
         <int>805</int> 
-        <int>775</int> 
+        <int>805</int> 
        </object> 
       </void> 
       <void method="setProperty"> 
