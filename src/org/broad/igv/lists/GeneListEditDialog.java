@@ -22,7 +22,9 @@
 
 package org.broad.igv.lists;
 
+import oracle.jdbc.proxy.annotation.Pre;
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.awt.*;
@@ -41,6 +43,7 @@ public class GeneListEditDialog extends JDialog {
 
     private GeneList geneList;
     private boolean canceled = true;
+    private boolean bedOptionChanged = false;
 
 
     public GeneListEditDialog(Dialog owner, GeneList geneList) {
@@ -62,6 +65,8 @@ public class GeneListEditDialog extends JDialog {
             }
             genesField.setText(buf.toString());
         }
+
+        bedCB.setSelected(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.GENE_LIST_BED_FORMAT));
     }
 
 
@@ -86,6 +91,11 @@ public class GeneListEditDialog extends JDialog {
             }
             saveGeneList(name.trim(), Arrays.asList(genes));
         }
+
+        if(this.bedOptionChanged) {
+            PreferenceManager.getInstance().put(PreferenceManager.GENE_LIST_BED_FORMAT, bedCB.isSelected());
+        }
+        
         setVisible(false);
     }
 
@@ -109,6 +119,10 @@ public class GeneListEditDialog extends JDialog {
 
     private void cancelButtonActionPerformed(ActionEvent e) {
         setVisible(false);
+    }
+
+    private void bedCBActionPerformed(ActionEvent e) {
+        this.bedOptionChanged = true;
     }
 
     private void initComponents() {
@@ -180,12 +194,18 @@ public class GeneListEditDialog extends JDialog {
 
                 //---- bedCB ----
                 bedCB.setText("BED format");
+                bedCB.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        bedCBActionPerformed(e);
+                    }
+                });
                 contentPanel.add(bedCB);
                 bedCB.setBounds(new Rectangle(new Point(475, 160), bedCB.getPreferredSize()));
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for (int i = 0; i < contentPanel.getComponentCount(); i++) {
+                    for(int i = 0; i < contentPanel.getComponentCount(); i++) {
                         Rectangle bounds = contentPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -203,8 +223,8 @@ public class GeneListEditDialog extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
-                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
+                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
+                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("OK");
@@ -215,8 +235,8 @@ public class GeneListEditDialog extends JDialog {
                     }
                 });
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 5), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -227,8 +247,8 @@ public class GeneListEditDialog extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }

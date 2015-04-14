@@ -247,6 +247,14 @@
             <void property="name"> 
              <string>bedCB</string> 
             </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>bedCBActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
            </object> 
            <object class="com.jformdesigner.model.FormLayoutConstraints"> 
             <class>com.jformdesigner.runtime.NullConstraints</class> 

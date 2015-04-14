@@ -261,6 +261,8 @@ public class PreferenceManager implements PropertyManager {
 
     public static final String BLAT_URL = "BLAT_URL";
 
+    public static final String GENE_LIST_BED_FORMAT = "GENE_LIST_BED_FORMAT";
+
 
     IGVPreferences preferences;
     Map<String, String> defaultValues;
@@ -1132,6 +1134,8 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(DEFAULT_VISIBILITY_WINDOW, "-1");
 
         defaultValues.put(BLAT_URL, "http://genome.cse.ucsc.edu/cgi-bin/hgBlat");
+
+        defaultValues.put(GENE_LIST_BED_FORMAT, "false");
 
     }
 
