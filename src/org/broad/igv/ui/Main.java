@@ -237,16 +237,16 @@ public class Main {
         }
 
         double resolutionScale = Toolkit.getDefaultToolkit().getScreenResolution() / Globals.DESIGN_DPI;
+        final PreferenceManager prefMgr = PreferenceManager.getInstance();
         if (resolutionScale > 1.5) {
-            final PreferenceManager prefMgr = PreferenceManager.getInstance();
-            if (prefMgr.hasExplicitValue(PreferenceManager.DEFAULT_FONT_SIZE)) {
+            if (prefMgr.getAsBoolean(PreferenceManager.SCALE_FONTS)) {
+                FontManager.scaleFontSize(resolutionScale);
+            } else if (prefMgr.hasExplicitValue(PreferenceManager.DEFAULT_FONT_SIZE)) {
                 int fs = prefMgr.getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
                 FontManager.updateSystemFontSize(fs);
             }
-            if(prefMgr.getAsBoolean(PreferenceManager.SCALE_FONTS)) {
-                FontManager.scaleFontSize(resolutionScale);
-            }
         }
+
 
         if (Globals.IS_LINUX) {
             try {
