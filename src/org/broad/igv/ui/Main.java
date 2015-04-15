@@ -30,7 +30,6 @@ import java.awt.event.WindowEvent;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Set;
 
 
 /**
@@ -233,14 +232,20 @@ public class Main {
             String lnf = UIManager.getSystemLookAndFeelClassName();
             UIManager.setLookAndFeel(lnf);
 
-
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        int fs = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
-        if (fs != FontManager.INITIAL_FONT_SIZE) {
-            FontManager.updateSystemFontSize(fs);
+        double resolutionScale = Toolkit.getDefaultToolkit().getScreenResolution() / Globals.DESIGN_DPI;
+        if (resolutionScale > 1.5) {
+            final PreferenceManager prefMgr = PreferenceManager.getInstance();
+            if (prefMgr.hasExplicitValue(PreferenceManager.DEFAULT_FONT_SIZE)) {
+                int fs = prefMgr.getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
+                FontManager.updateSystemFontSize(fs);
+            }
+            if(prefMgr.getAsBoolean(PreferenceManager.SCALE_FONTS)) {
+                FontManager.scaleFontSize(resolutionScale);
+            }
         }
 
         if (Globals.IS_LINUX) {

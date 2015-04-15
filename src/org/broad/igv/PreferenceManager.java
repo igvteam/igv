@@ -227,6 +227,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String DEFAULT_FONT_FAMILY = "DEFAULT_FONT_FAMILY";
     public static final String DEFAULT_FONT_ATTRIBUTE = "DEFAULT_FONT_ATTRIBUTE";
     public static final String ENABLE_ANTIALISING = "ENABLE_ANTIALIASING";
+    public static final String SCALE_FONTS = "SCALE_FONTS";
 
     public static final String NAME_PANEL_WIDTH = "NAME_PANEL_WIDTH";
     public static final String BACKGROUND_COLOR = "BACKGROUND_COLOR";
@@ -301,6 +302,10 @@ public class PreferenceManager implements PropertyManager {
 
     public String get(String key) {
         return get(key, defaultValues.get(key));
+    }
+
+    public boolean hasExplicitValue(String key) {
+        return preferences.userPreferences.containsKey(key);
     }
 
     /**
@@ -1062,9 +1067,10 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(GWAS_SECONDARY_COLOR, "250,169,10");
         defaultValues.put(GWAS_SHOW_AXIS, "true");
 
-        defaultValues.put(DEFAULT_FONT_SIZE, String.valueOf(FontManager.INITIAL_FONT_SIZE));
+        defaultValues.put(DEFAULT_FONT_SIZE, "10");
         defaultValues.put(DEFAULT_FONT_FAMILY, "Arial");
         defaultValues.put(DEFAULT_FONT_ATTRIBUTE, String.valueOf(Font.PLAIN));
+        defaultValues.put(SCALE_FONTS, "true");
 
         boolean isMac = System.getProperty("os.name").toLowerCase().startsWith("mac");
         defaultValues.put(ENABLE_ANTIALISING, String.valueOf(isMac));

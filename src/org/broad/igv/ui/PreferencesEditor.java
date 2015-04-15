@@ -10,8 +10,6 @@
  */
 package org.broad.igv.ui;
 
-import java.beans.*;
-
 import com.jidesoft.dialog.ButtonPanel;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.PreferenceManager;
@@ -34,7 +32,6 @@ import org.broad.igv.util.collections.CollUtils;
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.*;
@@ -70,6 +67,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private File newIGVDirectory;
     private boolean updateCoverageTrack = false;
 
+
+    private void scaleFontsCBActionPerformed(ActionEvent e) {
+        PreferenceManager.getInstance().put(PreferenceManager.SCALE_FONTS, scaleFontsCB.isSelected());
+    }
 
     public PreferencesEditor(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -115,17 +116,20 @@ public class PreferencesEditor extends javax.swing.JDialog {
         label6 = new JLabel();
         seqResolutionThreshold = new JTextField();
         label10 = new JLabel();
-        defaultFontField = new JTextField();
         fontChangeButton = new JButton();
         showRegionBoundariesCB = new JCheckBox();
         label7 = new JLabel();
         backgroundColorPanel = new JPanel();
-        resetBackgroundButton = new JButton();
         showMissingDataCB = new JCheckBox();
         label32 = new JLabel();
         textField1 = new JLabel();
         featureVisibilityWindowField = new JTextField();
         zoomToFeatureExplanation3 = new JLabel();
+        defaultFontField = new JTextField();
+        resetFontButton = new JButton();
+        scaleFontsCB = new JCheckBox();
+        label8 = new JLabel();
+        resetBackgroundButton = new JButton();
         panel23 = new JScrollPane();
         tracksPanel = new JPanel();
         vSpacer1 = new JPanel(null);
@@ -350,17 +354,17 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     {
                         jPanel10.setBorder(null);
                         jPanel10.setLayout(new GridBagLayout());
-                        ((GridBagLayout)jPanel10.getLayout()).columnWidths = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0};
-                        ((GridBagLayout)jPanel10.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-                        ((GridBagLayout)jPanel10.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
-                        ((GridBagLayout)jPanel10.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                        ((GridBagLayout)jPanel10.getLayout()).columnWidths = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                        ((GridBagLayout)jPanel10.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                        ((GridBagLayout)jPanel10.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                        ((GridBagLayout)jPanel10.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
                         //---- missingDataExplanation ----
                         missingDataExplanation.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                         missingDataExplanation.setText("(NAME, DATA_TYPE, and DATA_FILE).");
                         jPanel10.add(missingDataExplanation, new GridBagConstraints(3, 4, 5, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 0), 0, 0));
+                            new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- showDefaultTrackAttributesCB ----
                         showDefaultTrackAttributesCB.setText("Show default track attributes");
@@ -443,7 +447,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         zoomToFeatureExplanation2.setVerticalAlignment(SwingConstants.TOP);
                         jPanel10.add(zoomToFeatureExplanation2, new GridBagConstraints(7, 7, 1, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                            new Insets(0, 0, 15, 0), 0, 0));
+                            new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- label6 ----
                         label6.setText("Sequence resolution threshold (bp/pixel):");
@@ -469,15 +473,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- label10 ----
-                        label10.setText("Default font: ");
+                        label10.setText("Default  font: ");
                         label10.setLabelFor(defaultFontField);
                         jPanel10.add(label10, new GridBagConstraints(0, 10, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
-
-                        //---- defaultFontField ----
-                        defaultFontField.setEditable(false);
-                        jPanel10.add(defaultFontField, new GridBagConstraints(1, 10, 5, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 5), 0, 0));
 
@@ -507,7 +505,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         //---- label7 ----
                         label7.setText("Background color click to change): ");
-                        jPanel10.add(label7, new GridBagConstraints(0, 11, 3, 1, 0.0, 0.0,
+                        jPanel10.add(label7, new GridBagConstraints(0, 12, 3, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 5), 0, 0));
 
@@ -523,19 +521,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             });
                             backgroundColorPanel.setLayout(null);
                         }
-                        jPanel10.add(backgroundColorPanel, new GridBagConstraints(3, 11, 2, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
-
-                        //---- resetBackgroundButton ----
-                        resetBackgroundButton.setText("Reset to default");
-                        resetBackgroundButton.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                resetBackgroundButtonActionPerformed(e);
-                            }
-                        });
-                        jPanel10.add(resetBackgroundButton, new GridBagConstraints(5, 11, 2, 1, 0.0, 0.0,
+                        jPanel10.add(backgroundColorPanel, new GridBagConstraints(3, 12, 2, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 5), 0, 0));
 
@@ -549,14 +535,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel10.add(showMissingDataCB, new GridBagConstraints(0, 1, 2, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- label32 ----
                         label32.setText("<html><i>Distinguish regions with value of zero from regions with  no data.  ");
                         jPanel10.add(label32, new GridBagConstraints(2, 1, 6, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 0), 0, 0));
+                            new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- textField1 ----
                         textField1.setText("Default visibility window (kilobases):");
@@ -580,16 +566,64 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel10.add(featureVisibilityWindowField, new GridBagConstraints(4, 8, 3, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- zoomToFeatureExplanation3 ----
                         zoomToFeatureExplanation3.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                         zoomToFeatureExplanation3.setText("<html><i>&lt; 0 disables visibility window.</b>");
                         zoomToFeatureExplanation3.setVerticalAlignment(SwingConstants.TOP);
                         jPanel10.add(zoomToFeatureExplanation3, new GridBagConstraints(7, 8, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                                new Insets(0, 0, 15, 5), 0, 0));
+
+                        //---- defaultFontField ----
+                        defaultFontField.setEditable(false);
+                        jPanel10.add(defaultFontField, new GridBagConstraints(1, 10, 4, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 5), 0, 0));
+
+                        //---- resetFontButton ----
+                        resetFontButton.setText("Reset to default");
+                        resetFontButton.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                resetFontButtonActionPerformed(e);
+                            }
+                        });
+                        jPanel10.add(resetFontButton, new GridBagConstraints(7, 10, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 5), 0, 0));
+
+                        //---- scaleFontsCB ----
+                        scaleFontsCB.setText("Scale fonts");
+                        scaleFontsCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                scaleFontsCBActionPerformed(e);
+                            }
+                        });
+                        jPanel10.add(scaleFontsCB, new GridBagConstraints(0, 11, 6, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 5), 0, 0));
+
+                        //---- label8 ----
+                        label8.setText("<html><i>Scale fonts for high resolution screens.  Requires restart.");
+                        jPanel10.add(label8, new GridBagConstraints(2, 11, 7, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 0), 0, 0));
+
+                        //---- resetBackgroundButton ----
+                        resetBackgroundButton.setText("Reset to default");
+                        resetBackgroundButton.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                resetBackgroundButtonActionPerformed(e);
+                            }
+                        });
+                        jPanel10.add(resetBackgroundButton, new GridBagConstraints(7, 12, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 5), 0, 0));
                     }
                     generalPanel.add(jPanel10, BorderLayout.CENTER);
                 }
@@ -2727,7 +2761,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
             IGV.getInstance().getMainPanel().setBackground(backgroundColor);
             backgroundColorPanel.setBackground(backgroundColor);
         }
+    }
 
+    private void resetFontButtonActionPerformed(ActionEvent e) {
+        FontManager.resetDefaultFont();
+        updateFontField();
     }
 
     private void binSizeTextActionPerformed(ActionEvent e) {
@@ -3927,6 +3965,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         showOrphanedMutationsCB.setEnabled(overlayTrackCB.isSelected());
         seqResolutionThreshold.setText(prefMgr.get(PreferenceManager.MAX_SEQUENCE_RESOLUTION));
 
+        scaleFontsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SCALE_FONTS));
 
         geneListFlankingField.setText(prefMgr.get(PreferenceManager.FLANKING_REGION));
 
@@ -4209,17 +4248,20 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JLabel label6;
     private JTextField seqResolutionThreshold;
     private JLabel label10;
-    private JTextField defaultFontField;
     private JButton fontChangeButton;
     private JCheckBox showRegionBoundariesCB;
     private JLabel label7;
     private JPanel backgroundColorPanel;
-    private JButton resetBackgroundButton;
     private JCheckBox showMissingDataCB;
     private JLabel label32;
     private JLabel textField1;
     private JTextField featureVisibilityWindowField;
     private JLabel zoomToFeatureExplanation3;
+    private JTextField defaultFontField;
+    private JButton resetFontButton;
+    private JCheckBox scaleFontsCB;
+    private JLabel label8;
+    private JButton resetBackgroundButton;
     private JScrollPane panel23;
     private JPanel tracksPanel;
     private JPanel vSpacer1;

@@ -23,6 +23,7 @@
 
 package org.broad.igv.ui;
 
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 
 import javax.swing.*;
@@ -36,12 +37,9 @@ import java.util.Set;
 public class FontManager {
 
 
-    public static int INITIAL_FONT_SIZE = 10;
-
     private static Font defaultFont;
-    private static int currentFontSize = INITIAL_FONT_SIZE;
-
     static Hashtable<String, Font> fontCache = new Hashtable();
+    private static double scaleFactor = 1.0;
 
 
     public static Font getDefaultFont() {
@@ -51,8 +49,12 @@ public class FontManager {
         return defaultFont;
     }
 
-    static public Font getFont(int size) {
+    static public Font getFont(int sz) {
+
         final PreferenceManager prefManager = PreferenceManager.getInstance();
+
+        int size = (int) (scaleFactor * sz);
+
         String fontFamily = prefManager.get(PreferenceManager.DEFAULT_FONT_FAMILY);
         int attribute = prefManager.getAsInt(PreferenceManager.DEFAULT_FONT_ATTRIBUTE);
         String key = fontFamily + "_" + attribute + "_" + size;
@@ -64,7 +66,10 @@ public class FontManager {
         return font;
     }
 
-    static public Font getFont(int attribute, int size) {
+    static public Font getFont(int attribute, int sz) {
+
+        int size = (int) (scaleFactor * sz);
+
         final PreferenceManager prefManager = PreferenceManager.getInstance();
         String fontFamily = prefManager.get(PreferenceManager.DEFAULT_FONT_FAMILY);
         String key = fontFamily + "_" + attribute + "_" + size;
@@ -75,7 +80,6 @@ public class FontManager {
         }
         return font;
     }
-
 
     public static void updateDefaultFont() {
         final PreferenceManager prefManager = PreferenceManager.getInstance();
@@ -83,33 +87,48 @@ public class FontManager {
         int fontSize = prefManager.getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
         int attribute = prefManager.getAsInt(PreferenceManager.DEFAULT_FONT_ATTRIBUTE);
         defaultFont = new Font(fontFamily, attribute, fontSize);
+    }
 
-        if (fontSize != currentFontSize) {
-            updateSystemFontSize(fontSize);
-        }
-
+    public static void resetDefaultFont() {
+        final PreferenceManager prefMgr = PreferenceManager.getInstance();
+        prefMgr.remove(PreferenceManager.DEFAULT_FONT_SIZE);
+        prefMgr.remove(PreferenceManager.DEFAULT_FONT_FAMILY);
+        prefMgr.remove(PreferenceManager.DEFAULT_FONT_ATTRIBUTE);
+        updateDefaultFont();
     }
 
 
     public static void updateSystemFontSize(int size) {
 
-        currentFontSize = size;
-
         Set<Object> keySet = UIManager.getLookAndFeelDefaults().keySet();
         Object[] keys = keySet.toArray(new Object[keySet.size()]);
 
         for (Object key : keys) {
-
             if (key != null && key.toString().toLowerCase().contains("font")) {
-
                 Font font = UIManager.getDefaults().getFont(key);
                 if (font != null) {
                     font = font.deriveFont((float) size);
                     UIManager.put(key, font);
                 }
-
             }
+        }
+    }
 
+    public static void scaleFontSize(double sf) {
+
+        scaleFactor = sf;
+
+        Set<Object> keySet = UIManager.getLookAndFeelDefaults().keySet();
+        Object[] keys = keySet.toArray(new Object[keySet.size()]);
+        for (Object key : keys) {
+            if (key != null && key.toString().toLowerCase().contains("font")) {
+                Font font = UIManager.getDefaults().getFont(key);
+                int newSize = (int) (scaleFactor * font.getSize());
+                if (font != null) {
+                    font = font.deriveFont((float) newSize);
+                    UIManager.put(key, font);
+                }
+            }
         }
 
     }

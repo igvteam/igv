@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
  */
 public class Globals {
 
+    public static final int DESIGN_DPI = 96;
     private static Logger log = Logger.getLogger(Globals.class);
 
 

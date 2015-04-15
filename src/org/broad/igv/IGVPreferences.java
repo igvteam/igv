@@ -148,7 +148,6 @@ public class IGVPreferences {
                 }
             }
 
-
         } else {
             BufferedReader reader = null;
             try {
@@ -190,7 +189,6 @@ public class IGVPreferences {
                 }
                 userPreferences.put(key, value);
             }
-
         }
     }
 
