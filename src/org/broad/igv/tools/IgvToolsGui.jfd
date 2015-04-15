@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_20" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_65" class="java.beans.XMLDecoder"> 
  <object class="com.jformdesigner.model.FormModel"> 
   <void property="contentType"> 
    <string>form/swing</string> 
@@ -33,10 +33,6 @@
          <null/> 
         </object> 
         <string></string> 
-        <int>4</int> 
-        <int>0</int> 
-        <null/> 
-        <null/> 
        </object> 
       </void> 
       <void property="name"> 
@@ -492,7 +488,7 @@
          </void> 
          <void method="setProperty"> 
           <string>$rowSpecs</string> 
-          <string>0, 0, 0, 0, 0</string> 
+          <string>0, 0, 0, 0, 0, 0, 0</string> 
          </void> 
         </object> 
         <void method="setProperty"> 
@@ -512,11 +508,9 @@
          <string>border</string> 
          <object class="javax.swing.border.TitledBorder"> 
           <null/> 
-          <string>Tile and Count Options</string> 
+          <string>TDF and Count options</string> 
           <int>4</int> 
           <int>2</int> 
-          <null/> 
-          <null/> 
          </object> 
         </void> 
         <void property="name"> 
@@ -934,6 +928,79 @@
           </void> 
          </object> 
         </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Extension Factor</string> 
+          </void> 
+          <void method="setProperty"> 
+           <string>toolTipText</string> 
+           <string>Extend read by this amount.  Set to average fragment size of library</string> 
+          </void> 
+          <void property="name"> 
+           <string>extFactorLabel</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
+          <void method="setProperty"> 
+           <string>gridx</string> 
+           <int>1</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>gridy</string> 
+           <int>5</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JTextField</string> 
+          <void property="name"> 
+           <string>extFactorField</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
+          <void method="setProperty"> 
+           <string>gridx</string> 
+           <int>2</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>gridy</string> 
+           <int>5</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JCheckBox</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Count as Pairs</string> 
+          </void> 
+          <void method="setProperty"> 
+           <string>toolTipText</string> 
+           <string>Count area between proper pairs as covered.</string> 
+          </void> 
+          <void property="name"> 
+           <string>pairsCB</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
+          <void method="setProperty"> 
+           <string>gridx</string> 
+           <int>1</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>gridy</string> 
+           <int>6</int> 
+          </void> 
+         </object> 
+        </void> 
        </object> 
        <object class="com.jformdesigner.model.FormLayoutConstraints"> 
         <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
@@ -976,8 +1043,6 @@
           <string>Sort Options</string> 
           <int>4</int> 
           <int>2</int> 
-          <null/> 
-          <null/> 
          </object> 
         </void> 
         <void property="name"> 
@@ -1273,18 +1338,14 @@
          <string>border</string> 
          <object class="javax.swing.border.TitledBorder"> 
           <object class="javax.swing.border.EmptyBorder"> 
-           <object class="java.awt.Insets"> 
-            <int>0</int> 
-            <int>0</int> 
-            <int>0</int> 
-            <int>0</int> 
-           </object> 
+           <int>0</int> 
+           <int>0</int> 
+           <int>0</int> 
+           <int>0</int> 
           </object> 
           <string>Messages</string> 
           <int>4</int> 
           <int>2</int> 
-          <null/> 
-          <null/> 
          </object> 
         </void> 
         <void property="name"> 
