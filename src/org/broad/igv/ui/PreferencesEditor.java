@@ -535,8 +535,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel10.add(showMissingDataCB, new GridBagConstraints(0, 1, 2, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 15, 5), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- label32 ----
                         label32.setText("<html><i>Distinguish regions with value of zero from regions with  no data.  ");
@@ -566,16 +566,16 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel10.add(featureVisibilityWindowField, new GridBagConstraints(4, 8, 3, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 15, 5), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- zoomToFeatureExplanation3 ----
                         zoomToFeatureExplanation3.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                         zoomToFeatureExplanation3.setText("<html><i>&lt; 0 disables visibility window.</b>");
                         zoomToFeatureExplanation3.setVerticalAlignment(SwingConstants.TOP);
                         jPanel10.add(zoomToFeatureExplanation3, new GridBagConstraints(7, 8, 1, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                                new Insets(0, 0, 15, 5), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                            new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- defaultFontField ----
                         defaultFontField.setEditable(false);
