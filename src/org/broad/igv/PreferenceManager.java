@@ -1070,7 +1070,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(DEFAULT_FONT_SIZE, "10");
         defaultValues.put(DEFAULT_FONT_FAMILY, "Arial");
         defaultValues.put(DEFAULT_FONT_ATTRIBUTE, String.valueOf(Font.PLAIN));
-        defaultValues.put(SCALE_FONTS, "true");
+        defaultValues.put(SCALE_FONTS, "false");
 
         boolean isMac = System.getProperty("os.name").toLowerCase().startsWith("mac");
         defaultValues.put(ENABLE_ANTIALISING, String.valueOf(isMac));
