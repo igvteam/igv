@@ -123,8 +123,8 @@ public class FontManager {
         for (Object key : keys) {
             if (key != null && key.toString().toLowerCase().contains("font")) {
                 Font font = UIManager.getDefaults().getFont(key);
-                int newSize = (int) (scaleFactor * font.getSize());
                 if (font != null) {
+                    int newSize = (int) (scaleFactor * font.getSize());
                     font = font.deriveFont((float) newSize);
                     UIManager.put(key, font);
                 }
