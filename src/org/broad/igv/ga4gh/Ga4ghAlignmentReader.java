@@ -54,7 +54,7 @@ public class Ga4ghAlignmentReader implements AlignmentReader<Alignment> {
         if (sequenceNames == null) {
             try {
                 loadMetadata();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 log.error("Error fetching metadata", e);
             }
         }
@@ -99,15 +99,16 @@ public class Ga4ghAlignmentReader implements AlignmentReader<Alignment> {
         JsonParser parser = new JsonParser();
         JsonObject root = parser.parse(result).getAsJsonObject();
 
-        String referenceSetId = root.getAsJsonPrimitive("referenceSetId").getAsString();
+        if (root.has("referenceSetId")) {
+            String referenceSetId = root.getAsJsonPrimitive("referenceSetId").getAsString();
 
-        List<JsonObject> refererences = Ga4ghAPIHelper.searchReferences(provider, referenceSetId, 1000);
+            List<JsonObject> refererences = Ga4ghAPIHelper.searchReferences(provider, referenceSetId, 1000);
 
-        sequenceNames = new ArrayList();
+            sequenceNames = new ArrayList();
 
-        for (JsonObject refObject : refererences) {
-            sequenceNames.add(refObject.getAsJsonPrimitive("name").getAsString());
-
+            for (JsonObject refObject : refererences) {
+                sequenceNames.add(refObject.getAsJsonPrimitive("name").getAsString());
+            }
         }
     }
 

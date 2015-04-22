@@ -273,20 +273,24 @@ public class Ga4ghAPIHelper {
             br.close();
 
             return sb.toString();
-        } catch (IOException e) {
+        } catch (Exception e) {
 
-            int rs = connection.getResponseCode();
-            if(rs == 404) {
-                MessageUtils.showErrorMessage("The requested resource was not found<br>" + url, e);
-            }
-            else if (rs == 401 || rs == 403) {
-                displayAuthorizationDialog(url.getHost());
-            } else {
-                MessageUtils.showErrorMessage("Error accessing resource", e);
-                e.printStackTrace();
-            }
+            handleHttpException(url, connection, e);
 
             return null;
+        }
+    }
+
+    static void handleHttpException(URL url, HttpURLConnection connection, Exception e) throws IOException {
+        int rs = connection.getResponseCode();
+        if(rs == 404) {
+            MessageUtils.showErrorMessage("The requested resource was not found<br>" + url, e);
+        }
+        else if (rs == 401 || rs == 403) {
+            displayAuthorizationDialog(url.getHost());
+        } else {
+            MessageUtils.showErrorMessage("Error accessing resource", e);
+            log.error("Error accessing resource", e);
         }
     }
 

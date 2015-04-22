@@ -402,7 +402,8 @@ public class IGVMenuBar extends JMenuBar {
             menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         }
 
-        if (PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_API_KEY) != null) {
+        if (PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_API_KEY) != null ||
+                PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_GOOGLE_MENU)) {
             menuAction = new BrowseGa4ghAction("Load from Ga4gh...", KeyEvent.VK_G, igv);
             menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         }

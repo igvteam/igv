@@ -16,6 +16,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import htsjdk.samtools.Cigar;
 import htsjdk.samtools.TextCigarCodec;
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.ReadMate;
@@ -32,6 +33,8 @@ import java.util.Set;
  * id
  */
 public class Ga4ghAlignment extends SAMAlignment {
+
+    private static Logger log = Logger.getLogger(Ga4ghAlignment.class);
 
     private final Map<String, String> tags;
     protected int alignmentStart;
@@ -56,12 +59,12 @@ public class Ga4ghAlignment extends SAMAlignment {
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
         this.readName = json.get("fragmentName").getAsString();
-        this.properPlacement = json.has("properPlacement") ? json.get("properPlacement").getAsBoolean() : true;
-        this.duplicateFragment = json.has("duplicateFragment") ? json.get("duplicateFragment").getAsBoolean() : false;
-        this.numberReads = json.has("numberReads") ? json.get("numberReads").getAsInt() : 1;
-        this.inferredInsertSize = json.has("fragmentLength") ? json.get("fragmentLength").getAsInt() : 0;
-        this.readNumber = json.has("readNumber") ? json.get("readNumber").getAsInt() : 0;
-        this.failedVendorQualityChecks = json.has("failedVendorQualityChecks") ? json.get("failedVendorQualityChecks").getAsBoolean() : false;
+        this.properPlacement = hasNonNullValue(json, "properPlacement") ? json.get("properPlacement").getAsBoolean() : true;
+        this.duplicateFragment = hasNonNullValue(json, "duplicateFragment") ? json.get("duplicateFragment").getAsBoolean() : false;
+        this.numberReads = hasNonNullValue(json, "numberReads") ? json.get("numberReads").getAsInt() : 1;
+        this.inferredInsertSize = hasNonNullValue(json, "fragmentLength") ? json.get("fragmentLength").getAsInt() : 0;
+        this.readNumber = hasNonNullValue(json, "readNumber") ? json.get("readNumber").getAsInt() : 0;
+        this.failedVendorQualityChecks = hasNonNullValue(json, "failedVendorQualityChecks") ? json.get("failedVendorQualityChecks").getAsBoolean() : false;
 
         JsonObject alignmentObject = json.getAsJsonObject("alignment");
         if (alignmentObject == null) {
@@ -73,10 +76,9 @@ public class Ga4ghAlignment extends SAMAlignment {
             String refName = positionObject.get("referenceName").getAsString();
             this.setChr(genome == null ? refName : genome.getChromosomeAlias(refName));
 
-
             this.alignmentStart = positionObject.get("position").getAsInt();
-            this.mappingQuality = alignmentObject.has("mappingQuality") ? alignmentObject.get("mappingQuality").getAsInt() : 256;
-            this.negativeStrand = positionObject.get("reverseStrand").getAsBoolean();
+            this.mappingQuality = hasNonNullValue(alignmentObject, "mappingQuality") ? alignmentObject.get("mappingQuality").getAsInt() : 256;
+            this.negativeStrand = hasNonNullValue(positionObject, "reverseStrand") && positionObject.get("reverseStrand").getAsBoolean();
 
             this.cigarString = generateCigarString(alignmentObject.getAsJsonArray("cigar"));
             this.start = this.alignmentStart;   // might be modified later for soft clipping
@@ -85,10 +87,10 @@ public class Ga4ghAlignment extends SAMAlignment {
 
         }
 
-        this.secondaryAlignment = json.has("secondaryAlignment") ? json.get("secondaryAlignment").getAsBoolean() : false;
-        this.supplementaryAlignment = json.has("supplementaryAlignment") ? json.get("supplementaryAlignment").getAsBoolean() : false;
-        this.readSequence = json.has("alignedSequence") ? json.get("alignedSequence").getAsString() : null;
-        byte[] baseQualities = json.has("alignedQuality") ? generateBaseQualities(json.getAsJsonArray("alignedQuality")) : null;
+        this.secondaryAlignment = hasNonNullValue(json, "secondaryAlignment") ? json.get("secondaryAlignment").getAsBoolean() : false;
+        this.supplementaryAlignment = hasNonNullValue(json, "supplementaryAlignment") ? json.get("supplementaryAlignment").getAsBoolean() : false;
+        this.readSequence = hasNonNullValue(json, "alignedSequence") ? json.get("alignedSequence").getAsString() : null;
+        byte[] baseQualities = hasNonNullValue(json, "alignedQuality") ? generateBaseQualities(json.getAsJsonArray("alignedQuality")) : null;
 
         JsonObject mateObject = json.getAsJsonObject("nextMatePosition");
         if (mateObject == null) {
@@ -97,7 +99,7 @@ public class Ga4ghAlignment extends SAMAlignment {
             String mateReferenceName = mateObject.get("referenceName").getAsString();
             String mateChr = genome == null ? mateReferenceName : genome.getChromosomeAlias(mateReferenceName);
             int matePosition = Integer.parseInt(mateObject.get("position").getAsString());
-            boolean mateNegStrand = mateObject.get("reverseStrand").getAsBoolean();
+            boolean mateNegStrand = hasNonNullValue(json, "reverseStrand") && mateObject.get("reverseStrand").getAsBoolean();
             this.setMate(new ReadMate(mateChr,
                     matePosition,
                     mateNegStrand,
@@ -111,6 +113,10 @@ public class Ga4ghAlignment extends SAMAlignment {
         setPairOrientation();
         setPairStrands();
         createAlignmentBlocks(this.cigarString, this.readSequence.getBytes(), baseQualities, null, null, -1);
+    }
+
+    public static boolean hasNonNullValue(JsonObject json, String name) {
+        return json.has(name) && !json.get(name).isJsonNull();
     }
 
     private Map<String, String> generateTags(JsonObject infoObject) {
