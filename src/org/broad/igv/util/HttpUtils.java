@@ -213,7 +213,7 @@ public class HttpUtils {
 
         boolean rangeRequestedNotReceived = isExpectedRangeMissing(conn, requestProperties);
         if (rangeRequestedNotReceived) {
-            String msg = "Byte range requested, but no Content-Range header in response";
+            String msg = "Warning: range requested, but no Content-Range header in response";
             log.error(msg);
 //            if(Globals.isTesting()){
 //                throw new IOException(msg);

@@ -118,9 +118,9 @@ public class TDFReader {
         System.arraycopy(buffer, 0, magicBytes, 0, 4);
         String magicString = new String(magicBytes);
 
-        if (!(magicString.startsWith("TDF") || !magicString.startsWith("IBF"))) {
+        if (!(magicString.startsWith("TDF") || magicString.startsWith("IBF"))) {
             String msg = "Error reading header: bad magic number.";
-            //    throw new DataLoadException(msg, locator.getPath());
+            throw new DataLoadException(msg, locator.getPath());
         }
 
         version = byteBuffer.getInt();

@@ -906,9 +906,13 @@ public class TrackLoader {
                 if (covPath != null) {
                     if (FileUtils.resourceExists(covPath)) {
                         log.debug("Loading TDF for coverage: " + covPath);
-                        TDFReader reader = TDFReader.getReader(covPath);
-                        TDFDataSource ds = new TDFDataSource(reader, 0, alignmentTrack.getName() + " coverage", genome);
-                        covTrack.setDataSource(ds);
+                        try {
+                            TDFReader reader = TDFReader.getReader(covPath);
+                            TDFDataSource ds = new TDFDataSource(reader, 0, alignmentTrack.getName() + " coverage", genome);
+                            covTrack.setDataSource(ds);
+                        } catch (Exception e) {
+                            log.error("Error loading coverage TDF file", e);
+                        }
                     }
 
                 }
