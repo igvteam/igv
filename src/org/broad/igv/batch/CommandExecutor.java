@@ -446,6 +446,7 @@ public class CommandExecutor {
             names = nameString != null ? StringUtils.breakQuotedString(nameString.replaceAll("%2C", ","), ',') : null;
             indexFiles = indexString != null ? StringUtils.breakQuotedString(indexString.replaceAll("%2C", ","), ',') : null;
             coverageFiles = coverageString != null ? StringUtils.breakQuotedString(coverageString.replaceAll("%2C", ","), ',') : null;
+            formats = formatString != null ? StringUtils.breakQuotedString(formatString.replaceAll("%2C", ","), ',') : null;
         }
 
         if (names != null && names.size() != files.size()) {
@@ -527,7 +528,9 @@ public class CommandExecutor {
                     rl.setCoverage(coverageFiles.get(fi));
                 }
                 if(formats != null) {
-                    rl.setType(formats.get(fi));
+                    String format = formats.get(fi);
+                    if(!format.startsWith(".")) format = "." + format;
+                    rl.setType(format);
                 }
                 if (params != null) {
                     String trackLine = createTrackLine(params);
