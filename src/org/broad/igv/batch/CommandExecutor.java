@@ -126,7 +126,7 @@ public class CommandExecutor {
                     String filename = param1;
                     result = createSnapshot(filename, param2);
                 } else if ((cmd.equalsIgnoreCase("loadfile") || cmd.equalsIgnoreCase("load")) && param1 != null) {
-                    result = load(param1, param2, param3);
+                    result = load(param1, param2, param3, param4);
                 } else if (cmd.equalsIgnoreCase("genome") && args.size() > 1) {
                     result = genome(param1);
                 } else if (cmd.equalsIgnoreCase("new") || cmd.equalsIgnoreCase("reset") || cmd.equalsIgnoreCase("clear")) {
@@ -365,7 +365,7 @@ public class CommandExecutor {
      * @return
      * @throws IOException
      */
-    private String load(String fileString, String param2, String param3) throws IOException {
+    private String load(String fileString, String param2, String param3, String param4) throws IOException {
 
         // Default for merge is "true" for session files,  "false" otherwise
         String tmpFile = StringUtils.stripQuotes(fileString);
@@ -375,6 +375,7 @@ public class CommandExecutor {
         String name = null;
         String index = null;
         String coverage = null;
+        String format = null;
         for (String param : Arrays.asList(param2, param3)) {
             if (param != null && param.startsWith("name=")) {
                 name = param.substring(5);
@@ -385,22 +386,25 @@ public class CommandExecutor {
                 index = param.substring(6);
             } else if (param != null && param.startsWith("coverage=")) {
                 coverage = param.substring(9);
+            } else if(param != null && param.startsWith("format=")) {
+                format = param.substring(7);
             }
         }
         // Locus is not specified from port commands
         String locus = null;
         Map<String, String> params = null;
-        return loadFiles(fileString, index, coverage, name, locus, merge, params);
+        return loadFiles(fileString, index, coverage, name, format, locus, merge, params);
     }
 
     String loadFiles(final String fileString,
                      final String indexString,
                      final String coverageString,
                      final String nameString,
+                     final String formatString,
                      final String locus,
                      final boolean merge,
                      Map<String, String> params) throws IOException {
-        return loadFiles(fileString, indexString, coverageString, nameString, locus, merge, params, null, null);
+        return loadFiles(fileString, indexString, coverageString, nameString, formatString, locus, merge, params, null, null);
     }
 
     /**
@@ -420,6 +424,7 @@ public class CommandExecutor {
                      final String indexString,
                      final String coverageString,
                      final String nameString,
+                     final String formatString,
                      final String locus,
                      final boolean merge,
                      Map<String, String> params,
@@ -433,6 +438,7 @@ public class CommandExecutor {
         List<String> names = StringUtils.breakQuotedString(nameString, ',');
         List<String> indexFiles = StringUtils.breakQuotedString(indexString, ',');
         List<String> coverageFiles = StringUtils.breakQuotedString(coverageString, ',');
+        List<String> formats = StringUtils.breakQuotedString(formatString, ',');
 
         if (files.size() == 1) {
             // String might be URL encoded
@@ -463,6 +469,9 @@ public class CommandExecutor {
             if (coverageFiles != null) {
                 coverageFiles.set(ii, decodeFileString(coverageFiles.get(ii).replace("\"", "")));
             }
+            if (formatString != null) {
+                formats.set(ii, decodeFileString(formats.get(ii).replace("\"", "")));
+            }
         }
 
         List<ResourceLocator> fileLocators = new ArrayList<ResourceLocator>();
@@ -488,6 +497,7 @@ public class CommandExecutor {
         }
 
         // Loop through files
+
         for (int fi = 0; fi < files.size(); fi++) {
 
             String f = files.get(fi);
@@ -515,6 +525,9 @@ public class CommandExecutor {
                 }
                 if (coverageFiles != null) {
                     rl.setCoverage(coverageFiles.get(fi));
+                }
+                if(formats != null) {
+                    rl.setType(formats.get(fi));
                 }
                 if (params != null) {
                     String trackLine = createTrackLine(params);

@@ -332,12 +332,13 @@ public class CommandListener implements Runnable {
                 }
 
                 String name = params.get("name");
+                String format = params.get("format");
                 String locus = params.get("locus");
                 String index = params.get("index");
                 String coverage = params.get("coverage");
                 String sort = params.get("sort");
                 String sortTag = params.get("sortTag");
-                result = cmdExe.loadFiles(file, index, coverage, name, locus, merge, params, sort, sortTag);
+                result = cmdExe.loadFiles(file, index, coverage, name, format, locus, merge, params, sort, sortTag);
             } else {
                 return ("ERROR Parameter \"file\" is required");
             }
