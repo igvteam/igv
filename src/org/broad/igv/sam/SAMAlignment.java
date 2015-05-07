@@ -268,18 +268,23 @@ public abstract class SAMAlignment implements Alignment {
                     nGaps++;
                 }
 
+                operators.add(new CigarOperator(nBases, op));
+                buffer = new StringBuffer(4);
+                prevOp = op;
 
                 if (firstOperator && op == SOFT_CLIP) {
                     softClippedBaseCount += nBases;
                 }
 
-                operators.add(new CigarOperator(nBases, op));
-                buffer = new StringBuffer(4);
+                if(op != SOFT_CLIP) {
+                    firstOperator = false;
+                }
 
-                prevOp = op;
-                firstOperator = false;
             }
         }
+
+
+
 
         alignmentBlocks = new AlignmentBlock[nBlocks];
         insertions = new AlignmentBlock[nInsertions];
@@ -572,13 +577,13 @@ public abstract class SAMAlignment implements Alignment {
 
     public abstract boolean isSecondOfPair();
 
-    public abstract boolean isDuplicate() ;
+    public abstract boolean isDuplicate();
 
     public abstract boolean isMapped();
 
     public abstract boolean isPaired();
 
-    public abstract boolean isProperPair() ;
+    public abstract boolean isProperPair();
 
     public abstract boolean isSupplementary();
 
@@ -658,7 +663,6 @@ public abstract class SAMAlignment implements Alignment {
     }
 
 
-
     public Strand getReadStrand() {
         return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
     }
@@ -683,7 +687,6 @@ public abstract class SAMAlignment implements Alignment {
         }
         return readSeq;
     }
-
 
 
     @Override
@@ -778,14 +781,14 @@ public abstract class SAMAlignment implements Alignment {
         }
     }
 
-     //(String chr, int start, boolean negativeStrand,boolean isReadUnmappedFlag) {
+    //(String chr, int start, boolean negativeStrand,boolean isReadUnmappedFlag) {
     //SA = X,82962991,+,18S51M31S,0,0;
     static List<ReadMate> parseSupplementaryTag(String sa) {
 
         List<ReadMate> mates = new ArrayList();
-        String [] records = Globals.semicolonPattern.split(sa);
-        for(String rec : records) {
-            String [] tokens = Globals.commaPattern.split(rec);
+        String[] records = Globals.semicolonPattern.split(sa);
+        for (String rec : records) {
+            String[] tokens = Globals.commaPattern.split(rec);
             String seq = tokens[0];
             int pos = Integer.parseInt(tokens[1]);
             boolean negStrand = tokens[2].equals("-");
