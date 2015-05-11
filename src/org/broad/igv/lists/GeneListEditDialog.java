@@ -22,15 +22,12 @@
 
 package org.broad.igv.lists;
 
-import oracle.jdbc.proxy.annotation.Pre;
-import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.*;
