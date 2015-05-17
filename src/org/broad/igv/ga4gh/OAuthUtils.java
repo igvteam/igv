@@ -24,7 +24,9 @@ public class OAuthUtils {
 
     private static final String REFRESH_TOKEN_KEY = "oauth_refresh_token";
     private static final String PROPERTIES_URL = "https://igvdata.broadinstitute.org/app/oauth_native.json";
-    private String scope = "https://www.googleapis.com/auth/genomics";
+    private String genomicsScope = "https://www.googleapis.com/auth/genomics";
+    private String gsScope = "https://www.googleapis.com/auth/devstorage.read_only";
+    private String profileScope = "https://www.googleapis.com/auth/userinfo.profile";
     private String state = "%2Fprofile";
     private String redirectURI = "http%3A%2F%2Flocalhost%3A60151%2FoauthCallback";
     private String clientId;
@@ -37,7 +39,10 @@ public class OAuthUtils {
     private String refreshToken;
     private long expirationTime;
 
+    public static String GS_HOST = "www.googleapis.com";
+
     private static OAuthUtils theInstance;
+    private String currentUserName;
 
 
     public static synchronized OAuthUtils getInstance() {
@@ -71,10 +76,10 @@ public class OAuthUtils {
 
     public void fetchAuthCode() throws IOException, URISyntaxException {
 
-        if(clientId == null) fetchOauthProperties();
+        if (clientId == null) fetchOauthProperties();
 
         String url = authURI + "?" +
-                "scope=" + scope + "&" +
+                "scope=" + genomicsScope + "%20" + gsScope + "%20" + profileScope + "&" +
                 "state=" + state + "&" +
                 "redirect_uri=" + redirectURI + "&" +
                 "response_type=code&" +
@@ -88,11 +93,12 @@ public class OAuthUtils {
     public void setAuthorizationCode(String ac) throws IOException {
         authorizationCode = ac;
         fetchTokens();
+        fetchPeople();
     }
 
     public void fetchTokens() throws IOException {
 
-        if(clientId == null) fetchOauthProperties();
+        if (clientId == null) fetchOauthProperties();
 
         URL url = new URL(tokenURI);
 
@@ -119,6 +125,17 @@ public class OAuthUtils {
         }
     }
 
+    private void fetchPeople() throws IOException {
+
+        if (clientId == null) fetchOauthProperties();
+
+        URL url = new URL("https://www.googleapis.com/plus/v1/people/me?access_token=" + accessToken);
+        String response = HttpUtils.getInstance().getContentsAsJSON(url);
+        JsonParser parser = new JsonParser();
+        JsonObject obj = parser.parse(response).getAsJsonObject();
+        currentUserName = obj.get("displayName").getAsString();
+    }
+
     /**
      * Fetch a new access token from a refresh token.
      *
@@ -126,7 +143,7 @@ public class OAuthUtils {
      */
     public void fetchAccessToken() throws IOException {
 
-        if(clientId == null) fetchOauthProperties();
+        if (clientId == null) fetchOauthProperties();
 
         URL url = new URL(tokenURI);
 
@@ -144,11 +161,12 @@ public class OAuthUtils {
         expirationTime = System.currentTimeMillis() + (obj.getAsJsonPrimitive("expires_in").getAsInt() * 1000);
 
         // Try to store in java.util.prefs
-        try {
-            Preferences.userRoot().put(REFRESH_TOKEN_KEY, refreshToken);
-        } catch (Exception e) {
-            log.error("Error storing refresh token", e);
-        }
+        // DISABLED FOR NOW -- force user to authenticate each session
+//        try {
+//            Preferences.userRoot().put(REFRESH_TOKEN_KEY, refreshToken);
+//        } catch (Exception e) {
+//            log.error("Error storing refresh token", e);
+//        }
 
     }
 
@@ -176,17 +194,28 @@ public class OAuthUtils {
         return getAccessToken() != null;
     }
 
+    public String getCurrentUserName() {
+        return currentUserName;
+    }
+
     public void logout() {
         accessToken = null;
         refreshToken = null;
         expirationTime = -1;
-
+        currentUserName = null;
         try {
             Preferences.userRoot().remove(REFRESH_TOKEN_KEY);
         } catch (Exception e) {
             log.error("Error removing oauth refresh token", e);
         }
     }
+
+
+    // Doesn't really belong here....
+    public static boolean isGoogleCloud(String url) {
+        return url.contains(GS_HOST);
+    }
+
 
     // Main program for testing
 

@@ -369,6 +369,10 @@ public class ResourceLocator {
                         String newQueryString = queryString.replace(bamFile, bamIndexFile);
                         return path.replace(queryString, newQueryString);
                     }
+                    else {
+                        String ip = path.replace(url.getPath(), url.getPath() + ".bai");
+                        return ip;
+                    }
                 }
             } catch (MalformedURLException e) {
                 log.error(e.getMessage(), e);

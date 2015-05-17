@@ -92,6 +92,7 @@ public class IGVMenuBar extends JMenuBar {
     private static final String CANNOT_LOAD_GENOME_SERVER_TOOLTIP = "Could not reach genome server";
 
     private static IGVMenuBar instance;
+    private JMenu googleMenu;
 
     public void notifyGenomeServerReachable(boolean reachable) {
         if (loadFromServerMenuItem != null) {
@@ -160,10 +161,11 @@ public class IGVMenuBar extends JMenuBar {
         //extrasMenu.setVisible(false);
         menus.add(extrasMenu);
 
-        if (PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_API_KEY) != null ||
-                PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_GOOGLE_MENU)) {
-            menus.add(createGoogleMenu());
-        }
+
+        googleMenu = createGoogleMenu();
+        googleMenu.setVisible(PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_API_KEY) != null ||
+                PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_GOOGLE_MENU));
+        menus.add(googleMenu);
 
         menus.add(createHelpMenu());
 
@@ -1119,6 +1121,11 @@ public class IGVMenuBar extends JMenuBar {
             @Override
             public void menuSelected(MenuEvent e) {
                 boolean loggedIn = OAuthUtils.getInstance().isLoggedIn();
+                if (loggedIn) {
+                    login.setText(OAuthUtils.getInstance().getCurrentUserName());
+                } else {
+                    login.setText("Login ...");
+                }
                 login.setEnabled(!loggedIn);
                 logout.setEnabled(loggedIn);
                 loadReadset.setEnabled(loggedIn);
@@ -1134,6 +1141,7 @@ public class IGVMenuBar extends JMenuBar {
 
             }
         });
+
 
         return menu;
     }
@@ -1204,5 +1212,9 @@ public class IGVMenuBar extends JMenuBar {
     @ForTesting
     static void destroyInstance() {
         instance = null;
+    }
+
+    public void enableGoogleMenu(boolean aBoolean) {
+        googleMenu.setVisible(aBoolean);
     }
 }

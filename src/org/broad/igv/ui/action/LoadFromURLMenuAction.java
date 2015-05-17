@@ -16,6 +16,7 @@
 package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -49,8 +50,15 @@ public class LoadFromURLMenuAction extends MenuAction {
         ta.setPreferredSize(new Dimension(600, 20));
         if (e.getActionCommand().equalsIgnoreCase(LOAD_FROM_URL)) {
             String url = JOptionPane.showInputDialog(IGV.getMainFrame(), ta, "Enter URL (http or ftp)", JOptionPane.QUESTION_MESSAGE);
+
             if (url != null && url.trim().length() > 0) {
                 url = url.trim();
+                if (url.startsWith("gs://")) {
+                    url = translateGoogleCloudURL(url);
+                }
+                if (OAuthUtils.isGoogleCloud(url) && url.indexOf("alt=media") < 0) {
+                    url = url + (url.indexOf('?') > 0 ? "&" : "?") + "alt=media";
+                }
                 if (url.endsWith(".xml") || url.endsWith(".session")) {
                     try {
                         boolean merge = false;
@@ -84,6 +92,29 @@ public class LoadFromURLMenuAction extends MenuAction {
                 }
             }
         }
+    }
+
+
+    /**
+     * gs://igv-bam-test/NA12878.bam
+     * https://www.googleapis.com/storage/v1/b/igv-bam-test/o/NA12878.bam
+     *
+     * @param gsUrl
+     * @return
+     */
+    private String translateGoogleCloudURL(String gsUrl) {
+
+        int i = gsUrl.indexOf('/', 5);
+        if (i < 0) {
+            log.error("Invalid gs url: " + gsUrl);
+            return gsUrl;
+        }
+
+        String bucket = gsUrl.substring(5, i);
+        String object = gsUrl.substring(i + 1);
+
+        return "https://www.googleapis.com/storage/v1/b/" + bucket + "/o/" + object;
+
     }
 }
 

@@ -20,6 +20,7 @@ import org.apache.tomcat.util.HttpDate;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.HttpResponseException;
+import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.CancellableProgressDialog;
@@ -81,9 +82,9 @@ public class HttpUtils {
 
         htsjdk.tribble.util.ParsingUtils.registerHelperClass(IGVUrlHelper.class);
 
-       // if (!Globals.checkJavaVersion("1.8")) {
-            disableCertificateValidation();
-       // }
+        // if (!Globals.checkJavaVersion("1.8")) {
+        disableCertificateValidation();
+        // }
         CookieHandler.setDefault(new IGVCookieManager());
         Authenticator.setDefault(new IGVAuthenticator());
 
@@ -682,14 +683,10 @@ public class HttpUtils {
                 conn.setRequestProperty("Accept", "text/plain");
         }
 
-        //------//
-        //There seems to be a bug with JWS caches
-        //So we avoid caching
-
+        //There seems to be a bug with JWS caches, so we avoid caching
         //This default is persistent, really should be available statically but isn't
         conn.setDefaultUseCaches(false);
         conn.setUseCaches(false);
-        //------//
 
 
         conn.setConnectTimeout(Globals.CONNECT_TIMEOUT);
@@ -702,6 +699,11 @@ public class HttpUtils {
             }
         }
         conn.setRequestProperty("User-Agent", Globals.applicationString());
+
+        if (url.getHost().equals(OAuthUtils.GS_HOST)) {
+            String token = OAuthUtils.getInstance().getAccessToken();
+            if (token != null) conn.setRequestProperty("Authorization", "Bearer " + token);
+        }
 
         if (method.equals("PUT")) {
             return conn;
@@ -734,20 +736,16 @@ public class HttpUtils {
                 if (code == 404) {
                     message = "File not found: " + url.toString();
                     throw new FileNotFoundException(message);
-                } else if (code == 401) {
-                    // Looks like this only happens when user hits "Cancel".
-                    // message = "Not authorized to view this file";
-                    // JOptionPane.showMessageDialog(null, message, "HTTP error", JOptionPane.ERROR_MESSAGE);
-                    redirectCount = MAX_REDIRECTS + 1;
-                    return null;
+                } else if(code == 401) {
+                    message = "You must log in to access this file";
+                    throw new HttpResponseException(code, message, "");
                 } else {
                     message = conn.getResponseMessage();
+                    String details = readErrorStream(conn);
+                    log.error("URL: " + url.toExternalForm() + ". error stream: " + details);
+                    log.error("Code: " + code + ". " + message);
+                    throw new HttpResponseException(code, message, details);
                 }
-                String details = readErrorStream(conn);
-                log.error("URL: " + url.toExternalForm() + ". error stream: " + details);
-                log.error("Code: " + code + ". " + message);
-                HttpResponseException exc = new HttpResponseException(code);
-                throw exc;
             }
         }
         return conn;
@@ -759,8 +757,7 @@ public class HttpUtils {
         try {
             if (host.equals("igv.broadinstitute.org")) {
                 url = new URL(url.toExternalForm().replace("igv.broadinstitute.org", "s3.amazonaws.com/igv.broadinstitute.org"));
-            }
-            else if (host.equals("igvdata.broadinstitute.org")) {
+            } else if (host.equals("igvdata.broadinstitute.org")) {
                 url = new URL(url.toExternalForm().replace("igvdata.broadinstitute.org", "dn7ywbm9isq8j.cloudfront.net"));
             }
         } catch (MalformedURLException e) {

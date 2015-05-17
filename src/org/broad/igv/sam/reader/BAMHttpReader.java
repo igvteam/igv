@@ -160,7 +160,7 @@ public class BAMHttpReader implements AlignmentReader<PicardAlignment> {
         }
 
         if (!indexFile.exists() || indexFile.length() < 1) {
-            loadIndexFile(locator.getBamIndexPath(), indexFile);
+            loadIndexFile(locator.getBamIndexPath());
             indexFile.deleteOnExit();
         }
 
@@ -178,47 +178,39 @@ public class BAMHttpReader implements AlignmentReader<PicardAlignment> {
         return indexFile;
     }
 
-    private void loadIndexFile(String indexPath, File indexFile) throws IOException {
+    private void loadIndexFile(String indexPath) throws IOException {
         InputStream is = null;
         OutputStream os = null;
 
         try {
-            // Look for gzipped file first
-            String gzippedPath = indexPath + ".gz";
-            URL indexURL = new URL(gzippedPath);
-            os = new FileOutputStream(indexFile);
-            boolean foundIndex = true;
 
+            boolean foundIndex = true;
+            os = new FileOutputStream(indexFile);
+            URL indexURL = new URL(indexPath);
             try {
-                is = new GZIPInputStream(HttpUtils.getInstance().openConnectionStream(indexURL));
-            } catch (Exception e) {
-                // Try non-gzipped
+                is = org.broad.igv.util.HttpUtils.getInstance().openConnectionStream(indexURL);
+            } catch (FileNotFoundException e1) {
+
+                indexPath = indexPath.replace(".bam.bai", ".bai");
                 indexURL = new URL(indexPath);
                 try {
-                    is = org.broad.igv.util.HttpUtils.getInstance().openConnectionStream(indexURL);
-                } catch (FileNotFoundException e1) {
-                    // Try gzipped
-                    indexPath = indexPath.replace(".bam.bai", ".bai");
-                    indexURL = new URL(indexPath);
-                    try {
-                        is = HttpUtils.getInstance().openConnectionStream(indexURL);
-                    } catch (FileNotFoundException e2) {
+                    is = HttpUtils.getInstance().openConnectionStream(indexURL);
+                } catch (FileNotFoundException e2) {
 
-
-                        if (!Globals.isHeadless() && IGV.hasInstance()) {
-                            String tmp = MessageUtils.showInputDialog("Index file not found. Enter path to index file", indexPath);
-                            if (tmp != null) {
-                                try {
-                                    indexURL = new URL(tmp);
-                                    is = org.broad.igv.util.HttpUtils.getInstance().openConnectionStream(indexURL);
-                                } catch (FileNotFoundException e3) {
-                                    foundIndex = false;
-                                }
-                            } else {
+                    if (!Globals.isHeadless() && IGV.hasInstance()) {
+                        String tmp = MessageUtils.showInputDialog("Index file not found. Enter path to index file", indexPath);
+                        if (tmp != null) {
+                            try {
+                                indexURL = new URL(tmp);
+                                is = org.broad.igv.util.HttpUtils.getInstance().openConnectionStream(indexURL);
+                            } catch (FileNotFoundException e3) {
                                 foundIndex = false;
                             }
+                        } else {
+                            foundIndex = false;
                         }
                     }
+
                 }
 
             }
