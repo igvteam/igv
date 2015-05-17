@@ -56,11 +56,12 @@ public class OAuthUtils {
 
     private OAuthUtils() {
         // Attempt to fetch refresh token from local store.
-        try {
-            refreshToken = Preferences.userRoot().get(REFRESH_TOKEN_KEY, null);
-        } catch (Exception e) {
-            log.error("Error fetching oauth refresh token", e);
-        }
+        // Disabled for now
+//        try {
+//            refreshToken = Preferences.userRoot().get(REFRESH_TOKEN_KEY, null);
+//        } catch (Exception e) {
+//            log.error("Error fetching oauth refresh token", e);
+//        }
     }
 
     private void fetchOauthProperties() throws IOException {
@@ -118,11 +119,11 @@ public class OAuthUtils {
         expirationTime = System.currentTimeMillis() + (obj.getAsJsonPrimitive("expires_in").getAsInt() * 1000);
 
         // Try to store in java.util.prefs
-        try {
-            Preferences.userRoot().put(REFRESH_TOKEN_KEY, refreshToken);
-        } catch (Exception e) {
-            log.error("Error storing refresh token", e);
-        }
+//        try {
+//            Preferences.userRoot().put(REFRESH_TOKEN_KEY, refreshToken);
+//        } catch (Exception e) {
+//            log.error("Error storing refresh token", e);
+//        }
     }
 
     private void fetchPeople() throws IOException {
@@ -141,7 +142,7 @@ public class OAuthUtils {
      *
      * @throws IOException
      */
-    public void fetchAccessToken() throws IOException {
+    private void fetchAccessToken() throws IOException {
 
         if (clientId == null) fetchOauthProperties();
 
