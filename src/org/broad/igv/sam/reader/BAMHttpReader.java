@@ -11,10 +11,7 @@
 
 package org.broad.igv.sam.reader;
 
-import htsjdk.samtools.SAMFileHeader;
-import htsjdk.samtools.SAMFileReader;
-import htsjdk.samtools.SAMRecord;
-import htsjdk.samtools.SAMSequenceRecord;
+import htsjdk.samtools.*;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
@@ -52,31 +49,36 @@ public class BAMHttpReader implements AlignmentReader<PicardAlignment> {
     public static final long oneDay = 24 * 60 * 60 * 1000;
 
     static Hashtable<String, File> indexFileCache = new Hashtable<String, File>();
+    private final ResourceLocator locator;
 
     URL url;
     SAMFileHeader header;
-    File indexFile;
-    SAMFileReader reader;
+    htsjdk.samtools.SamReader reader;
     List<String> sequenceNames;
+    private boolean indexed = false; // False until proven otherwise
 
     public BAMHttpReader(ResourceLocator locator, boolean requireIndex) throws IOException {
+        this.locator = locator;
         this.url = new URL(locator.getPath());
+        reader = getSamReader(locator, requireIndex);
+
+    }
+
+    public SamReader getSamReader(ResourceLocator locator, boolean requireIndex) throws IOException {
+
         if (requireIndex) {
-            indexFile = getIndexFile(locator);
-            if (indexFile == null) {
-                throw new RuntimeException("Could not load index file for file: " + url.getPath());
-            }
+            final SamReaderFactory factory = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT);
+
+            SeekableStream indexStream = getInputStream(locator.getBamIndexPath());
+            this.indexed = true;
 
             SeekableStream ss = new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(url), 128000);
-            //SeekableStream ss = getSeekableStream(url);
-            log.debug("Initializing SAMFileReader");
-
-            reader = new SAMFileReader(ss, indexFile, false);
+            SamInputResource resource = SamInputResource.of(ss).index(indexStream);
+            return factory.open(resource);
         } else {
             InputStream is = HttpUtils.getInstance().openConnectionStream(url);
-            reader = new SAMFileReader(new BufferedInputStream(is));
+            return new SAMFileReader(new BufferedInputStream(is));
         }
-
     }
 
     public void close() throws IOException {
@@ -92,13 +94,14 @@ public class BAMHttpReader implements AlignmentReader<PicardAlignment> {
         return header;
     }
 
+    public boolean hasIndex() {
+        return indexed;
+    }
+
     public Set<String> getPlatforms() {
         return AlignmentReaderFactory.getPlatforms(getFileHeader());
     }
 
-    public boolean hasIndex() {
-        return indexFile != null && indexFile.exists();
-    }
 
     public List<String> getSequenceNames() {
         if (sequenceNames == null) {
@@ -137,7 +140,7 @@ public class BAMHttpReader implements AlignmentReader<PicardAlignment> {
         try {
             if (reader == null) {
                 SeekableStream ss = new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(url));
-                reader = new SAMFileReader(ss, indexFile, false);
+                reader = getSamReader(locator, true);
             }
             CloseableIterator<SAMRecord> iter = reader.query(sequence, start + 1, end, contained);
             return new WrappedIterator(iter);
@@ -147,100 +150,37 @@ public class BAMHttpReader implements AlignmentReader<PicardAlignment> {
         }
     }
 
-    File getIndexFile(ResourceLocator locator) throws IOException {
 
-        log.debug("Getting index for " + url + ". Index path " + locator.getBamIndexPath());
-        String urlString = url.toString();
-        indexFile = getTmpIndexFile(urlString);
+    private SeekableStream getInputStream(String indexPath) throws IOException {
 
-        // Crude staleness check -- if more than a day old discard
-        long age = System.currentTimeMillis() - indexFile.lastModified();
-        if (age > oneDay) {
-            indexFile.delete();
-        }
-
-        if (!indexFile.exists() || indexFile.length() < 1) {
-            loadIndexFile(locator.getBamIndexPath());
-            indexFile.deleteOnExit();
-        }
-
-        return indexFile;
-
-    }
-
-    private File getTmpIndexFile(String bamURL) throws IOException {
-        File indexFile = indexFileCache.get(bamURL);
-        if (indexFile == null) {
-            indexFile = File.createTempFile("index_", ".bai", DirectoryManager.getCacheDirectory());
-            indexFile.deleteOnExit();
-            indexFileCache.put(bamURL, indexFile);
-        }
-        return indexFile;
-    }
-
-    private void loadIndexFile(String indexPath) throws IOException {
-        InputStream is = null;
-        OutputStream os = null;
+        SeekableStream ss = null;
+        URL indexURL = new URL(indexPath);
+        boolean foundIndex;
 
         try {
-
-            boolean foundIndex = true;
-            os = new FileOutputStream(indexFile);
-            URL indexURL = new URL(indexPath);
-            try {
-                is = org.broad.igv.util.HttpUtils.getInstance().openConnectionStream(indexURL);
-            } catch (FileNotFoundException e1) {
-
-                indexPath = indexPath.replace(".bam.bai", ".bai");
-                indexURL = new URL(indexPath);
-                try {
-                    is = HttpUtils.getInstance().openConnectionStream(indexURL);
-                } catch (FileNotFoundException e2) {
-
-                    if (!Globals.isHeadless() && IGV.hasInstance()) {
-                        String tmp = MessageUtils.showInputDialog("Index file not found. Enter path to index file", indexPath);
-                        if (tmp != null) {
-                            try {
-                                indexURL = new URL(tmp);
-                                is = org.broad.igv.util.HttpUtils.getInstance().openConnectionStream(indexURL);
-                            } catch (FileNotFoundException e3) {
-                                foundIndex = false;
-                            }
-                        } else {
-                            foundIndex = false;
-                        }
-                    }
-
-                }
-
-            }
-            if (!foundIndex) {
-                String msg = "Index file not found: " + indexPath;
-                throw new DataLoadException(msg, indexPath);
-            }
-            byte[] buf = new byte[512000];
-            int bytesRead;
-            while ((bytesRead = is.read(buf)) != -1) {
-                os.write(buf, 0, bytesRead);
-            }
-
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
-
+            ss = IGVSeekableStreamFactory.getInstance().getStreamFor(indexURL);
+            foundIndex = true;
         }
+        catch(FileNotFoundException e) {
+
+            String newIndexPath = indexPath.replace(".bam.bai", ".bai");
+            indexURL = new URL(newIndexPath);
+            try {
+                ss = IGVSeekableStreamFactory.getInstance().getStreamFor(indexURL);
+                foundIndex = true;
+            }
+            catch(FileNotFoundException e1) {
+                foundIndex = false;
+            }
+        }
+
+
+        if (!foundIndex) {
+            String msg = "Index file not found: " + indexPath;
+            throw new DataLoadException(msg, indexPath);
+        }
+
+        return ss;
     }
 
 

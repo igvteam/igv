@@ -112,29 +112,5 @@ public class BAMHttpQueryReaderTest extends AbstractHeadlessTest {
         assertEquals(expected_count, counted);
     }
 
-    @Test
-    public void testDeleteIndex() throws Exception {
-        File indexFile = reader.indexFile;
-
-        assertTrue(indexFile.exists());
-
-        CloseableIterator<PicardAlignment> iter = reader.query("Y", 10000000, 10004000, false);
-        int max = 100;
-        int counted = 0;
-        while (iter.hasNext()) {
-            Alignment a = iter.next();
-            counted++;
-            assertNotNull(a);
-            if (counted > max) {
-                break;
-            }
-        }
-
-        //Not closing the iterator on purpose
-
-        assertTrue(indexFile.exists());
-
-        assertTrue(indexFile.canWrite());
-    }
 
 }
