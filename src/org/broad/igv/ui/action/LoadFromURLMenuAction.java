@@ -16,8 +16,10 @@
 package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
 
@@ -54,6 +56,7 @@ public class LoadFromURLMenuAction extends MenuAction {
             if (url != null && url.trim().length() > 0) {
                 url = url.trim();
                 if (url.startsWith("gs://")) {
+                    enableGoogleMenu();
                     url = translateGoogleCloudURL(url);
                 }
                 if (OAuthUtils.isGoogleCloud(url) && url.indexOf("alt=media") < 0) {
@@ -91,6 +94,14 @@ public class LoadFromURLMenuAction extends MenuAction {
                     MessageUtils.showMessage("Error loading genome: " + e1.getMessage());
                 }
             }
+        }
+    }
+
+    private void enableGoogleMenu() {
+
+        if(!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_GOOGLE_MENU)) {
+            PreferenceManager.getInstance().put(PreferenceManager.ENABLE_GOOGLE_MENU, true);
+            IGVMenuBar.getInstance().enableGoogleMenu(true);
         }
     }
 

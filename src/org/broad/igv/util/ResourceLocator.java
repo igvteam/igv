@@ -245,7 +245,20 @@ public class ResourceLocator {
     }
 
     public String getTrackName() {
-        return name != null ? name : new File(getPath()).getName();
+        if(name == null) {
+            if(path.startsWith("http://") || path.startsWith("https://")) {
+                try {
+                    return new File((new URL(path)).getPath()).getName();
+                } catch (MalformedURLException e) {
+                    return path;
+                }
+            }
+            else {
+                return new File(path).getName();
+            }
+        }
+        return name;
+
     }
 
 
