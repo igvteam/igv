@@ -41,6 +41,7 @@ import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.ga4gh.Ga4ghAPIHelper;
+import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.gwas.GWASData;
@@ -893,7 +894,8 @@ public class TrackLoader {
             // Search for precalculated coverage data
             // Skip for GA4GH & SU2C resources
             if (!(Ga4ghAPIHelper.RESOURCE_TYPE.equals(locator.getType()) ||
-                   locator.getPath().contains("dataformat=.bam"))) {
+                   locator.getPath().contains("dataformat=.bam") ||
+                    OAuthUtils.isGoogleCloud(locator.getPath()))) {
 
                 String covPath = locator.getCoverage();
                 if (covPath == null) {

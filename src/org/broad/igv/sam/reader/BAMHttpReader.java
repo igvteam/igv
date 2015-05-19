@@ -15,12 +15,8 @@ import htsjdk.samtools.*;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
-import org.broad.igv.DirectoryManager;
-import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.sam.PicardAlignment;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.stream.IGVSeekableBufferedStream;
@@ -32,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
-import java.util.zip.GZIPInputStream;
 
 /**
  * Created by IntelliJ IDEA.
@@ -69,7 +64,7 @@ public class BAMHttpReader implements AlignmentReader<PicardAlignment> {
         if (requireIndex) {
             final SamReaderFactory factory = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT);
 
-            SeekableStream indexStream = getInputStream(locator.getBamIndexPath());
+            SeekableStream indexStream = getIndexStream(locator.getBamIndexPath());
             this.indexed = true;
 
             SeekableStream ss = new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(url), 128000);
@@ -139,7 +134,6 @@ public class BAMHttpReader implements AlignmentReader<PicardAlignment> {
     public CloseableIterator<PicardAlignment> query(String sequence, int start, int end, boolean contained) {
         try {
             if (reader == null) {
-                SeekableStream ss = new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(url));
                 reader = getSamReader(locator, true);
             }
             CloseableIterator<SAMRecord> iter = reader.query(sequence, start + 1, end, contained);
@@ -151,11 +145,11 @@ public class BAMHttpReader implements AlignmentReader<PicardAlignment> {
     }
 
 
-    private SeekableStream getInputStream(String indexPath) throws IOException {
+    private SeekableStream getIndexStream(String indexPath) throws IOException {
 
         SeekableStream ss = null;
         URL indexURL = new URL(indexPath);
-        boolean foundIndex;
+        boolean foundIndex = false;
 
         try {
             ss = IGVSeekableStreamFactory.getInstance().getStreamFor(indexURL);

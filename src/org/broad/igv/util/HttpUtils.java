@@ -126,7 +126,6 @@ public class HttpUtils {
         try {
             is = getInputStream(conn);
             return readContents(is);
-
         } catch (IOException e) {
             readErrorStream(conn);  // Consume content
             throw e;
@@ -736,8 +735,11 @@ public class HttpUtils {
                 if (code == 404) {
                     message = "File not found: " + url.toString();
                     throw new FileNotFoundException(message);
-                } else if(code == 401) {
+                } else if (code == 401) {
                     message = "You must log in to access this file";
+                    throw new HttpResponseException(code, message, "");
+                } else if (code == 403) {
+                    message = "Access forbidden";
                     throw new HttpResponseException(code, message, "");
                 } else {
                     message = conn.getResponseMessage();

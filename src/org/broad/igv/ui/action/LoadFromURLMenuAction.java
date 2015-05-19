@@ -17,17 +17,23 @@ package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author jrobinso
@@ -59,9 +65,19 @@ public class LoadFromURLMenuAction extends MenuAction {
                     enableGoogleMenu();
                     url = translateGoogleCloudURL(url);
                 }
-                if (OAuthUtils.isGoogleCloud(url) && url.indexOf("alt=media") < 0) {
-                    url = url + (url.indexOf('?') > 0 ? "&" : "?") + "alt=media";
+
+                if (OAuthUtils.isGoogleCloud(url)) {
+
+                    // Access a few bytes as a means to check authorization
+                    if(!ping(url)) return;
+
+                    if (url.indexOf("alt=media") < 0) {
+                        url = url + (url.indexOf('?') > 0 ? "&" : "?") + "alt=media";
+                    }
+
                 }
+
+
                 if (url.endsWith(".xml") || url.endsWith(".session")) {
                     try {
                         boolean merge = false;
@@ -99,7 +115,7 @@ public class LoadFromURLMenuAction extends MenuAction {
 
     private void enableGoogleMenu() {
 
-        if(!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_GOOGLE_MENU)) {
+        if (!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_GOOGLE_MENU)) {
             PreferenceManager.getInstance().put(PreferenceManager.ENABLE_GOOGLE_MENU, true);
             IGVMenuBar.getInstance().enableGoogleMenu(true);
         }
@@ -126,6 +142,34 @@ public class LoadFromURLMenuAction extends MenuAction {
 
         return "https://www.googleapis.com/storage/v1/b/" + bucket + "/o/" + object;
 
+    }
+
+
+    private boolean ping(String url) {
+        InputStream is = null;
+        try {
+            Map<String, String> params = new HashMap();
+            params.put("Range", "0-10");
+            byte [] buffer = new byte[10];
+            is = HttpUtils.getInstance().openConnectionStream(new URL(url), params);
+            is.read(buffer);
+            is.close();
+        }  catch (HttpResponseException e1) {
+            MessageUtils.showMessage(e1.getMessage());
+            return false;
+        }
+        catch (IOException e) {
+            log.error(e);
+
+        } finally {
+            if(is != null) try {
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return true;
     }
 }
 
