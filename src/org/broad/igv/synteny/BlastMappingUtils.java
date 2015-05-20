@@ -112,11 +112,9 @@ public class BlastMappingUtils {
 
                 }
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             pw.close();
         }
     }
@@ -125,66 +123,69 @@ public class BlastMappingUtils {
     static class BasicScore implements LocusScore {
 
         String chr;
-    int start;
-    int end;
-    float score;
+        int start;
+        int end;
+        float score;
 
-    public BasicScore(String chromosome, int start, int end, float score) {
-        this.chr = chromosome;
-        this.start = start;
-        this.end = end;
-        this.score = score;
-    }
+        public BasicScore(String chromosome, int start, int end, float score) {
+            this.chr = chromosome;
+            this.start = start;
+            this.end = end;
+            this.score = score;
+        }
 
-    public BasicScore(BasicScore bs) {
-        this.chr = bs.chr;
-        this.start = bs.start;
-        this.end = bs.end;
-        this.score = bs.score;
-    }
+        public BasicScore(BasicScore bs) {
+            this.chr = bs.chr;
+            this.start = bs.start;
+            this.end = bs.end;
+            this.score = bs.score;
+        }
 
-    public BasicScore copy() {
-        return new BasicScore(this);
-    }
+        public BasicScore copy() {
+            return new BasicScore(this);
+        }
 
-    public String getChr() {
-        return chr;
-    }
+        public String getChr() {
+            return chr;
+        }
 
+        @Override
+        public String getContig() {
+            return chr;
+        }
 
+        public int getStart() {
+            return start;
+        }
 
-    public int getStart() {
-        return start;
-    }
+        public float getScore() {
+            return score;
+        }
 
-    public float getScore() {
-        return score;
-    }
+        public void setStart(int start) {
+            this.start = start;
+        }
 
-    public void setStart(int start) {
-        this.start = start;
-    }
+        public int getEnd() {
+            return end;
+        }
 
-    public int getEnd() {
-        return end;
-    }
+        public void setEnd(int end) {
+            this.end = end;
+        }
 
-    public void setEnd(int end) {
-        this.end = end;
-    }
+        public String getValueString(double position, WindowFunction windowFunction) {
+            return "Value: " + score;
+            //throw new UnsupportedOperationException("Not supported yet.");
+        }
 
-    public String getValueString(double position, WindowFunction windowFunction) {
-        return "Value: " + score;
-        //throw new UnsupportedOperationException("Not supported yet.");
-    }
+        public int getExtendedStart() {
+            return getStart();
+        }
 
-    public int getExtendedStart() {
-        return getStart();
-    }
-
-    public int getExtendedEnd() {
-        return getEnd();
-    }
+        public int getExtendedEnd() {
+            return getEnd();
+        }
     }
 
 

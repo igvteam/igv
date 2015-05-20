@@ -31,6 +31,11 @@ public class CursorRegion implements Feature {
     }
 
     @Override
+    public String getContig() {
+        return chr;
+    }
+
+    @Override
     public int getStart() {
         return location;
     }

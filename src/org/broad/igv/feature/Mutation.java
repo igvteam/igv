@@ -193,6 +193,11 @@ public class Mutation implements IGVFeature {
         return chr;
     }
 
+    @Override
+    public String getContig() {
+        return chr;
+    }
+
     public void setColor(Color color) {
 
         // Ignore

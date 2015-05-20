@@ -405,6 +405,11 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         }
 
         @Override
+        public String getContig() {
+            return chr;
+        }
+
+        @Override
         public int getStart() {
             return start;  //To change body of implemented methods use File | Settings | File Templates.
         }

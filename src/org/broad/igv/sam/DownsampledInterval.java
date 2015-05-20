@@ -50,6 +50,11 @@ public class DownsampledInterval implements Feature {
         return null;
     }
 
+    @Override
+    public String getContig() {
+        return null;
+    }
+
     public String getValueString() {
         return "Interval [" + start + "-" + end + "] <br>" + count + " reads removed.";
     }

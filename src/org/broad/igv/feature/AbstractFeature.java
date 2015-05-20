@@ -89,6 +89,10 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
         return chromosome;
     }
 
+    public String getContig() {
+        return chromosome;
+    }
+
     /**
      * By default features are 1 bp wide
      *

@@ -77,6 +77,11 @@ public class ExomeBlock implements Feature {
     }
 
     @Override
+    public String getContig() {
+        return null;
+    }
+
+    @Override
     public int getStart() {
         return genomeStart;
     }

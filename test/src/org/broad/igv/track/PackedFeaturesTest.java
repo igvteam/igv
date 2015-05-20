@@ -75,6 +75,11 @@ public class PackedFeaturesTest extends AbstractHeadlessTest {
             return chr;
         }
 
+        @Override
+        public String getContig() {
+            return chr;
+        }
+
         public int getStart() {
             return start;
         }

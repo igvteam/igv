@@ -162,6 +162,11 @@ public class VCFFeature implements IGVFeature, htsjdk.tribble.Feature {
         return chr;
     }
 
+    @Override
+    public String getContig() {
+        return chr;
+    }
+
     public void setChr(String chr) {
         throw new java.lang.UnsupportedOperationException("setEnd not supported");
     }

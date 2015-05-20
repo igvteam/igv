@@ -93,6 +93,11 @@ public class DotAlignedAlignment implements Alignment {
         return chromosome;
     }
 
+    @Override
+    public String getContig() {
+        return chromosome;
+    }
+
     public int getAlignmentStart() {
         return getStart();
     }

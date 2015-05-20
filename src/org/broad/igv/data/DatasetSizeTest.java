@@ -133,6 +133,10 @@ public class DatasetSizeTest {
         public String getChr() {
             return null;  //To change body of implemented methods use File | Settings | File Templates.
         }
+        @Override
+        public String getContig() {
+            return null;
+        }
 
         public int getStart() {
             return 0;  //To change body of implemented methods use File | Settings | File Templates.

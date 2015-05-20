@@ -418,6 +418,11 @@ public class GobyAlignment implements Alignment {
         return getChromosome(entry.getTargetIndex());
     }
 
+    @Override
+    public String getContig() {
+        return getChr();
+    }
+
     /**
      * Get the reference id from the iterator, prepend "chr".
      *

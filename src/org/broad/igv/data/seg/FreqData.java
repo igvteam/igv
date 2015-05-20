@@ -244,6 +244,11 @@ public class FreqData {
             return chr;
         }
 
+        @Override
+        public String getContig() {
+            return chr;
+        }
+
         public int getStart() {
             return start;
         }

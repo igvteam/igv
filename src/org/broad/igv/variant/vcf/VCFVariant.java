@@ -237,6 +237,11 @@ public class VCFVariant implements Variant {
     }
 
     @Override
+    public String getContig() {
+        return chr;
+    }
+
+    @Override
     public int getStart() {
         if(this.start < 0){
             calcStart();

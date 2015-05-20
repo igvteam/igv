@@ -71,6 +71,11 @@ public class DBFeature extends ReflectionDBObject implements Feature {
         return chr;
     }
 
+    @Override
+    public String getContig() {
+        return chr;
+    }
+
     public void setChr(String chr) {
         this.chr = chr;
     }

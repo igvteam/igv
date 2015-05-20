@@ -29,6 +29,8 @@ public class Locus extends Range implements NamedFeature {
         super(chr, start, end);
     }
 
+
+
     /**
      * Generate Locus from locusString of form [chr]:[start]-[end]
      * Returns null if invalid string

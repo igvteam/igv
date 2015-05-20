@@ -101,6 +101,11 @@ public abstract class SAMAlignment implements Alignment {
         return chr;
     }
 
+    @Override
+    public String getContig() {
+        return chr;
+    }
+
     public String getDescription() {
         return getReadName();
     }

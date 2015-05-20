@@ -38,4 +38,5 @@ public interface LocusScore extends htsjdk.tribble.Feature {
      * @return
      */
     public String getValueString(double position, WindowFunction windowFunction);
+
 }

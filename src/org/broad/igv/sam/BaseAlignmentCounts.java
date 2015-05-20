@@ -75,6 +75,10 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         return null;
     }
 
+    @Override
+    public String getContig() {
+        return null;
+    }
 
     public BisulfiteCounts getBisulfiteCounts() {
         return bisulfiteCounts;

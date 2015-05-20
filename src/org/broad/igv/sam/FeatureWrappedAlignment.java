@@ -71,6 +71,11 @@ public class FeatureWrappedAlignment implements Alignment {
         return chr;
     }
 
+    @Override
+    public String getContig() {
+        return chr;
+    }
+
     public int getAlignmentStart() {
         return start;
     }

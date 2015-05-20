@@ -52,6 +52,11 @@ public class BasicScore implements LocusScore {
         return null;
     }
 
+    @Override
+    public String getContig() {
+        return null;
+    }
+
     public int getStart() {
         return start;
     }

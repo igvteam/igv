@@ -40,6 +40,11 @@ public class Cytoband implements NamedFeature {
         // @todo -- trim arrays
     }
 
+    @Override
+    public String getContig() {
+        return chromosome;
+    }
+
     public String getChr() {
         return chromosome;
     }

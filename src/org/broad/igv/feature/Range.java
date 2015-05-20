@@ -41,6 +41,11 @@ public class Range implements Feature {
         return chr;
     }
 
+    @Override
+    public String getContig() {
+        return chr;
+    }
+
     public int getStart() {
         return start;
     }

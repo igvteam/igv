@@ -42,6 +42,11 @@ public class MethylScore implements LocusScore {
         return chr;
     }
 
+    @Override
+    public String getContig() {
+        return chr;
+    }
+
     public int getStart() {
         return start;
     }

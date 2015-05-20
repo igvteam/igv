@@ -59,6 +59,11 @@ public class PairedAlignment implements Alignment {
         return chr;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
+    public String getContig() {
+        return chr;
+    }
+
     public int getStart() {
         return start;
     }
