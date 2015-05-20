@@ -133,16 +133,17 @@ public class Main {
 
             if (thisVersion.lessThan(serverVersion)) {
 
-                final VersionUpdateDialog dlg = new VersionUpdateDialog(serverVersionString);
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    public void run() {
-                        dlg.setVisible(true);
-                        if (dlg.isSkipVersion()) {
-                            String newSkipString = skipString + "," + serverVersionString;
-                            PreferenceManager.getInstance().put(PreferenceManager.SKIP_VERSION, newSkipString);
-                        }
-                    }
-                });
+                log.info("A later version of IGV is available (" + serverVersionString + ")");
+//                final VersionUpdateDialog dlg = new VersionUpdateDialog(serverVersionString);
+//                SwingUtilities.invokeAndWait(new Runnable() {
+//                    public void run() {
+//                        dlg.setVisible(true);
+//                        if (dlg.isSkipVersion()) {
+//                            String newSkipString = skipString + "," + serverVersionString;
+//                            PreferenceManager.getInstance().put(PreferenceManager.SKIP_VERSION, newSkipString);
+//                        }
+//                    }
+//                });
 
             }
 
