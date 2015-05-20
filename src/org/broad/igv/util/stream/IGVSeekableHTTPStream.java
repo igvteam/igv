@@ -14,36 +14,30 @@ package org.broad.igv.util.stream;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
 import htsjdk.tribble.util.URLHelper;
+import org.broad.igv.exceptions.HttpResponseException;
+import org.broad.igv.util.HttpUtils;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * TODO Get rid of this class
- * Temporary workaround to let us use IGVUrlHelper, think
- * it's what's causing the issue with reading TDF from web start over http
  */
 public class IGVSeekableHTTPStream extends SeekableStream {
 
     static Logger log = Logger.getLogger(IGVSeekableHTTPStream.class);
 
     private long position = 0;
-    private long contentLength = -1;
-
-    private URLHelper helper;
+    private URL url;
+    long contentLength = -1;                      // Not set
 
     public IGVSeekableHTTPStream(final URL url) {
-
-        this.helper = new IGVUrlHelper(url);
-        try {
-            this.contentLength = this.helper.getContentLength();
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
-            //throw new RuntimeException(e.getMessage(), e);
-        }
-
+        this.url = url;
     }
 
     public long position() {
@@ -56,7 +50,7 @@ public class IGVSeekableHTTPStream extends SeekableStream {
 
     @Override
     public long skip(long n) throws IOException {
-        long bytesToSkip = Math.min(n, contentLength - position);
+        long bytesToSkip = contentLength < 0 ? n : Math.min(n, contentLength - position);
         position += bytesToSkip;
         return bytesToSkip;
     }
@@ -71,7 +65,7 @@ public class IGVSeekableHTTPStream extends SeekableStream {
 
     public int read(byte[] buffer, int offset, int len) throws IOException {
 
-        String stats = "Offset="+offset+",len="+len+",buflen="+buffer.length;
+        String stats = "Offset=" + offset + ",len=" + len + ",buflen=" + buffer.length;
         if (offset < 0 || len < 0 || (offset + len) > buffer.length) {
             throw new IndexOutOfBoundsException(stats);
         }
@@ -83,7 +77,7 @@ public class IGVSeekableHTTPStream extends SeekableStream {
         int n = 0;
         try {
 
-            if(contentLength > 0 && position >= contentLength) {
+            if (contentLength > 0 && position >= contentLength) {
                 return -1;  // EOF
             }
 
@@ -92,10 +86,10 @@ public class IGVSeekableHTTPStream extends SeekableStream {
             if (contentLength > 0) {
                 endRange = Math.min(endRange, contentLength);
             }
-            if(log.isTraceEnabled()){
+            if (log.isTraceEnabled()) {
                 log.trace("Trying to read range " + position + " to " + endRange);
             }
-            is = this.helper.openInputStreamForRange(position, endRange);
+            is = openInputStreamForRange(position, endRange);
 
             while (n < len) {
                 int count = is.read(buffer, offset + n, len - n);
@@ -112,9 +106,7 @@ public class IGVSeekableHTTPStream extends SeekableStream {
             position += n;
             return n;
 
-        }
-
-        catch (IOException e) {
+        } catch (IOException e) {
             // THis is a bit of a hack, but its not clear how else to handle this.  If a byte range is specified
             // that goes past the end of the file the response code will be 416.  The MAC os translates this to
             // an IOException with the 416 code in the message.  Windows translates the error to an EOFException.
@@ -134,9 +126,7 @@ public class IGVSeekableHTTPStream extends SeekableStream {
                 throw e;
             }
 
-        }
-
-        finally {
+        } finally {
             if (is != null) {
                 is.close();
             }
@@ -150,13 +140,56 @@ public class IGVSeekableHTTPStream extends SeekableStream {
 
 
     public int read() throws IOException {
-        byte []tmp=new byte[1];
-        read(tmp,0,1);
+        byte[] tmp = new byte[1];
+        read(tmp, 0, 1);
         return (int) tmp[0] & 0xFF;
+    }
+
+    public InputStream openInputStreamForRange(long start, long end) throws IOException {
+
+        String byteRange = "bytes=" + start + "-" + end;
+        Map<String, String> params = new HashMap();
+        params.put("Range", byteRange);
+        //Hack for web services which strip range header
+        // URL url = addStartEndQueryString(this.url, start, end);
+        return HttpUtils.getInstance().openConnectionStream(url, params);
+    }
+
+
+    /**
+     * Add query parameters which should more properly be in Range header field
+     * to query string
+     *
+     * @param start start byte
+     * @param end   end byte
+     * @throws java.net.MalformedURLException
+     */
+    static URL addStartEndQueryString(URL url, long start, long end) throws MalformedURLException {
+
+        String queryString = url.getQuery();
+        if (queryString == null) {
+            return new URL(url.toExternalForm() + "?start=" + start + "&end=" + end);
+        } else {
+            String newQueryString = queryString + "&start=" + start + "&end" + end;
+            return new URL(url.toExternalForm().replace(queryString, newQueryString));
+        }
     }
 
     @Override
     public String getSource() {
-        return this.helper.getUrl().toExternalForm();
+        return url.toExternalForm();
+    }
+
+
+    public static void main(String[] args) throws IOException {
+
+        IGVSeekableHTTPStream stream = new IGVSeekableHTTPStream(new URL("http://localhost/igv-web/test/data/misc/BufferedReaderTest.bin"));
+
+        byte[] buffer = new byte[1000];
+
+        stream.read(buffer, 0, 1000);
+
+        System.out.println("Done");
+
     }
 }

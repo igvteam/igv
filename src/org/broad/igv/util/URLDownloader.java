@@ -1,5 +1,6 @@
 package org.broad.igv.util;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.ui.util.ProgressMonitor;
 
 import java.io.*;
@@ -13,6 +14,8 @@ import java.net.URL;
  * via {@link #cancel(boolean)}
  */
 public class URLDownloader implements Runnable {
+
+    private static Logger log = Logger.getLogger(URLDownloader.class);
 
     private ProgressMonitor monitor = null;
 
@@ -39,7 +42,7 @@ public class URLDownloader implements Runnable {
         try {
             this.result = doDownload();
         } catch (IOException e) {
-            HttpUtils.log.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         } finally {
             this.done();
         }
@@ -58,9 +61,9 @@ public class URLDownloader implements Runnable {
 
     private RunnableResult doDownload() throws IOException {
 
-        HttpUtils.log.info("Downloading " + srcUrl + " to " + outputFile.getAbsolutePath());
+       log.info("Downloading " + srcUrl + " to " + outputFile.getAbsolutePath());
 
-        HttpURLConnection conn = openConnection(this.srcUrl, null);
+        HttpURLConnection conn = HttpUtils.getInstance().openConnection(this.srcUrl, null);
 
         long contentLength = -1;
         String contentLengthString = conn.getHeaderField("Content-Length");
@@ -77,7 +80,7 @@ public class URLDownloader implements Runnable {
         String msg1 = String.format("downloaded of %s total", contentLength >= 0 ? bytesToByteCountString(contentLength) : "unknown");
         int perc = 0;
         try {
-            is = getInputStream(conn);
+            is = conn.getInputStream();
             out = new FileOutputStream(outputFile);
 
             byte[] buf = new byte[64 * 1024];
@@ -99,9 +102,9 @@ public class URLDownloader implements Runnable {
                     }
                 }
             }
-            HttpUtils.log.info("Download complete.  Total bytes downloaded = " + downloaded);
+            log.info("Download complete.  Total bytes downloaded = " + downloaded);
         } catch (IOException e) {
-            readErrorStream(conn);
+            HttpUtils.getInstance().readErrorStream(conn);
             throw e;
         } finally {
             if (is != null) is.close();

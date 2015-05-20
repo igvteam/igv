@@ -41,7 +41,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 
 /**
  * Wrapper utility class... for interacting with HttpURLConnection.
@@ -124,7 +123,7 @@ public class HttpUtils {
         InputStream is = null;
         HttpURLConnection conn = openConnection(url, null);
         try {
-            is = getInputStream(conn);
+            is = conn.getInputStream();
             return readContents(is);
         } catch (IOException e) {
             readErrorStream(conn);  // Consume content
@@ -141,7 +140,7 @@ public class HttpUtils {
         reqProperties.put("Accept", "application/json,text/plain");
         HttpURLConnection conn = openConnection(url, reqProperties);
         try {
-            is = getInputStream(conn);
+            is = conn.getInputStream();
             return readContents(is);
 
         } catch (IOException e) {
@@ -151,7 +150,6 @@ public class HttpUtils {
             if (is != null) is.close();
         }
     }
-
 
     public String doPost(URL url, Map<String, String> params) throws IOException {
 
@@ -168,12 +166,11 @@ public class HttpUtils {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        //conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
         conn.setDoOutput(true);
         conn.getOutputStream().write(postDataBytes);
 
         StringBuilder response = new StringBuilder();
-        Reader in = new BufferedReader(new InputStreamReader(getInputStream(conn), "UTF-8"));
+        Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
         for (int c; (c = in.read()) >= 0; ) {
             response.append((char) c);
         }
@@ -211,17 +208,13 @@ public class HttpUtils {
             return null;
         }
 
-        boolean rangeRequestedNotReceived = isExpectedRangeMissing(conn, requestProperties);
-        if (rangeRequestedNotReceived) {
-            String msg = "Warning: range requested, but no Content-Range header in response";
+        if ((requestProperties != null) && requestProperties.containsKey("Range") && conn.getResponseCode() != 216) {
+            String msg = "Warning: range requested, but response code = " + conn.getResponseCode();
             log.error(msg);
-//            if(Globals.isTesting()){
-//                throw new IOException(msg);
-//            }
         }
 
         try {
-            InputStream input = getInputStream(conn);
+            InputStream input = conn.getInputStream();
             return input;
         } catch (IOException e) {
             readErrorStream(conn);  // Consume content
@@ -229,33 +222,23 @@ public class HttpUtils {
         }
     }
 
-    private InputStream getInputStream(HttpURLConnection conn) throws IOException {
-        InputStream input = conn.getInputStream();
-        //  if ("gzip".equals(conn.getContentEncoding())) {
-        //      input = new GZIPInputStream(input);
-        //  }
-        return input;
-    }
-
-    boolean isExpectedRangeMissing(URLConnection conn, Map<String, String> requestProperties) {
-        final boolean rangeRequested = (requestProperties != null) && (new CI.CIHashMap<String>(requestProperties)).containsKey("Range");
-        if (!rangeRequested) return false;
-
-        Map<String, List<String>> headerFields = conn.getHeaderFields();
-        boolean rangeReceived = (headerFields != null) && (new CI.CIHashMap<List<String>>(headerFields)).containsKey("Content-Range");
-        return !rangeReceived;
-    }
-
     public boolean resourceAvailable(URL url) {
         log.debug("Checking if resource is available: " + url);
         if (url.getProtocol().toLowerCase().equals("ftp")) {
             return FTPUtils.resourceAvailable(url);
         } else {
+            HttpURLConnection conn = null;
             try {
-                HttpURLConnection conn = openConnectionHeadOrGet(url);
+                conn = openConnectionHeadOrGet(url);
                 int code = conn.getResponseCode();
                 return code >= 200 && code < 300;
             } catch (Exception e) {
+                if(conn != null)
+                    try {
+                        readErrorStream(conn);  // Consume content
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
                 return false;
             }
         }
@@ -527,7 +510,7 @@ public class HttpUtils {
         InputStream inputStream;
 
         if (responseCode >= 200 && responseCode < 300) {
-            inputStream = getInputStream(urlconnection);
+            inputStream = urlconnection.getInputStream();
         } else {
             inputStream = urlconnection.getErrorStream();
         }
@@ -589,7 +572,7 @@ public class HttpUtils {
         return new String(bos.toByteArray());
     }
 
-    private String readErrorStream(HttpURLConnection connection) throws IOException {
+    String readErrorStream(HttpURLConnection connection) throws IOException {
         InputStream inputStream = null;
 
         try {
@@ -609,7 +592,7 @@ public class HttpUtils {
         return openConnection(url, Collections.<String, String>emptyMap(), "DELETE");
     }
 
-    HttpURLConnection openConnection(URL url, Map<String, String> requestProperties) throws IOException {
+    public HttpURLConnection openConnection(URL url, Map<String, String> requestProperties) throws IOException {
         return openConnection(url, requestProperties, "GET");
     }
 
@@ -811,49 +794,13 @@ public class HttpUtils {
             } else {
                 SeekableStream str = null;
                 try {
-                    boolean byteRangeTestSuccess = true;
 
-                    if (host.contains("broadinstitute.org")) {
-                        byteRangeTestSuccess = testBroadHost(host);
-                    } else {
-                        // Non-broad URL
-                        int l = (int) Math.min(1000, HttpUtils.getInstance().getContentLength(url));
-                        if (l > 100) {
-
-                            byte[] firstBytes = new byte[l];
-                            str = new IGVSeekableHTTPStream(url);
-                            str.readFully(firstBytes);
-
-                            int end = firstBytes.length;
-                            int start = end - 100;
-                            str.seek(start);
-                            int len = end - start;
-                            byte[] buffer = new byte[len];
-                            int n = 0;
-                            while (n < len) {
-                                int count = str.read(buffer, n, len - n);
-                                if (count < 0)
-                                    throw new EOFException();
-                                n += count;
-                            }
-
-                            for (int i = 0; i < len; i++) {
-                                if (buffer[i] != firstBytes[i + start]) {
-                                    byteRangeTestSuccess = false;
-                                    break;
-                                }
-                            }
-                        } else {
-                            // Too small a sample to test, or unknown content length.  Return "true" but don't record
-                            // this host as tested.
-                            return true;
-                        }
-                    }
+                    boolean byteRangeTestSuccess = testByteRange(url);
 
                     if (byteRangeTestSuccess) {
                         log.info("Range-byte request succeeded");
                     } else {
-                        log.info("Range-byte test failed -- problem with client network environment.");
+                        log.info("Range-byte test failed -- Server does not support range-byte requests or problem with client network environment.");
                     }
 
                     byteRangeTestMap.put(host, byteRangeTestSuccess);
@@ -877,44 +824,16 @@ public class HttpUtils {
         }
     }
 
-    private boolean testBroadHost(String host) throws IOException {
-        // Test broad urls for successful byte range requests.
-        log.info("Testing range-byte request on host: " + host);
-
-        String testURL;
-        if (host.startsWith("igvdata.broadinstitute.org")) {
-            // Amazon cloud front
-            testURL = "http://igvdata.broadinstitute.org/genomes/seq/hg19/chr12.txt";
-        } else if (host.startsWith("igv.broadinstitute.org")) {
-            // Amazon S3
-            testURL = "http://igv.broadinstitute.org/genomes/seq/hg19/chr12.txt";
-        } else {
-            // All others
-            testURL = "http://www.broadinstitute.org/igvdata/annotations/seq/hg19/chr12.txt";
-        }
-
-        byte[] expectedBytes = {'T', 'C', 'G', 'C', 'T', 'T', 'G', 'A', 'A', 'C', 'C', 'C', 'G', 'G',
-                'G', 'A', 'G', 'A', 'G', 'G'};
-        IGVSeekableHTTPStream str = null;
-
-        try {
-            str = new IGVSeekableHTTPStream(new URL(testURL));
-
-            str.seek(25350000);
-            byte[] buffer = new byte[80000];
-            str.read(buffer);
-            String result = new String(buffer);
-            for (int i = 0; i < expectedBytes.length; i++) {
-                if (buffer[i] != expectedBytes[i]) {
-                    return false;
-                }
-            }
-            return true;
-        } finally {
-            if (str != null) str.close();
-        }
+    public boolean testByteRange(URL url) throws IOException {
+        Map<String, String> params = new HashMap();
+        String byteRange = "bytes=" + 0 + "-" + 10;
+        params.put("Range", byteRange);
+        HttpURLConnection conn = HttpUtils.getInstance().openConnection(url, params);
+        int statusCode = conn.getResponseCode();
+        boolean byteRangeTestSuccess = (statusCode == 206);
+        readFully(conn.getInputStream(), new byte[10]);
+        return byteRangeTestSuccess;
     }
-
 
     public void shutdown() {
         // Do any cleanup required here
@@ -1041,172 +960,15 @@ public class HttpUtils {
         }
     }
 
-    /**
-     * Runnable for downloading a file from a URL.
-     * Downloading is buffered, and can be cancelled (between buffers)
-     * via {@link #cancel(boolean)}
-     */
-    public class URLDownloader implements Runnable {
 
-        private ProgressMonitor monitor = null;
 
-        private final URL srcUrl;
-        private final File outputFile;
+    static boolean isExpectedRangeMissing(URLConnection conn, Map<String, String> requestProperties) {
+        final boolean rangeRequested = (requestProperties != null) && (new CI.CIHashMap<String>(requestProperties)).containsKey("Range");
+        if (!rangeRequested) return false;
 
-        private volatile boolean started = false;
-        private volatile boolean done = false;
-        private volatile boolean cancelled = false;
-        private volatile RunnableResult result;
-
-        public URLDownloader(String url, File outputFile) throws MalformedURLException {
-            this.srcUrl = new URL(url);
-            this.outputFile = outputFile;
-        }
-
-        @Override
-        public void run() {
-            if (this.cancelled) {
-                return;
-            }
-            started = true;
-
-            try {
-                this.result = doDownload();
-            } catch (IOException e) {
-                log.error(e.getMessage(), e);
-            } finally {
-                this.done();
-            }
-
-        }
-
-        /**
-         * Return the result. Must be called after run is complete
-         *
-         * @return
-         */
-        public RunnableResult getResult() {
-            if (!this.done) throw new IllegalStateException("Must wait for run to finish before getting result");
-            return this.result;
-        }
-
-        private RunnableResult doDownload() throws IOException {
-
-            log.info("Downloading " + srcUrl + " to " + outputFile.getAbsolutePath());
-
-            HttpURLConnection conn = openConnection(this.srcUrl, null);
-
-            long contentLength = -1;
-            String contentLengthString = conn.getHeaderField("Content-Length");
-            if (contentLengthString != null) {
-                contentLength = Long.parseLong(contentLengthString);
-            }
-
-            InputStream is = null;
-            OutputStream out = null;
-
-            long downloaded = 0;
-            long downSinceLast = 0;
-            String curStatus;
-            String msg1 = String.format("downloaded of %s total", contentLength >= 0 ? bytesToByteCountString(contentLength) : "unknown");
-            int perc = 0;
-            try {
-                is = getInputStream(conn);
-                out = new FileOutputStream(outputFile);
-
-                byte[] buf = new byte[64 * 1024];
-                int counter = 0;
-                int interval = 100;
-                int bytesRead = 0;
-                while (!this.cancelled && (bytesRead = is.read(buf)) != -1) {
-                    out.write(buf, 0, bytesRead);
-                    downloaded += bytesRead;
-                    downSinceLast += bytesRead;
-                    counter = (counter + 1) % interval;
-                    if (counter == 0 && this.monitor != null) {
-                        curStatus = String.format("%s %s", bytesToByteCountString(downloaded), msg1);
-                        this.monitor.updateStatus(curStatus);
-                        if (contentLength >= 0) {
-                            perc = (int) ((downSinceLast * 100) / contentLength);
-                            this.monitor.fireProgressChange(perc);
-                            if (perc >= 1) downSinceLast = 0;
-                        }
-                    }
-                }
-                log.info("Download complete.  Total bytes downloaded = " + downloaded);
-            } catch (IOException e) {
-                readErrorStream(conn);
-                throw e;
-            } finally {
-                if (is != null) is.close();
-                if (out != null) {
-                    out.flush();
-                    out.close();
-                }
-            }
-            long fileLength = outputFile.length();
-
-            if (this.cancelled) return RunnableResult.CANCELLED;
-
-            boolean knownComplete = contentLength == fileLength;
-            //Assume success if file length not known
-            if (knownComplete || contentLength < 0) {
-                if (this.monitor != null) {
-                    this.monitor.fireProgressChange(100);
-                    this.monitor.updateStatus("Done");
-                }
-                return RunnableResult.SUCCESS;
-            } else {
-                return RunnableResult.FAILURE;
-            }
-
-        }
-
-        protected void done() {
-            this.done = true;
-        }
-
-        public boolean isDone() {
-            return this.done;
-        }
-
-        /**
-         * See {@link java.util.concurrent.FutureTask#cancel(boolean)}
-         *
-         * @param mayInterruptIfRunning
-         * @return
-         */
-        public boolean cancel(boolean mayInterruptIfRunning) {
-            if (this.started && !mayInterruptIfRunning) {
-                return false;
-            }
-            this.cancelled = true;
-            return true;
-        }
-
-        public void setMonitor(ProgressMonitor monitor) {
-            this.monitor = monitor;
-        }
-
-        /**
-         * Convert bytes to human-readable string.
-         * e.g. 102894 -> 102.89 KB. If too big or too small,
-         * doesn't append a prefix just returns {@code bytes + " B"}
-         *
-         * @param bytes
-         * @return
-         */
-        public String bytesToByteCountString(long bytes) {
-            int unit = 1000;
-            String prefs = "KMGT";
-
-            if (bytes < unit) return bytes + " B";
-            int exp = (int) (Math.log(bytes) / Math.log(unit));
-            if (exp <= 0 || exp >= prefs.length()) return bytes + " B";
-
-            String pre = (prefs).charAt(exp - 1) + "";
-            return String.format("%.2f %sB", bytes / Math.pow(unit, exp), pre);
-        }
+        Map<String, List<String>> headerFields = conn.getHeaderFields();
+        boolean rangeReceived = (headerFields != null) && (new CI.CIHashMap<List<String>>(headerFields)).containsKey("Content-Range");
+        return !rangeReceived;
     }
 
 
@@ -1223,6 +985,25 @@ public class HttpUtils {
     public void resetAuthenticator() {
         Authenticator.setDefault(new IGVAuthenticator());
 
+    }
+
+
+    /**
+     * Useful helper function
+     */
+    public static void readFully(InputStream is, byte b[]) throws IOException {
+        int len = b.length;
+        if (len < 0){
+            throw new IndexOutOfBoundsException();
+        }
+        int n = 0;
+        while (n < len) {
+            int count = is.read(b, n, len - n);
+            if (count < 0){
+                throw new EOFException();
+            }
+            n += count;
+        }
     }
 
 
