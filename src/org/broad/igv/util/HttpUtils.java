@@ -208,7 +208,7 @@ public class HttpUtils {
             return null;
         }
 
-        if ((requestProperties != null) && requestProperties.containsKey("Range") && conn.getResponseCode() != 216) {
+        if ((requestProperties != null) && requestProperties.containsKey("Range") && conn.getResponseCode() != 206) {
             String msg = "Warning: range requested, but response code = " + conn.getResponseCode();
             log.error(msg);
         }
