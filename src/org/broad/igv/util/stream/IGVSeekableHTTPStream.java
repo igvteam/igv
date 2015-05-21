@@ -38,6 +38,12 @@ public class IGVSeekableHTTPStream extends SeekableStream {
 
     public IGVSeekableHTTPStream(final URL url) {
         this.url = url;
+//        try {
+//            this.contentLength = HttpUtils.getInstance().getContentLength(url);
+//        } catch (IOException e) {
+//            log.error(e.getMessage(), e);
+//            //throw new RuntimeException(e.getMessage(), e);
+//        }
     }
 
     public long position() {
@@ -112,9 +118,9 @@ public class IGVSeekableHTTPStream extends SeekableStream {
             // an IOException with the 416 code in the message.  Windows translates the error to an EOFException.
             //
             //  The BAM file iterator  uses the return value to detect end of file (specifically looks for n == 0).
-            log.error(e.getMessage(), e);
-            if (e.getMessage().contains("416") || (e instanceof EOFException)) {
+             if (e.getMessage().contains("416") || (e instanceof EOFException)) {
                 if (n == 0) {
+                    contentLength = position;
                     return -1;
                 } else {
                     position += n;

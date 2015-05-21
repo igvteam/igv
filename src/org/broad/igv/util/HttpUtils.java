@@ -727,8 +727,6 @@ public class HttpUtils {
                 } else {
                     message = conn.getResponseMessage();
                     String details = readErrorStream(conn);
-                    log.error("URL: " + url.toExternalForm() + ". error stream: " + details);
-                    log.error("Code: " + code + ". " + message);
                     throw new HttpResponseException(code, message, details);
                 }
             }
