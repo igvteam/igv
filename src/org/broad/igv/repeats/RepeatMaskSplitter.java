@@ -40,11 +40,11 @@ import java.util.Properties;
 public class RepeatMaskSplitter {
 
     public static void main(String[] args) {
-        File file = new File("/Users/jrobinso/Downloads/Repeats/RepMask_3.2.7_hg18.tab");
+        File file = new File(args[0]);
         split(file);
     }
 
-    public static void split(File file) {
+    public static void split(File inputFile) {
 
         int binCol = 0;
         int millDivCol = 2;
@@ -54,7 +54,7 @@ public class RepeatMaskSplitter {
         int startCol = 6;
         int endCol = 7;
         int strandCol = 9;
-        int namCol = 10;
+        int nameCol = 10;
         int classCol = 11;
         int famCol = 12;
 
@@ -62,12 +62,19 @@ public class RepeatMaskSplitter {
 
         AsciiLineReader reader = null;
         HashMap<String, PrintWriter> writers = new HashMap();
+        PrintWriter allWriter = null;
         try {
             String lastChr = "";
-            reader = new AsciiLineReader(new FileInputStream(file));
+            reader = new AsciiLineReader(new FileInputStream(inputFile));
             // Skip header
             reader.readLine();
             String nextLine;
+            File dir = inputFile.getParentFile();
+
+            allWriter = new PrintWriter(new BufferedWriter(new FileWriter("rmsk.bed")));
+            allWriter.println("#gffTags");
+            allWriter.println("track name=\"Repeat Masker\"");
+
             while ((nextLine = reader.readLine()) != null) {
                 String[] tokens = Globals.tabPattern.split(nextLine, -1);
                 String chr = tokens[chrCol];
@@ -80,28 +87,21 @@ public class RepeatMaskSplitter {
                 if (repClass.contains("?")) {
                     continue;
                 }
-                String fileKey = chr + "." + repClass;
+                String filename = repClass + ".bed";
 
-                // Get or create file writer for the class + chr combination
-                PrintWriter pw = writers.get(fileKey);
+                // Get or create file writer for the class
+                PrintWriter pw = writers.get(filename);
                 if (pw == null) {
 
-                    File dir = new File(file.getParent(), repClass);
-                    if (!dir.exists()) {
-                        dir.mkdir();
-                        fileMappings.put(repClass, new LinkedHashMap<String, String>());
-                    }
-
-                    Map<String, String> fMap = fileMappings.get(repClass);
-                    String fn = fileKey + ".bed";
-                    fMap.put(chr, fn);
-
-                    File outputFile = new File(dir, fn);
-                    pw = new PrintWriter(new FileWriter(outputFile));
-                    writers.put(fileKey, pw);
+                    File outputFile = new File(dir, filename);
+                    pw = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
+                    writers.put(filename, pw);
                 }
 
-                String name = "Repeat " + tokens[4] + ", family " + tokens[6];
+                String nm = tokens[nameCol];
+                String fam = tokens[famCol];
+
+                String name = "Name=" + nm + ";Class=" + repClass + ";Family=" + fam;
 
                 pw.print(chr);
                 pw.print("\t");
@@ -114,26 +114,24 @@ public class RepeatMaskSplitter {
                 pw.print(tokens[strandCol]);
                 pw.println();
 
-            }
+                allWriter.print(chr);
+                allWriter.print("\t");
+                allWriter.print(Integer.parseInt(tokens[startCol]));
+                allWriter.print("\t");
+                allWriter.print(Integer.parseInt(tokens[endCol]));
+                allWriter.print("\t");
+                allWriter.print(name);
+                allWriter.print("\t");
+                allWriter.print(tokens[strandCol]);
+                allWriter.println();
 
-            // Ouput filemapping files
-            for (Map.Entry<String, LinkedHashMap<String, String>> entry : fileMappings.entrySet()) {
-                String repClass = entry.getKey();
-                File dir = new File(file.getParent(), repClass);
-                File listFile = new File(dir, repClass + "_files.list.txt");
-                Properties props = new Properties();
-                for (Map.Entry<String, String> entry2 : entry.getValue().entrySet()) {
-                    props.put(entry2.getKey(), entry2.getValue());
-                }
-                FileOutputStream os = new FileOutputStream(listFile);
-                props.store(os, "");
-                os.close();
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             reader.close();
+            allWriter.close();
             closeWriters(writers);
         }
 
