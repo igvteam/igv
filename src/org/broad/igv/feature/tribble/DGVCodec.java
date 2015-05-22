@@ -190,11 +190,11 @@ samples	IS30771,IS39243,IS41043	longblob	 	Sample IDs if available
             basicFeature = (BasicFeature) feature;
         }
 
-        if (basicFeature.getName() != null || (gffTags && basicFeature.getDescription() != null)) {
+        if (basicFeature.getName() != null || (isGffTags() && basicFeature.getDescription() != null)) {
 
             buffer.append("\t");
 
-            if (gffTags && basicFeature.getDescription() != null) {
+            if (isGffTags() && basicFeature.getDescription() != null) {
                 // mRNA<br>ID = LOC_Os01g01010.2<br>Name = LOC_Os01g01010.2<br>Parent = LOC_Os01g01010<br>
                 //ID=LOC_Os01g01010.1:exon_1;Parent=LOC_Os01g01010.1
                 String[] attrs = BR_PATTERN.split(basicFeature.getDescription());

@@ -49,14 +49,6 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
         this.genome = genome;
     }
 
-    public void setGffTags(boolean gffTags) {
-        this.gffTags = gffTags;
-    }
-
-    public boolean isGffTags() {
-        return this.gffTags;
-    }
-
     //@Override
     public BasicFeature decode(String[] tokens) {
 
@@ -88,7 +80,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
 
         // Name
         if (tokenCount > 3) {
-            if (gffTags) {
+            if (isGffTags()) {
                 MultiMap<String, String> atts = new MultiMap<String, String>();
                 tagHelper.parseAttributes(tokens[3], atts);
                 String name = tagHelper.getName(atts);
@@ -211,7 +203,6 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
         }
 
         if (nextLine.startsWith("#") || nextLine.startsWith("track") || nextLine.startsWith("browser")) {
-            this.readHeaderLine(nextLine);
             return null;
         }
 
@@ -296,11 +287,11 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
             basicFeature = (BasicFeature) feature;
         }
 
-        if (basicFeature.getName() != null || (gffTags && basicFeature.getDescription() != null)) {
+        if (basicFeature.getName() != null || (isGffTags() && basicFeature.getDescription() != null)) {
 
             buffer.append("\t");
 
-            if (gffTags && basicFeature.getDescription() != null) {
+            if (isGffTags() && basicFeature.getDescription() != null) {
                 // mRNA<br>ID = LOC_Os01g01010.2<br>Name = LOC_Os01g01010.2<br>Parent = LOC_Os01g01010<br>
                 //ID=LOC_Os01g01010.1:exon_1;Parent=LOC_Os01g01010.1
                 String[] attrs = BR_PATTERN.split(basicFeature.getDescription());

@@ -87,7 +87,7 @@ public abstract class UCSCCodec<T extends Feature> extends AsciiFeatureCodec<T> 
             TrackProperties tp = new TrackProperties();
             ParsingUtils.parseTrackLine(line, tp);
             header.setTrackProperties(tp);
-            gffTags = tp.isGffTags();
+            if(gffTags == false) gffTags = tp.isGffTags();
 
             Class rendererClass = tp.getRendererClass();
             if (rendererClass != null && rendererClass.isAssignableFrom(SpliceJunctionRenderer.class)) {
@@ -109,5 +109,13 @@ public abstract class UCSCCodec<T extends Feature> extends AsciiFeatureCodec<T> 
     public void setSpliceJunctions(boolean b) {
         spliceJunctions = true;
 
+    }
+
+    public void setGffTags(boolean gffTags) {
+        this.gffTags = gffTags;
+    }
+
+    public boolean isGffTags() {
+        return this.gffTags;
     }
 }
