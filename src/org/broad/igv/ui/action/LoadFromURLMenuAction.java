@@ -30,7 +30,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -139,6 +141,12 @@ public class LoadFromURLMenuAction extends MenuAction {
 
         String bucket = gsUrl.substring(5, i);
         String object = gsUrl.substring(i + 1);
+        try {
+            object = URLEncoder.encode(object, "UTF8");
+        } catch (UnsupportedEncodingException e) {
+            // This isn't going to happen
+            log.error(e);
+        }
 
         return "https://www.googleapis.com/storage/v1/b/" + bucket + "/o/" + object;
 
