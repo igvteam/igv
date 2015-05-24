@@ -259,6 +259,7 @@ public class PreferenceManager implements PropertyManager {
 
     public static final String GOOGLE_API_KEY = "GOOGLE_API_KEY";
     public static final String ENABLE_GOOGLE_MENU = "ENABLE_GOOGLE_MENU";
+    public static final String SAVE_GOOGLE_CREDENTIALS = "SAVE_GOOGLE_CREDENTIALS";
 
     public static final String BLAT_URL = "BLAT_URL";
 
@@ -1136,6 +1137,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SASHIMI_SHOW_COVERAGE, "true");
 
         defaultValues.put(ENABLE_GOOGLE_MENU, "false");
+        defaultValues.put(SAVE_GOOGLE_CREDENTIALS, "true");
 
         defaultValues.put(DEFAULT_VISIBILITY_WINDOW, "-1");
 

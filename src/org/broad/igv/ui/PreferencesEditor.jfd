@@ -80,7 +80,7 @@
                </void> 
                <void method="setProperty"> 
                 <string>$rowSpecs</string> 
-                <string>0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0</string> 
+                <string>0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0</string> 
                </void> 
                <void method="setProperty"> 
                 <string>$hGap</string> 
@@ -292,7 +292,7 @@
                 <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
                 <void method="setProperty"> 
                  <string>gridy</string> 
-                 <int>8</int> 
+                 <int>9</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>gridwidth</string> 
@@ -335,7 +335,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>gridy</string> 
-                 <int>8</int> 
+                 <int>9</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>gridwidth</string> 
@@ -374,7 +374,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>gridy</string> 
-                 <int>8</int> 
+                 <int>9</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>vAlign</string> 
@@ -397,7 +397,7 @@
                 <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
                 <void method="setProperty"> 
                  <string>gridy</string> 
-                 <int>10</int> 
+                 <int>11</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>gridwidth</string> 
@@ -436,7 +436,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>gridy</string> 
-                 <int>10</int> 
+                 <int>11</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>gridwidth</string> 
@@ -465,7 +465,7 @@
                 <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
                 <void method="setProperty"> 
                  <string>gridy</string> 
-                 <int>11</int> 
+                 <int>12</int> 
                 </void> 
                </object> 
               </void> 
@@ -496,7 +496,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>gridy</string> 
-                 <int>11</int> 
+                 <int>12</int> 
                 </void> 
                </object> 
               </void> 
@@ -546,7 +546,7 @@
                 <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
                 <void method="setProperty"> 
                  <string>gridy</string> 
-                 <int>13</int> 
+                 <int>14</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>gridwidth</string> 
@@ -601,7 +601,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>gridy</string> 
-                 <int>13</int> 
+                 <int>14</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>gridwidth</string> 
@@ -735,6 +735,68 @@
               </void> 
               <void method="add"> 
                <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JCheckBox</string> 
+                <void method="setProperty"> 
+                 <string>text</string> 
+                 <string>Save Google credentials</string> 
+                </void> 
+                <void property="name"> 
+                 <string>saveGoogleCredentialsCB</string> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.ActionListener</string> 
+                  <string>actionPerformed</string> 
+                  <string>saveGoogleCredentialsCBActionPerformed</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
+                <void method="setProperty"> 
+                 <string>gridy</string> 
+                 <int>8</int> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JLabel</string> 
+                <void method="setProperty"> 
+                 <string>text</string> 
+                 <string>Save authorization credentials across sessions</string> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>font</string> 
+                 <object class="java.awt.Font"> 
+                  <string>Lucida Grande</string> 
+                  <int>2</int> 
+                  <int>13</int> 
+                 </object> 
+                </void> 
+                <void property="name"> 
+                 <string>label34</string> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
+                <void method="setProperty"> 
+                 <string>gridx</string> 
+                 <int>3</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>gridy</string> 
+                 <int>8</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>gridwidth</string> 
+                 <int>5</int> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
                 <string>javax.swing.JLabel</string> 
                 <void method="setProperty"> 
                  <string>text</string> 
@@ -752,7 +814,7 @@
                 <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
                 <void method="setProperty"> 
                  <string>gridy</string> 
-                 <int>9</int> 
+                 <int>10</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>gridwidth</string> 
@@ -795,7 +857,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>gridy</string> 
-                 <int>9</int> 
+                 <int>10</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>gridwidth</string> 
@@ -830,7 +892,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>gridy</string> 
-                 <int>9</int> 
+                 <int>10</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>vAlign</string> 
@@ -857,7 +919,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>gridy</string> 
-                 <int>11</int> 
+                 <int>12</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>gridwidth</string> 
@@ -892,7 +954,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>gridy</string> 
-                 <int>11</int> 
+                 <int>12</int> 
                 </void> 
                </object> 
               </void> 
@@ -919,7 +981,7 @@
                 <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
                 <void method="setProperty"> 
                  <string>gridy</string> 
-                 <int>12</int> 
+                 <int>13</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>gridwidth</string> 
@@ -946,7 +1008,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>gridy</string> 
-                 <int>12</int> 
+                 <int>13</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>gridwidth</string> 
@@ -981,7 +1043,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>gridy</string> 
-                 <int>13</int> 
+                 <int>14</int> 
                 </void> 
                </object> 
               </void> 

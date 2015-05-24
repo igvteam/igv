@@ -16,6 +16,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.data.expression.ProbeToLocusMap;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
@@ -74,7 +75,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void enableGoogleCBActionPerformed(ActionEvent e) {
         updatedPreferenceMap.put(PreferenceManager.ENABLE_GOOGLE_MENU, String.valueOf(enableGoogleCB.isSelected()));
+    }
 
+    private void saveGoogleCredentialsCBActionPerformed(ActionEvent e) {
+        updatedPreferenceMap.put(PreferenceManager.SAVE_GOOGLE_CREDENTIALS, String.valueOf(saveGoogleCredentialsCB.isSelected()));
     }
 
     public PreferencesEditor(java.awt.Frame parent, boolean modal) {
@@ -129,6 +133,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
         label32 = new JLabel();
         enableGoogleCB = new JCheckBox();
         label33 = new JLabel();
+        saveGoogleCredentialsCB = new JCheckBox();
+        label34 = new JLabel();
         textField1 = new JLabel();
         featureVisibilityWindowField = new JTextField();
         zoomToFeatureExplanation3 = new JLabel();
@@ -367,9 +373,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         jPanel10.setBorder(null);
                         jPanel10.setLayout(new GridBagLayout());
                         ((GridBagLayout)jPanel10.getLayout()).columnWidths = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-                        ((GridBagLayout)jPanel10.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                        ((GridBagLayout)jPanel10.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
                         ((GridBagLayout)jPanel10.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
-                        ((GridBagLayout)jPanel10.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                        ((GridBagLayout)jPanel10.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
                         //---- missingDataExplanation ----
                         missingDataExplanation.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
@@ -431,7 +437,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         //---- label4 ----
                         label4.setText("Feature flanking region (bp or %): ");
                         label4.setToolTipText("Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.  A negative number is interpreted as a percentage.");
-                        jPanel10.add(label4, new GridBagConstraints(0, 8, 4, 1, 0.0, 0.0,
+                        jPanel10.add(label4, new GridBagConstraints(0, 9, 4, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 5), 0, 0));
 
@@ -449,7 +455,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 geneListFlankingFieldActionPerformed(e);
                             }
                         });
-                        jPanel10.add(geneListFlankingField, new GridBagConstraints(4, 8, 3, 1, 0.0, 0.0,
+                        jPanel10.add(geneListFlankingField, new GridBagConstraints(4, 9, 3, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 5), 0, 0));
 
@@ -457,13 +463,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         zoomToFeatureExplanation2.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                         zoomToFeatureExplanation2.setText("<html><i>&lt; 0 is interpreted as a percentage.</b>");
                         zoomToFeatureExplanation2.setVerticalAlignment(SwingConstants.TOP);
-                        jPanel10.add(zoomToFeatureExplanation2, new GridBagConstraints(7, 8, 1, 1, 0.0, 0.0,
+                        jPanel10.add(zoomToFeatureExplanation2, new GridBagConstraints(7, 9, 1, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
                             new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- label6 ----
                         label6.setText("Sequence resolution threshold (bp/pixel):");
-                        jPanel10.add(label6, new GridBagConstraints(0, 10, 4, 1, 0.0, 0.0,
+                        jPanel10.add(label6, new GridBagConstraints(0, 11, 4, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 5), 0, 0));
 
@@ -480,14 +486,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 seqResolutionThresholdActionPerformed(e);
                             }
                         });
-                        jPanel10.add(seqResolutionThreshold, new GridBagConstraints(4, 10, 3, 1, 0.0, 0.0,
+                        jPanel10.add(seqResolutionThreshold, new GridBagConstraints(4, 11, 3, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- label10 ----
                         label10.setText("Default  font: ");
                         label10.setLabelFor(defaultFontField);
-                        jPanel10.add(label10, new GridBagConstraints(0, 11, 1, 1, 0.0, 0.0,
+                        jPanel10.add(label10, new GridBagConstraints(0, 12, 1, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 5), 0, 0));
 
@@ -499,7 +505,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 fontChangeButtonActionPerformed(e);
                             }
                         });
-                        jPanel10.add(fontChangeButton, new GridBagConstraints(6, 11, 1, 1, 0.0, 0.0,
+                        jPanel10.add(fontChangeButton, new GridBagConstraints(6, 12, 1, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 5), 0, 0));
 
@@ -517,7 +523,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         //---- label7 ----
                         label7.setText("Background color click to change): ");
-                        jPanel10.add(label7, new GridBagConstraints(0, 13, 3, 1, 0.0, 0.0,
+                        jPanel10.add(label7, new GridBagConstraints(0, 14, 3, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 5), 0, 0));
 
@@ -533,7 +539,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             });
                             backgroundColorPanel.setLayout(null);
                         }
-                        jPanel10.add(backgroundColorPanel, new GridBagConstraints(3, 13, 2, 1, 0.0, 0.0,
+                        jPanel10.add(backgroundColorPanel, new GridBagConstraints(3, 14, 2, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 5), 0, 0));
 
@@ -575,10 +581,29 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 5), 0, 0));
 
+                        //---- saveGoogleCredentialsCB ----
+                        saveGoogleCredentialsCB.setText("Save Google credentials");
+                        saveGoogleCredentialsCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                saveGoogleCredentialsCBActionPerformed(e);
+                            }
+                        });
+                        jPanel10.add(saveGoogleCredentialsCB, new GridBagConstraints(0, 8, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 5), 0, 0));
+
+                        //---- label34 ----
+                        label34.setText("Save authorization credentials across sessions");
+                        label34.setFont(new Font("Lucida Grande", Font.ITALIC, 13));
+                        jPanel10.add(label34, new GridBagConstraints(3, 8, 5, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 5), 0, 0));
+
                         //---- textField1 ----
                         textField1.setText("Default visibility window (kilobases):");
                         textField1.setToolTipText("A value > 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.   The threshold (\"visibility window\") can be overriden explicitly for individual tracks via the track menu.");
-                        jPanel10.add(textField1, new GridBagConstraints(0, 9, 3, 1, 0.0, 0.0,
+                        jPanel10.add(textField1, new GridBagConstraints(0, 10, 3, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 5), 0, 0));
 
@@ -596,7 +621,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 featureVisibilityWindowFieldFocusLost(e);
                             }
                         });
-                        jPanel10.add(featureVisibilityWindowField, new GridBagConstraints(4, 9, 3, 1, 0.0, 0.0,
+                        jPanel10.add(featureVisibilityWindowField, new GridBagConstraints(4, 10, 3, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 5), 0, 0));
 
@@ -604,13 +629,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         zoomToFeatureExplanation3.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                         zoomToFeatureExplanation3.setText("<html><i>&lt; 0 disables visibility window.</b>");
                         zoomToFeatureExplanation3.setVerticalAlignment(SwingConstants.TOP);
-                        jPanel10.add(zoomToFeatureExplanation3, new GridBagConstraints(7, 9, 1, 1, 0.0, 0.0,
+                        jPanel10.add(zoomToFeatureExplanation3, new GridBagConstraints(7, 10, 1, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
                             new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- defaultFontField ----
                         defaultFontField.setEditable(false);
-                        jPanel10.add(defaultFontField, new GridBagConstraints(1, 11, 4, 1, 0.0, 0.0,
+                        jPanel10.add(defaultFontField, new GridBagConstraints(1, 12, 4, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 5), 0, 0));
 
@@ -622,7 +647,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 resetFontButtonActionPerformed(e);
                             }
                         });
-                        jPanel10.add(resetFontButton, new GridBagConstraints(7, 11, 1, 1, 0.0, 0.0,
+                        jPanel10.add(resetFontButton, new GridBagConstraints(7, 12, 1, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 5), 0, 0));
 
@@ -634,13 +659,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 scaleFontsCBActionPerformed(e);
                             }
                         });
-                        jPanel10.add(scaleFontsCB, new GridBagConstraints(0, 12, 6, 1, 0.0, 0.0,
+                        jPanel10.add(scaleFontsCB, new GridBagConstraints(0, 13, 6, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- label8 ----
                         label8.setText("<html><i>Scale fonts for high resolution screens.  Requires restart.");
-                        jPanel10.add(label8, new GridBagConstraints(2, 12, 7, 1, 0.0, 0.0,
+                        jPanel10.add(label8, new GridBagConstraints(2, 13, 7, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 0), 0, 0));
 
@@ -652,7 +677,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 resetBackgroundButtonActionPerformed(e);
                             }
                         });
-                        jPanel10.add(resetBackgroundButton, new GridBagConstraints(7, 13, 1, 1, 0.0, 0.0,
+                        jPanel10.add(resetBackgroundButton, new GridBagConstraints(7, 14, 1, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 5), 0, 0));
                     }
@@ -2995,6 +3020,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 IGVMenuBar.getInstance().enableGoogleMenu(Boolean.valueOf(updatedPreferenceMap.get(PreferenceManager.ENABLE_GOOGLE_MENU)));
             }
 
+
+            if(updatedPreferenceMap.containsKey(PreferenceManager.SAVE_GOOGLE_CREDENTIALS)) {
+                OAuthUtils.getInstance().updateSaveOption(Boolean.valueOf(updatedPreferenceMap.get(PreferenceManager.SAVE_GOOGLE_CREDENTIALS)));
+            }
+
             updatedPreferenceMap.clear();
             IGV.getInstance().doRefresh();
             setVisible(false);
@@ -4041,6 +4071,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         scaleFontsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SCALE_FONTS));
 
         enableGoogleCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.ENABLE_GOOGLE_MENU));
+        saveGoogleCredentialsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAVE_GOOGLE_CREDENTIALS));
 
         geneListFlankingField.setText(prefMgr.get(PreferenceManager.FLANKING_REGION));
 
@@ -4331,6 +4362,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JLabel label32;
     private JCheckBox enableGoogleCB;
     private JLabel label33;
+    private JCheckBox saveGoogleCredentialsCB;
+    private JLabel label34;
     private JLabel textField1;
     private JTextField featureVisibilityWindowField;
     private JLabel zoomToFeatureExplanation3;

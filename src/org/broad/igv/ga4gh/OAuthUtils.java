@@ -2,12 +2,13 @@ package org.broad.igv.ga4gh;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.util.HttpUtils;
 
 import java.awt.*;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -56,12 +57,7 @@ public class OAuthUtils {
 
     private OAuthUtils() {
         // Attempt to fetch refresh token from local store.
-        // Disabled for now
-//        try {
-//            refreshToken = Preferences.userRoot().get(REFRESH_TOKEN_KEY, null);
-//        } catch (Exception e) {
-//            log.error("Error fetching oauth refresh token", e);
-//        }
+        restoreRefreshToken();
     }
 
     private void fetchOauthProperties() throws IOException {
@@ -75,7 +71,7 @@ public class OAuthUtils {
         clientId = obj.get("client_id").getAsString();
     }
 
-    public void fetchAuthCode() throws IOException, URISyntaxException {
+    public void openAuthorizationPage() throws IOException, URISyntaxException {
 
         if (clientId == null) fetchOauthProperties();
 
@@ -90,14 +86,20 @@ public class OAuthUtils {
 
     }
 
-    // Called from HttpUtils upon receiving the redirect uri.
+    // Called from port listener upon receiving the oauth request with a "code" parameter
     public void setAuthorizationCode(String ac) throws IOException {
         authorizationCode = ac;
         fetchTokens();
-        fetchPeople();
+        fetchUserProfile();
     }
 
-    public void fetchTokens() throws IOException {
+    // Called from port listener upon receiving the oauth request with a "token" parameter TODO -- does this ever happen?
+    public void setAccessToken(String accessToken) throws IOException {
+        this.accessToken = accessToken;
+        fetchUserProfile();
+    }
+
+    private void fetchTokens() throws IOException {
 
         if (clientId == null) fetchOauthProperties();
 
@@ -119,22 +121,7 @@ public class OAuthUtils {
         expirationTime = System.currentTimeMillis() + (obj.getAsJsonPrimitive("expires_in").getAsInt() * 1000);
 
         // Try to store in java.util.prefs
-//        try {
-//            Preferences.userRoot().put(REFRESH_TOKEN_KEY, refreshToken);
-//        } catch (Exception e) {
-//            log.error("Error storing refresh token", e);
-//        }
-    }
-
-    private void fetchPeople() throws IOException {
-
-        if (clientId == null) fetchOauthProperties();
-
-        URL url = new URL("https://www.googleapis.com/plus/v1/people/me?access_token=" + accessToken);
-        String response = HttpUtils.getInstance().getContentsAsJSON(url);
-        JsonParser parser = new JsonParser();
-        JsonObject obj = parser.parse(response).getAsJsonObject();
-        currentUserName = obj.get("displayName").getAsString();
+        saveRefreshToken();
     }
 
     /**
@@ -142,7 +129,7 @@ public class OAuthUtils {
      *
      * @throws IOException
      */
-    private void fetchAccessToken() throws IOException {
+    private void refreshAccessToken() throws IOException {
 
         if (clientId == null) fetchOauthProperties();
 
@@ -158,18 +145,39 @@ public class OAuthUtils {
         JsonParser parser = new JsonParser();
         JsonObject obj = parser.parse(response).getAsJsonObject();
 
-        accessToken = obj.getAsJsonPrimitive("access_token").getAsString();
-        expirationTime = System.currentTimeMillis() + (obj.getAsJsonPrimitive("expires_in").getAsInt() * 1000);
-
-        // Try to store in java.util.prefs
-        // DISABLED FOR NOW -- force user to authenticate each session
-//        try {
-//            Preferences.userRoot().put(REFRESH_TOKEN_KEY, refreshToken);
-//        } catch (Exception e) {
-//            log.error("Error storing refresh token", e);
-//        }
+        JsonPrimitive atprim = obj.getAsJsonPrimitive("access_token");
+        if (atprim != null) {
+            accessToken = obj.getAsJsonPrimitive("access_token").getAsString();
+            expirationTime = System.currentTimeMillis() + (obj.getAsJsonPrimitive("expires_in").getAsInt() * 1000);
+            fetchUserProfile();
+        }
+        else {
+            // Refresh token has failed, reauthorize from scratch
+            reauthorize();
+        }
 
     }
+
+    private void reauthorize() throws IOException {
+        logout();
+        try {
+            openAuthorizationPage();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void fetchUserProfile() throws IOException {
+
+        if (clientId == null) fetchOauthProperties();
+
+        URL url = new URL("https://www.googleapis.com/plus/v1/people/me?access_token=" + accessToken);
+        String response = HttpUtils.getInstance().getContentsAsJSON(url);
+        JsonParser parser = new JsonParser();
+        JsonObject obj = parser.parse(response).getAsJsonObject();
+        currentUserName = obj.get("displayName").getAsString();
+    }
+
 
     public String getAccessToken() {
 
@@ -177,7 +185,7 @@ public class OAuthUtils {
         if (accessToken == null || (System.currentTimeMillis() > (expirationTime - 60 * 1000))) {
             if (refreshToken != null) {
                 try {
-                    this.fetchAccessToken();
+                    this.refreshAccessToken();
                 } catch (IOException e) {
                     log.error("Error fetching access token", e);
                 }
@@ -185,10 +193,6 @@ public class OAuthUtils {
         }
 
         return accessToken;
-    }
-
-    public void setAccessToken(String accessToken) {
-        this.accessToken = accessToken;
     }
 
     public boolean isLoggedIn() {
@@ -204,6 +208,29 @@ public class OAuthUtils {
         refreshToken = null;
         expirationTime = -1;
         currentUserName = null;
+        removeRefreshToken();
+    }
+
+
+    private void saveRefreshToken() {
+        try {
+            Preferences.userRoot().put(REFRESH_TOKEN_KEY, refreshToken);
+        } catch (Exception e) {
+            log.error("Error storing refresh token", e);
+        }
+    }
+
+
+    private void restoreRefreshToken() {
+        try {
+            refreshToken = Preferences.userRoot().get(REFRESH_TOKEN_KEY, null);
+        } catch (Exception e) {
+            log.error("Error fetching oauth refresh token", e);
+        }
+    }
+
+
+    private void removeRefreshToken() {
         try {
             Preferences.userRoot().remove(REFRESH_TOKEN_KEY);
         } catch (Exception e) {
@@ -217,12 +244,14 @@ public class OAuthUtils {
         return url.contains(GS_HOST);
     }
 
+    public void updateSaveOption(boolean aBoolean) {
+        if (aBoolean) {
+            if (refreshToken != null) {
+                saveRefreshToken();
+            }
+        } else {
+            removeRefreshToken();
 
-    // Main program for testing
-
-    public static void main(String[] args) throws IOException, URISyntaxException {
-        getInstance().fetchAuthCode();
+        }
     }
-
-
 }

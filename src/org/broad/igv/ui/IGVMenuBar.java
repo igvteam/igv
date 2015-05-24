@@ -41,6 +41,8 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.ReorderPanelsDialog;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.util.BrowserLauncher;
+import org.broad.igv.util.LongRunningTask;
+import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.encode.EncodeFileBrowser;
 
@@ -1081,7 +1083,7 @@ public class IGVMenuBar extends JMenuBar {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    OAuthUtils.getInstance().fetchAuthCode();
+                    OAuthUtils.getInstance().openAuthorizationPage();
                 } catch (Exception ex) {
                     MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
                     log.error("Error fetching oAuth tokens", ex);
@@ -1089,6 +1091,7 @@ public class IGVMenuBar extends JMenuBar {
 
             }
         });
+        login.setEnabled(false);
         menu.add(login);
 
 
@@ -1099,6 +1102,7 @@ public class IGVMenuBar extends JMenuBar {
                 OAuthUtils.getInstance().logout();
             }
         });
+        logout.setEnabled(false);
         menu.add(logout);
 
         final JMenuItem loadReadset = new JMenuItem("Load readset... ");
@@ -1115,20 +1119,27 @@ public class IGVMenuBar extends JMenuBar {
                 }
             }
         });
+        loadReadset.setEnabled(false);
         menu.add(loadReadset);
 
         menu.addMenuListener(new MenuListener() {
             @Override
             public void menuSelected(MenuEvent e) {
-                boolean loggedIn = OAuthUtils.getInstance().isLoggedIn();
-                if (loggedIn) {
-                    login.setText(OAuthUtils.getInstance().getCurrentUserName());
-                } else {
-                    login.setText("Login ...");
-                }
-                login.setEnabled(!loggedIn);
-                logout.setEnabled(loggedIn);
-                loadReadset.setEnabled(loggedIn);
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        boolean loggedIn = OAuthUtils.getInstance().isLoggedIn();
+                        if (loggedIn) {
+                            login.setText(OAuthUtils.getInstance().getCurrentUserName());
+                        } else {
+                            login.setText("Login ...");
+                        }
+                        login.setEnabled(!loggedIn);
+                        logout.setEnabled(loggedIn);
+                        loadReadset.setEnabled(loggedIn);
+                    }
+                };
+                LongRunningTask.submit(runnable);
             }
 
             @Override

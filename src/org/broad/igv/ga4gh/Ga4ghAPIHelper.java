@@ -310,7 +310,7 @@ public class Ga4ghAPIHelper {
 
         if(option == 1) {
             try {
-                OAuthUtils.getInstance().fetchAuthCode();
+                OAuthUtils.getInstance().openAuthorizationPage();
             } catch (Exception e) {
                 MessageUtils.showErrorMessage("Error fetching oAuth token", e);
                 log.error("Error fetching oAuth tokens", e);
