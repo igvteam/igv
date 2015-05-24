@@ -572,7 +572,7 @@ public class HttpUtils {
         return new String(bos.toByteArray());
     }
 
-    String readErrorStream(HttpURLConnection connection) throws IOException {
+    public String readErrorStream(HttpURLConnection connection) throws IOException {
         InputStream inputStream = null;
 
         try {

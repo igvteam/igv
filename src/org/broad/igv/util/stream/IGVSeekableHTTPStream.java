@@ -38,12 +38,6 @@ public class IGVSeekableHTTPStream extends SeekableStream {
 
     public IGVSeekableHTTPStream(final URL url) {
         this.url = url;
-//        try {
-//            this.contentLength = HttpUtils.getInstance().getContentLength(url);
-//        } catch (IOException e) {
-//            log.error(e.getMessage(), e);
-//            //throw new RuntimeException(e.getMessage(), e);
-//        }
     }
 
     public long position() {
@@ -118,7 +112,7 @@ public class IGVSeekableHTTPStream extends SeekableStream {
             // an IOException with the 416 code in the message.  Windows translates the error to an EOFException.
             //
             //  The BAM file iterator  uses the return value to detect end of file (specifically looks for n == 0).
-             if (e.getMessage().contains("416") || (e instanceof EOFException)) {
+            if (e.getMessage().contains("416") || (e instanceof EOFException)) {
                 if (n == 0) {
                     contentLength = position;
                     return -1;
@@ -156,10 +150,28 @@ public class IGVSeekableHTTPStream extends SeekableStream {
         String byteRange = "bytes=" + start + "-" + end;
         Map<String, String> params = new HashMap();
         params.put("Range", byteRange);
-        //Hack for web services which strip range header
-        // URL url = addStartEndQueryString(this.url, start, end);
-        return HttpUtils.getInstance().openConnectionStream(url, params);
+        URL url = addStartEndQueryString(this.url, start, end);
+
+        HttpURLConnection conn = HttpUtils.getInstance().openConnection(url, params);
+        try {
+            int contentLength = conn.getContentLength();
+            if (contentLength > 0 && (contentLength != (end - start + 1))) {
+                // We're at EOF, record
+                this.contentLength = this.position + contentLength;
+            }
+        } catch (Exception e) {
+            log.error("Error determining content length", e);
+        }
+
+        try {
+            InputStream input = conn.getInputStream();
+            return input;
+        } catch (IOException e) {
+            HttpUtils.getInstance().readErrorStream(conn);  // Consume content
+            throw e;
+        }
     }
+
 
 
     /**
