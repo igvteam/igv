@@ -64,7 +64,6 @@ public class RepeatMaskSplitter {
         HashMap<String, PrintWriter> writers = new HashMap();
         PrintWriter allWriter = null;
         try {
-            String lastChr = "";
             reader = new AsciiLineReader(new FileInputStream(inputFile));
             // Skip header
             reader.readLine();
@@ -72,16 +71,11 @@ public class RepeatMaskSplitter {
             File dir = inputFile.getParentFile();
 
             allWriter = new PrintWriter(new BufferedWriter(new FileWriter("rmsk.bed")));
-            allWriter.println("#gffTags");
-            allWriter.println("track name=\"Repeat Masker\"");
+            allWriter.println("track name=\"Repeat Masker\" \" gffTags=\"on\"");
 
             while ((nextLine = reader.readLine()) != null) {
                 String[] tokens = Globals.tabPattern.split(nextLine, -1);
                 String chr = tokens[chrCol];
-                if (!chr.equals(lastChr)) {
-                    closeWriters(writers);
-                }
-                lastChr = chr;
 
                 String repClass = tokens[classCol];
                 if (repClass.contains("?")) {
@@ -92,9 +86,9 @@ public class RepeatMaskSplitter {
                 // Get or create file writer for the class
                 PrintWriter pw = writers.get(filename);
                 if (pw == null) {
-
                     File outputFile = new File(dir, filename);
                     pw = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
+                    pw.println("track name=\"" + repClass + "\" gffTags=\"on\"");
                     writers.put(filename, pw);
                 }
 
@@ -131,7 +125,7 @@ public class RepeatMaskSplitter {
             e.printStackTrace();
         } finally {
             reader.close();
-            allWriter.close();
+           // allWriter.close();
             closeWriters(writers);
         }
 
