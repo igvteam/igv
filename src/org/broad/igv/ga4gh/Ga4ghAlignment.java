@@ -99,7 +99,7 @@ public class Ga4ghAlignment extends SAMAlignment {
             String mateReferenceName = mateObject.get("referenceName").getAsString();
             String mateChr = genome == null ? mateReferenceName : genome.getChromosomeAlias(mateReferenceName);
             int matePosition = Integer.parseInt(mateObject.get("position").getAsString());
-            boolean mateNegStrand = hasNonNullValue(json, "reverseStrand") && mateObject.get("reverseStrand").getAsBoolean();
+            boolean mateNegStrand = hasNonNullValue(mateObject, "reverseStrand") && mateObject.get("reverseStrand").getAsBoolean();
             this.setMate(new ReadMate(mateChr,
                     matePosition,
                     mateNegStrand,

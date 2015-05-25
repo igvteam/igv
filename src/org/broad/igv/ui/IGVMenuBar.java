@@ -1105,11 +1105,11 @@ public class IGVMenuBar extends JMenuBar {
         logout.setEnabled(false);
         menu.add(logout);
 
-        final JMenuItem loadReadset = new JMenuItem("Load readset... ");
+        final JMenuItem loadReadset = new JMenuItem("Load Genomics ReadGroupSet... ");
         loadReadset.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String readsetId = MessageUtils.showInputDialog("Enter readset id: ");
+                String readsetId = MessageUtils.showInputDialog("Enter ReadGroupSet ID (e.g. CMvnhpKTFhCjz9_25e_lCw): ");
                 if (readsetId != null) {
                     ResourceLocator locator = new ResourceLocator(readsetId);
                     locator.setName(readsetId);
