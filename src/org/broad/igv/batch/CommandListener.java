@@ -30,6 +30,9 @@ import java.util.*;
 public class CommandListener implements Runnable {
 
     public static final String OK = "OK";
+
+    public static int currentListenerPort = -1;
+
     private static Logger log = Logger.getLogger(CommandListener.class);
 
     private static CommandListener listener;
@@ -86,6 +89,7 @@ public class CommandListener implements Runnable {
         try {
             serverSocket = new ServerSocket(port);
             log.info("Listening on port " + port);
+            currentListenerPort = port;
 
             while (!halt) {
                 clientSocket = serverSocket.accept();
@@ -103,6 +107,7 @@ public class CommandListener implements Runnable {
 
         } catch (java.net.BindException e) {
             log.error(e);
+            currentListenerPort = -1;
         } catch (ClosedByInterruptException e) {
             log.error(e);
 

@@ -5,6 +5,8 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.batch.CommandListener;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 
 import java.awt.*;
@@ -73,16 +75,22 @@ public class OAuthUtils {
 
     public void openAuthorizationPage() throws IOException, URISyntaxException {
 
-        if (clientId == null) fetchOauthProperties();
+        if (CommandListener.currentListenerPort != 60151) {
+            MessageUtils.showMessage("OAuth failure:  IGV command listener must be open on the default port (60151)");
+            return;
+        } else {
 
-        String url = authURI + "?" +
-                "scope=" + genomicsScope + "%20" + gsScope + "%20" + profileScope + "&" +
-                "state=" + state + "&" +
-                "redirect_uri=" + redirectURI + "&" +
-                "response_type=code&" +
-                "client_id=" + clientId; // Native app
+            if (clientId == null) fetchOauthProperties();
 
-        Desktop.getDesktop().browse(new URI(url));
+            String url = authURI + "?" +
+                    "scope=" + genomicsScope + "%20" + gsScope + "%20" + profileScope + "&" +
+                    "state=" + state + "&" +
+                    "redirect_uri=" + redirectURI + "&" +
+                    "response_type=code&" +
+                    "client_id=" + clientId; // Native app
+
+            Desktop.getDesktop().browse(new URI(url));
+        }
 
     }
 
@@ -150,8 +158,7 @@ public class OAuthUtils {
             accessToken = obj.getAsJsonPrimitive("access_token").getAsString();
             expirationTime = System.currentTimeMillis() + (obj.getAsJsonPrimitive("expires_in").getAsInt() * 1000);
             fetchUserProfile();
-        }
-        else {
+        } else {
             // Refresh token has failed, reauthorize from scratch
             reauthorize();
         }
