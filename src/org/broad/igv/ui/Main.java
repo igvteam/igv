@@ -78,7 +78,7 @@ public class Main {
         int MB = 1000000;
         if (mem < 400 * MB) {
             int mb = (int) (mem / MB);
-            JOptionPane.showMessageDialog(null, "Warning: IGV is running with minimal available memory (" + mb + " mb)");
+            JOptionPane.showMessageDialog(null, "Warning: IGV is running with low available memory (" + mb + " mb)");
         }
 
         DirectoryManager.initializeLog();

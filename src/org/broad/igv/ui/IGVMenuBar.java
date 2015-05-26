@@ -40,10 +40,7 @@ import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.ReorderPanelsDialog;
 import org.broad.igv.ui.util.*;
-import org.broad.igv.util.BrowserLauncher;
-import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.NamedRunnable;
-import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.*;
 import org.broad.igv.util.encode.EncodeFileBrowser;
 
 import javax.swing.*;
@@ -57,8 +54,10 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.broad.igv.ui.UIConstants.*;
@@ -880,6 +879,16 @@ public class IGVMenuBar extends JMenuBar {
         }
 
         menuAction =
+                new MenuAction("Check for Updates...") {
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        checkVersion();
+                    }
+                };
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menuAction =
                 new MenuAction("About IGV ") {
 
                     @Override
@@ -891,7 +900,53 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         MenuAction helpMenuAction = new MenuAction("Help");
+
+
         return MenuAndToolbarUtils.createMenu(menuItems, helpMenuAction);
+    }
+
+    private void checkVersion() {
+
+        int readTimeout = Globals.READ_TIMEOUT;
+        int connectTimeout = Globals.CONNECT_TIMEOUT;
+
+        try {
+            Main.Version thisVersion = Main.Version.getVersion(Globals.VERSION);
+            if (thisVersion == null) return;  // Can't compare
+
+            Globals.CONNECT_TIMEOUT = 5000;
+            Globals.READ_TIMEOUT = 1000;
+            final String serverVersionString = HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
+            // See if user has specified to skip this update
+
+            final String skipString = PreferenceManager.getInstance().get(PreferenceManager.SKIP_VERSION);
+            HashSet<String> skipVersion = new HashSet<String>(Arrays.asList(skipString.split(",")));
+            if (skipVersion.contains(serverVersionString)) return;
+
+            Main.Version serverVersion = Main.Version.getVersion(serverVersionString.trim());
+            if (serverVersion == null) return;
+
+            if (thisVersion.lessThan(serverVersion)) {
+
+                log.info("A later version of IGV is available (" + serverVersionString + ")");
+                final VersionUpdateDialog dlg = new VersionUpdateDialog(serverVersionString);
+
+                dlg.setVisible(true);
+                if (dlg.isSkipVersion()) {
+                    String newSkipString = skipString + "," + serverVersionString;
+                    PreferenceManager.getInstance().put(PreferenceManager.SKIP_VERSION, newSkipString);
+                }
+
+            } else {
+                MessageUtils.showMessage("IGV is up to date");
+            }
+
+        } catch (Exception e) {
+            log.error("Error checking version", e);
+        } finally {
+            Globals.CONNECT_TIMEOUT = connectTimeout;
+            Globals.READ_TIMEOUT = readTimeout;
+        }
     }
 
     private JMenu createGenomeSpaceMenu() {
