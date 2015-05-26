@@ -40,9 +40,9 @@ public class UCSCSnpFeature implements IGVFeature, htsjdk.tribble.Feature {
         this.molType = tokens[10];
         this.snpClass = tokens[11];
         this.function = tokens[15];
-        this.submitters = tokens[19];
-        this.alleles = tokens[21];
-        this.alleleFreqs = tokens[23];
+        this.submitters = tokens[20];
+        this.alleles = tokens[22];
+        this.alleleFreqs = tokens[24];
     }
 
     @Override

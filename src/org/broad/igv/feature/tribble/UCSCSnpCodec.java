@@ -20,9 +20,9 @@ public class UCSCSnpCodec extends UCSCCodec<UCSCSnpFeature> {
     @Override
     public UCSCSnpFeature decode(String s) {
 
-        String[] tokens = Globals.whitespacePattern.split(s);
+        String[] tokens = Globals.tabPattern.split(s);
 
-        if (tokens.length < 24) return null;
+        if (tokens.length < 25) return null;
 
         String chr = tokens[1];
         if (genome != null) {
