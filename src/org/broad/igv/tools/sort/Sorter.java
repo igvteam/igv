@@ -124,6 +124,8 @@ public abstract class Sorter {
             return new BedSorter(inputFile, outputFile);
         } else if (shortFN.endsWith(".eqtl")) {
             return new EQTLSorter(inputFile, outputFile);
+        } else if (shortFN.endsWith(".snp")) {
+            return new GenericSorter(inputFile, outputFile, 1, 2);
         } else if (GWASParser.isGWASFile(shortFN)) {
             return new GWASSorter(inputFile, outputFile);
         } else if (MUTCodec.isMutationAnnotationFile(new ResourceLocator(inputFile.getAbsolutePath()))) {
@@ -135,7 +137,6 @@ public abstract class Sorter {
     }
 
     /**
-     *
      * @param inputFile
      * @param outputFile If null, we write to stdout
      */
@@ -159,9 +160,9 @@ public abstract class Sorter {
         try {
             fis = new FileInputStream(inputFile);
             Writer rawWriter;
-            if(writeStdOut){
+            if (writeStdOut) {
                 rawWriter = new OutputStreamWriter(System.out);
-            }else{
+            } else {
                 rawWriter = new FileWriter(this.outputFile);
             }
             writer = new PrintWriter(new BufferedWriter(rawWriter));
@@ -223,6 +224,7 @@ public abstract class Sorter {
     /**
      * Write the header to the output file. Since many readers can't help but read
      * one feature line, that line should be returned and will then be treated as a record
+     *
      * @param reader
      * @param writer
      * @return

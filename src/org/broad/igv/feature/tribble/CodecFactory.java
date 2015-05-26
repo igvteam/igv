@@ -47,15 +47,16 @@ public class CodecFactory {
     }
 
     /**
-     * @deprecated Use {@link #getCodec(org.broad.igv.util.ResourceLocator, org.broad.igv.feature.genome.Genome)}
-     * This won't handle URLs with query strings properly for all codecs
      * @param path
      * @param genome
      * @return
+     * @deprecated Use {@link #getCodec(org.broad.igv.util.ResourceLocator, org.broad.igv.feature.genome.Genome)}
+     * This won't handle URLs with query strings properly for all codecs
      */
     public static FeatureCodec getCodec(String path, Genome genome) {
         return getCodec(new ResourceLocator(path), genome);
     }
+
     /**
      * Return a tribble codec to decode the supplied file, or null if not found.
      *
@@ -105,6 +106,8 @@ public class CodecFactory {
             return new EncodePeakCodec(genome);
         } else if (fn.endsWith(".peak")) {
             return new PeakCodec(genome);
+        } else if (fn.endsWith(".snp")) {
+            return new UCSCSnpCodec(genome);
         } else if (fn.endsWith(".eqtl")) {
             return new EQTLCodec(genome);
         } else if (fn.endsWith("fpkm_tracking")) {
