@@ -233,7 +233,7 @@ public class HttpUtils {
                 int code = conn.getResponseCode();
                 return code >= 200 && code < 300;
             } catch (Exception e) {
-                if(conn != null)
+                if (conn != null)
                     try {
                         readErrorStream(conn);  // Consume content
                     } catch (IOException e1) {
@@ -742,12 +742,16 @@ public class HttpUtils {
                 url = new URL(url.toExternalForm().replace("igv.broadinstitute.org", "s3.amazonaws.com/igv.broadinstitute.org"));
             } else if (host.equals("igvdata.broadinstitute.org")) {
                 url = new URL(url.toExternalForm().replace("igvdata.broadinstitute.org", "dn7ywbm9isq8j.cloudfront.net"));
+            } else if (host.equals("www.broadinstitute.org")) {
+                url = new URL(url.toExternalForm().replace("www.broadinstitute.org", "data.broadinstitute.org"));
             }
+
         } catch (MalformedURLException e) {
             log.error("Error modifying url", e);
         }
         return url;
     }
+
 
     //Used for testing sometimes, please do not delete
     private void logHeaders(HttpURLConnection conn) {
@@ -959,7 +963,6 @@ public class HttpUtils {
     }
 
 
-
     static boolean isExpectedRangeMissing(URLConnection conn, Map<String, String> requestProperties) {
         final boolean rangeRequested = (requestProperties != null) && (new CI.CIHashMap<String>(requestProperties)).containsKey("Range");
         if (!rangeRequested) return false;
@@ -991,13 +994,13 @@ public class HttpUtils {
      */
     public static void readFully(InputStream is, byte b[]) throws IOException {
         int len = b.length;
-        if (len < 0){
+        if (len < 0) {
             throw new IndexOutOfBoundsException();
         }
         int n = 0;
         while (n < len) {
             int count = is.read(b, n, len - n);
-            if (count < 0){
+            if (count < 0) {
                 throw new EOFException();
             }
             n += count;
