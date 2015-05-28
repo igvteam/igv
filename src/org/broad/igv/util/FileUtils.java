@@ -271,25 +271,6 @@ public class FileUtils {
         }
     }
 
-
-    /**
-     * Cleanup extra jnlp files.  This method is written specifcally for Mac OS.
-     */
-    public static void cleanupJnlpFiles() {
-
-        // Cleanup jnlp files
-        if (Globals.IS_MAC) {
-            File desktop = new File(System.getProperty("user.home") + "/Desktop");
-            if (desktop.exists() && desktop.isDirectory()) {
-                FileUtils.cleanup(desktop);
-            }
-            File downloads = new File(System.getProperty("user.home") + "/Downloads");
-            if (downloads.exists() && downloads.isDirectory()) {
-                FileUtils.cleanup(downloads);
-            }
-        }
-    }
-
     private static void cleanup(File dir) {
 
         if (dir.exists() && dir.isDirectory()) {

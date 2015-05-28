@@ -35,10 +35,6 @@ public class ShutdownThread extends Thread {
     private static long oneDayMS = 24 * 60 * 60 * 1000;
 
     public static void runS() {
-        // Cleanup jnlp files
-        if (Globals.IS_MAC) {
-            FileUtils.cleanupJnlpFiles();
-        }
 
         DBManager.shutdown();
         CommandListener.halt();
