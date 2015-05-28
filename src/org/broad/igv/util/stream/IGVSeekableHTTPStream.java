@@ -150,7 +150,7 @@ public class IGVSeekableHTTPStream extends SeekableStream {
         String byteRange = "bytes=" + start + "-" + end;
         Map<String, String> params = new HashMap();
         params.put("Range", byteRange);
-        URL url = addStartEndQueryString(this.url, start, end);
+        //URL url = addStartEndQueryString(this.url, start, end);
 
         HttpURLConnection conn = HttpUtils.getInstance().openConnection(url, params);
         try {

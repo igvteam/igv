@@ -1,7 +1,6 @@
 package org.broad.igv.feature.tribble;
 
 import org.broad.igv.Globals;
-import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.UCSCSnpFeature;
 import org.broad.igv.feature.genome.Genome;
 

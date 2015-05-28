@@ -743,7 +743,7 @@ public class HttpUtils {
             } else if (host.equals("igvdata.broadinstitute.org")) {
                 url = new URL(url.toExternalForm().replace("igvdata.broadinstitute.org", "dn7ywbm9isq8j.cloudfront.net"));
             } else if (host.equals("www.broadinstitute.org")) {
-                url = new URL(url.toExternalForm().replace("www.broadinstitute.org", "data.broadinstitute.org"));
+                url = new URL(url.toExternalForm().replace("www.broadinstitute.org/igvdata", "data.broadinstitute.org/igvdata"));
             }
 
         } catch (MalformedURLException e) {
