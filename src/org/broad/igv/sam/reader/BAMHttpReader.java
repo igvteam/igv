@@ -17,6 +17,7 @@ import htsjdk.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.sam.PicardAlignment;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.stream.IGVSeekableBufferedStream;
@@ -147,34 +148,36 @@ public class BAMHttpReader implements AlignmentReader<PicardAlignment> {
 
     private SeekableStream getIndexStream(String indexPath) throws IOException {
 
-        SeekableStream ss = null;
-        URL indexURL = new URL(indexPath);
-        boolean foundIndex = false;
+        List<String> pathsTried = new ArrayList<String>();
 
-        try {
-            ss = IGVSeekableStreamFactory.getInstance().getStreamFor(indexURL);
-            foundIndex = true;
-        }
-        catch(FileNotFoundException e) {
+        pathsTried.add(indexPath);
 
-            String newIndexPath = indexPath.replace(".bam.bai", ".bai");
-            indexURL = new URL(newIndexPath);
-            try {
-                ss = IGVSeekableStreamFactory.getInstance().getStreamFor(indexURL);
-                foundIndex = true;
+        if (HttpUtils.getInstance().resourceAvailable(new URL(indexPath))) {
+            return IGVSeekableStreamFactory.getInstance().getStreamFor(new URL(indexPath));
+        } else {
+            if (indexPath.endsWith(".bam.bai")) {
+                indexPath = indexPath.substring(0, indexPath.length() - 8) + ".bai";
+                pathsTried.add(indexPath);
+                if (HttpUtils.getInstance().resourceAvailable(new URL(indexPath))) {
+                    log.info("Index found: " + indexPath);
+                    return IGVSeekableStreamFactory.getInstance().getStreamFor(new URL(indexPath));
+                }
+            } else if (indexPath.endsWith(".bai")) {
+                indexPath = indexPath.substring(0, indexPath.length() - 4) + ".bam.bai";
+                pathsTried.add(indexPath);
+                if (HttpUtils.getInstance().resourceAvailable(new URL(indexPath))){
+                    log.info("Index found: " + indexPath);
+                    return IGVSeekableStreamFactory.getInstance().getStreamFor(new URL(indexPath));
+                }
             }
-            catch(FileNotFoundException e1) {
-                foundIndex = false;
-            }
         }
 
-
-        if (!foundIndex) {
-            String msg = "Index file not found: " + indexPath;
-            throw new DataLoadException(msg, indexPath);
+        String msg = "Index file not found.  Tried ";
+        for(String path : pathsTried) {
+            msg += "<br>" + indexPath;
         }
+        throw new DataLoadException(msg, indexPath);
 
-        return ss;
     }
 
 
