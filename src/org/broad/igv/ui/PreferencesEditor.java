@@ -274,13 +274,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
         panel27 = new JScrollPane();
         proxyPanel = new JPanel();
         jPanel15 = new JPanel();
-        jPanel16 = new JPanel();
+        label3 = new JLabel();
+        clearProxySettingsButton = new JButton();
         proxyUsernameField = new JTextField();
         jLabel28 = new JLabel();
         authenticateProxyCB = new JCheckBox();
         jLabel29 = new JLabel();
         proxyPasswordField = new JPasswordField();
-        jPanel17 = new JPanel();
         proxyHostField = new JTextField();
         proxyPortField = new JTextField();
         jLabel27 = new JLabel();
@@ -288,8 +288,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
         useProxyCB = new JCheckBox();
         proxyTypeCB = new JComboBox();
         label27 = new JLabel();
-        label3 = new JLabel();
-        clearProxySettingsButton = new JButton();
+        label35 = new JLabel();
+        scrollPane1 = new JScrollPane();
+        textArea1 = new JTextArea();
         panel28 = new JScrollPane();
         ionTorrentPanel = new JPanel();
         panel6 = new JPanel();
@@ -1982,168 +1983,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     {
                         jPanel15.setLayout(null);
 
-                        //======== jPanel16 ========
-                        {
-                            jPanel16.setLayout(new GridBagLayout());
-                            ((GridBagLayout)jPanel16.getLayout()).columnWidths = new int[] {0, 0, 0};
-                            ((GridBagLayout)jPanel16.getLayout()).rowHeights = new int[] {0, 0, 0, 0};
-                            ((GridBagLayout)jPanel16.getLayout()).columnWeights = new double[] {0.0, 0.0, 1.0E-4};
-                            ((GridBagLayout)jPanel16.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 1.0E-4};
-
-                            //---- proxyUsernameField ----
-                            proxyUsernameField.setText("jTextField1");
-                            proxyUsernameField.setEnabled(false);
-                            proxyUsernameField.setPreferredSize(new Dimension(500, 28));
-                            proxyUsernameField.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    proxyUsernameFieldActionPerformed(e);
-                                }
-                            });
-                            proxyUsernameField.addFocusListener(new FocusAdapter() {
-                                @Override
-                                public void focusLost(FocusEvent e) {
-                                    proxyUsernameFieldFocusLost(e);
-                                }
-                            });
-                            jPanel16.add(proxyUsernameField, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 20, 0), 0, 0));
-
-                            //---- jLabel28 ----
-                            jLabel28.setText("Username:");
-                            jPanel16.add(jLabel28, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 20, 5), 0, 0));
-
-                            //---- authenticateProxyCB ----
-                            authenticateProxyCB.setText("Authentication required");
-                            authenticateProxyCB.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    authenticateProxyCBActionPerformed(e);
-                                }
-                            });
-                            jPanel16.add(authenticateProxyCB, new GridBagConstraints(0, 0, 2, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 20, 0), 0, 0));
-
-                            //---- jLabel29 ----
-                            jLabel29.setText("Password:");
-                            jPanel16.add(jLabel29, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 0, 5), 0, 0));
-
-                            //---- proxyPasswordField ----
-                            proxyPasswordField.setText("jPasswordField1");
-                            proxyPasswordField.setEnabled(false);
-                            proxyPasswordField.addFocusListener(new FocusAdapter() {
-                                @Override
-                                public void focusLost(FocusEvent e) {
-                                    proxyPasswordFieldFocusLost(e);
-                                }
-                            });
-                            jPanel16.add(proxyPasswordField, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 0, 0), 0, 0));
-                        }
-                        jPanel15.add(jPanel16);
-                        jPanel16.setBounds(20, 315, 741, jPanel16.getPreferredSize().height);
-
-                        //======== jPanel17 ========
-                        {
-                            jPanel17.setLayout(new GridBagLayout());
-                            ((GridBagLayout)jPanel17.getLayout()).columnWidths = new int[] {0, 0, 0};
-                            ((GridBagLayout)jPanel17.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0};
-                            ((GridBagLayout)jPanel17.getLayout()).columnWeights = new double[] {0.0, 0.0, 1.0E-4};
-                            ((GridBagLayout)jPanel17.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 1.0E-4};
-
-                            //---- proxyHostField ----
-                            proxyHostField.setText("jTextField1");
-                            proxyHostField.setPreferredSize(new Dimension(500, 28));
-                            proxyHostField.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    proxyHostFieldActionPerformed(e);
-                                }
-                            });
-                            proxyHostField.addFocusListener(new FocusAdapter() {
-                                @Override
-                                public void focusLost(FocusEvent e) {
-                                    proxyHostFieldFocusLost(e);
-                                }
-                            });
-                            jPanel17.add(proxyHostField, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 20, 0), 0, 0));
-
-                            //---- proxyPortField ----
-                            proxyPortField.setText("jTextField1");
-                            proxyPortField.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    proxyPortFieldActionPerformed(e);
-                                }
-                            });
-                            proxyPortField.addFocusListener(new FocusAdapter() {
-                                @Override
-                                public void focusLost(FocusEvent e) {
-                                    proxyPortFieldFocusLost(e);
-                                }
-                            });
-                            jPanel17.add(proxyPortField, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 20, 0), 0, 0));
-
-                            //---- jLabel27 ----
-                            jLabel27.setText("Proxy port:");
-                            jPanel17.add(jLabel27, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 20, 5), 0, 0));
-
-                            //---- jLabel23 ----
-                            jLabel23.setText("Proxy host:");
-                            jPanel17.add(jLabel23, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 20, 5), 0, 0));
-
-                            //---- useProxyCB ----
-                            useProxyCB.setText("Use proxy");
-                            useProxyCB.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    useProxyCBActionPerformed(e);
-                                }
-                            });
-                            jPanel17.add(useProxyCB, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 20, 5), 0, 0));
-
-                            //---- proxyTypeCB ----
-                            proxyTypeCB.setModel(new DefaultComboBoxModel(new String[] {
-                                "HTTP",
-                                "SOCKS",
-                                "DIRECT"
-                            }));
-                            proxyTypeCB.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    proxyTypeCBActionPerformed(e);
-                                }
-                            });
-                            jPanel17.add(proxyTypeCB, new GridBagConstraints(1, 3, 1, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 0, 0), 0, 0));
-
-                            //---- label27 ----
-                            label27.setText("Proxy type:");
-                            jPanel17.add(label27, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 0, 5), 0, 0));
-                        }
-                        jPanel15.add(jPanel17);
-                        jPanel17.setBounds(20, 91, 770, 199);
-
                         //---- label3 ----
                         label3.setText("<html>Note:  do not use these settings unless you receive error or warning messages about server connections.  On most systems the correct settings will be automatically copied from your web browser.");
                         jPanel15.add(label3);
@@ -2158,7 +1997,147 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel15.add(clearProxySettingsButton);
-                        clearProxySettingsButton.setBounds(new Rectangle(new Point(10, 485), clearProxySettingsButton.getPreferredSize()));
+                        clearProxySettingsButton.setBounds(new Rectangle(new Point(15, 620), clearProxySettingsButton.getPreferredSize()));
+
+                        //---- proxyUsernameField ----
+                        proxyUsernameField.setText("jTextField1");
+                        proxyUsernameField.setEnabled(false);
+                        proxyUsernameField.setPreferredSize(new Dimension(500, 28));
+                        proxyUsernameField.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                proxyUsernameFieldActionPerformed(e);
+                            }
+                        });
+                        proxyUsernameField.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                proxyUsernameFieldFocusLost(e);
+                            }
+                        });
+                        jPanel15.add(proxyUsernameField);
+                        proxyUsernameField.setBounds(120, 495, 615, proxyUsernameField.getPreferredSize().height);
+
+                        //---- jLabel28 ----
+                        jLabel28.setText("Username:");
+                        jPanel15.add(jLabel28);
+                        jLabel28.setBounds(20, 495, jLabel28.getPreferredSize().width, 28);
+
+                        //---- authenticateProxyCB ----
+                        authenticateProxyCB.setText("Authentication required");
+                        authenticateProxyCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                authenticateProxyCBActionPerformed(e);
+                            }
+                        });
+                        jPanel15.add(authenticateProxyCB);
+                        authenticateProxyCB.setBounds(20, 455, 571, authenticateProxyCB.getPreferredSize().height);
+
+                        //---- jLabel29 ----
+                        jLabel29.setText("Password:");
+                        jPanel15.add(jLabel29);
+                        jLabel29.setBounds(20, 540, 66, 28);
+
+                        //---- proxyPasswordField ----
+                        proxyPasswordField.setText("jPasswordField1");
+                        proxyPasswordField.setEnabled(false);
+                        proxyPasswordField.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                proxyPasswordFieldFocusLost(e);
+                            }
+                        });
+                        jPanel15.add(proxyPasswordField);
+                        proxyPasswordField.setBounds(120, 540, 615, proxyPasswordField.getPreferredSize().height);
+
+                        //---- proxyHostField ----
+                        proxyHostField.setText("jTextField1");
+                        proxyHostField.setPreferredSize(new Dimension(500, 28));
+                        proxyHostField.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                proxyHostFieldActionPerformed(e);
+                            }
+                        });
+                        proxyHostField.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                proxyHostFieldFocusLost(e);
+                            }
+                        });
+                        jPanel15.add(proxyHostField);
+                        proxyHostField.setBounds(120, 155, 615, proxyHostField.getPreferredSize().height);
+
+                        //---- proxyPortField ----
+                        proxyPortField.setText("jTextField1");
+                        proxyPortField.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                proxyPortFieldActionPerformed(e);
+                            }
+                        });
+                        proxyPortField.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                proxyPortFieldFocusLost(e);
+                            }
+                        });
+                        jPanel15.add(proxyPortField);
+                        proxyPortField.setBounds(120, 213, 615, proxyPortField.getPreferredSize().height);
+
+                        //---- jLabel27 ----
+                        jLabel27.setText("Proxy port:");
+                        jPanel15.add(jLabel27);
+                        jLabel27.setBounds(20, 213, 95, 28);
+
+                        //---- jLabel23 ----
+                        jLabel23.setText("Proxy host:");
+                        jPanel15.add(jLabel23);
+                        jLabel23.setBounds(20, 155, 95, 28);
+
+                        //---- useProxyCB ----
+                        useProxyCB.setText("Use proxy");
+                        useProxyCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                useProxyCBActionPerformed(e);
+                            }
+                        });
+                        jPanel15.add(useProxyCB);
+                        useProxyCB.setBounds(new Rectangle(new Point(20, 105), useProxyCB.getPreferredSize()));
+
+                        //---- proxyTypeCB ----
+                        proxyTypeCB.setModel(new DefaultComboBoxModel(new String[] {
+                            "HTTP",
+                            "SOCKS",
+                            "DIRECT"
+                        }));
+                        proxyTypeCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                proxyTypeCBActionPerformed(e);
+                            }
+                        });
+                        jPanel15.add(proxyTypeCB);
+                        proxyTypeCB.setBounds(120, 271, 615, proxyTypeCB.getPreferredSize().height);
+
+                        //---- label27 ----
+                        label27.setText("Proxy type:");
+                        jPanel15.add(label27);
+                        label27.setBounds(20, 271, 95, 27);
+
+                        //---- label35 ----
+                        label35.setText("Whitelist:");
+                        jPanel15.add(label35);
+                        label35.setBounds(new Rectangle(new Point(20, 328), label35.getPreferredSize()));
+
+                        //======== scrollPane1 ========
+                        {
+                            scrollPane1.setViewportView(textArea1);
+                        }
+                        jPanel15.add(scrollPane1);
+                        scrollPane1.setBounds(120, 328, 615, 85);
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
@@ -4503,13 +4482,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JScrollPane panel27;
     private JPanel proxyPanel;
     private JPanel jPanel15;
-    private JPanel jPanel16;
+    private JLabel label3;
+    private JButton clearProxySettingsButton;
     private JTextField proxyUsernameField;
     private JLabel jLabel28;
     private JCheckBox authenticateProxyCB;
     private JLabel jLabel29;
     private JPasswordField proxyPasswordField;
-    private JPanel jPanel17;
     private JTextField proxyHostField;
     private JTextField proxyPortField;
     private JLabel jLabel27;
@@ -4517,8 +4496,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox useProxyCB;
     private JComboBox proxyTypeCB;
     private JLabel label27;
-    private JLabel label3;
-    private JButton clearProxySettingsButton;
+    private JLabel label35;
+    private JScrollPane scrollPane1;
+    private JTextArea textArea1;
     private JScrollPane panel28;
     private JPanel ionTorrentPanel;
     private JPanel panel6;
