@@ -22,7 +22,6 @@ import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.AboutDialog;
-import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGVCommandBar;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.color.ColorUtilities;
@@ -202,6 +201,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String PROXY_USER = "PROXY.USERNAME";
     public static final String PROXY_PW = "PROXY.PW";
     public static final String PROXY_TYPE = "PROXY.TYPE";
+    public static final String PROXY_WHITELIST = "PROXY.WHITELIST";
 
     public static final String KNOWN_SNPS = "KNOWN_SNPS_FILE";
 
@@ -929,6 +929,7 @@ public class PreferenceManager implements PropertyManager {
         remove(PreferenceManager.PROXY_USER);
         remove(PreferenceManager.PROXY_PW);
         remove(PreferenceManager.PROXY_TYPE);
+        remove(PreferenceManager.PROXY_WHITELIST);
         HttpUtils.getInstance().updateProxySettings();
     }
 

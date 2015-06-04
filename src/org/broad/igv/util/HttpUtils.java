@@ -377,7 +377,11 @@ public class HttpUtils {
         String proxyTypeString = prefMgr.get(PreferenceManager.PROXY_TYPE, "HTTP");
         Proxy.Type type = Proxy.Type.valueOf(proxyTypeString.trim().toUpperCase());
 
-        proxySettings = new ProxySettings(useProxy, user, pw, auth, proxyHost, proxyPort, type);
+        String proxyWhitelistString = prefMgr.get(PreferenceManager.PROXY_WHITELIST);
+        Set<String> whitelist = proxyWhitelistString == null ? new HashSet<String>() :
+                new HashSet(Arrays.asList(Globals.commaPattern.split(proxyWhitelistString)));
+
+        proxySettings = new ProxySettings(useProxy, user, pw, auth, proxyHost, proxyPort, type, whitelist);
     }
 
     /**
@@ -634,7 +638,7 @@ public class HttpUtils {
         if (!igvProxySettingsExist) {
             sysProxy = getSystemProxy(url.toExternalForm());
         }
-        boolean useProxy = sysProxy != null || igvProxySettingsExist;
+        boolean useProxy = sysProxy != null || (igvProxySettingsExist && proxySettings.getWhitelist().contains(url.getHost()));
 
         HttpURLConnection conn;
         if (useProxy) {
@@ -872,13 +876,11 @@ public class HttpUtils {
         String proxyHost;
         int proxyPort = -1;
         Proxy.Type type;
+        Set<String> whitelist;
 
-        public ProxySettings(boolean useProxy, String user, String pw, boolean auth, String proxyHost, int proxyPort) {
-            this(useProxy, user, pw, auth, proxyHost, proxyPort, Proxy.Type.HTTP);
-            this.auth = auth;
-        }
 
-        public ProxySettings(boolean useProxy, String user, String pw, boolean auth, String proxyHost, int proxyPort, Proxy.Type proxyType) {
+        public ProxySettings(boolean useProxy, String user, String pw, boolean auth, String proxyHost, int proxyPort,
+                             Proxy.Type proxyType, Set<String> whitelist) {
             this.auth = auth;
             this.proxyHost = proxyHost;
             this.proxyPort = proxyPort;
@@ -886,6 +888,11 @@ public class HttpUtils {
             this.useProxy = useProxy;
             this.user = user;
             this.type = proxyType;
+            this.whitelist = whitelist;
+        }
+
+        public Set<String> getWhitelist() {
+            return null;
         }
     }
 
