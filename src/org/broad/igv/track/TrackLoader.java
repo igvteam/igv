@@ -171,7 +171,7 @@ public class TrackLoader {
                     typeString.endsWith(".bai") || typeString.equals("alist") ||
                     typeString.equals(Ga4ghAPIHelper.RESOURCE_TYPE)) {
                 loadAlignmentsTrack(locator, newTracks, genome);
-            } else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) ||
+            } else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) || (typeString.endsWith(".bdg") ||
                     typeString.endsWith("cpg.txt") || typeString.endsWith(".expr")) {
                 loadWigFile(locator, newTracks, genome);
             } else if (typeString.endsWith("fpkm_tracking") || typeString.endsWith("gene_exp.diff") ||
