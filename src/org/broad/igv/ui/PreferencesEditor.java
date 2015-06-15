@@ -81,6 +81,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         updatedPreferenceMap.put(PreferenceManager.SAVE_GOOGLE_CREDENTIALS, String.valueOf(saveGoogleCredentialsCB.isSelected()));
     }
 
+
     public PreferencesEditor(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -289,8 +290,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         proxyTypeCB = new JComboBox();
         label27 = new JLabel();
         label35 = new JLabel();
-        scrollPane1 = new JScrollPane();
-        textArea1 = new JTextArea();
+        proxyWhitelistTextArea = new JTextField();
         panel28 = new JScrollPane();
         ionTorrentPanel = new JPanel();
         panel6 = new JPanel();
@@ -2128,16 +2128,25 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         label27.setBounds(20, 271, 95, 27);
 
                         //---- label35 ----
-                        label35.setText("Whitelist:");
+                        label35.setText("<html>Whitelist:  <i>comma delimted list of hosts to whitelist (bypass proxy)</i>");
                         jPanel15.add(label35);
                         label35.setBounds(new Rectangle(new Point(20, 328), label35.getPreferredSize()));
 
-                        //======== scrollPane1 ========
-                        {
-                            scrollPane1.setViewportView(textArea1);
-                        }
-                        jPanel15.add(scrollPane1);
-                        scrollPane1.setBounds(120, 328, 615, 85);
+                        //---- proxyWhitelistTextArea ----
+                        proxyWhitelistTextArea.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                proxyWhitelistTextAreaActionPerformed(e);
+                            }
+                        });
+                        proxyWhitelistTextArea.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                proxyWhitelistTextAreaFocusLost(e);
+                            }
+                        });
+                        jPanel15.add(proxyWhitelistTextArea);
+                        proxyWhitelistTextArea.setBounds(20, 355, 715, 35);
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
@@ -3850,6 +3859,24 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }
 
 
+    private void proxyWhitelistTextAreaActionPerformed(java.awt.event.ActionEvent evt) {
+
+        String[] urls = proxyWhitelistTextArea.getText().split("\n");
+        String setting = "";
+        for(String u : urls) {
+            setting += u + ",";
+        }
+        updatedPreferenceMap.put(PreferenceManager.PROXY_WHITELIST, setting);
+        proxySettingsChanged = true;
+
+    }
+
+
+    private void proxyWhitelistTextAreaFocusLost(FocusEvent e) {
+        proxyWhitelistTextAreaActionPerformed(null);
+    }
+
+
     private void proxyTypeCBActionPerformed(ActionEvent e) {
         proxySettingsChanged = true;
         String proxyTypeString = proxyTypeCB.getSelectedItem().toString();
@@ -4180,6 +4207,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         proxyUsernameField.setText(prefMgr.get(PreferenceManager.PROXY_USER, ""));
         String pwCoded = prefMgr.get(PreferenceManager.PROXY_PW, "");
         proxyPasswordField.setText(Utilities.base64Decode(pwCoded));
+        proxyWhitelistTextArea.setText(prefMgr.get(PreferenceManager.PROXY_WHITELIST));
 
         String proxyTypeString = prefMgr.get(PreferenceManager.PROXY_TYPE, null);
         if (proxyTypeString != null) {
@@ -4497,8 +4525,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JComboBox proxyTypeCB;
     private JLabel label27;
     private JLabel label35;
-    private JScrollPane scrollPane1;
-    private JTextArea textArea1;
+    private JTextField proxyWhitelistTextArea;
     private JScrollPane panel28;
     private JPanel ionTorrentPanel;
     private JPanel panel6;

@@ -638,7 +638,8 @@ public class HttpUtils {
         if (!igvProxySettingsExist) {
             sysProxy = getSystemProxy(url.toExternalForm());
         }
-        boolean useProxy = sysProxy != null || (igvProxySettingsExist && proxySettings.getWhitelist().contains(url.getHost()));
+        boolean useProxy = sysProxy != null ||
+                (igvProxySettingsExist && !proxySettings.getWhitelist().contains(url.getHost()));
 
         HttpURLConnection conn;
         if (useProxy) {
@@ -892,7 +893,7 @@ public class HttpUtils {
         }
 
         public Set<String> getWhitelist() {
-            return null;
+            return whitelist;
         }
     }
 
