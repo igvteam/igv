@@ -228,14 +228,6 @@ public abstract class SAMAlignment implements Alignment {
     protected void createAlignmentBlocks(String cigarString, byte[] readBases, byte[] readBaseQualities,
                                          short[] flowSignals, String flowOrder, int flowOrderStart) {
 
-        boolean showSoftClipped = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED);
-
-        int nInsertions = 0;
-        int nBlocks = 0;
-
-        java.util.List<CigarOperator> operators = new ArrayList();
-        StringBuffer buffer = new StringBuffer(4);
-
         if (cigarString.equals("*")) {
             alignmentBlocks = new AlignmentBlock[1];
             alignmentBlocks[0] = new AlignmentBlock(getChr(), getStart(), readBases, readBaseQualities);
@@ -243,52 +235,39 @@ public abstract class SAMAlignment implements Alignment {
         }
 
         // Create list of cigar operators
+        java.util.List<CigarOperator> operators = buildOperators(cigarString);
+
+        boolean showSoftClipped = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED);
+
+        int nInsertions = 0;
+        int nBlocks = 0;
         boolean firstOperator = true;
         int softClippedBaseCount = 0;
         int nGaps = 0;
-        char prevOp = 0;
-        for (int i = 0; i < cigarString.length(); i++) {
-            char next = cigarString.charAt(i);
-            if (Character.isDigit(next)) {
-                buffer.append(next);
-            } else {
-                char op = next;
-                if (op == HARD_CLIP) {
-                    buffer = new StringBuffer(4);
-                    continue;  // Just skip hardclips
-                }
-                int nBases = Integer.parseInt(buffer.toString());
-                if (operatorIsMatch(showSoftClipped, op)) {
-                    if (operatorIsMatch(showSoftClipped, prevOp)) {
-                        nGaps++;   // Consecutive Ms
-                    }
-                    nBlocks++;
+        for (CigarOperator operator : operators) {
 
-                } else if (op == DELETION || op == SKIPPED_REGION) {
-                    nGaps++;
-                } else if (op == INSERTION) {
-                    nInsertions++;
-                    nGaps++; // "virtual" gap, account for artificial block split @ insertion
-                } else if (op == PADDING) {
-                    nGaps++;
-                }
+            char op = operator.operator;
+            if (op == HARD_CLIP) {
+                continue;  // Just skip hardclips
+            }
+            int nBases = operator.nBases;
+            if (operatorIsMatch(showSoftClipped, op)) {
+                nBlocks++;
+            } else if (op == DELETION || op == SKIPPED_REGION) {
+                nGaps++;
+            } else if (op == INSERTION) {
+                nInsertions++;
+                nGaps++; // "virtual" gap, account for artificial block split @ insertion
+            }
 
-                operators.add(new CigarOperator(nBases, op));
-                buffer = new StringBuffer(4);
-                prevOp = op;
+            if (firstOperator && op == SOFT_CLIP) {
+                softClippedBaseCount += nBases;
+            }
 
-                if (firstOperator && op == SOFT_CLIP) {
-                    softClippedBaseCount += nBases;
-                }
-
-                if(op != SOFT_CLIP) {
-                    firstOperator = false;
-                }
-
+            if (op != SOFT_CLIP) {
+                firstOperator = false;
             }
         }
-
-
 
 
         alignmentBlocks = new AlignmentBlock[nBlocks];
@@ -314,7 +293,7 @@ public abstract class SAMAlignment implements Alignment {
                 fBlockBuilder = new FlowSignalContextBuilder(flowSignals, flowOrder, flowOrderStart, readBases, fromIdx, this.isNegativeStrand());
             }
         }
-        prevOp = 0;
+
         for (CigarOperator op : operators) {
             try {
 
@@ -334,9 +313,6 @@ public abstract class SAMAlignment implements Alignment {
                     fromIdx += op.nBases;
                     blockStart += op.nBases;
 
-                    if (operatorIsMatch(showSoftClipped, prevOp)) {
-                        gapTypes[gapIdx++] = ZERO_GAP;
-                    }
 
                 } else if (op.operator == DELETION || op.operator == SKIPPED_REGION) {
                     blockStart += op.nBases;
@@ -358,7 +334,6 @@ public abstract class SAMAlignment implements Alignment {
             } catch (Exception e) {
                 log.error("Error processing CIGAR string", e);
             }
-            prevOp = op.operator;
         }
 
         // Check for soft clipping at end
@@ -368,6 +343,47 @@ public abstract class SAMAlignment implements Alignment {
                 end += last.nBases;
             }
         }
+    }
+
+
+    /**
+     * Build a list of cigar operators from a cigarString.  Removes padding operators and concatenates consecutive
+     * operators of the same type
+     *
+     * @param cigarString
+     * @return
+     */
+    public static List<CigarOperator> buildOperators(String cigarString) {
+
+        java.util.List<CigarOperator> operators = new ArrayList();
+        StringBuilder buffer = new StringBuilder(4);
+
+        // Create list of cigar operators
+        boolean firstOperator = true;
+        CigarOperator prevOp = null;
+        for (int i = 0; i < cigarString.length(); i++) {
+            char next = cigarString.charAt(i);
+            if (Character.isDigit(next)) {
+                buffer.append(next);
+            } else {
+                char op = next;
+                int nBases = Integer.parseInt(buffer.toString());
+                buffer.setLength(0);
+
+                if (op == PADDING) {
+                    // Just skip padding for now
+                    continue;
+                } else if (prevOp != null && prevOp.operator == op) {
+                    prevOp.nBases += nBases;
+                } else {
+                    prevOp = new CigarOperator(nBases, op);
+                    operators.add(prevOp);
+                }
+
+            }
+        }
+        return operators;
+
     }
 
     private static AlignmentBlock buildAlignmentBlock(FlowSignalContextBuilder fBlockBuilder, byte[] readBases,
