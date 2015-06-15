@@ -111,11 +111,6 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
     public void testGetContentLengthFTP() {
         long contLength = ParsingUtils.getContentLength(TestUtils.AVAILABLE_FTP_URL);
         assertTrue("Error retrieving content length: " + contLength, contLength > 0);
-
-        long start_time = System.currentTimeMillis();
-        assertTrue(ParsingUtils.getContentLength(TestUtils.UNAVAILABLE_FTP_URL) == -1);
-        long end_time = System.currentTimeMillis();
-        assertTrue(end_time - start_time < Globals.CONNECT_TIMEOUT + 1000);
     }
 
 
