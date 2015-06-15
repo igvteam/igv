@@ -742,15 +742,20 @@ public class HttpUtils {
     private URL mapCname(URL url) {
 
         String host = url.getHost();
+        String urlString = url.toExternalForm();
         try {
             if (host.equals("igv.broadinstitute.org")) {
-                url = new URL(url.toExternalForm().replace("igv.broadinstitute.org", "s3.amazonaws.com/igv.broadinstitute.org"));
+                urlString = urlString.replace("igv.broadinstitute.org", "s3.amazonaws.com/igv.broadinstitute.org");
             } else if (host.equals("igvdata.broadinstitute.org")) {
-                url = new URL(url.toExternalForm().replace("igvdata.broadinstitute.org", "dn7ywbm9isq8j.cloudfront.net"));
+                urlString = urlString.replace("igvdata.broadinstitute.org", "dn7ywbm9isq8j.cloudfront.net");
             } else if (host.equals("www.broadinstitute.org")) {
-                url = new URL(url.toExternalForm().replace("www.broadinstitute.org/igvdata", "data.broadinstitute.org/igvdata"));
+                urlString = urlString.replace("www.broadinstitute.org/igvdata", "data.broadinstitute.org/igvdata");
             }
 
+            // data.broadinstitute.org requires https
+            urlString = urlString.replace("http://data.broadinstitute.org", "https://data.broadinstitute.org");
+
+            return new URL(urlString);
         } catch (MalformedURLException e) {
             log.error("Error modifying url", e);
         }

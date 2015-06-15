@@ -36,6 +36,8 @@ public class SeekableServiceStreamTest extends TestCase {
 
         String tdfFile = "http://www.broadinstitute.org/igvdata/annotations/hg18/conservation/omega.12mer.tdf";
 
+        HttpUtils.getInstance().updateProxySettings();
+
         IGVSeekableHTTPStream hs = new IGVSeekableHTTPStream(new URL(tdfFile));
         final int position = 100;
         hs.seek(position);

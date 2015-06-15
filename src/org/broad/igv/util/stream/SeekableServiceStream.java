@@ -84,7 +84,6 @@ public class SeekableServiceStream extends SeekableStream {
         InputStream is = null;
 
         URL url = new URL(WEBSERVICE_URL + "?file=" + wrappedURL.toExternalForm() + "&position=" + position + "&length=" + length);
-        //log.info(url);
 
         int n = 0;
         try {
