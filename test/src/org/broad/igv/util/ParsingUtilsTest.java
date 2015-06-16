@@ -106,14 +106,7 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
             ii++;
         }
     }
-
-    @Test
-    public void testGetContentLengthFTP() {
-        long contLength = ParsingUtils.getContentLength(TestUtils.AVAILABLE_FTP_URL);
-        assertTrue("Error retrieving content length: " + contLength, contLength > 0);
-    }
-
-
+    
     @Test
     public void testGetLastModified_HTTP() throws Exception{
         tstGetLastModified(HttpUtilsTest.broadURLString);
