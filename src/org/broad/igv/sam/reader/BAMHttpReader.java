@@ -150,22 +150,25 @@ public class BAMHttpReader implements AlignmentReader<PicardAlignment> {
 
         List<String> pathsTried = new ArrayList<String>();
 
-        pathsTried.add(indexPath);
+        // Strip parameters
+
 
         if (HttpUtils.getInstance().resourceAvailable(new URL(indexPath))) {
             return IGVSeekableStreamFactory.getInstance().getStreamFor(new URL(indexPath));
         } else {
-            if (indexPath.endsWith(".bam.bai")) {
-                indexPath = indexPath.substring(0, indexPath.length() - 8) + ".bai";
+
+
+            if (indexPath.contains(".bam.bai")) {
+                indexPath = indexPath.replaceFirst(".bam.bai", ".bai");
                 pathsTried.add(indexPath);
                 if (HttpUtils.getInstance().resourceAvailable(new URL(indexPath))) {
                     log.info("Index found: " + indexPath);
                     return IGVSeekableStreamFactory.getInstance().getStreamFor(new URL(indexPath));
                 }
-            } else if (indexPath.endsWith(".bai")) {
-                indexPath = indexPath.substring(0, indexPath.length() - 4) + ".bam.bai";
+            } else {
+                indexPath = indexPath.replaceFirst(".bai", ".bam.bai");
                 pathsTried.add(indexPath);
-                if (HttpUtils.getInstance().resourceAvailable(new URL(indexPath))){
+                if (HttpUtils.getInstance().resourceAvailable(new URL(indexPath))) {
                     log.info("Index found: " + indexPath);
                     return IGVSeekableStreamFactory.getInstance().getStreamFor(new URL(indexPath));
                 }
@@ -173,7 +176,7 @@ public class BAMHttpReader implements AlignmentReader<PicardAlignment> {
         }
 
         String msg = "Index file not found.  Tried ";
-        for(String path : pathsTried) {
+        for (String path : pathsTried) {
             msg += "<br>" + indexPath;
         }
         throw new DataLoadException(msg, indexPath);
