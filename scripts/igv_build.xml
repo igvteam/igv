@@ -59,12 +59,12 @@
 
     <!-- Sign all jars if a keystore is defined -->
     <target name="sign-jars" if="keystore">
-        <signjar jar="${jar.path}" alias="${alias}" keypass="${key-password}" storepass="${store-password}"
-                 keystore="${keystore}"/>
+        <signjar jar="${jar.path}" alias="${alias}" keypass="${key-password}"
+                 storepass="${store-password}" keystore="${keystore}" tsaurl="${tsaurl}"/>
         <signjar jar="${dist.dir}${batik-codec-finame}" alias="${alias}" keypass="${key-password}"
-                 storepass="${store-password}" keystore="${keystore}"/>
+                 storepass="${store-password}" keystore="${keystore}" tsaurl="${tsaurl}"/>
         <signjar jar="${dist.dir}${goby-io-finame}" alias="${alias}" keypass="${key-password}"
-                 storepass="${store-password}" keystore="${keystore}"/>
+                 storepass="${store-password}" keystore="${keystore}" tsaurl="${tsaurl}"/>
     </target>
 
     <fileset id="scripts" dir="${scripts.dir}">
