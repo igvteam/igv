@@ -13,8 +13,6 @@ package org.broad.igv.util.stream;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
-import htsjdk.tribble.util.URLHelper;
-import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.EOFException;
@@ -92,7 +90,7 @@ public class IGVSeekableHTTPStream extends SeekableStream {
             is = openInputStreamForRange(position, endRange);
 
             while (n < len) {
-                int count = is.read(buffer, offset + n, len - n);
+                int count = robustRead(buffer, offset + n, len - n, is, 0);
                 if (count < 0) {
                     if (n == 0) {
                         return -1;
@@ -129,6 +127,18 @@ public class IGVSeekableHTTPStream extends SeekableStream {
         } finally {
             if (is != null) {
                 is.close();
+            }
+        }
+    }
+
+    public int robustRead(byte[] buffer, int offset, int len, InputStream is, int attempts) throws IOException {
+        try {
+            return is.read(buffer, offset, len);
+        } catch (java.net.SocketException e) {
+            if (attempts < 4) {
+                return robustRead(buffer, offset, len, is, attempts + 1);
+            } else {
+                throw e;
             }
         }
     }
@@ -171,7 +181,6 @@ public class IGVSeekableHTTPStream extends SeekableStream {
             throw e;
         }
     }
-
 
 
     /**
