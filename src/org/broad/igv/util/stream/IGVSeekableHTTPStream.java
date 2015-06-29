@@ -13,6 +13,7 @@ package org.broad.igv.util.stream;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
+import org.broad.igv.ui.util.Packable;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.EOFException;
@@ -63,6 +64,27 @@ public class IGVSeekableHTTPStream extends SeekableStream {
 
     public int read(byte[] buffer, int offset, int len) throws IOException {
 
+        int attempts = 0;
+
+        while(attempts < 4) {
+            try {
+                return _read(buffer, offset, len);
+            } catch (java.net.SocketException e) {
+                if(attempts < 4) {
+                    attempts++;
+                    log.error("Socket exception. Trying again." + e);
+                }
+                else {
+                    throw e;
+                }
+            }
+        }
+
+        throw new RuntimeException("Reading " + url + " failed with unknown error.");  // Should be impossible to get here
+    }
+
+    public int _read(byte[] buffer, int offset, int len) throws IOException {
+
         String stats = "Offset=" + offset + ",len=" + len + ",buflen=" + buffer.length;
         if (offset < 0 || len < 0 || (offset + len) > buffer.length) {
             throw new IndexOutOfBoundsException(stats);
@@ -90,7 +112,7 @@ public class IGVSeekableHTTPStream extends SeekableStream {
             is = openInputStreamForRange(position, endRange);
 
             while (n < len) {
-                int count = robustRead(buffer, offset + n, len - n, is, 0);
+                int count = is.read(buffer, offset + n, len - n);
                 if (count < 0) {
                     if (n == 0) {
                         return -1;
@@ -131,17 +153,6 @@ public class IGVSeekableHTTPStream extends SeekableStream {
         }
     }
 
-    public int robustRead(byte[] buffer, int offset, int len, InputStream is, int attempts) throws IOException {
-        try {
-            return is.read(buffer, offset, len);
-        } catch (java.net.SocketException e) {
-            if (attempts < 4) {
-                return robustRead(buffer, offset, len, is, attempts + 1);
-            } else {
-                throw e;
-            }
-        }
-    }
 
 
     public void close() throws IOException {
