@@ -61,9 +61,9 @@ public class EncodePeakFeature extends BasicFeature implements SignalFeature {
         StringBuffer desc = new StringBuffer();
         desc.append(super.getValueString(position, ignored));
 
-        desc.append("Signal value: " + signal);
-        desc.append("<br>P value: " + PValue);
-        desc.append("<br>Q value: " + QValue);
+        desc.append("<br>Signal Value: " + signal);
+        desc.append("<br>pValue (-log10): " + PValue);
+        desc.append("<br>qValue (-log10): " + QValue);
         if (peakPosition > 0) {
             desc.append("<br>Peak: " + (peakPosition + 1));
         }

@@ -151,7 +151,8 @@ public class UCSCEncodeUtils {
         pw.close();
     }
 
-    static HashSet knownFileTypes = new HashSet(Arrays.asList("bam", "bigBed", "bed", "bb", "bw", "bigWig", "gtf", "broadPeak", "narrowPeak", "gff"));
+    static HashSet knownFileTypes = new HashSet(Arrays.asList(
+            "bam", "bigBed", "bed", "bb", "bw", "bigWig", "gtf", "broadPeak", "narrowPeak", "gappedPeak", "gff"));
 
     public static void parseFilesDotTxt(String url, List<EncodeFileRecord> fileRecords) throws IOException {
 
@@ -209,35 +210,6 @@ public class UCSCEncodeUtils {
         reader.close();
 
     }
-
-    /*
-File types
-bam
-bigBed
-shortFrags
-csqual
-spikeins
-bai
-pdf
-bed
-matrix
-bigWig
-tab
-bed9
-bedCluster
-peptideMapping
-csfasta
-gtf
-fastq
-broadPeak
-narrowPeak
-gff
-bedRrbs
-bedRnaElements
-tgz
-bedLogR
-peaks
-*/
 
 
 }

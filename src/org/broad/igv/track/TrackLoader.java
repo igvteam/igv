@@ -386,7 +386,7 @@ public class TrackLoader {
                     t.setHeight(15);
                 }
             }
-            if (locator.getPath().contains(".narrowPeak") || locator.getPath().contains(".broadPeak")) {
+            if (locator.getPath().contains(".narrowPeak") || locator.getPath().contains(".broadPeak") || locator.getPath().contains(".gappedPeak")) {
                 t.setUseScore(true);
             }
             newTracks.add(t);

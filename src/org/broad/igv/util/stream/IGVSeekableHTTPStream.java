@@ -65,14 +65,13 @@ public class IGVSeekableHTTPStream extends SeekableStream {
     public int read(byte[] buffer, int offset, int len) throws IOException {
 
         int attempts = 0;
-
-        while(attempts < 4) {
+        while(attempts < 3) {
             try {
                 return _read(buffer, offset, len);
             } catch (java.net.SocketException e) {
-                if(attempts < 4) {
+                if(attempts < 3) {
                     attempts++;
-                    log.error("Socket exception. Trying again." + e);
+                    log.error("Socket exception. Trying again.", e);
                 }
                 else {
                     throw e;

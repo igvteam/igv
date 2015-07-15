@@ -82,7 +82,9 @@ public class CodecFactory {
                 codec.setSpliceJunctions(true);
             }
             return codec;
-        } else if (fn.endsWith(".dgv")) {
+        } else if (fn.endsWith(".gappedpeak")) {
+            return new IGVBEDCodec(genome, IGVBEDCodec.FeatureType.GAPPED_PEAK);
+        }else if (fn.endsWith(".dgv")) {
             return new DGVCodec(genome);
         } else if (fn.contains("refflat")) {
             return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.REFFLAT, genome);
@@ -102,7 +104,7 @@ public class CodecFactory {
             return new PSLCodec(genome);
         } else if (MUTCodec.isMutationAnnotationFile(locator)) {
             return new MUTCodec(path, genome);
-        } else if (fn.endsWith(".narrowpeak") || fn.endsWith(".broadpeak")) {
+        } else if (fn.endsWith(".narrowpeak") || fn.endsWith(".broadpeak") ) {
             return new EncodePeakCodec(genome);
         } else if (fn.endsWith(".peak")) {
             return new PeakCodec(genome);

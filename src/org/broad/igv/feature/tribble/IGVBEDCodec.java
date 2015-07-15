@@ -11,6 +11,7 @@
 
 package org.broad.igv.feature.tribble;
 
+import com.sun.org.apache.xpath.internal.operations.Mult;
 import org.broad.igv.Globals;
 import org.broad.igv.cli_plugin.Argument;
 import org.broad.igv.cli_plugin.LineFeatureDecoder;
@@ -22,6 +23,7 @@ import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.collections.MultiMap;
 import htsjdk.tribble.Feature;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -38,14 +40,22 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
     static final Pattern BR_PATTERN = Pattern.compile("<br>");
     static final Pattern EQ_PATTERN = Pattern.compile("=");
 
+    enum FeatureType {BED, GAPPED_PEAK};
+
     Genome genome;
+    FeatureType featureType;
 
     public IGVBEDCodec() {
         this(null);
     }
 
     public IGVBEDCodec(Genome genome) {
+        this(genome, FeatureType.BED);
+    }
+
+    public IGVBEDCodec(Genome genome, FeatureType featureType) {
         super(BasicFeature.class);
+        this.featureType = featureType;
         this.genome = genome;
     }
 
@@ -167,7 +177,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
 
 
         // Color
-        if (tokenCount > 8) {
+        if (tokenCount > 8 && featureType != FeatureType.GAPPED_PEAK) {
             String colorString = tokens[8];
             if (colorString.trim().length() > 0 && !colorString.equals(".")) {
                 feature.setColor(ColorUtilities.stringToColor(colorString));
@@ -187,6 +197,14 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
                 junctionFeature.setJunctionEnd(end - exons.get(1).getLength());
 
             }
+        }
+
+        if(tokenCount > 14 && featureType == FeatureType.GAPPED_PEAK) {
+            MultiMap<String, String> attributes = new MultiMap<String, String>();
+            attributes.put("Signal Value", tokens[12]);
+            attributes.put("pValue (-log10)", tokens[13]);
+            attributes.put("qValue (-log10)", tokens[14]);
+            feature.setAttributes(attributes);
         }
 
         return feature;
