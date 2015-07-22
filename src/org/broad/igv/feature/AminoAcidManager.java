@@ -20,7 +20,6 @@ import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
 import com.google.gson.*;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.*;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;
@@ -147,7 +146,7 @@ public class AminoAcidManager {
     /**
      * @param codon 3-letter nucleotide sequence
      * @return The amino acid represented by this codon, as
-     *         decoded from the current codon table
+     * decoded from the current codon table
      */
     public AminoAcid getAminoAcid(String codon) {
         return currentCodonTable.getAminoAcid(codon);
@@ -348,24 +347,8 @@ public class AminoAcidManager {
                     defaultCodonTable = curTable;
                 }
             }
-        } else if (codonTablesPath.endsWith(".asn1") || codonTablesPath.endsWith(".val")) {
-            ASN1InputStream ASNis = new ASN1InputStream(is);
-            ASN1Primitive obj = ASNis.readObject();
-            ASN1Set set = (ASN1Set) obj;
-            //Array of different genetic code tables
-            ASN1Encodable[] codonArray = set.toArray();
-            if (codonArray.length == 0) {
-                throw new RuntimeException("ASN1 File has empty array for Genetic-code-table");
-            }
-            for (ASN1Encodable aCodonArray : codonArray) {
-                CodonTable curTable = CodonTable.createFromASN1(codonTablesPath, aCodonArray);
-                newCodonTables.put(curTable.getKey(), curTable);
-                if (defaultCodonTable == null) {
-                    defaultCodonTable = curTable;
-                }
-            }
         } else {
-            throw new IllegalArgumentException("Unknown file type, must be .json or .asn1");
+            throw new IllegalArgumentException("Unknown file type, must be .json");
         }
 
         allCodonTables.putAll(newCodonTables);
@@ -378,7 +361,7 @@ public class AminoAcidManager {
 //        return new JsonObject(tokener);
 //    }
 
-    private static JsonObject readJSONFromStream(InputStream is){
+    private static JsonObject readJSONFromStream(InputStream is) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         JsonParser parser = new JsonParser();
         return parser.parse(reader).getAsJsonObject();
@@ -455,7 +438,7 @@ public class AminoAcidManager {
 
             JsonObject chromosomes = obj.get("chromosomes").getAsJsonObject();
             Iterator<Map.Entry<String, JsonElement>> iterator = chromosomes.entrySet().iterator();
-            while(iterator.hasNext()){
+            while (iterator.hasNext()) {
                 Map.Entry<String, JsonElement> entry = iterator.next();
                 String chromoName = entry.getKey();
                 int id = entry.getValue().getAsInt();
@@ -570,41 +553,6 @@ public class AminoAcidManager {
             String startString = jsonObject.get("sncbieaa").getAsString();
 
             return build(sourcePath, id, names, aas, startString);
-        }
-
-        private static CodonTable createFromASN1(String sourcePath, ASN1Encodable asn1Encodable) throws IOException {
-            byte[] data = asn1Encodable.toASN1Primitive().getEncoded();
-            ASN1InputStream iASNis = new ASN1InputStream(data);
-            ASN1Primitive prim = iASNis.readObject();
-            ASN1Set iset = (ASN1Set) prim;
-
-            //Set of fields of each table
-            ASN1TaggedObject[] taggedObjects = getTaggedObjects(iset.toArray());
-            int index = 0;
-            int tagNo = taggedObjects[index].getTagNo();
-            List<String> names = new ArrayList<String>(2);
-            while (tagNo == 0) {
-                names.add(getAsString(taggedObjects[index].getObject()));
-                tagNo = taggedObjects[++index].getTagNo();
-            }
-
-            int id = ((DERInteger) taggedObjects[index++].getObject()).getValue().intValue();
-            String aas = getAsString(taggedObjects[index++].getObject());
-            String startString = getAsString(taggedObjects[index++].getObject());
-
-            return build(sourcePath, id, names, aas, startString);
-        }
-
-        private static String getAsString(ASN1Object object) {
-            return ((ASN1String) object).getString();
-        }
-
-        private static ASN1TaggedObject[] getTaggedObjects(ASN1Encodable[] encodables) {
-            ASN1TaggedObject[] taggedObjects = new ASN1TaggedObject[encodables.length];
-            for (int ii = 0; ii < encodables.length; ii++) {
-                taggedObjects[ii] = (ASN1TaggedObject) encodables[ii];
-            }
-            return taggedObjects;
         }
 
         private static CodonTable build(String sourcePath, int id, List<String> names, String aas, String startString) {

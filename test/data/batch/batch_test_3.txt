@@ -1,13 +1,6 @@
-snapshotDirectory /Users/jrobinso/tmp
+snapshotDirectory /Users/jrobinso/
 maxPanelHeight 2000
-load http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.SLX.bam
-goto chr1:116028154
-sort base chr1:116028154
+load http://www.broadinstitute.org/igvdata/BodyMap/hg19/IlluminaHiSeq2000_BodySites/brain_merged/accepted_hits.bam
+goto chr8:128,746,315-128,755,680
 snapshot
 new
-load http://www.broadinstitute.org/igvdata/1KG/freeze5_merged/low_coverage_YRI.13.bam
-goto chr13:77,167,670-77,183,095
-collapse
-sort base
-snapshot
-snapshot yri_snp_1.png
