@@ -457,7 +457,7 @@
                     <include name="${goby-io-finame}"/>
                 </classpath>
                 <option value="-Dapple.laf.useScreenMenuBar=true"/>
-                <argument value="-Xmx2g"/>
+                <argument value="-Xmx4g"/>
                 <argument value="-Xdock:name=${ant.project.name}"/>
             </bundleapp>
 
