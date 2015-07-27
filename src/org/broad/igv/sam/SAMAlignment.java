@@ -494,11 +494,16 @@ public abstract class SAMAlignment implements Alignment {
             buf.append("Read group = " + readGroup + "<br>");
         }
 
+        String cigarString = getCigarString();
+        if(cigarString.length() > 80) {
+            cigarString = cigarString.substring(0, 80) + "...";
+        }
+
         buf.append("----------------------" + "<br>");
         int basePosition = (int) position;
         buf.append("Location = " + getChr() + ":" + DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
         buf.append("Alignment start = " + DECIMAL_FORMAT.format(getAlignmentStart() + 1) + " (" + (isNegativeStrand() ? "-" : "+") + ")<br>");
-        buf.append("Cigar = " + getCigarString() + "<br>");
+        buf.append("Cigar = " + cigarString + "<br>");
         buf.append("Mapped = " + (isMapped() ? "yes" : "no") + "<br>");
         buf.append("Mapping quality = " + getMappingQuality() + "<br>");
         buf.append("Secondary = " + (isPrimary() ? "no" : "yes") + "<br>");
