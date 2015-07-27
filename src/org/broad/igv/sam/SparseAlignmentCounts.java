@@ -130,31 +130,6 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
         }
     }
 
-    public int getNegTotal(int pos) {
-        if (!indexMap.containsKey(pos)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
-            }
-            return 0;
-        } else {
-            int idx = getIndex(pos);
-            return getCountFromList(negTotal, idx);
-
-        }
-    }
-
-    public int getPosTotal(int pos) {
-        if (!indexMap.containsKey(pos)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
-            }
-            return 0;
-        } else {
-            int idx = getIndex(pos);
-            return getCountFromList(posTotal, idx);
-
-        }
-    }
 
     public int getTotalQuality(int pos) {
         if (!indexMap.containsKey(pos)) {
@@ -318,12 +293,6 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
         }
 
     }
-
-    public int getAvgQuality(int pos, byte b) {
-        int count = getCount(pos, b);
-        return count == 0 ? 0 : getQuality(pos, b) / count;
-    }
-
 
     protected void incrementDeletion(int pos, boolean negativeStrand) {
         int idx = getIndex(pos);

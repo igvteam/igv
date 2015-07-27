@@ -118,32 +118,6 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
         }
     }
 
-    public int getNegTotal(int pos) {
-        int offset = pos - start;
-        if (offset < 0 || offset >= posA.length) {
-            if (log.isDebugEnabled()) {
-                log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
-            }
-            return 0;
-        } else {
-            return negTotal[offset];
-
-        }
-    }
-
-    public int getPosTotal(int pos) {
-        int offset = pos - start;
-        if (offset < 0 || offset >= posA.length) {
-            if (log.isDebugEnabled()) {
-                log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
-            }
-            return 0;
-        } else {
-            return posTotal[offset];
-
-        }
-    }
-
     public int getTotalQuality(int pos) {
         int offset = pos - start;
         if (offset < 0 || offset >= posA.length) {
@@ -296,11 +270,6 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
             log.error("Unknown nucleotide: " + posN);
             return 0;
         }
-    }
-
-    public int getAvgQuality(int pos, byte b) {
-        int count = getCount(pos, b);
-        return count == 0 ? 0 : getQuality(pos, b) / count;
     }
 
 

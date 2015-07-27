@@ -19,11 +19,9 @@ import htsjdk.tribble.Feature;
  */
 public interface AlignmentCounts extends Feature {
 
+    void incCounts(Alignment alignment);
+
     int getTotalCount(int pos);
-
-    int getNegTotal(int pos);
-
-    int getPosTotal(int pos);
 
     int getTotalQuality(int pos);
 
@@ -39,10 +37,6 @@ public interface AlignmentCounts extends Feature {
 
     int getQuality(int pos, byte b);
 
-    int getAvgQuality(int pos, byte b);
-
-    void incCounts(Alignment alignment);
-
     int getNumberOfPoints();
 
     int getMaxCount(int origin, int end);
@@ -55,7 +49,4 @@ public interface AlignmentCounts extends Feature {
 
     void finish();
 
-    static interface PositionIterator {
-        int nextPosition();
-    }
 }
