@@ -30,20 +30,18 @@ public class AlignmentBlock {
 
     private boolean softClipped = false;
 
+    private FlowSignalContext fContext = null;
+
+    Alignment alignment;
+    int offset;
+    int end;
+
     /**
      * The reference genome we store mismatches to
      */
     private Genome genome;
 
-    public static AlignmentBlock getInstance(String chr, int start, byte[] bases, byte[] qualities) {
-        return new AlignmentBlock(chr, start, bases, qualities);
-    }
-
-    public static AlignmentBlock getInstance(String chr, int start, byte[] bases, byte[] qualities, FlowSignalContext fContext) {
-        return new AlignmentBlockFS(chr, start, bases, qualities, fContext);
-    }
-
-    protected AlignmentBlock(String chr, int start, byte[] bases, byte[] qualities) {
+    public AlignmentBlock(String chr, int start, byte[] bases, byte[] qualities) {
         this.chr = chr;
         this.start = start;
         this.bases = bases;
@@ -56,6 +54,14 @@ public class AlignmentBlock {
         }
         this.counts = null;
     }
+
+    protected AlignmentBlock(String chr, int start, byte[] bases, byte[] qualities, FlowSignalContext fContext) {
+        this(chr, start, bases, qualities);
+        if (fContext != null && fContext.getNrSignals() == bases.length) {
+            this.fContext = fContext;
+        }
+    }
+
 
     public boolean contains(int position) {
         int offset = position - start;
@@ -120,17 +126,8 @@ public class AlignmentBlock {
         this.softClipped = softClipped;
     }
 
-    public boolean hasFlowSignals() {
-        return false;
-    }
-
     public boolean hasCounts() {
         return counts != null;
-    }
-
-    // Default implementation -- to be overridden
-    public FlowSignalSubContext getFlowSignalSubContext(int offset) {
-        return null;
     }
 
     @Override
@@ -176,6 +173,19 @@ public class AlignmentBlock {
      */
     public boolean hasBases() {
         return this.bases != null;
+    }
+
+
+    public FlowSignalSubContext getFlowSignalSubContext(int offset) {
+
+        return  this.fContext == null ? null :
+                new FlowSignalSubContext(this.fContext.getSignalForOffset(offset),
+                        this.fContext.getBasesForOffset(offset), this.fContext.getFlowOrderIndexForOffset(offset));
+    }
+
+
+    public boolean hasFlowSignals() {
+        return (null != this.fContext);
     }
 
 
