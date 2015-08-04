@@ -89,4 +89,12 @@ public class FPKMTrackingCodec extends CufflinksCodec<FPKMValue>{
     public int getNumSamples() {
         return numSamples;
     }
+
+    @Override
+    public boolean canDecode(String path) {
+
+        String fn = path.toLowerCase();
+        if(fn.endsWith(".gz")) fn = fn.substring(0, fn.length()-3);
+        return fn.endsWith("fpkm_tracking");
+    }
 }

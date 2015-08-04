@@ -32,4 +32,11 @@ public class UCSCSnpCodec extends UCSCCodec<UCSCSnpFeature> {
         return new UCSCSnpFeature(chr, start, end, tokens);
 
     }
+
+    @Override
+    public boolean canDecode(String path) {
+        String fn = path.toLowerCase();
+        if(fn.endsWith(".gz")) fn = fn.substring(0, fn.length()-3);
+        return fn.toLowerCase().endsWith(".snp");
+    }
 }

@@ -244,7 +244,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
      */
     @Override
     public boolean canDecode(String path) {
-        return path.toLowerCase().endsWith(".bed");
+        return path.toLowerCase().endsWith(".bed") || path.toLowerCase().endsWith(".bed.gz");
     }
 
 

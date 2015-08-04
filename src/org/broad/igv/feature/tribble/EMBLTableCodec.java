@@ -91,6 +91,11 @@ public class EMBLTableCodec extends AbstractFeatureCodec<BasicFeature, EMBLTable
         o.close();
     }
 
+    @Override
+    public boolean canDecode(String path) {
+        return false;
+    }
+
     static class EmblRecord {
 
         private static Logger log = Logger.getLogger(EmblRecord.class);

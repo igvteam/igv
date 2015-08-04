@@ -88,4 +88,10 @@ public class ExpDiffCodec extends CufflinksCodec<ExpDiffValue>{
     }
 
 
+    @Override
+    public boolean canDecode(String path) {
+        String s = path.toLowerCase();
+        if(s.endsWith(".gz")) s = s.substring(0, s.length()-3);
+        return s.endsWith("gene_exp.diff") || s.endsWith("cds_exp.diff");
+    }
 }

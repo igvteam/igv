@@ -174,7 +174,8 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
      * @return true if potentialInput can be parsed, false otherwise
      */
     public boolean canDecode(String path) {
-        final String pathLowerCase = path.toLowerCase();
+        String pathLowerCase = path.toLowerCase();
+        if (pathLowerCase.endsWith(".gz")) pathLowerCase = pathLowerCase.substring(0, pathLowerCase.length() - 3);
         return pathLowerCase.endsWith(".gff") || pathLowerCase.endsWith(".gff3") ||
                 pathLowerCase.endsWith(".gvf") || pathLowerCase.endsWith(".gtf");
     }
@@ -386,7 +387,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
                     if (attributes.containsKey(possName)) {
                         String parent = attributes.get(possName).trim();
                         if (parent.length() > 0) {
-                            return new String[] {parent};
+                            return new String[]{parent};
                         }
                     }
                 }
@@ -406,12 +407,12 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
             for (String nf : idFields) {
                 if (attributes.containsKey(nf)) {
                     String tmp = attributes.get(nf).trim();
-                    if(tmp.length() > 0) return tmp;
+                    if (tmp.length() > 0) return tmp;
                 }
             }
 
             String tmp = getName(attributes);
-            if(tmp != null && tmp.trim().length() > 0) {
+            if (tmp != null && tmp.trim().length() > 0) {
                 return tmp.trim();
             }
 
