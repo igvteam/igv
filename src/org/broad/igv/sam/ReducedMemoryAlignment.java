@@ -38,34 +38,27 @@ import java.awt.*;
 /**
  * @author jrobinso
  */
-public class DotAlignedAlignment implements Alignment {
+public class ReducedMemoryAlignment implements Alignment {
 
-    String readName;
+    //String readName;
     private String chromosome;
     private int start;
     private int end;
     boolean negativeStrand;
 
 
-    public DotAlignedAlignment(String chromosome, int start, int end, boolean isNegative, String name) {
-        this.negativeStrand = isNegative;
-        this.readName = name;
-        this.chromosome = chromosome;
-        this.start = start;
-        this.end = end;
+    public ReducedMemoryAlignment(Alignment al) {
+        this.negativeStrand = al.isNegativeStrand();
+      //  this.readName = al.getReadName();
+        this.chromosome = al.getChr();
+        this.start = al.getStart();
+        this.end = al.getEnd();
     }
 
-    public DotAlignedAlignment(String chromosome, int start, int end, boolean negativeStrand) {
-        this.readName = chromosome + ":" + (start + 1) + "-" + (end + 1) + "(" +
-                (negativeStrand ? "-" : "+") + ")";
-        this.chromosome = chromosome;
-        this.start = start;
-        this.end = end;
-        this.negativeStrand = negativeStrand;
-    }
+
 
     public String getReadName() {
-        return readName;
+        return null;
     }
 
     /**
@@ -177,7 +170,7 @@ public class DotAlignedAlignment implements Alignment {
     }
 
     public String getValueString(double position, WindowFunction windowFunction) {
-        return readName + "<br>Read length = " + (getEnd() - getStart());
+        return "Read length = " + (getEnd() - getStart());
     }
 
     /**
