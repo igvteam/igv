@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<!--
+  ~ The MIT License (MIT)
+  ~
+  ~ Copyright (c) 2007-2015 Broad Institute
+  ~
+  ~ Permission is hereby granted, free of charge, to any person obtaining a copy
+  ~ of this software and associated documentation files (the "Software"), to deal
+  ~ in the Software without restriction, including without limitation the rights
+  ~ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  ~ copies of the Software, and to permit persons to whom the Software is
+  ~ furnished to do so, subject to the following conditions:
+  ~
+  ~ The above copyright notice and this permission notice shall be included in
+  ~ all copies or substantial portions of the Software.
+  ~
+  ~
+  ~ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  ~ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  ~ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  ~ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  ~ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  ~ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  ~ THE SOFTWARE.
+  -->
+
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+<h2>
+    <strong>IGV 2.3,</strong>&nbsp;released April 2013</h2>
+
+<p><strong>New Features and Improvements</strong></p>
+<ul>
+    <li>
+        <strong>Motif finder. </strong>This new feature allows you to search for a particular nucleotide sequence in the
+        reference genome, using either regular expression syntax or IUPAC ambiguity codes. Search results are displayed
+        in two new tracks; one displays matches on the positive strand, and the other displays matches on the negative
+        strand. Read more about it <a href="http://www.broadinstitute.org/software/igv/node/251">here</a>.
+    </li>
+</ul>
+<ul>
+    <li>
+        <strong>Copy details of alignment coverage track to the clipboard.&nbsp;</strong>If you hover the mouse cursor
+        over a sequence alignment coverage track, the pop-up window shows details about the reads at that locus,
+        including the number of reads, and the distribution of called nucleotides. You can now copy this information to
+        your computer&#39;s clipboard by right-clicking and selecting&nbsp;<em>Copy Details to Clipboard&nbsp;</em>from
+        the menu.
+    </li>
+</ul>
+<ul>
+    <li>
+        <strong>Improved memory performance for BAM files. </strong>In this release, sequence alignments that are no
+        longer in view are purged from memory more frequently than before. &quot;Out of memory&quot; messages should
+        happen less often.
+    </li>
+</ul>
+<ul>
+    <li>
+        <strong>Gitools integration. </strong>Gitools is a framework, developed at the Biomedical Research Park in
+        Barcelona (PRBB), for analysis and visualization of genomic data. Data and results are represented as browsable
+        heatmaps. Data can be exported from IGV in gitools format, or loaded directly into a running gitools session.&nbsp;Available
+        under the <em>Tools</em> menu.&nbsp;See http://www.gitools.org for details.&nbsp;</li>
+</ul>
+<h5>
+    Bug Fixes</h5>
+<ul>
+    <li>
+        Improved parsing of GFF3 files, so alternate coding sequences are displayed properly.
+    </li>
+    <li>
+        Fixed loading of BAM files over FTP.
+    </li>
+    <li>
+        Fixed bug where &quot;Load Genome&quot; dialog was sometimes blank.
+    </li>
+    <li>
+        Set autoscale to false when scale manually set, don&#39;t disable &quot;Set Data Range&quot; when autoscale set.
+    </li>
+    <li>
+        Trim any leading bases from VCF files which match the reference, so variants are displayed where the variation
+        actually starts.
+    </li>
+</ul>
+<h1>
+    <strong>IGV 2.3.2&nbsp;</strong>&nbsp;April 22, 2013</h1>
+
+<div>
+    <h5>
+        Bug Fixes</h5>
+    <ul>
+        <li>
+            Cannot load large tdf or tabix files over http from some servers.
+        </li>
+    </ul>
+    <h1>
+        <strong>IGV 2.3.3&nbsp;</strong>&nbsp;May 1, 2013</h1>
+
+    <div>
+        <h5>
+            Bug Fixes</h5>
+        <ul>
+            <li>
+                Minimum junction setting is ignored in splice junction track.
+            </li>
+            <li>
+                &quot;Goto mate region&quot; jumps to whole chromosome view when mate is on another chromosome.
+            </li>
+        </ul>
+        <h1>
+            <strong>IGV 2.3.4&nbsp;</strong>&nbsp;May 13, 2013</h1>
+        <h5>
+            Bug Fixes</h5>
+        <ul>
+            <li>
+                File handes for &quot;tribble&quot; indexed files are not being closed.
+            </li>
+            <li>
+                Dragging in split screen / gene list view is broken.
+            </li>
+            <li>
+                Coverage track height cannot be changed.
+            </li>
+        </ul>
+        <h1>
+            <strong>IGV 2.3.6&nbsp;</strong>&nbsp;May&nbsp; 2013</h1>
+        <h5>
+            Bug Fixes</h5>
+        <ul>
+            <li>
+                Null pointer exception creating snapshots from batch script.
+            </li>
+        </ul>
+    </div>
+</div>
+<h1>
+    <strong>IGV 2.3.7&nbsp;</strong>&nbsp;May 30, 2013</h1>
+
+<div>
+    <ul>
+        <li>
+            The region-of-interest (ROI) batch command now takes an optional &quot;name&quot; argument.
+        </li>
+    </ul>
+    <h5>
+        Bug Fixes</h5>
+    <ul>
+        <li>
+            When viewing VCF files with large numbers of samples view is not refreshed after scrolling vertically.
+        </li>
+        <li>
+            IGV fails on startup with Java 8
+        </li>
+    </ul>
+    <h1>
+        <strong>IGV 2.3.8&nbsp; </strong>May 31, 2013</h1>
+
+    <div>
+        <h5>
+            Bug Fixes</h5>
+        <ul>
+            <li>
+                Fails to use proxy settings when performing byte range requests.
+            </li>
+            <li>
+                Searching for full chromosome causes no view change if already zoomed in
+            </li>
+        </ul>
+        <h1>
+            <strong>IGV 2.3.10 &nbsp;July 7</strong>, 2013</h1>
+
+        <div>
+            <h5>
+                <strong>New features and Improvements</strong></h5>
+            <ul>
+                <li>
+                    Display message when BEDTools plugin encounters an error
+                </li>
+                <li>
+                    Show genomic location in tooltip of alignment tracks
+                </li>
+                <li>
+                    Sashimi plot for RNA-Seq alignments
+                </li>
+                <li>
+                    Option to override user preferences via a batch comman&gt;</li>
+                <li>
+                    Option to direct igvtools output to stdout for count and sort commands, using the special string
+                    &#39;stdout&#39; as the output file.
+                </li>
+            </ul>
+            <h5>
+                <strong>Bug Fixes</strong></h5>
+            <ul>
+                <li>
+                    igvtools outputs incorrect wig files (multiple track lines)
+                </li>
+                <li>
+                    SVG files are not readable by some programs (e.g. gimp) on Windows platform due to incorrect
+                    encoding.
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<h1>
+    <strong>IGV 2.3.12&nbsp; July 15</strong>, 2013</h1>
+
+<div>
+    <h5>
+        <strong>Bug Fixes</strong></h5>
+    <ul>
+        <li>
+            Some bigwig files fail to load with a &quot;null pointer exception&quot;</li>
+    </ul>
+    <h1>
+        <strong>IGV 2.3.13 August 2</strong>, 2013</h1>
+    <ul>
+        <li>
+            Pickup default &nbsp;proxy settings from environment variables.
+        </li>
+    </ul>
+    <div>
+        <strong>Bug Fixes</strong>
+        <ul>
+            <li>
+                UTRs not recognized in GFF files
+            </li>
+        </ul>
+        <h1>
+            <strong>IGV 2.3.14 August 6</strong>, 2013</h1>
+        <ul>
+            <li>
+                Implement autoscale for splice junction tracks
+            </li>
+        </ul>
+        <div>
+            <strong>Bug Fixes</strong>
+            <ul>
+                <li>
+                    Loading bedgraph files fail with &quot;array index out of bounds&quot; error
+                </li>
+            </ul>
+            <h1>
+                <strong>IGV 2.3.15 August 19</strong>, 2013</h1>
+
+            <div>
+                <strong>Bug Fixes</strong>
+                <ul>
+                    <li>
+                        Show read sequence of unmapped mates&nbsp;</li>
+                    <li>
+                        Exons not associated with transcripts in GTF files
+                    </li>
+                    <li>
+                        Splice junction tooltip incomplete in collapsed mode
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<p><strong>&nbsp;</strong></p>
+
+<h1>
+    <strong>IGV 2.3.16 August 20</strong>, 2013</h1>
+<ul>
+    <li>
+        Add &quot;export consensus sequence&quot; option to alignment track menu
+    </li>
+</ul>
+<div>
+    <h1>
+        <strong>IGV 2.3.17 August 26</strong>, 2013</h1>
+
+    <div>
+        <ul>
+            <li>
+                Disable native Mac dialog when IGV is launched from Java Web Start&nbsp;</li>
+        </ul>
+        <h1>
+            <strong>IGV 2.3.18 September 5</strong>, 2013</h1>
+
+        <div>
+            <p><strong>Bug Fixes</strong></p>
+            <ul>
+                <li>
+                    Autoscale option is reset after navigating to new locus
+                </li>
+                <li>
+                    Reference sequence track is not shown from session files if there is no assoicated annotation track
+                </li>
+            </ul>
+            <h1>
+                <strong>IGV 2.3.19 September 27</strong>, 2013</h1>
+
+            <div>
+                <p><strong>Bug Fixes</strong></p>
+                <ul>
+                    <li>
+                        Popup messages appear when running batch scripts from the command line
+                    </li>
+                    <li>
+                        Starting from the command line with a session file fails if no genome was previously selected
+                    </li>
+                    <li>
+                        IGV hangs when viewing soft-clipped alignments at coordinates &lt; 0 &nbsp;(5&#39; end of
+                        contig)
+                    </li>
+                    <li>
+                        Not all exons are displayed from Wormbase GFF files
+                    </li>
+                </ul>
+                <h1>
+                    <strong>IGV 2.3.23 October 24</strong>, 2013</h1>
+
+                <p><strong>New Features and Improvements</strong></p>
+                <ul>
+                    <li>
+                        Add preference to control display of default sample/track attributes
+                    </li>
+                    <li>
+                        Performance improvements for loading BAM files over the web
+                    </li>
+                    <li>
+                        Development version only: Remove tracks via delete or backspace key
+                    </li>
+                    <li>
+                        Allow multiple motifs to be entered at once in MotifFinder
+                    </li>
+                    <li>
+                        Allow grouping of VCF tracks
+                    </li>
+                </ul>
+                <p><strong>Bug Fixes</strong></p>
+                <ul>
+                    <li>
+                        Starting igv with the -g option causes a null pointer exception when genome is in current
+                        directory
+                    </li>
+                    <li>
+                        Cannot read BAM files when server doesn&#39;t return Content-Length
+                    </li>
+                    <li>
+                        Cannot read eQTL files with missing q-value
+                    </li>
+                </ul>
+                <h1>
+                    <strong>IGV 2.3.26 January 17</strong>, 2014</h1>
+            </div>
+        </div>
+    </div>
+</div>
+<p><strong>New Features and Improvements</strong></p>
+<ul>
+    <li>
+        Add option to <a href="https://www.broadinstitute.org/software/igv/PopupMenus#DataTrack">overlay data tracks</a>
+    </li>
+    <li>
+        A new option for loading files from the ENCODE project has been added to the file menu for genome assemblies
+        hg19, b37, and mm9.
+    </li>
+    <li>
+        Provide 1-click download of genome and sequence files.&nbsp;</li>
+    <li>
+        Add additional options for loading files by URL, can specify the index file and TDF file location with &quot;index&quot;
+        and &quot;coverage&quot; query parameters respectively.
+    </li>
+    <li>
+        Allow EPS snapshot output, through use of EPSGraphics library. See <a
+            href="https://www.broadinstitute.org/software/igv/third_party_tools#epsgraphics" target="_blank">https://www.broadinstitute.
+        <wbr>
+        org/software/igv/third_party_
+        <wbr>
+        tools#epsgraphics</wbr></wbr></a> for instructions
+    </li>
+    <li>
+        Add &quot;remove&quot; batch command, syntax &quot;remove &lt;trackName&gt;&quot;</li>
+    <li>
+        Add &#39;ctrl-s&#39; hotkey for sorting alignments by most recent sort
+    </li>
+    <li>
+        Read pairs are now downsampled together (both kept or both removed)
+    </li>
+</ul>
+<p>
+    <wbr>
+    <wbr>
+
+<p><strong>Bug Fixes</strong></p>
+<ul>
+    <li>
+        Fallback from HEAD to GET for HTTP requests if HEAD fails. Useful for loading from cloud providers such as AWS
+    </li>
+    <li>
+        When long error messages are displayed, they are scrollable
+    </li>
+</ul>
+<div>
+    <h1>
+        <strong>IGV 2.3.46 March 16</strong>, 2015</h1>
+
+    <p><strong>New Features and Improvements</strong></p>
+    <ul>
+        <li>
+            <strong>BLAT.&nbsp;</strong>You can now do a BLAT search from a <em>feature</em>, <em>alignment</em>, or
+            <em>region of interest,&nbsp;</em>of up to 8 kb in length as detailed <a
+                href="http://www.broadinstitute.org/software/igv/BLAT" target="_self">here</a>.
+            <ul>
+                <li>
+                    <strong>Features: </strong><span>Right-click on the feature in the track to see the BLAT command in the pop-up menu. The BLAT input sequence is the section of the reference genome defined by the feature start and end bounds.</span>
+                </li>
+                <li>
+                    <strong>Alignments:</strong>&nbsp;Right-click on the aligned read to see the BLAT command in the
+                    pop-up menu. The BLAT input sequence is the read sequence. It is&nbsp;<em>not&nbsp;</em>the sequence
+                    of the reference genome where the read was aligned.
+                </li>
+                <li>
+                    <strong>Regions of Interest:&nbsp;</strong>After <a
+                        href="http://www.broadinstitute.org/software/igv/regionsofinterest">creating a region of
+                    interest</a>, click on the region&#39;s red bar to see the BLAT command in the popup menu. The BLAT
+                    input sequence is the sequence of the reference genome defined by the region bounds.<span>&nbsp; &nbsp;</span>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <p class="rteindent1"><span>​</span>By default, the BLAT server hosted at the UCSC Genome Browser is used, but this
+        can be changed in the <em>Advanced</em> preferences (<em>View &gt; Preferences &gt; Advanced</em>). Most UCSC
+        derived genomes are supported, including human and mouse genomes.</p>
+    <ul>
+        <li>
+            <span>​</span><strong>Combine numeric tracks. </strong>From the <em>Tools&nbsp;</em>menu, you&nbsp;can now
+            dynamically create new tracks by combining two existing numeric tracks. Operators include add, subtract,
+            multiply, and divide. Note that this does not overlay the two tracks, but rather creates a new data track
+            that combines the data values from both tracks. For example, if you multiply two tracks, and one track has a
+            data value of 10 at a particular locus, and the other track has a value of 2 at that locus, then the new
+            track will have a value of 20.&nbsp;</li>
+    </ul>
+    <ul>
+        <li>
+            <strong>Support for Supplementary Alignments</strong>
+            <ul>
+                <li>
+                    <span>Added a new alignment preference to filter supplementary alignments. See <em>Filter and
+                        shading options</em> in&nbsp;</span><em>View &gt; Preferences &gt; Alignments</em><span>.</span>
+                </li>
+                <li>
+                    <span>Added <em>Group by supplementary flag</em> to the alignment popup track menu.</span></li>
+                <li>
+                    <span>Enhanced the pop-up information panel, also referred to as a tooltip, for supplementary alignments.</span>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</div>
+<ul dir="ltr">
+    <li>
+        <span><strong>Misc</strong></span>
+        <ul>
+            <li>
+                <span>Session file paths are now relative where possible (i.e. data file path is relative to session path).</span>
+            </li>
+            <li>
+                <span>Added a new batch command to go to whole genome view: &ldquo;goto all&rdquo;. &nbsp;</span></li>
+            <li>
+                <span>You can now optionally disable quality weighting of the allele fraction when displaying single nucleotide mismatches in the coverage track for sequencing data. See &quot;Filter and shading options&quot; in&nbsp;</span><em>View
+                &gt; Preferences &gt; Alignments</em><span>.</span></li>
+            <li>
+                <span>Nucleotide colors for the sequence track are now settable by adding or editing properties COLOR.A, COLOR.C, COLOR.T, COLOR.G, and COLOR.N in the IGV <em>pref.properties</em> file (see the&nbsp;<em>igv&nbsp;</em>directory in your home directory). Similarly for a BAM track with properties SAM.COLOR.A, SAM.COLOR.C, etc., as outlined <a
+                        href="http://www.broadinstitute.org/software/igv/prefs.properties"
+                        target="_self">here</a>.</span></li>
+            <li>
+                <span>The exon numbering scheme has been changed to begin at first <em>coding</em> exon, rather than first exon.</span>
+            </li>
+            <li>
+                <span>Increased the keyboard left/right scroll speed to 50 pixels per key press.</span></li>
+            <li>
+                <span>Improved memory management for smaller BAM file footprint.</span></li>
+        </ul>
+    </li>
+</ul>
+<p>&nbsp;</p>
+
+<h1>
+    <strong>IGV 2.3.47 March 26</strong>, 2015</h1>
+
+<p><strong>New Features and Improvements</strong></p>
+<ul>
+    <li>
+        Add option to filter junctions on Sashimi plot by strand
+    </li>
+</ul>
+<p><strong>Bug Fixes</strong></p>
+<ul>
+    <li>
+        Fix SSL certification errors when running under Java 1.8
+    </li>
+</ul>
+<h1>
+    <strong>IGV 2.3.49 April 10</strong>, 2015</h1>
+
+<p><strong>Bug Fixes</strong></p>
+<ul>
+    <li>
+        &quot;Show centerline&quot; ignored if alignment tracks are zoomed out
+    </li>
+</ul>
+<h1>
+    <strong>IGV 2.3.50 April 15</strong>, 2015</h1>
+
+<p><strong>New Features and Improvements</strong></p>
+<ul>
+    <li>
+        Option to add gene lists in &quot;bed&quot; format
+    </li>
+    <li>
+        Add &nbsp;&quot;count as pairs&quot; and &quot;extension factor&quot; options to igvtools input form
+    </li>
+    <li>
+        Add option to scale fonts for very high resolution displays. &nbsp;If the screen resolution is &gt; 1.5 times
+        the design resolution of 96 dpi all fonts are scaled proportionally. &nbsp;Option is set on the &quot;Genera&quot;
+        tab of the preferences window, default is off (don&#39;t scale).
+    </li>
+</ul>
+<p><strong>Bug Fixes</strong></p>
+<ul>
+    <li>
+        Null pointer exception preventing startup when scaling fonts on some machines with very-high resolution screens.
+    </li>
+</ul>
+
+<h1><strong>IGV 2.3.51 April 20, 2015</strong></h1>
+
+<p><strong>Bug Fixes</strong></p>
+<ul>
+    <li>
+        Null pointer exception preventing startup when scaling fonts on some machines with very-high resolution screens.
+    </li>
+</ul>
+
+<h1><strong>IGV 2.3.52 April 20</strong>, 2015</h1>
+
+<p><strong>Bug Fixes</strong></p>
+<ul>
+    <li>
+        BAM files fail to load and hang IGV if server returns a &quot;302&quot; status code for file not found.
+    </li>
+</ul>
+
+<h1><strong>IGV 2.3.53 May 26, 2015</strong></h1>
+<p><strong>Bug Fixes</strong></p>
+<ul>
+    <li>
+        Bug -- #gffTags ignored if followed by track line
+    </li>
+    <li>
+        Concatenate bases of leading soft-clip operators
+    </li>
+</ul>
+<p><strong>New Features and Improvements</strong></p>
+<ul>
+    <li>
+        Support for UCSC snp files (extension ".snp").
+    </li>
+    <li>
+        Check of active port listener before attempting OAuth.
+    </li>
+    <li>
+        Determine content length of remote file from partial content response header.
+    </li>
+    <li>
+        Print version update notice to log instead of popup dialog to prevent batch runs from failing.
+    </li>
+</ul>
+
+
+<h1><strong>IGV 2.3.55 May 28, 2015</strong></h1>
+<p><strong>Bug Fixes</strong></p>
+<ul>
+    <li>
+        Bug -- ".bam.bai" index file not found in some situations
+    </li>
+
+</ul>
+
+
+<h1><strong>IGV 2.3.56 June 19 , 2015</strong></h1>
+<p><strong>New Features and Improvements</strong></p>
+<ul>
+    <li>
+        Support for proxy "white list"
+    </li>
+    <li>
+        Improve treatment of cigar operators with padding
+    </li>
+    <li>
+        Support ".bdg" as a bedgraph file extension
+    </li>
+    <li>
+        Ignore "YC" tag in bam records if not convertible to a color
+    </li>
+</ul>
+
+<h1><strong>IGV 2.3.57 June 19 , 2015</strong></h1>
+
+<p><strong>Bug Fixes</strong></p>
+<ul>
+    <li>
+        Check for "null" gap types when computing splice junctions.
+    </li>
+</ul>
+
+
+<h1><strong>IGV 2.3.58 August 4, 2015</strong></h1>
+
+<p><strong>New Features and Improvements</strong></p>
+<ul>
+    <li>
+        Support for Encode gapped peak files (extension .gappedPeak).
+    </li>
+    <li>
+        Update htsjdk to version 1.138
+    </li>
+</ul>
+
+
+</body>
+</html>
