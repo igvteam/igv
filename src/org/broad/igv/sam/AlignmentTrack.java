@@ -156,9 +156,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         bisulfiteContextToContextString.put(BisulfiteContext.WCG, new Pair<byte[], byte[]>(new byte[]{'W'}, new byte[]{'G'}));
     }
 
-    static final ShadeBasesOption DEFAULT_SHADE_BASES_OPTION = ShadeBasesOption.QUALITY;
-    static final ColorOption DEFAULT_COLOR_OPTION = ColorOption.INSERT_SIZE;
-    static final boolean DEFAULT_SHOWALLBASES = false;
     static final BisulfiteContext DEFAULT_BISULFITE_CONTEXT = BisulfiteContext.CG;
 
     private boolean ionTorrent;
@@ -1093,7 +1090,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             maxInsertSize = prefs.getAsInt(PreferenceManager.SAM_MAX_INSERT_SIZE_THRESHOLD);
             minInsertSizePercentile = prefs.getAsFloat(PreferenceManager.SAM_MIN_INSERT_SIZE_PERCENTILE);
             maxInsertSizePercentile = prefs.getAsFloat(PreferenceManager.SAM_MAX_INSERT_SIZE_PERCENTILE);
-            showAllBases = DEFAULT_SHOWALLBASES;
+            showAllBases = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_ALL_BASES);
             colorOption = CollUtils.valueOf(ColorOption.class, prefs.get(PreferenceManager.SAM_COLOR_BY), ColorOption.NONE);
             groupByOption = null;
             flagZeroQualityAlignments = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_ZERO_QUALITY);

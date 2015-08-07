@@ -114,6 +114,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_SAMPLING_WINDOW = "SAM.SAMPLING_WINDOW";
     public static final String SAM_DOWNSAMPLE_READS = "SAM.DOWNSAMPLE_READS";
     public static final String SAM_SORT_OPTION = "SAM.SORT_OPTION";
+    public static final String SAM_SHOW_ALL_BASES = "SAM.SHOW_ALL_BASES";
 
     public static final String SAM_COLOR_BY = "SAM.COLOR_BY";
     public static final String SAM_COLOR_BY_TAG = "SAM.COLOR_BY_TAG";
@@ -1057,6 +1058,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_SORT_OPTION, "NUCLEOTIDE");
         defaultValues.put(SAM_SHOW_GROUP_SEPARATOR, "true");
         defaultValues.put(SAM_COMPLETE_READS_ONLY, "false");
+        defaultValues.put(SAM_SHOW_ALL_BASES, "false");
 
         defaultValues.put(NORMALIZE_COVERAGE, "false");
 
