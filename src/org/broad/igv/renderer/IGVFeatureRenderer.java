@@ -68,6 +68,9 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     public static final Color DULL_RED = new Color(200, 0, 0);
     static final int NON_CODING_HEIGHT = 8;
 
+    private static final Color VARIANT_HET_COLOR = Color.blue.brighter();
+    private static final Color VARIANT_HOM_COLOR = new Color(0, 245, 255);
+
     float viewLimitMin = Float.NaN;
     float viewLimitMax = Float.NaN;
 
@@ -293,7 +296,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     }
 
     protected void renderGenotypeFeature(RenderContext context, IGVFeature feature, Rectangle trackRectangle, int pixelStart, int pixelEnd) {
-        Color color = feature.getName().equals("HET") ? VariantRenderer.colorHet : VariantRenderer.colorHomVar;
+        Color color = feature.getName().equals("HET") ? VARIANT_HET_COLOR : VARIANT_HOM_COLOR;
         Graphics2D g2D = context.getGraphic2DForColor(color);
         g2D.fillRect(pixelStart, trackRectangle.y, (pixelEnd - pixelStart), trackRectangle.height);
     }

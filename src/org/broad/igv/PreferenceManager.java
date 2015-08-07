@@ -150,6 +150,13 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_COLOR_G = "SAM.COLOR.G";
     public static final String SAM_COLOR_N = "SAM.COLOR.N";
 
+    public static final String HOMREF_COLOR = "HOMREF.COLOR";
+    public static final String HETVAR_COLOR = "HETVAR.COLOR";
+    public static final String HOMVAR_COLOR = "HOMVAR.COLOR";
+    public static final String NOCALL_COLOR = "NOCALL.COLOR";
+    public static final String AF_REF_COLOR = "AF_REF.COLOR";
+    public static final String AF_VAR_COLOR = "AF_VAR.COLOR";
+
     public static final String EXPAND_FEAUTRE_TRACKS = "EXPAND_FEATURE_TRACKS";
     public static final String PORT_ENABLED = "PORT_ENABLED";
     public static final String PORT_NUMBER = "PORT_NUMBER";
@@ -1149,6 +1156,13 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_COLOR_T, "255,0,0");
         defaultValues.put(SAM_COLOR_G, "209,113,5");
         defaultValues.put(SAM_COLOR_N, ColorUtilities.colorToString(Color.gray.brighter()));
+
+        defaultValues.put(HOMREF_COLOR, "235,235,235");
+        defaultValues.put(HETVAR_COLOR, "0,0,255");
+        defaultValues.put(HOMVAR_COLOR, "0,245,255");
+        defaultValues.put(NOCALL_COLOR, "255,255,255");
+        defaultValues.put(AF_REF_COLOR, "0,0,220");
+        defaultValues.put(AF_VAR_COLOR, "255,0,0");
 
         defaultValues.put(SASHIMI_SHOW_COVERAGE, "true");
 

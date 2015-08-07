@@ -26,6 +26,7 @@
 package org.broad.igv.variant;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
@@ -38,35 +39,20 @@ import java.util.Map;
 
 /**
  * @author Jesse Whitworth
- * @since Jul 16, 2010
  * @api
+ * @since Jul 16, 2010
  */
 public class VariantRenderer { //extends FeatureRenderer {
 
     private static Logger log = Logger.getLogger(VariantRenderer.class);
 
-    public static final int BOTTOM_MARGIN = 0;
-    public static final int TOP_MARGIN = 3;
-
+    private static final int BOTTOM_MARGIN = 0;
+    private static final int TOP_MARGIN = 3;
     private static float alphaValue = 0.2f;
-    public static Color colorHomRef = new Color(235, 235, 235);
-    public static Color colorHomRefAlpha = ColorUtilities.getCompositeColor(colorHomRef, alphaValue);
-    public static Color colorHomVar = new Color(0, 245, 255);
-    public static Color colorHomVarAlpha = ColorUtilities.getCompositeColor(colorHomVar, alphaValue);
-    public static Color colorHet = Color.blue.brighter();  //new Color(107, 30, 115); //Color.blue;
-    public static Color colorHetAlpha = ColorUtilities.getCompositeColor(colorHet, alphaValue);
-    public static Color colorNoCall = Color.white;
-    public static Color colorNoCallAlpha = ColorUtilities.getCompositeColor(colorNoCall, alphaValue);
-    public static final Color colorAlleleBand = Color.red;
-    public static Color colorAlleleBandAlpha = ColorUtilities.getCompositeColor(colorAlleleBand, alphaValue);
-    public static final Color colorAlleleRef = Color.gray;
-    public static Color colorAlleleRefAlpha = ColorUtilities.getCompositeColor(colorAlleleRef, alphaValue);
-    private static final Color blue = new Color(0, 0, 220);
-    public static Color blueAlpha = ColorUtilities.getCompositeColor(blue, alphaValue);
+    private static final Color colorAlleleRef = Color.gray;
+    private static Color colorAlleleRefAlpha = ColorUtilities.getCompositeColor(colorAlleleRef, alphaValue);
 
     static Map<Character, Color> nucleotideColors = new HashMap<Character, Color>();
-
-    private VariantTrack track;
 
     static {
         nucleotideColors.put('A', Color.GREEN);
@@ -83,17 +69,51 @@ public class VariantRenderer { //extends FeatureRenderer {
         nucleotideColors.put(null, Color.BLACK);
     }
 
+
+    private VariantTrack track;
+
+    private Color colorAlleleBandVar;
+    private Color colorAlleleBandVarAlpha;
+    private Color colorAlleleBandRef;
+    private Color colorAlleleBandRefAlpha;
+    private Color colorHomRef;
+    private Color colorHomRefAlpha;
+    private Color colorHomVar;
+    private Color colorHomVarAlpha;
+    private Color colorHet;
+    private Color colorHetAlpha;
+    private Color colorNoCall;
+    private Color colorNoCallAlpha;
+
     public VariantRenderer(VariantTrack track) {
         this.track = track;
+
+        final PreferenceManager prefMgr = PreferenceManager.getInstance();
+
+        colorAlleleBandVar = prefMgr.getAsColor(PreferenceManager.AF_VAR_COLOR);
+        colorAlleleBandRef = prefMgr.getAsColor(PreferenceManager.AF_REF_COLOR);
+        colorHomRef = prefMgr.getAsColor(PreferenceManager.HOMREF_COLOR);
+        colorHomVar = prefMgr.getAsColor(PreferenceManager.HOMVAR_COLOR);
+        colorHet = prefMgr.getAsColor(PreferenceManager.HETVAR_COLOR);
+        colorNoCall = prefMgr.getAsColor(PreferenceManager.NOCALL_COLOR);
+
+        colorHomRefAlpha = ColorUtilities.getCompositeColor(colorHomRef, alphaValue);
+        colorHomVarAlpha = ColorUtilities.getCompositeColor(colorHomVar, alphaValue);
+        colorHetAlpha = ColorUtilities.getCompositeColor(colorHet, alphaValue);
+        colorNoCallAlpha = ColorUtilities.getCompositeColor(colorNoCall, alphaValue);
+        colorAlleleBandVarAlpha = ColorUtilities.getCompositeColor(colorAlleleBandVar, alphaValue);
+        colorAlleleBandRefAlpha = ColorUtilities.getCompositeColor(colorAlleleBandRef, alphaValue);
+
     }
 
     /**
      * Whether to use alpha channel by default when rendering variants.
      * Normally they are dimmed if filtered
+     *
      * @return
      * @api
      */
-    protected boolean defaultUseAlpha(){
+    protected boolean defaultUseAlpha() {
         return false;
     }
 
@@ -102,8 +122,8 @@ public class VariantRenderer { //extends FeatureRenderer {
      *
      * @param variant
      * @param bandRectangle
-     * @param pixelX Location of the variant in pixels
-     * @param xWidth Width of the variant in pixels
+     * @param pixelX        Location of the variant in pixels
+     * @param xWidth        Width of the variant in pixels
      * @param context
      * @api
      */
@@ -122,11 +142,11 @@ public class VariantRenderer { //extends FeatureRenderer {
             percent = variant.getCoveredSampleFraction();
             refColor = useAlpha ? colorAlleleRefAlpha : colorAlleleRef;   // Gray
         } else {
-            alleleColor = useAlpha ? colorAlleleBandAlpha : colorAlleleBand; // Red
+            alleleColor = useAlpha ? colorAlleleBandVarAlpha : colorAlleleBandVar; // Red
             double af = variant.getAlleleFraction();
             if (af < 0) {
                 double[] afreqs = variant.getAlleleFreqs();
-                if(afreqs != null && afreqs.length > 0) {
+                if (afreqs != null && afreqs.length > 0) {
                     af = afreqs[0];
                 }
             }
@@ -135,7 +155,7 @@ public class VariantRenderer { //extends FeatureRenderer {
                 percent = 0;
                 refColor = useAlpha ? colorAlleleRefAlpha : colorAlleleRef;   // Gray
             } else {
-                refColor = useAlpha ? blueAlpha : blue;                      // Blue
+                refColor = useAlpha ? colorAlleleBandRefAlpha : colorAlleleBandRef;                      // Blue
             }
 
         }
@@ -157,11 +177,11 @@ public class VariantRenderer { //extends FeatureRenderer {
         }
     }
 
-    protected int calculateBottomYSiteBand(Rectangle bandRectangle){
+    protected int calculateBottomYSiteBand(Rectangle bandRectangle) {
         return bandRectangle.y + bandRectangle.height - BOTTOM_MARGIN;
     }
 
-    protected int calculateBarHeightSiteBand(Rectangle bandRectangle){
+    protected int calculateBarHeightSiteBand(Rectangle bandRectangle) {
         return bandRectangle.height - TOP_MARGIN - BOTTOM_MARGIN;
     }
 
@@ -192,8 +212,8 @@ public class VariantRenderer { //extends FeatureRenderer {
 
         Genotype genotype = variant.getGenotype(sampleName);
 
-        if(sampleName.equals("CYP26B1-B12")) {
-            System.out.println(genotype.getTypeString() + "   " +  genotype.getGenotypeString() + "  " + isFiltered);
+        if (sampleName.equals("CYP26B1-B12")) {
+            System.out.println(genotype.getTypeString() + "   " + genotype.getGenotypeString() + "  " + isFiltered);
         }
 
 
