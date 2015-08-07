@@ -258,6 +258,7 @@ public abstract class SAMAlignment implements Alignment {
         boolean firstOperator = true;
         int softClippedBaseCount = 0;
         int nGaps = 0;
+        char prevOp = 0;
         for (CigarOperator operator : operators) {
 
             char op = operator.operator;
@@ -267,6 +268,9 @@ public abstract class SAMAlignment implements Alignment {
             int nBases = operator.nBases;
             if (operatorIsMatch(showSoftClipped, op)) {
                 nBlocks++;
+                if (operatorIsMatch(showSoftClipped, prevOp)) {
+                    nGaps++;
+                }
             } else if (op == DELETION || op == SKIPPED_REGION) {
                 nGaps++;
             } else if (op == INSERTION) {
@@ -281,6 +285,8 @@ public abstract class SAMAlignment implements Alignment {
             if (op != SOFT_CLIP) {
                 firstOperator = false;
             }
+
+            prevOp = op;
         }
 
 
@@ -308,6 +314,7 @@ public abstract class SAMAlignment implements Alignment {
             }
         }
 
+        prevOp = 0;
         for (CigarOperator op : operators) {
             try {
 
@@ -327,6 +334,9 @@ public abstract class SAMAlignment implements Alignment {
                     fromIdx += op.nBases;
                     blockStart += op.nBases;
 
+                    if (operatorIsMatch(showSoftClipped, prevOp)) {
+                        gapTypes[gapIdx++] = ZERO_GAP;
+                    }
 
                 } else if (op.operator == DELETION || op.operator == SKIPPED_REGION) {
                     blockStart += op.nBases;
@@ -348,6 +358,7 @@ public abstract class SAMAlignment implements Alignment {
             } catch (Exception e) {
                 log.error("Error processing CIGAR string", e);
             }
+            prevOp = op.operator;
         }
 
         // Check for soft clipping at end
@@ -373,7 +384,6 @@ public abstract class SAMAlignment implements Alignment {
         StringBuilder buffer = new StringBuilder(4);
 
         // Create list of cigar operators
-        boolean firstOperator = true;
         CigarOperator prevOp = null;
         for (int i = 0; i < cigarString.length(); i++) {
             char next = cigarString.charAt(i);

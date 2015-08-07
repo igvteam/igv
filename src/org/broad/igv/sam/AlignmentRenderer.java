@@ -68,6 +68,7 @@ public class AlignmentRenderer implements FeatureRenderer {
     private static Color purple = new Color(118, 24, 220);
     private static Color deletionColor = Color.black;
     private static Color skippedColor = new Color(150, 184, 200);
+    private static Color unknownGapColor = new Color(0, 150, 0);
     public static Color grey1 = new Color(200, 200, 200);
 
     private static Stroke thickStroke = new BasicStroke(2.0f);
@@ -676,21 +677,34 @@ public class AlignmentRenderer implements FeatureRenderer {
                 Stroke stroke;
                 int gapIdx = blockNumber - 1;
                 Color gapLineColor = deletionColor;
-                if (gapTypes != null && gapIdx < gapTypes.length && gapTypes[gapIdx] == SAMAlignment.SKIPPED_REGION) {
-                    gLine = context.getGraphic2DForColor(skippedColor);
-                    stroke = gLine.getStroke();
-                } else {
-                    gLine = context.getGraphic2DForColor(gapLineColor);
-                    stroke = gLine.getStroke();
-                    //gLine.setStroke(dashedStroke);
-                    gLine.setStroke(thickStroke);
+
+                if(gapTypes == null) {
+                    // Use deletion color, no info on actual type of gap
+                    gapLineColor = deletionColor;
                 }
 
-                int startX = Math.max(rowRect.x, lastBlockEnd);
-                int endX = Math.min(rowRect.x + rowRect.width, blockPixelStart);
+                else if(gapIdx >= gapTypes.length) {
+                    // This shouldn't happen
+                    gapLineColor = unknownGapColor;
+                }
 
-                gLine.drawLine(startX, y + h / 2, endX, y + h / 2);
-                gLine.setStroke(stroke);
+                else if(gapTypes[gapIdx] != SAMAlignment.ZERO_GAP) {
+                    if (gapTypes[gapIdx] == SAMAlignment.SKIPPED_REGION) {
+                        gLine = context.getGraphic2DForColor(skippedColor);
+                        stroke = gLine.getStroke();
+                    } else {
+                        gLine = context.getGraphic2DForColor(gapLineColor);
+                        stroke = gLine.getStroke();
+                        //gLine.setStroke(dashedStroke);
+                        gLine.setStroke(thickStroke);
+                    }
+
+                    int startX = Math.max(rowRect.x, lastBlockEnd);
+                    int endX = Math.min(rowRect.x + rowRect.width, blockPixelStart);
+
+                    gLine.drawLine(startX, y + h / 2, endX, y + h / 2);
+                    gLine.setStroke(stroke);
+                }
             }
             lastBlockEnd = blockPixelStart + blockPixelWidth;
 
