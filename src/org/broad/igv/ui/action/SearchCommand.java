@@ -609,7 +609,7 @@ public class SearchCommand {
                 int widen = 20;
                 start = center - widen;
                 start = Math.max(0, start);
-                end = center + widen + 1;
+                end = center + widen;
             }
 
             return new int[]{Math.min(start, end)-1, Math.max(start, end)};
