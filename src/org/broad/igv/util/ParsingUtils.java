@@ -423,6 +423,8 @@ public class ParsingUtils {
                                 trackProperties.setRendererClass(SpliceJunctionRenderer.class);
                             } else if (value.equals("genotype")) {
                                 trackProperties.setRendererClass(GenotypeRenderer.class);
+                            } else if("arc".equals(value)) {
+                                trackProperties.setRendererClass(ArcRenderer.class);
                             }
                         } else if (key.toLowerCase().equals("viewlimits")) {
                             String[] limits = value.split(":");
