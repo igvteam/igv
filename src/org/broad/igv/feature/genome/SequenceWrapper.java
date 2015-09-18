@@ -62,7 +62,9 @@ public class SequenceWrapper implements Sequence {
             SequenceTile tile = getSequenceTile(chr, tileNo);
             int offset = position - tile.getStart();
             byte[] bytes = tile.bytes;
-            if (offset > 0 && offset < bytes.length) {
+            if (bytes == null) {
+                return 0;
+            } else if (offset > 0 && offset < bytes.length) {
                 return bytes[offset];
             } else {
                 return 0;
@@ -171,6 +173,7 @@ public class SequenceWrapper implements Sequence {
      * tiles. We combined the chr and tileNo, with a
      * delimiter in between to ensure that
      * chr1 12 doesn't clash with chr11 2
+     *
      * @param chr
      * @param tileNo
      * @return
