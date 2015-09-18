@@ -99,15 +99,11 @@ public class ArcRenderer extends FeatureRenderer {
                     pixelStart--;
                 }
 
-               // double f = Math.min(1, ((double) w) / trackRectangle.width);
-                double h = f * w;
+                double h = Math.min(trackRectangle.height, f * w);
                 double y = trackRectangle.y + trackRectangle.height - h;
-
                 Arc2D.Double arcPath = new Arc2D.Double(pixelStart, y, w, 2*h, 0, 180, Arc2D.OPEN);
 
 
-                //Draw the arc, to ensure outline is drawn completely (fill won't do it, necessarily). This will also
-                //give the arc a darker outline
                 g.draw(arcPath);
 
             }

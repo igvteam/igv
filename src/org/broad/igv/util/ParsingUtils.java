@@ -405,6 +405,10 @@ public class ParsingUtils {
                                 trackProperties.setHeight(Integer.parseInt(value));
                             }
 
+                        } else if (key.equals("height")) {
+
+                            trackProperties.setHeight(Integer.parseInt(value));
+                            
                         } else if (key.equals("url")) {
                             trackProperties.setUrl(value);
                         } else if (key.equals("graphtype")) {
@@ -423,7 +427,7 @@ public class ParsingUtils {
                                 trackProperties.setRendererClass(SpliceJunctionRenderer.class);
                             } else if (value.equals("genotype")) {
                                 trackProperties.setRendererClass(GenotypeRenderer.class);
-                            } else if("arc".equals(value)) {
+                            } else if ("arc".equals(value)) {
                                 trackProperties.setRendererClass(ArcRenderer.class);
                             }
                         } else if (key.toLowerCase().equals("viewlimits")) {
