@@ -32,6 +32,7 @@ import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 
 import java.awt.*;
+import java.awt.geom.Arc2D;
 import java.awt.geom.GeneralPath;
 import java.util.List;
 
@@ -70,6 +71,8 @@ public class ArcRenderer extends FeatureRenderer {
             }
         }
 
+        double f = trackRectangle.height / maxWidth;
+
         for (IGVFeature feature : featureList) {
             // Note -- don't cast these to an int until the range is checked.
             // could get an overflow.
@@ -84,7 +87,7 @@ public class ArcRenderer extends FeatureRenderer {
 
                 Color color = feature.getColor();
                 if(color == null) {
-                    color = ARC_COLOR;
+                    color = track.getColor();
                 }
                 Graphics2D g = context.getGraphic2DForColor(color);
                 g.setFont(FontManager.getDefaultFont());
@@ -96,17 +99,12 @@ public class ArcRenderer extends FeatureRenderer {
                     pixelStart--;
                 }
 
-               // double mutHeight = 1.3 * (Math.log(w) / Math.log(maxWidth)) * trackRectangle.height;
-                double mutHeight = 1.3 * (Math.log(w) / Math.log(maxWidth)) * trackRectangle.height;
-                int mutY = trackRectangle.y + trackRectangle.height;
+               // double f = Math.min(1, ((double) w) / trackRectangle.width);
+                double h = f * w;
+                double y = trackRectangle.y + trackRectangle.height - h;
 
-                double bezierXPad = 0; //Math.max(1, w / 30);
+                Arc2D.Double arcPath = new Arc2D.Double(pixelStart, y, w, 2*h, 0, 180, Arc2D.OPEN);
 
-                GeneralPath arcPath = new GeneralPath();
-                arcPath.moveTo(pixelStart, mutY);
-                arcPath.curveTo(pixelStart - bezierXPad, mutY - mutHeight, //Bezier 1
-                        pixelStart + w + bezierXPad, mutY - mutHeight,         //Bezier 2
-                        pixelStart + w, mutY);
 
                 //Draw the arc, to ensure outline is drawn completely (fill won't do it, necessarily). This will also
                 //give the arc a darker outline
