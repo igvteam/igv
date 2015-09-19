@@ -111,7 +111,7 @@
                 <string>javax.swing.JCheckBox</string>
                 <void method="setProperty">
                  <string>text</string>
-                 <string>Use absolute paths in sessions</string>
+                 <string>Use relative paths in sessions</string>
                 </void>
                 <void property="name">
                  <string>sessionPathsCB</string>

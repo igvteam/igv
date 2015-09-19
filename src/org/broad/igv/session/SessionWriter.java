@@ -315,11 +315,11 @@ public class SessionWriter {
 
                     //REQUIRED ATTRIBUTES - Cannot be null
 
-                    boolean useAbsolute = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SESSION_ABSOLUTE_PATH);
+                    boolean useRelative = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SESSION_RELATIVE_PATH);
 
-                    String relativePath = useAbsolute ?
-                            resourceLocator.getPath() :
-                            FileUtils.getRelativePath(outputFile.getAbsolutePath(), resourceLocator.getPath());
+                    String relativePath = useRelative ?
+                            FileUtils.getRelativePath(outputFile.getAbsolutePath(), resourceLocator.getPath()) :
+                            resourceLocator.getPath();
 
                     dataFileElement.setAttribute(SessionAttribute.PATH.getText(), relativePath);
 

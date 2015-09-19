@@ -97,7 +97,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }
 
     private void sessionPathsCBActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(PreferenceManager.SESSION_ABSOLUTE_PATH, String.valueOf(sessionPathsCB.isSelected()));
+        updatedPreferenceMap.put(PreferenceManager.SESSION_RELATIVE_PATH, String.valueOf(sessionPathsCB.isSelected()));
     }
 
 
@@ -399,7 +399,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         ((GridBagLayout)jPanel10.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
                         //---- sessionPathsCB ----
-                        sessionPathsCB.setText("Use absolute paths in sessions");
+                        sessionPathsCB.setText("Use relative paths in sessions");
                         sessionPathsCB.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
@@ -4111,7 +4111,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         enableGoogleCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.ENABLE_GOOGLE_MENU));
         saveGoogleCredentialsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAVE_GOOGLE_CREDENTIALS));
 
-        sessionPathsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SESSION_ABSOLUTE_PATH));
+        sessionPathsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SESSION_RELATIVE_PATH));
 
         geneListFlankingField.setText(prefMgr.get(PreferenceManager.FLANKING_REGION));
 
