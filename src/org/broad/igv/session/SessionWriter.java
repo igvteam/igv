@@ -25,9 +25,8 @@
 
 package org.broad.igv.session;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
@@ -315,7 +314,12 @@ public class SessionWriter {
                     Element dataFileElement = document.createElement(SessionElement.RESOURCE.getText());
 
                     //REQUIRED ATTRIBUTES - Cannot be null
-                    String relativePath = FileUtils.getRelativePath(outputFile.getAbsolutePath(), resourceLocator.getPath());
+
+                    boolean useAbsolute = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SESSION_ABSOLUTE_PATH);
+
+                    String relativePath = useAbsolute ?
+                            resourceLocator.getPath() :
+                            FileUtils.getRelativePath(outputFile.getAbsolutePath(), resourceLocator.getPath());
 
                     dataFileElement.setAttribute(SessionAttribute.PATH.getText(), relativePath);
 
@@ -398,18 +402,19 @@ public class SessionWriter {
     /**
      * Attempt to marshall the {@code track} into {@code trackParent} as it's
      * own class, if that fails, try the superclass, and so on up
+     *
      * @param m
      * @param track
      * @param trackParent
      * @throws javax.xml.bind.JAXBException
      */
-    private static void marshalTrack(Marshaller m, Track track, Node trackParent, Class marshalClass) throws JAXBException{
+    private static void marshalTrack(Marshaller m, Track track, Node trackParent, Class marshalClass) throws JAXBException {
 
-        if(marshalClass == null || marshalClass.equals(Object.class)){
+        if (marshalClass == null || marshalClass.equals(Object.class)) {
             throw new JAXBException(track.getClass() + " and none of its superclasses are known");
         }
 
-        if(AbstractTrack.knownUnknownTrackClasses.contains(marshalClass)){
+        if (AbstractTrack.knownUnknownTrackClasses.contains(marshalClass)) {
             marshalTrack(m, track, trackParent, marshalClass.getSuperclass());
             return;
         }
@@ -428,15 +433,16 @@ public class SessionWriter {
     /**
      * Because we are using JAXB piecewise, and also because JAXB can't handle
      * interfaces, we marshal certain track children here
+     *
      * @param m
      * @param track
      * @param trackElement
      */
-    private void marshalTrackChildren(Marshaller m, Track track, Element trackElement) throws JAXBException{
-        if(track instanceof FeatureTrack){
+    private void marshalTrackChildren(Marshaller m, Track track, Element trackElement) throws JAXBException {
+        if (track instanceof FeatureTrack) {
             FeatureTrack featureTrack = (FeatureTrack) track;
             featureTrack.marshalSource(m, trackElement);
-        }else if(track instanceof DataSourceTrack){
+        } else if (track instanceof DataSourceTrack) {
             DataSourceTrack dataSourceTrack = (DataSourceTrack) track;
             dataSourceTrack.marshalSource(m, trackElement);
         }

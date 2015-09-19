@@ -288,6 +288,7 @@ public class PreferenceManager implements PropertyManager {
 
     public static final String GENE_LIST_BED_FORMAT = "GENE_LIST_BED_FORMAT";
 
+    public static final String SESSION_ABSOLUTE_PATH = "SESSION.ABSOLUTE_PATH";
 
     IGVPreferences preferences;
     Map<String, String> defaultValues;
@@ -1176,6 +1177,8 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(BLAT_URL, "http://genome.cse.ucsc.edu/cgi-bin/hgBlat");
 
         defaultValues.put(GENE_LIST_BED_FORMAT, "false");
+
+        defaultValues.put(SESSION_ABSOLUTE_PATH, "false");
 
     }
 

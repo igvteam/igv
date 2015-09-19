@@ -96,6 +96,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
         updatedPreferenceMap.put(PreferenceManager.SAVE_GOOGLE_CREDENTIALS, String.valueOf(saveGoogleCredentialsCB.isSelected()));
     }
 
+    private void sessionPathsCBActionPerformed(ActionEvent e) {
+        updatedPreferenceMap.put(PreferenceManager.SESSION_ABSOLUTE_PATH, String.valueOf(sessionPathsCB.isSelected()));
+    }
+
 
     public PreferencesEditor(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -130,6 +134,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         generalPanel = new JPanel();
         vSpacer7 = new JPanel(null);
         jPanel10 = new JPanel();
+        sessionPathsCB = new JCheckBox();
         missingDataExplanation = new JLabel();
         showDefaultTrackAttributesCB = new JCheckBox();
         combinePanelsCB = new JCheckBox();
@@ -392,6 +397,18 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         ((GridBagLayout)jPanel10.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
                         ((GridBagLayout)jPanel10.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
                         ((GridBagLayout)jPanel10.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+
+                        //---- sessionPathsCB ----
+                        sessionPathsCB.setText("Use absolute paths in sessions");
+                        sessionPathsCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                sessionPathsCBActionPerformed(e);
+                            }
+                        });
+                        jPanel10.add(sessionPathsCB, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- missingDataExplanation ----
                         missingDataExplanation.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
@@ -4094,6 +4111,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
         enableGoogleCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.ENABLE_GOOGLE_MENU));
         saveGoogleCredentialsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAVE_GOOGLE_CREDENTIALS));
 
+        sessionPathsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SESSION_ABSOLUTE_PATH));
+
         geneListFlankingField.setText(prefMgr.get(PreferenceManager.FLANKING_REGION));
 
         enablePortCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.PORT_ENABLED));
@@ -4365,6 +4384,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JPanel generalPanel;
     private JPanel vSpacer7;
     private JPanel jPanel10;
+    private JCheckBox sessionPathsCB;
     private JLabel missingDataExplanation;
     private JCheckBox showDefaultTrackAttributesCB;
     private JCheckBox combinePanelsCB;
