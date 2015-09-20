@@ -826,7 +826,8 @@ public class HttpUtils {
                     if (byteRangeTestSuccess) {
                         log.info("Range-byte request succeeded");
                     } else {
-                        log.info("Range-byte test failed -- Server does not support range-byte requests or problem with client network environment.");
+                        log.info("Range-byte test failed -- Host: " + host +
+                                " does not support range-byte requests or there is a problem with client network environment.");
                     }
 
                     byteRangeTestMap.put(host, byteRangeTestSuccess);
