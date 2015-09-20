@@ -2562,6 +2562,7 @@ public class IGV {
 
                 indefMonitor.stop();
                 closeWindow(progressDialog2);
+
             }
 
             session.recordHistory();
@@ -2586,6 +2587,11 @@ public class IGV {
                     }
                     if (runningBatch) {
                         LongRunningTask.submit(new BatchRunner(igvArgs.getBatchFile()));
+                    }
+                    else {
+                        if(PreferenceManager.getInstance().getAsBoolean("showLOS")) {
+                            (new LOSDialog(mainFrame)).setVisible(true);
+                        }
                     }
 
                 }
