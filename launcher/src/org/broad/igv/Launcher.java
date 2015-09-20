@@ -133,7 +133,7 @@ public class Launcher {
         }
 
 
-        System.exit(1);
+        System.exit(0);
     }
 
 

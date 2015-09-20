@@ -25,8 +25,6 @@
 
 package org.broad.igv.ui;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
@@ -50,12 +48,12 @@ public class ShutdownThread extends Thread {
     private static long oneDayMS = 24 * 60 * 60 * 1000;
 
     public static void runS() {
-
+        log.info("Shutting down");
         DBManager.shutdown();
         CommandListener.halt();
         if (IGV.hasInstance()) {
             IGV.getInstance().saveStateForExit();
-            for(Track t : IGV.getInstance().getAllTracks()) {
+            for (Track t : IGV.getInstance().getAllTracks()) {
                 t.dispose();
             }
         }
