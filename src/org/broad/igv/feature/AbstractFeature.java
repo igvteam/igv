@@ -28,6 +28,7 @@ package org.broad.igv.feature;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.collections.MultiMap;
 import htsjdk.tribble.Feature;
 
@@ -261,7 +262,7 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
         StringBuffer buf = new StringBuffer();
         buf.append("<br>");
         // 30 attributes is the maximum visible on a typical screen
-        int max = 30;
+        int max = IGV.getInstance().isShowDetailsOnClick() ? 10000 :  30;
         attributes.printHtml(buf, max);
         return buf.toString();
 

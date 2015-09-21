@@ -236,7 +236,7 @@ public class TooltipTextFrame extends JFrame {
 
     public static void main(String[] args) throws IOException {
 
-        test3();
+        test1();
         //omaTest();
 
     }
