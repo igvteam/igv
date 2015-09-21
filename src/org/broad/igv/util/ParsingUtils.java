@@ -392,22 +392,28 @@ public class ParsingUtils {
                             boolean autoscale = value.equals("on");
                             trackProperties.setAutoScale(autoscale);
                         } else if (key.equals("maxheightpixels")) {
-                            // There should be 3 values per UCSC spec,  max:default:min.  In the past we have accepted
-                            // 2 values,  def:min,  so keep this for backwards compatibility.   IGV currently doesn't
-                            // have a "max height"   UPDATE -- apparently 1 value is also allowed!
-                            String[] maxDefMin = value.split(":");
-                            if (maxDefMin.length >= 2) {
-                                int defIDX = (maxDefMin.length == 2 ? 0 : 1);
-                                trackProperties.setHeight(Integer.parseInt(maxDefMin[defIDX].trim()));
-                                trackProperties.setMinHeight(Integer.parseInt(maxDefMin[defIDX + 1].trim()));
-                            } else {
-                                // Single value
-                                trackProperties.setHeight(Integer.parseInt(value));
+                            try {
+                                // There should be 3 values per UCSC spec,  max:default:min.  In the past we have accepted
+                                // 2 values,  def:min,  so keep this for backwards compatibility.   IGV currently doesn't
+                                // have a "max height"   UPDATE -- apparently 1 value is also allowed!
+                                String[] maxDefMin = value.split(":");
+                                if (maxDefMin.length >= 2) {
+                                    int defIDX = (maxDefMin.length == 2 ? 0 : 1);
+                                    trackProperties.setHeight(Integer.parseInt(maxDefMin[defIDX].trim()));
+                                    trackProperties.setMinHeight(Integer.parseInt(maxDefMin[defIDX + 1].trim()));
+                                } else {
+                                    // Single value
+                                    trackProperties.setHeight(Integer.parseInt(value));
+                                }
+                            } catch (NumberFormatException e) {
+                                log.error("height must be an integer: " + value);
                             }
-
-                        } else if (key.equals("height")) {
-
-                            trackProperties.setHeight(Integer.parseInt(value));
+                        } else if ("height".equals(key)) {
+                            try {
+                                trackProperties.setHeight(Integer.parseInt(value));
+                            } catch (NumberFormatException e) {
+                                log.error("height must be an integer: " + value);
+                            }
                             
                         } else if (key.equals("url")) {
                             trackProperties.setUrl(value);
