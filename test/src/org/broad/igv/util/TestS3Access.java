@@ -55,7 +55,7 @@ public class TestS3Access {
     }
     public static void testAsciiDownloadStatic() throws IOException {
 
-        String broadURL = "http://www.broadinstitute.org/igvdata/annotations/hg18/refGene.txt";
+        String broadURL = "http://data.broadinstitute.org/igvdata/annotations/hg18/refGene.txt";
         String s3URL = "http://s3.amazonaws.com/genomespace-igv/refGene.txt";
 
         try {

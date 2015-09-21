@@ -47,7 +47,7 @@ public class FastaIndexedSequenceTest {
 
     @BeforeClass
     public static void setup() throws IOException {
-        String path = "http://www.broadinstitute.org/igvdata/test/fasta/ci2_test.fa";
+        String path = "http://data.broadinstitute.org/igvdata/test/fasta/ci2_test.fa";
         fastaSequence = new FastaIndexedSequence(path);
     }
 
@@ -59,7 +59,7 @@ public class FastaIndexedSequenceTest {
     @Test
     public void testReadSequence() throws Exception {
 
-        String chr02qSeqPath = "http://www.broadinstitute.org/igvdata/test/fasta/";
+        String chr02qSeqPath = "http://data.broadinstitute.org/igvdata/test/fasta/";
 
         String chr = "chr02q";
         int start = 3531385;
@@ -79,7 +79,7 @@ public class FastaIndexedSequenceTest {
     @Test
     public void testReadEnd() throws Exception {
 
-        String path = "http://www.broadinstitute.org/igvdata/test/fasta/ci2_test.fa";
+        String path = "http://data.broadinstitute.org/igvdata/test/fasta/ci2_test.fa";
 
         String chr = "chr02q";
         int chrLen = 8059593;

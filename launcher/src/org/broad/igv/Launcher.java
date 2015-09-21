@@ -8,7 +8,7 @@ import java.util.Comparator;
 
 /**
  * Example
- * http://www.broadinstitute.org/igv/projects/current/launch.php?sessionURL=http://www.broadinstitute.org/igvdata/encode/hg19/broadEncode/wgEncodeBroadHistoneGm12878ControlStdSig.bigWig&genome=hg19&name=XXX
+ * http://www.broadinstitute.org/igv/projects/current/launch.php?sessionURL=http://data.broadinstitute.org/igvdata/encode/hg19/broadEncode/wgEncodeBroadHistoneGm12878ControlStdSig.bigWig&genome=hg19&name=XXX
  *
  * @author Jim Robinson
  * @date 11/3/11

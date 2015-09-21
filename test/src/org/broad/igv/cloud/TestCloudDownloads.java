@@ -52,7 +52,7 @@ public class TestCloudDownloads {
     @Test
     public void testSequenceByteRange() throws IOException {
 
-        String broadURL = "http://www.broadinstitute.org/igvdata/annotations/seq/hg18/chr1.txt";
+        String broadURL = "http://data.broadinstitute.org/igvdata/annotations/seq/hg18/chr1.txt";
         String s3URL = "http://igv.broadinstitute.org/genomes/seq/hg18/chr1.txt";
         String cfURL = "http://igvdata.broadinstitute.org/genomes/seq/hg18/chr1.txt";
 

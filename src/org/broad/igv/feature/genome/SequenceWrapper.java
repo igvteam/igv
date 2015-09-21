@@ -239,7 +239,7 @@ public class SequenceWrapper implements Sequence {
      * http://www.broadinstitute.org/igv/sequence
      * <p/>
      * Direct URLS  (uses byte range requests)
-     * http://www.broadinstitute.org/igvdata/annotations/seq/
+     * http://data.broadinstitute.org/igvdata/annotations/seq/
      * http://igvdata.broadinstitute.org/genomes/seq
      *
      * @param url

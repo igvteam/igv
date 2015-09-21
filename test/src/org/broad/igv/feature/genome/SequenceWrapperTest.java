@@ -107,7 +107,7 @@ public class SequenceWrapperTest extends AbstractHeadlessTest{
         int start = 5;
         int end = 10;
         String expSequence = "ATTGC";
-        String tmp = SequenceWrapper.checkSequenceURL("http://www.broadinstitute.org/igvdata/annotations/seq/spur_2.1/");
+        String tmp = SequenceWrapper.checkSequenceURL("http://data.broadinstitute.org/igvdata/annotations/seq/spur_2.1/");
         SequenceWrapper helper = new SequenceWrapper(new IGVSequence(tmp));
         byte[] seq = helper.getSequence(chr, start, end);
         assertEquals(expSequence, new String(seq));
@@ -144,7 +144,7 @@ public class SequenceWrapperTest extends AbstractHeadlessTest{
             seqPath = "http://igv.broadinstitute.org/genomes/seq/hg18/";
             readEGFRSequence();
 
-            seqPath = "http://www.broadinstitute.org/igvdata/annotations/seq/hg18/";
+            seqPath = "http://data.broadinstitute.org/igvdata/annotations/seq/hg18/";
             readEGFRSequence();
         } finally {
             HttpUtils.disableByteRange(false);

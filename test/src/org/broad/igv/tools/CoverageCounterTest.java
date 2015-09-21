@@ -79,7 +79,7 @@ public class CoverageCounterTest extends AbstractHeadlessTest {
     @Ignore    // The test file no longer exists
     @Test
     public void testPairFlag() throws Exception{
-        String bamURL = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.SLX.bam";
+        String bamURL = "http://data.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.SLX.bam";
         String queryString = "2:1000-1100";
         File wigFile = new File(TestUtils.DATA_DIR + "out/testPair.wig");
         int windowSize = 1;
@@ -271,7 +271,7 @@ public class CoverageCounterTest extends AbstractHeadlessTest {
 
     @Test
     public void testIncludeDuplicatesFlag() throws IOException {
-        String bamURL = "http://www.broadinstitute.org/igvdata/BodyMap/hg18/Merged/HBM.adipose.bam.sorted.bam";
+        String bamURL = "http://data.broadinstitute.org/igvdata/BodyMap/hg18/Merged/HBM.adipose.bam.sorted.bam";
         int options = CoverageCounter.INCLUDE_DUPS;
         String queryString = "chr1:153425249-153425249";
         int windowSize = 1;

@@ -251,7 +251,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         //TODO We could point to github instead of the Broad, only real benefit is if we ever change
         //this file it's one less manual update step
         //String parent = "https://github.com/broadinstitute/IGV/tree/master/test/data/genomes";
-        String parent = "http://www.broadinstitute.org/igvdata/test";
+        String parent = "http://data.broadinstitute.org/igvdata/test";
         URL remURL = new URL(parent + "/" + updatedFile.getName());
 
         PreferenceManager.getInstance().put(PreferenceManager.AUTO_UPDATE_GENOMES, true);

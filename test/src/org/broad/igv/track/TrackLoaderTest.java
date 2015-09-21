@@ -395,7 +395,7 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
 
     //@Test
     public void testLoadScratch() throws Exception {
-        String path = "http://www.broadinstitute.org/igvdata/annotations/hg19/EnsemblGenes.ensGene";
+        String path = "http://data.broadinstitute.org/igvdata/annotations/hg19/EnsemblGenes.ensGene";
         tstLoadFi(path, 1, genome, false);
     }
 }

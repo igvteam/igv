@@ -63,14 +63,14 @@ public class TDFRegressionTests extends AbstractHeadlessTest{
      */
     @Test
     public void test_IGV1417() {
-        String tdfFile = "http://www.broadinstitute.org/igvdata/annotations/hg18/conservation/pi.ewig.tdf";
+        String tdfFile = "http://data.broadinstitute.org/igvdata/annotations/hg18/conservation/pi.ewig.tdf";
         TDFReader reader = TDFReader.getReader(tdfFile);
         assertEquals(1, reader.getVersion());
     }
 
     @Test
     public void test_v3() {
-        String tdfFile = "http://www.broadinstitute.org/igvdata/test/tdf/NA12878.pilot2.454.bam.tdf";
+        String tdfFile = "http://data.broadinstitute.org/igvdata/test/tdf/NA12878.pilot2.454.bam.tdf";
         TDFReader reader = TDFReader.getReader(tdfFile);
         assertEquals(3, reader.getVersion());
     }

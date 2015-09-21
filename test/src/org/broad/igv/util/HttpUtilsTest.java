@@ -48,7 +48,7 @@ import static org.junit.Assert.assertTrue;
 public class HttpUtilsTest extends AbstractHeadlessTest{
 
 
-    static String broadURLString = "http://www.broadinstitute.org/igvdata/annotations/seq/hg19/chr1.txt";
+    static String broadURLString = "http://data.broadinstitute.org/igvdata/annotations/seq/hg19/chr1.txt";
     static String genericURLString = "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/chromosomes/chr1.fa.gz";
 
     static String noRangeHeaderSupportString = "http://www.ncbi.nlm.nih.gov/geo/download/?acc=GSM714693&format=file&file=GSM714693%5Fhg19%5FwgEncodeGisDnaPetK562F1kAln%2Ebam";

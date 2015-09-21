@@ -51,8 +51,8 @@ import static org.junit.Assert.*;
 @Ignore
 public class BAMHttpQueryReaderTest extends AbstractHeadlessTest {
 
-    //private final String BAM_URL_STRING = "http://www.broadinstitute.org/igvdata/test/index_test.bam";
-    private final String BAM_URL_STRING = "http://www.broadinstitute.org/igvdata/1KG/freeze5_merged/low_coverage_CEU.Y.bam";
+    //private final String BAM_URL_STRING = "http://data.broadinstitute.org/igvdata/test/index_test.bam";
+    private final String BAM_URL_STRING = "http://data.broadinstitute.org/igvdata/1KG/freeze5_merged/low_coverage_CEU.Y.bam";
 
     BAMHttpReader reader;
 

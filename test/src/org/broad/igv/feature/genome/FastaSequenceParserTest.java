@@ -43,7 +43,7 @@ public class FastaSequenceParserTest {
 
     @BeforeClass
     public static void setup() throws IOException {
-        String path = "http://www.broadinstitute.org/igvdata/test/fasta/ci2_test.fa";
+        String path = "http://data.broadinstitute.org/igvdata/test/fasta/ci2_test.fa";
         Map<String, byte[]> sequenceMap = FastaSequenceParser.parseFasta(path);
         fastaSequence = new InMemorySequence(sequenceMap);
     }

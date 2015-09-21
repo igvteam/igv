@@ -48,7 +48,7 @@ public class SeekableServiceStreamTest extends TestCase {
     @Test
     public void testRead() throws Exception {
 
-        String tdfFile = "http://www.broadinstitute.org/igvdata/annotations/hg18/conservation/omega.12mer.tdf";
+        String tdfFile = "http://data.broadinstitute.org/igvdata/annotations/hg18/conservation/omega.12mer.tdf";
 
         HttpUtils.getInstance().updateProxySettings();
 

@@ -47,10 +47,10 @@ import java.util.Set;
 public class DBSegUtils {
 
     public static void main(String[] args) throws IOException {
-        // String seg = "http://www.broadinstitute.org/igvdata/tcga/gbmsubtypes/Broad.080528.subtypes.seg.gz";
+        // String seg = "http://data.broadinstitute.org/igvdata/tcga/gbmsubtypes/Broad.080528.subtypes.seg.gz";
         // String oFile = "gbm_subtypes.sql";
         // segToDB(seg, oFile);
-        generateSampleInfoInserts("http://www.broadinstitute.org/igvdata/tcga/gbmsubtypes/sampleTable.txt");
+        generateSampleInfoInserts("http://data.broadinstitute.org/igvdata/tcga/gbmsubtypes/sampleTable.txt");
     }
 
     /**
@@ -83,7 +83,7 @@ public class DBSegUtils {
         SegmentFileParser parser = new SegmentFileParser(loc);
         parser.loadSegments(loc, null);
 
-        Map<String, String> sampleMap = loadSampleMappings("http://www.broadinstitute.org/igvdata/tcga/gbmsubtypes/cn.sampleMappings.txt");
+        Map<String, String> sampleMap = loadSampleMappings("http://data.broadinstitute.org/igvdata/tcga/gbmsubtypes/cn.sampleMappings.txt");
         PrintWriter pw = new PrintWriter(new FileWriter(outputFile));
 
         Set<String> chrs = ds.getChromosomes();

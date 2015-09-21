@@ -43,7 +43,7 @@ public class TDFReaderTest {
 
     @Test
     public void testReader() throws Exception {
-        String url = "http://www.broadinstitute.org/igvdata/encode/hg18/broadHistone/SignalK562H3k4me3.tdf";
+        String url = "http://data.broadinstitute.org/igvdata/encode/hg18/broadHistone/SignalK562H3k4me3.tdf";
 
         TDFReader reader =  new TDFReader(new ResourceLocator(url));
 

@@ -44,7 +44,7 @@ import static org.junit.Assert.assertEquals;
 
 public class IGVHttpClientUtilsTest {
 
-    private static String hg18URL = "http://www.broadinstitute.org/igvdata/test/hg18.unittest.genome";
+    private static String hg18URL = "http://data.broadinstitute.org/igvdata/test/hg18.unittest.genome";
     private static int hg18bytes = 3617644;
 
     @Test

@@ -193,7 +193,7 @@ public class IGVTestHeaded extends AbstractHeadedTest {
 
 
     public void testExomeView() throws Exception {
-        String file = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12891.SLX.bam";
+        String file = "http://data.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12891.SLX.bam";
         List<Track> tracks = IGV.getInstance().load(new ResourceLocator(file));
         Thread.sleep(10000);
         //TestUtils.loadSession(igv, TestUtils.DATA_DIR + "sessions/slx_ceu_father.xml");

@@ -168,7 +168,7 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
 
     @Test
     public void testQuery() throws IOException {
-        String testFile = "http://www.broadinstitute.org/igvdata/BodyMap/hg18/50bp/FCA/s_1_1_sequence.bam";
+        String testFile = "http://data.broadinstitute.org/igvdata/BodyMap/hg18/50bp/FCA/s_1_1_sequence.bam";
         String sequence = "chr1";
         int start = 44680145;
         int end = 44789983;
