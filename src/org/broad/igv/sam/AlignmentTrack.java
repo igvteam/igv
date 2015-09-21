@@ -127,7 +127,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     public enum BisulfiteContext {
-        CG, CHH, CHG, HCG, GCH, WCG
+        CG, CHH, CHG, HCG, GCH, WCG, NONE
     }
 
     enum OrientationType {
@@ -143,6 +143,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         bisulfiteContextToPubString.put(BisulfiteContext.HCG, "HCG");
         bisulfiteContextToPubString.put(BisulfiteContext.GCH, "GCH");
         bisulfiteContextToPubString.put(BisulfiteContext.WCG, "WCG");
+        bisulfiteContextToPubString.put(BisulfiteContext.NONE, "None");
     }
 
     protected static final Map<BisulfiteContext, Pair<byte[], byte[]>> bisulfiteContextToContextString = new HashMap<BisulfiteContext, Pair<byte[], byte[]>>();

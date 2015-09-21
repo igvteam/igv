@@ -199,6 +199,10 @@ public class BisulfiteBaseInfo {
     protected BisulfiteContext contextIsMatching(byte[] reference, byte[] read, int idx,
                                                  BisulfiteContext bisulfiteContext) {
 
+        if(BisulfiteContext.NONE == bisulfiteContext) {
+            return bisulfiteContext;
+        }
+
         // Get the context and see if it matches our desired context.
         byte[] preContext = AlignmentTrack.getBisulfiteContextPreContext(bisulfiteContext);
         byte[] postContext = AlignmentTrack.getBisulfiteContextPostContext(bisulfiteContext);
