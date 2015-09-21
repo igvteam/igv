@@ -65,7 +65,7 @@ import java.util.List;
 public class SearchCommand {
 
     private static Logger log = Logger.getLogger(SearchCommand.class);
-    public static int SEARCH_LIMIT = 20;
+    public static int SEARCH_LIMIT = 10000;
     private boolean askUser = false;
 
     String searchString;
