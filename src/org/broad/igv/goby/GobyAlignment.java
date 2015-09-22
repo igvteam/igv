@@ -65,8 +65,8 @@ public class GobyAlignment implements Alignment {
 
     protected final Alignments.AlignmentEntry entry;
     private final GobyAlignmentIterator iterator;
-    protected AlignmentBlock[] block = new AlignmentBlock[1];
-    protected AlignmentBlock[] insertionBlock;
+    protected AlignmentBlockImpl[] block = new AlignmentBlockImpl[1];
+    protected AlignmentBlockImpl[] insertionBlock;
     private CharArrayList gapTypes = null;
     private static final ReadMate unmappedMate = new ReadMate("*", -1, false, true);
     private Comparator<? super AlignmentBlock> blockComparator = new Comparator<AlignmentBlock>() {
@@ -204,9 +204,9 @@ public class GobyAlignment implements Alignment {
                     entry.getSoftClippedQualityRight().toByteArray(),
                     entry.getQueryAlignedLength() + entry.getSoftClippedBasesLeft().length());
         }
-        block = blocks.toArray(new AlignmentBlock[blocks.size()]);
+        block = blocks.toArray(new AlignmentBlockImpl[blocks.size()]);
         Arrays.sort(block, blockComparator);
-        insertionBlock = insertionBlocks.toArray(new AlignmentBlock[insertionBlocks.size()]);
+        insertionBlock = insertionBlocks.toArray(new AlignmentBlockImpl[insertionBlocks.size()]);
         Arrays.sort(insertionBlock, blockComparator);
         ObjectArrayList<GobyAlignment> list = null;
 
@@ -220,12 +220,12 @@ public class GobyAlignment implements Alignment {
                 ObjectArrayList<AlignmentBlock> splicedBlocks = new ObjectArrayList<AlignmentBlock>();
                 splicedBlocks.addAll(ObjectArrayList.wrap(spliceHeadAlignment.block));
                 splicedBlocks.addAll(blocks);
-                spliceHeadAlignment.block = splicedBlocks.toArray(new AlignmentBlock[splicedBlocks.size()]);
+                spliceHeadAlignment.block = splicedBlocks.toArray(new AlignmentBlockImpl[splicedBlocks.size()]);
 
                 ObjectArrayList<AlignmentBlock> splicedInsertionBlocks = new ObjectArrayList<AlignmentBlock>();
                 splicedInsertionBlocks.addAll(ObjectArrayList.wrap(spliceHeadAlignment.insertionBlock));
                 splicedInsertionBlocks.addAll(insertionBlocks);
-                spliceHeadAlignment.insertionBlock = splicedInsertionBlocks.toArray(new AlignmentBlock[splicedInsertionBlocks.size()]);
+                spliceHeadAlignment.insertionBlock = splicedInsertionBlocks.toArray(new AlignmentBlockImpl[splicedInsertionBlocks.size()]);
 
                 if (spliceHeadAlignment.gapTypes == null) {
                     spliceHeadAlignment.gapTypes = new CharArrayList(10);
@@ -235,7 +235,7 @@ public class GobyAlignment implements Alignment {
                 // Since the previous alignment carries this information, we clear up block and insertionBlock
                 // in this alignment, but keep any softClips:
                 this.block = keepSoftClips(block);
-                this.insertionBlock = new AlignmentBlock[0];
+                this.insertionBlock = new AlignmentBlockImpl[0];
             }
         }
 
@@ -243,7 +243,7 @@ public class GobyAlignment implements Alignment {
 
     }
 
-    private AlignmentBlock[] removeNulls(AlignmentBlock[] block) {
+    private AlignmentBlockImpl[] removeNulls(AlignmentBlockImpl[] block) {
         int nullCount = 0;
         for (int i = 0; i < block.length; i++) {
             AlignmentBlock alignmentBlock = block[i];
@@ -256,7 +256,7 @@ public class GobyAlignment implements Alignment {
             return block;
         } else {
             int newLength = block.length - nullCount;
-            AlignmentBlock[] result = new AlignmentBlock[newLength];
+            AlignmentBlockImpl[] result = new AlignmentBlockImpl[newLength];
             int j = 0;
             for (int i = 0; i < result.length; i++) {
                 result[i] = block[j++];
@@ -265,15 +265,15 @@ public class GobyAlignment implements Alignment {
         }
     }
 
-    private AlignmentBlock[] keepSoftClips(AlignmentBlock[] blocks) {
+    private AlignmentBlockImpl[] keepSoftClips(AlignmentBlockImpl[] blocks) {
         int numSoftCLippedBlocks = 0;
         for (AlignmentBlock block : blocks) {
             if (block.isSoftClipped()) numSoftCLippedBlocks++;
         }
-        AlignmentBlock[] tmp = new AlignmentBlock[numSoftCLippedBlocks];
+        AlignmentBlockImpl[] tmp = new AlignmentBlockImpl[numSoftCLippedBlocks];
         int j = 0;
         for (int i = 0; i < numSoftCLippedBlocks; i++) {
-            AlignmentBlock block = blocks[j++];
+            AlignmentBlockImpl block = blocks[j++];
             if (block.isSoftClipped()) {
                 tmp[i] = block;
             }
@@ -292,7 +292,7 @@ public class GobyAlignment implements Alignment {
             bases[i] = (byte) softClippedBasesLeft.charAt(i);
             scores[i] = hasSoftClippedQuality ? softClippedQuality[i] : readQualScores[j++];
         }
-        final AlignmentBlock alignmentBlock = new AlignmentBlock(getChr(), position,
+        final AlignmentBlockImpl alignmentBlock = new AlignmentBlockImpl(getChr(), position,
                 bases,
                 scores);
         alignmentBlock.setSoftClipped(true);
@@ -363,11 +363,11 @@ public class GobyAlignment implements Alignment {
                         leftScores = leftScores.subList(0, deletionPosition);
                         rightScores = rightScores.subList(deletionPosition, rightScores.size());
 
-                        AlignmentBlock left = new AlignmentBlock(getChr(), block.getStart(),
+                        AlignmentBlock left = new AlignmentBlockImpl(getChr(), block.getStart(),
                                 leftBases.toByteArray(new byte[leftBases.size()]),
                                 leftScores.toByteArray(new byte[leftScores.size()]));
 
-                        AlignmentBlock right = new AlignmentBlock(getChr(), block.getStart() + leftBases.size()
+                        AlignmentBlock right = new AlignmentBlockImpl(getChr(), block.getStart() + leftBases.size()
                                 + var.getFrom().length(),
                                 rightBases.toByteArray(new byte[rightBases.size()]),
                                 rightScores.toByteArray(new byte[rightScores.size()]));
@@ -394,7 +394,7 @@ public class GobyAlignment implements Alignment {
                          ByteArrayList scores) {
 
         blocks.add(
-                new AlignmentBlock(getChr(), start,
+                new AlignmentBlockImpl(getChr(), start,
                         bases.toByteArray(new byte[bases.size()]),
                         scores.toByteArray(new byte[scores.size()])));
         start += bases.size();

@@ -23,184 +23,37 @@
  * THE SOFTWARE.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.broad.igv.sam;
 
 import org.broad.igv.feature.genome.Genome;
 
-import java.util.Arrays;
+/**
+ * Created by jrobinso on 9/22/15.
+ */
+public interface AlignmentBlock {
+    boolean contains(int position);
 
-public class AlignmentBlock {
+    int getLength();
 
-    private String chr;
-    private int start;
-    private byte[] bases;
-    private int length = -1;
-    public byte[] qualities;
-    protected short[] counts;
+    byte getBase(int offset);
 
-    private boolean softClipped = false;
+    byte[] getBases();
 
-    private FlowSignalContext fContext = null;
+    int getStart();
 
-    Alignment alignment;
-    int offset;
-    int end;
+    byte getQuality(int offset);
 
-    /**
-     * The reference genome we store mismatches to
-     */
-    private Genome genome;
+    byte[] getQualities();
 
-    public AlignmentBlock(String chr, int start, byte[] bases, byte[] qualities) {
-        this.chr = chr;
-        this.start = start;
-        this.bases = bases;
-        this.length = bases.length;
-        if (qualities == null || qualities.length < bases.length) {
-            this.qualities = new byte[bases.length];
-            Arrays.fill(this.qualities, (byte) 126);
-        } else {
-            this.qualities = qualities;
-        }
-        this.counts = null;
-    }
+    int getEnd();
 
-    protected AlignmentBlock(String chr, int start, byte[] bases, byte[] qualities, FlowSignalContext fContext) {
-        this(chr, start, bases, qualities);
-        if (fContext != null && fContext.getNrSignals() == bases.length) {
-            this.fContext = fContext;
-        }
-    }
+    boolean isSoftClipped();
 
+    void reduce(Genome genome);
 
-    public boolean contains(int position) {
-        int offset = position - start;
-        return offset >= 0 && offset < getLength();
-    }
+    boolean hasBases();
 
-    /**
-     * Return AlignmentBlock bases.
-     * May be null, which indicates they match the reference
-     * @return
-     */
-    public byte[] getBases() {
-        if(bases != null){
-            return bases;
-        }else{
-            return getReferenceSequence();
-        }
-    }
+    FlowSignalSubContext getFlowSignalSubContext(int offset);
 
-    private byte[] getReferenceSequence() {
-        return genome.getSequence(this.chr, getStart(), getEnd());
-    }
-
-    public int getLength() {
-        return length;
-    }
-
-    public byte getBase(int offset) {
-        return getBases()[offset];
-    }
-
-    public int getStart() {
-        return start;
-    }
-
-    public byte getQuality(int offset) {
-        return getQualities()[offset];
-
-    }
-
-    public byte[] getQualities() {
-        return qualities;
-    }
-
-    public short getCount(int i) {
-        return counts[i];
-    }
-
-    public void setCounts(short[] counts) {
-        this.counts = counts;
-    }
-
-    public int getEnd() {
-        return start + getLength();
-    }
-
-    public boolean isSoftClipped() {
-        return softClipped;
-    }
-
-    public void setSoftClipped(boolean softClipped) {
-        this.softClipped = softClipped;
-    }
-
-    public boolean hasCounts() {
-        return counts != null;
-    }
-
-    @Override
-    public String toString() {
-        StringBuffer sb = new StringBuffer();
-        sb.append("[block ");
-        sb.append(isSoftClipped() ? "softClipped " : " ");
-        sb.append(getStart());
-        sb.append("-");
-        sb.append(getEnd());
-        sb.append(" ");
-        for (int i = 0; i < bases.length; i++) {
-            sb.append((char) bases[i]);
-        }
-        sb.append("]");
-        return sb.toString();
-    }
-
-    /**
-     * Reduce so that we only store the mismatches between this block and reference
-     * This may do nothing, if there are any mismatches we keep the original.
-     * Note that we require an EXACT match, meaning ambiguity codes need to match
-     * exactly. So if reference = 'N' and read = 'A', the full read sequence is stored.
-     * @param genome
-     */
-    public void reduce(Genome genome){
-        this.genome = genome;
-        byte[] refBases = genome.getSequence(this.chr, getStart(), getEnd());
-        //null refBases mostly happens in testing, but if we have no reference can't create mismatch
-        if(refBases != null && this.bases != null){
-            boolean match = false;
-            for(int idx = 0; idx < refBases.length; idx++){
-                match = refBases[idx] == this.bases[idx];
-                if(!match) break;
-            }
-            if(match) this.bases = null;
-        }
-    }
-
-    /**
-     * Whether this AlignmentBlock has non-null bases
-     * @return
-     */
-    public boolean hasBases() {
-        return this.bases != null;
-    }
-
-
-    public FlowSignalSubContext getFlowSignalSubContext(int offset) {
-
-        return  this.fContext == null ? null :
-                new FlowSignalSubContext(this.fContext.getSignalForOffset(offset),
-                        this.fContext.getBasesForOffset(offset), this.fContext.getFlowOrderIndexForOffset(offset));
-    }
-
-
-    public boolean hasFlowSignals() {
-        return (null != this.fContext);
-    }
-
-
+    boolean hasFlowSignals();
 }

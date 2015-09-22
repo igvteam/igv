@@ -31,6 +31,7 @@ package org.broad.igv.sam;
 
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
@@ -45,14 +46,29 @@ public class ReducedMemoryAlignment implements Alignment {
     private int start;
     private int end;
     boolean negativeStrand;
-
+    AlignmentBlock [] blocks;
 
     public ReducedMemoryAlignment(Alignment al) {
+
+
         this.negativeStrand = al.isNegativeStrand();
       //  this.readName = al.getReadName();
         this.chromosome = al.getChr();
         this.start = al.getStart();
         this.end = al.getEnd();
+
+        AlignmentBlock [] blocks = al.getAlignmentBlocks();
+        if(blocks != null) {
+
+            // Filter small indels
+            int indelLimit = 25;
+
+            AlignmentBlock [] rmBlocks = new AlignmentBlock[blocks.length];
+            for(int i=0; i<blocks.length; i++) {
+                rmBlocks[i] = new ReducedMemoryAlignmentBlock(blocks[i]);
+            }
+            this.blocks = rmBlocks;
+        }
     }
 
 
@@ -114,7 +130,7 @@ public class ReducedMemoryAlignment implements Alignment {
     }
 
     public AlignmentBlock[] getAlignmentBlocks() {
-        return null;
+        return blocks;
     }
 
     public AlignmentBlock[] getInsertions() {
@@ -267,5 +283,85 @@ public class ReducedMemoryAlignment implements Alignment {
     @Override
     public boolean isSupplementary() {
         return false;
+    }
+
+    public static class ReducedMemoryAlignmentBlock implements AlignmentBlock {
+
+        ReducedMemoryAlignmentBlock(AlignmentBlock block) {
+            this.start = block.getStart();
+            this.length = block.getLength();
+            this.softClipped = block.isSoftClipped();
+        }
+
+        int start;
+        int length;
+        boolean softClipped;
+
+        @Override
+        public boolean contains(int position) {
+            int offset = position - start;
+            return offset >= 0 && offset < getLength();
+        }
+
+
+        @Override
+        public int getLength() {
+            return length;
+        }
+
+        @Override
+        public byte getBase(int offset) {
+            return 0;
+        }
+
+        @Override
+        public byte[] getBases() {
+            return null;
+        }
+
+        @Override
+        public int getStart() {
+            return start;
+        }
+
+        @Override
+        public byte getQuality(int offset) {
+            return 0;
+        }
+
+        @Override
+        public byte[] getQualities() {
+            return null;
+        }
+
+        @Override
+        public int getEnd() {
+            return start + length;
+        }
+
+        @Override
+        public boolean isSoftClipped() {
+            return softClipped;
+        }
+
+        @Override
+        public void reduce(Genome genome) {
+
+        }
+
+        @Override
+        public boolean hasBases() {
+            return false;
+        }
+
+        @Override
+        public FlowSignalSubContext getFlowSignalSubContext(int offset) {
+            return null;
+        }
+
+        @Override
+        public boolean hasFlowSignals() {
+            return false;
+        }
     }
 }

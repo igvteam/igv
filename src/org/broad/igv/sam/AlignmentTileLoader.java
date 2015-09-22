@@ -388,7 +388,7 @@ public class AlignmentTileLoader {
          */
         public void addRecord(Alignment alignment) {
 
-           // alignment = new ReducedMemoryAlignment(alignment);
+            alignment = new ReducedMemoryAlignment(alignment);
 
             counts.incCounts(alignment);
 

@@ -323,7 +323,7 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
             for (int i = 0; i < bases.length; i++) {
                 int pos = start + i;
                 // NOTE:  the direct access block.qualities is intentional,  profiling reveals this to be a critical bottleneck
-                byte q = block.qualities[i];
+                byte q = ((AlignmentBlockImpl) block).qualities[i];
                 // TODO -- handle "=" in cigar string with no read bases
                 byte n = bases[i];
                 incPositionCount(pos, n, q, isNegativeStrand);

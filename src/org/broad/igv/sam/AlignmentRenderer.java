@@ -26,7 +26,6 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
@@ -586,7 +585,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 Shape blockShape = null;
 
                 // If this is a terminal block draw the "arrow" to indicate strand position.  Otherwise draw a rectangle.
-                if ((aBlock == terminalBlock) && blockPixelWidth > 10)
+                if ((aBlock == terminalBlock) && blockPixelWidth > 10) {
                     if (h > 10) {
 
                         int arrowLength = Math.min(5, blockPixelWidth / 6);
@@ -630,7 +629,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                             terminalGrpahics.drawLine(blockPixelStart + blockPixelWidth + 1, y, blockPixelStart + blockPixelWidth + 1, y + tH);
                         }
                     }
-                else {
+                } else {
                     // Not a terminal block, or too small for arrow
                     blockShape = new Rectangle(blockPixelStart, y, blockPixelWidth, h);
                 }
@@ -674,37 +673,50 @@ public class AlignmentRenderer implements FeatureRenderer {
             // Draw connecting lines between blocks, if in view
             if (lastBlockEnd > Integer.MIN_VALUE && blockPixelStart > rowRect.x) {
                 Graphics2D gLine;
-                Stroke stroke;
+                Stroke stroke = null;
+                Stroke gapStroke = null;
                 int gapIdx = blockNumber - 1;
                 Color gapLineColor = deletionColor;
 
-                if(gapTypes == null) {
-                    // Use deletion color, no info on actual type of gap
-                    gapLineColor = deletionColor;
-                }
 
+                int type;
+                if (gapTypes == null) {
+                    type = SAMAlignment.DELETION;
+                }
                 else if(gapIdx >= gapTypes.length) {
-                    // This shouldn't happen
-                    gapLineColor = unknownGapColor;
+                    type = SAMAlignment.UNKNOWN;  // This shouldn't happen
+                }
+                else {
+                    type = gapTypes[gapIdx];
                 }
 
-                else if(gapTypes[gapIdx] != SAMAlignment.ZERO_GAP) {
-                    if (gapTypes[gapIdx] == SAMAlignment.SKIPPED_REGION) {
-                        gLine = context.getGraphic2DForColor(skippedColor);
+                switch(type) {
+                    case SAMAlignment.UNKNOWN:
+                        gapLineColor = unknownGapColor;
+                        break;
+                    case SAMAlignment.SKIPPED_REGION:
+                        gapLineColor = skippedColor;
+                        break;
+                    default:
+                        gapLineColor = deletionColor;
+                        gapStroke = thickStroke;
+                        break;
+                }
+
+
+                if (SAMAlignment.ZERO_GAP != type) {
+                    gLine = context.getGraphic2DForColor(gapLineColor);
+                    if (gapStroke != null) {
                         stroke = gLine.getStroke();
-                    } else {
-                        gLine = context.getGraphic2DForColor(gapLineColor);
-                        stroke = gLine.getStroke();
-                        //gLine.setStroke(dashedStroke);
                         gLine.setStroke(thickStroke);
                     }
 
                     int startX = Math.max(rowRect.x, lastBlockEnd);
                     int endX = Math.min(rowRect.x + rowRect.width, blockPixelStart);
-
                     gLine.drawLine(startX, y + h / 2, endX, y + h / 2);
-                    gLine.setStroke(stroke);
+                    if (stroke != null) gLine.setStroke(stroke);
                 }
+
             }
             lastBlockEnd = blockPixelStart + blockPixelWidth;
 

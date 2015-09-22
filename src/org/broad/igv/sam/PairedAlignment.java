@@ -98,7 +98,7 @@ public class PairedAlignment implements Alignment {
 
 
     public AlignmentBlock[] getAlignmentBlocks() {
-        return new AlignmentBlock[0];  //To change body of implemented methods use File | Settings | File Templates.
+        return new AlignmentBlockImpl[0];  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     AlignmentBlock[] insertions;
@@ -110,7 +110,7 @@ public class PairedAlignment implements Alignment {
                 insertions = block1;
             } else {
                 AlignmentBlock[] block2 = secondAlignment.getInsertions();
-                insertions = new AlignmentBlock[block1.length + block2.length];
+                insertions = new AlignmentBlockImpl[block1.length + block2.length];
                 System.arraycopy(block1, 0, insertions, 0, block1.length);
                 System.arraycopy(block2, 0, insertions, block1.length, block2.length);
             }

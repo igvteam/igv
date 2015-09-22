@@ -75,68 +75,70 @@ public class BisulfiteBaseInfo {
      * @param bisulfiteContext
      */
     public BisulfiteBaseInfo(byte[] inReference, Alignment baseAlignment, AlignmentBlock block, BisulfiteContext bisulfiteContext) {
+
         super();
 
         myContext = bisulfiteContext;
         byte[] inRead = block.getBases();
-        int alignmentLen = inRead.length;
+        if(inRead != null) {
+            int alignmentLen = inRead.length;
 
-        // We will only need reverse complement if the strand and paired end status don't match (2nd ends are G->A)
-        if (baseAlignment.isPaired()) {
-            flipRead = (baseAlignment.isPaired() && (baseAlignment.isNegativeStrand() ^ baseAlignment.isSecondOfPair()));
-        } else {
-            flipRead = baseAlignment.isNegativeStrand();
-        }
-        byte[] read = (flipRead) ? AlignmentUtils.reverseComplementCopy(inRead) : inRead;
-        byte[] reference = (flipRead && inReference != null) ? AlignmentUtils.reverseComplementCopy(inReference) : inReference;
-
-
-        displayChars = new byte[alignmentLen];
-        displayStatus = new DisplayStatus[alignmentLen];
-        displayColors = new Color[alignmentLen];
-
-        final int idxEnd = alignmentLen - 1;
-        for (int idxFw = 0; idxFw < alignmentLen; idxFw++) {
-
-            //// Everything comes in relative to the positive strand.
-            int idx = flipRead ? (idxEnd - idxFw) : idxFw;
+            // We will only need reverse complement if the strand and paired end status don't match (2nd ends are G->A)
+            if (baseAlignment.isPaired()) {
+                flipRead = (baseAlignment.isPaired() && (baseAlignment.isNegativeStrand() ^ baseAlignment.isSecondOfPair()));
+            } else {
+                flipRead = baseAlignment.isNegativeStrand();
+            }
+            byte[] read = (flipRead) ? AlignmentUtils.reverseComplementCopy(inRead) : inRead;
+            byte[] reference = (flipRead && inReference != null) ? AlignmentUtils.reverseComplementCopy(inReference) : inReference;
 
 
-            // Since we allow soft-cliping, the reference sequence can actually be shorter than the read.  Not sure
-            // what to do in this case,  just skip?
-            if (idx < 0 || idx > reference.length) continue;
+            displayChars = new byte[alignmentLen];
+            displayStatus = new DisplayStatus[alignmentLen];
+            displayColors = new Color[alignmentLen];
 
-            // The read base can be an equals sign, so change that to the actual ref base
-            byte refbase = reference[idx];
-            byte readbase = read[idx];
-            if (readbase == '=') readbase = refbase;
+            final int idxEnd = alignmentLen - 1;
+            for (int idxFw = 0; idxFw < alignmentLen; idxFw++) {
 
-            Color out = null;
-            boolean matchesContext = false;
+                //// Everything comes in relative to the positive strand.
+                int idx = flipRead ? (idxEnd - idxFw) : idxFw;
 
 
-            // The logic is organized according to the reference base.
+                // Since we allow soft-cliping, the reference sequence can actually be shorter than the read.  Not sure
+                // what to do in this case,  just skip?
+                if (idx < 0 || idx > reference.length) continue;
 
-            switch (refbase) {
-                case 'T':
-                case 'A':
-                case 'G':
-                	if (AlignmentUtils.compareBases((byte) 'C', readbase)) out = METHYLATED_COLOR;
-                	else if (!AlignmentUtils.compareBases(readbase, refbase)) out = NONCYTOSINE_MISMATCH_COLOR;
-                    break;
-                case 'C':
-                    if (!AlignmentUtils.compareBases((byte) 'C', readbase) && !AlignmentUtils.compareBases((byte) 'T', readbase)) {
-                        out = CYTOSINE_MISMATCH_COLOR;
-                    } else {
-                    	// If we had information about whether this position was a SNP or not, we could
-                    	// show cytosines in any context when they are a SNP.
-                        BisulfiteContext matchingContext = contextIsMatching(reference, read, idx, bisulfiteContext);
-                        matchesContext = (matchingContext != null);
-                        if (matchesContext) {
-                            out = getContextColor(readbase, matchingContext);
+                // The read base can be an equals sign, so change that to the actual ref base
+                byte refbase = reference[idx];
+                byte readbase = read[idx];
+                if (readbase == '=') readbase = refbase;
+
+                Color out = null;
+                boolean matchesContext = false;
+
+
+                // The logic is organized according to the reference base.
+
+                switch (refbase) {
+                    case 'T':
+                    case 'A':
+                    case 'G':
+                        if (AlignmentUtils.compareBases((byte) 'C', readbase)) out = METHYLATED_COLOR;
+                        else if (!AlignmentUtils.compareBases(readbase, refbase)) out = NONCYTOSINE_MISMATCH_COLOR;
+                        break;
+                    case 'C':
+                        if (!AlignmentUtils.compareBases((byte) 'C', readbase) && !AlignmentUtils.compareBases((byte) 'T', readbase)) {
+                            out = CYTOSINE_MISMATCH_COLOR;
+                        } else {
+                            // If we had information about whether this position was a SNP or not, we could
+                            // show cytosines in any context when they are a SNP.
+                            BisulfiteContext matchingContext = contextIsMatching(reference, read, idx, bisulfiteContext);
+                            matchesContext = (matchingContext != null);
+                            if (matchesContext) {
+                                out = getContextColor(readbase, matchingContext);
+                            }
                         }
-                    }
-                    break;
+                        break;
 //                case 'G':
 //                    if (AlignmentUtils.compareBases((byte) 'A', readbase))
 //                    {
@@ -146,25 +148,25 @@ public class BisulfiteBaseInfo {
 //                    {
 //                    	out = NONCYTOSINE_MISMATCH_COLOR;
 //                    }
-            }
-
-            // Remember, the output should be relative to the FW strand (use idxFw)
-            this.displayColors[idxFw] = out;
-            if (out == null) {
-                this.displayStatus[idxFw] = DisplayStatus.NOTHING;
-            } else {
-                if (matchesContext) {
-                    // Display the color
-                    this.displayStatus[idxFw] = DisplayStatus.COLOR;
-                } else {
-                    // Display the character
-                    this.displayStatus[idxFw] = DisplayStatus.CHARACTER;
-                    this.displayChars[idxFw] = 'X';
                 }
-            }
-//			System.err.printf("\tSeting displayStatus[%d] = %s\n", idx, displayStatus[idx]);
-        }
 
+                // Remember, the output should be relative to the FW strand (use idxFw)
+                this.displayColors[idxFw] = out;
+                if (out == null) {
+                    this.displayStatus[idxFw] = DisplayStatus.NOTHING;
+                } else {
+                    if (matchesContext) {
+                        // Display the color
+                        this.displayStatus[idxFw] = DisplayStatus.COLOR;
+                    } else {
+                        // Display the character
+                        this.displayStatus[idxFw] = DisplayStatus.CHARACTER;
+                        this.displayChars[idxFw] = 'X';
+                    }
+                }
+//			System.err.printf("\tSeting displayStatus[%d] = %s\n", idx, displayStatus[idx]);
+            }
+        }
         //this.numDisplayStatus();
     }
 

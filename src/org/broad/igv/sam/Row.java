@@ -84,7 +84,7 @@ public class Row implements Comparable<Row> {
                     for (AlignmentBlock ins : insertions) {
                         int s = ins.getStart();
                         if (s == adjustedCenter || (s - 1) == adjustedCenter) {
-                            insertionScore += ins.getBases().length;
+                            insertionScore += ins.getLength();
                         }
                     }
 

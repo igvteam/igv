@@ -46,7 +46,7 @@ public class FeatureWrappedAlignment implements Alignment {
     String chr;
     int start;
     int end;
-    AlignmentBlock[] blocks;
+    AlignmentBlockImpl[] blocks;
     Strand strand;
 
     public FeatureWrappedAlignment(BasicFeature f) {
@@ -58,12 +58,12 @@ public class FeatureWrappedAlignment implements Alignment {
         strand = f.getStrand();
 
         if (f.getExonCount() > 0) {
-            blocks = new AlignmentBlock[f.getExonCount()];
+            blocks = new AlignmentBlockImpl[f.getExonCount()];
             int i = 0;
             for (Exon exon : f.getExons()) {
                 int length = exon.getLength();
                 byte[] seq = new byte[length];
-                blocks[i] = new AlignmentBlock(getChr(), exon.getStart(), seq, seq);
+                blocks[i] = new AlignmentBlockImpl(getChr(), exon.getStart(), seq, seq);
                 i++;
             }
         }

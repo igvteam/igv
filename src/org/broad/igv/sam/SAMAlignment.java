@@ -61,6 +61,7 @@ public abstract class SAMAlignment implements Alignment {
     public static final char HARD_CLIP = 'H';
     public static final char PADDING = 'P';
     public static final char ZERO_GAP = 'O';
+    public static final char UNKNOWN = 0;
     public static final String REDUCE_READS_TAG = "RR";
 
     /**
@@ -97,8 +98,8 @@ public abstract class SAMAlignment implements Alignment {
     protected String sample;
 
     ReadMate mate;
-    AlignmentBlock[] alignmentBlocks;
-    AlignmentBlock[] insertions;
+    AlignmentBlockImpl[] alignmentBlocks;
+    AlignmentBlockImpl[] insertions;
     char[] gapTypes;
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
 
@@ -148,7 +149,7 @@ public abstract class SAMAlignment implements Alignment {
         return alignmentBlocks;
     }
 
-    public AlignmentBlock[] getInsertions() {
+    public AlignmentBlockImpl[] getInsertions() {
         return insertions;
     }
 
@@ -163,7 +164,7 @@ public abstract class SAMAlignment implements Alignment {
         for (AlignmentBlock block : this.alignmentBlocks) {
             if (block.contains(basePosition)) {
                 int offset = basePosition - block.getStart();
-                byte base = block.getBases()[offset];
+                byte base = block.getBase(offset);
                 return base;
             }
         }
@@ -243,8 +244,8 @@ public abstract class SAMAlignment implements Alignment {
                                          short[] flowSignals, String flowOrder, int flowOrderStart) {
 
         if (cigarString.equals("*")) {
-            alignmentBlocks = new AlignmentBlock[1];
-            alignmentBlocks[0] = new AlignmentBlock(getChr(), getStart(), readBases, readBaseQualities);
+            alignmentBlocks = new AlignmentBlockImpl[1];
+            alignmentBlocks[0] = new AlignmentBlockImpl(getChr(), getStart(), readBases, readBaseQualities);
             return;
         }
 
@@ -290,8 +291,8 @@ public abstract class SAMAlignment implements Alignment {
         }
 
 
-        alignmentBlocks = new AlignmentBlock[nBlocks];
-        insertions = new AlignmentBlock[nInsertions];
+        alignmentBlocks = new AlignmentBlockImpl[nBlocks];
+        insertions = new AlignmentBlockImpl[nInsertions];
         if (nGaps > 0) {
             gapTypes = new char[nGaps];
         }
@@ -323,7 +324,7 @@ public abstract class SAMAlignment implements Alignment {
                 }
                 if (operatorIsMatch(showSoftClipped, op.operator)) {
 
-                    AlignmentBlock block = buildAlignmentBlock(fBlockBuilder, readBases, readBaseQualities,
+                    AlignmentBlockImpl block = buildAlignmentBlock(fBlockBuilder, readBases, readBaseQualities,
                             getChr(), blockStart, fromIdx, op.nBases, true);
 
                     if (op.operator == SOFT_CLIP) {
@@ -345,7 +346,7 @@ public abstract class SAMAlignment implements Alignment {
                     // This gap is between blocks split by insertion.   It is a zero
                     // length gap but must be accounted for.
                     gapTypes[gapIdx++] = ZERO_GAP;
-                    AlignmentBlock block = buildAlignmentBlock(fBlockBuilder, readBases, readBaseQualities,
+                    AlignmentBlockImpl block = buildAlignmentBlock(fBlockBuilder, readBases, readBaseQualities,
                             getChr(), blockStart, fromIdx, op.nBases, false);
 
                     insertions[insertionIdx++] = block;
@@ -410,7 +411,7 @@ public abstract class SAMAlignment implements Alignment {
 
     }
 
-    private static AlignmentBlock buildAlignmentBlock(FlowSignalContextBuilder fBlockBuilder, byte[] readBases,
+    private static AlignmentBlockImpl buildAlignmentBlock(FlowSignalContextBuilder fBlockBuilder, byte[] readBases,
                                                       byte[] readBaseQualities, String chr, int blockStart,
                                                       int fromIdx, int nBases, boolean checkNBasesAvailable) {
 
@@ -440,12 +441,12 @@ public abstract class SAMAlignment implements Alignment {
             System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, nBases);
         }
 
-        AlignmentBlock block;
+        AlignmentBlockImpl block;
         if (fBlockBuilder != null) {
-            block = new AlignmentBlock(chr, blockStart, blockBases, blockQualities,
+            block = new AlignmentBlockImpl(chr, blockStart, blockBases, blockQualities,
                     fBlockBuilder.getFlowSignalContext(readBases, fromIdx, nBases));
         } else {
-            block = new AlignmentBlock(chr, blockStart, blockBases, blockQualities);
+            block = new AlignmentBlockImpl(chr, blockStart, blockBases, blockQualities);
         }
 
         return block;
@@ -556,13 +557,19 @@ public abstract class SAMAlignment implements Alignment {
                         buf.append("<br>");
                         for (offset = 0; offset < block.getLength(); offset++) {
                             byte base = block.getBase(offset);
-                            buf.append((char) base + ": ");
-                            bufAppendFlowSignals(block, buf, offset);
+                            if (base > 0) {
+                                buf.append((char) base + ": ");
+                                bufAppendFlowSignals(block, buf, offset);
+                            }
                         }
                         buf.append("----------------------"); // NB: no <br> required
                         return buf.toString();
                     } else {
-                        return "Insertion: " + new String(block.getBases());
+                        byte [] bases = block.getBases();
+
+                        return bases == null ?
+                                "Insertion: " + block.getLength() + " bases" :
+                                "Insertion: " + new String(block.getBases());
                     }
                 }
             }
@@ -572,15 +579,15 @@ public abstract class SAMAlignment implements Alignment {
             if (block.contains(basePosition)) {
                 int offset = basePosition - block.getStart();
                 byte base = block.getBase(offset);
-                byte quality = block.getQuality(offset);
-                buf.append("Base = " + (char) base + "<br>");
-                buf.append("Base phred quality = " + quality + "<br>");
-                if (block.hasCounts()) {
-                    buf.append("Count = " + block.getCount(offset) + "<br>");
-                }
-                // flow signals
-                if (block.hasFlowSignals()) {
-                    bufAppendFlowSignals(block, buf, offset);
+                if (base > 0) {
+                    byte quality = block.getQuality(offset);
+                    buf.append("Base = " + (char) base + "<br>");
+                    buf.append("Base phred quality = " + quality + "<br>");
+
+                    // flow signals
+                    if (block.hasFlowSignals()) {
+                        bufAppendFlowSignals(block, buf, offset);
+                    }
                 }
             }
         }
@@ -732,7 +739,10 @@ public abstract class SAMAlignment implements Alignment {
     String buildReadSequenceFromBlocks() {
         String readSeq = "";
         for (AlignmentBlock block : getAlignmentBlocks()) {
-            readSeq += new String(block.getBases());
+            byte [] bases = block.getBases();
+            if(bases != null) {
+                readSeq += new String(block.getBases());
+            }
         }
         return readSeq;
     }

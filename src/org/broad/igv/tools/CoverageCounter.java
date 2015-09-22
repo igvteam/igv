@@ -347,8 +347,7 @@ public class CoverageCounter {
 
                             if (!block.isSoftClipped()) {
 
-                                byte[] bases = block.getBases();
-                                int blockStart = block.getStart();
+                                 int blockStart = block.getStart();
                                 int blockEnd = block.getEnd();
 
 
@@ -387,6 +386,7 @@ public class CoverageCounter {
                                     adjustedEnd = Math.min(queryInterval.getEnd(), adjustedEnd);
                                 }
 
+                                byte[] bases = block.getBases();
                                 for (int pos = adjustedStart; pos < adjustedEnd; pos++) {
                                     byte base = 0;
                                     int baseIdx = pos - blockStart;

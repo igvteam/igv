@@ -68,7 +68,7 @@ public class BisulfiteCounts {
 
         for (AlignmentBlock block : baseAlignment.getAlignmentBlocks()) {
 
-            if (block.isSoftClipped()) continue;
+            if (block.isSoftClipped() || block.getBases() == null) continue;
 
             int start = block.getStart();
             int end = block.getEnd();

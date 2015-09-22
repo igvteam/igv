@@ -26,10 +26,7 @@
 package org.broad.igv.ui;
 
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.sam.AlignmentBlock;
-import org.broad.igv.sam.AlignmentDataManager;
-import org.broad.igv.sam.AlignmentInterval;
-import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.sam.*;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.util.ResourceLocator;
