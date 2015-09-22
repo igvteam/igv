@@ -209,6 +209,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String USE_PROBE_MAPPING_FILE = "USE_PROBE_MAPPING_FILE";
 
     public static final String SEARCH_ZOOM = "SEARCH_ZOOM";
+    public static final String BYPASS_FILE_AUTO_DISCOVERY = "BYPASS_FILE_AUTO_DISCOVERY";
     public static final String NORMALIZE_COVERAGE = "NORMALIZE_COVERAGE";
     public static final String SHOW_EXPAND_ICON = "SHOW_EXPAND_ICON";
     public static final String SHOW_DEFAULT_TRACK_ATTRIBUTES = "SHOW_DEFAULT_TRACK_ATTRIBUTES";
@@ -1060,6 +1061,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_COMPLETE_READS_ONLY, "false");
         defaultValues.put(SAM_SHOW_ALL_BASES, "false");
 
+        defaultValues.put(BYPASS_FILE_AUTO_DISCOVERY, "false");
         defaultValues.put(NORMALIZE_COVERAGE, "false");
 
         defaultValues.put(SHOW_GENOME_SERVER_WARNING, "true");

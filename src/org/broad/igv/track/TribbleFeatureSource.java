@@ -26,6 +26,7 @@
 package org.broad.igv.track;
 
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.DataSource;
 import org.broad.igv.data.DataTile;
@@ -134,9 +135,10 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                 new CachingFeatureReader(reader, 5, featureWindowSize) :
                 new TribbleReaderWrapper(reader);
 
-        initCoverageSource(locator.getPath() + ".tdf");
-
-
+        boolean bypassFileAutoDiscovery = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.BYPASS_FILE_AUTO_DISCOVERY);
+        if (!bypassFileAutoDiscovery) {
+            initCoverageSource(locator.getPath() + ".tdf");
+        }
     }
 
     protected abstract int estimateFeatureWindowSize(FeatureReader reader);

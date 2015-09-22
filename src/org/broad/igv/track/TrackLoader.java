@@ -908,13 +908,14 @@ public class TrackLoader {
             // Search for precalculated coverage data
             // Skip for GA4GH & SU2C resources
             if (!(Ga4ghAPIHelper.RESOURCE_TYPE.equals(locator.getType()) ||
-                   locator.getPath().contains("dataformat=.bam") ||
-                    OAuthUtils.isGoogleCloud(locator.getPath()))) {
+                  locator.getPath().contains("dataformat=.bam") ||
+                  OAuthUtils.isGoogleCloud(locator.getPath()))) {
 
                 String covPath = locator.getCoverage();
                 if (covPath == null) {
+                    boolean bypassFileAutoDiscovery = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.BYPASS_FILE_AUTO_DISCOVERY);
                     String path = locator.getPath();
-                    if (!path.contains("/query.cgi?")) {
+                    if (!bypassFileAutoDiscovery && !path.contains("/query.cgi?")) {
                         covPath = path + ".tdf";
                     }
 
