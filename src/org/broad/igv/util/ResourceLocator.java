@@ -438,7 +438,7 @@ public class ResourceLocator {
         if (locator.getIndexPath() != null) {
             return locator.getIndexPath();
         }
-        String indexExtension = (locator.getPath().toLowerCase().endsWith(".gz") || locator.getPath().toLowerCase().endsWith(".bgz")) ? ".tbi" : Tribble.STANDARD_INDEX_EXTENSION;
+        String indexExtension = (locator.getURLPath().toLowerCase().endsWith(".gz") || locator.getPath().toLowerCase().endsWith(".bgz")) ? ".tbi" : Tribble.STANDARD_INDEX_EXTENSION;
         return appendToPath(locator, indexExtension);
     }
 
