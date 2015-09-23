@@ -34,9 +34,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 import htsjdk.tribble.readers.AsciiLineReader;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -109,7 +107,7 @@ public class ProbeToLocusMap {
 
 
     public void loadMapping(String urlString, Map<String, String[]> map) {
-        AsciiLineReader bufReader = null;
+        BufferedReader bufReader = null;
         InputStream is = null;
         try {
             if (HttpUtils.isRemoteURL(urlString)) {
@@ -121,7 +119,7 @@ public class ProbeToLocusMap {
             if (urlString.endsWith("gz")) {
                 is = new GZIPInputStream(is);
             }
-            bufReader = new AsciiLineReader(is);
+            bufReader = new BufferedReader(new InputStreamReader(is));
             loadMapping(bufReader, map);
 
         } catch (Exception e) {
@@ -139,7 +137,7 @@ public class ProbeToLocusMap {
         }
     }
 
-    public void loadMapping(AsciiLineReader bufReader, Map<String, String[]> map) throws IOException {
+    public void loadMapping(BufferedReader bufReader, Map<String, String[]> map) throws IOException {
         String line;
         while ((line = bufReader.readLine()) != null) {
             String[] result = Globals.tabPattern.split(line, -1);

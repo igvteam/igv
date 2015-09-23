@@ -39,8 +39,10 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import htsjdk.tribble.readers.AsciiLineReader;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
@@ -241,7 +243,7 @@ public class RNAIGCTDatasetParser {
             InputStream probeMappingStream = null;
             try {
                 probeMappingStream = new GZIPInputStream(HttpUtils.getInstance().openConnectionStream(url));
-                AsciiLineReader br = new AsciiLineReader(probeMappingStream);
+                BufferedReader br = new BufferedReader(new InputStreamReader(probeMappingStream));
 
                 ProbeToLocusMap.getInstance().loadMapping(br, rnaiProbeMap);
             } catch (Exception e) {
