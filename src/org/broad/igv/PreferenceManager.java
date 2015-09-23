@@ -140,6 +140,10 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_SHOW_GROUP_SEPARATOR = "SAM.SHOW_GROUP_SEPARATOR";
     public static final String SAM_COMPLETE_READS_ONLY = "SAM.COMPLETE_READS_ONLY";
 
+    public static final String SAM_REDUCED_MEMORY_MODE = "SAM.REDUCED_MEMORY_MODE";
+    public static final String SAM_MIN_INDEL_SIZE = "SAM.MIN_INDEL_SIZE";
+
+
     public static final String COLOR_A = "COLOR.A";
     public static final String COLOR_C = "COLOR.C";
     public static final String COLOR_T = "COLOR.T";
@@ -1060,6 +1064,9 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_SHOW_GROUP_SEPARATOR, "true");
         defaultValues.put(SAM_COMPLETE_READS_ONLY, "false");
         defaultValues.put(SAM_SHOW_ALL_BASES, "false");
+
+        defaultValues.put(SAM_REDUCED_MEMORY_MODE, "false");
+        defaultValues.put(SAM_MIN_INDEL_SIZE, "25");
 
         defaultValues.put(NORMALIZE_COVERAGE, "false");
 

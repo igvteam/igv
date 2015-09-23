@@ -124,6 +124,8 @@ public class AlignmentTileLoader {
         boolean showDuplicates = prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_DUPLICATES);
         int qualityThreshold = prefMgr.getAsInt(PreferenceManager.SAM_QUALITY_THRESHOLD);
 
+        boolean reducedMemory = prefMgr.getAsBoolean(PreferenceManager.SAM_REDUCED_MEMORY_MODE);
+
         CloseableIterator<Alignment> iter = null;
 
         //log.debug("Loading : " + start + " - " + end);
@@ -186,7 +188,7 @@ public class AlignmentTileLoader {
                     continue;
                 }
 
-                t.addRecord(record);
+                t.addRecord(record, reducedMemory);
 
                 alignmentCount++;
                 int interval = Globals.isTesting() ? 100000 : 1000;
@@ -334,6 +336,7 @@ public class AlignmentTileLoader {
 
         private int downsampledCount = 0;
         private int offset = 0;
+        private int indelLimit;
 
         AlignmentTile(int start, int end,
                       SpliceJunctionHelper spliceJunctionHelper,
@@ -342,6 +345,10 @@ public class AlignmentTileLoader {
             this.start = start;
             this.end = end;
             this.downsampledIntervals = new ArrayList<DownsampledInterval>();
+
+            this.indelLimit = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MIN_INDEL_SIZE);
+
+
             long seed = System.currentTimeMillis();
             //System.out.println("seed: " + seed);
             RAND.setSeed(seed);
@@ -386,9 +393,11 @@ public class AlignmentTileLoader {
          *
         // * @param alignment
          */
-        public void addRecord(Alignment alignment) {
+        public void addRecord(Alignment alignment, boolean reducedMemory) {
 
-            alignment = new ReducedMemoryAlignment(alignment);
+            if(reducedMemory) {
+                alignment = new ReducedMemoryAlignment(alignment, this.indelLimit);
+            }
 
             counts.incCounts(alignment);
 

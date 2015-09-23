@@ -29,6 +29,7 @@
  */
 package org.broad.igv.sam;
 
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
@@ -51,7 +52,7 @@ public class ReducedMemoryAlignment implements Alignment {
     AlignmentBlock[] blocks;
     AlignmentBlock[] insertions;
 
-    public ReducedMemoryAlignment(Alignment al) {
+    public ReducedMemoryAlignment(Alignment al, int indelLimit) {
 
 
         this.negativeStrand = al.isNegativeStrand();
@@ -59,9 +60,6 @@ public class ReducedMemoryAlignment implements Alignment {
         this.chromosome = al.getChr();
         this.start = al.getStart();
         this.end = al.getEnd();
-
-        // Filter small indels
-        int indelLimit = 25;
 
         AlignmentBlock[] blocks = al.getAlignmentBlocks();
         if (blocks != null) {
