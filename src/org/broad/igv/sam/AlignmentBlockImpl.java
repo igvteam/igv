@@ -54,9 +54,6 @@ public class AlignmentBlockImpl implements AlignmentBlock {
         this.bases = bases;
         this.length = bases.length;
         this.qualities = qualities;
-
-        this.bases = null;
-        this.qualities = null;
     }
 
     protected AlignmentBlockImpl(String chr, int start, byte[] bases, byte[] qualities, FlowSignalContext fContext) {
