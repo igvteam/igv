@@ -35,6 +35,8 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -46,31 +48,60 @@ public class ReducedMemoryAlignment implements Alignment {
     private int start;
     private int end;
     boolean negativeStrand;
-    AlignmentBlock [] blocks;
+    AlignmentBlock[] blocks;
+    AlignmentBlock[] insertions;
 
     public ReducedMemoryAlignment(Alignment al) {
 
 
         this.negativeStrand = al.isNegativeStrand();
-      //  this.readName = al.getReadName();
+        //  this.readName = al.getReadName();
         this.chromosome = al.getChr();
         this.start = al.getStart();
         this.end = al.getEnd();
 
-        AlignmentBlock [] blocks = al.getAlignmentBlocks();
-        if(blocks != null) {
+        // Filter small indels
+        int indelLimit = 25;
 
-            // Filter small indels
-            int indelLimit = 25;
+        AlignmentBlock[] blocks = al.getAlignmentBlocks();
+        if (blocks != null) {
 
-            AlignmentBlock [] rmBlocks = new AlignmentBlock[blocks.length];
-            for(int i=0; i<blocks.length; i++) {
-                rmBlocks[i] = new ReducedMemoryAlignmentBlock(blocks[i]);
+
+            List<AlignmentBlock> rmBlocks = new ArrayList<AlignmentBlock>(blocks.length);
+            int start = blocks[0].getStart();
+            int end = blocks[0].getEnd();
+            boolean softClip = blocks[0].isSoftClipped();
+
+            for (int i = 1; i < blocks.length; i++) {
+
+                if (blocks[i].getStart() - end < indelLimit && blocks[i].isSoftClipped() == softClip) {
+                    end = blocks[i].getEnd();
+                } else {
+                    rmBlocks.add(new ReducedMemoryAlignmentBlock(start, end - start, softClip));
+                    start = blocks[i].getStart();
+                    end = blocks[i].getEnd();
+                    softClip = blocks[i].isSoftClipped();
+                }
             }
-            this.blocks = rmBlocks;
+
+            // Last one
+            rmBlocks.add(new ReducedMemoryAlignmentBlock(start, end - start, softClip));
+
+            this.blocks = rmBlocks.toArray(new AlignmentBlock[rmBlocks.size()]);
+        }
+
+        AlignmentBlock[] insertions = al.getInsertions();
+        if (insertions != null) {
+
+            List<AlignmentBlock> rmInsertions = new ArrayList<AlignmentBlock>();
+            for(AlignmentBlock b : insertions) {
+                if(b.getLength() >= indelLimit) {
+                    rmInsertions.add(b);
+                }
+            }
+            this.insertions = rmInsertions.toArray(new AlignmentBlock[rmInsertions.size()]);
         }
     }
-
 
 
     public String getReadName() {
@@ -134,7 +165,7 @@ public class ReducedMemoryAlignment implements Alignment {
     }
 
     public AlignmentBlock[] getInsertions() {
-        return null;
+        return insertions;
     }
 
     public String getCigarString() {
@@ -287,10 +318,10 @@ public class ReducedMemoryAlignment implements Alignment {
 
     public static class ReducedMemoryAlignmentBlock implements AlignmentBlock {
 
-        ReducedMemoryAlignmentBlock(AlignmentBlock block) {
-            this.start = block.getStart();
-            this.length = block.getLength();
-            this.softClipped = block.isSoftClipped();
+        ReducedMemoryAlignmentBlock(int start, int length, boolean softClipped) {
+            this.start = start;
+            this.length = length;
+            this.softClipped = softClipped;
         }
 
         int start;
