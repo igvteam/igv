@@ -58,7 +58,6 @@ import java.util.*;
 abstract public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
 
     IGVFeatureReader reader;
-    DataSource coverageSource;
     boolean isVCF;
     Genome genome;
 
@@ -133,10 +132,6 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         this.reader = useCache ?
                 new CachingFeatureReader(reader, 5, featureWindowSize) :
                 new TribbleReaderWrapper(reader);
-
-        initCoverageSource(locator.getPath() + ".tdf");
-
-
     }
 
     protected abstract int estimateFeatureWindowSize(FeatureReader reader);
@@ -162,13 +157,6 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
     public Object getHeader() {
         return header;
-    }
-
-    private void initCoverageSource(String covPath) {
-        if (ParsingUtils.pathExists(covPath)) {
-            TDFReader reader = TDFReader.getReader(covPath);
-            coverageSource = new TDFDataSource(reader, 0, "", genome);
-        }
     }
 
     static class IndexedFeatureSource extends TribbleFeatureSource {
@@ -219,8 +207,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
          */
         @Override
         public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
-            return coverageSource == null ? null :
-                    coverageSource.getSummaryScoresForRange(chr, start, end, zoom);
+            return null;
         }
 
 
