@@ -179,11 +179,10 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
             try {
                 int thickStart = Integer.parseInt(tokens[6]);
                 int thickEnd = Integer.parseInt(tokens[7]);
-                if(thickStart < start || thickStart > end || thickEnd < start || thickEnd > end) {
-                    return feature;
-                }
-                feature.setThickStart(Integer.parseInt(tokens[6]));
-                feature.setThickEnd(Integer.parseInt(tokens[7]));
+                if(thickStart < start) thickStart = start;
+                if(thickEnd > end) thickEnd = end;
+                feature.setThickStart(thickStart);
+                feature.setThickEnd(thickEnd);
             } catch (NumberFormatException e) {
                 return feature;
             }
