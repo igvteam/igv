@@ -191,24 +191,4 @@ public class IGVTestHeaded extends AbstractHeadedTest {
         Assert.assertEquals(26, chromos.length);
     }
 
-
-    public void testExomeView() throws Exception {
-        String file = "http://data.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12891.SLX.bam";
-        List<Track> tracks = IGV.getInstance().load(new ResourceLocator(file));
-        Thread.sleep(10000);
-        //TestUtils.loadSession(igv, TestUtils.DATA_DIR + "sessions/slx_ceu_father.xml");
-
-        Assert.assertEquals(2, tracks.size());
-
-        FrameManager.setExomeMode(true, true);
-        IGV.getInstance().resetFrames();
-
-        String locus = "chr7:55,208,260-55,240,460";
-        igv.goToLocus(locus);
-
-        //File out = new File(TestUtils.DATA_DIR, "testsnap.png");
-        //SnapshotUtilities.doComponentSnapshot(IGV.getMainFrame(), out, SnapshotFileChooser.SnapshotFileType.PNG);
-
-
-    }
 }

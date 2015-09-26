@@ -157,7 +157,7 @@ public abstract class AbstractDataSource implements DataSource {
         int adjustedEnd = Math.min(chrLength, endLocation);
 
 
-        if (cacheSummaryTiles && !FrameManager.isGeneListMode() && !FrameManager.isExomeMode()) {
+        if (cacheSummaryTiles && !FrameManager.isGeneListMode()) {
 
             // By definition there are 2^z tiles per chromosome, and 700 bins per tile, where z is the zoom level.
             //int maxZoom = (int) (Math.log(chrLength/700) / Globals.log2) + 1;

@@ -503,19 +503,10 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                             curYOffset, trackRectangle, idx);
                 }
 
-                if (FrameManager.isExomeMode()) {
-                    //Draw exon edge bound
-                    int halfHeight = blockHeight / 2;
-                    edgeGraphics.drawLine(pStart, curYOffset - halfHeight, pStart, curYOffset + halfHeight - 1);
-                    edgeGraphics.drawLine(pEnd, curYOffset - halfHeight, pEnd, curYOffset + halfHeight - 1);
-                }
-
             }
-
+            exonNumberGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
+            fontGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
         }
-        exonNumberGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
-        fontGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
-
     }
 
     /**

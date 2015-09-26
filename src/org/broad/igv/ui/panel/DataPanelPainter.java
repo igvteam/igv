@@ -34,9 +34,6 @@ package org.broad.igv.ui.panel;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.FeatureUtils;
-import org.broad.igv.feature.exome.ExomeBlock;
-import org.broad.igv.feature.exome.ExomeReferenceFrame;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.RenderContextImpl;
 import org.broad.igv.track.Track;
@@ -55,8 +52,6 @@ public class DataPanelPainter {
 
     private static Logger log = Logger.getLogger(DataPanelPainter.class);
 
-    private static Color exomeBorderColor = new Color(190, 190, 255);
-
     public synchronized void paint(Collection<TrackGroup> groups,
                                    RenderContext context,
                                    int width,
@@ -71,110 +66,8 @@ public class DataPanelPainter {
             graphics2D.clearRect(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height);
             graphics2D.setColor(Color.BLACK);
 
-            ReferenceFrame frame = context.getReferenceFrame();
-
             resetLastY(groups);
-
-            if (frame.isExomeMode()) {
-
-                ExomeReferenceFrame exomeFrame = (ExomeReferenceFrame) frame;
-                int blockGap = exomeFrame.getBlockGap();
-
-                Rectangle panelClip = visibleRect;
-
-                List<ExomeBlock> blocks = exomeFrame.getBlocks();
-                int idx = exomeFrame.getFirstBlockIdx();
-
-                RenderContext exomeContext = new RenderContextImpl(null, null, frame, visibleRect);
-                preloadTracks(groups, exomeContext, visibleRect);
-
-                ExomeBlock b;
-                int lastPStart = 0;
-                int pStart;
-                int pEnd;
-                int exomeOrigin = ((ExomeReferenceFrame) frame).getExomeOrigin();
-                int visibleBlockCount = 0;
-
-                do {
-                    b = blocks.get(idx);
-
-                    pStart = (int) ((b.getExomeStart() - exomeOrigin) / frame.getScale()) + visibleBlockCount * blockGap;
-                    pEnd = (int) ((b.getExomeEnd() - exomeOrigin) / frame.getScale()) + visibleBlockCount * blockGap;
-
-                    if (pEnd > lastPStart) {
-
-                        lastPStart = pStart;
-                        // Don't draw over previously drawn region -- can happen when zoomed out.
-
-
-                        if (pEnd == pStart) pEnd++;
-
-
-                        b.setScreenBounds(pStart, pEnd);
-
-                        Rectangle rect = new Rectangle(pStart, visibleRect.y, pEnd - pStart, visibleRect.height);
-
-                        Graphics2D exomeGraphics = (Graphics2D) context.getGraphics().create();
-
-                        //Shape clip = exomeGraphics.getClip();
-
-//                         Color c = ColorUtilities.randomColor(idx);
-//                         exomeGraphics.setColor(c);
-//                         exomeGraphics.fill(rect);
-//                         exomeGraphics.setColor(Color.black);
-//                         GraphicUtils.drawCenteredText(String.valueOf(idx), rect, exomeGraphics);
-
-                        exomeGraphics.setClip(rect.intersection(panelClip));
-                        exomeGraphics.translate(pStart, 0);
-
-                        ReferenceFrame tmpFrame = new ReferenceFrame(frame);
-                        tmpFrame.setOrigin(b.getGenomeStart());
-
-
-                        RenderContext tmpContext = new RenderContextImpl(null, exomeGraphics, tmpFrame, rect);
-                        paintFrame(groups, tmpContext, rect.width, rect);
-
-                        tmpContext.dispose();
-                        exomeGraphics.dispose();
-                        visibleBlockCount++;
-                    }
-                    idx++;
-
-                }
-                while ((pStart < visibleRect.x + visibleRect.width) && idx < blocks.size());
-
-                // Draw lines @ gene boundaries
-                String chr = frame.getChrName();
-                List<ExomeReferenceFrame.Gene> genes = exomeFrame.getGenes(chr);
-
-                idx = FeatureUtils.getIndexBefore(frame.getOrigin(), genes);
-
-                exomeOrigin = ((ExomeReferenceFrame) frame).getExomeOrigin();
-                int top = visibleRect.y;
-
-                int lastXDrawn = -1;
-                Graphics2D lineGraphics = context.getGraphic2DForColor(exomeBorderColor);
-                do {
-                    ExomeReferenceFrame.Gene gene = genes.get(idx);
-                    double exomeStart = exomeFrame.genomeToExomePosition(gene.getStart());
-                    double exomeEnd = exomeFrame.genomeToExomePosition(gene.getEnd());
-                    pStart = (int) ((exomeStart - exomeOrigin) / frame.getScale()) + visibleBlockCount * blockGap;
-                    pEnd = (int) ((exomeEnd - exomeOrigin) / frame.getScale()) + visibleBlockCount * blockGap;
-
-                    if (pStart != lastXDrawn) {
-                        lineGraphics.drawLine(pStart, top, pStart, top + visibleRect.height);
-                    }
-                    lineGraphics.drawLine(pEnd, top, pEnd, top + visibleRect.height);
-                    lastXDrawn = pEnd;
-                    idx++;
-
-                }
-                while ((pStart < visibleRect.x + visibleRect.width) && idx < genes.size());
-
-
-            } else {
-                paintFrame(groups, context, width, visibleRect);
-            }
+            paintFrame(groups, context, width, visibleRect);
 
 
         } finally {
@@ -246,8 +139,8 @@ public class DataPanelPainter {
     }
 
     private void resetLastY(Collection<TrackGroup> groups) {
-        for(TrackGroup group: groups){
-            for(Track track: group.getTracks()){
+        for (TrackGroup group : groups) {
+            for (Track track : group.getTracks()) {
                 track.resetLastY();
             }
         }

@@ -37,13 +37,9 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Chromosome;
-import org.broad.igv.feature.FeatureUtils;
-import org.broad.igv.feature.exome.ExomeBlock;
-import org.broad.igv.feature.exome.ExomeReferenceFrame;
 import org.broad.igv.feature.genome.ChromosomeCoordinate;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.WaitCursorManager;
@@ -55,11 +51,8 @@ import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Rectangle2D;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -141,18 +134,9 @@ public class RulerPanel extends JPanel {
 
         if (isWholeGenomeView()) {
             drawChromosomeTicks(g);
-        } else if (FrameManager.isExomeMode()) {
-            // TODO -- hack,
-            ExomeReferenceFrame exomeFrame = (ExomeReferenceFrame) FrameManager.getDefaultFrame();
-            drawExomeBlocks(g, exomeFrame);
-            drawExomeGenes(g, exomeFrame);
-            if (drawSpan) {
-                drawSpan(g);
-            }
-
         } else {
 
-                drawTicks(g);
+            drawTicks(g);
 
             if (drawSpan) {
                 drawSpan(g);
@@ -172,12 +156,8 @@ public class RulerPanel extends JPanel {
         g.setFont(spanFont);
 
 
-        int range;
-        if (FrameManager.isExomeMode()) {
-            range = (int) (frame.getEnd() - frame.getOrigin()) + 1;
-        } else {
-            range = (int) (frame.getScale() * w) + 1;
-        }
+        int range = (int) (frame.getScale() * w) + 1;
+
 
         // TODO -- hack, assumes location unit for whole genome is kilo-base
         boolean scaleInKB = frame.getChrName().equals(Globals.CHR_ALL);
@@ -332,135 +312,6 @@ public class RulerPanel extends JPanel {
 
             offset += chrLength;
         }
-    }
-
-    private void drawExomeBlocks(Graphics g, ExomeReferenceFrame frame) {
-
-        String chr = frame.getChrName();
-        List<ExomeBlock> blocks = frame.getBlocks(chr);
-        int idx = frame.getFirstBlockIdx();
-        ExomeBlock b;
-
-        Rectangle visibleRect = this.getVisibleRect();
-
-
-        int lastPStart = -1;
-        int pStart;
-        int pEnd;
-        int exomeOrigin = frame.getExomeOrigin();
-        int visibleBlockCount = 0;
-        int blockGap = 0; // TODO --
-        int top = visibleRect.y + visibleRect.height - 10;
-        do {
-            b = blocks.get(idx);
-
-            pStart = (int) ((b.getExomeStart() - exomeOrigin) / frame.getScale()) + visibleBlockCount * blockGap;
-            pEnd = (int) ((b.getExomeEnd() - exomeOrigin) / frame.getScale()) + visibleBlockCount * blockGap;
-
-            // Don't draw over previously drawn region -- can happen when zoomed out.
-            if (pEnd > lastPStart) {
-
-                lastPStart = pStart;
-                if (pEnd == pStart) pEnd++;
-
-
-                b.setScreenBounds(pStart, pEnd);
-
-                Rectangle rect = new Rectangle(pStart, top, pEnd - pStart, 10);
-
-
-                Graphics2D exomeGraphics = (Graphics2D) g.create();
-
-
-                Color c = idx % 2 == 0 ? grey1 : grey2;
-
-                exomeGraphics.setColor(c);
-                exomeGraphics.fill(rect);
-                //GraphicUtils.drawCenteredText(String.valueOf(idx), rect, exomeGraphics);
-
-
-                visibleBlockCount++;
-            }
-            idx++;
-
-
-        }
-        while ((pStart < visibleRect.x + visibleRect.width) && idx < blocks.size());
-
-
-    }
-
-    private void drawExomeGenes(Graphics g, ExomeReferenceFrame frame) {
-
-        mouseRects.clear();
-
-        String chr = frame.getChrName();
-        List<ExomeReferenceFrame.Gene> genes = frame.getGenes(chr);
-
-        int idx = FeatureUtils.getIndexBefore(frame.getOrigin(), genes);
-
-        if(idx < 0) idx = 0;
-
-        Rectangle visibleRect = this.getVisibleRect();
-        FontMetrics fm = g.getFontMetrics();
-
-        int lastPStart = -1;
-        int pStart;
-        int pEnd;
-        int exomeOrigin = frame.getExomeOrigin();
-        int visibleBlockCount = 0;
-        int blockGap = 0; // TODO --
-        int top = visibleRect.y + visibleRect.height - 30;
-        do {
-            ExomeReferenceFrame.Gene gene = genes.get(idx);
-
-            double exomeStart = frame.genomeToExomePosition(gene.getStart());
-            double exomeEnd = frame.genomeToExomePosition(gene.getEnd());
-
-            pStart = (int) ((exomeStart - exomeOrigin) / frame.getScale()) + visibleBlockCount * blockGap;
-            pEnd = (int) ((exomeEnd - exomeOrigin) / frame.getScale()) + visibleBlockCount * blockGap;
-
-            // Don't draw over previously drawn region -- can happen when zoomed out.
-            if (pEnd > lastPStart) {
-
-                lastPStart = pStart;
-                if (pEnd == pStart) pEnd++;
-
-                Rectangle rect = new Rectangle(pStart, top, pEnd - pStart, 20);
-
-
-                Graphics2D exomeGraphics = (Graphics2D) g.create();
-//Shape clip = exomeGraphics.getClip();
-
-                Color c = idx % 2 == 0 ? gene1 : gene2;
-
-                exomeGraphics.setColor(c);
-                exomeGraphics.fill(rect);
-
-                Rectangle2D sb = fm.getStringBounds(gene.getName(), g);
-                if (sb.getWidth() < rect.getWidth()) {
-                    exomeGraphics.setColor(Color.black);
-                    GraphicUtils.drawCenteredText(gene.getName(), rect, exomeGraphics);
-                }
-
-                mouseRects.add(new MouseRect(rect, gene.getName()));
-
-                visibleBlockCount++;
-            }
-            idx++;
-
-
-        }
-        while ((pStart < visibleRect.x + visibleRect.width) && idx < genes.size());
-
-        Collections.sort(mouseRects, new Comparator<MouseRect>() {
-            @Override
-            public int compare(MouseRect mr1, MouseRect mr2) {
-                return mr1.width() - mr2.width();
-            }
-        });
-
-
     }
 
     public static String formatNumber(double position) {
@@ -729,7 +580,6 @@ public class RulerPanel extends JPanel {
             this.tooltipText = tooltipText;
         }
     }
-
 
 
     static class MouseRect {

@@ -244,7 +244,7 @@ public abstract class XYPlotRenderer extends DataRenderer {
                         axisRect.x + AXIS_AREA_WIDTH - 15, midPY + 4, labelGraphics);
             }
 
-        } else if (!FrameManager.isExomeMode() && track.isShowDataRange() && arect.height > 20) {
+        } else if (track.isShowDataRange() && arect.height > 20) {
             drawScale(track.getDataRange(), context, arect);
         }
     }

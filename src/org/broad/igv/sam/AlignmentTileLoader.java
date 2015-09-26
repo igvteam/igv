@@ -394,6 +394,7 @@ public class AlignmentTileLoader {
         // * @param alignment
          */
         public void addRecord(Alignment alignment, boolean reducedMemory) {
+reducedMemory=true;
 
             if(reducedMemory) {
                 alignment = new ReducedMemoryAlignment(alignment, this.indelLimit);

@@ -1025,19 +1025,6 @@ public class IGVMenuBar extends JMenuBar {
 
         MenuAction menuAction = null;
 
-        final JCheckBoxMenuItem exomeModeItem = new JCheckBoxMenuItem("Exome mode");
-        exomeModeItem.setSelected(FrameManager.isExomeMode());
-        exomeModeItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                FrameManager.setExomeMode(exomeModeItem.isSelected(), true);
-                igv.resetFrames();
-            }
-        });
-        menuItems.add(exomeModeItem);
-        menuItems.add(new JSeparator());
-
-
         // Preferences reset
         menuAction = new ResetPreferencesAction("Reset Preferences", IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));

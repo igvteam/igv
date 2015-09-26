@@ -109,11 +109,6 @@ public abstract class DataTrack extends AbstractTrack {
             GraphicUtils.drawCenteredText("Data not available for whole genome view; zoom in to see data", rect, g);
         }else{
             getRenderer().render(inViewScores, context, rect, this);
-            if(FrameManager.isExomeMode()){
-                int x = context.getGraphics().getClipBounds().x;
-                Rectangle scaleRect = new Rectangle(x, rect.y, rect.width, rect.height);
-                DataRenderer.drawScale(getDataRange(), context, scaleRect);
-            }
         }
 
     }
@@ -208,7 +203,7 @@ public abstract class DataTrack extends AbstractTrack {
             }
 
             // Expand interval +/- 50%, unless in a multi-locus mode with "lots" of frames
-            boolean multiLocus = FrameManager.isExomeMode() || (FrameManager.getFrames().size() > 4);
+            boolean multiLocus = (FrameManager.getFrames().size() > 4);
             int delta = multiLocus ? 1 : (end - start) / 2;
             int expandedStart = Math.max(0, start - delta);
             int expandedEnd = Math.min(maxEnd, end + delta);

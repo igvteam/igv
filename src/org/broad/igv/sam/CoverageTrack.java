@@ -226,14 +226,7 @@ public class CoverageTrack extends AbstractTrack {
             if(dataSourceRenderer != null){
                 dataSourceRenderer.renderAxis(this, context, rect);
             }
-            if(FrameManager.isExomeMode()){
-                int x = context.getGraphics().getClipBounds().x;
-                Rectangle scaleRect = new Rectangle(x, rect.y, rect.width, rect.height);
-                drawScale(context, scaleRect);
-            }
-
         }
-
     }
 
     private List<LocusScore> getSummaryScores(RenderContext context){
@@ -286,10 +279,6 @@ public class CoverageTrack extends AbstractTrack {
         context.getGraphic2DForColor(Color.gray).drawLine(
                 rect.x, rect.y + rect.height,
                 rect.x + rect.width, rect.y + rect.height);
-
-        if(!FrameManager.isExomeMode()){
-            drawScale(context, rect);
-        }
     }
 
     public void drawScale(RenderContext context, Rectangle rect) {

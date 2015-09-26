@@ -746,10 +746,6 @@ public class ReferenceFrame {
         return minZoom;
     }
 
-    public boolean isExomeMode() {
-        return false;
-    }
-
     public void setName(String name) {
         this.name = name;
     }

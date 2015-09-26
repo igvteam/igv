@@ -50,7 +50,6 @@ public class FrameManager {
 
     private static List<ReferenceFrame> frames = new ArrayList();
     private static ReferenceFrame defaultFrame;
-    private static boolean exomeMode = false;
 
     public static final String DEFAULT_FRAME_NAME = "genome";
 
@@ -64,72 +63,6 @@ public class FrameManager {
         }
         return defaultFrame;
     }
-
-    /**
-     * Set exome mode.
-     *
-     * @param b
-     * @param showTrackMenu
-     * @return true if a change was made,
-     *         false if not.
-     */
-    public static boolean setExomeMode(boolean b, boolean showTrackMenu) {
-        if (b == exomeMode) return false;  // No change
-        if (b) {
-            return switchToExomeMode(showTrackMenu);
-        } else {
-            return switchToGenomeMode();
-        }
-    }
-
-
-    public static boolean isExomeMode() {
-        return exomeMode;
-    }
-
-
-    static FeatureTrack exomeTrack = null;
-
-    private static boolean switchToExomeMode(boolean showTrackMenu) {
-
-        Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
-        List<FeatureTrack> featureTracks = IGV.getInstance().getFeatureTracks();
-        if (featureTracks.size() == 1) {
-            exomeTrack = featureTracks.get(0);
-        } else {
-            if (exomeTrack == null || showTrackMenu) {
-                FeatureTrackSelectionDialog dlg = new FeatureTrackSelectionDialog(parent);
-                dlg.setVisible(true);
-                if (dlg.getIsCancelled()) return false;
-                exomeTrack = dlg.getSelectedTrack();
-            }
-        }
-
-        if (exomeTrack == null) return false;
-
-        ExomeReferenceFrame exomeFrame = new ExomeReferenceFrame(defaultFrame, exomeTrack);
-
-        Locus locus = new Locus(defaultFrame.getChrName(), (int) defaultFrame.getOrigin(), (int) defaultFrame.getEnd());
-        exomeFrame.jumpTo(locus);
-        defaultFrame = exomeFrame;
-        frames.clear();
-        frames.add(defaultFrame);
-        exomeMode = true;
-        return true;
-    }
-
-    private static boolean switchToGenomeMode() {
-        ReferenceFrame refFrame = new ReferenceFrame(defaultFrame);
-
-        Locus locus = new Locus(defaultFrame.getChrName(), (int) defaultFrame.getOrigin(), (int) defaultFrame.getEnd());
-        refFrame.jumpTo(locus);
-        defaultFrame = refFrame;
-        frames.clear();
-        frames.add(defaultFrame);
-        exomeMode = false;
-        return true;
-    }
-
 
     public static List<ReferenceFrame> getFrames() {
         return frames;

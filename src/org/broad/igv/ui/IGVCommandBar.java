@@ -817,31 +817,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
         });
         toolPanel.add(rulerLineButton, JideBoxLayout.FIX);
 
-
-        boolean showExomeButton = Globals.isDevelopment();
-        if (showExomeButton) {
-            exomeButton = new JideButton();
-            exomeButton.setButtonStyle(JideButton.TOOLBAR_STYLE);
-            exomeButton.setText(FrameManager.isExomeMode() ? "Genome" : "Exome");
-            exomeButton.setToolTipText("Click to toggle between 'exome' and 'genome' views");
-            exomeButton.addActionListener(new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-
-                    int modifiers = actionEvent.getModifiers();
-                    boolean showTrackMenu = (modifiers & ActionEvent.ALT_MASK) > 0;
-
-                    boolean newMode = !FrameManager.isExomeMode();
-                    if (!FrameManager.setExomeMode(newMode, showTrackMenu)) return;
-                    String label = newMode ? "Genome" : "Exome";
-                    exomeButton.setText(label);
-                    IGV.getInstance().resetFrames();
-                }
-            });
-            toolPanel.add(exomeButton, JideBoxLayout.FIX);
-        }
-
         this.add(toolPanel);
 
         this.add(Box.createHorizontalGlue(), JideBoxLayout.VARY);

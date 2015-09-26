@@ -654,12 +654,6 @@ public abstract class SAMAlignment implements Alignment {
 
     abstract public int getAlignmentEnd();
 
-
-    public boolean isSmallInsert() {
-        int absISize = Math.abs(getInferredInsertSize());
-        return absISize > 0 && absISize <= getReadLength();
-    }
-
     public float getScore() {
         return getMappingQuality();
     }
