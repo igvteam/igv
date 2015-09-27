@@ -52,8 +52,8 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
     private static Map<String, Set<Integer>> knownSnps;
     int start;
     int end;
+    private int bucketSize = 1;
     protected boolean countDeletedBasesCovered = false;
-
 
     private BisulfiteCounts bisulfiteCounts;
 
@@ -96,6 +96,16 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
 
     public BisulfiteCounts getBisulfiteCounts() {
         return bisulfiteCounts;
+    }
+
+    @Override
+    public int getBucketSize() {
+        return bucketSize;
+    }
+
+    @Override
+    public boolean hasBaseCounts() {
+        return true;
     }
 
     /**

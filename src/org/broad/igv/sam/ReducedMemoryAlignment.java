@@ -29,7 +29,7 @@
  */
 package org.broad.igv.sam;
 
-import org.broad.igv.PreferenceManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
@@ -37,12 +37,15 @@ import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * @author jrobinso
  */
 public class ReducedMemoryAlignment implements Alignment {
+
+    private static Logger log = Logger.getLogger(ReducedMemoryAlignment.class);
 
     //String readName;
     private String chromosome;
@@ -92,8 +95,8 @@ public class ReducedMemoryAlignment implements Alignment {
         if (insertions != null) {
 
             List<AlignmentBlock> rmInsertions = new ArrayList<AlignmentBlock>();
-            for(AlignmentBlock b : insertions) {
-                if(b.getLength() >= indelLimit) {
+            for (AlignmentBlock b : insertions) {
+                if (b.getLength() >= indelLimit) {
                     rmInsertions.add(b);
                 }
             }
@@ -392,5 +395,188 @@ public class ReducedMemoryAlignment implements Alignment {
         public boolean hasFlowSignals() {
             return false;
         }
+    }
+
+
+    // TODO -- why is this class a "Feature"?
+
+    public static class ReducedMemoryAlignmentCounts implements AlignmentCounts {
+
+        private int start;
+        private int end;
+        private int bucketSize;
+        private int nBuckets;
+        double[] total;
+        private int maxCount;
+
+
+        public ReducedMemoryAlignmentCounts(int start, int end, int bucketSize) {
+            this.start = start;
+            this.bucketSize = bucketSize;
+
+            this.nBuckets = (end - start) / bucketSize;
+            if (nBuckets == 0 || (end - start) % bucketSize != 0) nBuckets++;
+
+            total = new double[nBuckets];
+            Arrays.fill(total, 0);
+
+            // Adjust end to avoid fractional bucket
+            this.end = start + nBuckets * bucketSize;
+
+        }
+
+        @Override
+        public int getStart() {
+            return start;
+        }
+
+        @Override
+        public int getEnd() {
+            return end;
+        }
+
+        @Override
+        public int getBucketSize() {
+            return bucketSize;
+        }
+
+
+        @Override
+        public int getNumberOfPoints() {
+            return nBuckets;
+        }
+
+
+        @Override
+        public int getTotalCount(int pos) {
+            int offset = (pos - start) / bucketSize;
+            if (offset < 0 || offset >= total.length) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
+                }
+                return 0;
+            } else {
+                return (int) Math.round(total[offset]);
+
+            }
+        }
+
+        @Override
+        public void incCounts(Alignment alignment) {
+
+            AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
+            if (blocks != null) {
+                for (AlignmentBlock b : blocks) {
+                    if(!b.isSoftClipped()) {
+                        incrementBuckets(b.getStart(), b.getEnd());
+                    }
+                }
+
+            } else {
+                incrementBuckets(alignment.getAlignmentStart(), alignment.getAlignmentEnd());
+            }
+        }
+
+        private void incrementBuckets(int blockStart, int blockEnd) {
+
+            int startBucket = Math.max(0, (blockStart - this.start) / bucketSize);
+            int endBucket = Math.min(nBuckets-1, (blockEnd - this.start) / bucketSize);
+
+            for (int b = startBucket; b <= endBucket; b++) {
+                int bucketStart = this.start + b * bucketSize;
+                int bucketEnd = bucketStart + bucketSize;
+                if(blockEnd >= bucketStart && blockStart <= bucketEnd) {
+                    double s = Math.max(blockStart, bucketStart);
+                    double e = Math.min(blockEnd, bucketEnd);
+                    double f = (e - s) / bucketSize;
+                    total[b] += f;
+
+                    if(total[b] > maxCount) maxCount = (int) Math.round(total[b]);
+                }
+
+            }
+
+        }
+
+
+        @Override
+        public int getMaxCount(int origin, int end) {
+            return maxCount;
+        }
+
+        @Override
+        public String getValueStringAt(int pos) {
+            int idx = (pos - start) / bucketSize;
+            return idx > 0 && idx < total.length ? String.valueOf((int) Math.round(total[idx])) : "";
+        }
+
+        // Rest is needed for the interface, but NA for reduced memory alignments
+        @Override
+        public String getChr() {
+            return null;
+        }
+
+        @Override
+        public String getContig() {
+            return null;
+        }
+
+
+        @Override
+        public int getTotalQuality(int pos) {
+            return 0;
+        }
+
+        @Override
+        public int getCount(int pos, byte b) {
+            return 0;
+        }
+
+        @Override
+        public int getNegCount(int pos, byte b) {
+            return 0;
+        }
+
+        @Override
+        public int getPosCount(int pos, byte b) {
+            return 0;
+        }
+
+        @Override
+        public int getDelCount(int pos) {
+            return 0;
+        }
+
+        @Override
+        public int getInsCount(int pos) {
+            return 0;
+        }
+
+        @Override
+        public int getQuality(int pos, byte b) {
+            return 0;
+        }
+
+
+        @Override
+        public boolean isMismatch(int pos, byte ref, String chr, float snpThreshold) {
+            return false;
+        }
+
+        @Override
+        public BisulfiteCounts getBisulfiteCounts() {
+            return null;
+        }
+
+        @Override
+        public boolean hasBaseCounts() {
+            return false;
+        }
+
+        @Override
+        public void finish() {
+
+        }
+
     }
 }

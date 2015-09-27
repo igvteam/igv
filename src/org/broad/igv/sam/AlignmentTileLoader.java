@@ -108,14 +108,6 @@ public class AlignmentTileLoader {
                            AlignmentTrack.BisulfiteContext bisulfiteContext,
                            ProgressMonitor monitor) {
 
-        AlignmentTile t = new AlignmentTile(start, end, spliceJunctionHelper, downsampleOptions, bisulfiteContext);
-
-
-        //assert (tiles.size() > 0);
-        if (corruptIndex) {
-            return t;
-        }
-
         final PreferenceManager prefMgr = PreferenceManager.getInstance();
         boolean filterFailedReads = prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_FAILED_READS);
         boolean filterSecondaryAlignments = prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_SECONDARY_ALIGNMENTS);
@@ -125,6 +117,15 @@ public class AlignmentTileLoader {
         int qualityThreshold = prefMgr.getAsInt(PreferenceManager.SAM_QUALITY_THRESHOLD);
 
         boolean reducedMemory = prefMgr.getAsBoolean(PreferenceManager.SAM_REDUCED_MEMORY_MODE);
+
+        AlignmentTile t = new AlignmentTile(start, end, spliceJunctionHelper, downsampleOptions, bisulfiteContext, reducedMemory);
+
+
+        //assert (tiles.size() > 0);
+        if (corruptIndex) {
+            return t;
+        }
+
 
         CloseableIterator<Alignment> iter = null;
 
@@ -341,7 +342,8 @@ public class AlignmentTileLoader {
         AlignmentTile(int start, int end,
                       SpliceJunctionHelper spliceJunctionHelper,
                       AlignmentDataManager.DownsampleOptions downsampleOptions,
-                      AlignmentTrack.BisulfiteContext bisulfiteContext) {
+                      AlignmentTrack.BisulfiteContext bisulfiteContext,
+                      boolean reducedMemory) {
             this.start = start;
             this.end = end;
             this.downsampledIntervals = new ArrayList<DownsampledInterval>();
@@ -354,11 +356,14 @@ public class AlignmentTileLoader {
             RAND.setSeed(seed);
 
             // Use a sparse array for large regions  (> 10 mb)
-            if ((end - start) > 10000000) {
+            if (reducedMemory) {
+                this.counts = new ReducedMemoryAlignment.ReducedMemoryAlignmentCounts(start, end, 25);
+            } else if ((end - start) > 10000000) {
                 this.counts = new SparseAlignmentCounts(start, end, bisulfiteContext);
             } else {
                 this.counts = new DenseAlignmentCounts(start, end, bisulfiteContext);
             }
+
 
             // Set the max depth, and the max depth of the sampling bucket.
             if (downsampleOptions == null) {
@@ -390,13 +395,12 @@ public class AlignmentTileLoader {
 
         /**
          * Add an alignment record to this tile.  This record is not necessarily retained after down-sampling.
-         *
-        // * @param alignment
+         * <p/>
+         * // * @param alignment
          */
         public void addRecord(Alignment alignment, boolean reducedMemory) {
-reducedMemory=true;
 
-            if(reducedMemory) {
+            if (reducedMemory) {
                 alignment = new ReducedMemoryAlignment(alignment, this.indelLimit);
             }
 
@@ -552,7 +556,7 @@ reducedMemory=true;
 
         public List<Alignment> getAlignments() {
 
-            if(alignments == null) {
+            if (alignments == null) {
                 finish();   // TODO -- I'm not sure this should ever happen
             }
             return alignments;
@@ -578,7 +582,7 @@ reducedMemory=true;
 
         private void finalizeSpliceJunctions() {
             if (spliceJunctionHelper != null) {
-           //     spliceJunctionHelper.finish();
+                //     spliceJunctionHelper.finish();
             }
         }
 
