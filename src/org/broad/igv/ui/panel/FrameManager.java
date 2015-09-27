@@ -27,16 +27,13 @@ package org.broad.igv.ui.panel;
 
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Locus;
-import org.broad.igv.feature.exome.ExomeReferenceFrame;
 import org.broad.igv.lists.GeneList;
-import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.util.MessageUtils;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
