@@ -2592,6 +2592,9 @@ public class IGV {
                         if(PreferenceManager.getInstance().getAsBoolean("showLOS")) {
                             (new LOSDialog(mainFrame)).setVisible(true);
                         }
+                        else {
+                            log.info("showLOS=false");
+                        }
                     }
 
                 }
