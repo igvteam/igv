@@ -326,14 +326,17 @@ public class PreferenceManager implements PropertyManager {
 
 
     public String get(String key, String defaultString) {
+        key = key.trim();
         return preferences.get(key, defaultString);
     }
 
     public String get(String key) {
+        key = key.trim();
         return get(key, defaultValues.get(key));
     }
 
     public boolean hasExplicitValue(String key) {
+        key = key.trim();
         return preferences.userPreferences.containsKey(key);
     }
 
@@ -345,6 +348,7 @@ public class PreferenceManager implements PropertyManager {
      * @return
      */
     public String getDefaultValue(String key) {
+        key = key.trim();
         return defaultValues.get(key);
     }
 
@@ -356,6 +360,7 @@ public class PreferenceManager implements PropertyManager {
      * @return
      */
     public boolean getAsBoolean(String key) {
+        key = key.trim();
         Boolean boolValue = booleanCache.get(key);
         if (boolValue == null) {
             String value = get(key);
@@ -376,6 +381,7 @@ public class PreferenceManager implements PropertyManager {
      * @return
      */
     public int getAsInt(String key) {
+        key = key.trim();
         Number value = (Number) objectCache.get(key);
         if (value == null) {
             String defValue = get(key);
@@ -396,6 +402,7 @@ public class PreferenceManager implements PropertyManager {
      * @return
      */
     public Color getAsColor(String key) {
+        key = key.trim();
         Color value = (Color) objectCache.get(key);
         if (value == null) {
             String defValue = get(key);
@@ -416,6 +423,7 @@ public class PreferenceManager implements PropertyManager {
      * @return
      */
     public float getAsFloat(String key) {
+        key = key.trim();
         Number value = (Number) objectCache.get(key);
         if (value == null) {
             String defValue = get(key);
@@ -447,6 +455,7 @@ public class PreferenceManager implements PropertyManager {
      * @param value
      */
     private void updateCaches(String key, String value) {
+        key = key.trim();
         if (booleanCache.containsKey(key)) {
             booleanCache.put(key, new Boolean(value));
         }
@@ -461,11 +470,13 @@ public class PreferenceManager implements PropertyManager {
     }
 
     public void put(String key, String value) {
+        key = key.trim();
         preferences.put(key, value);
         updateCaches(key, value);
     }
 
     public void put(String key, boolean b) {
+        key = key.trim();
         String value = String.valueOf(b);
         preferences.put(key, value);
         updateCaches(key, value);
