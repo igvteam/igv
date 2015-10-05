@@ -589,12 +589,12 @@ public class IGV {
                         GenomeListItem newItem = new GenomeListItem(oldItem.getDisplayableName(), newLocation.getAbsolutePath(), oldItem.getId());
                         //Checking to see if it has a downloaded sequence might seem redundant,
                         //but if the user cancels a download we want to use the oldItem
-                        if(newItem.hasDownloadedSequence()){
+                        if (newItem.hasDownloadedSequence()) {
                             selectedValues = Arrays.asList(newItem);
                         }
                     }
 
-                    if(selectedValues.size() > 0){
+                    if (selectedValues.size() > 0) {
                         GenomeManager.getInstance().addGenomeItems(selectedValues, false);
                         getContentPane().getCommandBar().refreshGenomeListComboBox();
                         selectGenomeFromList(selectedValues.get(0).getId());
@@ -1033,7 +1033,7 @@ public class IGV {
             token = WaitCursorManager.showWaitCursor();
             contentPane.getStatusBar().setMessage("Exporting image: " + defaultFile.getAbsolutePath());
             String msg = createSnapshotNonInteractive(target, file, false);
-            if(msg != null && msg.toLowerCase().startsWith("error")){
+            if (msg != null && msg.toLowerCase().startsWith("error")) {
                 MessageUtils.showMessage(msg);
             }
         } catch (IOException e) {
@@ -2533,7 +2533,7 @@ public class IGV {
                         }
 
                         //Set index file, iff one was passed
-                        if(indexFiles != null && i < indexFiles.length) {
+                        if (indexFiles != null && i < indexFiles.length) {
                             String idxP = indexFiles[i];
                             if (HttpUtils.isURL(idxP) && !FileUtils.isRemote(idxP)) {
                                 idxP = StringUtils.decodeURL(idxP);
@@ -2544,7 +2544,7 @@ public class IGV {
                         }
 
                         //Set coverage file, iff one was passed
-                        if(coverageFiles != null && i < coverageFiles.length) {
+                        if (coverageFiles != null && i < coverageFiles.length) {
                             String covP = coverageFiles[i];
                             if (HttpUtils.isURL(covP) && !FileUtils.isRemote(covP)) {
                                 covP = StringUtils.decodeURL(covP);
@@ -2587,13 +2587,9 @@ public class IGV {
                     }
                     if (runningBatch) {
                         LongRunningTask.submit(new BatchRunner(igvArgs.getBatchFile()));
-                    }
-                    else {
-                        if(PreferenceManager.getInstance().getAsBoolean("showLOS")) {
+                    } else {
+                        if (PreferenceManager.getInstance().getAsBoolean("showLOS")) {
                             (new LOSDialog(mainFrame)).setVisible(true);
-                        }
-                        else {
-                            log.info("showLOS=false");
                         }
                     }
 
@@ -2639,7 +2635,7 @@ public class IGV {
             }
             pluginClassNames.addAll(Arrays.asList(PreferenceManager.getInstance().getIGVPluginList()));
             for (String classname : pluginClassNames) {
-                if(classname.startsWith("#")) continue;
+                if (classname.startsWith("#")) continue;
                 try {
                     Class clazz = Class.forName(classname);
                     IGVPlugin plugin = (IGVPlugin) clazz.newInstance();
