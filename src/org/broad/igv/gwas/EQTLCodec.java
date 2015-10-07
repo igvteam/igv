@@ -103,7 +103,7 @@ public class EQTLCodec extends AsciiFeatureCodec<EQTLFeature> {
         //float tStat = Float.parseFloat(tokens[6]);
         //float beta = Float.parseFloat(tokens[6]);
 
-        double tmp = Double.parseDouble(tokens[5]);
+        double tmp = Double.parseDouble(tokens[8]);
         float pValue = tmp < Float.MIN_VALUE ? Float.MIN_VALUE : (float) tmp;
 
 
