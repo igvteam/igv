@@ -44,7 +44,8 @@ import java.util.*;
 public class PairedUtils {
 
     public static void main(String [] args) {
-        extractInteractions("/Users/jrobinso/Downloads/wgEncodeGisDnaPetK562F10kAln.bam", "test.interactions", 1000);
+
+        extractInteractions(args[0], args[1], Integer.parseInt(args[2]));
     }
 
     public static void extractInteractions(String alignmentFile, String outputFile, int binSize) {
@@ -65,7 +66,9 @@ public class PairedUtils {
 
                 Alignment alignment = iter.next();
 
-                if (passFilter(alignment)) {
+                if (alignment.isPaired() && alignment.getMate().isMapped() &&
+                        alignment.getMappingQuality() > 0 && 
+                        (Math.abs(alignment.getInferredInsertSize()) > 100000 || !alignment.getChr().equals(alignment.getMate().getChr()))) {
 
                     String chr1 = alignment.getChr();
                     int bin1 = alignment.getAlignmentStart() / binSize;

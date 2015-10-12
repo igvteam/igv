@@ -76,6 +76,10 @@ import java.util.*;
  */
 public class IgvTools {
 
+    public static final String CMD_WIGTOBED = "wigtobed";
+    public static final String CMD_VCFTOBED = "vcftobed";
+    public static final String CMD_DENSITIESTOBEDGRAPH = "densitiestobedgraph";
+    public static final String CMD_GEN_GENOME_LIST = "genGenomeList";
     static private Logger log = Logger.getLogger(IgvTools.class);
 
     static final String CMD_TILE = "tile";
@@ -89,6 +93,7 @@ public class IgvTools {
     static final String CMD_HELP = "help";
     static final String CMD_BAMTOBED = "bamtobed";
     static final String CMD_TDFTOBEDGRAPH = "tdftobedgraph";
+    static final String CMD_CONTACTS = "contacts";
 
     /**
      * Stream for writing messages to the user, which we
@@ -411,7 +416,7 @@ public class IgvTools {
                 validateArgsLength(nonOptionArgs, 3, basic_syntax);
                 String ofile = nonOptionArgs[2];
                 TDFUtils.tdfToBedgraph(ifile, ofile);
-            } else if (command.equals("wigtobed")) {
+            } else if (command.equals(CMD_WIGTOBED)) {
                 validateArgsLength(nonOptionArgs, 2, "Error in syntax. Expected: " + command + " [options] inputfile");
                 String inputFile = nonOptionArgs[1];
                 float hetThreshold = 0.17f;
@@ -423,14 +428,14 @@ public class IgvTools {
                     homThreshold = Float.parseFloat(nonOptionArgs[3]);
                 }
                 WigToBed.run(inputFile, hetThreshold, homThreshold);
-            } else if (command.equals("vcftobed")) {
+            } else if (command.equals(CMD_VCFTOBED)) {
                 validateArgsLength(nonOptionArgs, 3, basic_syntax);
                 String inputFile = nonOptionArgs[1];
                 String outputFile = nonOptionArgs[2];
                 VCFtoBed.convert(inputFile, outputFile);
-            } else if (command.equals("sumwigs")) {
+            } else if (command.equals(CMD_SUMWIGS())) {
                 sumWigs(nonOptionArgs[1], nonOptionArgs[2]);
-            } else if (command.equals("densitiestobedgraph")) {
+            } else if (command.equals(CMD_DENSITIESTOBEDGRAPH)) {
                 validateArgsLength(nonOptionArgs, 3, "Error in syntax. Expected: " + command + " [options] inputdir outputdir");
                 File inputDir = new File(nonOptionArgs[1]);
                 File outputDir = new File(nonOptionArgs[2]);
@@ -445,18 +450,26 @@ public class IgvTools {
                 String ofile = nonOptionArgs[2];
                 Boolean pairOption = (Boolean) parser.getOptionValue(pairedCoverageOpt, false);
                 BamToBed.convert(new File(ifile), new File(ofile), pairOption);
-            } else if (command.equalsIgnoreCase("genGenomeList")) {
+            } else if (command.equalsIgnoreCase(CMD_GEN_GENOME_LIST)) {
                 //Generate a genomes.txt list file based on a directory
                 //TODO Probably a better place for this. Users won't generally use it
                 File inDir = new File(ifile);
                 GenomeManager manager = GenomeManager.getInstance();
                 manager.generateGenomeList(inDir, nonOptionArgs[2], nonOptionArgs[3]);
-            } else {
+            } else if(command.equalsIgnoreCase(CMD_CONTACTS)) {
+                PairedUtils.extractInteractions(ifile, nonOptionArgs[2], Integer.parseInt(nonOptionArgs[3]));
+            }
+
+            else {
                 throw new PreprocessingException("Unknown command: " + argv[EXT_FACTOR]);
             }
         } catch (IOException e) {
             throw new PreprocessingException("Unexpected IO error: ", e);
         }
+    }
+
+    private String CMD_SUMWIGS() {
+        return "sumwigs";
     }
 
     private void GFFToBed(String ifile, String ofile) throws FileNotFoundException{

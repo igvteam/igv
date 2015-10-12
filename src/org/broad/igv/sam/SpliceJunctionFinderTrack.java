@@ -26,6 +26,7 @@
 
 package org.broad.igv.sam;
 
+import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.SpliceJunctionFeature;
@@ -43,8 +44,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -174,6 +177,25 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
         if (parent != null) parent.repaint();
 
         return result;
+    }
+
+    /**
+     * Get all features which overlap the specified locus
+     *
+     * @return
+     */
+    @Override
+    public List<Feature> getFeatures(String chr, int start, int end) {
+        List<Feature> features = new ArrayList<Feature>();
+        try {
+            Iterator<Feature> iter = source.getFeatures(chr, start, end);
+            while (iter.hasNext()) {
+                features.add(iter.next());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return features;
     }
 
     // Start of Roche-Tessella modification
