@@ -56,7 +56,7 @@ public class PreferenceManager implements PropertyManager {
 
     private static Logger log = Logger.getLogger(PreferenceManager.class);
 
-    public static final String DEFAULT_GENOME = "hg18";
+    public static final String DEFAULT_GENOME = "hg19";
 
     public static final String SKIP_VERSION = "SKIP_VERSION";
 

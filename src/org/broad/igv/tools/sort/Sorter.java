@@ -144,6 +144,8 @@ public abstract class Sorter {
             return new GWASSorter(inputFile, outputFile);
         } else if (MUTCodec.isMutationAnnotationFile(new ResourceLocator(inputFile.getAbsolutePath()))) {
             return new MUTSorter(inputFile, outputFile);
+        } else if (shortFN.endsWith(".interaction")) {
+            return new InteractionSorter(inputFile, outputFile);
         } else {
             log.error("Unknown file type or sorting not supported for: " + inputFile.getName());
             return null;
