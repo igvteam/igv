@@ -43,7 +43,7 @@ public class EQTLCodecTest {
 
         EQTLCodec codec = new EQTLCodec(genome);
 
-        String line = "rs4700772\t5\t180341845\tENSG00000168903.7\tBTNL3\t180415845\t129.858921455635\t1.61918925670937e-27";
+        String line = "rs4700772\t5\t180341845\tENSG00000168903.7\tBTNL3\t180415845\t129.858921455635\t0\t1.61918925670937e-27";
 
         EQTLFeature f = codec.decode(line);
 
