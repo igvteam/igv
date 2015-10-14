@@ -75,6 +75,10 @@ public class PairedUtils {
                     String chr2 = alignment.getMate().getChr();
                     int bin2 = alignment.getMate().getStart() / binSize;
 
+                    int o1 = getOrder(chr1);
+                    int o2 = getOrder(chr2);
+                    if(o1 > o2 || (o1 < 0 || o2 < 0)) continue;  // Only need to record one diagonal, they are symmetrical
+
                     String cell =chr1 + "_" +  bin1 + ":" + chr2 + "_" + bin2;
 
                     Integer count = counts.get(cell);
@@ -93,7 +97,7 @@ public class PairedUtils {
             Set<Map.Entry<String, Integer>> entrySet = counts.entrySet();
             Iterator<Map.Entry<String, Integer>> iter2 = entrySet.iterator();
             while(iter2.hasNext()) {
-                if(iter2.next().getValue() < 10) iter2.remove();
+                if(iter2.next().getValue() < 5) iter2.remove();
             }
 
             // Output counts
@@ -133,6 +137,25 @@ public class PairedUtils {
         }
 
 
+    }
+
+    private static int getOrder(String chr) {
+        int order;
+        try {
+            order = Integer.parseInt(chr);
+        } catch (NumberFormatException e) {
+            if(chr.contains("X")) {
+                order = 23;
+            }
+            else if(chr.contains("Y")) {
+                order = 24;
+            }
+            else {
+                order = -1;
+            }
+        }
+
+        return order;
     }
 
     private static boolean passFilter(Alignment alignment) {
