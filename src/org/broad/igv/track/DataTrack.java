@@ -82,41 +82,27 @@ public abstract class DataTrack extends AbstractTrack {
     }
 
 
-    public void render(RenderContext context, Rectangle rect){
+    public void render(RenderContext context, Rectangle rect) {
         if (featuresLoading) {
             return;
         }
 
-        if(isRepeatY(rect)){
-            overlay(context, rect);
-        }else{
-            renderFirstTimeY(context, rect);
-            this.lastRenderY = rect.y;
-        }
-    }
-
-
-    /**
-     * Called the first time we render for a given Y-coordinate
-     * @param context
-     * @param rect
-     */
-    private void renderFirstTimeY(RenderContext context, Rectangle rect) {
         List<LocusScore> inViewScores = getInViewScores(context, rect);
 
         if ((inViewScores == null || inViewScores.size() == 0) && Globals.CHR_ALL.equals(context.getChr())) {
             Graphics2D g = context.getGraphic2DForColor(Color.gray);
             GraphicUtils.drawCenteredText("Data not available for whole genome view; zoom in to see data", rect, g);
-        }else{
+        } else {
             getRenderer().render(inViewScores, context, rect, this);
         }
 
     }
 
-    public void overlay(RenderContext context, Rectangle rect){
+
+    public void overlay(RenderContext context, Rectangle rect) {
         List<LocusScore> inViewScores = getInViewScores(context, rect);
-        if(inViewScores != null){
-            synchronized (inViewScores){
+        if (inViewScores != null) {
+            synchronized (inViewScores) {
                 getRenderer().renderScores(this, inViewScores, context, rect);
             }
         }
@@ -124,7 +110,7 @@ public abstract class DataTrack extends AbstractTrack {
     }
 
 
-    private List<LocusScore> getInViewScores(RenderContext context, Rectangle rect){
+    public List<LocusScore> getInViewScores(RenderContext context, Rectangle rect) {
         String chr = context.getChr();
         int start = (int) context.getOrigin();
         int end = (int) context.getEndLocation() + 1;
@@ -143,7 +129,7 @@ public abstract class DataTrack extends AbstractTrack {
         //Not all data sources support whole genome views, tell user if CHR_ALL not available
         if ((inViewScores == null || inViewScores.size() == 0) && Globals.CHR_ALL.equals(chr)) {
             Graphics2D g = context.getGraphic2DForColor(Color.gray);
-            GraphicUtils.drawCenteredText("Data not available for whole genome view; zoom in to see data", rect, g);
+            GraphicUtils.drawCenteredText("Data not available for whole genome view; select chromosome to see data", rect, g);
         } else {
             if (autoScale && !FrameManager.isGeneListMode()) {
 
@@ -293,7 +279,7 @@ public abstract class DataTrack extends AbstractTrack {
 
     abstract public List<LocusScore> getSummaryScores(String chr, int startLocation, int endLocation, int zoom);
 
-    private InViewInterval computeScale(double origin, double end, List<LocusScore> scores) {
+    public static InViewInterval computeScale(double origin, double end, List<LocusScore> scores) {
 
         InViewInterval interval = new InViewInterval();
 
@@ -406,7 +392,7 @@ public abstract class DataTrack extends AbstractTrack {
                         int interval = Math.min(end, score.getEnd()) - Math.max(start, score.getStart());
                         float value = score.getScore();
                         //For sorting it makes sense to skip NaNs. Not sure about other contexts
-                        if(Float.isNaN(value)){
+                        if (Float.isNaN(value)) {
                             hasNan = true;
                             continue;
                         }
@@ -415,10 +401,10 @@ public abstract class DataTrack extends AbstractTrack {
                     }
                 }
                 if (intervalSum <= 0) {
-                    if(hasNan){
+                    if (hasNan) {
                         //If the only existing scores are NaN, the overall score should be NaN
                         return Float.NaN;
-                    }else{
+                    } else {
                         // No scores in interval
                         return -Float.MAX_VALUE;
                     }
@@ -461,11 +447,11 @@ public abstract class DataTrack extends AbstractTrack {
         return regionScore;
     }
 
-    class InViewInterval {
-        int startIdx;
-        int endIdx;
-        float dataMax = 0;
-        float dataMin = 0;
+    public static class InViewInterval {
+        public int startIdx;
+        public int endIdx;
+        public float dataMax = 0;
+        public float dataMin = 0;
     }
 
     @SubtlyImportant

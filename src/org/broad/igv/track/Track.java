@@ -92,12 +92,6 @@ public interface Track extends Persistable{
     void overlay(RenderContext context, Rectangle rect);
 
     /**
-     * We store the y-coordinate at which this track was last rendered,
-     * to avoid repeating borders/scales/etc. This resets that value
-     */
-    void resetLastY();
-
-    /**
      * Render the name of the track. Both the track and visible rectangles are supplied so the implementor
      * can adjust the placing of the name based on the current viewport.  This is used to center track names
      * on the viewport for large tracks that extend outside the viewport.

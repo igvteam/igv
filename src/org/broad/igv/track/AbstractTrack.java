@@ -284,28 +284,6 @@ public abstract class AbstractTrack implements Track {
     }
 
 
-    protected int lastRenderY = -1;
-    /**
-     * Render the components which should only be rendered once
-     * for a give y-value. We sometimes render tracks piecewise, but may
-     * only want to show the scale once at the left, for instance
-     * @param context
-     * @param rect
-     */
-
-    /**
-     * Return whether we have rendered anything at this Y-coordinate already
-     * @param rect
-     * @return
-     */
-    protected boolean isRepeatY(Rectangle rect){
-        return rect.y == lastRenderY;
-    }
-
-    public void resetLastY(){
-        this.lastRenderY = -1;
-    }
-
     public void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect,
                                  List<String> names, List<MouseableRegion> mouseRegions) {
 

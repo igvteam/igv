@@ -33,6 +33,9 @@ package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.FeatureUtils;
+import org.broad.igv.feature.LocusScore;
+import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -62,6 +65,8 @@ public class TrackGroup {
 
     private boolean selected;
 
+    private boolean autoScale = true;
+
 
     public TrackGroup() {
         this("");
@@ -82,6 +87,13 @@ public class TrackGroup {
         return tracks;
     }
 
+    public boolean isAutoScale() {
+        return autoScale;
+    }
+
+    public void setAutoScale(boolean autoScale) {
+        this.autoScale = autoScale;
+    }
 
     public int indexOf(Track track) {
         return tracks.indexOf(track);
@@ -507,4 +519,42 @@ public class TrackGroup {
         }
 
     }
+
+    public void autoScale(RenderContext context, Rectangle visibleRect) {
+        int start = (int) context.getOrigin();
+        int end = (int) context.getEndLocation() + 1;
+        List<Track> trackList = getTracks();
+        List<LocusScore> inViewScores = new ArrayList<LocusScore>();
+        synchronized (trackList) {
+            for (Track track : trackList) {
+                if (track instanceof DataTrack) {
+                    inViewScores.addAll(((DataTrack) track).getInViewScores(context, visibleRect));
+                }
+            }
+
+            if (inViewScores.size() > 0) {
+
+                FeatureUtils.sortFeatureList(inViewScores);
+                DataTrack.InViewInterval inter = DataTrack.computeScale(start, end, inViewScores);
+                for (Track track : trackList) {
+                    if (track instanceof DataTrack) {
+                        DataRange dr = track.getDataRange();
+                        float min = Math.min(0, inter.dataMin);
+                        float base = Math.max(min, dr.getBaseline());
+                        float max = inter.dataMax;
+                        // Pathological case where min ~= max  (no data in view)
+                        if (max - min <= (2 * Float.MIN_VALUE)) {
+                            max = min + 1;
+                        }
+
+                        DataRange newDR = new DataRange(min, base, max, dr.isDrawBaseline());
+                        newDR.setType(dr.getType());
+                        track.setAutoScale(false);
+                        track.setDataRange(newDR);
+                    }
+                }
+            }
+        }
+    }
+
 }

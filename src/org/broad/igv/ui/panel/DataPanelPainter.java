@@ -34,10 +34,10 @@ package org.broad.igv.ui.panel;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.track.RenderContext;
-import org.broad.igv.track.RenderContextImpl;
-import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackGroup;
+import org.broad.igv.feature.FeatureUtils;
+import org.broad.igv.feature.LocusScore;
+import org.broad.igv.renderer.DataRange;
+import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 
@@ -66,7 +66,6 @@ public class DataPanelPainter {
             graphics2D.clearRect(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height);
             graphics2D.setColor(Color.BLACK);
 
-            resetLastY(groups);
             paintFrame(groups, context, width, visibleRect);
 
 
@@ -83,6 +82,21 @@ public class DataPanelPainter {
 
         int trackX = 0;
         int trackY = 0;
+
+
+        // TODO -- gene list mode!!!
+        // Loop through all tracks extracting autoscale groups.
+        // Get "in view scores" for each track in the group
+        // Set data range for each track in the group and set  "autoScale" off (if its on).
+        // Use  "groupAutoscale" tag?
+
+        for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
+            TrackGroup group = groupIter.next();
+
+            if (group.getName() != null && group.isAutoScale() && group.isVisible()) {
+                group.autoScale(context, visibleRect);
+            }
+        }
 
         for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
             TrackGroup group = groupIter.next();
@@ -138,14 +152,6 @@ public class DataPanelPainter {
         }
     }
 
-    private void resetLastY(Collection<TrackGroup> groups) {
-        for (TrackGroup group : groups) {
-            for (Track track : group.getTracks()) {
-                track.resetLastY();
-            }
-        }
-    }
-
     final private void draw(Track track, Rectangle rect, RenderContext context) {
 
         track.render(context, rect);
@@ -180,19 +186,7 @@ public class DataPanelPainter {
         return visibleTracks;
     }
 
-    private void preloadTracks(final Collection<TrackGroup> groups,
-                               final RenderContext context,
-                               final Rectangle visibleRect) {
 
-
-        final List<Track> visibleTracks = getVisibleTracks(groups);
-
-        for (Track track : visibleTracks) {
-            RenderContextImpl newContext = new RenderContextImpl(null, null, context.getReferenceFrame(), visibleRect);
-            track.load(newContext);
-        }
-
-    }
 }
 
 

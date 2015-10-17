@@ -226,13 +226,11 @@ public class CoverageTrack extends AbstractTrack {
             dataSourceRenderer.renderBorder(this, context, rect);
         }
 
-        if (!isRepeatY(rect)) {
-            lastRenderY = rect.y;
-            if (dataSourceRenderer != null) {
-                dataSourceRenderer.renderAxis(this, context, rect);
-            }
+        if (dataSourceRenderer != null) {
+            dataSourceRenderer.renderAxis(this, context, rect);
         }
     }
+
 
     private List<LocusScore> getSummaryScores(RenderContext context) {
         List<LocusScore> scores = null;
