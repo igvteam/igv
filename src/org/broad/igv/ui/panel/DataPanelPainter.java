@@ -94,7 +94,7 @@ public class DataPanelPainter {
             TrackGroup group = groupIter.next();
 
             if (group.getName() != null && group.isAutoScale() && group.isVisible()) {
-                group.autoScale(context, visibleRect);
+                group.autoScale(context);
             }
         }
 

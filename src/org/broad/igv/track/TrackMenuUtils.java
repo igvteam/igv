@@ -332,7 +332,7 @@ public class TrackMenuUtils {
         //Add overlay track option
         menu.addSeparator();
         final List<DataTrack> dataTrackList = Lists.newArrayList(Iterables.filter(tracks, DataTrack.class));
-        final JMenuItem overlayGroups = new JMenuItem("Create Overlay Track");
+        final JMenuItem overlayGroups = new JMenuItem("Overlay Tracks");
         overlayGroups.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

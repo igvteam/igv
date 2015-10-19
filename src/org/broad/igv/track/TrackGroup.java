@@ -65,7 +65,7 @@ public class TrackGroup {
 
     private boolean selected;
 
-    private boolean autoScale = true;
+    private boolean autoScale = false;
 
 
     public TrackGroup() {
@@ -520,9 +520,10 @@ public class TrackGroup {
 
     }
 
-    public void autoScale(RenderContext context, Rectangle visibleRect) {
+    public void autoScale(RenderContext context) {
         int start = (int) context.getOrigin();
         int end = (int) context.getEndLocation() + 1;
+        Rectangle visibleRect = context.getVisibleRect();
         List<Track> trackList = getTracks();
         List<LocusScore> inViewScores = new ArrayList<LocusScore>();
         synchronized (trackList) {
