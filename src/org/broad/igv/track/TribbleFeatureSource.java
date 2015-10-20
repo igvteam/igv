@@ -296,21 +296,29 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
             super(locator, basicReader, codec, genome, false);
 
             featureMap = new HashMap<String, List<Feature>>(25);
-            Iterator<Feature> iter = reader.iterator();
-            while (iter.hasNext()) {
-                Feature f = iter.next();
-                if (f == null) continue;
+            Iterator<Feature> iter = null;
 
-                String seqName = f.getChr();
-                String igvChr = genome == null ? seqName : genome.getChromosomeAlias(seqName);
+            try {
+                iter = reader.iterator();
+                while (iter.hasNext()) {
+                    Feature f = iter.next();
+                    if (f == null) continue;
 
-                List<Feature> featureList = featureMap.get(igvChr);
-                if (featureList == null) {
-                    featureList = new ArrayList();
-                    featureMap.put(igvChr, featureList);
+                    String seqName = f.getChr();
+                    String igvChr = genome == null ? seqName : genome.getChromosomeAlias(seqName);
+
+                    List<Feature> featureList = featureMap.get(igvChr);
+                    if (featureList == null) {
+                        featureList = new ArrayList();
+                        featureMap.put(igvChr, featureList);
+                    }
+                    featureList.add(f);
+                    if (f instanceof NamedFeature) FeatureDB.addFeature((NamedFeature) f, genome);
                 }
-                featureList.add(f);
-                if (f instanceof NamedFeature) FeatureDB.addFeature((NamedFeature) f, genome);
+            } finally {
+                if(iter instanceof CloseableTribbleIterator) {
+                    ((CloseableTribbleIterator) iter).close();
+                }
             }
 
             for (List<Feature> featureList : featureMap.values()) {
