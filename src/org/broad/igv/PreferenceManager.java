@@ -36,11 +36,10 @@ import org.broad.igv.renderer.ColorScaleFactory;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
 import org.broad.igv.track.TrackType;
-import org.broad.igv.ui.AboutDialog;
-import org.broad.igv.ui.IGVCommandBar;
-import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.*;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
+import org.broad.igv.ui.event.AlignmentTrackEvent;
 import org.broad.igv.ui.util.PropertyManager;
 import org.broad.igv.util.HttpUtils;
 
@@ -486,6 +485,8 @@ public class PreferenceManager implements PropertyManager {
 
 
     public void putAll(Map<String, String> updatedPrefs) {
+
+
         for (Map.Entry<String, String> entry : updatedPrefs.entrySet()) {
             if (entry.getValue() == null || entry.getValue().trim().length() == 0) {
                 remove(entry.getKey());
@@ -494,7 +495,57 @@ public class PreferenceManager implements PropertyManager {
                 put(entry.getKey(), entry.getValue());
             }
         }
+
+        checkForAlignmentChanges(updatedPrefs);
+
+
         clearCaches();
+
+    }
+
+    private void checkForAlignmentChanges(Map<String, String> updatedPreferenceMap) {
+
+            WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
+            try {
+                boolean reloadSAM = false;
+                boolean updateCoverageTrack = false;
+                for (String key : SAM_PREFERENCE_KEYS) {
+                    if (updatedPreferenceMap.containsKey(key)) {
+                        reloadSAM = true;
+                        break;
+                    }
+
+                }
+                if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_ALLELE_THRESHOLD)) {
+                    updateCoverageTrack = true;
+                }
+
+                boolean updateSpliceJunctions = false;
+                for (String key : SPLICE_JUNCTION_KEYS) {
+                    if (updatedPreferenceMap.containsKey(key)) {
+                        updateSpliceJunctions = true;
+                        break;
+                    }
+                }
+
+
+                final IGV igv = IGV.getInstance();
+                if (updateSpliceJunctions) {
+                    igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.SPLICE_JUNCTION);
+                }
+                if (reloadSAM) {
+                    if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_MAX_VISIBLE_RANGE)) {
+                        igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.VISIBILITY_WINDOW);
+                    }
+                    igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.RELOAD);
+                }
+                if (updateCoverageTrack) {
+                    igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.ALLELE_THRESHOLD);
+                }
+            } finally {
+                WaitCursorManager.removeWaitCursor(token);
+            }
+
 
     }
 
@@ -1339,5 +1390,33 @@ public class PreferenceManager implements PropertyManager {
             return get(key, def);
         }
     }
+
+
+    /**
+     * List of keys that affect the alignments loaded.  This list is used to trigger a reload, if required.
+     * Not all alignment preferences need trigger a reload, this is a subset.
+     */
+    static java.util.List<String> SAM_PREFERENCE_KEYS = Arrays.asList(
+            PreferenceManager.SAM_QUALITY_THRESHOLD,
+            PreferenceManager.SAM_FILTER_ALIGNMENTS,
+            PreferenceManager.SAM_FILTER_URL,
+            PreferenceManager.SAM_MAX_VISIBLE_RANGE,
+            PreferenceManager.SAM_SHOW_DUPLICATES,
+            PreferenceManager.SAM_SHOW_SOFT_CLIPPED,
+            PreferenceManager.SAM_SAMPLING_COUNT,
+            PreferenceManager.SAM_SAMPLING_WINDOW,
+            PreferenceManager.SAM_FILTER_FAILED_READS,
+            PreferenceManager.SAM_DOWNSAMPLE_READS,
+            PreferenceManager.SAM_FILTER_SECONDARY_ALIGNMENTS,
+            PreferenceManager.SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS
+    );
+
+    static java.util.List<String> SPLICE_JUNCTION_KEYS = Arrays.asList(
+            PreferenceManager.SAM_SHOW_JUNCTION_TRACK,
+            PreferenceManager.SAM_JUNCTION_MIN_FLANKING_WIDTH,
+            PreferenceManager.SAM_JUNCTION_MIN_COVERAGE
+
+    );
+
 
 }

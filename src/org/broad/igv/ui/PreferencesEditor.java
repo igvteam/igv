@@ -3013,7 +3013,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 }
             }
 
-            checkForSAMChanges();
 
             // Overlays
             if (updateOverlays) {
@@ -4293,53 +4292,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     }
 
-    /**
-     * Scan preference updates for changes affecting alignment tracks.  If any force reload of all alignment tracks.
-     */
-    private void checkForSAMChanges() {
-        WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-        try {
-            boolean reloadSAM = false;
-            for (String key : SAM_PREFERENCE_KEYS) {
-                if (updatedPreferenceMap.containsKey(key)) {
-                    reloadSAM = true;
-                    break;
-                }
-
-            }
-            if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_ALLELE_THRESHOLD)) {
-                updateCoverageTrack = true;
-            }
-
-            boolean updateSpliceJunctions = false;
-            for (String key : SPLICE_JUNCTION_KEYS) {
-                if (updatedPreferenceMap.containsKey(key)) {
-                    updateSpliceJunctions = true;
-                    break;
-                }
-            }
-
-
-            final IGV igv = IGV.getInstance();
-            if (updateSpliceJunctions) {
-                igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.SPLICE_JUNCTION);
-            }
-            if (reloadSAM) {
-                if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_MAX_VISIBLE_RANGE)) {
-                    igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.VISIBILITY_WINDOW);
-                }
-                igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.RELOAD);
-            }
-            if (updateCoverageTrack) {
-                igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.ALLELE_THRESHOLD);
-                updateCoverageTrack = false;
-            }
-        } finally {
-            WaitCursorManager.removeWaitCursor(token);
-        }
-
-    }
-
 
     private void checkForProbeChanges() {
         if (updatedPreferenceMap.containsKey(PreferenceManager.PROBE_MAPPING_KEY)) {
@@ -4624,32 +4576,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     public boolean isCanceled() {
         return canceled;
     }
-
-    /**
-     * List of keys that affect the alignments loaded.  This list is used to trigger a reload, if required.
-     * Not all alignment preferences need trigger a reload, this is a subset.
-     */
-    static java.util.List<String> SAM_PREFERENCE_KEYS = Arrays.asList(
-            PreferenceManager.SAM_QUALITY_THRESHOLD,
-            PreferenceManager.SAM_FILTER_ALIGNMENTS,
-            PreferenceManager.SAM_FILTER_URL,
-            PreferenceManager.SAM_MAX_VISIBLE_RANGE,
-            PreferenceManager.SAM_SHOW_DUPLICATES,
-            PreferenceManager.SAM_SHOW_SOFT_CLIPPED,
-            PreferenceManager.SAM_SAMPLING_COUNT,
-            PreferenceManager.SAM_SAMPLING_WINDOW,
-            PreferenceManager.SAM_FILTER_FAILED_READS,
-            PreferenceManager.SAM_DOWNSAMPLE_READS,
-            PreferenceManager.SAM_FILTER_SECONDARY_ALIGNMENTS,
-            PreferenceManager.SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS
-    );
-
-    static java.util.List<String> SPLICE_JUNCTION_KEYS = Arrays.asList(
-            PreferenceManager.SAM_SHOW_JUNCTION_TRACK,
-            PreferenceManager.SAM_JUNCTION_MIN_FLANKING_WIDTH,
-            PreferenceManager.SAM_JUNCTION_MIN_COVERAGE
-
-    );
 
 
 }
