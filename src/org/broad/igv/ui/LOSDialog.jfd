@@ -23,6 +23,7 @@ new FormModel {
 					add( new FormComponent( "javax.swing.JCheckBox" ) {
 						name: "remindMeCB"
 						"text": "Remind me later"
+						"selected": true
 					}, new FormLayoutConstraints( class java.lang.String ) {
 						"value": "South"
 					} )

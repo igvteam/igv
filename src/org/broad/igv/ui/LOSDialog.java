@@ -30,6 +30,8 @@
 package org.broad.igv.ui;
 
 import javax.swing.event.*;
+
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.util.HttpUtils;
 
 import java.awt.*;
@@ -45,10 +47,12 @@ import javax.swing.border.*;
  * @author James Robinson
  */
 public class LOSDialog extends JDialog {
+
     public LOSDialog(Frame owner) {
         super(owner);
         initComponents();
         initContent();
+        remindMeCB.setSelected(true);
 
         contentPane.setEditorKit(JEditorPane.createEditorKitForContentType("text/html"));
         contentPane.setEditable(false);
@@ -60,6 +64,7 @@ public class LOSDialog extends JDialog {
                         final URI mailtoURI = e.getURL().toURI();
                         Desktop.getDesktop().mail(mailtoURI);
                         setVisible(false);
+                        PreferenceManager.getInstance().put(PreferenceManager.SHOW_LOS, false);
                         dispose();
                     } catch (Exception e1) {
                         e1.printStackTrace();
@@ -78,8 +83,9 @@ public class LOSDialog extends JDialog {
     }
 
     private void okButtonActionPerformed(ActionEvent e) {
+
         if(!remindMeCB.isSelected()) {
-            // Record that the dialog has been shown
+            PreferenceManager.getInstance().put(PreferenceManager.SHOW_LOS, false);
         }
 
         this.setVisible(false);

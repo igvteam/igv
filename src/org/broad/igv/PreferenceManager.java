@@ -60,6 +60,8 @@ public class PreferenceManager implements PropertyManager {
 
     public static final String SKIP_VERSION = "SKIP_VERSION";
 
+    public static final String SHOW_LOS = "showLOS";
+
     public static final String INITIAL_TRACK_HEIGHT = "15";
 
     public static final String TOOLTIP_INITIAL_DELAY = "TOOLTIP.INITIAL_DELAY";
@@ -1197,6 +1199,8 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(GENE_LIST_BED_FORMAT, "false");
 
         defaultValues.put(SESSION_RELATIVE_PATH, "false");
+
+        defaultValues.put(SHOW_LOS, "true");
 
     }
 

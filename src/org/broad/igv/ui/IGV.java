@@ -56,7 +56,6 @@ import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.Preloader;
 import org.broad.igv.peaks.PeakCommandBar;
 import org.broad.igv.sam.AlignmentTrack;
-import org.broad.igv.sam.reader.BAMHttpReader;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionReader;
@@ -2588,7 +2587,7 @@ public class IGV {
                     if (runningBatch) {
                         LongRunningTask.submit(new BatchRunner(igvArgs.getBatchFile()));
                     } else {
-                        if (PreferenceManager.getInstance().getAsBoolean("showLOS")) {
+                        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_LOS)) {
                             (new LOSDialog(mainFrame)).setVisible(true);
                         }
                     }
