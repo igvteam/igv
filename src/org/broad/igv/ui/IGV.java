@@ -60,6 +60,7 @@ import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionReader;
 import org.broad.igv.session.UCSCSessionReader;
+import org.broad.igv.session.IndexAwareSessionReader;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.dnd.GhostGlassPane;
 import org.broad.igv.ui.event.*;
@@ -1418,9 +1419,10 @@ public class IGV {
             inputStream = new BufferedInputStream(ParsingUtils.openInputStreamGZ(new ResourceLocator(sessionPath)));
 
             boolean isUCSC = sessionPath.endsWith(".session") || sessionPath.endsWith(".session.txt");
+            boolean isIndexAware = sessionPath.endsWith(".idxsession") || sessionPath.endsWith(".idxsession.txt");
             final SessionReader sessionReader = isUCSC ?
                     new UCSCSessionReader(this) :
-                    new IGVSessionReader(this);
+                    (isIndexAware ? new IndexAwareSessionReader(this) : new IGVSessionReader(this));
 
             sessionReader.loadSession(inputStream, session, sessionPath);
 

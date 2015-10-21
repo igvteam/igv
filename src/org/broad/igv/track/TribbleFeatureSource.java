@@ -26,6 +26,7 @@
 package org.broad.igv.track;
 
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.DataSource;
 import org.broad.igv.data.DataTile;

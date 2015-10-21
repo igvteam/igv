@@ -508,6 +508,10 @@ public class ParsingUtils {
                             trackProperties.setGenome(value);
                         } else if (key.equals("bigdataurl") || key.equals("dataurl")) {
                             trackProperties.setDataURL(value);
+                        } else if (key.equals("indexurl")) {
+                            trackProperties.setIndexURL(value);
+                        } else if (key.equals("coverageurl")) {
+                            trackProperties.setCoverageURL(value);
                         } else if (key.equals("meta")) {
                             trackProperties.setMetaData(value);
                         }

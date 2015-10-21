@@ -59,6 +59,7 @@ public class LoadFromURLMenuAction extends MenuAction {
     static Logger log = Logger.getLogger(LoadFilesMenuAction.class);
     public static final String LOAD_FROM_DAS = "Load from DAS...";
     public static final String LOAD_FROM_URL = "Load from URL...";
+    public static final String LOAD_FILE_AND_INDEX_FROM_URLS = "Load file and index from URLs...";
     public static final String LOAD_GENOME_FROM_URL = "Load Genome from URL...";
     private IGV igv;
 
@@ -107,6 +108,17 @@ public class LoadFromURLMenuAction extends MenuAction {
                     igv.loadTracks(Arrays.asList(rl));
 
                 }
+            }
+        } else if ((e.getActionCommand().equalsIgnoreCase(LOAD_FILE_AND_INDEX_FROM_URLS))) {
+            String fileUrl = JOptionPane.showInputDialog(IGV.getMainFrame(), ta, "Enter file URL (http or ftp)", JOptionPane.QUESTION_MESSAGE);
+            String indexUrl = JOptionPane.showInputDialog(IGV.getMainFrame(), ta, "Enter index URL (http or ftp)", JOptionPane.QUESTION_MESSAGE);
+
+            if (fileUrl != null && fileUrl.trim().length() > 0 && indexUrl != null && indexUrl.trim().length() > 0) {
+                fileUrl = fileUrl.trim();
+                indexUrl = indexUrl.trim();
+                ResourceLocator rl = new ResourceLocator(fileUrl.trim());
+                rl.setIndexPath(indexUrl.trim());
+                igv.loadTracks(Arrays.asList(rl));
             }
         } else if ((e.getActionCommand().equalsIgnoreCase(LOAD_FROM_DAS))) {
             String url = JOptionPane.showInputDialog(IGV.getMainFrame(), ta, "Enter DAS feature source URL",

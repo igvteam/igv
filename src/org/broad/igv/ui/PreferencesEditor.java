@@ -175,7 +175,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
         defaultTrackHeightField = new JTextField();
         hSpacer1 = new JPanel(null);
         expandCB = new JCheckBox();
+        bypassFileAutoDiscoveryCB = new JCheckBox();
         normalizeCoverageCB = new JCheckBox();
+        bypassFileAutoDiscoveryExplanation = new JLabel();
         missingDataExplanation8 = new JLabel();
         expandIconCB = new JCheckBox();
         panel24 = new JScrollPane();
@@ -825,6 +827,27 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                         new Insets(0, 0, 15, 10), 0, 0));
 
+                    //---- Bypass looking for tdf, bam, or other helper files ----
+                    bypassFileAutoDiscoveryCB.setText("Bypass automatic discovery of helper files");
+                    bypassFileAutoDiscoveryCB.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            bypassFileAutoDiscoveryCBActionPerformed(e);
+                        }
+                    });
+                    tracksPanel.add(bypassFileAutoDiscoveryCB, new GridBagConstraints(2, 6, 2, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 15, 10), 0, 0));
+
+                    //---- Bypass file auto discovery explanation ----
+                    bypassFileAutoDiscoveryExplanation.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
+                    bypassFileAutoDiscoveryExplanation.setText("<html><i> By default, igv will attempt to automatically discover helper files to some tracks by checking to see if a filename with a given extension exists (for instance a tdf file for a given bam file).  Some environments may not be compatible with this behavior.");
+                    //bypassFileAutoDiscoveryExplanation.setMaximumSize(new Dimension(500, 2147483647));
+                    bypassFileAutoDiscoveryExplanation.setPreferredSize(new Dimension(500, 60));
+                    tracksPanel.add(bypassFileAutoDiscoveryExplanation, new GridBagConstraints(2, 7, 2, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 15, 10), 0, 0));
+
                     //---- normalizeCoverageCB ----
                     normalizeCoverageCB.setText("Normalize Coverage Data");
                     normalizeCoverageCB.addActionListener(new ActionListener() {
@@ -839,18 +862,18 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             normalizeCoverageCBFocusLost(e);
                         }
                     });
-                    tracksPanel.add(normalizeCoverageCB, new GridBagConstraints(2, 7, 2, 1, 0.0, 0.0,
+                    tracksPanel.add(normalizeCoverageCB, new GridBagConstraints(2, 8, 2, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                         new Insets(0, 0, 15, 10), 0, 0));
 
                     //---- missingDataExplanation8 ----
                     missingDataExplanation8.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                     missingDataExplanation8.setText("<html><i> Applies to coverage tracks computed with igvtools (.tdf files).  If selected coverage values are scaled by (1,000,000 / totalCount),  where totalCount is the total number of features or alignments.");
-                    missingDataExplanation8.setMaximumSize(new Dimension(500, 2147483647));
+                    //missingDataExplanation8.setMaximumSize(new Dimension(500, 2147483647));
                     missingDataExplanation8.setPreferredSize(new Dimension(500, 50));
-                    tracksPanel.add(missingDataExplanation8, new GridBagConstraints(2, 8, 6, 2, 0.0, 0.0,
+                    tracksPanel.add(missingDataExplanation8, new GridBagConstraints(2, 9, 2, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                        new Insets(0, 0, 15, 10), 0, 0));
 
                     //---- expandIconCB ----
                     expandIconCB.setText("Show Expand Icon");
@@ -861,8 +884,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             expandIconCBActionPerformed(e);
                         }
                     });
-                    tracksPanel.add(expandIconCB, new GridBagConstraints(2, 6, 2, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    tracksPanel.add(expandIconCB, new GridBagConstraints(2, 10, 2, 1, 0.0, 0.0,
+                        GridBagConstraints.PAGE_START, GridBagConstraints.HORIZONTAL,
                         new Insets(0, 0, 15, 10), 0, 0));
                 }
                 panel23.setViewportView(tracksPanel);
@@ -3818,6 +3841,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
         snpThresholdFieldActionPerformed(null);
     }
 
+    private void bypassFileAutoDiscoveryCBActionPerformed(java.awt.event.ActionEvent evt) {
+        updatedPreferenceMap.put(PreferenceManager.BYPASS_FILE_AUTO_DISCOVERY, String.valueOf(bypassFileAutoDiscoveryCB.isSelected()));
+    }
+
     private void normalizeCoverageCBActionPerformed(java.awt.event.ActionEvent evt) {
         updatedPreferenceMap.put(PreferenceManager.NORMALIZE_COVERAGE, String.valueOf(normalizeCoverageCB.isSelected()));
         portField.setEnabled(enablePortCB.isSelected());
@@ -4224,6 +4251,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         useProbeMappingCB.setSelected(useProbeMapping);
         updateProbeMappingOptions(useProbeMapping);
 
+        bypassFileAutoDiscoveryCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.BYPASS_FILE_AUTO_DISCOVERY));
         normalizeCoverageCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.NORMALIZE_COVERAGE));
 
 
@@ -4377,7 +4405,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JTextField defaultTrackHeightField;
     private JPanel hSpacer1;
     private JCheckBox expandCB;
+    private JCheckBox bypassFileAutoDiscoveryCB;
     private JCheckBox normalizeCoverageCB;
+    private JLabel bypassFileAutoDiscoveryExplanation;
     private JLabel missingDataExplanation8;
     private JCheckBox expandIconCB;
     private JScrollPane panel24;

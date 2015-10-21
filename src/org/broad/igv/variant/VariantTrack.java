@@ -211,8 +211,9 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         }
 
         // If sample->bam list file is supplied enable vcfToBamMode.
+        boolean bypassFileAutoDiscovery = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.BYPASS_FILE_AUTO_DISCOVERY);
         String vcfToBamMapping = path != null ? path + ".mapping" : null;
-        if (ParsingUtils.pathExists(vcfToBamMapping)) {
+        if (!bypassFileAutoDiscovery && ParsingUtils.pathExists(vcfToBamMapping)) {
             loadAlignmentMappings(vcfToBamMapping);
         }
 

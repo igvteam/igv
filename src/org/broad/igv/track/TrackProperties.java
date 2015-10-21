@@ -138,6 +138,10 @@ public class TrackProperties {
 
     private String dataURL;
 
+    private String indexURL;
+
+    private String coverageURL;
+
     /**
      * Track attributes (meta data)
      */
@@ -422,8 +426,24 @@ public class TrackProperties {
         return dataURL;
     }
 
+    public String getIndexURL() {
+        return indexURL;
+    }
+
+    public String getCoverageURL() {
+        return coverageURL;
+    }
+
     public void setDataURL(String dataURL) {
         this.dataURL = dataURL;
+    }
+
+    public void setIndexURL(String indexURL) {
+        this.indexURL = indexURL;
+    }
+
+    public void setCoverageURL(String coverageURL) {
+        this.coverageURL = coverageURL;
     }
 
 

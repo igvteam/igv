@@ -343,6 +343,9 @@ public class SessionWriter {
                     if (resourceLocator.getType() != null) {
                         dataFileElement.setAttribute(SessionAttribute.TYPE.getText(), resourceLocator.getType());
                     }
+                    if (resourceLocator.getIndexPath() != null) {
+                        dataFileElement.setAttribute(SessionAttribute.INDEX.getText(), resourceLocator.getIndexPath());
+                    }
                     if (resourceLocator.getCoverage() != null) {
                         dataFileElement.setAttribute(SessionAttribute.COVERAGE.getText(), resourceLocator.getCoverage());
                     }
