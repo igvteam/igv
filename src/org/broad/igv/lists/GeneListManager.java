@@ -167,6 +167,9 @@ public class GeneListManager {
 
         if (loadedLists.size() > 0) {
             importedFiles.put(name, f);
+            for(GeneList gl : loadedLists) {
+                gl.setEditable(true);
+            }
         }
 
         return loadedLists;

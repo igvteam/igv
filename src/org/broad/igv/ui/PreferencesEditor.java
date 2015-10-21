@@ -81,8 +81,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     boolean proxySettingsChanged = false;
     boolean tooltipSettingsChanged = false;
     private File newIGVDirectory;
-    private boolean updateCoverageTrack = false;
-
 
     private void scaleFontsCBActionPerformed(ActionEvent e) {
         PreferenceManager.getInstance().put(PreferenceManager.SCALE_FONTS, scaleFontsCB.isSelected());
@@ -2986,7 +2984,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private void useAlleleQualityCBActionPerformed(ActionEvent e) {
         updatedPreferenceMap.put(PreferenceManager.SAM_ALLELE_USE_QUALITY, String.valueOf(
                 useAlleleQualityCB.isSelected()));
-        this.updateCoverageTrack = true;
     }
 
     private void featureVisibilityWindowFieldActionPerformed(ActionEvent e) {
