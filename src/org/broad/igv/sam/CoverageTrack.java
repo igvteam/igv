@@ -229,6 +229,9 @@ public class CoverageTrack extends AbstractTrack {
         if (dataSourceRenderer != null) {
             dataSourceRenderer.renderAxis(this, context, rect);
         }
+        else {
+            DataRenderer.drawScale(this.getDataRange(), context, rect);
+        }
     }
 
 
