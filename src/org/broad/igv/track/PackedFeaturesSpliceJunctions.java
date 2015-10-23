@@ -54,6 +54,7 @@ import java.util.*;
  * coverage overall.  These are kind of degenerate cases, so only worth handling if someone complains.
  */
 public class PackedFeaturesSpliceJunctions<T extends Feature> extends PackedFeatures {
+
     private static Logger log = Logger.getLogger(PackedFeaturesSpliceJunctions.class);
 
     public PackedFeaturesSpliceJunctions(String chr, int start, int end, Iterator<T> iter, String trackName) {
