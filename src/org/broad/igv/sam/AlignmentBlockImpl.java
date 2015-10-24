@@ -115,6 +115,11 @@ public class AlignmentBlockImpl implements AlignmentBlock {
         return softClipped;
     }
 
+    @Override
+    public void reduce(Genome genome) {
+
+    }
+
     public void setSoftClipped(boolean softClipped) {
         this.softClipped = softClipped;
     }
@@ -136,27 +141,6 @@ public class AlignmentBlockImpl implements AlignmentBlock {
         return sb.toString();
     }
 
-    /**
-     * Reduce so that we only store the mismatches between this block and reference
-     * This may do nothing, if there are any mismatches we keep the original.
-     * Note that we require an EXACT match, meaning ambiguity codes need to match
-     * exactly. So if reference = 'N' and read = 'A', the full read sequence is stored.
-     * @param genome
-     */
-    @Override
-    public void reduce(Genome genome){
-
-        byte[] refBases = genome.getSequence(this.chr, getStart(), getEnd());
-        //null refBases mostly happens in testing, but if we have no reference can't create mismatch
-        if(refBases != null && this.bases != null){
-            boolean match = false;
-            for(int idx = 0; idx < refBases.length; idx++){
-                match = refBases[idx] == this.bases[idx];
-                if(!match) break;
-            }
-            if(match) this.bases = null;
-        }
-    }
 
     /**
      * Whether this AlignmentBlock has non-null bases

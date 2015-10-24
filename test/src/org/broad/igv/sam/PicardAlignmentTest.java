@@ -136,17 +136,4 @@ public class PicardAlignmentTest extends AbstractHeadlessTest {
         }
     }
 
-
-
-    @Ignore("Don't store hard clipped bases in blocks")
-    @Test
-    public void testBuildReadSequenceFromBlocks() throws Exception{
-        AlignmentDataManager dataManager = AlignmentDataManagerTest.getManager171();
-        Iterator<Alignment> iter = dataManager.getReader().iterator();
-
-        while(iter.hasNext()){
-            PicardAlignment al = (PicardAlignment) iter.next();
-            assertEquals(al.getRecord().getReadString(), al.buildReadSequenceFromBlocks());
-        }
-    }
 }

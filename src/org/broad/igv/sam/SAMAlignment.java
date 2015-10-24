@@ -412,8 +412,8 @@ public abstract class SAMAlignment implements Alignment {
     }
 
     private static AlignmentBlockImpl buildAlignmentBlock(FlowSignalContextBuilder fBlockBuilder, byte[] readBases,
-                                                      byte[] readBaseQualities, String chr, int blockStart,
-                                                      int fromIdx, int nBases, boolean checkNBasesAvailable) {
+                                                          byte[] readBaseQualities, String chr, int blockStart,
+                                                          int fromIdx, int nBases, boolean checkNBasesAvailable) {
 
         byte[] blockBases = new byte[nBases];
         byte[] blockQualities = new byte[nBases];
@@ -565,7 +565,7 @@ public abstract class SAMAlignment implements Alignment {
                         buf.append("----------------------"); // NB: no <br> required
                         return buf.toString();
                     } else {
-                        byte [] bases = block.getBases();
+                        byte[] bases = block.getBases();
 
                         return bases == null ?
                                 "Insertion: " + block.getLength() + " bases" :
@@ -575,20 +575,27 @@ public abstract class SAMAlignment implements Alignment {
             }
         }
 
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+
         for (AlignmentBlock block : this.alignmentBlocks) {
             if (block.contains(basePosition)) {
                 int offset = basePosition - block.getStart();
                 byte base = block.getBase(offset);
-                if (base > 0) {
-                    byte quality = block.getQuality(offset);
-                    buf.append("Base = " + (char) base + "<br>");
-                    buf.append("Base phred quality = " + quality + "<br>");
 
-                    // flow signals
-                    if (block.hasFlowSignals()) {
-                        bufAppendFlowSignals(block, buf, offset);
-                    }
+                if (base == 0 && this.getReadSequence().equals("=") && !block.isSoftClipped() && genome != null) {
+                    base = genome.getReference(chr, basePosition);
+
                 }
+
+                byte quality = block.getQuality(offset);
+                buf.append("Base = " + (char) base + "<br>");
+                buf.append("Base phred quality = " + quality + "<br>");
+
+                // flow signals
+                if (block.hasFlowSignals()) {
+                    bufAppendFlowSignals(block, buf, offset);
+                }
+
             }
         }
 
@@ -706,10 +713,6 @@ public abstract class SAMAlignment implements Alignment {
     @Override
     public void finish() {
 
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        for (AlignmentBlock block : alignmentBlocks) {
-            block.reduce(genome);
-        }
     }
 
 
@@ -720,25 +723,6 @@ public abstract class SAMAlignment implements Alignment {
     @Override
     public String getPairOrientation() {
         return pairOrientation;
-    }
-
-
-    /**
-     * Use blocks to recreate read sequence.
-     * As of this comment writing, we don't keep a block
-     * for hard-clipped bases, so this won't match what's in the file
-     *
-     * @return
-     */
-    String buildReadSequenceFromBlocks() {
-        String readSeq = "";
-        for (AlignmentBlock block : getAlignmentBlocks()) {
-            byte [] bases = block.getBases();
-            if(bases != null) {
-                readSeq += new String(block.getBases());
-            }
-        }
-        return readSeq;
     }
 
 
