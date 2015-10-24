@@ -34,7 +34,9 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.IGVMenuBar;
+import org.broad.igv.ui.util.LoadFromURLDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -74,51 +76,50 @@ public class LoadFromURLMenuAction extends MenuAction {
         JPanel ta = new JPanel();
         ta.setPreferredSize(new Dimension(600, 20));
         if (e.getActionCommand().equalsIgnoreCase(LOAD_FROM_URL)) {
-            String url = JOptionPane.showInputDialog(IGV.getMainFrame(), ta, "Enter URL (http or ftp)", JOptionPane.QUESTION_MESSAGE);
 
-            if (url != null && url.trim().length() > 0) {
-                url = url.trim();
-                if (url.startsWith("gs://")) {
-                    enableGoogleMenu();
-                    url = translateGoogleCloudURL(url);
-                }
+            LoadFromURLDialog dlg = new LoadFromURLDialog(IGV.getMainFrame());
+            dlg.setVisible(true);
 
-                if (OAuthUtils.isGoogleCloud(url)) {
+            if (!dlg.isCanceled()) {
 
-                    // Access a few bytes as a means to check authorization
-                    if(!ping(url)) return;
+                String url = dlg.getFileURL();
 
-                    if (url.indexOf("alt=media") < 0) {
-                        url = url + (url.indexOf('?') > 0 ? "&" : "?") + "alt=media";
+                if (url != null && url.trim().length() > 0) {
+
+                    url = url.trim();
+
+                    if (url.startsWith("gs://")) {
+                        enableGoogleMenu();
+                        url = translateGoogleCloudURL(url);
                     }
 
-                }
+                    if (OAuthUtils.isGoogleCloud(url)) {
 
-
-                if (url.endsWith(".xml") || url.endsWith(".session")) {
-                    try {
-                        boolean merge = false;
-                        String locus = null;
-                        igv.doRestoreSession(url, locus, merge);
-                    } catch (Exception ex) {
-                        MessageUtils.showMessage("Error loading url: " + url + " (" + ex.toString() + ")");
+                        // Access a few bytes as a means to check authorization
+                        if (!ping(url)) return;
+                        if (url.indexOf("alt=media") < 0) {
+                            url = url + (url.indexOf('?') > 0 ? "&" : "?") + "alt=media";
+                        }
                     }
-                } else {
-                    ResourceLocator rl = new ResourceLocator(url.trim());
-                    igv.loadTracks(Arrays.asList(rl));
 
+                    if (url.endsWith(".xml") || url.endsWith(".session")) {
+                        try {
+                            boolean merge = false;
+                            String locus = null;
+                            igv.doRestoreSession(url, locus, merge);
+                        } catch (Exception ex) {
+                            MessageUtils.showMessage("Error loading url: " + url + " (" + ex.toString() + ")");
+                        }
+                    } else {
+                        ResourceLocator rl = new ResourceLocator(url.trim());
+
+                        if(dlg.getIndexURL() != null) {
+                            rl.setIndexPath(dlg.getIndexURL().trim());
+                        }
+                        igv.loadTracks(Arrays.asList(rl));
+
+                    }
                 }
-            }
-        } else if ((e.getActionCommand().equalsIgnoreCase(LOAD_FILE_AND_INDEX_FROM_URLS))) {
-            String fileUrl = JOptionPane.showInputDialog(IGV.getMainFrame(), ta, "Enter file URL (http or ftp)", JOptionPane.QUESTION_MESSAGE);
-            String indexUrl = JOptionPane.showInputDialog(IGV.getMainFrame(), ta, "Enter index URL (http or ftp)", JOptionPane.QUESTION_MESSAGE);
-
-            if (fileUrl != null && fileUrl.trim().length() > 0 && indexUrl != null && indexUrl.trim().length() > 0) {
-                fileUrl = fileUrl.trim();
-                indexUrl = indexUrl.trim();
-                ResourceLocator rl = new ResourceLocator(fileUrl.trim());
-                rl.setIndexPath(indexUrl.trim());
-                igv.loadTracks(Arrays.asList(rl));
             }
         } else if ((e.getActionCommand().equalsIgnoreCase(LOAD_FROM_DAS))) {
             String url = JOptionPane.showInputDialog(IGV.getMainFrame(), ta, "Enter DAS feature source URL",
@@ -184,19 +185,18 @@ public class LoadFromURLMenuAction extends MenuAction {
         try {
             Map<String, String> params = new HashMap();
             params.put("Range", "0-10");
-            byte [] buffer = new byte[10];
+            byte[] buffer = new byte[10];
             is = HttpUtils.getInstance().openConnectionStream(new URL(url), params);
             is.read(buffer);
             is.close();
-        }  catch (HttpResponseException e1) {
+        } catch (HttpResponseException e1) {
             MessageUtils.showMessage(e1.getMessage());
             return false;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             log.error(e);
 
         } finally {
-            if(is != null) try {
+            if (is != null) try {
                 is.close();
             } catch (IOException e) {
                 e.printStackTrace();

@@ -382,13 +382,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 //======== generalPanel ========
                 {
 
-                    // JFormDesigner evaluation mark
-                    generalPanel.setBorder(new javax.swing.border.CompoundBorder(
-                        new javax.swing.border.TitledBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 0),
-                            "JFormDesigner Evaluation", javax.swing.border.TitledBorder.CENTER,
-                            javax.swing.border.TitledBorder.BOTTOM, new java.awt.Font("Dialog", java.awt.Font.BOLD, 12),
-                            java.awt.Color.red), generalPanel.getBorder())); generalPanel.addPropertyChangeListener(new java.beans.PropertyChangeListener(){public void propertyChange(java.beans.PropertyChangeEvent e){if("border".equals(e.getPropertyName()))throw new RuntimeException();}});
-
                     generalPanel.setLayout(new BorderLayout());
 
                     //---- vSpacer7 ----

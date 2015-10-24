@@ -401,10 +401,6 @@ public class IGVMenuBar extends JMenuBar {
         menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FILE_AND_INDEX_FROM_URLS, KeyEvent.VK_B, igv);
-        menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
         menuAction = new LoadFromServerAction("Load from Server...", KeyEvent.VK_S, igv);
         menuAction.setToolTipText(UIConstants.LOAD_SERVER_DATA_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
