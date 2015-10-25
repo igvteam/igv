@@ -520,42 +520,5 @@ public class TrackGroup {
 
     }
 
-    public void autoScale(RenderContext context) {
-        int start = (int) context.getOrigin();
-        int end = (int) context.getEndLocation() + 1;
-        Rectangle visibleRect = context.getVisibleRect();
-        List<Track> trackList = getTracks();
-        List<LocusScore> inViewScores = new ArrayList<LocusScore>();
-        synchronized (trackList) {
-            for (Track track : trackList) {
-                if (track instanceof DataTrack) {
-                    inViewScores.addAll(((DataTrack) track).getInViewScores(context, visibleRect));
-                }
-            }
-
-            if (inViewScores.size() > 0) {
-
-                FeatureUtils.sortFeatureList(inViewScores);
-                DataTrack.InViewInterval inter = DataTrack.computeScale(start, end, inViewScores);
-                for (Track track : trackList) {
-                    if (track instanceof DataTrack) {
-                        DataRange dr = track.getDataRange();
-                        float min = Math.min(0, inter.dataMin);
-                        float base = Math.max(min, dr.getBaseline());
-                        float max = inter.dataMax;
-                        // Pathological case where min ~= max  (no data in view)
-                        if (max - min <= (2 * Float.MIN_VALUE)) {
-                            max = min + 1;
-                        }
-
-                        DataRange newDR = new DataRange(min, base, max, dr.isDrawBaseline());
-                        newDR.setType(dr.getType());
-                        track.setAutoScale(false);
-                        track.setDataRange(newDR);
-                    }
-                }
-            }
-        }
-    }
 
 }

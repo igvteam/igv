@@ -42,9 +42,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
 
 
@@ -83,20 +81,8 @@ public class DataPanelPainter {
         int trackX = 0;
         int trackY = 0;
 
+        groupAutoscale(groups, context);
 
-        // TODO -- gene list mode!!!
-        // Loop through all tracks extracting autoscale groups.
-        // Get "in view scores" for each track in the group
-        // Set data range for each track in the group and set  "autoScale" off (if its on).
-        // Use  "groupAutoscale" tag?
-
-        for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
-            TrackGroup group = groupIter.next();
-
-            if (group.getName() != null && group.isAutoScale() && group.isVisible()) {
-                group.autoScale(context);
-            }
-        }
 
         for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
             TrackGroup group = groupIter.next();
@@ -152,6 +138,35 @@ public class DataPanelPainter {
         }
     }
 
+    private void groupAutoscale(Collection<TrackGroup> groups, RenderContext context) {
+        // TODO -- gene list mode!!!
+        // Loop through all tracks extracting autoscale groups.
+        // Get "in view scores" for each track in the group
+        // Set data range for each track in the group and set  "autoScale" off (if its on).
+        // Use  "groupAutoscale" tag?
+
+        Map<String, List<Track>> autoscaleGroups = new HashMap<String, List<Track>>();
+        for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
+            TrackGroup group = groupIter.next();
+            List<Track> trackList = group.getTracks();
+            synchronized (trackList) {
+                for(Track track : trackList) {
+                    String asGroup = track.getAttributeValue("GROUP_AUTOSCALE");
+                    if(!autoscaleGroups.containsKey(asGroup)) {
+                        autoscaleGroups.put(asGroup, new ArrayList<Track>());
+                    }
+                    autoscaleGroups.get(asGroup).add(track);
+                }
+            }
+        }
+
+        if(autoscaleGroups.size() > 0) {
+            for(List<Track> tracks : autoscaleGroups.values()) {
+                autoscale(context, tracks);
+            }
+        }
+    }
+
     final private void draw(Track track, Rectangle rect, RenderContext context) {
 
         track.render(context, rect);
@@ -184,6 +199,44 @@ public class DataPanelPainter {
             }
         }
         return visibleTracks;
+    }
+
+
+    private void autoscale(RenderContext context, List<Track> trackList) {
+        int start = (int) context.getOrigin();
+        int end = (int) context.getEndLocation() + 1;
+        Rectangle visibleRect = context.getVisibleRect();
+        List<LocusScore> inViewScores = new ArrayList<LocusScore>();
+        synchronized (trackList) {
+            for (Track track : trackList) {
+                if (track instanceof DataTrack) {
+                    inViewScores.addAll(((DataTrack) track).getInViewScores(context, visibleRect));
+                }
+            }
+
+            if (inViewScores.size() > 0) {
+
+                FeatureUtils.sortFeatureList(inViewScores);
+                DataTrack.InViewInterval inter = DataTrack.computeScale(start, end, inViewScores);
+                for (Track track : trackList) {
+                    if (track instanceof DataTrack) {
+                        DataRange dr = track.getDataRange();
+                        float min = Math.min(0, inter.dataMin);
+                        float base = Math.max(min, dr.getBaseline());
+                        float max = inter.dataMax;
+                        // Pathological case where min ~= max  (no data in view)
+                        if (max - min <= (2 * Float.MIN_VALUE)) {
+                            max = min + 1;
+                        }
+
+                        DataRange newDR = new DataRange(min, base, max, dr.isDrawBaseline());
+                        newDR.setType(dr.getType());
+                        track.setAutoScale(false);
+                        track.setDataRange(newDR);
+                    }
+                }
+            }
+        }
     }
 
 

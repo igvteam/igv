@@ -91,6 +91,8 @@ public class TrackMenuUtils {
             WindowFunction.none
     };
 
+    private static int groupAutoScaleCounter = 1;
+
     private static List<TrackMenuItemBuilder> trackMenuItems = new ArrayList<TrackMenuItemBuilder>();
 
     /**
@@ -326,6 +328,10 @@ public class TrackMenuUtils {
         }
 
         menu.add(getAutoscaleItem(tracks));
+
+        if (tracks.size() > 1) {
+            menu.add(getGroupAutoscaleItem(tracks));
+        }
 
         menu.add(getShowDataRangeItem(tracks));
 
@@ -741,6 +747,7 @@ public class TrackMenuUtils {
                         for (Track track : selectedTracks) {
                             track.setDataRange(axisDefinition);
                             track.setAutoScale(false);
+                            track.removeAttribute("GROUP_AUTOSCALE");
                         }
                         IGV.getInstance().repaint();
                     }
@@ -810,11 +817,40 @@ public class TrackMenuUtils {
                     boolean autoScale = autoscaleItem.isSelected();
                     for (Track t : selectedTracks) {
                         t.setAutoScale(autoScale);
+                        if (autoScale) {
+                            t.removeAttribute("GROUP_AUTOSCALE");
+
+                        }
                     }
-                    IGV.getInstance().repaintDataPanels();
+
+                    IGV.getInstance().repaint();
                 }
             });
         }
+        return autoscaleItem;
+    }
+
+    private static JMenuItem getGroupAutoscaleItem(final Collection<Track> selectedTracks) {
+
+        final JMenuItem autoscaleItem = new JMenuItem("Group Autoscale");
+
+        autoscaleItem.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent evt) {
+                boolean autoScale = autoscaleItem.isSelected();
+                for (Track t : selectedTracks) {
+                    t.setAttributeValue("GROUP_AUTOSCALE", String.valueOf(groupAutoScaleCounter));
+                }
+                groupAutoScaleCounter++;
+
+                PreferenceManager.getInstance().setShowAttributeView(true);
+                IGV.getInstance().getMainPanel().invalidate();
+                IGV.getInstance().doRefresh();
+
+
+            }
+        });
+
         return autoscaleItem;
     }
 

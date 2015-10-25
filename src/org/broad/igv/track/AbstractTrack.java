@@ -369,6 +369,12 @@ public abstract class AbstractTrack implements Track {
         AttributeManager.getInstance().addAttribute(getSample(), name, value);
     }
 
+    public void removeAttribute(String name) {
+        String key = name.toUpperCase();
+        attributes.remove(key);
+        AttributeManager.getInstance().removeAttribute(getSample(), name);
+    }
+
 
     /**
      * Return the attribute value.  Attribute lookup occurs in the following order, if all fail null is returned.

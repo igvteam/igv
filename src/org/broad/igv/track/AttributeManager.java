@@ -252,6 +252,15 @@ public class AttributeManager {
         updateMetaData(key, attributeValue);
     }
 
+    public void removeAttribute(String rowId, String attributeName) {
+
+        Map attributes = attributeMap.get(rowId);
+        if (attributes != null) {
+            attributes.remove(attributeName.toUpperCase());
+        }
+
+    }
+
     private void addAttributeName(String name) {
         String key = name.toUpperCase();
         if (!attributeNames.containsKey(key) && !name.startsWith("#")) {

@@ -127,6 +127,8 @@ public interface Track extends Persistable{
 
     void setAttributeValue(String key, String value);
 
+    void removeAttribute(String key);
+
     String getAttributeValue(String attributeKey);
 
     void setVisible(boolean isVisible);
