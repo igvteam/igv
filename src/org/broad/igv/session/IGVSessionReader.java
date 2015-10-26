@@ -208,6 +208,7 @@ public class IGVSessionReader implements SessionReader {
         FILTER_SHOW_ALL_TRACKS("showTracks"),
         GENOME("genome"),
         GROUP_TRACKS_BY("groupTracksBy"),
+        NEXT_AUTOSCALE_GROUP("nextAutoscaleGroup"),
         HEIGHT("height"),
         ID("id"),
         ITEM("item"),
@@ -444,6 +445,15 @@ public class IGVSessionReader implements SessionReader {
 
         session.setLocus(getAttribute(element, SessionAttribute.LOCUS.getText()));
         session.setGroupTracksBy(getAttribute(element, SessionAttribute.GROUP_TRACKS_BY.getText()));
+
+        String nextAutoscaleGroup = getAttribute(element, SessionAttribute.NEXT_AUTOSCALE_GROUP.getText());
+        if(nextAutoscaleGroup != null) {
+            try {
+                session.setNextAutoscaleGroup(Integer.parseInt(nextAutoscaleGroup));
+            } catch (NumberFormatException e) {
+                log.error("Error setting next autoscale group", e);
+            }
+        }
 
         String removeEmptyTracks = getAttribute(element, "removeEmptyTracks");
         if (removeEmptyTracks != null) {

@@ -91,8 +91,6 @@ public class TrackMenuUtils {
             WindowFunction.none
     };
 
-    private static int groupAutoScaleCounter = 1;
-
     private static List<TrackMenuItemBuilder> trackMenuItems = new ArrayList<TrackMenuItemBuilder>();
 
     /**
@@ -747,7 +745,7 @@ public class TrackMenuUtils {
                         for (Track track : selectedTracks) {
                             track.setDataRange(axisDefinition);
                             track.setAutoScale(false);
-                            track.removeAttribute("GROUP_AUTOSCALE");
+                            track.removeAttribute(AttributeManager.GROUP_AUTOSCALE);
                         }
                         IGV.getInstance().repaint();
                     }
@@ -818,7 +816,7 @@ public class TrackMenuUtils {
                     for (Track t : selectedTracks) {
                         t.setAutoScale(autoScale);
                         if (autoScale) {
-                            t.removeAttribute("GROUP_AUTOSCALE");
+                            t.removeAttribute(AttributeManager.GROUP_AUTOSCALE);
 
                         }
                     }
@@ -837,11 +835,12 @@ public class TrackMenuUtils {
         autoscaleItem.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {
-                boolean autoScale = autoscaleItem.isSelected();
+                int nextAutoscaleGroup = IGV.getInstance().getSession().getNextAutoscaleGroup();
                 for (Track t : selectedTracks) {
-                    t.setAttributeValue("GROUP_AUTOSCALE", String.valueOf(groupAutoScaleCounter));
+                    t.setAttributeValue(AttributeManager.GROUP_AUTOSCALE, String.valueOf(nextAutoscaleGroup));
                 }
-                groupAutoScaleCounter++;
+                IGV.getInstance().getSession().incrementNextAutoscaleGroup();
+
 
                 PreferenceManager.getInstance().setShowAttributeView(true);
                 IGV.getInstance().getMainPanel().invalidate();

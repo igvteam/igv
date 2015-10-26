@@ -137,6 +137,11 @@ public class SessionWriter {
                 globalElement.setAttribute(SessionAttribute.GROUP_TRACKS_BY.getText(), groupBy);
             }
 
+            int nextAutoscaleGroup = session.getNextAutoscaleGroup();
+            if(nextAutoscaleGroup > 1) {
+                globalElement.setAttribute(SessionAttribute.NEXT_AUTOSCALE_GROUP.getText(), String.valueOf(nextAutoscaleGroup));
+            }
+
             if (session.isRemoveEmptyPanels()) {
                 globalElement.setAttribute("removeEmptyTracks", "true");
             }

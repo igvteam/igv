@@ -151,7 +151,7 @@ public class DataPanelPainter {
             List<Track> trackList = group.getTracks();
             synchronized (trackList) {
                 for(Track track : trackList) {
-                    String asGroup = track.getAttributeValue("GROUP_AUTOSCALE");
+                    String asGroup = track.getAttributeValue(AttributeManager.GROUP_AUTOSCALE);
                     if(!autoscaleGroups.containsKey(asGroup)) {
                         autoscaleGroups.put(asGroup, new ArrayList<Track>());
                     }

@@ -52,12 +52,14 @@ public class Session {
 
     private static Logger log = Logger.getLogger(Session.class);
 
+
     //This doesn't mean genelist or not, the same way it does in FrameManager
     public enum GeneListMode {NORMAL, CURSOR}
 
     private int version;
     private String path;
     private String groupTracksBy;
+    private int nextAutoscaleGroup;
     private ReferenceFrame referenceFrame = FrameManager.getDefaultFrame();
     private TrackFilter filter;
     private HashMap<String, String> preferences;
@@ -88,6 +90,7 @@ public class Session {
     public void reset(String path) {
 
         this.path = path;
+        this.nextAutoscaleGroup = 1;
         regionsOfInterest = new LinkedHashMap<String, Collection<RegionOfInterest>>();
         regionsOfInterestObservable =
                 new ObservableForObject<Map<String, Collection<RegionOfInterest>>>(regionsOfInterest);
@@ -111,7 +114,6 @@ public class Session {
 
     public void setDividerFractions(double[] divs) {
         this.dividerFractions = divs;
-
     }
 
     public double[] getDividerFractions() {
@@ -399,6 +401,19 @@ public class Session {
 
     public void setVersion(int version) {
         this.version = version;
+    }
+
+
+    public void setNextAutoscaleGroup(int nextAutoscaleGroup) {
+        this.nextAutoscaleGroup = nextAutoscaleGroup;
+    }
+
+    public int getNextAutoscaleGroup() {
+        return this.nextAutoscaleGroup;
+    }
+
+    public synchronized void incrementNextAutoscaleGroup() {
+        this.nextAutoscaleGroup++;
     }
 
 
