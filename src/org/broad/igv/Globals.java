@@ -126,7 +126,7 @@ public class Globals {
     //is named rather than the full path given
     public static String BEDtoolsPath = "/usr/local/bin/bedtools"; //"bedtools"
     public static boolean toolsMenuEnabled = false;
-    public static boolean development;
+    public static boolean development = false;
 
     public static String versionURL = "http://www.broadinstitute.org/igv/projects/current/version.txt";
     public static String downloadURL = "http://www.broadinstitute.org/igv/download";
@@ -144,8 +144,8 @@ public class Globals {
 
          //Runtime property overrides compile-time property, if both exist.
         //If neither exist we default to false
-        final String prodProperty = System.getProperty("development", properties.getProperty("development", "false"));
-        development = Boolean.parseBoolean(prodProperty);
+        final String developmentProperty = System.getProperty("development", properties.getProperty("development", "false"));
+        development = Boolean.parseBoolean(developmentProperty);
         if(development){
             log.warn("Development mode is enabled");
         }

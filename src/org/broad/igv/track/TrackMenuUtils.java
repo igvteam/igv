@@ -327,7 +327,7 @@ public class TrackMenuUtils {
 
         menu.add(getAutoscaleItem(tracks));
 
-        if (tracks.size() > 1) {
+        if (tracks.size() > 1 && Globals.isDevelopment()) {
             menu.add(getGroupAutoscaleItem(tracks));
         }
 
