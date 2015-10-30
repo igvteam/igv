@@ -81,7 +81,7 @@ public class DataPanelPainter {
         int trackX = 0;
         int trackY = 0;
 
-        groupAutoscale(groups, context);
+       // groupAutoscale(groups, context);
 
 
         for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
@@ -231,7 +231,7 @@ public class DataPanelPainter {
 
                         DataRange newDR = new DataRange(min, base, max, dr.isDrawBaseline());
                         newDR.setType(dr.getType());
-                        track.setAutoScale(false);
+                        //track.setAutoScale(false);
                         track.setDataRange(newDR);
                     }
                 }
