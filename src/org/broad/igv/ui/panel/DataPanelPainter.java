@@ -81,7 +81,7 @@ public class DataPanelPainter {
         int trackX = 0;
         int trackY = 0;
 
-       // groupAutoscale(groups, context);
+        groupAutoscale(groups, context);
 
 
         for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
@@ -150,18 +150,20 @@ public class DataPanelPainter {
             TrackGroup group = groupIter.next();
             List<Track> trackList = group.getTracks();
             synchronized (trackList) {
-                for(Track track : trackList) {
+                for (Track track : trackList) {
                     String asGroup = track.getAttributeValue(AttributeManager.GROUP_AUTOSCALE);
-                    if(!autoscaleGroups.containsKey(asGroup)) {
-                        autoscaleGroups.put(asGroup, new ArrayList<Track>());
+                    if (asGroup != null) {
+                        if (!autoscaleGroups.containsKey(asGroup)) {
+                            autoscaleGroups.put(asGroup, new ArrayList<Track>());
+                        }
+                        autoscaleGroups.get(asGroup).add(track);
                     }
-                    autoscaleGroups.get(asGroup).add(track);
                 }
             }
         }
 
-        if(autoscaleGroups.size() > 0) {
-            for(List<Track> tracks : autoscaleGroups.values()) {
+        if (autoscaleGroups.size() > 0) {
+            for (List<Track> tracks : autoscaleGroups.values()) {
                 autoscale(context, tracks);
             }
         }
@@ -231,7 +233,6 @@ public class DataPanelPainter {
 
                         DataRange newDR = new DataRange(min, base, max, dr.isDrawBaseline());
                         newDR.setType(dr.getType());
-                        //track.setAutoScale(false);
                         track.setDataRange(newDR);
                     }
                 }
