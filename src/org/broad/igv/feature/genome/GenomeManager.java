@@ -1310,16 +1310,19 @@ public class GenomeManager {
      * Download a fasta file. Also attempts to download the index, and create an index
      * if that download fails
      *
-     * @param fastaPath     Full source path of fasta
+     * @param path     Full source path of fasta
      * @param targetDir     Destination directory for fasta file
      * @param targetName    Destination file name for fasta file
      * @param dialogsParent Parent of progress dialog shown. None shown if null
      * @return
      * @throws IOException
      */
-    private RunnableResult downloadFasta(String fastaPath, File targetDir, String targetName, Frame dialogsParent) throws IOException {
+    private RunnableResult downloadFasta(String path, File targetDir, String targetName, Frame dialogsParent) throws IOException {
         //Simple case, just need to copy fasta and create index
         File destFile = new File(targetDir, targetName);
+
+        String fastaPath = convertToS3(path);
+
         //TODO PROMPT TO OVERWRITE IF FILE EXISTS
         URLDownloader urlDownloader = HttpUtils.getInstance().downloadFile(fastaPath, destFile, dialogsParent, "Downloading genome sequence");
         RunnableResult fastaResult = urlDownloader.getResult();
@@ -1338,6 +1341,20 @@ public class GenomeManager {
         }
 
         return fastaResult;
+    }
+
+    /**
+     * Specific to Broad Amazon servers -- use S3 downwload rather than cloudfront
+     * @param path
+     * @return
+     */
+    private String convertToS3(String path) {
+        if(path.startsWith("http://igvdata") || path.startsWith("https://igvdata")) {
+            return path.replaceFirst("igvdata", "igv");
+        }
+        else {
+            return path;
+        }
     }
 
     /**
