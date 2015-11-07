@@ -2580,22 +2580,22 @@ public class IGV {
                 CommandListener.start(port);
             }
 
-            UIUtilities.invokeOnEventThread(new Runnable() {
-                public void run() {
-                    mainFrame.setVisible(true);
-                    if (igvArgs.getLocusString() != null) {
-                        goToLocus(igvArgs.getLocusString());
-                    }
-                    if (runningBatch) {
-                        LongRunningTask.submit(new BatchRunner(igvArgs.getBatchFile()));
-                    } else {
-                        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_LOS)) {
-                            (new LOSDialog(mainFrame)).setVisible(true);
-                        }
-                    }
-
-                }
-            });
+//            UIUtilities.invokeOnEventThread(new Runnable() {
+//                public void run() {
+//                    mainFrame.setVisible(true);
+//                    if (igvArgs.getLocusString() != null) {
+//                        goToLocus(igvArgs.getLocusString());
+//                    }
+//                    if (runningBatch) {
+//                        LongRunningTask.submit(new BatchRunner(igvArgs.getBatchFile()));
+//                    } else {
+//                        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_LOS)) {
+//                            (new LOSDialog(mainFrame)).setVisible(true);
+//                        }
+//                    }
+//
+//                }
+//            });
 
             synchronized (IGV.getInstance()) {
                 IGV.getInstance().notifyAll();
