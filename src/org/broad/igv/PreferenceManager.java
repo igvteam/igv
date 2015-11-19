@@ -506,46 +506,46 @@ public class PreferenceManager implements PropertyManager {
 
     private void checkForAlignmentChanges(Map<String, String> updatedPreferenceMap) {
 
-            WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-            try {
-                boolean reloadSAM = false;
-                boolean updateCoverageTrack = false;
-                for (String key : SAM_PREFERENCE_KEYS) {
-                    if (updatedPreferenceMap.containsKey(key)) {
-                        reloadSAM = true;
-                        break;
-                    }
-
-                }
-                if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_ALLELE_THRESHOLD)) {
-                    updateCoverageTrack = true;
+        WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
+        try {
+            boolean reloadSAM = false;
+            boolean updateCoverageTrack = false;
+            for (String key : SAM_PREFERENCE_KEYS) {
+                if (updatedPreferenceMap.containsKey(key)) {
+                    reloadSAM = true;
+                    break;
                 }
 
-                boolean updateSpliceJunctions = false;
-                for (String key : SPLICE_JUNCTION_KEYS) {
-                    if (updatedPreferenceMap.containsKey(key)) {
-                        updateSpliceJunctions = true;
-                        break;
-                    }
-                }
-
-
-                final IGV igv = IGV.getInstance();
-                if (updateSpliceJunctions) {
-                    igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.SPLICE_JUNCTION);
-                }
-                if (reloadSAM) {
-                    if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_MAX_VISIBLE_RANGE)) {
-                        igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.VISIBILITY_WINDOW);
-                    }
-                    igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.RELOAD);
-                }
-                if (updateCoverageTrack) {
-                    igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.ALLELE_THRESHOLD);
-                }
-            } finally {
-                WaitCursorManager.removeWaitCursor(token);
             }
+            if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_ALLELE_THRESHOLD)) {
+                updateCoverageTrack = true;
+            }
+
+            boolean updateSpliceJunctions = false;
+            for (String key : SPLICE_JUNCTION_KEYS) {
+                if (updatedPreferenceMap.containsKey(key)) {
+                    updateSpliceJunctions = true;
+                    break;
+                }
+            }
+
+
+            final IGV igv = IGV.getInstance();
+            if (updateSpliceJunctions) {
+                igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.SPLICE_JUNCTION);
+            }
+            if (reloadSAM) {
+                if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_MAX_VISIBLE_RANGE)) {
+                    igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.VISIBILITY_WINDOW);
+                }
+                igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.RELOAD);
+            }
+            if (updateCoverageTrack) {
+                igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.ALLELE_THRESHOLD);
+            }
+        } finally {
+            WaitCursorManager.removeWaitCursor(token);
+        }
 
 
     }
@@ -779,6 +779,12 @@ public class PreferenceManager implements PropertyManager {
      */
     public void override(String key, String value) {
         preferences.putOverride(key, value);
+
+        Map<String, String> updatedPrefs = new HashMap<String, String>();
+        updatedPrefs.put(key, value);
+        checkForAlignmentChanges(updatedPrefs);
+
+
         clearCaches();
     }
 
