@@ -102,7 +102,7 @@ public class Ga4ghAPIHelper {
 
                 String result = doPost(provider, "/readgroupsets/search", contentToPost, null); //"fields=readsets(id,name, fileData),nextPageToken");
 
-                if(result == null) return null;
+                if (result == null) return null;
 
                 JsonParser parser = new JsonParser();
                 JsonObject obj = parser.parse(result).getAsJsonObject();
@@ -157,7 +157,7 @@ public class Ga4ghAPIHelper {
 
                 String result = doPost(provider, "/references/search", contentToPost, null); //"fields=readsets(id,name, fileData),nextPageToken");
 
-                if(result == null) return null;
+                if (result == null) return null;
 
                 JsonParser parser = new JsonParser();
                 JsonObject obj = parser.parse(result).getAsJsonObject();
@@ -196,7 +196,7 @@ public class Ga4ghAPIHelper {
                     ", \"start\": \"" + start + "\"" +
                     ", \"end\": \"" + end + "\"" +
                     ", \"pageSize\": \"10000\"" +
-                     (pageToken == null ? "" : ", \"pageToken\": " + pageToken) +
+                    (pageToken == null ? "" : ", \"pageToken\": " + pageToken) +
                     "}";
 
             String readString = doPost(provider, "/reads/search", contentToPost, "");
@@ -297,10 +297,14 @@ public class Ga4ghAPIHelper {
 
     static void handleHttpException(URL url, HttpURLConnection connection, Exception e) throws IOException {
         int rs = connection.getResponseCode();
-        if(rs == 404) {
-            MessageUtils.showErrorMessage("The requested resource was not found<br>" + url, e);
+
+        String sb = getErrorMessage(connection);
+        if (sb != null && sb.length() > 0) {
+            MessageUtils.showErrorMessage(sb, e);
         }
-        else if (rs == 401 || rs == 403) {
+        else if (rs == 404) {
+            MessageUtils.showErrorMessage("The requested resource was not found<br>" + url, e);
+        } else if (rs == 401 || rs == 403) {
             displayAuthorizationDialog(url.getHost());
         } else {
             MessageUtils.showErrorMessage("Error accessing resource", e);
@@ -308,9 +312,32 @@ public class Ga4ghAPIHelper {
         }
     }
 
+    private static String getErrorMessage(HttpURLConnection connection) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(connection.getErrorStream())));
+        StringBuffer sb = new StringBuffer();
+        String str = br.readLine();
+        while (str != null) {
+            sb.append(str);
+            str = br.readLine();
+        }
+        br.close();
+
+        JsonParser parser = new JsonParser();
+        JsonObject obj = parser.parse(sb.toString()).getAsJsonObject();
+
+        JsonObject errorObject = obj.getAsJsonObject("error");
+        if (errorObject != null) {
+            JsonPrimitive msg = errorObject.getAsJsonPrimitive("message");
+            if (msg != null) return msg.getAsString();
+        }
+
+
+        return sb.toString();
+    }
+
     static void displayAuthorizationDialog(String host) {
 
-        String message = "The requested resource at '"  + host + "' requires authorization.";
+        String message = "The requested resource at '" + host + "' requires authorization.";
         Icon icon = null;
         int option = JOptionPane.showOptionDialog(IGV.getMainFrame(),
                 message,
@@ -322,7 +349,7 @@ public class Ga4ghAPIHelper {
                 JOptionPane.YES_OPTION
         );
 
-        if(option == 1) {
+        if (option == 1) {
             try {
                 OAuthUtils.getInstance().openAuthorizationPage();
             } catch (Exception e) {
