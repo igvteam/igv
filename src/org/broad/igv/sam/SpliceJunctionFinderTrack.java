@@ -70,6 +70,14 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
     // directory,  so this field might be null at any given time.  It is updated each repaint.
     JComponent parent;
 
+    public static void setStrandOption(StrandOption so) {
+        strandOption = so;
+    }
+
+    public static StrandOption getStrandOption() {
+        return strandOption;
+    }
+
 
     public SpliceJunctionFinderTrack(ResourceLocator locator, String name, IAlignmentDataManager dataManager, StrandOption ignoreStrand) {
         super(locator, locator.getPath() + "_junctions", name);
@@ -89,15 +97,6 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
         return context.getScale() < minVisibleScale;
     }
 
-
-    public static void setStrandOption(StrandOption so) {
-        strandOption = so;
-    }
-
-
-    public static StrandOption getStrandOption() {
-        return strandOption;
-    }
 
     public void clear() {
         this.packedFeaturesMap.clear();

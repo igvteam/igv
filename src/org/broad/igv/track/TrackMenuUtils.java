@@ -532,7 +532,7 @@ public class TrackMenuUtils {
                             new File("visibleData.bed"),
                             FileDialogUtils.SAVE);
 
-                    exportVisibleFeatures(outFile.getAbsolutePath(), tracks, frame.getCurrentRange());
+                    exportVisibleFeatures(outFile.getAbsolutePath(), tracks, frame);
                 }
             });
         } else if (ft instanceof AlignmentTrack) {
@@ -590,11 +590,12 @@ public class TrackMenuUtils {
      * BED format
      * TODO Move somewhere else? run on separate thread?  Probably shouldn't be here
      *
+     * @param range
      * @param outPath
      * @param tracks
-     * @param range
+     * @param frame
      */
-    static void exportVisibleFeatures(String outPath, Collection<Track> tracks, Range range) {
+    static void exportVisibleFeatures(String outPath, Collection<Track> tracks, ReferenceFrame frame) {
         PrintWriter writer;
         try {
             writer = new PrintWriter(outPath);
@@ -606,7 +607,8 @@ public class TrackMenuUtils {
             if (track instanceof FeatureTrack) {
                 FeatureTrack fTrack = (FeatureTrack) track;
                 //Can't trust FeatureTrack.getFeatures to limit itself, so we filter
-                List<Feature> features = fTrack.getFeatures(range.getChr(), range.getStart(), range.getEnd());
+                List<Feature> features = fTrack.getVisibleFeatures(frame);
+                Range range = frame.getCurrentRange();
                 Predicate<Feature> pred = FeatureUtils.getOverlapPredicate(range.getChr(), range.getStart(), range.getEnd());
                 features = CollUtils.filter(features, pred);
                 IGVBEDCodec codec = new IGVBEDCodec();

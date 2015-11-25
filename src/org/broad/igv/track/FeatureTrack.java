@@ -1120,5 +1120,12 @@ public class FeatureTrack extends AbstractTrack {
         this.packedFeaturesMap.clear();
     }
 
+    public List<Feature> getVisibleFeatures(ReferenceFrame frame) {
+
+        PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
+        return (packedFeatures == null) ? Collections.emptyList() : packedFeatures.getFeatures();
+
+        
+    }
 }
 
