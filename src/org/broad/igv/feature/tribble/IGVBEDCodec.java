@@ -25,7 +25,7 @@
 
 package org.broad.igv.feature.tribble;
 
-import com.sun.org.apache.xpath.internal.operations.Mult;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.cli_plugin.Argument;
 import org.broad.igv.cli_plugin.LineFeatureDecoder;
@@ -37,7 +37,6 @@ import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.collections.MultiMap;
 import htsjdk.tribble.Feature;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -51,13 +50,13 @@ import java.util.regex.Pattern;
  */
 public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureEncoder<Feature>, LineFeatureDecoder<BasicFeature> {
 
+    private static final Logger log = Logger.getLogger(IGVBEDCodec.class);
+
     static final Pattern BR_PATTERN = Pattern.compile("<br>");
     static final Pattern EQ_PATTERN = Pattern.compile("=");
 
-    enum FeatureType {BED, GAPPED_PEAK};
 
     Genome genome;
-    FeatureType featureType;
 
     public IGVBEDCodec() {
         this(null);
@@ -68,10 +67,10 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
     }
 
     public IGVBEDCodec(Genome genome, FeatureType featureType) {
-        super(BasicFeature.class);
-        this.featureType = featureType;
+        super(BasicFeature.class, featureType);
         this.genome = genome;
     }
+
 
     //@Override
     public BasicFeature decode(String[] tokens) {
@@ -95,7 +94,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
             end = Integer.parseInt(tokens[2]);
         }
 
-        BasicFeature feature = spliceJunctions ?
+        BasicFeature feature = featureType == FeatureType.SPLICE_JUNCTION ?
                 new SpliceJunctionFeature(chr, start, end) :
                 new BasicFeature(chr, start, end);
 
@@ -134,7 +133,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
 
             } else {
                 String name = tokens[3].replaceAll("\"", "");
-                if(name.equals(".")) name = "";   // Convention
+                if (name.equals(".")) name = "";   // Convention
                 feature.setName(name);
                 feature.setIdentifier(name);
             }
@@ -147,7 +146,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
             try {
                 float score = Float.parseFloat(tokens[4]);
                 feature.setScore(score);
-                if (spliceJunctions) {
+                if (featureType == FeatureType.SPLICE_JUNCTION ) {
                     ((SpliceJunctionFeature) feature).setJunctionDepth((int) score);
                 }
             } catch (NumberFormatException numberFormatException) {
@@ -179,7 +178,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
             try {
                 int thickStart = Integer.parseInt(tokens[6]);
                 int thickEnd = Integer.parseInt(tokens[7]);
-                if(thickStart >= start && thickEnd <= end) {
+                if (thickStart >= start && thickEnd <= end) {
                     feature.setThickStart(Integer.parseInt(tokens[6]));
                     feature.setThickEnd(Integer.parseInt(tokens[7]));
                 }
@@ -201,7 +200,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
         if (tokenCount > 11) {
             createExons(start, tokens, feature, chr, feature.getStrand());
             //todo: some refactoring that allows this hack to be removed
-            if (spliceJunctions) {
+            if (featureType == FeatureType.SPLICE_JUNCTION ) {
                 SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
 
                 List<Exon> exons = feature.getExons();
@@ -212,12 +211,31 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
             }
         }
 
-        if(tokenCount > 14 && featureType == FeatureType.GAPPED_PEAK) {
+        if (tokenCount > 14 && featureType == FeatureType.GAPPED_PEAK) {
             MultiMap<String, String> attributes = new MultiMap<String, String>();
             attributes.put("Signal Value", tokens[12]);
             attributes.put("pValue (-log10)", tokens[13]);
             attributes.put("qValue (-log10)", tokens[14]);
             feature.setAttributes(attributes);
+        }
+
+        else if(tokenCount > 13 && featureType == FeatureType.SPLICE_JUNCTION ) {
+            try {
+                String [] startFlanking = tokens[12].split(",");
+                int [] startFlankingDeptyArray = new int[startFlanking.length];
+                for(int i=0; i<startFlanking.length; i++) {
+                    startFlankingDeptyArray[i] = Integer.parseInt(startFlanking[i]);
+                }
+                String [] endFlanking = tokens[13].split(",");
+                int [] endFlankingDeptyArray = new int[endFlanking.length];
+                for(int i=0; i<endFlanking.length ;i++) {
+                    endFlankingDeptyArray[i] = Integer.parseInt(endFlanking[i]);
+                }
+                ((SpliceJunctionFeature) feature).setStartFlankingRegionDepthArray(startFlankingDeptyArray);
+                ((SpliceJunctionFeature) feature).setEndFlankingRegionDepthArray(endFlankingDeptyArray);
+            } catch (NumberFormatException e) {
+                log.error("Error parsing flanking array", e);
+            }
         }
 
         return feature;
@@ -318,8 +336,10 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
             basicFeature = (BasicFeature) feature;
         }
 
-        if (basicFeature.getName() != null || (isGffTags() && basicFeature.getDescription() != null)) {
+        boolean hasName = (basicFeature.getName() != null && basicFeature.getName().length() > 0) ||
+                (isGffTags() && basicFeature.getDescription() != null && basicFeature.getDescription().length() > 0);
 
+        if (hasName) {
             buffer.append("\t");
 
             if (isGffTags() && basicFeature.getDescription() != null) {
@@ -341,62 +361,88 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
             } else {
                 buffer.append(basicFeature.getName());
             }
+        }
 
-            boolean more = !Float.isNaN(basicFeature.getScore()) || basicFeature.getStrand() != Strand.NONE ||
-                    basicFeature.getColor() != null || basicFeature.getExonCount() > 0;
+        boolean more = !Float.isNaN(basicFeature.getScore()) || basicFeature.getStrand() != Strand.NONE ||
+                basicFeature.getColor() != null  || basicFeature.getExonCount() > 0;
+
+        if (more) {
+
+            // Must have a non-whitespace name column to proceed
+            if(!hasName) {
+                buffer.append("\t.");
+            }
+
+            buffer.append("\t");
+            // UCSC scores are integers between 0 and 1000, but
+            float score = basicFeature.getScore();
+            if (Float.isNaN(score)) {
+                buffer.append("1000");
+
+            } else {
+                boolean isInt = (Math.floor(score) == score);
+                buffer.append(String.valueOf(isInt ? (int) score : score));
+            }
+
+
+            more = basicFeature.getStrand() != Strand.NONE || basicFeature.getColor() != null ||
+                    (basicFeature.getThickStart() != basicFeature.getStart()) || basicFeature.getExonCount() > 0;
 
             if (more) {
+
                 buffer.append("\t");
-                // UCSC scores are integers between 0 and 1000, but
-                float score = basicFeature.getScore();
-                if (Float.isNaN(score)) {
-                    buffer.append("1000");
+                Strand strand = basicFeature.getStrand();
+                if (strand == Strand.NONE) buffer.append(" ");
+                else if (strand == Strand.POSITIVE) buffer.append("+");
+                else if (strand == Strand.NEGATIVE) buffer.append("-");
 
-                } else {
-                    boolean isInt = (Math.floor(score) == score);
-                    buffer.append(String.valueOf(isInt ? (int) score : score));
-                }
+                more = basicFeature.getColor() != null  || basicFeature.getExonCount() > 0;
 
-
-                more = basicFeature.getStrand() != Strand.NONE || basicFeature.getColor() != null || basicFeature.getExonCount() > 0;
                 if (more) {
-                    buffer.append("\t");
-                    Strand strand = basicFeature.getStrand();
-                    if (strand == Strand.NONE) buffer.append(" ");
-                    else if (strand == Strand.POSITIVE) buffer.append("+");
-                    else if (strand == Strand.NEGATIVE) buffer.append("-");
+                    // Must continue if basicFeature has color or exons
+                    java.util.List<Exon> exons = basicFeature.getExons();
 
-                    more = basicFeature.getColor() != null || basicFeature.getExonCount() > 0;
+                    if (basicFeature.getColor() != null || exons != null) {
+                        buffer.append("\t");
+                        buffer.append(String.valueOf(basicFeature.getThickStart()));
+                        buffer.append("\t");
+                        buffer.append(String.valueOf(basicFeature.getThickEnd()));
+                        buffer.append("\t");
 
-                    if (more) {
-                        // Must continue if basicFeature has color or exons
-                        java.util.List<Exon> exons = basicFeature.getExons();
-                        if (basicFeature.getColor() != null || exons != null) {
-                            buffer.append("\t");
-                            buffer.append(String.valueOf(basicFeature.getThickStart()));
-                            buffer.append("\t");
-                            buffer.append(String.valueOf(basicFeature.getThickEnd()));
-                            buffer.append("\t");
+                        java.awt.Color c = basicFeature.getColor();
+                        buffer.append(c == null ? "." : ColorUtilities.colorToString(c));
+                        buffer.append("\t");
 
-                            java.awt.Color c = basicFeature.getColor();
-                            buffer.append(c == null ? "." : ColorUtilities.colorToString(c));
+                        if (exons != null && exons.size() > 0) {
+                            buffer.append(String.valueOf(exons.size()));
                             buffer.append("\t");
 
-                            if (exons != null && exons.size() > 0) {
-                                buffer.append(String.valueOf(exons.size()));
-                                buffer.append("\t");
+                            for (Exon exon : exons) {
+                                buffer.append(String.valueOf(exon.getLength()));
+                                buffer.append(",");
+                            }
+                            buffer.append("\t");
+                            for (Exon exon : exons) {
+                                int exonStart = exon.getStart() - featureStart;
+                                buffer.append(String.valueOf(exonStart));
+                                buffer.append(",");
+                            }
 
-                                for (Exon exon : exons) {
-                                    buffer.append(String.valueOf(exon.getLength()));
-                                    buffer.append(",");
-                                }
-                                buffer.append("\t");
-                                for (Exon exon : exons) {
-                                    int exonStart = exon.getStart() - featureStart;
-                                    buffer.append(String.valueOf(exonStart));
-                                    buffer.append(",");
-                                }
+                        }
+                    }
 
+                    if(basicFeature instanceof SpliceJunctionFeature) {
+                        SpliceJunctionFeature spliceJunctionFeature = (SpliceJunctionFeature) basicFeature;
+                        int [] startFlanking = spliceJunctionFeature.getStartFlankingRegionDepthArray();
+                        int [] endFlanking = spliceJunctionFeature.getEndFlankingRegionDepthArray();
+                        if(startFlanking != null && startFlanking.length > 0 && endFlanking != null && endFlanking.length > 0) {
+                            buffer.append("\t" + startFlanking[0]);
+                            for(int i=1; i<startFlanking.length; i++) {
+                                buffer.append("," + startFlanking[i]);
+                            }
+                            buffer.append("\t" + endFlanking[0]);
+                            for(int i=1; i<endFlanking.length; i++) {
+                                buffer.append("," + endFlanking[i]);
                             }
                         }
                     }

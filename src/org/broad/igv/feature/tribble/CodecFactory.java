@@ -28,6 +28,7 @@ package org.broad.igv.feature.tribble;
 import htsjdk.samtools.util.BlockCompressedInputStream;
 import org.apache.log4j.Logger;
 import org.broad.igv.data.cufflinks.FPKMTrackingCodec;
+import org.broad.igv.feature.FeatureType;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.gwas.EQTLCodec;
 import org.broad.igv.peaks.PeakCodec;
@@ -93,11 +94,11 @@ public class CodecFactory {
         } else if (fn.endsWith(".bed")) {
             final IGVBEDCodec codec = new IGVBEDCodec(genome);
             if (fn.endsWith("junctions.bed")) {
-                codec.setSpliceJunctions(true);
+                codec.setFeatureType(FeatureType.SPLICE_JUNCTION);
             }
             return codec;
         } else if (fn.endsWith(".gappedpeak")) {
-            return new IGVBEDCodec(genome, IGVBEDCodec.FeatureType.GAPPED_PEAK);
+            return new IGVBEDCodec(genome, FeatureType.GAPPED_PEAK);
         }else if (fn.endsWith(".dgv")) {
             return new DGVCodec(genome);
         } else if (fn.contains("refflat")) {

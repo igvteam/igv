@@ -28,6 +28,9 @@ package org.broad.igv.feature;
 
 import org.broad.igv.track.WindowFunction;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * A feature class for splice junctions, with depth information for flanking regions if available.
@@ -124,6 +127,27 @@ public class SpliceJunctionFeature extends BasicFeature {
         return junctionDepth;
     }
 
+    /**
+     * Splice junction features by definition have 2 "exons", or more precisely "blocks" in bed lingo.  This
+     * follows Tophat's splice junction bed feature convention.  They are "lazily" created since these are only
+     * used to export splice junction features in Tophat compatible format.
+     * @return
+     */
+    @Override
+    public List<Exon> getExons() {
+        if(exons == null) {
+            exons = new ArrayList<Exon>(2);
+            exons.add(new Exon(getChr(), start, junctionStart, getStrand()));
+            exons.add(new Exon(getChr(), junctionEnd, end, getStrand()));
+        }
+        return exons;
+    }
+
+    @Override
+    public int getExonCount() {
+        return getExons().size();
+    }
+
     public int getJunctionDepth() {
         return junctionDepth;
     }
@@ -160,8 +184,16 @@ public class SpliceJunctionFeature extends BasicFeature {
         return startFlankingRegionDepthArray;
     }
 
+    public void setStartFlankingRegionDepthArray(int[] startFlankingRegionDepthArray) {
+        this.startFlankingRegionDepthArray = startFlankingRegionDepthArray;
+    }
+
     public int[] getEndFlankingRegionDepthArray() {
         return endFlankingRegionDepthArray;
+    }
+
+    public void setEndFlankingRegionDepthArray(int[] endFlankingRegionDepthArray) {
+        this.endFlankingRegionDepthArray = endFlankingRegionDepthArray;
     }
 
     public boolean hasFlankingRegionDepthArrays() {

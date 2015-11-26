@@ -1120,12 +1120,24 @@ public class FeatureTrack extends AbstractTrack {
         this.packedFeaturesMap.clear();
     }
 
+    /**
+     * Return currently loaded features.  Used to export features to a file.
+     * @param frame
+     * @return
+     */
     public List<Feature> getVisibleFeatures(ReferenceFrame frame) {
-
         PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
         return (packedFeatures == null) ? Collections.emptyList() : packedFeatures.getFeatures();
 
-        
+
+    }
+
+    /**
+     * Return "track" line information for exporting features to a file.  Default is null, subclasses may override.
+     * @return
+     */
+    public String getExportTrackLine() {
+        return null;
     }
 }
 

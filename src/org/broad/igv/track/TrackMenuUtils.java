@@ -606,6 +606,12 @@ public class TrackMenuUtils {
         for (Track track : tracks) {
             if (track instanceof FeatureTrack) {
                 FeatureTrack fTrack = (FeatureTrack) track;
+
+                String trackLine = fTrack.getExportTrackLine();
+                if(trackLine != null) {
+                    writer.println(trackLine);
+                }
+
                 //Can't trust FeatureTrack.getFeatures to limit itself, so we filter
                 List<Feature> features = fTrack.getVisibleFeatures(frame);
                 Range range = frame.getCurrentRange();

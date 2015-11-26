@@ -30,7 +30,7 @@ package org.broad.igv.feature;
  * @author jrobinso
  */
 public enum FeatureType {
-    OTHER, GENE, PROMOTER, MISC_RNA, REPEAT_REGION, LTR, MUTATION
+    OTHER, GENE, PROMOTER, MISC_RNA, REPEAT_REGION, LTR, MUTATION, BED, GAPPED_PEAK, SPLICE_JUNCTION
 
 }
 

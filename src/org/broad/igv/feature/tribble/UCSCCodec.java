@@ -25,6 +25,7 @@
 
 package org.broad.igv.feature.tribble;
 
+import org.broad.igv.feature.FeatureType;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
@@ -42,12 +43,17 @@ public abstract class UCSCCodec<T extends Feature> extends AsciiFeatureCodec<T> 
 
     GFFCodec.GFF3Helper tagHelper = new GFFCodec.GFF3Helper();
     protected boolean gffTags = false;
-    protected boolean spliceJunctions;
 
     FeatureFileHeader header;
+    FeatureType featureType;
 
     protected UCSCCodec(Class myClass) {
         super(myClass);
+    }
+    
+    protected UCSCCodec(Class myClass, FeatureType featureType) {
+        super(myClass);
+        this.featureType = featureType;
     }
 
     /**
@@ -105,7 +111,7 @@ public abstract class UCSCCodec<T extends Feature> extends AsciiFeatureCodec<T> 
 
             Class rendererClass = tp.getRendererClass();
             if (rendererClass != null && rendererClass.isAssignableFrom(SpliceJunctionRenderer.class)) {
-                spliceJunctions = true;
+                featureType = FeatureType.SPLICE_JUNCTION ;
             }
 
         } else if (line.toLowerCase().contains("#gfftags")) {
@@ -120,10 +126,6 @@ public abstract class UCSCCodec<T extends Feature> extends AsciiFeatureCodec<T> 
         return decode(line);
     }
 
-    public void setSpliceJunctions(boolean b) {
-        spliceJunctions = true;
-
-    }
 
     public void setGffTags(boolean gffTags) {
         this.gffTags = gffTags;
@@ -132,4 +134,9 @@ public abstract class UCSCCodec<T extends Feature> extends AsciiFeatureCodec<T> 
     public boolean isGffTags() {
         return this.gffTags;
     }
+
+    public void setFeatureType(org.broad.igv.feature.FeatureType featureType) {
+        this.featureType = featureType;
+    }
+
 }

@@ -169,6 +169,11 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
         if (context.getPanel() != null) context.getPanel().repaint();
     }
 
+    @Override
+    public String getExportTrackLine() {
+        return "track graphType=junctions";
+    }
+
 
     @Override
     public boolean handleDataClick(TrackClickEvent te) {
