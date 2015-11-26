@@ -506,30 +506,29 @@ public class PreferenceManager implements PropertyManager {
 
     private void checkForAlignmentChanges(Map<String, String> updatedPreferenceMap) {
 
-        WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-        try {
-            boolean reloadSAM = false;
-            boolean updateCoverageTrack = false;
-            for (String key : SAM_PREFERENCE_KEYS) {
-                if (updatedPreferenceMap.containsKey(key)) {
-                    reloadSAM = true;
-                    break;
-                }
-
-            }
-            if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_ALLELE_THRESHOLD)) {
-                updateCoverageTrack = true;
+        boolean reloadSAM = false;
+        boolean updateCoverageTrack = false;
+        for (String key : SAM_PREFERENCE_KEYS) {
+            if (updatedPreferenceMap.containsKey(key)) {
+                reloadSAM = true;
+                break;
             }
 
-            boolean updateSpliceJunctions = false;
-            for (String key : SPLICE_JUNCTION_KEYS) {
-                if (updatedPreferenceMap.containsKey(key)) {
-                    updateSpliceJunctions = true;
-                    break;
-                }
+        }
+        if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_ALLELE_THRESHOLD)) {
+            updateCoverageTrack = true;
+        }
+
+        boolean updateSpliceJunctions = false;
+        for (String key : SPLICE_JUNCTION_KEYS) {
+            if (updatedPreferenceMap.containsKey(key)) {
+                updateSpliceJunctions = true;
+                break;
             }
+        }
 
 
+        if(IGV.hasInstance()) {
             final IGV igv = IGV.getInstance();
             if (updateSpliceJunctions) {
                 igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.SPLICE_JUNCTION);
@@ -543,10 +542,7 @@ public class PreferenceManager implements PropertyManager {
             if (updateCoverageTrack) {
                 igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.ALLELE_THRESHOLD);
             }
-        } finally {
-            WaitCursorManager.removeWaitCursor(token);
         }
-
 
     }
 

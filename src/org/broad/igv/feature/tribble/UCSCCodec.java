@@ -50,7 +50,7 @@ public abstract class UCSCCodec<T extends Feature> extends AsciiFeatureCodec<T> 
     protected UCSCCodec(Class myClass) {
         super(myClass);
     }
-    
+
     protected UCSCCodec(Class myClass, FeatureType featureType) {
         super(myClass);
         this.featureType = featureType;
