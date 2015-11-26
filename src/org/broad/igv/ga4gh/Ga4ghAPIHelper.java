@@ -100,7 +100,7 @@ public class Ga4ghAPIHelper {
                         ", \"pageSize\":" + maxResults +
                         "}";
 
-                String result = doPost(provider, "/readgroupsets/search", contentToPost, null); //"fields=readsets(id,name, fileData),nextPageToken");
+                String result = doPost(provider, "/readgroupsets/search", contentToPost, null, true); //"fields=readsets(id,name, fileData),nextPageToken");
 
                 if (result == null) return null;
 
@@ -155,7 +155,7 @@ public class Ga4ghAPIHelper {
                         ", \"pageSize\":" + maxResults +
                         "}";
 
-                String result = doPost(provider, "/references/search", contentToPost, null); //"fields=readsets(id,name, fileData),nextPageToken");
+                String result = doPost(provider, "/references/search", contentToPost, null, true); //"fields=readsets(id,name, fileData),nextPageToken");
 
                 if (result == null) return null;
 
@@ -182,7 +182,7 @@ public class Ga4ghAPIHelper {
     }
 
 
-    public static List<Alignment> searchReads(Ga4ghProvider provider, String readGroupSetId, String chr, int start, int end) throws IOException {
+    public static List<Alignment> searchReads(Ga4ghProvider provider, String readGroupSetId, String chr, int start, int end, boolean handleError) throws IOException {
 
         List<Alignment> alignments = new ArrayList<Alignment>(10000);
         int maxPages = 10000;
@@ -199,7 +199,7 @@ public class Ga4ghAPIHelper {
                     (pageToken == null ? "" : ", \"pageToken\": " + pageToken) +
                     "}";
 
-            String readString = doPost(provider, "/reads/search", contentToPost, "");
+            String readString = doPost(provider, "/reads/search", contentToPost, "", handleError);
 
             if (readString == null) {
                 return null;
@@ -231,7 +231,7 @@ public class Ga4ghAPIHelper {
     }
 
 
-    private static String doPost(Ga4ghProvider provider, String command, String content, String fields) throws IOException {
+    private static String doPost(Ga4ghProvider provider, String command, String content, String fields, boolean handleError) throws IOException {
 
         String authKey = provider.getAuthKey();
         String baseURL = provider.getBaseURL();
@@ -289,7 +289,9 @@ public class Ga4ghAPIHelper {
             return sb.toString();
         } catch (Exception e) {
 
-            handleHttpException(url, connection, e);
+            if (handleError) {
+                handleHttpException(url, connection, e);
+            }
 
             return null;
         }
@@ -297,12 +299,10 @@ public class Ga4ghAPIHelper {
 
     static void handleHttpException(URL url, HttpURLConnection connection, Exception e) throws IOException {
         int rs = connection.getResponseCode();
-
         String sb = getErrorMessage(connection);
         if (sb != null && sb.length() > 0) {
             MessageUtils.showErrorMessage(sb, e);
-        }
-        else if (rs == 404) {
+        } else if (rs == 404) {
             MessageUtils.showErrorMessage("The requested resource was not found<br>" + url, e);
         } else if (rs == 401 || rs == 403) {
             displayAuthorizationDialog(url.getHost());
