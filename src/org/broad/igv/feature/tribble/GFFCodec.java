@@ -128,8 +128,11 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
             trackProperties = new TrackProperties();
             ParsingUtils.parseTrackLine(line, trackProperties);
             header.setTrackProperties(trackProperties);
-        } else if (line.startsWith("##gff-version") && line.endsWith("3")) {
-            helper = new GFF3Helper();
+        } else if (line.startsWith("##gff-version") && line.contains("3")) {
+            String[] tokens = Globals.whitespacePattern.split(line);
+            if (tokens.length > 1 && tokens[1].startsWith("3")) {
+                helper = new GFF3Helper();
+            }
         } else if (line.startsWith("#nodecode") || line.startsWith("##nodecode")) {
             helper.setUrlDecoding(false);
         } else if (line.startsWith("#hide") || line.startsWith("##hide")) {
