@@ -71,7 +71,7 @@ public class WiggleDataset implements Dataset {
 
     public void sort(Set<String> unsortedChromosomes) {
         for (String c : unsortedChromosomes) {
-            String chr = genome.getChromosomeAlias(c);
+            String chr = genome.getCanonicalChrName(c);
 
             final IntArrayList starts = startLocationsMap.get(chr);
             int sz = starts.size();
@@ -185,7 +185,7 @@ public class WiggleDataset implements Dataset {
     }
 
     boolean containsChromosome(String chr){
-        String datChr = this.genome != null ? genome.getChromosomeAlias(chr) : chr;
+        String datChr = this.genome != null ? genome.getCanonicalChrName(chr) : chr;
         return startLocationsMap.containsKey(datChr);
     }
 

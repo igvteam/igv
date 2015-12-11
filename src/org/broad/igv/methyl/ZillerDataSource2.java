@@ -28,7 +28,6 @@ package org.broad.igv.methyl;
 import org.broad.igv.Globals;
 import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.bbfile.BedFeature;
-import org.broad.igv.bbfile.WigItem;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.DataTile;
 import org.broad.igv.feature.LocusScore;
@@ -69,7 +68,7 @@ public class ZillerDataSource2 extends AbstractDataSource {
             Collection<String> seqNames = reader.getChromosomeNames();
             if (seqNames != null)
                 for (String seqName : seqNames) {
-                    String igvChr = genome.getChromosomeAlias(seqName);
+                    String igvChr = genome.getCanonicalChrName(seqName);
                     if (igvChr != null && !igvChr.equals(seqName)) {
                         chrNameMap.put(igvChr, seqName);
                     }

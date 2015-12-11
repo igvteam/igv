@@ -1,7 +1,8 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2007-2015 Broad Institute
+ * Copyright (c) 2016 University of California San Diego
+ * Author: Jim Robinson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,45 +24,23 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.feature.tribble;
+package org.broad.igv.sam.cram;
 
-import org.broad.igv.Globals;
-import org.broad.igv.feature.UCSCSnpFeature;
-import org.broad.igv.feature.genome.Genome;
 
-/**
- * Created by jrobinso on 5/26/15.
- */
-public class UCSCSnpCodec extends UCSCCodec<UCSCSnpFeature> {
+import htsjdk.samtools.SAMSequenceRecord;
+import htsjdk.samtools.cram.ref.ReferenceSource;
+import org.broad.igv.feature.genome.GenomeManager;
 
-    private Genome genome;
 
-    public UCSCSnpCodec(Genome genome) {
-        super(UCSCSnpFeature.class);
-        this.genome = genome;
-    }
+public class IGVReferenceSource extends ReferenceSource {
 
     @Override
-    public UCSCSnpFeature decode(String s) {
+    public synchronized byte[] getReferenceBases(SAMSequenceRecord record, boolean tryNameVariants) {
 
-        String[] tokens = Globals.tabPattern.split(s);
+        final String name = record.getSequenceName();
 
-        if (tokens.length < 25) return null;
+        GenomeManager.getInstance().getCurrentGenome().getCanonicalChrName(name);
 
-        String chr = tokens[1];
-        if (genome != null) {
-            chr = genome.getCanonicalChrName(chr);
-        }
-        int start = Integer.parseInt(tokens[2]);
-        int end = Integer.parseInt(tokens[3]);
-        return new UCSCSnpFeature(chr, start, end, tokens);
-
-    }
-
-    @Override
-    public boolean canDecode(String path) {
-        String fn = path.toLowerCase();
-        if(fn.endsWith(".gz")) fn = fn.substring(0, fn.length()-3);
-        return fn.toLowerCase().endsWith(".snp");
+        return super.getReferenceBases(record, tryNameVariants);
     }
 }

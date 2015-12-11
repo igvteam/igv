@@ -28,13 +28,6 @@ package org.broad.igv.feature.tribble;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
-import htsjdk.tribble.Feature;
-import htsjdk.tribble.util.ParsingUtils;
-
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Codec for UCSC / ENCDOE "broad and narrow peak" files (http://genome.ucsc.edu/FAQ/FAQformat.html#format13)
@@ -91,7 +84,7 @@ public class EncodePeakCodec extends UCSCCodec {
         }
 
         String c = tokens[0];
-        String chr = genome == null ? c : genome.getChromosomeAlias(c);
+        String chr = genome == null ? c : genome.getCanonicalChrName(c);
 
         //BED format, and IGV, use starting element as 0.
         int start = Integer.parseInt(tokens[1]);

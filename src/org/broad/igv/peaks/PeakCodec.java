@@ -59,7 +59,7 @@ public class PeakCodec extends UCSCCodec<Peak> {
         int tokenCount = tokens.length;
 
         String chrToken = tokens[0];
-        String chr = genome == null ? chrToken : genome.getChromosomeAlias(chrToken);
+        String chr = genome == null ? chrToken : genome.getCanonicalChrName(chrToken);
         int start = Integer.parseInt(tokens[1]);
         int end = Integer.parseInt(tokens[2]);
         String name = tokens[3];

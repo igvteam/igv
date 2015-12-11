@@ -39,7 +39,6 @@ import org.broad.igv.sam.SAMAlignment;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by jrobinso on 6/17/14.
@@ -88,7 +87,7 @@ public class Ga4ghAlignment extends SAMAlignment {
 
             JsonObject positionObject = alignmentObject.getAsJsonObject("position");
             String refName = positionObject.get("referenceName").getAsString();
-            this.setChr(genome == null ? refName : genome.getChromosomeAlias(refName));
+            this.setChr(genome == null ? refName : genome.getCanonicalChrName(refName));
 
             this.alignmentStart = positionObject.get("position").getAsInt();
             this.mappingQuality = hasNonNullValue(alignmentObject, "mappingQuality") ? alignmentObject.get("mappingQuality").getAsInt() : 256;
@@ -111,7 +110,7 @@ public class Ga4ghAlignment extends SAMAlignment {
             this.setMate(new ReadMate("*", 0, false, true));
         } else {
             String mateReferenceName = mateObject.get("referenceName").getAsString();
-            String mateChr = genome == null ? mateReferenceName : genome.getChromosomeAlias(mateReferenceName);
+            String mateChr = genome == null ? mateReferenceName : genome.getCanonicalChrName(mateReferenceName);
             int matePosition = Integer.parseInt(mateObject.get("position").getAsString());
             boolean mateNegStrand = hasNonNullValue(mateObject, "reverseStrand") && mateObject.get("reverseStrand").getAsBoolean();
             this.setMate(new ReadMate(mateChr,

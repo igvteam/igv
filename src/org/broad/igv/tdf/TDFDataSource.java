@@ -118,7 +118,7 @@ public class TDFDataSource implements CoverageDataSource {
         if (genome != null) {
             Set<String> chrNames = reader.getChromosomeNames();
             for (String chr : chrNames) {
-                String igvChr = genome.getChromosomeAlias(chr);
+                String igvChr = genome.getCanonicalChrName(chr);
                 if (igvChr != null && !igvChr.equals(chr)) {
                     chrNameMap.put(igvChr, chr);
                 }

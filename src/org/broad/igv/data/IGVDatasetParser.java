@@ -251,7 +251,7 @@ public class IGVDatasetParser {
                 String[] tokens = Globals.tabPattern.split(nextLine, -1);
                 int nTokens = tokens.length;
                 if (nTokens > 0) {
-                    String thisChr = genome.getChromosomeAlias(tokens[chrColumn]);
+                    String thisChr = genome.getCanonicalChrName(tokens[chrColumn]);
                     if (chrSummary == null || !thisChr.equals(chrSummary.getName())) {
                         // Update whole genome and previous chromosome summary, unless this is
                         // the first chromosome
@@ -427,7 +427,7 @@ public class IGVDatasetParser {
                     try {
                         String[] tokens = Globals.tabPattern.split(nextLine, -1);
 
-                        String thisChromosome = genome.getChromosomeAlias(tokens[chrColumn].trim());
+                        String thisChromosome = genome.getCanonicalChrName(tokens[chrColumn].trim());
                         if (thisChromosome.equals(chromosome)) {
                             chromosomeStarted = true;
 

@@ -101,7 +101,7 @@ public class SegmentedAsciiDataSet implements SegmentedDataSet {
      */
     public void addSegment(String heading, String c, int start, int end, float value, String desc) {
 
-        String chr = genome == null ? c : genome.getChromosomeAlias(c);
+        String chr = genome == null ? c : genome.getCanonicalChrName(c);
 
         Map<String, List<LocusScore>> chrSegments = segments.get(heading);
         if (chrSegments == null) {

@@ -55,7 +55,7 @@ public class BisulfiteCounts {
         // Only works with block formats
         if(baseAlignment.getAlignmentBlocks() == null) return;
 
-        String chrname = genome.getChromosomeAlias(baseAlignment.getChr());
+        String chrname = genome.getCanonicalChrName(baseAlignment.getChr());
 
         boolean flipRead;
         // We will only need reverse complement if the strand and paired end status don't match (2nd ends are G->A)

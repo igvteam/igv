@@ -59,8 +59,8 @@ public class GenomeTest extends AbstractHeadlessTest {
         String genomeURL = "http://igv.broadinstitute.org/genomes/hg19.genome";
         Genome genome = loadGenomeAssumeSuccess(genomeURL);
 
-        assertEquals("chrUn_gl000229", genome.getChromosomeAlias("GL000229.1"));
-        assertEquals("chr14", genome.getChromosomeAlias("14"));
+        assertEquals("chrUn_gl000229", genome.getCanonicalChrName("GL000229.1"));
+        assertEquals("chr14", genome.getCanonicalChrName("14"));
     }
 
     @Test
@@ -68,7 +68,7 @@ public class GenomeTest extends AbstractHeadlessTest {
         // NCBI genome, test an auto-generated alias
         String genomeURL = "http://igvdata.broadinstitute.org/genomes/NC_000964.genome";
         Genome genome = loadGenomeAssumeSuccess(genomeURL);
-        assertEquals("gi|255767013|ref|NC_000964.3|", genome.getChromosomeAlias("NC_000964.3"));
+        assertEquals("gi|255767013|ref|NC_000964.3|", genome.getCanonicalChrName("NC_000964.3"));
     }
 
     /**

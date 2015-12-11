@@ -26,21 +26,16 @@
 package org.broad.igv.track;
 
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.AbstractDataSource;
-import org.broad.igv.data.DataSource;
 import org.broad.igv.data.DataTile;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.*;
-import org.broad.igv.tdf.TDFDataSource;
-import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.IndexCreatorDialog;
 import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.collections.CollUtils;
@@ -172,7 +167,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                 Collection<String> seqNames = reader.getSequenceNames();
                 if (seqNames != null) {
                     for (String seqName : seqNames) {
-                        String igvChr = genome.getChromosomeAlias(seqName);
+                        String igvChr = genome.getCanonicalChrName(seqName);
                         if (igvChr != null && !igvChr.equals(seqName)) {
                             chrNameMap.put(igvChr, seqName);
                         }
@@ -306,7 +301,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                     if (f == null) continue;
 
                     String seqName = f.getChr();
-                    String igvChr = genome == null ? seqName : genome.getChromosomeAlias(seqName);
+                    String igvChr = genome == null ? seqName : genome.getCanonicalChrName(seqName);
 
                     List<Feature> featureList = featureMap.get(igvChr);
                     if (featureList == null) {

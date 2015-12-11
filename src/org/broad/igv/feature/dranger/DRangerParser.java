@@ -29,7 +29,6 @@
  */
 package org.broad.igv.feature.dranger;
 
-import org.apache.batik.dom.svg12.Global;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
@@ -95,12 +94,12 @@ public class DRangerParser {
                 if (nTokens > pos2Column) {
                     int index = Integer.parseInt(tokens[numColumn]);
 
-                    String chr1 = genome.getChromosomeAlias(tokens[chr1Column]);
+                    String chr1 = genome.getCanonicalChrName(tokens[chr1Column]);
                     int pos1 = Integer.parseInt(tokens[pos1Column]);
                     String str1 = tokens[str1Column];
                     Strand strand1 = (str1.equals("0") || str1.equals("(+)")) ? Strand.POSITIVE : Strand.NEGATIVE;
 
-                    String chr2 = genome.getChromosomeAlias(tokens[chr2Column]);
+                    String chr2 = genome.getCanonicalChrName(tokens[chr2Column]);
                     int pos2 = Integer.parseInt(tokens[pos2Column]);
                     String str2 = tokens[str2Column];
                     Strand strand2 = (str2.equals("0") || str2.equals("(+)")) ? Strand.POSITIVE : Strand.NEGATIVE;

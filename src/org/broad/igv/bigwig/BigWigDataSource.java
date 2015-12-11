@@ -37,7 +37,6 @@ import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
 import htsjdk.tribble.Feature;
@@ -96,7 +95,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         if (genome != null) {
             Collection<String> chrNames = reader.getChromosomeNames();
             for (String chr : chrNames) {
-                String igvChr = genome.getChromosomeAlias(chr);
+                String igvChr = genome.getCanonicalChrName(chr);
                 if (igvChr != null && !igvChr.equals(chr)) {
                     chrNameMap.put(igvChr, chr);
                 }

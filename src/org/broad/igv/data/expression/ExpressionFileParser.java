@@ -40,7 +40,6 @@ package org.broad.igv.data.expression;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
-import org.broad.igv.exceptions.ProbeMappingException;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.StatusMonitor;
@@ -325,7 +324,7 @@ public class ExpressionFileParser {
             for (Locus locus : loci) {
                 if ((locus != null) && locus.isValid()) {
 
-                    String chr = genome == null ? locus.getChr() : genome.getChromosomeAlias(locus.getChr());
+                    String chr = genome == null ? locus.getChr() : genome.getCanonicalChrName(locus.getChr());
 
                     List<Row> rows = rowMap.get(chr);
                     if (rows == null) {

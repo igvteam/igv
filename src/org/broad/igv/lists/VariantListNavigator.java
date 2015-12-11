@@ -184,7 +184,7 @@ public class VariantListNavigator extends JDialog {
                     Runnable runnable = new Runnable() {
                         public void run() {
                             Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                            String chr = genome == null ? variant.chr : genome.getChromosomeAlias(variant.chr);
+                            String chr = genome == null ? variant.chr : genome.getCanonicalChrName(variant.chr);
                             String locus = chr + ":" + variant.position;
                             IGV.getInstance().goToLocus(locus);
                             VariantListNavigator.this.setCursor(Cursor.getDefaultCursor());

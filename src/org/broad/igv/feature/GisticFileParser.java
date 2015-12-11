@@ -90,7 +90,7 @@ public class GisticFileParser {
                 String[] tokens = nextLine.split("\t");
 
                 GisticScore.Type type = getType(tokens[0].trim());
-                String chr = genome.getChromosomeAlias(tokens[1].trim());
+                String chr = genome.getCanonicalChrName(tokens[1].trim());
 
                 int start = -1;
                 try {

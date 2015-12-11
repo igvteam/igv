@@ -102,7 +102,7 @@ public class PSLCodec extends UCSCCodec<BasicFeature> {
             }
             int tSize = Integer.parseInt(tokens[14]);
             String chrToken = tokens[13];
-            String chr = genome == null ? chrToken : genome.getChromosomeAlias(chrToken);
+            String chr = genome == null ? chrToken : genome.getCanonicalChrName(chrToken);
             int start = Integer.parseInt(tokens[15]); // IS PSL 1 or ZERO based,  closed or open?
 
             String strandString = tokens[8];

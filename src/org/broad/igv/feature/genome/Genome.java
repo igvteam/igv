@@ -35,12 +35,10 @@
 package org.broad.igv.feature.genome;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.track.FeatureTrack;
-import org.broad.igv.ui.util.MessageUtils;
 
 import java.io.*;
 import java.util.*;
@@ -128,7 +126,7 @@ public class Genome {
     }
 
 
-    public String getChromosomeAlias(String str) {
+    public String getCanonicalChrName(String str) {
         if (str == null) {
             return str;
         } else {
@@ -287,7 +285,7 @@ public class Genome {
 
 
     public Chromosome getChromosome(String chrName) {
-        return chromosomeMap.get(getChromosomeAlias(chrName));
+        return chromosomeMap.get(getCanonicalChrName(chrName));
     }
 
 

@@ -398,7 +398,7 @@ public class WiggleParser {
 
         if (startLocations != null && startLocations.size() > 0) {
 
-            String convertedChr = genome == null ? lastChr : genome.getChromosomeAlias(lastChr);
+            String convertedChr = genome == null ? lastChr : genome.getCanonicalChrName(lastChr);
             dataset.addDataChunk(convertedChr, startLocations, endLocations, data);
             //sz = startLocations.size();
 

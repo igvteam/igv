@@ -77,7 +77,7 @@ public class BBMethylDataSource implements MethylDataSource {
             Collection<String> seqNames = reader.getChromosomeNames();
             if (seqNames != null)
                 for (String seqName : seqNames) {
-                    String igvChr = genome.getChromosomeAlias(seqName);
+                    String igvChr = genome.getCanonicalChrName(seqName);
                     if (igvChr != null && !igvChr.equals(seqName)) {
                         chrNameMap.put(igvChr, seqName);
                     }

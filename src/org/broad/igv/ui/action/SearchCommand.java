@@ -533,12 +533,12 @@ public class SearchCommand {
         }
 
         //startEnd will have coordinates if found.
-        chr = genome.getChromosomeAlias(chr);
+        chr = genome.getCanonicalChrName(chr);
         Chromosome chromosome = genome.getChromosome(chr);
         //If we couldn't find chromosome, check
         //whole string
         if (chromosome == null) {
-            chr = genome.getChromosomeAlias(tokens[0]);
+            chr = genome.getCanonicalChrName(tokens[0]);
             chromosome = genome.getChromosome(chr);
             if (chromosome != null) {
                 //Found chromosome

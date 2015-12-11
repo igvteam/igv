@@ -82,7 +82,7 @@ public class VCFWrapperCodec extends AsciiFeatureCodec<VCFVariant> {
         if (vc == null) {
             return null;
         }
-        String chr = genome == null ? vc.getChr() : genome.getChromosomeAlias(vc.getChr());
+        String chr = genome == null ? vc.getChr() : genome.getCanonicalChrName(vc.getChr());
         return new VCFVariant(vc, chr);
 
     }

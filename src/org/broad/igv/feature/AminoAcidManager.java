@@ -475,7 +475,7 @@ public class AminoAcidManager {
 //    public void loadDefaultCodonTable(Genome genome, String chrName) {
 //        Map<String, CodonTableKey> chrMap = genomeChromoTable.row(genome.getId());
 //        String[] tryChromos = new String[]{
-//                chrName, genome.getChromosomeAlias(chrName), DEFAULT_CHROMO_KEY
+//                chrName, genome.getCanonicalChrName(chrName), DEFAULT_CHROMO_KEY
 //        };
 //        for (String tryChromo : tryChromos) {
 //            if (chrMap.containsKey(tryChromo)) {

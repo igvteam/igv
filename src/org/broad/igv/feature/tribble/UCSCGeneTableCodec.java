@@ -122,7 +122,7 @@ public class UCSCGeneTableCodec extends UCSCCodec<BasicFeature> {
         }
 
         String chrToken = tokens[chrColumn].trim();
-        String chr = genome == null ? StringUtils.intern(chrToken) : genome.getChromosomeAlias(chrToken);
+        String chr = genome == null ? StringUtils.intern(chrToken) : genome.getCanonicalChrName(chrToken);
 
         int start = Integer.parseInt(tokens[startColumn]);
         int end = Integer.parseInt(tokens[endColumn]);

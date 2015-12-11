@@ -110,7 +110,7 @@ public class MergedAlignmentReader implements AlignmentReader {
         chrNameIndex = new HashMap<String, Integer>(sequenceNames.size());
         for (int i = 0; i < sequenceNames.size(); i++) {
             final String seqName = sequenceNames.get(i);
-            String chr = genome == null ? seqName : genome.getChromosomeAlias(seqName);
+            String chr = genome == null ? seqName : genome.getCanonicalChrName(seqName);
             chrNameIndex.put(chr, i);
         }
     }

@@ -223,7 +223,7 @@ public class GWASParser {
         if (tokens.length > 1) {
 
             //String chr = ParsingUtils.convertChrString(tokens[chrCol].trim());
-            String chr = genome.getChromosomeAlias(tokens[this.columns.chrCol].trim());
+            String chr = genome.getCanonicalChrName(tokens[this.columns.chrCol].trim());
 
             int start;
 

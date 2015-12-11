@@ -84,7 +84,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
         }
 
         String c = tokens[0];
-        String chr = genome == null ? c : genome.getChromosomeAlias(c);
+        String chr = genome == null ? c : genome.getCanonicalChrName(c);
 
         //BED format, and IGV, use starting element as 0.
         int start = Integer.parseInt(tokens[1]);

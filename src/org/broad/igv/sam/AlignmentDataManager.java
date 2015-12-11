@@ -100,7 +100,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
             List<String> seqNames = reader.getSequenceNames();
             if (seqNames != null) {
                 for (String chr : seqNames) {
-                    String alias = genome.getChromosomeAlias(chr);
+                    String alias = genome.getCanonicalChrName(chr);
                     chrMappings.put(alias, chr);
                 }
             }

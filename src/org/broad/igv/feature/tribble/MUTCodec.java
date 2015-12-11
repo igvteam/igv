@@ -135,7 +135,7 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
 
         String[] tokens = Globals.tabPattern.split(line);
 
-        String chr = genome == null ? tokens[chrColumn].trim() : genome.getChromosomeAlias(tokens[chrColumn].trim());
+        String chr = genome == null ? tokens[chrColumn].trim() : genome.getCanonicalChrName(tokens[chrColumn].trim());
 
         int start;
         try {

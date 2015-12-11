@@ -135,7 +135,7 @@ public class REPMaskCodec extends AsciiFeatureCodec<BasicFeature> {
         if(tokens.length < 15) {
             return decodeLegacy(tokens);
         }
-        String chr = genome == null ? tokens[5] : genome.getChromosomeAlias(tokens[5]);
+        String chr = genome == null ? tokens[5] : genome.getCanonicalChrName(tokens[5]);
         int start = Integer.parseInt(tokens[6]);
         int end = Integer.parseInt(tokens[7]);
         return new BasicFeature(chr, start, end);
@@ -154,7 +154,7 @@ public class REPMaskCodec extends AsciiFeatureCodec<BasicFeature> {
             return decodeLegacy(tokens);
         }
 
-        String chr = genome == null ? tokens[5] : genome.getChromosomeAlias(tokens[5]);
+        String chr = genome == null ? tokens[5] : genome.getCanonicalChrName(tokens[5]);
         int start = Integer.parseInt(tokens[6]);
         int end = Integer.parseInt(tokens[7]);
         BasicFeature feature = new BasicFeature(chr, start, end);
@@ -198,7 +198,7 @@ public class REPMaskCodec extends AsciiFeatureCodec<BasicFeature> {
             return null;
         }
 
-        String chr = genome == null ? tokens[0] : genome.getChromosomeAlias(tokens[0]);
+        String chr = genome == null ? tokens[0] : genome.getCanonicalChrName(tokens[0]);
         int start = Integer.parseInt(tokens[1]);
 
         int end = start + 1;

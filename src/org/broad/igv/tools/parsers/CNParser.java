@@ -175,7 +175,7 @@ public class CNParser extends AbstractParser {
 
                 try {
 
-                    chr = (genome == null ? tokens[chrColumn] : genome.getChromosomeAlias(tokens[chrColumn]));
+                    chr = (genome == null ? tokens[chrColumn] : genome.getCanonicalChrName(tokens[chrColumn]));
                     if (!chr.equals(lastChr)) {
                         newChromosome();
                     }

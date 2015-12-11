@@ -250,7 +250,7 @@ public class SegmentedReader {
 
 
             if (genome != null) {
-                chr = genome.getChromosomeAlias(chr);
+                chr = genome.getCanonicalChrName(chr);
             }
 
             String trackId = sample;

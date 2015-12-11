@@ -29,7 +29,6 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
-import org.broad.igv.tdf.BufferedByteWriter;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.util.StringUtils;
@@ -94,7 +93,7 @@ public class EQTLCodec extends AsciiFeatureCodec<EQTLFeature> {
 //  SNP	SNP_Chr	SNP_Pos	Gen_ID	Gene_Name	Gene_Pos	T_Stat	Beta	P_Val	min(p)	EmpP	nom_thresh
 
         String snp = tokens[0];
-        String chr = genome == null ? StringUtils.intern(tokens[1]) : genome.getChromosomeAlias(tokens[1]);
+        String chr = genome == null ? StringUtils.intern(tokens[1]) : genome.getCanonicalChrName(tokens[1]);
 
         int position = Integer.parseInt(tokens[2]) - 1;
         String geneId = tokens[3];

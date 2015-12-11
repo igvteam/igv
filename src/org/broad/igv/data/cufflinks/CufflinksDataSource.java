@@ -138,7 +138,7 @@ public class CufflinksDataSource implements DataSource {
                 chrValues = new ArrayList<LocusScore>();
                 values.put(chr, chrValues);
                 if (genome != null) {
-                    String alias = genome.getChromosomeAlias(chr);
+                    String alias = genome.getCanonicalChrName(chr);
                     chrAliasMap.put(alias, chr);
                 }
 

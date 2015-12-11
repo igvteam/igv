@@ -183,7 +183,7 @@ public abstract class DataTrack extends AbstractTrack {
 
             String queryChr = chr;
             if (genome != null) {
-                queryChr = genome.getChromosomeAlias(chr);
+                queryChr = genome.getCanonicalChrName(chr);
                 Chromosome c = genome.getChromosome(chr);
                 if (c != null) maxEnd = Math.max(c.getLength(), end);
             }

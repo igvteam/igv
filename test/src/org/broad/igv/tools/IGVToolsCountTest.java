@@ -391,7 +391,7 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
         Genome genome = TestUtils.loadGenome();
 
         //Have to read back in using aliased chromosome names
-        String readChr = genome.getChromosomeAlias(queryChr);
+        String readChr = genome.getCanonicalChrName(queryChr);
 
         int noDupCount = (int) getCount(outputFileND, readChr, 23, pos, genome);
         int dupCount = (int) getCount(outputFileWithDup, readChr, 23, pos, genome);

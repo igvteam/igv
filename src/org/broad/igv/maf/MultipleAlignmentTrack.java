@@ -106,7 +106,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         if (mafChrNames != null) {
             chrMappings = new HashMap();
             for (String mafChr : mafChrNames) {
-                String chr = genome.getChromosomeAlias(mafChr);
+                String chr = genome.getCanonicalChrName(mafChr);
                 chrMappings.put(chr, mafChr);
             }
         }

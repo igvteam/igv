@@ -34,7 +34,6 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.StringUtils;
 import htsjdk.tribble.Feature;
-import htsjdk.tribble.util.ParsingUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -102,7 +101,7 @@ public class DGVCodec extends UCSCCodec<BasicFeature> implements LineFeatureEnco
 
 
         String c = tokens[0];
-        String chr = genome == null ? c : genome.getChromosomeAlias(c);
+        String chr = genome == null ? c : genome.getCanonicalChrName(c);
 
         //BED format, and IGV, use starting element as 0.
         int start = Integer.parseInt(tokens[1]);

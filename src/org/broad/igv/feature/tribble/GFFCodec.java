@@ -229,7 +229,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
             return null;
         }
 
-        String chromosome = genome == null ? StringUtils.intern(chrToken) : genome.getChromosomeAlias(chrToken);
+        String chromosome = genome == null ? StringUtils.intern(chrToken) : genome.getCanonicalChrName(chrToken);
 
         // GFF coordinates are 1-based inclusive (length = end - start + 1)
         // IGV (UCSC) coordinates are 0-based exclusive.  Adjust start and end accordingly

@@ -150,7 +150,7 @@ public class SegmentFileParser implements SegFileParser {
 
                     String chr = tokens[chrColumn].trim();
                     if (genome != null) {
-                        chr = genome.getChromosomeAlias(chr);
+                        chr = genome.getCanonicalChrName(chr);
                     }
 
 

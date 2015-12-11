@@ -74,7 +74,7 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
 
         String refName = record.getReferenceName();
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        this.chr = genome == null ? refName : genome.getChromosomeAlias(refName);
+        this.chr = genome == null ? refName : genome.getCanonicalChrName(refName);
 
         // SAMRecord is 1 based inclusive.  IGV is 0 based exclusive.
 
@@ -84,7 +84,7 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
 
         if (record.getReadPairedFlag()) {
             String mateReferenceName = record.getMateReferenceName();
-            String mateChr = genome == null ? mateReferenceName : genome.getChromosomeAlias(mateReferenceName);
+            String mateChr = genome == null ? mateReferenceName : genome.getCanonicalChrName(mateReferenceName);
             this.setMate(new ReadMate(mateChr,
                     record.getMateAlignmentStart() - 1,
                     record.getMateNegativeStrandFlag(),
