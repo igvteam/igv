@@ -25,6 +25,7 @@
 
 package org.broad.igv.track;
 
+import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.bbfile.BBFileReader;
@@ -49,6 +50,8 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.CachingFeatureSource;
 import org.broad.igv.feature.GisticFileParser;
 import org.broad.igv.feature.MutationTrackLoader;
+import org.broad.igv.feature.bionano.SMAPFeature;
+import org.broad.igv.feature.bionano.SMAPParser;
 import org.broad.igv.feature.dranger.DRangerParser;
 import org.broad.igv.feature.genome.*;
 import org.broad.igv.feature.tribble.CodecFactory;
@@ -220,7 +223,11 @@ public class TrackLoader {
             } else if (typeString.endsWith(".list")) {
                 // This should be deprecated
                 loadListFile(locator, newTracks, genome);
-            } else if (handler != null) {
+            } else if (typeString.endsWith(".smap")) {
+                loadSMAPFile(locator, newTracks, genome);
+            }
+
+            else if (handler != null) {
                 //Custom loader specified
                 log.info(String.format("Loading %s with %s", path, handler));
                 handler.load(path, newTracks);
@@ -263,6 +270,14 @@ public class TrackLoader {
             throw new DataLoadException(e.getMessage());
         }
 
+    }
+
+    private void loadSMAPFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+
+        List<Feature> features = SMAPParser.parseFeatures(locator, genome);
+        FeatureCollectionSource src = new FeatureCollectionSource(features, genome);
+        FeatureTrack track = new FeatureTrack(locator, locator.getName(), src);
+        newTracks.add(track);
     }
 
     private boolean forceNotTribble(String typeString) {
