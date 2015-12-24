@@ -93,8 +93,8 @@ public class SMAPParser {
                 String c2 = tokens[refContig2];
                 int start = (int) Double.parseDouble(tokens[refStart]);
                 int end = (int) Double.parseDouble(tokens[refEnd]);
-                double conf = Double.parseDouble(tokens[confidence]);
-                String t = tokens[type];
+                double conf = confidence >= 0 ? Double.parseDouble(tokens[confidence]) : 0;
+                String t = type >= 0 ? tokens[type] : "";
 
 
                 if (c1.equals(c2)) {

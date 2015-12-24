@@ -144,6 +144,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_REDUCED_MEMORY_MODE = "SAM.REDUCED_MEMORY_MODE";
     public static final String SAM_MIN_INDEL_SIZE = "SAM.MIN_INDEL_SIZE";
 
+    public static final String SAM_SHOW_ALIGNMENTS = "SAM.SHOW_ALIGNMENTS";
 
     public static final String COLOR_A = "COLOR.A";
     public static final String COLOR_C = "COLOR.C";
@@ -1134,6 +1135,8 @@ public class PreferenceManager implements PropertyManager {
 
         defaultValues.put(SAM_REDUCED_MEMORY_MODE, "false");
         defaultValues.put(SAM_MIN_INDEL_SIZE, "25");
+
+        defaultValues.put(SAM_SHOW_ALIGNMENTS, "true");
 
         defaultValues.put(BYPASS_FILE_AUTO_DISCOVERY, "false");
 

@@ -320,6 +320,7 @@ public class AlignmentTileLoader {
         private static final Random RAND = new Random();
 
         private boolean downsample;
+        private boolean retainAlignments;
         private int samplingWindowSize;
         private int samplingDepth;
 
@@ -349,8 +350,8 @@ public class AlignmentTileLoader {
             this.downsampledIntervals = new ArrayList<DownsampledInterval>();
 
             this.indelLimit = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MIN_INDEL_SIZE);
-
-
+            this.retainAlignments = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_ALIGNMENTS);
+            
             long seed = System.currentTimeMillis();
             //System.out.println("seed: " + seed);
             RAND.setSeed(seed);
@@ -410,17 +411,19 @@ public class AlignmentTileLoader {
                 spliceJunctionHelper.addAlignment(alignment);
             }
 
-            if (downsample) {
-                final int alignmentStart = alignment.getAlignmentStart();
-                int currentSamplingBucketEnd = currentSamplingWindowStart + samplingWindowSize;
-                if (currentSamplingWindowStart < 0 || alignmentStart >= currentSamplingBucketEnd) {
-                    setCurrentSamplingBucket(alignmentStart);
+            if (retainAlignments) {
+                if (downsample) {
+                    final int alignmentStart = alignment.getAlignmentStart();
+                    int currentSamplingBucketEnd = currentSamplingWindowStart + samplingWindowSize;
+                    if (currentSamplingWindowStart < 0 || alignmentStart >= currentSamplingBucketEnd) {
+                        setCurrentSamplingBucket(alignmentStart);
+                    }
+
+                    attemptAddRecordDownsampled(alignment);
+
+                } else {
+                    alignments.add(alignment);
                 }
-
-                attemptAddRecordDownsampled(alignment);
-
-            } else {
-                alignments.add(alignment);
             }
 
             alignment.finish();

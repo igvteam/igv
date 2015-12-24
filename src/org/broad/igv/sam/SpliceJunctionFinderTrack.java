@@ -38,6 +38,7 @@ import org.broad.igv.ui.SashimiPlot;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
 import org.broad.igv.ui.event.AlignmentTrackEventListener;
 import org.broad.igv.ui.panel.IGVPopupMenu;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
@@ -135,7 +136,13 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
         sashimi.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                SashimiPlot.getSashimiPlot(null);
+
+                if(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_ALIGNMENTS)) {
+                    SashimiPlot.getSashimiPlot(null);
+                }
+                else {
+                    MessageUtils.showMessage("Sashimi Plot only available if alignment track is loaded");
+                }
             }
         });
         popupMenu.add(sashimi);

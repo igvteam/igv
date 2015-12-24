@@ -26,6 +26,7 @@
 package org.broad.igv.track;
 
 import htsjdk.tribble.Feature;
+import oracle.jdbc.proxy.annotation.Pre;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.bbfile.BBFileReader;
@@ -225,9 +226,7 @@ public class TrackLoader {
                 loadListFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".smap")) {
                 loadSMAPFile(locator, newTracks, genome);
-            }
-
-            else if (handler != null) {
+            } else if (handler != null) {
                 //Custom loader specified
                 log.info(String.format("Loading %s with %s", path, handler));
                 handler.load(path, newTracks);
@@ -908,23 +907,28 @@ public class TrackLoader {
                 }
             }
 
-            AlignmentTrack alignmentTrack = new AlignmentTrack(locator, dataManager, genome);    // parser.loadTrack(locator, dsName);
-            alignmentTrack.setName(dsName);
+            AlignmentTrack alignmentTrack = null;
+
+            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_ALIGNMENTS )) {
+                alignmentTrack = new AlignmentTrack(locator, dataManager, genome);    // parser.loadTrack(locator, dsName);
+                alignmentTrack.setName(dsName);
+            }
 
 
             // Create coverage track
-            CoverageTrack covTrack = new CoverageTrack(locator, alignmentTrack.getName() + " Coverage", genome);
+            CoverageTrack covTrack = new CoverageTrack(locator, dsName + " Coverage", genome);
             covTrack.setVisible(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_COV_TRACK));
             newTracks.add(covTrack);
-            alignmentTrack.setCoverageTrack(covTrack);
             covTrack.setDataManager(dataManager);
             dataManager.setCoverageTrack(covTrack);
+
+            if(alignmentTrack != null) alignmentTrack.setCoverageTrack(covTrack);
 
             // Search for precalculated coverage data
             // Skip for GA4GH & SU2C resources
             if (!(Ga4ghAPIHelper.RESOURCE_TYPE.equals(locator.getType()) ||
-                  locator.getPath().contains("dataformat=.bam") ||
-                  OAuthUtils.isGoogleCloud(locator.getPath()))) {
+                    locator.getPath().contains("dataformat=.bam") ||
+                    OAuthUtils.isGoogleCloud(locator.getPath()))) {
 
                 String covPath = locator.getCoverage();
                 if (covPath == null) {
@@ -940,7 +944,7 @@ public class TrackLoader {
                         log.debug("Loading TDF for coverage: " + covPath);
                         try {
                             TDFReader reader = TDFReader.getReader(covPath);
-                            TDFDataSource ds = new TDFDataSource(reader, 0, alignmentTrack.getName() + " coverage", genome);
+                            TDFDataSource ds = new TDFDataSource(reader, 0, dsName + " coverage", genome);
                             covTrack.setDataSource(ds);
                         } catch (Exception e) {
                             log.error("Error loading coverage TDF file", e);
@@ -953,15 +957,18 @@ public class TrackLoader {
             boolean showSpliceJunctionTrack = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
             if (showSpliceJunctionTrack) {
                 SpliceJunctionFinderTrack spliceJunctionTrack = new SpliceJunctionFinderTrack(locator,
-                        alignmentTrack.getName() + " Junctions", dataManager, SpliceJunctionFinderTrack.StrandOption.BOTH);
+                        dsName + " Junctions", dataManager, SpliceJunctionFinderTrack.StrandOption.BOTH);
                 spliceJunctionTrack.setHeight(60);
 
                 spliceJunctionTrack.setVisible(showSpliceJunctionTrack);
                 newTracks.add(spliceJunctionTrack);
-                alignmentTrack.setSpliceJunctionTrack(spliceJunctionTrack);
+
+                if(alignmentTrack != null)alignmentTrack.setSpliceJunctionTrack(spliceJunctionTrack);
             }
             log.debug("Alignment track loaded");
-            newTracks.add(alignmentTrack);
+
+
+            if(alignmentTrack != null) newTracks.add(alignmentTrack);
 
         } catch (IndexNotFoundException e) {
             MessageUtils.showMessage("<html>Could not find the index file for  <br><br>&nbsp;&nbsp;" + e.getSamFile() +
