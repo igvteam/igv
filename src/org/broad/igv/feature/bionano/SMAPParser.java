@@ -46,6 +46,7 @@ public class SMAPParser {
     private SMAPParser() {
 
     }
+////SmapEntryID	QryContigID	RefcontigID1	RefcontigID2	QryStartPos	QryEndPos	RefStartPos	RefEndPos	Confidence	Type	XmapID1	XmapID2	LinkID	QryStartIdx	QryEndIdx	RefStartIdx	RefEndIdx
 
     public static List<Feature> parseFeatures(ResourceLocator locator, Genome genome) throws IOException {
 
@@ -54,28 +55,59 @@ public class SMAPParser {
         ArrayList<Feature> features = new ArrayList<Feature>(1000);
         br = ParsingUtils.openBufferedReader(locator);
         String nextLine;
-        while((nextLine = br.readLine()) != null) {
+        String[] headers = null;
+        int refContig1 = -1, refContig2 = -1, refStart = -1, refEnd = -1, confidence = -1, type = -1;
 
-            if(nextLine.startsWith("#")) continue;
 
-            String [] tokens = Globals.tabPattern.split(nextLine);
 
-            String c1 = tokens[2];
-            String c2 = tokens[3];
-            int start = (int) Double.parseDouble(tokens[6]);
-            int end = (int) Double.parseDouble(tokens[7]);
+        while ((nextLine = br.readLine()) != null) {
 
-            if(c1.equals(c2)) {
+            if (nextLine.startsWith("#h")) {
+                headers = Globals.tabPattern.split(nextLine.substring(3));
+                for (int i = 0; i < headers.length; i++) {
+                    String h = headers[i];
+                    if (h.equals("RefcontigID1")) {
+                        refContig1 = i;
+                    } else if (h.equals("RefcontigID2")) {
+                        refContig2 = i;
+                    } else if (h.equals("RefStartPos")) {
+                        refStart = i;
+                    } else if (h.equals("RefEndPos")) {
+                        refEnd = i;
+                    } else if (h.equals("Confidence")) {
+                        confidence = i;
+                    } else if (h.equals("Type")) {
+                        type = i;
+                    }
+                }
+            } else if (nextLine.startsWith("#")) {
+                continue;
+            } else {
+                if (headers == null) {
+                    throw new RuntimeException("Never saw #h line");
+                }
 
-                String chr = genome == null ? c1 : genome.getCanonicalChrName(c1);
-                features.add(new SMAPFeature(chr, start, end, tokens));
-            }
-            else {
-                String chr1 = genome == null ? c1 : genome.getCanonicalChrName(c1);
-                features.add(new SMAPFeature(chr1, start, start + 1, tokens));
+                String[] tokens = Globals.tabPattern.split(nextLine);
 
-                String chr2 = genome == null ? c2 : genome.getCanonicalChrName(c2);
-                features.add(new SMAPFeature(chr2, end, end + 1, tokens));
+                String c1 = tokens[refContig1];
+                String c2 = tokens[refContig2];
+                int start = (int) Double.parseDouble(tokens[refStart]);
+                int end = (int) Double.parseDouble(tokens[refEnd]);
+                double conf = Double.parseDouble(tokens[confidence]);
+                String t = tokens[type];
+
+
+                if (c1.equals(c2)) {
+
+                    String chr = genome == null ? c1 : genome.getCanonicalChrName(c1);
+                    features.add(new SMAPFeature(chr, start, end, conf, t, headers, tokens));
+                } else {
+                    String chr1 = genome == null ? c1 : genome.getCanonicalChrName(c1);
+                    features.add(new SMAPFeature(chr1, start, end, conf, t, headers, tokens));
+
+                    String chr2 = genome == null ? c2 : genome.getCanonicalChrName(c2);
+                    features.add(new SMAPFeature(chr2, start, end, conf, t, headers, tokens));
+                }
             }
         }
 

@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A least-recently-used cache with a maximum size that can be altered.
+ *
  * @author jrobinso
  */
 public class LRUCache<K, V> {
@@ -45,7 +46,7 @@ public class LRUCache<K, V> {
         this.maxEntries = new AtomicInteger(max);
     }
 
-    public void setMaxEntries(int max){
+    public void setMaxEntries(int max) {
         this.maxEntries.set(max);
     }
 
@@ -90,7 +91,7 @@ public class LRUCache<K, V> {
         return getMap().keySet();
     }
 
-    public Collection<V> values(){
+    public Collection<V> values() {
         return getMap().values();
     }
 
@@ -100,6 +101,32 @@ public class LRUCache<K, V> {
 
     public void putAll(LRUCache<K, V> intervals) {
         this.putAll(intervals.getMap());
+    }
+
+    /**
+     * Test for memory leaks
+     */
+
+    public static void main(String[] args) {
+
+        LRUCache<String, int [] > cache = new LRUCache<String, int []>(10);
+
+
+        for (int i = 0; i < Integer.MAX_VALUE; i++) {
+
+            cache.put(String.valueOf(i), new int[1000]);
+
+            if(i % 1000000 == 0) {
+                // Get the Java runtime
+                Runtime runtime = Runtime.getRuntime();
+                // Run the garbage collector
+                runtime.gc();
+                // Calculate the used memory
+                long memory = runtime.totalMemory() - runtime.freeMemory();
+                System.out.println("Used memory (kb): " + memory / 1000);
+            }
+
+        }
     }
 }
 

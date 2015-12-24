@@ -35,28 +35,26 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
-//SmapEntryID	QryContigID	RefcontigID1	RefcontigID2	QryStartPos	QryEndPos	RefStartPos	RefEndPos	Confidence	Type	XmapID1	XmapID2	LinkID	QryStartIdx	QryEndIdx	RefStartIdx	RefEndIdx
 
 public class SMAPFeature extends AbstractFeature {
 
-    private static String[] ROW_HEADERS = {"SmapEntryID", "QryContigID", "RefcontigID1", "RefcontigID2", "QryStartPos",
-            "QryEndPos", "RefStartPos", "RefEndPos", "Confidence", "Type", "XmapID1", "XmapID2", "LinkID", "QryStartIdx",
-            "QryEndIdx", "RefStartIdx", "RefEndIdx"};
-
+    private  String[] headers;
     private String[] tokens;
     double confidence;
 
-    public SMAPFeature(String chr, int start, int end, String[] tokens) {
+    public SMAPFeature(String chr, int start, int end, double confidence, String type, String[] headers, String[] tokens) {
         super(chr, start, end, Strand.NONE);
 
         // TODO -- check tokens length
         this.tokens = tokens;
-        confidence = Double.parseDouble(tokens[8]);
+        this.confidence = confidence;
+        this.type = type;
+        this.headers = headers;
+
     }
 
     @Override
     public Color getColor() {
-        String type = tokens[9];
         if(colors.containsKey(type)) {
             return colors.get(type);
         }
@@ -74,8 +72,8 @@ public class SMAPFeature extends AbstractFeature {
     public String getValueString(double position, WindowFunction windowFunction) {
 
         StringBuffer buf = new StringBuffer();
-        for (int i = 0; i < ROW_HEADERS.length; i++) {
-            buf.append("<br>" + ROW_HEADERS[i] + ":&nbsp;" + tokens[i]);
+        for (int i = 0; i < headers.length; i++) {
+            buf.append("<br>" + headers[i] + ":&nbsp;" + tokens[i]);
         }
         return buf.toString();
     }
