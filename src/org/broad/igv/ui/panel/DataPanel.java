@@ -136,7 +136,7 @@ public class DataPanel extends JComponent implements Paintable {
             // If there are no tracks to paint, just exit
             boolean hasTracks = false;
             for (TrackGroup group : groups) {
-                if (group.getTracks().size() > 0) {
+                if (group.getVisibleTracks().size() > 0) {
                     hasTracks = true;
                     break;
                 }
@@ -192,7 +192,7 @@ public class DataPanel extends JComponent implements Paintable {
                     trackY += UIConstants.groupGap;
                 }
 
-                List<Track> trackList = group.getTracks();
+                List<Track> trackList = group.getVisibleTracks();
                 for (Track track : trackList) {
                     if (track == null) continue;
                     int trackHeight = track.getHeight();

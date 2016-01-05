@@ -79,6 +79,15 @@ public class AlignmentDataManager implements IAlignmentDataManager {
 
     private ResourceLocator locator;
 
+    public void dumpAlignments() {
+
+        packedAlignmentsCache.clear();
+        for (AlignmentInterval interval : loadedIntervalCache.values()) {
+            interval.dumpAlignments();
+        }
+
+    }
+
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
         this.locator = locator;
         reader = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator));
@@ -248,7 +257,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
             int adjustedStart = start;
             int adjustedEnd = end;
             // Expand the interval by the lesser of  +/- a 2 screens, or max visible range
-            int windowSize = Math.min(4*(end - start), PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MAX_VISIBLE_RANGE) * 1000);
+            int windowSize = Math.min(4 * (end - start), PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MAX_VISIBLE_RANGE) * 1000);
             int center = (end + start) / 2;
             int expand = Math.max(end - start, windowSize / 2);
 
@@ -307,7 +316,6 @@ public class AlignmentDataManager implements IAlignmentDataManager {
                 AlignmentInterval loadedInterval = loadInterval(chr, start, end, renderOptions);
                 loadedIntervalCache.put(loadedInterval.getRange(), loadedInterval);
 
-                List<ReferenceFrame> frameList = context != null ? Arrays.asList(context.getReferenceFrame()) : null;
                 packAlignments(renderOptions);
                 getEventBus().post(new DataLoadedEvent(context));
 

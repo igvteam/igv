@@ -26,7 +26,6 @@
 package org.broad.igv.track;
 
 import htsjdk.tribble.Feature;
-import oracle.jdbc.proxy.annotation.Pre;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.bbfile.BBFileReader;
@@ -51,7 +50,6 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.CachingFeatureSource;
 import org.broad.igv.feature.GisticFileParser;
 import org.broad.igv.feature.MutationTrackLoader;
-import org.broad.igv.feature.bionano.SMAPFeature;
 import org.broad.igv.feature.bionano.SMAPParser;
 import org.broad.igv.feature.dranger.DRangerParser;
 import org.broad.igv.feature.genome.*;
@@ -909,10 +907,12 @@ public class TrackLoader {
 
             AlignmentTrack alignmentTrack = null;
 
-            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_ALIGNMENTS )) {
+          //  if (!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_COVERAGE_ONLY)) {
                 alignmentTrack = new AlignmentTrack(locator, dataManager, genome);    // parser.loadTrack(locator, dsName);
                 alignmentTrack.setName(dsName);
-            }
+          //  }
+
+            alignmentTrack.setVisible(!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_COVERAGE_ONLY));
 
 
             // Create coverage track

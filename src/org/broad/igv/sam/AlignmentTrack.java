@@ -857,6 +857,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         AlignmentTrackEvent.Type type = e.getType();
         switch (type) {
+            case VISIBLE:
+                dataManager.dumpAlignments();
+                setVisible(e.getBooleanValue());
+                break;
             case VISIBILITY_WINDOW:
                 visibilityWindowChanged();
                 break;

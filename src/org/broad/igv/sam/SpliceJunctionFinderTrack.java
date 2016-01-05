@@ -33,10 +33,7 @@ import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.*;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.SashimiPlot;
-import org.broad.igv.ui.event.AlignmentTrackEvent;
-import org.broad.igv.ui.event.AlignmentTrackEventListener;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -137,7 +134,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                if(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_ALIGNMENTS)) {
+                if(!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_COVERAGE_ONLY)) {
                     SashimiPlot.getSashimiPlot(null);
                 }
                 else {

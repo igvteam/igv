@@ -30,7 +30,6 @@ import htsjdk.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.ReadGroupFilter;
 import org.broad.igv.ui.IGV;
@@ -320,7 +319,7 @@ public class AlignmentTileLoader {
         private static final Random RAND = new Random();
 
         private boolean downsample;
-        private boolean retainAlignments;
+        private boolean coverageOnly;
         private int samplingWindowSize;
         private int samplingDepth;
 
@@ -350,7 +349,7 @@ public class AlignmentTileLoader {
             this.downsampledIntervals = new ArrayList<DownsampledInterval>();
 
             this.indelLimit = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MIN_INDEL_SIZE);
-            this.retainAlignments = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_ALIGNMENTS);
+            this.coverageOnly = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_COVERAGE_ONLY);
             
             long seed = System.currentTimeMillis();
             //System.out.println("seed: " + seed);
@@ -411,7 +410,7 @@ public class AlignmentTileLoader {
                 spliceJunctionHelper.addAlignment(alignment);
             }
 
-            if (retainAlignments) {
+            if (!coverageOnly) {
                 if (downsample) {
                     final int alignmentStart = alignment.getAlignmentStart();
                     int currentSamplingBucketEnd = currentSamplingWindowStart + samplingWindowSize;

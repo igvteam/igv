@@ -104,7 +104,7 @@ public class DataPanelPainter {
                     graphics2D.drawLine(0, trackY - 1, width, trackY - 1);
                 }
 
-                List<Track> trackList = group.getTracks();
+                List<Track> trackList = group.getVisibleTracks();
                 synchronized (trackList) {
                     for (Track track : trackList) {
                         if (track == null) continue;
@@ -148,7 +148,7 @@ public class DataPanelPainter {
         Map<String, List<Track>> autoscaleGroups = new HashMap<String, List<Track>>();
         for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
             TrackGroup group = groupIter.next();
-            List<Track> trackList = group.getTracks();
+            List<Track> trackList = group.getVisibleTracks();
             synchronized (trackList) {
                 for (Track track : trackList) {
                     String asGroup = track.getAttributeValue(AttributeManager.GROUP_AUTOSCALE);
@@ -193,7 +193,7 @@ public class DataPanelPainter {
         final List<Track> visibleTracks = new ArrayList<Track>();
         for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
             TrackGroup group = groupIter.next();
-            List<Track> trackList = new ArrayList(group.getTracks());
+            List<Track> trackList = new ArrayList(group.getVisibleTracks());
             for (Track track : trackList) {
                 if (track != null && track.isVisible()) {
                     visibleTracks.add(track);

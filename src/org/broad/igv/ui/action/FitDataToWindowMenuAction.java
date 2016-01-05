@@ -36,7 +36,6 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.DataPanelContainer;
 import org.broad.igv.ui.panel.TrackPanel;
-import org.broad.igv.ui.panel.TrackPanelScrollPane;
 
 import java.awt.event.ActionEvent;
 import java.util.Collection;
@@ -91,7 +90,7 @@ public class FitDataToWindowMenuAction extends MenuAction {
 
         // Count visible tracks.
         for (TrackGroup group : groups) {
-            List<Track> tracks = group.getTracks();
+            List<Track> tracks = group.getVisibleTracks();
             for (Track track : tracks) {
                 if (track.isVisible()) {
                     ++visibleTrackCount;
@@ -115,7 +114,7 @@ public class FitDataToWindowMenuAction extends MenuAction {
             int iTotal = 0;
             double target = 0;
             for (TrackGroup group : groups) {
-                List<Track> tracks = group.getTracks();
+                List<Track> tracks = group.getVisibleTracks();
                 for (Track track : tracks) {
                     target += delta;
                     int height = (int) (target - iTotal);

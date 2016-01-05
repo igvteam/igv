@@ -143,7 +143,7 @@ public class AlignmentInterval extends Locus {
         return 0;
     }
 
-    public List<Alignment> getAlignments(){
+    public List<Alignment> getAlignments() {
         return alignments == null ? Collections.<Alignment>emptyList() : Collections.unmodifiableList(alignments);
     }
 
@@ -161,6 +161,10 @@ public class AlignmentInterval extends Locus {
 
     public Range getRange() {
         return new Range(getChr(), getStart(), getEnd());
+    }
+
+    public void dumpAlignments() {
+        if (this.alignments != null) this.alignments.clear();
     }
 
 

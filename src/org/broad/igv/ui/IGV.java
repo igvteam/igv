@@ -2381,6 +2381,15 @@ public class IGV {
         }
     }
 
+    public void notifyAlignmentTrackEvent(Object source, AlignmentTrackEvent.Type type, boolean value) {
+        AlignmentTrackEvent e = new AlignmentTrackEvent(source, type, value);
+        for (SoftReference<AlignmentTrackEventListener> ref : alignmentTrackListeners) {
+            AlignmentTrackEventListener l = ref.get();
+            l.onAlignmentTrackEvent(e);
+        }
+    }
+
+
     public void notifyAlignmentTrackEvent(Object source, AlignmentTrackEvent.Type type) {
         AlignmentTrackEvent e = new AlignmentTrackEvent(source, type);
         for (SoftReference<AlignmentTrackEventListener> ref : alignmentTrackListeners) {

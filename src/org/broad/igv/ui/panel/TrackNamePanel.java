@@ -192,7 +192,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                                 Graphics2D graphics2D, int regionX, int regionY) {
 
 
-        List<Track> tmp = new ArrayList(group.getTracks());
+        List<Track> tmp = new ArrayList(group.getVisibleTracks());
         final Color backgroundColor = PreferenceManager.getInstance().getAsColor(PreferenceManager.BACKGROUND_COLOR);
         graphics2D.setBackground(backgroundColor);
         graphics2D.clearRect(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height);
@@ -663,7 +663,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
     private void selectGroup(TrackGroup group) {
         selectedGroup = group;
         if (selectedGroup != null) {
-            for (Track t : selectedGroup.getTracks()) {
+            for (Track t : selectedGroup.getVisibleTracks()) {
                 t.setSelected(true);
             }
         }

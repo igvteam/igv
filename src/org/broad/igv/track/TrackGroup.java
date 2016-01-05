@@ -33,9 +33,6 @@ package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.FeatureUtils;
-import org.broad.igv.feature.LocusScore;
-import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -85,6 +82,14 @@ public class TrackGroup {
 
     public List<Track> getTracks() {
         return tracks;
+    }
+
+    public List<Track> getVisibleTracks() {
+        List<Track> visibleTracks = new ArrayList<Track>();
+        for(Track t : tracks) {
+            if(t.isVisible()) visibleTracks.add(t);
+        }
+        return visibleTracks;
     }
 
     public boolean isAutoScale() {
@@ -279,9 +284,9 @@ public class TrackGroup {
             }
         }
 
-        List<Track> tracksWithScore = new ArrayList(getTracks().size());
-        List<Track> otherTracks = new ArrayList(getTracks().size());
-        for (Track t : getTracks()) {
+        List<Track> tracksWithScore = new ArrayList(getVisibleTracks().size());
+        List<Track> otherTracks = new ArrayList(getVisibleTracks().size());
+        for (Track t : getVisibleTracks()) {
             if (t.isRegionScoreType(type)) {
                 tracksWithScore.add(t);
             } else {

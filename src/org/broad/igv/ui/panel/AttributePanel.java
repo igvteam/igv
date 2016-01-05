@@ -136,7 +136,7 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
                             g.drawLine(0, regionY - 1, getWidth(), regionY - 1);
                         }
 
-                        for (Track track : group.getTracks()) {
+                        for (Track track : group.getVisibleTracks()) {
                             if (track == null) continue;
                             int trackHeight = track.getHeight();
                             if (regionY > bottom) {
