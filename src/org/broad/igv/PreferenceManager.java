@@ -508,40 +508,28 @@ public class PreferenceManager implements PropertyManager {
 
     private void checkForAlignmentChanges(Map<String, String> updatedPreferenceMap) {
 
-        boolean reloadSAM = false;
-        boolean updateCoverageTrack = false;
-
-
-        for (String key : SAM_PREFERENCE_KEYS) {
-            if (updatedPreferenceMap.containsKey(key)) {
-                reloadSAM = true;
-                break;
-            }
-
-        }
-        if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_ALLELE_THRESHOLD)) {
-            updateCoverageTrack = true;
-        }
-
-        boolean updateSpliceJunctions = false;
-        for (String key : SPLICE_JUNCTION_KEYS) {
-            if (updatedPreferenceMap.containsKey(key)) {
-                updateSpliceJunctions = true;
-                break;
-            }
-        }
-
-
         if (IGV.hasInstance()) {
+
             final IGV igv = IGV.getInstance();
+
+            boolean reloadSAM = false;
+            for (String key : SAM_RELOAD_KEYS) {
+                if (updatedPreferenceMap.containsKey(key)) {
+                    reloadSAM = true;
+                    break;
+                }
+
+            }
+
             if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_COVERAGE_ONLY)) {
                 boolean coverageOnly = Boolean.parseBoolean(updatedPreferenceMap.get(PreferenceManager.SAM_COVERAGE_ONLY));
                 igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.VISIBLE, !coverageOnly);
                 reloadSAM = !coverageOnly;
             }
 
-            if (updateSpliceJunctions) {
-                igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.SPLICE_JUNCTION);
+            if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_SHOW_JUNCTION_TRACK)) {
+                boolean showSpliceJunctionTrack = Boolean.parseBoolean(updatedPreferenceMap.get(PreferenceManager.SAM_SHOW_JUNCTION_TRACK));
+                igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.SPLICE_JUNCTION, showSpliceJunctionTrack);
             }
             if (reloadSAM) {
                 if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_MAX_VISIBLE_RANGE)) {
@@ -549,7 +537,7 @@ public class PreferenceManager implements PropertyManager {
                 }
                 igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.RELOAD);
             }
-            if (updateCoverageTrack) {
+            if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_ALLELE_THRESHOLD)) {
                 igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.ALLELE_THRESHOLD);
             }
         }
@@ -1413,7 +1401,7 @@ public class PreferenceManager implements PropertyManager {
      * List of keys that affect the alignments loaded.  This list is used to trigger a reload, if required.
      * Not all alignment preferences need trigger a reload, this is a subset.
      */
-    static java.util.List<String> SAM_PREFERENCE_KEYS = Arrays.asList(
+    static java.util.List<String> SAM_RELOAD_KEYS = Arrays.asList(
             PreferenceManager.SAM_QUALITY_THRESHOLD,
             PreferenceManager.SAM_FILTER_ALIGNMENTS,
             PreferenceManager.SAM_FILTER_URL,
@@ -1425,14 +1413,9 @@ public class PreferenceManager implements PropertyManager {
             PreferenceManager.SAM_FILTER_FAILED_READS,
             PreferenceManager.SAM_DOWNSAMPLE_READS,
             PreferenceManager.SAM_FILTER_SECONDARY_ALIGNMENTS,
-            PreferenceManager.SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS
-    );
-
-    static java.util.List<String> SPLICE_JUNCTION_KEYS = Arrays.asList(
-            PreferenceManager.SAM_SHOW_JUNCTION_TRACK,
+            PreferenceManager.SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS,
             PreferenceManager.SAM_JUNCTION_MIN_FLANKING_WIDTH,
             PreferenceManager.SAM_JUNCTION_MIN_COVERAGE
-
     );
 
 

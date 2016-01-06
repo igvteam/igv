@@ -865,10 +865,14 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 visibilityWindowChanged();
                 break;
             case ALLELE_THRESHOLD:
-                this.dataManager.alleleThresholdChanged();
+                dataManager.alleleThresholdChanged();
+                break;
+            case SPLICE_JUNCTION:
+                if (spliceJunctionTrack != null) {
+                    spliceJunctionTrack.setVisible(e.getBooleanValue());
+                }
                 break;
             case RELOAD:
-            case SPLICE_JUNCTION:
                 dataManager.initLoadOptions();
                 clearCaches();
                 break;
@@ -927,6 +931,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public void clearCaches() {
         dataManager.clear();
+        if(spliceJunctionTrack != null) spliceJunctionTrack.clear();
     }
 
     public static void refresh() {

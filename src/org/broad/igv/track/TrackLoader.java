@@ -905,13 +905,8 @@ public class TrackLoader {
                 }
             }
 
-            AlignmentTrack alignmentTrack = null;
-
-          //  if (!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_COVERAGE_ONLY)) {
-                alignmentTrack = new AlignmentTrack(locator, dataManager, genome);    // parser.loadTrack(locator, dsName);
-                alignmentTrack.setName(dsName);
-          //  }
-
+            AlignmentTrack alignmentTrack = new AlignmentTrack(locator, dataManager, genome);    // parser.loadTrack(locator, dsName);
+            alignmentTrack.setName(dsName);
             alignmentTrack.setVisible(!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_COVERAGE_ONLY));
 
 
@@ -922,7 +917,7 @@ public class TrackLoader {
             covTrack.setDataManager(dataManager);
             dataManager.setCoverageTrack(covTrack);
 
-            if(alignmentTrack != null) alignmentTrack.setCoverageTrack(covTrack);
+            alignmentTrack.setCoverageTrack(covTrack);
 
             // Search for precalculated coverage data
             // Skip for GA4GH & SU2C resources
@@ -955,20 +950,19 @@ public class TrackLoader {
             }
 
             boolean showSpliceJunctionTrack = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
-            if (showSpliceJunctionTrack) {
-                SpliceJunctionFinderTrack spliceJunctionTrack = new SpliceJunctionFinderTrack(locator,
-                        dsName + " Junctions", dataManager, SpliceJunctionFinderTrack.StrandOption.BOTH);
-                spliceJunctionTrack.setHeight(60);
 
-                spliceJunctionTrack.setVisible(showSpliceJunctionTrack);
-                newTracks.add(spliceJunctionTrack);
+            SpliceJunctionFinderTrack spliceJunctionTrack = new SpliceJunctionFinderTrack(locator,
+                    dsName + " Junctions", dataManager, SpliceJunctionFinderTrack.StrandOption.BOTH);
+            spliceJunctionTrack.setHeight(60);
+            spliceJunctionTrack.setVisible(showSpliceJunctionTrack);
+            newTracks.add(spliceJunctionTrack);
 
-                if(alignmentTrack != null)alignmentTrack.setSpliceJunctionTrack(spliceJunctionTrack);
-            }
+            alignmentTrack.setSpliceJunctionTrack(spliceJunctionTrack);
+
             log.debug("Alignment track loaded");
 
 
-            if(alignmentTrack != null) newTracks.add(alignmentTrack);
+            if (alignmentTrack != null) newTracks.add(alignmentTrack);
 
         } catch (IndexNotFoundException e) {
             MessageUtils.showMessage("<html>Could not find the index file for  <br><br>&nbsp;&nbsp;" + e.getSamFile() +
