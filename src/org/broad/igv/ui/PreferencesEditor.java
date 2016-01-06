@@ -25,6 +25,8 @@
 
 package org.broad.igv.ui;
 
+import java.beans.*;
+
 import com.jidesoft.dialog.ButtonPanel;
 import oracle.jdbc.proxy.annotation.Pre;
 import org.broad.igv.DirectoryManager;
@@ -34,6 +36,7 @@ import org.broad.igv.data.expression.ProbeToLocusMap;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
+import org.broad.igv.ui.color.*;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
@@ -98,6 +101,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private void sessionPathsCBActionPerformed(ActionEvent e) {
         updatedPreferenceMap.put(PreferenceManager.SESSION_RELATIVE_PATH, String.valueOf(sessionPathsCB.isSelected()));
     }
+
+    private void afRefColorPropertyChange(PropertyChangeEvent e) {
+        // TODO add your code here
+    }
+
 
     public PreferencesEditor(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -189,6 +197,19 @@ public class PreferencesEditor extends javax.swing.JDialog {
         label11 = new JLabel();
         showOrphanedMutationsCB = new JCheckBox();
         label12 = new JLabel();
+        panel33 = new JPanel();
+        homRefColorChooser = new ColorChooserPanel();
+        label36 = new JLabel();
+        hetVarColorChooser = new ColorChooserPanel();
+        homVarColorChooser = new ColorChooserPanel();
+        noCallColorChooser = new ColorChooserPanel();
+        afRefColorChooser = new ColorChooserPanel();
+        afVarColorChooser = new ColorChooserPanel();
+        label37 = new JLabel();
+        label38 = new JLabel();
+        label40 = new JLabel();
+        label41 = new JLabel();
+        label42 = new JLabel();
         panel25 = new JScrollPane();
         chartPanel = new JPanel();
         jPanel4 = new JPanel();
@@ -881,6 +902,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     //======== jPanel5 ========
                     {
+                        jPanel5.setBorder(new TitledBorder("MAF  Somatic Mutations"));
                         jPanel5.setLayout(null);
 
                         //---- jLabel3 ----
@@ -990,7 +1012,71 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     }
                     overlaysPanel.add(jPanel5);
-                    jPanel5.setBounds(28, 55, 673, 394);
+                    jPanel5.setBounds(20, 315, 690, 394);
+
+                    //======== panel33 ========
+                    {
+                        panel33.setBorder(new TitledBorder("VCF Variant Colors"));
+                        panel33.setLayout(null);
+                        panel33.add(homRefColorChooser);
+                        homRefColorChooser.setBounds(265, 40, 55, 30);
+
+                        //---- label36 ----
+                        label36.setText("Homozygous reference");
+                        panel33.add(label36);
+                        label36.setBounds(15, 40, 230, 36);
+                        panel33.add(hetVarColorChooser);
+                        hetVarColorChooser.setBounds(265, 75, 55, 30);
+                        panel33.add(homVarColorChooser);
+                        homVarColorChooser.setBounds(265, 110, 55, 30);
+                        panel33.add(noCallColorChooser);
+                        noCallColorChooser.setBounds(265, 145, 55, 30);
+                        panel33.add(afRefColorChooser);
+                        afRefColorChooser.setBounds(265, 180, 55, 30);
+                        panel33.add(afVarColorChooser);
+                        afVarColorChooser.setBounds(265, 215, 55, 30);
+
+                        //---- label37 ----
+                        label37.setText("Heterozygous variant");
+                        panel33.add(label37);
+                        label37.setBounds(15, 75, 230, 36);
+
+                        //---- label38 ----
+                        label38.setText("Homozygous variant");
+                        panel33.add(label38);
+                        label38.setBounds(15, 110, 230, 36);
+
+                        //---- label40 ----
+                        label40.setText("No call");
+                        panel33.add(label40);
+                        label40.setBounds(15, 145, 230, 36);
+
+                        //---- label41 ----
+                        label41.setText("Allele freq - reference");
+                        panel33.add(label41);
+                        label41.setBounds(15, 180, 230, 36);
+
+                        //---- label42 ----
+                        label42.setText("Allele freq - variant");
+                        panel33.add(label42);
+                        label42.setBounds(15, 215, 230, 36);
+
+                        { // compute preferred size
+                            Dimension preferredSize = new Dimension();
+                            for(int i = 0; i < panel33.getComponentCount(); i++) {
+                                Rectangle bounds = panel33.getComponent(i).getBounds();
+                                preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                                preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                            }
+                            Insets insets = panel33.getInsets();
+                            preferredSize.width += insets.right;
+                            preferredSize.height += insets.bottom;
+                            panel33.setMinimumSize(preferredSize);
+                            panel33.setPreferredSize(preferredSize);
+                        }
+                    }
+                    overlaysPanel.add(panel33);
+                    panel33.setBounds(20, 25, 690, 265);
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
@@ -1008,7 +1094,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 }
                 panel24.setViewportView(overlaysPanel);
             }
-            tabbedPane.addTab("Mutations", panel24);
+            tabbedPane.addTab("Variants", panel24);
 
             //======== panel25 ========
             {
@@ -3033,6 +3119,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
         if (inputValidated) {
 
+            checkForVCFColors();
+
             checkForProbeChanges();
 
             lastSelectedIndex = tabbedPane.getSelectedIndex();
@@ -3071,12 +3159,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 Main.updateTooltipSettings();
             }
 
-            if(updatedPreferenceMap.containsKey(PreferenceManager.ENABLE_GOOGLE_MENU)) {
+            if (updatedPreferenceMap.containsKey(PreferenceManager.ENABLE_GOOGLE_MENU)) {
                 IGVMenuBar.getInstance().enableGoogleMenu(Boolean.valueOf(updatedPreferenceMap.get(PreferenceManager.ENABLE_GOOGLE_MENU)));
             }
 
 
-            if(updatedPreferenceMap.containsKey(PreferenceManager.SAVE_GOOGLE_CREDENTIALS)) {
+            if (updatedPreferenceMap.containsKey(PreferenceManager.SAVE_GOOGLE_CREDENTIALS)) {
                 OAuthUtils.getInstance().updateSaveOption(Boolean.valueOf(updatedPreferenceMap.get(PreferenceManager.SAVE_GOOGLE_CREDENTIALS)));
             }
 
@@ -3591,7 +3679,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 ct.getColorMap().put(entry.getKey(), entry.getValue());
             }
             String mapString = ct.getMapAsString();
-            PreferenceManager.getInstance().put(PreferenceManager.MUTATION_COLOR_TABLE, mapString);
+            updatedPreferenceMap.put(PreferenceManager.MUTATION_COLOR_TABLE, mapString);
         }
     }
 
@@ -3599,6 +3687,41 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private void colorMutationsCBActionPerformed(java.awt.event.ActionEvent evt) {
         updatedPreferenceMap.put(PreferenceManager.COLOR_MUTATIONS, String.valueOf(
                 colorCodeMutationsCB.isSelected()));
+    }
+
+
+    private void checkForVCFColors() {
+
+        Color homRefColor = homRefColorChooser.getSelectedColor(); ;
+        if(!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.HOMREF_COLOR))) {
+            updatedPreferenceMap.put(PreferenceManager.HOMREF_COLOR, ColorUtilities.colorToString(homRefColor));
+        }
+
+        Color hetVarColor = hetVarColorChooser.getSelectedColor(); ;
+        if(!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.HETVAR_COLOR))) {
+            updatedPreferenceMap.put(PreferenceManager.HETVAR_COLOR, ColorUtilities.colorToString(hetVarColor));
+        }
+
+        Color homVarColor = homVarColorChooser.getSelectedColor(); ;
+        if(!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.HOMVAR_COLOR))) {
+            updatedPreferenceMap.put(PreferenceManager.HOMVAR_COLOR, ColorUtilities.colorToString(homVarColor));
+        }
+
+        Color noCallColor = noCallColorChooser.getSelectedColor(); ;
+        if(!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.NOCALL_COLOR))) {
+            updatedPreferenceMap.put(PreferenceManager.NOCALL_COLOR, ColorUtilities.colorToString(noCallColor));
+        }
+
+        Color afRefColor = afRefColorChooser.getSelectedColor(); ;
+        if(!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.AF_REF_COLOR))) {
+            updatedPreferenceMap.put(PreferenceManager.AF_REF_COLOR, ColorUtilities.colorToString(afRefColor));
+        }
+
+        Color afVarColor = afVarColorChooser.getSelectedColor(); ;
+        if(!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.AF_VAR_COLOR))) {
+            updatedPreferenceMap.put(PreferenceManager.AF_VAR_COLOR, ColorUtilities.colorToString(afVarColor));
+        }
+
     }
 
     private void showOrphanedMutationsCBActionPerformed(ActionEvent e) {
@@ -3939,7 +4062,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
         String[] urls = proxyWhitelistTextArea.getText().split("\n");
         String setting = "";
-        for(String u : urls) {
+        for (String u : urls) {
             setting += u + ",";
         }
         updatedPreferenceMap.put(PreferenceManager.PROXY_WHITELIST, setting);
@@ -4319,6 +4442,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
         samFlagInsertionsThresholdField.setText(prefMgr.get(PreferenceManager.SAM_LARGE_INSERTIONS_THRESHOLD));
         samFlagInsertionsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FLAG_LARGE_INSERTIONS));
 
+        homRefColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.HOMREF_COLOR));
+        hetVarColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.HETVAR_COLOR));
+        homVarColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.HOMVAR_COLOR));
+        noCallColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.NOCALL_COLOR));
+        afRefColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.AF_REF_COLOR));
+        afVarColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.AF_VAR_COLOR));
+
         updateFontField();
 
         updateProxyState(useProxy, authenticateProxy);
@@ -4440,6 +4570,19 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JLabel label11;
     private JCheckBox showOrphanedMutationsCB;
     private JLabel label12;
+    private JPanel panel33;
+    private ColorChooserPanel homRefColorChooser;
+    private JLabel label36;
+    private ColorChooserPanel hetVarColorChooser;
+    private ColorChooserPanel homVarColorChooser;
+    private ColorChooserPanel noCallColorChooser;
+    private ColorChooserPanel afRefColorChooser;
+    private ColorChooserPanel afVarColorChooser;
+    private JLabel label37;
+    private JLabel label38;
+    private JLabel label40;
+    private JLabel label41;
+    private JLabel label42;
     private JScrollPane panel25;
     private JPanel chartPanel;
     private JPanel jPanel4;
