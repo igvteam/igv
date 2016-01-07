@@ -49,6 +49,7 @@ import org.broad.igv.track.*;
 import org.broad.igv.ui.DataRangeDialog;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.event.AlignmentTrackEvent;
 import org.broad.igv.ui.event.DataLoadedEvent;
 import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.FrameManager;
@@ -95,13 +96,14 @@ public class CoverageTrack extends AbstractTrack {
     @XmlAttribute
     boolean showReference;
 
+    AlignmentTrack alignmentTrack;
     AlignmentDataManager dataManager;
     CoverageDataSource dataSource;
     DataRenderer dataSourceRenderer;
     IntervalRenderer intervalRenderer;
     PreferenceManager prefs;
     JMenuItem dataRangeItem;
-    JMenuItem autoscaleItem;
+;
     Genome genome;
 
     /**
@@ -118,14 +120,15 @@ public class CoverageTrack extends AbstractTrack {
      * @param track
      */
     public CoverageTrack(CoverageTrack track) {
-        this(track.getResourceLocator(), track.getName(), track.genome);
+        this(track.getResourceLocator(), track.getName(), track.alignmentTrack, track.genome);
         if (track.dataManager != null) this.setDataManager(track.dataManager);
         if (track.dataSource != null) this.setDataSource(track.dataSource);
     }
 
-    public CoverageTrack(ResourceLocator locator, String name, Genome genome) {
+    public CoverageTrack(ResourceLocator locator, String name, AlignmentTrack alignmentTrack, Genome genome) {
         super(locator, locator.getPath() + "_coverage", name);
         super.setDataRange(new DataRange(0, 0, 60));
+        this.alignmentTrack = alignmentTrack;
         this.genome = genome;
         intervalRenderer = new IntervalRenderer();
         setMaximumHeight(40);
@@ -712,6 +715,9 @@ public class CoverageTrack extends AbstractTrack {
         this.addSnpTresholdItem(popupMenu);
 
         popupMenu.addSeparator();
+        addShowItems(popupMenu);
+
+        popupMenu.addSeparator();
         addLoadCoverageDataItem(popupMenu);
         popupMenu.addSeparator();
 
@@ -802,9 +808,41 @@ public class CoverageTrack extends AbstractTrack {
         return maxValItem;
     }
 
+    public void addShowItems(JPopupMenu menu) {
+
+        if(alignmentTrack != null) {
+            final JMenuItem alignmentItem = new JCheckBoxMenuItem("Show alignments");
+            alignmentItem.setSelected(alignmentTrack.isVisible());
+            alignmentItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(CoverageTrack.this, AlignmentTrackEvent.Type.VISIBLE, alignmentItem.isSelected()));
+                    if(alignmentItem.isSelected()) {
+                        alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(CoverageTrack.this, AlignmentTrackEvent.Type.RELOAD));
+                    }
+                }
+            });
+            menu.add(alignmentItem);
+
+            final SpliceJunctionFinderTrack spliceJunctionTrack = alignmentTrack.getSpliceJunctionTrack();
+            if (spliceJunctionTrack != null) {
+                final JMenuItem junctionItem = new JCheckBoxMenuItem("Show junctions");
+                junctionItem.setSelected(spliceJunctionTrack.isVisible());
+                junctionItem.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(CoverageTrack.this, AlignmentTrackEvent.Type.SPLICE_JUNCTION, junctionItem.isSelected()));
+                    }
+                });
+                menu.add(junctionItem);
+            }
+        }
+    }
+
+
     public void addLoadCoverageDataItem(JPopupMenu menu) {
         // Change track height by attribute
-        final JMenuItem item = new JCheckBoxMenuItem("Load coverage data...");
+        final JMenuItem item = new JCheckBoxMenuItem("Load pre-computed coverage data...");
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -831,13 +869,14 @@ public class CoverageTrack extends AbstractTrack {
             }
         });
 
+        item.setEnabled(dataSource == null);
         menu.add(item);
 
     }
 
     public void addAutoscaleItem(JPopupMenu menu, final ReferenceFrame frame) {
         // Change track height by attribute
-        autoscaleItem = new JCheckBoxMenuItem("Autoscale");
+        final JMenuItem autoscaleItem = new JCheckBoxMenuItem("Autoscale");
         autoscaleItem.setSelected(autoScale);
         autoscaleItem.addActionListener(new ActionListener() {
 

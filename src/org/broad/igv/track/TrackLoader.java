@@ -911,7 +911,7 @@ public class TrackLoader {
 
 
             // Create coverage track
-            CoverageTrack covTrack = new CoverageTrack(locator, dsName + " Coverage", genome);
+            CoverageTrack covTrack = new CoverageTrack(locator, dsName + " Coverage", alignmentTrack, genome);
             covTrack.setVisible(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_COV_TRACK));
             newTracks.add(covTrack);
             covTrack.setDataManager(dataManager);

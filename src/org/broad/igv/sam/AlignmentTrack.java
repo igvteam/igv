@@ -272,6 +272,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
     }
 
+
+    public SpliceJunctionFinderTrack getSpliceJunctionTrack() {
+        return spliceJunctionTrack;
+    }
+
+
     @Override
     public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
         return new PopupMenu(te);
@@ -871,9 +877,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 if (spliceJunctionTrack != null) {
                     spliceJunctionTrack.setVisible(e.getBooleanValue());
                 }
+                dataManager.initLoadOptions();
                 break;
             case RELOAD:
-                dataManager.initLoadOptions();
                 clearCaches();
                 break;
         }
