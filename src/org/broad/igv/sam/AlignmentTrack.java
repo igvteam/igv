@@ -931,7 +931,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public void clearCaches() {
         dataManager.clear();
-        if(spliceJunctionTrack != null) spliceJunctionTrack.clear();
+        if (spliceJunctionTrack != null) spliceJunctionTrack.clear();
     }
 
     public static void refresh() {
@@ -1302,6 +1302,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             if (spliceJunctionTrack != null) {
                 addShowSpliceJuntionItem();
             }
+            addShowAlignmentItem();
+
             addLoadCoverageDataItem();
 
             addSeparator();
@@ -2029,6 +2031,18 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 }
             });
             item.setEnabled(spliceJunctionTrack != null);
+            add(item);
+        }
+
+        private void addShowAlignmentItem() {
+
+            final JMenuItem item = new JCheckBoxMenuItem("Show alignment track");
+            item.setSelected(AlignmentTrack.this.isVisible());
+            item.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent aEvt) {
+                    onAlignmentTrackEvent(new AlignmentTrackEvent(AlignmentTrack.this, AlignmentTrackEvent.Type.VISIBLE, item.isSelected()));
+                }
+            });
             add(item);
         }
 
