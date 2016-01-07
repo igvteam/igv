@@ -133,13 +133,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
         sashimi.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
-              //  if(!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_COVERAGE_ONLY)) {
-                    SashimiPlot.getSashimiPlot(null);
-              //  }
-              //  else {
-              //      MessageUtils.showMessage("Sashimi Plot only available if alignment track is loaded");
-              //  }
+                SashimiPlot.getSashimiPlot(null);
             }
         });
         popupMenu.add(sashimi);

@@ -1280,6 +1280,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             addGroupMenuItem();
             addSortMenuItem();
             addColorByMenuItem();
+            addPackMenuItem();
 
             addSeparator();
             addShadeBaseByMenuItem();
@@ -1302,16 +1303,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             addInsertSizeMenuItem();
 
             addSeparator();
-            addPackMenuItem();
             //addCoverageDepthMenuItem();
             addShowCoverageItem();
             if (spliceJunctionTrack != null) {
                 addShowSpliceJuntionItem();
             }
-            addShowAlignmentItem();
-
-            addLoadCoverageDataItem();
-
             addSeparator();
             TrackMenuUtils.addDisplayModeItems(tracks, this);
 
@@ -1997,7 +1993,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         public void addShowCoverageItem() {
             // Change track height by attribute
-            final JMenuItem item = new JCheckBoxMenuItem("Show coverage track");
+            final JMenuItem item = new JCheckBoxMenuItem("Show coverage");
             item.setSelected(getCoverageTrack() != null && getCoverageTrack().isVisible());
             item.addActionListener(new ActionListener() {
 
@@ -2019,7 +2015,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
 
         private void addShowSpliceJuntionItem() {
-            final JMenuItem item = new JCheckBoxMenuItem("Show junction track");
+            final JMenuItem item = new JCheckBoxMenuItem("Show junctions");
             item.setSelected(spliceJunctionTrack != null && spliceJunctionTrack.isVisible());
             item.addActionListener(new ActionListener() {
 
@@ -2040,55 +2036,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             add(item);
         }
 
-        private void addShowAlignmentItem() {
-
-            final JMenuItem item = new JCheckBoxMenuItem("Show alignment track");
-            item.setSelected(AlignmentTrack.this.isVisible());
-            item.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent aEvt) {
-                    onAlignmentTrackEvent(new AlignmentTrackEvent(AlignmentTrack.this, AlignmentTrackEvent.Type.VISIBLE, item.isSelected()));
-                }
-            });
-            add(item);
-        }
-
-
-        public void addLoadCoverageDataItem() {
-            // Change track height by attribute
-            final JMenuItem item = new JCheckBoxMenuItem("Load coverage data...");
-            item.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent aEvt) {
-                    UIUtilities.invokeOnEventThread(new Runnable() {
-
-                        public void run() {
-
-                            final PreferenceManager prefs = PreferenceManager.getInstance();
-                            File initDirectory = prefs.getLastTrackDirectory();
-                            File file = FileDialogUtils.chooseFile("Select coverage file", initDirectory, FileDialog.LOAD);
-                            if (file != null) {
-                                prefs.setLastTrackDirectory(file.getParentFile());
-                                String path = file.getAbsolutePath();
-                                if (path.endsWith(".tdf") || path.endsWith(".tdf")) {
-                                    TDFReader reader = TDFReader.getReader(file.getAbsolutePath());
-                                    TDFDataSource ds = new TDFDataSource(reader, 0, getName() + " coverage", genome);
-                                    getCoverageTrack().setDataSource(ds);
-                                    refresh();
-                                } else if (path.endsWith(".counts")) {
-                                    CoverageDataSource ds = new GobyCountArchiveDataSource(file);
-                                    getCoverageTrack().setDataSource(ds);
-                                    refresh();
-                                } else {
-                                    MessageUtils.showMessage("Coverage data must be in .tdf format");
-                                }
-                            }
-                        }
-                    });
-                }
-            });
-
-            add(item);
-        }
 
         public void addCopySequenceItem(final TrackClickEvent te) {
             // Change track height by attribute
