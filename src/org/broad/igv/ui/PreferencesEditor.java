@@ -102,10 +102,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         updatedPreferenceMap.put(PreferenceManager.SESSION_RELATIVE_PATH, String.valueOf(sessionPathsCB.isSelected()));
     }
 
-    private void afRefColorPropertyChange(PropertyChangeEvent e) {
-        // TODO add your code here
-    }
-
 
     public PreferencesEditor(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -210,6 +206,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         label40 = new JLabel();
         label41 = new JLabel();
         label42 = new JLabel();
+        resetVCFButton = new JButton();
         panel25 = new JScrollPane();
         chartPanel = new JPanel();
         jPanel4 = new JPanel();
@@ -1012,7 +1009,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     }
                     overlaysPanel.add(jPanel5);
-                    jPanel5.setBounds(20, 315, 690, 394);
+                    jPanel5.setBounds(20, 365, 690, 344);
 
                     //======== panel33 ========
                     {
@@ -1061,6 +1058,17 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         panel33.add(label42);
                         label42.setBounds(15, 215, 230, 36);
 
+                        //---- resetVCFButton ----
+                        resetVCFButton.setText("Reset to defaults");
+                        resetVCFButton.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                resetVCFButtonActionPerformed(e);
+                            }
+                        });
+                        panel33.add(resetVCFButton);
+                        resetVCFButton.setBounds(new Rectangle(new Point(20, 265), resetVCFButton.getPreferredSize()));
+
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
                             for(int i = 0; i < panel33.getComponentCount(); i++) {
@@ -1076,7 +1084,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     }
                     overlaysPanel.add(panel33);
-                    panel33.setBounds(20, 25, 690, 265);
+                    panel33.setBounds(20, 25, 690, 325);
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
@@ -3692,37 +3700,62 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void checkForVCFColors() {
 
-        Color homRefColor = homRefColorChooser.getSelectedColor(); ;
-        if(!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.HOMREF_COLOR))) {
+        Color homRefColor = homRefColorChooser.getSelectedColor();
+        ;
+        if (!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.HOMREF_COLOR))) {
             updatedPreferenceMap.put(PreferenceManager.HOMREF_COLOR, ColorUtilities.colorToString(homRefColor));
         }
 
-        Color hetVarColor = hetVarColorChooser.getSelectedColor(); ;
-        if(!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.HETVAR_COLOR))) {
+        Color hetVarColor = hetVarColorChooser.getSelectedColor();
+        ;
+        if (!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.HETVAR_COLOR))) {
             updatedPreferenceMap.put(PreferenceManager.HETVAR_COLOR, ColorUtilities.colorToString(hetVarColor));
         }
 
-        Color homVarColor = homVarColorChooser.getSelectedColor(); ;
-        if(!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.HOMVAR_COLOR))) {
+        Color homVarColor = homVarColorChooser.getSelectedColor();
+        ;
+        if (!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.HOMVAR_COLOR))) {
             updatedPreferenceMap.put(PreferenceManager.HOMVAR_COLOR, ColorUtilities.colorToString(homVarColor));
         }
 
-        Color noCallColor = noCallColorChooser.getSelectedColor(); ;
-        if(!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.NOCALL_COLOR))) {
+        Color noCallColor = noCallColorChooser.getSelectedColor();
+        ;
+        if (!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.NOCALL_COLOR))) {
             updatedPreferenceMap.put(PreferenceManager.NOCALL_COLOR, ColorUtilities.colorToString(noCallColor));
         }
 
-        Color afRefColor = afRefColorChooser.getSelectedColor(); ;
-        if(!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.AF_REF_COLOR))) {
+        Color afRefColor = afRefColorChooser.getSelectedColor();
+        ;
+        if (!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.AF_REF_COLOR))) {
             updatedPreferenceMap.put(PreferenceManager.AF_REF_COLOR, ColorUtilities.colorToString(afRefColor));
         }
 
-        Color afVarColor = afVarColorChooser.getSelectedColor(); ;
-        if(!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.AF_VAR_COLOR))) {
+        Color afVarColor = afVarColorChooser.getSelectedColor();
+        ;
+        if (!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.AF_VAR_COLOR))) {
             updatedPreferenceMap.put(PreferenceManager.AF_VAR_COLOR, ColorUtilities.colorToString(afVarColor));
         }
 
     }
+
+    private void resetVCFButtonActionPerformed(ActionEvent e) {
+        for (String vcfKey : Arrays.asList(PreferenceManager.HOMREF_COLOR, PreferenceManager.HETVAR_COLOR, PreferenceManager.HOMVAR_COLOR,
+                PreferenceManager.NOCALL_COLOR, PreferenceManager.AF_REF_COLOR, PreferenceManager.AF_VAR_COLOR)) {
+            prefMgr.remove(vcfKey);
+        }
+        resetVCFColorChoosers();
+    }
+
+
+    private void resetVCFColorChoosers() {
+        homRefColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.HOMREF_COLOR));
+        hetVarColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.HETVAR_COLOR));
+        homVarColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.HOMVAR_COLOR));
+        noCallColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.NOCALL_COLOR));
+        afRefColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.AF_REF_COLOR));
+        afVarColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.AF_VAR_COLOR));
+    }
+
 
     private void showOrphanedMutationsCBActionPerformed(ActionEvent e) {
         updatedPreferenceMap.put(PreferenceManager.SHOW_ORPHANED_MUTATIONS, String.valueOf(
@@ -4442,12 +4475,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         samFlagInsertionsThresholdField.setText(prefMgr.get(PreferenceManager.SAM_LARGE_INSERTIONS_THRESHOLD));
         samFlagInsertionsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FLAG_LARGE_INSERTIONS));
 
-        homRefColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.HOMREF_COLOR));
-        hetVarColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.HETVAR_COLOR));
-        homVarColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.HOMVAR_COLOR));
-        noCallColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.NOCALL_COLOR));
-        afRefColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.AF_REF_COLOR));
-        afVarColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.AF_VAR_COLOR));
+        resetVCFColorChoosers();
 
         updateFontField();
 
@@ -4583,6 +4611,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JLabel label40;
     private JLabel label41;
     private JLabel label42;
+    private JButton resetVCFButton;
     private JScrollPane panel25;
     private JPanel chartPanel;
     private JPanel jPanel4;

@@ -1947,7 +1947,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>315</int> 
+               <int>365</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
@@ -1955,7 +1955,7 @@
               </void> 
               <void method="setProperty"> 
                <string>height</string> 
-               <int>394</int> 
+               <int>344</int> 
               </void> 
              </object> 
             </void> 
@@ -2322,6 +2322,37 @@
                 </void> 
                </object> 
               </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JButton</string> 
+                <void method="setProperty"> 
+                 <string>text</string> 
+                 <string>Reset to defaults</string> 
+                </void> 
+                <void property="name"> 
+                 <string>resetVCFButton</string> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.ActionListener</string> 
+                  <string>actionPerformed</string> 
+                  <string>resetVCFButtonActionPerformed</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>20</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>265</int> 
+                </void> 
+               </object> 
+              </void> 
              </object> 
              <object class="com.jformdesigner.model.FormLayoutConstraints"> 
               <class>com.jformdesigner.runtime.NullConstraints</class> 
@@ -2339,7 +2370,7 @@
               </void> 
               <void method="setProperty"> 
                <string>height</string> 
-               <int>265</int> 
+               <int>325</int> 
               </void> 
              </object> 
             </void> 

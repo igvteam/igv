@@ -62,10 +62,6 @@ public class VariantReviewRenderer extends VariantRenderer {
         super(track);
     }
 
-    @Override
-    protected boolean defaultUseAlpha() {
-        return false;
-    }
 
     @Override
     public void renderSiteBand(Variant variant, Rectangle bandRectangle, int pixelX, int xWidth, RenderContext context) {

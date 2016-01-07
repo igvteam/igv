@@ -87,34 +87,43 @@ public class VariantRenderer { //extends FeatureRenderer {
 
     public VariantRenderer(VariantTrack track) {
         this.track = track;
-
-        final PreferenceManager prefMgr = PreferenceManager.getInstance();
-
-        colorAlleleBandVar = prefMgr.getAsColor(PreferenceManager.AF_VAR_COLOR);
-        colorAlleleBandRef = prefMgr.getAsColor(PreferenceManager.AF_REF_COLOR);
-        colorHomRef = prefMgr.getAsColor(PreferenceManager.HOMREF_COLOR);
-        colorHomVar = prefMgr.getAsColor(PreferenceManager.HOMVAR_COLOR);
-        colorHet = prefMgr.getAsColor(PreferenceManager.HETVAR_COLOR);
-        colorNoCall = prefMgr.getAsColor(PreferenceManager.NOCALL_COLOR);
-
-        colorHomRefAlpha = ColorUtilities.getCompositeColor(colorHomRef, alphaValue);
-        colorHomVarAlpha = ColorUtilities.getCompositeColor(colorHomVar, alphaValue);
-        colorHetAlpha = ColorUtilities.getCompositeColor(colorHet, alphaValue);
-        colorNoCallAlpha = ColorUtilities.getCompositeColor(colorNoCall, alphaValue);
-        colorAlleleBandVarAlpha = ColorUtilities.getCompositeColor(colorAlleleBandVar, alphaValue);
-        colorAlleleBandRefAlpha = ColorUtilities.getCompositeColor(colorAlleleBandRef, alphaValue);
-
+        updateColors();
     }
 
     /**
-     * Whether to use alpha channel by default when rendering variants.
-     * Normally they are dimmed if filtered
-     *
-     * @return
-     * @api
+     * Check colors against user prefs and update if neccessary
      */
-    protected boolean defaultUseAlpha() {
-        return false;
+    private void updateColors() {
+
+        final PreferenceManager prefMgr = PreferenceManager.getInstance();
+
+        if (!prefMgr.getAsColor(PreferenceManager.AF_VAR_COLOR).equals(colorAlleleBandVar)) {
+            colorAlleleBandVar = prefMgr.getAsColor(PreferenceManager.AF_VAR_COLOR);
+            colorAlleleBandVarAlpha = ColorUtilities.getCompositeColor(colorAlleleBandVar, alphaValue);
+
+        }
+        if (!prefMgr.getAsColor(PreferenceManager.AF_REF_COLOR).equals(colorAlleleBandRef)) {
+            colorAlleleBandRef = prefMgr.getAsColor(PreferenceManager.AF_REF_COLOR);
+            colorAlleleBandRefAlpha = ColorUtilities.getCompositeColor(colorAlleleBandRef, alphaValue);
+
+        }
+        if (!prefMgr.getAsColor(PreferenceManager.HOMREF_COLOR).equals(colorHomRef)) {
+            colorHomRef = prefMgr.getAsColor(PreferenceManager.HOMREF_COLOR);
+            colorHomRefAlpha = ColorUtilities.getCompositeColor(colorHomRef, alphaValue);
+        }
+        if (!prefMgr.getAsColor(PreferenceManager.HOMVAR_COLOR).equals(colorHomVar)) {
+            colorHomVar = prefMgr.getAsColor(PreferenceManager.HOMVAR_COLOR);
+            colorHomVarAlpha = ColorUtilities.getCompositeColor(colorHomVar, alphaValue);
+        }
+        if (!prefMgr.getAsColor(PreferenceManager.HETVAR_COLOR).equals(colorHet)) {
+            colorHet = prefMgr.getAsColor(PreferenceManager.HETVAR_COLOR);
+            colorHetAlpha = ColorUtilities.getCompositeColor(colorHet, alphaValue);
+        }
+        if (!prefMgr.getAsColor(PreferenceManager.NOCALL_COLOR).equals(colorNoCall)) {
+            colorNoCall = prefMgr.getAsColor(PreferenceManager.NOCALL_COLOR);
+            colorNoCallAlpha = ColorUtilities.getCompositeColor(colorNoCall, alphaValue);
+        }
+
     }
 
     /**
@@ -132,8 +141,9 @@ public class VariantRenderer { //extends FeatureRenderer {
                                int pixelX, int xWidth,
                                RenderContext context) {
 
+        updateColors();
 
-        final boolean useAlpha = variant.isFiltered() || defaultUseAlpha();
+        final boolean useAlpha = variant.isFiltered();
         final Color alleleColor;
         final Color refColor;
         double percent;
@@ -188,6 +198,8 @@ public class VariantRenderer { //extends FeatureRenderer {
 
     public void renderGenotypeBandSNP(Variant variant, RenderContext context, Rectangle bandRectangle, int pX0, int dX,
                                       String sampleName, VariantTrack.ColorMode coloring, boolean hideFiltered) {
+
+        updateColors();
 
         int pY = (int) bandRectangle.getY();
         int dY = (int) bandRectangle.getHeight();
