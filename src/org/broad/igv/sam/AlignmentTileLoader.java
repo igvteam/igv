@@ -100,11 +100,14 @@ public class AlignmentTileLoader {
     }
 
 
-    AlignmentTile loadTile(String chr, int start, int end,
+    AlignmentTile loadTile(String chr,
+                           int start,
+                           int end,
                            SpliceJunctionHelper spliceJunctionHelper,
                            AlignmentDataManager.DownsampleOptions downsampleOptions,
                            Map<String, PEStats> peStats,
                            AlignmentTrack.BisulfiteContext bisulfiteContext,
+                           boolean showAlignments,
                            ProgressMonitor monitor) {
 
         final PreferenceManager prefMgr = PreferenceManager.getInstance();
@@ -117,7 +120,7 @@ public class AlignmentTileLoader {
 
         boolean reducedMemory = prefMgr.getAsBoolean(PreferenceManager.SAM_REDUCED_MEMORY_MODE);
 
-        AlignmentTile t = new AlignmentTile(start, end, spliceJunctionHelper, downsampleOptions, bisulfiteContext, reducedMemory);
+        AlignmentTile t = new AlignmentTile(start, end, spliceJunctionHelper, downsampleOptions, bisulfiteContext, showAlignments, reducedMemory);
 
 
         //assert (tiles.size() > 0);
@@ -339,17 +342,19 @@ public class AlignmentTileLoader {
         private int offset = 0;
         private int indelLimit;
 
-        AlignmentTile(int start, int end,
+        AlignmentTile(int start,
+                      int end,
                       SpliceJunctionHelper spliceJunctionHelper,
                       AlignmentDataManager.DownsampleOptions downsampleOptions,
                       AlignmentTrack.BisulfiteContext bisulfiteContext,
+                      boolean showAlignments,
                       boolean reducedMemory) {
             this.start = start;
             this.end = end;
             this.downsampledIntervals = new ArrayList<DownsampledInterval>();
 
             this.indelLimit = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MIN_INDEL_SIZE);
-            this.showAlignments = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_ALIGNMENT_TRACK);
+            this.showAlignments = showAlignments;
             
             long seed = System.currentTimeMillis();
             //System.out.println("seed: " + seed);

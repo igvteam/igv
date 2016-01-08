@@ -493,7 +493,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         label4.setToolTipText("Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.  A negative number is interpreted as a percentage.");
                         jPanel10.add(label4, new GridBagConstraints(0, 9, 4, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                            new Insets(0, 10, 15, 5), 0, 0));
 
                         //---- geneListFlankingField ----
                         geneListFlankingField.setToolTipText("Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.  A negative number is interpreted as a percentage.");
@@ -525,7 +525,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         label6.setText("Sequence resolution threshold (bp/pixel):");
                         jPanel10.add(label6, new GridBagConstraints(0, 11, 4, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                            new Insets(0, 10, 15, 5), 0, 0));
 
                         //---- seqResolutionThreshold ----
                         seqResolutionThreshold.addFocusListener(new FocusAdapter() {
@@ -549,7 +549,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         label10.setLabelFor(defaultFontField);
                         jPanel10.add(label10, new GridBagConstraints(0, 12, 1, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                            new Insets(0, 10, 15, 5), 0, 0));
 
                         //---- fontChangeButton ----
                         fontChangeButton.setText("Change...");
@@ -579,7 +579,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         label7.setText("Background color click to change): ");
                         jPanel10.add(label7, new GridBagConstraints(0, 14, 3, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                            new Insets(0, 10, 15, 5), 0, 0));
 
                         //======== backgroundColorPanel ========
                         {
@@ -659,7 +659,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         textField1.setToolTipText("A value > 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.   The threshold (\"visibility window\") can be overriden explicitly for individual tracks via the track menu.");
                         jPanel10.add(textField1, new GridBagConstraints(0, 10, 3, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                            new Insets(0, 10, 15, 5), 0, 0));
 
                         //---- featureVisibilityWindowField ----
                         featureVisibilityWindowField.setToolTipText("A value > 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.   The threshold (\"visibility window\") can be overriden explicitly for individual tracks via the track menu.");

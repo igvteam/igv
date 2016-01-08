@@ -830,6 +830,10 @@ public abstract class AbstractTrack implements Track {
             setName(displayName);
         }
 
+        if(attributes.containsKey("visible")) {
+            this.setVisible(Boolean.parseBoolean(attributes.get("visible")));
+        }
+
         // Set DataRange -- legacy (pre V3 sessions)
         if(version <= 3){
             String scale = attributes.get(IGVSessionReader.SessionAttribute.SCALE.getText());

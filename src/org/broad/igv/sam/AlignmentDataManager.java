@@ -58,18 +58,16 @@ public class AlignmentDataManager implements IAlignmentDataManager {
     private PositionCache<AlignmentInterval> loadedIntervalCache = new PositionCache<AlignmentInterval>();
     private PositionCache<PackedAlignments> packedAlignmentsCache = new PositionCache<PackedAlignments>();
 
+    private ResourceLocator locator;
     private HashMap<String, String> chrMappings = new HashMap();
     private volatile boolean isLoading = false;
     private AlignmentTileLoader reader;
     private CoverageTrack coverageTrack;
-
     private Map<String, PEStats> peStats;
-
     private AlignmentTrack.ExperimentType experimentType;
-
     private SpliceJunctionHelper.LoadOptions loadOptions;
-
     private Object loadLock = new Object();
+    private boolean showAlignments;
 
     /**
      * This {@code EventBus} is typically used to notify listeners when new data
@@ -77,16 +75,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
      */
     private EventBus eventBus = new EventBus();
 
-    private ResourceLocator locator;
 
-    public void dumpAlignments() {
-
-        packedAlignmentsCache.clear();
-        for (AlignmentInterval interval : loadedIntervalCache.values()) {
-            interval.dumpAlignments();
-        }
-
-    }
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
         this.locator = locator;
@@ -293,6 +282,13 @@ public class AlignmentDataManager implements IAlignmentDataManager {
         packedAlignmentsCache.clear();
     }
 
+    public void dumpAlignments() {
+        packedAlignmentsCache.clear();
+        for (AlignmentInterval interval : loadedIntervalCache.values()) {
+            interval.dumpAlignments();
+        }
+    }
+
     public synchronized void loadAlignments(final String chr, final int start, final int end,
                                             final AlignmentTrack.RenderOptions renderOptions,
                                             final RenderContext context) {
@@ -348,7 +344,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
 
         SpliceJunctionHelper spliceJunctionHelper = new SpliceJunctionHelper(this.loadOptions);
         AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, spliceJunctionHelper,
-                downsampleOptions, peStats, bisulfiteContext, monitor);
+                downsampleOptions, peStats, bisulfiteContext, showAlignments, monitor);
 
         List<Alignment> alignments = t.getAlignments();
         List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();
@@ -439,6 +435,11 @@ public class AlignmentDataManager implements IAlignmentDataManager {
 
     public void alleleThresholdChanged() {
         coverageTrack.setSnpThreshold(PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD));
+    }
+
+    public void setShowAlignments(boolean showAlignments) {
+        this.showAlignments = showAlignments;
+        clear();
     }
 
     public static class DownsampleOptions {

@@ -1758,7 +1758,8 @@ public class IGV {
     public List<Track> load(ResourceLocator locator) throws DataLoadException {
 
         TrackLoader loader = new TrackLoader();
-        List<Track> newTracks = loader.load(locator, this);
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        List<Track> newTracks = loader.load(locator, genome);
         if (newTracks.size() > 0) {
             for (Track track : newTracks) {
                 String fn = locator.getPath();
@@ -1773,6 +1774,7 @@ public class IGV {
                 track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
                 track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
 
+                // If the track listens for group events add it to the listener list
                 if (track instanceof TrackGroupEventListener) {
                     addGroupEventListener((TrackGroupEventListener) track);
                 }

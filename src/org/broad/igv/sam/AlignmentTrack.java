@@ -171,12 +171,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private int minHeight = 50;
     private AlignmentDataManager dataManager;
     private Genome genome;
-    // The "dataPanel" of the track (a DataPanel).  This field might be null at any given time.  It is updated each repaint.
-    JComponent parent;
     private Rectangle alignmentsRect;
     private Rectangle downsampleRect;
-
     private ColorTable readNamePalette;
+    // The "dataPanel" of the track (a DataPanel).  This field might be null at any given time.  It is updated each repaint.
+    private JComponent dataPanel;
 
 
     public static void sortAlignmentTracks(SortOption option, String tag) {
@@ -252,6 +251,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         this.coverageTrack.setRenderOptions(this.renderOptions);
     }
 
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        dataManager.setShowAlignments(visible);
+    }
+
     @XmlElement(name = RenderOptions.NAME)
     private void setRenderOptions(RenderOptions renderOptions) {
         this.renderOptions = renderOptions;
@@ -296,8 +301,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     @Override
     public int getHeight() {
 
-        if (parent != null
-                && (parent instanceof DataPanel && ((DataPanel) parent).getFrame().getScale() > minVisibleScale)) {
+        if (dataPanel != null
+                && (dataPanel instanceof DataPanel && ((DataPanel) dataPanel).getFrame().getScale() > minVisibleScale)) {
             return minimumHeight;
         }
 
@@ -326,7 +331,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public void render(RenderContext context, Rectangle rect) {
 
-        parent = context.getPanel();
+        dataPanel = context.getPanel();
 
         // Split track rectangle into sections.
         int seqHeight = sequenceTrack == null ? 0 : sequenceTrack.getHeight();
@@ -907,8 +912,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             final ReferenceFrame frame = te.getFrame();
             if (frame != null) {
                 selectAlignment(e, frame);
-                if (parent != null) {
-                    parent.repaint();
+                if (dataPanel != null) {
+                    dataPanel.repaint();
                 }
                 return true;
             }

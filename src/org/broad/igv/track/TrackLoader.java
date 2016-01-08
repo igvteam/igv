@@ -103,19 +103,6 @@ public class TrackLoader {
     private static Collection<? extends Class> NOLogExceptions = Arrays.asList(TribbleIndexNotFoundException.class);
 
     /**
-     * Calls {@linkplain TrackLoader#load(org.broad.igv.util.ResourceLocator, org.broad.igv.feature.genome.Genome)}
-     * with genome from IGV instance (if not null).
-     *
-     * @param locator
-     * @param igv
-     * @return
-     */
-    public List<Track> load(ResourceLocator locator, IGV igv) throws DataLoadException {
-        Genome genome = igv != null ? GenomeManager.getInstance().getCurrentGenome() : null;
-        return load(locator, genome);
-    }
-
-    /**
      * Switches on various attributes of locator (mainly locator path extension and whether the locator is indexed)
      * to call the appropriate loading method.
      *
@@ -908,7 +895,6 @@ public class TrackLoader {
             AlignmentTrack alignmentTrack = new AlignmentTrack(locator, dataManager, genome);    // parser.loadTrack(locator, dsName);
             alignmentTrack.setName(dsName);
             alignmentTrack.setVisible(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_ALIGNMENT_TRACK));
-
 
             // Create coverage track
             CoverageTrack covTrack = new CoverageTrack(locator, dsName + " Coverage", alignmentTrack, genome);

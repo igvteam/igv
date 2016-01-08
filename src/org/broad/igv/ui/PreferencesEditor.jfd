@@ -328,6 +328,15 @@
                  <string>gridwidth</string> 
                  <int>4</int> 
                 </void> 
+                <void method="setProperty"> 
+                 <string>insets</string> 
+                 <object class="java.awt.Insets"> 
+                  <int>0</int> 
+                  <int>10</int> 
+                  <int>0</int> 
+                  <int>0</int> 
+                 </object> 
+                </void> 
                </object> 
               </void> 
               <void method="add"> 
@@ -433,6 +442,15 @@
                  <string>gridwidth</string> 
                  <int>4</int> 
                 </void> 
+                <void method="setProperty"> 
+                 <string>insets</string> 
+                 <object class="java.awt.Insets"> 
+                  <int>0</int> 
+                  <int>10</int> 
+                  <int>0</int> 
+                  <int>0</int> 
+                 </object> 
+                </void> 
                </object> 
               </void> 
               <void method="add"> 
@@ -496,6 +514,15 @@
                 <void method="setProperty"> 
                  <string>gridy</string> 
                  <int>12</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>insets</string> 
+                 <object class="java.awt.Insets"> 
+                  <int>0</int> 
+                  <int>10</int> 
+                  <int>0</int> 
+                  <int>0</int> 
+                 </object> 
                 </void> 
                </object> 
               </void> 
@@ -581,6 +608,15 @@
                 <void method="setProperty"> 
                  <string>gridwidth</string> 
                  <int>3</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>insets</string> 
+                 <object class="java.awt.Insets"> 
+                  <int>0</int> 
+                  <int>10</int> 
+                  <int>0</int> 
+                  <int>0</int> 
+                 </object> 
                 </void> 
                </object> 
               </void> 
@@ -849,6 +885,15 @@
                 <void method="setProperty"> 
                  <string>gridwidth</string> 
                  <int>3</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>insets</string> 
+                 <object class="java.awt.Insets"> 
+                  <int>0</int> 
+                  <int>10</int> 
+                  <int>0</int> 
+                  <int>0</int> 
+                 </object> 
                 </void> 
                </object> 
               </void> 
