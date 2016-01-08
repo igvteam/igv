@@ -970,6 +970,7 @@ public class IGV {
 
 
     final public void doRefresh() {
+
         contentPane.getMainPanel().revalidate();
         mainFrame.repaint();
         //getContentPane().repaint();

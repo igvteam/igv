@@ -847,7 +847,7 @@ public class CoverageTrack extends AbstractTrack {
 
                         public void run() {
                             setVisible(coverageItem.isSelected());
-                            IGV.getInstance().repaint();
+                            IGV.getInstance().getMainPanel().revalidate();
 
                         }
                     });
@@ -855,7 +855,7 @@ public class CoverageTrack extends AbstractTrack {
             });
             menu.add(coverageItem);
 
-            final SpliceJunctionFinderTrack spliceJunctionTrack = alignmentTrack.getSpliceJunctionTrack();
+            final SpliceJunctionTrack spliceJunctionTrack = alignmentTrack.getSpliceJunctionTrack();
             if (spliceJunctionTrack != null) {
                 final JMenuItem junctionItem = new JCheckBoxMenuItem("Show Junction Track");
                 junctionItem.setSelected(spliceJunctionTrack.isVisible());
@@ -864,8 +864,10 @@ public class CoverageTrack extends AbstractTrack {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(CoverageTrack.this, AlignmentTrackEvent.Type.SPLICE_JUNCTION, junctionItem.isSelected()));
+                        IGV.getInstance().getMainPanel().revalidate();
                     }
                 });
+
                 menu.add(junctionItem);
             }
         }

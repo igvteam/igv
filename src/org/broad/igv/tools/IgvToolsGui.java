@@ -26,7 +26,6 @@
 package org.broad.igv.tools;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.sam.SpliceJunctionFinderTrack;
 import org.broad.igv.track.WindowFunction;
 
 import javax.swing.*;

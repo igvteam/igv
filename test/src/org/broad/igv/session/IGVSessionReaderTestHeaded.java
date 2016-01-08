@@ -104,7 +104,6 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
         AlignmentTrack alTrack = getAlignmentTrack(path);
 
         CoverageTrack covTrack = alTrack.getCoverageTrack();
-        assertTrue(alTrack.isShowSpliceJunctions());
 
         assertEquals(CoverageTrack.DEFAULT_SHOW_REFERENCE, covTrack.isShowReference());
         assertEquals(CoverageTrack.DEFAULT_AUTOSCALE, covTrack.getAutoScale());

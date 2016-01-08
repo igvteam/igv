@@ -62,7 +62,7 @@ public class SpliceJunctionHelper {
         this.loadOptions = loadOptions;
     }
 
-    public List<SpliceJunctionFeature> getFilteredJunctions(SpliceJunctionFinderTrack.StrandOption strandOption) {
+    public List<SpliceJunctionFeature> getFilteredJunctions(SpliceJunctionTrack.StrandOption strandOption) {
 
         List<SpliceJunctionFeature> junctions;
 

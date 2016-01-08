@@ -144,7 +144,7 @@ public class FeatureTrack extends AbstractTrack {
     // TODO -- there are WAY too many constructors for this class
 
     /**
-     * Construct with no feature source.  Currently this is only used for the SpliceJunctionFinderTrack subclass.
+     * Construct with no feature source.  Currently this is only used for the SpliceJunctionTrack subclass.
      *
      * @param id
      * @param name

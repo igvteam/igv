@@ -157,7 +157,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private boolean ionTorrent;
     private SequenceTrack sequenceTrack;
     private CoverageTrack coverageTrack;
-    private SpliceJunctionFinderTrack spliceJunctionTrack;
+    private SpliceJunctionTrack spliceJunctionTrack;
 
     private RenderOptions renderOptions = new RenderOptions();
 
@@ -174,7 +174,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private Rectangle alignmentsRect;
     private Rectangle downsampleRect;
     private ColorTable readNamePalette;
-    // The "dataPanel" of the track (a DataPanel).  This field might be null at any given time.  It is updated each repaint.
+    // The "DataPanel" containing the track.  This field might be null at any given time.  It is updated each repaint.
     private JComponent dataPanel;
 
 
@@ -206,8 +206,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         maximumHeight = Integer.MAX_VALUE;
 
         PreferenceManager prefs = PreferenceManager.getInstance();
-
-        setShowSpliceJunctions(prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK));
 
         float maxRange = prefs.getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
         minVisibleScale = (maxRange * 1000) / 700;
@@ -254,7 +252,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     @Override
     public void setVisible(boolean visible) {
         super.setVisible(visible);
-        dataManager.setShowAlignments(visible);
+        if(dataManager != null) dataManager.setShowAlignments(visible);
     }
 
     @XmlElement(name = RenderOptions.NAME)
@@ -274,7 +272,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         return coverageTrack;
     }
 
-    public void setSpliceJunctionTrack(SpliceJunctionFinderTrack spliceJunctionTrack) {
+    public void setSpliceJunctionTrack(SpliceJunctionTrack spliceJunctionTrack) {
         this.spliceJunctionTrack = spliceJunctionTrack;
         if (dataManager.getExperimentType() == ExperimentType.BISULFITE) {
             spliceJunctionTrack.setVisible(false);
@@ -282,7 +280,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
 
-    public SpliceJunctionFinderTrack getSpliceJunctionTrack() {
+    public SpliceJunctionTrack getSpliceJunctionTrack() {
         return spliceJunctionTrack;
     }
 
@@ -768,17 +766,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         return dataManager;
     }
 
-    //Public only for testing
-    @XmlAttribute
-    public boolean isShowSpliceJunctions() {
-        return showSpliceJunctions;
-    }
-
-    @SubtlyImportant
-    private void setShowSpliceJunctions(boolean showSpliceJunctions) {
-        this.showSpliceJunctions = showSpliceJunctions;
-    }
-
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
         if (downsampleRect != null && y > downsampleRect.y && y <= downsampleRect.y + downsampleRect.height) {
@@ -875,6 +862,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             case VISIBLE:
                 dataManager.dumpAlignments();
                 setVisible(e.getBooleanValue());
+                IGV.getInstance().getMainPanel().revalidate();
                 break;
             case VISIBILITY_WINDOW:
                 visibilityWindowChanged();
@@ -2005,8 +1993,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                             public void run() {
                                 if (getCoverageTrack() != null) {
                                     getCoverageTrack().setVisible(item.isSelected());
-                                    refresh();
-                                    IGV.getInstance().repaintNamePanels();
+                                    IGV.getInstance().getMainPanel().revalidate();
                                 }
                             }
                         });
@@ -2027,8 +2014,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                             public void run() {
                                 if (AlignmentTrack.this.spliceJunctionTrack != null) {
                                     AlignmentTrack.this.spliceJunctionTrack.setVisible(item.isSelected());
-                                    refresh();
-                                    IGV.getInstance().repaintNamePanels();
+                                    IGV.getInstance().getMainPanel().revalidate();
                                 }
                             }
                         });

@@ -54,9 +54,9 @@ import java.util.List;
  * @author dhmay
  *         Finds splice junctions in real time and renders them as Features
  */
-public class SpliceJunctionFinderTrack extends FeatureTrack {
+public class SpliceJunctionTrack extends FeatureTrack {
 
-    private static Logger log = Logger.getLogger(SpliceJunctionFinderTrack.class);
+    private static Logger log = Logger.getLogger(SpliceJunctionTrack.class);
 
     public enum StrandOption {COMBINE, FORWARD, REVERSE, BOTH}
 
@@ -82,7 +82,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
     }
 
 
-    public SpliceJunctionFinderTrack(ResourceLocator locator, String name, IAlignmentDataManager dataManager, AlignmentTrack alignmentTrack, StrandOption ignoreStrand) {
+    public SpliceJunctionTrack(ResourceLocator locator, String name, IAlignmentDataManager dataManager, AlignmentTrack alignmentTrack, StrandOption ignoreStrand) {
         super(locator, locator.getPath() + "_junctions", name);
 
         super.setDataRange(new DataRange(0, 0, 60));
@@ -164,9 +164,9 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
             alignmentItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(SpliceJunctionFinderTrack.this, AlignmentTrackEvent.Type.VISIBLE, alignmentItem.isSelected()));
+                    alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(SpliceJunctionTrack.this, AlignmentTrackEvent.Type.VISIBLE, alignmentItem.isSelected()));
                     if (alignmentItem.isSelected()) {
-                        alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(SpliceJunctionFinderTrack.this, AlignmentTrackEvent.Type.RELOAD));
+                        alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(SpliceJunctionTrack.this, AlignmentTrackEvent.Type.RELOAD));
                     }
                 }
             });
@@ -184,9 +184,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
 
                             public void run() {
                                 coverageTrack.setVisible(coverageItem.isSelected());
-                                IGV.getInstance().getContentPane().getMainPanel().invalidate();
-                                IGV.getInstance().repaintDataPanels();
-                                IGV.getInstance().repaintNamePanels();
+                                IGV.getInstance().getMainPanel().revalidate();
 
                             }
                         });
@@ -202,7 +200,8 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
             junctionItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(SpliceJunctionFinderTrack.this, AlignmentTrackEvent.Type.SPLICE_JUNCTION, junctionItem.isSelected()));
+                    alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(SpliceJunctionTrack.this, AlignmentTrackEvent.Type.SPLICE_JUNCTION, junctionItem.isSelected()));
+                    IGV.getInstance().getMainPanel().revalidate();
                 }
             });
             popupMenu.add(junctionItem);
