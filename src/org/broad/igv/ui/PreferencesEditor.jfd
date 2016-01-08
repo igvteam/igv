@@ -3018,7 +3018,7 @@
                   <string>javax.swing.JLabel</string> 
                   <void method="setProperty"> 
                    <string>text</string> 
-                   <string>Show:</string> 
+                   <string>On inital load show: </string> 
                   </void> 
                   <void property="name"> 
                    <string>label39</string> 
@@ -3074,7 +3074,7 @@
                   <string>javax.swing.JCheckBox</string> 
                   <void method="setProperty"> 
                    <string>text</string> 
-                   <string>Junction Track</string> 
+                   <string>Splice Junction Track</string> 
                   </void> 
                   <void property="name"> 
                    <string>showJunctionTrackCB</string> 
@@ -4039,6 +4039,18 @@
               </void> 
               <void method="add"> 
                <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JLabel</string> 
+                <void method="setProperty"> 
+                 <string>text</string> 
+                 <string>Min flanking width:</string> 
+                </void> 
+                <void property="name"> 
+                 <string>label15</string> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
                 <string>javax.swing.JTextField</string> 
                 <void method="setProperty"> 
                  <string>preferredSize</string> 
@@ -4065,18 +4077,6 @@
                   <string>junctionFlankingTextFieldFocusLost</string> 
                   <boolean>true</boolean> 
                  </object> 
-                </void> 
-               </object> 
-              </void> 
-              <void method="add"> 
-               <object class="com.jformdesigner.model.FormComponent"> 
-                <string>javax.swing.JLabel</string> 
-                <void method="setProperty"> 
-                 <string>text</string> 
-                 <string>Min flanking width:</string> 
-                </void> 
-                <void property="name"> 
-                 <string>label15</string> 
                 </void> 
                </object> 
               </void> 

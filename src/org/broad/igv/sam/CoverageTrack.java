@@ -839,7 +839,7 @@ public class CoverageTrack extends AbstractTrack {
 
             final SpliceJunctionTrack spliceJunctionTrack = alignmentTrack.getSpliceJunctionTrack();
             if (spliceJunctionTrack != null) {
-                final JMenuItem junctionItem = new JCheckBoxMenuItem("Show Junction Track");
+                final JMenuItem junctionItem = new JCheckBoxMenuItem("Show Splice Junction Track");
                 junctionItem.setSelected(spliceJunctionTrack.isVisible());
                 junctionItem.setEnabled(!spliceJunctionTrack.isRemoved());
                 junctionItem.addActionListener(new ActionListener() {

@@ -29,18 +29,36 @@ package org.broad.igv.sam.cram;
 
 import htsjdk.samtools.SAMSequenceRecord;
 import htsjdk.samtools.cram.ref.ReferenceSource;
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.util.ObjectCache;
 
 
 public class IGVReferenceSource extends ReferenceSource {
+
+    ObjectCache<String, byte[]> cachedSequences = new ObjectCache<String, byte[]>(2);
 
     @Override
     public synchronized byte[] getReferenceBases(SAMSequenceRecord record, boolean tryNameVariants) {
 
         final String name = record.getSequenceName();
 
-        GenomeManager.getInstance().getCurrentGenome().getCanonicalChrName(name);
+        String igvName = GenomeManager.getInstance().getCurrentGenome().getCanonicalChrName(name);
 
-        return super.getReferenceBases(record, tryNameVariants);
+        byte[] bases = cachedSequences.get(igvName);
+
+        if (bases == null) {
+
+            Chromosome chromosome = GenomeManager.getInstance().getCurrentGenome().getChromosome(igvName);
+
+            bases = GenomeManager.getInstance().getCurrentGenome().getSequence(igvName, 0, chromosome.getLength());
+
+            cachedSequences.put(igvName, bases);
+        }
+
+        return bases;
+
+
+
     }
 }

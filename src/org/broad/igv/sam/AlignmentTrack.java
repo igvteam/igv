@@ -1989,7 +1989,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             }
 
             if (AlignmentTrack.this.spliceJunctionTrack != null) {
-                final JMenuItem item = new JCheckBoxMenuItem("Show Junction Track");
+                final JMenuItem item = new JCheckBoxMenuItem("Show Splice Junction Track");
                 item.setSelected(AlignmentTrack.this.spliceJunctionTrack.isVisible());
                 item.setEnabled(!AlignmentTrack.this.spliceJunctionTrack.isRemoved());
                 item.addActionListener(new ActionListener() {

@@ -278,8 +278,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
         useAlleleQualityCB = new JCheckBox();
         panel3 = new JPanel();
         showJunctionFlankingRegionsCB = new JCheckBox();
-        junctionFlankingTextField = new JTextField();
         label15 = new JLabel();
+        junctionFlankingTextField = new JTextField();
         label16 = new JLabel();
         junctionCoverageTextField = new JTextField();
         vSpacer6 = new JPanel(null);
@@ -1297,7 +1297,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             panel32.setLayout(new FlowLayout(FlowLayout.LEFT));
 
                             //---- label39 ----
-                            label39.setText("Show:");
+                            label39.setText("On inital load show: ");
                             panel32.add(label39);
 
                             //---- showAlignmentTrackCB ----
@@ -1322,7 +1322,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             panel32.add(showCovTrackCB);
 
                             //---- showJunctionTrackCB ----
-                            showJunctionTrackCB.setText("Junction Track");
+                            showJunctionTrackCB.setText("Splice Junction Track");
                             showJunctionTrackCB.addActionListener(new ActionListener() {
                                 @Override
                                 public void actionPerformed(ActionEvent e) {
@@ -1737,6 +1737,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         });
                         panel3.add(showJunctionFlankingRegionsCB);
 
+                        //---- label15 ----
+                        label15.setText("Min flanking width:");
+                        panel3.add(label15);
+
                         //---- junctionFlankingTextField ----
                         junctionFlankingTextField.setPreferredSize(new Dimension(80, 28));
                         junctionFlankingTextField.addActionListener(new ActionListener() {
@@ -1752,10 +1756,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         panel3.add(junctionFlankingTextField);
-
-                        //---- label15 ----
-                        label15.setText("Min flanking width:");
-                        panel3.add(label15);
 
                         //---- label16 ----
                         label16.setText("Min junction coverage:");
@@ -4680,8 +4680,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox useAlleleQualityCB;
     private JPanel panel3;
     private JCheckBox showJunctionFlankingRegionsCB;
-    private JTextField junctionFlankingTextField;
     private JLabel label15;
+    private JTextField junctionFlankingTextField;
     private JLabel label16;
     private JTextField junctionCoverageTextField;
     private JPanel vSpacer6;
