@@ -184,7 +184,9 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
 
                             public void run() {
                                 coverageTrack.setVisible(coverageItem.isSelected());
-                                IGV.getInstance().repaint();
+                                IGV.getInstance().getContentPane().getMainPanel().invalidate();
+                                IGV.getInstance().repaintDataPanels();
+                                IGV.getInstance().repaintNamePanels();
 
                             }
                         });
