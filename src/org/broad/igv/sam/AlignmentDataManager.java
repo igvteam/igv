@@ -67,7 +67,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
     private AlignmentTrack.ExperimentType experimentType;
     private SpliceJunctionHelper.LoadOptions loadOptions;
     private Object loadLock = new Object();
-    private boolean showAlignments;
+    private boolean showAlignments = true;
 
     /**
      * This {@code EventBus} is typically used to notify listeners when new data
