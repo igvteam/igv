@@ -319,7 +319,7 @@ public class AlignmentTileLoader {
         private static final Random RAND = new Random();
 
         private boolean downsample;
-        private boolean coverageOnly;
+        private boolean showAlignments;
         private int samplingWindowSize;
         private int samplingDepth;
 
@@ -349,7 +349,7 @@ public class AlignmentTileLoader {
             this.downsampledIntervals = new ArrayList<DownsampledInterval>();
 
             this.indelLimit = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MIN_INDEL_SIZE);
-            this.coverageOnly = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_COVERAGE_ONLY);
+            this.showAlignments = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_ALIGNMENT_TRACK);
             
             long seed = System.currentTimeMillis();
             //System.out.println("seed: " + seed);
@@ -410,7 +410,7 @@ public class AlignmentTileLoader {
                 spliceJunctionHelper.addAlignment(alignment);
             }
 
-            if (!coverageOnly) {
+            if (showAlignments) {
                 if (downsample) {
                     final int alignmentStart = alignment.getAlignmentStart();
                     int currentSamplingBucketEnd = currentSamplingWindowStart + samplingWindowSize;

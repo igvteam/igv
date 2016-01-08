@@ -144,8 +144,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_REDUCED_MEMORY_MODE = "SAM.REDUCED_MEMORY_MODE";
     public static final String SAM_MIN_INDEL_SIZE = "SAM.MIN_INDEL_SIZE";
 
-    public static final String SAM_COVERAGE_ONLY = "SAM.COVERAGE_ONLY" +
-            "";
+    public static final String SAM_SHOW_ALIGNMENT_TRACK = "SAM.SHOW_ALIGNMENT_TRACK";
 
     public static final String COLOR_A = "COLOR.A";
     public static final String COLOR_C = "COLOR.C";
@@ -521,16 +520,6 @@ public class PreferenceManager implements PropertyManager {
 
             }
 
-            if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_COVERAGE_ONLY)) {
-                boolean coverageOnly = Boolean.parseBoolean(updatedPreferenceMap.get(PreferenceManager.SAM_COVERAGE_ONLY));
-                igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.VISIBLE, !coverageOnly);
-                reloadSAM = !coverageOnly;
-            }
-
-            if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_SHOW_JUNCTION_TRACK)) {
-                boolean showSpliceJunctionTrack = Boolean.parseBoolean(updatedPreferenceMap.get(PreferenceManager.SAM_SHOW_JUNCTION_TRACK));
-                igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.SPLICE_JUNCTION, showSpliceJunctionTrack);
-            }
             if (reloadSAM) {
                 if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_MAX_VISIBLE_RANGE)) {
                     igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.VISIBILITY_WINDOW);
@@ -1133,7 +1122,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_REDUCED_MEMORY_MODE, "false");
         defaultValues.put(SAM_MIN_INDEL_SIZE, "25");
 
-        defaultValues.put(SAM_COVERAGE_ONLY, "false");
+        defaultValues.put(SAM_SHOW_ALIGNMENT_TRACK, "true");
 
         defaultValues.put(BYPASS_FILE_AUTO_DISCOVERY, "false");
 

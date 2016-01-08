@@ -25,10 +25,8 @@
 
 package org.broad.igv.ui;
 
-import java.beans.*;
-
+import javax.swing.border.*;
 import com.jidesoft.dialog.ButtonPanel;
-import oracle.jdbc.proxy.annotation.Pre;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.batch.CommandListener;
@@ -39,7 +37,6 @@ import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
 import org.broad.igv.ui.color.*;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
-import org.broad.igv.ui.event.AlignmentTrackEvent;
 import org.broad.igv.ui.legend.ColorMapEditor;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.FontChooser;
@@ -100,6 +97,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void sessionPathsCBActionPerformed(ActionEvent e) {
         updatedPreferenceMap.put(PreferenceManager.SESSION_RELATIVE_PATH, String.valueOf(sessionPathsCB.isSelected()));
+    }
+
+    private void coverageOnlyCBActionPerformed(ActionEvent e) {
+        // TODO add your code here
     }
 
 
@@ -226,14 +227,18 @@ public class PreferencesEditor extends javax.swing.JDialog {
         label14 = new JLabel();
         panel20 = new JScrollPane();
         alignmentPanel = new JPanel();
-        vSpacer2 = new JPanel(null);
         jPanel11 = new JPanel();
+        panel32 = new JPanel();
+        label39 = new JLabel();
+        showAlignmentTrackCB = new JCheckBox();
+        showCovTrackCB = new JCheckBox();
+        showJunctionTrackCB = new JCheckBox();
+        jPanel12 = new JPanel();
+        panel13 = new JPanel();
         panel31 = new JPanel();
         jLabel11 = new JLabel();
         samMaxWindowSizeField = new JTextField();
         jLabel12 = new JLabel();
-        panel32 = new JPanel();
-        coverageOnlyCB = new JCheckBox();
         panel4 = new JPanel();
         downsampleReadsCB = new JCheckBox();
         hSpacer3 = new JPanel(null);
@@ -241,24 +246,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         samDownsampleCountField = new JTextField();
         jLabel13 = new JLabel();
         samSamplingWindowField = new JTextField();
-        vSpacer3 = new JPanel(null);
-        vSpacer4 = new JPanel(null);
-        jPanel12 = new JPanel();
-        panel8 = new JPanel();
-        panel5 = new JPanel();
-        jLabel26 = new JLabel();
-        snpThresholdField = new JTextField();
-        hSpacer2 = new JPanel(null);
-        showCovTrackCB = new JCheckBox();
-        samFilterDuplicatesCB = new JCheckBox();
-        samFlagUnmappedPairCB = new JCheckBox();
-        filterFailedReadsCB = new JCheckBox();
-        showSoftClippedCB = new JCheckBox();
-        showCenterLineCB = new JCheckBox();
-        filterSecondaryAlignmentsCB = new JCheckBox();
-        filterSupplementaryAlignmentsCB = new JCheckBox();
-        useAlleleQualityCB = new JCheckBox();
-        panel13 = new JPanel();
         panel12 = new JPanel();
         jLabel15 = new JLabel();
         mappingQualityThresholdField = new JTextField();
@@ -274,9 +261,22 @@ public class PreferencesEditor extends javax.swing.JDialog {
         samFlagInsertionsCB = new JCheckBox();
         samFlagInsertionsThresholdField = new JTextField();
         label31 = new JLabel();
+        panel8 = new JPanel();
+        samFilterDuplicatesCB = new JCheckBox();
+        samFlagUnmappedPairCB = new JCheckBox();
+        filterFailedReadsCB = new JCheckBox();
+        showSoftClippedCB = new JCheckBox();
+        filterSecondaryAlignmentsCB = new JCheckBox();
+        showCenterLineCB = new JCheckBox();
+        filterSupplementaryAlignmentsCB = new JCheckBox();
         vSpacer5 = new JPanel(null);
+        panel34 = new JPanel();
+        panel5 = new JPanel();
+        jLabel26 = new JLabel();
+        snpThresholdField = new JTextField();
+        hSpacer2 = new JPanel(null);
+        useAlleleQualityCB = new JCheckBox();
         panel3 = new JPanel();
-        showJunctionTrackCB = new JCheckBox();
         showJunctionFlankingRegionsCB = new JCheckBox();
         junctionFlankingTextField = new JTextField();
         label15 = new JLabel();
@@ -1286,261 +1286,155 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 //======== alignmentPanel ========
                 {
                     alignmentPanel.setLayout(new BoxLayout(alignmentPanel, BoxLayout.Y_AXIS));
-                    alignmentPanel.add(vSpacer2);
 
                     //======== jPanel11 ========
                     {
-                        jPanel11.setBorder(new TitledBorder(""));
-                        jPanel11.setLayout(new GridLayout(3, 1));
-
-                        //======== panel31 ========
-                        {
-                            panel31.setLayout(new FlowLayout(FlowLayout.LEFT));
-
-                            //---- jLabel11 ----
-                            jLabel11.setText("Visibility range threshold (kb):");
-                            jLabel11.setPreferredSize(new Dimension(250, 16));
-                            panel31.add(jLabel11);
-
-                            //---- samMaxWindowSizeField ----
-                            samMaxWindowSizeField.setText("jTextField1");
-                            samMaxWindowSizeField.setPreferredSize(new Dimension(80, 28));
-                            samMaxWindowSizeField.addFocusListener(new FocusAdapter() {
-                                @Override
-                                public void focusLost(FocusEvent e) {
-                                    samMaxWindowSizeFieldFocusLost(e);
-                                }
-                            });
-                            samMaxWindowSizeField.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    samMaxWindowSizeFieldActionPerformed(e);
-                                }
-                            });
-                            panel31.add(samMaxWindowSizeField);
-
-                            //---- jLabel12 ----
-                            jLabel12.setText("<html><i>Range at which alignments become visible");
-                            panel31.add(jLabel12);
-                        }
-                        jPanel11.add(panel31);
+                        jPanel11.setBorder(new TitledBorder("Track Display Options"));
+                        jPanel11.setLayout(new FlowLayout(FlowLayout.LEFT));
 
                         //======== panel32 ========
                         {
                             panel32.setLayout(new FlowLayout(FlowLayout.LEFT));
 
-                            //---- coverageOnlyCB ----
-                            coverageOnlyCB.setText("Show only coverage and junction track");
-                            coverageOnlyCB.setHorizontalAlignment(SwingConstants.LEFT);
-                            coverageOnlyCB.addActionListener(new ActionListener() {
+                            //---- label39 ----
+                            label39.setText("Show:");
+                            panel32.add(label39);
+
+                            //---- showAlignmentTrackCB ----
+                            showAlignmentTrackCB.setText("Alignment Track");
+                            showAlignmentTrackCB.setHorizontalAlignment(SwingConstants.LEFT);
+                            showAlignmentTrackCB.addActionListener(new ActionListener() {
                                 @Override
                                 public void actionPerformed(ActionEvent e) {
-                                    coverageOnlyCBActionPerformed(e);
+                                    showAlignmentTrackCBActionPerformed(e);
                                 }
                             });
-                            panel32.add(coverageOnlyCB);
-                        }
-                        jPanel11.add(panel32);
-
-                        //======== panel4 ========
-                        {
-                            panel4.setBorder(null);
-                            panel4.setLayout(new FlowLayout(FlowLayout.LEFT));
-
-                            //---- downsampleReadsCB ----
-                            downsampleReadsCB.setText("Downsample reads");
-                            downsampleReadsCB.setHorizontalAlignment(SwingConstants.LEFT);
-                            downsampleReadsCB.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    downsampleReadsCBActionPerformed(e);
-                                }
-                            });
-                            panel4.add(downsampleReadsCB);
-                            panel4.add(hSpacer3);
-
-                            //---- label23 ----
-                            label23.setText("Max read count:");
-                            panel4.add(label23);
-
-                            //---- samDownsampleCountField ----
-                            samDownsampleCountField.setPreferredSize(new Dimension(100, 28));
-                            samDownsampleCountField.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    samDownsampleCountFieldActionPerformed(e);
-                                }
-                            });
-                            samDownsampleCountField.addFocusListener(new FocusAdapter() {
-                                @Override
-                                public void focusLost(FocusEvent e) {
-                                    samDownsampleCountFieldFocusLost(e);
-                                }
-                            });
-                            panel4.add(samDownsampleCountField);
-
-                            //---- jLabel13 ----
-                            jLabel13.setText("per window size (bases):");
-                            panel4.add(jLabel13);
-
-                            //---- samSamplingWindowField ----
-                            samSamplingWindowField.setText("jTextField1");
-                            samSamplingWindowField.setPreferredSize(new Dimension(100, 28));
-                            samSamplingWindowField.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    samSamplingWindowFieldActionPerformed(e);
-                                }
-                            });
-                            samSamplingWindowField.addFocusListener(new FocusAdapter() {
-                                @Override
-                                public void focusLost(FocusEvent e) {
-                                    samSamplingWindowFieldFocusLost(e);
-                                }
-                            });
-                            panel4.add(samSamplingWindowField);
-                        }
-                        jPanel11.add(panel4);
-                    }
-                    alignmentPanel.add(jPanel11);
-                    alignmentPanel.add(vSpacer3);
-                    alignmentPanel.add(vSpacer4);
-
-                    //======== jPanel12 ========
-                    {
-                        jPanel12.setBorder(new TitledBorder("Filter and shading options"));
-                        jPanel12.setLayout(new BoxLayout(jPanel12, BoxLayout.Y_AXIS));
-
-                        //======== panel8 ========
-                        {
-                            panel8.setLayout(new GridLayout(5, 1));
-
-                            //======== panel5 ========
-                            {
-                                panel5.setLayout(new FlowLayout());
-
-                                //---- jLabel26 ----
-                                jLabel26.setText("Coverage allele-fraction threshold:");
-                                panel5.add(jLabel26);
-
-                                //---- snpThresholdField ----
-                                snpThresholdField.setText("0");
-                                snpThresholdField.setPreferredSize(new Dimension(60, 28));
-                                snpThresholdField.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        snpThresholdFieldActionPerformed(e);
-                                    }
-                                });
-                                snpThresholdField.addFocusListener(new FocusAdapter() {
-                                    @Override
-                                    public void focusLost(FocusEvent e) {
-                                        snpThresholdFieldFocusLost(e);
-                                    }
-                                });
-                                panel5.add(snpThresholdField);
-
-                                //---- hSpacer2 ----
-                                hSpacer2.setPreferredSize(new Dimension(50, 10));
-                                panel5.add(hSpacer2);
-                            }
-                            panel8.add(panel5);
+                            panel32.add(showAlignmentTrackCB);
 
                             //---- showCovTrackCB ----
-                            showCovTrackCB.setText("Show coverage track");
+                            showCovTrackCB.setText("Coverage Track");
                             showCovTrackCB.addActionListener(new ActionListener() {
                                 @Override
                                 public void actionPerformed(ActionEvent e) {
                                     showCovTrackCBActionPerformed(e);
                                 }
                             });
-                            panel8.add(showCovTrackCB);
+                            panel32.add(showCovTrackCB);
 
-                            //---- samFilterDuplicatesCB ----
-                            samFilterDuplicatesCB.setText("Filter duplicate reads");
-                            samFilterDuplicatesCB.addActionListener(new ActionListener() {
+                            //---- showJunctionTrackCB ----
+                            showJunctionTrackCB.setText("Junction Track");
+                            showJunctionTrackCB.addActionListener(new ActionListener() {
                                 @Override
                                 public void actionPerformed(ActionEvent e) {
-                                    samShowDuplicatesCBActionPerformed(e);
+                                    showJunctionTrackCBActionPerformed(e);
                                 }
                             });
-                            panel8.add(samFilterDuplicatesCB);
-
-                            //---- samFlagUnmappedPairCB ----
-                            samFlagUnmappedPairCB.setText("Flag unmapped pairs");
-                            samFlagUnmappedPairCB.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    samFlagUnmappedPairCBActionPerformed(e);
-                                }
-                            });
-                            panel8.add(samFlagUnmappedPairCB);
-
-                            //---- filterFailedReadsCB ----
-                            filterFailedReadsCB.setText("Filter vendor failed reads");
-                            filterFailedReadsCB.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    filterVendorFailedReadsCBActionPerformed(e);
-                                }
-                            });
-                            panel8.add(filterFailedReadsCB);
-
-                            //---- showSoftClippedCB ----
-                            showSoftClippedCB.setText("Show soft-clipped bases");
-                            showSoftClippedCB.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    showSoftClippedCBActionPerformed(e);
-                                }
-                            });
-                            panel8.add(showSoftClippedCB);
-
-                            //---- showCenterLineCB ----
-                            showCenterLineCB.setText("Show center line");
-                            showCenterLineCB.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    showCenterLineCBActionPerformed(e);
-                                }
-                            });
-                            panel8.add(showCenterLineCB);
-
-                            //---- filterSecondaryAlignmentsCB ----
-                            filterSecondaryAlignmentsCB.setText("Filter secondary alignments");
-                            filterSecondaryAlignmentsCB.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    filterSecondaryAlignmentsCBActionPerformed(e);
-                                }
-                            });
-                            panel8.add(filterSecondaryAlignmentsCB);
-
-                            //---- filterSupplementaryAlignmentsCB ----
-                            filterSupplementaryAlignmentsCB.setText("Filter supplementary alignments");
-                            filterSupplementaryAlignmentsCB.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    filterSupplementaryAlignmentsCBActionPerformed(e);
-                                }
-                            });
-                            panel8.add(filterSupplementaryAlignmentsCB);
-
-                            //---- useAlleleQualityCB ----
-                            useAlleleQualityCB.setText("Quality weight allele fraction");
-                            useAlleleQualityCB.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    useAlleleQualityCBActionPerformed(e);
-                                }
-                            });
-                            panel8.add(useAlleleQualityCB);
+                            panel32.add(showJunctionTrackCB);
                         }
-                        jPanel12.add(panel8);
+                        jPanel11.add(panel32);
+                    }
+                    alignmentPanel.add(jPanel11);
+
+                    //======== jPanel12 ========
+                    {
+                        jPanel12.setBorder(new TitledBorder("Alignment Track Options"));
+                        jPanel12.setLayout(new BoxLayout(jPanel12, BoxLayout.Y_AXIS));
 
                         //======== panel13 ========
                         {
-                            panel13.setLayout(new BoxLayout(panel13, BoxLayout.Y_AXIS));
+                            panel13.setLayout(new GridLayout(6, 0));
+
+                            //======== panel31 ========
+                            {
+                                panel31.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+                                //---- jLabel11 ----
+                                jLabel11.setText("Visibility range threshold (kb):");
+                                jLabel11.setPreferredSize(new Dimension(250, 16));
+                                panel31.add(jLabel11);
+
+                                //---- samMaxWindowSizeField ----
+                                samMaxWindowSizeField.setText("jTextField1");
+                                samMaxWindowSizeField.setPreferredSize(new Dimension(80, 28));
+                                samMaxWindowSizeField.addFocusListener(new FocusAdapter() {
+                                    @Override
+                                    public void focusLost(FocusEvent e) {
+                                        samMaxWindowSizeFieldFocusLost(e);
+                                    }
+                                });
+                                samMaxWindowSizeField.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        samMaxWindowSizeFieldActionPerformed(e);
+                                    }
+                                });
+                                panel31.add(samMaxWindowSizeField);
+
+                                //---- jLabel12 ----
+                                jLabel12.setText("<html><i>Range at which alignments become visible");
+                                panel31.add(jLabel12);
+                            }
+                            panel13.add(panel31);
+
+                            //======== panel4 ========
+                            {
+                                panel4.setBorder(null);
+                                panel4.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+                                //---- downsampleReadsCB ----
+                                downsampleReadsCB.setText("Downsample reads");
+                                downsampleReadsCB.setHorizontalAlignment(SwingConstants.LEFT);
+                                downsampleReadsCB.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        downsampleReadsCBActionPerformed(e);
+                                    }
+                                });
+                                panel4.add(downsampleReadsCB);
+                                panel4.add(hSpacer3);
+
+                                //---- label23 ----
+                                label23.setText("Max read count:");
+                                panel4.add(label23);
+
+                                //---- samDownsampleCountField ----
+                                samDownsampleCountField.setPreferredSize(new Dimension(100, 28));
+                                samDownsampleCountField.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        samDownsampleCountFieldActionPerformed(e);
+                                    }
+                                });
+                                samDownsampleCountField.addFocusListener(new FocusAdapter() {
+                                    @Override
+                                    public void focusLost(FocusEvent e) {
+                                        samDownsampleCountFieldFocusLost(e);
+                                    }
+                                });
+                                panel4.add(samDownsampleCountField);
+
+                                //---- jLabel13 ----
+                                jLabel13.setText("per window size (bases):");
+                                panel4.add(jLabel13);
+
+                                //---- samSamplingWindowField ----
+                                samSamplingWindowField.setText("jTextField1");
+                                samSamplingWindowField.setPreferredSize(new Dimension(100, 28));
+                                samSamplingWindowField.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        samSamplingWindowFieldActionPerformed(e);
+                                    }
+                                });
+                                samSamplingWindowField.addFocusListener(new FocusAdapter() {
+                                    @Override
+                                    public void focusLost(FocusEvent e) {
+                                        samSamplingWindowFieldFocusLost(e);
+                                    }
+                                });
+                                panel4.add(samSamplingWindowField);
+                            }
+                            panel13.add(panel4);
 
                             //======== panel12 ========
                             {
@@ -1571,7 +1465,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                             //======== panel11 ========
                             {
-                                panel11.setLayout(new FlowLayout(FlowLayout.LEFT));
+                                panel11.setBorder(null);
+                                panel11.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 5));
 
                                 //---- samShadeMismatchedBaseCB ----
                                 samShadeMismatchedBaseCB.setText("Shade mismatched bases by quality:");
@@ -1625,7 +1520,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                             //======== panel9 ========
                             {
-                                panel9.setLayout(new FlowLayout(FlowLayout.LEFT));
+                                panel9.setBorder(null);
+                                panel9.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 5));
 
                                 //---- filterCB ----
                                 filterCB.setText("Filter alignments by read group");
@@ -1659,7 +1555,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                             //======== panel10 ========
                             {
-                                panel10.setLayout(new FlowLayout(FlowLayout.LEFT));
+                                panel10.setBorder(null);
+                                panel10.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 5));
 
                                 //---- samFlagInsertionsCB ----
                                 samFlagInsertionsCB.setText("Flag insertions larger than: ");
@@ -1694,6 +1591,82 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             panel13.add(panel10);
                         }
                         jPanel12.add(panel13);
+
+                        //======== panel8 ========
+                        {
+                            panel8.setLayout(new GridLayout(4, 1));
+
+                            //---- samFilterDuplicatesCB ----
+                            samFilterDuplicatesCB.setText("Filter duplicate reads");
+                            samFilterDuplicatesCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    samShowDuplicatesCBActionPerformed(e);
+                                }
+                            });
+                            panel8.add(samFilterDuplicatesCB);
+
+                            //---- samFlagUnmappedPairCB ----
+                            samFlagUnmappedPairCB.setText("Flag unmapped pairs");
+                            samFlagUnmappedPairCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    samFlagUnmappedPairCBActionPerformed(e);
+                                }
+                            });
+                            panel8.add(samFlagUnmappedPairCB);
+
+                            //---- filterFailedReadsCB ----
+                            filterFailedReadsCB.setText("Filter vendor failed reads");
+                            filterFailedReadsCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    filterVendorFailedReadsCBActionPerformed(e);
+                                }
+                            });
+                            panel8.add(filterFailedReadsCB);
+
+                            //---- showSoftClippedCB ----
+                            showSoftClippedCB.setText("Show soft-clipped bases");
+                            showSoftClippedCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    showSoftClippedCBActionPerformed(e);
+                                }
+                            });
+                            panel8.add(showSoftClippedCB);
+
+                            //---- filterSecondaryAlignmentsCB ----
+                            filterSecondaryAlignmentsCB.setText("Filter secondary alignments");
+                            filterSecondaryAlignmentsCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    filterSecondaryAlignmentsCBActionPerformed(e);
+                                }
+                            });
+                            panel8.add(filterSecondaryAlignmentsCB);
+
+                            //---- showCenterLineCB ----
+                            showCenterLineCB.setText("Show center line");
+                            showCenterLineCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    showCenterLineCBActionPerformed(e);
+                                }
+                            });
+                            panel8.add(showCenterLineCB);
+
+                            //---- filterSupplementaryAlignmentsCB ----
+                            filterSupplementaryAlignmentsCB.setText("Filter supplementary alignments");
+                            filterSupplementaryAlignmentsCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    filterSupplementaryAlignmentsCBActionPerformed(e);
+                                }
+                            });
+                            panel8.add(filterSupplementaryAlignmentsCB);
+                        }
+                        jPanel12.add(panel8);
                     }
                     alignmentPanel.add(jPanel12);
 
@@ -1701,24 +1674,58 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     vSpacer5.setPreferredSize(new Dimension(10, 5));
                     alignmentPanel.add(vSpacer5);
 
+                    //======== panel34 ========
+                    {
+                        panel34.setBorder(new TitledBorder("Coverage Track Options"));
+                        panel34.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+                        //======== panel5 ========
+                        {
+                            panel5.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+                            //---- jLabel26 ----
+                            jLabel26.setText("Coverage allele-fraction threshold:");
+                            panel5.add(jLabel26);
+
+                            //---- snpThresholdField ----
+                            snpThresholdField.setText("0");
+                            snpThresholdField.setPreferredSize(new Dimension(60, 28));
+                            snpThresholdField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    snpThresholdFieldActionPerformed(e);
+                                }
+                            });
+                            snpThresholdField.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    snpThresholdFieldFocusLost(e);
+                                }
+                            });
+                            panel5.add(snpThresholdField);
+
+                            //---- hSpacer2 ----
+                            hSpacer2.setPreferredSize(new Dimension(50, 10));
+                            panel5.add(hSpacer2);
+                        }
+                        panel34.add(panel5);
+
+                        //---- useAlleleQualityCB ----
+                        useAlleleQualityCB.setText("Quality weight allele fraction");
+                        useAlleleQualityCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                useAlleleQualityCBActionPerformed(e);
+                            }
+                        });
+                        panel34.add(useAlleleQualityCB);
+                    }
+                    alignmentPanel.add(panel34);
+
                     //======== panel3 ========
                     {
                         panel3.setBorder(new TitledBorder("Splice Junction Track Options"));
-                        panel3.setLayout(new GridBagLayout());
-                        ((GridBagLayout)panel3.getLayout()).columnWidths = new int[] {0, 0, 0, 0, 0, 0};
-                        ((GridBagLayout)panel3.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
-
-                        //---- showJunctionTrackCB ----
-                        showJunctionTrackCB.setText("Show junction track");
-                        showJunctionTrackCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                showJunctionTrackCBActionPerformed(e);
-                            }
-                        });
-                        panel3.add(showJunctionTrackCB, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 5), 0, 0));
+                        panel3.setLayout(new FlowLayout(FlowLayout.LEFT));
 
                         //---- showJunctionFlankingRegionsCB ----
                         showJunctionFlankingRegionsCB.setText("Show flanking regions");
@@ -1728,9 +1735,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 showJunctionFlankingRegionsCBActionPerformed(e);
                             }
                         });
-                        panel3.add(showJunctionFlankingRegionsCB, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 0, 5), 0, 0));
+                        panel3.add(showJunctionFlankingRegionsCB);
 
                         //---- junctionFlankingTextField ----
                         junctionFlankingTextField.setPreferredSize(new Dimension(80, 28));
@@ -1746,21 +1751,15 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 junctionFlankingTextFieldFocusLost(e);
                             }
                         });
-                        panel3.add(junctionFlankingTextField, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 5), 0, 0));
+                        panel3.add(junctionFlankingTextField);
 
                         //---- label15 ----
                         label15.setText("Min flanking width:");
-                        panel3.add(label15, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 5), 0, 0));
+                        panel3.add(label15);
 
                         //---- label16 ----
                         label16.setText("Min junction coverage:");
-                        panel3.add(label16, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 5), 0, 0));
+                        panel3.add(label16);
 
                         //---- junctionCoverageTextField ----
                         junctionCoverageTextField.setPreferredSize(new Dimension(80, 28));
@@ -1776,9 +1775,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 junctionCoverageTextFieldFocusLost(e);
                             }
                         });
-                        panel3.add(junctionCoverageTextField, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 0), 0, 0));
+                        panel3.add(junctionCoverageTextField);
                     }
                     alignmentPanel.add(panel3);
 
@@ -3454,11 +3451,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         samDownsampleCountField.setEnabled(downsample);
     }
 
-    private void coverageOnlyCBActionPerformed(ActionEvent e) {
-        final boolean coverageOnlyCBSelected = coverageOnlyCB.isSelected();
-        updatedPreferenceMap.put(PreferenceManager.SAM_COVERAGE_ONLY, String.valueOf(coverageOnlyCBSelected));
-    }
-
     private void samSamplingWindowFieldFocusLost(FocusEvent e) {
         samSamplingWindowFieldActionPerformed(null);
     }
@@ -3927,6 +3919,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void labelYAxisCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_labelYAxisCBActionPerformed
         updatedPreferenceMap.put(PreferenceManager.CHART_DRAW_Y_AXIS, String.valueOf(labelYAxisCB.isSelected()));
+    }
+
+
+    private void showAlignmentTrackCBActionPerformed(ActionEvent e) {
+        final boolean coverageOnlyCBSelected = showAlignmentTrackCB.isSelected();
+        updatedPreferenceMap.put(PreferenceManager.SAM_SHOW_ALIGNMENT_TRACK, String.valueOf(coverageOnlyCBSelected));
     }
 
 
@@ -4471,7 +4469,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
         featureVisibilityWindowField.setText(prefMgr.get(PreferenceManager.DEFAULT_VISIBILITY_WINDOW));
 
-        coverageOnlyCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_COVERAGE_ONLY));
+        showAlignmentTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_ALIGNMENT_TRACK));
         samFlagInsertionsThresholdField.setText(prefMgr.get(PreferenceManager.SAM_LARGE_INSERTIONS_THRESHOLD));
         samFlagInsertionsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FLAG_LARGE_INSERTIONS));
 
@@ -4631,14 +4629,18 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JLabel label14;
     private JScrollPane panel20;
     private JPanel alignmentPanel;
-    private JPanel vSpacer2;
     private JPanel jPanel11;
+    private JPanel panel32;
+    private JLabel label39;
+    private JCheckBox showAlignmentTrackCB;
+    private JCheckBox showCovTrackCB;
+    private JCheckBox showJunctionTrackCB;
+    private JPanel jPanel12;
+    private JPanel panel13;
     private JPanel panel31;
     private JLabel jLabel11;
     private JTextField samMaxWindowSizeField;
     private JLabel jLabel12;
-    private JPanel panel32;
-    private JCheckBox coverageOnlyCB;
     private JPanel panel4;
     private JCheckBox downsampleReadsCB;
     private JPanel hSpacer3;
@@ -4646,24 +4648,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JTextField samDownsampleCountField;
     private JLabel jLabel13;
     private JTextField samSamplingWindowField;
-    private JPanel vSpacer3;
-    private JPanel vSpacer4;
-    private JPanel jPanel12;
-    private JPanel panel8;
-    private JPanel panel5;
-    private JLabel jLabel26;
-    private JTextField snpThresholdField;
-    private JPanel hSpacer2;
-    private JCheckBox showCovTrackCB;
-    private JCheckBox samFilterDuplicatesCB;
-    private JCheckBox samFlagUnmappedPairCB;
-    private JCheckBox filterFailedReadsCB;
-    private JCheckBox showSoftClippedCB;
-    private JCheckBox showCenterLineCB;
-    private JCheckBox filterSecondaryAlignmentsCB;
-    private JCheckBox filterSupplementaryAlignmentsCB;
-    private JCheckBox useAlleleQualityCB;
-    private JPanel panel13;
     private JPanel panel12;
     private JLabel jLabel15;
     private JTextField mappingQualityThresholdField;
@@ -4679,9 +4663,22 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox samFlagInsertionsCB;
     private JTextField samFlagInsertionsThresholdField;
     private JLabel label31;
+    private JPanel panel8;
+    private JCheckBox samFilterDuplicatesCB;
+    private JCheckBox samFlagUnmappedPairCB;
+    private JCheckBox filterFailedReadsCB;
+    private JCheckBox showSoftClippedCB;
+    private JCheckBox filterSecondaryAlignmentsCB;
+    private JCheckBox showCenterLineCB;
+    private JCheckBox filterSupplementaryAlignmentsCB;
     private JPanel vSpacer5;
+    private JPanel panel34;
+    private JPanel panel5;
+    private JLabel jLabel26;
+    private JTextField snpThresholdField;
+    private JPanel hSpacer2;
+    private JCheckBox useAlleleQualityCB;
     private JPanel panel3;
-    private JCheckBox showJunctionTrackCB;
     private JCheckBox showJunctionFlankingRegionsCB;
     private JTextField junctionFlankingTextField;
     private JLabel label15;

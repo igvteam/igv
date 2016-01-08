@@ -907,7 +907,7 @@ public class TrackLoader {
 
             AlignmentTrack alignmentTrack = new AlignmentTrack(locator, dataManager, genome);    // parser.loadTrack(locator, dsName);
             alignmentTrack.setName(dsName);
-            alignmentTrack.setVisible(!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_COVERAGE_ONLY));
+            alignmentTrack.setVisible(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_ALIGNMENT_TRACK));
 
 
             // Create coverage track
