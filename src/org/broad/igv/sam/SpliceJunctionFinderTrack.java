@@ -33,9 +33,11 @@ import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.*;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.SashimiPlot;
+import org.broad.igv.ui.event.AlignmentTrackEvent;
 import org.broad.igv.ui.panel.IGVPopupMenu;
-import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
@@ -61,12 +63,15 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
     // Strand option is shared by all tracks
     private static StrandOption strandOption;
 
-    IAlignmentDataManager dataManager;
-    PreferenceManager prefs;
+    private AlignmentTrack alignmentTrack;
+    private IAlignmentDataManager dataManager;
+    private boolean removed = false;
 
-    // The "parent" of the track (a DataPanel).  This release of IGV does not support owner-track relationships
-    // directory,  so this field might be null at any given time.  It is updated each repaint.
-    JComponent parent;
+    /**
+     * The "DataPanel" containing this track.  This field might be null at any given time.  It is updated each repaint.
+     */
+
+    private JComponent dataPanel;
 
     public static void setStrandOption(StrandOption so) {
         strandOption = so;
@@ -77,13 +82,13 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
     }
 
 
-    public SpliceJunctionFinderTrack(ResourceLocator locator, String name, IAlignmentDataManager dataManager, StrandOption ignoreStrand) {
+    public SpliceJunctionFinderTrack(ResourceLocator locator, String name, IAlignmentDataManager dataManager, AlignmentTrack alignmentTrack, StrandOption ignoreStrand) {
         super(locator, locator.getPath() + "_junctions", name);
 
         super.setDataRange(new DataRange(0, 0, 60));
         setRendererClass(SpliceJunctionRenderer.class);
         this.dataManager = dataManager;
-        prefs = PreferenceManager.getInstance();
+        this.alignmentTrack = alignmentTrack;
         this.strandOption = ignoreStrand;
         // Register track
     }
@@ -95,11 +100,22 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
         return context.getScale() < minVisibleScale;
     }
 
+    public boolean isRemoved() {
+        return removed;
+    }
 
     public void clear() {
         this.packedFeaturesMap.clear();
     }
 
+    @Override
+    public void dispose() {
+        super.dispose();
+        removed = true;
+        dataManager = null;
+        alignmentTrack = null;
+        setVisible(false);
+    }
 
     /**
      * Override to return a specialized popup menu
@@ -138,6 +154,60 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
         });
         popupMenu.add(sashimi);
 
+
+        if (alignmentTrack != null) {
+            popupMenu.addSeparator();
+
+            final JMenuItem alignmentItem = new JCheckBoxMenuItem("Show Alignment Track");
+            alignmentItem.setSelected(alignmentTrack.isVisible());
+            alignmentItem.setEnabled(!alignmentTrack.isRemoved());
+            alignmentItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(SpliceJunctionFinderTrack.this, AlignmentTrackEvent.Type.VISIBLE, alignmentItem.isSelected()));
+                    if (alignmentItem.isSelected()) {
+                        alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(SpliceJunctionFinderTrack.this, AlignmentTrackEvent.Type.RELOAD));
+                    }
+                }
+            });
+            popupMenu.add(alignmentItem);
+
+            final CoverageTrack coverageTrack = alignmentTrack.getCoverageTrack();
+            if (coverageTrack != null) {
+                final JMenuItem coverageItem = new JCheckBoxMenuItem("Show Coverage Track");
+                coverageItem.setSelected(coverageTrack.isVisible());
+                coverageItem.setEnabled(!coverageTrack.isRemoved());
+                coverageItem.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        UIUtilities.invokeOnEventThread(new Runnable() {
+
+                            public void run() {
+                                coverageTrack.setVisible(coverageItem.isSelected());
+                                IGV.getInstance().repaint();
+
+                            }
+                        });
+                    }
+                });
+                popupMenu.add(coverageItem);
+            }
+
+
+            final JMenuItem junctionItem = new JCheckBoxMenuItem("Show Junction Track");
+            junctionItem.setSelected(isVisible());
+            junctionItem.setEnabled(!isRemoved());
+            junctionItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(SpliceJunctionFinderTrack.this, AlignmentTrackEvent.Type.SPLICE_JUNCTION, junctionItem.isSelected()));
+                }
+            });
+            popupMenu.add(junctionItem);
+
+        }
+
+
         return popupMenu;
     }
 
@@ -151,7 +221,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
 
     @Override
     protected void loadFeatures(String chr, int start, int end, RenderContext context) {
-        parent = context.getPanel();
+        dataPanel = context.getPanel();
         AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame().getCurrentRange());
         if (loadedInterval == null) return;
 
@@ -176,7 +246,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
     @Override
     public boolean handleDataClick(TrackClickEvent te) {
         boolean result = super.handleDataClick(te);
-        if (parent != null) parent.repaint();
+        if (dataPanel != null) dataPanel.repaint();
 
         return result;
     }
@@ -224,7 +294,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
                 tp.setRendererClass(SpliceJunctionRenderer.class);
                 setProperties(tp);
 
-                if (parent != null) parent.repaint();
+                if (dataPanel != null) dataPanel.repaint();
             }
         });
 

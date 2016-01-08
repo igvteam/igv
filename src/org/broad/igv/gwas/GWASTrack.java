@@ -536,8 +536,7 @@ public class GWASTrack extends AbstractTrack {
 
 
         popupMenu.add(TrackMenuUtils.getTrackRenameItem(tmpTracks));
-        popupMenu.add(TrackMenuUtils.getRemoveMenuItem(tmpTracks));
-        popupMenu.addSeparator();
+         popupMenu.addSeparator();
 
         popupMenu.add(TrackMenuUtils.getDataRangeItem(tmpTracks));
         popupMenu.add(TrackMenuUtils.getChangeTrackHeightItem(tmpTracks));

@@ -109,7 +109,7 @@ public class SashimiPlot extends JFrame {
             MemoryAlignmentDataManager dataManager = new MemoryAlignmentDataManager(oldDataManager, oldDataManager.getSpliceJunctionLoadOptions());
 
             SpliceJunctionFinderTrack spliceJunctionTrack =
-                    new SpliceJunctionFinderTrack(alignmentTrack.getResourceLocator(), alignmentTrack.getName(), dataManager, SpliceJunctionFinderTrack.StrandOption.COMBINE);
+                    new SpliceJunctionFinderTrack(alignmentTrack.getResourceLocator(), alignmentTrack.getName(), dataManager, null, SpliceJunctionFinderTrack.StrandOption.COMBINE);
             // Override expand/collpase setting -- expanded sashimi plots make no sense
             spliceJunctionTrack.setDisplayMode(Track.DisplayMode.COLLAPSED);
 

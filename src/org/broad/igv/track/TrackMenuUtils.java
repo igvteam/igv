@@ -187,8 +187,6 @@ public class TrackMenuUtils {
             addFeatureItems(menu, tracks, te);
         }
 
-        menu.addSeparator();
-        menu.add(getRemoveMenuItem(tracks));
 
     }
 

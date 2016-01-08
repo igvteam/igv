@@ -952,17 +952,16 @@ public class TrackLoader {
             boolean showSpliceJunctionTrack = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
 
             SpliceJunctionFinderTrack spliceJunctionTrack = new SpliceJunctionFinderTrack(locator,
-                    dsName + " Junctions", dataManager, SpliceJunctionFinderTrack.StrandOption.BOTH);
+                    dsName + " Junctions", dataManager, alignmentTrack, SpliceJunctionFinderTrack.StrandOption.BOTH);
             spliceJunctionTrack.setHeight(60);
             spliceJunctionTrack.setVisible(showSpliceJunctionTrack);
             newTracks.add(spliceJunctionTrack);
 
             alignmentTrack.setSpliceJunctionTrack(spliceJunctionTrack);
 
+            newTracks.add(alignmentTrack);
+
             log.debug("Alignment track loaded");
-
-
-            if (alignmentTrack != null) newTracks.add(alignmentTrack);
 
         } catch (IndexNotFoundException e) {
             MessageUtils.showMessage("<html>Could not find the index file for  <br><br>&nbsp;&nbsp;" + e.getSamFile() +

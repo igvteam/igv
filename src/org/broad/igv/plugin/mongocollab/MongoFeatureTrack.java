@@ -41,12 +41,13 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author jacob
  * @date 2013-Sep-27
  */
-public class MongoFeatureTrack extends FeatureTrack{
+public class MongoFeatureTrack extends FeatureTrack {
 
     public MongoFeatureTrack(String id, String name, MongoFeatureSource source) {
         super(id, name, source);
@@ -60,15 +61,16 @@ public class MongoFeatureTrack extends FeatureTrack{
 
     /**
      * Return a menu entry for adding a new feature, or editing a feature the user clicked on.
+     *
      * @param te
      * @param selFeat Selected feature. {@code null} indicates adding a new feature
      * @return
      */
-    private JMenuItem createEditAnnotMenuEntry(TrackClickEvent te, final DBFeature.IGVFeat selFeat){
+    private JMenuItem createEditAnnotMenuEntry(TrackClickEvent te, final DBFeature.IGVFeat selFeat) {
 
         ReferenceFrame frame = te.getFrame();
         boolean hasFrame = frame != null;
-        if(!hasFrame) return null;
+        if (!hasFrame) return null;
 
 
         final boolean editing = selFeat != null;
@@ -91,19 +93,20 @@ public class MongoFeatureTrack extends FeatureTrack{
         return item;
     }
 
-    private DBCollection getCollection(){
+    private DBCollection getCollection() {
         return ((MongoFeatureSource) source).getCollection();
     }
 
     @Override
     public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
         String title = getName();
-        IGVPopupMenu menu = TrackMenuUtils.getPopupMenu(Arrays.<Track>asList(this), title, te);
+        List<Track> tracks = Arrays.<Track>asList(this);
+        IGVPopupMenu menu = TrackMenuUtils.getPopupMenu(tracks, title, te);
 
         //Add annotation or edit existing one
         Feature feat = getFeatureAtMousePosition(te);
         JMenuItem item = createEditAnnotMenuEntry(te, (DBFeature.IGVFeat) feat);
-        if(item != null) menu.add(item);
+        if (item != null) menu.add(item);
 
         return menu;
     }

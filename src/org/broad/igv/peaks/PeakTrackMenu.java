@@ -101,9 +101,6 @@ public class PeakTrackMenu extends IGVPopupMenu {
             add(TrackMenuUtils.getLogScaleItem(tracks));
             add(TrackMenuUtils.getShowDataRangeItem(tracks));
         }
-
-        addSeparator();
-        add(TrackMenuUtils.getRemoveMenuItem(tracks));
     }
 
     public void addDisplayModeItems() {

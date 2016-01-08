@@ -57,6 +57,7 @@ import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 
@@ -94,17 +95,17 @@ public class CoverageTrack extends AbstractTrack {
     private float snpThreshold;
     //TODO This appears to not be used anywhere, remove?
     @XmlAttribute
-    boolean showReference;
+    private boolean showReference;
 
-    AlignmentTrack alignmentTrack;
-    AlignmentDataManager dataManager;
-    CoverageDataSource dataSource;
-    DataRenderer dataSourceRenderer;
-    IntervalRenderer intervalRenderer;
-    PreferenceManager prefs;
-    JMenuItem dataRangeItem;
-;
-    Genome genome;
+    private AlignmentTrack alignmentTrack;
+    private AlignmentDataManager dataManager;
+    private CoverageDataSource dataSource;
+    private DataRenderer dataSourceRenderer;
+    private IntervalRenderer intervalRenderer;
+    private PreferenceManager prefs;
+    private JMenuItem dataRangeItem;
+    private Genome genome;
+    private boolean removed = false;
 
     /**
      * Whether to autoscale across all ReferenceFrames
@@ -175,6 +176,20 @@ public class CoverageTrack extends AbstractTrack {
 
     AlignmentTrack.RenderOptions getRenderOptions() {
         return this.renderOptions;
+    }
+
+    public boolean isRemoved() {
+        return removed;
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        removed = true;
+        dataManager = null;
+        dataSource = null;
+        alignmentTrack = null;
+        setVisible(false);
     }
 
     /**
@@ -715,13 +730,10 @@ public class CoverageTrack extends AbstractTrack {
         this.addSnpTresholdItem(popupMenu);
 
         popupMenu.addSeparator();
-        addShowItems(popupMenu);
-
-        popupMenu.addSeparator();
         addLoadCoverageDataItem(popupMenu);
-        popupMenu.addSeparator();
 
-        popupMenu.add(TrackMenuUtils.getRemoveMenuItem(tmp));
+        popupMenu.addSeparator();
+        addShowItems(popupMenu);
 
         return popupMenu;
     }
@@ -811,23 +823,43 @@ public class CoverageTrack extends AbstractTrack {
     public void addShowItems(JPopupMenu menu) {
 
         if(alignmentTrack != null) {
-            final JMenuItem alignmentItem = new JCheckBoxMenuItem("Show alignments");
+            final JMenuItem alignmentItem = new JCheckBoxMenuItem("Show Alignment Track");
             alignmentItem.setSelected(alignmentTrack.isVisible());
+            alignmentItem.setEnabled(!alignmentTrack.isRemoved());
             alignmentItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(CoverageTrack.this, AlignmentTrackEvent.Type.VISIBLE, alignmentItem.isSelected()));
-                    if(alignmentItem.isSelected()) {
+                    if (alignmentItem.isSelected()) {
                         alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(CoverageTrack.this, AlignmentTrackEvent.Type.RELOAD));
                     }
                 }
             });
             menu.add(alignmentItem);
 
+            final JMenuItem coverageItem = new JCheckBoxMenuItem("Show Coverage Track");
+            coverageItem.setSelected(isVisible());
+            coverageItem.setEnabled(!isRemoved());
+            coverageItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    UIUtilities.invokeOnEventThread(new Runnable() {
+
+                        public void run() {
+                            setVisible(coverageItem.isSelected());
+                            IGV.getInstance().repaint();
+
+                        }
+                    });
+                }
+            });
+            menu.add(coverageItem);
+
             final SpliceJunctionFinderTrack spliceJunctionTrack = alignmentTrack.getSpliceJunctionTrack();
             if (spliceJunctionTrack != null) {
-                final JMenuItem junctionItem = new JCheckBoxMenuItem("Show junctions");
+                final JMenuItem junctionItem = new JCheckBoxMenuItem("Show Junction Track");
                 junctionItem.setSelected(spliceJunctionTrack.isVisible());
+                junctionItem.setEnabled(!spliceJunctionTrack.isRemoved());
                 junctionItem.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {

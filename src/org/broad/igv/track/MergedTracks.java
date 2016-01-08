@@ -266,11 +266,6 @@ public class MergedTracks extends DataTrack {
 
         }
 
-        menu.addSeparator();
-
-        menu.add(TrackMenuUtils.getRemoveMenuItem(selfAsList));
-
-
         return menu;
     }
 

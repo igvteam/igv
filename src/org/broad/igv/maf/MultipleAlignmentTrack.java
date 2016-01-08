@@ -301,7 +301,6 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         }
 
         List<Track> selfAsList = Arrays.asList((Track) this);
-        menu.add(TrackMenuUtils.getRemoveMenuItem(selfAsList));
 
         return menu;
     }

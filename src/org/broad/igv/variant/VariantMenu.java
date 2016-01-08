@@ -133,9 +133,6 @@ public class VariantMenu extends IGVPopupMenu {
             add(getLoadBamsItem());
         }
 
-
-        addSeparator();
-        add(TrackMenuUtils.getRemoveMenuItem(Arrays.asList(new Track[]{this.track})));
     }
 
     private JMenuItem getFeatureVisibilityItem() {

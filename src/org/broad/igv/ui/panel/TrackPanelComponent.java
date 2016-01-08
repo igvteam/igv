@@ -227,9 +227,10 @@ abstract public class TrackPanelComponent extends JPanel {
         JMenuItem exportFeats = getExportFeatures(selectedTracks, frame);
         if (exportFeats != null) menu.add(exportFeats);
 
-        if (menu != null) {
-            menu.show(e.getComponent(), e.getX(), e.getY());
-        }
+        menu.addSeparator();
+        menu.add(TrackMenuUtils.getRemoveMenuItem(selectedTracks));
+
+        menu.show(e.getComponent(), e.getX(), e.getY());
 
     }
 

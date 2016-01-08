@@ -117,10 +117,6 @@ public class CNFreqTrack extends AbstractTrack {
         List<Track> selfAsList = Arrays.asList((Track) this);
         TrackMenuUtils.addSharedItems(menu, selfAsList, false);
 
-        menu.addSeparator();
-        menu.add(TrackMenuUtils.getRemoveMenuItem(selfAsList));
-
-
         return menu;
     }
 }
