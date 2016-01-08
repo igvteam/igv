@@ -194,13 +194,12 @@ public class SpliceJunctionTrack extends FeatureTrack {
             }
 
 
-            final JMenuItem junctionItem = new JCheckBoxMenuItem("Show Junction Track");
-            junctionItem.setSelected(isVisible());
+            final JMenuItem junctionItem = new JMenuItem("Hide Track");
             junctionItem.setEnabled(!isRemoved());
             junctionItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(SpliceJunctionTrack.this, AlignmentTrackEvent.Type.SPLICE_JUNCTION, junctionItem.isSelected()));
+                    alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(SpliceJunctionTrack.this, AlignmentTrackEvent.Type.SPLICE_JUNCTION, false));
                     IGV.getInstance().getMainPanel().revalidate();
                 }
             });

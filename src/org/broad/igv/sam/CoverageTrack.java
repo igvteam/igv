@@ -837,24 +837,6 @@ public class CoverageTrack extends AbstractTrack {
             });
             menu.add(alignmentItem);
 
-            final JMenuItem coverageItem = new JCheckBoxMenuItem("Show Coverage Track");
-            coverageItem.setSelected(isVisible());
-            coverageItem.setEnabled(!isRemoved());
-            coverageItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    UIUtilities.invokeOnEventThread(new Runnable() {
-
-                        public void run() {
-                            setVisible(coverageItem.isSelected());
-                            IGV.getInstance().getMainPanel().revalidate();
-
-                        }
-                    });
-                }
-            });
-            menu.add(coverageItem);
-
             final SpliceJunctionTrack spliceJunctionTrack = alignmentTrack.getSpliceJunctionTrack();
             if (spliceJunctionTrack != null) {
                 final JMenuItem junctionItem = new JCheckBoxMenuItem("Show Junction Track");
@@ -870,6 +852,23 @@ public class CoverageTrack extends AbstractTrack {
 
                 menu.add(junctionItem);
             }
+
+            final JMenuItem coverageItem = new JMenuItem("Hide Track");
+            coverageItem.setEnabled(!isRemoved());
+            coverageItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    UIUtilities.invokeOnEventThread(new Runnable() {
+
+                        public void run() {
+                            setVisible(false);
+                            IGV.getInstance().getMainPanel().revalidate();
+
+                        }
+                    });
+                }
+            });
+            menu.add(coverageItem);
         }
     }
 

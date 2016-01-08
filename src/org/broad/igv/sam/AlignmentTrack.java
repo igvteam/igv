@@ -1967,20 +1967,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         public void addShowItems() {
 
-            final JMenuItem alignmentItem = new JCheckBoxMenuItem("Show Alignment Track");
-            alignmentItem.setSelected(AlignmentTrack.this.isVisible());
-            alignmentItem.setEnabled(!AlignmentTrack.this.isRemoved());
-            alignmentItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    onAlignmentTrackEvent(new AlignmentTrackEvent(AlignmentTrack.this, AlignmentTrackEvent.Type.VISIBLE, alignmentItem.isSelected()));
-                    if (alignmentItem.isSelected()) {
-                        onAlignmentTrackEvent(new AlignmentTrackEvent(AlignmentTrack.this, AlignmentTrackEvent.Type.RELOAD));
-                    }
-                }
-            });
-            add(alignmentItem);
-
             if (AlignmentTrack.this.coverageTrack != null) {
                 final JMenuItem item = new JCheckBoxMenuItem("Show Coverage Track");
                 item.setSelected(AlignmentTrack.this.coverageTrack.isVisible());
@@ -2022,6 +2008,19 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 });
                 add(item);
             }
+
+            final JMenuItem alignmentItem = new JMenuItem("Hide Track");
+            alignmentItem.setEnabled(!AlignmentTrack.this.isRemoved());
+            alignmentItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    onAlignmentTrackEvent(new AlignmentTrackEvent(AlignmentTrack.this, AlignmentTrackEvent.Type.VISIBLE, false));
+                    if (alignmentItem.isSelected()) {
+                        onAlignmentTrackEvent(new AlignmentTrackEvent(AlignmentTrack.this, AlignmentTrackEvent.Type.RELOAD));
+                    }
+                }
+            });
+            add(alignmentItem);
         }
 
 
