@@ -76,7 +76,6 @@ public class AlignmentDataManager implements IAlignmentDataManager {
     private EventBus eventBus = new EventBus();
 
 
-
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
         this.locator = locator;
         reader = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator));
@@ -140,6 +139,13 @@ public class AlignmentDataManager implements IAlignmentDataManager {
     public CoverageTrack getCoverageTrack() {
         return coverageTrack;
     }
+
+    public double getMinVisibleScale() {
+        PreferenceManager prefs = PreferenceManager.getInstance();
+        float maxRange = prefs.getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
+        return (maxRange * 1000) / 700;
+    }
+
 
     /**
      * The set of sequences found in the file.

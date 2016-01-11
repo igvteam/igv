@@ -3313,9 +3313,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private void showJunctionTrackCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showCovTrackCBActionPerformed
         final boolean junctionTrackEnabled = showJunctionTrackCB.isSelected();
         updatedPreferenceMap.put(PreferenceManager.SAM_SHOW_JUNCTION_TRACK, String.valueOf(junctionTrackEnabled));
-        junctionFlankingTextField.setEnabled(junctionTrackEnabled);
-        junctionCoverageTextField.setEnabled(junctionTrackEnabled);
-        showJunctionFlankingRegionsCB.setEnabled(junctionTrackEnabled);
     }
 
     private void showJunctionFlankingRegionsCBActionPerformed(java.awt.event.ActionEvent evt) {
@@ -4403,13 +4400,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
         final boolean junctionTrackEnabled = prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
         showJunctionTrackCB.setSelected(junctionTrackEnabled);
-        showJunctionFlankingRegionsCB.setSelected(prefMgr.getAsBoolean(
-                PreferenceManager.SAM_SHOW_JUNCTION_FLANKINGREGIONS));
-        showJunctionFlankingRegionsCB.setEnabled(junctionTrackEnabled);
+        showJunctionFlankingRegionsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_FLANKINGREGIONS));
         junctionFlankingTextField.setText(prefMgr.get(PreferenceManager.SAM_JUNCTION_MIN_FLANKING_WIDTH));
         junctionCoverageTextField.setText(prefMgr.get(PreferenceManager.SAM_JUNCTION_MIN_COVERAGE));
-        junctionFlankingTextField.setEnabled(junctionTrackEnabled);
-        junctionCoverageTextField.setEnabled(junctionTrackEnabled);
+
 
         genomeUpdateCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.AUTO_UPDATE_GENOMES));
         antialiasingCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.ENABLE_ANTIALISING));

@@ -41,6 +41,7 @@ import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.DataRenderer;
+import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.tdf.TDFDataSource;
@@ -233,6 +234,14 @@ public class CoverageTrack extends AbstractTrack {
     }
 
     public void render(RenderContext context, Rectangle rect) {
+
+        if (context.getScale() > dataManager.getMinVisibleScale() && dataSource == null) {
+            Rectangle visibleRect = context.getVisibleRect().intersection(rect);
+            Graphics2D g = context.getGraphic2DForColor(Color.gray);
+            GraphicUtils.drawCenteredText("Zoom in to see alignments.", visibleRect, g);
+            return;
+        }
+
 
         overlay(context, rect);
 

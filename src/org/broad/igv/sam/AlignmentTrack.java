@@ -165,7 +165,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private int maxSquishedHeight = 4;
     private int squishedHeight = maxSquishedHeight;
     private FeatureRenderer renderer;
-    private double minVisibleScale = 25;
+
     private HashMap<String, Color> selectedReadNames = new HashMap();
     private int selectionColorIndex = 0;
     private int minHeight = 50;
@@ -207,8 +207,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         PreferenceManager prefs = PreferenceManager.getInstance();
 
-        float maxRange = prefs.getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
-        minVisibleScale = (maxRange * 1000) / 700;
 
         renderer = AlignmentRenderer.getInstance();
 
@@ -300,7 +298,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     public int getHeight() {
 
         if (dataPanel != null
-                && (dataPanel instanceof DataPanel && ((DataPanel) dataPanel).getFrame().getScale() > minVisibleScale)) {
+                && (dataPanel instanceof DataPanel && ((DataPanel) dataPanel).getFrame().getScale() > dataManager.getMinVisibleScale())) {
             return minimumHeight;
         }
 
@@ -342,7 +340,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         // Top gap.
         rect.y += DS_MARGIN_0;
 
-        if (context.getScale() > minVisibleScale) {
+        if (context.getScale() > dataManager.getMinVisibleScale()) {
             Rectangle visibleRect = context.getVisibleRect().intersection(rect);
             Graphics2D g = context.getGraphic2DForColor(Color.gray);
             GraphicUtils.drawCenteredText("Zoom in to see alignments.", visibleRect, g);
@@ -864,9 +862,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 setVisible(e.getBooleanValue());
                 IGV.getInstance().getMainPanel().revalidate();
                 break;
-            case VISIBILITY_WINDOW:
-                visibilityWindowChanged();
-                break;
             case ALLELE_THRESHOLD:
                 dataManager.alleleThresholdChanged();
                 break;
@@ -883,14 +878,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     }
 
-    /**
-     * The visibility window has changed.
-     */
-    private void visibilityWindowChanged() {
-        PreferenceManager prefs = PreferenceManager.getInstance();
-        float maxRange = prefs.getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
-        minVisibleScale = (maxRange * 1000) / 700;
-    }
 
     @Override
     public boolean handleDataClick(TrackClickEvent te) {
