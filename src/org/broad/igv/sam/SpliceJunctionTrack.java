@@ -28,6 +28,7 @@ package org.broad.igv.sam;
 
 import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.renderer.DataRange;
@@ -217,6 +218,11 @@ public class SpliceJunctionTrack extends FeatureTrack {
 
     public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
         return 0;
+    }
+
+    @Override
+    protected String getZoomInMessage(String chr) {
+        return "Zoom in to see junctions.";
     }
 
     @Override

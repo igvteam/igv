@@ -238,7 +238,7 @@ public class CoverageTrack extends AbstractTrack {
         if (context.getScale() > dataManager.getMinVisibleScale() && dataSource == null) {
             Rectangle visibleRect = context.getVisibleRect().intersection(rect);
             Graphics2D g = context.getGraphic2DForColor(Color.gray);
-            GraphicUtils.drawCenteredText("Zoom in to see alignments.", visibleRect, g);
+            GraphicUtils.drawCenteredText("Zoom in to see coverage.", visibleRect, g);
             return;
         }
 

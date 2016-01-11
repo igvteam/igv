@@ -721,13 +721,10 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     protected void renderCoverage(RenderContext context, Rectangle inputRect) {
-        if (source == null) {
-            return;
-        }
 
         final String chr = context.getChr();
 
-        List<LocusScore> scores = chr.equals(Globals.CHR_ALL) ?
+        List<LocusScore> scores = (source != null && chr.equals(Globals.CHR_ALL)) ?
                 source.getCoverageScores(chr, (int) context.getOrigin(),
                         (int) context.getEndLocation(), context.getZoom()) :
                 null;
@@ -738,8 +735,7 @@ public class FeatureTrack extends AbstractTrack {
 
             // Keep text near the top of the track rectangle
             textRect.height = Math.min(inputRect.height, 20);
-            String message = chr.equals(Globals.CHR_ALL) ? "Zoom in to see features." :
-                    "Zoom in to see features, or right-click to increase Feature Visibility Window.";
+            String message = getZoomInMessage(chr);
             GraphicUtils.drawCenteredText(message, textRect, g);
 
         } else {
@@ -751,6 +747,11 @@ public class FeatureTrack extends AbstractTrack {
             setDataRange(new DataRange(0, 0, max));
             coverageRenderer.render(scores, context, inputRect, this);
         }
+    }
+
+    protected String getZoomInMessage(String chr) {
+        return chr.equals(Globals.CHR_ALL) ? "Zoom in to see features." :
+                        "Zoom in to see features, or right-click to increase Feature Visibility Window.";
     }
 
     private float getMaxEstimate(List<LocusScore> scores) {
@@ -1122,6 +1123,7 @@ public class FeatureTrack extends AbstractTrack {
 
     /**
      * Return currently loaded features.  Used to export features to a file.
+     *
      * @param frame
      * @return
      */
@@ -1134,6 +1136,7 @@ public class FeatureTrack extends AbstractTrack {
 
     /**
      * Return "track" line information for exporting features to a file.  Default is null, subclasses may override.
+     *
      * @return
      */
     public String getExportTrackLine() {
