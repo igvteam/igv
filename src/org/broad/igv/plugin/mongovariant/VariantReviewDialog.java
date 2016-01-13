@@ -51,6 +51,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
+import java.util.Collections;
 
 /**
  * Dialog for reviewing a variant from a VCF file.
@@ -61,6 +62,7 @@ import java.io.IOException;
 public class VariantReviewDialog extends JDialog {
 
     private VariantContext variantContext;
+    private VariantContext sampleVC;
     private String userName;
 
     //Path to spec file describing database
@@ -126,7 +128,7 @@ public class VariantReviewDialog extends JDialog {
                 break;
         }
 
-        MongoVariantContext mvc = VariantReviewSource.createMVC(allele0, allele1, callsetName, variantContext, truthStatus, isComplexEvent);
+        MongoVariantContext mvc = VariantReviewSource.createMVC(allele0, allele1, callsetName, sampleVC, truthStatus, isComplexEvent);
         String errorMessage = addCall(this.dbSpecPath, mvc);
 
         if (errorMessage != null) {
@@ -191,14 +193,19 @@ public class VariantReviewDialog extends JDialog {
         for (String sampleName : variant.getSampleNamesOrderedByName()) {
             boolean isPref = sampleName.equalsIgnoreCase(prefSampleName);
             if (isPref || mutationString == null) {
-                mutationString = ParsingUtils.join("/", ParsingUtils.sortList(variant.getAlleles()));
-                Genotype genotype = variant.getGenotype(sampleName);
+                if(!variantContext.isBiallelic())
+                    sampleVC = variantContext.subContextFromSamples(Collections.singleton(sampleName), true);
+                else
+                    sampleVC = variantContext;
+
+                mutationString = ParsingUtils.join(",", ParsingUtils.sortList(sampleVC.getAlleles()));
+                Genotype genotype = sampleVC.getGenotype(sampleName);
                 gtt = genotype.getType();
                 if (isPref) break;
             } else {
                 //If we have several samples with different mutations, don't know which
                 //to pick. Make that obvious to the user
-                if (gtt != variant.getGenotype(sampleName).getType()) {
+                if (gtt != sampleVC.getGenotype(sampleName).getType()) {
                     mutationString = "./.";
                     gtt = GenotypeType.UNAVAILABLE;
                 }
@@ -326,18 +333,18 @@ public class VariantReviewDialog extends JDialog {
 
                 //======== panel7 ========
                 {
-                    panel7.setMaximumSize(new Dimension(46, 1000));
+                    panel7.setMaximumSize(new Dimension(200, 1000));
                     panel7.setLayout(new BoxLayout(panel7, BoxLayout.Y_AXIS));
 
                     //---- label10 ----
-                    label10.setText("Mut");
+                    label10.setText("Alleles");
                     label10.setHorizontalAlignment(SwingConstants.LEFT);
-                    label10.setMaximumSize(new Dimension(80, 16));
+                    label10.setMaximumSize(new Dimension(200, 16));
                     panel7.add(label10);
 
                     //---- mutField ----
                     mutField.setText("A/G");
-                    mutField.setMaximumSize(new Dimension(46, 1000));
+                    mutField.setMaximumSize(new Dimension(200, 1000));
                     panel7.add(mutField);
                 }
                 contentPanel.add(panel7);
@@ -387,8 +394,8 @@ public class VariantReviewDialog extends JDialog {
                     //---- startField ----
                     startField.setText("54321");
                     startField.setMaximumSize(new Dimension(500, 1000));
-                    startField.setMinimumSize(new Dimension(80, 16));
-                    startField.setPreferredSize(new Dimension(80, 16));
+                    startField.setMinimumSize(new Dimension(400, 16));
+                    startField.setPreferredSize(new Dimension(400, 16));
                     startField.setHorizontalTextPosition(SwingConstants.LEFT);
                     startField.setHorizontalAlignment(SwingConstants.LEFT);
                     panel5.add(startField);
@@ -418,8 +425,8 @@ public class VariantReviewDialog extends JDialog {
                     stopField.setMaximumSize(new Dimension(500, 1000));
                     stopField.setHorizontalTextPosition(SwingConstants.LEADING);
                     stopField.setHorizontalAlignment(SwingConstants.LEFT);
-                    stopField.setMinimumSize(new Dimension(100, 16));
-                    stopField.setPreferredSize(new Dimension(100, 16));
+                    stopField.setMinimumSize(new Dimension(400, 16));
+                    stopField.setPreferredSize(new Dimension(400, 16));
                     panel6.add(stopField);
                 }
                 contentPanel.add(panel6);
@@ -476,7 +483,7 @@ public class VariantReviewDialog extends JDialog {
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
         contentPane.add(dialogPane, BorderLayout.CENTER);
-        setSize(700, 160);
+        setSize(800, 160);
         setLocationRelativeTo(getOwner());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
