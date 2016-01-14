@@ -81,7 +81,7 @@ public class TrackLoaderTestHeaded extends AbstractHeadedTest {
     @Test
     public void testLoadBAMFtpHeaded() throws Exception{
         String path = "ftp://ftp.broadinstitute.org/pub/igv/TEST/HG00171.hg18.bam";
-        Integer expected_tracks = 2;
+        Integer expected_tracks = 3;
 
         TrackLoaderTest.tstLoadFi(trackLoader, path, expected_tracks, genome, false);
     }
