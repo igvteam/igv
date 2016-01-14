@@ -552,6 +552,7 @@
 </ul>
 
 <h1><strong>IGV 2.3.53 May 26, 2015</strong></h1>
+
 <p><strong>Bug Fixes</strong></p>
 <ul>
     <li>
@@ -579,6 +580,7 @@
 
 
 <h1><strong>IGV 2.3.55 May 28, 2015</strong></h1>
+
 <p><strong>Bug Fixes</strong></p>
 <ul>
     <li>
@@ -589,6 +591,7 @@
 
 
 <h1><strong>IGV 2.3.56 June 19 , 2015</strong></h1>
+
 <p><strong>New Features and Improvements</strong></p>
 <ul>
     <li>
@@ -659,13 +662,15 @@
 <p><strong>New Features and Improvements</strong></p>
 <ul>
     <li>
-        New option to render bed files as arcs connecting the start and end position.  To use specify "graphType=arc" on the track line.  An initial height of at least 250 pixels is recommended (track line option height=250)
+        New option to render bed files as arcs connecting the start and end position. To use specify "graphType=arc" on
+        the track line. An initial height of at least 250 pixels is recommended (track line option height=250)
     </li>
     <li>
-        New bisulfite option to show all "C"s irrespective of context  (context = None)
+        New bisulfite option to show all "C"s irrespective of context (context = None)
     </li>
     <li>
-        Session files now uses absolute resource paths by default.  There is a new option to force use of relative paths in the "General" category of user preferences.
+        Session files now uses absolute resource paths by default. There is a new option to force use of relative paths
+        in the "General" category of user preferences.
     </li>
 </ul>
 
@@ -676,6 +681,45 @@
 <ul>
     <li>
         VCF and bed files not loadable from Google cloud storage (gs:// urls)
+    </li>
+</ul>
+
+
+<h1><strong>IGV 2.3.67 November 27 , 2015</strong></h1>
+
+<p><strong>Bug Fixes</strong></p>
+<ul>
+    <li>
+        Recognize GFF version directives with major/minor version numbers
+    </li>
+</ul>
+
+<p><strong>New Features and Improvements</strong></p>
+<ul>
+    <li>
+        Add support for exporting features from the Splice Junction track
+    </li>
+
+</ul>
+<h1><strong>IGV 2.3.68 January 13, 2016</strong></h1>
+
+<p><strong>New Features and Improvements</strong></p>
+<ul>
+    <li>
+        VCF colors can now be customized. See the "Variants" tab of the Preferences dialog
+    </li>
+    <li>
+        New options for loading BAM files - alignments can now be hidden, showing coverage and/or splice junctions only.
+        This option leads to significant memory settings when viewing individual alignments is not neccessary. See the
+        new track display options on the "Alignments" tab of the Preferences dialog. These options control initial
+        display
+        upon loading a BAM file. Alignments
+        can still be loaded on demand for specific loci by right-clicking on the coverage or splice-junction track and
+        selecting <i>Show Alignment Track</i>. NOTE: When the Alignment track is off consider selecting "Display all
+        tracks in a single panel" from the "General" tab of the Preferences dialog.
+    </li>
+    <li>
+        Add new menu item to autoscale multiple tracks as a group.  Item is enabled if multiple numeric tracks are selected.
     </li>
 </ul>
 
