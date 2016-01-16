@@ -94,6 +94,7 @@ public class IgvTools {
     static final String CMD_BAMTOBED = "bamtobed";
     static final String CMD_TDFTOBEDGRAPH = "tdftobedgraph";
     static final String CMD_CONTACTS = "contacts";
+    static final String CMD_DISCORDANT = "discordant";
 
     /**
      * Stream for writing messages to the user, which we
@@ -458,6 +459,8 @@ public class IgvTools {
                 manager.generateGenomeList(inDir, nonOptionArgs[2], nonOptionArgs[3]);
             } else if(command.equalsIgnoreCase(CMD_CONTACTS)) {
                 PairedUtils.extractInteractions(ifile, nonOptionArgs[2], Integer.parseInt(nonOptionArgs[3]));
+            } else if(command.equalsIgnoreCase(CMD_DISCORDANT)) {
+                PairedUtils.extractFunnyPairs(ifile, nonOptionArgs[2]);
             }
 
             else {
