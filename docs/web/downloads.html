@@ -1,0 +1,228 @@
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<h1>
+    Integrative Genomics Viewer (IGV) &nbsp;(Version 2.3)</h1>
+
+<h2>
+    Install IGV</h2>
+
+<p>Options for installing and running IGV:</p>
+<ol>
+    <li>
+        (Mac only) Download and run the Mac applcation; or
+    </li>
+    <li>
+        (Windows) Download and run the self-extracting archive; or
+    </li>
+    <li>
+        (All systems) Use the Java Web Start buttons (Mac users: see below for limitations); or
+    </li>
+    <li>
+        (All systems) Download the binary distribution and run IGV from the command line.
+    </li>
+</ol>
+<p><em><strong>Note: IGV 2.3.x requires Java 7. &nbsp;Users with Java 6 (JRE 1.6) should first try to upgrade Java to
+    the latest version. &nbsp;If this is not possible you will need to run a 2.2.x version available in the <a
+            href="http://data.broadinstitute.org/igv/projects/downloads/">archive</a></strong></em>.</p>
+
+<div>
+    <h3>
+        Mac Application
+    </h3>
+    <table class="general" width="100%">
+        <tbody>
+        <tr>
+            <td>
+                <p>Download and unzip the Mac App archive, then double-click the IGV application to run it. The
+                    application can be moved to the &quot;Applications&quot; folder, or anywhere else.=
+            </td>
+            <td>
+                <p><a href="http://data.broadinstitute.org/igv/projects/downloads/IGV_2.3.68.app.zip"
+                      style="color: rgb(12, 66, 150);"><img alt=""
+                                                            src="/software/igv/sites/cancerinformatics.org.igv/files/DownloadMacApp.png"
+                                                            style="width: 113px; height: 43px;"/></a></p>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div>
+    <h3>
+        Windows
+    </h3>
+    <table class="general" width="100%">
+        <tbody>
+        <tr>
+            <td>
+                <p>
+                    Stand-alone windows package. To install:
+                <ol>
+                    <li>download and execute the self-extracting installation archive =></li>
+                    <li>it will prompt you for a location to extract the folder, choose anywhere you like (e.g. your
+                        home folder).
+                    </li>
+                    <li>on completion, open the new folder</li>
+                    <li>double-click the file "igv.bat", it might appear as just "igv" depending on your settings</li>
+                </ol>
+                </p>
+            </td>
+            <td>
+                <p><a href="http://data.broadinstitute.org/igv/projects/downloads/IGV_2.3.68_jre.exe"><img alt="download"
+                                                                                                            src="//data.broadinstitute.org/igv/projects/img/Win.png"
+                                                                                                            style="width: 113px; height: 113px;"/></a></p>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<h3>
+    Java Web Start (All Platforms)&nbsp;
+</h3>
+
+<p>The buttons below use Java Web Start (JWS) to install and launch IGV directly from our web site. &nbsp; &nbsp;</p>
+
+<p><strong>*Mac Users</strong>: The Java Web Start option does not work for some users due to security settings. &nbsp;
+    The recommended solution is to use the bundled Mac App from the link above. &nbsp; Alternatively you can try to work
+    around this try right-clicking on the buttons and saving the &quot;jnlp&quot; file, then right-click on the &quot;jnlp&quot;
+    file and select &quot;Open With Java Web Start&quot;.&nbsp;</p>
+
+<p><strong>Chrome:</strong> Chrome does not automatically launch the Java Webstart files by default. Instead, the launch
+    buttons below will download a &quot;jnlp&quot; file. This should appear in the lower left corner of the browser.
+    Double-click the downloaded file to run, or if on a Mac right-click and select &quot;Open With Java Web Start&quot;
+</p>
+
+<p><strong>Windows users:</strong>&nbsp;To run with more than 1.2 GB of memory you must install 64-bit
+    Java.&nbsp;<em><strong>Most Windows installs do not include 64-bit Java by default, even if the operating system is
+        64-bit</strong></em>. Attempting to use the 2GB or greater launch options with 32-bit Java will result in the
+    error<em> &quot;could not create virtual machine&quot;</em>.&nbsp;</p>
+<table class="general" width="100%">
+    <tbody>
+    <tr>
+        <td width="25%">
+            <p><a href="http://data.broadinstitute.org/igv/projects/current/igv.jnlp"><img alt="" height="34"
+                                                                                           src="<?php echo base_path() ?>sites/cancerinformatics.org.igv/files/images/webstart_small2.jpg"
+                                                                                           width="88"/></a>&nbsp;<br/>
+                Launch with 750 MB</p>
+
+            <p>&nbsp;</p>
+        </td>
+        <td width="25%">
+            <p><a href="http://data.broadinstitute.org/igv/projects/current/igv_mm.jnlp"><img alt="" height="34"
+                                                                                              src="<?php echo base_path() ?>sites/cancerinformatics.org.igv/files/images/webstart_small2.jpg"
+                                                                                              width="88"/></a><br/>
+                Launch with 1.2 GB</p>
+
+            <p>Maximum usable memory for Windows OS&nbsp;with 32-bit Java.</p>
+        </td>
+        <td width="25%">
+            <p><a href="http://data.broadinstitute.org/igv/projects/current/igv_lm.jnlp"><img alt="" height="34"
+                                                                                              src="<?php echo base_path() ?>sites/cancerinformatics.org.igv/files/images/webstart_small2.jpg"
+                                                                                              width="88"/></a><br/>
+                Launch with 2 GB</p>
+
+            <p>Maximum usable memory for 32-bit MacOS.</p>
+        </td>
+        <td width="25%">
+            <p><a href="http://data.broadinstitute.org/igv/projects/current/igv_hm.jnlp"><img alt="" height="34"
+                                                                                              src="<?php echo base_path() ?>sites/cancerinformatics.org.igv/files/images/webstart_small2.jpg"
+                                                                                              width="88"/></a><br/>
+                Launch with 10 GB</p>
+
+            <p>For large memory machines with 64-bit Java.</p>
+        </td>
+    </tr>
+    </tbody>
+</table>
+<div>
+    <h3>
+        Binary Distribution&nbsp;</h3>
+    <table class="general" width="100%">
+        <tbody>
+        <tr>
+            <td>
+                <p>Download and unzip the binary distribution archive in a folder of your choosing. IGV is launched from
+                    a command prompt -- follow instructions in the &quot;readme&quot; file. To launch igv on Mac or
+                    Linux platforms use the shell script &quot;igv.sh&quot;. On Windows use &quot;igv.bat&quot;.</p>
+            </td>
+            <td>
+                <p><a href="http://data.broadinstitute.org/igv/projects/downloads/IGV_2.3.68.zip"
+                      style="color: rgb(12, 66, 150);"><img alt=""
+                                                            src="/software/igv/sites/cancerinformatics.org.igv/files/DownloadBinDist.png"
+                                                            style="width: 115px; height: 44px;"/></a></p>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <h2>
+        <b>igvtools</b></h2>
+
+    <p><b>Utilities for preprocessing data files.</b></p>
+    <ul>
+        <li>
+            <b><a href="http://data.broadinstitute.org/igv/projects/downloads/igvtools_2.3.68.zip">igvtools_2.3.68.zip</a></b>
+        </li>
+    </ul>
+    <h2>
+        Other IGV Versions</h2>
+</div>
+<div style="text-align: center; padding: 3px; ">
+    <p class="rteleft"><a href="http://www.broadinstitute.org/software/igv/download_snapshot"><strong>Development
+        Snapshot Build&nbsp;</strong></a>&nbsp; <em>Latest development snapshot; built at least nightly.</em></p>
+
+    <p class="rteleft"><b><b><a href="http://data.broadinstitute.org/igv/projects/downloads/">Archived Versions</a></b></b>
+    </p>
+</div>
+<h2>
+    <b>Source Code</b></h2>
+
+<p><b>​</b><strong>Source code repository is hosted at GitHub:</strong></p>
+<ul>
+    <li>
+        <a href="https://github.com/igvteam/igv/" style="color: rgb(12, 66, 150);">https://github.com/igvteam/igv/</a>
+    </li>
+</ul>
+<ul>
+</ul>
+<h2>
+    <b>License</b></h2>
+
+<p><b>Permission to use this work is granted under the <a href="http://opensource.org/licenses/MIT">MIT License</a></b>
+</p>
+
+<h2>
+    <b>Contact</b></h2>
+
+<p><b>We welcome your feedback.&nbsp; Please send suggestions, requests, and bug reports to our <a
+        href="http://groups.google.com/group/igv-help" target="_blank">help forum</a>&nbsp;or open a ticket in our <a
+        href="https://github.com/igvteam/igv/issues">issue tracker</a>.</b></p>
+
+<div>
+    If you are posting about a problem, <b>please include the error message</b> (if applicable)<b> and your igv.log
+    file</b>. It will be in &lt;your home directory&gt;/igv. When posting a bug report, please include:
+</div>
+<ol>
+    <li>
+        The version of IGV you are using
+    </li>
+    <li>
+        What you did (e.g. I opened a bedgraph file). If the problem happens when you open a file and/or view certain
+        genomic coordinates, attach the file* (or provide a link) and specify the genomic coordinates.
+    </li>
+    <li>
+        What you expected to happen (e.g. I expected IGV to display my data)
+    </li>
+    <li>
+        What actually happened (e.g. I received an error message saying &quot;Unknown extension: .graph&quot;)
+    </li>
+</ol>
+
+</body>
+</html>

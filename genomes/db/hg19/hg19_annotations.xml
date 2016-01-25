@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Global name="Annotations" version="1">
+
+    <Category name="Genes">
+        <Resource name="Ensemble Genes" path="http://www.broadinstitute.org/igvdata/annotations/hg19/EnsemblGenes.ensGene">
+        </Resource>
+        <Resource name="UCSC Genes" hyperlink="http://genome.ucsc.edu/cgi-bin/hgTrackUi?g=knownGene" path="http://www.broadinstitute.org/igvdata/annotations/hg19/UCSCGenes.ucscGene">
+        </Resource>
+        <Resource name="MGC Genes" path="http://www.broadinstitute.org/igvdata/annotations/hg19/MGCGenes.bed">
+        </Resource>
+        <Resource name="Gencode Genes" path="http://igvdata.broadinstitute.org/annotations/hg19/genes/gencode.v10.annotation.ucscgene.gz" hyperlink="http://www.gencodegenes.org/">
+        </Resource>
+    </Category>
+    <Category name="Phenotype and Disease Associations">
+<!--        <Resource name="COSMIC" resourceType="DAS"
+        hyperlink="http://www.sanger.ac.uk/genetics/CGP/cosmic/"
+        path="http://das.sanger.ac.uk/das/cosmic_mutations_GRCh37/features"
+        trackLine="featureVisibilityWindow=0"/> -->
+        <Resource name="OMIM Genes" hyperlink="http://www.ncbi.nlm.nih.gov/omim" url="http://www.ncbi.nlm.nih.gov/entrez/dispomim.cgi?id=$$" path="http://www.broadinstitute.org/igvdata/annotations/hg19/phenotype/hg19_omim_genes.bed.gz"/>
+        <Resource name="GWAS Catalog" hyperlink="http://genome.ucsc.edu/cgi-bin/hgTrackUi?g=gwasCatalog" url="http://genome.ucsc.edu/cgi-bin/hgc?g=gwasCatalog&amp;i=$$" path="http://www.broadinstitute.org/igvdata/annotations/hg19/phenotype/hg19_gwas_genes.bed.gz"/>
+        <Resource name="RGD Human QTL" hyperlink="http://rgd.mcw.edu/wg/home" url="http://genome.ucsc.edu/cgi-bin/hgc?g=rgdQtl&amp;i=$$" path="http://igvdata.broadinstitute.org/annotations/hg19/phenotype/RGD_QTL_hg18.bed"/>
+                 
+                  
+    </Category>
+    
+    <Category name="Sequence and Regulation">
+        <Resource name="CpG Islands" hyperlink="http://genome.ucsc.edu/cgi-bin/hgTrackUi?g=cpgIslandExt" path="http://www.broadinstitute.org/igvdata/annotations/hg19/cpgIslands.hg19.bed">
+        </Resource>
+	<Resource name="GC Percentage" path="http://www.broadinstitute.org/igvdata/annotations/hg19/hg19.gc5base.tdf">
+	</Resource>
+    </Category>
+    
+    <Category name="Variation and Repeats">
+        <Resource name="dbSNP 1.3.1" path="http://www.broadinstitute.org/igvdata/annotations/hg19/dbSnp/hg19_snp131.bed"/>
+
+        <Category name="Repeat Masker"
+                  hyperlink="http://genome.ucsc.edu/cgi-bin/hgTrackUi?db=hg19&amp;g=rmsk">
+            <Resource name="SINE"
+                      path="http://igvdata.broadinstitute.org/annotations/hg19/variations/SINE.rmask.gz"/>
+            <Resource name="LINE"
+                      path="http://igvdata.broadinstitute.org/annotations/hg19/variations/LINE.rmask.gz"/>
+            <Resource name="LTR"
+                      path="http://igvdata.broadinstitute.org/annotations/hg19/variations/LTR.rmask.gz"/>
+            <Resource name="DNA"
+                      path="http://igvdata.broadinstitute.org/annotations/hg19/variations/DNA.rmask.gz"/>
+            <Resource name="Simple"
+                      path="http://igvdata.broadinstitute.org/annotations/hg19/variations/Simple_repeat.rmask.gz"/>
+            <Resource name="Low Complexity"
+                      path="http://igvdata.broadinstitute.org/annotations/hg19/variations/Low_complexity.rmask.gz"/>
+            <Resource name="Satellite"
+                      path="http://igvdata.broadinstitute.org/annotations/hg19/variations/Satellite.rmask.gz"/>
+            <Resource name="RC"
+                      path="http://igvdata.broadinstitute.org/annotations/hg19/variations/RC.rmask.gz"/>
+            <Resource name="RNA"
+                      path="http://igvdata.broadinstitute.org/annotations/hg19/variations/RNA.rmask.gz"/>
+            <!-- 
+<Resource name="rRNA"
+                      path="http://igvdata.broadinstitute.org/annotations/hg19/variations/rRNA.rmask.gz"/>
+            <Resource name="scRNA"
+                      path="http://igvdata.broadinstitute.org/annotations/hg19/variations/scRNA.rmask.gz"/>
+            <Resource name="snRNA"
+                      path="http://igvdata.broadinstitute.org/annotations/hg19/variations/snRNA.rmask.gz"/>
+            <Resource name="srpRNA"
+                      path="http://igvdata.broadinstitute.org/annotations/hg19/variations/srpRNA.rmask.gz"/>
+            <Resource name="tRNA"
+                      path="http://igvdata.broadinstitute.org/annotations/hg19/variations/tRNA.rmask.gz"/>
+ -->
+            <Resource name="Other"
+                      path="http://igvdata.broadinstitute.org/annotations/hg19/variations/Other.rmask.gz"/>
+            <Resource name="Unknown"
+                      path="http://igvdata.broadinstitute.org/annotations/hg19/variations/Unknown.rmask.gz"/>
+        </Category>
+    </Category>
+
+    <Category name="Comparative Genomics">
+        <Resource name="siphy rate (10 mer)"
+                  path="http://www.broadinstitute.org/igvdata/hg19/omega.10mers.wig.tdf"
+                  hyperlink="http://bioinformatics.oxfordjournals.org/cgi/content/full/25/12/i54"/>
+        <Resource name="siphy pi"
+                  path="http://www.broadinstitute.org/igvdata/hg19/pi.ewig.tdf"
+                  hyperlink="http://bioinformatics.oxfordjournals.org/cgi/content/full/25/12/i54"/>
+        <Resource name="Phastcons (Verterbrate 46 way)" 
+                  path="http://www.broadinstitute.org/igvdata/annotations/hg19/conservation/hg19_phastcon46.tdf" 
+                  hyperlink="http://genome.ucsc.edu/cgi-bin/hgTrackUi?g=cons46way"/>
+        <Resource name="phlyoP (Verterbrate 46 way)" 
+                  path="http://www.broadinstitute.org/igvdata/annotations/hg19/conservation/hg19_phyloP46way.tdf" 
+                  hyperlink="http://genome.ucsc.edu/cgi-bin/hgTrackUi?g=cons46way"/>
+       <Resource name="Multiple Alignments (multiz, 44 species)"
+                  path="http://www.broadinstitute.org/igvdata/hg19/maf/hg19.maf.dict"
+                  hyperlink="http://genome.ucsc.edu/cgi-bin/hgTrackUi?db=hg19&amp;g=cons44way">
+       </Resource>                  
+    </Category>
+
+</Global>

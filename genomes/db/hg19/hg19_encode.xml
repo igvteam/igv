@@ -1,0 +1,169 @@
+<Global trackLine='viewLimits=0:25' name="ENCODE" version="1"> 
+
+     <Resource trackLine="useScore=1" name="Txn Factor ChIP" path="http://igvdata.broadinstitute.org/data/hg19/encode/wgEncodeRegTfbsClustered.bb" 
+     hyperlink="http://genome.ucsc.edu/cgi-bin/hgTrackUi?db=hg19&amp;g=wgEncodeRegTfbsClustered"></Resource>
+     <Resource trackLine="useScore=1" name="DNaseI Clusters" path="http://igvdata.broadinstitute.org/data/hg19/encode/wgEncodeRegDnaseClustered.bb" 
+     hyperlink="http://genome.ucsc.edu/cgi-bin/hgTrackUi?db=hg19&amp;g=wgEncodeRegDnaseClustered"></Resource>
+     <Category name="Regulatory Transcription" hyperlink="http://genome.ucsc.edu/cgi-bin/hgTrackUi?db=hg19&amp;g=wgEncodeRegTxn">
+      <Resource trackLine='viewLimits=0:1000 meta="type=RNA;cell line=GM12878" scaleType=log' color="255,128,128" name="GM12878 RNA-seq" path="http://igvdata.broadinstitute.org/data/hg19/encode/regTxn/wgEncodeRegTxnCaltechRnaSeqGm12878R2x75Il200SigPooled.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:1000 meta="type=RNA;cell line=H1-hESC" scaleType=log' color="255,212,128" name="H1-hESC RNA-seq" path="http://igvdata.broadinstitute.org/data/hg19/encode/regTxn/wgEncodeRegTxnCaltechRnaSeqH1hescR2x75Il200SigPooled.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:1000 meta="type=RNA;cell line=HSMM" scaleType=log' color="128,255,242" name="HSMM RNA-seq" path="http://igvdata.broadinstitute.org/data/hg19/encode/regTxn/wgEncodeRegTxnCaltechRnaSeqHsmmR2x75Il200SigPooled.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:1000 meta="type=RNA;cell line=HUVEC" scaleType=log' color="128,200,255" name="HUVEC RNA-seq" path="http://igvdata.broadinstitute.org/data/hg19/encode/regTxn/wgEncodeRegTxnCaltechRnaSeqHuvecR2x75Il200SigPooled.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:1000 meta="type=RNA;cell line=K562" scaleType=log' color="149,128,255" name="K562 RNA-seq" path="http://igvdata.broadinstitute.org/data/hg19/encode/regTxn/wgEncodeRegTxnCaltechRnaSeqK562R2x75Il200SigPooled.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:1000 meta="type=RNA;cell line=NHEK" scaleType=log' color="227,128,255" name="NHEK RNA-seq" path="http://igvdata.broadinstitute.org/data/hg19/encode/regTxn/wgEncodeRegTxnCaltechRnaSeqNhekR2x75Il200SigPooled.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:1000 meta="type=RNA;cell line=NHLF" scaleType=log' color="255,128,212" name="NHLF RNA-seq" path="http://igvdata.broadinstitute.org/data/hg19/encode/regTxn/wgEncodeRegTxnCaltechRnaSeqNhlfR2x75Il200SigPooled.wig.tdf"/>
+    </Category>
+<!-- 
+    <Category name="H3K4Me1" hyperlink="http://genome.ucsc.edu/cgi-bin/hgTrackUi?db=hg19&amp;wgEncodeRegH3K4Me1">
+      <Resource trackLine='viewLimits=0:50 meta="type=H3K4Me1;cell line=GM12878"' color="255,128,128" name="GM12878 H3K4Me1" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k4me1StdSig.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:50 meta="type=H3K4Me1;cell line=H1-hESC"' color="255,212,128" name="H1-hESC H3K4Me1" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneH1hescH3k4me1StdSig.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:50 meta="type=H3K4Me1;cell line=HSMM"' color="128,255,242" name="HSMM H3K4Me1" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHsmmH3k4me1StdSig.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:50 meta="type=H3K4Me1;cell line=HUVEC"' color="128,200,255" name="HUVEC H3K4Me1" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHuvecH3k4me1StdSig.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:50 meta="type=H3K4Me1;cell line=K562"' color="149,128,255" name="K562 H3K4Me1" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneK562H3k4me1StdSig.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:50 meta="type=H3K4Me1;cell line=NHEK"' color="227,128,255" name="NHEK H3K4Me1" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhekH3k4me1StdSig.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:50 meta="type=H3K4Me1;cell line=NHLF"' color="255,128,212" name="NHLF H3K4Me1" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhlfH3k4me1StdSig.wig.tdf"/>
+  </Category>
+    <Category name="H3K4Me3" hyperlink="http://genome.ucsc.edu/cgi-bin/hgTrackUi?db=hg19&amp;wgEncodeRegMarkH3K4Me3">
+      <Resource trackLine='viewLimits=0:150 meta="type=H3K4Me3;cell line=GM12878"' color="255,128,128" name="GM12878 H3K4Me3" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k4me3StdSig.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:150 meta="type=H3K4Me3;cell line=H1-hESC"' color="255,212,128" name="H1-hESC H3K4Me3" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneH1hescH3k4me3StdSig.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:150 meta="type=H3K4Me3;cell line=HSMM"' color="128,255,242" name="HSMM H3K4Me3" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHsmmH3k4me3StdSig.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:150 meta="type=H3K4Me3;cell line=HUVEC"' color="128,200,255" name="HUVEC H3K4Me3" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHuvecH3k4me3StdSig.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:150 meta="type=H3K4Me3;cell line=K562"' color="149,128,255" name="K562 H3K4Me3" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneK562H3k4me3StdSig.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:150 meta="type=H3K4Me3;cell line=NHEK"' color="227,128,255" name="NHEK H3K4Me3" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhekH3k4me3StdSig.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:150 meta="type=H3K4Me3;cell line=NHLF"' color="255,128,212" name="NHLF H3K4Me3" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhlfH3k4me3StdSig.wig.tdf"/>
+  </Category>
+    <Category name="H3K27Ac" hyperlink="http://genome.ucsc.edu/cgi-bin/hgTrackUi?db=hg19&amp;wgEncodeRegMarkH3k27ac">
+      <Resource trackLine='viewLimits=0:100 meta="type=H3K27Ac;cell line=GM12878"' color="255,128,128" name="GM12878 H3K27Ac" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k27acStdSig.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:100 meta="type=H3K27Ac;cell line=H1-hESC"' color="255,212,128" name="H1-hESC H3K27Ac" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneH1hescH3k27acStdSig.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:100 meta="type=H3K27Ac;cell line=HSMM"' color="128,255,242" name="HSMM H3K27Ac" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHsmmH3k27acStdSig.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:100 meta="type=H3K27Ac;cell line=HUVEC"' color="128,200,255" name="HUVEC H3K27Ac" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHuvecH3k27acStdSig.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:100 meta="type=H3K27Ac;cell line=K562"' color="149,128,255" name="K562 H3K27Ac" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneK562H3k27acStdSig.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:100 meta="type=H3K27Ac;cell line=NHEK"' color="227,128,255" name="NHEK H3K27Ac" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhekH3k27acStdSig.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:100 meta="type=H3K27Ac;cell line=NHLF"' color="255,128,212" name="NHLF H3K27Ac" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhlfH3k27acStdSig.wig.tdf"/>
+  </Category>
+ -->
+     <Category name="UW DNaseI" hyperlink="http://genome.ucsc.edu/cgi-bin/hgTrackUi?db=hg19&amp;g=wgEncodeUwDnase">
+      <Resource color="255,128,128" trackLine='viewLimits=0:50 meta="type=DnaseI;cell line=GM12878"' name="GM12878 DnaseI Rep 1" path="http://www.broadinstitute.org/igvdata/encode/hg19/uwDnase/wgEncodeUwDnaseGm12878RawRep1.bigWig"/>
+      <Resource color="255,128,128" trackLine='viewLimits=0:50 meta="type=DnaseI;cell line=GM12878"' name="GM12878 DnaseI Rep 2" path="http://www.broadinstitute.org/igvdata/encode/hg19/uwDnase/wgEncodeUwDnaseGm12878RawRep2.bigWig"/>
+      <Resource color="255,212,128" trackLine='viewLimits=0:50 meta="type=DnaseI;cell line=H1-hESC"' name="H1-hESC DnaseI " path="http://www.broadinstitute.org/igvdata/encode/hg19/uwDnase/wgEncodeUwDnaseH1hescRawRep1.bigWig"/>
+      <Resource color="128,255,242" trackLine='viewLimits=0:50 meta="type=DnaseI;cell line=HSMM"' name="HSMM DnaseI Rep 1" path="http://www.broadinstitute.org/igvdata/encode/hg19/uwDnase/wgEncodeUwDnaseHsmmRawRep1.bigWig"/>
+      <Resource color="128,255,242" trackLine='viewLimits=0:50 meta="type=DnaseI;cell line=HSMM"' name="HSMM DnaseI Rep 2" path="http://www.broadinstitute.org/igvdata/encode/hg19/uwDnase/wgEncodeUwDnaseHsmmRawRep2.bigWig"/>
+      <Resource color="128,200,255" trackLine='viewLimits=0:50 meta="type=DnaseI;cell line=HUVEC"' name="HUVEC DnaseI Rep 1" path="http://www.broadinstitute.org/igvdata/encode/hg19/uwDnase/wgEncodeUwDnaseHuvecRawRep1.bigWig"/>
+      <Resource color="128,200,255" trackLine='viewLimits=0:50 meta="type=DnaseI;cell line=HUVEC"' name="HUVEC DnaseI Rep 2" path="http://www.broadinstitute.org/igvdata/encode/hg19/uwDnase/wgEncodeUwDnaseHuvecRawRep2.bigWig"/>
+      <Resource color="149,128,255" trackLine='viewLimits=0:50 meta="type=DnaseI;cell line=K562"' name="K562 DnaseI Rep 1" path="http://www.broadinstitute.org/igvdata/encode/hg19/uwDnase/wgEncodeUwDnaseK562RawRep1.bigWig"/>
+      <Resource color="149,128,255" trackLine='viewLimits=0:50 meta="type=DnaseI;cell line=K562"' name="K562 DnaseI Rep 2" path="http://www.broadinstitute.org/igvdata/encode/hg19/uwDnase/wgEncodeUwDnaseK562RawRep2.bigWig"/>
+      <Resource color="227,128,255" trackLine='viewLimits=0:50 meta="type=DnaseI;cell line=NHEK"' name="NHEK DnaseI" path="http://www.broadinstitute.org/igvdata/encode/hg19/uwDnase/wgEncodeUwDnaseNhekRawRep1.bigWig"/>
+      <Resource color="255,128,212" trackLine='viewLimits=0:50 meta="type=DnaseI;cell line=NHLF"' name="NHLF DnaseI Rep 1" path="http://www.broadinstitute.org/igvdata/encode/hg19/uwDnase/wgEncodeUwDnaseNhlfRawRep1.bigWig"/>
+      <Resource color="255,128,212" trackLine='viewLimits=0:50 meta="type=DnaseI;cell line=NHLF"' name="NHLF DnaseI Rep 2" path="http://www.broadinstitute.org/igvdata/encode/hg19/uwDnase/wgEncodeUwDnaseNhlfRawRep2.bigWig"/>
+    </Category>
+    <Category name="UW CTCF Binding" hyperlink="http://genome.ucsc.edu/cgi-bin/hgTrackUi?db=hg19&amp;g=wgEncodeUwTfbs">
+      <Resource trackLine='viewLimits=0:25 meta="type=CTCF;cell line=Gm06990"' name="Gm06990 CTCF Rep 1" path="http://www.broadinstitute.org/igvdata/encode/hg19/uwTfbs/wgEncodeUwTfbsGm06990CtcfStdRawRep1.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:25 meta="type=CTCF;cell line=Gm06990"' name="Gm06990 CTCF Rep 2" path="http://www.broadinstitute.org/igvdata/encode/hg19/uwTfbs/wgEncodeUwTfbsGm06990CtcfStdRawRep2.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:25 meta="type=CTCF;cell line=Gm06990"' name="Gm06990 Input Rep 1" path="http://www.broadinstitute.org/igvdata/encode/hg19/uwTfbs/wgEncodeUwTfbsGm06990InputStdRawRep1.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:25 meta="type=CTCF;cell line=Hl60"' name="Hl60 CTCF" path="http://www.broadinstitute.org/igvdata/encode/hg19/uwTfbs/wgEncodeUwTfbsHl60CtcfStdRawRep1.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:25 meta="type=CTCF;cell line=Hl60"' name="Hl60 Input" path="http://www.broadinstitute.org/igvdata/encode/hg19/uwTfbs/wgEncodeUwTfbsHl60InputStdRawRep1.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:25 meta="type=CTCF;cell line=HUVEC"' name="HUVEC CTCF Rep 1" path="http://www.broadinstitute.org/igvdata/encode/hg19/uwTfbs/wgEncodeUwTfbsHuvecCtcfStdRawRep1.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:25 meta="type=CTCF;cell line=HUVEC"' name="HUVEC CTCF Rep 2" path="http://www.broadinstitute.org/igvdata/encode/hg19/uwTfbs/wgEncodeUwTfbsHuvecCtcfStdRawRep2.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:25 meta="type=CTCF;cell line=HUVEC"' name="HUVEC Input" path="http://www.broadinstitute.org/igvdata/encode/hg19/uwTfbs/wgEncodeUwTfbsHuvecInputStdRawRep1.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:25 meta="type=CTCF;cell line=K562"' name="K562 CTCF Rep 1" path="http://www.broadinstitute.org/igvdata/encode/hg19/uwTfbs/wgEncodeUwTfbsK562CtcfStdRawRep1.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:25 meta="type=CTCF;cell line=K562"' name="K562 CTCF Rep 2" path="http://www.broadinstitute.org/igvdata/encode/hg19/uwTfbs/wgEncodeUwTfbsK562CtcfStdRawRep2.wig.tdf"/>
+      <Resource trackLine='viewLimits=0:25 meta="type=CTCF;cell line=K562"' name="K562 Input Rep 2" path="http://www.broadinstitute.org/igvdata/encode/hg19/uwTfbs/wgEncodeUwTfbsK562InputStdRawRep1.wig.tdf"/>
+  </Category>
+  <Category name="Broad Histone">
+      <Resource trackLine='viewLimits=0:25' name="GM12878 Input" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878ControlStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="GM12878 CTCF" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878CtcfStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="GM12878 H3K27ac" color="255,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k27acStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="GM12878 H3K27me3" color="255,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k27me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="GM12878 H3K36me3" color="0,0,150" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k36me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="GM12878 H3K4me1" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k4me1StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="GM12878 H3K4me2" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k4me2StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="GM12878 H3K4me3" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k4me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="GM12878 H3K9ac" color="100,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k9acStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="GM12878 H4K20me1" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H4k20me1StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="H1-hESC Input" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneH1hescControlStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="H1-hESC CTCF" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneH1hescCtcfStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="H1-hESC H3K27me3" color="255,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneH1hescH3k27me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="H1-hESC H3K36me3" color="0,0,150" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneH1hescH3k36me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="H1-hESC H3K4me1" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneH1hescH3k4me1StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="H1-hESC H3K4me2" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneH1hescH3k4me2StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="H1-hESC H3K4me3" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneH1hescH3k4me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="H1-hESC H3K9ac" color="100,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneH1hescH3k9acStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="H1-hESC H4K20me1" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneH1hescH4k20me1StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HepG2 Input" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHepg2ControlStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HepG2 CTCF" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHepg2CtcfStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HepG2 H3K27ac" color="255,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHepg2H3k27acStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HepG2 H3K36me3" color="0,0,150" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHepg2H3k36me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HepG2 H3K4me2" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHepg2H3k4me2StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HepG2 H3K4me3" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHepg2H3k4me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HepG2 H3K9ac" color="100,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHepg2H3k9acStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HepG2 H4K20me1" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHepg2H4k20me1StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HMEC Input" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHmecControlStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HMEC CTCF" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHmecCtcfStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HMEC H3K27ac" color="255,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHmecH3k27acStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HMEC H3K27me3" color="255,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHmecH3k27me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HMEC H3K36me3" color="0,0,150" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHmecH3k36me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HMEC H3K4me1" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHmecH3k4me1StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HMEC H3K4me2" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHmecH3k4me2StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HMEC H3K4me3" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHmecH3k4me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HMEC H3K9ac" color="100,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHmecH3k9acStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HMEC H4K20me1" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHmecH4k20me1StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HSMM Input" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHsmmControlStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HSMM CTCF" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHsmmCtcfStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HSMM H3K27ac" color="255,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHsmmH3k27acStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HSMM H3K27me3" color="255,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHsmmH3k27me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HSMM H3K36me3" color="0,0,150" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHsmmH3k36me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HSMM H3K4me1" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHsmmH3k4me1StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HSMM H3K4me2" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHsmmH3k4me2StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HSMM H3K4me3" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHsmmH3k4me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HSMM H3K9ac" color="100,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHsmmH3k9acStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HSMM H4K20me1" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHsmmH4k20me1StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HUVEC Input" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHuvecControlStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HUVEC CTCF" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHuvecCtcfStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HUVEC H3K27ac" color="255,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHuvecH3k27acStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HUVEC H3K27me3" color="255,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHuvecH3k27me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HUVEC H3K36me3" color="0,0,150" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHuvecH3k36me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HUVEC H3K4me1" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHuvecH3k4me1StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HUVEC H3K4me2" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHuvecH3k4me2StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HUVEC H3K4me3" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHuvecH3k4me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HUVEC H3K9ac" color="100,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHuvecH3k9acStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HUVEC H3K9me1" color="100,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHuvecH3k9me1StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HUVEC H4K20me1" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHuvecH4k20me1StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="HUVEC Pol2(b)" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneHuvecPol2bStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="K562 Input" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneK562ControlStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="K562 CTCF" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneK562CtcfStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="K562 H3K27ac" color="255,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneK562H3k27acStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="K562 H3K27me3" color="255,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneK562H3k27me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="K562 H3K36me3" color="0,0,150" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneK562H3k36me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="K562 H3K4me1" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneK562H3k4me1StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="K562 H3K4me2" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneK562H3k4me2StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="K562 H3K4me3" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneK562H3k4me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="K562 H3K9ac" color="100,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneK562H3k9acStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="K562 H3K9me1" color="100,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneK562H3k9me1StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="K562 H4K20me1" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneK562H4k20me1StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="K562 Pol2(b)" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneK562Pol2bStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="NHEK Input" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhekControlStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="NHEK CTCF" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhekCtcfStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="NHEK H3K27ac" color="255,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhekH3k27acStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="NHEK H3K27me3" color="255,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhekH3k27me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="NHEK H3K36me3" color="0,0,150" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhekH3k36me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="NHEK H3K4me1" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhekH3k4me1StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="NHEK H3K4me2" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhekH3k4me2StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="NHEK H3K4me3" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhekH3k4me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="NHEK H3K9ac" color="100,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhekH3k9acStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="NHEK H3K9me1" color="100,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhekH3k9me1StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="NHEK H4K20me1" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhekH4k20me1StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="NHEK Pol2(b)" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhekPol2bStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="NHLF Input" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhlfControlStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="NHLF CTCF" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhlfCtcfStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="NHLF H3K27ac" color="255,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhlfH3k27acStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="NHLF H3K27me3" color="255,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhlfH3k27me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="NHLF H3K36me3" color="0,0,150" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhlfH3k36me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="NHLF H3K4me1" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhlfH3k4me1StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="NHLF H3K4me2" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhlfH3k4me2StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="NHLF H3K4me3" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhlfH3k4me3StdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="NHLF H3K9ac" color="100,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhlfH3k9acStdSig.wig.tdf"></Resource>
+      <Resource trackLine='viewLimits=0:25' name="NHLF H4K20me1" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneNhlfH4k20me1StdSig.wig.tdf"></Resource>
+  </Category>
+
+  
+</Global>
