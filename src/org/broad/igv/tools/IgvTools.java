@@ -1132,6 +1132,7 @@ public class IgvTools {
                 typeString.endsWith("tab") ||
                 typeString.endsWith("mage-tab") ||
                 typeString.endsWith("bedgraph") ||
+                typeString.endsWith("bdg") ||
                 typeString.endsWith("ewig.list") ||
                 Preprocessor.isAlignmentFile(typeString))) {
             throw new PreprocessingException("Tile command not supported for files of type: " + typeString);

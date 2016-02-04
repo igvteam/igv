@@ -734,7 +734,8 @@ public class Preprocessor implements DataConsumer {
         String tmp = (typeString == null ? iFile.getAbsolutePath() : typeString).toLowerCase();
         if (tmp.endsWith(".txt")) tmp = tmp.substring(0, tmp.length() - 4);
         if (tmp.endsWith(".gz")) tmp = tmp.substring(0, tmp.length() - 3);
-        if (tmp.endsWith("wig") || tmp.endsWith("bedgraph") || tmp.endsWith("cpg") || tmp.endsWith("map")) {
+        if (tmp.endsWith("wig") || tmp.endsWith("bedgraph") || tmp.endsWith("bdg")
+                || tmp.endsWith("cpg") || tmp.endsWith("map")) {
             ToolsWiggleParser wg = new ToolsWiggleParser(iFile.getAbsolutePath(), this, genome);
             wg.parse();
         } else if (tmp.endsWith("cn") || tmp.endsWith("xcn") || tmp.endsWith("igv") || tmp.endsWith("snp")) {
