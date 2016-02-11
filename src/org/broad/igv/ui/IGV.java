@@ -1917,10 +1917,10 @@ public class IGV {
      * @param option
      * @api
      */
-    public void groupAlignmentTracks(AlignmentTrack.GroupOption option) {
+    public void groupAlignmentTracks(AlignmentTrack.GroupOption option, String tag) {
         for (Track t : getAllTracks()) {
             if (t instanceof AlignmentTrack) {
-                ((AlignmentTrack) t).groupAlignments(option, FrameManager.getFrames());
+                ((AlignmentTrack) t).groupAlignments(option, tag);
             }
         }
     }

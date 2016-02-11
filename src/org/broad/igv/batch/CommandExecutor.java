@@ -150,7 +150,7 @@ public class CommandExecutor {
                 } else if (cmd.equalsIgnoreCase("sort")) {
                     sort(param1, param2, param3, param4);
                 } else if (cmd.equalsIgnoreCase("group")) {
-                    group(param1);
+                    group(param1, param2);
                 } else if (cmd.equalsIgnoreCase("collapse")) {
                     String trackName = parseTrackName(param1);
                     igv.setTrackDisplayMode(Track.DisplayMode.COLLAPSED, trackName);
@@ -400,7 +400,7 @@ public class CommandExecutor {
                 index = param.substring(6);
             } else if (param != null && param.startsWith("coverage=")) {
                 coverage = param.substring(9);
-            } else if(param != null && param.startsWith("format=")) {
+            } else if (param != null && param.startsWith("format=")) {
                 format = param.substring(7);
             }
         }
@@ -541,9 +541,9 @@ public class CommandExecutor {
                 if (coverageFiles != null) {
                     rl.setCoverage(coverageFiles.get(fi));
                 }
-                if(formats != null) {
+                if (formats != null) {
                     String format = formats.get(fi);
-                    if(!format.startsWith(".")) format = "." + format;
+                    if (!format.startsWith(".")) format = "." + format;
                     rl.setType(format);
                 }
                 if (params != null) {
@@ -776,6 +776,7 @@ public class CommandExecutor {
 
 
     private void sort(String sortArg, String locusString, String param3, String param4) {
+
         RegionScoreType regionSortOption = getRegionSortOption(sortArg);
         String tag = "";
         if (regionSortOption != null) {
@@ -806,15 +807,18 @@ public class CommandExecutor {
                     tag = param3;
                 }
             }
+
             //Convert from 1-based to 0-based
             if (location != null) location--;
+
             igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag);
+
         }
         igv.repaintDataPanels();
     }
 
-    private void group(String groupArg) {
-        igv.groupAlignmentTracks(getAlignmentGroupOption(groupArg));
+    private void group(String groupArg, String tagArg) {
+        igv.groupAlignmentTracks(getAlignmentGroupOption(groupArg), tagArg);
         igv.repaintDataPanels();
     }
 
@@ -906,20 +910,39 @@ public class CommandExecutor {
         } else if (str.equalsIgnoreCase("mateChr")) {
             return AlignmentTrack.SortOption.MATE_CHR;
         }
-        return AlignmentTrack.SortOption.NUCLEOTIDE;
+        else {
+            try {
+                return AlignmentTrack.SortOption.valueOf(str.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                log.error("Unknown sort option: " + str);
+                return AlignmentTrack.SortOption.NUCLEOTIDE;
+            }
+        }
+
     }
 
-    private static AlignmentTrack.GroupOption getAlignmentGroupOption(String str) {
-        if (str.equalsIgnoreCase("strand")) {
-            return AlignmentTrack.GroupOption.STRAND;
+    //      STRAND, SAMPLE, READ_GROUP, FIRST_OF_PAIR_STRAND, TAG, PAIR_ORIENTATION, MATE_CHROMOSOME, NONE, SUPPLEMENTARY
 
+    private static AlignmentTrack.GroupOption getAlignmentGroupOption(String str) {
+        if (str == null || str.length() == 0) {
+            return AlignmentTrack.GroupOption.NONE;
+        } else if (str.equalsIgnoreCase("strand")) {
+            return AlignmentTrack.GroupOption.STRAND;
         } else if (str.equalsIgnoreCase("sample")) {
             return AlignmentTrack.GroupOption.SAMPLE;
-
         } else if (str.equalsIgnoreCase("readGroup") || str.equalsIgnoreCase("read_group")) {
             return AlignmentTrack.GroupOption.READ_GROUP;
         }
-        return AlignmentTrack.GroupOption.NONE;
+        else {
+            try {
+                return AlignmentTrack.GroupOption.valueOf(str.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                log.error("Unknown group by option: " + str);
+                return AlignmentTrack.GroupOption.NONE;
+            }
+
+        }
+
     }
 
     private static class SortAlignmentsHandler {

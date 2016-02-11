@@ -250,7 +250,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     @Override
     public void setVisible(boolean visible) {
         super.setVisible(visible);
-        if(dataManager != null) dataManager.setShowAlignments(visible);
+        if (dataManager != null) dataManager.setShowAlignments(visible);
     }
 
     @XmlElement(name = RenderOptions.NAME)
@@ -473,14 +473,15 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
      * Visually regroup alignments by the provided {@code GroupOption}.
      *
      * @param option
-     * @param referenceFrames
      * @see AlignmentDataManager#packAlignments
      */
-    public void groupAlignments(GroupOption option, List<ReferenceFrame> referenceFrames) {
-        if (renderOptions.groupByOption != option) {
-            renderOptions.groupByOption = (option == GroupOption.NONE ? null : option);
-            dataManager.packAlignments(renderOptions);
+    public void groupAlignments(GroupOption option, String tag) {
+        if (tag != null) {
+            renderOptions.setGroupByTag(tag);
         }
+        renderOptions.groupByOption = (option == GroupOption.NONE ? null : option);
+        dataManager.packAlignments(renderOptions);
+
     }
 
     public void packAlignments() {
@@ -1440,7 +1441,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             mi.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
-                    IGV.getInstance().groupAlignmentTracks(option);
+                    IGV.getInstance().groupAlignmentTracks(option, null);
                     refresh();
 
                 }
@@ -1478,7 +1479,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getGroupByTag());
                     if (tag != null && tag.trim().length() > 0) {
                         renderOptions.setGroupByTag(tag);
-                        IGV.getInstance().groupAlignmentTracks(GroupOption.TAG);
+                        IGV.getInstance().groupAlignmentTracks(GroupOption.TAG, tag);
                         refresh();
                     }
 
