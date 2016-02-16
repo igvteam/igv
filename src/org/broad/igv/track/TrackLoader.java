@@ -47,6 +47,8 @@ import org.broad.igv.dev.db.SQLCodecSource;
 import org.broad.igv.dev.db.SampleInfoSQLReader;
 import org.broad.igv.dev.db.SegmentedSQLReader;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.feature.basepair.BasePairFileParser;
+import org.broad.igv.feature.basepair.BasePairData;
 import org.broad.igv.feature.CachingFeatureSource;
 import org.broad.igv.feature.GisticFileParser;
 import org.broad.igv.feature.MutationTrackLoader;
@@ -76,6 +78,7 @@ import org.broad.igv.synteny.BlastMapping;
 import org.broad.igv.synteny.BlastParser;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
+import org.broad.igv.track.BasePairTrack;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
@@ -202,6 +205,8 @@ public class TrackLoader {
             } else if (typeString.endsWith("mage-tab") || ExpressionFileParser.parsableMAGE_TAB(locator)) {
                 locator.setDescription("MAGE_TAB");
                 loadGctFile(locator, newTracks, genome);
+            }  else if (typeString.endsWith(".bp")){
+                loadBasePairFile(locator, newTracks, genome);
             } else if (GWASParser.isGWASFile(typeString)) {
                 loadGWASFile(locator, newTracks, genome);
             } else if (GobyAlignmentQueryReader.supportsFileType(path)) {
@@ -1175,6 +1180,11 @@ public class TrackLoader {
         PedigreeUtils.parseTrioFile(locator.getPath());
     }
 
+
+    private void loadBasePairFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+        BasePairFileParser parser = new BasePairFileParser();
+        newTracks.add(parser.loadTrack(locator, genome)); // should create one track from the given file
+    }
 
     public static boolean isIndexed(ResourceLocator locator, Genome genome) {
 
