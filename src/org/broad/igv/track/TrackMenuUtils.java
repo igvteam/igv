@@ -176,6 +176,17 @@ public class TrackMenuUtils {
             }
         }
 
+        boolean hasBasePairTracks = false;
+        for (Track track : tracks) {
+            if (track instanceof BasePairTrack) {
+                hasBasePairTracks = true;
+                break;
+            }
+        }
+        if (hasBasePairTracks) {
+            addBasePairItems(menu, tracks);
+        }
+
         boolean featureTracksOnly = hasFeatureTracks && !hasDataTracks && !hasOtherTracks;
         boolean dataTracksOnly = !hasFeatureTracks && hasDataTracks && !hasOtherTracks;
 
@@ -488,6 +499,47 @@ public class TrackMenuUtils {
         featurePopupMenu.addSeparator();
         featurePopupMenu.add(getChangeFeatureWindow(tracks));
 
+    }
+
+    /**
+     * Return popup menu with items applicable to arc tracks
+     *
+     * @return
+     */
+    // stevenbusan
+    public static void addBasePairItems(JPopupMenu menu, final Collection<Track> tracks) {
+
+        JLabel arcDirectionHeading = new JLabel(LEADING_HEADING_SPACER + "Arc direction", JLabel.LEFT);
+        arcDirectionHeading.setFont(UIConstants.boldFont);
+
+        menu.add(arcDirectionHeading);
+
+        final String[] arcDirectionLabels = {"Up", "Down"};
+
+        for (int i = 0; i < arcDirectionLabels.length; i++) {
+            JCheckBoxMenuItem item = new JCheckBoxMenuItem(arcDirectionLabels[i]);
+            final int n = (i==0) ? 1 : -1 ;
+            for (Track track : tracks) {
+                if (track instanceof BasePairTrack) {
+                    if (((BasePairTrack) track).getDirection() == n){
+                        item.setSelected(true);
+                    }
+                }
+            }
+            item.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
+                    for (Track track : tracks) {
+                        if (track instanceof BasePairTrack) {
+                            ((BasePairTrack) track).setDirection(n);
+                        }
+                    }
+                    IGV.getInstance().repaint();
+                }
+            });
+            menu.add(item);
+        }
+
+        menu.addSeparator();
     }
 
     private static JMenuItem getFeatureToGeneListItem(final Track t) {
