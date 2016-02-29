@@ -32,6 +32,7 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +44,7 @@ public class SMAPFeature extends AbstractFeature {
     private String[] headers;
     private String[] tokens;
     double confidence;
-    List<String []> partialFeatures;
+    List<SMAPFeature> partialFeatures;
 
     public SMAPFeature(String chr, int start, int end, double confidence, String type, String[] headers, String[] tokens) {
         super(chr, start, end, Strand.NONE);
@@ -70,8 +71,11 @@ public class SMAPFeature extends AbstractFeature {
         }
     }
 
-    public void addPartialFeature(SMAPFeature tokens) {
-        partialFeatures.add(tokens);
+    public void addPartialFeature(SMAPFeature smapFeature) {
+        if (partialFeatures == null) {
+            partialFeatures = new ArrayList<SMAPFeature>();
+        }
+        partialFeatures.add(smapFeature);
     }
 
     @Override
@@ -86,6 +90,14 @@ public class SMAPFeature extends AbstractFeature {
         for (int i = 0; i < headers.length; i++) {
             buf.append("<br>" + headers[i] + ":&nbsp;" + tokens[i]);
         }
+
+        if(partialFeatures != null) {
+            for(SMAPFeature pf : partialFeatures) {
+                buf.append("<hr>");
+                buf.append(pf.getValueString(position, windowFunction));
+            }
+        }
+
         return buf.toString();
     }
 

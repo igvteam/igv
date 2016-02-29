@@ -53,6 +53,7 @@ import org.broad.igv.feature.CachingFeatureSource;
 import org.broad.igv.feature.GisticFileParser;
 import org.broad.igv.feature.MutationTrackLoader;
 import org.broad.igv.feature.bionano.SMAPParser;
+import org.broad.igv.feature.bionano.SMAPRenderer;
 import org.broad.igv.feature.dranger.DRangerParser;
 import org.broad.igv.feature.genome.*;
 import org.broad.igv.feature.tribble.CodecFactory;
@@ -266,6 +267,8 @@ public class TrackLoader {
         List<Feature> features = SMAPParser.parseFeatures(locator, genome);
         FeatureCollectionSource src = new FeatureCollectionSource(features, genome);
         FeatureTrack track = new FeatureTrack(locator, locator.getName(), src);
+        track.setRendererClass(SMAPRenderer.class);
+        track.setDisplayMode(Track.DisplayMode.EXPANDED);
         newTracks.add(track);
     }
 

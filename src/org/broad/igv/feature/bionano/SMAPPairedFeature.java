@@ -52,6 +52,7 @@ public class SMAPPairedFeature extends AbstractFeature {
             return;
         }
 
+        setChr(feature1.getChr());
         if (feature1.getStart() < feature2.getStart()) {
             this.feature1 = feature1;
             this.feature2  = feature2;

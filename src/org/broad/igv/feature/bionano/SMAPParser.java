@@ -114,8 +114,8 @@ public class SMAPParser {
                     featureMap.put(id, new SMAPFeature(chr1, start, end, conf, t, headers, tokens, linkId));
                 } else {
                     // Don't know how to treat this interchr features.  Split into 2 for now
-                    SMAPFeature feature1 = new SMAPFeature(chr1, start, end, conf, t, headers, tokens);
-                    SMAPFeature feature2 = new SMAPFeature(chr1, start, end, conf, t, headers, tokens);
+                    SMAPFeature feature1 = new SMAPFeature(chr1, start, start+1, conf, t, headers, tokens);
+                    SMAPFeature feature2 = new SMAPFeature(chr2, end, end+1, conf, t, headers, tokens);
                     features.add(feature1);
                     features.add(feature2);
                 }
@@ -127,7 +127,7 @@ public class SMAPParser {
             int linkId = partialFeature.getLinkId();
             SMAPFeature f = featureMap.get(linkId);
             if (f != null) {
-                f.addPartialFeature(f);
+                f.addPartialFeature(partialFeature);
             }
         }
 
