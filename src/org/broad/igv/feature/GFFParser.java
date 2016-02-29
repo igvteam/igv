@@ -26,18 +26,11 @@
 package org.broad.igv.feature;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.GFFCodec;
-import org.broad.igv.renderer.GeneTrackRenderer;
-import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.track.*;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.ResourceLocator;
 import htsjdk.tribble.Feature;
-import htsjdk.tribble.FeatureCodec;
 
 import java.io.*;
 import java.util.*;
@@ -124,72 +117,6 @@ public class GFFParser implements FeatureParser {
 
     }
 
-    /**
-     * Given a GFF File, creates a new GFF file for each type. Any feature type
-     * which is part of a "gene" ( {@link SequenceOntology#geneParts} ) are put in the same file,
-     * others are put in different files. So features of type "gene", "exon", and "mrna"
-     * would go in gene.gff, but features of type "myFeature" would go in myFeature.gff.
-     *
-     * @param gffFile
-     * @param outputDirectory
-     * @throws IOException
-     */
-    public static void splitFileByType(String gffFile, String outputDirectory) throws IOException {
-
-        BufferedReader br = new BufferedReader(new FileReader(gffFile));
-        String nextLine;
-        String ext = "." + gffFile.substring(gffFile.length() - 4);
-
-        Map<String, PrintWriter> writers = new HashMap();
-
-        while ((nextLine = br.readLine()) != null) {
-            nextLine = nextLine.trim();
-            if (!nextLine.startsWith("#")) {
-                String[] tokens = Globals.tabPattern.split(nextLine.trim().replaceAll("\"", ""), -1);
-
-                String type = tokens[2];
-                if (SequenceOntology.geneParts.contains(type)) {
-                    type = "gene";
-                }
-                if (!writers.containsKey(type)) {
-                    writers.put(type,
-                            new PrintWriter(new FileWriter(new File(outputDirectory, type + ext))));
-                }
-            }
-        }
-        br.close();
-
-        br = new BufferedReader(new FileReader(gffFile));
-        PrintWriter currentWriter = null;
-        while ((nextLine = br.readLine()) != null) {
-            nextLine = nextLine.trim();
-            if (nextLine.startsWith("#")) {
-                for (PrintWriter pw : writers.values()) {
-                    pw.println(nextLine);
-                }
-            } else {
-                String[] tokens = Globals.tabPattern.split(nextLine.trim().replaceAll("\"", ""), -1);
-                String type = tokens[2];
-                if (SequenceOntology.geneParts.contains(type)) {
-                    type = "gene";
-                }
-                currentWriter = writers.get(type);
-
-                if (currentWriter != null) {
-                    currentWriter.println(nextLine);
-                } else {
-                    System.out.println("No writer for: " + type);
-                }
-            }
-
-        }
-
-        br.close();
-        for (PrintWriter pw : writers.values()) {
-            pw.close();
-        }
-    }
-
     public TrackProperties getTrackProperties() {
         return trackProperties;
     }
@@ -199,6 +126,6 @@ public class GFFParser implements FeatureParser {
             System.out.println("SpitFilesByType <gffFile> <outputDirectory>");
             return;
         }
-        splitFileByType(args[0], args[1]);
+        FeatureFileUtils.splitGffFileByType(args[0], args[1]);
     }
 }

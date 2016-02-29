@@ -35,6 +35,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.feature.FeatureFileUtils;
 import org.broad.igv.feature.GFFParser;
 import org.broad.igv.feature.genome.FastaUtils;
 import org.broad.igv.feature.genome.Genome;
@@ -393,7 +394,7 @@ public class IgvTools {
             } else if (command.equals("splitgff")) {
                 validateArgsLength(nonOptionArgs, 3, "Error in syntax. Expected: " + command + " [options] inputfile outputdir");
                 String outputDirectory = nonOptionArgs[2];
-                GFFParser.splitFileByType(ifile, outputDirectory);
+                FeatureFileUtils.splitGffFileByType(ifile, outputDirectory);
             } else if(command.equals("gfftobed")){
                 validateArgsLength(nonOptionArgs, 3, "Error in syntax. Expected: " + command + " inputfile outputfile");
                 String ofile = nonOptionArgs[2];

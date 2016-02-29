@@ -33,14 +33,17 @@ import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
 public class SMAPFeature extends AbstractFeature {
 
-    private  String[] headers;
+    private int linkId;
+    private String[] headers;
     private String[] tokens;
     double confidence;
+    List<String []> partialFeatures;
 
     public SMAPFeature(String chr, int start, int end, double confidence, String type, String[] headers, String[] tokens) {
         super(chr, start, end, Strand.NONE);
@@ -53,14 +56,22 @@ public class SMAPFeature extends AbstractFeature {
 
     }
 
+    public SMAPFeature(String chr, int start, int end, double conf, String t, String[] headers, String[] tokens, int linkId) {
+        this(chr, start, end, conf, t, headers, tokens);
+        this.linkId = linkId;
+    }
+
     @Override
     public Color getColor() {
-        if(colors.containsKey(type)) {
+        if (colors.containsKey(type)) {
             return colors.get(type);
-        }
-        else {
+        } else {
             return super.getColor();
         }
+    }
+
+    public void addPartialFeature(SMAPFeature tokens) {
+        partialFeatures.add(tokens);
     }
 
     @Override
@@ -79,11 +90,16 @@ public class SMAPFeature extends AbstractFeature {
     }
 
 
+    public int getLinkId() {
+        return linkId;
+    }
+
     static Map<String, Color> colors = new HashMap<String, Color>();
+
     static {
 
-        colors.put("insertion", new Color(0,128,0));
-        colors.put("deletion", new Color(255,0,0));
+        colors.put("insertion", new Color(0, 128, 0));
+        colors.put("deletion", new Color(255, 0, 0));
 
     }
 }

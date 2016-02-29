@@ -41,6 +41,9 @@ import java.util.*;
 public class FeatureFileUtils {
 
 
+    static Set<String> types = new HashSet(Arrays.asList("SINE", "LINE", "LTR", "DNA", "Simple_repeat",
+            "Low_complexity", "Satellite", "RNA", "Other", "Unknown", "Uncategorized"));
+
     /**
      * Compute feature density in units of # / window.  Note: This function could be extended to other file types by
      * using codecs.
@@ -127,6 +130,173 @@ public class FeatureFileUtils {
 
     }
 
+    /**
+     * Utility to convert a file with the following format to "bed"
+     * ILMN_2087817	chrY:9529429:9529478:+					        // "1" based?
+     * ILMN_2204360	chrY:9598604:9598615:-	chrY:9590985:9591022:-
+     *
+     * @param iFile
+     * @param oFile
+     * @param includeMultiMappings if false probes with multiple location mappings are filtered out
+     */
+    public static void probeToBed(String iFile, String oFile, boolean includeMultiMappings) throws IOException {
+
+        BufferedReader br = null;
+        PrintWriter pw = null;
+
+        try {
+            br = ParsingUtils.openBufferedReader(iFile);
+            pw = new PrintWriter(new FileWriter(oFile));
+
+            String nextLine;
+            br.readLine();  // eat header
+            while ((nextLine = br.readLine()) != null) {
+
+                String[] tokens = Globals.commaPattern.split(nextLine);
+                String probe = tokens[0];
+
+                if(tokens.length < 1 || (tokens.length > 2 && !includeMultiMappings)) continue;
+
+                for (int i = 1; i < tokens.length; i++) {
+
+                    String loc = tokens[i];
+                    String[] locParts = Globals.colonPattern.split(loc);
+                    String chr = locParts[0];
+                    int start = Integer.parseInt(locParts[1]) - 1;
+                    int end = Integer.parseInt(locParts[2]);
+                    String strand = locParts[3];
+                    pw.println(chr + "\t" + start + "\t" + end + "\t" + probe + "\t1000\t" + strand);
+                }
+            }
+        } finally {
+            if(br != null) br.close();
+            if(pw != null) pw.close();
+        }
+
+
+    }
+
+    public static void splitRepeatMasker(String iFile, String outputDirectory, String prefix) throws IOException {
+
+
+        BufferedReader br = null;
+        Map<String, PrintWriter> pws = new HashMap();
+
+        try {
+            br = new BufferedReader(new FileReader(iFile));
+            File dir = new File(outputDirectory);
+            for (String type : types) {
+                File f = new File(dir, prefix + type + ".bed");
+                pws.put(type, new PrintWriter(new BufferedWriter(new FileWriter(f))));
+            }
+
+            String nextLine;
+            while ((nextLine = br.readLine()) != null) {
+                if (nextLine.startsWith("#")) continue;
+                String[] tokens = nextLine.split("\t");
+                String type = getType(tokens[5]);
+
+                // Rerrange columns for legal bed
+                pws.get(type).println(tokens[0] + "\t" + tokens[1] + "\t" + tokens[2] + "\t" +
+                        tokens[4] + "\t" + tokens[3]);
+            }
+
+
+        } finally {
+            if (br != null) {
+                br.close();
+            }
+            for (PrintWriter pw : pws.values()) {
+                pw.close();
+            }
+        }
+
+    }
+
+    public static String getType(String s) {
+
+        s = s.replace("?", "");
+
+        if (s.contains("RNA")) {
+            return "RNA";
+        } else if (s.equals("RC")) {
+            return "Other";
+        } else if (s.equals("repClass")) {
+            return "Other";
+        } else if (types.contains(s)) {
+            return s;
+        } else {
+            return "Uncategorized";
+        }
+
+    }
+
+    /**
+     * Given a GFF File, creates a new GFF file for each type. Any feature type
+     * which is part of a "gene" ( {@link SequenceOntology#geneParts} ) are put in the same file,
+     * others are put in different files. So features of type "gene", "exon", and "mrna"
+     * would go in gene.gff, but features of type "myFeature" would go in myFeature.gff.
+     *
+     * @param gffFile
+     * @param outputDirectory
+     * @throws IOException
+     */
+    public static void splitGffFileByType(String gffFile, String outputDirectory) throws IOException {
+
+        BufferedReader br = new BufferedReader(new FileReader(gffFile));
+        String nextLine;
+        String ext = "." + gffFile.substring(gffFile.length() - 4);
+
+        Map<String, PrintWriter> writers = new HashMap();
+
+        while ((nextLine = br.readLine()) != null) {
+            nextLine = nextLine.trim();
+            if (!nextLine.startsWith("#")) {
+                String[] tokens = Globals.tabPattern.split(nextLine.trim().replaceAll("\"", ""), -1);
+
+                String type = tokens[2];
+                if (SequenceOntology.geneParts.contains(type)) {
+                    type = "gene";
+                }
+                if (!writers.containsKey(type)) {
+                    writers.put(type,
+                            new PrintWriter(new FileWriter(new File(outputDirectory, type + ext))));
+                }
+            }
+        }
+        br.close();
+
+        br = new BufferedReader(new FileReader(gffFile));
+        PrintWriter currentWriter = null;
+        while ((nextLine = br.readLine()) != null) {
+            nextLine = nextLine.trim();
+            if (nextLine.startsWith("#")) {
+                for (PrintWriter pw : writers.values()) {
+                    pw.println(nextLine);
+                }
+            } else {
+                String[] tokens = Globals.tabPattern.split(nextLine.trim().replaceAll("\"", ""), -1);
+                String type = tokens[2];
+                if (SequenceOntology.geneParts.contains(type)) {
+                    type = "gene";
+                }
+                currentWriter = writers.get(type);
+
+                if (currentWriter != null) {
+                    currentWriter.println(nextLine);
+                } else {
+                    System.out.println("No writer for: " + type);
+                }
+            }
+
+        }
+
+        br.close();
+        for (PrintWriter pw : writers.values()) {
+            pw.close();
+        }
+    }
+
     static class Window {
         int idx;
         int count;
@@ -138,11 +308,6 @@ public class FeatureFileUtils {
         void increment() {
             count++;
         }
-    }
-
-
-    public static void main(String [] args) throws IOException {
-        createCanonicalGeneFile(args[0], args[1]);
     }
 
     /**
@@ -334,4 +499,11 @@ public class FeatureFileUtils {
             pw.close();
         }
     }
+
+
+
+    public static void main(String [] args) throws IOException {
+        splitGffFileByType(args[0], args[1]);
+    }
+
 }
