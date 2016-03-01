@@ -87,6 +87,7 @@ public class SMAPFeature extends AbstractFeature {
     public String getValueString(double position, WindowFunction windowFunction) {
 
         StringBuffer buf = new StringBuffer();
+        buf.append("<b>Type:&nbsp;" + type + "</b>");
         for (int i = 0; i < headers.length; i++) {
             buf.append("<br>" + headers[i] + ":&nbsp;" + tokens[i]);
         }
@@ -100,8 +101,7 @@ public class SMAPFeature extends AbstractFeature {
 
         return buf.toString();
     }
-
-
+    
     public int getLinkId() {
         return linkId;
     }
