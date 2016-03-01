@@ -1,22 +1,15 @@
 // previously ArcRenderer
 
-package org.broad.igv.renderer;
+package org.broad.igv.feature.basepair;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.commons.math.stat.Frequency;
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.basepair.BasePairData;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.RenderContext;
-import org.broad.igv.track.Track;
-import org.broad.igv.ui.FontManager;
 
 import java.awt.*;
 import java.awt.geom.GeneralPath;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 // TODO: add vertical scaling option so arcs fit on track, or clip arcs outside of track rect?
 
@@ -52,10 +45,16 @@ public class BasePairRenderer {
         if (end <= start) return;
 
         // TODO: should make this a function (ugh no multiple value return from java functions)
-        for (int i=0 ; i< data.colors.length ; i++){
-            //System.out.println("Color: "+data.colors[i]);
-            int arcCount = 0;
-            for (int j=0; j<data.startLeftNucs[i].length; j++){
+
+        java.util.List<BasePairFeature> featureList = data.getFeatures(context.getChr());
+
+        if (featureList != null) {
+
+            for (BasePairFeature feature : featureList) {
+
+
+                //System.out.println("Color: "+data.colors[i]);
+                int arcCount = 0;
                 // TODO: only render arcs whose interior overlaps the viewing area - i.e. if an arc starts left of the window and ends right of the window, should still render
 
 
@@ -66,12 +65,12 @@ public class BasePairRenderer {
                 //System.out.println("    start = " + start);
                 //System.out.println("    end = " + end);
 
-                double startLeftPix = (double) ((data.startLeftNucs[i][j]-origin)/nucsPerPixel);
-                double startRightPix = (double) ((data.startRightNucs[i][j]+1.0-origin)/nucsPerPixel);
-                double endLeftPix = (double) ((data.endLeftNucs[i][j]-origin)/nucsPerPixel);
-                double endRightPix = (double) ((data.endRightNucs[i][j]+1.0-origin)/nucsPerPixel);
+                double startLeftPix = (feature.startLeft - origin) / nucsPerPixel;
+                double startRightPix = (feature.startRight + 1.0 - origin) / nucsPerPixel;
+                double endLeftPix = (feature.endLeft - origin) / nucsPerPixel;
+                double endRightPix = (feature.endRight + 1.0 - origin) / nucsPerPixel;
 
-                drawArc(startLeftPix, startRightPix, endLeftPix, endRightPix, trackRectangle, context, data.colors[i]);
+                drawArc(startLeftPix, startRightPix, endLeftPix, endRightPix, trackRectangle, context, feature.color);
                 arcCount++;
 
                 //System.out.println("    leftStart = " + leftStartNucPix);
@@ -83,13 +82,14 @@ public class BasePairRenderer {
                 //drawArc(10, 210, 50, trackRectangle, context, ARC_COLOR_B);
                 //drawArc(300, 500, 50, trackRectangle, context, ARC_COLOR_A);
 
+
+                //System.out.println("Drew "+arcCount+" arcs");
             }
-            //System.out.println("Drew "+arcCount+" arcs");
         }
         //System.out.println("");
 
         //draw a central horizontal line
-        Graphics2D g2D = context.getGraphic2DForColor(COLOR_CENTERLINE);
+        //Graphics2D g2D = context.getGraphic2DForColor(COLOR_CENTERLINE);
 
         //g2D.drawLine((int) trackRectangle.getX(), y,
         //        (int) trackRectangle.getMaxX(), y);
@@ -101,8 +101,8 @@ public class BasePairRenderer {
     /**
      * Draw a filled arc between two regions of equal length
      *
-     * @param pixelStart  the starting position of the feature, whether on-screen or not
-     * @param pixelEnd    the ending position of the feature, whether on-screen or not
+     * @param startLeft  the starting position of the feature, whether on-screen or not
+     * @param endLeft    the ending position of the feature, whether on-screen or not
      * @param pixelWidth  the width of the arc in pixels
      * @param trackRectangle
      * @param context

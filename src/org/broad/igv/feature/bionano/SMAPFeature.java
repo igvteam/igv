@@ -101,7 +101,7 @@ public class SMAPFeature extends AbstractFeature {
 
         return buf.toString();
     }
-    
+
     public int getLinkId() {
         return linkId;
     }

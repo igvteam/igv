@@ -1,40 +1,32 @@
 package org.broad.igv.feature.basepair;
 
-import org.apache.batik.dom.svg12.Global;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.Strand;
-import org.broad.igv.feature.basepair.BasePairData;
 import org.broad.igv.track.BasePairTrack;
-import org.broad.igv.renderer.BasePairRenderer;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.awt.*;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class BasePairFileParser {
 
     static Logger log = Logger.getLogger(BasePairFileParser.class);
 
-    BasePairData basePairData;
     BasePairTrack track;
 
     public BasePairTrack loadTrack(ResourceLocator locator, Genome genome) {
         AsciiLineReader reader = null;
 
-        List<Object> rows = new ArrayList();
         List<Color> colors = new ArrayList();
         HashMap<Color, List<Object>> rowsByColor = new HashMap<Color, List<Object>>();
+        BasePairData basePairData = new BasePairData();
 
-        int parseColumn = -1;
         String nextLine = null;
         int rowCounter = 0;
 
@@ -64,31 +56,39 @@ public class BasePairFileParser {
 
                 int nTokens = tokens.length;
 
-                int startLeftNuc = Integer.parseInt(tokens[0])-1; // stick to IGV's 0-based coordinate convention
-                int startRightNuc = Integer.parseInt(tokens[1])-1;
-                int endLeftNuc = Integer.parseInt(tokens[2])-1;
-                int endRightNuc = Integer.parseInt(tokens[3])-1;
-                Color color = colors.get(Integer.parseInt(tokens[4]));
+                String chr = (genome == null ? tokens[0] : genome.getCanonicalChrName(tokens[0]));   // TODO Future use
 
-                List<Object> columns = new ArrayList();
+                int startLeftNuc = Integer.parseInt(tokens[1])-1; // stick to IGV's 0-based coordinate convention
+                int startRightNuc = Integer.parseInt(tokens[2])-1;
+                int endLeftNuc = Integer.parseInt(tokens[3])-1;
+                int endRightNuc = Integer.parseInt(tokens[4])-1;
+                Color color = colors.get(Integer.parseInt(tokens[5]));
+
+                BasePairFeature feature;
                 if (startLeftNuc <= endRightNuc){
-                    columns.add(Math.min(startLeftNuc, startRightNuc));
-                    columns.add(Math.max(startLeftNuc, startRightNuc));
-                    columns.add(Math.min(endLeftNuc, endRightNuc));
-                    columns.add(Math.max(endLeftNuc, endRightNuc));
+                    feature = new BasePairFeature(chr,
+                            Math.min(startLeftNuc, startRightNuc),
+                            Math.max(startLeftNuc, startRightNuc),
+                            Math.min(endLeftNuc, endRightNuc),
+                            Math.max(endLeftNuc, endRightNuc),
+                            color);
                 } else {
-                    // maintain left-to-right basepair order even if swapped in file
-                    columns.add(Math.min(endLeftNuc, endRightNuc));
-                    columns.add(Math.max(endLeftNuc, endRightNuc));
-                    columns.add(Math.min(startLeftNuc, startRightNuc));
-                    columns.add(Math.max(startLeftNuc, startRightNuc));
+                    feature = new BasePairFeature(chr,
+                            Math.min(endLeftNuc, endRightNuc),
+                            Math.max(endLeftNuc, endRightNuc),
+                            Math.min(startLeftNuc, startRightNuc),
+                            Math.max(startLeftNuc, startRightNuc),
+                            color);
                 }
-                rowsByColor.get(color).add(columns);
+
+                basePairData.addFeature(feature);
+
                 nextLine = reader.readLine();
                 rowCounter++;
+
             }
 
-            basePairData = new BasePairData(colors, rowsByColor);
+           // basePairData.finish();
 
         } catch (Exception e) {
             log.error("Error parsing base pair file", e);
