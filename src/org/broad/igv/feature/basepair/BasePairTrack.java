@@ -1,9 +1,9 @@
-package org.broad.igv.track;
+package org.broad.igv.feature.basepair;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.basepair.BasePairData;
-import org.broad.igv.feature.basepair.BasePairRenderer;
 import org.broad.igv.renderer.*;
+import org.broad.igv.track.AbstractTrack;
+import org.broad.igv.track.RenderContext;
 
 import java.awt.*;
 

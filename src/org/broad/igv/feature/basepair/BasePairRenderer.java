@@ -52,6 +52,8 @@ public class BasePairRenderer {
 
             for (BasePairFeature feature : featureList) {
 
+                if(feature.startLeft > context.getEndLocation()) break;
+                else if(feature.endRight < context.getOrigin()) continue;
 
                 //System.out.println("Color: "+data.colors[i]);
                 int arcCount = 0;

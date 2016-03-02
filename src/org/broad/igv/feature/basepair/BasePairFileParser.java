@@ -4,7 +4,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.track.BasePairTrack;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import htsjdk.tribble.readers.AsciiLineReader;
@@ -88,7 +87,7 @@ public class BasePairFileParser {
 
             }
 
-           // basePairData.finish();
+            basePairData.finish();   // Insure features are sorted by start position, important for rendering optimization
 
         } catch (Exception e) {
             log.error("Error parsing base pair file", e);
