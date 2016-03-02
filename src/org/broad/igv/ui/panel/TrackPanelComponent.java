@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static org.broad.igv.track.TrackMenuUtils.getExportFeatures;
 
 /**
  * @author eflakes
@@ -183,7 +182,7 @@ abstract public class TrackPanelComponent extends JPanel {
     protected void openPopupMenu(TrackClickEvent te, List<Component> extraItems) {
         MouseEvent e = te.getMouseEvent();
 
-        Collection<Track> selectedTracks = getSelectedTracks();
+        final Collection<Track> selectedTracks = getSelectedTracks();
         if (selectedTracks.size() == 0) {
             return;
         }
@@ -224,8 +223,17 @@ abstract public class TrackPanelComponent extends JPanel {
 
         // Add export features
         ReferenceFrame frame = FrameManager.getDefaultFrame();
-        JMenuItem exportFeats = getExportFeatures(selectedTracks, frame);
+        JMenuItem exportFeats = TrackMenuUtils.getExportFeatures(selectedTracks, frame);
         if (exportFeats != null) menu.add(exportFeats);
+
+        JMenuItem exportNames = new JMenuItem("Export track names...");
+        exportNames.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TrackMenuUtils.exportTrackNames(selectedTracks);
+            }
+        });
+        menu.add(exportNames);
 
         menu.addSeparator();
         menu.add(TrackMenuUtils.getRemoveMenuItem(selectedTracks));

@@ -66,10 +66,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
 import java.util.List;
 
@@ -641,7 +638,6 @@ public class TrackMenuUtils {
      * BED format
      * TODO Move somewhere else? run on separate thread?  Probably shouldn't be here
      *
-     * @param range
      * @param outPath
      * @param tracks
      * @param frame
@@ -1253,6 +1249,54 @@ public class TrackMenuUtils {
             track.setAltColor(ColorUtilities.modifyAlpha(color, currentSelection.getAlpha()));
         }
         refresh();
+
+    }
+
+    public static void exportTrackNames(final Collection<Track> selectedTracks) {
+
+        if (selectedTracks.isEmpty()) {
+            return;
+        }
+
+        File file = FileDialogUtils.chooseFile("Export track names",
+                PreferenceManager.getInstance().getLastTrackDirectory(),
+                new File("trackNames.tab"),
+                FileDialogUtils.SAVE);
+
+        if (file == null) {
+            return;
+        }
+
+        PrintWriter pw = null;
+        try {
+             pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+
+            List<String> attributes = AttributeManager.getInstance().getVisibleAttributes();
+
+            pw.print("Name");
+            for(String att : attributes) {
+                pw.print("\t" + att);
+            }
+            pw.println();
+
+            for (Track track : selectedTracks) {
+                //We preserve the alpha value. This is motivated by MergedTracks
+                pw.print(track.getName());
+
+                for(String att : attributes) {
+                    String val = track.getAttributeValue(att);
+                    pw.print("\t" + (val == null ? "" : val));
+                }
+                pw.println();
+            }
+
+
+        } catch (IOException e) {
+            MessageUtils.showErrorMessage("Error writing to file", e);
+            log.error(e);
+        } finally {
+            if(pw != null) pw.close();
+        }
 
     }
 

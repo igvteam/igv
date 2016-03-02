@@ -2091,8 +2091,8 @@ public class IGV {
         }
     }
 
-    public Collection<Track> getSelectedTracks() {
-        HashSet<Track> selectedTracks = new HashSet();
+    public List<Track> getSelectedTracks() {
+        ArrayList<Track> selectedTracks = new ArrayList();
         for (Track t : getAllTracks()) {
             if (t != null && t.isSelected()) {
                 selectedTracks.add(t);
