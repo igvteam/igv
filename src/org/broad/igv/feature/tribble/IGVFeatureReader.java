@@ -29,6 +29,7 @@ package org.broad.igv.feature.tribble;
 
 
 import htsjdk.tribble.Feature;
+import htsjdk.tribble.index.Index;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -53,4 +54,6 @@ public interface IGVFeatureReader {
     public List<String> getSequenceNames();
 
     public Object getHeader();
+
+    public Index getIndex();
 }

@@ -136,6 +136,8 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
     public abstract boolean isIndexed();
 
+    public abstract Index getIndex();
+
     public Class getFeatureClass() {
         return featureClass;
     }
@@ -174,12 +176,17 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                     }
                 }
             }
-       }
+        }
 
 
         @Override
         public boolean isIndexed() {
             return true;
+        }
+
+        @Override
+        public Index getIndex() {
+            return this.reader.getIndex();
         }
 
         @Override
@@ -222,10 +229,9 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         protected int estimateFeatureWindowSize(FeatureReader reader) {
 
             // Simple formula for VCF.  Appropriate for human 1KG/dbSNp, probably overly conservative otherwise
-            if(isVCF) {
-                 return 10000;
-            }
-            else {
+            if (isVCF) {
+                return 10000;
+            } else {
 
             }
             CloseableTribbleIterator<htsjdk.tribble.Feature> iter = null;
@@ -312,7 +318,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                     if (f instanceof NamedFeature) FeatureDB.addFeature((NamedFeature) f, genome);
                 }
             } finally {
-                if(iter instanceof CloseableTribbleIterator) {
+                if (iter instanceof CloseableTribbleIterator) {
                     ((CloseableTribbleIterator) iter).close();
                 }
             }
@@ -331,6 +337,11 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         @Override
         public boolean isIndexed() {
             return false;
+        }
+
+        @Override
+        public Index getIndex() {
+            return null;
         }
 
         @Override

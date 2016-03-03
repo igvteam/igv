@@ -25,10 +25,13 @@
 
 package org.broad.igv.track;
 
+import htsjdk.tribble.index.Index;
+import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Mutation;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.tribble.MUTCodec;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.util.ResourceLocator;
 import htsjdk.tribble.Feature;
@@ -78,9 +81,15 @@ public class MutationFeatureSource implements FeatureSource<Mutation> {
         Range currentRange;
         Map<String, List<Mutation>> featureMap = Collections.synchronizedMap(new HashMap());
         TribbleFeatureSource tribbleFeatureSource;
+        ResourceLocator locator;
 
         public MutationDataManager(ResourceLocator locator, Genome genome) throws IOException, TribbleIndexNotFoundException {
             this.tribbleFeatureSource = TribbleFeatureSource.getFeatureSource(locator, genome);
+            this.locator = locator;
+        }
+
+        public boolean isIndexed() {
+            return this.tribbleFeatureSource.isIndexed();
         }
 
         synchronized Iterator<Mutation> getFeatures(String trackKey, String chr, int start, int end) throws IOException {
@@ -104,5 +113,26 @@ public class MutationFeatureSource implements FeatureSource<Mutation> {
             return featureList == null ? Collections.EMPTY_LIST.iterator() : featureList.iterator();
 
         }
+
+
+        public String[] getSamples() {
+
+            Index idx = this.tribbleFeatureSource.getIndex();
+            if (idx != null) {
+                Map<String, String> map = idx.getProperties();
+                if (map != null && map.containsKey("samples")) {
+                    return Globals.commaPattern.split(map.get("samples"));
+                }
+            }
+
+            // Try to fetch features from codec.  This is to support a deprecated option to
+            // specify sample names in the .mut or .maf file header.
+
+            MUTCodec codec = new MUTCodec(locator.getPath(), null);
+            return codec.getSamples();
+
+        }
+
+
     }
 }

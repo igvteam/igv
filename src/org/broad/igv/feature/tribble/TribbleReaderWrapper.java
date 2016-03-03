@@ -28,6 +28,8 @@ package org.broad.igv.feature.tribble;
 import htsjdk.tribble.CloseableTribbleIterator;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.FeatureReader;
+import htsjdk.tribble.TribbleIndexedFeatureReader;
+import htsjdk.tribble.index.Index;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -88,5 +90,15 @@ public class TribbleReaderWrapper  implements IGVFeatureReader {
     @Override
     public Object getHeader() {
         return wrappedReader.getHeader();
+    }
+
+    @Override
+    public Index getIndex() {
+        if (wrappedReader instanceof TribbleIndexedFeatureReader) {
+            return ((TribbleIndexedFeatureReader) wrappedReader).getIndex();
+
+        } else {
+            return null;
+        }
     }
 }

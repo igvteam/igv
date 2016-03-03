@@ -52,7 +52,6 @@ public class MutationTrackLoader {
     private static Logger log = Logger.getLogger(MutationTrackLoader.class);
     private ResourceLocator locator = null;
     private Genome genome = null;
-    MUTCodec codec;
 
     public static boolean isMutationAnnotationFile(ResourceLocator locator) throws IOException {
         return MUTCodec.isMutationAnnotationFile(locator);
@@ -63,13 +62,13 @@ public class MutationTrackLoader {
         this.locator = locator;
         this.genome = genome;
 
-        boolean indexed = isIndexed(locator, genome);
-
         List<FeatureTrack> tracks = new ArrayList<FeatureTrack>();
 
-        if (indexed) {
-            String[] samples = getCodec().getSamples();
-            MutationFeatureSource.MutationDataManager dataManager = new MutationFeatureSource.MutationDataManager(locator, genome);
+        MutationFeatureSource.MutationDataManager dataManager = new MutationFeatureSource.MutationDataManager(locator, genome);
+        String[] samples = dataManager.getSamples();
+
+        if (dataManager.isIndexed() && samples != null) {
+
             for (String sampleId : samples) {
                 String id = locator.getPath() + "_" + sampleId;
                 FeatureSource<Mutation> featureSource = new MutationFeatureSource(sampleId, dataManager);
@@ -101,32 +100,6 @@ public class MutationTrackLoader {
         return tracks;
     }
 
-
-    private MUTCodec getCodec() {
-        if (codec == null) codec = new MUTCodec(locator.getPath(), genome);
-        return codec;
-    }
-
-    /**
-     * Test to see if a usable index exists.  In addition to the index, mutation files have an additional requirement
-     * that samples be specified in a header directive.
-     *
-     * @param locator
-     * @return
-     */
-    private boolean isIndexed(ResourceLocator locator, Genome genome) {
-        if (!TrackLoader.isIndexed(locator, genome)) return false;
-
-        try {
-            String[] samples = getCodec().getSamples();
-            return samples != null && samples.length > 0;
-        } catch (Exception e) {
-            log.error("Error creating codec for: " + locator.getPath(), e);
-            return false;
-        }
-
-    }
-
     /**
      * Return a map of runId -> list of mutation objects.   The "runId" field
      * is the track identifier (name) for mutation files.
@@ -139,7 +112,7 @@ public class MutationTrackLoader {
 
         try {
 
-            if (codec == null) codec = new MUTCodec(locator.getPath(), genome);
+            MUTCodec codec = new MUTCodec(locator.getPath(), genome);
 
             Map<String, List<htsjdk.tribble.Feature>> mutationMap = new LinkedHashMap();
 

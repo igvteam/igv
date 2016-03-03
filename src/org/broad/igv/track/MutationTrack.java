@@ -106,17 +106,22 @@ public class MutationTrack extends FeatureTrack {
                     StringBuffer buf = new StringBuffer();
                     buf.append("<html>");
 
+                    buf.append("<p style=\"font-size:medium;\"><b>");
+                    buf.append(mut.getDescription());
+                    buf.append("</b></p><br><hr>");
+
+                    buf.append(mut.getFullDescription());
+
                     final String omaURL = mut.getOMAUrl();
                     if (omaURL != null) {
                         System.out.println("Running");
                         String omaText = getOMAText(mut, omaURL);
                         if (omaText != null) {
+                            buf.append("<hr>");
                             buf.append(omaText);
-                            buf.append("<p>----------------------------------</p>");
                         }
                     }
 
-                    buf.append(mut.getFullDescription());
                     buf.append("</html>");
 
 
@@ -151,9 +156,6 @@ public class MutationTrack extends FeatureTrack {
             String[] values = br.readLine().split("\t");
 
             StringBuffer buf = new StringBuffer();
-            buf.append("<p style=\"font-size:medium;\"><b>");
-            buf.append(mut.getDescription());
-            buf.append("</b><br><br>");
 
             buf.append("<table>");
             buf.append("<tr><td>Data from</td><td><a href=\"");
@@ -166,7 +168,7 @@ public class MutationTrack extends FeatureTrack {
                 final String header = headers[i].trim();
                 final String value = values[i].trim();
 
-                if (header.length() == 0 || value.length() == 0 || header.equals("Mutation") || header.equals("Type")) continue;
+               if (header.length() == 0 || value.length() == 0) continue;
 
                 buf.append("<tr>");
                 buf.append("<td>");

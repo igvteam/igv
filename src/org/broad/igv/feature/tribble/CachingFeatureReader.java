@@ -26,6 +26,8 @@
 
 package org.broad.igv.feature.tribble;
 
+import htsjdk.tribble.TribbleIndexedFeatureReader;
+import htsjdk.tribble.index.Index;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.AbstractCacher;
 import htsjdk.tribble.CloseableTribbleIterator;
@@ -112,6 +114,14 @@ public class CachingFeatureReader extends AbstractCacher implements IGVFeatureRe
         return tribbleFeatureReader.iterator();
     }
 
+    public Index getIndex() {
+        if (tribbleFeatureReader instanceof TribbleIndexedFeatureReader) {
+            return ((TribbleIndexedFeatureReader) tribbleFeatureReader).getIndex();
+
+        } else {
+            return null;
+        }
+    }
 
 }
 
