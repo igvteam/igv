@@ -49,6 +49,7 @@ import org.broad.igv.ui.event.DataLoadedEvent;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.SnapshotUtilities;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.*;
 
 import java.awt.*;
@@ -170,7 +171,7 @@ public class CommandExecutor {
                 } else if (cmd.equalsIgnoreCase("maxpanelheight") && param1 != null) {
                     return setMaxPanelHeight(param1);
                 } else if (cmd.equalsIgnoreCase("tofront")) {
-                    return bringToFront();
+                    return UIUtilities.bringToFront();
                 } else if (cmd.equalsIgnoreCase("viewaspairs")) {
                     return setViewAsPairs(param1, param2);
                 } else if (cmd.equalsIgnoreCase("samplingwindowsize")) {
@@ -668,15 +669,6 @@ public class CommandExecutor {
 //        return buf.toString();
     }
 
-
-    private String bringToFront() {
-        // Trick to force window to front, the setAlwaysOnTop works on a Mac,  toFront() does nothing.
-        Frame mainFrame = IGV.getMainFrame();
-        mainFrame.toFront();
-        mainFrame.setAlwaysOnTop(true);
-        mainFrame.setAlwaysOnTop(false);
-        return "OK";
-    }
 
     /**
      * Set a directory to deposit image snapshots

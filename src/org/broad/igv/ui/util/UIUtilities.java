@@ -36,6 +36,7 @@ import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.InputEvent;
 import java.lang.reflect.InvocationTargetException;
 
 
@@ -53,7 +54,7 @@ public class UIUtilities {
      *
      * @param dialogTitle
      * @param defaultColor The currently selected color
-     * @return  The color the user selected, or null if none/cancelled
+     * @return The color the user selected, or null if none/cancelled
      */
     public static Color showColorChooserDialog(String dialogTitle, Color defaultColor) {
 
@@ -172,5 +173,45 @@ public class UIUtilities {
                 log.error("Error invoking runnable", e);
             }
         }
+    }
+
+    public static String bringToFront() {
+        // Trick to force window to front, the setAlwaysOnTop works on a Mac,  toFront() does nothing.
+        Frame mainFrame = IGV.getMainFrame();
+        mainFrame.toFront();
+        mainFrame.setAlwaysOnTop(true);
+        mainFrame.setAlwaysOnTop(false);
+        return "OK";
+    }
+
+    /**
+     * This crazy hack is the only solution that works on a MAC when attempting to show the glass pane.  Without
+     * this the glass pane, and more importantly its wait cursor,  will not appear until you click the window
+     * header.
+     */
+    public static void activateMainFrame() {
+
+        Frame mainFrame = IGV.getMainFrame();
+        mainFrame.toFront();
+        mainFrame.requestFocus();
+        mainFrame.setAlwaysOnTop(true);
+        try {
+            //remember the last location of mouse
+            final Point oldMouseLocation = MouseInfo.getPointerInfo().getLocation();
+
+            //simulate a mouse click on title bar of window
+            Robot robot = new Robot();
+            robot.mouseMove(mainFrame.getX() + 100, mainFrame.getY() + 5);
+            robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+            robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+
+            //move mouse to old location
+            robot.mouseMove((int) oldMouseLocation.getX(), (int) oldMouseLocation.getY());
+        } catch (Exception ex) {
+            //just ignore exception, or you can handle it as you want
+        } finally {
+            mainFrame.setAlwaysOnTop(false);
+        }
+
     }
 }

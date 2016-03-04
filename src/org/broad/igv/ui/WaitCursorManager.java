@@ -28,7 +28,8 @@ package org.broad.igv.ui;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import java.awt.*;
+import org.broad.igv.ui.util.UIUtilities;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -51,10 +52,6 @@ public class WaitCursorManager {
      */
     static Set<CursorToken> tokens = Collections.synchronizedSet(new HashSet());
 
-    /**
-     * The wait cursor, defined statically for convenience.
-     */
-    static Cursor waitCursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
 
     /**
      * Show the wait cursor on all components.  Add a token to represent this invocation of
@@ -64,7 +61,15 @@ public class WaitCursorManager {
      *         the wait cursor.  This should be done in a finally block to insure removal.
      */
     public static CursorToken showWaitCursor() {
-        IGV.getRootPane().getGlassPane().setVisible(true);
+
+        UIUtilities.invokeOnEventThread(new Runnable() {
+            @Override
+            public void run() {
+                IGV.getRootPane().getGlassPane().setVisible(true);
+                UIUtilities.activateMainFrame();   // neccessary for busy cursor
+
+            }
+        });
         CursorToken token = new CursorToken();
         tokens.add(token);
         // Return a token representing this wait cursor set.  The token is used to release the
