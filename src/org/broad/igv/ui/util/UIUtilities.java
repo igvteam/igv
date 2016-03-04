@@ -192,16 +192,14 @@ public class UIUtilities {
     public static void activateMainFrame() {
 
         Frame mainFrame = IGV.getMainFrame();
-        mainFrame.toFront();
-        mainFrame.requestFocus();
-        mainFrame.setAlwaysOnTop(true);
+
         try {
             //remember the last location of mouse
             final Point oldMouseLocation = MouseInfo.getPointerInfo().getLocation();
 
             //simulate a mouse click on title bar of window
             Robot robot = new Robot();
-            robot.mouseMove(mainFrame.getX() + 100, mainFrame.getY() + 5);
+            robot.mouseMove(mainFrame.getX() + 200, mainFrame.getY() + 5);
             robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
             robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
 
@@ -210,7 +208,7 @@ public class UIUtilities {
         } catch (Exception ex) {
             //just ignore exception, or you can handle it as you want
         } finally {
-            mainFrame.setAlwaysOnTop(false);
+
         }
 
     }

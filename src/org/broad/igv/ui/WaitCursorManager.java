@@ -58,20 +58,15 @@ public class WaitCursorManager {
      * showWaitCursor
      *
      * @return token representing this invocation.  This token should be used by clients to remove
-     *         the wait cursor.  This should be done in a finally block to insure removal.
+     * the wait cursor.  This should be done in a finally block to insure removal.
      */
     public static CursorToken showWaitCursor() {
 
-        UIUtilities.invokeOnEventThread(new Runnable() {
-            @Override
-            public void run() {
-                IGV.getRootPane().getGlassPane().setVisible(true);
-                UIUtilities.activateMainFrame();   // neccessary for busy cursor
-
-            }
-        });
+        IGV.getRootPane().getGlassPane().setVisible(true);
         CursorToken token = new CursorToken();
         tokens.add(token);
+
+        if(tokens.size() == 1) UIUtilities.activateMainFrame();   // neccessary for busy cursor
         // Return a token representing this wait cursor set.  The token is used to release the
         // wait cursor.
         return token;
