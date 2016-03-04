@@ -1,0 +1,16 @@
+<Global name="Annotations" version="1">
+
+    <Resource name="Gene transcripts"
+              trackLine="track visibilitywindow=0"
+              path="http://igv.broadinstitute.org/data/GCF_000233375.1/gene_transcripts.gff3.gz"/>
+    <Resource name="rRNA"
+              trackLine="track visibilitywindow=0"
+              path="http://igv.broadinstitute.org/data/GCF_000233375.1/rRNA.sorted.gff3.gz"/>
+    <Resource name="ncRNA"
+              trackLine="track visibilitywindow=0"
+              path="http://igv.broadinstitute.org/data/GCF_000233375.1/ncRNA.sorted.gff3.gz"/>
+    <Resource name="tRNA"
+              trackLine="track visibilitywindow=0"
+              path="http://igv.broadinstitute.org/data/GCF_000233375.1/tRNA.sorted.gff3.gz"/>
+
+</Global>
