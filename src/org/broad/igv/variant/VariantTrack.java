@@ -28,6 +28,7 @@
 
 package org.broad.igv.variant;
 
+import oracle.jdbc.proxy.annotation.Pre;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.FeatureUtils;
@@ -144,7 +145,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     private ColorMode coloring = ColorMode.GENOTYPE;
 
 
-    private ColorMode siteColorMode = ColorMode.ALLELE_FREQUENCY;
+    private ColorMode siteColorMode;
 
     /**
      * When true, variants that are marked filtering are not drawn.
@@ -191,7 +192,10 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     public VariantTrack(ResourceLocator locator, FeatureSource source, List<String> samples,
                         boolean enableMethylationRateSupport) {
         super(locator, source);
+
         String path = locator != null ? locator.getPath() : null;
+        PreferenceManager prefMgr = PreferenceManager.getInstance();
+
         this.renderer = new VariantRenderer(this);
 
         this.enableMethylationRateSupport = enableMethylationRateSupport;
@@ -200,6 +204,9 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             coloring = ColorMode.METHYLATION_RATE;
         }
 
+        this.siteColorMode = prefMgr.getAsBoolean(PreferenceManager.VARIANT_COLOR_BY_ALLELE_FREQ) ?
+                ColorMode.ALLELE_FREQUENCY :
+                ColorMode.ALLELE_FRACTION;
 
         this.allSamples = samples;
 
@@ -214,7 +221,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         }
 
         // If sample->bam list file is supplied enable vcfToBamMode.
-        boolean bypassFileAutoDiscovery = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.BYPASS_FILE_AUTO_DISCOVERY);
+        boolean bypassFileAutoDiscovery = prefMgr.getAsBoolean(PreferenceManager.BYPASS_FILE_AUTO_DISCOVERY);
         String vcfToBamMapping = path != null ? path + ".mapping" : null;
         if (!bypassFileAutoDiscovery && ParsingUtils.pathExists(vcfToBamMapping)) {
             loadAlignmentMappings(vcfToBamMapping);
@@ -224,7 +231,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         // Ugly test on source is to avoid having to add "isIndexed" to a zillion feature source classes.  The intent
         // is to skip this if using a non-indexed source.
         if (!(source instanceof TribbleFeatureSource && ((TribbleFeatureSource) source).isIndexed() == false)) {
-            int defVisibilityWindow = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_VISIBILITY_WINDOW);
+            int defVisibilityWindow = prefMgr.getAsInt(PreferenceManager.DEFAULT_VISIBILITY_WINDOW);
             if (defVisibilityWindow > 0) {
                 setVisibilityWindow(defVisibilityWindow * 1000);
             } else {
@@ -1017,7 +1024,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             }
 
             int totalAlleleCount = variant.getTotalAlleleCount();
-            if(totalAlleleCount > 0) {
+            if (totalAlleleCount > 0) {
                 toolTip.append("<br>Total # Alleles: " + String.valueOf(totalAlleleCount));
             }
 

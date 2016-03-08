@@ -2021,33 +2021,6 @@
               </void> 
               <void method="add"> 
                <object class="com.jformdesigner.model.FormComponent"> 
-                <string>org.broad.igv.ui.color.ColorChooserPanel</string> 
-                <void property="name"> 
-                 <string>homRefColorChooser</string> 
-                </void> 
-               </object> 
-               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-                <class>com.jformdesigner.runtime.NullConstraints</class> 
-                <void method="setProperty"> 
-                 <string>width</string> 
-                 <int>55</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>height</string> 
-                 <int>30</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>x</string> 
-                 <int>265</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>y</string> 
-                 <int>40</int> 
-                </void> 
-               </object> 
-              </void> 
-              <void method="add"> 
-               <object class="com.jformdesigner.model.FormComponent"> 
                 <string>javax.swing.JLabel</string> 
                 <void method="setProperty"> 
                  <string>text</string> 
@@ -2061,19 +2034,19 @@
                 <class>com.jformdesigner.runtime.NullConstraints</class> 
                 <void method="setProperty"> 
                  <string>x</string> 
-                 <int>15</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>width</string> 
-                 <int>230</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>height</string> 
-                 <int>36</int> 
+                 <int>6</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>40</int> 
+                 <int>22</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>339</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>height</string> 
+                 <int>29</int> 
                 </void> 
                </object> 
               </void> 
@@ -2081,14 +2054,18 @@
                <object class="com.jformdesigner.model.FormComponent"> 
                 <string>org.broad.igv.ui.color.ColorChooserPanel</string> 
                 <void property="name"> 
-                 <string>hetVarColorChooser</string> 
+                 <string>homRefColorChooser</string> 
                 </void> 
                </object> 
                <object class="com.jformdesigner.model.FormLayoutConstraints"> 
                 <class>com.jformdesigner.runtime.NullConstraints</class> 
                 <void method="setProperty"> 
                  <string>x</string> 
-                 <int>265</int> 
+                 <int>345</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>22</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>width</string> 
@@ -2096,150 +2073,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>height</string> 
-                 <int>30</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>y</string> 
-                 <int>75</int> 
-                </void> 
-               </object> 
-              </void> 
-              <void method="add"> 
-               <object class="com.jformdesigner.model.FormComponent"> 
-                <string>org.broad.igv.ui.color.ColorChooserPanel</string> 
-                <void property="name"> 
-                 <string>homVarColorChooser</string> 
-                </void> 
-               </object> 
-               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-                <class>com.jformdesigner.runtime.NullConstraints</class> 
-                <void method="setProperty"> 
-                 <string>y</string> 
-                 <int>110</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>width</string> 
-                 <int>55</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>height</string> 
-                 <int>30</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>x</string> 
-                 <int>265</int> 
-                </void> 
-               </object> 
-              </void> 
-              <void method="add"> 
-               <object class="com.jformdesigner.model.FormComponent"> 
-                <string>org.broad.igv.ui.color.ColorChooserPanel</string> 
-                <void property="name"> 
-                 <string>noCallColorChooser</string> 
-                </void> 
-               </object> 
-               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-                <class>com.jformdesigner.runtime.NullConstraints</class> 
-                <void method="setProperty"> 
-                 <string>x</string> 
-                 <int>265</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>y</string> 
-                 <int>145</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>width</string> 
-                 <int>55</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>height</string> 
-                 <int>30</int> 
-                </void> 
-               </object> 
-              </void> 
-              <void method="add"> 
-               <object class="com.jformdesigner.model.FormComponent"> 
-                <string>org.broad.igv.ui.color.ColorChooserPanel</string> 
-                <void property="name"> 
-                 <string>afRefColorChooser</string> 
-                </void> 
-               </object> 
-               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-                <class>com.jformdesigner.runtime.NullConstraints</class> 
-                <void method="setProperty"> 
-                 <string>x</string> 
-                 <int>265</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>y</string> 
-                 <int>180</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>width</string> 
-                 <int>55</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>height</string> 
-                 <int>30</int> 
-                </void> 
-               </object> 
-              </void> 
-              <void method="add"> 
-               <object class="com.jformdesigner.model.FormComponent"> 
-                <string>org.broad.igv.ui.color.ColorChooserPanel</string> 
-                <void property="name"> 
-                 <string>afVarColorChooser</string> 
-                </void> 
-               </object> 
-               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-                <class>com.jformdesigner.runtime.NullConstraints</class> 
-                <void method="setProperty"> 
-                 <string>y</string> 
-                 <int>215</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>width</string> 
-                 <int>55</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>height</string> 
-                 <int>30</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>x</string> 
-                 <int>265</int> 
-                </void> 
-               </object> 
-              </void> 
-              <void method="add"> 
-               <object class="com.jformdesigner.model.FormComponent"> 
-                <string>javax.swing.JLabel</string> 
-                <void method="setProperty"> 
-                 <string>text</string> 
-                 <string>Heterozygous variant</string> 
-                </void> 
-                <void property="name"> 
-                 <string>label37</string> 
-                </void> 
-               </object> 
-               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-                <class>com.jformdesigner.runtime.NullConstraints</class> 
-                <void method="setProperty"> 
-                 <string>x</string> 
-                 <int>15</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>y</string> 
-                 <int>75</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>width</string> 
-                 <int>230</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>height</string> 
-                 <int>36</int> 
+                 <int>29</int> 
                 </void> 
                </object> 
               </void> 
@@ -2258,19 +2092,104 @@
                 <class>com.jformdesigner.runtime.NullConstraints</class> 
                 <void method="setProperty"> 
                  <string>x</string> 
-                 <int>15</int> 
+                 <int>6</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>110</int> 
+                 <int>51</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>width</string> 
-                 <int>230</int> 
+                 <int>339</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>height</string> 
-                 <int>36</int> 
+                 <int>29</int> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>org.broad.igv.ui.color.ColorChooserPanel</string> 
+                <void property="name"> 
+                 <string>homVarColorChooser</string> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>345</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>51</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>55</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>height</string> 
+                 <int>29</int> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JLabel</string> 
+                <void method="setProperty"> 
+                 <string>text</string> 
+                 <string>Heterozygous variant</string> 
+                </void> 
+                <void property="name"> 
+                 <string>label37</string> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>6</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>80</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>339</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>height</string> 
+                 <int>29</int> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>org.broad.igv.ui.color.ColorChooserPanel</string> 
+                <void property="name"> 
+                 <string>hetVarColorChooser</string> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>345</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>80</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>55</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>height</string> 
+                 <int>29</int> 
                 </void> 
                </object> 
               </void> 
@@ -2289,19 +2208,46 @@
                 <class>com.jformdesigner.runtime.NullConstraints</class> 
                 <void method="setProperty"> 
                  <string>x</string> 
-                 <int>15</int> 
+                 <int>6</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>145</int> 
+                 <int>109</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>width</string> 
-                 <int>230</int> 
+                 <int>339</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>height</string> 
-                 <int>36</int> 
+                 <int>29</int> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>org.broad.igv.ui.color.ColorChooserPanel</string> 
+                <void property="name"> 
+                 <string>noCallColorChooser</string> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>345</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>109</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>55</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>height</string> 
+                 <int>29</int> 
                 </void> 
                </object> 
               </void> 
@@ -2320,19 +2266,46 @@
                 <class>com.jformdesigner.runtime.NullConstraints</class> 
                 <void method="setProperty"> 
                  <string>x</string> 
-                 <int>15</int> 
+                 <int>6</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>180</int> 
+                 <int>138</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>width</string> 
-                 <int>230</int> 
+                 <int>339</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>height</string> 
-                 <int>36</int> 
+                 <int>29</int> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>org.broad.igv.ui.color.ColorChooserPanel</string> 
+                <void property="name"> 
+                 <string>afRefColorChooser</string> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>345</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>138</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>55</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>height</string> 
+                 <int>29</int> 
                 </void> 
                </object> 
               </void> 
@@ -2350,20 +2323,47 @@
                <object class="com.jformdesigner.model.FormLayoutConstraints"> 
                 <class>com.jformdesigner.runtime.NullConstraints</class> 
                 <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>6</int> 
+                </void> 
+                <void method="setProperty"> 
                  <string>y</string> 
-                 <int>215</int> 
+                 <int>167</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>width</string> 
-                 <int>230</int> 
+                 <int>339</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>height</string> 
-                 <int>36</int> 
+                 <int>29</int> 
                 </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>org.broad.igv.ui.color.ColorChooserPanel</string> 
+                <void property="name"> 
+                 <string>afVarColorChooser</string> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
                 <void method="setProperty"> 
                  <string>x</string> 
-                 <int>15</int> 
+                 <int>345</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>167</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>55</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>height</string> 
+                 <int>29</int> 
                 </void> 
                </object> 
               </void> 
@@ -2390,11 +2390,93 @@
                 <class>com.jformdesigner.runtime.NullConstraints</class> 
                 <void method="setProperty"> 
                  <string>x</string> 
-                 <int>20</int> 
+                 <int>5</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
                  <int>265</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>144</int> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormContainer"> 
+                <string>javax.swing.JPanel</string> 
+                <object class="com.jformdesigner.model.FormLayoutManager"> 
+                 <class>java.awt.FlowLayout</class> 
+                 <void method="setProperty"> 
+                  <string>alignment</string> 
+                  <int>0</int> 
+                 </void> 
+                </object> 
+                <void property="name"> 
+                 <string>panel35</string> 
+                </void> 
+                <void method="add"> 
+                 <object class="com.jformdesigner.model.FormComponent"> 
+                  <string>javax.swing.JLabel</string> 
+                  <void method="setProperty"> 
+                   <string>text</string> 
+                   <string>Color variant by: </string> 
+                  </void> 
+                  <void property="name"> 
+                   <string>label43</string> 
+                  </void> 
+                 </object> 
+                </void> 
+                <void method="add"> 
+                 <object class="com.jformdesigner.model.FormComponent"> 
+                  <string>javax.swing.JRadioButton</string> 
+                  <void method="setProperty"> 
+                   <string>text</string> 
+                   <string>Allele frequency</string> 
+                  </void> 
+                  <void method="setProperty"> 
+                   <string>$buttonGroup</string> 
+                   <object class="com.jformdesigner.model.FormReference"> 
+                    <string>buttonGroup2</string> 
+                   </object> 
+                  </void> 
+                  <void property="name"> 
+                   <string>alleleFreqRB</string> 
+                  </void> 
+                 </object> 
+                </void> 
+                <void method="add"> 
+                 <object class="com.jformdesigner.model.FormComponent"> 
+                  <string>javax.swing.JRadioButton</string> 
+                  <void method="setProperty"> 
+                   <string>text</string> 
+                   <string>Allele fraction</string> 
+                  </void> 
+                  <void method="setProperty"> 
+                   <string>$buttonGroup</string> 
+                   <object class="com.jformdesigner.model.FormReference"> 
+                    <string>buttonGroup2</string> 
+                   </object> 
+                  </void> 
+                  <void property="name"> 
+                   <string>alleleFractionRB</string> 
+                  </void> 
+                 </object> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>5</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>220</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>450</int> 
                 </void> 
                </object> 
               </void> 
@@ -7544,6 +7626,24 @@
        <object class="java.awt.Point"> 
         <int>0</int> 
         <int>620</int> 
+       </object> 
+      </void> 
+     </object> 
+    </void> 
+    <void method="add"> 
+     <object class="com.jformdesigner.model.FormNonVisual"> 
+      <string>javax.swing.ButtonGroup</string> 
+      <void property="name"> 
+       <string>buttonGroup2</string> 
+      </void> 
+     </object> 
+     <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+      <null/> 
+      <void method="setProperty"> 
+       <string>location</string> 
+       <object class="java.awt.Point"> 
+        <int>0</int> 
+        <int>915</int> 
        </object> 
       </void> 
      </object> 

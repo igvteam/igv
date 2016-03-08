@@ -210,6 +210,8 @@ public class PreferenceManager implements PropertyManager {
     //public static final String CHECKED_RESOURCES_KEY = "CHECKED_RESOURCES_KEY";
     public static final String DEFINE_GENOME_INPUT_DIRECTORY_KEY = "DEFINE_GENOME_INPUT_DIRECTORY_KEY";
 
+    public static final String VARIANT_COLOR_BY_ALLELE_FREQ = "VARIANT_COLOR_BY_ALLELE_FREQ";
+
     public static final String PROBE_MAPPING_KEY = "PROBE_MAPPING_KEY";
     public static final String PROBE_MAPPING_FILE = "PROBE_MAPPING_FILE";
     public static final String USE_PROBE_MAPPING_FILE = "USE_PROBE_MAPPING_FILE";
@@ -1231,6 +1233,8 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(NOCALL_COLOR, "255,255,255");
         defaultValues.put(AF_REF_COLOR, "0,0,220");
         defaultValues.put(AF_VAR_COLOR, "255,0,0");
+
+        defaultValues.put(VARIANT_COLOR_BY_ALLELE_FREQ, "true");
 
         defaultValues.put(SASHIMI_SHOW_COVERAGE, "true");
 

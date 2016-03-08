@@ -26,6 +26,7 @@
 package org.broad.igv.ui;
 
 import javax.swing.border.*;
+
 import com.jidesoft.dialog.ButtonPanel;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.PreferenceManager;
@@ -195,19 +196,23 @@ public class PreferencesEditor extends javax.swing.JDialog {
         showOrphanedMutationsCB = new JCheckBox();
         label12 = new JLabel();
         panel33 = new JPanel();
-        homRefColorChooser = new ColorChooserPanel();
         label36 = new JLabel();
-        hetVarColorChooser = new ColorChooserPanel();
-        homVarColorChooser = new ColorChooserPanel();
-        noCallColorChooser = new ColorChooserPanel();
-        afRefColorChooser = new ColorChooserPanel();
-        afVarColorChooser = new ColorChooserPanel();
-        label37 = new JLabel();
+        homRefColorChooser = new ColorChooserPanel();
         label38 = new JLabel();
+        homVarColorChooser = new ColorChooserPanel();
+        label37 = new JLabel();
+        hetVarColorChooser = new ColorChooserPanel();
         label40 = new JLabel();
+        noCallColorChooser = new ColorChooserPanel();
         label41 = new JLabel();
+        afRefColorChooser = new ColorChooserPanel();
         label42 = new JLabel();
+        afVarColorChooser = new ColorChooserPanel();
         resetVCFButton = new JButton();
+        panel35 = new JPanel();
+        label43 = new JLabel();
+        alleleFreqRB = new JRadioButton();
+        alleleFractionRB = new JRadioButton();
         panel25 = new JScrollPane();
         chartPanel = new JPanel();
         jPanel4 = new JPanel();
@@ -414,10 +419,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     {
                         jPanel10.setBorder(null);
                         jPanel10.setLayout(new GridBagLayout());
-                        ((GridBagLayout)jPanel10.getLayout()).columnWidths = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-                        ((GridBagLayout)jPanel10.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-                        ((GridBagLayout)jPanel10.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
-                        ((GridBagLayout)jPanel10.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                        ((GridBagLayout) jPanel10.getLayout()).columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                        ((GridBagLayout) jPanel10.getLayout()).rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                        ((GridBagLayout) jPanel10.getLayout()).columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                        ((GridBagLayout) jPanel10.getLayout()).rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
                         //---- sessionPathsCB ----
                         sessionPathsCB.setText("Use relative paths in sessions");
@@ -428,15 +433,15 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel10.add(sessionPathsCB, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- missingDataExplanation ----
                         missingDataExplanation.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                         missingDataExplanation.setText("(NAME, DATA_TYPE, and DATA_FILE).");
                         jPanel10.add(missingDataExplanation, new GridBagConstraints(3, 4, 5, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- showDefaultTrackAttributesCB ----
                         showDefaultTrackAttributesCB.setText("Show default track attributes");
@@ -448,8 +453,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel10.add(showDefaultTrackAttributesCB, new GridBagConstraints(0, 4, 2, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- combinePanelsCB ----
                         combinePanelsCB.setText("Display all tracks in a single panel");
@@ -460,8 +465,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel10.add(combinePanelsCB, new GridBagConstraints(0, 2, 3, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- showAttributesDisplayCheckBox ----
                         showAttributesDisplayCheckBox.setText("Show attribute panel");
@@ -472,8 +477,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel10.add(showAttributesDisplayCheckBox, new GridBagConstraints(0, 3, 2, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- searchZoomCB ----
                         searchZoomCB.setText("Zoom to features");
@@ -485,15 +490,15 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel10.add(searchZoomCB, new GridBagConstraints(0, 6, 2, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- label4 ----
                         label4.setText("Feature flanking region (bp or %): ");
                         label4.setToolTipText("Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.  A negative number is interpreted as a percentage.");
                         jPanel10.add(label4, new GridBagConstraints(0, 9, 4, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 10, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 10, 15, 5), 0, 0));
 
                         //---- geneListFlankingField ----
                         geneListFlankingField.setToolTipText("Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.  A negative number is interpreted as a percentage.");
@@ -510,22 +515,22 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel10.add(geneListFlankingField, new GridBagConstraints(4, 9, 3, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- zoomToFeatureExplanation2 ----
                         zoomToFeatureExplanation2.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                         zoomToFeatureExplanation2.setText("<html><i>&lt; 0 is interpreted as a percentage.</b>");
                         zoomToFeatureExplanation2.setVerticalAlignment(SwingConstants.TOP);
                         jPanel10.add(zoomToFeatureExplanation2, new GridBagConstraints(7, 9, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- label6 ----
                         label6.setText("Sequence resolution threshold (bp/pixel):");
                         jPanel10.add(label6, new GridBagConstraints(0, 11, 4, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 10, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 10, 15, 5), 0, 0));
 
                         //---- seqResolutionThreshold ----
                         seqResolutionThreshold.addFocusListener(new FocusAdapter() {
@@ -541,15 +546,15 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel10.add(seqResolutionThreshold, new GridBagConstraints(4, 11, 3, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- label10 ----
                         label10.setText("Default  font: ");
                         label10.setLabelFor(defaultFontField);
                         jPanel10.add(label10, new GridBagConstraints(0, 12, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 10, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 10, 15, 5), 0, 0));
 
                         //---- fontChangeButton ----
                         fontChangeButton.setText("Change...");
@@ -560,8 +565,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel10.add(fontChangeButton, new GridBagConstraints(6, 12, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- showRegionBoundariesCB ----
                         showRegionBoundariesCB.setText("Show region boundaries");
@@ -572,14 +577,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel10.add(showRegionBoundariesCB, new GridBagConstraints(0, 5, 4, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- label7 ----
                         label7.setText("Background color click to change): ");
                         jPanel10.add(label7, new GridBagConstraints(0, 14, 3, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 10, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 10, 15, 5), 0, 0));
 
                         //======== backgroundColorPanel ========
                         {
@@ -594,8 +599,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             backgroundColorPanel.setLayout(null);
                         }
                         jPanel10.add(backgroundColorPanel, new GridBagConstraints(3, 14, 2, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- showMissingDataCB ----
                         showMissingDataCB.setText("Distinguish missing data");
@@ -607,14 +612,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel10.add(showMissingDataCB, new GridBagConstraints(0, 1, 2, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- label32 ----
                         label32.setText("<html><i>Distinguish regions with value of zero from regions with  no data.  ");
                         jPanel10.add(label32, new GridBagConstraints(2, 1, 6, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- enableGoogleCB ----
                         enableGoogleCB.setText("Enable Google access");
@@ -625,15 +630,15 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel10.add(enableGoogleCB, new GridBagConstraints(0, 7, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- label33 ----
                         label33.setText("Enable loading from Google apis.");
                         label33.setFont(new Font("Lucida Grande", Font.ITALIC, 13));
                         jPanel10.add(label33, new GridBagConstraints(3, 7, 5, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- saveGoogleCredentialsCB ----
                         saveGoogleCredentialsCB.setText("Save Google credentials");
@@ -644,22 +649,22 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel10.add(saveGoogleCredentialsCB, new GridBagConstraints(0, 8, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- label34 ----
                         label34.setText("Save authorization credentials across sessions");
                         label34.setFont(new Font("Lucida Grande", Font.ITALIC, 13));
                         jPanel10.add(label34, new GridBagConstraints(3, 8, 5, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- textField1 ----
                         textField1.setText("Default visibility window (kilobases):");
                         textField1.setToolTipText("A value > 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.   The threshold (\"visibility window\") can be overriden explicitly for individual tracks via the track menu.");
                         jPanel10.add(textField1, new GridBagConstraints(0, 10, 3, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 10, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 10, 15, 5), 0, 0));
 
                         //---- featureVisibilityWindowField ----
                         featureVisibilityWindowField.setToolTipText("A value > 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.   The threshold (\"visibility window\") can be overriden explicitly for individual tracks via the track menu.");
@@ -676,22 +681,22 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel10.add(featureVisibilityWindowField, new GridBagConstraints(4, 10, 3, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- zoomToFeatureExplanation3 ----
                         zoomToFeatureExplanation3.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                         zoomToFeatureExplanation3.setText("<html><i>&lt; 0 disables visibility window.</b>");
                         zoomToFeatureExplanation3.setVerticalAlignment(SwingConstants.TOP);
                         jPanel10.add(zoomToFeatureExplanation3, new GridBagConstraints(7, 10, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- defaultFontField ----
                         defaultFontField.setEditable(false);
                         jPanel10.add(defaultFontField, new GridBagConstraints(1, 12, 4, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- resetFontButton ----
                         resetFontButton.setText("Reset to default");
@@ -702,8 +707,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel10.add(resetFontButton, new GridBagConstraints(7, 12, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- scaleFontsCB ----
                         scaleFontsCB.setText("Scale fonts");
@@ -714,14 +719,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel10.add(scaleFontsCB, new GridBagConstraints(0, 13, 6, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- label8 ----
                         label8.setText("<html><i>Scale fonts for high resolution screens.  Requires restart.");
                         jPanel10.add(label8, new GridBagConstraints(2, 13, 7, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 0), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 0), 0, 0));
 
                         //---- resetBackgroundButton ----
                         resetBackgroundButton.setText("Reset to default");
@@ -732,8 +737,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel10.add(resetBackgroundButton, new GridBagConstraints(7, 14, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
                     }
                     generalPanel.add(jPanel10, BorderLayout.CENTER);
                 }
@@ -748,19 +753,19 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 {
                     tracksPanel.setMinimumSize(new Dimension(700, 407));
                     tracksPanel.setLayout(new GridBagLayout());
-                    ((GridBagLayout)tracksPanel.getLayout()).columnWidths = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0};
-                    ((GridBagLayout)tracksPanel.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-                    ((GridBagLayout)tracksPanel.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
-                    ((GridBagLayout)tracksPanel.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                    ((GridBagLayout) tracksPanel.getLayout()).columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0};
+                    ((GridBagLayout) tracksPanel.getLayout()).rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                    ((GridBagLayout) tracksPanel.getLayout()).columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                    ((GridBagLayout) tracksPanel.getLayout()).rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
                     tracksPanel.add(vSpacer1, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 15, 10), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 10), 0, 0));
 
                     //---- jLabel5 ----
                     jLabel5.setText("Default Track Height, Charts (Pixels)");
                     tracksPanel.add(jLabel5, new GridBagConstraints(2, 1, 2, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 15, 10), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 10), 0, 0));
 
                     //---- defaultChartTrackHeightField ----
                     defaultChartTrackHeightField.setText("40");
@@ -779,15 +784,15 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     tracksPanel.add(defaultChartTrackHeightField, new GridBagConstraints(4, 1, 2, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 15, 10), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 10), 0, 0));
 
                     //---- trackNameAttributeLabel ----
                     trackNameAttributeLabel.setText("Track Name Attribute");
                     trackNameAttributeLabel.setToolTipText("Name of an attribute to be used to label  tracks.  If provided tracks will be labeled with the corresponding attribute values from the sample information file");
                     tracksPanel.add(trackNameAttributeLabel, new GridBagConstraints(2, 3, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 15, 10), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 10), 0, 0));
 
                     //---- trackNameAttributeField ----
                     trackNameAttributeField.addActionListener(new ActionListener() {
@@ -803,14 +808,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     tracksPanel.add(trackNameAttributeField, new GridBagConstraints(3, 3, 3, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 15, 10), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 10), 0, 0));
 
                     //---- jLabel8 ----
                     jLabel8.setText("Default Track Height, Other (Pixels)");
                     tracksPanel.add(jLabel8, new GridBagConstraints(2, 2, 2, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 15, 10), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 10), 0, 0));
 
                     //---- defaultTrackHeightField ----
                     defaultTrackHeightField.setText("15");
@@ -828,11 +833,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     tracksPanel.add(defaultTrackHeightField, new GridBagConstraints(4, 2, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 15, 10), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 10), 0, 0));
                     tracksPanel.add(hSpacer1, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 15, 10), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 10), 0, 0));
 
                     //---- expandCB ----
                     expandCB.setText("Expand Feature Tracks");
@@ -843,8 +848,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     tracksPanel.add(expandCB, new GridBagConstraints(2, 5, 2, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 15, 10), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 10), 0, 0));
 
                     //---- normalizeCoverageCB ----
                     normalizeCoverageCB.setText("Normalize Coverage Data");
@@ -861,8 +866,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     tracksPanel.add(normalizeCoverageCB, new GridBagConstraints(2, 7, 2, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 15, 10), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 10), 0, 0));
 
                     //---- missingDataExplanation8 ----
                     missingDataExplanation8.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
@@ -870,8 +875,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     missingDataExplanation8.setMaximumSize(new Dimension(500, 2147483647));
                     missingDataExplanation8.setPreferredSize(new Dimension(500, 50));
                     tracksPanel.add(missingDataExplanation8, new GridBagConstraints(2, 8, 6, 2, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 0, 0), 0, 0));
 
                     //---- expandIconCB ----
                     expandIconCB.setText("Show Expand Icon");
@@ -883,8 +888,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     tracksPanel.add(expandIconCB, new GridBagConstraints(2, 6, 2, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 15, 10), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 10), 0, 0));
                 }
                 panel23.setViewportView(tracksPanel);
             }
@@ -996,7 +1001,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
-                            for(int i = 0; i < jPanel5.getComponentCount(); i++) {
+                            for (int i = 0; i < jPanel5.getComponentCount(); i++) {
                                 Rectangle bounds = jPanel5.getComponent(i).getBounds();
                                 preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                                 preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1015,48 +1020,48 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     {
                         panel33.setBorder(new TitledBorder("VCF Variant Colors"));
                         panel33.setLayout(null);
-                        panel33.add(homRefColorChooser);
-                        homRefColorChooser.setBounds(265, 40, 55, 30);
 
                         //---- label36 ----
                         label36.setText("Homozygous reference");
                         panel33.add(label36);
-                        label36.setBounds(15, 40, 230, 36);
-                        panel33.add(hetVarColorChooser);
-                        hetVarColorChooser.setBounds(265, 75, 55, 30);
-                        panel33.add(homVarColorChooser);
-                        homVarColorChooser.setBounds(265, 110, 55, 30);
-                        panel33.add(noCallColorChooser);
-                        noCallColorChooser.setBounds(265, 145, 55, 30);
-                        panel33.add(afRefColorChooser);
-                        afRefColorChooser.setBounds(265, 180, 55, 30);
-                        panel33.add(afVarColorChooser);
-                        afVarColorChooser.setBounds(265, 215, 55, 30);
-
-                        //---- label37 ----
-                        label37.setText("Heterozygous variant");
-                        panel33.add(label37);
-                        label37.setBounds(15, 75, 230, 36);
+                        label36.setBounds(6, 22, 339, 29);
+                        panel33.add(homRefColorChooser);
+                        homRefColorChooser.setBounds(345, 22, 55, 29);
 
                         //---- label38 ----
                         label38.setText("Homozygous variant");
                         panel33.add(label38);
-                        label38.setBounds(15, 110, 230, 36);
+                        label38.setBounds(6, 51, 339, 29);
+                        panel33.add(homVarColorChooser);
+                        homVarColorChooser.setBounds(345, 51, 55, 29);
+
+                        //---- label37 ----
+                        label37.setText("Heterozygous variant");
+                        panel33.add(label37);
+                        label37.setBounds(6, 80, 339, 29);
+                        panel33.add(hetVarColorChooser);
+                        hetVarColorChooser.setBounds(345, 80, 55, 29);
 
                         //---- label40 ----
                         label40.setText("No call");
                         panel33.add(label40);
-                        label40.setBounds(15, 145, 230, 36);
+                        label40.setBounds(6, 109, 339, 29);
+                        panel33.add(noCallColorChooser);
+                        noCallColorChooser.setBounds(345, 109, 55, 29);
 
                         //---- label41 ----
                         label41.setText("Allele freq - reference");
                         panel33.add(label41);
-                        label41.setBounds(15, 180, 230, 36);
+                        label41.setBounds(6, 138, 339, 29);
+                        panel33.add(afRefColorChooser);
+                        afRefColorChooser.setBounds(345, 138, 55, 29);
 
                         //---- label42 ----
                         label42.setText("Allele freq - variant");
                         panel33.add(label42);
-                        label42.setBounds(15, 215, 230, 36);
+                        label42.setBounds(6, 167, 339, 29);
+                        panel33.add(afVarColorChooser);
+                        afVarColorChooser.setBounds(345, 167, 55, 29);
 
                         //---- resetVCFButton ----
                         resetVCFButton.setText("Reset to defaults");
@@ -1067,11 +1072,30 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         panel33.add(resetVCFButton);
-                        resetVCFButton.setBounds(new Rectangle(new Point(20, 265), resetVCFButton.getPreferredSize()));
+                        resetVCFButton.setBounds(5, 265, 144, resetVCFButton.getPreferredSize().height);
+
+                        //======== panel35 ========
+                        {
+                            panel35.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+                            //---- label43 ----
+                            label43.setText("Color variant by: ");
+                            panel35.add(label43);
+
+                            //---- alleleFreqRB ----
+                            alleleFreqRB.setText("Allele frequency");
+                            panel35.add(alleleFreqRB);
+
+                            //---- alleleFractionRB ----
+                            alleleFractionRB.setText("Allele fraction");
+                            panel35.add(alleleFractionRB);
+                        }
+                        panel33.add(panel35);
+                        panel35.setBounds(5, 220, 450, panel35.getPreferredSize().height);
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
-                            for(int i = 0; i < panel33.getComponentCount(); i++) {
+                            for (int i = 0; i < panel33.getComponentCount(); i++) {
                                 Rectangle bounds = panel33.getComponent(i).getBounds();
                                 preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                                 preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1088,7 +1112,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < overlaysPanel.getComponentCount(); i++) {
+                        for (int i = 0; i < overlaysPanel.getComponentCount(); i++) {
                             Rectangle bounds = overlaysPanel.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1218,7 +1242,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
-                            for(int i = 0; i < jPanel4.getComponentCount(); i++) {
+                            for (int i = 0; i < jPanel4.getComponentCount(); i++) {
                                 Rectangle bounds = jPanel4.getComponent(i).getBounds();
                                 preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                                 preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1264,7 +1288,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < chartPanel.getComponentCount(); i++) {
+                        for (int i = 0; i < chartPanel.getComponentCount(); i++) {
                             Rectangle bounds = chartPanel.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1796,22 +1820,22 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             //======== panel16 ========
                             {
                                 panel16.setLayout(new GridBagLayout());
-                                ((GridBagLayout)panel16.getLayout()).columnWidths = new int[] {0, 0, 0, 0};
-                                ((GridBagLayout)panel16.getLayout()).rowHeights = new int[] {0, 0, 0};
-                                ((GridBagLayout)panel16.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 1.0E-4};
-                                ((GridBagLayout)panel16.getLayout()).rowWeights = new double[] {0.0, 0.0, 1.0E-4};
+                                ((GridBagLayout) panel16.getLayout()).columnWidths = new int[]{0, 0, 0, 0};
+                                ((GridBagLayout) panel16.getLayout()).rowHeights = new int[]{0, 0, 0};
+                                ((GridBagLayout) panel16.getLayout()).columnWeights = new double[]{0.0, 0.0, 0.0, 1.0E-4};
+                                ((GridBagLayout) panel16.getLayout()).rowWeights = new double[]{0.0, 0.0, 1.0E-4};
 
                                 //---- label9 ----
                                 label9.setText("Defaults ");
                                 panel16.add(label9, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 5, 5), 0, 0));
+                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                        new Insets(0, 0, 5, 5), 0, 0));
 
                                 //---- jLabel20 ----
                                 jLabel20.setText("Minimum (bp):");
                                 panel16.add(jLabel20, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 5, 5), 0, 0));
+                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                        new Insets(0, 0, 5, 5), 0, 0));
 
                                 //---- insertSizeMinThresholdField ----
                                 insertSizeMinThresholdField.setText("0");
@@ -1834,14 +1858,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                     }
                                 });
                                 panel16.add(insertSizeMinThresholdField, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 5, 0), 0, 0));
+                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                        new Insets(0, 0, 5, 0), 0, 0));
 
                                 //---- jLabel17 ----
                                 jLabel17.setText("Maximum (bp):");
                                 panel16.add(jLabel17, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 0, 5), 0, 0));
+                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                        new Insets(0, 0, 0, 5), 0, 0));
 
                                 //---- insertSizeThresholdField ----
                                 insertSizeThresholdField.setText("0");
@@ -1860,18 +1884,18 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                     }
                                 });
                                 panel16.add(insertSizeThresholdField, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 0, 0), 0, 0));
+                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                        new Insets(0, 0, 0, 0), 0, 0));
                             }
                             panel19.add(panel16);
 
                             //======== panel15 ========
                             {
                                 panel15.setLayout(new GridBagLayout());
-                                ((GridBagLayout)panel15.getLayout()).columnWidths = new int[] {0, 0, 0, 0};
-                                ((GridBagLayout)panel15.getLayout()).rowHeights = new int[] {0, 0, 0};
-                                ((GridBagLayout)panel15.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 1.0E-4};
-                                ((GridBagLayout)panel15.getLayout()).rowWeights = new double[] {0.0, 0.0, 1.0E-4};
+                                ((GridBagLayout) panel15.getLayout()).columnWidths = new int[]{0, 0, 0, 0};
+                                ((GridBagLayout) panel15.getLayout()).rowHeights = new int[]{0, 0, 0};
+                                ((GridBagLayout) panel15.getLayout()).columnWeights = new double[]{0.0, 0.0, 0.0, 1.0E-4};
+                                ((GridBagLayout) panel15.getLayout()).rowWeights = new double[]{0.0, 0.0, 1.0E-4};
 
                                 //---- isizeComputeCB ----
                                 isizeComputeCB.setText("Compute");
@@ -1885,14 +1909,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                     }
                                 });
                                 panel15.add(isizeComputeCB, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 5, 5), 0, 0));
+                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                        new Insets(0, 0, 5, 5), 0, 0));
 
                                 //---- jLabel30 ----
                                 jLabel30.setText("Minimum (percentile):");
                                 panel15.add(jLabel30, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 5, 5), 0, 0));
+                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                        new Insets(0, 0, 5, 5), 0, 0));
 
                                 //---- insertSizeMinPercentileField ----
                                 insertSizeMinPercentileField.setText("0");
@@ -1917,14 +1941,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                     }
                                 });
                                 panel15.add(insertSizeMinPercentileField, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 5, 0), 0, 0));
+                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                        new Insets(0, 0, 5, 0), 0, 0));
 
                                 //---- jLabel18 ----
                                 jLabel18.setText("Maximum (percentile):");
                                 panel15.add(jLabel18, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 0, 5), 0, 0));
+                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                        new Insets(0, 0, 0, 5), 0, 0));
 
                                 //---- insertSizeMaxPercentileField ----
                                 insertSizeMaxPercentileField.setText("0");
@@ -1945,8 +1969,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                     }
                                 });
                                 panel15.add(insertSizeMaxPercentileField, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 0, 0), 0, 0));
+                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                        new Insets(0, 0, 0, 0), 0, 0));
                             }
                             panel19.add(panel15);
                         }
@@ -1972,22 +1996,22 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         //======== panel18 ========
                         {
                             panel18.setLayout(new GridBagLayout());
-                            ((GridBagLayout)panel18.getLayout()).columnWidths = new int[] {0, 0};
-                            ((GridBagLayout)panel18.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0};
-                            ((GridBagLayout)panel18.getLayout()).columnWeights = new double[] {0.0, 1.0E-4};
-                            ((GridBagLayout)panel18.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                            ((GridBagLayout) panel18.getLayout()).columnWidths = new int[]{0, 0};
+                            ((GridBagLayout) panel18.getLayout()).rowHeights = new int[]{0, 0, 0, 0, 0};
+                            ((GridBagLayout) panel18.getLayout()).columnWeights = new double[]{0.0, 1.0E-4};
+                            ((GridBagLayout) panel18.getLayout()).rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
                             //---- jLabel24 ----
                             jLabel24.setText("Expression probe mapping options: ");
                             panel18.add(jLabel24, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 15, 0), 0, 0));
+                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                    new Insets(0, 0, 15, 0), 0, 0));
 
                             //---- jLabel21 ----
                             jLabel21.setText("<html><i>Note: Changes will not affect currently loaded datasets.");
                             panel18.add(jLabel21, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 15, 0), 0, 0));
+                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                    new Insets(0, 0, 15, 0), 0, 0));
 
                             //---- expMapToLociCB ----
                             expMapToLociCB.setText("<html>Map probes to target loci");
@@ -1998,8 +2022,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 }
                             });
                             panel18.add(expMapToLociCB, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 15, 0), 0, 0));
+                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                    new Insets(0, 0, 15, 0), 0, 0));
 
                             //---- expMapToGeneCB ----
                             expMapToGeneCB.setText("Map probes to genes");
@@ -2011,8 +2035,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 }
                             });
                             panel18.add(expMapToGeneCB, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 0, 0), 0, 0));
+                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                    new Insets(0, 0, 0, 0), 0, 0));
                         }
                         jPanel8.add(panel18);
                         panel18.setBounds(new Rectangle(new Point(20, 20), panel18.getPreferredSize()));
@@ -2068,7 +2092,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                                 { // compute preferred size
                                     Dimension preferredSize = new Dimension();
-                                    for(int i = 0; i < panel14.getComponentCount(); i++) {
+                                    for (int i = 0; i < panel14.getComponentCount(); i++) {
                                         Rectangle bounds = panel14.getComponent(i).getBounds();
                                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -2087,7 +2111,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
-                            for(int i = 0; i < jPanel8.getComponentCount(); i++) {
+                            for (int i = 0; i < jPanel8.getComponentCount(); i++) {
                                 Rectangle bounds = jPanel8.getComponent(i).getBounds();
                                 preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                                 preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -2104,7 +2128,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < expressionPane.getComponentCount(); i++) {
+                        for (int i = 0; i < expressionPane.getComponentCount(); i++) {
                             Rectangle bounds = expressionPane.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -2256,10 +2280,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         useProxyCB.setBounds(new Rectangle(new Point(20, 105), useProxyCB.getPreferredSize()));
 
                         //---- proxyTypeCB ----
-                        proxyTypeCB.setModel(new DefaultComboBoxModel(new String[] {
-                            "HTTP",
-                            "SOCKS",
-                            "DIRECT"
+                        proxyTypeCB.setModel(new DefaultComboBoxModel(new String[]{
+                                "HTTP",
+                                "SOCKS",
+                                "DIRECT"
                         }));
                         proxyTypeCB.addActionListener(new ActionListener() {
                             @Override
@@ -2298,7 +2322,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
-                            for(int i = 0; i < jPanel15.getComponentCount(); i++) {
+                            for (int i = 0; i < jPanel15.getComponentCount(); i++) {
                                 Rectangle bounds = jPanel15.getComponent(i).getBounds();
                                 preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                                 preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -2420,7 +2444,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
-                            for(int i = 0; i < panel6.getComponentCount(); i++) {
+                            for (int i = 0; i < panel6.getComponentCount(); i++) {
                                 Rectangle bounds = panel6.getComponent(i).getBounds();
                                 preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                                 preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -2458,7 +2482,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
-                            for(int i = 0; i < panel7.getComponentCount(); i++) {
+                            for (int i = 0; i < panel7.getComponentCount(); i++) {
                                 Rectangle bounds = panel7.getComponent(i).getBounds();
                                 preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                                 preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -2492,22 +2516,22 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     //======== panel21 ========
                     {
                         panel21.setLayout(new GridBagLayout());
-                        ((GridBagLayout)panel21.getLayout()).columnWidths = new int[] {0, 0, 0};
-                        ((GridBagLayout)panel21.getLayout()).rowHeights = new int[] {0, 0, 0, 0};
-                        ((GridBagLayout)panel21.getLayout()).columnWeights = new double[] {0.0, 0.0, 1.0E-4};
-                        ((GridBagLayout)panel21.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 1.0E-4};
+                        ((GridBagLayout) panel21.getLayout()).columnWidths = new int[]{0, 0, 0};
+                        ((GridBagLayout) panel21.getLayout()).rowHeights = new int[]{0, 0, 0, 0};
+                        ((GridBagLayout) panel21.getLayout()).columnWeights = new double[]{0.0, 0.0, 1.0E-4};
+                        ((GridBagLayout) panel21.getLayout()).rowWeights = new double[]{0.0, 0.0, 0.0, 1.0E-4};
 
                         //---- label17 ----
                         label17.setText("Host:");
                         panel21.add(label17, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 5, 5), 0, 0));
 
                         //---- label19 ----
                         label19.setText("Name:");
                         panel21.add(label19, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 5, 5), 0, 0));
 
                         //---- dbNameField ----
                         dbNameField.setPreferredSize(new Dimension(500, 28));
@@ -2524,8 +2548,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         panel21.add(dbNameField, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 0), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 5, 0), 0, 0));
 
                         //---- dbHostField ----
                         dbHostField.setPreferredSize(new Dimension(500, 28));
@@ -2542,14 +2566,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         panel21.add(dbHostField, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 0), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 5, 0), 0, 0));
 
                         //---- label18 ----
                         label18.setText("Port:");
                         panel21.add(label18, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 0, 5), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 0, 5), 0, 0));
 
                         //---- dbPortField ----
                         dbPortField.setPreferredSize(new Dimension(500, 28));
@@ -2566,15 +2590,15 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         panel21.add(dbPortField, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 0, 0), 0, 0));
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 0, 0), 0, 0));
                     }
                     dbPanel.add(panel21);
                     panel21.setBounds(new Rectangle(new Point(20, 76), panel21.getPreferredSize()));
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < dbPanel.getComponentCount(); i++) {
+                        for (int i = 0; i < dbPanel.getComponentCount(); i++) {
                             Rectangle bounds = dbPanel.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -2597,10 +2621,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 {
                     advancedPanel.setBorder(new EmptyBorder(1, 10, 1, 10));
                     advancedPanel.setLayout(new GridBagLayout());
-                    ((GridBagLayout)advancedPanel.getLayout()).columnWidths = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-                    ((GridBagLayout)advancedPanel.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-                    ((GridBagLayout)advancedPanel.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
-                    ((GridBagLayout)advancedPanel.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                    ((GridBagLayout) advancedPanel.getLayout()).columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                    ((GridBagLayout) advancedPanel.getLayout()).rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                    ((GridBagLayout) advancedPanel.getLayout()).columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                    ((GridBagLayout) advancedPanel.getLayout()).rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
                     //---- clearGenomeCacheButton ----
                     clearGenomeCacheButton.setText("Clear  Genome Cache");
@@ -2611,8 +2635,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     advancedPanel.add(clearGenomeCacheButton, new GridBagConstraints(7, 2, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 5), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
 
                     //---- enablePortCB ----
                     enablePortCB.setText("Enable port");
@@ -2623,8 +2647,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     advancedPanel.add(enablePortCB, new GridBagConstraints(0, 0, 3, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 5), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
 
                     //---- portField ----
                     portField.setText("60151");
@@ -2641,21 +2665,21 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     advancedPanel.add(portField, new GridBagConstraints(4, 0, 2, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 5), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
 
                     //---- jLabel22 ----
                     jLabel22.setFont(new Font("Lucida Grande", Font.ITALIC, 13));
                     jLabel22.setText("Enable port to send commands and http requests to IGV. ");
                     advancedPanel.add(jLabel22, new GridBagConstraints(6, 0, 3, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 0), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 0), 0, 0));
 
                     //---- vSpacer12 ----
                     vSpacer12.setPreferredSize(new Dimension(10, 40));
                     advancedPanel.add(vSpacer12, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 5), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
 
                     //---- genomeUpdateCB ----
                     genomeUpdateCB.setText("<html>Automatically check for updated genomes.    &nbsp;&nbsp;&nbsp;   <i>Most users should leave this checked.");
@@ -2666,14 +2690,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     advancedPanel.add(genomeUpdateCB, new GridBagConstraints(0, 6, 8, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 5), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
 
                     //---- jLabel6 ----
                     jLabel6.setText("Data Registry URL");
                     advancedPanel.add(jLabel6, new GridBagConstraints(2, 4, 3, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 5), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
 
                     //---- dataServerURLTextField ----
                     dataServerURLTextField.setEnabled(false);
@@ -2690,14 +2714,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     advancedPanel.add(dataServerURLTextField, new GridBagConstraints(5, 4, 4, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 0), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 0), 0, 0));
 
                     //---- jLabel1 ----
                     jLabel1.setText("Genome Server URL");
                     advancedPanel.add(jLabel1, new GridBagConstraints(2, 3, 3, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 5), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
 
                     //---- genomeServerURLTextField ----
                     genomeServerURLTextField.setText("jTextField1");
@@ -2715,8 +2739,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     advancedPanel.add(genomeServerURLTextField, new GridBagConstraints(5, 3, 4, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 0), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 0), 0, 0));
 
                     //---- editServerPropertiesCB ----
                     editServerPropertiesCB.setText("Edit server properties");
@@ -2727,8 +2751,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     advancedPanel.add(editServerPropertiesCB, new GridBagConstraints(0, 2, 5, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 5), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
 
                     //---- jButton1 ----
                     jButton1.setText("Reset to Defaults");
@@ -2739,14 +2763,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     advancedPanel.add(jButton1, new GridBagConstraints(5, 2, 2, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 5), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
 
                     //---- vSpacer11 ----
                     vSpacer11.setPreferredSize(new Dimension(10, 40));
                     advancedPanel.add(vSpacer11, new GridBagConstraints(0, 5, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 5), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
 
                     //---- autoFileDisoveryCB ----
                     autoFileDisoveryCB.setText("Automatically discover index and coverage files.");
@@ -2757,8 +2781,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     advancedPanel.add(autoFileDisoveryCB, new GridBagConstraints(0, 7, 8, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 5), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
 
                     //---- igvDirectoryButton ----
                     igvDirectoryButton.setText("Move...");
@@ -2769,20 +2793,20 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     advancedPanel.add(igvDirectoryButton, new GridBagConstraints(8, 15, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 0, 0), 0, 0));
 
                     //---- igvDirectoryField ----
                     igvDirectoryField.setBorder(new BevelBorder(BevelBorder.LOWERED));
                     advancedPanel.add(igvDirectoryField, new GridBagConstraints(2, 15, 6, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 5), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 0, 5), 0, 0));
 
                     //---- label21 ----
                     label21.setText("IGV Directory: ");
                     advancedPanel.add(label21, new GridBagConstraints(0, 14, 4, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 5), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
 
                     //======== tooltipOptionsPanel ========
                     {
@@ -2853,7 +2877,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
-                            for(int i = 0; i < tooltipOptionsPanel.getComponentCount(); i++) {
+                            for (int i = 0; i < tooltipOptionsPanel.getComponentCount(); i++) {
                                 Rectangle bounds = tooltipOptionsPanel.getComponent(i).getBounds();
                                 preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                                 preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -2866,8 +2890,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     }
                     advancedPanel.add(tooltipOptionsPanel, new GridBagConstraints(0, 10, 9, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 0), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 0), 0, 0));
 
                     //---- antialiasingCB ----
                     antialiasingCB.setText("Enable antialiasing");
@@ -2878,14 +2902,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     advancedPanel.add(antialiasingCB, new GridBagConstraints(0, 8, 5, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 5), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
 
                     //---- label5 ----
                     label5.setText("BLAT URL");
                     advancedPanel.add(label5, new GridBagConstraints(1, 12, 2, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 5), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
 
                     //---- blatURLField ----
                     blatURLField.addFocusListener(new FocusAdapter() {
@@ -2901,26 +2925,26 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     advancedPanel.add(blatURLField, new GridBagConstraints(3, 12, 6, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 0), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 0), 0, 0));
 
                     //---- vSpacer8 ----
                     vSpacer8.setPreferredSize(new Dimension(10, 40));
                     advancedPanel.add(vSpacer8, new GridBagConstraints(1, 11, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 5), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
 
                     //---- vSpacer9 ----
                     vSpacer9.setPreferredSize(new Dimension(10, 40));
                     advancedPanel.add(vSpacer9, new GridBagConstraints(0, 9, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 5), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
 
                     //---- vSpacer10 ----
                     vSpacer10.setPreferredSize(new Dimension(10, 40));
                     advancedPanel.add(vSpacer10, new GridBagConstraints(1, 13, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 5), 0, 0));
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
                 }
                 panel29.setViewportView(advancedPanel);
             }
@@ -2956,6 +2980,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
         contentPane.add(okCancelButtonPanel, BorderLayout.SOUTH);
         pack();
         setLocationRelativeTo(getOwner());
+
+        //---- buttonGroup2 ----
+        ButtonGroup buttonGroup2 = new ButtonGroup();
+        buttonGroup2.add(alleleFreqRB);
+        buttonGroup2.add(alleleFractionRB);
 
         //---- buttonGroup1 ----
         ButtonGroup buttonGroup1 = new ButtonGroup();
@@ -3690,46 +3719,51 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private void checkForVCFColors() {
 
         Color homRefColor = homRefColorChooser.getSelectedColor();
-        ;
+
         if (!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.HOMREF_COLOR))) {
             updatedPreferenceMap.put(PreferenceManager.HOMREF_COLOR, ColorUtilities.colorToString(homRefColor));
         }
 
         Color hetVarColor = hetVarColorChooser.getSelectedColor();
-        ;
+
         if (!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.HETVAR_COLOR))) {
             updatedPreferenceMap.put(PreferenceManager.HETVAR_COLOR, ColorUtilities.colorToString(hetVarColor));
         }
 
         Color homVarColor = homVarColorChooser.getSelectedColor();
-        ;
+
         if (!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.HOMVAR_COLOR))) {
             updatedPreferenceMap.put(PreferenceManager.HOMVAR_COLOR, ColorUtilities.colorToString(homVarColor));
         }
 
         Color noCallColor = noCallColorChooser.getSelectedColor();
-        ;
+
         if (!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.NOCALL_COLOR))) {
             updatedPreferenceMap.put(PreferenceManager.NOCALL_COLOR, ColorUtilities.colorToString(noCallColor));
         }
 
         Color afRefColor = afRefColorChooser.getSelectedColor();
-        ;
+
         if (!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.AF_REF_COLOR))) {
             updatedPreferenceMap.put(PreferenceManager.AF_REF_COLOR, ColorUtilities.colorToString(afRefColor));
         }
 
         Color afVarColor = afVarColorChooser.getSelectedColor();
-        ;
+
         if (!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.AF_VAR_COLOR))) {
             updatedPreferenceMap.put(PreferenceManager.AF_VAR_COLOR, ColorUtilities.colorToString(afVarColor));
+        }
+
+        boolean alleleFreq = alleleFreqRB.isSelected();
+        if (alleleFreq != prefMgr.getAsBoolean(PreferenceManager.VARIANT_COLOR_BY_ALLELE_FREQ)) {
+            updatedPreferenceMap.put(PreferenceManager.VARIANT_COLOR_BY_ALLELE_FREQ, Boolean.toString(alleleFreq));
         }
 
     }
 
     private void resetVCFButtonActionPerformed(ActionEvent e) {
         for (String vcfKey : Arrays.asList(PreferenceManager.HOMREF_COLOR, PreferenceManager.HETVAR_COLOR, PreferenceManager.HOMVAR_COLOR,
-                PreferenceManager.NOCALL_COLOR, PreferenceManager.AF_REF_COLOR, PreferenceManager.AF_VAR_COLOR)) {
+                PreferenceManager.NOCALL_COLOR, PreferenceManager.AF_REF_COLOR, PreferenceManager.AF_VAR_COLOR, PreferenceManager.VARIANT_COLOR_BY_ALLELE_FREQ)) {
             prefMgr.remove(vcfKey);
         }
         resetVCFColorChoosers();
@@ -3743,6 +3777,15 @@ public class PreferencesEditor extends javax.swing.JDialog {
         noCallColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.NOCALL_COLOR));
         afRefColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.AF_REF_COLOR));
         afVarColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.AF_VAR_COLOR));
+
+        if(prefMgr.getAsBoolean(PreferenceManager.VARIANT_COLOR_BY_ALLELE_FREQ)) {
+            alleleFreqRB.setSelected(true);
+            alleleFractionRB.setSelected(false);
+        }
+        else {
+            alleleFreqRB.setSelected(false);
+            alleleFractionRB.setSelected(true);
+        }
     }
 
 
@@ -4591,19 +4634,23 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox showOrphanedMutationsCB;
     private JLabel label12;
     private JPanel panel33;
-    private ColorChooserPanel homRefColorChooser;
     private JLabel label36;
-    private ColorChooserPanel hetVarColorChooser;
-    private ColorChooserPanel homVarColorChooser;
-    private ColorChooserPanel noCallColorChooser;
-    private ColorChooserPanel afRefColorChooser;
-    private ColorChooserPanel afVarColorChooser;
-    private JLabel label37;
+    private ColorChooserPanel homRefColorChooser;
     private JLabel label38;
+    private ColorChooserPanel homVarColorChooser;
+    private JLabel label37;
+    private ColorChooserPanel hetVarColorChooser;
     private JLabel label40;
+    private ColorChooserPanel noCallColorChooser;
     private JLabel label41;
+    private ColorChooserPanel afRefColorChooser;
     private JLabel label42;
+    private ColorChooserPanel afVarColorChooser;
     private JButton resetVCFButton;
+    private JPanel panel35;
+    private JLabel label43;
+    private JRadioButton alleleFreqRB;
+    private JRadioButton alleleFractionRB;
     private JScrollPane panel25;
     private JPanel chartPanel;
     private JPanel jPanel4;
