@@ -146,7 +146,7 @@ public class VariantRenderer { //extends FeatureRenderer {
         final boolean useAlpha = variant.isFiltered();
         final Color alleleColor;
         final Color refColor;
-        double percent;
+        double percent = 0;
         if (track.getColorMode() == VariantTrack.ColorMode.METHYLATION_RATE) {
             alleleColor = this.convertMethylationRateToColor((float) variant.getMethlationRate() / 100);
             percent = variant.getCoveredSampleFraction();
@@ -154,9 +154,11 @@ public class VariantRenderer { //extends FeatureRenderer {
         } else {
             alleleColor = useAlpha ? colorAlleleBandVarAlpha : colorAlleleBandVar; // Red
 
-            double af = variant.getAlternateAlleleFrequency();
-
+            double af = track.getSiteColorMode() == VariantTrack.ColorMode.ALLELE_FREQUENCY ?
+                    variant.getAlternateAlleleFrequency() :
+                    variant.getAlleleFraction();
             percent = Math.min(1, af);
+
             if (percent <= 0) {
                 percent = 0;
                 refColor = useAlpha ? colorAlleleRefAlpha : colorAlleleRef;   // Gray
@@ -240,17 +242,6 @@ public class VariantRenderer { //extends FeatureRenderer {
                     b2Color = b1Color;
                     break;
 
-                case ALLELE:
-                    final List<Allele> alleleList = genotype.getAlleles();
-                    if (alleleList.size() > 0) {
-                        b1 = getFirstBase(alleleList.get(0));
-                        b1Color = nucleotideColors.get(b1);
-                    }
-                    if (alleleList.size() > 1) {
-                        b2 = getFirstBase(alleleList.get(1));
-                        b2Color = nucleotideColors.get(b2);
-                    }
-                    break;
                 case METHYLATION_RATE:
 
                     final double goodBaseCount = genotype.getAttributeAsDouble("GB");

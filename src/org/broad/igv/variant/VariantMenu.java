@@ -77,14 +77,18 @@ public class VariantMenu extends IGVPopupMenu {
         add(TrackMenuUtils.getTrackRenameItem(selectedTracks));
         add(TrackMenuUtils.getChangeFontSizeItem(selectedTracks));
 
+        addSeparator();
+        JLabel colorSiteByItem = new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT);
+        add(colorSiteByItem);
+        add(getColorBandByAllelFrequency());
+        add(getColorBandByAlleleFraction());
 
         //Hides
-        addSeparator();
-        JLabel colorByItem = new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT);
-        add(colorByItem);
-        add(getColorByGenotype());
-        add(getColorByAllele());
         if (track.isEnableMethylationRateSupport()) {
+            addSeparator();
+            JLabel colorByItem = new JLabel("<html>&nbsp;&nbsp;<b>Color Samples By", JLabel.LEFT);
+            add(colorByItem);
+            add(getColorByGenotype());
             add(getColorByMethylationRate());
         }
 
@@ -146,11 +150,12 @@ public class VariantMenu extends IGVPopupMenu {
         return item;
     }
 
-    private JMenuItem getColorByGenotype() {
-        final JMenuItem item = new JCheckBoxMenuItem("Genotype", track.getColorMode() == VariantTrack.ColorMode.GENOTYPE);
+
+    private JMenuItem getColorBandByAllelFrequency() {
+        final JMenuItem item = new JCheckBoxMenuItem("Allele Frequency", track.getSiteColorMode() == VariantTrack.ColorMode.ALLELE_FREQUENCY);
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                track.setColorMode(VariantTrack.ColorMode.GENOTYPE);
+                track.setSiteColorMode(VariantTrack.ColorMode.ALLELE_FREQUENCY);
                 IGV.getInstance().getContentPane().repaint();
             }
         });
@@ -158,11 +163,23 @@ public class VariantMenu extends IGVPopupMenu {
     }
 
 
-    private JMenuItem getColorByAllele() {
-        final JMenuItem item = new JCheckBoxMenuItem("Allele", track.getColorMode() == VariantTrack.ColorMode.ALLELE);
+    private JMenuItem getColorBandByAlleleFraction() {
+        final JMenuItem item = new JCheckBoxMenuItem("Allele Fraction", track.getSiteColorMode() == VariantTrack.ColorMode.ALLELE_FRACTION);
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                track.setColorMode(VariantTrack.ColorMode.ALLELE);
+                track.setSiteColorMode(VariantTrack.ColorMode.ALLELE_FRACTION);
+                IGV.getInstance().getContentPane().repaint();
+            }
+        });
+        return item;
+    }
+
+
+    private JMenuItem getColorByGenotype() {
+        final JMenuItem item = new JCheckBoxMenuItem("Genotype", track.getColorMode() == VariantTrack.ColorMode.GENOTYPE);
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                track.setColorMode(VariantTrack.ColorMode.GENOTYPE);
                 IGV.getInstance().getContentPane().repaint();
             }
         });

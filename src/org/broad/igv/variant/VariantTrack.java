@@ -143,6 +143,9 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      */
     private ColorMode coloring = ColorMode.GENOTYPE;
 
+
+    private ColorMode siteColorMode = ColorMode.ALLELE_FREQUENCY;
+
     /**
      * When true, variants that are marked filtering are not drawn.
      */
@@ -839,6 +842,15 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     }
 
 
+    @XmlAttribute
+    public ColorMode getSiteColorMode() {
+        return siteColorMode;
+    }
+
+    public void setSiteColorMode(ColorMode siteColorMode) {
+        this.siteColorMode = siteColorMode;
+    }
+
     public String getNameValueString(int y) {
         if (y < top + variantBandHeight) {
             return getName();
@@ -1114,7 +1126,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     }
 
     public static enum ColorMode {
-        GENOTYPE, METHYLATION_RATE, ALLELE
+        GENOTYPE, METHYLATION_RATE, ALLELE_FREQUENCY, ALLELE_FRACTION
     }
 
     public static enum BackgroundType {
