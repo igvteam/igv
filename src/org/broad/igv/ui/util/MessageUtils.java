@@ -72,7 +72,7 @@ public class MessageUtils {
     public static synchronized void showMessage(Level level, String message) {
 
         log.log(level, message);
-        boolean showDialog = !(Globals.isHeadless() || Globals.isSuppressMessages() || Globals.isTesting());
+        boolean showDialog = !(Globals.isHeadless() || Globals.isSuppressMessages() || Globals.isTesting() || Globals.isBatch());
         if (showDialog) {
             // Always use HTML for message displays, but first remove any embedded <html> tags.
             message = "<html>" + message.replaceAll("<html>", "");
@@ -109,7 +109,11 @@ public class MessageUtils {
     public static synchronized boolean confirm(final String message) {
         if(Globals.isHeadless()){
             log.error("Attempted to confirm while running headless with the following message:\n" + message);
-            return false;
+            return true;
+        }
+
+        if(Globals.isBatch()) {
+            return true;
         }
 
         final Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
@@ -125,6 +129,10 @@ public class MessageUtils {
      */
     public static synchronized boolean confirm(final Component component, final String message) {
 
+
+        if(Globals.isHeadless() || Globals.isBatch()) {
+            return true;
+        }
 
         if (SwingUtilities.isEventDispatchThread()) {
             int opt = JOptionPane.showConfirmDialog(component, message, "Confirm", JOptionPane.YES_NO_OPTION);
