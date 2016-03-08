@@ -45,16 +45,18 @@ public class VCFVariant implements Variant {
 
     VariantContext variantContext;
     List<Allele> alternateAlleles;
-    private ZygosityCount zygosityCount;
+    // private ZygosityCount zygosityCount;
 
     String chr;
     private double[] alleleFreqs;
+    private int[] alleleCounts;
     private double methylationRate = Double.NaN;  // <= signals unknown / not applicable
     private double coveredSampleFraction = Double.NaN;
 
     Map<String, VCFGenotype> genotypeMap;
 
     private int start = -1;
+    private int totalAlleleCount = 0;
 
     public VCFVariant(VariantContext variantContext, String chr) {
         this.variantContext = variantContext;
@@ -72,24 +74,45 @@ public class VCFVariant implements Variant {
             genotypeMap.put(sample, vcfGenotype);
         }
 
-        zygosityCount = new ZygosityCount();
-        for (String sample : getSampleNames()) {
-            Genotype genotype = getGenotype(sample);
-            zygosityCount.incrementCount(genotype);
-        }
+//        zygosityCount = new ZygosityCount();
+//        for (String sample : getSampleNames()) {
+//            Genotype genotype = getGenotype(sample);
+//            zygosityCount.incrementCount(genotype);
+//        }
 
         String afString = null;
         String[] alleleFreqKeys = {"AF", "GMAF"};
         try {
             for (String alleleFreqKey : alleleFreqKeys) {
                 afString = variantContext.getAttributeAsString(alleleFreqKey, "-1");
-                alleleFreqs = parseAFString(afString);
+                alleleFreqs = parseDoubleArrayString(afString);
                 if (alleleFreqs[0] >= 0) break;
             }
         } catch (NumberFormatException e) {
             alleleFreqs = new double[]{-1};
             log.error("Error parsing allele frequency: " + afString);
         }
+
+        String acKey = "AC";
+        String acString = variantContext.getAttributeAsString(acKey, null);
+        if (acString != null) {
+            try {
+                alleleCounts = parseIntArrayString(acString);
+            } catch (NumberFormatException e) {
+                log.error("Error parsing allele counts:" + acString);
+            }
+        }
+
+        String anKey = "AN";
+        String anString = variantContext.getAttributeAsString(anKey, null);
+        if(anString != null) {
+            try {
+                totalAlleleCount = Integer.parseInt(anString);
+            } catch (NumberFormatException e) {
+                log.error("Error parsing 'AN' attribute: " + anString);
+            }
+        }
+
 
     }
 
@@ -100,12 +123,22 @@ public class VCFVariant implements Variant {
      * @param afString
      * @return
      */
-    private double[] parseAFString(String afString) {
+    private double[] parseDoubleArrayString(String afString) throws NumberFormatException {
         afString = afString.replaceAll("[\\[\\]\\(\\)]", "");
         String[] tokens = afString.split(",");
         double[] result = new double[tokens.length];
         for (int ii = 0; ii < tokens.length; ii++) {
-            result[ii] = Double.parseDouble(tokens[ii]);
+            result[ii] = Double.parseDouble(tokens[ii].trim());
+        }
+        return result;
+    }
+
+    private int[] parseIntArrayString(String afString) throws NumberFormatException {
+        afString = afString.replaceAll("[\\[\\]\\(\\)]", "");
+        String[] tokens = afString.split(",");
+        int[] result = new int[tokens.length];
+        for (int ii = 0; ii < tokens.length; ii++) {
+            result[ii] = Integer.parseInt(tokens[ii].trim());
         }
         return result;
     }
@@ -178,17 +211,42 @@ public class VCFVariant implements Variant {
         return alleleFreqs;
     }
 
-    /**
-     * Return the allele fraction for this variant.  The allele fraction is similiar to allele frequency, but is based
-     * on the samples in this VCF as opposed to an AF or GMAF annotation.
-     * <p/>
-     * A value of -1 indicates unknown
-     */
-    public double getAlleleFraction() {
 
-        int total = getHomVarCount() + getHetCount() + getHomRefCount();
-        return total == 0 ? -1 : (((double) getHomVarCount() + ((double) getHetCount()) / 2) / total);
+    @Override
+    public double getAlternateAlleleFrequency() {
+        double af = 0;
+        double[] afreqs = getAlleleFreqs();
+        if (afreqs != null) {
+            for (int i = 0; i < afreqs.length; i++) {
+                af += afreqs[i];
+            }
+        }
+        return af;
     }
+
+
+    @Override
+    public int[] getAlleleCounts() {
+        return alleleCounts;
+    }
+
+    public int getTotalAlleleCount() {
+        return totalAlleleCount;
+    }
+
+    public double getAlleleFraction() {
+        if(alleleCounts != null && alleleCounts.length > 0 && totalAlleleCount > 0) {
+            double ac = 0;
+            for(int i=0; i<alleleCounts.length; i++) {
+                ac += alleleCounts[i];
+            }
+            return ac / totalAlleleCount;
+        }
+        else {
+            return -1;
+        }
+    }
+
 
     /**
      * Return the methylation rate as annoted with a MR attribute.  A value of -1 indicates
@@ -226,26 +284,6 @@ public class VCFVariant implements Variant {
     }
 
     @Override
-    public int getHomVarCount() {
-        return zygosityCount.getHomVar();
-    }
-
-    @Override
-    public int getHetCount() {
-        return zygosityCount.getHet();
-    }
-
-    @Override
-    public int getHomRefCount() {
-        return zygosityCount.getHomRef();
-    }
-
-    @Override
-    public int getNoCallCount() {
-        return zygosityCount.getNoCall();
-    }
-
-    @Override
     public String getChr() {
         return chr;
     }
@@ -257,7 +295,7 @@ public class VCFVariant implements Variant {
 
     @Override
     public int getStart() {
-        if(this.start < 0){
+        if (this.start < 0) {
             calcStart();
         }
         return this.start;
@@ -283,7 +321,8 @@ public class VCFVariant implements Variant {
 
     }
 
-    public String getSource(){
+
+    public String getSource() {
         return variantContext.getSource();
     }
 
@@ -305,57 +344,16 @@ public class VCFVariant implements Variant {
         }
     }
 
-    /**
-     * @author Jim Robinson
-     * @date Aug 1, 2011
-     */
-    public static class ZygosityCount {
-        private int homVar = 0;
-        private int het = 0;
-        private int homRef = 0;
-        private int noCall = 0;
-
-        public void incrementCount(Genotype genotype) {
-            if (genotype != null) {
-                if (genotype.isHomVar()) {
-                    homVar++;
-                } else if (genotype.isHet()) {
-                    het++;
-                } else if (genotype.isHomRef()) {
-                    homRef++;
-                } else {
-                    noCall++;
-                }
-            }
-        }
-
-        public int getHomVar() {
-            return homVar;
-        }
-
-        public int getHet() {
-            return het;
-        }
-
-        public int getHomRef() {
-            return homRef;
-        }
-
-        public int getNoCall() {
-            return noCall;
-        }
-
-    }
 
     /**
      * VCFs specify padding bases at the beginning of indels so they can be positioned properly.
      * We display the variant only where it actually differs from the reference. So we find the longest
      * common prefix between the reference and variants
      */
-    private void calcStart(){
+    private void calcStart() {
         int prefixLength = 0;
 
-        if(variantContext.getType() == VariantContext.Type.INDEL || variantContext.getType() == VariantContext.Type.MIXED){
+        if (variantContext.getType() == VariantContext.Type.INDEL || variantContext.getType() == VariantContext.Type.MIXED) {
             prefixLength = findCommonPrefixLength();
         }
         this.start = (variantContext.getStart() - 1) + prefixLength;
@@ -364,24 +362,25 @@ public class VCFVariant implements Variant {
     /**
      * Find the length of the common prefix between the reference and ALL
      * variant alleles
+     *
      * @return
      */
-    private int findCommonPrefixLength(){
+    private int findCommonPrefixLength() {
         String ref = variantContext.getReference().getDisplayString();
         int prefixLength = 0;
         boolean foundmisMatch = false;
-        for(int refPos = 0; refPos < ref.length() ; refPos++){
+        for (int refPos = 0; refPos < ref.length(); refPos++) {
             char refChar = ref.charAt(refPos);
-            for(Allele var: getAlternateAlleles()){
+            for (Allele var : getAlternateAlleles()) {
                 byte[] varBases = var.getBases();
-                if(refPos >= varBases.length || varBases[refPos] != refChar){
+                if (refPos >= varBases.length || varBases[refPos] != refChar) {
                     foundmisMatch = true;
                     break;
                 }
             }
-            if(foundmisMatch){
+            if (foundmisMatch) {
                 break;
-            }else{
+            } else {
                 prefixLength++;
             }
         }

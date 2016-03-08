@@ -36,4 +36,5 @@ package org.broad.igv.variant;
  */
 public interface Allele {
     public byte[] getBases() ;
+    public String getDisplayString();
 }

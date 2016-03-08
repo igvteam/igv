@@ -93,7 +93,6 @@ public class BCFReaderTest extends AbstractHeadlessTest {
             VCFVariant bcfV = (VCFVariant) BCF2features.next();
             VCFVariant vcfV = (VCFVariant) VCFfeatures.next();
 
-            assertEquals(vcfV.getAlleleFraction(), bcfV.getAlleleFraction(), 1e-4f);
             assertEquals(vcfV.getType(), bcfV.getType());
 
             BCF2List.add(bcfV);

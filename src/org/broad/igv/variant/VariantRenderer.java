@@ -153,13 +153,9 @@ public class VariantRenderer { //extends FeatureRenderer {
             refColor = useAlpha ? colorAlleleRefAlpha : colorAlleleRef;   // Gray
         } else {
             alleleColor = useAlpha ? colorAlleleBandVarAlpha : colorAlleleBandVar; // Red
-            double af = variant.getAlleleFraction();
-            if (af < 0) {
-                double[] afreqs = variant.getAlleleFreqs();
-                if (afreqs != null && afreqs.length > 0) {
-                    af = afreqs[0];
-                }
-            }
+
+            double af = variant.getAlternateAlleleFrequency();
+
             percent = Math.min(1, af);
             if (percent <= 0) {
                 percent = 0;

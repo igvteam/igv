@@ -43,6 +43,11 @@ public class VCFAllele implements Allele {
         return bases;
     }
 
+    @Override
+    public String getDisplayString() {
+        return new String(bases);
+    }
+
     public String toString() {
         return new String(bases);
     }

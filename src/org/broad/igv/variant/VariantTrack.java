@@ -974,8 +974,10 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         toolTip.append("<br>ID: " + id);
         toolTip.append("<br>Reference: " + variant.getReference());
         List<Allele> alternates = variant.getAlternateAlleles();
+        String alternateString = null;
         if (alternates.size() > 0) {
-            toolTip.append("<br>Alternate: " + StringUtils.join(alternates, ","));
+            alternateString = StringUtils.join(alternates, ",");
+            toolTip.append("<br>Alternate: " + alternateString);
         }
 
         toolTip.append("<br>Qual: " + numFormat.format(variant.getPhredScaledQual()));
@@ -986,37 +988,47 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         } else {
             toolTip.append("<br>Is Filtered Out: No</b><br>");
         }
-        toolTip.append("<br><b>Alleles:</b>");
-        toolTip.append(getAlleleToolTip(variant));
 
-        double[] af = variant.getAlleleFreqs();
-        if (af[0] < 0 && variant.getSampleNames().size() > 0) {
-            af = new double[]{variant.getAlleleFraction()};
-        }
-        String afMsg = "Unknown";
-        if (af[0] >= 0) {
-            afMsg = numFormat.format(af[0]);
-            for (int ii = 1; ii < af.length; ii++) {
-                afMsg += ", " + numFormat.format(af[ii]);
+        if (alternateString != null) {
+            toolTip.append("<br><b>Alleles:</b>");
+
+            toolTip.append("<br>Alternate Alleles: " + alternateString);
+
+            int[] ac = variant.getAlleleCounts();
+            if (ac != null) {
+                String acString = ac.length > 1 ? "<br>Allele Counts: " : "<br>Allele Count: ";
+                for (int i = 0; i < ac.length; i++) {
+                    acString += Integer.toString(ac[i]);
+                    if (i < ac.length - 1) acString += ", ";
+                }
+                toolTip.append(acString);
             }
-        }
-        toolTip.append("<br>Allele Frequency: " + afMsg + "<br>");
 
-        if (variant.getSampleNames().size() > 0) {
-            double afrac = variant.getAlleleFraction();
-            toolTip = toolTip.append("<br>Minor Allele Fraction: " + numFormat.format(afrac) + "<br>");
+            int totalAlleleCount = variant.getTotalAlleleCount();
+            if(totalAlleleCount > 0) {
+                toolTip.append("<br>Total # Alleles: " + String.valueOf(totalAlleleCount));
+            }
+
+            double[] af = variant.getAlleleFreqs();
+            String afString = af.length > 1 ? "<br>Allele Fequencies: " : "<br>Allele Frequency: ";
+            for (int i = 0; i < af.length; i++) {
+                afString += Double.toString(af[i]);
+                if (i < af.length - 1) afString += ", ";
+            }
+            toolTip.append(afString);
+        }
+        if (variant.getAttributes().size() > 0) {
+            toolTip.append(getVariantInfo(variant));
         }
 
-        toolTip.append("<br><b>Genotypes:</b>");
-        toolTip.append(getGenotypesSummaryTooltip(variant) + "<br>");
-        toolTip.append(getVariantInfo(variant) + "<br>");
+
         return toolTip.toString();
     }
 
     protected String getVariantInfo(Variant variant) {
         Set<String> keys = variant.getAttributes().keySet();
         if (keys.size() > 0) {
-            String toolTip = "<br><b>Variant Attributes</b>";
+            String toolTip = "<br><br><b>Variant Attributes</b>";
             int count = 0;
 
             // Put AF and GMAF and put at the top, if present
@@ -1025,6 +1037,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             if (afValue != null && afValue.length() > 0 && !afValue.equals("null")) {
                 toolTip = toolTip.concat("<br>" + getFullName(k) + ": " + variant.getAttributeAsString(k));
             }
+
             k = "GMAF";
             afValue = variant.getAttributeAsString(k);
             if (afValue != null && afValue.length() > 0 && !afValue.equals("null")) {
@@ -1113,8 +1126,8 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
     static {
         fullNames.put("AA", "Ancestral Allele");
-        fullNames.put("AC", "Allele Count in Genotypes");
-        fullNames.put("AN", "Total Alleles in Genotypes");
+        fullNames.put("AC", "Allele Count");
+        fullNames.put("AN", "Total Alleles");
         fullNames.put("AF", "Allele Frequency");
         fullNames.put("DP", "Depth");
         fullNames.put("MQ", "Mapping Quality");
@@ -1180,33 +1193,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         return toolTip;
     }
 
-    private String getAlleleToolTip(Variant counts) {
-        double noCall = counts.getNoCallCount() * 2;
-        double aNum = (counts.getHetCount() + counts.getHomRefCount() + counts.getHomVarCount()) * 2;
-        double aCount = (counts.getHomVarCount() * 2 + counts.getHetCount()) * 2;
-
-        String toolTip = "<br>No Call: " + (int) noCall;
-        toolTip = toolTip.concat("<br>Allele Num: " + (int) aNum);
-        toolTip = toolTip.concat("<br>Allele Count: " + (int) aCount);
-        return toolTip;
-    }
-
-    private String getGenotypesSummaryTooltip(Variant counts) {
-        int noCall = counts.getNoCallCount();
-        int homRef = counts.getHomRefCount();
-        int nonVar = noCall + homRef;
-        int het = counts.getHetCount();
-        int homVar = counts.getHomVarCount();
-        int var = het + homVar;
-
-        String toolTip = "<br>Non Variant: " + nonVar;
-        toolTip = toolTip.concat("<br> - No Call: " + noCall);
-        toolTip = toolTip.concat("<br> - Hom Ref: " + homRef);
-        toolTip = toolTip.concat("<br>Variant: " + var);
-        toolTip = toolTip.concat("<br> - Het: " + het);
-        toolTip = toolTip.concat("<br> - Hom Var: " + homVar);
-        return toolTip;
-    }
 
     /**
      * Return the {@code Variant} object closest to the specified event

@@ -41,13 +41,13 @@ public interface Variant extends Feature {
 
     /**
      * @return the identifier for this variant.  This is the "ID" attribute in VCF files, and is typically a
-     *         dbSnp id.   This method can return null, which means that no ID has been assigned.  There is not
+     * dbSnp id.   This method can return null, which means that no ID has been assigned.  There is not
      */
     String getID();
 
     /**
      * @return the type of this variant as a String.  Any String value is legal, typical values from VCF files include
-     *         NO_VARIATION, SNP, MNP, INDEL, SYMBOLIC, MIXED
+     * NO_VARIATION, SNP, MNP, INDEL, SYMBOLIC, MIXED
      */
     String getType();
 
@@ -102,7 +102,7 @@ public interface Variant extends Feature {
      * <p/>
      * A value of -1 indicates unknown
      */
-    double getAlleleFraction();
+    //  double getAlleleFraction();
 
     /**
      * Return the list of sample names associated with this variant.
@@ -124,29 +124,37 @@ public interface Variant extends Feature {
      */
     Collection<String> getFilters();
 
-    /**
-     * @return the count of genotypes for this variant called as homozygous variant
-     */
-    public int getHomVarCount();
-
-    /**
-     * @return the count of genotypes for this variant called as heterozygous variant
-     */
-    public int getHetCount();
-
-    /**
-     * @return the count of genotypes for this variant called as homozygous reference
-     */
-    public int getHomRefCount();
-
-    /**
-     * @return the count of genotypes for this variant that are no-calls
-     */
-    public int getNoCallCount();
+//    /**
+//     * @return the count of genotypes for this variant called as homozygous variant
+//     */
+//    public int getHomVarCount();
+//
+//    /**
+//     * @return the count of genotypes for this variant called as heterozygous variant
+//     */
+//    public int getHetCount();
+//
+//    /**
+//     * @return the count of genotypes for this variant called as homozygous reference
+//     */
+//    public int getHomRefCount();
+//
+//    /**
+//     * @return the count of genotypes for this variant that are no-calls
+//     */
+//    public int getNoCallCount();
 
     double getMethlationRate();
 
     double getCoveredSampleFraction();
 
     String getPositionString();
+
+    int[] getAlleleCounts();
+
+    double getAlternateAlleleFrequency();
+
+    int getTotalAlleleCount();
+
+    double getAlleleFraction();
 }
