@@ -82,7 +82,6 @@ public class FrameManager {
         return frames.size() > 1;
     }
 
-
     public static void setToDefaultFrame(String searchString) {
         frames.clear();
         if (searchString != null) {
@@ -105,7 +104,6 @@ public class FrameManager {
         }
         return locusAdded;
     }
-
 
     public static void resetFrames(GeneList gl) {
 
@@ -216,7 +214,6 @@ public class FrameManager {
         frames.remove(frame);
     }
 
-
     public static void sortFrames(final Track t) {
 
         Collections.sort(frames, new Comparator<ReferenceFrame>() {
@@ -224,12 +221,29 @@ public class FrameManager {
             public int compare(ReferenceFrame o1, ReferenceFrame o2) {
                 float s1 = t.getRegionScore(o1.getChromosome().getName(), (int) o1.getOrigin(), (int) o1.getEnd(),
                         o1.getZoom(), RegionScoreType.SCORE, o1.getName());
-                float s2  = t.getRegionScore(o2.getChromosome().getName(), (int) o2.getOrigin(), (int) o2.getEnd(),
+                float s2 = t.getRegionScore(o2.getChromosome().getName(), (int) o2.getOrigin(), (int) o2.getEnd(),
                         o2.getZoom(), RegionScoreType.SCORE, o2.getName());
                 return (s1 == s2 ? 0 : (s1 > s2) ? -1 : 1);
             }
         });
 
+    }
+
+    /**
+     * Increment the zoom level of the visibile frame(s). Supports batch commands zoomIn and zoomOut
+     *
+     * @param zoom the zoom level increment, usually -1 or 1
+     */
+    public static void incrementZoom(int zoom) {
+
+        if(isGeneListMode()) {
+            for(ReferenceFrame frame : getFrames()) {
+                frame.doZoomIncrement(zoom);
+            }
+        }
+        else {
+            getDefaultFrame().doZoomIncrement(zoom);
+        }
     }
 
 }

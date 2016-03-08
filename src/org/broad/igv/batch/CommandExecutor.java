@@ -190,6 +190,10 @@ public class CommandExecutor {
                     return Globals.VERSION;
                 } else if (cmd.equals("exit")) {
                     System.exit(0);
+                } else if (cmd.equals("zoomin")) {
+                    FrameManager.incrementZoom(1);
+                } else if (cmd.equals("zoomout")) {
+                    FrameManager.incrementZoom(-1);
                 } else {
                     result = "UNKOWN COMMAND: " + command;
                     log.error(result);
@@ -901,8 +905,7 @@ public class CommandExecutor {
             return AlignmentTrack.SortOption.FIRST_OF_PAIR_STRAND;
         } else if (str.equalsIgnoreCase("mateChr")) {
             return AlignmentTrack.SortOption.MATE_CHR;
-        }
-        else {
+        } else {
             try {
                 return AlignmentTrack.SortOption.valueOf(str.toUpperCase());
             } catch (IllegalArgumentException e) {
@@ -924,8 +927,7 @@ public class CommandExecutor {
             return AlignmentTrack.GroupOption.SAMPLE;
         } else if (str.equalsIgnoreCase("readGroup") || str.equalsIgnoreCase("read_group")) {
             return AlignmentTrack.GroupOption.READ_GROUP;
-        }
-        else {
+        } else {
             try {
                 return AlignmentTrack.GroupOption.valueOf(str.toUpperCase());
             } catch (IllegalArgumentException e) {
