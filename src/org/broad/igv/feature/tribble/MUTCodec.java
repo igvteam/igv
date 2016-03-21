@@ -65,7 +65,7 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
     private int refAlleleColumn;
     private int tumorAllele1Column;
     private int tumorAllele2Column;
-    private int currentLinNumber = 0;
+    private int errorCount = 0;
 
 
     public MUTCodec(String path, Genome genome) {
@@ -132,11 +132,9 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
     @Override
     public Mutation decode(String line) {
 
-        if (line.startsWith("#") || line.startsWith("Hugo_Symbol") || currentLinNumber == 0) {
-            currentLinNumber++;
+        if (line.startsWith("#") || line.startsWith("Hugo_Symbol")) {
             return null;
         } else {
-            currentLinNumber++;
 
             String[] tokens = Globals.tabPattern.split(line);
 
@@ -146,14 +144,28 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
             try {
                 start = Integer.parseInt(tokens[startColumn].trim());
             } catch (NumberFormatException e) {
-                throw new DataLoadException("Column " + (startColumn + 1) + " must be a numeric value.", path);
+                errorCount++;
+                if(errorCount > 100) {
+                    throw new DataLoadException("Column " + (startColumn + 1) + " must be a numeric value.", path);
+                }
+                else {
+                    log.info("Error parsing line: " + line);
+                    return null;
+                }
             }
 
             int end;
             try {
                 end = Integer.parseInt(tokens[endColumn].trim());
             } catch (NumberFormatException e) {
-                throw new DataLoadException("Column " + (endColumn + 1) + " must be a numeric value.", path);
+                errorCount++;
+                if(errorCount > 100) {
+                    throw new DataLoadException("Column " + (endColumn + 1) + " must be a numeric value.", path);
+                }
+                else {
+                    log.info("Error parsing line: " + line);
+                    return null;
+                }
             }
 
 
