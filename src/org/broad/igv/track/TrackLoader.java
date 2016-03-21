@@ -131,8 +131,6 @@ public class TrackLoader {
             LoadHandler handler = getTrackLoaderHandler(typeString);
             if (dbUrl != null) {
                 this.loadFromDatabase(locator, newTracks, genome);
-            } else if (CodecFactory.hasCodec(locator, genome) && !forceNotTribble(typeString)) {
-                loadTribbleFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".dbxml")) {
                 loadFromDBProfile(locator, newTracks);
             } else if (typeString.endsWith(".gmt")) {
@@ -204,7 +202,7 @@ public class TrackLoader {
             } else if (typeString.endsWith("mage-tab") || ExpressionFileParser.parsableMAGE_TAB(locator)) {
                 locator.setDescription("MAGE_TAB");
                 loadGctFile(locator, newTracks, genome);
-            }  else if (typeString.endsWith(".bp")){
+            } else if (typeString.endsWith(".bp")) {
                 loadBasePairFile(locator, newTracks, genome);
             } else if (GWASParser.isGWASFile(typeString)) {
                 loadGWASFile(locator, newTracks, genome);
@@ -215,6 +213,8 @@ public class TrackLoader {
                 loadListFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".smap")) {
                 loadSMAPFile(locator, newTracks, genome);
+            } else if (CodecFactory.hasCodec(locator, genome) && !forceNotTribble(typeString)) {
+                loadTribbleFile(locator, newTracks, genome);
             } else if (handler != null) {
                 //Custom loader specified
                 log.info(String.format("Loading %s with %s", path, handler));
