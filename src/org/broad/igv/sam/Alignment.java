@@ -59,6 +59,8 @@ public interface Alignment extends LocusScore {
 
     char[] getGapTypes();
 
+    java.util.List<Gap> getGaps();
+
     int getInferredInsertSize();
 
     int getMappingQuality();

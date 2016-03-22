@@ -32,6 +32,7 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
+import java.util.List;
 
 /**
  * Some alignment formats are parsed as Features.
@@ -235,6 +236,11 @@ public class FeatureWrappedAlignment implements Alignment {
     }
 
     public char[] getGapTypes() {
+        return null;
+    }
+
+    @Override
+    public List<Gap> getGaps() {
         return null;
     }
 

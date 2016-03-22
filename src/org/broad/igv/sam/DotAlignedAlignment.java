@@ -34,6 +34,7 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -240,6 +241,12 @@ public class DotAlignedAlignment implements Alignment {
     public char[] getGapTypes() {
         return null;
     }
+
+    @Override
+    public List<Gap> getGaps() {
+        return null;
+    }
+
 
     public boolean isFirstOfPair() {
         return false;

@@ -282,6 +282,11 @@ public class ReducedMemoryAlignment implements Alignment {
         return null;
     }
 
+    @Override
+    public List<Gap> getGaps() {
+        return null;
+    }
+
     public boolean isFirstOfPair() {
         return false;
     }

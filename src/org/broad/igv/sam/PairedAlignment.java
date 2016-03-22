@@ -30,6 +30,7 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -120,6 +121,11 @@ public class PairedAlignment implements Alignment {
 
     public char[] getGapTypes() {
         return new char[0];  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public List<Gap> getGaps() {
+        return null;
     }
 
     public int getInferredInsertSize() {

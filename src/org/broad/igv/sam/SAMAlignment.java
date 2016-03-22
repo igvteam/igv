@@ -100,6 +100,7 @@ public abstract class SAMAlignment implements Alignment {
     ReadMate mate;
     AlignmentBlockImpl[] alignmentBlocks;
     AlignmentBlockImpl[] insertions;
+    List<Gap> gaps;
     char[] gapTypes;
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
 
@@ -259,6 +260,7 @@ public abstract class SAMAlignment implements Alignment {
         boolean firstOperator = true;
         int softClippedBaseCount = 0;
         int nGaps = 0;
+        int nRealGaps = 0;
         char prevOp = 0;
         for (CigarOperator operator : operators) {
 
@@ -274,6 +276,7 @@ public abstract class SAMAlignment implements Alignment {
                 }
             } else if (op == DELETION || op == SKIPPED_REGION) {
                 nGaps++;
+                nRealGaps++;
             } else if (op == INSERTION) {
                 nInsertions++;
                 nGaps++; // "virtual" gap, account for artificial block split @ insertion
@@ -296,6 +299,9 @@ public abstract class SAMAlignment implements Alignment {
         if (nGaps > 0) {
             gapTypes = new char[nGaps];
         }
+        if (nRealGaps > 0) {
+            gaps = new ArrayList<Gap>();
+        }
 
         // Adjust start to include soft clipped bases a
         if (showSoftClipped) {
@@ -308,6 +314,8 @@ public abstract class SAMAlignment implements Alignment {
         int blockIdx = 0;
         int insertionIdx = 0;
         int gapIdx = 0;
+        int nRealGapIdx = 0;
+
         FlowSignalContextBuilder fBlockBuilder = null;
         if (null != flowSignals) {
             if (0 < readBases.length) {
@@ -340,6 +348,9 @@ public abstract class SAMAlignment implements Alignment {
                     }
 
                 } else if (op.operator == DELETION || op.operator == SKIPPED_REGION) {
+
+                    gaps.add(new Gap(blockStart,  op.nBases, op.operator));
+
                     blockStart += op.nBases;
                     gapTypes[gapIdx++] = op.operator;
                 } else if (op.operator == INSERTION) {
@@ -707,6 +718,10 @@ public abstract class SAMAlignment implements Alignment {
     @Override
     public char[] getGapTypes() {
         return gapTypes;
+    }
+
+    public java.util.List<Gap> getGaps() {
+        return gaps;
     }
 
 

@@ -42,8 +42,8 @@ import org.broad.igv.sam.*;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.*;
+import java.util.List;
 
 /**
  * A Facade to a <a href="http://goby.campagnelab.org">Goby</a> alignment entry. The facade exposes
@@ -469,6 +469,12 @@ public class GobyAlignment implements Alignment {
         } else {
             return gapTypes.toArray();
         }
+    }
+
+    @Override
+    public List<Gap> getGaps() {
+        // TODO -- implement
+        return null;
     }
 
     public String getCigarString() {
