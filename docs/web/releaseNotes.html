@@ -715,7 +715,10 @@
         Support for loading Bionano .smap files.
     </li>
     <li>
-        New option to specify coloring of VCF variant records by allele frequency or allele fraction.
+        <strong>Note: Important change to VCF variant coloring.</strong>  VCF variants can now be colored by either allele fraction (AF) or
+        allele fraction (computed from AC and AN fields).  This option is specified on the Variant tab of the user
+        preferences window.  <strong><i>Calculations of Allele Fraction from genotype records is no longer performed in IGV</i></strong>,  either
+        AF or AC & AN must be specified in the INFO column to color variants.
     </li>
 </ul>
 
