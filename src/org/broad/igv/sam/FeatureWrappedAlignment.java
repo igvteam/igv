@@ -235,10 +235,6 @@ public class FeatureWrappedAlignment implements Alignment {
         return null;
     }
 
-    public char[] getGapTypes() {
-        return null;
-    }
-
     @Override
     public List<Gap> getGaps() {
         return null;

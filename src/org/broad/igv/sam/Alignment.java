@@ -57,8 +57,6 @@ public interface Alignment extends LocusScore {
 
     String getCigarString();
 
-    char[] getGapTypes();
-
     java.util.List<Gap> getGaps();
 
     int getInferredInsertSize();

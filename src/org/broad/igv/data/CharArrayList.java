@@ -57,6 +57,10 @@ public class CharArrayList {
         return values;
     }
 
+    public int getSize() {
+        return size;
+    }
+
     private void grow() {
         if (values.length >= Integer.MAX_VALUE) {
             throw new RuntimeException("Maximum array size exceeded");

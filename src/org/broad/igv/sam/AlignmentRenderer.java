@@ -556,8 +556,6 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         int lastBlockEnd = Integer.MIN_VALUE;
 
-        int blockNumber = -1;
-        char[] gapTypes = alignment.getGapTypes();
         boolean highZoom = locScale < 0.1251;
 
         // Get a graphics context for outlining reads
@@ -569,7 +567,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         int y = (int) (rowRect.getY());
 
         for (AlignmentBlock aBlock : alignment.getAlignmentBlocks()) {
-            blockNumber++;
+
             int blockPixelStart = (int) ((aBlock.getStart() - origin) / locScale);
             int blockPixelWidth = (int) Math.ceil(aBlock.getLength() / locScale);
 
@@ -731,7 +729,6 @@ public class AlignmentRenderer implements FeatureRenderer {
         if (gaps != null) {
             for (Gap gap : alignment.getGaps()) {
 
-                blockNumber++;
                 int gapStart = (int) ((gap.getStart() - origin) / locScale);
                 int gapWidth = (int) Math.ceil(gap.getnBases() / locScale);
 

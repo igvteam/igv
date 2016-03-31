@@ -35,10 +35,7 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import htsjdk.tribble.readers.AsciiLineReader;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Jim Robinson
@@ -121,40 +118,38 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
 
         int alignmentStart = alignment.getAlignmentStart();
         int alignmentEnd = alignment.getAlignmentEnd();
+        Strand strand = alignment.getReadStrand();
+        final boolean isNegativeStrand = strand == Strand.NEGATIVE;
 
         AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
         if (blocks != null) {
             int lastBlockEnd = -1;
-            int gapIdx = 0;
-            char[] gapTypes = alignment.getGapTypes();
 
             for (AlignmentBlock b : blocks) {
                 if (b.getEnd() < start) continue;
                 if (b.getStart() > end) break;
 
                 //Strand strand = alignment.getFirstOfPairStrand();
-                Strand strand = alignment.getReadStrand();
 
                 // Don't count softclips
                 if (!b.isSoftClipped() && strand != Strand.NONE) {
-                    final boolean isNegativeStrand = strand == Strand.NEGATIVE;
-
-                    incBlockCounts(b, isNegativeStrand); //alignment.isNegativeStrand());
-
-                    // Count deletions
-                    if (gapTypes != null
-                            && (lastBlockEnd >= 0)
-                            && (gapIdx < gapTypes.length)) {
-                        if (gapTypes[gapIdx] == SAMAlignment.DELETION) {
-                            for (int pos = lastBlockEnd; pos < b.getStart(); pos++) {
-                                incrementDeletion(pos, isNegativeStrand);
-                            }
-                        }
-                        gapIdx++;
-                    }
-                    lastBlockEnd = b.getEnd();
+                    incBlockCounts(b, isNegativeStrand);
                 }
             }
+
+            // Count deletions
+            List<Gap> gaps = alignment.getGaps();
+            if (gaps != null) {
+                for (Gap gap : gaps) {
+                    if (gap.getType() == SAMAlignment.DELETION) {
+                        for (int pos = gap.getStart(); pos < gap.getStart() + gap.getnBases(); pos++) {
+                            incrementDeletion(pos, isNegativeStrand);
+                        }
+                    }
+                }
+            }
+
+
             // Count insertions
             final AlignmentBlock[] insertions = alignment.getInsertions();
             if (insertions != null) {

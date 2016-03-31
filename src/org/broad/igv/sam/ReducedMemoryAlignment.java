@@ -277,11 +277,6 @@ public class ReducedMemoryAlignment implements Alignment {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-
-    public char[] getGapTypes() {
-        return null;
-    }
-
     @Override
     public List<Gap> getGaps() {
         return null;

@@ -112,22 +112,23 @@ public class SpliceJunctionHelper {
         Table<Integer, Integer, SpliceJunctionFeature> startEndJunctionsTableThisStrand =
                 isNegativeStrand ? negStartEndJunctionsMap : posStartEndJunctionsMap;
 
-        int flankingStart = -1;
-        int junctionStart = -1;
-        int gapCount = -1;
-        char[] gapTypes = alignment.getGapTypes();
-        //for each pair of blocks, create or add evidence to a splice junction
-        if (gapTypes != null) {
-            for (AlignmentBlock block : blocks) {
-                int flankingEnd = block.getEnd();
-                int junctionEnd = block.getStart();
-                if (junctionStart != -1 && gapCount < gapTypes.length && gapTypes[gapCount] == SAMAlignment.SKIPPED_REGION) {
 
+        //for each skipped region, create or add evidence to a splice junction
+        List<Gap> gaps = alignment.getGaps();
+        if (gaps != null) {
+            //  for (AlignmentBlock block : blocks) {
+            for (Gap gap : gaps) {
+                if (gap instanceof SpliceGap) {
+                    SpliceGap spliceGap = (SpliceGap) gap;
                     //only proceed if the flanking regions are both bigger than the minimum
                     if (loadOptions.minReadFlankingWidth == 0 ||
-                            ((junctionStart - flankingStart >= loadOptions.minReadFlankingWidth) &&
-                                    (flankingEnd - junctionEnd >= loadOptions.minReadFlankingWidth))) {
+                            (spliceGap.getFlankingLeft() >= loadOptions.minReadFlankingWidth &&
+                                    spliceGap.getFlankingRight() >= loadOptions.minReadFlankingWidth)) {
 
+                        int junctionStart = spliceGap.getStart();
+                        int junctionEnd = junctionStart + spliceGap.getnBases();
+                        int flankingStart = junctionStart - spliceGap.getFlankingLeft();
+                        int flankingEnd = junctionEnd + spliceGap.getFlankingRight();
                         SpliceJunctionFeature junction = startEndJunctionsTableThisStrand.get(junctionStart, junctionEnd);
                         if (junction == null) {
                             junction = new SpliceJunctionFeature(alignment.getChr(), junctionStart, junctionEnd,
@@ -139,9 +140,6 @@ public class SpliceJunctionHelper {
                     }
 
                 }
-                flankingStart = junctionEnd;
-                junctionStart = flankingEnd;
-                gapCount += 1;
             }
         }
     }

@@ -119,10 +119,6 @@ public class PairedAlignment implements Alignment {
         return insertions;
     }
 
-    public char[] getGapTypes() {
-        return new char[0];  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     @Override
     public List<Gap> getGaps() {
         return null;

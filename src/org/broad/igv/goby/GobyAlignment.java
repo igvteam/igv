@@ -68,6 +68,7 @@ public class GobyAlignment implements Alignment {
     protected AlignmentBlockImpl[] block = new AlignmentBlockImpl[1];
     protected AlignmentBlockImpl[] insertionBlock;
     private CharArrayList gapTypes = null;
+    private List<Gap> gaps = null;
     private static final ReadMate unmappedMate = new ReadMate("*", -1, false, true);
     private Comparator<? super AlignmentBlock> blockComparator = new Comparator<AlignmentBlock>() {
         public int compare(AlignmentBlock alignmentBlock, AlignmentBlock alignmentBlock1) {
@@ -462,19 +463,29 @@ public class GobyAlignment implements Alignment {
     }
 
 
-    public char[] getGapTypes() {
-        //LOG.info("getGapTypes");
-        if (gapTypes == null) {
-            return new char[0];
-        } else {
-            return gapTypes.toArray();
-        }
-    }
-
     @Override
     public List<Gap> getGaps() {
-        // TODO -- implement
-        return null;
+        if(gaps == null && gapTypes != null && gapTypes.getSize() > 0 && block.length > 1) {
+            gaps = new ArrayList<Gap>(gapTypes.getSize());
+            char[] types = gapTypes.toArray();
+
+            AlignmentBlock leftBlock = block[0];
+            for(int i=1; i<block.length; i++ ) {
+                AlignmentBlock rightBlock = block[i];
+                int gapStart = leftBlock.getEnd();
+                int nBases = rightBlock.getStart() - gapStart;
+                char type = types.length <= i ? types[i-1] : 'N';
+                if(type == SAMAlignment.SKIPPED_REGION) {
+                    gaps.add(new SpliceGap(gapStart, nBases, type, leftBlock.getLength(), rightBlock.getLength()));
+                }
+                else {
+                    gaps.add(new Gap(gapStart, nBases, type));
+                }
+                leftBlock = rightBlock;
+            }
+        }
+
+        return gaps;
     }
 
     public String getCigarString() {

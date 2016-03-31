@@ -314,7 +314,6 @@ public abstract class SAMAlignment implements Alignment {
         int blockIdx = 0;
         int insertionIdx = 0;
         int gapIdx = 0;
-        int nRealGapIdx = 0;
 
         FlowSignalContextBuilder fBlockBuilder = null;
         if (null != flowSignals) {
@@ -324,7 +323,8 @@ public abstract class SAMAlignment implements Alignment {
         }
 
         prevOp = 0;
-        for (CigarOperator op : operators) {
+        for (int i = 0; i < operators.size(); i++) {
+            CigarOperator op = operators.get(i);
             try {
 
                 if (op.operator == HARD_CLIP) {
@@ -347,10 +347,22 @@ public abstract class SAMAlignment implements Alignment {
                         gapTypes[gapIdx++] = ZERO_GAP;
                     }
 
-                } else if (op.operator == DELETION || op.operator == SKIPPED_REGION) {
+                } else if (op.operator == DELETION) {
+                    gaps.add(new Gap(blockStart, op.nBases, op.operator));
+                    blockStart += op.nBases;
+                    gapTypes[gapIdx++] = op.operator;
+                } else if (op.operator == SKIPPED_REGION) {
 
-                    gaps.add(new Gap(blockStart,  op.nBases, op.operator));
-
+                    // Need the "flanking" regions, i.e. size of blocks either side of splice
+                    int flankingLeft = 0;
+                    int flankingRight = 0;
+                    if (i > 0) {
+                        flankingLeft = operators.get(i - 1).nBases;
+                    }
+                    if (i < operators.size() - 1) {
+                        flankingRight = operators.get(i + 1).nBases;
+                    }
+                    gaps.add(new SpliceGap(blockStart, op.nBases, op.operator, flankingLeft, flankingRight));
                     blockStart += op.nBases;
                     gapTypes[gapIdx++] = op.operator;
                 } else if (op.operator == INSERTION) {
@@ -713,11 +725,6 @@ public abstract class SAMAlignment implements Alignment {
 
     public String getLibrary() {
         return library;
-    }
-
-    @Override
-    public char[] getGapTypes() {
-        return gapTypes;
     }
 
     public java.util.List<Gap> getGaps() {
