@@ -34,14 +34,14 @@ public class Ga4ghProvider {
 
     String name;
     String baseURL;
-    String authKey;
+    String apiKey;
     List<Ga4ghDataset> datasets;
     private Object id;
 
-    public Ga4ghProvider(String name, String baseURL, String authKey, List<Ga4ghDataset> datasets) {
+    public Ga4ghProvider(String name, String baseURL, String apiKey, List<Ga4ghDataset> datasets) {
         this.name = name;
         this.baseURL = baseURL;
-        this.authKey = authKey;
+        this.apiKey = apiKey;
         this.datasets = datasets;
     }
 
@@ -53,8 +53,8 @@ public class Ga4ghProvider {
         return baseURL;
     }
 
-    public String getAuthKey() {
-        return authKey;
+    public String getApiKey() {
+        return apiKey;
     }
 
     public List<Ga4ghDataset> getDatasets() {

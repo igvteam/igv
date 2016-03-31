@@ -178,8 +178,6 @@ public class IGVMenuBar extends JMenuBar {
 
 
         googleMenu = createGoogleMenu();
-        googleMenu.setVisible(PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_API_KEY) != null ||
-                PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_GOOGLE_MENU));
         menus.add(googleMenu);
 
         menus.add(createHelpMenu());
@@ -419,11 +417,9 @@ public class IGVMenuBar extends JMenuBar {
             menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         }
 
-        if (PreferenceManager.getInstance().get(PreferenceManager.GOOGLE_API_KEY) != null ||
-                PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_GOOGLE_MENU)) {
-            menuAction = new BrowseGa4ghAction("Load from Ga4gh...", KeyEvent.VK_G, igv);
-            menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-        }
+        menuAction = new BrowseGa4ghAction("Load from Ga4gh...", KeyEvent.VK_G, igv);
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
 
         //Disable loading if no genome loaded. Something of an edge case
         if (!genomeLoaded) {

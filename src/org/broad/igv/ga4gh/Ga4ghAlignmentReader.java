@@ -141,7 +141,7 @@ public class Ga4ghAlignmentReader implements AlignmentReader<Alignment> {
 
     private void loadMetadata() throws IOException {
 
-        String authKey = provider.authKey;
+        String authKey = provider.apiKey;
         String baseURL = provider.baseURL;
         URL url = new URL(baseURL + "/readgroupsets/" + readsetId + (authKey == null ? "" : "?key=" + authKey));   // TODO -- field selection?
 

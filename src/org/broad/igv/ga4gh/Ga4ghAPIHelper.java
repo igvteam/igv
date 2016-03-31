@@ -233,7 +233,7 @@ public class Ga4ghAPIHelper {
 
     private static String doPost(Ga4ghProvider provider, String command, String content, String fields, boolean handleError) throws IOException {
 
-        String authKey = provider.getAuthKey();
+        String authKey = provider.getApiKey();
         String baseURL = provider.getBaseURL();
         String token = OAuthUtils.getInstance().getAccessToken();
 
