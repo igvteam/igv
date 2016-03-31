@@ -727,57 +727,60 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         }
 
-        for (Gap gap : alignment.getGaps()) {
+        java.util.List<Gap> gaps = alignment.getGaps();
+        if (gaps != null) {
+            for (Gap gap : alignment.getGaps()) {
 
-            blockNumber++;
-            int gapStart = (int) ((gap.getStart() - origin) / locScale);
-            int gapWidth = (int) Math.ceil(gap.getnBases() / locScale);
+                blockNumber++;
+                int gapStart = (int) ((gap.getStart() - origin) / locScale);
+                int gapWidth = (int) Math.ceil(gap.getnBases() / locScale);
 
-            // If block is out of view skip -- this is important in the case of PacBio and other platforms with very long reads
-            if (gapStart + gapWidth >= rowRect.x && gapStart <= rowRect.getMaxX()) {
-
-
-                // Draw connecting lines between blocks, if in view
-                if (gapStart > rowRect.x && gapWidth > 0) {
-                    Graphics2D gLine;
-                    Stroke stroke = null;
-                    Stroke gapStroke = null;
-                    Color gapLineColor = deletionColor;
+                // If block is out of view skip -- this is important in the case of PacBio and other platforms with very long reads
+                if (gapStart + gapWidth >= rowRect.x && gapStart <= rowRect.getMaxX()) {
 
 
-                    int type = gap.getType();
+                    // Draw connecting lines between blocks, if in view
+                    if (gapStart > rowRect.x && gapWidth > 0) {
+                        Graphics2D gLine;
+                        Stroke stroke = null;
+                        Stroke gapStroke = null;
+                        Color gapLineColor = deletionColor;
 
-                    switch (type) {
-                        case SAMAlignment.UNKNOWN:
-                            gapLineColor = unknownGapColor;
-                            break;
-                        case SAMAlignment.SKIPPED_REGION:
-                            gapLineColor = skippedColor;
-                            break;
-                        default:
-                            gapLineColor = deletionColor;
-                            gapStroke = thickStroke;
-                            break;
+
+                        int type = gap.getType();
+
+                        switch (type) {
+                            case SAMAlignment.UNKNOWN:
+                                gapLineColor = unknownGapColor;
+                                break;
+                            case SAMAlignment.SKIPPED_REGION:
+                                gapLineColor = skippedColor;
+                                break;
+                            default:
+                                gapLineColor = deletionColor;
+                                gapStroke = thickStroke;
+                                break;
+                        }
+
+
+                        gLine = context.getGraphic2DForColor(gapLineColor);
+                        if (gapStroke != null) {
+                            stroke = gLine.getStroke();
+                            gLine.setStroke(thickStroke);
+                        }
+
+                        int startX = Math.max(rowRect.x, gapStart);
+                        int endX = Math.min(rowRect.x + rowRect.width, gapStart + gapWidth);
+                        gLine.drawLine(startX, y + h / 2, endX, y + h / 2);
+                        if (stroke != null) {
+                            gLine.setStroke(stroke);
+                        }
                     }
 
-
-                    gLine = context.getGraphic2DForColor(gapLineColor);
-                    if (gapStroke != null) {
-                        stroke = gLine.getStroke();
-                        gLine.setStroke(thickStroke);
+                    // Next block cannot start before lastBlockEnd.  If its out of view we are done.
+                    if (gapStart + gapWidth > rowRect.getMaxX()) {
+                        break;
                     }
-
-                    int startX = Math.max(rowRect.x, gapStart);
-                    int endX = Math.min(rowRect.x + rowRect.width, gapStart + gapWidth);
-                    gLine.drawLine(startX, y + h / 2, endX, y + h / 2);
-                    if (stroke != null) {
-                        gLine.setStroke(stroke);
-                    }
-                }
-
-                // Next block cannot start before lastBlockEnd.  If its out of view we are done.
-                if (gapStart + gapWidth > rowRect.getMaxX()) {
-                    break;
                 }
             }
         }

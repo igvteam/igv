@@ -48,36 +48,26 @@ public class LongRunningTask implements Callable {
 
     Runnable runnable;
 
-    boolean waitCursor;
-
     public static Executor getThreadExecutor() {
         return threadExecutor;
     }
 
     public static Future submit(Runnable runnable) {
-        return submit(runnable, true);
-    }
-
-    public static Future submit(Runnable runnable, boolean waitCursor) {
         if (Globals.isBatch() || !SwingUtilities.isEventDispatchThread()) {
             runnable.run();
             return null;
         } else {
-            return threadExecutor.submit(new LongRunningTask(runnable, waitCursor));
+            return threadExecutor.submit(new LongRunningTask(runnable));
         }
     }
 
-    private LongRunningTask(Runnable runnable, boolean waitCursor) {
+    private LongRunningTask(Runnable runnable) {
         this.runnable = runnable;
-        this.waitCursor = waitCursor;
     }
 
     public Object call() throws Exception {
 
-        CursorToken token = null;
-
-        if(waitCursor)  WaitCursorManager.showWaitCursor();
-
+        CursorToken token = WaitCursorManager.showWaitCursor();
         try {
             runnable.run();
         } catch (Exception e) {
@@ -85,7 +75,7 @@ public class LongRunningTask implements Callable {
             log.error("Exception running task", e);
         } finally {
             //log.info("Removing wait cursor " + runnable.getName());
-            if(waitCursor) WaitCursorManager.removeWaitCursor(token);
+            WaitCursorManager.removeWaitCursor(token);
 
             synchronized (IGV.getInstance()) {
                 IGV.getInstance().notifyAll();
