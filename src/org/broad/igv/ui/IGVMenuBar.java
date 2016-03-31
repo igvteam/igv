@@ -176,9 +176,7 @@ public class IGVMenuBar extends JMenuBar {
         //extrasMenu.setVisible(false);
         menus.add(extrasMenu);
 
-
-        googleMenu = createGoogleMenu();
-        menus.add(googleMenu);
+        menus.add(createGoogleMenu());
 
         menus.add(createHelpMenu());
 
@@ -1191,7 +1189,8 @@ public class IGVMenuBar extends JMenuBar {
                         loadReadset.setEnabled(loggedIn);
                     }
                 };
-                LongRunningTask.submit(runnable);
+
+                LongRunningTask.submit(runnable, false);
             }
 
             @Override
