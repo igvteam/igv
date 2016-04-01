@@ -92,7 +92,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
      * Create an alias -> chromosome lookup map.  Enable loading BAM files that use alternative names for chromosomes,
      * provided the alias has been defined  (e.g. 1 -> chr1,  etc).
      */
-    private void initChrMap(Genome genome) {
+    private void initChrMap(Genome genome) throws IOException {
         if (genome != null) {
             List<String> seqNames = reader.getSequenceNames();
             if (seqNames != null) {
@@ -153,7 +153,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
      *
      * @return
      */
-    public List<String> getSequenceNames() {
+    public List<String> getSequenceNames() throws IOException {
         return reader.getSequenceNames();
     }
 

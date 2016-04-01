@@ -52,7 +52,7 @@ public class MergedAlignmentReader implements AlignmentReader {
     Map<String, Integer> chrNameIndex;
     SAMFileHeader header;
 
-    public MergedAlignmentReader(List<AlignmentReader> readers) {
+    public MergedAlignmentReader(List<AlignmentReader> readers) throws IOException {
         this.readers = readers;
         loadSequenceNames();
     }
@@ -98,7 +98,7 @@ public class MergedAlignmentReader implements AlignmentReader {
      *
      * @return
      */
-    public void loadSequenceNames() {
+    public void loadSequenceNames() throws IOException {
         // Use a set for quick comparison
         LinkedHashSet<String> names = new LinkedHashSet<String>(50);
         for (AlignmentReader reader : readers) {

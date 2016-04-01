@@ -87,7 +87,7 @@ public class AlignmentTileLoader {
         return this.reader.getFileHeader();
     }
 
-    public List<String> getSequenceNames() {
+    public List<String> getSequenceNames() throws IOException {
         return reader.getSequenceNames();
     }
 

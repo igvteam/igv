@@ -65,12 +65,16 @@ public class Ga4ghAlignmentReader implements AlignmentReader<Alignment> {
     }
 
     @Override
-    public List<String> getSequenceNames() {
+    public List<String> getSequenceNames() throws IOException {
 
         if (sequenceNames == null) {
             try {
                 loadMetadata();
-            } catch (Exception e) {
+            }
+            catch (IOException e) {
+                throw e;
+            }
+            catch (Exception e) {
                 log.error("Error fetching metadata", e);
             }
         }

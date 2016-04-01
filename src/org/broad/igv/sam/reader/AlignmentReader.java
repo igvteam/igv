@@ -48,7 +48,7 @@ public interface AlignmentReader<T extends Alignment> {
     /**
      * Return the list of sequence (chromosome) names as defined in the files header or meta-data section.
      */
-    List<String> getSequenceNames();
+    List<String> getSequenceNames() throws IOException;
 
     /**
      * Return the header of the SAM file. May be null
