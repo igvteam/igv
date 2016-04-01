@@ -176,9 +176,9 @@ public class IGVMenuBar extends JMenuBar {
         //extrasMenu.setVisible(false);
         menus.add(extrasMenu);
 
-        if(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_GOOGLE_MENU)) {
-            menus.add(createGoogleMenu());
-        }
+        googleMenu = createGoogleMenu();
+        googleMenu.setVisible(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_GOOGLE_MENU));
+        menus.add(googleMenu);
 
         menus.add(createHelpMenu());
 
