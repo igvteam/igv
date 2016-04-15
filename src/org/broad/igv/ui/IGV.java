@@ -1165,15 +1165,25 @@ public class IGV {
                 public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
                     if ((infoflags & ImageObserver.ALLBITS) != 0) {
                         // Image is ready
-                        fistCursor = mainFrame.getToolkit().createCustomCursor(handImage, new Point(8, 6), "Move");
+                        try {
+                            fistCursor = mainFrame.getToolkit().createCustomCursor(handImage, new Point(8, 6), "Move");
+                        } catch (Exception e) {
+                            log.error("Could not create fistCursor", e);
+                            fistCursor = Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
+                        }
                         return false;
                     } else {
                         return true;
                     }
                 }
             });
-            if(ready) {
-                fistCursor = mainFrame.getToolkit().createCustomCursor(handImage, new Point(8, 6), "Move");
+            if (ready) {
+                try {
+                    fistCursor = mainFrame.getToolkit().createCustomCursor(handImage, new Point(8, 6), "Move");
+                } catch (Exception e) {
+                    log.error("Could not create fistCursor", e);
+                    fistCursor = Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
+                }
 
             }
 
@@ -1185,9 +1195,7 @@ public class IGV {
             throws HeadlessException, IndexOutOfBoundsException {
 
         if (dragNDropCursor == null) {
-            ImageIcon icon =
-                    IconFactory.getInstance().getIcon(
-                            IconFactory.IconID.DRAG_AND_DROP);
+            ImageIcon icon = IconFactory.getInstance().getIcon(IconFactory.IconID.DRAG_AND_DROP);
 
             int width = icon.getIconWidth();
             int height = icon.getIconHeight();
@@ -1197,8 +1205,7 @@ public class IGV {
 
             // Make background transparent
             Graphics2D g = dragNDropImage.createGraphics();
-            g.setComposite(AlphaComposite.getInstance(
-                    AlphaComposite.CLEAR, 0.0f));
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR, 0.0f));
             Rectangle2D.Double rect = new Rectangle2D.Double(0, 0, width, height);
             g.fill(rect);
 
@@ -1208,25 +1215,32 @@ public class IGV {
             boolean ready = g.drawImage(image, 0, 0, new ImageObserver() {
                 @Override
                 public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
-                    if((infoflags & ImageObserver.ALLBITS) != 0) {
+                    if ((infoflags & ImageObserver.ALLBITS) != 0) {
                         // Image is ready
-                        dragNDropCursor =
-                                mainFrame.getToolkit().createCustomCursor(
-                                        dragNDropImage, new Point(0, 0), "Drag and Drop");
+                        try {
+                            dragNDropCursor = mainFrame.getToolkit().createCustomCursor(
+                                    dragNDropImage, new Point(0, 0), "Drag and Drop");
+                        } catch (Exception e) {
+                            log.error("Could not create dragNDrop cursor", e);
+                            dragNDropCursor = Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
+                        }
                         return false;
 
-                    }
-                    else {
+                    } else {
                         return true;
                     }
                 }
             });
-            if(ready) {
-                dragNDropCursor =
-                        mainFrame.getToolkit().createCustomCursor(dragNDropImage, new Point(0, 0), "Drag and Drop");
+            if (ready) {
+                try {
+                    dragNDropCursor = mainFrame.getToolkit().createCustomCursor(
+                            dragNDropImage, new Point(0, 0), "Drag and Drop");
+                } catch (Exception e) {
+                    log.error("Could not create dragNDrop cursor", e);
+                    dragNDropCursor = Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
+                }
             }
         }
-
     }
 
     /**
