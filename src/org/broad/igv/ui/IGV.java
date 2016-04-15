@@ -75,6 +75,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.ImageObserver;
 import java.io.*;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.InvocationTargetException;
@@ -1148,7 +1149,7 @@ public class IGV {
         }*/
 
         if (fistCursor == null) {
-            BufferedImage handImage = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
+            final BufferedImage handImage = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
 
             // Make backgroun transparent
             Graphics2D g = handImage.createGraphics();
@@ -1159,8 +1160,23 @@ public class IGV {
 
             // Draw hand image in middle
             g = handImage.createGraphics();
-            g.drawImage(IconFactory.getInstance().getIcon(IconFactory.IconID.FIST).getImage(), 0, 0, null);
-            fistCursor = mainFrame.getToolkit().createCustomCursor(handImage, new Point(8, 6), "Move");
+            boolean ready = g.drawImage(IconFactory.getInstance().getIcon(IconFactory.IconID.FIST).getImage(), 0, 0, new ImageObserver() {
+                @Override
+                public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
+                    if ((infoflags & ImageObserver.ALLBITS) != 0) {
+                        // Image is ready
+                        fistCursor = mainFrame.getToolkit().createCustomCursor(handImage, new Point(8, 6), "Move");
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            });
+            if(ready) {
+                fistCursor = mainFrame.getToolkit().createCustomCursor(handImage, new Point(8, 6), "Move");
+
+            }
+
         }
 
     }
@@ -1176,7 +1192,7 @@ public class IGV {
             int width = icon.getIconWidth();
             int height = icon.getIconHeight();
 
-            BufferedImage dragNDropImage =
+            final BufferedImage dragNDropImage =
                     new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
             // Make background transparent
@@ -1187,13 +1203,28 @@ public class IGV {
             g.fill(rect);
 
             // Draw DND image
-            g =
-                    dragNDropImage.createGraphics();
+            g = dragNDropImage.createGraphics();
             Image image = icon.getImage();
-            g.drawImage(image, 0, 0, null);
-            dragNDropCursor =
-                    mainFrame.getToolkit().createCustomCursor(
-                            dragNDropImage, new Point(0, 0), "Drag and Drop");
+            boolean ready = g.drawImage(image, 0, 0, new ImageObserver() {
+                @Override
+                public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
+                    if((infoflags & ImageObserver.ALLBITS) != 0) {
+                        // Image is ready
+                        dragNDropCursor =
+                                mainFrame.getToolkit().createCustomCursor(
+                                        dragNDropImage, new Point(0, 0), "Drag and Drop");
+                        return false;
+
+                    }
+                    else {
+                        return true;
+                    }
+                }
+            });
+            if(ready) {
+                dragNDropCursor =
+                        mainFrame.getToolkit().createCustomCursor(dragNDropImage, new Point(0, 0), "Drag and Drop");
+            }
         }
 
     }
