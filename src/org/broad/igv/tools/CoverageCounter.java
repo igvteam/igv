@@ -31,9 +31,7 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.AlignmentBlock;
-import org.broad.igv.sam.ReadMate;
+import org.broad.igv.sam.*;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.tools.parsers.DataConsumer;
@@ -155,7 +153,9 @@ public class CoverageCounter {
     private float[] buffer;
 
     private final static Set<Byte> nucleotidesKeep = new HashSet<Byte>();
-    private final static byte[] nucleotides = new byte[]{'A', 'C', 'G', 'T', 'N'};
+    public static final byte DEL = 126;
+    public static final byte INS = 127;
+    private final static byte[] nucleotides = new byte[]{'A', 'C', 'G', 'T', 'N', DEL, INS};
 
     /**
      * Whether to write wig data to standard out (stdout)
@@ -199,7 +199,7 @@ public class CoverageCounter {
 
         //Count the number of output columns. 1 or 2 if not outputting bases
         //5 or 10 if are.
-        int multiplier = outputBases ? 5 : 1;
+        int multiplier = outputBases ? nucleotides.length : 1;
         int datacols = (outputSeparate ? 2 : 1) * multiplier;
 
         buffer = new float[datacols];
@@ -223,7 +223,8 @@ public class CoverageCounter {
     private void parseOptions(String queryString, int minMapQual, int countFlags) {
         if (queryString != null) {
             this.queryInterval = Locus.fromString(queryString);
-            if(this.queryInterval == null) throw new IllegalArgumentException("Error parsing queryString: " + queryString);
+            if (this.queryInterval == null)
+                throw new IllegalArgumentException("Error parsing queryString: " + queryString);
         }
         this.minMappingQuality = minMapQual;
         outputSeparate = (countFlags & STRANDS_BY_READ) > 0;
@@ -347,7 +348,7 @@ public class CoverageCounter {
 
                             if (!block.isSoftClipped()) {
 
-                                 int blockStart = block.getStart();
+                                int blockStart = block.getStart();
                                 int blockEnd = block.getEnd();
 
 
@@ -395,11 +396,40 @@ public class CoverageCounter {
                                     }
                                     //int idx = pos - blockStart;
                                     //byte quality = (idx >= 0 && idx < block.qualities.length) ?
-                                            //block.qualities[pos - blockStart] : (byte) 0;
+                                    //block.qualities[pos - blockStart] : (byte) 0;
                                     counter.incrementCount(pos, base, strand);
                                 }
                             }
                         }
+
+                        final AlignmentBlock[] insertions = alignment.getInsertions();
+                        if (insertions != null) {
+                            for (AlignmentBlock insBlock : insertions) {
+                                int pos = insBlock.getStart();
+                                if (queryInterval == null || (pos >= queryInterval.getStart() && pos <= queryInterval.getEnd()))
+                                    counter.incrementInsertion(pos);
+                            }
+                        }
+
+                        // Count deletions
+                        List<Gap> gaps = alignment.getGaps();
+                        if (gaps != null) {
+                            for (Gap gap : gaps) {
+                                if (gap.getType() == SAMAlignment.DELETION) {
+                                    int adjustedStart = gap.getStart();
+                                    int adjustedEnd = gap.getStart() + gap.getnBases();
+                                    if (queryInterval != null) {
+                                        adjustedStart = Math.max(queryInterval.getStart() - 1, adjustedStart);
+                                        adjustedEnd = Math.min(queryInterval.getEnd(), adjustedEnd);
+                                    }
+                                    for (int pos = adjustedStart; pos < adjustedEnd; pos++) {
+                                        counter.incrementDeletion(pos, strand);
+                                    }
+                                }
+                            }
+                        }
+
+
                     } else {
                         int adjustedStart = alignment.getAlignmentStart();
                         int adjustedEnd = pairedCoverage ?
@@ -471,7 +501,11 @@ public class CoverageCounter {
         for (String sA : strandArr) {
             if (outputBases) {
                 for (Byte n : nucleotides) {
-                    trackNames[col] = prefix + " " + sA + " " + new String(new byte[]{n});
+                    String base;
+                    if (n == DEL) base = "DEL";
+                    else if (n == INS) base = "INS";
+                    else base = new String(new byte[]{n});
+                    trackNames[col] = prefix + " " + sA + " " + base;
                     col++;
                 }
             } else {
@@ -507,6 +541,23 @@ public class CoverageCounter {
             final Counter counter = getCounterForPosition(position);
             int strandNum = strand.equals(Strand.POSITIVE) ? 0 : 1;
             counter.increment(base, strandNum);
+        }
+
+        void incrementDeletion(int position, Strand strand) {
+            final Counter counter = getCounterForPosition(position);
+            int strandNum = strand.equals(Strand.POSITIVE) ? 0 : 1;
+            if (outputBases) {
+                counter.incrementNucleotide(DEL, strandNum);
+            }
+        }
+
+        void incrementInsertion(int position) {
+            final Counter counter = getCounterForPosition(position);
+            int strandNum = 0;
+            if (outputBases) {
+                counter.incrementNucleotide(DEL, strandNum);
+            }
+
         }
 
 
@@ -671,8 +722,8 @@ public class CoverageCounter {
         /**
          * Increment the nucleotide counts.
          *
-         * @param base   65, 67, 71, 84, 78
-         *               aka A, C, G, T, N (upper case).
+         * @param base   65, 67, 71, 84, 78, 126, 127
+         *               aka A, C, G, T, N, deletion, insertion.
          *               Anything else is stored as 0
          * @param strand index of strand, 0 for positive and 1 for negative
          */
@@ -719,9 +770,9 @@ public class CoverageCounter {
             this.step = step;
             this.span = step;
             Writer writer;
-            if(file != null){
+            if (file != null) {
                 writer = new FileWriter(file);
-            }else{
+            } else {
                 writer = new OutputStreamWriter(System.out);
             }
             pw = new PrintWriter(writer);
@@ -729,7 +780,7 @@ public class CoverageCounter {
 
         public void addData(String chr, int start, int end, float[] data) {
 
-            for (float di: data) {
+            for (float di : data) {
                 if (Float.isNaN(di)) {
                     return;
                 }
@@ -745,9 +796,9 @@ public class CoverageCounter {
             int dataSpan = end - start;
 
             //Start of file
-            if(lastChr == null){
+            if (lastChr == null) {
                 outputHeader(chr);
-            }else if (!chr.equals(lastChr) || dataSpan != span) {
+            } else if (!chr.equals(lastChr) || dataSpan != span) {
                 //Changing chromosomes
                 span = dataSpan;
                 outputStepLine(chr);
@@ -769,7 +820,7 @@ public class CoverageCounter {
 
         }
 
-        private void outputTrackLine(){
+        private void outputTrackLine() {
             pw.println("track type=wiggle_0");
         }
 
@@ -777,9 +828,9 @@ public class CoverageCounter {
          * If column labels non-standard we output what they are
          * If they are standard WIG, we output nothing
          */
-        private void outputColumnLabelLine(){
+        private void outputColumnLabelLine() {
             String[] trackNames = getTrackNames("");
-            if(trackNames.length != 1){
+            if (trackNames.length != 1) {
                 String labels = "Pos";
                 for (String s : trackNames) {
                     labels += "," + s;
@@ -788,7 +839,7 @@ public class CoverageCounter {
             }
         }
 
-        private void outputStepLine(String chr){
+        private void outputStepLine(String chr) {
             pw.println("variableStep chrom=" + chr + " span=" + span);
         }
 
