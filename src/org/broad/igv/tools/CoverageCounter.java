@@ -552,10 +552,11 @@ public class CoverageCounter {
         }
 
         void incrementInsertion(int position) {
-            final Counter counter = getCounterForPosition(position);
+            // Insertions are between 2 bases, we increment the counter for the position preceding the insertion
+            final Counter counter = getCounterForPosition(position-1);
             int strandNum = 0;
             if (outputBases) {
-                counter.incrementNucleotide(DEL, strandNum);
+                counter.incrementNucleotide(INS, strandNum);
             }
 
         }
