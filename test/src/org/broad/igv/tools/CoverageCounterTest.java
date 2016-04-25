@@ -144,54 +144,11 @@ public class CoverageCounterTest extends AbstractHeadlessTest {
         }
     }
 
-    /*
-    Simple test, output all 3 data columns and check that they add up properly (both = positive + negative)
-    */
-    @Test
-    public void testStrandsConsistent() throws Exception {
-        String ifile = TestUtils.DATA_DIR + "bed/Unigene.sample.sorted.bed";
-        int[] windowSizes = new int[]{10, 50, 101, 500, 999};
-
-        File wigFile = null;//new File(TestUtils.DATA_DIR + "out", "testStrandsConsistent.wig");
-        //Test that when we run the process twice, with separate and totalled strands, the results add
-        //up properly
-        int[] strandOptions = new int[]{0, CoverageCounter.STRANDS_BY_READ, CoverageCounter.STRANDS_BY_FIRST_IN_PAIR, CoverageCounter.BASES};
-        int[] expected_cols = new int[]{1, 2, 2, 5};
-        TestDataConsumer[] tdcs = new TestDataConsumer[expected_cols.length];
-
-        for (int ii = 0; ii < windowSizes.length; ii++) {
-            for (int so = 0; so < strandOptions.length; so++) {
-                TestDataConsumer dc = new TestDataConsumer();
-                CoverageCounter cc = new CoverageCounter(ifile, dc, windowSizes[ii], 0, wigFile, genome, null, 0, strandOptions[so]);
-                cc.parse();
-
-                for (TestData tdata : dc.testDatas) {
-                    float[] numbers = tdata.data;
-                    assertEquals(expected_cols[so], numbers.length);
-                }
-                tdcs[so] = dc;
-            }
-
-            TestDataConsumer total_dc = tdcs[0];
-            assertEquals(total_dc.testDatas.size(), tdcs[1].testDatas.size());
-            for (int opts = 1; opts < strandOptions.length; opts++) {
-                TestDataConsumer tdc = tdcs[opts];
-                for (int row = 0; row < total_dc.testDatas.size(); row++) {
-                    TestData td = tdc.testDatas.get(row);
-                    float act_sum = 0;
-                    for (float f : td.data) {
-                        act_sum += f;
-                    }
-                    assertEquals(total_dc.testDatas.get(row).data[0], act_sum, 1e-2);
-                }
-            }
-        }
-    }
 
     @Test
     public void testCountBases() throws Exception {
         String ifile = TestUtils.DATA_DIR + "sam/NA12878.muc1.test.sam";
-        int expected_cols = 10;
+        int expected_cols = 14;
 
         File wigFile = new File(TestUtils.DATA_DIR + "out", "testCountBases.wig");
         int windowSize = 1;
@@ -205,9 +162,9 @@ public class CoverageCounterTest extends AbstractHeadlessTest {
         int check_startpos = 153426135 - 1;
         Map<Byte, Integer> posCounts = new HashMap<Byte, Integer>();
         Map<Byte, Integer> negCounts = new HashMap<Byte, Integer>();
-        byte[] keys = new byte[]{'A', 'C', 'G', 'T', 'N'};
-        int[] posvals = new int[]{9, 0, 0, 2, 0};
-        int[] negvals = new int[]{16, 0, 0, 0, 0};
+        byte[] keys = new byte[]{'A', 'C', 'G', 'T', 'N', CoverageCounter.DEL, CoverageCounter.INS};
+        int[] posvals = new int[]{9, 0, 0, 2, 0, 0, 0};
+        int[] negvals = new int[]{16, 0, 0, 0, 0, 0, 0};
         for (int ii = 0; ii < keys.length; ii++) {
             posCounts.put(keys[ii], posvals[ii]);
             negCounts.put(keys[ii], negvals[ii]);

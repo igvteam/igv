@@ -167,11 +167,11 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
         tstCountStrandMapOpts(inputFile, "testwig", "wig", "chr2", 178709699, 179008373);
     }
 
-    @Test
-    public void testCountSAM() throws Exception {
-        String inputFile = TestUtils.DATA_DIR + "sam/test_2.sam";
-        tstCountStrandOpts(inputFile, "testwig", "wig", null, -1, -1);
-    }
+//    @Test
+//    public void testCountSAM() throws Exception {
+//        String inputFile = TestUtils.DATA_DIR + "sam/test_2.sam";
+//        tstCountStrandOpts(inputFile, "testwig", "wig", null, -1, -1);
+//    }
 
     @Test
     public void testCountBAM() throws Exception {
