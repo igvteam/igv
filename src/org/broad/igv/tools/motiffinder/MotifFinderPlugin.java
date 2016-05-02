@@ -25,8 +25,6 @@
 
 package org.broad.igv.tools.motiffinder;
 
-import org.broad.igv.dev.api.IGVPlugin;
-import org.broad.igv.dev.api.batch.Command;
 import org.broad.igv.feature.CachingFeatureSource;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -44,19 +42,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Plugin for searching for a motif (currently can be a regex or IUPAC code)
- * This plugin provides for a dialog so that the user can enter motifs manually,
- * also a batch {@link org.broad.igv.dev.api.batch.Command}.
-* @author jacob
-* @date 2013-Oct-09
-*/
-public class MotifFinderPlugin implements IGVPlugin, Command {
+ * Search for a motif (currently can be a regex or IUPAC code)
+ */
+public class MotifFinderPlugin {
 
     /**
      * Add menu entry for activating SequenceMatchDialog
      */
-    @Override
-    public void init() {
+    public static JMenuItem getMenuItem() {
         JMenuItem menuItem = new JMenuItem("Find Motif...");
         menuItem.addActionListener(new ActionListener() {
             @Override
@@ -69,10 +62,10 @@ public class MotifFinderPlugin implements IGVPlugin, Command {
             }
         });
 
-        IGV.getInstance().addOtherToolMenu(menuItem);
+        return menuItem;
     }
 
-    static void handleDialogResult(MotifFinderDialog dialog){
+    static void handleDialogResult(MotifFinderDialog dialog) {
         String[] pattern = dialog.getInputPattern();
         if (pattern != null) {
             String[] posTrackName = dialog.getPosTrackName();
@@ -83,12 +76,13 @@ public class MotifFinderPlugin implements IGVPlugin, Command {
 
     /**
      * Generate motif-finding track and add it to IGV
+     *
      * @param pattern
      * @param posTrackNames
      * @param negTrackNames
      * @return
      */
-    static List<Track> addTracksForPatterns(String[] pattern, String[] posTrackNames, String[] negTrackNames){
+    static List<Track> addTracksForPatterns(String[] pattern, String[] posTrackNames, String[] negTrackNames) {
         List<Track> trackList = generateTracksForPatterns(pattern, posTrackNames, negTrackNames);
         IGV.getInstance().addTracks(trackList, PanelName.FEATURE_PANEL);
         return trackList;
@@ -96,30 +90,31 @@ public class MotifFinderPlugin implements IGVPlugin, Command {
 
     /**
      * Generate motif-finding tracks for the given pattern, do not add them to anything
+     *
      * @param patterns
      * @param posTrackNames
      * @param negTrackNames
      * @return
      */
-    static List<Track> generateTracksForPatterns(String[] patterns, String[] posTrackNames, String[] negTrackNames){
+    static List<Track> generateTracksForPatterns(String[] patterns, String[] posTrackNames, String[] negTrackNames) {
 
         Color[] colors = {null, Color.RED};
         Strand[] strands = {Strand.POSITIVE, Strand.NEGATIVE};
-        List<Track> trackList = new ArrayList<Track>(2*posTrackNames.length);
+        List<Track> trackList = new ArrayList<Track>(2 * posTrackNames.length);
 
         if (patterns != null) {
-            for(int pi=0; pi < patterns.length; pi++){
+            for (int pi = 0; pi < patterns.length; pi++) {
                 String pattern = patterns[pi];
                 String[] curTrackNames = new String[]{posTrackNames[pi], negTrackNames[pi]};
-                for(int ci=0; ci < curTrackNames.length; ci++){
+                for (int ci = 0; ci < curTrackNames.length; ci++) {
                     String tName = curTrackNames[ci];
-                    if(tName == null) continue;
+                    if (tName == null) continue;
 
                     MotifFinderSource src = new MotifFinderSource(pattern, strands[ci], GenomeManager.getInstance().getCurrentGenome());
-                    CachingFeatureSource cachingSrc= new CachingFeatureSource(src);
+                    CachingFeatureSource cachingSrc = new CachingFeatureSource(src);
 
                     FeatureTrack track = new FeatureTrack(tName, tName, cachingSrc);
-                    if(colors[ci] != null) track.setColor(colors[ci]);
+                    if (colors[ci] != null) track.setColor(colors[ci]);
 
                     track.setDisplayMode(Track.DisplayMode.SQUISHED);
                     trackList.add(track);
@@ -130,10 +125,9 @@ public class MotifFinderPlugin implements IGVPlugin, Command {
         return trackList;
     }
 
-    @Override
     public String run(List<String> args) {
         String cmd = args.get(0);
-        if(cmd.equalsIgnoreCase("find")){
+        if (cmd.equalsIgnoreCase("find")) {
             String pattern = args.get(1);
             String[] patterns = new String[]{pattern};
             String shrtPattern = StringUtils.checkLength(pattern, MotifFinderDialog.MaxTrackNameLength);
@@ -141,7 +135,7 @@ public class MotifFinderPlugin implements IGVPlugin, Command {
             String[] negName = new String[]{shrtPattern + " Negative"};
             addTracksForPatterns(patterns, posName, negName);
             return "OK";
-        }else{
+        } else {
             return "ERROR: Unknown command " + cmd + " for plugin " + getClass().getName();
         }
     }

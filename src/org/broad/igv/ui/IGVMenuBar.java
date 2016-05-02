@@ -46,6 +46,7 @@ import org.broad.igv.gs.GSUtils;
 import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.lists.VariantListManager;
 import org.broad.igv.tools.IgvToolsGui;
+import org.broad.igv.tools.motiffinder.MotifFinderPlugin;
 import org.broad.igv.track.CombinedDataSourceDialog;
 import org.broad.igv.ui.action.*;
 import org.broad.igv.ui.legend.LegendDialog;
@@ -55,6 +56,7 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.ReorderPanelsDialog;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.util.*;
+import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.util.encode.EncodeFileBrowser;
 
 import javax.swing.*;
@@ -201,7 +203,6 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // igvtools
-        //menuItems.add(new JSeparator());
         menuAction = new SortTracksMenuAction("Run igvtools...", KeyEvent.VK_T, igv) {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -210,13 +211,31 @@ public class IGVMenuBar extends JMenuBar {
         };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
+        // Motif finder
+        menuItems.add(MotifFinderPlugin.getMenuItem());
+
+        // BLAT
+        menuItems.add(BlatClient.getMenuItem());
+
+        // Combine data tracks
+        JMenuItem combineDataItem = new JMenuItem("Combine Data Tracks");
+        combineDataItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                CombinedDataSourceDialog dialog = new CombinedDataSourceDialog(IGV.getMainFrame());
+                dialog.setVisible(true);
+            }
+        });
+        menuItems.add(combineDataItem);
+
+
         List<JComponent> otherToolMenus = igv.getOtherToolMenus();
+        menuItems.add(new JSeparator());
         if (otherToolMenus.size() > 0) {
             for (JComponent entry : otherToolMenus) {
                 menuItems.add(entry);
             }
         }
-        //menuItems.add(new JSeparator());
 
 
         //-------------------------------------//
@@ -348,16 +367,6 @@ public class IGVMenuBar extends JMenuBar {
 
 
         //DataTrack Math------------------------//
-
-        JMenuItem combineDataItem = new JMenuItem("Combine Data Tracks");
-        combineDataItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                CombinedDataSourceDialog dialog = new CombinedDataSourceDialog(IGV.getMainFrame());
-                dialog.setVisible(true);
-            }
-        });
-        menuItems.add(combineDataItem);
 
 
         //-------------------------------------//

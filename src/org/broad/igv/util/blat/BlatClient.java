@@ -36,12 +36,14 @@ import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -277,11 +279,28 @@ public class BlatClient {
 
                     }
                 } catch (IOException e1) {
-
                     MessageUtils.showErrorMessage("Error running blat", e1);
                 }
             }
         });
+    }
+
+
+    public static JMenuItem getMenuItem() {
+        JMenuItem menuItem = new JMenuItem("BLAT ...");
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                String blatSequence = MessageUtils.showInputDialog("Enter sequence to blat:");
+                if(blatSequence != null) {
+                    doBlatQuery(blatSequence);
+                }
+
+            }
+        });
+
+        return menuItem;
     }
 }
 
