@@ -59,7 +59,7 @@ public class Preloader {
                             RenderContext context = new RenderContextImpl(null, null, frame, null);
                            // int start = Math.max(0, locus.getStart() - flankingRegion);
                            // int end = locus.getEnd() + flankingRegion;
-                            dt.loadScores(context);
+                            dt.loadScores(context.getReferenceFrame());
                         }
                     }
                 }

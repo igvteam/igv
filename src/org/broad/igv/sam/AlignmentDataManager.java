@@ -239,15 +239,15 @@ public class AlignmentDataManager implements IAlignmentDataManager {
         return true;
     }
 
-    public void load(RenderContext context,
+    public void load(ReferenceFrame referenceFrame,
                      AlignmentTrack.RenderOptions renderOptions,
                      boolean expandEnds) {
 
         synchronized (loadLock) {
-            final String chr = context.getChr();
-            final int start = (int) context.getOrigin();
-            final int end = (int) context.getEndLocation();
-            AlignmentInterval loadedInterval = loadedIntervalCache.getForRange(context.getReferenceFrame().getCurrentRange());
+            final String chr = referenceFrame.getChrName();
+            final int start = (int) referenceFrame.getOrigin();
+            final int end = (int) referenceFrame.getEnd();
+            AlignmentInterval loadedInterval = loadedIntervalCache.getForRange(referenceFrame.getCurrentRange());
 
             int adjustedStart = start;
             int adjustedEnd = end;
@@ -268,13 +268,13 @@ public class AlignmentDataManager implements IAlignmentDataManager {
                 adjustedStart = Math.max(0, Math.min(start, center - expand));
                 adjustedEnd = Math.max(end, center + expand);
             }
-            loadAlignments(chr, adjustedStart, adjustedEnd, renderOptions, context);
+            loadAlignments(chr, adjustedStart, adjustedEnd, renderOptions, referenceFrame);
         }
 
     }
 
     public synchronized PackedAlignments getGroups(RenderContext context, AlignmentTrack.RenderOptions renderOptions) {
-        load(context, renderOptions, false);
+        load(context.getReferenceFrame(), renderOptions, false);
         Range range = context.getReferenceFrame().getCurrentRange();
         if (!packedAlignmentsCache.containsRange(range)) {
             packAlignments(renderOptions);
@@ -297,7 +297,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
 
     public synchronized void loadAlignments(final String chr, final int start, final int end,
                                             final AlignmentTrack.RenderOptions renderOptions,
-                                            final RenderContext context) {
+                                            final ReferenceFrame frame) {
 
         if (isLoading || chr.equals(Globals.CHR_ALL)) {
             return;
@@ -319,7 +319,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
                 loadedIntervalCache.put(loadedInterval.getRange(), loadedInterval);
 
                 packAlignments(renderOptions);
-                getEventBus().post(new DataLoadedEvent(context));
+                getEventBus().post(new DataLoadedEvent(frame));
 
                 isLoading = false;
             }

@@ -251,7 +251,7 @@ public abstract class AbstractTrack implements Track {
     }
 
     @Override
-    public void load(RenderContext context) {
+    public void load(ReferenceFrame referenceFrame) {
         // No-op, to be overriden by subclasses
     }
 

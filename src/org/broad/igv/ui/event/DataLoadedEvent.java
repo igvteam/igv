@@ -26,6 +26,7 @@
 package org.broad.igv.ui.event;
 
 import org.broad.igv.track.RenderContext;
+import org.broad.igv.ui.panel.ReferenceFrame;
 
 /**
  * User: jacob
@@ -33,9 +34,13 @@ import org.broad.igv.track.RenderContext;
  */
 public class DataLoadedEvent {
 
-    public final RenderContext context;
+    public final ReferenceFrame referenceFrame;
 
-    public DataLoadedEvent(RenderContext context){
-        this.context = context;
+    public DataLoadedEvent(ReferenceFrame referenceFrame){
+        this.referenceFrame = referenceFrame;
+    }
+
+    public ReferenceFrame getReferenceFrame() {
+        return referenceFrame;
     }
 }

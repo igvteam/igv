@@ -200,7 +200,7 @@ public class CoverageTrack extends AbstractTrack {
      */
     @Subscribe
     public void receiveDataLoaded(DataLoadedEvent e) {
-        ReferenceFrame frame = e.context.getReferenceFrame();
+        ReferenceFrame frame = e.getReferenceFrame();
         rescale(frame);
         frame.getEventBus().post(new ViewChange.Result());
     }
@@ -232,6 +232,53 @@ public class CoverageTrack extends AbstractTrack {
 
         }
     }
+
+//
+//    public List<LocusScore> getInViewScores(RenderContext context, Rectangle rect) {
+//        String chr = context.getChr();
+//        int start = (int) context.getOrigin();
+//        int end = (int) context.getEndLocation() + 1;
+//        int zoom = context.getZoom();
+//
+//        List<LocusScore> inViewScores = null;
+//
+//        LoadedDataInterval interval = loadedIntervalCache.get(context.getReferenceFrame().getName());
+//        if (interval != null && interval.contains(chr, start, end, zoom)) {
+//            inViewScores = interval.getScores();
+//        } else {
+//            inViewScores = loadScores(context);
+//        }
+//
+//
+//        //Not all data sources support whole genome views, tell user if CHR_ALL not available
+//        if ((inViewScores == null || inViewScores.size() == 0) && Globals.CHR_ALL.equals(chr)) {
+//            Graphics2D g = context.getGraphic2DForColor(Color.gray);
+//            GraphicUtils.drawCenteredText("Data not available for whole genome view; select chromosome to see data", rect, g);
+//        } else {
+//            if (autoScale && !FrameManager.isGeneListMode()) {
+//
+//                DataTrack.InViewInterval inter = computeScale(start, end, inViewScores);
+//                if (inter.endIdx > inter.startIdx) {
+//                    inViewScores = inViewScores.subList(inter.startIdx, inter.endIdx);
+//
+//                    DataRange dr = getDataRange();
+//                    float min = Math.min(0, inter.dataMin);
+//                    float base = Math.max(min, dr.getBaseline());
+//                    float max = inter.dataMax;
+//                    // Pathological case where min ~= max  (no data in view)
+//                    if (max - min <= (2 * Float.MIN_VALUE)) {
+//                        max = min + 1;
+//                    }
+//
+//                    DataRange newDR = new DataRange(min, base, max, dr.isDrawBaseline());
+//                    newDR.setType(dr.getType());
+//                    setDataRange(newDR);
+//                }
+//
+//            }
+//        }
+//        return inViewScores;
+//    }
 
     public void render(RenderContext context, Rectangle rect) {
 
@@ -283,7 +330,7 @@ public class CoverageTrack extends AbstractTrack {
             //Show coverage calculated from intervals if zoomed in enough
             AlignmentInterval interval = null;
             if (dataManager != null) {
-                dataManager.load(context, renderOptions, true);
+                dataManager.load(context.getReferenceFrame(), renderOptions, true);
                 interval = dataManager.getLoadedInterval(context.getReferenceFrame().getCurrentRange());
             }
             if (interval != null) {

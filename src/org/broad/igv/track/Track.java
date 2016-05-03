@@ -64,7 +64,7 @@ public interface Track extends Persistable{
     String getId();
 
 
-    void load(RenderContext context);
+    void load(ReferenceFrame frame);
 
     /**
      * Return true if a track can be filtered by sample annotation.

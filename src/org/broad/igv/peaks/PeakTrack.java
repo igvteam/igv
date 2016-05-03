@@ -232,9 +232,9 @@ public class PeakTrack extends AbstractTrack {
     }
 
     @Override
-    public void load(RenderContext context) {
+    public void load(ReferenceFrame referenceFrame) {
         try {
-            getFilteredPeaks(context.getChr());
+            getFilteredPeaks(referenceFrame.getChrName());
         } catch (IOException e) {
             log.error("Error loading peaks", e);
         }

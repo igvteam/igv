@@ -38,6 +38,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.SashimiPlot;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
 import org.broad.igv.ui.panel.IGVPopupMenu;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
 
@@ -226,9 +227,9 @@ public class SpliceJunctionTrack extends FeatureTrack {
     }
 
     @Override
-    protected void loadFeatures(String chr, int start, int end, RenderContext context) {
-        dataPanel = context.getPanel();
-        AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame().getCurrentRange());
+    protected void loadFeatures(String chr, int start, int end, ReferenceFrame referenceFrame) {
+        //dataPanel = context.getPanel();
+        AlignmentInterval loadedInterval = dataManager.getLoadedInterval(referenceFrame.getCurrentRange());
         if (loadedInterval == null) return;
 
         SpliceJunctionHelper helper = loadedInterval.getSpliceJunctionHelper();
@@ -239,8 +240,8 @@ public class SpliceJunctionTrack extends FeatureTrack {
         int intervalStart = loadedInterval.getStart();
         int intervalEnd = loadedInterval.getEnd();
         PackedFeatures pf = new PackedFeaturesSpliceJunctions(chr, intervalStart, intervalEnd, features.iterator(), getName());
-        packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
-        if (context.getPanel() != null) context.getPanel().repaint();
+        packedFeaturesMap.put(referenceFrame.getName(), pf);
+      //  if (context.getPanel() != null) context.getPanel().repaint();
     }
 
     @Override

@@ -42,6 +42,7 @@ import org.broad.igv.tools.motiffinder.MotifFinderSource;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.event.DataLoadedEvent;
+import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
@@ -658,20 +659,18 @@ public class FeatureTrack extends AbstractTrack {
         super.setDisplayMode(mode);
     }
 
-    @Override
-    public void load(RenderContext context) {
-        ReferenceFrame frame = context.getReferenceFrame();
+    public void load(ReferenceFrame frame) {
         PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
-        String chr = context.getChr();
-        int start = (int) context.getOrigin();
-        int end = (int) context.getEndLocation();
+        String chr = frame.getChrName();
+        int start = (int) frame.getOrigin();
+        int end = (int) frame.getEnd();
         if (packedFeatures == null || !packedFeatures.containsInterval(chr, start, end)) {
             try {
-                context.getReferenceFrame().getEventBus().unregister(FeatureTrack.this);
+                frame.getEventBus().unregister(FeatureTrack.this);
             } catch (IllegalArgumentException e) {
                 //Don't care
             }
-            loadFeatures(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd(), context);
+            loadFeatures(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd(), frame);
         }
     }
 
@@ -782,7 +781,7 @@ public class FeatureTrack extends AbstractTrack {
 
         //Attempt to load the relevant data. Note that there is no guarantee
         //the data will be loaded once preload exits, as loading may be asynchronous
-        load(context);
+        load(context.getReferenceFrame());
         PackedFeatures packedFeatures = packedFeaturesMap.get(context.getReferenceFrame().getName());
 
         if (packedFeatures == null || !packedFeatures.overlapsInterval(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation() + 1)) {
@@ -859,7 +858,7 @@ public class FeatureTrack extends AbstractTrack {
      * @param start
      * @param end
      */
-    protected void loadFeatures(final String chr, final int start, final int end, final RenderContext context) {
+    protected void loadFeatures(final String chr, final int start, final int end, final ReferenceFrame referenceFrame) {
 
         boolean aSync = !forceLoadSync && !(source instanceof FeatureCollectionSource);
 
@@ -898,23 +897,23 @@ public class FeatureTrack extends AbstractTrack {
                         Iterator<Feature> iter = source.getFeatures(chr, expandedStart, expandedEnd);
                         if (iter == null) {
                             PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd);
-                            packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
+                            packedFeaturesMap.put(referenceFrame.getName(), pf);
                         } else {
                             //dhmay putting a switch in for different packing behavior in splice junction tracks.
                             //This should probably be switched somewhere else, but that would require a big refactor.
                             PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd, iter, getName());
-                            packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
+                            packedFeaturesMap.put(referenceFrame.getName(), pf);
                         }
                     }
 
                     //Now that features are loaded, we may need to repaint
                     //to accommodate.
-                    context.getReferenceFrame().getEventBus().post(new DataLoadedEvent(context));
+                    referenceFrame.getEventBus().post(new DataLoadedEvent(referenceFrame));
                 } catch (Exception e) {
                     // Mark the interval with an empty feature list to prevent an endless loop of load
                     // attempts.
                     PackedFeatures pf = new PackedFeatures(chr, start, end);
-                    packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
+                    packedFeaturesMap.put(referenceFrame.getName(), pf);
                     String msg = "Error loading features for interval: " + chr + ":" + start + "-" + end + " <br>" + e.toString();
                     MessageUtils.showMessage(msg);
                     log.error(msg, e);
@@ -929,7 +928,7 @@ public class FeatureTrack extends AbstractTrack {
         };
 
         if (aSync) {
-            context.getReferenceFrame().getEventBus().register(FeatureTrack.this);
+            referenceFrame.getEventBus().register(FeatureTrack.this);
             LongRunningTask.submit(runnable);
         } else {
             runnable.run();
@@ -954,8 +953,10 @@ public class FeatureTrack extends AbstractTrack {
             //don't want to layout for each one
             IGV.getInstance().layoutMainPanel();
         }
-        JComponent panel = event.context.getPanel();
-        if (panel != null) panel.repaint();
+        event.getReferenceFrame().getEventBus().post(new ViewChange.Result());
+        System.out.println("Data loaded");
+       // JComponent panel = event.context.getPanel();
+      //  if (panel != null) panel.repaint();
     }
 
     /**

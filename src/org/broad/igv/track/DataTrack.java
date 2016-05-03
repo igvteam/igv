@@ -87,7 +87,7 @@ public abstract class DataTrack extends AbstractTrack {
             return;
         }
 
-        List<LocusScore> inViewScores = getInViewScores(context, rect);
+        List<LocusScore> inViewScores = getInViewScores(context.getReferenceFrame());
 
         if ((inViewScores == null || inViewScores.size() == 0) && Globals.CHR_ALL.equals(context.getChr())) {
             Graphics2D g = context.getGraphic2DForColor(Color.gray);
@@ -100,8 +100,13 @@ public abstract class DataTrack extends AbstractTrack {
 
 
     public void overlay(RenderContext context, Rectangle rect) {
-        List<LocusScore> inViewScores = getInViewScores(context, rect);
-        if (inViewScores != null) {
+
+        List<LocusScore> inViewScores = getInViewScores(context.getReferenceFrame());
+
+        if ((inViewScores == null || inViewScores.size() == 0) && Globals.CHR_ALL.equals(context.getChr())) {
+            Graphics2D g = context.getGraphic2DForColor(Color.gray);
+            GraphicUtils.drawCenteredText("Data not available for whole genome view; select chromosome to see data", rect, g);
+        } else if (inViewScores != null) {
             synchronized (inViewScores) {
                 getRenderer().renderScores(this, inViewScores, context, rect);
             }
@@ -110,71 +115,59 @@ public abstract class DataTrack extends AbstractTrack {
     }
 
 
-    public List<LocusScore> getInViewScores(RenderContext context, Rectangle rect) {
-        String chr = context.getChr();
-        int start = (int) context.getOrigin();
-        int end = (int) context.getEndLocation() + 1;
-        int zoom = context.getZoom();
+    public List<LocusScore> getInViewScores(ReferenceFrame referenceFrame) {
+
+        String chr = referenceFrame.getChrName();
+        int start = (int) referenceFrame.getOrigin();
+        int end = (int) referenceFrame.getEnd() + 1;
+        int zoom = referenceFrame.getZoom();
 
         List<LocusScore> inViewScores = null;
 
-        LoadedDataInterval interval = loadedIntervalCache.get(context.getReferenceFrame().getName());
+        LoadedDataInterval interval = loadedIntervalCache.get(referenceFrame.getName());
         if (interval != null && interval.contains(chr, start, end, zoom)) {
             inViewScores = interval.getScores();
         } else {
-            inViewScores = loadScores(context);
+            inViewScores = loadScores(referenceFrame);
         }
 
-
-        //Not all data sources support whole genome views, tell user if CHR_ALL not available
-        if ((inViewScores == null || inViewScores.size() == 0) && Globals.CHR_ALL.equals(chr)) {
-            Graphics2D g = context.getGraphic2DForColor(Color.gray);
-            GraphicUtils.drawCenteredText("Data not available for whole genome view; select chromosome to see data", rect, g);
-        } else {
-            if (autoScale && !FrameManager.isGeneListMode()) {
-
-                InViewInterval inter = computeScale(start, end, inViewScores);
-                if (inter.endIdx > inter.startIdx) {
-                    inViewScores = inViewScores.subList(inter.startIdx, inter.endIdx);
-
-                    DataRange dr = getDataRange();
-                    float min = Math.min(0, inter.dataMin);
-                    float base = Math.max(min, dr.getBaseline());
-                    float max = inter.dataMax;
-                    // Pathological case where min ~= max  (no data in view)
-                    if (max - min <= (2 * Float.MIN_VALUE)) {
-                        max = min + 1;
-                    }
-
-                    DataRange newDR = new DataRange(min, base, max, dr.isDrawBaseline());
-                    newDR.setType(dr.getType());
-                    setDataRange(newDR);
-                }
-
+        // Trim scores
+        int startIdx = FeatureUtils.getIndexBefore(start, inViewScores);
+        int endIdx = inViewScores.size() - 1;   // Starting guess
+        int tmp = FeatureUtils.getIndexBefore(end, inViewScores);
+        for (int i = tmp; i < inViewScores.size(); i++) {
+            if (inViewScores.get(i).getStart() > end) {
+                endIdx = i - 1;
+                break;
             }
         }
-        return inViewScores;
+        endIdx = Math.max(startIdx + 1, endIdx);
+
+        return startIdx == 0 && endIdx == inViewScores.size() - 1 ?
+                inViewScores :
+                inViewScores.subList(startIdx, endIdx);
     }
 
-    @Override
-    public synchronized void load(RenderContext context) {
+    public synchronized void load(ReferenceFrame referenceFrame) {
 
-        String chr = context.getChr();
-        int start = (int) context.getOrigin();
-        int end = (int) context.getEndLocation() + 1;
-        int zoom = context.getZoom();
-        LoadedDataInterval interval = loadedIntervalCache.get(context.getReferenceFrame().getName());
+        String chr = referenceFrame.getChrName();
+        int start = (int) referenceFrame.getOrigin();
+        int end = (int) referenceFrame.getEnd() + 1;
+        int zoom = referenceFrame.getZoom();
+
+
+        LoadedDataInterval interval = loadedIntervalCache.get(referenceFrame.getName());
         if (interval == null || !interval.contains(chr, start, end, zoom)) {
-            loadScores(context);
+            loadScores(referenceFrame);
         }
     }
 
-    public List<LocusScore> loadScores(final RenderContext context) {
+    public List<LocusScore> loadScores(final ReferenceFrame referenceFrame) {
 
-        String chr = context.getChr();
-        int start = (int) context.getOrigin();
-        int end = (int) context.getEndLocation() + 1;
-        int zoom = context.getZoom();
+        String chr = referenceFrame.getChrName();
+        int start = (int) referenceFrame.getOrigin();
+        int end = (int) referenceFrame.getEnd() + 1;
+        int zoom = referenceFrame.getZoom();
 
         try {
             featuresLoading = true;
@@ -195,7 +188,7 @@ public abstract class DataTrack extends AbstractTrack {
             int expandedEnd = Math.min(maxEnd, end + delta);
             List<LocusScore> inViewScores = getSummaryScores(queryChr, expandedStart, expandedEnd, zoom);
             LoadedDataInterval interval = new LoadedDataInterval(chr, start, end, zoom, inViewScores);
-            loadedIntervalCache.put(context.getReferenceFrame().getName(), interval);
+            loadedIntervalCache.put(referenceFrame.getName(), interval);
             return inViewScores;
 
         } finally {
@@ -278,39 +271,6 @@ public abstract class DataTrack extends AbstractTrack {
 
 
     abstract public List<LocusScore> getSummaryScores(String chr, int startLocation, int endLocation, int zoom);
-
-    public static InViewInterval computeScale(double origin, double end, List<LocusScore> scores) {
-
-        InViewInterval interval = new InViewInterval();
-
-        if (scores.size() == 1) {
-            interval.dataMax = Math.max(0, scores.get(0).getScore());
-            interval.dataMin = Math.min(0, scores.get(0).getScore());
-        } else {
-            interval.startIdx = 0;
-            interval.endIdx = scores.size();
-            for (int i = 1; i < scores.size(); i++) {
-                if (scores.get(i).getEnd() >= origin) {
-                    interval.startIdx = i - 1;
-                    break;
-                }
-            }
-
-            for (int i = interval.startIdx + 1; i < scores.size(); i++) {
-                LocusScore locusScore = scores.get(i);
-                float value = locusScore.getScore();
-                if (Float.isNaN(value)) value = 0;
-                interval.dataMax = Math.max(interval.dataMax, value);
-                interval.dataMin = Math.min(interval.dataMin, value);
-                if (locusScore.getStart() > end) {
-                    interval.endIdx = i;
-                    break;
-                }
-            }
-        }
-
-        return interval;
-    }
 
     /**
      * Get the score over the provided region for the given type. Different types
@@ -445,13 +405,6 @@ public abstract class DataTrack extends AbstractTrack {
             regionScore /= intervalSum;
         }
         return regionScore;
-    }
-
-    public static class InViewInterval {
-        public int startIdx;
-        public int endIdx;
-        public float dataMax = 0;
-        public float dataMin = 0;
     }
 
     @SubtlyImportant

@@ -199,7 +199,7 @@ public class SashimiPlot extends JFrame {
         geneTrack.clearPackedFeatures();
         RenderContext context = new RenderContextImpl(geneComponent, null, frame, null);
         geneTrack.setForceLoadSync(true);
-        geneTrack.load(context);
+        geneTrack.load(context.getReferenceFrame());
 
 
         Dimension maxGeneDim = new Dimension(Integer.MAX_VALUE, geneTrack.getNumberOfFeatureLevels() * geneTrack.getSquishedRowHeight() + 10);
