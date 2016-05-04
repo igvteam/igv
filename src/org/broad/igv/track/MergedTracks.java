@@ -30,11 +30,9 @@ import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.SubtlyImportant;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.ui.panel.TrackPanel;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
@@ -254,7 +252,7 @@ public class MergedTracks extends DataTrack {
         menu.add(TrackMenuUtils.getChangeFontSizeItem(selfAsList));
 
         menu.addSeparator();
-        TrackMenuUtils.addDataItems(menu, selfAsList);
+        TrackMenuUtils.addDataItems(menu, selfAsList, true);
         for (Component c : menu.getComponents()) {
             if (c instanceof JMenuItem) {
                 String text = ((JMenuItem) c).getText();

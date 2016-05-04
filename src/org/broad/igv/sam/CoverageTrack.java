@@ -70,6 +70,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -202,74 +203,37 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     @Subscribe
     public void receiveDataLoaded(DataLoadedEvent e) {
         ReferenceFrame frame = e.getReferenceFrame();
-        rescale(frame);
+        //rescale(frame);
         frame.getEventBus().post(new ViewChange.Result());
     }
 
-    public void rescale(ReferenceFrame iframe) {
-        List<ReferenceFrame> frameList = new ArrayList<ReferenceFrame>();
-        if (iframe != null) frameList.add(iframe);
-        if (globalAutoScale) {
-            frameList.addAll(FrameManager.getFrames());
-        }
-
-        if (autoScale && dataManager != null) {
-
-            int max = 10;
-            for (ReferenceFrame frame : frameList) {
-                AlignmentInterval interval = dataManager.getLoadedInterval(frame.getCurrentRange());
-                if (interval == null) continue;
-
-                int origin = (int) frame.getOrigin();
-                int end = (int) frame.getEnd() + 1;
-
-                int intervalMax = interval.getMaxCount(origin, end);
-                max = intervalMax > max ? intervalMax : max;
-            }
-
-            DataRange newRange = new DataRange(0, max);
-            newRange.setType(getDataRange().getType());
-            super.setDataRange(newRange);
-
-        }
-    }
-
-
-    @Override
-    public Range getInViewRange(ReferenceFrame frame) {
-        
-        if (dataManager == null || frame.getScale() > dataManager.getMinVisibleScale()) {
-
-                List<LocusScore> scores = getInViewScores(frame);
-                if(scores != null && scores.size() > 0) {
-                    float min = scores.get(0).getScore();
-                    float max = min;
-                    for(int i=1; i<scores.size(); i++) {
-                        LocusScore score = scores.get(i);
-                        float value = score.getScore();
-                        min = Math.min(value, min);
-                        max = Math.max(value, max);
-                    }
-                    return new Range(min, max);
-                }
-                else {
-                    return null;
-                }
-
-        } else {
-
-            AlignmentInterval interval = dataManager.getLoadedInterval(frame.getCurrentRange());
-            if (interval == null) return null;
-
-            int origin = (int) frame.getOrigin();
-            int end = (int) frame.getEnd() + 1;
-
-            int intervalMax = interval.getMaxCount(origin, end);
-
-            return new Range(0, Math.max(10, intervalMax));
-        }
-
-    }
+//    public void rescale(ReferenceFrame iframe) {
+//        List<ReferenceFrame> frameList = new ArrayList<ReferenceFrame>();
+//        if (iframe != null) frameList.add(iframe);
+//        if (globalAutoScale) {
+//            frameList.addAll(FrameManager.getFrames());
+//        }
+//
+//        if (autoScale && dataManager != null) {
+//
+//            int max = 10;
+//            for (ReferenceFrame frame : frameList) {
+//                AlignmentInterval interval = dataManager.getLoadedInterval(frame.getCurrentRange());
+//                if (interval == null) continue;
+//
+//                int origin = (int) frame.getOrigin();
+//                int end = (int) frame.getEnd() + 1;
+//
+//                int intervalMax = interval.getMaxCount(origin, end);
+//                max = intervalMax > max ? intervalMax : max;
+//            }
+//
+//            DataRange newRange = new DataRange(0, max);
+//            newRange.setType(getDataRange().getType());
+//            super.setDataRange(newRange);
+//
+//        }
+//    }
 
 
     public void render(RenderContext context, Rectangle rect) {
@@ -282,21 +246,46 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         }
 
 
-        overlay(context, rect);
+        drawData(context, rect);
 
         drawBorder(context, rect);
 
-        // TODO -- What is this all about ??? JTR
-        List<LocusScore> scores = getInViewScores(context.getReferenceFrame());
-        if (scores != null) {
-            dataSourceRenderer.renderBorder(this, context, rect);
-        }
-
         if (dataSourceRenderer != null) {
+            dataSourceRenderer.renderBorder(this, context, rect);
             dataSourceRenderer.renderAxis(this, context, rect);
         } else {
             DataRenderer.drawScale(this.getDataRange(), context, rect);
         }
+    }
+
+
+    public void drawData(RenderContext context, Rectangle rect) {
+
+        float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
+        float minVisibleScale = (maxRange * 1000) / 700;
+
+        if (context.getScale() < minVisibleScale && !context.getChr().equals(Globals.CHR_ALL)) {
+            //Show coverage calculated from intervals if zoomed in enough
+            AlignmentInterval interval = null;
+            if (dataManager != null) {
+                dataManager.load(context.getReferenceFrame(), renderOptions, true);
+                interval = dataManager.getLoadedInterval(context.getReferenceFrame().getCurrentRange());
+            }
+            if (interval != null) {
+                if (interval.contains(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation())) {
+                    //if (autoScale) rescale(context.getReferenceFrame());
+                    intervalRenderer.paint(context, rect, interval.getCounts());
+                    return;
+                }
+            }
+        }
+
+        //Not rendered yet.  Use precomputed scores, if available
+        List<LocusScore> scores = getInViewScores(context.getReferenceFrame());
+        if (scores != null) {
+            dataSourceRenderer.renderScores(this, scores, context, rect);
+        }
+
     }
 
 
@@ -331,34 +320,42 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         return inViewScores;
     }
 
-    public void overlay(RenderContext context, Rectangle rect) {
 
-        float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
-        float minVisibleScale = (maxRange * 1000) / 700;
+    @Override
+    public Range getInViewRange(ReferenceFrame frame) {
 
-        if (context.getScale() < minVisibleScale && !context.getChr().equals(Globals.CHR_ALL)) {
-            //Show coverage calculated from intervals if zoomed in enough
-            AlignmentInterval interval = null;
-            if (dataManager != null) {
-                dataManager.load(context.getReferenceFrame(), renderOptions, true);
-                interval = dataManager.getLoadedInterval(context.getReferenceFrame().getCurrentRange());
-            }
-            if (interval != null) {
-                if (interval.contains(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation())) {
-                    if (autoScale) rescale(context.getReferenceFrame());
-                    intervalRenderer.paint(context, rect, interval.getCounts());
-                    return;
+        if (dataManager == null || frame.getScale() > dataManager.getMinVisibleScale()) {
+
+            List<LocusScore> scores = getInViewScores(frame);
+            if (scores != null && scores.size() > 0) {
+                float min = scores.get(0).getScore();
+                float max = min;
+                for (int i = 1; i < scores.size(); i++) {
+                    LocusScore score = scores.get(i);
+                    float value = score.getScore();
+                    min = Math.min(value, min);
+                    max = Math.max(value, max);
                 }
+                return new Range(min, max);
+            } else {
+                return null;
             }
-        }
 
-        //Use precomputed scores, if available
-        List<LocusScore> scores = getInViewScores(context.getReferenceFrame());
-        if (scores != null) {
-            dataSourceRenderer.renderScores(this, scores, context, rect);
+        } else {
+
+            AlignmentInterval interval = dataManager.getLoadedInterval(frame.getCurrentRange());
+            if (interval == null) return null;
+
+            int origin = (int) frame.getOrigin();
+            int end = (int) frame.getEnd() + 1;
+
+            int intervalMax = interval.getMaxCount(origin, end);
+
+            return new Range(0, Math.max(10, intervalMax));
         }
 
     }
+
 
     /**
      * Draw border and scale
@@ -770,33 +767,19 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     @Override
     public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
 
-        IGVPopupMenu popupMenu = new IGVPopupMenu();
-
-        JLabel popupTitle = new JLabel("  " + getName(), JLabel.CENTER);
-
-        Font newFont = popupMenu.getFont().deriveFont(Font.BOLD, 12);
-        popupTitle.setFont(newFont);
-        if (popupTitle != null) {
-            popupMenu.add(popupTitle);
-        }
-
-        popupMenu.addSeparator();
-
-        ArrayList<Track> tmp = new ArrayList();
+        Collection<Track> tmp = new ArrayList<>();
         tmp.add(this);
 
-        popupMenu.add(TrackMenuUtils.getChangeTrackHeightItem(tmp));
-        popupMenu.add(TrackMenuUtils.getTrackRenameItem(tmp));
-        addCopyDetailsItem(popupMenu, te);
+        IGVPopupMenu popupMenu = TrackMenuUtils.getPopupMenu(tmp, getName(), te);
 
-        addAutoscaleItem(popupMenu, te.getFrame());
-        addLogScaleItem(popupMenu);
-        dataRangeItem = addDataRangeItem(IGV.getMainFrame(), popupMenu, tmp);
-
+        popupMenu.addSeparator();
         this.addSnpTresholdItem(popupMenu);
 
         popupMenu.addSeparator();
         addLoadCoverageDataItem(popupMenu);
+
+        popupMenu.addSeparator();
+        addCopyDetailsItem(popupMenu, te);
 
         popupMenu.addSeparator();
         addShowItems(popupMenu);
@@ -973,47 +956,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     }
 
-    public void addAutoscaleItem(JPopupMenu menu, final ReferenceFrame frame) {
-        // Change track height by attribute
-        final JMenuItem autoscaleItem = new JCheckBoxMenuItem("Autoscale");
-        autoscaleItem.setSelected(autoScale);
-        autoscaleItem.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-
-                autoScale = autoscaleItem.isSelected();
-                dataRangeItem.setEnabled(!autoScale);
-                if (autoScale) {
-                    rescale(frame);
-                }
-                IGV.getInstance().repaintDataPanels();
-
-            }
-        });
-
-        menu.add(autoscaleItem);
-    }
-
-    public void addLogScaleItem(JPopupMenu menu) {
-        // Change track height by attribute
-        final DataRange dataRange = getDataRange();
-        final JCheckBoxMenuItem logScaleItem = new JCheckBoxMenuItem("Log scale");
-        final boolean logScale = dataRange.getType() == DataRange.Type.LOG;
-        logScaleItem.setSelected(logScale);
-        logScaleItem.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-
-                DataRange.Type scaleType = logScaleItem.isSelected() ?
-                        DataRange.Type.LOG :
-                        DataRange.Type.LINEAR;
-                dataRange.setType(scaleType);
-                IGV.getInstance().repaintDataPanels();
-            }
-        });
-
-        menu.add(logScaleItem);
-    }
 
     @SubtlyImportant
     private static CoverageTrack getNextTrack() {

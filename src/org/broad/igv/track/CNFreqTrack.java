@@ -115,7 +115,7 @@ public class CNFreqTrack extends AbstractTrack {
         IGVPopupMenu menu = new IGVPopupMenu();
 
         List<Track> selfAsList = Arrays.asList((Track) this);
-        TrackMenuUtils.addSharedItems(menu, selfAsList, false);
+        TrackMenuUtils.addSharedItems(menu, selfAsList, false, false);
 
         return menu;
     }
