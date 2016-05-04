@@ -77,7 +77,8 @@ import java.util.List;
  * @author jrobinso
  */
 @XmlType(factoryMethod = "getNextTrack")
-public class CoverageTrack extends AbstractTrack {
+
+public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     private static Logger log = Logger.getLogger(CoverageTrack.class);
     public static final int TEN_MB = 10000000;
@@ -233,52 +234,43 @@ public class CoverageTrack extends AbstractTrack {
         }
     }
 
-//
-//    public List<LocusScore> getInViewScores(RenderContext context, Rectangle rect) {
-//        String chr = context.getChr();
-//        int start = (int) context.getOrigin();
-//        int end = (int) context.getEndLocation() + 1;
-//        int zoom = context.getZoom();
-//
-//        List<LocusScore> inViewScores = null;
-//
-//        LoadedDataInterval interval = loadedIntervalCache.get(context.getReferenceFrame().getName());
-//        if (interval != null && interval.contains(chr, start, end, zoom)) {
-//            inViewScores = interval.getScores();
-//        } else {
-//            inViewScores = loadScores(context);
-//        }
-//
-//
-//        //Not all data sources support whole genome views, tell user if CHR_ALL not available
-//        if ((inViewScores == null || inViewScores.size() == 0) && Globals.CHR_ALL.equals(chr)) {
-//            Graphics2D g = context.getGraphic2DForColor(Color.gray);
-//            GraphicUtils.drawCenteredText("Data not available for whole genome view; select chromosome to see data", rect, g);
-//        } else {
-//            if (autoScale && !FrameManager.isGeneListMode()) {
-//
-//                DataTrack.InViewInterval inter = computeScale(start, end, inViewScores);
-//                if (inter.endIdx > inter.startIdx) {
-//                    inViewScores = inViewScores.subList(inter.startIdx, inter.endIdx);
-//
-//                    DataRange dr = getDataRange();
-//                    float min = Math.min(0, inter.dataMin);
-//                    float base = Math.max(min, dr.getBaseline());
-//                    float max = inter.dataMax;
-//                    // Pathological case where min ~= max  (no data in view)
-//                    if (max - min <= (2 * Float.MIN_VALUE)) {
-//                        max = min + 1;
-//                    }
-//
-//                    DataRange newDR = new DataRange(min, base, max, dr.isDrawBaseline());
-//                    newDR.setType(dr.getType());
-//                    setDataRange(newDR);
-//                }
-//
-//            }
-//        }
-//        return inViewScores;
-//    }
+
+    @Override
+    public Range getInViewRange(ReferenceFrame frame) {
+        
+        if (dataManager == null || frame.getScale() > dataManager.getMinVisibleScale()) {
+
+                List<LocusScore> scores = getInViewScores(frame);
+                if(scores != null && scores.size() > 0) {
+                    float min = scores.get(0).getScore();
+                    float max = min;
+                    for(int i=1; i<scores.size(); i++) {
+                        LocusScore score = scores.get(i);
+                        float value = score.getScore();
+                        min = Math.min(value, min);
+                        max = Math.max(value, max);
+                    }
+                    return new Range(min, max);
+                }
+                else {
+                    return null;
+                }
+
+        } else {
+
+            AlignmentInterval interval = dataManager.getLoadedInterval(frame.getCurrentRange());
+            if (interval == null) return null;
+
+            int origin = (int) frame.getOrigin();
+            int end = (int) frame.getEnd() + 1;
+
+            int intervalMax = interval.getMaxCount(origin, end);
+
+            return new Range(0, Math.max(10, intervalMax));
+        }
+
+    }
+
 
     public void render(RenderContext context, Rectangle rect) {
 
@@ -295,30 +287,48 @@ public class CoverageTrack extends AbstractTrack {
         drawBorder(context, rect);
 
         // TODO -- What is this all about ??? JTR
-        List<LocusScore> scores = getSummaryScores(context);
+        List<LocusScore> scores = getInViewScores(context.getReferenceFrame());
         if (scores != null) {
             dataSourceRenderer.renderBorder(this, context, rect);
         }
 
         if (dataSourceRenderer != null) {
             dataSourceRenderer.renderAxis(this, context, rect);
-        }
-        else {
+        } else {
             DataRenderer.drawScale(this.getDataRange(), context, rect);
         }
     }
 
 
-    private List<LocusScore> getSummaryScores(RenderContext context) {
-        List<LocusScore> scores = null;
+    private List<LocusScore> getInViewScores(ReferenceFrame frame) {
+
+        List<LocusScore> inViewScores = null;
+
         if (dataSource != null) {
-            String chr = context.getChr();
-            int start = (int) context.getOrigin();
-            int end = (int) context.getEndLocation();
-            int zoom = context.getZoom();
-            scores = dataSource.getSummaryScoresForRange(chr, start, end, zoom);
+            String chr = frame.getChrName();
+            int start = (int) frame.getOrigin();
+            int end = (int) frame.getEnd();
+            int zoom = frame.getZoom();
+            inViewScores = dataSource.getSummaryScoresForRange(chr, start, end, zoom);
+
+            // Trim
+            // Trim scores
+            int startIdx = FeatureUtils.getIndexBefore(start, inViewScores);
+            int endIdx = inViewScores.size() - 1;   // Starting guess
+            int tmp = FeatureUtils.getIndexBefore(end, inViewScores);
+            for (int i = tmp; i < inViewScores.size(); i++) {
+                if (inViewScores.get(i).getStart() > end) {
+                    endIdx = i - 1;
+                    break;
+                }
+            }
+            endIdx = Math.max(startIdx + 1, endIdx);
+
+            return startIdx == 0 && endIdx == inViewScores.size() - 1 ?
+                    inViewScores :
+                    inViewScores.subList(startIdx, endIdx);
         }
-        return scores;
+        return inViewScores;
     }
 
     public void overlay(RenderContext context, Rectangle rect) {
@@ -343,7 +353,7 @@ public class CoverageTrack extends AbstractTrack {
         }
 
         //Use precomputed scores, if available
-        List<LocusScore> scores = getSummaryScores(context);
+        List<LocusScore> scores = getInViewScores(context.getReferenceFrame());
         if (scores != null) {
             dataSourceRenderer.renderScores(this, scores, context, rect);
         }
@@ -878,7 +888,7 @@ public class CoverageTrack extends AbstractTrack {
 
     public void addShowItems(JPopupMenu menu) {
 
-        if(alignmentTrack != null) {
+        if (alignmentTrack != null) {
             final JMenuItem alignmentItem = new JCheckBoxMenuItem("Show Alignment Track");
             alignmentItem.setSelected(alignmentTrack.isVisible());
             alignmentItem.setEnabled(!alignmentTrack.isRemoved());

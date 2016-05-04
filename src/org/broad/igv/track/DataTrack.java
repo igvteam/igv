@@ -64,7 +64,7 @@ import java.util.List;
  * @author jrobinso
  */
 @XmlType(factoryMethod = "getNextTrack")
-public abstract class DataTrack extends AbstractTrack {
+public abstract class DataTrack extends AbstractTrack implements ScalableTrack {
 
     private static Logger log = Logger.getLogger(DataTrack.class);
 
@@ -146,6 +146,26 @@ public abstract class DataTrack extends AbstractTrack {
         return startIdx == 0 && endIdx == inViewScores.size() - 1 ?
                 inViewScores :
                 inViewScores.subList(startIdx, endIdx);
+    }
+
+    public Range getInViewRange(ReferenceFrame referenceFrame) {
+
+        List<LocusScore> scores = getInViewScores(referenceFrame);
+        if(scores.size() > 0) {
+            float min = scores.get(0).getScore();
+            float max = min;
+            for(int i=1; i<scores.size(); i++) {
+                LocusScore score = scores.get(i);
+                float value = score.getScore();
+                min = Math.min(value, min);
+                max = Math.max(value, max);
+            }
+            return new Range(min, max);
+        }
+        else {
+            return null;
+        }
+
     }
 
     public synchronized void load(ReferenceFrame referenceFrame) {

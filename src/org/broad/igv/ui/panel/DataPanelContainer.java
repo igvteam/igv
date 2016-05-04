@@ -142,10 +142,10 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
     @Override
     protected void paintChildren(Graphics g) {
 
-       autoscale();
+        autoscale();
 
         super.paintChildren(g);
-        if(IGV.getInstance().isRulerEnabled()) {
+        if (IGV.getInstance().isRulerEnabled()) {
             int start = MouseInfo.getPointerInfo().getLocation().x - getLocationOnScreen().x;
             g.setColor(Color.BLACK);
             g.drawLine(start, 0, start, getHeight());
@@ -251,8 +251,7 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
     }
 
 
-
-    private void autoscale( ) {
+    private void autoscale() {
 
         final Collection<TrackGroup> groups = getTrackGroups();
 
@@ -271,7 +270,7 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
                             autoscaleGroups.put(asGroup, new ArrayList<Track>());
                         }
                         autoscaleGroups.get(asGroup).add(track);
-                    } else if(track.getAutoScale()) {
+                    } else if (track.getAutoScale()) {
                         autoscaleGroup(Arrays.asList(track));
                     }
                 }
@@ -293,68 +292,65 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
                         Arrays.asList(FrameManager.getDefaultFrame());
 
 
-        List<LocusScore> inViewScores = new ArrayList<LocusScore>();
+        List<Range> inViewRanges = new ArrayList<Range>();
+
         synchronized (trackList) {
             for (Track track : trackList) {
-                if (track instanceof DataTrack) {
-                    for(ReferenceFrame frame : frames) {
-                        inViewScores.addAll(((DataTrack) track).getInViewScores(frame));
-                    }
-                }
-            }
-
-            if (inViewScores.size() > 0) {
-
-                FeatureUtils.sortFeatureList(inViewScores);
-                InViewInterval inter = computeScale(inViewScores);
-                for (Track track : trackList) {
-                    if (track instanceof DataTrack) {
-                        DataRange dr = track.getDataRange();
-                        float min = Math.min(0, inter.dataMin);
-                        float base = Math.max(min, dr.getBaseline());
-                        float max = inter.dataMax;
-                        // Pathological case where min ~= max  (no data in view)
-                        if (max - min <= (2 * Float.MIN_VALUE)) {
-                            max = min + 1;
+                if (track instanceof ScalableTrack) {
+                    for (ReferenceFrame frame : frames) {
+                        Range range = ((ScalableTrack) track).getInViewRange(frame);
+                        if (range != null) {
+                            inViewRanges.add(range);
                         }
-
-                        DataRange newDR = new DataRange(min, base, max, dr.isDrawBaseline());
-                        newDR.setType(dr.getType());
-                        track.setDataRange(newDR);
                     }
+                }
+            }
+
+            if (inViewRanges.size() > 0) {
+
+                Range inter = computeScale(inViewRanges);
+
+                for (Track track : trackList) {
+
+                    DataRange dr = track.getDataRange();
+                    float min = Math.min(0, inter.min);
+                    float base = Math.max(min, dr.getBaseline());
+                    float max = inter.max;
+                    // Pathological case where min ~= max  (no data in view)
+                    if (max - min <= (2 * Float.MIN_VALUE)) {
+                        max = min + 1;
+                    }
+
+                    DataRange newDR = new DataRange(min, base, max, dr.isDrawBaseline());
+                    newDR.setType(dr.getType());
+                    track.setDataRange(newDR);
+
                 }
             }
         }
     }
 
 
-    public static InViewInterval computeScale(List<LocusScore> scores) {
+    public static Range computeScale(List<Range> ranges) {
 
-        InViewInterval interval = new InViewInterval();
+        float min = 0;
+        float max = 0;
 
-        if (scores.size() == 1) {
-            interval.dataMax = Math.max(0, scores.get(0).getScore());
-            interval.dataMin = Math.min(0, scores.get(0).getScore());
-        } else {
+        if (ranges.size() > 0) {
+            max = ranges.get(0).max;
+            min = ranges.get(0).min;
 
-            for (int i = 1; i < scores.size(); i++) {
+            for (int i = 1; i < ranges.size(); i++) {
 
-                LocusScore locusScore = scores.get(i);
-                float value = locusScore.getScore();
-                if (Float.isNaN(value)) value = 0;
-                interval.dataMax = Math.max(interval.dataMax, value);
-                interval.dataMin = Math.min(interval.dataMin, value);
+                Range r = ranges.get(i);
+                max = Math.max(r.max, max);
+                min = Math.min(r.min, min);
 
             }
         }
 
-        return interval;
+        return new Range(min, max);
     }
 
-
-    public static class InViewInterval {
-        public float dataMax = 0;
-        public float dataMin = 0;
-    }
 
 }
