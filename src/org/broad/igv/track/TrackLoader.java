@@ -1111,7 +1111,7 @@ public class TrackLoader {
 
         // The "freq" track.  TODO - make this optional
         if ((ds.getType() == TrackType.COPY_NUMBER || ds.getType() == TrackType.CNV) &&
-                ds.getSampleNames().size() > 4) {
+                ds.getSampleNames().size() > 1) {
             FreqData fd = new FreqData(ds, genome);
             String freqTrackId = path;
             String freqTrackName = "CNV Summary";
