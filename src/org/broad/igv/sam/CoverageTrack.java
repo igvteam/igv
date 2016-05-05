@@ -767,7 +767,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     @Override
     public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
 
-        Collection<Track> tmp = new ArrayList<>();
+        Collection<Track> tmp = new ArrayList<Track>();
         tmp.add(this);
 
         IGVPopupMenu popupMenu = TrackMenuUtils.getPopupMenu(tmp, getName(), te);
