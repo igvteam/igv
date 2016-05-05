@@ -118,6 +118,12 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     private AlignmentTrack.RenderOptions renderOptions = null;
 
+    @SubtlyImportant
+    public CoverageTrack() {
+
+    }
+
+
     /**
      * Copy constructor.  Used for Sashimi plot.
      *

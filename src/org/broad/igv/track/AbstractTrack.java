@@ -167,7 +167,7 @@ public abstract class AbstractTrack implements Track {
     protected DataRange dataRange;
 
     @SubtlyImportant
-    private AbstractTrack() {
+    protected AbstractTrack() {
     }
 
     public AbstractTrack(
