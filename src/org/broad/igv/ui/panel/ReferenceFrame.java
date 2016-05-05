@@ -750,4 +750,8 @@ public class ReferenceFrame {
         this.name = name;
     }
 
+    public int getStateHash() {
+       return (chrName + origin + locationScale + widthInPixels).hashCode();
+    }
+
 }

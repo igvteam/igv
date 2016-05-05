@@ -53,7 +53,15 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
 
     private static Logger log = Logger.getLogger(DataPanelContainer.class);
 
+    static int lastStateHash = 0;   // TODO -- could synchronization be an issue?
+
     TrackPanel parent;
+
+
+    public static void resetStateHash() {
+        lastStateHash = 0;
+    }
+
 
     public DataPanelContainer(TrackPanel trackPanel) {
         super(trackPanel);
@@ -253,28 +261,31 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
 
     private void autoscale() {
 
-        final Collection<TrackGroup> groups = getTrackGroups();
+        int stateHash = FrameManager.getStateHash();
+
+        if(lastStateHash == stateHash) return;
+
+        lastStateHash = stateHash;
+
+        final Collection<Track> trackList = IGV.getInstance().getAllTracks();
 
         Map<String, List<Track>> autoscaleGroups = new HashMap<String, List<Track>>();
 
-        for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
+        for (Track track : trackList) {
 
-            TrackGroup group = groupIter.next();
-            List<Track> trackList = group.getVisibleTracks();
-            synchronized (trackList) {
+            if(!track.isVisible()) continue;
 
-                for (Track track : trackList) {
-                    String asGroup = track.getAttributeValue(AttributeManager.GROUP_AUTOSCALE);
-                    if (asGroup != null) {
-                        if (!autoscaleGroups.containsKey(asGroup)) {
-                            autoscaleGroups.put(asGroup, new ArrayList<Track>());
-                        }
-                        autoscaleGroups.get(asGroup).add(track);
-                    } else if (track.getAutoScale()) {
-                        autoscaleGroup(Arrays.asList(track));
-                    }
+            String asGroup = track.getAttributeValue(AttributeManager.GROUP_AUTOSCALE);
+            if (asGroup != null) {
+                if (!autoscaleGroups.containsKey(asGroup)) {
+                    autoscaleGroups.put(asGroup, new ArrayList<Track>());
                 }
+                autoscaleGroups.get(asGroup).add(track);
+            } else if (track.getAutoScale()) {
+                autoscaleGroup(Arrays.asList(track));
             }
+
+
         }
 
         if (autoscaleGroups.size() > 0) {

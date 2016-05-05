@@ -82,6 +82,19 @@ public class FrameManager {
         return frames.size() > 1;
     }
 
+    public static int getStateHash() {
+        if(isGeneListMode()) {
+            String hs = "";
+            for(ReferenceFrame frame : frames) {
+                hs = hs + frame.getStateHash();
+            }
+            return hs.hashCode();
+        }
+        else {
+            return defaultFrame.getStateHash();
+        }
+    }
+
     public static void setToDefaultFrame(String searchString) {
         frames.clear();
         if (searchString != null) {
@@ -245,6 +258,7 @@ public class FrameManager {
             getDefaultFrame().doZoomIncrement(zoom);
         }
     }
+
 
 }
 

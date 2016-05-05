@@ -48,10 +48,7 @@ import org.broad.igv.sam.CoverageTrack;
 import org.broad.igv.sam.SAMWriter;
 import org.broad.igv.ui.*;
 import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.igv.ui.panel.FrameManager;
-import org.broad.igv.ui.panel.IGVPopupMenu;
-import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.ui.panel.TrackPanel;
+import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
@@ -880,9 +877,10 @@ public class TrackMenuUtils {
                         t.setAutoScale(autoScale);
                         if (autoScale) {
                             t.removeAttribute(AttributeManager.GROUP_AUTOSCALE);
-
                         }
                     }
+
+                    DataPanelContainer.resetStateHash();
 
                     IGV.getInstance().repaint();
                 }
@@ -905,6 +903,7 @@ public class TrackMenuUtils {
                 }
                 IGV.getInstance().getSession().incrementNextAutoscaleGroup();
 
+                DataPanelContainer.resetStateHash();
 
                 PreferenceManager.getInstance().setShowAttributeView(true);
                 IGV.getInstance().getMainPanel().invalidate();
@@ -1064,6 +1063,7 @@ public class TrackMenuUtils {
             return;
         }
 
+        DataPanelContainer.resetStateHash();
         IGV.getInstance().removeTracks(selectedTracks);
         IGV.getInstance().doRefresh();
     }
