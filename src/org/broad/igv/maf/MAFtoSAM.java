@@ -39,6 +39,7 @@ import java.io.*;
 
 public class MAFtoSAM {
 
+    static boolean includeSequence = true;
 
     public static void main(String[] args) throws IOException {
         String inputPath = args[0];
@@ -116,6 +117,8 @@ public class MAFtoSAM {
 
                     // Output SAM record
 
+                    String qname = queryLine.src;
+                    int flag = 0;
                     String chr;
                     if(referenceLine.src.contains(".")) {
                         int idx = referenceLine.src.lastIndexOf('.') + 1;
@@ -124,18 +127,21 @@ public class MAFtoSAM {
                     else {
                         chr = referenceLine.src;
                     }
+                    int start = referenceLine.start + 1;
+                    int mapq = 30;
+                    String rnext = "*";
+                    int pnext = 0;
+                    int tlen = 0;
+                    String seq = includeSequence ? collapseSequence(queryLine.text) : "*";
+                    String qual = "*";
 
-                    out.println(queryLine.src + "\t" +
-                            0 + "\t" +
-                            chr + "\t" +
-                            (referenceLine.start + 1) + "\t" +
-                            30 + "\t" +
-                            cigarString + "\t" +
-                            "*\t0\t0\t*\t*");
+                    out.println(qname + "\t" + flag + "\t" + chr + "\t" + start + "\t" + mapq + "\t" + cigarString + "\t" +
+                          rnext + "\t" + pnext + "\t" + tlen + "\t" + seq + "\t" + qual);
                 }
             }
         }
     }
+
 
     private static String collapseCigar(String cigarString) {
 
@@ -157,6 +163,10 @@ public class MAFtoSAM {
         return collapsedCigar;
     }
 
+
+    private static String collapseSequence(String text) {
+        return text.replaceAll("-", "");
+    }
 
     /**
      * Parse an alignment block.   Assumes 1 alignment per block, first "s" record is reference, second is alignment
