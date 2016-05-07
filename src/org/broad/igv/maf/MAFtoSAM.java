@@ -32,10 +32,7 @@ import org.broad.igv.tools.sort.Sorter;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -77,14 +74,15 @@ public class MAFtoSAM {
 
         // Now sort sam records
         Sorter sorter = Sorter.getSorter(new File(unsortedOutput), new File(sortedOutput));
-        sorter.run();;
+        sorter.run();
+        ;
 
         // Finally insert sam header
         out = new PrintWriter(new BufferedWriter(new FileWriter(samOutput)));
         outputHeader(sequenceDictionary, out);
 
         reader = ParsingUtils.openBufferedReader(sortedOutput);
-        while((line = reader.readLine()) != null) {
+        while ((line = reader.readLine()) != null) {
             out.println(line);
         }
         out.flush();
@@ -177,7 +175,7 @@ public class MAFtoSAM {
     private static void outputHeader(Map<String, Integer> sequenceDictionary, PrintWriter out) {
 
         List<String> chrNames = new ArrayList<String>(sequenceDictionary.keySet());
-        chrNames.sort(ChromosomeNameComparator.get());
+        Collections.sort(chrNames, ChromosomeNameComparator.get());
 
         out.println("@HD\tVN:1.5\t SO:coordinate");
         for (String chr : chrNames) {
