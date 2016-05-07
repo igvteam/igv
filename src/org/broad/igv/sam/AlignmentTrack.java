@@ -921,7 +921,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     public void clearCaches() {
-        dataManager.clear();
+        if(dataManager != null) dataManager.clear();
         if (spliceJunctionTrack != null) spliceJunctionTrack.clear();
     }
 
