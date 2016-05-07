@@ -27,8 +27,15 @@
 package org.broad.igv.maf;
 
 import org.broad.igv.Globals;
+import org.broad.igv.feature.genome.ChromosomeNameComparator;
+import org.broad.igv.tools.sort.Sorter;
 import org.broad.igv.util.ParsingUtils;
+
 import java.io.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -39,41 +46,64 @@ import java.io.*;
 
 public class MAFtoSAM {
 
-    static boolean includeSequence = true;
 
     public static void main(String[] args) throws IOException {
         String inputPath = args[0];
         String outputPath = args.length > 1 ? args[1] : null;
-        convert(inputPath, outputPath);
+        convert(inputPath, outputPath, true, false);
     }
 
 
-    public static void convert(String path, String outputPath) throws IOException {
+    public static void convert(String path, String outputPath, boolean includeSequence, boolean generateReadNames) throws IOException {
 
+        String samOutput = outputPath.endsWith(".sam") ? outputPath : outputPath + ".sam";
+        String unsortedOutput = outputPath + ".unsorted.sam";
+        String sortedOutput = outputPath + "sorted.sam";
+        int readCounter = 1;
 
         BufferedReader reader = ParsingUtils.openBufferedReader(path);
-
-        PrintWriter out = outputPath == null ? new PrintWriter(System.out) :
-                new PrintWriter(new BufferedWriter(new FileWriter(outputPath)));
-
+        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(unsortedOutput)));
+        Map<String, Integer> sequenceDictionary = new LinkedHashMap<String, Integer>();
         String line;
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("a ")) {
                 // Parse alignments until blank line
-                parseBlock(reader, out);
+                parseBlock(reader, out, sequenceDictionary, includeSequence, generateReadNames, readCounter);
             }
         }
-
         out.flush();
         out.close();
+        reader.close();
+
+        // Now sort sam records
+        Sorter sorter = Sorter.getSorter(new File(unsortedOutput), new File(sortedOutput));
+        sorter.run();;
+
+        // Finally insert sam header
+        out = new PrintWriter(new BufferedWriter(new FileWriter(samOutput)));
+        outputHeader(sequenceDictionary, out);
+
+        reader = ParsingUtils.openBufferedReader(sortedOutput);
+        while((line = reader.readLine()) != null) {
+            out.println(line);
+        }
+        out.flush();
+        out.close();
+        reader.close();
+
+        (new File(unsortedOutput)).deleteOnExit();
+        (new File(sortedOutput)).deleteOnExit();
+
     }
 
-    private static void parseBlock(BufferedReader reader, PrintWriter out) throws IOException {
+    private static void parseBlock(BufferedReader reader, PrintWriter out, Map<String, Integer> sequenceDictionary,
+                                   boolean includeSequence, boolean generateReadNames, int readCounter) throws IOException {
 
         String line;
         SequenceLine referenceLine = null;
         SequenceLine queryLine;
         byte[] refBytes = null;
+        String chr = null;
 
         while ((line = reader.readLine()) != null) {
             if (line.trim().length() == 0) {
@@ -83,6 +113,14 @@ public class MAFtoSAM {
                 if (null == referenceLine) {
                     referenceLine = parseSequenceLine(line);
                     refBytes = referenceLine.text.getBytes();
+
+                    if (referenceLine.src.contains(".")) {
+                        int idx = referenceLine.src.lastIndexOf('.') + 1;
+                        chr = referenceLine.src.substring(idx);
+                    } else {
+                        chr = referenceLine.src;
+                    }
+                    sequenceDictionary.put(chr, referenceLine.srcSize);
                 } else {
                     queryLine = parseSequenceLine(line);
 
@@ -90,7 +128,7 @@ public class MAFtoSAM {
                     byte[] queryBytes = queryLine.text.getBytes();
 
                     if (queryBytes.length != refBytes.length)
-                        throw new RuntimeException("Query and ref bytes unequal length");
+                        throw new RuntimeException("Query and ref sequence unequal length");
 
                     String cigarString = "";
 
@@ -116,17 +154,9 @@ public class MAFtoSAM {
                     cigarString = collapseCigar(cigarString);
 
                     // Output SAM record
-
-                    String qname = queryLine.src;
+                    String qname = generateReadNames ? "read" + readCounter++ : queryLine.src;
                     int flag = 0;
-                    String chr;
-                    if(referenceLine.src.contains(".")) {
-                        int idx = referenceLine.src.lastIndexOf('.') + 1;
-                        chr = referenceLine.src.substring(idx);
-                    }
-                    else {
-                        chr = referenceLine.src;
-                    }
+
                     int start = referenceLine.start + 1;
                     int mapq = 30;
                     String rnext = "*";
@@ -136,12 +166,25 @@ public class MAFtoSAM {
                     String qual = "*";
 
                     out.println(qname + "\t" + flag + "\t" + chr + "\t" + start + "\t" + mapq + "\t" + cigarString + "\t" +
-                          rnext + "\t" + pnext + "\t" + tlen + "\t" + seq + "\t" + qual);
+                            rnext + "\t" + pnext + "\t" + tlen + "\t" + seq + "\t" + qual);
                 }
             }
         }
+
+        // Output SAN header
     }
 
+    private static void outputHeader(Map<String, Integer> sequenceDictionary, PrintWriter out) {
+
+        List<String> chrNames = new ArrayList<String>(sequenceDictionary.keySet());
+        chrNames.sort(ChromosomeNameComparator.get());
+
+        out.println("@HD\tVN:1.5\t SO:coordinate");
+        for (String chr : chrNames) {
+            out.println("@SQ\tSN:" + chr + "\tLN:" + sequenceDictionary.get(chr));
+        }
+
+    }
 
     private static String collapseCigar(String cigarString) {
 

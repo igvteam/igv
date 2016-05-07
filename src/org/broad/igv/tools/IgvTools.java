@@ -47,6 +47,7 @@ import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.feature.tribble.MUTCodec;
+import org.broad.igv.maf.MAFtoSAM;
 import org.broad.igv.sam.reader.AlignmentIndexer;
 import org.broad.igv.tdf.TDFUtils;
 import org.broad.igv.tools.converters.BamToBed;
@@ -99,6 +100,8 @@ public class IgvTools {
     static final String CMD_TDFTOBEDGRAPH = "tdftobedgraph";
     static final String CMD_CONTACTS = "contacts";
     static final String CMD_DISCORDANT = "discordant";
+    static final String CMD_MAFTOSAM = "maftosam";
+    static final String CMD_SUMWIGS = "sumwigs";
 
     /**
      * Stream for writing messages to the user, which we
@@ -170,6 +173,10 @@ public class IgvTools {
     private static CmdLineParser.Option indexTypeOption = null;
     private static CmdLineParser.Option binSizeOption = null;
     private static CmdLineParser.Option outputDirOption = null;
+
+    // MAF to SAM
+    private static CmdLineParser.Option includeSequence = null;
+    private static CmdLineParser.Option generateReadNames = null;
 
     // Trackline
     private static CmdLineParser.Option colorOption = null;
@@ -438,7 +445,15 @@ public class IgvTools {
                 String inputFile = nonOptionArgs[1];
                 String outputFile = nonOptionArgs[2];
                 VCFtoBed.convert(inputFile, outputFile);
-            } else if (command.equals(CMD_SUMWIGS())) {
+            } else if (command.equalsIgnoreCase(CMD_MAFTOSAM)) {
+                validateArgsLength(nonOptionArgs, 3, basic_syntax);
+                String inputFile = nonOptionArgs[1];
+                String outputFile = nonOptionArgs[2];
+                Boolean includeSequenceOption = (Boolean) parser.getOptionValue(includeSequence, false);
+                Boolean generateReadNamesOption = (Boolean) parser.getOptionValue(generateReadNames, false);
+                MAFtoSAM.convert(inputFile, outputFile, includeSequenceOption.booleanValue(), generateReadNamesOption.booleanValue());
+
+            } else if (command.equals(CMD_SUMWIGS)) {
                 sumWigs(nonOptionArgs[1], nonOptionArgs[2]);
             } else if (command.equals(CMD_DENSITIESTOBEDGRAPH)) {
                 validateArgsLength(nonOptionArgs, 3, "Error in syntax. Expected: " + command + " [options] inputdir outputdir");
@@ -471,10 +486,6 @@ public class IgvTools {
         } catch (IOException e) {
             throw new PreprocessingException("Unexpected IO error: ", e);
         }
-    }
-
-    private String CMD_SUMWIGS() {
-        return "sumwigs";
     }
 
     private void GFFToBed(String ifile, String ofile) throws FileNotFoundException {
@@ -1031,7 +1042,7 @@ public class IgvTools {
             if (codec instanceof MUTCodec) {
                 Collection<String> sampleNames = getSampleNames(ifile, (MUTCodec) codec);
                 StringBuffer buf = new StringBuffer();
-                for(String sn : sampleNames) {
+                for (String sn : sampleNames) {
                     buf.append(sn);
                     buf.append(",");
                 }
