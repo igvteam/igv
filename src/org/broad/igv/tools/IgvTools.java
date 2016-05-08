@@ -30,6 +30,9 @@
 package org.broad.igv.tools;
 
 
+import htsjdk.samtools.BAMIndexer;
+import htsjdk.samtools.SamReader;
+import htsjdk.samtools.SamReaderFactory;
 import htsjdk.tribble.index.AbstractIndex;
 import jargs.gnu.CmdLineParser;
 import org.apache.commons.io.FilenameUtils;
@@ -597,10 +600,11 @@ public class IgvTools {
             outputDirOption = parser.addStringOption("outputDir");
         }
 
-        // MAF to SAM
-        includeSequence = parser.addBooleanOption("includeSequence");
-        combineAlignments = parser.addBooleanOption("combineAlignments");
-
+        if (command.equals(CMD_MAFTOSAM)) {
+            // MAF to SAM
+            includeSequence = parser.addBooleanOption('s', "includeSequence");
+            combineAlignments = parser.addBooleanOption('c', "combineAlignments");
+        }
 
 
         return parser;
@@ -921,34 +925,28 @@ public class IgvTools {
      * @throws IOException
      */
     public String doIndex(String ifile, String typeString, String outputDir, int indexType, int binSize) throws IOException {
+
         File inputFile = new File(ifile);
 
         if (outputDir == null) {
             outputDir = inputFile.getParent();
         }
-        String outputFileName = (new File(outputDir, inputFile.getName())).getAbsolutePath();
 
         if (typeString.endsWith("gz")) {
             log.error("Cannot index a gzipped file");
             throw new PreprocessingException("Cannot index a gzipped file");
         }
 
-        if (typeString.endsWith("bam")) {
-            String msg = "Cannot index a BAM file. Use the samtools package for sorting and indexing BAM files.";
-            log.error(msg);
-            throw new PreprocessingException(msg);
-        }
-
         String[] fastaTypes = new String[]{"fa", "fna", "fasta"};
         boolean isFasta = false;
 
         //We have different naming conventions for different index files
+        String outputFileName = (new File(outputDir, inputFile.getName())).getAbsolutePath();
         if (typeString.endsWith("sam") && !outputFileName.endsWith(".sai")) {
             outputFileName += ".sai";
         } else if (typeString.endsWith("bam") && !outputFileName.endsWith(".bai")) {
             outputFileName += ".bai";
         } else {
-
             for (String ft : fastaTypes) {
                 if (typeString.endsWith(ft) && !outputFileName.endsWith(".fai")) {
                     outputFileName += ".fai";
@@ -970,10 +968,30 @@ public class IgvTools {
             if (typeString.endsWith("sam")) {
                 AlignmentIndexer indexer = AlignmentIndexer.getInstance(inputFile, null, null);
                 indexer.createSamIndex(outputFile);
-                return outputFileName;
             } else if (isFasta) {
                 FastaUtils.createIndexFile(inputFile.getAbsolutePath(), outputFileName);
-                return outputFileName;
+            } else if(typeString.endsWith("bam")) {
+                final File bamIndexFile = new File(outputFileName);
+                final SamReader bam = SamReaderFactory.makeDefault().enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS).open(inputFile);
+                BAMIndexer.createIndex(bam, bamIndexFile);
+            }
+
+            else {
+                Genome genome = null;  // <= don't do chromosome conversion
+                FeatureCodec codec = CodecFactory.getCodec(ifile, genome);
+                if (codec != null) {
+                    try {
+                        createTribbleIndex(ifile, outputFile, indexType, binSize, codec);
+                    } catch (TribbleException.MalformedFeatureFile e) {
+                        StringBuffer buf = new StringBuffer();
+                        buf.append("<html>Files must be sorted by start position prior to indexing.<br>");
+                        buf.append(e.getMessage());
+                        buf.append("<br><br>Note: igvtools can be used to sort the file, select \"File > Run igvtools...\".");
+                        MessageUtils.showMessage(buf.toString());
+                    }
+                } else {
+                    throw new DataLoadException("Unknown File Type", ifile);
+                }
             }
         } catch (Exception e) {
             // Delete output file as it is probably corrupt
@@ -981,23 +999,6 @@ public class IgvTools {
                 outputFile.delete();
             }
             throw new RuntimeException(e);
-        }
-
-
-        Genome genome = null;  // <= don't do chromosome conversion
-        FeatureCodec codec = CodecFactory.getCodec(ifile, genome);
-        if (codec != null) {
-            try {
-                createTribbleIndex(ifile, outputFile, indexType, binSize, codec);
-            } catch (TribbleException.MalformedFeatureFile e) {
-                StringBuffer buf = new StringBuffer();
-                buf.append("<html>Files must be sorted by start position prior to indexing.<br>");
-                buf.append(e.getMessage());
-                buf.append("<br><br>Note: igvtools can be used to sort the file, select \"File > Run igvtools...\".");
-                MessageUtils.showMessage(buf.toString());
-            }
-        } else {
-            throw new DataLoadException("Unknown File Type", ifile);
         }
         userMessageWriter.flush();
         return outputFileName;
