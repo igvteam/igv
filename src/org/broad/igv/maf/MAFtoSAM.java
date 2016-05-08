@@ -26,11 +26,17 @@
 
 package org.broad.igv.maf;
 
+import htsjdk.samtools.*;
+import htsjdk.samtools.seekablestream.SeekableStream;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.ChromosomeNameComparator;
+import org.broad.igv.tools.sort.SAMSorter;
 import org.broad.igv.tools.sort.Sorter;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.stream.IGVSeekableBufferedStream;
+import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
+import javax.swing.*;
 import java.io.*;
 import java.util.*;
 
@@ -51,7 +57,7 @@ public class MAFtoSAM {
     }
 
 
-    public static void convert(String path, String outputPath, boolean includeSequence, boolean generateReadNames) throws IOException {
+    public static void convert(String path, String outputPath, boolean includeSequence, boolean groupByReadName) throws IOException {
 
         String samOutput = outputPath.endsWith(".sam") ? outputPath : outputPath + ".sam";
         String unsortedOutput = outputPath + ".unsorted.sam";
@@ -65,17 +71,20 @@ public class MAFtoSAM {
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("a ")) {
                 // Parse alignments until blank line
-                parseBlock(reader, out, sequenceDictionary, includeSequence, generateReadNames, readCounter);
+                parseBlock(reader, out, sequenceDictionary, includeSequence);
             }
         }
         out.flush();
         out.close();
         reader.close();
 
+        if (groupByReadName) {
+            unsortedOutput = combineReads(unsortedOutput);
+        }
+
         // Now sort sam records
         Sorter sorter = Sorter.getSorter(new File(unsortedOutput), new File(sortedOutput));
         sorter.run();
-        ;
 
         // Finally insert sam header
         out = new PrintWriter(new BufferedWriter(new FileWriter(samOutput)));
@@ -94,8 +103,84 @@ public class MAFtoSAM {
 
     }
 
+    private static String combineReads(String unsortedOutput) throws IOException {
+
+        String groupedOutput = unsortedOutput + ".grouped.sam";
+        String combinedOutput = unsortedOutput + ".combined.sam";
+
+        Sorter sorter = Sorter.getSorter(new File(unsortedOutput), new File(groupedOutput));
+        sorter.setComparator(SAMSorter.ReadNameComparator);
+        sorter.run();
+
+        // Get Sam file reader, output header, then iterate through sam records combining those with like read names
+
+        BufferedReader reader = new BufferedReader(new FileReader(groupedOutput));
+        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(combinedOutput)));
+        String line;
+        String[] lastRecord = null;
+        while ((line = reader.readLine()) != null) {
+            if (line.startsWith("@")) {
+                out.println(line);
+            } else {
+                String[] record = Globals.tabPattern.split(line);
+
+                if (lastRecord != null && lastRecord[0].equals(record[0])) {
+
+                    Cigar lastCigar = TextCigarCodec.decode(lastRecord[5]);
+                    int lastEnd = Integer.parseInt(lastRecord[3]) + lastCigar.getReferenceLength()-1;
+                    int gap = Integer.parseInt(record[3]) - lastEnd - 1;
+
+                    if(gap < 1) {
+                     // Don't try to combine overlapping records
+                        printRecord(out, lastRecord);
+                        lastRecord = record;
+                    }
+                    else {
+
+                        String newCigar = lastRecord[5] + (gap + "D") + record[5];
+                        lastRecord[5] = newCigar;
+                        if (lastRecord[9].equals("*") || record[9].equals("*")) {
+                            lastRecord[9] = "*";
+                        } else {
+                            lastRecord[9] = lastRecord[9] + record[9];
+                        }
+                    }
+
+                } else {
+                    if(lastRecord != null) printRecord(out, lastRecord);
+                    lastRecord = record;
+                }
+            }
+        }
+
+        // Last one
+        if(lastRecord != null) printRecord(out, lastRecord);
+
+        out.flush();
+        out.close();
+
+        (new File(groupedOutput)).deleteOnExit();
+        (new File(combinedOutput)).deleteOnExit();
+
+        return combinedOutput;
+
+    }
+
+    private static void printRecord(PrintWriter out, String [] record) {
+        out.print(record[0]);
+        for(int i=1; i<record.length; i++) {
+            out.print("\t" + record[i]);
+        }
+        out.println();
+    }
+
+
+    private static SAMRecord combineRecords(SAMRecord lastRecord, SAMRecord record) {
+        return null;
+    }
+
     private static void parseBlock(BufferedReader reader, PrintWriter out, Map<String, Integer> sequenceDictionary,
-                                   boolean includeSequence, boolean generateReadNames, int readCounter) throws IOException {
+                                   boolean includeSequence) throws IOException {
 
         String line;
         SequenceLine referenceLine = null;
@@ -152,7 +237,7 @@ public class MAFtoSAM {
                     cigarString = collapseCigar(cigarString);
 
                     // Output SAM record
-                    String qname = generateReadNames ? "read" + readCounter++ : queryLine.src;
+                    String qname = queryLine.src;
                     int flag = 0;
 
                     int start = referenceLine.start + 1;

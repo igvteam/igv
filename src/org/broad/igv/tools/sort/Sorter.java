@@ -60,66 +60,11 @@ public abstract class Sorter {
      */
     private File tmpDir;
     static final String usageString = "igvtools sort <inputFile> [outputFile]";
+
     protected Comparator<SortableRecord> comparator = getDefaultComparator();
 
-    public static Sorter getSorter(String[] argv) {
-
-        if (argv.length < 2) {
-            System.out.println(usageString);
-            System.exit(-1);
-        }
-
-        CmdLineParser parser = new CmdLineParser();
-        CmdLineParser.Option tmpDirOption = parser.addStringOption('t', "tmpDir");
-        CmdLineParser.Option maxRecordsOption = parser.addStringOption('m', "maxRecords");
-
-        try {
-            parser.parse(argv);
-        } catch (CmdLineParser.OptionException e) {
-            String msg = "Error parsing command line " + e.getMessage();
-            log.error(msg, e);
-        }
-        String[] nonOptionArgs = parser.getRemainingArgs();
-
-        File inputFile = new File(nonOptionArgs[0]);
-        if (!inputFile.exists()) {
-            String msg = "Error: " + inputFile.getAbsolutePath() + " does not exist.";
-            log.error(msg);
-            throw new RuntimeException(msg);
-        }
-
-        File outputFile = new File(nonOptionArgs[1]);
-
-        Sorter sorter = getSorter(inputFile, outputFile);
-
-        String tmpDirName = (String) parser.getOptionValue(tmpDirOption);
-        if (tmpDirName != null) {
-            File tmpDir = new File(tmpDirName);
-            if (!tmpDir.exists()) {
-                String msg = "Error: tmp directory: " + tmpDir.getAbsolutePath() + " does not exist.";
-                log.error(msg);
-                throw new RuntimeException(msg);
-            }
-            sorter.setTmpDir(tmpDir);
-        }
-
-        int mr = MAX_RECORDS_IN_RAM;
-        String maxRecordsString = (String) parser.getOptionValue(maxRecordsOption);
-        if (maxRecordsOption != null) {
-            try {
-                mr = Integer.parseInt(maxRecordsString);
-            } catch (NumberFormatException e) {
-                log.warn("Warning: max records is not an integer: (" + maxRecordsString + ").  Setting" +
-                        "max records to " + MAX_RECORDS_IN_RAM);
-                mr = MAX_RECORDS_IN_RAM;
-            }
-        }
-
-        sorter.setMaxRecords(mr);
-        return sorter;
-    }
-
     public static Sorter getSorter(File inputFile, File outputFile) {
+
         String shortFN = inputFile.getName().toLowerCase();
         if (shortFN.endsWith(".txt")) {
             shortFN = shortFN.substring(0, shortFN.length() - 4);
@@ -214,7 +159,7 @@ public abstract class Sorter {
         }
     }
 
-    void setComparator(Comparator<SortableRecord> comparator) {
+    public void setComparator(Comparator<SortableRecord> comparator) {
         this.comparator = comparator;
     }
 

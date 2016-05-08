@@ -30,10 +30,12 @@
 package org.broad.igv.tools.sort;
 
 import htsjdk.tribble.readers.AsciiLineReader;
+import org.broad.igv.Globals;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Comparator;
 
 /**
  * @author jrobinso
@@ -60,4 +62,15 @@ public class SAMSorter extends Sorter {
         // First alignment row
         return nextLine;
     }
+
+
+    public static Comparator<SortableRecord> ReadNameComparator = new Comparator<SortableRecord>() {
+
+        public int compare(SortableRecord o1, SortableRecord o2) {
+            String[] t1 = Globals.tabPattern.split(o1.getText());
+            String[] t2 = Globals.tabPattern.split(o2.getText());
+            return t1[0].compareTo(t2[0]);
+
+        }
+    };
 }

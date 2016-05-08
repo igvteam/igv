@@ -176,7 +176,7 @@ public class IgvTools {
 
     // MAF to SAM
     private static CmdLineParser.Option includeSequence = null;
-    private static CmdLineParser.Option generateReadNames = null;
+    private static CmdLineParser.Option combineAlignments = null;
 
     // Trackline
     private static CmdLineParser.Option colorOption = null;
@@ -450,8 +450,8 @@ public class IgvTools {
                 String inputFile = nonOptionArgs[1];
                 String outputFile = nonOptionArgs[2];
                 Boolean includeSequenceOption = (Boolean) parser.getOptionValue(includeSequence, false);
-                Boolean generateReadNamesOption = (Boolean) parser.getOptionValue(generateReadNames, false);
-                MAFtoSAM.convert(inputFile, outputFile, includeSequenceOption.booleanValue(), generateReadNamesOption.booleanValue());
+                Boolean combineAlignmentsOption = (Boolean) parser.getOptionValue(combineAlignments, false);
+                MAFtoSAM.convert(inputFile, outputFile, includeSequenceOption.booleanValue(), combineAlignmentsOption.booleanValue());
 
             } else if (command.equals(CMD_SUMWIGS)) {
                 sumWigs(nonOptionArgs[1], nonOptionArgs[2]);
@@ -584,8 +584,8 @@ public class IgvTools {
 
                 // Trackline
                 colorOption = parser.addStringOption("color");
+
             } else {
-                // options for gct files
                 probeFileOption = parser.addStringOption('p', "probeFile");
                 typeOption = parser.addStringOption("fileType");
             }
@@ -596,6 +596,12 @@ public class IgvTools {
             binSizeOption = parser.addIntegerOption("binSize");
             outputDirOption = parser.addStringOption("outputDir");
         }
+
+        // MAF to SAM
+        includeSequence = parser.addBooleanOption("includeSequence");
+        combineAlignments = parser.addBooleanOption("combineAlignments");
+
+
 
         return parser;
     }
