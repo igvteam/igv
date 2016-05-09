@@ -1181,7 +1181,7 @@ public class IGV {
                 try {
                     fistCursor = mainFrame.getToolkit().createCustomCursor(handImage, new Point(8, 6), "Move");
                 } catch (Exception e) {
-                    log.error("Could not create fistCursor", e);
+                    log.info("Warning: could not create fistCursor");
                     fistCursor = Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
                 }
 
@@ -1221,7 +1221,7 @@ public class IGV {
                             dragNDropCursor = mainFrame.getToolkit().createCustomCursor(
                                     dragNDropImage, new Point(0, 0), "Drag and Drop");
                         } catch (Exception e) {
-                            log.error("Could not create dragNDrop cursor", e);
+                            log.info("Warning: could not create dragNDropCursor");
                             dragNDropCursor = Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
                         }
                         return false;
@@ -1236,7 +1236,7 @@ public class IGV {
                     dragNDropCursor = mainFrame.getToolkit().createCustomCursor(
                             dragNDropImage, new Point(0, 0), "Drag and Drop");
                 } catch (Exception e) {
-                    log.error("Could not create dragNDrop cursor", e);
+                    log.info("Warning: could not create dragNDropCursor");
                     dragNDropCursor = Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
                 }
             }
