@@ -159,7 +159,7 @@ public class MAFtoSAM {
         out.flush();
         out.close();
 
-        (new File(groupedOutput)).deleteOnExit();
+       // (new File(groupedOutput)).deleteOnExit();
         (new File(combinedOutput)).deleteOnExit();
 
         return combinedOutput;

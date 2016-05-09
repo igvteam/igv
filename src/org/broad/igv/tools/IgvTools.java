@@ -33,6 +33,7 @@ package org.broad.igv.tools;
 import htsjdk.samtools.BAMIndexer;
 import htsjdk.samtools.SamReader;
 import htsjdk.samtools.SamReaderFactory;
+import htsjdk.samtools.ValidationStringency;
 import htsjdk.tribble.index.AbstractIndex;
 import jargs.gnu.CmdLineParser;
 import org.apache.commons.io.FilenameUtils;
@@ -972,6 +973,7 @@ public class IgvTools {
                 FastaUtils.createIndexFile(inputFile.getAbsolutePath(), outputFileName);
             } else if(typeString.endsWith("bam")) {
                 final File bamIndexFile = new File(outputFileName);
+                SamReaderFactory.setDefaultValidationStringency(ValidationStringency.LENIENT);
                 final SamReader bam = SamReaderFactory.makeDefault().enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS).open(inputFile);
                 BAMIndexer.createIndex(bam, bamIndexFile);
             }

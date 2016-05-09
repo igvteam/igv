@@ -38,6 +38,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.FeatureUtils;
+import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -54,8 +55,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.awt.*;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -135,17 +135,23 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack {
         int startIdx = FeatureUtils.getIndexBefore(start, inViewScores);
         int endIdx = inViewScores.size() - 1;   // Starting guess
         int tmp = FeatureUtils.getIndexBefore(end, inViewScores);
-        for (int i = tmp; i < inViewScores.size(); i++) {
-            if (inViewScores.get(i).getStart() > end) {
-                endIdx = i - 1;
-                break;
-            }
-        }
-        endIdx = Math.max(startIdx + 1, endIdx);
 
-        return startIdx == 0 && endIdx == inViewScores.size() - 1 ?
-                inViewScores :
-                inViewScores.subList(startIdx, endIdx);
+        if(tmp < 0)
+            return Collections.EMPTY_LIST;
+
+        else {
+            for (int i = tmp; i < inViewScores.size(); i++) {
+                if (inViewScores.get(i).getStart() > end) {
+                    endIdx = i - 1;
+                    break;
+                }
+            }
+            endIdx = Math.max(startIdx + 1, endIdx);
+
+            return startIdx == 0 && endIdx == inViewScores.size() - 1 ?
+                    inViewScores :
+                    inViewScores.subList(startIdx, endIdx);
+        }
     }
 
     public Range getInViewRange(ReferenceFrame referenceFrame) {
