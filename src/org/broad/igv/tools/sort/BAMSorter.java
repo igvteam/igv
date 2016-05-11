@@ -29,6 +29,8 @@ package org.broad.igv.tools.sort;
 import com.mysql.jdbc.NotImplemented;
 import htsjdk.samtools.*;
 import htsjdk.samtools.util.CloserUtil;
+import org.apache.log4j.Logger;
+import org.broad.igv.ui.IGV;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.File;
@@ -36,6 +38,8 @@ import java.io.IOException;
 import java.util.Comparator;
 
 public class BAMSorter implements Sorter {
+
+    private static Logger log = Logger.getLogger(BAMSorter.class);
 
     File inputFile;
     File outputFile;
@@ -64,7 +68,16 @@ public class BAMSorter implements Sorter {
         }
         final SAMFileWriter writer = samFileWriterFactory.makeSAMOrBAMWriter(reader.getFileHeader(), false, outputFile);
 
+        int count = 0;
         for (final SAMRecord rec : reader) {
+            if(++count % 100000 == 0) {
+                if(IGV.hasInstance()) {
+                    System.out.println("" + count + " records processed");   // GUI
+                }
+                else {
+                    log.info("" + count + " records processed");   // Command line
+                }
+            }
             writer.addAlignment(rec);
         }
 
