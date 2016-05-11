@@ -26,14 +26,11 @@
 package org.broad.igv.gwas;
 
 import org.broad.igv.tdf.BufferedByteWriter;
-import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.tools.sort.Sorter;
-import org.broad.igv.track.TrackType;
-import org.broad.igv.track.WindowFunction;
+import org.broad.igv.tools.sort.SorterFactory;
 import org.broad.igv.util.CompressionUtils;
 
 import java.io.*;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -77,7 +74,7 @@ public class EqtlPreprocessor {
             if (file.getName().endsWith(".eqtl")) {
 
                 File sortedFile = new File(file.getAbsolutePath() + ".sorted.eqtl");
-                Sorter sorter = Sorter.getSorter(file, sortedFile);
+                Sorter sorter = SorterFactory.getSorter(file, sortedFile);
                 sorter.run();
 
                 (new EqtlPreprocessor()).process(sortedFile.getAbsolutePath(), file.getAbsolutePath() + ".bin");

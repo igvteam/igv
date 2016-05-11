@@ -36,7 +36,7 @@ import java.io.PrintWriter;
  * Date: Jun 28, 2010
  * Time: 2:37:24 PM
  */
-public class GFFSorter extends Sorter {
+public class GFFSorter extends AsciiSorter {
     private final int chrCol = 0;
     private final int startCol = 3;
 

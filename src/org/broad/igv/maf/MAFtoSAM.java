@@ -27,16 +27,13 @@
 package org.broad.igv.maf;
 
 import htsjdk.samtools.*;
-import htsjdk.samtools.seekablestream.SeekableStream;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.tools.sort.SAMSorter;
 import org.broad.igv.tools.sort.Sorter;
+import org.broad.igv.tools.sort.SorterFactory;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.stream.IGVSeekableBufferedStream;
-import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
-import javax.swing.*;
 import java.io.*;
 import java.util.*;
 
@@ -83,7 +80,7 @@ public class MAFtoSAM {
         }
 
         // Now sort sam records
-        Sorter sorter = Sorter.getSorter(new File(unsortedOutput), new File(sortedOutput));
+        Sorter sorter = SorterFactory.getSorter(new File(unsortedOutput), new File(sortedOutput));
         sorter.run();
 
         // Finally insert sam header
@@ -108,7 +105,7 @@ public class MAFtoSAM {
         String groupedOutput = unsortedOutput + ".grouped.sam";
         String combinedOutput = unsortedOutput + ".combined.sam";
 
-        Sorter sorter = Sorter.getSorter(new File(unsortedOutput), new File(groupedOutput));
+        Sorter sorter = SorterFactory.getSorter(new File(unsortedOutput), new File(groupedOutput));
         sorter.setComparator(SAMSorter.ReadNameComparator);
         sorter.run();
 

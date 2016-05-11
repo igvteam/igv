@@ -37,7 +37,7 @@ import java.util.List;
  * @author Jim Robinson
  * @date 4/12/12
  */
-public class GWASSorter extends Sorter {
+public class GWASSorter extends AsciiSorter {
 
     static Logger log = Logger.getLogger(GWASSorter.class);
 

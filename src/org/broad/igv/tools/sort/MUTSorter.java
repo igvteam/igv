@@ -37,7 +37,7 @@ import java.io.PrintWriter;
  *         Date: 4/8/13
  *         Time: 4:23 PM
  */
-public class MUTSorter extends Sorter {
+public class MUTSorter extends AsciiSorter {
 
     int chrCol;
     int startCol;

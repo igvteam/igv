@@ -38,7 +38,7 @@ import java.io.PrintWriter;
 /**
  * @author jrobinso
  */
-public class InteractionSorter extends Sorter {
+public class InteractionSorter extends AsciiSorter {
     private int chrCol;
     private int startCol;
 

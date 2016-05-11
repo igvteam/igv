@@ -40,7 +40,7 @@ import java.util.Comparator;
 /**
  * @author jrobinso
  */
-public class SAMSorter extends Sorter {
+public class SAMSorter extends AsciiSorter {
 
     public SAMSorter(File inputFile, File outputFile) {
         super(inputFile, outputFile);

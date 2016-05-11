@@ -25,7 +25,6 @@
 
 package org.broad.igv.tools.sort;
 
-import org.broad.igv.feature.tribble.MUTCodec;
 import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.File;
@@ -39,7 +38,7 @@ import java.io.PrintWriter;
  * Time: 10:03 AM
  * To change this template use File | Settings | File Templates.
  */
-public class EQTLSorter extends Sorter {
+public class EQTLSorter extends AsciiSorter {
 
     int chrCol;
     int startCol;

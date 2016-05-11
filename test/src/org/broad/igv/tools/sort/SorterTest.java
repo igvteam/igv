@@ -98,7 +98,7 @@ public class SorterTest extends AbstractHeadlessTest {
         File ofile = new File(infile + ".sorted");
         ofile.deleteOnExit();
 
-        Sorter sorter = Sorter.getSorter(ifile, ofile);
+        Sorter sorter = SorterFactory.getSorter(ifile, ofile);
         sorter.setMaxRecords(maxRecords);
         sorter.run();
 
@@ -158,7 +158,7 @@ public class SorterTest extends AbstractHeadlessTest {
 
     //@Test
     public void testCurrentCompSpeed() throws IOException {
-        tstComparatorSpeed(Sorter.getDefaultComparator());
+        tstComparatorSpeed(AsciiSorter.getDefaultComparator());
     }
 
     //@Test
@@ -176,15 +176,17 @@ public class SorterTest extends AbstractHeadlessTest {
             @Override
             public Sorter get() {
                 ChromosomeNameComparator.get().resetCache();
-                Sorter sorter = new BedSorter(inputFile, outputFile);
+                AsciiSorter sorter = new BedSorter(inputFile, outputFile);
                 sorter.setComparator(testComp);
                 return sorter;
             }
         };
 
         Function<Sorter, Void> func = new Function<Sorter, Void>() {
+
             @Override
             public Void apply(Sorter input) {
+
                 try {
                     input.run();
                 } catch (IOException e) {

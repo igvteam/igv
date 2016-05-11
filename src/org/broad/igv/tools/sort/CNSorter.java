@@ -37,9 +37,9 @@ import java.io.*;
 /**
  * @author jrobinso
  */
-public class CNSorter extends Sorter {
+public class CNSorter extends AsciiSorter {
 
-    static private Logger log = Logger.getLogger(Sorter.class);
+    static private Logger log = Logger.getLogger(AsciiSorter.class);
 
     public CNSorter(File inputFile, File outputFile) {
         super(inputFile, outputFile);

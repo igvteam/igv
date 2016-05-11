@@ -38,7 +38,7 @@ import java.io.PrintWriter;
 /**
  * @author jrobinso
  */
-public class GenericSorter extends Sorter {
+public class GenericSorter extends AsciiSorter {
     private int chrCol;
     private int startCol;
 

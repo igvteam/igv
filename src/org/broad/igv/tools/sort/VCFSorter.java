@@ -39,7 +39,7 @@ import java.io.PrintWriter;
  * Time: 2:46:12 PM
  * To change this template use File | Settings | File Templates.
  */
-public class VCFSorter extends Sorter {
+public class VCFSorter extends AsciiSorter {
 
     private static Logger log = Logger.getLogger(VCFSorter.class);
 

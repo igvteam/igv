@@ -30,10 +30,7 @@
 package org.broad.igv.tools;
 
 
-import htsjdk.samtools.BAMIndexer;
-import htsjdk.samtools.SamReader;
-import htsjdk.samtools.SamReaderFactory;
-import htsjdk.samtools.ValidationStringency;
+import htsjdk.samtools.*;
 import htsjdk.tribble.index.AbstractIndex;
 import jargs.gnu.CmdLineParser;
 import org.apache.commons.io.FilenameUtils;
@@ -59,6 +56,7 @@ import org.broad.igv.tools.converters.ExpressionFormatter;
 import org.broad.igv.tools.converters.GCTtoIGVConverter;
 import org.broad.igv.tools.converters.WigToBed;
 import org.broad.igv.tools.sort.Sorter;
+import org.broad.igv.tools.sort.SorterFactory;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.ReadmeParser;
@@ -971,14 +969,11 @@ public class IgvTools {
                 indexer.createSamIndex(outputFile);
             } else if (isFasta) {
                 FastaUtils.createIndexFile(inputFile.getAbsolutePath(), outputFileName);
-            } else if(typeString.endsWith("bam")) {
-                final File bamIndexFile = new File(outputFileName);
-                SamReaderFactory.setDefaultValidationStringency(ValidationStringency.LENIENT);
-                final SamReader bam = SamReaderFactory.makeDefault().enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS).open(inputFile);
-                BAMIndexer.createIndex(bam, bamIndexFile);
-            }
+            } else if (typeString.endsWith("bam")) {
 
-            else {
+                indexBAM(inputFile, outputFileName);
+
+            } else {
                 Genome genome = null;  // <= don't do chromosome conversion
                 FeatureCodec codec = CodecFactory.getCodec(ifile, genome);
                 if (codec != null) {
@@ -1006,6 +1001,29 @@ public class IgvTools {
         return outputFileName;
 
     }
+
+    public void indexBAM(File inputFile, String outputFileName) {
+        final File bamIndexFile = new File(outputFileName);
+        SamReaderFactory.setDefaultValidationStringency(ValidationStringency.SILENT);
+        final SamReader samReader = SamReaderFactory.makeDefault().
+                enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS).
+                open(inputFile);
+        BAMIndexer indexer = new BAMIndexer(bamIndexFile, samReader.getFileHeader());
+
+        long totalRecords = 0;
+
+        // create and write the content
+        SAMRecordIterator iter = samReader.iterator().assertSorted(SAMFileHeader.SortOrder.coordinate);
+        while(iter.hasNext()) {
+            SAMRecord rec = iter.next();
+            if (++totalRecords % 1000000 == 0) {
+                if (null != log) log.info(totalRecords + " reads processed ...");
+            }
+            indexer.processAlignment(rec);
+        }
+        indexer.finish();
+    }
+
 
     public static void writeTribbleIndex(Index idx, String idxFile) throws IOException {
         LittleEndianOutputStream stream = null;
@@ -1095,7 +1113,8 @@ public class IgvTools {
         File inputFile = new File(ifile);
         boolean writeStdOut = ofile.equals(STDOUT_FILE_STR);
         File outputFile = writeStdOut ? null : new File(ofile);
-        Sorter sorter = Sorter.getSorter(inputFile, outputFile);
+
+        Sorter sorter = SorterFactory.getSorter(inputFile, outputFile);
         if (tmpDirName != null && tmpDirName.trim().length() > 0) {
             File tmpDir = new File(tmpDirName);
             if (!tmpDir.exists()) {

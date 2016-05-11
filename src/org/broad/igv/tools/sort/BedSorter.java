@@ -38,7 +38,7 @@ import java.io.PrintWriter;
 /**
  * @author jrobinso
  */
-public class BedSorter extends Sorter {
+public class BedSorter extends AsciiSorter {
     private int chrCol;
     private int startCol;
 
