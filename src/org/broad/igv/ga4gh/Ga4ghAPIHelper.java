@@ -56,7 +56,8 @@ public class Ga4ghAPIHelper {
 
     public static final Ga4ghProvider GA4GH_GOOGLE_PROVIDER = new Ga4ghProvider(
             "Google",
-            "https://www.googleapis.com/genomics/v1beta2",
+            //"https://www.googleapis.com/genomics/v1beta2",
+              "https://genomics.googleapis.com/v1",
             "AIzaSyC-dujgw4P1QvNd8i_c-I-S_P1uxVZzn0w",
             Arrays.asList(
                     new Ga4ghDataset("10473108253681171589", "1000 Genomes", "hg19"),
@@ -120,7 +121,7 @@ public class Ga4ghAPIHelper {
                 if (readsets.size() >= maxResults) break;
 
                 pageToken = obj.getAsJsonPrimitive("nextPageToken");
-                if (pageToken == null) break;
+                if (pageToken == null || pageToken.getAsString().equals("")) break;
             }
 
             Collections.sort(readsets, new Comparator<Ga4ghReadset>() {
@@ -172,7 +173,7 @@ public class Ga4ghAPIHelper {
                 if (references.size() >= maxResults) break;
 
                 pageToken = obj.getAsJsonPrimitive("nextPageToken");
-                if (pageToken == null) break;
+                if (pageToken == null || pageToken.getAsString().equals("")) break;
             }
 
             referenceCache.put(referenceSetId, references);
@@ -189,6 +190,7 @@ public class Ga4ghAPIHelper {
         JsonPrimitive pageToken = null;
         StringBuffer result = new StringBuffer();
 
+        int counter = 0;
         while (maxPages-- > 0) {
             String contentToPost = "{" +
                     "\"readGroupSetIds\": [\"" + readGroupSetId + "\"]" +
@@ -220,8 +222,9 @@ public class Ga4ghAPIHelper {
             //System.out.println("# reads = " + reads.size());
 
             pageToken = obj.getAsJsonPrimitive("nextPageToken");
-            if (pageToken == null) break;
+            if (pageToken == null || pageToken.getAsString().equals("")) break;
 
+            System.out.println("" + (++counter) + "   " + alignments.size());
         }
 
         //System.out.println("# pages= " + (10000 - maxPages));
