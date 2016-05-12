@@ -69,6 +69,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -83,6 +84,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     private static Logger log = Logger.getLogger(CoverageTrack.class);
     public static final int TEN_MB = 10000000;
+    static DecimalFormat locationFormatter = new DecimalFormat();
 
     char[] nucleotides = {'a', 'c', 'g', 't', 'n'};
     public static Color lightBlue = new Color(0, 0, 150);
@@ -387,20 +389,27 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
         float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
         float minVisibleScale = (maxRange * 1000) / 700;
+
+        StringBuffer buf = new StringBuffer();
+
+        if (!chr.equals("All")) {
+            String posString = chr + ":" + locationFormatter.format(Math.floor(position + 1));
+            buf.append(posString + "<br>");
+            buf.append("<hr>");
+        }
+
         if (frame.getScale() < minVisibleScale) {
             AlignmentInterval interval = dataManager.getLoadedInterval(frame.getCurrentRange());
-            if (interval == null) return null;
-
-            if (interval.contains(chr, (int) position, (int) position)) {
+            if (interval != null && interval.contains(chr, (int) position, (int) position)) {
                 AlignmentCounts counts = interval.getCounts();
                 if (counts != null) {
-                    return counts.getValueStringAt((int) position);
+                    buf.append(counts.getValueStringAt((int) position));
                 }
             }
         } else {
-            return getPrecomputedValueString(chr, position, frame);
+            buf.append(getPrecomputedValueString(chr, position, frame));
         }
-        return null;
+        return buf.toString();
     }
 
     private String getPrecomputedValueString(String chr, double position, ReferenceFrame frame) {
