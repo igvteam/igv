@@ -277,7 +277,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>toolTipText</string> 
-                 <string>This option controls the behavior of feature searchs.  If true, the zoom level is changed as required to size the view to the feature size.  If false the zoom level is unchanged.</string> 
+                 <string>This option controls the behavior of feature searches.  If true, the zoom level is changed as required to size the view to the feature size.  If false, the zoom level is unchanged.</string>
                 </void> 
                 <void property="name"> 
                  <string>searchZoomCB</string> 
@@ -497,7 +497,7 @@
                 <string>javax.swing.JLabel</string> 
                 <void method="setProperty"> 
                  <string>text</string> 
-                 <string>Default  font: </string> 
+                 <string>Default font:</string>
                 </void> 
                 <void method="setProperty"> 
                  <string>labelFor</string> 
@@ -593,7 +593,7 @@
                 <string>javax.swing.JLabel</string> 
                 <void method="setProperty"> 
                  <string>text</string> 
-                 <string>Background color click to change): </string> 
+                 <string>Background color (click to change):</string>
                 </void> 
                 <void property="name"> 
                  <string>label7</string> 
@@ -684,7 +684,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>toolTipText</string> 
-                 <string>Distinguish regions with zero values from regions with  no data on plots (e.g. bar charts).  Regions with no data are indicated with a gray background.</string> 
+                 <string>Distinguish regions with zero values from regions with no data on plots (e.g. bar charts).  Regions with no data are indicated with a gray background.</string>
                 </void> 
                 <void property="name"> 
                  <string>showMissingDataCB</string> 
@@ -715,7 +715,7 @@
                 <string>javax.swing.JLabel</string> 
                 <void method="setProperty"> 
                  <string>text</string> 
-                 <string>&lt;html&gt;&lt;i&gt;Distinguish regions with value of zero from regions with  no data.  </string> 
+                 <string>&lt;html&gt;&lt;i&gt;Distinguish regions with value of zero from regions with no data.</string>
                 </void> 
                 <void property="name"> 
                  <string>label32</string> 
@@ -870,7 +870,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>toolTipText</string> 
-                 <string>A value &gt; 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.   The threshold (&quot;visibility window&quot;) can be overriden explicitly for individual tracks via the track menu.</string> 
+                 <string>A value &gt; 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.  The threshold (&quot;visibility window&quot;) can be overridden explicitly for individual tracks via the track menu.</string>
                 </void> 
                 <void property="name"> 
                  <string>textField1</string> 
@@ -902,7 +902,7 @@
                 <string>javax.swing.JTextField</string> 
                 <void method="setProperty"> 
                  <string>toolTipText</string> 
-                 <string>A value &gt; 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.   The threshold (&quot;visibility window&quot;) can be overriden explicitly for individual tracks via the track menu.</string> 
+                 <string>A value &gt; 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.  The threshold (&quot;visibility window&quot;) can be overridden explicitly for individual tracks via the track menu.</string>
                 </void> 
                 <void property="name"> 
                  <string>featureVisibilityWindowField</string> 
@@ -1060,7 +1060,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>gridwidth</string> 
-                 <int>6</int> 
+                 <int>2</int>
                 </void> 
                </object> 
               </void> 
@@ -1296,7 +1296,7 @@
               </void> 
               <void method="setProperty"> 
                <string>toolTipText</string> 
-               <string>Name of an attribute to be used to label  tracks.  If provided tracks will be labeled with the corresponding attribute values from the sample information file</string> 
+               <string>Name of an attribute to be used to label tracks.  If provided, tracks will be labeled with the corresponding attribute values from the sample information file</string>
               </void> 
               <void property="name"> 
                <string>trackNameAttributeLabel</string> 
@@ -1528,7 +1528,7 @@
               </void> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>&lt;html&gt;&lt;i&gt; Applies to coverage tracks computed with igvtools (.tdf files).  If selected coverage values are scaled by (1,000,000 / totalCount),  where totalCount is the total number of features or alignments.</string> 
+               <string>&lt;html&gt;&lt;i&gt; Applies to coverage tracks computed with igvtools (.tdf files).  If selected, coverage values are scaled by (1,000,000 / totalCount),  where totalCount is the total number of features or alignments.</string>
               </void> 
               <void method="setProperty"> 
                <string>maximumSize</string> 
@@ -1577,7 +1577,7 @@
               </void> 
               <void method="setProperty"> 
                <string>toolTipText</string> 
-               <string>If checked displays an expand/collapse icon on feature tracks.</string> 
+               <string>If checked, displays an expand/collapse icon on feature tracks.</string>
               </void> 
               <void property="name"> 
                <string>expandIconCB</string> 
@@ -1645,7 +1645,7 @@
               <void method="setProperty"> 
                <string>border</string> 
                <object class="javax.swing.border.TitledBorder"> 
-                <string>MAF  Somatic Mutations</string> 
+                <string>MAF Somatic Mutations</string>
                </object> 
               </void> 
               <void property="name"> 
@@ -2983,7 +2983,7 @@
                 <string>javax.swing.JLabel</string> 
                 <void method="setProperty"> 
                  <string>text</string> 
-                 <string>&lt;html&gt;&lt;i&gt;Paint all features/segments with a minimum width of 1 pixel.   If not checked features/segments with screen widths less than 1 pixel are not drawn.</string> 
+                 <string>&lt;html&gt;&lt;i&gt;Paint all features/segments with a minimum width of 1 pixel.  If not checked, features/segments with screen widths less than 1 pixel are not drawn.</string>
                 </void> 
                 <void property="name"> 
                  <string>label14</string> 
@@ -3100,7 +3100,7 @@
                   <string>javax.swing.JLabel</string> 
                   <void method="setProperty"> 
                    <string>text</string> 
-                   <string>On inital load show: </string> 
+                   <string>On initial load show:</string>
                   </void> 
                   <void property="name"> 
                    <string>label39</string> 
@@ -4236,7 +4236,7 @@
               </void> 
               <void method="setProperty"> 
                <string>toolTipText</string> 
-               <string>These options control the color coding of paired alignments by inferred insert size.   Base pair values set default values.  If &quot;compute&quot; is selected  values are computed from the actual size distribution of each library.</string> 
+               <string>These options control the color coding of paired alignments by inferred insert size.  Base pair values set default values.  If &quot;compute&quot; is selected, values are computed from the actual size distribution of each library.</string>
               </void> 
               <void property="name"> 
                <string>panel2</string> 
@@ -5672,7 +5672,7 @@
                 <string>javax.swing.JLabel</string> 
                 <void method="setProperty"> 
                  <string>text</string> 
-                 <string>&lt;html&gt;Whitelist:  &lt;i&gt;comma delimted list of hosts to whitelist (bypass proxy)&lt;/i&gt;</string> 
+                 <string>&lt;html&gt;Whitelist:  &lt;i&gt;comma delimited list of hosts to whitelist (bypass proxy)&lt;/i&gt;</string>
                 </void> 
                 <void property="name"> 
                  <string>label35</string> 
@@ -5788,11 +5788,11 @@
                 <string>javax.swing.JCheckBox</string> 
                 <void method="setProperty"> 
                  <string>text</string> 
-                 <string>skip flow signals for homo polymers at start or end of read (including HP of size 1)</string> 
+                 <string>Skip flow signals for homo polymers at start or end of read (including HP of size 1)</string>
                 </void> 
                 <void method="setProperty"> 
                  <string>toolTipText</string> 
-                 <string>discards flow signals from HP at beginning or end of reads (including HP of size 1), in order to not skew the results due to short reads</string> 
+                 <string>Discards flow signals from HP at beginning or end of reads (including HP of size 1), in order to not skew the results due to short reads</string>
                 </void> 
                 <void method="setProperty"> 
                  <string>selected</string> 
@@ -6564,7 +6564,7 @@
               <string>javax.swing.JButton</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>Clear  Genome Cache</string> 
+               <string>Clear Genome Cache</string>
               </void> 
               <void property="name"> 
                <string>clearGenomeCacheButton</string> 

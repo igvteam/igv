@@ -482,7 +482,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         //---- searchZoomCB ----
                         searchZoomCB.setText("Zoom to features");
-                        searchZoomCB.setToolTipText("This option controls the behavior of feature searchs.  If true, the zoom level is changed as required to size the view to the feature size.  If false the zoom level is unchanged.");
+                        searchZoomCB.setToolTipText("This option controls the behavior of feature searches.  If true, the zoom level is changed as required to size the view to the feature size.  If false, the zoom level is unchanged.");
                         searchZoomCB.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
@@ -550,7 +550,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- label10 ----
-                        label10.setText("Default  font: ");
+                        label10.setText("Default font:");
                         label10.setLabelFor(defaultFontField);
                         jPanel10.add(label10, new GridBagConstraints(0, 12, 1, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
@@ -581,7 +581,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- label7 ----
-                        label7.setText("Background color click to change): ");
+                        label7.setText("Background color (click to change):");
                         jPanel10.add(label7, new GridBagConstraints(0, 14, 3, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 10, 15, 5), 0, 0));
@@ -604,7 +604,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         //---- showMissingDataCB ----
                         showMissingDataCB.setText("Distinguish missing data");
-                        showMissingDataCB.setToolTipText("Distinguish regions with zero values from regions with  no data on plots (e.g. bar charts).  Regions with no data are indicated with a gray background.");
+                        showMissingDataCB.setToolTipText("Distinguish regions with zero values from regions with no data on plots (e.g. bar charts).  Regions with no data are indicated with a gray background.");
                         showMissingDataCB.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
@@ -616,7 +616,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 new Insets(0, 0, 15, 5), 0, 0));
 
                         //---- label32 ----
-                        label32.setText("<html><i>Distinguish regions with value of zero from regions with  no data.  ");
+                        label32.setText("<html><i>Distinguish regions with value of zero from regions with no data.");
                         jPanel10.add(label32, new GridBagConstraints(2, 1, 6, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 0, 15, 5), 0, 0));
@@ -661,13 +661,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         //---- textField1 ----
                         textField1.setText("Default visibility window (kilobases):");
-                        textField1.setToolTipText("A value > 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.   The threshold (\"visibility window\") can be overriden explicitly for individual tracks via the track menu.");
+                        textField1.setToolTipText("A value > 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.  The threshold (\"visibility window\") can be overridden explicitly for individual tracks via the track menu.");
                         jPanel10.add(textField1, new GridBagConstraints(0, 10, 3, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 10, 15, 5), 0, 0));
 
                         //---- featureVisibilityWindowField ----
-                        featureVisibilityWindowField.setToolTipText("A value > 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.   The threshold (\"visibility window\") can be overriden explicitly for individual tracks via the track menu.");
+                        featureVisibilityWindowField.setToolTipText("A value > 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.  The threshold (\"visibility window\") can be overridden explicitly for individual tracks via the track menu.");
                         featureVisibilityWindowField.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
@@ -718,7 +718,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 scaleFontsCBActionPerformed(e);
                             }
                         });
-                        jPanel10.add(scaleFontsCB, new GridBagConstraints(0, 13, 6, 1, 0.0, 0.0,
+                        jPanel10.add(scaleFontsCB, new GridBagConstraints(0, 13, 2, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 0, 15, 5), 0, 0));
 
@@ -789,7 +789,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     //---- trackNameAttributeLabel ----
                     trackNameAttributeLabel.setText("Track Name Attribute");
-                    trackNameAttributeLabel.setToolTipText("Name of an attribute to be used to label  tracks.  If provided tracks will be labeled with the corresponding attribute values from the sample information file");
+                    trackNameAttributeLabel.setToolTipText("Name of an attribute to be used to label tracks.  If provided, tracks will be labeled with the corresponding attribute values from the sample information file");
                     tracksPanel.add(trackNameAttributeLabel, new GridBagConstraints(2, 3, 1, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 10), 0, 0));
@@ -871,7 +871,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     //---- missingDataExplanation8 ----
                     missingDataExplanation8.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
-                    missingDataExplanation8.setText("<html><i> Applies to coverage tracks computed with igvtools (.tdf files).  If selected coverage values are scaled by (1,000,000 / totalCount),  where totalCount is the total number of features or alignments.");
+                    missingDataExplanation8.setText("<html><i> Applies to coverage tracks computed with igvtools (.tdf files).  If selected, coverage values are scaled by (1,000,000 / totalCount),  where totalCount is the total number of features or alignments.");
                     missingDataExplanation8.setMaximumSize(new Dimension(500, 2147483647));
                     missingDataExplanation8.setPreferredSize(new Dimension(500, 50));
                     tracksPanel.add(missingDataExplanation8, new GridBagConstraints(2, 8, 6, 2, 0.0, 0.0,
@@ -880,7 +880,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     //---- expandIconCB ----
                     expandIconCB.setText("Show Expand Icon");
-                    expandIconCB.setToolTipText("If checked displays an expand/collapse icon on feature tracks.");
+                    expandIconCB.setToolTipText("If checked, displays an expand/collapse icon on feature tracks.");
                     expandIconCB.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -904,7 +904,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     //======== jPanel5 ========
                     {
-                        jPanel5.setBorder(new TitledBorder("MAF  Somatic Mutations"));
+                        jPanel5.setBorder(new TitledBorder("MAF Somatic Mutations"));
                         jPanel5.setLayout(null);
 
                         //---- jLabel3 ----
@@ -1279,7 +1279,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         showAllHeatmapFeauresCB.setBounds(new Rectangle(new Point(20, 45), showAllHeatmapFeauresCB.getPreferredSize()));
 
                         //---- label14 ----
-                        label14.setText("<html><i>Paint all features/segments with a minimum width of 1 pixel.   If not checked features/segments with screen widths less than 1 pixel are not drawn.");
+                        label14.setText("<html><i>Paint all features/segments with a minimum width of 1 pixel.  If not checked, features/segments with screen widths less than 1 pixel are not drawn.");
                         panel1.add(label14);
                         label14.setBounds(200, 35, 425, 60);
                     }
@@ -1321,7 +1321,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             panel32.setLayout(new FlowLayout(FlowLayout.LEFT));
 
                             //---- label39 ----
-                            label39.setText("On inital load show: ");
+                            label39.setText("On initial load show:");
                             panel32.add(label39);
 
                             //---- showAlignmentTrackCB ----
@@ -1810,7 +1810,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     //======== panel2 ========
                     {
                         panel2.setBorder(new TitledBorder("Insert Size Options"));
-                        panel2.setToolTipText("These options control the color coding of paired alignments by inferred insert size.   Base pair values set default values.  If \"compute\" is selected  values are computed from the actual size distribution of each library.");
+                        panel2.setToolTipText("These options control the color coding of paired alignments by inferred insert size.  Base pair values set default values.  If \"compute\" is selected, values are computed from the actual size distribution of each library.");
                         panel2.setLayout(new GridLayout());
 
                         //======== panel19 ========
@@ -2300,7 +2300,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         label27.setBounds(20, 271, 95, 27);
 
                         //---- label35 ----
-                        label35.setText("<html>Whitelist:  <i>comma delimted list of hosts to whitelist (bypass proxy)</i>");
+                        label35.setText("<html>Whitelist:  <i>comma delimited list of hosts to whitelist (bypass proxy)</i>");
                         jPanel15.add(label35);
                         label35.setBounds(new Rectangle(new Point(20, 328), label35.getPreferredSize()));
 
@@ -2353,8 +2353,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         panel6.setLayout(null);
 
                         //---- hideFirstHP ----
-                        hideFirstHP.setText("skip flow signals for homo polymers at start or end of read (including HP of size 1)");
-                        hideFirstHP.setToolTipText("discards flow signals from HP at beginning or end of reads (including HP of size 1), in order to not skew the results due to short reads");
+                        hideFirstHP.setText("Skip flow signals for homo polymers at start or end of read (including HP of size 1)");
+                        hideFirstHP.setToolTipText("Discards flow signals from HP at beginning or end of reads (including HP of size 1), in order to not skew the results due to short reads");
                         hideFirstHP.setSelected(true);
                         hideFirstHP.addActionListener(new ActionListener() {
                             @Override
@@ -2627,7 +2627,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     ((GridBagLayout) advancedPanel.getLayout()).rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
                     //---- clearGenomeCacheButton ----
-                    clearGenomeCacheButton.setText("Clear  Genome Cache");
+                    clearGenomeCacheButton.setText("Clear Genome Cache");
                     clearGenomeCacheButton.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -3493,7 +3493,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
             }
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
-            MessageUtils.showMessage("Down-sampling window  must be a positive integer.");
+            MessageUtils.showMessage("Down-sampling window must be a positive integer.");
         }
     }
 
@@ -4560,7 +4560,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     //TODO move this to another class,  or resource bundle
     static String overlayText = "<html>These options control the treatment of mutation tracks.  " +
-            "Mutation data may optionally<br>be overlayed on other tracks that have a matching attribute value " +
+            "Mutation data may optionally<br>be overlaid on other tracks that have a matching attribute value " +
             "from the sample info <br>file. " +
             "This is normally an attribute that identifies a sample or patient. The attribute key <br>is specified in the" +
             "text field below.";
