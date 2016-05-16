@@ -50,7 +50,7 @@ public class GenomeBuilderDialog extends JDialog {
     File archiveFile;
 
     public GenomeBuilderDialog(Frame owner, IGV igv) {
-        super(owner);
+        super(owner, "Create .genome file");
         setModal(true);
         initComponents();
         this.panel1.setIgv(igv);

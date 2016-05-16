@@ -74,7 +74,7 @@ public class GSFileBrowser extends JDialog {
     }
 
     public GSFileBrowser(Frame owner, Mode mode) throws IOException {
-        super(owner);
+        super(owner, "GenomeSpace");
         setModal(true);
         initComponents();
         init(mode);
