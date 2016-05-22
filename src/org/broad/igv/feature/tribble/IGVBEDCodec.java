@@ -402,11 +402,31 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
                     // Must continue if basicFeature has color or exons
                     java.util.List<Exon> exons = basicFeature.getExons();
 
+
                     if (basicFeature.getColor() != null || exons != null) {
+
+                        // Correct "thickStart" and "thickEnd"
+                        int thickStart = basicFeature.getEnd();   // This is not a typo
+                        for(Exon ex : exons) {
+                            if(!ex.isNonCoding()) {
+                                thickStart = ex.getCdStart();
+                                break;
+                            }
+                        }
+                        int thickEnd = basicFeature.getStart();    // Not a typo
+                        for(int i = exons.size() - 1; i >= 0; i--) {
+                            Exon ex = exons.get(i);
+                            if(!ex.isNonCoding()) {
+                                thickEnd = ex.getCdEnd();
+                                break;
+                            }
+                        }
+
+
                         buffer.append("\t");
-                        buffer.append(String.valueOf(basicFeature.getThickStart()));
+                        buffer.append(String.valueOf(thickStart));
                         buffer.append("\t");
-                        buffer.append(String.valueOf(basicFeature.getThickEnd()));
+                        buffer.append(String.valueOf(thickEnd));
                         buffer.append("\t");
 
                         java.awt.Color c = basicFeature.getColor();

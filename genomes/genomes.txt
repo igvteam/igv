@@ -25,6 +25,7 @@ C. savignyi (v2.1 reftigs)	http://dn7ywbm9isq8j.cloudfront.net/genomes/CSavignyi
 C. thermocellum (NC_009012)	http://dn7ywbm9isq8j.cloudfront.net/genomes/NC_009012.genome	NC_009012
 Chicken (galGal3)	http://dn7ywbm9isq8j.cloudfront.net/genomes/galGal3.genome	galGal3
 Chicken (galGal4)	http://dn7ywbm9isq8j.cloudfront.net/genomes/galGal4.genome	galGal4
+Chicken (galGal5)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/galGal5.genome	galGal5
 Chimp (panTro2)	http://dn7ywbm9isq8j.cloudfront.net/genomes/panTro2.genome	panTro2
 Cat (felCat5)	http://dn7ywbm9isq8j.cloudfront.net/genomes/felCat5.genome	felCat5
 Cow (bosTau3)	http://dn7ywbm9isq8j.cloudfront.net/genomes/bosTau3.genome	bosTau3
