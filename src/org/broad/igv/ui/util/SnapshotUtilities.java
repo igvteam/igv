@@ -70,22 +70,16 @@ public class SnapshotUtilities {
     public static int DEFAULT_MAX_PANEL_HEIGHT = 1000;
 
     /**
-     * We need to use a static for max panel height,  or alternatively much refactoring, however this class might
-     * be accessed by multiple threads which set this to different values => use a thread local
+     * We need to use a static for max panel height,  or alternatively much refactoring
      */
-    private static ThreadLocal<Integer> maxPanelHeight = new ThreadLocal() {
-        @Override
-        protected Object initialValue() {
-            return new Integer(DEFAULT_MAX_PANEL_HEIGHT);
-        }
-    };
+    private static int maxPanelHeight = DEFAULT_MAX_PANEL_HEIGHT;
 
     public static int getMaxPanelHeight() {
-        return maxPanelHeight.get().intValue();
+        return maxPanelHeight;
     }
 
     public static void setMaxPanelHeight(int h) {
-        maxPanelHeight.set(h);
+        maxPanelHeight = h;
     }
 
     // Treat this class as a singleton, no instances allowed

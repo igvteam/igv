@@ -2644,13 +2644,9 @@ public class IGV {
                         goToLocus(igvArgs.getLocusString());
                     }
                     if (runningBatch) {
+                        Globals.setBatch(false);   // Set to false for startup execution -- otherwise we block the event thread
                         LongRunningTask.submit(new BatchRunner(igvArgs.getBatchFile()));
-                    } else {
-//                        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_LOS)) {
-//                            (new LOSDialog(mainFrame)).setVisible(true);
-//                        }
                     }
-
                 }
             });
 
