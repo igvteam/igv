@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.renderer.SequenceRenderer;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -40,6 +41,7 @@ import java.util.regex.Pattern;
 public class Globals {
 
     public static final int DESIGN_DPI = 96;
+    public static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
     private static Logger log = Logger.getLogger(Globals.class);
 
 

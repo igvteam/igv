@@ -30,9 +30,11 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
@@ -46,23 +48,26 @@ import java.util.List;
 public class ReducedMemoryAlignment implements Alignment {
 
     private static Logger log = Logger.getLogger(ReducedMemoryAlignment.class);
+    private final String cigarString;
 
-    //String readName;
+    private String readName;
     private String chromosome;
     private int start;
     private int end;
     boolean negativeStrand;
     AlignmentBlock[] blocks;
     AlignmentBlock[] insertions;
+    List<Gap> gaps;
 
     public ReducedMemoryAlignment(Alignment al, int indelLimit) {
 
 
         this.negativeStrand = al.isNegativeStrand();
-        //  this.readName = al.getReadName();
+        this.readName = al.getReadName();
         this.chromosome = al.getChr();
         this.start = al.getStart();
         this.end = al.getEnd();
+        this.cigarString = al.getCigarString();
 
         AlignmentBlock[] blocks = al.getAlignmentBlocks();
         if (blocks != null) {
@@ -102,6 +107,18 @@ public class ReducedMemoryAlignment implements Alignment {
             }
             this.insertions = rmInsertions.toArray(new AlignmentBlock[rmInsertions.size()]);
         }
+
+        List<Gap> gaps = al.getGaps();
+        if (gaps != null) {
+            List<Gap> rmGaps = new ArrayList<Gap>();
+            for (Gap gap : gaps) {
+                if (gap.getnBases() >= indelLimit) {
+                    rmGaps.add(gap);
+                }
+            }
+            this.gaps = rmGaps;
+        }
+
     }
 
 
@@ -217,9 +234,28 @@ public class ReducedMemoryAlignment implements Alignment {
         return getValueString(location, null);
     }
 
-    public String getValueString(double position, WindowFunction windowFunction) {
-        return "Read length = " + (getEnd() - getStart());
+    public String getValueString(double position, WindowFunction ignored) {
+
+        StringBuffer buf = new StringBuffer();
+
+        buf.append("Read name = " + readName + "<br>");
+
+        String sample = getSample();
+        if (sample != null) {
+            buf.append("Sample = " + sample + "<br>");
+        }
+        String readGroup = getReadGroup();
+        if (sample != null) {
+            buf.append("Read group = " + readGroup + "<br>");
+        }
+
+        buf.append("----------------------" + "<br>");
+        buf.append("Alignment start = " + Globals.DECIMAL_FORMAT.format(getAlignmentStart() + 1) + " (" + (isNegativeStrand() ? "-" : "+") + ")<br>");
+        buf.append("Cigar = " + cigarString + "<br>");
+
+        return buf.toString();
     }
+
 
     /**
      * @return the start
@@ -279,7 +315,7 @@ public class ReducedMemoryAlignment implements Alignment {
 
     @Override
     public List<Gap> getGaps() {
-        return null;
+        return gaps;
     }
 
     public boolean isFirstOfPair() {
@@ -467,7 +503,7 @@ public class ReducedMemoryAlignment implements Alignment {
             AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
             if (blocks != null) {
                 for (AlignmentBlock b : blocks) {
-                    if(!b.isSoftClipped()) {
+                    if (!b.isSoftClipped()) {
                         incrementBuckets(b.getStart(), b.getEnd());
                     }
                 }
@@ -480,18 +516,18 @@ public class ReducedMemoryAlignment implements Alignment {
         private void incrementBuckets(int blockStart, int blockEnd) {
 
             int startBucket = Math.max(0, (blockStart - this.start) / bucketSize);
-            int endBucket = Math.min(nBuckets-1, (blockEnd - this.start) / bucketSize);
+            int endBucket = Math.min(nBuckets - 1, (blockEnd - this.start) / bucketSize);
 
             for (int b = startBucket; b <= endBucket; b++) {
                 int bucketStart = this.start + b * bucketSize;
                 int bucketEnd = bucketStart + bucketSize;
-                if(blockEnd >= bucketStart && blockStart <= bucketEnd) {
+                if (blockEnd >= bucketStart && blockStart <= bucketEnd) {
                     double s = Math.max(blockStart, bucketStart);
                     double e = Math.min(blockEnd, bucketEnd);
                     double f = (e - s) / bucketSize;
                     total[b] += f;
 
-                    if(total[b] > maxCount) maxCount = (int) Math.round(total[b]);
+                    if (total[b] > maxCount) maxCount = (int) Math.round(total[b]);
                 }
 
             }

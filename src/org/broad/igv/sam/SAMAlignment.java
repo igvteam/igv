@@ -38,7 +38,6 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
-import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
 
@@ -102,7 +101,6 @@ public abstract class SAMAlignment implements Alignment {
     AlignmentBlockImpl[] insertions;
     List<Gap> gaps;
     char[] gapTypes;
-    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
 
     protected String mateSequence = null;
     protected String pairOrientation = "";
@@ -548,8 +546,8 @@ public abstract class SAMAlignment implements Alignment {
 
         buf.append("----------------------" + "<br>");
         int basePosition = (int) position;
-        buf.append("Location = " + getChr() + ":" + DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
-        buf.append("Alignment start = " + DECIMAL_FORMAT.format(getAlignmentStart() + 1) + " (" + (isNegativeStrand() ? "-" : "+") + ")<br>");
+        buf.append("Location = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
+        buf.append("Alignment start = " + Globals.DECIMAL_FORMAT.format(getAlignmentStart() + 1) + " (" + (isNegativeStrand() ? "-" : "+") + ")<br>");
         buf.append("Cigar = " + cigarString + "<br>");
         buf.append("Mapped = " + (isMapped() ? "yes" : "no") + "<br>");
         buf.append("Mapping quality = " + getMappingQuality() + "<br>");
