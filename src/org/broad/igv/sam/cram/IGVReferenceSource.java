@@ -28,13 +28,14 @@ package org.broad.igv.sam.cram;
 
 
 import htsjdk.samtools.SAMSequenceRecord;
+import htsjdk.samtools.cram.ref.CRAMReferenceSource;
 import htsjdk.samtools.cram.ref.ReferenceSource;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.util.ObjectCache;
 
 
-public class IGVReferenceSource extends ReferenceSource {
+public class IGVReferenceSource implements CRAMReferenceSource {
 
     ObjectCache<String, byte[]> cachedSequences = new ObjectCache<String, byte[]>(2);
 

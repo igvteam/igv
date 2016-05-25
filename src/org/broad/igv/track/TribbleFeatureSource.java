@@ -25,6 +25,7 @@
 
 package org.broad.igv.track;
 
+import htsjdk.tribble.AbstractFeatureReader;
 import org.broad.igv.Globals;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.DataTile;

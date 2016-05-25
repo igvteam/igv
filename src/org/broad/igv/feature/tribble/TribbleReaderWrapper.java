@@ -25,11 +25,11 @@
 
 package org.broad.igv.feature.tribble;
 
-import htsjdk.tribble.CloseableTribbleIterator;
-import htsjdk.tribble.Feature;
-import htsjdk.tribble.FeatureReader;
-import htsjdk.tribble.TribbleIndexedFeatureReader;
+import htsjdk.tribble.*;
 import htsjdk.tribble.index.Index;
+import htsjdk.tribble.index.IndexFactory;
+import htsjdk.tribble.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -101,4 +101,5 @@ public class TribbleReaderWrapper  implements IGVFeatureReader {
             return null;
         }
     }
+
 }
