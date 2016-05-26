@@ -158,8 +158,8 @@ public class IGVSeekableBufferedStream extends SeekableStream {
 
     public int read(final byte[] b, final int off, final int len) throws IOException {
 
-        long length = wrappedStream.length();
-        if (length >= 0 && position >= length) return -1;
+        long contentLength = wrappedStream.length();
+        if (contentLength >= 0 && position >= contentLength) return -1;
 
         if (len > maxBufferSize) {
             // Buffering not useful here.  Don't bother trying to use any (possible) overlapping buffer contents
@@ -168,16 +168,31 @@ public class IGVSeekableBufferedStream extends SeekableStream {
             position += nBytes;
             return nBytes;
         } else {
-            // Requested range is not contained within buffer.
-            if (needFillBuffer(len)) {
-                fillBuffer();
-            }
 
-            int bufferOffset = (int) (position - bufferStartPosition);
-            int bytesCopied = Math.min(len, bufferSize - bufferOffset);
-            arraycopy(buffer, bufferOffset, b, off, bytesCopied);
-            position += bytesCopied;
-            return bytesCopied;
+            long end = position + len;
+            long bufferEnd = bufferStartPosition + bufferSize;
+
+            if (position > bufferStartPosition && position < bufferEnd && end > bufferEnd) {
+
+                // We have part of the requested range.  Return what we have, the read contract does not guarantee
+                // all bytes requested.
+                int bufferOffset = (int) (position - bufferStartPosition);
+                int bytesCopied = (int) (bufferEnd - position);
+                arraycopy(buffer, bufferOffset, b, off, bytesCopied);
+                position += bytesCopied;
+                return bytesCopied;
+
+            } else {
+                if (!(position >= bufferStartPosition && end <= bufferEnd)) {
+                    fillBuffer();
+                }
+
+                int bufferOffset = (int) (position - bufferStartPosition);
+                int bytesCopied = Math.min(len, bufferSize - bufferOffset);
+                arraycopy(buffer, bufferOffset, b, off, bytesCopied);
+                position += bytesCopied;
+                return bytesCopied;
+            }
         }
     }
 
@@ -196,46 +211,6 @@ public class IGVSeekableBufferedStream extends SeekableStream {
         int toSkip = 0;
         //Number of bytes known to be stored in the buffer, which are valid
         int tmpBufferSize = 0;
-
-        long bufferEnd = bufferStartPosition + bufferSize;
-        long requiredEnd = position + bytesRemaining;
-
-        if (bufferStartPosition > position && bufferEnd < requiredEnd) {
-            // Buffer is in the middle of the required range, don't bother trying to reuse
-        } else {
-            if (position < bufferEnd && requiredEnd > bufferEnd) {
-                // Beginning of buffer data is useless, want to save
-                // some though
-                // Fill request:           xxxxxxxx...
-                // Buffer data:    xxxxxxxxxxxxx
-                int szOverlap = (int) (bufferEnd - position);
-                try {
-                    arraycopy(buffer, bufferSize - szOverlap, buffer, 0, szOverlap);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                //Skip the first bytes that we already had
-                toSkip = szOverlap;
-                tmpBufferSize += szOverlap;
-                bytesRemaining -= szOverlap;
-            } else if (position < bufferStartPosition && requiredEnd > bufferStartPosition && requiredEnd < bufferEnd) {
-                //Gap between position and buffer start, but some overlap
-                //We require that the buffer contain data all the way to the end,
-                //because dealing with the case of writing buffered data to the middle
-                //is too complicated and not likely to occur in practice. When it does,
-                //we just re-read everything.
-                // Fill request: xxxxxxxxxxxx...
-                // Buffer data:      xxxxxxxxxxx...
-                int szOverlap = (int) (requiredEnd - bufferStartPosition);
-                int destPos = (int) (bufferStartPosition - position);
-                arraycopy(buffer, 0, buffer, destPos, szOverlap);
-
-                //Don't skip any bytes, just trim from the number requested
-                bytesRemaining -= szOverlap;
-                tmpBufferSize += szOverlap;
-            }
-        }
 
         if (bytesRemaining > 0) {
             int curOffset = toSkip;
