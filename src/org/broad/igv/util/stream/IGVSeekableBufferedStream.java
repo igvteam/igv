@@ -153,7 +153,7 @@ public class IGVSeekableBufferedStream extends SeekableStream {
         int offset = (int) (position - bufferStartPosition);
         int b = buffer[offset];
         position++;
-        return b;
+        return (b >= 0 ? b : 256+b);
     }
 
     public int read(final byte[] b, final int off, final int len) throws IOException {
@@ -208,13 +208,12 @@ public class IGVSeekableBufferedStream extends SeekableStream {
         //we need to watch for overflow
         int bytesRemaining = Ints.saturatedCast(longRem);
         //Number of bytes to skip at beginning when reading from stream later
-        int toSkip = 0;
         //Number of bytes known to be stored in the buffer, which are valid
         int tmpBufferSize = 0;
 
         if (bytesRemaining > 0) {
-            int curOffset = toSkip;
-            wrappedStream.seek(position + toSkip);
+            int curOffset = 0;
+            wrappedStream.seek(position);
             while (bytesRemaining > 0) {
                 int count = wrappedStream.read(buffer, curOffset, bytesRemaining);
                 if (count < 0) {
