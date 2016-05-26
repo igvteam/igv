@@ -24,17 +24,12 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.sam.cram;
+package org.broad.igv.sam.cram.old;
 
 import com.google.common.io.LittleEndianDataInputStream;
-import com.mongodb.io.ByteBufferInputStream;
-import htsjdk.samtools.cram.io.CramArray;
-import htsjdk.samtools.cram.io.CramInt;
-import htsjdk.samtools.cram.io.ITF8;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 /**

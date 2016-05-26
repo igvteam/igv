@@ -537,7 +537,7 @@ public class Genome {
                 String nextLine;
                 while ((nextLine = br.readLine()) != null) {
                     if (nextLine.startsWith("#")) continue;
-                    String[] tokens = Globals.whitespacePattern.split(nextLine);
+                    String[] tokens = Globals.tabPattern.split(nextLine);
                     if (tokens.length == 2) {
                         ucscSpeciesMap.put(tokens[0], tokens[1]);
                     } else {

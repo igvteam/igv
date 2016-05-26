@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.sam.cram;
+package org.broad.igv.sam.cram.old;
 
 
 import com.google.common.io.LittleEndianDataInputStream;
