@@ -32,14 +32,13 @@ package org.broad.igv.sam;
 
 import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
-import org.broad.igv.sam.reader.BAMFileReader;
+import org.broad.igv.sam.reader.BAMReader;
 import org.broad.igv.sam.reader.SAMReader;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.io.File;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
@@ -72,7 +71,7 @@ public class BAMFileReaderTest {
         int start = end / 5;
         int stopafter = 10;
         int counter = 0;
-        BAMFileReader bamreader = new BAMFileReader(new File(bamfile));
+        BAMReader bamreader = new BAMReader(new ResourceLocator(bamfile), true);
         CloseableIterator<PicardAlignment> bamiter = bamreader.query(chr, start, end, true);
         while (bamiter.hasNext()) {
             Alignment bamrecord = bamiter.next();
@@ -106,7 +105,7 @@ public class BAMFileReaderTest {
         int end = 300000000;
         int start = end / 5;
 
-        BAMFileReader bamreader = new BAMFileReader(new File(bamfile));
+        BAMReader bamreader = new BAMReader(new ResourceLocator(bamfile), true);
         SAMReader samreader = new SAMReader(samfile);
         CloseableIterator<PicardAlignment> bamiter = bamreader.query(chr, start, end, true);
         CloseableIterator<PicardAlignment> samiter = samreader.iterator();

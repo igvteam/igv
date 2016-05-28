@@ -31,7 +31,6 @@ import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.sam.reader.BAMHttpReader;
 import org.broad.igv.track.TrackLoader;
 import org.broad.igv.ui.ResourceTree;
 import org.broad.igv.ui.action.LoadFromServerAction;

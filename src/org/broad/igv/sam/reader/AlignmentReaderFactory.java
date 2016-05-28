@@ -31,7 +31,6 @@ import htsjdk.samtools.SAMReadGroupRecord;
 import htsjdk.samtools.ValidationStringency;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.ga4gh.Ga4ghAPIHelper;
 import org.broad.igv.ga4gh.Ga4ghAlignmentReader;
 import org.broad.igv.ga4gh.Ga4ghProvider;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
@@ -40,9 +39,7 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.*;
 
 /**
@@ -87,16 +84,11 @@ public class AlignmentReaderFactory {
                 || typeString.endsWith("pslx")) {
             reader = new GeraldReader(samFile, requireIndex);
         } else if (typeString.endsWith(".bam")) {
-            if (locator.isLocal()) {
-                reader = new BAMFileReader(new File(samFile));
-            } else {
-                try {
-                    reader = new BAMHttpReader(locator, requireIndex);
-                } catch (MalformedURLException e) {
-                    log.error(e.getMessage(), e);
-                    throw new DataLoadException("Error loading BAM file: " + e.toString(), locator.getPath());
-                }
-
+            try {
+                reader = new BAMReader(locator, requireIndex);
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+                throw new DataLoadException("Error loading BAM file: " + e.toString(), locator.getPath());
             }
         } else if (typeString.endsWith(".bam.list") || pathLowerCase.endsWith(".sam.list")) {
             reader = getBamListReader(locator.getPath(), requireIndex);
@@ -110,9 +102,7 @@ public class AlignmentReaderFactory {
         } else if (Ga4ghAlignmentReader.supportsFileType(locator.getType())) {
             Ga4ghProvider provider = (Ga4ghProvider) locator.getAttribute("provider");
             return new Ga4ghAlignmentReader(provider, locator.getPath());
-        }
-
-        else {
+        } else {
             throw new RuntimeException("Cannot find reader for aligment file: " + locator.getPath());
         }
 
@@ -138,8 +128,8 @@ public class AlignmentReaderFactory {
                     }
                 } else {
                     String f = nextLine.trim();
-                    if(f.length() == 0) continue;  // Empty line
-                    
+                    if (f.length() == 0) continue;  // Empty line
+
                     for (Map.Entry<String, String> entry : replacements.entrySet()) {
                         f = f.replace(entry.getKey(), entry.getValue());
                     }

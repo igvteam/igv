@@ -40,7 +40,6 @@ import org.broad.igv.sam.PicardAlignment;
 import org.broad.igv.util.ResourceLocator;
 import org.junit.*;
 
-import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.*;
@@ -54,7 +53,7 @@ public class BAMHttpQueryReaderTest extends AbstractHeadlessTest {
     //private final String BAM_URL_STRING = "http://data.broadinstitute.org/igvdata/test/index_test.bam";
     private final String BAM_URL_STRING = "http://data.broadinstitute.org/igvdata/1KG/freeze5_merged/low_coverage_CEU.Y.bam";
 
-    BAMHttpReader reader;
+    BAMReader reader;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -68,7 +67,7 @@ public class BAMHttpQueryReaderTest extends AbstractHeadlessTest {
 
     @Before
     public void setUp() throws Exception {
-        reader = new BAMHttpReader(new ResourceLocator(BAM_URL_STRING), true);
+        reader = new BAMReader(new ResourceLocator(BAM_URL_STRING), true);
     }
 
     @After
