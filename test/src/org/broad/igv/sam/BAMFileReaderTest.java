@@ -89,8 +89,6 @@ public class BAMFileReaderTest {
             closeSucceeded = true;
         }
         assertTrue(closeSucceeded);
-
-
     }
 
     /**
@@ -124,4 +122,14 @@ public class BAMFileReaderTest {
 
     }
 
+    @Test
+    public void testLocalCraiCram() throws Exception {
+
+        String cramFile = "/Users/jrobinson/projects/IGV/test/data/cram/cram_with_crai_index.cram";
+
+        BAMReader reader = new BAMReader(new ResourceLocator(cramFile), true);
+
+        assertTrue(reader != null);
+
+    }
 }

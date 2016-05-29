@@ -47,11 +47,10 @@ import static org.junit.Assert.*;
 /**
  * @author jrobinso
  */
-@Ignore
-public class BAMHttpQueryReaderTest extends AbstractHeadlessTest {
 
-    //private final String BAM_URL_STRING = "http://data.broadinstitute.org/igvdata/test/index_test.bam";
-    private final String BAM_URL_STRING = "http://data.broadinstitute.org/igvdata/1KG/freeze5_merged/low_coverage_CEU.Y.bam";
+public class BAMHttpReaderTest extends AbstractHeadlessTest {
+
+    private final String BAM_URL_STRING = "http://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam";
 
     BAMReader reader;
 
@@ -79,7 +78,7 @@ public class BAMHttpQueryReaderTest extends AbstractHeadlessTest {
     @Test
     public void testGetHeader() throws IOException {
         SAMFileHeader header = reader.getFileHeader();
-        assertEquals(114, header.getSequenceDictionary().size());
+        assertEquals(86, header.getSequenceDictionary().size());
         assertEquals("1.0", header.getVersion());
     }
 
@@ -87,7 +86,7 @@ public class BAMHttpQueryReaderTest extends AbstractHeadlessTest {
     public void testIterator() {
         CloseableIterator<PicardAlignment> iter = reader.iterator();
         //This takes a long time. We just look for a minimum number
-        int minnum = 1000000;
+        int minnum = 10;
         int actnum = 0;
         while (iter.hasNext()) {
             Alignment a = iter.next();
@@ -105,11 +104,7 @@ public class BAMHttpQueryReaderTest extends AbstractHeadlessTest {
 
     @Test
     public void testQuery() throws Exception {
-
-        checkNumber("Y", 10000000 - 1, 10004000, 6890);
-        checkNumber("Y", 100000000 - 1, 100040000, 0);
-        checkNumber("1", 1 - 1, 100000000, 0);
-
+        checkNumber("Y", 10000000 - 1, 10004000, 4);
     }
 
     private void checkNumber(String chr, int start, int end, int expected_count) throws IOException {

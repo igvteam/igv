@@ -52,6 +52,8 @@ public class FileUtils {
 
 
     public static boolean resourceExists(String path) {
+
+        if(path == null) return false;
         try {
             if (isRemote(path)) {
                 return HttpUtils.getInstance().resourceAvailable(new URL(path));

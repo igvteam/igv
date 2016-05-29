@@ -31,6 +31,7 @@ import htsjdk.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.sam.PicardAlignment;
+import org.broad.igv.sam.cram.IGVReferenceSource;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
@@ -69,24 +70,29 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
     private SamReader getSamReader(ResourceLocator locator, boolean requireIndex) throws IOException {
 
         boolean isLocal = locator.isLocal();
-        final SamReaderFactory factory = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT);
+        final SamReaderFactory factory = SamReaderFactory.makeDefault().
+                referenceSource(new IGVReferenceSource()).
+                validationStringency(ValidationStringency.SILENT);
         SamInputResource resource;
 
         if (isLocal) {
             resource = SamInputResource.of(new File(locator.getPath()));
         } else {
             URL url = new URL(locator.getPath());
-            if(requireIndex) {
+            if (requireIndex) {
                 resource = SamInputResource.of(new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(url), 128000));
-            }
-            else {
+            } else {
                 resource = SamInputResource.of(HttpUtils.getInstance().openConnectionStream(url));
             }
         }
 
         if (requireIndex) {
 
-            String indexPath = getIndexPath(locator);
+            String indexPath = getExplicitIndexPath(locator);
+            if (indexPath == null) {
+                indexPath = getIndexPath(locator.getPath());
+            }
+
             indexed = true;
             if (isLocal) {
                 File indexFile = new File(indexPath);
@@ -151,52 +157,74 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
         return new WrappedIterator(iter);
     }
 
-    private String getIndexPath(ResourceLocator locator) throws IOException {
+
+    /**
+     * Fetch an explicitly set index path, either via the ResourceLocator or as a parameter in a URL
+     *
+     * @param locator
+     * @return the index path, or null if no index path is set
+     */
+    private String getExplicitIndexPath(ResourceLocator locator) {
+        String p = locator.getPath().toLowerCase();
+        String idx = locator.getIndexPath();
+        if (idx == null && (p.startsWith("http://") || p.startsWith("https://"))) {
+            try {
+                URL url = new URL(locator.getPath());
+                String queryString = url.getQuery();
+                if (queryString != null) {
+                    Map<String, String> parameters = HttpUtils.parseQueryString(queryString);
+                    if (parameters.containsKey("index")) {
+                        idx = parameters.get("index");
+
+                    }
+                }
+            } catch (MalformedURLException e) {
+                log.error("Error parsing url: " + locator.getPath());
+            }
+        }
+        return idx;
+    }
+
+    /**
+     * Try to guess the index path.
+     *
+     * @param path
+     * @return
+     * @throws IOException
+     */
+    private String getIndexPath(String path) throws IOException {
 
         List<String> pathsTried = new ArrayList<String>();
 
-        String path = locator.getPath();
-        String indexPath = locator.getIndexPath();
+        String indexPath = null;
 
-
-        if (indexPath != null) {
-            return indexPath;  // Explicit
-        } else {
-
-            if (path.toLowerCase().startsWith("http://") || path.toLowerCase().startsWith("https://")) {
-                // See if bam file is specified by parameter
-                try {
-                    URL url = new URL(path);
-                    String queryString = url.getQuery();
-                    if (queryString != null) {
-                        Map<String, String> parameters = HttpUtils.parseQueryString(queryString);
-                        if (parameters.containsKey("index")) {
-                            indexPath = parameters.get("index");
-                        } else if (parameters.containsKey("file")) {
-                            String bamFile = parameters.get("file");
-                            String bamIndexFile = bamFile + ".bai";
-                            String newQueryString = queryString.replace(bamFile, bamIndexFile);
-                            indexPath = path.replace(queryString, newQueryString);
-                        } else {
-                            indexPath = path.replace(url.getPath(), url.getPath() + ".bai");
-                        }
-                    }
-                } catch (MalformedURLException e) {
-                    log.error(e.getMessage(), e);
+        if (path.toLowerCase().startsWith("http://") || path.toLowerCase().startsWith("https://")) {
+            // See if bam file is specified by parameter
+            indexPath = getIndexURL(path, ".bai");
+            if (FileUtils.resourceExists(indexPath)) {
+                return indexPath;
+            } else if (path.endsWith(".cram")) {
+                indexPath = getIndexURL(path, ".crai");
+                if (FileUtils.resourceExists(indexPath)) {
+                    return indexPath;
                 }
             }
-        }
-        if (indexPath != null && FileUtils.resourceExists(indexPath)) {
-            return indexPath;
-        }
-
-        if (indexPath == null) {
-            indexPath = path + ".bai";
-        }
-
-        if (FileUtils.resourceExists(indexPath)) {
-            return indexPath;
         } else {
+            // Local file
+
+            indexPath = path + ".bai";
+
+            if (FileUtils.resourceExists(indexPath)) {
+                return indexPath;
+            }
+
+            if (path.endsWith(".cram")) {
+                indexPath = path + ".crai";
+                if (FileUtils.resourceExists(indexPath)) {
+                    return indexPath;
+                }
+            }
+
             if (indexPath.contains(".bam.bai")) {
                 indexPath = indexPath.replaceFirst(".bam.bai", ".bai");
                 pathsTried.add(indexPath);
@@ -212,15 +240,14 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
             }
         }
 
-        if (indexPath == null) {
-            String defaultValue = locator.getPath() + ".bai";
-            indexPath = MessageUtils.showInputDialog(
-                    "Index is required, but no index found.  Please enter path to index file:",
-                    defaultValue);
-            if (indexPath != null && FileUtils.resourceExists(indexPath)) {
-                return indexPath;
-            }
+        String defaultValue = path + (path.endsWith(".cram") ? ".crai" : ".bai");
+        indexPath = MessageUtils.showInputDialog(
+                "Index is required, but no index found.  Please enter path to index file:",
+                defaultValue);
+        if (indexPath != null && FileUtils.resourceExists(indexPath)) {
+            return indexPath;
         }
+
 
         String msg = "Index file not found.  Tried ";
         for (String p : pathsTried) {
@@ -228,6 +255,28 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
         }
         throw new DataLoadException(msg, indexPath);
 
+    }
+
+    private String getIndexURL(String path, String extension) {
+        String indexPath = null;
+        try {
+            URL url = new URL(path);
+            String queryString = url.getQuery();
+            if (queryString != null) {
+                Map<String, String> parameters = HttpUtils.parseQueryString(queryString);
+                if (parameters.containsKey("file")) {
+                    String bamFile = parameters.get("file");
+                    String bamIndexFile = bamFile + extension;
+                    String newQueryString = queryString.replace(bamFile, bamIndexFile);
+                    indexPath = path.replace(queryString, newQueryString);
+                } else {
+                    indexPath = path.replace(url.getPath(), url.getPath() + extension);
+                }
+            }
+        } catch (MalformedURLException e) {
+            log.error(e.getMessage(), e);
+        }
+        return indexPath;
     }
 
 
