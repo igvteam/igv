@@ -114,14 +114,5 @@ public class CachingFeatureReader extends AbstractCacher implements IGVFeatureRe
         return tribbleFeatureReader.iterator();
     }
 
-    public Index getIndex() {
-        if (tribbleFeatureReader instanceof TribbleIndexedFeatureReader) {
-            return ((TribbleIndexedFeatureReader) tribbleFeatureReader).getIndex();
-
-        } else {
-            return null;
-        }
-    }
-
 }
 

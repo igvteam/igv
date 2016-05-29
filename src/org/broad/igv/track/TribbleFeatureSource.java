@@ -137,8 +137,6 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
     public abstract boolean isIndexed();
 
-    public abstract Index getIndex();
-
     public Class getFeatureClass() {
         return featureClass;
     }
@@ -183,11 +181,6 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         @Override
         public boolean isIndexed() {
             return true;
-        }
-
-        @Override
-        public Index getIndex() {
-            return this.reader.getIndex();
         }
 
         @Override
@@ -338,11 +331,6 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         @Override
         public boolean isIndexed() {
             return false;
-        }
-
-        @Override
-        public Index getIndex() {
-            return null;
         }
 
         @Override

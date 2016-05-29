@@ -92,14 +92,5 @@ public class TribbleReaderWrapper  implements IGVFeatureReader {
         return wrappedReader.getHeader();
     }
 
-    @Override
-    public Index getIndex() {
-        if (wrappedReader instanceof TribbleIndexedFeatureReader) {
-            return ((TribbleIndexedFeatureReader) wrappedReader).getIndex();
-
-        } else {
-            return null;
-        }
-    }
 
 }

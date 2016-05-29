@@ -55,5 +55,4 @@ public interface IGVFeatureReader {
 
     public Object getHeader();
 
-    public Index getIndex();
 }

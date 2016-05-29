@@ -25,7 +25,11 @@
 
 package org.broad.igv.track;
 
+import htsjdk.tribble.Tribble;
 import htsjdk.tribble.index.Index;
+import htsjdk.tribble.index.IndexFactory;
+import htsjdk.tribble.util.ParsingUtils;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Mutation;
@@ -45,6 +49,8 @@ import java.util.*;
  *         Time: 8:45 AM
  */
 public class MutationFeatureSource implements FeatureSource<Mutation> {
+
+    private static Logger log = Logger.getLogger(MutationFeatureSource.class);
 
     String sample;
     MutationDataManager dataManager;
@@ -117,11 +123,14 @@ public class MutationFeatureSource implements FeatureSource<Mutation> {
 
         public String[] getSamples() {
 
-            Index idx = this.tribbleFeatureSource.getIndex();
-            if (idx != null) {
-                Map<String, String> map = idx.getProperties();
-                if (map != null && map.containsKey("samples")) {
-                    return Globals.commaPattern.split(map.get("samples"));
+            if (this.tribbleFeatureSource.isIndexed()) {
+                // Load the index for meta information.  Its already loaded, but not public in the htsjdk class.
+                Index idx = loadIndex(this.locator.getPath());
+                if (idx != null) {
+                    Map<String, String> map = idx.getProperties();
+                    if (map != null && map.containsKey("samples")) {
+                        return Globals.commaPattern.split(map.get("samples"));
+                    }
                 }
             }
 
@@ -133,6 +142,24 @@ public class MutationFeatureSource implements FeatureSource<Mutation> {
 
         }
 
-
+        private Index loadIndex(String path)  {
+            try {
+                String indexFile = Tribble.indexFile(path);
+                Index index = null;
+                if (ParsingUtils.resourceExists(indexFile)) {
+                    index = IndexFactory.loadIndex(indexFile);
+                } else {
+                    // See if the index itself is gzipped
+                    indexFile = ParsingUtils.appendToPath(indexFile, ".gz");
+                    if (ParsingUtils.resourceExists(indexFile)) {
+                        index = IndexFactory.loadIndex(indexFile);
+                    }
+                }
+                return index;
+            } catch (IOException e) {
+                log.error("Error loading index file", e);
+                return null;
+            }
+        }
     }
 }
