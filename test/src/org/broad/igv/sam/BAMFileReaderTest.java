@@ -32,6 +32,7 @@ package org.broad.igv.sam;
 
 import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.reader.BAMReader;
 import org.broad.igv.sam.reader.SAMReader;
 import org.broad.igv.util.ResourceLocator;
@@ -39,6 +40,8 @@ import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
@@ -125,9 +128,17 @@ public class BAMFileReaderTest {
     @Test
     public void testLocalCraiCram() throws Exception {
 
-        String cramFile = "/Users/jrobinson/projects/IGV/test/data/cram/cram_with_crai_index.cram";
+        String cramFile = TestUtils.DATA_DIR + "cram/cram_with_crai_index.cram";
+        GenomeManager.getInstance().loadGenome(TestUtils.DATA_DIR + "cram/hg19mini.fasta", null);
 
         BAMReader reader = new BAMReader(new ResourceLocator(cramFile), true);
+
+        List<String> seqNames = reader.getSequenceNames();
+
+        CloseableIterator<PicardAlignment> iter = reader.iterator();
+        while(iter.hasNext()) {
+            System.out.println(iter.next().toString());
+        }
 
         assertTrue(reader != null);
 
