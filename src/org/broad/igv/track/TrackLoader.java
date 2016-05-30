@@ -168,7 +168,7 @@ public class TrackLoader {
                 loadRNAiHPScoreFile(locator);
             } else if (typeString.contains(".tabblastn") || typeString.endsWith(".orthologs")) {
                 loadSyntentyMapping(locator, newTracks);
-            } else if (typeString.endsWith(".sam") || typeString.endsWith(".bam") ||
+            } else if (typeString.endsWith(".sam") || typeString.endsWith(".bam") || typeString.endsWith(".cram") ||
                     typeString.endsWith(".sam.list") || typeString.endsWith(".bam.list") ||
                     typeString.endsWith(".aligned") || typeString.endsWith(".sai") ||
                     typeString.endsWith(".bai") || typeString.equals("alist") ||
@@ -890,7 +890,7 @@ public class TrackLoader {
                 }
             }
 
-            if (locator.getPath().toLowerCase().endsWith(".bam")) {
+            if (locator.getTypeString().endsWith("bam") || locator.getTypeString().endsWith("cram")) {
                 if (!dataManager.hasIndex()) {
                     MessageUtils.showMessage("<html>Could not load index file for: " +
                             locator.getPath() + "<br>  An index file is required for SAM & BAM files.");
