@@ -188,23 +188,24 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
     /**
      * Try to guess the index path.
      *
-     * @param path
+     * @param pathOrURL
      * @return
      * @throws IOException
      */
-    private String getIndexPath(String path) throws IOException {
+    private String getIndexPath(String pathOrURL) throws IOException {
 
         List<String> pathsTried = new ArrayList<String>();
 
-        String indexPath = null;
+        String indexPath;
 
-        if (path.toLowerCase().startsWith("http://") || path.toLowerCase().startsWith("https://")) {
+        if (pathOrURL.toLowerCase().startsWith("http://") || pathOrURL.toLowerCase().startsWith("https://")) {
+
             // See if bam file is specified by parameter
-            indexPath = getIndexURL(path, ".bai");
+            indexPath = getIndexURL(pathOrURL, ".bai");
             if (FileUtils.resourceExists(indexPath)) {
                 return indexPath;
-            } else if (path.endsWith(".cram")) {
-                indexPath = getIndexURL(path, ".crai");
+            } else if (pathOrURL.endsWith(".cram")) {
+                indexPath = getIndexURL(pathOrURL, ".crai");
                 if (FileUtils.resourceExists(indexPath)) {
                     return indexPath;
                 }
@@ -212,14 +213,14 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
         } else {
             // Local file
 
-            indexPath = path + ".bai";
+            indexPath = pathOrURL + ".bai";
 
             if (FileUtils.resourceExists(indexPath)) {
                 return indexPath;
             }
 
-            if (path.endsWith(".cram")) {
-                indexPath = path + ".crai";
+            if (pathOrURL.endsWith(".cram")) {
+                indexPath = pathOrURL + ".crai";
                 if (FileUtils.resourceExists(indexPath)) {
                     return indexPath;
                 }
@@ -240,7 +241,7 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
             }
         }
 
-        String defaultValue = path + (path.endsWith(".cram") ? ".crai" : ".bai");
+        String defaultValue = pathOrURL + (pathOrURL.endsWith(".cram") ? ".crai" : ".bai");
         indexPath = MessageUtils.showInputDialog(
                 "Index is required, but no index found.  Please enter path to index file:",
                 defaultValue);
@@ -257,20 +258,22 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
 
     }
 
-    private String getIndexURL(String path, String extension) {
+    private String getIndexURL(String urlString, String extension) {
         String indexPath = null;
         try {
-            URL url = new URL(path);
+            URL url = new URL(urlString);
             String queryString = url.getQuery();
-            if (queryString != null) {
+            if (queryString == null) {
+                indexPath = urlString + extension;
+            } else {
                 Map<String, String> parameters = HttpUtils.parseQueryString(queryString);
                 if (parameters.containsKey("file")) {
                     String bamFile = parameters.get("file");
                     String bamIndexFile = bamFile + extension;
                     String newQueryString = queryString.replace(bamFile, bamIndexFile);
-                    indexPath = path.replace(queryString, newQueryString);
+                    indexPath = urlString.replace(queryString, newQueryString);
                 } else {
-                    indexPath = path.replace(url.getPath(), url.getPath() + extension);
+                    indexPath = urlString.replace(url.getPath(), url.getPath() + extension);
                 }
             }
         } catch (MalformedURLException e) {

@@ -45,7 +45,7 @@ import static junit.framework.Assert.assertEquals;
 /**
  * Created by jrobinso on 5/25/16.
  */
-@Ignore
+
 public class IGVReferenceSourceTest {
 
     @Before
@@ -72,55 +72,4 @@ public class IGVReferenceSourceTest {
         assertEquals('A', bases[27198882]);
     }
 
-
-    @Test
-    public void testCramReader() throws Exception {
-
-
-        String genomeURL = "http://igv.broadinstitute.org/genomes/hg38.genome";
-        Genome genome = GenomeManager.getInstance().loadGenome(genomeURL, null);
-        IGVReferenceSource refSource = new IGVReferenceSource();
-//
-        String url = "http://1000genomes.s3.amazonaws.com/data/NA21144/alignment/NA21144.alt_bwamem_GRCh38DH.20150718.GIH.low_coverage.cram";
- //       String url = "/Users/jrobinso/Downloads/NA21144.alt_bwamem_GRCh38DH.20150718.GIH.low_coverage.cram";
-        String indexURL = url + ".crai";
-
-        SeekableStream cramStream = new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(url), 512000);
-        SeekableStream indexStream = new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(indexURL), 512000);
-//        SeekableStream indexStream = IGVSeekableStreamFactory.getInstance().getStreamFor(indexURL);
-
-//        final SamReaderFactory factory = SamReaderFactory.makeDefault().referenceSource(refSource).validationStringency(ValidationStringency.SILENT);
-//        SamInputResource resource = SamInputResource.of(cramStream).index(indexStream);
-//        SamReader reader = factory.open(resource);
-//
-//        SAMRecordIterator iter = reader.query("22", 1000000, 2000000, false);
-//        int count=0;
-//        while(count++ < 10) {
-//            SAMRecord record = iter.next();
-//            System.out.println(record.toString());
-//        }
-
-
-        CRAMFileReader reader = new CRAMFileReader(cramStream, indexStream, refSource, ValidationStringency.LENIENT);
-        QueryInterval[] interval = new QueryInterval[]{new QueryInterval(reader.getFileHeader().getSequenceIndex("chr22"), 1000000, 20000000)};
-        //reader.query("1", 1000, 2000, true);
-        CloseableIterator<SAMRecord> iter = reader.query(interval, false);
-        int count=0;
-        while(count++ < 10 && iter.hasNext()) {
-            SAMRecord record = iter.next();
-            System.out.println(record.toString());
-        }
-
-    }
-//
-//    public static void main(String [] args) throws IOException {
-//
-//        FileInputStream is = new FileInputStream("/Users/jrobinso/Downloads/NA21144.alt_bwamem_GRCh38DH.20150718.GIH.low_coverage.cram.crai");
-//        int cout = 10;
-//        while(cout-- > 0) {
-//            System.out.println(is.read());
-//        }
-//        is.close();
-//
-//    }
 }
