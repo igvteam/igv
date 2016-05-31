@@ -27,8 +27,6 @@ package org.broad.igv.ui.panel;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.feature.FeatureUtils;
-import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
@@ -263,7 +261,7 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
 
         int stateHash = FrameManager.getStateHash();
 
-        if(lastStateHash == stateHash) return;
+      //  if(lastFrameStateHash == stateHash) return;
 
         lastStateHash = stateHash;
 
