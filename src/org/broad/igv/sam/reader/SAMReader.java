@@ -41,6 +41,7 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -181,7 +182,7 @@ public class SAMReader implements AlignmentReader<PicardAlignment> {
         try {
             InputStream is = ParsingUtils.openInputStreamGZ(new ResourceLocator(samFile));
             BufferedInputStream bis = new BufferedInputStream(is);
-            SamInputResource resource = SamInputResource.of(is);
+            SamInputResource resource = SamInputResource.of(bis);
             return factory.open(resource);
         } catch (IOException e) {
             log.error("Error opening SAM reader", e);
@@ -196,8 +197,11 @@ public class SAMReader implements AlignmentReader<PicardAlignment> {
             if (startPosition >= 0) {
                 stream.seek(startPosition);
             }
-            SamInputResource resource = SamInputResource.of(stream);
-            return factory.open(resource);
+            //SamInputResource resource = SamInputResource.of(stream);
+            //return factory.open(resource);
+            SAMFileReader reader = new SAMFileReader(stream);
+            reader.setValidationStringency(ValidationStringency.SILENT);
+            return reader;
         } catch (IOException ex) {
             log.error("Error opening sam file", ex);
             throw new RuntimeException("Error opening: " + samFile, ex);
