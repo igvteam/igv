@@ -29,19 +29,20 @@
  */
 package org.broad.igv.sam.reader;
 
-import htsjdk.samtools.*;
+import htsjdk.samtools.SAMFileHeader;
+import htsjdk.samtools.SAMFileReader;
+import htsjdk.samtools.ValidationStringency;
+import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.sam.EmptyAlignmentIterator;
 import org.broad.igv.sam.PicardAlignment;
-import org.broad.igv.sam.cram.IGVReferenceSource;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -60,7 +61,6 @@ public class SAMReader implements AlignmentReader<PicardAlignment> {
     FeatureIndex featureIndex;
     SAMFileHeader header;
     List<String> sequenceNames;
-    SamReaderFactory factory;
 
     public SAMReader(String samFile) throws IOException {
         this(samFile, true);
@@ -68,10 +68,6 @@ public class SAMReader implements AlignmentReader<PicardAlignment> {
 
     public SAMReader(String samFile, boolean requireIndex) throws IOException {
         this.samFile = samFile;
-
-        factory = SamReaderFactory.makeDefault().
-                referenceSource(new IGVReferenceSource()).
-                validationStringency(ValidationStringency.SILENT);
         loadHeader();
 
         if (requireIndex) {
@@ -93,20 +89,26 @@ public class SAMReader implements AlignmentReader<PicardAlignment> {
     private void loadHeader() {
 
         InputStream is = null;
-        SamReader reader = null;
+        SAMFileReader reader = null;
         try {
             is = ParsingUtils.openInputStreamGZ(new ResourceLocator(samFile));
             BufferedInputStream bis = new BufferedInputStream(is);
-            header = getSamReader(samFile).getFileHeader();
+            SAMFileReader.setDefaultValidationStringency(ValidationStringency.SILENT);
+            reader = new SAMFileReader(bis);
+            header = reader.getFileHeader();
         } catch (IOException e) {
             log.error("Error loading header", e);
         } finally {
-            if(reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-
+            try {
+                if (is != null) {
+                    is.close();
                 }
+                if (reader != null) {
+                    reader.close();
+                }
+
+            } catch (Exception e) {
+
             }
         }
     }
@@ -133,7 +135,8 @@ public class SAMReader implements AlignmentReader<PicardAlignment> {
 
         if (seekPos != null) {
             // Skip to the start of the query interval and open a sam file reader
-            CloseableIterator<SAMRecord> iter = getSamReader(samFile, seekPos.getStartPosition()).iterator();
+            SAMFileReader reader = getSAMFileReader(samFile, seekPos.getStartPosition());
+            CloseableIterator<SAMRecord> iter = reader.iterator();
             return new SAMQueryIterator(sequence, start, end, contained, iter);
         }
         return EmptyAlignmentIterator.getInstance();
@@ -172,41 +175,29 @@ public class SAMReader implements AlignmentReader<PicardAlignment> {
     }
 
     public CloseableIterator<PicardAlignment> iterator() {
-
-        CloseableIterator<SAMRecord> iter = getSamReader(samFile).iterator();
+        SAMFileReader reader = getSAMFileReader(samFile, -1);
+        CloseableIterator<SAMRecord> iter = reader.iterator();
         return new SAMQueryIterator(iter);
     }
 
-
-    private SamReader getSamReader(String samFile){
-        try {
-            InputStream is = ParsingUtils.openInputStreamGZ(new ResourceLocator(samFile));
-            BufferedInputStream bis = new BufferedInputStream(is);
-            SamInputResource resource = SamInputResource.of(bis);
-            return factory.open(resource);
-        } catch (IOException e) {
-            log.error("Error opening SAM reader", e);
-            throw new RuntimeException("Error opening SAM reader");
-        }
-    }
-
-
-    private SamReader getSamReader(String samFile, long startPosition) {
+    private SAMFileReader getSAMFileReader(String samFile, long startPosition) {
         try {
             SeekableStream stream = IGVSeekableStreamFactory.getInstance().getStreamFor(samFile);
             if (startPosition >= 0) {
                 stream.seek(startPosition);
             }
-            //SamInputResource resource = SamInputResource.of(stream);
-            //return factory.open(resource);
             SAMFileReader reader = new SAMFileReader(stream);
             reader.setValidationStringency(ValidationStringency.SILENT);
+
+            //Need to keep the file source, if loading lazily
+            //TODO Can't reload from SAM files. See SAMTextReader.getIterator
+            //reader.enableFileSource(PicardAlignment.DEFAULT_LAZY_LOAD);
+
             return reader;
         } catch (IOException ex) {
             log.error("Error opening sam file", ex);
             throw new RuntimeException("Error opening: " + samFile, ex);
         }
     }
-
 
 }
