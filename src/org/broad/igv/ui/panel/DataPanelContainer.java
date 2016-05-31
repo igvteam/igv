@@ -263,7 +263,7 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
 
         int stateHash = FrameManager.getStateHash();
 
-        if(lastStateHash == stateHash) return;
+        //if(lastStateHash == stateHash) return;
 
         lastStateHash = stateHash;
 
