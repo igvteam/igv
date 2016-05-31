@@ -50,6 +50,8 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Port of perl script blatPlot.pl   http://genomewiki.cse.ucsc.edu/index.php/Blat_Scripts
@@ -139,7 +141,7 @@ public class BlatClient {
         //then use this.
 
         String urlString = ($url + "?org=" + org + "&db=" + db + "&type=" + searchType + "&sort=" + sortOrder +
-                "&output=" + outputType + "&userSeq=" + userSeq); // + "&hgsid=" + hgsid);
+                "&output=" + outputType); // + "&hgsid=" + hgsid);
         if (hgsid != null) {
             urlString += "&hgsid=" + hgsid;
         }
@@ -155,7 +157,9 @@ public class BlatClient {
 
         lastQueryTime = System.currentTimeMillis();
 
-        String result = HttpUtils.getInstance().getContentsAsString(new URL(urlString));
+        Map<String, String> params = new HashMap();
+        params.put("userSeq", userSeq);
+        String result = HttpUtils.getInstance().doPost(new URL(urlString), params);
 
         return parseResult(result);
     }
