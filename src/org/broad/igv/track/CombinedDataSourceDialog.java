@@ -63,7 +63,7 @@ public class CombinedDataSourceDialog extends JDialog {
 
 
     public CombinedDataSourceDialog(Frame owner) {
-        super(owner);
+        super(owner, "Combine tracks");
         initComponents();
 
         ArrayList<CombinedDataSource.Operation> dialogOperations = new ArrayList<CombinedDataSource.Operation>(

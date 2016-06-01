@@ -118,6 +118,7 @@ public class GeneListManagerUI extends JDialog {
             instance = new GeneListManagerUI(owner);
         }
 
+        instance.setTitle(actionText);
         instance.actionButton.setText(actionText);
         instance.listener = listener;
 

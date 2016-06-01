@@ -46,7 +46,7 @@ public class LoadFromURLDialog extends JDialog {
     String indexURL;
 
     public LoadFromURLDialog(Frame owner) {
-        super(owner);
+        super(owner, "Load from URL");
         initComponents();
     }
 

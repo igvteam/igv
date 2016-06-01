@@ -152,6 +152,7 @@ public class IgvToolsGui extends JDialog {
     private void initUI() {
         setContentPane(mainPanel);
         setModal(true);
+        setTitle("igvtools");
 
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent windowEvent) {
