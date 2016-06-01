@@ -30,6 +30,7 @@
 package org.broad.igv.feature.genome;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.Range;
 import org.broad.igv.util.ObjectCache;
 
 import java.util.Hashtable;
@@ -95,15 +96,19 @@ public class SequenceWrapper implements Sequence {
      * @return
      */
     public byte[] getSequence(String chr, int start, int end) {
+
         if (cacheSequences) {
             byte[] seqbytes = new byte[end - start];
+
             int startTile = start / tileSize;
             int endTile = end / tileSize;
 
+            SequenceTile[] tiles = getSequenceTiles(chr, startTile, endTile);
+
             // Get first chunk
-            SequenceTile tile = getSequenceTile(chr, startTile);
+            SequenceTile tile = tiles[0];
             if (tile == null) {
-                return null;
+                return null;   // Can this ever happen?
             }
 
             byte[] tileBytes = tile.getBytes();
@@ -130,11 +135,7 @@ public class SequenceWrapper implements Sequence {
 
             // If multiple chunks ...
             for (int t = startTile + 1; t <= endTile; t++) {
-                tile = getSequenceTile(chr, t);
-                if (tile == null) {
-                    break;
-                }
-
+                tile = tiles[t - startTile];
                 int nNext = Math.min(seqbytes.length - nBytes, tile.getSize());
 
                 System.arraycopy(tile.getBytes(), 0, seqbytes, nBytes, nNext);
@@ -166,6 +167,74 @@ public class SequenceWrapper implements Sequence {
         }
 
         return tile;
+    }
+
+
+    private SequenceTile[] getSequenceTiles(String chr, int startTile, int endTile) {
+
+        SequenceTile[] tiles = new SequenceTile[endTile - startTile + 1];
+
+        TileRange toLoad = null;
+        for (int tileNo = startTile; tileNo <= endTile; tileNo++) {
+
+            String key = getKey(chr, tileNo);
+            SequenceTile tile = sequenceCache.get(key);
+
+            if (tile == null) {
+
+                if(toLoad == null) {
+                    toLoad = new TileRange(tileNo, tileNo);
+                }
+                else {
+                    toLoad.endTile = tileNo;
+                }
+
+            } else {  // tile != null
+                tiles[tileNo-startTile] = tile;
+
+                if (toLoad != null) {
+                    loadTiles(chr, startTile, tiles, toLoad);
+                    toLoad = null;
+                }
+            }
+        }
+
+        if (toLoad != null) {
+            loadTiles(chr, startTile, tiles, toLoad);
+        }
+
+        return tiles;
+
+    }
+
+    private void loadTiles(String chr, int startTile, SequenceTile[] tiles, TileRange toLoad) {
+        int start = toLoad.startTile * tileSize;
+        int end = (toLoad.endTile + 1) * tileSize;
+        byte[] seq = sequence.getSequence(chr, start, end);
+
+        int offset = 0;
+        for(int t = toLoad.startTile; t <= toLoad.endTile; t++) {
+
+            int nBytes = Math.min(tileSize, seq.length - offset);
+            byte [] tileSeq = new byte[nBytes];
+            int tileStart = t * tileSize;
+            System.arraycopy(seq, offset, tileSeq, 0, nBytes);
+            SequenceTile t2 = new SequenceTile(tileStart, tileSeq);
+            String k = getKey(chr, t);
+            sequenceCache.put(k, t2);
+            tiles[t-startTile] = t2;
+            offset += tileSize;
+        }
+    }
+
+    private static class TileRange {
+        int startTile;
+        int endTile;
+
+        public TileRange(int startTile, int endTile) {
+            this.startTile = startTile;
+            this.endTile = startTile;
+        }
     }
 
     /**
@@ -230,14 +299,14 @@ public class SequenceWrapper implements Sequence {
     /**
      * Translates sequence URLs that might be cached on client machines.  This method should be retired eventually,
      * as caches expire.
-     * <p/>
+     * <p>
      * Also modifies URLs to Broad hosted sequences that will use byte range requests if byte-range requests are
      * disabled.  This hack is neccessary for the Partners network, which does not forward the byte-range header.
-     * <p/>
+     * <p>
      * Older "sequence servlet" request URLs
      * http://www.broad.mit.edu/igv/SequenceServlet/
      * http://www.broadinstitute.org/igv/sequence
-     * <p/>
+     * <p>
      * Direct URLS  (uses byte range requests)
      * http://data.broadinstitute.org/igvdata/annotations/seq/
      * http://igvdata.broadinstitute.org/genomes/seq
@@ -253,7 +322,7 @@ public class SequenceWrapper implements Sequence {
      * Some rather ugly code to maintain backward compatibility.  Does 2 things
      * (1) domain swap  (mit -> broadinstitute)
      * (2) removes references to SequenceServlet, there are 2 forms
-     * <p/>
+     * <p>
      * This method can be removed when its verified that references to the MIT domain and sequence servlet have
      * been removed from all genomes.
      *
