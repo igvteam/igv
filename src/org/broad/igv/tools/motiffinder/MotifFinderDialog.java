@@ -89,7 +89,7 @@ public class MotifFinderDialog extends JDialog {
     private String[] inputPatterns;
 
     public MotifFinderDialog(Frame owner) {
-        super(owner);
+        super(owner, "Find motif");
         initComponents();
     }
 

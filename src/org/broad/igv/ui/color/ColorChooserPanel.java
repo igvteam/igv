@@ -85,7 +85,7 @@ public class ColorChooserPanel extends JPanel implements Serializable {
 
     private void changeColorAction() {
         JColorChooser colorChooser = new JColorChooser(selectedColor);
-        JDialog dialog = JColorChooser.createDialog(this, "Dialog Title", true,
+        JDialog dialog = JColorChooser.createDialog(this, "Select color", true,
                 colorChooser, null, null);
         dialog.setVisible(true);
         Color c = colorChooser.getColor();
