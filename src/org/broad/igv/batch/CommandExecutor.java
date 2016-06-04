@@ -31,8 +31,6 @@
 package org.broad.igv.batch;
 
 import com.google.common.collect.Iterables;
-import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -46,6 +44,8 @@ import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.event.DataLoadedEvent;
+import org.broad.igv.ui.event.IGVEventBus;
+import org.broad.igv.ui.event.IGVEventObserver;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.SnapshotUtilities;
@@ -604,15 +604,9 @@ public class CommandExecutor {
                     //Alignment tracks load alignment data asynchronously from the track
 
                     //Since sorting applies to all tracks, we only need to have 1 handler
-                    AlignmentTrack track = null;
-                    try {
-                        track = Iterables.filter(igv.getAllTracks(), AlignmentTrack.class).iterator().next();
-                        EventBus bus = track.getDataManager().getEventBus();
-                        bus.register(new SortAlignmentsHandler(igv, bus, sortOption, sortTag));
-                    } catch (NoSuchElementException e) {
-                        //No alignment tracks found.
-                        log.warn("Sort argument provided but no alignment tracks found");
-                    }
+                    //TODO -- the use of the bus here is, essentially, an attempt to simulate a promise,  do().then()
+                    IGVEventBus.getInstance().subscribe(DataLoadedEvent.class, new SortAlignmentsHandler(igv, sortOption, sortTag));
+
                 } catch (InterruptedException e) {
                     log.error(e.getMessage(), e);
                 } catch (ExecutionException e) {
@@ -939,25 +933,27 @@ public class CommandExecutor {
 
     }
 
-    private static class SortAlignmentsHandler {
+    private static class SortAlignmentsHandler implements IGVEventObserver {
 
         private IGV igv = null;
-        private EventBus bus = null;
         private AlignmentTrack.SortOption sortOption;
         private String sortTag;
 
-        SortAlignmentsHandler(IGV igv, EventBus bus, AlignmentTrack.SortOption sortOption, String sortTag) {
+        SortAlignmentsHandler(IGV igv, AlignmentTrack.SortOption sortOption, String sortTag) {
             this.igv = igv;
-            this.bus = bus;
             this.sortOption = sortOption;
             this.sortTag = sortTag;
+
+            IGVEventBus.getInstance().subscribe(DataLoadedEvent.class, this);
         }
 
-        @Subscribe
-        public void received(DataLoadedEvent event) {
+
+        @Override
+        public void receiveEvent(Object event) {
             boolean sorted = igv.sortAlignmentTracks(sortOption, sortTag);
-            if (sorted) this.bus.unregister(this);
+            if (sorted) {
+                IGVEventBus.getInstance().unsubscribe(this);
+            }
         }
-
     }
 }

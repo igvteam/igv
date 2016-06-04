@@ -36,7 +36,6 @@ package org.broad.igv.ui;
 import apple.dts.samplecode.osxadapter.OSXAdapter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.eventbus.Subscribe;
 import com.jidesoft.swing.JideSplitPane;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
 import org.apache.log4j.Logger;
@@ -78,6 +77,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.io.*;
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.net.NoRouteToHostException;
 import java.net.URL;
@@ -93,7 +93,7 @@ import static org.broad.igv.ui.WaitCursorManager.CursorToken;
  *
  * @author jrobinso
  */
-public class IGV {
+public class IGV implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(IGV.class);
     private static IGV theInstance;
@@ -139,13 +139,13 @@ public class IGV {
     private boolean isExportingSnapshot = false;
 
     // Listeners
-    Collection<SoftReference<TrackGroupEventListener>> groupListeners =
-            Collections.synchronizedCollection(new ArrayList<SoftReference<TrackGroupEventListener>>());
+    Collection<WeakReference<TrackGroupEventListener>> groupListeners =
+            Collections.synchronizedCollection(new ArrayList<>());
 
-    Collection<SoftReference<AlignmentTrackEventListener>> alignmentTrackListeners =
-            Collections.synchronizedCollection(new ArrayList<SoftReference<AlignmentTrackEventListener>>());
+    Collection<WeakReference<AlignmentTrackEventListener>> alignmentTrackListeners =
+            Collections.synchronizedCollection(new ArrayList<>());
 
-    private List<JComponent> otherToolMenus = new ArrayList<JComponent>();
+    private List<JComponent> otherToolMenus = new ArrayList<>();
     private boolean rulerEnabled;
 
     /**
@@ -164,16 +164,22 @@ public class IGV {
         return otherToolMenus;
     }
 
-    @Subscribe
-    public void receiveViewChange(ViewChange.Result e) {
-        repaintDataAndHeaderPanels();
-        repaintStatusAndZoomSlider();
+    public void receiveEvent(Object event) {
+
+        if(event instanceof ViewChange.Result) {
+            ViewChange.Result e = (ViewChange.Result) event;
+            repaintDataAndHeaderPanels();
+            repaintStatusAndZoomSlider();
+        }
+        else if(event instanceof ViewChange.ChromosomeChangeResult) {
+            ViewChange.ChromosomeChangeResult e = (ViewChange.ChromosomeChangeResult) event;
+            chromosomeChangeEvent(e.chrName, false);
+        }
+        else {
+            log.info("Unknown event type: " + event.getClass());
+        }
     }
 
-    @Subscribe
-    public void receiveViewChange(ViewChange.ChromosomeChangeResult e) {
-        chromosomeChangeEvent(e.chrName, false);
-    }
 
     public static IGV createInstance(Frame frame) {
         if (theInstance != null) {
@@ -332,6 +338,10 @@ public class IGV {
 
         mainFrame.setExtendedState(state);
         mainFrame.setBounds(applicationBounds);
+
+        IGVEventBus.getInstance().subscribe(ViewChange.Result.class, this);
+
+        IGVEventBus.getInstance().subscribe(ViewChange.ChromosomeChangeResult.class, this);
     }
 
 
@@ -2393,12 +2403,12 @@ public class IGV {
     // Events
 
     public synchronized void addGroupEventListener(TrackGroupEventListener l) {
-        groupListeners.add(new SoftReference<TrackGroupEventListener>(l));
+        groupListeners.add(new WeakReference<TrackGroupEventListener>(l));
     }
 
     public synchronized void removeGroupEventListener(TrackGroupEventListener l) {
 
-        for (Iterator<SoftReference<TrackGroupEventListener>> it = groupListeners.iterator(); it.hasNext(); ) {
+        for (Iterator<WeakReference<TrackGroupEventListener>> it = groupListeners.iterator(); it.hasNext(); ) {
             TrackGroupEventListener listener = it.next().get();
             if (listener != null && listener == l) {
                 it.remove();
@@ -2409,18 +2419,18 @@ public class IGV {
 
     public void notifyGroupEvent() {
         TrackGroupEvent e = new TrackGroupEvent(this);
-        for (SoftReference<TrackGroupEventListener> ref : groupListeners) {
+        for (WeakReference<TrackGroupEventListener> ref : groupListeners) {
             TrackGroupEventListener l = ref.get();
             l.onTrackGroupEvent(e);
         }
     }
 
     public synchronized void addAlignmentTrackEventListener(AlignmentTrackEventListener l) {
-        alignmentTrackListeners.add(new SoftReference<AlignmentTrackEventListener>(l));
+        alignmentTrackListeners.add(new WeakReference<AlignmentTrackEventListener>(l));
     }
 
     public synchronized void removeAlignmentTrackEvent(AlignmentTrackEventListener l) {
-        for (Iterator<SoftReference<AlignmentTrackEventListener>> it = alignmentTrackListeners.iterator(); it.hasNext(); ) {
+        for (Iterator<WeakReference<AlignmentTrackEventListener>> it = alignmentTrackListeners.iterator(); it.hasNext(); ) {
             AlignmentTrackEventListener listener = it.next().get();
             if (listener != null && listener == l) {
                 it.remove();
@@ -2431,7 +2441,7 @@ public class IGV {
 
     public void notifyAlignmentTrackEvent(Object source, AlignmentTrackEvent.Type type, boolean value) {
         AlignmentTrackEvent e = new AlignmentTrackEvent(source, type, value);
-        for (SoftReference<AlignmentTrackEventListener> ref : alignmentTrackListeners) {
+        for (WeakReference<AlignmentTrackEventListener> ref : alignmentTrackListeners) {
             AlignmentTrackEventListener l = ref.get();
             l.onAlignmentTrackEvent(e);
         }
@@ -2440,7 +2450,7 @@ public class IGV {
 
     public void notifyAlignmentTrackEvent(Object source, AlignmentTrackEvent.Type type) {
         AlignmentTrackEvent e = new AlignmentTrackEvent(source, type);
-        for (SoftReference<AlignmentTrackEventListener> ref : alignmentTrackListeners) {
+        for (WeakReference<AlignmentTrackEventListener> ref : alignmentTrackListeners) {
             AlignmentTrackEventListener l = ref.get();
             l.onAlignmentTrackEvent(e);
         }

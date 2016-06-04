@@ -25,11 +25,12 @@
 
 package org.broad.igv.ui;
 
-import com.google.common.eventbus.Subscribe;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.AminoAcidManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.action.SearchCommand;
+import org.broad.igv.ui.event.IGVEventBus;
+import org.broad.igv.ui.event.IGVEventObserver;
 import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.FrameManager;
 import org.fest.swing.fixture.FrameFixture;
@@ -45,7 +46,7 @@ import static org.junit.Assert.assertTrue;
  * User: jacob
  * Date: 2012/05/14
  */
-public class IGVCommandBarTest extends AbstractHeadedTest {
+public class IGVCommandBarTest extends AbstractHeadedTest implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(IGVCommandBarTest.class);
 
@@ -71,7 +72,7 @@ public class IGVCommandBarTest extends AbstractHeadedTest {
     }
 
     @Before
-    public void setUp() throws Exception{
+    public void setUp() throws Exception {
         super.setUp();
         this.actualEvents = 0;
         this.expectedEvents = 0;
@@ -79,11 +80,11 @@ public class IGVCommandBarTest extends AbstractHeadedTest {
     }
 
     @After
-    public void tearDown() throws Exception{
+    public void tearDown() throws Exception {
         System.out.println("Expected Events: " + expectedEvents + " Actual Events: " + actualEvents);
         assertTrue("Event handler not triggered properly", actualEvents >= expectedEvents);
-        if(registered){
-            FrameManager.getDefaultFrame().getEventBus().unregister(this);
+        if (registered) {
+            IGVEventBus.getInstance().unsubscribe(this);
         }
         super.tearDown();
     }
@@ -124,27 +125,34 @@ public class IGVCommandBarTest extends AbstractHeadedTest {
 
     private void registerEventHandler(int expectedEvents) {
         this.expectedEvents += expectedEvents;
-        if(!registered){
-            FrameManager.getDefaultFrame().getEventBus().register(this);
+        if (!registered) {
+            FrameManager.getDefaultFrame().getEventBus().subscribe(ViewChange.ChromosomeChangeCause.class, this);
             this.registered = true;
         }
     }
 
-    @Subscribe
-    public void receiveChromoChange(ViewChange.ChromosomeChangeCause e){
-        if(e.source instanceof SearchCommand){
-            actualEvents++;
-            try {
-                assertEquals(this.enterText, e.chrName);
-            } catch (Exception e1) {
-                log.error(e1.getMessage(), e1);
+    public void receiveEvent(Object event) {
+
+        if (event instanceof ViewChange.ChromosomeChangeCause) {
+
+            ViewChange.ChromosomeChangeCause e = (ViewChange.ChromosomeChangeCause) event;
+            if (e.source instanceof SearchCommand) {
+                actualEvents++;
+                try {
+                    assertEquals(this.enterText, e.chrName);
+                } catch (Exception e1) {
+                    log.error(e1.getMessage(), e1);
+                    actualEvents = Integer.MIN_VALUE;
+                }
+            } else {
                 actualEvents = Integer.MIN_VALUE;
+                throw new AssertionError("Got a ChromosomeChangeCause event from unexpected source: " + e.source);
             }
-        }else{
-            actualEvents = Integer.MIN_VALUE;
-            throw new AssertionError("Got a ChromosomeChangeCause event from unexpected source: " + e.source);
+        } else {
+            log.info("Unknown event type: " + event.getClass());
         }
     }
+
 
     @Test
     public void testChromoNav_CodonTable() throws Exception {

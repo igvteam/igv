@@ -25,7 +25,6 @@
 
 package org.broad.igv.sam;
 
-import com.google.common.eventbus.EventBus;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -36,6 +35,7 @@ import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.event.DataLoadedEvent;
+import org.broad.igv.ui.event.IGVEventBus;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.ProgressMonitor;
@@ -68,13 +68,6 @@ public class AlignmentDataManager implements IAlignmentDataManager {
     private SpliceJunctionHelper.LoadOptions loadOptions;
     private Object loadLock = new Object();
     private boolean showAlignments = true;
-
-    /**
-     * This {@code EventBus} is typically used to notify listeners when new data
-     * is loaded
-     */
-    private EventBus eventBus = new EventBus();
-
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
         this.locator = locator;
@@ -319,7 +312,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
                 loadedIntervalCache.put(loadedInterval.getRange(), loadedInterval);
 
                 packAlignments(renderOptions);
-                getEventBus().post(new DataLoadedEvent(frame));
+                IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
 
                 isLoading = false;
             }
@@ -418,10 +411,6 @@ public class AlignmentDataManager implements IAlignmentDataManager {
                 stats.compute(renderOptions.getMinInsertSizePercentile(), renderOptions.getMaxInsertSizePercentile());
             }
         }
-    }
-
-    public EventBus getEventBus() {
-        return eventBus;
     }
 
     public SpliceJunctionHelper.LoadOptions getSpliceJunctionLoadOptions() {

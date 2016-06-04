@@ -29,9 +29,6 @@
  */
 package org.broad.igv.ui.panel;
 
-import com.google.common.eventbus.AsyncEventBus;
-import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -42,6 +39,8 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.event.DragStoppedEvent;
+import org.broad.igv.ui.event.IGVEventBus;
+import org.broad.igv.ui.event.IGVEventObserver;
 import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
@@ -50,7 +49,7 @@ import org.broad.igv.util.LongRunningTask;
 /**
  * @author jrobinso
  */
-public class ReferenceFrame {
+public class ReferenceFrame implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(ReferenceFrame.class);
 
@@ -132,7 +131,7 @@ public class ReferenceFrame {
         this.name = name;
         Genome genome = getGenome();
         this.chrName = genome == null ? "" : genome.getHomeChromosome();
-        registerEventBuses();
+        subscribe();
     }
 
 
@@ -149,25 +148,45 @@ public class ReferenceFrame {
         this.widthInPixels = otherFrame.widthInPixels;
         this.zoom = otherFrame.zoom;
         this.maxZoom = otherFrame.maxZoom;
-        registerEventBuses();
+        subscribe();
     }
 
-    private void registerEventBuses(){
-        //TODO Would rather put this in IGV.createFrame, but since frame get
-        //changed we do it here
-        if(IGV.hasInstance()){
-            getEventBus().register(IGV.getInstance());
-        }
+    public IGVEventBus getEventBus() {
+        return IGVEventBus.getInstance();
     }
-    private EventBus eventBus;
 
-    public EventBus getEventBus() {
-        if (eventBus == null) {
-            eventBus = new AsyncEventBus(LongRunningTask.getThreadExecutor());
-            eventBus.register(this);
-        }
-        return eventBus;
+    private void subscribe() {
+        getEventBus().subscribe(ViewChange.ZoomCause.class, this);
+        getEventBus().subscribe(DragStoppedEvent.class, this);
+        getEventBus().subscribe(ViewChange.ChromosomeChangeCause.class, this);
     }
+
+    public void receiveEvent(Object event) {
+
+        if (event.getClass() == ViewChange.ZoomCause.class) {
+            ViewChange.ZoomCause e = (ViewChange.ZoomCause) event;
+            doSetZoom(e.newZoom);
+            ViewChange.Result result = new ViewChange.Result();
+            result.setRecordHistory(false);
+            getEventBus().post(result);
+        } else if (event.getClass() == DragStoppedEvent.class) {
+            DragStoppedEvent e = (DragStoppedEvent) event;
+            this.snapToGrid();
+            getEventBus().post(new ViewChange.Result());
+        } else if (event instanceof ViewChange.ChromosomeChangeCause) {
+            ViewChange.ChromosomeChangeCause chromoChangeCause = (ViewChange.ChromosomeChangeCause) event;
+            boolean changed = setChromosomeName(chromoChangeCause.chrName, false);
+            if (changed) {
+                ViewChange.ChromosomeChangeResult resultEvent = new ViewChange.ChromosomeChangeResult(chromoChangeCause.source,
+                        chrName);
+                resultEvent.setRecordHistory(chromoChangeCause.recordHistory());
+                getEventBus().post(resultEvent);
+            }
+        } else {
+            log.info("Unknown event type: " + event.getClass());
+        }
+    }
+
 
     public boolean isVisible() {
         return visible;
@@ -264,20 +283,6 @@ public class ReferenceFrame {
     public void doSetZoom(int newZoom) {
         double currentCenter = getGenomeCenterPosition();
         doSetZoomCenter(newZoom, currentCenter);
-    }
-
-    @Subscribe
-    public void receiveZoomChange(ViewChange.ZoomCause e) {
-        doSetZoom(e.newZoom);
-        ViewChange.Result result = new ViewChange.Result();
-        result.setRecordHistory(false);
-        getEventBus().post(result);
-    }
-
-    @Subscribe
-    public void receiveDragStopped(DragStoppedEvent e) {
-        this.snapToGrid();
-        getEventBus().post(new ViewChange.Result());
     }
 
 
@@ -512,6 +517,7 @@ public class ReferenceFrame {
     /**
      * Called before scaling and zooming, during jumpTo.
      * Intended to be overridden
+     *
      * @param locus
      */
     protected void beforeScaleZoom(Locus locus) {
@@ -575,23 +581,14 @@ public class ReferenceFrame {
      * Determine if this view will change at all based on the {@code newChrName}
      * The view changes if newChrName != {@code #this.chr} or if we are not
      * at full chromosome view
+     *
      * @param newChrName
      * @return
      */
-    private boolean shouldChangeChromosome(String newChrName){
+    private boolean shouldChangeChromosome(String newChrName) {
         return chrName == null || !chrName.equals(newChrName);
     }
 
-    @Subscribe
-    public void receiveChromosomeChange(ViewChange.ChromosomeChangeCause chromoChangeCause) {
-        boolean changed = setChromosomeName(chromoChangeCause.chrName, false);
-        if (changed) {
-            ViewChange.ChromosomeChangeResult resultEvent = new ViewChange.ChromosomeChangeResult(chromoChangeCause.source,
-                    chrName);
-            resultEvent.setRecordHistory(chromoChangeCause.recordHistory());
-            getEventBus().post(resultEvent);
-        }
-    }
 
     protected void calculateMaxZoom() {
         this.maxZoom = Globals.CHR_ALL.equals(this.chrName) ? 0 :
@@ -645,24 +642,26 @@ public class ReferenceFrame {
      * In genomic coordinates this is the same as the chromosome length.
      * In exome coordinates, the two are different
      * (since ExomeReferenceFrame takes input in genomic coordinates)
-     * @see #getChromosomeLength()
+     *
      * @return
+     * @see #getChromosomeLength()
      */
-    public int getMaxCoordinate(){
+    public int getMaxCoordinate() {
         return this.getChromosomeLength();
     }
 
-    private static int getMaxCoordinate(String chrName){
+    private static int getMaxCoordinate(String chrName) {
         return getChromosomeLength(chrName);
     }
 
     /**
      * Chromosome length, in genomic coordinates.
      * Intended to be used for scaling
-     * @see #getMaxCoordinate()
+     *
      * @return
+     * @see #getMaxCoordinate()
      */
-    public int getChromosomeLength(){
+    public int getChromosomeLength() {
         return getChromosomeLength(this.chrName);
     }
 
@@ -751,7 +750,7 @@ public class ReferenceFrame {
     }
 
     public int getStateHash() {
-       return (chrName + origin + locationScale + widthInPixels).hashCode();
+        return (chrName + origin + locationScale + widthInPixels).hashCode();
     }
 
 }

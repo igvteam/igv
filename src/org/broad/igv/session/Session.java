@@ -25,8 +25,6 @@
 
 package org.broad.igv.session;
 
-
-import com.google.common.eventbus.Subscribe;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -38,6 +36,7 @@ import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
+import org.broad.igv.ui.event.IGVEventObserver;
 import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -48,13 +47,15 @@ import java.util.*;
 /**
  * @author eflakes
  */
-public class Session {
+public class Session implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(Session.class);
 
 
     //This doesn't mean genelist or not, the same way it does in FrameManager
-    public enum GeneListMode {NORMAL, CURSOR}
+    public enum GeneListMode {
+        NORMAL, CURSOR
+    }
 
     private int version;
     private String path;
@@ -104,8 +105,22 @@ public class Session {
         if (resetRequired) {
             IGV.getInstance().resetFrames();
         }
-        FrameManager.getDefaultFrame().getEventBus().register(this);
+        FrameManager.getDefaultFrame().getEventBus().subscribe(ViewChange.Result.class, this);
     }
+
+
+    public void receiveEvent(Object event) {
+        if (event instanceof ViewChange.Result) {
+            ViewChange.Result e = (ViewChange.Result) event;
+            if (e.recordHistory()) {
+                recordHistory();
+            }
+        }
+        else {
+            log.info("Unknown event type: " + event.getClass());
+        }
+    }
+
 
     public void clearDividerLocations() {
         dividerFractions = null;
@@ -346,13 +361,6 @@ public class Session {
         this.path = path;
     }
 
-    @Subscribe
-    public void receiveViewChange(ViewChange.Result e) {
-        if (e.recordHistory()) {
-            recordHistory();
-        }
-    }
-
     public History getHistory() {
         return history;
     }
@@ -390,7 +398,7 @@ public class Session {
         }
     }
 
-    public void sortGeneList(Comparator<String> comparator){
+    public void sortGeneList(Comparator<String> comparator) {
         getCurrentGeneList().sort(comparator);
         this.setCurrentGeneList(getCurrentGeneList());
     }

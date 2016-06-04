@@ -25,7 +25,6 @@
 
 package org.broad.igv.track;
 
-import com.google.common.eventbus.Subscribe;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -42,6 +41,8 @@ import org.broad.igv.tools.motiffinder.MotifFinderSource;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.event.DataLoadedEvent;
+import org.broad.igv.ui.event.IGVEventBus;
+import org.broad.igv.ui.event.IGVEventObserver;
 import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
@@ -77,7 +78,8 @@ import java.util.List;
  */
 @XmlType(factoryMethod = "getNextTrack")
 @XmlSeeAlso({VariantTrack.class, PluginFeatureSource.class, MotifFinderSource.class})
-public class FeatureTrack extends AbstractTrack {
+
+public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(FeatureTrack.class);
 
@@ -232,6 +234,8 @@ public class FeatureTrack extends AbstractTrack {
 
         this.renderer = path != null && path.endsWith("junctions.bed") ?
                 new SpliceJunctionRenderer() : new IGVFeatureRenderer();
+
+        IGVEventBus.getInstance().subscribe(DataLoadedEvent.class, this);
 
     }
 
@@ -666,7 +670,7 @@ public class FeatureTrack extends AbstractTrack {
         int end = (int) frame.getEnd();
         if (packedFeatures == null || !packedFeatures.containsInterval(chr, start, end)) {
             try {
-                frame.getEventBus().unregister(FeatureTrack.this);
+                frame.getEventBus().unsubscribe(FeatureTrack.this);
             } catch (IllegalArgumentException e) {
                 //Don't care
             }
@@ -750,7 +754,7 @@ public class FeatureTrack extends AbstractTrack {
 
     protected String getZoomInMessage(String chr) {
         return chr.equals(Globals.CHR_ALL) ? "Zoom in to see features." :
-                        "Zoom in to see features, or right-click to increase Feature Visibility Window.";
+                "Zoom in to see features, or right-click to increase Feature Visibility Window.";
     }
 
     private float getMaxEstimate(List<LocusScore> scores) {
@@ -928,7 +932,7 @@ public class FeatureTrack extends AbstractTrack {
         };
 
         if (aSync) {
-            referenceFrame.getEventBus().register(FeatureTrack.this);
+            referenceFrame.getEventBus().subscribe(DataLoadedEvent.class, FeatureTrack.this);
             LongRunningTask.submit(runnable);
         } else {
             runnable.run();
@@ -942,21 +946,20 @@ public class FeatureTrack extends AbstractTrack {
 
     /**
      * Called after features are finished loading, which can be asynchronous
-     *
-     * @param event
      */
-    @Subscribe
-    private void receiveDataLoaded(DataLoadedEvent event) {
-        if (IGV.hasInstance()) {
-            // TODO -- WHY IS THIS HERE????
-            //TODO Assuming this is necessary, there can be many data loaded events in succession,
-            //don't want to layout for each one
-            IGV.getInstance().layoutMainPanel();
+    public void receiveEvent(Object e) {
+        if (e instanceof DataLoadedEvent) {
+            DataLoadedEvent event = (DataLoadedEvent) e;
+            if (IGV.hasInstance()) {
+                // TODO -- WHY IS THIS HERE????
+                //TODO Assuming this is necessary, there can be many data loaded events in succession,
+                //don't want to layout for each one
+                IGV.getInstance().layoutMainPanel();
+            }
+            event.getReferenceFrame().getEventBus().post(new ViewChange.Result());
+        } else {
+            log.info("Unknown event type: " + e.getClass());
         }
-        event.getReferenceFrame().getEventBus().post(new ViewChange.Result());
-        System.out.println("Data loaded");
-       // JComponent panel = event.context.getPanel();
-      //  if (panel != null) panel.repaint();
     }
 
     /**

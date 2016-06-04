@@ -30,8 +30,6 @@
  */
 package org.broad.igv.ui;
 
-
-import com.google.common.eventbus.Subscribe;
 import com.jidesoft.hints.ListDataIntelliHints;
 import com.jidesoft.swing.JideBoxLayout;
 import com.jidesoft.swing.JideButton;
@@ -50,6 +48,8 @@ import org.broad.igv.feature.genome.GenomeServerException;
 import org.broad.igv.session.History;
 import org.broad.igv.ui.action.FitDataToWindowMenuAction;
 import org.broad.igv.ui.action.SearchCommand;
+import org.broad.igv.ui.event.IGVEventBus;
+import org.broad.igv.ui.event.IGVEventObserver;
 import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
@@ -80,7 +80,7 @@ import java.util.List;
 /**
  * @author jrobinso
  */
-public class IGVCommandBar extends javax.swing.JPanel {
+public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(IGVCommandBar.class);
 
@@ -147,8 +147,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
             }
         });
 
-
-        getDefaultReferenceFrame().getEventBus().register(this);
+        IGVEventBus.getInstance().subscribe(ViewChange.Result.class, this);
     }
 
     private JPopupMenu getPopupMenuToolTipBehavior() {
@@ -932,11 +931,15 @@ public class IGVCommandBar extends javax.swing.JPanel {
         }
     }
 
-    @Subscribe
-    public void receiveViewChangeResult(ViewChange.Result e) {
-        String chrName = getDefaultReferenceFrame().getChrName();
-        setChromosomeComboBoxNoActionListeners(chrName);
-        updateCurrentCoordinates();
+    public void receiveEvent(Object event) {
+
+        if (event instanceof ViewChange.Result) {
+            String chrName = getDefaultReferenceFrame().getChrName();
+            setChromosomeComboBoxNoActionListeners(chrName);
+            updateCurrentCoordinates();
+        } else {
+            log.info("Unknown event class: " + event.getClass());
+        }
     }
 
     private void goButtonActionPerformed(java.awt.event.ActionEvent evt) {    // GEN-FIRST:event_goButtonActionPerformed

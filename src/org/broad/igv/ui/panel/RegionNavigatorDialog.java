@@ -26,13 +26,14 @@
 
 package org.broad.igv.ui.panel;
 
-import com.google.common.eventbus.Subscribe;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.event.IGVEventBus;
+import org.broad.igv.ui.event.IGVEventObserver;
 import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.util.StringUtils;
 
@@ -57,7 +58,7 @@ import java.util.List;
  *         This dialog is not intended to be persistent.  To view one of these, create it.
  *         <p/>
  */
-public class RegionNavigatorDialog extends JDialog implements Observer{
+public class RegionNavigatorDialog extends JDialog implements Observer, IGVEventObserver {
 
     private static Logger log = Logger.getLogger(AttributePanel.class);
 
@@ -130,9 +131,14 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
         synchRegions();
     }
 
-    @Subscribe
-    public void receiveChromosomeChanged(ViewChange.ChromosomeChangeResult e){
-        synchRegions();
+    public void receiveEvent(Object e) {
+
+        if (e instanceof ViewChange.ChromosomeChangeResult) {
+
+            synchRegions();
+        } else {
+            log.info("Unknown event type: " + e.getClass());
+        }
     }
 
     /**
@@ -143,7 +149,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
         synchingRegions = true;
         List<RegionOfInterest> regions = retrieveRegionsAsList();
         regionTableModel = (DefaultTableModel) regionTable.getModel();
-        while (regionTableModel.getRowCount() > 0){
+        while (regionTableModel.getRowCount() > 0) {
             regionTableModel.removeRow(0);
         }
         regionTableModel.setRowCount(regions.size());
@@ -186,7 +192,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
         synchRegions();
 
         ReferenceFrame defFrame = FrameManager.getDefaultFrame();
-        defFrame.getEventBus().register(this);
+        IGVEventBus.getInstance().subscribe(ViewChange.ChromosomeChangeResult.class, this);
         IGV.getInstance().getSession().getRegionsOfInterestObservable().addObserver(this);
 
         //resize window if small number of regions.  By default, tables are initialized with 20
@@ -480,10 +486,12 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
             public void windowActivated(WindowEvent e) {
                 thisWindowActivated(e);
             }
+
             @Override
             public void windowClosed(WindowEvent e) {
                 thisWindowClosed(e);
             }
+
             @Override
             public void windowDeactivated(WindowEvent e) {
                 thisWindowDeactivated(e);
@@ -531,23 +539,25 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
 
                     //---- regionTable ----
                     regionTable.setModel(new DefaultTableModel(
-                        new Object[][] {
-                            {null, null, null, null},
-                        },
-                        new String[] {
-                            "Chr", "Start", "End", "Description"
-                        }
+                            new Object[][]{
+                                    {null, null, null, null},
+                            },
+                            new String[]{
+                                    "Chr", "Start", "End", "Description"
+                            }
                     ) {
-                        Class<?>[] columnTypes = new Class<?>[] {
-                            String.class, Integer.class, Integer.class, Object.class
+                        Class<?>[] columnTypes = new Class<?>[]{
+                                String.class, Integer.class, Integer.class, Object.class
                         };
-                        boolean[] columnEditable = new boolean[] {
-                            false, true, true, true
+                        boolean[] columnEditable = new boolean[]{
+                                false, true, true, true
                         };
+
                         @Override
                         public Class<?> getColumnClass(int columnIndex) {
                             return columnTypes[columnIndex];
                         }
+
                         @Override
                         public boolean isCellEditable(int rowIndex, int columnIndex) {
                             return columnEditable[columnIndex];
@@ -754,7 +764,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
                     int start = roi.getCenter() - length / 2;
                     int end = start + length;
                     //Shift so we don't go below 0
-                    if(start < 0){
+                    if (start < 0) {
                         end += Math.abs(start);
                         start = 0;
                     }

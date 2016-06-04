@@ -29,7 +29,6 @@
  */
 package org.broad.igv.sam;
 
-import com.google.common.eventbus.Subscribe;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -158,7 +157,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     public void setDataManager(AlignmentDataManager dataManager) {
         this.dataManager = dataManager;
-        this.dataManager.getEventBus().register(this);
     }
 
     public void setDataSource(CoverageDataSource dataSource) {
@@ -202,47 +200,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         alignmentTrack = null;
         setVisible(false);
     }
-
-    /**
-     * Rescale as necessary, and tell components to repaint
-     *
-     * @param e
-     */
-    @Subscribe
-    public void receiveDataLoaded(DataLoadedEvent e) {
-        ReferenceFrame frame = e.getReferenceFrame();
-        //rescale(frame);
-        frame.getEventBus().post(new ViewChange.Result());
-    }
-
-//    public void rescale(ReferenceFrame iframe) {
-//        List<ReferenceFrame> frameList = new ArrayList<ReferenceFrame>();
-//        if (iframe != null) frameList.add(iframe);
-//        if (globalAutoScale) {
-//            frameList.addAll(FrameManager.getFrames());
-//        }
-//
-//        if (autoScale && dataManager != null) {
-//
-//            int max = 10;
-//            for (ReferenceFrame frame : frameList) {
-//                AlignmentInterval interval = dataManager.getLoadedInterval(frame.getCurrentRange());
-//                if (interval == null) continue;
-//
-//                int origin = (int) frame.getOrigin();
-//                int end = (int) frame.getEnd() + 1;
-//
-//                int intervalMax = interval.getMaxCount(origin, end);
-//                max = intervalMax > max ? intervalMax : max;
-//            }
-//
-//            DataRange newRange = new DataRange(0, max);
-//            newRange.setType(getDataRange().getType());
-//            super.setDataRange(newRange);
-//
-//        }
-//    }
-
 
     public void render(RenderContext context, Rectangle rect) {
 
