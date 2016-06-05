@@ -19,6 +19,7 @@ C. elegans (WS220)	http://dn7ywbm9isq8j.cloudfront.net/genomes/WS220.genome	WS22
 C. elegans (ws241)	http://dn7ywbm9isq8j.cloudfront.net/genomes/ws241.genome	ws241
 C. elegans (WS245)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/WS245.genome	WS245
 C. elegans (ce10)	http://dn7ywbm9isq8j.cloudfront.net/genomes/ce10.genome	ce10
+C. elegans (ce11)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/ce11.genome	ce11
 C. elegans (ce4)	http://dn7ywbm9isq8j.cloudfront.net/genomes/ce4.genome	ce4
 C. elegans (ce6)	http://dn7ywbm9isq8j.cloudfront.net/genomes/ce6.genome	ce6
 C. savignyi (v2.1 reftigs)	http://dn7ywbm9isq8j.cloudfront.net/genomes/CSavignyi_v2.1.genome	CSavignyi_v2.1
