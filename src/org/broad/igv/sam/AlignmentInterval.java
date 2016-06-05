@@ -30,6 +30,8 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.ReferenceFrame;
 
 import java.util.*;
 
@@ -45,6 +47,7 @@ public class AlignmentInterval extends Locus {
     private List<Alignment> alignments;
     private SpliceJunctionHelper spliceJunctionHelper;
     private List<DownsampledInterval> downsampledIntervals;
+    private PackedAlignments packedAlignments;
 
     public AlignmentInterval(String chr, int start, int end,
                              List<Alignment> alignments,
@@ -163,8 +166,19 @@ public class AlignmentInterval extends Locus {
         return new Range(getChr(), getStart(), getEnd());
     }
 
+    public void packAlignments(AlignmentTrack.RenderOptions renderOptions) {
+
+        final AlignmentPacker alignmentPacker = new AlignmentPacker();
+        this.packedAlignments = alignmentPacker.packAlignments(this, renderOptions);
+    }
+
+    public PackedAlignments getPackedAlignments() {
+        return packedAlignments;
+    }
+
     public void dumpAlignments() {
         if (this.alignments != null) this.alignments.clear();
+        this.packedAlignments = null;
     }
 
 

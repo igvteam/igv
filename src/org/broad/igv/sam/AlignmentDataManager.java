@@ -26,6 +26,7 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
+import org.apache.tools.ant.taskdefs.Pack;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Range;
@@ -57,7 +58,7 @@ public class AlignmentDataManager implements IGVEventObserver {
      * Caches for loaded alignments and the relevant packing
      */
     private IntervalCache loadedIntervalCache;
-    private PositionCache<PackedAlignments> packedAlignmentsCache = new PositionCache<PackedAlignments>();
+    // private PositionCache<PackedAlignments> packedAlignmentsCache = new PositionCache<PackedAlignments>();
 
     private ResourceLocator locator;
     private HashMap<String, String> chrMappings = new HashMap();
@@ -82,11 +83,10 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     public void receiveEvent(Object e) {
 
-        if(e instanceof FrameManager.ChangeEvent) {
+        if (e instanceof FrameManager.ChangeEvent) {
             List<ReferenceFrame> frames = ((FrameManager.ChangeEvent) e).getFrames();
             loadedIntervalCache.setMaxSize(frames.size(), frames);
-        }
-        else {
+        } else {
             log.info("Unknown event type: " + e.getClass());
         }
     }
@@ -178,7 +178,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public AlignmentInterval getLoadedInterval(Range range) {
-       return loadedIntervalCache.getIntervalForRange(range);
+        return loadedIntervalCache.getIntervalForRange(range);
     }
 
     /**
@@ -188,19 +188,24 @@ public class AlignmentDataManager implements IGVEventObserver {
      * @param location
      */
     public boolean sortRows(SortOption option, ReferenceFrame frame, double location, String tag) {
-        PackedAlignments packedAlignments = packedAlignmentsCache.getForRange(frame.getCurrentRange());
-        AlignmentInterval interval = loadedIntervalCache.getIntervalForRange(frame.getCurrentRange());
-        if (packedAlignments == null || interval == null) {
-            return false;
-        }
 
-        for (List<Row> alignmentRows : packedAlignments.values()) {
-            for (Row row : alignmentRows) {
-                row.updateScore(option, location, interval, tag);
+        AlignmentInterval interval = getLoadedInterval(frame.getCurrentRange());
+        if (interval == null) {
+            return false;
+        } else {
+            PackedAlignments packedAlignments = interval.getPackedAlignments();
+            if (packedAlignments == null) {
+                return false;
             }
-            Collections.sort(alignmentRows);
+
+            for (List<Row> alignmentRows : packedAlignments.values()) {
+                for (Row row : alignmentRows) {
+                    row.updateScore(option, location, interval, tag);
+                }
+                Collections.sort(alignmentRows);
+            }
+            return true;
         }
-        return true;
     }
 
     public void setViewAsPairs(boolean option, AlignmentTrack.RenderOptions renderOptions) {
@@ -219,31 +224,10 @@ public class AlignmentDataManager implements IGVEventObserver {
      * @param renderOptions
      * @return Whether repacking was performed
      */
-    boolean packAlignments(AlignmentTrack.RenderOptions renderOptions) {
-
-        List<ReferenceFrame> frameList = FrameManager.getFrames();
-        List<AlignmentInterval> intervalList = new ArrayList<AlignmentInterval>(frameList.size());
-
-        this.packedAlignmentsCache.clear();
-        this.packedAlignmentsCache.setMaxEntries(2 * intervalList.size());
-
-        for (ReferenceFrame frame : frameList) {
-            AlignmentInterval interval = loadedIntervalCache.getIntervalForRange(frame.getCurrentRange());
-
-            if (interval == null) {
-                return false;
-            }
-
-            final AlignmentPacker alignmentPacker = new AlignmentPacker();
-            PackedAlignments packedAlignments = alignmentPacker.packAlignments(interval, renderOptions);
-
-            //We cache by the interval range because this will generally be buffered/expanded, whereas the frame
-            //will be to-the-pixel (meaning a slight scroll triggers a repack
-
-            this.packedAlignmentsCache.put(interval.getRange(), packedAlignments);
+    void packAlignments(AlignmentTrack.RenderOptions renderOptions) {
+        for (AlignmentInterval interval : loadedIntervalCache.values()) {
+            interval.packAlignments(renderOptions);
         }
-
-        return true;
     }
 
     public void load(ReferenceFrame referenceFrame,
@@ -283,20 +267,21 @@ public class AlignmentDataManager implements IGVEventObserver {
     public synchronized PackedAlignments getGroups(RenderContext context, AlignmentTrack.RenderOptions renderOptions) {
         load(context.getReferenceFrame(), renderOptions, false);
         Range range = context.getReferenceFrame().getCurrentRange();
-        if (!packedAlignmentsCache.containsRange(range)) {
-            packAlignments(renderOptions);
+
+        AlignmentInterval interval = getLoadedInterval(range);
+        if (interval != null) {
+            return interval.getPackedAlignments();
+        } else {
+            return null;
         }
-        return packedAlignmentsCache.getForRange(context.getReferenceFrame().getCurrentRange());
     }
 
     public void clear() {
         // reader.clearCache();
         loadedIntervalCache.clear();
-        packedAlignmentsCache.clear();
     }
 
     public void dumpAlignments() {
-        packedAlignmentsCache.clear();
         for (AlignmentInterval interval : loadedIntervalCache.values()) {
             interval.dumpAlignments();
         }
@@ -377,18 +362,28 @@ public class AlignmentDataManager implements IGVEventObserver {
         int start = (int) position;
         int end = start + 1;
 
-        PackedAlignments packedAlignments = packedAlignmentsCache.getForRange(referenceFrame.getCurrentRange());
-        if (packedAlignments != null && packedAlignments.contains(chr, start, end)) {
-            return packedAlignments;
+        AlignmentInterval interval = getLoadedInterval(referenceFrame.getCurrentRange());
+        if (interval == null) {
+            return null;
+        } else {
+            PackedAlignments packedAlignments = interval.getPackedAlignments();
+            if (packedAlignments != null && packedAlignments.contains(chr, start, end)) {
+                return packedAlignments;
+            } else {
+                return null;
+            }
         }
-        return null;
     }
 
     public int getNLevels() {
         int nLevels = 0;
-        for (PackedAlignments packedAlignments : packedAlignmentsCache.values()) {
-            int intervalNLevels = packedAlignments.getNLevels();
-            nLevels = Math.max(nLevels, intervalNLevels);
+
+        for (AlignmentInterval interval : loadedIntervalCache.values()) {
+            PackedAlignments packedAlignments = interval.getPackedAlignments();
+            if (packedAlignments != null) {
+                int intervalNLevels = packedAlignments.getNLevels();
+                nLevels = Math.max(nLevels, intervalNLevels);
+            }
         }
         return nLevels;
     }
@@ -399,10 +394,12 @@ public class AlignmentDataManager implements IGVEventObserver {
      */
     public int getMaxGroupCount() {
         int groupCount = 0;
-        for (PackedAlignments packedAlignments : packedAlignmentsCache.values()) {
-            groupCount = Math.max(groupCount, packedAlignments.size());
+        for (AlignmentInterval interval : loadedIntervalCache.values()) {
+            PackedAlignments packedAlignments = interval.getPackedAlignments();
+            if (packedAlignments != null) {
+                groupCount = Math.max(groupCount, packedAlignments.size());
+            }
         }
-
         return groupCount;
     }
 
@@ -499,24 +496,23 @@ public class AlignmentDataManager implements IGVEventObserver {
 
         void setMaxSize(int ms, List<ReferenceFrame> frames) {
             this.maxSize = Math.max(1, ms);
-            if(intervals.size() > maxSize) {
+            if (intervals.size() > maxSize) {
                 // Reduce size.  Try to keep intervals that cover frame ranges.  This involves a linear search
                 // of potentially (intervals.size X frames.size) elements.  Don't attempt if this number is too large
-                if(frames.size() * intervals.size() < 25) {
+                if (frames.size() * intervals.size() < 25) {
                     ArrayList<AlignmentInterval> tmp = new ArrayList<>(maxSize);
-                    for(AlignmentInterval interval : intervals) {
-                        if(tmp.size() == maxSize) break;
-                        for(ReferenceFrame frame : frames) {
+                    for (AlignmentInterval interval : intervals) {
+                        if (tmp.size() == maxSize) break;
+                        for (ReferenceFrame frame : frames) {
                             Range range = frame.getCurrentRange();
-                            if(interval.contains(range.getChr(), range.getStart(), range.getEnd())) {
+                            if (interval.contains(range.getChr(), range.getStart(), range.getEnd())) {
                                 tmp.add(interval);
                                 break;
                             }
                         }
                     }
                     intervals = tmp;
-                }
-                else {
+                } else {
                     intervals = new ArrayList(intervals.subList(0, maxSize));
                     intervals.trimToSize();
                 }
@@ -524,7 +520,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         }
 
         public void add(AlignmentInterval interval) {
-            if(intervals.size() >= maxSize) {
+            if (intervals.size() >= maxSize) {
                 intervals.remove(0);
             }
             intervals.add(interval);
@@ -532,8 +528,8 @@ public class AlignmentDataManager implements IGVEventObserver {
 
         public AlignmentInterval getIntervalForRange(Range range) {
 
-            for(AlignmentInterval interval : intervals) {
-                if(interval.contains(range.getChr(), range.getStart(), range.getEnd())) {
+            for (AlignmentInterval interval : intervals) {
+                if (interval.contains(range.getChr(), range.getStart(), range.getEnd())) {
                     return interval;
                 }
             }
