@@ -374,8 +374,13 @@ public class Session implements IGVEventObserver {
     }
 
     public void setCurrentGeneList(GeneList currentGeneList) {
+
+        boolean frameReset = (currentGeneList != null || FrameManager.isGeneListMode());
         this.currentGeneList = currentGeneList;
-        FrameManager.resetFrames(currentGeneList);
+
+        if(frameReset) {
+            FrameManager.resetFrames(currentGeneList);
+        }
     }
 
     public GeneListMode getGeneListMode() {

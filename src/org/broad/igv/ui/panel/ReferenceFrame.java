@@ -122,11 +122,7 @@ public class ReferenceFrame implements IGVEventObserver {
 
     protected Locus initialLocus = null;
 
-    /**
-     * A temporary holder. We set the end location and then
-     * later zoom/origin/etc. calculations are made
-     */
-    //protected int setEnd = 0;
+
     public ReferenceFrame(String name) {
         this.name = name;
         Genome genome = getGenome();
@@ -135,6 +131,10 @@ public class ReferenceFrame implements IGVEventObserver {
     }
 
 
+    /**
+     * Copy constructor -- used by Sashimii plot
+     * @param otherFrame
+     */
     public ReferenceFrame(ReferenceFrame otherFrame) {
         this.chrName = otherFrame.chrName;
         this.initialLocus = otherFrame.initialLocus;

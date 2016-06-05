@@ -66,7 +66,7 @@ public class SpliceJunctionTrack extends FeatureTrack {
     private static StrandOption strandOption;
 
     private AlignmentTrack alignmentTrack;
-    private IAlignmentDataManager dataManager;
+    private AlignmentDataManager dataManager;
     private boolean removed = false;
 
     /**
@@ -84,7 +84,7 @@ public class SpliceJunctionTrack extends FeatureTrack {
     }
 
 
-    public SpliceJunctionTrack(ResourceLocator locator, String name, IAlignmentDataManager dataManager, AlignmentTrack alignmentTrack, StrandOption ignoreStrand) {
+    public SpliceJunctionTrack(ResourceLocator locator, String name, AlignmentDataManager dataManager, AlignmentTrack alignmentTrack, StrandOption ignoreStrand) {
         super(locator, locator.getPath() + "_junctions", name);
 
         super.setDataRange(new DataRange(0, 0, 60));

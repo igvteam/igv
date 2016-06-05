@@ -36,6 +36,7 @@ import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.event.DataLoadedEvent;
 import org.broad.igv.ui.event.IGVEventBus;
+import org.broad.igv.ui.event.IGVEventObserver;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.ProgressMonitor;
@@ -48,14 +49,14 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.*;
 
-public class AlignmentDataManager implements IAlignmentDataManager {
+public class AlignmentDataManager implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(AlignmentDataManager.class);
 
     /**
      * Caches for loaded alignments and the relevant packing
      */
-    private PositionCache<AlignmentInterval> loadedIntervalCache = new PositionCache<AlignmentInterval>();
+    private IntervalCache loadedIntervalCache;
     private PositionCache<PackedAlignments> packedAlignmentsCache = new PositionCache<PackedAlignments>();
 
     private ResourceLocator locator;
@@ -75,6 +76,19 @@ public class AlignmentDataManager implements IAlignmentDataManager {
         peStats = new HashMap();
         initLoadOptions();
         initChrMap(genome);
+        loadedIntervalCache = new IntervalCache(FrameManager.getFrames().size());
+        IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
+    }
+
+    public void receiveEvent(Object e) {
+
+        if(e instanceof FrameManager.ChangeEvent) {
+            List<ReferenceFrame> frames = ((FrameManager.ChangeEvent) e).getFrames();
+            loadedIntervalCache.setMaxSize(frames.size(), frames);
+        }
+        else {
+            log.info("Unknown event type: " + e.getClass());
+        }
     }
 
     void initLoadOptions() {
@@ -164,7 +178,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
     }
 
     public AlignmentInterval getLoadedInterval(Range range) {
-        return loadedIntervalCache.getForRange(range);
+       return loadedIntervalCache.getIntervalForRange(range);
     }
 
     /**
@@ -175,7 +189,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
      */
     public boolean sortRows(SortOption option, ReferenceFrame frame, double location, String tag) {
         PackedAlignments packedAlignments = packedAlignmentsCache.getForRange(frame.getCurrentRange());
-        AlignmentInterval interval = loadedIntervalCache.getForRange(frame.getCurrentRange());
+        AlignmentInterval interval = loadedIntervalCache.getIntervalForRange(frame.getCurrentRange());
         if (packedAlignments == null || interval == null) {
             return false;
         }
@@ -214,7 +228,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
         this.packedAlignmentsCache.setMaxEntries(2 * intervalList.size());
 
         for (ReferenceFrame frame : frameList) {
-            AlignmentInterval interval = loadedIntervalCache.getForRange(frame.getCurrentRange());
+            AlignmentInterval interval = loadedIntervalCache.getIntervalForRange(frame.getCurrentRange());
 
             if (interval == null) {
                 return false;
@@ -240,7 +254,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
             final String chr = referenceFrame.getChrName();
             final int start = (int) referenceFrame.getOrigin();
             final int end = (int) referenceFrame.getEnd();
-            AlignmentInterval loadedInterval = loadedIntervalCache.getForRange(referenceFrame.getCurrentRange());
+            AlignmentInterval loadedInterval = loadedIntervalCache.getIntervalForRange(referenceFrame.getCurrentRange());
 
             int adjustedStart = start;
             int adjustedEnd = end;
@@ -295,7 +309,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
         if (isLoading || chr.equals(Globals.CHR_ALL)) {
             return;
         }
-        loadedIntervalCache.setMaxEntries(2 * FrameManager.getFrames().size());
+
         isLoading = true;
 
         NamedRunnable runnable = new NamedRunnable() {
@@ -309,7 +323,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
                 log.debug("Loading alignments: " + chr + ":" + start + "-" + end + " for " + AlignmentDataManager.this);
 
                 AlignmentInterval loadedInterval = loadInterval(chr, start, end, renderOptions);
-                loadedIntervalCache.put(loadedInterval.getRange(), loadedInterval);
+                loadedIntervalCache.add(loadedInterval);
 
                 packAlignments(renderOptions);
                 IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
@@ -424,10 +438,6 @@ public class AlignmentDataManager implements IAlignmentDataManager {
         }
     }
 
-    PositionCache getCache() {
-        return this.loadedIntervalCache;
-    }
-
     public void alleleThresholdChanged() {
         coverageTrack.setSnpThreshold(PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD));
     }
@@ -471,6 +481,73 @@ public class AlignmentDataManager implements IAlignmentDataManager {
             return maxReadCount;
         }
 
+    }
+
+    static class IntervalCache {
+
+        private int maxSize;
+        ArrayList<AlignmentInterval> intervals;
+
+        public IntervalCache() {
+            this(1);
+        }
+
+        public IntervalCache(int ms) {
+            this.maxSize = Math.max(1, ms);
+            intervals = new ArrayList<>(maxSize);
+        }
+
+        void setMaxSize(int ms, List<ReferenceFrame> frames) {
+            this.maxSize = Math.max(1, ms);
+            if(intervals.size() > maxSize) {
+                // Reduce size.  Try to keep intervals that cover frame ranges.  This involves a linear search
+                // of potentially (intervals.size X frames.size) elements.  Don't attempt if this number is too large
+                if(frames.size() * intervals.size() < 25) {
+                    ArrayList<AlignmentInterval> tmp = new ArrayList<>(maxSize);
+                    for(AlignmentInterval interval : intervals) {
+                        if(tmp.size() == maxSize) break;
+                        for(ReferenceFrame frame : frames) {
+                            Range range = frame.getCurrentRange();
+                            if(interval.contains(range.getChr(), range.getStart(), range.getEnd())) {
+                                tmp.add(interval);
+                                break;
+                            }
+                        }
+                    }
+                    intervals = tmp;
+                }
+                else {
+                    intervals = new ArrayList(intervals.subList(0, maxSize));
+                    intervals.trimToSize();
+                }
+            }
+        }
+
+        public void add(AlignmentInterval interval) {
+            if(intervals.size() >= maxSize) {
+                intervals.remove(0);
+            }
+            intervals.add(interval);
+        }
+
+        public AlignmentInterval getIntervalForRange(Range range) {
+
+            for(AlignmentInterval interval : intervals) {
+                if(interval.contains(range.getChr(), range.getStart(), range.getEnd())) {
+                    return interval;
+                }
+            }
+            return null;
+
+        }
+
+        public Collection<AlignmentInterval> values() {
+            return intervals;
+        }
+
+        public void clear() {
+            intervals.clear();
+        }
     }
 }
 

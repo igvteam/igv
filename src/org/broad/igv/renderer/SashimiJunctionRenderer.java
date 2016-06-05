@@ -33,9 +33,9 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.IExon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.SpliceJunctionFeature;
+import org.broad.igv.sam.AlignmentDataManager;
 import org.broad.igv.sam.AlignmentInterval;
 import org.broad.igv.sam.CoverageTrack;
-import org.broad.igv.sam.IAlignmentDataManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
@@ -84,7 +84,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
     private Set<IExon> selectedExons;
 
     private CoverageTrack coverageTrack = null;
-    private IAlignmentDataManager dataManager = null;
+    private AlignmentDataManager dataManager = null;
 
     private Color background;
 
@@ -110,11 +110,11 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
      * Set the data manager
      * @param dataManager
      */
-    public void setDataManager(IAlignmentDataManager dataManager) {
+    public void setDataManager(AlignmentDataManager dataManager) {
         this.dataManager = dataManager;
     }
 
-    public IAlignmentDataManager getDataManager(){
+    public AlignmentDataManager getDataManager(){
         return this.dataManager;
     }
 

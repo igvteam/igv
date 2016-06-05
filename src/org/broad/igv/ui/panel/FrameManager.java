@@ -32,8 +32,10 @@ import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.SearchCommand;
+import org.broad.igv.ui.event.IGVEventBus;
 import org.broad.igv.ui.util.MessageUtils;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -76,6 +78,7 @@ public class FrameManager {
 
     public static void setFrames(List<ReferenceFrame> f) {
         frames = f;
+        IGVEventBus.getInstance().post(new ChangeEvent(frames));
     }
 
     public static boolean isGeneListMode() {
@@ -105,6 +108,8 @@ public class FrameManager {
         }
         frames.add(getDefaultFrame());
         getDefaultFrame().recordHistory();
+
+        IGVEventBus.getInstance().post(new ChangeEvent(frames));
     }
 
     private static boolean addNewFrame(String searchString){
@@ -119,7 +124,6 @@ public class FrameManager {
     }
 
     public static void resetFrames(GeneList gl) {
-
         frames.clear();
 
         if (gl == null) {
@@ -153,6 +157,8 @@ public class FrameManager {
 
             }
         }
+
+        IGVEventBus.getInstance().post(new ChangeEvent(frames));
     }
 
     /**
@@ -259,6 +265,17 @@ public class FrameManager {
         }
     }
 
+
+    public static class ChangeEvent {
+        List<ReferenceFrame> frames;
+        public ChangeEvent(List<ReferenceFrame> frames) {
+            this.frames = frames;
+        }
+
+        public List<ReferenceFrame> getFrames() {
+            return frames;
+        }
+    }
 
 }
 

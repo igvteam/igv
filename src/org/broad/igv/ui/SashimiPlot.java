@@ -104,8 +104,8 @@ public class SashimiPlot extends JFrame {
         for (AlignmentTrack alignmentTrack : alignmentTracks) {
 
 
-            AlignmentDataManager oldDataManager = alignmentTrack.getDataManager();
-            MemoryAlignmentDataManager dataManager = new MemoryAlignmentDataManager(oldDataManager, oldDataManager.getSpliceJunctionLoadOptions());
+            //AlignmentDataManager oldDataManager = alignmentTrack.getDataManager();
+            AlignmentDataManager dataManager = alignmentTrack.getDataManager();
 
             SpliceJunctionTrack spliceJunctionTrack =
                     new SpliceJunctionTrack(alignmentTrack.getResourceLocator(), alignmentTrack.getName(), dataManager, null, SpliceJunctionTrack.StrandOption.COMBINE);
@@ -120,7 +120,7 @@ public class SashimiPlot extends JFrame {
 
             TrackComponent<SpliceJunctionTrack> trackComponent = new TrackComponent<SpliceJunctionTrack>(frame, spliceJunctionTrack);
 
-            initSpliceJunctionComponent(trackComponent, dataManager, oldDataManager.getCoverageTrack(), minJunctionCoverage);
+            initSpliceJunctionComponent(trackComponent, dataManager,dataManager.getCoverageTrack(), minJunctionCoverage);
 
             getContentPane().add(trackComponent);
             spliceJunctionTracks.add(spliceJunctionTrack);
@@ -213,7 +213,7 @@ public class SashimiPlot extends JFrame {
         geneComponent.addMouseMotionListener(ad2);
     }
 
-    private void initSpliceJunctionComponent(TrackComponent<SpliceJunctionTrack> trackComponent, IAlignmentDataManager dataManager, CoverageTrack coverageTrack, int minJunctionCoverage) {
+    private void initSpliceJunctionComponent(TrackComponent<SpliceJunctionTrack> trackComponent, AlignmentDataManager dataManager, CoverageTrack coverageTrack, int minJunctionCoverage) {
         JunctionTrackMouseAdapter ad1 = new JunctionTrackMouseAdapter(trackComponent);
         trackComponent.addMouseListener(ad1);
         trackComponent.addMouseMotionListener(ad1);
@@ -272,7 +272,7 @@ public class SashimiPlot extends JFrame {
      * @param newMinJunctionCoverage
      */
     private void setMinJunctionCoverage(TrackComponent<SpliceJunctionTrack> trackComponent, int newMinJunctionCoverage) {
-        IAlignmentDataManager dataManager = getRenderer(trackComponent.track).getDataManager();
+        AlignmentDataManager dataManager = getRenderer(trackComponent.track).getDataManager();
         dataManager.setMinJunctionCoverage(newMinJunctionCoverage);
         trackComponent.track.clear();
         trackComponent.repaint();
@@ -341,7 +341,7 @@ public class SashimiPlot extends JFrame {
             minJunctionCoverage.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    IAlignmentDataManager dataManager = getRenderer(trackComponent.track).getDataManager();
+                    AlignmentDataManager dataManager = getRenderer(trackComponent.track).getDataManager();
                     SpliceJunctionHelper.LoadOptions loadOptions = dataManager.getSpliceJunctionLoadOptions();
 
                     String input = JOptionPane.showInputDialog("Set Minimum Junction Coverage", loadOptions.minJunctionCoverage);
