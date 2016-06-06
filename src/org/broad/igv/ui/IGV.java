@@ -164,22 +164,6 @@ public class IGV implements IGVEventObserver {
         return otherToolMenus;
     }
 
-    public void receiveEvent(Object event) {
-
-        if(event instanceof ViewChange.Result) {
-            ViewChange.Result e = (ViewChange.Result) event;
-            repaintDataAndHeaderPanels();
-            repaintStatusAndZoomSlider();
-        }
-        else if(event instanceof ViewChange.ChromosomeChangeResult) {
-            ViewChange.ChromosomeChangeResult e = (ViewChange.ChromosomeChangeResult) event;
-            chromosomeChangeEvent(e.chrName, false);
-        }
-        else {
-            log.info("Unknown event type: " + event.getClass());
-        }
-    }
-
 
     public static IGV createInstance(Frame frame) {
         if (theInstance != null) {
@@ -342,6 +326,23 @@ public class IGV implements IGVEventObserver {
         IGVEventBus.getInstance().subscribe(ViewChange.Result.class, this);
 
         IGVEventBus.getInstance().subscribe(ViewChange.ChromosomeChangeResult.class, this);
+    }
+
+
+    public void receiveEvent(Object event) {
+
+        if(event instanceof ViewChange.Result) {
+            ViewChange.Result e = (ViewChange.Result) event;
+            repaintDataAndHeaderPanels();
+            repaintStatusAndZoomSlider();
+        }
+        else if(event instanceof ViewChange.ChromosomeChangeResult) {
+            ViewChange.ChromosomeChangeResult e = (ViewChange.ChromosomeChangeResult) event;
+            chromosomeChangeEvent(e.chrName, false);
+        }
+        else {
+            log.info("Unknown event type: " + event.getClass());
+        }
     }
 
 

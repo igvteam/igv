@@ -38,6 +38,7 @@ package org.broad.igv.ui.event;
  * Date: 2013-Jan-30
  */
 public abstract class ViewChange {
+
     protected boolean recordHistory = false;
 
     public boolean recordHistory(){
@@ -85,7 +86,7 @@ public abstract class ViewChange {
         }
     }
 
-    public static class ChromosomeChangeResult extends Result{
+    public static class  ChromosomeChangeResult extends Result{
 
         public final Object source;
         public final String chrName;
