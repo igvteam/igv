@@ -74,7 +74,6 @@ public class IGVEventBus {
     }
 
     public void post(Object event) {
-System.out.println("Posted " + event);
         Set<IGVEventObserver> observerSet = observerMap.get(event.getClass());
         if(observerSet == null) {
             log.info("No observers for event type: " + event.getClass());
