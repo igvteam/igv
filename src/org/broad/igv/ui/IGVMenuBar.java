@@ -430,13 +430,6 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
-        //Disable loading if no genome loaded. Something of an edge case
-        if (!genomeLoaded) {
-            for (JComponent menuItem : menuItems) {
-                menuItem.setEnabled(false);
-            }
-        }
-
         menuItems.add(new JSeparator());
 
         // Session menu items
