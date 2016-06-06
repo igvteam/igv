@@ -381,7 +381,7 @@ public class Genome {
     }
 
     public String getNextChrName(String chr) {
-        List<String> chrList = getLongChromosomeNames();
+        List<String> chrList = getAllChromosomeNames();
         for (int i = 0; i < chrList.size() - 1; i++) {
             if (chrList.get(i).equals(chr)) {
                 return chrList.get(i + 1);
@@ -391,7 +391,7 @@ public class Genome {
     }
 
     public String getPrevChrName(String chr) {
-        List<String> chrList = getLongChromosomeNames();
+        List<String> chrList = getAllChromosomeNames();
         for (int i = chrList.size() - 1; i > 0; i--) {
             if (chrList.get(i).equals(chr)) {
                 return chrList.get(i - 1);
