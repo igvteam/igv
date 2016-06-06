@@ -23,7 +23,7 @@
     <property name="java.encoding" value="UTF-8"/>
     <!--Note: $$ translates to $, because $ is a special character-->
     <property name="data-server-url" value="http://www.broadinstitute.org/igvdata/$$$$_dataServerRegistry.txt"/>
-    <property name="javac.target" value="1.6"/>
+    <property name="javac.target" value="1.8"/>
 
     <!-- Flags to be passed to IGVTestRunner -->
     <property name="include.longrunning" value="false"/>
