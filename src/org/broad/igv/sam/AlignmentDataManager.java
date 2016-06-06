@@ -54,12 +54,7 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(AlignmentDataManager.class);
 
-    /**
-     * Caches for loaded alignments and the relevant packing
-     */
     private IntervalCache loadedIntervalCache;
-    // private PositionCache<PackedAlignments> packedAlignmentsCache = new PositionCache<PackedAlignments>();
-
     private ResourceLocator locator;
     private HashMap<String, String> chrMappings = new HashMap();
     private volatile boolean isLoading = false;

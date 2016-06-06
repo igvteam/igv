@@ -710,8 +710,6 @@ public class IGV implements IGVEventObserver {
 
         FrameManager.getDefaultFrame().setChromosomeName(genome.getHomeChromosome(), true);
 
-        //TODO Should use EventBus/events for changing genome, clean this up a lot
-        menuBar.createFileMenu();
     }
 
 
@@ -986,7 +984,7 @@ public class IGV implements IGVEventObserver {
         mainFrame.repaint();
         //getContentPane().repaint();
         contentPane.getCommandBar().updateComponentStates();
-        menuBar.createFileMenu();
+       // menuBar.createFileMenu();
     }
 
     final public void refreshCommandBar() {

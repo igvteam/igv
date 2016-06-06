@@ -48,9 +48,9 @@ public class TestClient {
             socket = new Socket("127.0.0.1", 60151);
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            testEcho(out, in);
+            //testEcho(out, in);
             //testMultiLocus(out, in);
-            //testLoopBAM(out, in);
+            testLoopBAM(out, in);
         } catch (UnknownHostException e) {
             System.err.println("Unknown host exception: " + e.getMessage());
             System.exit(1);
@@ -98,21 +98,22 @@ public class TestClient {
 
     private static void testLoopBAM(PrintWriter out, BufferedReader in) throws IOException {
 
-        String fileURL = "http://data.broadinstitute.org/igvdata/1KG/freeze5_merged/low_coverage_YRI.13.bam";
+//        String fileURL = "test/data/bam/test4bams_session.xml";
         String chr = "chr13";
         int chrLength = 113000000;
 
         String cmd = "snapshotDirectory /Users/jrobinso/tmp";
-        out.println(cmd);
-        String response = in.readLine();
-        System.out.println(cmd + " " + response);
+        String response;
+//        out.println(cmd);
+//        String response = in.readLine();
+//        System.out.println(cmd + " " + response);
+//
+//        cmd = "load " + fileURL;
+//        out.println(cmd);
+//        response = in.readLine();
+//        System.out.println(cmd + " " + response);
 
-        cmd = "load " + fileURL;
-        out.println(cmd);
-        response = in.readLine();
-        System.out.println(cmd + " " + response);
-
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 100; i++) {
 
             int start = 1 + (int) (Math.random() * (chrLength - 10000));
             int end = start + 8000;
@@ -122,10 +123,10 @@ public class TestClient {
             response = in.readLine();
             System.out.println("" + i + " " + cmd + " " + response);
 
-            cmd = "snapshot test_" + i + ".png";
-            out.println(cmd);
-            response = in.readLine();
-            System.out.println("" + i + " " + cmd + " " + response);
+//            cmd = "snapshot test_" + i + ".png";
+//            out.println(cmd);
+//            response = in.readLine();
+//            System.out.println("" + i + " " + cmd + " " + response);
         }
 
     }
