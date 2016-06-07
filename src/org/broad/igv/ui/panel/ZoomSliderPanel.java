@@ -264,9 +264,7 @@ public class ZoomSliderPanel extends JPanel {
                 repaint();
 
                 int effectiveZoom = toolZoom + getViewContext().getMinZoom();
-
-                ViewChange.ZoomCause event = new ViewChange.ZoomCause(effectiveZoom);
-                getViewContext().getEventBus().post(event);
+                FrameManager.getDefaultFrame().changeZoom(effectiveZoom);
                 toolZoom = -1;
 
             }

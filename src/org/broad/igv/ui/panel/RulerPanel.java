@@ -382,22 +382,7 @@ public class RulerPanel extends JPanel {
                         for (final ClickLink link : chromosomeRects) {
                             if (link.region.contains(e.getPoint())) {
                                 final String chrName = link.value;
-                                frame.getEventBus().post(new ViewChange.ChromosomeChangeCause(RulerPanel.this, chrName));
-
-//                                NamedRunnable runnable = new NamedRunnable() {
-//
-//                                    public void run() {
-//                                        final String chrName = link.value;
-//                                        frame.getEventBus().post(new ViewChange.ChromosomeChangeCause(RulerPanel.this, chrName));
-//                                        frame.recordHistory();
-//                                    }
-//
-//                                    public String getName() {
-//                                        return "Select chromosome: " + chrName;
-//                                    }
-//                                };
-//
-//                                LongRunningTask.submit(runnable);
+                                frame.changeChromosome( chrName, true);
                             }
                         }
                     }

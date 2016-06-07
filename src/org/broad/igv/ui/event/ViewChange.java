@@ -27,87 +27,61 @@ package org.broad.igv.ui.event;
 
 /**
  * Events corresponding to a change in viewed area (chromosome, position, and/or zoom).
- *
+ * <p>
  * {@code Cause} derived events
  * should cause the data model (e.g. ReferenceFrame) to change their position, this will
  * typically be dispatched by a UI Component.
- *
+ * <p>
  * {@code Result} derived events should be dispatched after objects have changed
  * their position, typically to tell UI elements they should repaint
  * User: jacob
  * Date: 2013-Jan-30
  */
-public abstract class ViewChange {
+public class ViewChange {
 
-    protected boolean recordHistory = false;
+    public static enum Type {Change, ChromosomeChange, LocusChange}
 
-    public boolean recordHistory(){
+    boolean recordHistory = false;
+    public Type type;
+    public String chrName;
+    public double start;
+    public double end;
+
+    private ViewChange(Type type) {
+        this.type = type;
+    }
+
+    public ViewChange(Type type, String chrName) {
+        this.type = type;
+        this.chrName = chrName;
+    }
+
+    public ViewChange(Type type, String chrName, double start, double end) {
+        this.type = type;
+        this.chrName = chrName;
+        this.start = start;
+        this.end = end;
+    }
+
+    public boolean recordHistory() {
         return this.recordHistory;
     }
 
-    public void setRecordHistory(boolean recordHistory){
+    public void setRecordHistory(boolean recordHistory) {
         this.recordHistory = recordHistory;
     }
 
-    public static class Cause extends ViewChange{}
 
-    public static class Result extends ViewChange{}
-
-    /**
-     * Event indicating that the zoom should change.
-     */
-    public static class ZoomCause extends Cause{
-        //public final int oldZoom;
-        public final int newZoom;
-        //public final Object source;
-
-        public ZoomCause(int newZoom){
-            //this.oldZoom = oldZoom;
-            this.newZoom = newZoom;
-            //this.source = source;
-        }
+    public static ViewChange Result() {
+        return new ViewChange(Type.Change);
     }
 
-    public static class ZoomResult extends Result{}
-
-    public static class ChromosomeChangeCause extends Cause{
-
-        public final Object source;
-        public final String chrName;
-
-        /**
-         *
-         * @param source The object which originated the chromosome change
-         * @param chrName
-         */
-        public ChromosomeChangeCause(Object source, String chrName){
-            this.source = source;
-            this.chrName = chrName;
-        }
+    public static ViewChange ChromosomeChangeResult(String chrName) {
+        return new ViewChange(Type.ChromosomeChange, chrName);
     }
 
-    public static class  ChromosomeChangeResult extends Result{
-
-        public final Object source;
-        public final String chrName;
-
-        public ChromosomeChangeResult(Object source, String chrName){
-            this.source = source;
-            this.chrName = chrName;
-        }
-    }
-
-    public static class LocusChangeResult extends Result {
-
-        public final String chrName;
-        public final double start;
-        public final double end;
-
-        public LocusChangeResult(String chrName, double start, double end) {
-            this.chrName = chrName;
-            this.start = start;
-            this.end = end;
-        }
+    public static ViewChange LocusChangeResult(String chrName, double start, double end) {
+        return new ViewChange(Type.LocusChange, chrName, start, end);
     }
 
 }

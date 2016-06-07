@@ -147,7 +147,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
             }
         });
 
-        IGVEventBus.getInstance().subscribe(ViewChange.Result.class, this);
+        IGVEventBus.getInstance().subscribe(ViewChange.class, this);
     }
 
     private JPopupMenu getPopupMenuToolTipBehavior() {
@@ -897,10 +897,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         if (genome != null) {
             String chrName = genome.getHomeChromosome();
             if (chrName != null && !chrName.equals(chromosomeComboBox.getSelectedItem())) {
-                Object source = (evt == null ? null : evt.getSource());
-                ViewChange.ChromosomeChangeCause cause = new ViewChange.ChromosomeChangeCause(source, chrName);
-                cause.setRecordHistory(true);
-                getDefaultReferenceFrame().getEventBus().post(cause);
+                getDefaultReferenceFrame().changeChromosome(chrName, false);
             }
         }
     }
@@ -914,7 +911,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         JComboBox combobox = (JComboBox) evt.getSource();
         final String chrName = (String) combobox.getSelectedItem();
         if (chrName != null) {
-            getDefaultReferenceFrame().getEventBus().post(new ViewChange.ChromosomeChangeCause(combobox, chrName));
+            getDefaultReferenceFrame().changeChromosome(chrName, true);
         }
     }
 
@@ -933,7 +930,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
     public void receiveEvent(Object event) {
 
-        if (event instanceof ViewChange.Result) {
+        if (event instanceof ViewChange) {
             String chrName = getDefaultReferenceFrame().getChrName();
             setChromosomeComboBoxNoActionListeners(chrName);
             updateCurrentCoordinates();

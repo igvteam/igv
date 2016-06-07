@@ -133,8 +133,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer, IGVEvent
 
     public void receiveEvent(Object e) {
 
-        if (e instanceof ViewChange.ChromosomeChangeResult) {
-
+        if (e instanceof ViewChange && ((ViewChange) e).type == ViewChange.Type.ChromosomeChange) {
             synchRegions();
         } else {
             log.info("Unknown event type: " + e.getClass());
@@ -192,7 +191,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer, IGVEvent
         synchRegions();
 
         ReferenceFrame defFrame = FrameManager.getDefaultFrame();
-        IGVEventBus.getInstance().subscribe(ViewChange.ChromosomeChangeResult.class, this);
+        IGVEventBus.getInstance().subscribe(ViewChange.class, this);
         IGV.getInstance().getSession().getRegionsOfInterestObservable().addObserver(this);
 
         //resize window if small number of regions.  By default, tables are initialized with 20

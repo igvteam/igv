@@ -114,10 +114,8 @@ public class History {
         if (entry != null) {
             String locus = entry.getLocus();
             if (locus.equals(Globals.CHR_ALL)){
-                ViewChange.Cause event = new ViewChange.ChromosomeChangeCause(this, Globals.CHR_ALL);
-                event.setRecordHistory(false);
-                FrameManager.getDefaultFrame().getEventBus().post(event);
-            }else if(locus.startsWith("List: ")) {
+                FrameManager.getDefaultFrame().changeChromosome(Globals.CHR_ALL, false);
+            } else if(locus.startsWith("List: ")) {
                 String listName = locus.substring(6);
                 IGV.getInstance().setGeneList(GeneListManager.getInstance().getGeneList(listName), false);
             } else {

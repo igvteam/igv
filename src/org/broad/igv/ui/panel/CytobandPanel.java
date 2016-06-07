@@ -171,7 +171,7 @@ public class CytobandPanel extends JPanel {
                         getReferenceFrame().centerOnLocation(newLocation);
                     }
 
-                    ViewChange.Result result = new ViewChange.Result();
+                    ViewChange result =  ViewChange.Result();
                     result.setRecordHistory(true);
                     getReferenceFrame().getEventBus().post(result);
 

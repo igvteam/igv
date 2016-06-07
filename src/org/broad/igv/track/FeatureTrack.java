@@ -239,6 +239,25 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     }
 
+    /**
+     * Called after features are finished loading, which can be asynchronous
+     */
+    public void receiveEvent(Object e) {
+        if (e instanceof DataLoadedEvent) {
+            DataLoadedEvent event = (DataLoadedEvent) e;
+            if (IGV.hasInstance()) {
+                // TODO -- WHY IS THIS HERE????
+                //TODO Assuming this is necessary, there can be many data loaded events in succession,
+                //don't want to layout for each one
+                IGV.getInstance().layoutMainPanel();
+            }
+            event.getReferenceFrame().getEventBus().post( ViewChange.Result());
+        } else {
+            log.info("Unknown event type: " + e.getClass());
+        }
+    }
+
+
     @Override
     public boolean isFilterable() {
         return false; // Don't filter "feature" tracks
@@ -944,23 +963,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         this.forceLoadSync = forceLoadSync;
     }
 
-    /**
-     * Called after features are finished loading, which can be asynchronous
-     */
-    public void receiveEvent(Object e) {
-        if (e instanceof DataLoadedEvent) {
-            DataLoadedEvent event = (DataLoadedEvent) e;
-            if (IGV.hasInstance()) {
-                // TODO -- WHY IS THIS HERE????
-                //TODO Assuming this is necessary, there can be many data loaded events in succession,
-                //don't want to layout for each one
-                IGV.getInstance().layoutMainPanel();
-            }
-            event.getReferenceFrame().getEventBus().post(new ViewChange.Result());
-        } else {
-            log.info("Unknown event type: " + e.getClass());
-        }
-    }
 
     /**
      * Return the nextLine or previous feature relative to the center location.

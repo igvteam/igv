@@ -323,23 +323,23 @@ public class IGV implements IGVEventObserver {
         mainFrame.setExtendedState(state);
         mainFrame.setBounds(applicationBounds);
 
-        IGVEventBus.getInstance().subscribe(ViewChange.Result.class, this);
-
-        IGVEventBus.getInstance().subscribe(ViewChange.ChromosomeChangeResult.class, this);
+        IGVEventBus.getInstance().subscribe(ViewChange.class, this);
     }
 
 
     public void receiveEvent(Object event) {
 
-        if(event instanceof ViewChange.Result) {
-            ViewChange.Result e = (ViewChange.Result) event;
-            repaintDataAndHeaderPanels();
-            repaintStatusAndZoomSlider();
+        if(event instanceof ViewChange) {
+            ViewChange e = (ViewChange) event;
+            if(e.type == ViewChange.Type.ChromosomeChange) {
+                chromosomeChangeEvent(e.chrName, false);
+            }
+            else {
+                repaintDataAndHeaderPanels();
+                repaintStatusAndZoomSlider();
+            }
         }
-        else if(event instanceof ViewChange.ChromosomeChangeResult) {
-            ViewChange.ChromosomeChangeResult e = (ViewChange.ChromosomeChangeResult) event;
-            chromosomeChangeEvent(e.chrName, false);
-        }
+
         else {
             log.info("Unknown event type: " + event.getClass());
         }

@@ -46,7 +46,7 @@ import static org.junit.Assert.assertTrue;
  * User: jacob
  * Date: 2012/05/14
  */
-public class IGVCommandBarTest extends AbstractHeadedTest implements IGVEventObserver {
+public class IGVCommandBarTest extends AbstractHeadedTest {
 
     private static Logger log = Logger.getLogger(IGVCommandBarTest.class);
 
@@ -83,9 +83,6 @@ public class IGVCommandBarTest extends AbstractHeadedTest implements IGVEventObs
     public void tearDown() throws Exception {
         System.out.println("Expected Events: " + expectedEvents + " Actual Events: " + actualEvents);
         assertTrue("Event handler not triggered properly", actualEvents >= expectedEvents);
-        if (registered) {
-            IGVEventBus.getInstance().unsubscribe(this);
-        }
         super.tearDown();
     }
 
@@ -108,7 +105,7 @@ public class IGVCommandBarTest extends AbstractHeadedTest implements IGVEventObs
     private volatile String enterText = null;
 
     private void tstChromoNav(String chromoText) throws Exception {
-        registerEventHandler(1);
+
 
         JTextComponentFixture searchFixture = frame.textBox("searchTextField");
         searchFixture.deleteText();
@@ -123,35 +120,7 @@ public class IGVCommandBarTest extends AbstractHeadedTest implements IGVEventObs
         frame.button("goButton").click();
     }
 
-    private void registerEventHandler(int expectedEvents) {
-        this.expectedEvents += expectedEvents;
-        if (!registered) {
-            FrameManager.getDefaultFrame().getEventBus().subscribe(ViewChange.ChromosomeChangeCause.class, this);
-            this.registered = true;
-        }
-    }
 
-    public void receiveEvent(Object event) {
-
-        if (event instanceof ViewChange.ChromosomeChangeCause) {
-
-            ViewChange.ChromosomeChangeCause e = (ViewChange.ChromosomeChangeCause) event;
-            if (e.source instanceof SearchCommand) {
-                actualEvents++;
-                try {
-                    assertEquals(this.enterText, e.chrName);
-                } catch (Exception e1) {
-                    log.error(e1.getMessage(), e1);
-                    actualEvents = Integer.MIN_VALUE;
-                }
-            } else {
-                actualEvents = Integer.MIN_VALUE;
-                throw new AssertionError("Got a ChromosomeChangeCause event from unexpected source: " + e.source);
-            }
-        } else {
-            log.info("Unknown event type: " + event.getClass());
-        }
-    }
 
 
     @Test

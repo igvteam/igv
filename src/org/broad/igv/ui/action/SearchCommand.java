@@ -218,8 +218,7 @@ public class SearchCommand {
                     referenceFrame.jumpTo(result.chr, result.start, result.end);
                     break;
                 case CHROMOSOME:
-                    referenceFrame.getEventBus().post(new ViewChange.ChromosomeChangeCause(this, result.chr));
-                    referenceFrame.getEventBus().post(new ViewChange.ZoomCause(0));
+                    referenceFrame.changeChromosome(result.chr, true);
                     break;
                 case ERROR:
                 default: {

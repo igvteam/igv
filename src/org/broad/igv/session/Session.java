@@ -105,18 +105,17 @@ public class Session implements IGVEventObserver {
         if (resetRequired) {
             IGV.getInstance().resetFrames();
         }
-        FrameManager.getDefaultFrame().getEventBus().subscribe(ViewChange.Result.class, this);
+        FrameManager.getDefaultFrame().getEventBus().subscribe(ViewChange.class, this);
     }
 
 
     public void receiveEvent(Object event) {
-        if (event instanceof ViewChange.Result) {
-            ViewChange.Result e = (ViewChange.Result) event;
+        if (event instanceof ViewChange) {
+            ViewChange e = (ViewChange) event;
             if (e.recordHistory()) {
                 recordHistory();
             }
-        }
-        else {
+        } else {
             log.info("Unknown event type: " + event.getClass());
         }
     }
@@ -378,7 +377,7 @@ public class Session implements IGVEventObserver {
         boolean frameReset = (currentGeneList != null || FrameManager.isGeneListMode());
         this.currentGeneList = currentGeneList;
 
-        if(frameReset) {
+        if (frameReset) {
             FrameManager.resetFrames(currentGeneList);
         }
     }

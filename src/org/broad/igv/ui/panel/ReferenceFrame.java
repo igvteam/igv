@@ -133,6 +133,7 @@ public class ReferenceFrame implements IGVEventObserver {
 
     /**
      * Copy constructor -- used by Sashimii plot
+     *
      * @param otherFrame
      */
     public ReferenceFrame(ReferenceFrame otherFrame) {
@@ -156,37 +157,38 @@ public class ReferenceFrame implements IGVEventObserver {
     }
 
     private void subscribe() {
-        getEventBus().subscribe(ViewChange.ZoomCause.class, this);
         getEventBus().subscribe(DragStoppedEvent.class, this);
-        getEventBus().subscribe(ViewChange.ChromosomeChangeCause.class, this);
     }
 
-    public void receiveEvent(Object event) {
 
-        if (event.getClass() == ViewChange.ZoomCause.class) {
-            ViewChange.ZoomCause e = (ViewChange.ZoomCause) event;
-            doSetZoom(e.newZoom);
-            ViewChange.Result result = new ViewChange.Result();
-            result.setRecordHistory(false);
-            getEventBus().post(result);
-        } else if (event.getClass() == DragStoppedEvent.class) {
+    public void receiveEvent(Object event) {
+        if (event.getClass() == DragStoppedEvent.class) {
             DragStoppedEvent e = (DragStoppedEvent) event;
-            this.snapToGrid();
-            getEventBus().post(new ViewChange.Result());
-        } else if (event instanceof ViewChange.ChromosomeChangeCause) {
-            ViewChange.ChromosomeChangeCause chromoChangeCause = (ViewChange.ChromosomeChangeCause) event;
-            boolean changed = setChromosomeName(chromoChangeCause.chrName, false);
-            if (changed) {
-                ViewChange.ChromosomeChangeResult resultEvent = new ViewChange.ChromosomeChangeResult(chromoChangeCause.source,
-                        chrName);
-                resultEvent.setRecordHistory(chromoChangeCause.recordHistory());
-                getEventBus().post(resultEvent);
-            }
+            setOrigin(Math.round(origin));   // Snap to gride
+            getEventBus().post(ViewChange.Result());
         } else {
             log.info("Unknown event type: " + event.getClass());
         }
     }
 
+
+    public void changeChromosome(String chrName, boolean recordHistory) {
+        boolean changed = setChromosomeName(chrName, false);
+        if (changed) {
+            ViewChange resultEvent = ViewChange.ChromosomeChangeResult(chrName);
+            resultEvent.setRecordHistory(recordHistory);
+            getEventBus().post(resultEvent);
+
+            changeZoom(0);
+        }
+    }
+
+    public void changeZoom(int newZoom) {
+        doSetZoom(newZoom);
+        ViewChange result = ViewChange.Result();
+        result.setRecordHistory(false);
+        getEventBus().post(result);
+    }
 
     public boolean isVisible() {
         return visible;
@@ -413,7 +415,7 @@ public class ReferenceFrame implements IGVEventObserver {
      * Record the current state of the frame in history.
      * It is recommended that this NOT be called from within ReferenceFrame,
      * and callers use it after making all changes
-     * <p/>
+     * <p>
      * //TODO Should we save history by receiving events in History?
      */
     public void recordHistory() {
@@ -438,12 +440,7 @@ public class ReferenceFrame implements IGVEventObserver {
     public void shiftOriginPixels(int delta) {
         double shiftBP = delta * getScale();
         setOrigin(origin + shiftBP);
-        getEventBus().post(new ViewChange.Result());
-    }
-
-    public void snapToGrid() {
-        setOrigin(Math.round(origin));
-        getEventBus().post(new ViewChange.Result());
+        getEventBus().post(ViewChange.Result());
     }
 
     public void centerOnLocation(String chr, double chrLocation) {
@@ -456,7 +453,7 @@ public class ReferenceFrame implements IGVEventObserver {
     public void centerOnLocation(double chrLocation) {
         double windowWidth = (widthInPixels * getScale()) / 2;
         setOrigin(Math.round(chrLocation - windowWidth));
-        getEventBus().post(new ViewChange.LocusChangeResult(chrName, origin, chrLocation + windowWidth));
+        getEventBus().post(ViewChange.LocusChangeResult(chrName, origin, chrLocation + windowWidth));
     }
 
     public boolean windowAtEnd() {
@@ -511,7 +508,7 @@ public class ReferenceFrame implements IGVEventObserver {
             log.debug("Scale = " + locationScale);
         }
 
-        getEventBus().post(new ViewChange.LocusChangeResult(chrName, start, end));
+        getEventBus().post(ViewChange.LocusChangeResult(chrName, start, end));
     }
 
     /**
