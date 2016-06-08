@@ -69,9 +69,13 @@ public class SequenceOntology {
         mrnaParts.addAll(utrTypes);
         mrnaParts.addAll(cdsTypes);
         mrnaParts.addAll(exonTypes);
+        mrnaParts.add("intron");
+        mrnaParts.add("polyA_sequence");
+        mrnaParts.add("polyA_site");
+        mrnaParts.add("start_codon");
+        mrnaParts.add("stop_codon");
 
         transcriptParts.addAll(mrnaParts);
-        transcriptParts.add("intron");
 
         geneParts.addAll(transcriptParts);
         geneParts.add("transcript");

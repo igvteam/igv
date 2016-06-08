@@ -71,14 +71,6 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
     static HashSet<String> ignoredTypes = new HashSet();
 
-    static {
-        ignoredTypes.add("start_codon");
-        ignoredTypes.add("stop_codon");
-        ignoredTypes.add("Contig");
-        ignoredTypes.add("RealContig");
-        ignoredTypes.add("CDS_parts");
-    }
-
 
     private TrackProperties trackProperties = null;
     private CI.CIHashSet featuresToHide = new CI.CIHashSet();
@@ -90,17 +82,6 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
     public enum Version {
         GFF2, GFF3
     }
-
-
-    /**
-     * List of known "Name" fields.  Some important fields from the GFF3 spec are listed below.  Note GFF3
-     * is case sensitive, however GFF2, GTF, and other variants might not be.
-     * <p/>
-     * ID	  Indicates the ID of the feature.
-     * Name   Display name for the feature.
-     * Alias  A secondary name for the feature.
-     */
-    static String[] nameFields = {"Name", "name", "Alias", "gene", "primary_name", "locus", "alias", "systematic_id", "ID", "transcript_id"};
 
 
     public GFFCodec(Genome genome) {
@@ -195,10 +176,6 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         if (pathLowerCase.endsWith(".gz")) pathLowerCase = pathLowerCase.substring(0, pathLowerCase.length() - 3);
         return pathLowerCase.endsWith(".gff") || pathLowerCase.endsWith(".gff3") ||
                 pathLowerCase.endsWith(".gvf") || pathLowerCase.endsWith(".gtf");
-    }
-
-    public BasicFeature decodeLoc(String line) {
-        return decode(line);
     }
 
     public BasicFeature decode(String line) {

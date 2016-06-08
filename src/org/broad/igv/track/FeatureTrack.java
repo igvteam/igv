@@ -434,7 +434,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             for (Feature feature : allFeatures) {
                 if (feature != null && feature instanceof IGVFeature) {
                     if (!firstFeature) {
-                        buf.append("<br/>--------------<br/>");
+                        buf.append("<hr><br>");
                     }
 
                     IGVFeature igvFeature = (IGVFeature) feature;

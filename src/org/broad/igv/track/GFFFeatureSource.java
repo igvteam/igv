@@ -97,18 +97,20 @@ public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
     public static class GFFCombiner {
 
         List<Feature> igvFeatures;
-        Map<String, BasicFeature> gffFeatures;
+        Map<String, GFFFeature> gffFeatures;
         List<BasicFeature> gffExons;
         Map<String, GFFCdsCltn> gffCdss;
         List<BasicFeature> gffUtrs;
+        List<BasicFeature> gffMrnaParts;
 
         public GFFCombiner() {
             int numElements = 10000;
             igvFeatures = new ArrayList<Feature>(numElements);
-            gffFeatures = new HashMap<String, BasicFeature>(numElements);
+            gffFeatures = new HashMap<String, GFFFeature>(numElements);
             gffExons = new ArrayList<BasicFeature>(numElements);
             gffCdss = new LinkedHashMap<String, GFFCdsCltn>(numElements);
             gffUtrs = new ArrayList<BasicFeature>(numElements);
+            gffMrnaParts = new ArrayList<>(numElements);
 
         }
 
@@ -132,21 +134,24 @@ public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
             String featureType = bf.getType();
             String[] parentIDs = bf.getParentIds();
             String id = bf.getIdentifier();
-            if (SequenceOntology.exonTypes.contains(featureType) && parentIDs != null) {
-                gffExons.add(bf);
-            } else if (SequenceOntology.utrTypes.contains(featureType) && parentIDs != null) {
-                gffUtrs.add(bf);
-            } else if (SequenceOntology.cdsTypes.contains(featureType) && parentIDs != null) {
-                for (String pid : parentIDs) {
-                    GFFCdsCltn cds = gffCdss.get(pid);
-                    if (cds == null) {
-                        cds = new GFFCdsCltn(pid);
-                        gffCdss.put(pid, cds);
+            if (SequenceOntology.mrnaParts.contains(featureType) && parentIDs != null) {
+                gffMrnaParts.add(bf);
+                if (SequenceOntology.exonTypes.contains(featureType) && parentIDs != null) {
+                    gffExons.add(bf);
+                } else if (SequenceOntology.utrTypes.contains(featureType) && parentIDs != null) {
+                    gffUtrs.add(bf);
+                } else if (SequenceOntology.cdsTypes.contains(featureType) && parentIDs != null) {
+                    for (String pid : parentIDs) {
+                        GFFCdsCltn cds = gffCdss.get(pid);
+                        if (cds == null) {
+                            cds = new GFFCdsCltn(pid);
+                            gffCdss.put(pid, cds);
+                        }
+                        cds.addPart(bf);
                     }
-                    cds.addPart(bf);
                 }
             } else if (id != null) {
-                gffFeatures.put(id, bf);
+                gffFeatures.put(id, new GFFFeature(bf));
             } else {
                 igvFeatures.add(bf); // Just use this feature  as is.
             }
@@ -155,11 +160,11 @@ public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
 
         public List<Feature> combineFeatures() {
 
-
+            // Exons
             for (BasicFeature gffExon : gffExons) {
                 final String[] parentIds = gffExon.getParentIds();
                 for (String parentId : parentIds) {
-                    BasicFeature parent = gffFeatures.get(parentId);
+                    GFFFeature parent = gffFeatures.get(parentId);
                     if (parent == null) {
                         parent = createParent(gffExon);
                         parent.setIdentifier(parentId);
@@ -176,7 +181,7 @@ public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
             // Now process utrs.  Modify exon if its already defined, create a new one if not.
             for (BasicFeature utr : gffUtrs) {
                 for (String parentId : utr.getParentIds()) {
-                    BasicFeature parent = gffFeatures.get(parentId);
+                    GFFFeature parent = gffFeatures.get(parentId);
                     if (parent == null) {
                         parent = createParent(utr);
                         parent.setIdentifier(parentId);
@@ -188,15 +193,15 @@ public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
                 }
             }
 
-            // Finally overlay cdss
+            // Overlay cdss
             for (GFFCdsCltn gffCdsCltn : gffCdss.values()) {
 
                 // Get the parent.
                 String parentId = gffCdsCltn.getParentId();
-                BasicFeature parent = gffFeatures.get(parentId);
+                GFFFeature parent = gffFeatures.get(parentId);
                 if (parent == null) {
                     // Create a "dummy" transcript for the orphaned cds records
-                    parent = new BasicFeature(gffCdsCltn.chr, gffCdsCltn.start, gffCdsCltn.end, gffCdsCltn.strand);
+                    parent = new GFFFeature(gffCdsCltn.chr, gffCdsCltn.start, gffCdsCltn.end, gffCdsCltn.strand);
                     parent.setIdentifier(parentId);
                     parent.setName(parentId);
                     gffFeatures.put(parentId, parent);
@@ -232,6 +237,22 @@ public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
                 }
             }
 
+
+            // Merge attributes (column 9)
+            for (BasicFeature mrnaPart : gffMrnaParts) {
+                for (String parentId : mrnaPart.getParentIds()) {
+                    GFFFeature parent = gffFeatures.get(parentId);
+                    if (parent == null) {
+                        // This shouldn't happen, but if it does use feature directly
+                        igvFeatures.add(mrnaPart);
+                    } else {
+                        parent.mergeAttributes(mrnaPart);
+                    }
+
+                }
+            }
+
+
             igvFeatures.addAll(gffFeatures.values());
 
 
@@ -254,10 +275,10 @@ public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
 
         }
 
-        private BasicFeature createParent(BasicFeature gffExon) {
-            BasicFeature parent;
-            parent = new BasicFeature(gffExon.getChr(), gffExon.getStart(), gffExon.getEnd(), gffExon.getStrand());
-            return parent;
+        private GFFFeature createParent(BasicFeature gffExon) {
+
+            return new GFFFeature(gffExon.getChr(), gffExon.getStart(), gffExon.getEnd(), gffExon.getStrand());
+
         }
 
 

@@ -88,6 +88,7 @@ public class BasicFeature extends AbstractFeature {
         this.link = feature.link;
         this.thickStart = feature.thickStart;
         this.thickEnd = feature.thickEnd;
+        this.attributes = feature.attributes;
     }
 
 
@@ -122,47 +123,33 @@ public class BasicFeature extends AbstractFeature {
      * Defined in interface {@linkplain LocusScore}
      */
     public String getValueString(double position, WindowFunction ignored) {
-        StringBuffer valueString = new StringBuffer();
 
+        StringBuffer buffer = new StringBuffer();
 
-        String name = getName();
-        if (name != null) {
-            valueString.append("<b>" + name + "</b><br>");
-        }
-        valueString.append(getLocusString());
-        if (type != null && type.length() > 0) {
-            valueString.append("<br>Type = " + type);
-        }
-        if ((identifier != null) && ((name == null) || !name.equals(identifier))) {
-            valueString.append("<br>id = " + identifier);
+        if(type != null) {
+            buffer.append("<b>Type</b>:&nbsp;");
+            buffer.append(type);
         }
 
-        if (!Float.isNaN(score)) {
-            valueString.append("<br>Score = " + score);
-        }
-        if (description != null) {
-            valueString.append("<br>" + description);
-        }
         if (attributes != null) {
-            valueString.append(getAttributeString());
+            buffer.append(getAttributeString());
         }
-
 
         // Get exon number, if over an exon
         int posZero = (int) position;
-        if (this.exons != null) {
+        if (this.exons != null && exons.size() > 1) {
             for (Exon exon : exons) {
                 if (posZero >= exon.getStart() && posZero < exon.getEnd()) {
                     String exonString = exon.getValueString(position, ignored);
                     if (exonString != null && exonString.length() > 0) {
-                        valueString.append("<br>--------------<br>");
-                        valueString.append(exonString);
+                        buffer.append("---<br>");
+                        buffer.append(exonString);
                     }
                 }
             }
         }
 
-        return valueString.toString();
+        return buffer.toString();
     }
 
     public void setScore(float score) {

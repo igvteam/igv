@@ -249,7 +249,7 @@ public class IGVMenuBar extends JMenuBar {
                 try {
                     PluginSpecReader.addCustomPlugin(pluginFi.getAbsolutePath());
                     refreshToolsMenu();
-                } catch (IOException e1) {
+                } catch (Exception e1) {
                     MessageUtils.showErrorMessage("Error loading custom cli_plugin", e1);
                 }
             }
