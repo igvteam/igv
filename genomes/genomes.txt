@@ -1,148 +1,149 @@
 <Server-Side Genome List>
-A. baumannii str. ATCC	http://dn7ywbm9isq8j.cloudfront.net/genomes/ABaumannii_ATCC_17978.genome	ABaumannii_ATCC_17978
-A. baumannii str. AYE	http://dn7ywbm9isq8j.cloudfront.net/genomes/ABaumannii_AYE_uid61637.genome	ABaumannii_AYE_uid61637
-A. gambia (Pest AgamP3)	http://dn7ywbm9isq8j.cloudfront.net/genomes/AgamP3.genome	AgamP3
-A. nidulans (4.1)	http://dn7ywbm9isq8j.cloudfront.net/genomes/anidulans_4.1.genome	anidulans_4.1
-A. thaliana (TAIR 10)	http://dn7ywbm9isq8j.cloudfront.net/genomes/tair10.genome	tair10
-A. thaliana (TAIR 8)	http://dn7ywbm9isq8j.cloudfront.net/genomes/tair8.genome	tair8
-A. thaliana (TAIR 9)	http://dn7ywbm9isq8j.cloudfront.net/genomes/tair9.genome	tair9
-Aplysia	http://dn7ywbm9isq8j.cloudfront.net/genomes/Aplysia.genome	Aplysia
-Autographa californica MNPV	http://dn7ywbm9isq8j.cloudfront.net/genomes/NC_001623.genome	NC_001623
-B. pertussis (Tohama I NC_002929.2)	http://dn7ywbm9isq8j.cloudfront.net/genomes/NC_002929.genome	NC_002929
-Bacillus Subtilis str. 168	http://dn7ywbm9isq8j.cloudfront.net/genomes/NC_000964.genome	NC_000964
-Banana (M. Balbisiana PKWv1)	http://dn7ywbm9isq8j.cloudfront.net/genomes/MusaBalbisianaPKWv1.genome	MusaBalbisianaPKWv1
-Banana (Musa acuminata)	http://dn7ywbm9isq8j.cloudfront.net/genomes/MusaAcuminata.genome	MusaAcuminata
-C. albicans	http://dn7ywbm9isq8j.cloudfront.net/genomes/candida.genome	candida
-C. alibcans (SC5314 A21)	http://dn7ywbm9isq8j.cloudfront.net/genomes/ca21.genome	ca21
-C. elegans (WS201)	http://dn7ywbm9isq8j.cloudfront.net/genomes/WS201.genome	WS201
-C. elegans (WS220)	http://dn7ywbm9isq8j.cloudfront.net/genomes/WS220.genome	WS220
-C. elegans (ws241)	http://dn7ywbm9isq8j.cloudfront.net/genomes/ws241.genome	ws241
+A. baumannii str. ATCC	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/ABaumannii_ATCC_17978.genome	ABaumannii_ATCC_17978
+A. baumannii str. AYE	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/ABaumannii_AYE_uid61637.genome	ABaumannii_AYE_uid61637
+A. gambia (Pest AgamP3)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/AgamP3.genome	AgamP3
+A. nidulans (4.1)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/anidulans_4.1.genome	anidulans_4.1
+A. thaliana (TAIR 10)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/tair10.genome	tair10
+A. thaliana (TAIR 8)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/tair8.genome	tair8
+A. thaliana (TAIR 9)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/tair9.genome	tair9
+Aplysia	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/Aplysia.genome	Aplysia
+Autographa californica MNPV	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_001623.genome	NC_001623
+B. pertussis (Tohama I NC_002929.2)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_002929.genome	NC_002929
+Bacillus Subtilis str. 168	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_000964.genome	NC_000964
+Banana (M. Balbisiana PKWv1)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/MusaBalbisianaPKWv1.genome	MusaBalbisianaPKWv1
+Banana (Musa acuminata)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/MusaAcuminata.genome	MusaAcuminata
+C. albicans	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/candida.genome	candida
+C. alibcans (SC5314 A21)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/ca21.genome	ca21
+C. elegans (WS201)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/WS201.genome	WS201
+C. elegans (WS220)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/WS220.genome	WS220
+C. elegans (ws241)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/ws241.genome	ws241
 C. elegans (WS245)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/WS245.genome	WS245
-C. elegans (ce10)	http://dn7ywbm9isq8j.cloudfront.net/genomes/ce10.genome	ce10
-C. elegans (ce11)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/ce11.genome	ce11
-C. elegans (ce4)	http://dn7ywbm9isq8j.cloudfront.net/genomes/ce4.genome	ce4
-C. elegans (ce6)	http://dn7ywbm9isq8j.cloudfront.net/genomes/ce6.genome	ce6
-C. savignyi (v2.1 reftigs)	http://dn7ywbm9isq8j.cloudfront.net/genomes/CSavignyi_v2.1.genome	CSavignyi_v2.1
-C. thermocellum (NC_009012)	http://dn7ywbm9isq8j.cloudfront.net/genomes/NC_009012.genome	NC_009012
-Chicken (galGal3)	http://dn7ywbm9isq8j.cloudfront.net/genomes/galGal3.genome	galGal3
-Chicken (galGal4)	http://dn7ywbm9isq8j.cloudfront.net/genomes/galGal4.genome	galGal4
+C. elegans (ce10)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/ce10.genome	ce10
+C. elegans (ce11)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/ce11.genome	ce11
+C. elegans (ce4)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/ce4.genome	ce4
+C. elegans (ce6)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/ce6.genome	ce6
+C. savignyi (v2.1 reftigs)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/CSavignyi_v2.1.genome	CSavignyi_v2.1
+C. thermocellum (NC_009012)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_009012.genome	NC_009012
+Chicken (galGal3)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/galGal3.genome	galGal3
+Chicken (galGal4)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/galGal4.genome	galGal4
 Chicken (galGal5)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/galGal5.genome	galGal5
-Chimp (panTro2)	http://dn7ywbm9isq8j.cloudfront.net/genomes/panTro2.genome	panTro2
-Cat (felCat5)	http://dn7ywbm9isq8j.cloudfront.net/genomes/felCat5.genome	felCat5
-Cow (bosTau3)	http://dn7ywbm9isq8j.cloudfront.net/genomes/bosTau3.genome	bosTau3
-Cow (bosTau4)	http://dn7ywbm9isq8j.cloudfront.net/genomes/bosTau4.genome	bosTau4
-Cow (bosTau6)	http://dn7ywbm9isq8j.cloudfront.net/genomes/bosTau6.genome	bosTau6
-Cow (bosTau7)	http://dn7ywbm9isq8j.cloudfront.net/genomes/bosTau7.genome	bosTau7
-D. discoideum (05-13-2009)	http://dn7ywbm9isq8j.cloudfront.net/genomes/D.discoideum.genome	D.discoideum
-D. melanogaster (5.9)	http://dn7ywbm9isq8j.cloudfront.net/genomes/dmel_5.9.genome	dmel_5.9
-D. melanogaster (dm2)	http://dn7ywbm9isq8j.cloudfront.net/genomes/dm2.genome	dm2
-D. melanogaster (dm3)	http://dn7ywbm9isq8j.cloudfront.net/genomes/dm3.genome	dm3
-D. melanogaster (dm6)	http://dn7ywbm9isq8j.cloudfront.net/genomes/dm6.genome	dm6
-D. melanogaster (r5.22)	http://dn7ywbm9isq8j.cloudfront.net/genomes/dmel_r5.22.genome	dmel_r5.22
-D. melanogaster (r5.33)	http://dn7ywbm9isq8j.cloudfront.net/genomes/dmel_r5.33.genome	dmel_r5.33
-Dog (canFam2)	http://dn7ywbm9isq8j.cloudfront.net/genomes/canFam2.genome	canFam2
-Dog (canFam3)	http://dn7ywbm9isq8j.cloudfront.net/genomes/canFam3.genome	canFam3
-E. coli K-12 MG1655 (NC_000913.2)	http://dn7ywbm9isq8j.cloudfront.net/genomes/NC_000913.2.genome	NC_000913.2
-E. coli K-12 MG1655 (U00096.2)	http://dn7ywbm9isq8j.cloudfront.net/genomes/U00096.2.genome	U00096.2
-E. coli O157:H7 EDL933 (NC_002655.2)	http://dn7ywbm9isq8j.cloudfront.net/genomes/NC_002655.2.genome	NC_002655.2
-E. phage phiX174	http://dn7ywbm9isq8j.cloudfront.net/genomes/NC_001422.genome	NC_001422
-Ferret (MusPutFur1.0)	http://dn7ywbm9isq8j.cloudfront.net/genomes/MusPutFur1.0.genome	MusPutFur1.0
-Francisella tularensis (NC_008601)	https://dn7ywbm9isq8j.cloudfront.net/genomes/NC_008601.gbk	NC_008601
-Foxy4287	http://dn7ywbm9isq8j.cloudfront.net/genomes/Foxy4287.genome	Foxy4287
-G. lamblia (2.0)	http://dn7ywbm9isq8j.cloudfront.net/genomes/Glamblia_2.0.genome	Glamblia_2.0
-Glycine max (v8.0)	http://dn7ywbm9isq8j.cloudfront.net/genomes/gmax8.genome	gmax8
-Glycine max (Wm82.a2.v1)	https://dn7ywbm9isq8j.cloudfront.net/genomes/gmax10.genome	gmax10
-Guinea Pig (cavPor3)	http://dn7ywbm9isq8j.cloudfront.net/genomes/cavPor3.genome	cavPor3
-Helicobacter hepaticus	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_004917.genome	NC_004917
-HIV-1	http://dn7ywbm9isq8j.cloudfront.net/genomes/NC_001802.genome	NC_001802
-HIV-2	http://dn7ywbm9isq8j.cloudfront.net/genomes/NC_001722.genome	NC_001722
-Horse (equCab2)	http://dn7ywbm9isq8j.cloudfront.net/genomes/equCab2.genome	equCab2
-Human (1kg reference, b36)	http://dn7ywbm9isq8j.cloudfront.net/genomes/1kg_ref.genome	1kg_ref
-Human (1kg, b37+decoy)	http://dn7ywbm9isq8j.cloudfront.net/genomes/1kg_v37.genome	1kg_v37
-Human (b37)	http://dn7ywbm9isq8j.cloudfront.net/genomes/b37.genome	b37
-Human Adenovirus C	http://dn7ywbm9isq8j.cloudfront.net/genomes/NC_001405.genome	NC_001405
-Human Herpesvirus 4, Type 1	http://dn7ywbm9isq8j.cloudfront.net/genomes/HHV4_Type1.genome	HHV4_Type1
-Human Herpesvirus 4, Type 2	http://dn7ywbm9isq8j.cloudfront.net/genomes/HHV4_Type2.genome	HHV4_Type2
-Human hg16	http://dn7ywbm9isq8j.cloudfront.net/genomes/hg16.genome	hg16
-Human hg17	http://dn7ywbm9isq8j.cloudfront.net/genomes/hg17.genome	hg17
+Chimp (panTro2)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/panTro2.genome	panTro2
+Cat (felCat5)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/felCat5.genome	felCat5
+Cow (bosTau3)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/bosTau3.genome	bosTau3
+Cow (bosTau4)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/bosTau4.genome	bosTau4
+Cow (bosTau6)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/bosTau6.genome	bosTau6
+Cow (bosTau7)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/bosTau7.genome	bosTau7
+D. discoideum (05-13-2009)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/D.discoideum.genome	D.discoideum
+D. melanogaster (5.9)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/dmel_5.9.genome	dmel_5.9
+D. melanogaster (dm2)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/dm2.genome	dm2
+D. melanogaster (dm3)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/dm3.genome	dm3
+D. melanogaster (dm6)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/dm6.genome	dm6
+D. melanogaster (r5.22)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/dmel_r5.22.genome	dmel_r5.22
+D. melanogaster (r5.33)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/dmel_r5.33.genome	dmel_r5.33
+Dog (canFam2)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/canFam2.genome	canFam2
+Dog (canFam3)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/canFam3.genome	canFam3
+E. coli K-12 MG1655 (NC_000913.2)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_000913.2.genome	NC_000913.2
+E. coli K-12 MG1655 (U00096.2)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/U00096.2.genome	U00096.2
+E. coli K-12 (NC_000913.3)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_000913.3.gbk	NC_000913.3
+E. coli O157:H7 EDL933 (NC_002655.2)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_002655.2.genome	NC_002655.2
+E. phage phiX174	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_001422.genome	NC_001422
+Ferret (MusPutFur1.0)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/MusPutFur1.0.genome	MusPutFur1.0
+Francisella tularensis (NC_008601)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_008601.gbk	NC_008601
+Foxy4287	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/Foxy4287.genome	Foxy4287
+G. lamblia (2.0)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/Glamblia_2.0.genome	Glamblia_2.0
+Glycine max (v8.0)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/gmax8.genome	gmax8
+Glycine max (Wm82.a2.v1)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/gmax10.genome	gmax10
+Guinea Pig (cavPor3)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/cavPor3.genome	cavPor3
+Helicobacter hepaticus	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_004917.genome	NC_004917
+HIV-1	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_001802.genome	NC_001802
+HIV-2	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_001722.genome	NC_001722
+Horse (equCab2)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/equCab2.genome	equCab2
+Human (1kg reference, b36)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/1kg_ref.genome	1kg_ref
+Human (1kg, b37+decoy)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/1kg_v37.genome	1kg_v37
+Human (b37)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/b37.genome	b37
+Human Adenovirus C	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_001405.genome	NC_001405
+Human Herpesvirus 4, Type 1	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/HHV4_Type1.genome	HHV4_Type1
+Human Herpesvirus 4, Type 2	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/HHV4_Type2.genome	HHV4_Type2
+Human hg16	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/hg16.genome	hg16
+Human hg17	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/hg17.genome	hg17
 Human hg18	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/hg18.genome	hg18
-Human hg19	http://dn7ywbm9isq8j.cloudfront.net/genomes/hg19.genome	hg19
-Human hg38	http://dn7ywbm9isq8j.cloudfront.net/genomes/hg38.genome	hg38
+Human hg19	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/hg19.genome	hg19
+Human hg38	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/hg38.genome	hg38
 Human Mito (NC_012920)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_012920.1.gbk	NC_012920
 Human respiratory synctial virus	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/M74568.genome	M74568
-L. major Friedlin	http://dn7ywbm9isq8j.cloudfront.net/genomes/lmjr.genome	lmjr
-L. major Friedlin (v4.0)	http://dn7ywbm9isq8j.cloudfront.net/genomes/lmjr_4.0.genome	lmjr_4.0
-M. oryzae (mg8)	http://dn7ywbm9isq8j.cloudfront.net/genomes/mg8.genome	mg8
-Macaca fascicularis (CE_1.0)	http://dn7ywbm9isq8j.cloudfront.net/genomes/CE_1.0.genome	CE_1.0
-Maize (B73 4a.53)	http://dn7ywbm9isq8j.cloudfront.net/genomes/B73.genome	B73
-Maize (ZmB73 5a)	http://dn7ywbm9isq8j.cloudfront.net/genomes/ZmB73_5a.genome	ZmB73_5a
-Mouse (129S1/SvImJ)	http://dn7ywbm9isq8j.cloudfront.net/genomes/SvImJ.genome	129S1/SvImJ
-Mouse mm10	http://dn7ywbm9isq8j.cloudfront.net/genomes/mm10.genome	mm10
-Mouse mm7	http://dn7ywbm9isq8j.cloudfront.net/genomes/mm7.genome	mm7
-Mouse mm8	http://dn7ywbm9isq8j.cloudfront.net/genomes/mm8.genome	mm8
-Mouse mm9	http://dn7ywbm9isq8j.cloudfront.net/genomes/mm9.genome	mm9
-Mycobacterium TB (CD1551)	http://dn7ywbm9isq8j.cloudfront.net/genomes/NC_002755.genome	NC_002755
-N. Meningitidis (FAM18)	http://dn7ywbm9isq8j.cloudfront.net/test/genomes/NC_008767.genome	NC_008767
-N. Meningitidis (MC58)	http://dn7ywbm9isq8j.cloudfront.net/test/genomes/NC_003112.genome	NC_003112
-N. Meningitidis (Z2491)	http://dn7ywbm9isq8j.cloudfront.net/test/genomes/NC_003116.genome	NC_003116
-N. crassa OR74A (NC10)	http://dn7ywbm9isq8j.cloudfront.net/genomes/nc10.genome	nc10
-Neurospora crassa (v3)	http://dn7ywbm9isq8j.cloudfront.net/genomes/ncrassa_v3.genome	ncrassa_v3
-O. Sativa (release 6)	http://dn7ywbm9isq8j.cloudfront.net/genomes/O_Sativa_r6.genome	O_Sativa_r6
-O. Sativa (release 6.1)	http://dn7ywbm9isq8j.cloudfront.net/genomes/osativa_6.1.genome	osativa_6.1
-O. Sativa (release 7)	http://dn7ywbm9isq8j.cloudfront.net/genomes/osativa_7.genome	osativa_7
-Opossum (monDom5)	http://dn7ywbm9isq8j.cloudfront.net/genomes/monDom5.genome	monDom5
-P. falciparum 3D7 (V9.0)	http://dn7ywbm9isq8j.cloudfront.net/genomes/Pf3D7_v9.0.genome	Pf3D7_v9.0
-P. patens  (V 1.2)	http://dn7ywbm9isq8j.cloudfront.net/genomes/ppatens_1.2.genome	ppatens_1.2
-P. vivax (7.2)	http://dn7ywbm9isq8j.cloudfront.net/genomes/pvivax.genome	pvivax
-Plasmodium (3D7 V7.0)	http://dn7ywbm9isq8j.cloudfront.net/genomes/PlasmoDB_7.0.genome	PlasmoDB_7.0
-Plasmodium (3D7 V8.2)	http://dn7ywbm9isq8j.cloudfront.net/genomes/PlasmoDB_8.2.genome	PlasmoDB_8.2
-Plasmodium (3D7 v2.1)	http://dn7ywbm9isq8j.cloudfront.net/genomes/Plasmodium_3D7_v2.1.genome	Plasmodium_3D7_v2.1
-Plasmodium (3D7 v5.5)	http://dn7ywbm9isq8j.cloudfront.net/genomes/Plasmodium_3D7_v5.5.genome	Plasmodium_3D7_v5.5
-Plasmodium (6.1)	http://dn7ywbm9isq8j.cloudfront.net/genomes/Plasmodium_6.1.genome	Plasmodium_6.1
+L. major Friedlin	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/lmjr.genome	lmjr
+L. major Friedlin (v4.0)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/lmjr_4.0.genome	lmjr_4.0
+M. oryzae (mg8)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/mg8.genome	mg8
+Macaca fascicularis (CE_1.0)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/CE_1.0.genome	CE_1.0
+Maize (B73 4a.53)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/B73.genome	B73
+Maize (ZmB73 5a)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/ZmB73_5a.genome	ZmB73_5a
+Mouse (129S1/SvImJ)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/SvImJ.genome	129S1/SvImJ
+Mouse mm10	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/mm10.genome	mm10
+Mouse mm7	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/mm7.genome	mm7
+Mouse mm8	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/mm8.genome	mm8
+Mouse mm9	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/mm9.genome	mm9
+Mycobacterium TB (CD1551)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_002755.genome	NC_002755
+N. Meningitidis (FAM18)	http://s3.amazonaws.com/igv.broadinstitute.org/test/genomes/NC_008767.genome	NC_008767
+N. Meningitidis (MC58)	http://s3.amazonaws.com/igv.broadinstitute.org/test/genomes/NC_003112.genome	NC_003112
+N. Meningitidis (Z2491)	http://s3.amazonaws.com/igv.broadinstitute.org/test/genomes/NC_003116.genome	NC_003116
+N. crassa OR74A (NC10)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/nc10.genome	nc10
+Neurospora crassa (v3)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/ncrassa_v3.genome	ncrassa_v3
+O. Sativa (release 6)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/O_Sativa_r6.genome	O_Sativa_r6
+O. Sativa (release 6.1)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/osativa_6.1.genome	osativa_6.1
+O. Sativa (release 7)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/osativa_7.genome	osativa_7
+Opossum (monDom5)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/monDom5.genome	monDom5
+P. falciparum 3D7 (V9.0)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/Pf3D7_v9.0.genome	Pf3D7_v9.0
+P. patens  (V 1.2)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/ppatens_1.2.genome	ppatens_1.2
+P. vivax (7.2)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/pvivax.genome	pvivax
+Plasmodium (3D7 V7.0)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/PlasmoDB_7.0.genome	PlasmoDB_7.0
+Plasmodium (3D7 V8.2)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/PlasmoDB_8.2.genome	PlasmoDB_8.2
+Plasmodium (3D7 v2.1)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/Plasmodium_3D7_v2.1.genome	Plasmodium_3D7_v2.1
+Plasmodium (3D7 v5.5)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/Plasmodium_3D7_v5.5.genome	Plasmodium_3D7_v5.5
+Plasmodium (6.1)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/Plasmodium_6.1.genome	Plasmodium_6.1
 Plasmodium (3D7 V24)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/PlasmoDB_24.genome	Plasmodium_24
-Rabbit (oryCun2.0)	http://dn7ywbm9isq8j.cloudfront.net/genomes/oryCun2.0.genome	oryCun2.0
-Rat (rn4)	http://dn7ywbm9isq8j.cloudfront.net/genomes/rn4.genome	rn4
-Rat (rn5)	http://dn7ywbm9isq8j.cloudfront.net/genomes/rn5.genome	rn5
-Rat (rn6)	http://dn7ywbm9isq8j.cloudfront.net/genomes/rn6.genome	rn6
-Rhesus (rheMac2)	http://dn7ywbm9isq8j.cloudfront.net/genomes/rheMac2.genome	rheMac2
-Rhesus (rheMac3)	http://dn7ywbm9isq8j.cloudfront.net/genomes/rheMac3.genome	rheMac3
-S. cerevisiae (EF3 r62)	http://dn7ywbm9isq8j.cloudfront.net/genomes/sacCer62.genome	sacCer62
-S. cerevisiae (GSM552910)	http://dn7ywbm9isq8j.cloudfront.net/genomes/GSM552910.genome	GSM552910
-S. cerevisiae (Y55)	http://dn7ywbm9isq8j.cloudfront.net/genomes/Y55.genome	Y55
-S. cerevisiae (sacCer1)	http://dn7ywbm9isq8j.cloudfront.net/genomes/sacCer1.genome	sacCer1
-S. cerevisiae (sacCer2)	http://dn7ywbm9isq8j.cloudfront.net/genomes/sacCer2.genome	sacCer2
-S. cerevisiae (sacCer3)	http://dn7ywbm9isq8j.cloudfront.net/genomes/sacCer3.genome	sacCer3
-S. cerevisiae (sk1)	http://dn7ywbm9isq8j.cloudfront.net/genomes/sk1.genome	sk1
-S. pombe (7/09)	http://dn7ywbm9isq8j.cloudfront.net/genomes/spombe_709.genome	spombe_709
-S. pombe (EF 1.55)	http://dn7ywbm9isq8j.cloudfront.net/genomes/spombe_1.55.genome	spombe_1.55
-S. purpuratus (2.5)	http://dn7ywbm9isq8j.cloudfront.net/genomes/spur_2.5.genome	spur_2.5
-S. purpuratus (3.0)	http://dn7ywbm9isq8j.cloudfront.net/genomes/spur_3.0.genome	spur_3.0
-S. sclerotiorum (sclerotiorum)	http://dn7ywbm9isq8j.cloudfront.net/genomes/sclerotiorum.genome	sclerotiorum
-S.purpuratus (2.1+)	http://dn7ywbm9isq8j.cloudfront.net/genomes/spur_2.1.genome	spur_2.1
-Salmonella enterica str. 14028S	http://dn7ywbm9isq8j.cloudfront.net/genomes/NC_016856.genome	NC_016856
+Rabbit (oryCun2.0)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/oryCun2.0.genome	oryCun2.0
+Rat (rn4)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/rn4.genome	rn4
+Rat (rn5)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/rn5.genome	rn5
+Rat (rn6)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/rn6.genome	rn6
+Rhesus (rheMac2)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/rheMac2.genome	rheMac2
+Rhesus (rheMac3)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/rheMac3.genome	rheMac3
+S. cerevisiae (EF3 r62)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/sacCer62.genome	sacCer62
+S. cerevisiae (GSM552910)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/GSM552910.genome	GSM552910
+S. cerevisiae (Y55)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/Y55.genome	Y55
+S. cerevisiae (sacCer1)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/sacCer1.genome	sacCer1
+S. cerevisiae (sacCer2)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/sacCer2.genome	sacCer2
+S. cerevisiae (sacCer3)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/sacCer3.genome	sacCer3
+S. cerevisiae (sk1)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/sk1.genome	sk1
+S. pombe (7/09)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/spombe_709.genome	spombe_709
+S. pombe (EF 1.55)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/spombe_1.55.genome	spombe_1.55
+S. purpuratus (2.5)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/spur_2.5.genome	spur_2.5
+S. purpuratus (3.0)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/spur_3.0.genome	spur_3.0
+S. sclerotiorum (sclerotiorum)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/sclerotiorum.genome	sclerotiorum
+S.purpuratus (2.1+)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/spur_2.1.genome	spur_2.1
+Salmonella enterica str. 14028S	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_016856.genome	NC_016856
 Salmo salar (ICSASG_v2)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/GCF_000233375.1.genome	GCF_000233375.1
-Sheep (Ovis Aries v3.1)	http://dn7ywbm9isq8j.cloudfront.net/genomes/oviAri3.genome	oviAri3
-Stickleback (gasAcu1)	http://dn7ywbm9isq8j.cloudfront.net/genomes/gasAcu1.genome	gasAcu1
-Sus Scrofa (9.56)	http://dn7ywbm9isq8j.cloudfront.net/genomes/susScrofa.genome	susScrofa
-Sus Scrofa (Sscrofa10.2/susScr3)	http://dn7ywbm9isq8j.cloudfront.net/genomes/susScr3.genome	susScr3
-T. brucei (427 v4.2)	http://dn7ywbm9isq8j.cloudfront.net/genomes/tb427_4.2.genome	tb427_4.2
-T. brucei (927 v2.5)	http://dn7ywbm9isq8j.cloudfront.net/genomes/tb927.genome	tb927
-T. brucei (927 v4.0)	http://dn7ywbm9isq8j.cloudfront.net/genomes/tbrucei927_4.0.genome	tbrucei927_4.0
-T. brucei (927 v5.0)	http://dn7ywbm9isq8j.cloudfront.net/genomes/tbrucei927_5.0.genome	tbrucei927_5.0
-T. brucei gambiense	http://dn7ywbm9isq8j.cloudfront.net/genomes/tbgambi.genome	tbgambi
-T. brucei gambiense (v4.0)	http://dn7ywbm9isq8j.cloudfront.net/genomes/tbgambi_4.0.genome	tbgambi_4.0
-T. castaneum (2.0)	http://dn7ywbm9isq8j.cloudfront.net/genomes/tcas_2.0.genome	tcas_2.0
-T. castaneum (3.0)	http://dn7ywbm9isq8j.cloudfront.net/genomes/tcas_3.0.genome	tcas_3.0
-T. gondii (ME49)	http://dn7ywbm9isq8j.cloudfront.net/genomes/T_gondii_me49.genome	me49
-Tomato (2.31)	http://dn7ywbm9isq8j.cloudfront.net/genomes/SL2.31.genome	SL2.31
-Tomato (2.40)	http://dn7ywbm9isq8j.cloudfront.net/genomes/SL2.40.genome	SL2.40
-Tomato (ITAG2.3)	http://dn7ywbm9isq8j.cloudfront.net/genomes/ITAG2.3.genome	ITAG2.3
-V. vitifera	http://dn7ywbm9isq8j.cloudfront.net/genomes/vvinifera.genome	vvitifera
-Vibrio cholerae N16961	http://dn7ywbm9isq8j.cloudfront.net/genomes/VcholeraeN16961.genome	VcholeraeN16961
-X. tropicalis (xenTro2)	http://dn7ywbm9isq8j.cloudfront.net/genomes/xenTro2.genome	xenTro2
-X. laevis (7.1)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/laevis_7.1.genome	laevis_7.1
-Zebra Finch (taeGut1)	http://dn7ywbm9isq8j.cloudfront.net/genomes/taeGut1.genome	taeGut1
-Zebrafish (Zv7/danRer5)	http://dn7ywbm9isq8j.cloudfront.net/genomes/zebrafish.genome	zebrafish
-Zebrafish (Zv8/danRer6)	http://dn7ywbm9isq8j.cloudfront.net/genomes/danRer6.genome	danRer6
-Zebrafish (Zv9/danRer7)	http://dn7ywbm9isq8j.cloudfront.net/genomes/danRer7.genome	danRer7
-Zebrafish (GRCz10/danRer10)	http://dn7ywbm9isq8j.cloudfront.net/genomes/danRer10.genome	danRer10
+Sheep (Ovis Aries v3.1)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/oviAri3.genome	oviAri3
+Stickleback (gasAcu1)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/gasAcu1.genome	gasAcu1
+Sus Scrofa (9.56)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/susScrofa.genome	susScrofa
+Sus Scrofa (Sscrofa10.2/susScr3)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/susScr3.genome	susScr3
+T. brucei (427 v4.2)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/tb427_4.2.genome	tb427_4.2
+T. brucei (927 v2.5)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/tb927.genome	tb927
+T. brucei (927 v4.0)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/tbrucei927_4.0.genome	tbrucei927_4.0
+T. brucei (927 v5.0)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/tbrucei927_5.0.genome	tbrucei927_5.0
+T. brucei gambiense	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/tbgambi.genome	tbgambi
+T. brucei gambiense (v4.0)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/tbgambi_4.0.genome	tbgambi_4.0
+T. castaneum (2.0)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/tcas_2.0.genome	tcas_2.0
+T. castaneum (3.0)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/tcas_3.0.genome	tcas_3.0
+T. gondii (ME49)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/T_gondii_me49.genome	me49
+Tomato (2.31)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/SL2.31.genome	SL2.31
+Tomato (2.40)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/SL2.40.genome	SL2.40
+Tomato (ITAG2.3)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/ITAG2.3.genome	ITAG2.3
+V. vitifera	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/vvinifera.genome	vvitifera
+Vibrio cholerae N16961	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/VcholeraeN16961.genome	VcholeraeN16961
+X. tropicalis (xenTro2)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/xenTro2.genome	xenTro2
+X. laevis (7.1)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/laevis_7.1.genome	laevis_7.1
+Zebra Finch (taeGut1)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/taeGut1.genome	taeGut1
+Zebrafish (Zv7/danRer5)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/zebrafish.genome	zebrafish
+Zebrafish (Zv8/danRer6)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/danRer6.genome	danRer6
+Zebrafish (Zv9/danRer7)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/danRer7.genome	danRer7
+Zebrafish (GRCz10/danRer10)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/danRer10.genome	danRer10
