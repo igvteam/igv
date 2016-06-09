@@ -251,6 +251,7 @@ public class GenbankParser {
         BasicFeature f = null;
         String currentLocQualifier = null;
         String nextLine = null;
+        int errorCount = 0;
         do {
             nextLine = reader.readLine();
 
@@ -259,6 +260,14 @@ public class GenbankParser {
 
             if (nextLine == null || nextLine.startsWith("ORIGIN")) {
                 break;
+            }
+
+            if(nextLine.length() < 6) {
+                if(errorCount < 10) {
+                    log.error("Unexpected line in genbank file (skipping): " + nextLine);
+                }
+                errorCount++;
+                continue;
             }
 
             if (nextLine.charAt(5) != ' ') {
