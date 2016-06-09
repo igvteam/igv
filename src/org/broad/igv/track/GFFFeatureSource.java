@@ -110,7 +110,7 @@ public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
             gffExons = new ArrayList<BasicFeature>(numElements);
             gffCdss = new LinkedHashMap<String, GFFCdsCltn>(numElements);
             gffUtrs = new ArrayList<BasicFeature>(numElements);
-            gffMrnaParts = new ArrayList<>(numElements);
+            gffMrnaParts = new ArrayList<BasicFeature>(numElements);
 
         }
 

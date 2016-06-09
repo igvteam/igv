@@ -38,7 +38,7 @@ import java.util.List;
  */
 public class GFFFeature extends BasicFeature {
 
-    List<String> componentAttributes = new ArrayList<>();
+    List<String> componentAttributes = new ArrayList<String>();
 
     public GFFFeature(BasicFeature feature) {
         super(feature);
