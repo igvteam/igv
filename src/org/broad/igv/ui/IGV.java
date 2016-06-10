@@ -2135,7 +2135,10 @@ public class IGV implements IGVEventObserver {
         int left = Math.min(otherIndex, clickedTrackIndex);
         int right = Math.max(otherIndex, clickedTrackIndex);
         for (int i = left; i <= right; i++) {
-            allTracks.get(i).setSelected(true);
+            Track t = allTracks.get(i);
+            if(t.isVisible()) {
+                t.setSelected(true);
+            }
         }
     }
 
