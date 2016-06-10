@@ -41,6 +41,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -76,13 +77,40 @@ public class Main {
 
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
 
+        Main.IGVArgs igvArgs = new Main.IGVArgs(args);
+
+        // Do this early
+        if (igvArgs.igvDirectory != null) {
+            setIgvDirectory(igvArgs);
+        }
+
         initApplication();
 
         JFrame frame = new JFrame();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         ImageIcon icon = new ImageIcon(Main.class.getResource("mainframeicon.png"));
         if (icon != null) frame.setIconImage(icon.getImage());
-        open(frame, args);
+        open(frame, igvArgs);
+
+    }
+
+    private static void setIgvDirectory(IGVArgs igvArgs) {
+
+        File dir = new File(igvArgs.igvDirectory);
+        if (dir.exists()) {
+            if (dir.isDirectory()) {
+                if (dir.canWrite()) {
+                    DirectoryManager.setIgvDirectory(dir);
+                } else {
+                    log.error("IGV directory '" + dir.getAbsolutePath() + "'is not writable");
+                }
+            } else {
+                log.error("'" + dir.getAbsolutePath() + "' is not a directory");
+            }
+        } else {
+            // doesn't exist
+            log.error("'" + dir.getAbsolutePath() + "' not found");
+        }
 
     }
 
@@ -172,13 +200,13 @@ public class Main {
 
 
     /**
-     * Open an IGV instance in the supplied Frame.
+     * Open an IGV instance in the supplied Frame.  This method used by unit tests
      *
      * @param frame
      */
     public static void open(Frame frame) {
 
-        open(frame, new String[]{});
+        open(frame, new IGVArgs(new String[]{}));
     }
 
 
@@ -186,9 +214,9 @@ public class Main {
      * Open an IGV instance in the supplied frame.
      *
      * @param frame
-     * @param args  command-line arguments
+     * @param igvArgs command-line arguments
      */
-    public static void open(Frame frame, String[] args) {
+    public static void open(Frame frame, Main.IGVArgs igvArgs) {
 
         // Add a listener for the "close" icon, unless its a JFrame
         if (!(frame instanceof JFrame)) {
@@ -215,8 +243,6 @@ public class Main {
         });
 
         initializeLookAndFeel();
-
-        Main.IGVArgs igvArgs = new Main.IGVArgs(args);
 
         // Optional arguments
         if (igvArgs.getPropertyOverrides() != null) {
@@ -353,6 +379,7 @@ public class Main {
         private String indexFile = null;
         private String coverageFile = null;
         private String name = null;
+        public String igvDirectory = null;
 
         IGVArgs(String[] args) {
             if (args != null) {
@@ -375,6 +402,7 @@ public class Main {
             CmdLineParser.Option indexFileOption = parser.addStringOption('i', "indexFile");
             CmdLineParser.Option coverageFileOption = parser.addStringOption('c', "coverageFile");
             CmdLineParser.Option nameOption = parser.addStringOption('n', "name");
+            CmdLineParser.Option igvDirectoryOption = parser.addStringOption("igvDirectory");
 
             try {
                 parser.parse(args);
@@ -392,6 +420,7 @@ public class Main {
             indexFile = (String) parser.getOptionValue(indexFileOption);
             coverageFile = (String) parser.getOptionValue(coverageFileOption);
             name = (String) parser.getOptionValue(nameOption);
+            igvDirectory = (String) parser.getOptionValue(igvDirectoryOption);
 
             String[] nonOptionArgs = parser.getRemainingArgs();
             if (nonOptionArgs != null && nonOptionArgs.length > 0) {

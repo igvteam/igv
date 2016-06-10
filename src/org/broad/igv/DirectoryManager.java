@@ -79,6 +79,9 @@ public class DirectoryManager {
         return USER_DIRECTORY;
     }
 
+    public static void setIgvDirectory(File dir) {
+        IGV_DIRECTORY = dir;
+    }
 
     public static File getIgvDirectory() {
 
@@ -453,4 +456,5 @@ public class DirectoryManager {
             log.error("Error creating log file", e);
         }
     }
+
 }

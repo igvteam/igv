@@ -39,7 +39,7 @@ public class TestLauncher {
 
             public void run() {
                 Frame frame = new Frame();
-                org.broad.igv.ui.Main.open(frame, args);
+                org.broad.igv.ui.Main.open(frame, new Main.IGVArgs(args));
             }
         });
     }
