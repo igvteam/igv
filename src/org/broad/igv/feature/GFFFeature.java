@@ -61,7 +61,12 @@ public class GFFFeature extends BasicFeature {
     @Override
     public String getValueString(double position, WindowFunction ignored) {
 
-        StringBuffer valueString = new StringBuffer(super.getValueString(position, ignored));
+        StringBuffer valueString = new StringBuffer();
+
+        if (attributes != null) {
+            valueString.append(getAttributeString());
+        }
+
         if (componentAttributes.size() > 0) {
             for (String s : componentAttributes) {
                 valueString.append("---------------------------");
