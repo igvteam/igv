@@ -88,7 +88,6 @@ public class BasicFeature extends AbstractFeature {
         this.link = feature.link;
         this.thickStart = feature.thickStart;
         this.thickEnd = feature.thickEnd;
-        this.attributes = feature.attributes;
     }
 
 
@@ -123,33 +122,47 @@ public class BasicFeature extends AbstractFeature {
      * Defined in interface {@linkplain LocusScore}
      */
     public String getValueString(double position, WindowFunction ignored) {
+        StringBuffer valueString = new StringBuffer();
 
-        StringBuffer buffer = new StringBuffer();
 
-        if(type != null) {
-            buffer.append("<b>Type</b>:&nbsp;");
-            buffer.append(type);
+        String name = getName();
+        if (name != null) {
+            valueString.append("<b>" + name + "</b><br>");
+        }
+        valueString.append(getLocusString());
+        if (type != null && type.length() > 0) {
+            valueString.append("<br>Type = " + type);
+        }
+        if ((identifier != null) && ((name == null) || !name.equals(identifier))) {
+            valueString.append("<br>id = " + identifier);
         }
 
+        if (!Float.isNaN(score)) {
+            valueString.append("<br>Score = " + score);
+        }
+        if (description != null) {
+            valueString.append("<br>" + description);
+        }
         if (attributes != null) {
-            buffer.append(getAttributeString());
+            valueString.append(getAttributeString());
         }
+
 
         // Get exon number, if over an exon
         int posZero = (int) position;
-        if (this.exons != null && exons.size() > 1) {
+        if (this.exons != null) {
             for (Exon exon : exons) {
                 if (posZero >= exon.getStart() && posZero < exon.getEnd()) {
                     String exonString = exon.getValueString(position, ignored);
                     if (exonString != null && exonString.length() > 0) {
-                        buffer.append("---<br>");
-                        buffer.append(exonString);
+                        valueString.append("<br>--------------<br>");
+                        valueString.append(exonString);
                     }
                 }
             }
         }
 
-        return buffer.toString();
+        return valueString.toString();
     }
 
     public void setScore(float score) {

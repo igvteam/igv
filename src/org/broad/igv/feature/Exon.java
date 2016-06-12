@@ -270,7 +270,7 @@ public class Exon extends AbstractFeature implements IExon {
         if (number > 0) buffer.append("Exon number: " + number + "<br>");
         int aaNumber = this.getAminoAcidNumber((int) position);
         if (aaNumber > 0) {
-            buffer.append("Amino acid codingNumber: " + aaNumber + "<br>");
+            buffer.append("Amino acid coding number: " + aaNumber + "<br>");
         }
         buffer.append(getLocusString());
         if (description != null) buffer.append("<br>" + description);
