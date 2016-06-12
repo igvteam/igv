@@ -88,6 +88,7 @@ public class BasicFeature extends AbstractFeature {
         this.link = feature.link;
         this.thickStart = feature.thickStart;
         this.thickEnd = feature.thickEnd;
+        this.attributes = feature.attributes;
     }
 
 
