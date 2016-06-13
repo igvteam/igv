@@ -1321,7 +1321,7 @@ public class TrackMenuUtils {
                 double location = frame.getChromosomePosition(mouseX);
                 if (f instanceof IGVFeature) {
                     String details =  f.getChr() + ":" + (f.getStart() + 1) + "-" + f.getEnd() +
-                            System.getProperty("line.separator");
+                            System.getProperty("line.separator") + System.getProperty("line.separator");
                     String valueString = ((IGVFeature) f).getValueString(location, null);
                     if (details != null) {
                         details += valueString;
