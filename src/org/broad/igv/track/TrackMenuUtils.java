@@ -466,25 +466,25 @@ public class TrackMenuUtils {
             Feature f = t.getFeatureAtMousePosition(te);
             if (f != null) {
                 featurePopupMenu.addSeparator();
+                featurePopupMenu.add(getCopyDetailsItem(f, te));
 
                 // If we are over an exon, copy its sequence instead of the entire feature.
-                if (f instanceof IGVFeature) {
+                Feature sequenceFeature = f;
+                if (sequenceFeature instanceof IGVFeature) {
                     double position = te.getChromosomePosition();
-                    Collection<Exon> exons = ((IGVFeature) f).getExons();
+                    Collection<Exon> exons = ((IGVFeature) sequenceFeature).getExons();
                     if (exons != null) {
                         for (Exon exon : exons) {
                             if (position > exon.getStart() && position < exon.getEnd()) {
-                                f = exon;
+                                sequenceFeature = exon;
                                 break;
                             }
                         }
                     }
                 }
 
-
-                featurePopupMenu.add(getCopyDetailsItem(f, te));
-                featurePopupMenu.add(getCopySequenceItem(f));
-                featurePopupMenu.add(getBlatItem(f));
+                featurePopupMenu.add(getCopySequenceItem(sequenceFeature));
+                featurePopupMenu.add(getBlatItem(sequenceFeature));
 
 
             }
@@ -1320,11 +1320,18 @@ public class TrackMenuUtils {
 
                 double location = frame.getChromosomePosition(mouseX);
                 if (f instanceof IGVFeature) {
-                    String details = ((IGVFeature) f).getValueString(location, null);
+                    String details =  f.getChr() + ":" + (f.getStart() + 1) + "-" + f.getEnd() +
+                            System.getProperty("line.separator");
+                    String valueString = ((IGVFeature) f).getValueString(location, null);
                     if (details != null) {
+                        details += valueString;
                         details = details.replace("<br>", System.getProperty("line.separator"));
-                        details += System.getProperty("line.separator") +
-                                f.getChr() + ":" + (f.getStart() + 1) + "-" + f.getEnd();
+                        details = details.replace("<br/>", System.getProperty("line.separator"));
+                        details = details.replace("<b>", "");
+                        details = details.replace("</b>", "");
+                        details = details.replace("&nbsp;", " ");
+                        details = details.replace("<hr>",
+                                System.getProperty("line.separator") + "--------------------------" + System.getProperty("line.separator"));
                         StringUtils.copyTextToClipboard(details);
                     }
                 }
