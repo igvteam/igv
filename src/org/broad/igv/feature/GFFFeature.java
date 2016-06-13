@@ -63,6 +63,7 @@ public class GFFFeature extends BasicFeature {
 
         StringBuffer valueString = new StringBuffer();
 
+        valueString.append("<b>Type:</b>&nbsp;" + this.type);
         if (attributes != null) {
             valueString.append(getAttributeString());
         }
@@ -78,6 +79,7 @@ public class GFFFeature extends BasicFeature {
 
     public void mergeAttributes(BasicFeature mrnaPart) {
         StringBuffer buf = new StringBuffer();
+        buf.append("<br><b>Type:</b>&nbsp;" + mrnaPart.getType());
         mrnaPart.getAttributes().printHtml(buf, 100);
         componentAttributes.add(buf.toString());
     }
