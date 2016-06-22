@@ -753,6 +753,11 @@ public class HttpUtils {
         return conn;
     }
 
+    /**
+     * Explicitly map cnames here.  Also fix other url migration issues.
+     * @param url
+     * @return
+     */
     private URL mapCname(URL url) {
 
         String host = url.getHost();

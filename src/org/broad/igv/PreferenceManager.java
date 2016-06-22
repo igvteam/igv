@@ -283,7 +283,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String DB_NAME = "DB_NAME";
     public static final String DB_PORT = "DB_PORT";
     public static final String DEFAULT_GENOME_URL = "http://igv.broadinstitute.org/genomes/genomes.txt";
-    public static final String DEFAULT_DATA_URL = "http://data.broadinstitute.org/igvdata/$$_dataServerRegistry.txt";
+    public static final String DEFAULT_DATA_URL = "https://data.broadinstitute.org/igvdata/$$_dataServerRegistry.txt";
 
     public static final String IGV_PLUGIN_LIST_KEY = "IGV_PLUGIN_LIST";
 

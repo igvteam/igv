@@ -327,7 +327,9 @@ public class AlignmentPacker {
                 return type.name();
             case MATE_CHROMOSOME:
                 ReadMate mate = al.getMate();
-                if (mate == null) return null;
+                if (mate == null) {
+                    return null;
+                }
                 return mate.getChr();
             case SUPPLEMENTARY:
                 return String.valueOf(!al.isSupplementary());
