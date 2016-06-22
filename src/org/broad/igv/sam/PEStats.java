@@ -55,7 +55,9 @@ public class PEStats {
     int f1f2Count = 0;
     int f2f1Count = 0;
 
-    Orientation orientation = null;
+    int totalCount = 0;
+
+    Orientation orientation = Orientation.FR;
 
 
     /**
@@ -76,41 +78,38 @@ public class PEStats {
 
     public void update(Alignment alignment) {
 
-        insertSizes.add(Math.abs(alignment.getInferredInsertSize()));
+        if (alignment.isProperPair()) {
+            insertSizes.add(Math.abs(alignment.getInferredInsertSize()));
+            String po = alignment.getPairOrientation();
+            if (po != null && po.length() == 4) {
+                if (po.charAt(0) == 'F') {
+                    if (po.charAt(2) == 'F') {
+                        if (po.charAt(1) == '1') {
+                            f1f2Count++;
+                        } else {
+                            f2f1Count++;
+                        }
+                    } else if (po.charAt(2) == 'R') {
+                        frCount++;
 
-        String po = alignment.getPairOrientation();
-        if (po != null && po.length() == 4) {
-            if (po.charAt(0) == 'F') {
-                if (po.charAt(2) == 'F') {
-                    if (po.charAt(1) == '1') {
-                        f1f2Count++;
-                    } else {
-                        f2f1Count++;
                     }
-                } else if (po.charAt(2) == 'R') {
-                    frCount++;
-
-                }
-            } else if (po.charAt(0) == 'R') {
-                if (po.charAt(2) == 'F') {
-                    rfCount++;
-                } else if (po.charAt(2) == 'R') {
-                    if (po.charAt(1) == '1') {
-                        f2f1Count++;
-                    } else {
-                        f1f2Count++;
+                } else if (po.charAt(0) == 'R') {
+                    if (po.charAt(2) == 'F') {
+                        rfCount++;
+                    } else if (po.charAt(2) == 'R') {
+                        if (po.charAt(1) == '1') {
+                            f2f1Count++;
+                        } else {
+                            f1f2Count++;
+                        }
                     }
                 }
             }
-        }
-
-        // Force recomputation of orientation
-        synchronized (this) {
-            orientation = null;
+            totalCount++;
         }
     }
 
-    public void compute(double minPercentile, double maxPercentile) {
+    public void computeInsertSize(double minPercentile, double maxPercentile) {
 
         if (insertSizes.size() > 100) {
             minThreshold = computePercentile(minPercentile);
@@ -129,8 +128,16 @@ public class PEStats {
         return maxThreshold;
     }
 
-    public synchronized Orientation getOrientation() {
+    public Orientation getOrientation() {
         if (orientation == null) {
+            computeExpectedOrientation();
+        }
+        return orientation;
+    }
+
+    public void computeExpectedOrientation() {
+
+        if(totalCount > 100) {
             int ffCount = f1f2Count + f2f1Count;
             if (ffCount > frCount && ffCount > rfCount) {
                 if (f1f2Count > f2f1Count) {
@@ -144,7 +151,9 @@ public class PEStats {
                 orientation = Orientation.FR;
             }
         }
-        return orientation;
+        else {
+            orientation = Orientation.FR;
+        }
     }
 
     private int computePercentile(double percentile) {
