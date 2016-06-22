@@ -231,9 +231,12 @@ public class AlignmentTileLoader {
                 double minPercentile = prefMgr.getAsFloat(PreferenceManager.SAM_MIN_INSERT_SIZE_PERCENTILE);
                 double maxPercentile = prefMgr.getAsFloat(PreferenceManager.SAM_MAX_INSERT_SIZE_PERCENTILE);
                 for (PEStats stats : peStats.values()) {
-                    stats.compute(minPercentile, maxPercentile);
+                    stats.computeInsertSize(minPercentile, maxPercentile);
+                    stats.computeExpectedOrientation();
                 }
             }
+
+
 
             // Clean up any remaining unmapped mate sequences
             for (String mappedMateName : mappedMates.getKeys()) {

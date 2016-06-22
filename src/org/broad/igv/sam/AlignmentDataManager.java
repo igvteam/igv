@@ -415,7 +415,7 @@ public class AlignmentDataManager implements IAlignmentDataManager {
     public void updatePEStats(AlignmentTrack.RenderOptions renderOptions) {
         if (this.peStats != null) {
             for (PEStats stats : peStats.values()) {
-                stats.compute(renderOptions.getMinInsertSizePercentile(), renderOptions.getMaxInsertSizePercentile());
+                stats.computeInsertSize(renderOptions.getMinInsertSizePercentile(), renderOptions.getMaxInsertSizePercentile());
             }
         }
     }
