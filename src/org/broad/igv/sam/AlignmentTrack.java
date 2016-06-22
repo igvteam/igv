@@ -237,9 +237,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
      */
     public void setExperimentType(ExperimentType type) {
         dataManager.setExperimentType(type);
-        if (spliceJunctionTrack != null) {
-            spliceJunctionTrack.setVisible(type != ExperimentType.BISULFITE);
-        }
     }
 
     public void setCoverageTrack(CoverageTrack coverageTrack) {
