@@ -132,12 +132,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer, IGVEvent
     }
 
     public void receiveEvent(Object e) {
-
-        if (e instanceof ViewChange && ((ViewChange) e).type == ViewChange.Type.ChromosomeChange) {
             synchRegions();
-        } else {
-            log.info("Unknown event type: " + e.getClass());
-        }
     }
 
     /**
@@ -770,8 +765,8 @@ public class RegionNavigatorDialog extends JDialog implements Observer, IGVEvent
                     loci.add(new RegionOfInterest(roi.getChr(), start, end, roi.getDescription()).getLocusString());
                 }
                 GeneList geneList = new GeneList("Regions of Interest", loci, false);
-                IGV.getInstance().getSession().setCurrentGeneList(geneList);
-                IGV.getInstance().resetFrames();
+                IGV.getInstance().setGeneList(geneList);
+             //   IGV.getInstance().resetFrames();
 
             }
             updateButtonsEnabled();

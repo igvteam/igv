@@ -138,6 +138,7 @@ public class FrameManager {
                 } else {
                     IGV.getInstance().getSession().setCurrentGeneList(null);
                     getDefaultFrame().jumpTo(locus.getChr(), locus.getStart(), locus.getEnd());
+                    frames.add(getDefaultFrame());
                 }
             } else {
                 for (String searchString : gl.getLoci()) {
