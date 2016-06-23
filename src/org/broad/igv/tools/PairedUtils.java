@@ -26,6 +26,7 @@
 package org.broad.igv.tools;
 
 import htsjdk.samtools.*;
+import htsjdk.samtools.cram.ref.ReferenceSource;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.sam.Alignment;
@@ -44,9 +45,10 @@ import java.util.*;
  */
 public class PairedUtils {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
-        extractInteractions(args[0], args[1], Integer.parseInt(args[2]));
+//        extractInteractions(args[0], args[1], Integer.parseInt(args[2]));
+        extractUnexpectedPairs(args[0], args[1]);
     }
 
     public static void extractInteractions(String alignmentFile, String outputFile, int binSize) {
@@ -141,15 +143,24 @@ public class PairedUtils {
 
     }
 
-    public static void extractFunnyPairs(String alignmentFile, String outputFile) throws IOException {
+    enum Orientation {FF, RF, FR, INTER}
 
+    ;
+
+    public static void extractUnexpectedPairs(String alignmentFile, String outputDir) throws IOException {
+
+       // Defaults.REFERENCE_FASTA = new File("/User/jrobinso/human_g1k_v37_decoy.fasta");
 
         htsjdk.samtools.SamReader reader = null;
-        SAMFileWriter writer = null;
+        SAMFileWriter ffWriter = null, rfWriter = null, interWriter = null, frWriter = null;
 
         try {
 
             final SamReaderFactory factory = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT);
+
+            File f = new File("/Users/jrobinso/Downloads/human_g1k_v37_decoy.fasta");
+            ReferenceSource rs = new ReferenceSource(f);
+            factory.referenceSource(rs);
 
             SeekableStream ss = new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(alignmentFile), 128000);
             SamInputResource resource = SamInputResource.of(ss);
@@ -160,7 +171,12 @@ public class PairedUtils {
             boolean preSorted = true;
             SAMFileWriterFactory wfactory = new SAMFileWriterFactory();
 
-            writer = wfactory.makeSAMOrBAMWriter(header, preSorted, new File(outputFile));
+            String pre = (new File(alignmentFile)).getName().replace(".bam", "");
+
+            ffWriter = wfactory.makeSAMOrBAMWriter(header, preSorted, new File(outputDir, pre + "_ff.bam"));
+            rfWriter = wfactory.makeSAMOrBAMWriter(header, preSorted, new File(outputDir, pre + "_rf.bam"));
+            frWriter = wfactory.makeSAMOrBAMWriter(header, preSorted, new File(outputDir, pre + "_fr.bam"));
+            interWriter = wfactory.makeSAMOrBAMWriter(header, preSorted, new File(outputDir, pre + "_inter.bam"));
 
 
             SAMRecordIterator iter = reader.iterator();
@@ -170,12 +186,29 @@ public class PairedUtils {
 
                 SAMRecord record = iter.next();
                 Alignment alignment = new PicardAlignment(record);
-                if (funnyPairFilter(alignment)) {
-                    writer.addAlignment(record);
+                if (alignment.isPaired() && alignment.getMate().isMapped() && !alignment.isProperPair()) {
+                    if (funnyPairFilter(alignment)) {
+                        Orientation orientation = getOrientation(alignment);
+                        if (orientation != null) {
+                            switch (orientation) {
+                                case FF:
+                                    ffWriter.addAlignment(record);
+                                    break;
+                                case RF:
+                                    rfWriter.addAlignment(record);
+                                    break;
+                                case FR:
+                                    frWriter.addAlignment(record);
+                                    break;
+                                case INTER:
+                                    interWriter.addAlignment(record);
+                                    break;
+                            }
+                        }
+                    }
                 }
-
                 count++;
-                //if(count > 1000000) break;
+                if (count % 1000000 == 0) System.out.println(count);
             }
 
             iter.close();
@@ -183,11 +216,30 @@ public class PairedUtils {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            writer.close();
+            ffWriter.close();
+            rfWriter.close();
+            frWriter.close();
+            interWriter.close();
             reader.close();
         }
+    }
 
-
+    private static Orientation getOrientation(Alignment alignment) {
+        if (!alignment.getChr().equals(alignment.getMate().getChr())) {
+            return Orientation.INTER;
+        } else {
+            String pairOrientation = alignment.getPairOrientation();
+            if (frTypes.contains(pairOrientation)) {
+                return Orientation.FR;
+            } else if (rfTypes.contains(pairOrientation)) {
+                return Orientation.RF;
+            } else if (ffTypes.contains(pairOrientation) || rrTypes.contains(pairOrientation)) {
+                return Orientation.FF;
+            } else {
+                System.out.println(pairOrientation);
+                return null;
+            }
+        }
     }
 
     private static int getOrder(String chr) {
@@ -214,7 +266,8 @@ public class PairedUtils {
 
     private static boolean funnyPairFilter(Alignment alignment) {
 
-        if (!(alignment.isPaired() && alignment.getMate().isMapped() && alignment.getMappingQuality() > 0)) return false;
+        if (!(alignment.isPaired() && alignment.getMate().isMapped() && alignment.getMappingQuality() > 0))
+            return false;
 
         // Orientation hard-coded for FR
         if (!(frTypes.contains(alignment.getPairOrientation()))) return true;
@@ -233,6 +286,7 @@ public class PairedUtils {
     }
 
     private static HashSet<String> frTypes = new HashSet<String>();
+
     static {
         frTypes.add("F1R2");
         frTypes.add("F2R1");
@@ -240,5 +294,30 @@ public class PairedUtils {
         frTypes.add("F R ");
     }
 
+    private static HashSet<String> rfTypes = new HashSet<String>();
 
+    static {
+        rfTypes.add("R2F1");
+        rfTypes.add("R1F2");
+        rfTypes.add("RF");
+        rfTypes.add("R F ");
+    }
+
+    private static HashSet<String> ffTypes = new HashSet<String>();
+
+    static {
+        ffTypes.add("F1F2");
+        ffTypes.add("F2F1");
+        ffTypes.add("FF");
+        ffTypes.add("F F ");
+    }
+
+    private static HashSet<String> rrTypes = new HashSet<String>();
+
+    static {
+        rrTypes.add("R1R2");
+        rrTypes.add("R2R1");
+        rrTypes.add("RR");
+        rrTypes.add("R R ");
+    }
 }

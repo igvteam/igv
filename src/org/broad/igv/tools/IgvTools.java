@@ -481,7 +481,7 @@ public class IgvTools {
             } else if (command.equalsIgnoreCase(CMD_CONTACTS)) {
                 PairedUtils.extractInteractions(ifile, nonOptionArgs[2], Integer.parseInt(nonOptionArgs[3]));
             } else if (command.equalsIgnoreCase(CMD_DISCORDANT)) {
-                PairedUtils.extractFunnyPairs(ifile, nonOptionArgs[2]);
+                PairedUtils.extractUnexpectedPairs(ifile, nonOptionArgs[2]);
             } else {
                 throw new PreprocessingException("Unknown command: " + argv[EXT_FACTOR]);
             }
