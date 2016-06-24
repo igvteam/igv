@@ -29,11 +29,7 @@
  */
 package org.broad.igv.sam.reader;
 
-import htsjdk.samtools.SAMFileHeader;
-import htsjdk.samtools.SAMFileReader;
-import htsjdk.samtools.ValidationStringency;
-import htsjdk.samtools.SAMRecordIterator;
-import htsjdk.samtools.SAMSequenceRecord;
+import htsjdk.samtools.*;
 import htsjdk.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.sam.EmptyAlignmentIterator;
@@ -96,6 +92,16 @@ public class BAMFileReader implements AlignmentReader<PicardAlignment> {
 
     private void loadHeader() {
         header = reader.getFileHeader();
+        validateSequenceLengths(header);
+    }
+
+    private void validateSequenceLengths(SAMFileHeader header) {
+        SAMSequenceDictionary dict = header.getSequenceDictionary();
+        for (SAMSequenceRecord seq : dict.getSequences()) {
+            if (seq.getSequenceLength() > 536870911) {
+                throw new RuntimeException("Sequence lengths > 2^29-1 are not supported");
+            }
+        }
     }
 
     public void close() throws IOException {
