@@ -65,6 +65,16 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
         this.locator = locator;
         reader = getSamReader(locator, requireIndex);
         header = reader.getFileHeader();
+        validateSequenceLengths(header);
+    }
+
+    private void validateSequenceLengths(SAMFileHeader header) {
+        SAMSequenceDictionary dict = header.getSequenceDictionary();
+        for (SAMSequenceRecord seq : dict.getSequences()) {
+           if(seq.getSequenceLength() > 536870911) {
+               throw new RuntimeException("Sequence lengths > 2^29-1 are not supported");
+           }
+        }
     }
 
     private SamReader getSamReader(ResourceLocator locator, boolean requireIndex) throws IOException {
