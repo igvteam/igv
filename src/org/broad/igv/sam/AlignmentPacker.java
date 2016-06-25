@@ -107,7 +107,7 @@ public class AlignmentPacker {
             Collections.sort(keys, groupComparator);
 
             for (String key : keys) {
-                if(key.equals(NULL_GROUP_VALUE)) continue;
+                if (key.equals(NULL_GROUP_VALUE)) continue;
                 List<Row> alignmentRows = new ArrayList<Row>(10000);
                 List<Alignment> group = groupedAlignments.get(key);
                 pack(group, isPairedAlignments, alignmentRows);
@@ -330,7 +330,11 @@ public class AlignmentPacker {
                 if (mate == null) {
                     return null;
                 }
-                return mate.getChr();
+                if (mate.isMapped() == false) {
+                    return "UNMAPPED";
+                } else {
+                    return mate.getChr();
+                }
             case SUPPLEMENTARY:
                 return String.valueOf(!al.isSupplementary());
         }
