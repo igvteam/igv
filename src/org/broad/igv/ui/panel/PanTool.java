@@ -101,7 +101,9 @@ public class PanTool extends AbstractDataPanelTool {
 
     @Override
     public ReferenceFrame getReferenceFame() {
-        if(referenceFrame != null) return referenceFrame;
+        if(referenceFrame != null) {
+            return referenceFrame;
+        }
         return super.getReferenceFame();
     }
 
@@ -109,7 +111,7 @@ public class PanTool extends AbstractDataPanelTool {
 
         if (isDragging) {
             isDragging = false;
-            referenceFrame.dragStopped();
+            getReferenceFame().dragStopped();
         }
         Component panel = (Component) e.getSource();
         panel.setCursor(getCursor());
