@@ -43,6 +43,7 @@ import org.broad.igv.feature.Cytoband;
 import org.broad.igv.renderer.CytobandRenderer;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.WaitCursorManager;
+import org.broad.igv.ui.event.IGVEventBus;
 import org.broad.igv.ui.event.ViewChange;
 
 import javax.swing.*;
@@ -173,7 +174,7 @@ public class CytobandPanel extends JPanel {
 
                     ViewChange result =  ViewChange.Result();
                     result.setRecordHistory(true);
-                    getReferenceFrame().getEventBus().post(result);
+                    IGVEventBus.getInstance().post(result);
 
                 } finally {
                     WaitCursorManager.removeWaitCursor(token);

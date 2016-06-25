@@ -33,7 +33,6 @@ package org.broad.igv.ui.panel;
 
 import org.broad.igv.ui.AbstractDataPanelTool;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.event.DragStoppedEvent;
 
 import javax.swing.*;
 import java.awt.*;
@@ -110,7 +109,7 @@ public class PanTool extends AbstractDataPanelTool {
 
         if (isDragging) {
             isDragging = false;
-            getReferenceFame().getEventBus().post(new DragStoppedEvent());
+            referenceFrame.dragStopped();
         }
         Component panel = (Component) e.getSource();
         panel.setCursor(getCursor());

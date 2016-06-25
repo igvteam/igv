@@ -38,7 +38,6 @@ import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.event.DragStoppedEvent;
 import org.broad.igv.ui.event.IGVEventBus;
 import org.broad.igv.ui.event.IGVEventObserver;
 import org.broad.igv.ui.event.ViewChange;
@@ -49,16 +48,15 @@ import org.broad.igv.util.LongRunningTask;
 /**
  * @author jrobinso
  */
-public class ReferenceFrame implements IGVEventObserver {
+public class ReferenceFrame {
 
     private static Logger log = Logger.getLogger(ReferenceFrame.class);
-
-    boolean visible = true;
-
     /**
      * The nominal viewport width in pixels.
      */
     public static int binsPerTile = 700;
+
+    boolean visible = true;
 
     private String name;
 
@@ -127,7 +125,6 @@ public class ReferenceFrame implements IGVEventObserver {
         this.name = name;
         Genome genome = getGenome();
         this.chrName = genome == null ? "" : genome.getHomeChromosome();
-        subscribe();
     }
 
 
@@ -149,28 +146,25 @@ public class ReferenceFrame implements IGVEventObserver {
         this.widthInPixels = otherFrame.widthInPixels;
         this.zoom = otherFrame.zoom;
         this.maxZoom = otherFrame.maxZoom;
-        subscribe();
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 
     public IGVEventBus getEventBus() {
         return IGVEventBus.getInstance();
     }
 
-    private void subscribe() {
-        getEventBus().subscribe(DragStoppedEvent.class, this);
+
+    public void dragStopped() {
+        setOrigin(Math.round(origin));   // Snap to gride
+        getEventBus().post(ViewChange.Result());
     }
-
-
-    public void receiveEvent(Object event) {
-        if (event.getClass() == DragStoppedEvent.class) {
-            DragStoppedEvent e = (DragStoppedEvent) event;
-            setOrigin(Math.round(origin));   // Snap to gride
-            getEventBus().post(ViewChange.Result());
-        } else {
-            log.info("Unknown event type: " + event.getClass());
-        }
-    }
-
 
     public void changeChromosome(String chrName, boolean recordHistory) {
         boolean changed = setChromosomeName(chrName, false);
@@ -190,13 +184,6 @@ public class ReferenceFrame implements IGVEventObserver {
         getEventBus().post(result);
     }
 
-    public boolean isVisible() {
-        return visible;
-    }
-
-    public void setVisible(boolean visible) {
-        this.visible = visible;
-    }
 
     /**
      * Set the position and width of the frame, in pixels
@@ -306,13 +293,7 @@ public class ReferenceFrame implements IGVEventObserver {
             chrName = getGenome().getHomeChromosome();
         }
 
-        if (chrName.equals(Globals.CHR_ALL)) {
-            // Translate the location to chromosome number
-            synchronized (this) {
-                jumpToChromosomeForGenomeLocation(newCenter);
-            }
-            //IGV.getInstance().chromosomeChangeEvent(chrName);
-        } else {
+        if (!chrName.equals(Globals.CHR_ALL)) {
             setZoom(newZoom);
             // Adjust origin so newCenter is centered
             centerOnLocation(newCenter);
@@ -749,5 +730,5 @@ public class ReferenceFrame implements IGVEventObserver {
     public int getStateHash() {
         return (chrName + origin + locationScale + widthInPixels).hashCode();
     }
-
 }
+
