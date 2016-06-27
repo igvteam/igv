@@ -158,6 +158,7 @@ public class REPMaskCodec extends AsciiFeatureCodec<BasicFeature> {
         int start = Integer.parseInt(tokens[6]);
         int end = Integer.parseInt(tokens[7]);
         BasicFeature feature = new BasicFeature(chr, start, end);
+        feature.setRepresentation(nextLine);
 
         String strandString = tokens[3].trim();
         char strand = (strandString.length() == 0) ? ' ' : strandString.charAt(0);

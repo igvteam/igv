@@ -45,6 +45,7 @@ import java.util.Map;
 public class TrackProperties {
 
     private static Logger log = Logger.getLogger(TrackProperties.class);
+    private String trackLine;
 
     public enum BaseCoord {
         ZERO, ONE, UNSPECIFIED
@@ -150,6 +151,15 @@ public class TrackProperties {
 
     public TrackProperties() {
 
+    }
+
+
+    public void setTrackLine(String trackLine) {
+        this.trackLine = trackLine;
+    }
+
+    public String getTrackLine() {
+        return this.trackLine;
     }
 
     public boolean isSortable() {
