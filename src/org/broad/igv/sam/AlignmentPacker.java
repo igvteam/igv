@@ -316,7 +316,6 @@ public class AlignmentPacker {
             case FIRST_OF_PAIR_STRAND:
                 Strand strand = al.getFirstOfPairStrand();
                 String strandString = strand == Strand.NONE ? null : strand.toString();
-                System.out.println(strandString);
                 return strandString;
             case PAIR_ORIENTATION:
                 PEStats peStats = AlignmentRenderer.getPEStats(al, renderOptions);
