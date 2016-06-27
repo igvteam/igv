@@ -246,7 +246,7 @@ public class FeatureTrack extends AbstractTrack {
             return 0;
         }
         int rowHeight = getDisplayMode() == DisplayMode.SQUISHED ? squishedRowHeight : expandedRowHeight;
-        int minHeight = rowHeight * Math.max(1, getNumberOfFeatureLevels());
+        int minHeight = margin + rowHeight * Math.max(1, getNumberOfFeatureLevels());
         return Math.max(minHeight, super.getHeight());
     }
 
@@ -509,18 +509,22 @@ public class FeatureTrack extends AbstractTrack {
      * @return
      */
     private int getFeatureRow(int y) {
-        // Determine the level number (for expanded tracks).
-        int featureRow = 0;
-        if (levelRects != null) {
-            for (int i = 0; i < levelRects.size(); i++) {
-                Rectangle r = levelRects.get(i);
-                if ((y >= r.y) && (y <= r.getMaxY())) {
-                    featureRow = i;
-                    break;
-                }
-            }
+
+        int rowHeight;
+        DisplayMode mode = getDisplayMode();
+        switch(mode) {
+            case SQUISHED:
+                rowHeight = getSquishedRowHeight();
+                break;
+            case EXPANDED:
+                rowHeight = getExpandedRowHeight();
+                break;
+            default:
+                rowHeight = getHeight();
         }
-        return featureRow;
+
+       return Math.max(0, Math.min(levelRects.size()-1, (int) ((y - this.getY() - this.margin)/ rowHeight)));
+
     }
 
     /**
@@ -824,7 +828,7 @@ public class FeatureTrack extends AbstractTrack {
                     levelRects.clear();
 
                     // Divide rectangle into equal height levels
-                    double h = inputRect.getHeight() / nLevels;
+                    double h = getDisplayMode() == DisplayMode.SQUISHED ? squishedRowHeight : expandedRowHeight;
                     Rectangle rect = new Rectangle(inputRect.x, inputRect.y, inputRect.width, (int) h);
                     int i = 0;
 
