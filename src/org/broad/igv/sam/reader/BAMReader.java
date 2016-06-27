@@ -71,9 +71,9 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
     private void validateSequenceLengths(SAMFileHeader header) {
         SAMSequenceDictionary dict = header.getSequenceDictionary();
         for (SAMSequenceRecord seq : dict.getSequences()) {
-           if(seq.getSequenceLength() > 536870911) {
-               throw new RuntimeException("Sequence lengths > 2^29-1 are not supported");
-           }
+            if (seq.getSequenceLength() > 536870911) {
+                throw new RuntimeException("Sequence lengths > 2^29-1 are not supported");
+            }
         }
     }
 
@@ -208,18 +208,33 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
 
         String indexPath;
 
-        if (pathOrURL.toLowerCase().startsWith("http://") || pathOrURL.toLowerCase().startsWith("https://")) {
+        if (FileUtils.isRemote(pathOrURL)) {
 
-            // See if bam file is specified by parameter
+            // Try .bam.bai
             indexPath = getIndexURL(pathOrURL, ".bai");
-            if (FileUtils.resourceExists(indexPath)) {
+            pathsTried.add(indexPath);
+            if (HttpUtils.getInstance().resourceAvailable(new URL(indexPath))) {
                 return indexPath;
-            } else if (pathOrURL.endsWith(".cram")) {
-                indexPath = getIndexURL(pathOrURL, ".crai");
-                if (FileUtils.resourceExists(indexPath)) {
+            }
+
+            // Try .bai
+            if (pathOrURL.endsWith(".bam")) {
+                indexPath = getIndexURL(pathOrURL.substring(0, pathOrURL.length() - 4), ".bai");
+                pathsTried.add(indexPath);
+                if (HttpUtils.getInstance().resourceAvailable(new URL(indexPath))) {
                     return indexPath;
                 }
             }
+
+            // Try cram
+            if(pathOrURL.endsWith(".cram")) {
+                indexPath = getIndexURL(pathOrURL, ".crai");
+                if (FileUtils.resourceExists(indexPath)) {
+                    pathsTried.add(indexPath);
+                    return indexPath;
+                }
+            }
+
         } else {
             // Local file
 
