@@ -137,6 +137,7 @@ public class UCSCGeneTableCodec extends UCSCCodec<BasicFeature> {
         }
 
         BasicFeature gene = new BasicFeature(chr, start, end, strand);
+        gene.setRepresentation(line);
 
         gene.setName(name);
         gene.setIdentifier(identifier);

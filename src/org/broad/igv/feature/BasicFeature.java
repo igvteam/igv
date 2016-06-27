@@ -42,6 +42,7 @@ public class BasicFeature extends AbstractFeature {
 
     private static Logger log = Logger.getLogger(BasicFeature.class);
 
+    String representation;
     protected List<Exon> exons;
     protected int level = 1;
     protected float score = Float.NaN;
@@ -91,6 +92,13 @@ public class BasicFeature extends AbstractFeature {
         this.attributes = feature.attributes;
     }
 
+    public String getRepresentation() {
+        return representation;
+    }
+
+    public void setRepresentation(String representation) {
+        this.representation = representation;
+    }
 
     /**
      * @param identifier

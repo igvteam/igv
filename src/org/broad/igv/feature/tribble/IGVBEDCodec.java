@@ -256,7 +256,9 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
         }
 
         tokens = Globals.whitespacePattern.split(trimLine);
-        return decode(tokens);
+        BasicFeature feature = decode(tokens);
+        feature.setRepresentation(nextLine);
+        return feature;
     }
 
 
@@ -318,6 +320,11 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
      * @return the encoded string
      */
     public String encode(Feature feature) {
+
+        if(feature instanceof BasicFeature) {
+            String rep = ((BasicFeature) feature).getRepresentation();
+            if(rep != null) return rep;
+        }
 
         StringBuffer buffer = new StringBuffer();
 

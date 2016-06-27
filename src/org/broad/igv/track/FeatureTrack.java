@@ -144,6 +144,8 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     //With this set to false, it chooses depending on the source
     private boolean forceLoadSync = false;
 
+    String trackLine = null;
+
     // TODO -- there are WAY too many constructors for this class
 
     /**
@@ -1144,13 +1146,18 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     }
 
+
+    public void setTrackLine(String trackLine) {
+        this.trackLine = trackLine;
+    }
+
     /**
      * Return "track" line information for exporting features to a file.  Default is null, subclasses may override.
      *
      * @return
      */
     public String getExportTrackLine() {
-        return null;
+        return trackLine;
     }
 }
 

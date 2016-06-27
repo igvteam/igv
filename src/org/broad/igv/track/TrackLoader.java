@@ -398,7 +398,9 @@ public class TrackLoader {
                     t.setTrackType(ffh.getTrackType());
                 }
                 if (ffh.getTrackProperties() != null) {
-                    t.setProperties(ffh.getTrackProperties());
+                    TrackProperties tp = ffh.getTrackProperties();
+                    t.setProperties(tp);
+                    t.setTrackLine(tp.getTrackLine());
                 }
 
                 if (ffh.getTrackType() == TrackType.REPMASK) {

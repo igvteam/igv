@@ -347,6 +347,9 @@ public class ParsingUtils {
 
         boolean foundProperties = false;
         try {
+
+            trackProperties.setTrackLine(nextLine);
+
             // track type=wiggle_0 name="CSF +" description="CSF +" visibility=full autoScale=off viewLimits=-50:50
             List<String> tokens = StringUtils.breakQuotedString(nextLine, ' ');
             for (String pair : tokens) {

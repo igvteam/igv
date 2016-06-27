@@ -305,7 +305,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
     }
 
 
-    protected interface Helper {
+    public interface Helper {
 
         String[] getParentIds(MultiMap<String, String> attributes, String attributeString);
 
