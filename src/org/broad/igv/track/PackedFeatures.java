@@ -48,7 +48,7 @@ public class PackedFeatures<T extends Feature>{
     protected List<FeatureRow> rows;
     private static Logger log = Logger.getLogger(PackedFeatures.class);
     protected int maxFeatureLength = 0;
-    protected static int maxLevels = 200;
+    protected static int maxLevels = 1000000;
 
     /**
      * No-arg constructor to allow subclassing
