@@ -176,12 +176,10 @@ public class BAMHttpReader implements AlignmentReader<PicardAlignment> {
 
         // Strip parameters
 
-
+        pathsTried.add(indexPath);
         if (HttpUtils.getInstance().resourceAvailable(new URL(indexPath))) {
             return IGVSeekableStreamFactory.getInstance().getStreamFor(new URL(indexPath));
         } else {
-
-
             if (indexPath.contains(".bam.bai")) {
                 indexPath = indexPath.replaceFirst(".bam.bai", ".bai");
                 pathsTried.add(indexPath);
@@ -201,7 +199,7 @@ public class BAMHttpReader implements AlignmentReader<PicardAlignment> {
 
         String msg = "Index file not found.  Tried ";
         for (String path : pathsTried) {
-            msg += "<br>" + indexPath;
+            msg += "<br>" + path;
         }
         throw new DataLoadException(msg, indexPath);
 
