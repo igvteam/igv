@@ -410,23 +410,30 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
                     java.util.List<Exon> exons = basicFeature.getExons();
 
 
+                    int thickStart, thickEnd;
                     if (basicFeature.getColor() != null || exons != null) {
 
                         // Correct "thickStart" and "thickEnd"
-                        int thickStart = basicFeature.getEnd();   // This is not a typo
-                        for(Exon ex : exons) {
-                            if(!ex.isNonCoding()) {
-                                thickStart = ex.getCdStart();
-                                break;
+                        if(exons != null && exons.size() > 0) {
+                             thickStart = basicFeature.getEnd();   // This is not a typo
+                            for (Exon ex : exons) {
+                                if (!ex.isNonCoding()) {
+                                    thickStart = ex.getCdStart();
+                                    break;
+                                }
+                            }
+                             thickEnd = basicFeature.getStart();    // Not a typo
+                            for (int i = exons.size() - 1; i >= 0; i--) {
+                                Exon ex = exons.get(i);
+                                if (!ex.isNonCoding()) {
+                                    thickEnd = ex.getCdEnd();
+                                    break;
+                                }
                             }
                         }
-                        int thickEnd = basicFeature.getStart();    // Not a typo
-                        for(int i = exons.size() - 1; i >= 0; i--) {
-                            Exon ex = exons.get(i);
-                            if(!ex.isNonCoding()) {
-                                thickEnd = ex.getCdEnd();
-                                break;
-                            }
+                        else {
+                            thickStart = ((BasicFeature) feature).getThickStart();
+                            thickEnd = ((BasicFeature) feature).getThickEnd();
                         }
 
 
