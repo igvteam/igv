@@ -510,7 +510,7 @@ public abstract class SAMAlignment implements Alignment {
                 }
                 buf.append("<br>").append(spos);
                 buf.append("<br>");
-                // maybe also add flow order?                
+                // maybe also add flow order?
             }
         }
     }
@@ -535,7 +535,7 @@ public abstract class SAMAlignment implements Alignment {
             buf.append("Sample = " + sample + "<br>");
         }
         String readGroup = getReadGroup();
-        if (sample != null) {
+        if (readGroup != null) {
             buf.append("Read group = " + readGroup + "<br>");
         }
 
