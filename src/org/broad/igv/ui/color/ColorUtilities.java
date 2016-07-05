@@ -184,7 +184,7 @@ public class ColorUtilities {
     }
 
     public static Color stringToColor(String string) {
-       return stringToColor(string, Color.black);
+        return stringToColor(string, Color.black);
     }
 
     public static Color stringToColor(String string, Color defaultColor) {
@@ -395,11 +395,79 @@ public class ColorUtilities {
 
     /**
      * Return a new Color, same as the old, but with a new alpha value
+     *
      * @param oldColor
      * @param newAlpha
      * @return
      */
-    public static Color modifyAlpha(Color oldColor, int newAlpha){
+    public static Color modifyAlpha(Color oldColor, int newAlpha) {
         return new Color(oldColor.getRed(), oldColor.getGreen(), oldColor.getBlue(), newAlpha);
     }
+
+    /**
+     * Converts an HSL color value to RGB. Conversion formula
+     * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
+     *
+     * @param h The hue  [0, 360]
+     * @param s The saturation  [0, 1]
+     * @param l The lightness  [0, 1]
+     * @return The RGB representation
+     */
+    public static int[] hslToRgb(double h, double s, double l) {
+
+        double c = (1 - Math.abs(2 * l - 1)) * s;
+
+        double hprime = h / 60;
+        double x = c * (1 - Math.abs(hprime % 2 - 1));
+        double r, g, b;
+
+        if (hprime < 1) {
+            r = c;
+            g = x;
+            b = 0;
+        } else if (hprime < 2) {
+            r = x;
+            g = c;
+            b = 0;
+        } else if (hprime < 3) {
+            r = 0;
+            g = c;
+            b = x;
+        } else if (hprime < 4) {
+            r = 0;
+            g = x;
+            b = c;
+        } else if (hprime < 5) {
+            r = x;
+            g = 0;
+            b = c;
+        } else {
+            r = c;
+            g = 0;
+            b = x;
+        }
+        double m = l - 0.5 * c;
+
+        return new int[]{
+                (int) ((r + m) * 255),
+                (int) ((g + m) * 255),
+                (int) ((b + m) * 255)
+        };
+//        int r, g, b;
+//
+//        if (s == 0) {
+//            r = g = b = (int) (255 * l); // achromatic
+//        } else {
+//            double q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+//            double p = 2 * l - q;
+//            r = (int) (255 * hue2rgb(p, q, h + 1 / 3));
+//            g = (int) (255 * hue2rgb(p, q, h));
+//            b = (int) (255 * hue2rgb(p, q, h - 1 / 3));
+//        }
+//
+//        return new int[]{r, g, b};
+    }
+
+
+
 }

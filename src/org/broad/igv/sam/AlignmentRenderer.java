@@ -38,10 +38,7 @@ import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
 import org.broad.igv.sam.BisulfiteBaseInfo.DisplayStatus;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.color.ColorPalette;
-import org.broad.igv.ui.color.ColorTable;
-import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.igv.ui.color.PaletteColorTable;
+import org.broad.igv.ui.color.*;
 import org.broad.igv.util.ChromosomeColors;
 
 import java.awt.*;
@@ -82,7 +79,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     private ColorTable readGroupColors;
     private ColorTable sampleColors;
-    private ColorTable tagValueColors;
+    private Map<String, ColorTable> tagValueColors;
 
     private final Color LR_COLOR = grey1; // "Normal" alignment color
     //private final Color LR_COLOR_12 = new Color(190, 190, 210);
@@ -259,9 +256,9 @@ public class AlignmentRenderer implements FeatureRenderer {
         ColorPalette palette = ColorUtilities.getPalette("Pastel 1");  // TODO let user choose
         readGroupColors = new PaletteColorTable(palette);
         sampleColors = new PaletteColorTable(palette);
-        tagValueColors = new PaletteColorTable(palette);
+        tagValueColors = new HashMap();
 
-        typeToColorMap = new HashMap<AlignmentTrack.OrientationType, Color>(5);
+        typeToColorMap = new HashMap<>(5);
         typeToColorMap.put(AlignmentTrack.OrientationType.LL, LL_COLOR);
         typeToColorMap.put(AlignmentTrack.OrientationType.LR, LR_COLOR);
         typeToColorMap.put(AlignmentTrack.OrientationType.RL, RL_COLOR);
@@ -275,7 +272,8 @@ public class AlignmentRenderer implements FeatureRenderer {
     public void renderAlignments(List<Alignment> alignments,
                                  RenderContext context,
                                  Rectangle rowRect,
-                                 Rectangle trackRect, RenderOptions renderOptions,
+                                 Rectangle trackRect,
+                                 RenderOptions renderOptions,
                                  boolean leaveMargin,
                                  Map<String, Color> selectedReadNames) {
 
@@ -431,7 +429,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             Rectangle rowRect,
             Rectangle trackRect,
             RenderContext context,
-            AlignmentTrack.RenderOptions renderOptions,
+            RenderOptions renderOptions,
             boolean leaveMargin,
             Map<String, Color> selectedReadNames,
             Font font) {
@@ -1090,7 +1088,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         }
     }
 
-    private Color getAlignmentColor(Alignment alignment, AlignmentTrack.RenderOptions renderOptions) {
+    private Color getAlignmentColor(Alignment alignment, RenderOptions renderOptions) {
 
         // Set color used to draw the feature.  Highlight features that intersect the
         // center line.  Also restorePersistentState row "score" if alignment intersects center line
@@ -1189,7 +1187,21 @@ public class AlignmentRenderer implements FeatureRenderer {
                 if (tag != null) {
                     Object tagValue = alignment.getAttribute(tag);
                     if (tagValue != null) {
-                        c = tagValueColors.get(tagValue.toString());
+                        String groupByTag = renderOptions.getGroupByTag();
+                        String group = "%%%%%%%%%%%%%%%%%%%%%%%%";
+                        if (groupByTag != null) {
+                            Object g = alignment.getAttribute(groupByTag);
+                            group = g == null ? "" : g.toString();
+                        }
+
+
+                        ColorTable ctable = tagValueColors.get(group);
+                        if (ctable == null) {
+                            ctable = new HSLColorTable(group);
+                            tagValueColors.put(group, ctable);
+                        }
+                        c = ctable.get(tagValue.toString());
+
                     }
                 }
                 break;
@@ -1343,25 +1355,6 @@ public class AlignmentRenderer implements FeatureRenderer {
         }
 
         return type;
-    }
-
-    /**
-     * Similar to "pair orientation" color, but this method does not attempt to interpret orientations.
-     *
-     * @param alignment
-     * @return
-     */
-    private Color getTemplateStrandColor(Alignment alignment) {
-
-        Color c = null;
-        if (alignment.isPaired()) {
-
-            final String pairOrientation = alignment.getPairOrientation();
-            return tagValueColors.get(pairOrientation);
-        }
-
-        return c == null ? grey1 : c;
-
     }
 
     public SortedSet<Shape> curveOverlap(double x) {
