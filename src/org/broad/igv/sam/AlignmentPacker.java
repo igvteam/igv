@@ -157,6 +157,9 @@ public class AlignmentPacker {
         }
 
 
+        // IF view by barcode
+        alList = groupByBarcode(alList);
+
         int curRangeStart = curRange.getStart();
         for (Alignment al : alList) {
 
@@ -177,7 +180,6 @@ public class AlignmentPacker {
 
                     }
                 }
-
                 // Negative "bucketNumbers" can arise with soft clips at the left edge of the chromosome. Allocate
                 // these alignments to the first bucket.
                 int bucketNumber = Math.max(0, al.getStart() - curRangeStart);
@@ -253,6 +255,28 @@ public class AlignmentPacker {
         }
 
 
+    }
+
+    private List<Alignment> groupByBarcode(List<Alignment> alList) {
+
+        List<Alignment> bcList = new ArrayList<>(alList.size() / 10);
+        Map<String, ExtendedAlignment> map = new HashMap<>(bcList.size() * 2);
+
+        for (Alignment a : alList) {
+            String bc = (String) a.getAttribute("BX");
+            if (bc == null) {
+                bcList.add(a);
+            } else {
+                ExtendedAlignment ea = map.get(bc);
+                if (ea == null) {
+                    ea = new ExtendedAlignment(bc);
+                    map.put(bc, ea);
+                    bcList.add(ea);
+                }
+                ea.addAlignment(a);
+            }
+        }
+        return bcList;
     }
 
 
@@ -340,7 +364,7 @@ public class AlignmentPacker {
         return null;
     }
 
-    static interface BucketCollection {
+    interface BucketCollection {
 
         Range getRange();
 
@@ -405,14 +429,13 @@ public class AlignmentPacker {
             while (bucketNumber < bucketArray.length) {
 
                 if (bucketNumber < 0) {
-                    System.out.println();
+                    log.info("Negative bucket number: " + bucketNumber);
                 }
 
                 bucket = bucketArray[bucketNumber];
                 if (bucket != null) {
                     if (bucket.isEmpty()) {
                         bucketArray[bucketNumber] = null;
-                        bucket = null;
                     } else {
                         return bucket;
                     }
