@@ -40,6 +40,8 @@ import org.broad.igv.track.WindowFunction;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author jrobinso
@@ -539,9 +541,16 @@ public abstract class SAMAlignment implements Alignment {
             buf.append("Read group = " + readGroup + "<br>");
         }
 
+
         String cigarString = getCigarString();
-        if (cigarString.length() > 80) {
-            cigarString = cigarString.substring(0, 80) + "...";
+        // Abbreviate long CIGAR strings.  Retain the start and end of the CIGAR, which show
+        // clipping; trim the middle.
+        int maxCigarStringLength = 60;
+        if (cigarString.length() > maxCigarStringLength) {
+            // Match only full <length><operator> pairs at the beginning and end of the string.
+            Matcher lMatcher = Pattern.compile("^(.{1," + Integer.toString(maxCigarStringLength/2 - 1) + "}[A-Z])").matcher(cigarString);
+            Matcher rMatcher = Pattern.compile("[A-Z](.{1," + Integer.toString(maxCigarStringLength/2) + "})$").matcher(cigarString);
+            cigarString = (lMatcher.find() ? lMatcher.group(1) : "") + "..." + (rMatcher.find() ? rMatcher.group(1) : "");
         }
 
         buf.append("----------------------" + "<br>");
