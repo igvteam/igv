@@ -553,11 +553,49 @@ public abstract class SAMAlignment implements Alignment {
             cigarString = (lMatcher.find() ? lMatcher.group(1) : "") + "..." + (rMatcher.find() ? rMatcher.group(1) : "");
         }
 
+        // Identify the number of hard and soft clipped bases.
+        Matcher lclipMatcher = Pattern.compile("^(([0-9]+)H)?(([0-9]+)S)?").matcher(cigarString);
+        Matcher rclipMatcher = Pattern.compile("(([0-9]+)S)?(([0-9]+)H)?$").matcher(cigarString);
+        int lclipHard = 0, lclipSoft = 0, rclipHard = 0, rclipSoft = 0;
+        if (lclipMatcher.find()) {
+            lclipHard = lclipMatcher.group(2) == null ? 0 : Integer.parseInt(lclipMatcher.group(2),10);
+            lclipSoft = lclipMatcher.group(4) == null ? 0 : Integer.parseInt(lclipMatcher.group(4),10);
+        }
+        if (rclipMatcher.find()) {
+            rclipHard = rclipMatcher.group(4) == null ? 0 : Integer.parseInt(rclipMatcher.group(4),10);
+            rclipSoft = rclipMatcher.group(2) == null ? 0 : Integer.parseInt(rclipMatcher.group(2),10);
+        }
+
         buf.append("----------------------" + "<br>");
         int basePosition = (int) position;
         buf.append("Location = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
         buf.append("Alignment start = " + Globals.DECIMAL_FORMAT.format(getAlignmentStart() + 1) + " (" + (isNegativeStrand() ? "-" : "+") + ")<br>");
         buf.append("Cigar = " + cigarString + "<br>");
+        buf.append("Clipping = ");
+        if (lclipHard + lclipSoft + rclipHard + rclipSoft == 0) {
+            buf.append("None");
+        }
+        else {
+            if (lclipHard + lclipSoft > 0) {
+                buf.append("Left");
+                if (lclipHard > 0) {
+                    buf.append(" " + Globals.DECIMAL_FORMAT.format(lclipHard) + " hard");
+                }
+                if (lclipSoft > 0) {
+                    buf.append(" " + Globals.DECIMAL_FORMAT.format(lclipSoft) + " soft");
+                }
+            }
+            if (rclipHard + rclipSoft > 0) {
+                buf.append((lclipHard + lclipSoft > 0 ? "; " : "") + "Right");
+                if (rclipHard > 0) {
+                    buf.append(" " + Globals.DECIMAL_FORMAT.format(rclipHard) + " hard");
+                }
+                if (rclipSoft > 0) {
+                    buf.append(" " + Globals.DECIMAL_FORMAT.format(rclipSoft) + " soft");
+                }
+            }
+        }
+        buf.append("<br>");
         buf.append("Mapped = " + (isMapped() ? "yes" : "no") + "<br>");
         buf.append("Mapping quality = " + getMappingQuality() + "<br>");
         buf.append("Secondary = " + (isPrimary() ? "no" : "yes") + "<br>");
