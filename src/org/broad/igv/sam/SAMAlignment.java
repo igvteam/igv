@@ -569,10 +569,12 @@ public abstract class SAMAlignment implements Alignment {
         }
 
         buf.append("----------------------" + "<br>");
-        buf.append("Alignment start = " + Globals.DECIMAL_FORMAT.format(getAlignmentStart() + 1) + " (" + (isNegativeStrand() ? "-" : "+") + ")<br>");
         buf.append("Mapping = " + (isPrimary() ? (isSupplementary() ?  "Supplementary" : "Primary") : "Secondary") +
             (isDuplicate() ? " Duplicate" : "") + (isVendorFailedRead() ? " Failed QC" : "") +
             " @ MAPQ " + Globals.DECIMAL_FORMAT.format(getMappingQuality()) + "<br>");
+        buf.append("Reference span = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(getAlignmentStart() + 1) + "-" +
+            Globals.DECIMAL_FORMAT.format(getAlignmentEnd()) + " (" + (isNegativeStrand() ? "-" : "+") + ")" +
+            " = " + Globals.DECIMAL_FORMAT.format(getAlignmentEnd()-getAlignmentStart()) + "bp<br>");
         buf.append("Cigar = " + cigarString + "<br>");
         buf.append("Clipping = ");
         if (lclipHard + lclipSoft + rclipHard + rclipSoft == 0) {
