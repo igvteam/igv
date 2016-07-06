@@ -569,7 +569,6 @@ public abstract class SAMAlignment implements Alignment {
         }
 
         buf.append("----------------------" + "<br>");
-        buf.append("Location = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
         buf.append("Alignment start = " + Globals.DECIMAL_FORMAT.format(getAlignmentStart() + 1) + " (" + (isNegativeStrand() ? "-" : "+") + ")<br>");
         buf.append("Cigar = " + cigarString + "<br>");
         buf.append("Clipping = ");
@@ -657,6 +656,7 @@ public abstract class SAMAlignment implements Alignment {
                 }
 
                 byte quality = block.getQuality(offset);
+                buf.append("Location = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
                 buf.append("Base = " + (char) base + "<br>");
                 buf.append("Base phred quality = " + quality + "<br>");
 
