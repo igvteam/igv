@@ -80,6 +80,7 @@ public class AlignmentRenderer implements FeatureRenderer {
     private ColorTable readGroupColors;
     private ColorTable sampleColors;
     private Map<String, ColorTable> tagValueColors;
+    private ColorTable defaultTagColors;
 
     private final Color LR_COLOR = grey1; // "Normal" alignment color
     //private final Color LR_COLOR_12 = new Color(190, 190, 210);
@@ -256,6 +257,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         ColorPalette palette = ColorUtilities.getPalette("Pastel 1");  // TODO let user choose
         readGroupColors = new PaletteColorTable(palette);
         sampleColors = new PaletteColorTable(palette);
+        defaultTagColors = new PaletteColorTable(palette);
         tagValueColors = new HashMap();
 
         typeToColorMap = new HashMap<>(5);
@@ -264,6 +266,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         typeToColorMap.put(AlignmentTrack.OrientationType.RL, RL_COLOR);
         typeToColorMap.put(AlignmentTrack.OrientationType.RR, RR_COLOR);
         typeToColorMap.put(null, grey1);
+
     }
 
     /**
@@ -1187,19 +1190,31 @@ public class AlignmentRenderer implements FeatureRenderer {
                 if (tag != null) {
                     Object tagValue = alignment.getAttribute(tag);
                     if (tagValue != null) {
+
+                        ColorTable ctable;
+                        String ctableKey;
+
                         String groupByTag = renderOptions.getGroupByTag();
-                        String group = "%%%%%%%%%%%%%%%%%%%%%%%%";
-                        if (groupByTag != null) {
+                        if (groupByTag == null) {
+                            ctable = defaultTagColors;
+
+                        } else {
                             Object g = alignment.getAttribute(groupByTag);
-                            group = g == null ? "" : g.toString();
+                            String group = g == null ? "" : g.toString();
+                            ctableKey = groupByTag + ":" + group;
+                            ctable = tagValueColors.get(ctableKey);
+                            if (ctable == null) {
+
+                                if(groupByTag.equals("HP")) {
+                                    ctable = getTenXColorTable(group);
+                                } else {
+                                    ctable = defaultTagColors;
+                                }
+
+                                tagValueColors.put(group, ctable);
+                            }
                         }
 
-
-                        ColorTable ctable = tagValueColors.get(group);
-                        if (ctable == null) {
-                            ctable = new HSLColorTable(group);
-                            tagValueColors.put(group, ctable);
-                        }
                         c = ctable.get(tagValue.toString());
 
                     }
@@ -1224,6 +1239,19 @@ public class AlignmentRenderer implements FeatureRenderer {
         }
 
         return c;
+    }
+
+    private ColorTable getTenXColorTable(String group) {
+        ColorTable ctable;
+        if (group.equals("1")) {
+            ctable = new HSLColorTable(30);
+
+        } else if (group.equals("2")) {
+            ctable = new HSLColorTable(270);
+        } else {
+            ctable = new GreyscaleColorTable();
+        }
+        return ctable;
     }
 
     public static PEStats getPEStats(Alignment alignment, RenderOptions renderOptions) {
