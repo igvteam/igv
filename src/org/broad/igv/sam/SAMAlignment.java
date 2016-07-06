@@ -570,6 +570,9 @@ public abstract class SAMAlignment implements Alignment {
 
         buf.append("----------------------" + "<br>");
         buf.append("Alignment start = " + Globals.DECIMAL_FORMAT.format(getAlignmentStart() + 1) + " (" + (isNegativeStrand() ? "-" : "+") + ")<br>");
+        buf.append("Mapping = " + (isPrimary() ? (isSupplementary() ?  "Supplementary" : "Primary") : "Secondary") +
+            (isDuplicate() ? " Duplicate" : "") + (isVendorFailedRead() ? " Failed QC" : "") +
+            " @ MAPQ " + Globals.DECIMAL_FORMAT.format(getMappingQuality()) + "<br>");
         buf.append("Cigar = " + cigarString + "<br>");
         buf.append("Clipping = ");
         if (lclipHard + lclipSoft + rclipHard + rclipSoft == 0) {
@@ -596,12 +599,6 @@ public abstract class SAMAlignment implements Alignment {
             }
         }
         buf.append("<br>");
-        buf.append("Mapped = " + (isMapped() ? "yes" : "no") + "<br>");
-        buf.append("Mapping quality = " + getMappingQuality() + "<br>");
-        buf.append("Secondary = " + (isPrimary() ? "no" : "yes") + "<br>");
-        buf.append("Supplementary = " + (isSupplementary() ? "yes" : "no") + "<br>");
-        buf.append("Duplicate = " + (isDuplicate() ? "yes" : "no") + "<br>");
-        buf.append("Failed QC = " + (isVendorFailedRead() ? "yes" : "no") + "<br>");
         buf.append("----------------------<br>");
 
         // First check insertions.  Position is zero based, block coords 1 based
@@ -657,8 +654,7 @@ public abstract class SAMAlignment implements Alignment {
 
                 byte quality = block.getQuality(offset);
                 buf.append("Location = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
-                buf.append("Base = " + (char) base + "<br>");
-                buf.append("Base phred quality = " + quality + "<br>");
+                buf.append("Base = " + (char) base +  " @ QV " + Globals.DECIMAL_FORMAT.format(quality) + "<br>");
 
                 // flow signals
                 if (block.hasFlowSignals()) {
