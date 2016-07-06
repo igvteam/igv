@@ -528,6 +528,7 @@ public abstract class SAMAlignment implements Alignment {
 
     private String getValueStringImpl(double position, boolean truncate) {
 
+        int basePosition = (int) position;
         StringBuffer buf = new StringBuffer();
 
         buf.append("Read name = " + getReadName() + "<br>");
@@ -540,6 +541,7 @@ public abstract class SAMAlignment implements Alignment {
         if (readGroup != null) {
             buf.append("Read group = " + readGroup + "<br>");
         }
+        buf.append("Read length = " + Globals.DECIMAL_FORMAT.format(getReadLength()) + "bp<br>");
 
 
         String cigarString = getCigarString();
@@ -567,7 +569,6 @@ public abstract class SAMAlignment implements Alignment {
         }
 
         buf.append("----------------------" + "<br>");
-        int basePosition = (int) position;
         buf.append("Location = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
         buf.append("Alignment start = " + Globals.DECIMAL_FORMAT.format(getAlignmentStart() + 1) + " (" + (isNegativeStrand() ? "-" : "+") + ")<br>");
         buf.append("Cigar = " + cigarString + "<br>");
