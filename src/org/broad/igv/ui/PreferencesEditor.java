@@ -262,6 +262,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
         panel9 = new JPanel();
         filterCB = new JCheckBox();
         filterURL = new JTextField();
+        panel31b = new JPanel();
+        jLabel11b = new JLabel();
+        samHiddenTagsField = new JTextField();
         panel10 = new JPanel();
         samFlagInsertionsCB = new JCheckBox();
         samFlagInsertionsThresholdField = new JTextField();
@@ -1366,7 +1369,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         //======== panel13 ========
                         {
-                            panel13.setLayout(new GridLayout(6, 0));
+                            panel13.setLayout(new GridLayout(7, 0));
 
                             //======== panel31 ========
                             {
@@ -1576,6 +1579,33 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 panel9.add(filterURL);
                             }
                             panel13.add(panel9);
+
+                            //======== panel31b ========
+                            {
+                                panel31b.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+                                //---- jLabel11b ----
+                                jLabel11b.setText("Hidden SAM tags:");
+                                jLabel11b.setPreferredSize(new Dimension(120, 16));
+                                panel31b.add(jLabel11b);
+
+                                //---- samHiddenTagsField ----
+                                samHiddenTagsField.setPreferredSize(new Dimension(250, 28));
+                                samHiddenTagsField.addFocusListener(new FocusAdapter() {
+                                    @Override
+                                    public void focusLost(FocusEvent e) {
+                                        samHiddenTagsFieldFocusLost(e);
+                                    }
+                                });
+                                samHiddenTagsField.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        samHiddenTagsFieldActionPerformed(e);
+                                    }
+                                });
+                                panel31b.add(samHiddenTagsField);
+                            }
+                            panel13.add(panel31b);
 
                             //======== panel10 ========
                             {
@@ -3150,7 +3180,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-
         if (inputValidated) {
 
             checkForVCFColors();
@@ -3635,6 +3664,22 @@ public class PreferencesEditor extends javax.swing.JDialog {
             inputValidated = false;
             MessageUtils.showMessage("Visibility range must be a number.");
         }
+    }
+
+
+    private void samHiddenTagsFieldFocusLost(java.awt.event.FocusEvent evt) {
+        samHiddenTagsFieldActionPerformed(null);
+    }
+
+    private void samHiddenTagsFieldActionPerformed(java.awt.event.ActionEvent evt) {
+        String samHiddenTags = String.valueOf(samHiddenTagsField.getText()), samHiddenTagsClean = "";
+        for (String s: (samHiddenTags == null ? "" : samHiddenTags).split("[, ]")) {
+            if (!s.equals("")) {
+                samHiddenTagsClean += (samHiddenTagsClean.equals("") ? "" : ",") + s;
+            }
+        }
+        samHiddenTagsClean += ","; // ensure non-empty string, which results in the option being unset
+        updatedPreferenceMap.put(PreferenceManager.SAM_HIDDEN_TAGS, samHiddenTagsClean);
     }
 
 
@@ -4440,6 +4485,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
         if (prefMgr.get(PreferenceManager.SAM_FILTER_URL) != null) {
             filterURL.setText(prefMgr.get(PreferenceManager.SAM_FILTER_URL));
         }
+        String samHiddenTags = prefMgr.get(PreferenceManager.SAM_HIDDEN_TAGS), samHiddenTagsClean = "";
+        for (String s: (samHiddenTags == null ? "" : samHiddenTags).split("[, ]")) {
+            if (!s.equals("")) {
+                samHiddenTagsClean += (samHiddenTagsClean.equals("") ? "" : ",") + s;
+            }
+        }
+        samHiddenTagsField.setText(samHiddenTagsClean);
 
         final boolean junctionTrackEnabled = prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
         showJunctionTrackCB.setSelected(junctionTrackEnabled);
@@ -4700,6 +4752,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JPanel panel9;
     private JCheckBox filterCB;
     private JTextField filterURL;
+    private JPanel panel31b;
+    private JLabel jLabel11b;
+    private JTextField samHiddenTagsField;
     private JPanel panel10;
     private JCheckBox samFlagInsertionsCB;
     private JTextField samFlagInsertionsThresholdField;

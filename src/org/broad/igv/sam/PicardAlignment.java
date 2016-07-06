@@ -31,11 +31,13 @@ import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMReadGroupRecord;
 import htsjdk.samtools.SAMRecord;
 import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * @author jrobinso
@@ -43,6 +45,7 @@ import java.util.List;
 public class PicardAlignment extends SAMAlignment implements Alignment {
 
     private static Logger log = Logger.getLogger(PicardAlignment.class);
+    private static PreferenceManager prefMgr = PreferenceManager.getInstance();
 
     private static final int READ_PAIRED_FLAG = 0x1;
     private static final int PROPER_PAIR_FLAG = 0x2;
@@ -227,6 +230,19 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
     }
 
     protected String getAttributeString(boolean truncate) {
+        // List of tags to skip.  Some tags, like MD and SA, are both quite verbose and not easily
+        // interpreted by a human reader.  It is best to just hide these tags.  The list of tags
+        // to hide is set through the SAM_HIDDEN_TAGS preference.
+        ArrayList<String> tagsToHide = new ArrayList<String>();
+
+        String samHiddenTagsPref = prefMgr.get(PreferenceManager.SAM_HIDDEN_TAGS);
+        for (String s: (samHiddenTagsPref == null ? "" : samHiddenTagsPref).split("[, ]")) {
+            if (!s.equals("")) {
+                tagsToHide.add(s);
+            }
+        }
+        // Always hide the read group (RG) tag, as it is displayed as a special case.
+        tagsToHide.add("RG");
 
         StringBuffer buf = new StringBuffer();
         SAMRecord record = getRecord();
@@ -234,8 +250,7 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
         if (attributes != null && !attributes.isEmpty()) {
 
             for (SAMRecord.SAMTagAndValue tag : attributes) {
-                // skip the read group (RG) tag, as it is handled as a special case
-                if (tag.tag.equals("RG")) { continue; }
+                if (tagsToHide.contains(tag.tag)) { continue; }
                 buf.append("<br>" + tag.tag + " = ");
 
                 if (tag.value.getClass().isArray()) { // ignore array types
