@@ -27,6 +27,7 @@ package org.broad.igv.tools.motiffinder;
 
 import com.google.common.collect.Iterators;
 import htsjdk.samtools.util.SequenceUtil;
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
@@ -61,6 +62,8 @@ import java.util.regex.Pattern;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class MotifFinderSource implements FeatureSource<Feature> {
+
+    private static Logger log = Logger.getLogger(MotifFinderSource.class);
 
     @XmlAttribute private String pattern;
 
@@ -179,6 +182,7 @@ public class MotifFinderSource implements FeatureSource<Feature> {
      */
     private static class MatchFeatureIterator implements Iterator<Feature>{
 
+        private final int sequenceLength;
         private String chr;
         private int posOffset;
         private Strand strand;
@@ -214,23 +218,29 @@ public class MotifFinderSource implements FeatureSource<Feature> {
             if(this.strand == Strand.NEGATIVE){
                 this.posOffset += sequenceLength;
             }
+            this.sequenceLength = sequenceLength;
             findNext();
         }
 
         private void findNext(){
-            if(matcher.find(lastMatchStart + 1)){
-                lastMatchStart = matcher.start();
-                //The start/end coordinates are always in positive-strand coordinates
-                int start, end;
-                if(strand == Strand.POSITIVE){
-                    start = posOffset + lastMatchStart;
-                    end = posOffset + matcher.end();
+            try {
+                if(matcher.find(lastMatchStart + 1)){
+                    lastMatchStart = matcher.start();
+                    //The start/end coordinates are always in positive-strand coordinates
+                    int start, end;
+                    if(strand == Strand.POSITIVE){
+                        start = posOffset + lastMatchStart;
+                        end = posOffset + matcher.end();
+                    }else{
+                        start = posOffset - matcher.end();
+                        end = posOffset - lastMatchStart;
+                    }
+                    nextFeat = new BasicFeature(chr, start, end, this.strand);
                 }else{
-                    start = posOffset - matcher.end();
-                    end = posOffset - lastMatchStart;
+                    nextFeat = null;
                 }
-                nextFeat = new BasicFeature(chr, start, end, this.strand);
-            }else{
+            } catch (IndexOutOfBoundsException e) {
+                log.error(e);
                 nextFeat = null;
             }
         }

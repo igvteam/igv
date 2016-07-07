@@ -143,7 +143,12 @@ public class MotifFinderDialog extends JDialog {
         this.negTrackNames = new String[lines.length];
 
         for(int ii=0; ii < lines.length; ii++){
-            String strPattern = lines[ii].toUpperCase();
+            String strPattern = lines[ii].toUpperCase().trim();
+
+            if(strPattern.length() == 0) {
+                MessageUtils.showMessage("Please enter a search pattern.");
+                return;
+            }
 
             boolean isIUPAC = checkIUPACPatternValid(strPattern);
             boolean isRegex = checkNucleotideRegex(strPattern);
