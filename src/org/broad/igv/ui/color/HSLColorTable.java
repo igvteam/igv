@@ -1,7 +1,5 @@
 package org.broad.igv.ui.color;
 
-import sun.plugin2.util.ColorUtil;
-
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
