@@ -107,6 +107,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_FILTER_SECONDARY_ALIGNMENTS = "SAM.FILTER_SECONDARY_ALIGNMENTS";
     public static final String SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS = "SAM.FILTER_SUPPLEMENTARY_ALIGNMENTS";
     public static final String SAM_FILTER_URL = "SAM.FILTER_URL";
+    public static final String SAM_HIDDEN_TAGS = "SAM.HIDDEN_TAGS";
     public static final String SAM_MAX_VISIBLE_RANGE = "SAM.MAX_VISIBLE_RANGE";
     public static final String SAM_SHOW_DUPLICATES = "SAM.SHOW_DUPLICATES";
     public static final String SAM_SHOW_SOFT_CLIPPED = "SAM.SHOW_SOFT_CLIPPED";
@@ -1093,6 +1094,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_BASE_QUALITY_MIN, "5");
         defaultValues.put(SAM_BASE_QUALITY_MAX, "20");
         defaultValues.put(SAM_FILTER_URL, null);
+        defaultValues.put(SAM_HIDDEN_TAGS, "MD,SA");
         defaultValues.put(SAM_QUALITY_THRESHOLD, "0");
         defaultValues.put(SAM_ALLELE_THRESHOLD, "0.2f");
         defaultValues.put(SAM_ALLELE_USE_QUALITY, "true");
