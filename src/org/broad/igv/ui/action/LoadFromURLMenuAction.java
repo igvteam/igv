@@ -94,7 +94,6 @@ public class LoadFromURLMenuAction extends MenuAction {
                     }
 
                     if (OAuthUtils.isGoogleCloud(url)) {
-
                         // Access a few bytes as a means to check authorization
                         if (!ping(url)) return;
                         if (url.indexOf("alt=media") < 0) {
@@ -114,7 +113,17 @@ public class LoadFromURLMenuAction extends MenuAction {
                         ResourceLocator rl = new ResourceLocator(url.trim());
 
                         if(dlg.getIndexURL() != null) {
-                            rl.setIndexPath(dlg.getIndexURL().trim());
+                            String indexUrl = dlg.getIndexURL().trim();
+                            if (indexUrl.startsWith("gs://")) {
+                                enableGoogleMenu();
+                                indexUrl = translateGoogleCloudURL(indexUrl);
+                            }
+                            if (OAuthUtils.isGoogleCloud(indexUrl)) {
+                                if (indexUrl.indexOf("alt=media") < 0) {
+                                    indexUrl = indexUrl + (indexUrl.indexOf('?') > 0 ? "&" : "?") + "alt=media";
+                                }
+                            }
+                            rl.setIndexPath(indexUrl);
                         }
                         igv.loadTracks(Arrays.asList(rl));
 
