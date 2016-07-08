@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "5.2.2.0.199" Java: "1.6.0_65" encoding: "UTF-8"
+JFDML JFormDesigner: "5.2.2.0.199" Java: "1.8.0_76-release" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -61,7 +61,7 @@ new FormModel {
 					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "label3"
-						"text": "<html><i>Optionally specify a url to an associated index file.  "
+						"text": "<html><i>Optionally specify the url to an associated index file (rare -- special circumstances only) ."
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 						"gridy": 4
 						"gridwidth": 2
