@@ -83,6 +83,22 @@ public class ExtendedAlignment implements Alignment {
         return true;
     }
 
+    @Override
+    public String getValueString(double position, WindowFunction windowFunction) {
+        StringBuffer buffer = new StringBuffer();
+
+        buffer.append("Barcode: " + this.barcode);
+
+        for(Alignment a : alignments) {
+            if(a.contains(position)) {
+                buffer.append("----------------------<br>");
+                buffer.append(a.getValueString(position, windowFunction));
+                break;
+            }
+        }
+
+        return buffer.toString();
+    }
 
     /////////////////////////////////////////////////////////////
 
@@ -98,12 +114,12 @@ public class ExtendedAlignment implements Alignment {
 
     @Override
     public AlignmentBlock[] getAlignmentBlocks() {
-        return new AlignmentBlock[0];
+        return null;
     }
 
     @Override
     public AlignmentBlock[] getInsertions() {
-        return new AlignmentBlock[0];
+        return null;
     }
 
     @Override
@@ -260,11 +276,6 @@ public class ExtendedAlignment implements Alignment {
     @Override
     public float getScore() {
         return 0;
-    }
-
-    @Override
-    public String getValueString(double position, WindowFunction windowFunction) {
-        return null;
     }
 
     @Override

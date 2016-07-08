@@ -331,6 +331,28 @@ public class AlignmentRenderer implements FeatureRenderer {
                     lastPixelDrawn = (int) pixelStart + w;
                 } else if (alignment instanceof PairedAlignment) {
                     drawPairedAlignment((PairedAlignment) alignment, rowRect, trackRect, context, renderOptions, leaveMargin, selectedReadNames, font);
+                } else if (alignment instanceof ExtendedAlignment) {
+                    List<Alignment> barcodedAlignments = ((ExtendedAlignment) alignment).alignments;
+                    if (barcodedAlignments.size() > 0) {
+                        Alignment a = barcodedAlignments.get(0);
+                        Color alignmentColor = getAlignmentColor(a, renderOptions);
+                        Graphics2D g = context.getGraphic2DForColor(alignmentColor);
+                        g.setFont(font);
+                        if (barcodedAlignments.size() > 1) {
+                            Color lineColor = new Color(alignmentColor.getRed()/255f, alignmentColor.getGreen()/255f, alignmentColor.getBlue()/255f, 0.3f);
+                            Graphics2D gline = context.getGraphic2DForColor(lineColor);
+                            int startX = (int) ((a.getEnd() - origin) / locScale);
+                            int endX = (int) ((barcodedAlignments.get(barcodedAlignments.size() - 1).getStart() - origin) / locScale);
+                            int h = (int) Math.max(1, rowRect.getHeight() - (leaveMargin ? 2 : 0));
+                            int y = (int) (rowRect.getY());
+                            startX = Math.max(rowRect.x, startX);
+                            endX = Math.min(rowRect.x + rowRect.width, endX);
+                            gline.drawLine(startX, y + h / 2, endX, y + h / 2);
+                        }
+                        for (Alignment al: barcodedAlignments) {
+                            drawAlignment(al, rowRect, trackRect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
+                        }
+                    }
                 } else {
                     Color alignmentColor = getAlignmentColor(alignment, renderOptions);
                     Graphics2D g = context.getGraphic2DForColor(alignmentColor);
@@ -1205,7 +1227,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                             ctable = tagValueColors.get(ctableKey);
                             if (ctable == null) {
 
-                                if(groupByTag.equals("HP")) {
+                                if (groupByTag.equals("HP")) {
                                     ctable = getTenXColorTable(group);
                                 } else {
                                     ctable = defaultTagColors;
