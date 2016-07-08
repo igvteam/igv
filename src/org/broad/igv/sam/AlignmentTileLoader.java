@@ -61,6 +61,7 @@ public class AlignmentTileLoader {
     private AlignmentReader reader;
     private boolean cancel = false;
     private boolean pairedEnd = false;
+    private boolean tenX = false;
 
     static void cancelReaders() {
         for (WeakReference<AlignmentTileLoader> readerRef : activeLoaders) {
@@ -179,6 +180,10 @@ public class AlignmentTileLoader {
                             mappedMates.remove(readName);
                         }
                     }
+                }
+
+                if(!tenX && record.getAttribute("HP")!= null) {
+                    tenX = true;
                 }
 
 
@@ -302,6 +307,13 @@ public class AlignmentTileLoader {
      */
     public boolean isPairedEnd() {
         return pairedEnd;
+    }
+
+    /**
+     * Does this file contain 10X barcoded data?  Assume not until proven otherwise.
+     */
+    public boolean isTenX() {
+        return tenX;
     }
 
     public Set<String> getPlatforms() {

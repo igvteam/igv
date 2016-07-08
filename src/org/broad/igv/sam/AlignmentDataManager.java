@@ -207,7 +207,6 @@ public class AlignmentDataManager implements IGVEventObserver {
             return;
         }
         renderOptions.setViewPairs(option);
-
         packAlignments(renderOptions);
     }
 
@@ -436,6 +435,10 @@ public class AlignmentDataManager implements IGVEventObserver {
     public void setShowAlignments(boolean showAlignments) {
         this.showAlignments = showAlignments;
         clear();
+    }
+
+    public boolean isTenX() {
+        return reader.isTenX();
     }
 
     public static class DownsampleOptions {

@@ -68,7 +68,7 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
         int numWords = 10;
         int max_length = 20;
         String ret = "";
-        for (int _ = 0; _ < numWords; _++) {
+        for (int n = 0; n < numWords; n++) {
             ret += getRandWord(max_length) + "\t";
         }
         return ret;
@@ -77,7 +77,7 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
     private String getRandWord(int max_length) {
         int length = (int) Math.random() * max_length + 1;
         String ret = "";
-        for (int _ = 0; _ < length; _++) {
+        for (int n = 0; n < length; n++) {
             ret += characters.charAt((int) Math.random() * numChars);
         }
         return ret;

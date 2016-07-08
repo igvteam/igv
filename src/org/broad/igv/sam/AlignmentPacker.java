@@ -72,12 +72,9 @@ public class AlignmentPacker {
 
         LinkedHashMap<String, List<Row>> packedAlignments = new LinkedHashMap<String, List<Row>>();
 
-        boolean isPairedAlignments = renderOptions.isViewPairs() || renderOptions.isPairedArcView();
-
-
         if (renderOptions.groupByOption == null) {
             List<Row> alignmentRows = new ArrayList<Row>(10000);
-            pack(interval.getAlignments(), isPairedAlignments, alignmentRows);
+            pack(interval.getAlignments(), renderOptions, alignmentRows);
             packedAlignments.put("", alignmentRows);
         } else {
 
@@ -108,14 +105,14 @@ public class AlignmentPacker {
                 if (key.equals(NULL_GROUP_VALUE)) continue;
                 List<Row> alignmentRows = new ArrayList<Row>(10000);
                 List<Alignment> group = groupedAlignments.get(key);
-                pack(group, isPairedAlignments, alignmentRows);
+                pack(group, renderOptions, alignmentRows);
                 packedAlignments.put(key, alignmentRows);
             }
 
             //Put null valued group at end
             List<Row> alignmentRows = new ArrayList<Row>(10000);
             List<Alignment> group = groupedAlignments.get(NULL_GROUP_VALUE);
-            pack(group, isPairedAlignments, alignmentRows);
+            pack(group, renderOptions, alignmentRows);
             packedAlignments.put("", alignmentRows);
         }
 
@@ -125,11 +122,22 @@ public class AlignmentPacker {
     }
 
 
-    private void pack(List<Alignment> alList, boolean pairAlignments, List<Row> alignmentRows) {
+    private void pack(List<Alignment> alList, AlignmentTrack.RenderOptions renderOptions, List<Row> alignmentRows) {
 
         Map<String, PairedAlignment> pairs = null;
-        if (pairAlignments) {
+
+        boolean isPairedAlignments = renderOptions.isViewPairs() || renderOptions.isPairedArcView();
+        String colorByTag = renderOptions.getColorByTag();
+        boolean isLinkedReads = renderOptions.isLinkedReads() && colorByTag != null;
+
+
+        if (isPairedAlignments) {
             pairs = new HashMap<String, PairedAlignment>(1000);
+        }
+
+        // TODO -- means to undo this
+        if(isLinkedReads) {
+            alList = linkByTag(alList, colorByTag);
         }
 
         // Allocate alignemnts to buckets for each range.
@@ -154,16 +162,12 @@ public class AlignmentPacker {
             bucketCollection = new SparseBucketCollection(curRange);
         }
 
-
-        // IF view by barcode
-        alList = groupByBarcode(alList);
-
         int curRangeStart = curRange.getStart();
         for (Alignment al : alList) {
 
             if (al.isMapped()) {
                 Alignment alignment = al;
-                if (pairAlignments && al.isPaired() && al.getMate().isMapped() && al.getMate().getChr().equals(al.getChr())) {
+                if (isPairedAlignments && al.isPaired() && al.getMate().isMapped() && al.getMate().getChr().equals(al.getChr())) {
                     String readName = al.getReadName();
                     PairedAlignment pair = pairs.get(readName);
                     if (pair == null) {
@@ -255,13 +259,13 @@ public class AlignmentPacker {
 
     }
 
-    private List<Alignment> groupByBarcode(List<Alignment> alList) {
+    private List<Alignment> linkByTag(List<Alignment> alList, String tag) {
 
         List<Alignment> bcList = new ArrayList<>(alList.size() / 10);
         Map<String, LinkedAlignment> map = new HashMap<>(bcList.size() * 2);
 
         for (Alignment a : alList) {
-            String bc = (String) a.getAttribute("BX");
+            String bc = (String) a.getAttribute(tag);
             if (bc == null) {
                 bcList.add(a);
             } else {
