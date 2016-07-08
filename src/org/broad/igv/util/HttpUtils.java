@@ -133,9 +133,14 @@ public class HttpUtils {
      * @throws IOException
      */
     public String getContentsAsString(URL url) throws IOException {
+       return getContentsAsString(url, null);
+    }
 
+
+    public String getContentsAsString(URL url, Map<String, String> headers) throws IOException {
         InputStream is = null;
-        HttpURLConnection conn = openConnection(url, null);
+
+        HttpURLConnection conn = openConnection(url, headers);
         try {
             is = conn.getInputStream();
             return readContents(is);
@@ -144,8 +149,8 @@ public class HttpUtils {
             throw e;
         } finally {
             if (is != null) is.close();
-        }
-    }
+        }    }
+
 
     public String getContentsAsJSON(URL url) throws IOException {
 
@@ -888,7 +893,6 @@ public class HttpUtils {
         }
         return map;
     }
-
 
     public static class ProxySettings {
         boolean auth = false;

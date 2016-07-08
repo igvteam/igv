@@ -61,7 +61,7 @@ new FormModel {
 					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "label3"
-						"text": "<html><i>Optionally specify the url to an associated index file (rare -- special circumstances only) ."
+						"text": "<html><i>Optionally specify the url to an associated index file (rare - special circumstances only) ."
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 						"gridy": 4
 						"gridwidth": 2

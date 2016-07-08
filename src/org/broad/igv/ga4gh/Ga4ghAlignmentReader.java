@@ -70,11 +70,9 @@ public class Ga4ghAlignmentReader implements AlignmentReader<Alignment> {
         if (sequenceNames == null) {
             try {
                 loadMetadata();
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 throw e;
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 log.error("Error fetching metadata", e);
             }
         }
@@ -147,23 +145,30 @@ public class Ga4ghAlignmentReader implements AlignmentReader<Alignment> {
 
         String authKey = provider.apiKey;
         String baseURL = provider.baseURL;
+
         URL url = new URL(baseURL + "/readgroupsets/" + readsetId + (authKey == null ? "" : "?key=" + authKey));   // TODO -- field selection?
 
-        String result = HttpUtils.getInstance().getContentsAsString(url);
+        Map<String, String> headers = new HashMap<String, String>();
+        String token = OAuthUtils.getInstance().getAccessToken();
+        if (token != null) {
+            headers.put("Authorization", "Bearer " + token);
+        }
+
+        String result = HttpUtils.getInstance().getContentsAsString(url, headers);
         JsonParser parser = new JsonParser();
         JsonObject root = parser.parse(result).getAsJsonObject();
 
-//        if (root.has("referenceSetId")) {
-//            String referenceSetId = root.getAsJsonPrimitive("referenceSetId").getAsString();
-//
-//            List<JsonObject> refererences = Ga4ghAPIHelper.searchReferences(provider, referenceSetId, 1000);
-//
-//            sequenceNames = new ArrayList();
-//
-//            for (JsonObject refObject : refererences) {
-//                sequenceNames.add(refObject.getAsJsonPrimitive("name").getAsString());
-//            }
-//        }
+        if (root.has("referenceSetId")) {
+            String referenceSetId = root.getAsJsonPrimitive("referenceSetId").getAsString();
+
+            List<JsonObject> refererences = Ga4ghAPIHelper.searchReferences(provider, referenceSetId, 1000);
+
+            sequenceNames = new ArrayList();
+
+            for (JsonObject refObject : refererences) {
+                sequenceNames.add(refObject.getAsJsonPrimitive("name").getAsString());
+            }
+        }
     }
 
     public static boolean supportsFileType(String type) {

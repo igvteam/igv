@@ -149,7 +149,7 @@ public class LoadFromURLDialog extends JDialog {
                     new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- label3 ----
-                label3.setText("<html><i>Optionally specify the url to an associated index file (rare -- special circumstances only) .");
+                label3.setText("<html><i>Optionally specify the url to an associated index file (rare - special circumstances only) .");
                 contentPanel.add(label3, new GridBagConstraints(0, 4, 2, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 10, 0), 0, 0));
@@ -164,14 +164,24 @@ public class LoadFromURLDialog extends JDialog {
 
                 //---- okButton ----
                 okButton.setText("OK");
-                okButton.addActionListener(e -> okButtonActionPerformed(e));
+                okButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        okButtonActionPerformed(e);
+                    }
+                });
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
-                cancelButton.addActionListener(e -> cancelButtonActionPerformed(e));
+                cancelButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        cancelButtonActionPerformed(e);
+                    }
+                });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 0, 0), 0, 0));
