@@ -29,8 +29,6 @@
  */
 package org.broad.igv.sam;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.Strand;
@@ -260,16 +258,16 @@ public class AlignmentPacker {
     private List<Alignment> groupByBarcode(List<Alignment> alList) {
 
         List<Alignment> bcList = new ArrayList<>(alList.size() / 10);
-        Map<String, ExtendedAlignment> map = new HashMap<>(bcList.size() * 2);
+        Map<String, LinkedAlignment> map = new HashMap<>(bcList.size() * 2);
 
         for (Alignment a : alList) {
             String bc = (String) a.getAttribute("BX");
             if (bc == null) {
                 bcList.add(a);
             } else {
-                ExtendedAlignment ea = map.get(bc);
+                LinkedAlignment ea = map.get(bc);
                 if (ea == null) {
-                    ea = new ExtendedAlignment(bc);
+                    ea = new LinkedAlignment(bc);
                     map.put(bc, ea);
                     bcList.add(ea);
                 }

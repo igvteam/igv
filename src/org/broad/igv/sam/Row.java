@@ -47,8 +47,8 @@ public class Row implements Comparable<Row> {
     }
 
     public void addAlignment(Alignment alignment) {
-//        if (alignment instanceof ExtendedAlignment) {
-//            for (Alignment a : ((ExtendedAlignment) alignment).alignments) {
+//        if (alignment instanceof LinkedAlignment) {
+//            for (Alignment a : ((LinkedAlignment) alignment).alignments) {
 //                alignments.add(a);
 //            }
 //        } else {

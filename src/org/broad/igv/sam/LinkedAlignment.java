@@ -1,5 +1,6 @@
 package org.broad.igv.sam;
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
 
@@ -8,9 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class for experimenting with barcodes
+ * Class for experimenting with 10X linked reads.
  */
-public class ExtendedAlignment implements Alignment {
+
+public class LinkedAlignment implements Alignment {
 
 
     final String barcode;
@@ -19,7 +21,7 @@ public class ExtendedAlignment implements Alignment {
     int alignmentEnd;
     String chr;
 
-    public ExtendedAlignment(String barcode) {
+    public LinkedAlignment(String barcode) {
         this.barcode = barcode;
         alignments = new ArrayList<>();
     }
@@ -88,9 +90,13 @@ public class ExtendedAlignment implements Alignment {
         StringBuffer buffer = new StringBuffer();
 
         buffer.append("Barcode: " + this.barcode);
+        buffer.append("<br>Reference span = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(getAlignmentStart() + 1) + "-" +
+                Globals.DECIMAL_FORMAT.format(getAlignmentEnd()) + " (" + (isNegativeStrand() ? "-" : "+") + ")" +
+                " = " + Globals.DECIMAL_FORMAT.format(getAlignmentEnd() - getAlignmentStart()) + "bp<br>");
 
-        for(Alignment a : alignments) {
-            if(a.contains(position)) {
+
+        for (Alignment a : alignments) {
+            if (a.contains(position)) {
                 buffer.append("----------------------<br>");
                 buffer.append(a.getValueString(position, windowFunction));
                 break;
