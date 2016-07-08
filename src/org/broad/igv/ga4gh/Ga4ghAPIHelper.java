@@ -224,7 +224,6 @@ public class Ga4ghAPIHelper {
             pageToken = obj.getAsJsonPrimitive("nextPageToken");
             if (pageToken == null || pageToken.getAsString().equals("")) break;
 
-            System.out.println("" + (++counter) + "   " + alignments.size());
         }
 
         //System.out.println("# pages= " + (10000 - maxPages));
