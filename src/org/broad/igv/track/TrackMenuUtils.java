@@ -56,6 +56,7 @@ import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.blat.BlatClient;
+import org.broad.igv.util.extview.ExtendViewClient;
 import org.broad.igv.util.collections.CollUtils;
 import org.broad.igv.util.stats.KMPlotFrame;
 import htsjdk.tribble.Feature;
@@ -485,8 +486,7 @@ public class TrackMenuUtils {
 
                 featurePopupMenu.add(getCopySequenceItem(sequenceFeature));
                 featurePopupMenu.add(getBlatItem(sequenceFeature));
-
-
+                featurePopupMenu.add(getExtendViewItem(featureName, sequenceFeature, r));
             }
             if (Globals.isDevelopment()) {
                 featurePopupMenu.addSeparator();
@@ -1365,6 +1365,16 @@ public class TrackMenuUtils {
         return item;
     }
 
+    public static JMenuItem getExtendViewItem(final String featureName, final Feature f, final Range r) {
+        JMenuItem item = new JMenuItem("ExtView");
+        item.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent evt) {
+                ExtendViewClient.postExtendView(featureName, f.getStart(), f.getEnd(), r.getChr(), r.getStart(), r.getEnd());
+            }
+        });
+        return item;
+    }
 
     /**
      * Return a representative track height to use as the default.  For now
