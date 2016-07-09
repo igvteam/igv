@@ -441,6 +441,10 @@ public class AlignmentDataManager implements IGVEventObserver {
         return reader.isTenX();
     }
 
+    public boolean isPhased() {
+        return reader.isPhased();
+    }
+
     public static class DownsampleOptions {
         private boolean downsample;
         private int sampleWindowSize;

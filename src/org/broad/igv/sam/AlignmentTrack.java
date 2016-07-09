@@ -1010,9 +1010,13 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         if (linkedReads == true) {
             this.renderRollback = new RenderRollback(renderOptions, getDisplayMode());
             renderOptions.setColorOption(ColorOption.TAG);
-            renderOptions.groupByOption = GroupOption.TAG;
-            renderOptions.setGroupByTag("HP");
             renderOptions.setColorByTag("BX");
+
+            if(dataManager.isPhased()) {
+                renderOptions.groupByOption = GroupOption.TAG;
+                renderOptions.setGroupByTag("HP");
+            }
+
             setDisplayMode(DisplayMode.SQUISHED);
         } else {
             if (this.renderRollback != null) {

@@ -129,8 +129,7 @@ public class AlignmentPacker {
         boolean isPairedAlignments = renderOptions.isViewPairs() || renderOptions.isPairedArcView();
         String colorByTag = renderOptions.getColorByTag();
         boolean isLinkedReads = renderOptions.isLinkedReads() && colorByTag != null;
-
-
+  
         if (isPairedAlignments) {
             pairs = new HashMap<String, PairedAlignment>(1000);
         }
