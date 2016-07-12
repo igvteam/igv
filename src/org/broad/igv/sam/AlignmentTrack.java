@@ -101,6 +101,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private boolean showSpliceJunctions;
     private boolean removed = false;
     private RenderRollback renderRollback;
+    private boolean showGroupLine;
 
     public enum ShadeBasesOption {
         NONE, QUALITY, FLOW_SIGNAL_DEVIATION_READ, FLOW_SIGNAL_DEVIATION_REFERENCE
@@ -213,7 +214,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         renderer = AlignmentRenderer.getInstance();
 
-        this.setDisplayMode(DisplayMode.EXPANDED);
+        showGroupLine = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_GROUP_SEPARATOR);
+        setDisplayMode(DisplayMode.EXPANDED);
 
         if (prefs.getAsBoolean(PreferenceManager.SAM_SHOW_REF_SEQ)) {
             sequenceTrack = new SequenceTrack("Reference sequence");
@@ -445,12 +447,14 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
                     renderer.renderAlignments(row.alignments, context, rowRectangle,
                             inputRect, renderOptions, leaveMargin, selectedReadNames);
+                    row.y = y;
+                    row.h = h;
                 }
                 y += h;
             }
 
             // Draw a subtle divider line between groups
-            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_GROUP_SEPARATOR)) {
+            if (showGroupLine) {
                 if (groupNumber < nGroups) {
                     int borderY = (int) y + GROUP_MARGIN / 2;
                     groupBorderGraphics.drawLine(inputRect.x, borderY, inputRect.width, borderY);
@@ -825,31 +829,18 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             return null;
         }
 
-        int h = getDisplayMode() == DisplayMode.EXPANDED ? expandedHeight : squishedHeight;
-//        int levelNumber = (y - renderedRect.y) / h;
-//        if (levelNumber < 0) {
-//            return null;
-//        }
-
-        int startY = alignmentsRect.y;
-        final boolean leaveMargin = getDisplayMode() == DisplayMode.EXPANDED;
-
         for (List<Row> rows : groups.values()) {
-            int endY = startY + rows.size() * h;
-            if (y >= startY && y < endY) {
-                int levelNumber = (y - startY) / h;
-                Row row = rows.get(levelNumber);
-                List<Alignment> features = row.alignments;
+            for (Row row : rows) {
+                if (y >= row.y && y <= row.y + row.h) {
+                    List<Alignment> features = row.alignments;
 
-                // No buffer for alignments,  you must zoom in far enough for them to be visible
-                int buffer = 0;
-                return (Alignment) FeatureUtils.getFeatureAt(position, buffer, features);
+                    // No buffer for alignments,  you must zoom in far enough for them to be visible
+                    int buffer = 0;
+                    return FeatureUtils.getFeatureAt(position, buffer, features);
+                }
             }
-            startY = endY + GROUP_MARGIN;
         }
-
         return null;
-
     }
 
     /**
@@ -1021,7 +1012,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 renderOptions.setGroupByTag("HP");
             }
             expandedHeight = 5;
-            //setDisplayMode(DisplayMode.SQUISHED);
+            showGroupLine = false;
+            setDisplayMode(DisplayMode.SQUISHED);
         } else {
             if (this.renderRollback != null) {
                 this.renderRollback.restore(renderOptions);
@@ -1039,6 +1031,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         String colorByTag;
         DisplayMode displayMode;
         int expandedHeight;
+        boolean showGroupLine;
 
         RenderRollback(RenderOptions renderOptions, DisplayMode displayMode) {
             this.colorOption = renderOptions.colorOption;
@@ -1047,6 +1040,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             this.groupByTag = renderOptions.groupByTag;
             this.displayMode = displayMode;
             this.expandedHeight = AlignmentTrack.this.expandedHeight;
+            this.showGroupLine = AlignmentTrack.this.showGroupLine;
         }
 
         void restore(RenderOptions renderOptions) {
@@ -1055,6 +1049,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             renderOptions.colorByTag = this.colorByTag;
             renderOptions.groupByTag = this.groupByTag;
             AlignmentTrack.this.expandedHeight = this.expandedHeight;
+            AlignmentTrack.this.showGroupLine = this.showGroupLine;
             AlignmentTrack.this.setDisplayMode(this.displayMode);
         }
     }

@@ -37,9 +37,12 @@ import java.util.List;
  * @date 2014-Jan-10
  */
 public class Row implements Comparable<Row> {
+  
     int nextIdx;
     private double score = 0;
     List<Alignment> alignments;
+    public double y;
+    public double h;
 
     public Row() {
         nextIdx = 0;
