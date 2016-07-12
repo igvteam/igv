@@ -149,3 +149,4 @@ Zebrafish (Zv7/danRer5)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/z
 Zebrafish (Zv8/danRer6)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/danRer6.genome	danRer6
 Zebrafish (Zv9/danRer7)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/danRer7.genome	danRer7
 Zebrafish (GRCz10/danRer10)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/danRer10.genome	danRer10
+Zea mays (AGPv3.31)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/AGPv3.31.genome	AGPv3.31
