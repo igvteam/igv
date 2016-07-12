@@ -52,6 +52,9 @@ import java.util.List;
  */
 public class AlignmentRenderer implements FeatureRenderer {
 
+    public static final HSLColorTable tenXColorTable1 = new HSLColorTable(30);
+    public static final HSLColorTable tenXColorTable2 = new HSLColorTable(270);
+    public static final GreyscaleColorTable tenXColorTable3 = new GreyscaleColorTable();
     private static Logger log = Logger.getLogger(AlignmentRenderer.class);
 
     public static final Color GROUP_DIVIDER_COLOR = new Color(200, 200, 200);
@@ -1274,12 +1277,12 @@ public class AlignmentRenderer implements FeatureRenderer {
     private ColorTable getTenXColorTable(String group) {
         ColorTable ctable;
         if (group.equals("1")) {
-            ctable = new HSLColorTable(30);
+            ctable = tenXColorTable1;
 
         } else if (group.equals("2")) {
-            ctable = new HSLColorTable(270);
+            ctable = tenXColorTable2;
         } else {
-            ctable = new GreyscaleColorTable();
+            ctable = tenXColorTable3;
         }
         return ctable;
     }
