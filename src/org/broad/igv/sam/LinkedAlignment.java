@@ -19,6 +19,8 @@ public class LinkedAlignment implements Alignment {
     List<Alignment> alignments;
     int alignmentStart;
     int alignmentEnd;
+    int lastAlignmentEnd = 0;
+    int maxGap = 0;
     String chr;
 
     public LinkedAlignment(String barcode) {
@@ -30,17 +32,20 @@ public class LinkedAlignment implements Alignment {
 
         if (alignments.isEmpty()) {
             this.chr = alignment.getChr();
-            this.alignmentStart = alignment.getAlignmentStart();
-            this.alignmentEnd = alignment.getAlignmentEnd();
+            alignmentStart = alignment.getAlignmentStart();
+            alignmentEnd = alignment.getAlignmentEnd();
+            lastAlignmentEnd = alignment.getAlignmentEnd();
         } else {
             if (!this.chr.equals(alignment.getChr())) {
-                throw new RuntimeException("Mixed chromosome extended alignments not supported");
+                throw new RuntimeException("Mixed chromosome linked alignments not supported");
             }
-            this.alignmentStart = Math.min(alignment.getAlignmentStart(), this.alignmentStart);
-            this.alignmentEnd = Math.max(alignment.getAlignmentEnd(), this.alignmentEnd);
+            maxGap = Math.max(alignment.getAlignmentStart() - lastAlignmentEnd, maxGap);
+            lastAlignmentEnd = alignment.getAlignmentEnd();
+            alignmentEnd = Math.max(alignment.getAlignmentEnd(), this.alignmentEnd);
+
         }
 
-        this.alignments.add(alignment);
+        alignments.add(alignment);
     }
 
     public String getBarcode() {

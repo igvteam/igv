@@ -96,7 +96,7 @@ public class AlignmentPacker {
             }
 
 
-            // Now alphabetize (sort) and packGroup the groups
+            // Now alphabetize (sort) and pack the groups
             List<String> keys = new ArrayList<String>(groupedAlignments.keySet());
             Comparator<String> groupComparator = getGroupComparator(renderOptions.groupByOption);
             Collections.sort(keys, groupComparator);
@@ -106,6 +106,19 @@ public class AlignmentPacker {
                 List<Row> alignmentRows = new ArrayList<Row>(10000);
                 List<Alignment> group = groupedAlignments.get(key);
                 pack(group, renderOptions, alignmentRows);
+
+                if(renderOptions.isLinkedReads()) {
+                    for(Row row : alignmentRows) {
+                        row.updateScore(AlignmentTrack.SortOption.MAX_GAP, 0, interval, "");
+                    }
+                    alignmentRows.sort(new Comparator<Row>() {
+                        @Override
+                        public int compare(Row o1, Row o2) {
+                            return o1.compareTo(o2);
+                        }
+                    });
+                }
+
                 packedAlignments.put(key, alignmentRows);
             }
 
@@ -113,6 +126,19 @@ public class AlignmentPacker {
             List<Row> alignmentRows = new ArrayList<Row>(10000);
             List<Alignment> group = groupedAlignments.get(NULL_GROUP_VALUE);
             pack(group, renderOptions, alignmentRows);
+
+            if(renderOptions.isLinkedReads()) {
+                for(Row row : alignmentRows) {
+                    row.updateScore(AlignmentTrack.SortOption.MAX_GAP, 0, interval, "");
+                }
+                alignmentRows.sort(new Comparator<Row>() {
+                    @Override
+                    public int compare(Row o1, Row o2) {
+                        return o1.compareTo(o2);
+                    }
+                });
+            }
+
             packedAlignments.put("", alignmentRows);
         }
 
@@ -268,13 +294,13 @@ public class AlignmentPacker {
             if (bc == null) {
                 bcList.add(a);
             } else {
-                LinkedAlignment ea = map.get(bc);
-                if (ea == null) {
-                    ea = new LinkedAlignment(bc);
-                    map.put(bc, ea);
-                    bcList.add(ea);
+                LinkedAlignment linkedAlignment = map.get(bc);
+                if (linkedAlignment == null) {
+                    linkedAlignment = new LinkedAlignment(bc);
+                    map.put(bc, linkedAlignment);
+                    bcList.add(linkedAlignment);
                 }
-                ea.addAlignment(a);
+                linkedAlignment.addAlignment(a);
             }
         }
         return bcList;

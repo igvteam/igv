@@ -116,7 +116,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     public enum SortOption {
-        START, STRAND, NUCLEOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FIRST_OF_PAIR_STRAND, MATE_CHR, TAG, SUPPLEMENTARY, NONE;
+        START, STRAND, NUCLEOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FIRST_OF_PAIR_STRAND, MATE_CHR, TAG, SUPPLEMENTARY, NONE,
+        MAX_GAP;
     }
 
     public enum GroupOption {
@@ -406,8 +407,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         // Divide rectangle into equal height levels
         double y = inputRect.getY();
-        double h = expandedHeight;
-        if (getDisplayMode() != DisplayMode.EXPANDED) {
+        double h;
+        if (getDisplayMode() == DisplayMode.EXPANDED) {
+            h = renderOptions.isLinkedReads() ? 5 : expandedHeight;
+        } else {
+
             int visHeight = visibleRect.height;
             int depth = dataManager.getNLevels();
             if (depth == 0) {
@@ -1012,12 +1016,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             renderOptions.setColorOption(ColorOption.TAG);
             renderOptions.setColorByTag("BX");
 
-            if(dataManager.isPhased()) {
+            if (dataManager.isPhased()) {
                 renderOptions.groupByOption = GroupOption.TAG;
                 renderOptions.setGroupByTag("HP");
             }
-
-            setDisplayMode(DisplayMode.SQUISHED);
+            expandedHeight = 5;
+            //setDisplayMode(DisplayMode.SQUISHED);
         } else {
             if (this.renderRollback != null) {
                 this.renderRollback.restore(renderOptions);
@@ -1034,6 +1038,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         String groupByTag;
         String colorByTag;
         DisplayMode displayMode;
+        int expandedHeight;
 
         RenderRollback(RenderOptions renderOptions, DisplayMode displayMode) {
             this.colorOption = renderOptions.colorOption;
@@ -1041,6 +1046,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             this.colorByTag = renderOptions.colorByTag;
             this.groupByTag = renderOptions.groupByTag;
             this.displayMode = displayMode;
+            this.expandedHeight = AlignmentTrack.this.expandedHeight;
         }
 
         void restore(RenderOptions renderOptions) {
@@ -1048,6 +1054,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             renderOptions.groupByOption = this.groupByOption;
             renderOptions.colorByTag = this.colorByTag;
             renderOptions.groupByTag = this.groupByTag;
+            AlignmentTrack.this.expandedHeight = this.expandedHeight;
             AlignmentTrack.this.setDisplayMode(this.displayMode);
         }
     }
@@ -1299,6 +1306,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         public boolean isLinkedReads() {
             return linkedReads;
+        }
+
+        public void setLinkedReads(boolean linkedReads) {
+            this.linkedReads = linkedReads;
         }
     }
 
