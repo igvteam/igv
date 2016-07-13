@@ -57,8 +57,7 @@ public class AlignmentPacker {
     };
 
     private static final String NULL_GROUP_VALUE = "Because google-guava tables don't support a null key, we use a special value" +
-            " for null keys. It doesn't matter much what it is, but we want to avoid collisions. I find it unlikely that " +
-            " this sentence will ever be used as a group value";
+            " for null keys. It doesn't matter much what it is, but we want to avoid collisions.";
     public static final int tenMB = 10000000;
 
     /**
@@ -290,13 +289,14 @@ public class AlignmentPacker {
         Map<String, LinkedAlignment> map = new HashMap<>(bcList.size() * 2);
 
         for (Alignment a : alList) {
-            String bc = (String) a.getAttribute(tag);
-            if (bc == null) {
+            Object attr = a.getAttribute(tag);
+            if (attr == null) {
                 bcList.add(a);
             } else {
+                String bc = a.getAttribute(tag).toString();
                 LinkedAlignment linkedAlignment = map.get(bc);
                 if (linkedAlignment == null) {
-                    linkedAlignment = new LinkedAlignment(bc);
+                    linkedAlignment = new LinkedAlignment(tag, bc);
                     map.put(bc, linkedAlignment);
                     bcList.add(linkedAlignment);
                 }

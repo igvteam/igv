@@ -2202,37 +2202,33 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                 addSeparator();
 
-                final JMenuItem item = new JCheckBoxMenuItem("View linked reads (BX)");
+                final JMenuItem bxItem = new JCheckBoxMenuItem("View linked reads (BX)");
+                final JMenuItem miItem = new JCheckBoxMenuItem("View linked reads (MI)");
+
                 if(isLinkedReads()) {
-                    item.setSelected("BX".equals(renderOptions.colorByTag));
+                    bxItem.setSelected("BX".equals(renderOptions.colorByTag));
+                    miItem.setSelected("MI".equals(renderOptions.colorByTag));
                 }
                 else {
-                    item.setSelected(false);
+                    bxItem.setSelected(false);
+                    miItem.setSelected(false);
                 }
-                item.setSelected(isLinkedReads());
-                item.addActionListener(new ActionListener() {
+
+                bxItem.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent aEvt) {
-                        boolean linkedReads = item.isSelected();
+                        boolean linkedReads = bxItem.isSelected();
                         setLinkedReads(linkedReads, "BX");
                     }
                 });
-                add(item);
+                add(bxItem);
 
-                final JMenuItem item2 = new JCheckBoxMenuItem("View linked reads (MI)");
-                if(isLinkedReads()) {
-                    item.setSelected("MI".equals(renderOptions.colorByTag));
-                }
-                else {
-                    item.setSelected(false);
-                }
-                item.setSelected(isLinkedReads());
-                item.addActionListener(new ActionListener() {
+                miItem.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent aEvt) {
-                        boolean linkedReads = item2.isSelected();
+                        boolean linkedReads = miItem.isSelected();
                         setLinkedReads(linkedReads, "MI");
                     }
                 });
-                add(item2);
+                add(miItem);
 
             }
         }

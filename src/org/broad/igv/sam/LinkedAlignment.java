@@ -15,16 +15,19 @@ import java.util.List;
 public class LinkedAlignment implements Alignment {
 
 
+    final String tag;
     final String barcode;
     List<Alignment> alignments;
+    String chr;
     int alignmentStart;
     int alignmentEnd;
     int lastAlignmentEnd = 0;
     int maxGap = 0;
-    String chr;
 
-    public LinkedAlignment(String barcode) {
-        this.barcode = barcode;
+
+    public LinkedAlignment(String tag, String bc) {
+        this.tag = tag;
+        this.barcode = bc;
         alignments = new ArrayList<>();
     }
 
@@ -94,7 +97,7 @@ public class LinkedAlignment implements Alignment {
     public String getValueString(double position, WindowFunction windowFunction) {
         StringBuffer buffer = new StringBuffer();
 
-        buffer.append("Barcode: " + this.barcode);
+        buffer.append("Linking id (" + tag + "): "  + this.barcode);
         buffer.append("<br>Reference span = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(getAlignmentStart() + 1) + "-" +
                 Globals.DECIMAL_FORMAT.format(getAlignmentEnd()) + " (" + (isNegativeStrand() ? "-" : "+") + ")" +
                 " = " + Globals.DECIMAL_FORMAT.format(getAlignmentEnd() - getAlignmentStart()) + "bp<br>");
