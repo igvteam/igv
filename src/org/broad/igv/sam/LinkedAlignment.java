@@ -6,7 +6,9 @@ import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Class for experimenting with 10X linked reads.
@@ -17,17 +19,20 @@ public class LinkedAlignment implements Alignment {
 
     final String tag;
     final String barcode;
+    String haplotype;
     List<Alignment> alignments;
     String chr;
     int alignmentStart;
     int alignmentEnd;
     int lastAlignmentEnd = 0;
     int maxGap = 0;
-
+    Map<String, Object> attributes;
 
     public LinkedAlignment(String tag, String bc) {
+        attributes = new HashMap<>();
         this.tag = tag;
         this.barcode = bc;
+        attributes.put(tag, barcode);
         alignments = new ArrayList<>();
     }
 
@@ -38,7 +43,11 @@ public class LinkedAlignment implements Alignment {
             alignmentStart = alignment.getAlignmentStart();
             alignmentEnd = alignment.getAlignmentEnd();
             lastAlignmentEnd = alignment.getAlignmentEnd();
+
+            Object hp = alignment.getAttribute("HP");
+            haplotype = hp == null ? "" : hp.toString();
         } else {
+
             if (!this.chr.equals(alignment.getChr())) {
                 throw new RuntimeException("Mixed chromosome linked alignments not supported");
             }
@@ -46,6 +55,13 @@ public class LinkedAlignment implements Alignment {
             lastAlignmentEnd = alignment.getAlignmentEnd();
             alignmentEnd = Math.max(alignment.getAlignmentEnd(), this.alignmentEnd);
 
+            if (!this.haplotype.equals("MIXED")) {
+                Object hp = alignment.getAttribute("HP");
+                String haplotype = hp == null ? "" : hp.toString();
+                if (!this.haplotype.equals(haplotype)) {
+                    this.haplotype = "MIXED";
+                }
+            }
         }
 
         alignments.add(alignment);
@@ -87,7 +103,6 @@ public class LinkedAlignment implements Alignment {
         return location >= this.alignmentStart && location <= this.alignmentEnd;
     }
 
-
     @Override
     public boolean isMapped() {
         return true;
@@ -97,7 +112,8 @@ public class LinkedAlignment implements Alignment {
     public String getValueString(double position, WindowFunction windowFunction) {
         StringBuffer buffer = new StringBuffer();
 
-        buffer.append("Linking id (" + tag + "): "  + this.barcode);
+        buffer.append("Linking id (" + tag + ") = " + this.barcode);
+        buffer.append("Haplotype = " + this.haplotype);
         buffer.append("<br>Reference span = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(getAlignmentStart() + 1) + "-" +
                 Globals.DECIMAL_FORMAT.format(getAlignmentEnd()) + " (" + (isNegativeStrand() ? "-" : "+") + ")" +
                 " = " + Globals.DECIMAL_FORMAT.format(getAlignmentEnd() - getAlignmentStart()) + "bp<br>");
@@ -112,6 +128,23 @@ public class LinkedAlignment implements Alignment {
         }
 
         return buffer.toString();
+    }
+
+
+    @Override
+    public Object getAttribute(String key) {
+        if ("HP".equals(key)) {
+            return haplotype;
+        }
+        else {
+            return attributes.get(key);
+        }
+    }
+
+
+    @Override
+    public int getMappingQuality() {
+        return 30;    // This is used for coloring.  Not sure what to do here
     }
 
     /////////////////////////////////////////////////////////////
@@ -148,11 +181,6 @@ public class LinkedAlignment implements Alignment {
 
     @Override
     public int getInferredInsertSize() {
-        return 0;
-    }
-
-    @Override
-    public int getMappingQuality() {
         return 0;
     }
 
@@ -215,11 +243,6 @@ public class LinkedAlignment implements Alignment {
     @Override
     public byte getPhred(double position) {
         return 0;
-    }
-
-    @Override
-    public Object getAttribute(String key) {
-        return null;
     }
 
     @Override

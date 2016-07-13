@@ -71,15 +71,22 @@ public class AlignmentPacker {
 
         LinkedHashMap<String, List<Row>> packedAlignments = new LinkedHashMap<String, List<Row>>();
 
+
+        List<Alignment> alList = interval.getAlignments();
+        // TODO -- means to undo this
+        if(renderOptions.isLinkedReads()) {
+            alList = linkByTag(alList, renderOptions.getColorByTag());
+        }
+
         if (renderOptions.groupByOption == null) {
             List<Row> alignmentRows = new ArrayList<Row>(10000);
-            pack(interval.getAlignments(), renderOptions, alignmentRows);
+            pack(alList, renderOptions, alignmentRows);
             packedAlignments.put("", alignmentRows);
         } else {
 
             // Separate alignments into groups.
             Map<String, List<Alignment>> groupedAlignments = new HashMap<String, List<Alignment>>();
-            Iterator<Alignment> iter = interval.getAlignmentIterator();
+            Iterator<Alignment> iter = alList.iterator();
             while (iter.hasNext()) {
                 Alignment alignment = iter.next();
                 String groupKey = getGroupValue(alignment, renderOptions);
@@ -159,10 +166,6 @@ public class AlignmentPacker {
             pairs = new HashMap<String, PairedAlignment>(1000);
         }
 
-        // TODO -- means to undo this
-        if(isLinkedReads) {
-            alList = linkByTag(alList, colorByTag);
-        }
 
         // Allocate alignemnts to buckets for each range.
         // We use priority queues to keep the buckets sorted by alignment length.  However this  is probably a needless

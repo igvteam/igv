@@ -375,37 +375,17 @@ public class AlignmentRenderer implements FeatureRenderer {
         double origin = context.getOrigin();
         double locScale = context.getScale();
 
+        Color alignmentColor = getAlignmentColor(alignment, renderOptions);
+
         List<Alignment> barcodedAlignments = alignment.alignments;
         if (barcodedAlignments.size() > 0) {
-            Alignment a = barcodedAlignments.get(0);
-            Color alignmentColor;
-
-            if (renderOptions.getColorOption() == ColorOption.MAPPED_SIZE) {
-
-                Object haplotype = a.getAttribute("HP");
-                ColorScale cs;
-                if (haplotype == null) {
-                    cs = GRAY_SCALE;
-                } else if ("1".equals(haplotype.toString())) {
-                    cs = RED_SCALE;
-                } else if ("2".equals(haplotype.toString())) {
-                    cs = BLUE_SCALE;
-                } else {
-                    cs = GRAY_SCALE;
-                }
-                alignmentColor = cs.getColor(alignment.getAlignmentEnd() - alignment.getAlignmentStart());
-
-
-            } else {
-                alignmentColor = getAlignmentColor(a, renderOptions);
-            }
-
+            Alignment firstAlignment = barcodedAlignments.get(0);
             Graphics2D g = context.getGraphic2DForColor(alignmentColor);
             g.setFont(font);
             if (barcodedAlignments.size() > 1) {
                 Color lineColor = new Color(alignmentColor.getRed() / 255f, alignmentColor.getGreen() / 255f, alignmentColor.getBlue() / 255f, 0.3f);
                 Graphics2D gline = context.getGraphic2DForColor(lineColor);
-                int startX = (int) ((a.getEnd() - origin) / locScale);
+                int startX = (int) ((firstAlignment.getEnd() - origin) / locScale);
                 int endX = (int) ((barcodedAlignments.get(barcodedAlignments.size() - 1).getStart() - origin) / locScale);
                 int h = (int) Math.max(1, rowRect.getHeight() - (leaveMargin ? 2 : 0));
                 int y = (int) (rowRect.getY());
