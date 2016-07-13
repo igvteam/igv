@@ -113,7 +113,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public enum ColorOption {
         INSERT_SIZE, READ_STRAND, FIRST_OF_PAIR_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, BISULFITE, NOMESEQ,
-        TAG, NONE, UNEXPECTED_PAIR
+        TAG, NONE, UNEXPECTED_PAIR, MAPPED_SIZE
     }
 
     public enum SortOption {
@@ -999,13 +999,14 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         return renderOptions.linkedReads;
     }
 
-    public void setLinkedReads(boolean linkedReads) {
+    public void setLinkedReads(boolean linkedReads, String tag) {
 
         renderOptions.linkedReads = linkedReads;
         if (linkedReads == true) {
             this.renderRollback = new RenderRollback(renderOptions, getDisplayMode());
             renderOptions.setColorOption(ColorOption.TAG);
-            renderOptions.setColorByTag("BX");
+            renderOptions.setColorByTag(tag);
+ //           renderOptions.setColorOption(ColorOption.MAPPED_SIZE);
 
             if (dataManager.isPhased()) {
                 renderOptions.groupByOption = GroupOption.TAG;
@@ -2198,16 +2199,41 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         public void addTenXItems() {
 
             if (dataManager.isTenX()) {
+
                 addSeparator();
-                final JMenuItem item = new JCheckBoxMenuItem("View linked reads");
+
+                final JMenuItem item = new JCheckBoxMenuItem("View linked reads (BX)");
+                if(isLinkedReads()) {
+                    item.setSelected("BX".equals(renderOptions.colorByTag));
+                }
+                else {
+                    item.setSelected(false);
+                }
                 item.setSelected(isLinkedReads());
                 item.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent aEvt) {
                         boolean linkedReads = item.isSelected();
-                        setLinkedReads(linkedReads);
+                        setLinkedReads(linkedReads, "BX");
                     }
                 });
                 add(item);
+
+                final JMenuItem item2 = new JCheckBoxMenuItem("View linked reads (MI)");
+                if(isLinkedReads()) {
+                    item.setSelected("MI".equals(renderOptions.colorByTag));
+                }
+                else {
+                    item.setSelected(false);
+                }
+                item.setSelected(isLinkedReads());
+                item.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent aEvt) {
+                        boolean linkedReads = item2.isSelected();
+                        setLinkedReads(linkedReads, "MI");
+                    }
+                });
+                add(item2);
+
             }
         }
     }

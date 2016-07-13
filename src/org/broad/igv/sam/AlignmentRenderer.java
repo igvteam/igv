@@ -30,8 +30,10 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
+import org.broad.igv.renderer.MonocolorScale;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
 import org.broad.igv.sam.AlignmentTrack.RenderOptions;
 import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
@@ -52,9 +54,15 @@ import java.util.List;
  */
 public class AlignmentRenderer implements FeatureRenderer {
 
+
     public static final HSLColorTable tenXColorTable1 = new HSLColorTable(30);
     public static final HSLColorTable tenXColorTable2 = new HSLColorTable(270);
     public static final GreyscaleColorTable tenXColorTable3 = new GreyscaleColorTable();
+
+    public static final MonocolorScale RED_SCALE = new MonocolorScale(0, 100000, Color.RED);
+    public static final MonocolorScale BLUE_SCALE = new MonocolorScale(0, 100000, Color.blue);
+    public static final MonocolorScale GRAY_SCALE = new MonocolorScale(0, 100000, Color.GRAY);
+
     private static Logger log = Logger.getLogger(AlignmentRenderer.class);
 
     public static final Color GROUP_DIVIDER_COLOR = new Color(200, 200, 200);
@@ -335,7 +343,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 } else if (alignment instanceof PairedAlignment) {
                     drawPairedAlignment((PairedAlignment) alignment, rowRect, trackRect, context, renderOptions, leaveMargin, selectedReadNames, font);
                 } else if (alignment instanceof LinkedAlignment) {
-                    drawExtendedAlignment((LinkedAlignment) alignment, rowRect, trackRect, context,  renderOptions, leaveMargin, selectedReadNames, font);
+                    drawExtendedAlignment((LinkedAlignment) alignment, rowRect, trackRect, context, renderOptions, leaveMargin, selectedReadNames, font);
                 } else {
                     Color alignmentColor = getAlignmentColor(alignment, renderOptions);
                     Graphics2D g = context.getGraphic2DForColor(alignmentColor);
@@ -370,11 +378,32 @@ public class AlignmentRenderer implements FeatureRenderer {
         List<Alignment> barcodedAlignments = alignment.alignments;
         if (barcodedAlignments.size() > 0) {
             Alignment a = barcodedAlignments.get(0);
-            Color alignmentColor = getAlignmentColor(a, renderOptions);
+            Color alignmentColor;
+
+            if (renderOptions.getColorOption() == ColorOption.MAPPED_SIZE) {
+
+                Object haplotype = a.getAttribute("HP");
+                ColorScale cs;
+                if (haplotype == null) {
+                    cs = GRAY_SCALE;
+                } else if ("1".equals(haplotype.toString())) {
+                    cs = RED_SCALE;
+                } else if ("2".equals(haplotype.toString())) {
+                    cs = BLUE_SCALE;
+                } else {
+                    cs = GRAY_SCALE;
+                }
+                alignmentColor = cs.getColor(alignment.getAlignmentEnd() - alignment.getAlignmentStart());
+
+
+            } else {
+                alignmentColor = getAlignmentColor(a, renderOptions);
+            }
+
             Graphics2D g = context.getGraphic2DForColor(alignmentColor);
             g.setFont(font);
             if (barcodedAlignments.size() > 1) {
-                Color lineColor = new Color(alignmentColor.getRed()/255f, alignmentColor.getGreen()/255f, alignmentColor.getBlue()/255f, 0.3f);
+                Color lineColor = new Color(alignmentColor.getRed() / 255f, alignmentColor.getGreen() / 255f, alignmentColor.getBlue() / 255f, 0.3f);
                 Graphics2D gline = context.getGraphic2DForColor(lineColor);
                 int startX = (int) ((a.getEnd() - origin) / locScale);
                 int endX = (int) ((barcodedAlignments.get(barcodedAlignments.size() - 1).getStart() - origin) / locScale);
@@ -384,7 +413,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 endX = Math.min(rowRect.x + rowRect.width, endX);
                 gline.drawLine(startX, y + h / 2, endX, y + h / 2);
             }
-            for (Alignment al: barcodedAlignments) {
+            for (Alignment al : barcodedAlignments) {
                 drawAlignment(al, rowRect, trackRect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
             }
         }
@@ -1253,6 +1282,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                     }
                 }
                 break;
+
 
             default:
 //                if (renderOptions.shadeCenters && center >= alignment.getStart() && center <= alignment.getEnd()) {
