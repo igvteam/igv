@@ -56,8 +56,7 @@ public class AlignmentPacker {
         }
     };
 
-    private static final String NULL_GROUP_VALUE = "Because google-guava tables don't support a null key, we use a special value" +
-            " for null keys. It doesn't matter much what it is, but we want to avoid collisions.";
+    private static final String NULL_GROUP_VALUE = "";
     public static final int tenMB = 10000000;
 
     /**
@@ -74,7 +73,7 @@ public class AlignmentPacker {
 
         List<Alignment> alList = interval.getAlignments();
         // TODO -- means to undo this
-        if(renderOptions.isLinkedReads()) {
+        if (renderOptions.isLinkedReads()) {
             alList = linkByTag(alList, renderOptions.getColorByTag());
         }
 
@@ -108,13 +107,12 @@ public class AlignmentPacker {
             Collections.sort(keys, groupComparator);
 
             for (String key : keys) {
-                if (key.equals(NULL_GROUP_VALUE)) continue;
                 List<Row> alignmentRows = new ArrayList<Row>(10000);
                 List<Alignment> group = groupedAlignments.get(key);
                 pack(group, renderOptions, alignmentRows);
 
-                if(renderOptions.isLinkedReads()) {
-                    for(Row row : alignmentRows) {
+                if (renderOptions.isLinkedReads()) {
+                    for (Row row : alignmentRows) {
                         row.updateScore(AlignmentTrack.SortOption.MAX_GAP, 0, interval, "");
                     }
                     alignmentRows.sort(new Comparator<Row>() {
@@ -127,25 +125,6 @@ public class AlignmentPacker {
 
                 packedAlignments.put(key, alignmentRows);
             }
-
-            //Put null valued group at end
-            List<Row> alignmentRows = new ArrayList<Row>(10000);
-            List<Alignment> group = groupedAlignments.get(NULL_GROUP_VALUE);
-            pack(group, renderOptions, alignmentRows);
-
-            if(renderOptions.isLinkedReads()) {
-                for(Row row : alignmentRows) {
-                    row.updateScore(AlignmentTrack.SortOption.MAX_GAP, 0, interval, "");
-                }
-                alignmentRows.sort(new Comparator<Row>() {
-                    @Override
-                    public int compare(Row o1, Row o2) {
-                        return o1.compareTo(o2);
-                    }
-                });
-            }
-
-            packedAlignments.put("", alignmentRows);
         }
 
         List<AlignmentInterval> tmp = new ArrayList<AlignmentInterval>();
@@ -161,7 +140,7 @@ public class AlignmentPacker {
         boolean isPairedAlignments = renderOptions.isViewPairs() || renderOptions.isPairedArcView();
         String colorByTag = renderOptions.getColorByTag();
         boolean isLinkedReads = renderOptions.isLinkedReads() && colorByTag != null;
-  
+
         if (isPairedAlignments) {
             pairs = new HashMap<String, PairedAlignment>(1000);
         }
@@ -338,15 +317,25 @@ public class AlignmentPacker {
                 return new Comparator<String>() {
                     @Override
                     public int compare(String o1, String o2) {
-                        if (o1 != null) {
-                            return o1.compareToIgnoreCase(o2);
-                        } else if (o2 != null) {
-                            return o2.compareToIgnoreCase(o1);
-                        } else {
-                            //Both null;
+                        if (o1 == null && o2 == null) {
                             return 0;
+                        } else if (o1 == null) {
+                            return 1;
+                        } else if (o2 == null) {
+                            return -1;
+                        } else {
+                            // no nulls
+                            if (o1.equals(o2)) {
+                                return 0;
+                            } else if (NULL_GROUP_VALUE.equals(o1)) {
+                                return 1;
+                            }
+                            if (NULL_GROUP_VALUE.equals(o2)) {
+                                return -1;
+                            } else {
+                                return o2.compareToIgnoreCase(o1);
+                            }
                         }
-
                     }
                 };
         }

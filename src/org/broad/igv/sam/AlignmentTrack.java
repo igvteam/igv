@@ -411,7 +411,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         double y = inputRect.getY();
         double h;
         if (getDisplayMode() == DisplayMode.EXPANDED) {
-            h = renderOptions.isLinkedReads() ? 5 : expandedHeight;
+            h = expandedHeight;
         } else {
 
             int visHeight = visibleRect.height;
@@ -1012,7 +1012,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 renderOptions.groupByOption = GroupOption.TAG;
                 renderOptions.setGroupByTag("HP");
             }
-            expandedHeight = 5;
+            expandedHeight = 10;
             showGroupLine = false;
             setDisplayMode(DisplayMode.SQUISHED);
         } else {
