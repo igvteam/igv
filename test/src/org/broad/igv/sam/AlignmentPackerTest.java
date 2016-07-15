@@ -98,7 +98,7 @@ public class AlignmentPackerTest extends AbstractHeadlessTest {
 
     @Test
     public void testGroupAlignmentsPairOrientation() throws Exception {
-        int expSize = 3; //AlignmentTrack.OrientationType.values().length;
+        int expSize = 2; //AlignmentTrack.OrientationType.values().length;
         Map<String, List<Row>> result = tstGroupAlignments(AlignmentTrack.GroupOption.PAIR_ORIENTATION, expSize);
     }
 
