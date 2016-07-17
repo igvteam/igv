@@ -465,6 +465,9 @@ public class TrackMenuUtils {
         if (tracks.size() == 1) {
             Track t = tracks.iterator().next();
             Feature f = t.getFeatureAtMousePosition(te);
+            ReferenceFrame frame=te.getFrame();
+            Range r = frame.getCurrentRange();
+            String featureName = "";
             if (f != null) {
                 featurePopupMenu.addSeparator();
                 featurePopupMenu.add(getCopyDetailsItem(f, te));
@@ -472,6 +475,7 @@ public class TrackMenuUtils {
                 // If we are over an exon, copy its sequence instead of the entire feature.
                 Feature sequenceFeature = f;
                 if (sequenceFeature instanceof IGVFeature) {
+                    featureName = ((IGVFeature) sequenceFeature).getName();
                     double position = te.getChromosomePosition();
                     Collection<Exon> exons = ((IGVFeature) sequenceFeature).getExons();
                     if (exons != null) {
@@ -485,8 +489,8 @@ public class TrackMenuUtils {
                 }
 
                 featurePopupMenu.add(getCopySequenceItem(sequenceFeature));
-                featurePopupMenu.add(getBlatItem(sequenceFeature));
                 featurePopupMenu.add(getExtendViewItem(featureName, sequenceFeature, r));
+                featurePopupMenu.add(getBlatItem(sequenceFeature));
             }
             if (Globals.isDevelopment()) {
                 featurePopupMenu.addSeparator();
@@ -1340,7 +1344,6 @@ public class TrackMenuUtils {
         return item;
     }
 
-
     public static JMenuItem getCopySequenceItem(final Feature f) {
         JMenuItem item = new JMenuItem("Copy Sequence");
         item.addActionListener(new ActionListener() {
@@ -1348,18 +1351,6 @@ public class TrackMenuUtils {
             public void actionPerformed(ActionEvent evt) {
                 Genome genome = GenomeManager.getInstance().getCurrentGenome();
                 IGV.copySequenceToClipboard(genome, f.getChr(), f.getStart(), f.getEnd());
-            }
-        });
-        return item;
-    }
-
-
-    public static JMenuItem getBlatItem(final Feature f) {
-        JMenuItem item = new JMenuItem("Blat Sequence");
-        item.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent evt) {
-                BlatClient.doBlatQuery(f.getChr(), f.getStart(), f.getEnd());
             }
         });
         return item;
@@ -1375,6 +1366,18 @@ public class TrackMenuUtils {
         });
         return item;
     }
+
+    public static JMenuItem getBlatItem(final Feature f) {
+        JMenuItem item = new JMenuItem("Blat Sequence");
+        item.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent evt) {
+                BlatClient.doBlatQuery(f.getChr(), f.getStart(), f.getEnd());
+            }
+        });
+        return item;
+    }
+
 
     /**
      * Return a representative track height to use as the default.  For now

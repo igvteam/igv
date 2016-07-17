@@ -295,6 +295,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAVE_GOOGLE_CREDENTIALS = "SAVE_GOOGLE_CREDENTIALS";
 
     public static final String BLAT_URL = "BLAT_URL";
+    public static final String EXTVIEW_URL = "EXTVIEW_URL";
 
     public static final String GENE_LIST_BED_FORMAT = "GENE_LIST_BED_FORMAT";
 

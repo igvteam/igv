@@ -80,7 +80,7 @@ public class ExtendViewClient {
         params.put("r_start", String.valueOf(r_start));
         params.put("r_end", String.valueOf(r_end));
         
-        String $url = "http://localhost:6502";
+        String $url = PreferenceManager.getInstance().get(PreferenceManager.EXTVIEW_URL);
         String urlString = ($url + "/FeatureRange/");
         try {
             String result = HttpUtils.getInstance().doPost(new URL(urlString), params);
@@ -124,7 +124,7 @@ public class ExtendViewClient {
         params.put("ref_seq", userSeq);
     
 
-        String $url = "http://localhost:6502";
+        String $url = PreferenceManager.getInstance().get(PreferenceManager.EXTVIEW_URL);
         String urlString = ($url + "/ExamineReadAlignment/");
         try {
             String result = HttpUtils.getInstance().doPost(new URL(urlString), params);

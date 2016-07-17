@@ -1371,8 +1371,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             addClearSelectionsMenuItem();
 
             addSeparator();
-            addExtViewItem(e);
             addCopySequenceItem(e);
+            addExtViewItem(e);
             addBlatItem(e);
             addConsensusSequence(e);
 

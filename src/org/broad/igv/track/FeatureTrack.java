@@ -253,7 +253,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                 //don't want to layout for each one
                 IGV.getInstance().layoutMainPanel();
             }
-            //event.getReferenceFrame().getEventBus().post( ViewChange.Result());
+            event.getReferenceFrame().getEventBus().post( ViewChange.Result());
         } else {
             log.info("Unknown event type: " + e.getClass());
         }
