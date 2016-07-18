@@ -1118,7 +1118,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         @XmlAttribute
         GroupOption groupByOption = null;
         BisulfiteContext bisulfiteContext;
-        public float samAlleleThreshold = 0;
         //ContinuousColorScale insertSizeColorScale;
         private boolean viewPairs = false;
         private boolean pairedArcView = false;
@@ -1159,7 +1158,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             groupByOption = null;
             flagZeroQualityAlignments = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_ZERO_QUALITY);
             bisulfiteContext = DEFAULT_BISULFITE_CONTEXT;
-            samAlleleThreshold = prefs.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD);
 
 
             colorByTag = prefs.get(PreferenceManager.SAM_COLOR_BY_TAG);
