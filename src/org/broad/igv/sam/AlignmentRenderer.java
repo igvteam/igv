@@ -913,7 +913,8 @@ public class AlignmentRenderer implements FeatureRenderer {
         int dY = (int) rect.getHeight();
         int dX = (int) Math.max(1, (1.0 / locScale));
         Graphics2D g = (Graphics2D) context.getGraphics().create();
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+        PreferenceManager prefs = PreferenceManager.getInstance();
+        if (prefs.getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
             g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
         if (dX >= 8) {
@@ -971,7 +972,8 @@ public class AlignmentRenderer implements FeatureRenderer {
                 BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(idx);
                 if (isSoftClipped || bisulfiteMode ||
                     // In "quick consensus" mode, only show mismatches at positions with a consistent alternative basepair.
-                    (!quickConsensus || alignmentCounts.isMismatch(loc, reference[idx], chr, renderOptions.samAlleleThreshold))) {
+                    (!quickConsensus || alignmentCounts.isMismatch(loc, reference[idx], chr, prefs.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD)))
+                   ) {
                     drawBase(g, color, c, pX, pY, dX, dY, bisulfiteMode, bisstatus);
                 }
             }

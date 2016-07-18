@@ -1406,6 +1406,7 @@ public class PreferenceManager implements PropertyManager {
             PreferenceManager.SAM_MAX_VISIBLE_RANGE,
             PreferenceManager.SAM_SHOW_DUPLICATES,
             PreferenceManager.SAM_QUICK_CONSENSUS_MODE,
+            PreferenceManager.SAM_ALLELE_THRESHOLD,
             PreferenceManager.SAM_SHOW_SOFT_CLIPPED,
             PreferenceManager.SAM_SAMPLING_COUNT,
             PreferenceManager.SAM_SAMPLING_WINDOW,
