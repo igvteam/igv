@@ -66,6 +66,7 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.Utilities;
 import org.broad.igv.util.blat.BlatClient;
+import org.broad.igv.util.extview.ExtendViewClient;
 import org.broad.igv.util.collections.CollUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -1371,6 +1372,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             addSeparator();
             addCopySequenceItem(e);
+            addExtViewItem(e);
             addBlatItem(e);
             addConsensusSequence(e);
 
@@ -2134,6 +2136,31 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         }
 
+        public void addExtViewItem(final TrackClickEvent te) {
+            // Change track height by attribute
+            final JMenuItem item = new JMenuItem("ExtView");
+            add(item);
+
+            final Alignment alignment = getAlignment(te);
+            if (alignment == null) {
+                item.setEnabled(false);
+                return;
+            }
+
+            final String seq = alignment.getReadSequence();
+            if (seq == null) {
+                item.setEnabled(false);
+                return;
+
+            }
+
+            item.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent aEvt) {
+                    ExtendViewClient.postExtendView(alignment);
+                }
+            });
+
+        }
 
         private void addIonTorrentAuxiliaryViews(final TrackClickEvent e) {
 

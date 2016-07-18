@@ -56,6 +56,7 @@ import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.blat.BlatClient;
+import org.broad.igv.util.extview.ExtendViewClient;
 import org.broad.igv.util.collections.CollUtils;
 import org.broad.igv.util.stats.KMPlotFrame;
 import htsjdk.tribble.Feature;
@@ -464,6 +465,9 @@ public class TrackMenuUtils {
         if (tracks.size() == 1) {
             Track t = tracks.iterator().next();
             Feature f = t.getFeatureAtMousePosition(te);
+            ReferenceFrame frame=te.getFrame();
+            Range r = frame.getCurrentRange();
+            String featureName = "";
             if (f != null) {
                 featurePopupMenu.addSeparator();
                 featurePopupMenu.add(getCopyDetailsItem(f, te));
@@ -471,6 +475,7 @@ public class TrackMenuUtils {
                 // If we are over an exon, copy its sequence instead of the entire feature.
                 Feature sequenceFeature = f;
                 if (sequenceFeature instanceof IGVFeature) {
+                    featureName = ((IGVFeature) sequenceFeature).getName();
                     double position = te.getChromosomePosition();
                     Collection<Exon> exons = ((IGVFeature) sequenceFeature).getExons();
                     if (exons != null) {
@@ -484,9 +489,8 @@ public class TrackMenuUtils {
                 }
 
                 featurePopupMenu.add(getCopySequenceItem(sequenceFeature));
+                featurePopupMenu.add(getExtendViewItem(featureName, sequenceFeature, r));
                 featurePopupMenu.add(getBlatItem(sequenceFeature));
-
-
             }
             if (Globals.isDevelopment()) {
                 featurePopupMenu.addSeparator();
@@ -1340,7 +1344,6 @@ public class TrackMenuUtils {
         return item;
     }
 
-
     public static JMenuItem getCopySequenceItem(final Feature f) {
         JMenuItem item = new JMenuItem("Copy Sequence");
         item.addActionListener(new ActionListener() {
@@ -1353,6 +1356,16 @@ public class TrackMenuUtils {
         return item;
     }
 
+    public static JMenuItem getExtendViewItem(final String featureName, final Feature f, final Range r) {
+        JMenuItem item = new JMenuItem("ExtView");
+        item.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent evt) {
+                ExtendViewClient.postExtendView(featureName, f.getStart(), f.getEnd(), r.getChr(), r.getStart(), r.getEnd());
+            }
+        });
+        return item;
+    }
 
     public static JMenuItem getBlatItem(final Feature f) {
         JMenuItem item = new JMenuItem("Blat Sequence");
