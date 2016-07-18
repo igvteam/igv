@@ -110,6 +110,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_HIDDEN_TAGS = "SAM.HIDDEN_TAGS";
     public static final String SAM_MAX_VISIBLE_RANGE = "SAM.MAX_VISIBLE_RANGE";
     public static final String SAM_SHOW_DUPLICATES = "SAM.SHOW_DUPLICATES";
+    public static final String SAM_QUICK_CONSENSUS_MODE = "SAM.QUICK_CONSENSUS_MODE";
     public static final String SAM_SHOW_SOFT_CLIPPED = "SAM.SHOW_SOFT_CLIPPED";
     public static final String SAM_FLAG_UNMAPPED_PAIR = "SAM.FLAG_UNMAPPED_PAIR";
     public static final String SAM_SAMPLING_COUNT = "SAM.MAX_LEVELS"; // Sampling count
@@ -1077,6 +1078,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(UNLOAD_ON_GENOME_CHANGE, "false");
 
         defaultValues.put(SAM_SHOW_DUPLICATES, "false");
+        defaultValues.put(SAM_QUICK_CONSENSUS_MODE, "false");
         defaultValues.put(SAM_SHOW_SOFT_CLIPPED, "false");
         defaultValues.put(SAM_FLAG_UNMAPPED_PAIR, "false");
         defaultValues.put(SAM_AUTO_SORT, "false");
@@ -1403,6 +1405,7 @@ public class PreferenceManager implements PropertyManager {
             PreferenceManager.SAM_FILTER_URL,
             PreferenceManager.SAM_MAX_VISIBLE_RANGE,
             PreferenceManager.SAM_SHOW_DUPLICATES,
+            PreferenceManager.SAM_QUICK_CONSENSUS_MODE,
             PreferenceManager.SAM_SHOW_SOFT_CLIPPED,
             PreferenceManager.SAM_SAMPLING_COUNT,
             PreferenceManager.SAM_SAMPLING_WINDOW,

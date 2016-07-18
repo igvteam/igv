@@ -29,6 +29,7 @@
  */
 package org.broad.igv.sam;
 
+import org.broad.igv.sam.AlignmentCounts;
 import org.broad.igv.track.RenderContext;
 
 import java.awt.*;
@@ -42,7 +43,7 @@ public class BedRenderer implements FeatureRenderer {
 
     public void renderAlignments(List<Alignment> alignments, RenderContext context,
                                  Rectangle rowRect, Rectangle inputRect, AlignmentTrack.RenderOptions renderOptions, boolean leaveMargin,
-                                 Map<String, Color> selectedReadNames) {
+                                 Map<String, Color> selectedReadNames, AlignmentCounts alignmentCounts) {
 
         double origin = context.getOrigin();
         double locScale = context.getScale();

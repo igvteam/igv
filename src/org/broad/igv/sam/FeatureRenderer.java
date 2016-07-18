@@ -29,6 +29,7 @@
  */
 package org.broad.igv.sam;
 
+import org.broad.igv.sam.AlignmentCounts;
 import org.broad.igv.track.RenderContext;
 
 import java.awt.*;
@@ -48,8 +49,9 @@ public interface FeatureRenderer {
      * @param renderOptions
      * @param leaveMargin
      * @param selectedReadNames
+     * @param alignmentCounts
      */
     public void renderAlignments(List<Alignment> alignments, RenderContext context,
                                  Rectangle rowRect, Rectangle trackRect, AlignmentTrack.RenderOptions renderOptions,
-                                 boolean leaveMargin, Map<String, Color> selectedReadNames);
+                                 boolean leaveMargin, Map<String, Color> selectedReadNames, AlignmentCounts alignmentCounts);
 }
