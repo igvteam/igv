@@ -5,14 +5,9 @@ import htsjdk.tribble.exception.CodecLineParsingException;
 import htsjdk.tribble.readers.LineIterator;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.tribble.FeatureFileHeader;
-import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.util.ParsingUtils;
 
-import java.util.Arrays;
-
-import static com.sun.tools.doclets.formats.html.markup.HtmlStyle.header;
 
 /**
  * Created by jrobinson on 7/19/16.
