@@ -465,8 +465,12 @@ public class TrackMenuUtils {
         if (tracks.size() == 1) {
             Track t = tracks.iterator().next();
             Feature f = t.getFeatureAtMousePosition(te);
+
             ReferenceFrame frame=te.getFrame();
-            Range r = frame.getCurrentRange();
+            if(frame == null && !FrameManager.isGeneListMode()) {
+                frame = FrameManager.getDefaultFrame();
+            }
+
             String featureName = "";
             if (f != null) {
                 featurePopupMenu.addSeparator();
@@ -489,7 +493,12 @@ public class TrackMenuUtils {
                 }
 
                 featurePopupMenu.add(getCopySequenceItem(sequenceFeature));
-                featurePopupMenu.add(getExtendViewItem(featureName, sequenceFeature, r));
+
+                if(frame != null) {
+                    Range r = frame.getCurrentRange();
+                    featurePopupMenu.add(getExtendViewItem(featureName, sequenceFeature, r));
+                }
+
                 featurePopupMenu.add(getBlatItem(sequenceFeature));
             }
             if (Globals.isDevelopment()) {
