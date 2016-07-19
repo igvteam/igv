@@ -35,6 +35,7 @@ import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.*;
+import org.broad.igv.renderer.Renderer;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.tools.FeatureSearcher;
@@ -109,7 +110,7 @@ public class FeatureTrack extends AbstractTrack {
      */
     protected Map<String, PackedFeatures<IGVFeature>> packedFeaturesMap = Collections.synchronizedMap(new HashMap<String, PackedFeatures<IGVFeature>>());
 
-    private FeatureRenderer renderer;
+    private Renderer renderer;
 
     private DataRenderer coverageRenderer;
 
@@ -274,7 +275,7 @@ public class FeatureTrack extends AbstractTrack {
 
     public void setRendererClass(Class rc) {
         try {
-            renderer = (FeatureRenderer) rc.newInstance();
+            renderer = (Renderer) rc.newInstance();
         } catch (Exception ex) {
             log.error("Error instatiating renderer ", ex);
         }
@@ -381,7 +382,7 @@ public class FeatureTrack extends AbstractTrack {
     }
 
 
-    public FeatureRenderer getRenderer() {
+    public Renderer getRenderer() {
         if (renderer == null) {
             setRendererClass(IGVFeatureRenderer.class);
         }
@@ -498,7 +499,7 @@ public class FeatureTrack extends AbstractTrack {
      * @param frame
      * @return
      */
-    private List<Feature> getAllFeatureAt(double position, int y, ReferenceFrame frame) {
+    protected List<Feature> getAllFeatureAt(double position, int y, ReferenceFrame frame) {
         // Determine the level number (for expanded tracks)
         int featureRow = getFeatureRow(y);
         return getFeaturesAtPositionInFeatureRow(position, featureRow, frame);
@@ -819,7 +820,7 @@ public class FeatureTrack extends AbstractTrack {
     protected void renderFeatureImpl(RenderContext context, Rectangle inputRect, PackedFeatures packedFeatures) {
 
 
-        FeatureRenderer renderer = getRenderer();
+        Renderer renderer = getRenderer();
         if (areFeaturesStacked()) {
             List<PackedFeatures.FeatureRow> rows = packedFeatures.getRows();
             if (rows != null && rows.size() > 0) {
@@ -834,7 +835,7 @@ public class FeatureTrack extends AbstractTrack {
                     Rectangle rect = new Rectangle(inputRect.x, inputRect.y, inputRect.width, (int) h);
                     int i = 0;
 
-                    renderer.reset();
+                    if(renderer instanceof FeatureRenderer) ((FeatureRenderer) renderer).reset();
                     for (PackedFeatures.FeatureRow row : rows) {
                         levelRects.add(new Rectangle(rect));
                         renderer.render(row.features, context, levelRects.get(i), this);
@@ -848,7 +849,7 @@ public class FeatureTrack extends AbstractTrack {
                 }
             }
         } else {
-            List<IGVFeature> features = packedFeatures.getFeatures();
+            List<Feature> features = packedFeatures.getFeatures();
             if (features != null) {
                 renderer.render(features, context, inputRect, this);
             }

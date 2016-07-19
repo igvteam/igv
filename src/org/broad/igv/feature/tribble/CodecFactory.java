@@ -29,6 +29,8 @@ import htsjdk.samtools.util.BlockCompressedInputStream;
 import org.apache.log4j.Logger;
 import org.broad.igv.data.cufflinks.FPKMTrackingCodec;
 import org.broad.igv.feature.FeatureType;
+import org.broad.igv.feature.dsi.DSICodec;
+import org.broad.igv.feature.dsi.DSIFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.gwas.EQTLCodec;
 import org.broad.igv.peaks.PeakCodec;
@@ -99,7 +101,7 @@ public class CodecFactory {
             return codec;
         } else if (fn.endsWith(".gappedpeak")) {
             return new IGVBEDCodec(genome, FeatureType.GAPPED_PEAK);
-        }else if (fn.endsWith(".dgv")) {
+        } else if (fn.endsWith(".dgv")) {
             return new DGVCodec(genome);
         } else if (fn.contains("refflat")) {
             return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.REFFLAT, genome);
@@ -119,7 +121,7 @@ public class CodecFactory {
             return new PSLCodec(genome);
         } else if (MUTCodec.isMutationAnnotationFile(locator)) {
             return new MUTCodec(path, genome);
-        } else if (fn.endsWith(".narrowpeak") || fn.endsWith(".broadpeak") ) {
+        } else if (fn.endsWith(".narrowpeak") || fn.endsWith(".broadpeak")) {
             return new EncodePeakCodec(genome);
         } else if (fn.endsWith(".peak")) {
             return new PeakCodec(genome);
@@ -131,6 +133,8 @@ public class CodecFactory {
             return new FPKMTrackingCodec(path);
             //} else if (fn.endsWith("gene_exp.diff") || fn.endsWith("cds_exp.diff")) {
             //    return new ExpDiffCodec(path);
+        } else if (fn.endsWith(".dsi")) {
+            return new DSICodec(genome);
         } else {
             return null;
         }
