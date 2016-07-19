@@ -289,7 +289,8 @@ public class AlignmentRenderer implements FeatureRenderer {
                                  Rectangle trackRect,
                                  RenderOptions renderOptions,
                                  boolean leaveMargin,
-                                 Map<String, Color> selectedReadNames) {
+                                 Map<String, Color> selectedReadNames,
+                                 AlignmentCounts alignmentCounts) {
 
         double origin = context.getOrigin();
         double locScale = context.getScale();
@@ -341,14 +342,14 @@ public class AlignmentRenderer implements FeatureRenderer {
                     g.fillRect((int) pixelStart, y, w, h);
                     lastPixelDrawn = (int) pixelStart + w;
                 } else if (alignment instanceof PairedAlignment) {
-                    drawPairedAlignment((PairedAlignment) alignment, rowRect, trackRect, context, renderOptions, leaveMargin, selectedReadNames, font);
+                    drawPairedAlignment((PairedAlignment) alignment, rowRect, trackRect, context, renderOptions, leaveMargin, selectedReadNames, font, alignmentCounts);
                 } else if (alignment instanceof LinkedAlignment) {
-                    drawExtendedAlignment((LinkedAlignment) alignment, rowRect, trackRect, context, renderOptions, leaveMargin, selectedReadNames, font);
+                    drawExtendedAlignment((LinkedAlignment) alignment, rowRect, trackRect, context, renderOptions, leaveMargin, selectedReadNames, font, alignmentCounts);
                 } else {
                     Color alignmentColor = getAlignmentColor(alignment, renderOptions);
                     Graphics2D g = context.getGraphic2DForColor(alignmentColor);
                     g.setFont(font);
-                    drawAlignment(alignment, rowRect, trackRect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
+                    drawAlignment(alignment, rowRect, trackRect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames, alignmentCounts);
                 }
             }
 
@@ -370,7 +371,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         }
     }
 
-    private void drawExtendedAlignment(LinkedAlignment alignment, Rectangle rowRect, Rectangle trackRect, RenderContext context, RenderOptions renderOptions, boolean leaveMargin, Map<String, Color> selectedReadNames, Font font) {
+    private void drawExtendedAlignment(LinkedAlignment alignment, Rectangle rowRect, Rectangle trackRect, RenderContext context, RenderOptions renderOptions, boolean leaveMargin, Map<String, Color> selectedReadNames, Font font, AlignmentCounts alignmentCounts) {
 
         double origin = context.getOrigin();
         double locScale = context.getScale();
@@ -394,7 +395,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 gline.drawLine(startX, y + h / 2, endX, y + h / 2);
             }
             for (Alignment al : barcodedAlignments) {
-                drawAlignment(al, rowRect, trackRect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
+                drawAlignment(al, rowRect, trackRect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames, alignmentCounts);
             }
         }
     }
@@ -468,6 +469,7 @@ public class AlignmentRenderer implements FeatureRenderer {
      * @param leaveMargin
      * @param selectedReadNames
      * @param font
+     * @param alignmentCounts
      */
     private void drawPairedAlignment(
             PairedAlignment pair,
@@ -477,7 +479,8 @@ public class AlignmentRenderer implements FeatureRenderer {
             RenderOptions renderOptions,
             boolean leaveMargin,
             Map<String, Color> selectedReadNames,
-            Font font) {
+            Font font,
+            AlignmentCounts alignmentCounts) {
 
         //Only plot outliers
         if (renderOptions.isPairedArcView() && getOutlierStatus(pair, renderOptions) == 0) {
@@ -498,7 +501,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         Graphics2D g = context.getGraphic2DForColor(alignmentColor1);
         g.setFont(font);
-        drawAlignment(pair.firstAlignment, rowRect, trackRect, g, context, alignmentColor1, renderOptions, leaveMargin, selectedReadNames);
+        drawAlignment(pair.firstAlignment, rowRect, trackRect, g, context, alignmentColor1, renderOptions, leaveMargin, selectedReadNames, alignmentCounts);
 
         //If the paired alignment is in memory, we draw it.
         //However, we get the coordinates from the first alignment
@@ -509,7 +512,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             }
             g = context.getGraphic2DForColor(alignmentColor2);
 
-            drawAlignment(pair.secondAlignment, rowRect, trackRect, g, context, alignmentColor2, renderOptions, leaveMargin, selectedReadNames);
+            drawAlignment(pair.secondAlignment, rowRect, trackRect, g, context, alignmentColor2, renderOptions, leaveMargin, selectedReadNames, alignmentCounts);
         } else {
             return;
         }
@@ -571,6 +574,7 @@ public class AlignmentRenderer implements FeatureRenderer {
      * @param renderOptions
      * @param leaveMargin
      * @param selectedReadNames
+     * @param alignmentCounts
      */
     private void drawAlignment(
             Alignment alignment,
@@ -581,7 +585,8 @@ public class AlignmentRenderer implements FeatureRenderer {
             Color alignmentColor,
             AlignmentTrack.RenderOptions renderOptions,
             boolean leaveMargin,
-            Map<String, Color> selectedReadNames) {
+            Map<String, Color> selectedReadNames,
+            AlignmentCounts alignmentCounts) {
 
         double origin = context.getOrigin();
         double locScale = context.getScale();
@@ -707,9 +712,11 @@ public class AlignmentRenderer implements FeatureRenderer {
             if ((locScale < 5) || (AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) && (locScale < 100))) // Is 100 here going to kill some machines? bpb
             {
                 if (renderOptions.showMismatches || renderOptions.showAllBases) {
-                    drawBases(context, rowRect, alignment, aBlock, alignmentColor, renderOptions);
+                    boolean quickConsensus = prefs.getAsBoolean(PreferenceManager.SAM_QUICK_CONSENSUS_MODE);
+                    drawBases(context, rowRect, alignment, aBlock, alignmentCounts, quickConsensus, alignmentColor, renderOptions);
                 }
             }
+
 
             // Draw connecting lines between blocks, if in view
 //            if (lastBlockEnd > Integer.MIN_VALUE && blockPixelStart > rowRect.x) {
@@ -852,6 +859,8 @@ public class AlignmentRenderer implements FeatureRenderer {
      * @param rect
      * @param baseAlignment
      * @param block
+     * @param alignmentCounts
+     * @param quickConsensus
      * @param alignmentColor
      * @param renderOptions
      */
@@ -859,6 +868,8 @@ public class AlignmentRenderer implements FeatureRenderer {
                            Rectangle rect,
                            Alignment baseAlignment,
                            AlignmentBlock block,
+                           AlignmentCounts alignmentCounts,
+                           boolean quickConsensus,
                            Color alignmentColor,
                            RenderOptions renderOptions) {
 
@@ -902,7 +913,8 @@ public class AlignmentRenderer implements FeatureRenderer {
         int dY = (int) rect.getHeight();
         int dX = (int) Math.max(1, (1.0 / locScale));
         Graphics2D g = (Graphics2D) context.getGraphics().create();
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+        PreferenceManager prefs = PreferenceManager.getInstance();
+        if (prefs.getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
             g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
         if (dX >= 8) {
@@ -958,7 +970,12 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
 
                 BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(idx);
-                drawBase(g, color, c, pX, pY, dX, dY, bisulfiteMode, bisstatus);
+                if (isSoftClipped || bisulfiteMode ||
+                    // In "quick consensus" mode, only show mismatches at positions with a consistent alternative basepair.
+                    (!quickConsensus || alignmentCounts.isMismatch(loc, reference[idx], chr, prefs.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD)))
+                   ) {
+                    drawBase(g, color, c, pX, pY, dX, dY, bisulfiteMode, bisstatus);
+                }
             }
         }
 

@@ -3977,6 +3977,26 @@
                   <string>javax.swing.JCheckBox</string> 
                   <void method="setProperty"> 
                    <string>text</string> 
+                   <string>Quick consensus mode</string> 
+                  </void> 
+                  <void property="name"> 
+                   <string>quickConsensusModeCB</string> 
+                  </void> 
+                  <void method="addEvent"> 
+                   <object class="com.jformdesigner.model.FormEvent"> 
+                    <string>java.awt.event.ActionListener</string> 
+                    <string>actionPerformed</string> 
+                    <string>quickConsensusModeCBActionPerformed</string> 
+                    <boolean>false</boolean> 
+                   </object> 
+                  </void> 
+                 </object> 
+                </void> 
+                <void method="add"> 
+                 <object class="com.jformdesigner.model.FormComponent"> 
+                  <string>javax.swing.JCheckBox</string> 
+                  <void method="setProperty"> 
+                   <string>text</string> 
                    <string>Show center line</string> 
                   </void> 
                   <void property="name"> 
