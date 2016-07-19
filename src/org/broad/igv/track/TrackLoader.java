@@ -54,6 +54,8 @@ import org.broad.igv.feature.MutationTrackLoader;
 import org.broad.igv.feature.bionano.SMAPParser;
 import org.broad.igv.feature.bionano.SMAPRenderer;
 import org.broad.igv.feature.dranger.DRangerParser;
+import org.broad.igv.feature.dsi.DSIRenderer;
+import org.broad.igv.feature.dsi.DSITrack;
 import org.broad.igv.feature.genome.*;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
@@ -213,6 +215,8 @@ public class TrackLoader {
                 loadListFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".smap")) {
                 loadSMAPFile(locator, newTracks, genome);
+            } else if (typeString.endsWith("dsi")) {
+                loadDSIFile(locator, newTracks, genome);
             } else if (CodecFactory.hasCodec(locator, genome) && !forceNotTribble(typeString)) {
                 loadTribbleFile(locator, newTracks, genome);
             } else if (handler != null) {
@@ -382,6 +386,7 @@ public class TrackLoader {
         } else {
 
             TribbleFeatureSource tribbleFeatureSource = TribbleFeatureSource.getFeatureSource(locator, genome);
+
             FeatureSource src = GFFFeatureSource.isGFF(locator.getPath()) ?
                     new GFFFeatureSource(tribbleFeatureSource) : tribbleFeatureSource;
 
@@ -402,7 +407,6 @@ public class TrackLoader {
                     t.setProperties(tp);
                     t.setTrackLine(tp.getTrackLine());
                 }
-
                 if (ffh.getTrackType() == TrackType.REPMASK) {
                     t.setHeight(15);
                 }
@@ -413,6 +417,29 @@ public class TrackLoader {
             newTracks.add(t);
         }
     }
+
+    private void loadDSIFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException, TribbleIndexNotFoundException {
+
+        TribbleFeatureSource tribbleFeatureSource = TribbleFeatureSource.getFeatureSource(locator, genome);
+
+        // Create feature source and track
+        DSITrack t = new DSITrack(locator, tribbleFeatureSource);
+        t.setName(locator.getTrackName());
+        //t.setRendererClass(BasicTribbleRenderer.class);
+
+        // Set track properties from header
+        Object header = tribbleFeatureSource.getHeader();
+        if (header != null && header instanceof TrackProperties) {
+            TrackProperties tp = (TrackProperties) header;
+            t.setProperties(tp);
+            t.setTrackLine(tp.getTrackLine());
+        }
+
+        t.setRendererClass(DSIRenderer.class);
+
+        newTracks.add(t);
+    }
+
 
     /**
      * Load GWAS PLINK result file
