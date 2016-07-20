@@ -27,6 +27,7 @@ package org.broad.igv.util;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.ga4gh.Ga4ghAPIHelper;
+import org.broad.igv.ga4gh.GoogleUtils;
 import org.broad.igv.gs.GSUtils;
 import htsjdk.tribble.Tribble;
 
@@ -260,15 +261,14 @@ public class ResourceLocator {
     }
 
     public String getTrackName() {
-        if(name == null) {
-            if(path.startsWith("http://") || path.startsWith("https://")) {
+        if (name == null) {
+            if (path.startsWith("http://") || path.startsWith("https://")) {
                 try {
                     return new File((new URL(path)).getPath()).getName();
                 } catch (MalformedURLException e) {
                     return path;
                 }
-            }
-            else {
+            } else {
                 return new File(path).getName();
             }
         }
@@ -313,6 +313,8 @@ public class ResourceLocator {
     public void setPath(String path) {
         if (path != null && path.startsWith("file://")) {
             this.path = path.substring(7);
+        } else if (path != null && path.startsWith("gs://")) {
+            this.path = GoogleUtils.translateGoogleCloudURL(path);
         } else {
             this.path = path;
         }
@@ -396,8 +398,7 @@ public class ResourceLocator {
                         String bamIndexFile = bamFile + ".bai";
                         String newQueryString = queryString.replace(bamFile, bamIndexFile);
                         return path.replace(queryString, newQueryString);
-                    }
-                    else {
+                    } else {
                         String ip = path.replace(url.getPath(), url.getPath() + ".bai");
                         return ip;
                     }

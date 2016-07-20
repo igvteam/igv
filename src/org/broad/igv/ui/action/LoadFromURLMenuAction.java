@@ -32,9 +32,9 @@ package org.broad.igv.ui.action;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.HttpResponseException;
+import org.broad.igv.ga4gh.GoogleUtils;
 import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.util.LoadFromURLDialog;
 import org.broad.igv.ui.util.MessageUtils;
@@ -90,7 +90,7 @@ public class LoadFromURLMenuAction extends MenuAction {
 
                     if (url.startsWith("gs://")) {
                         enableGoogleMenu();
-                        url = translateGoogleCloudURL(url);
+                        url = GoogleUtils.translateGoogleCloudURL(url);
                     }
 
                     if (OAuthUtils.isGoogleCloud(url)) {
@@ -116,7 +116,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                             String indexUrl = dlg.getIndexURL().trim();
                             if (indexUrl.startsWith("gs://")) {
                                 enableGoogleMenu();
-                                indexUrl = translateGoogleCloudURL(indexUrl);
+                                indexUrl = GoogleUtils.translateGoogleCloudURL(indexUrl);
                             }
                             if (OAuthUtils.isGoogleCloud(indexUrl)) {
                                 if (indexUrl.indexOf("alt=media") < 0) {
@@ -157,35 +157,6 @@ public class LoadFromURLMenuAction extends MenuAction {
             PreferenceManager.getInstance().put(PreferenceManager.ENABLE_GOOGLE_MENU, true);
             IGVMenuBar.getInstance().enableGoogleMenu(true);
         }
-    }
-
-
-    /**
-     * gs://igv-bam-test/NA12878.bam
-     * https://www.googleapis.com/storage/v1/b/igv-bam-test/o/NA12878.bam
-     *
-     * @param gsUrl
-     * @return
-     */
-    private String translateGoogleCloudURL(String gsUrl) {
-
-        int i = gsUrl.indexOf('/', 5);
-        if (i < 0) {
-            log.error("Invalid gs url: " + gsUrl);
-            return gsUrl;
-        }
-
-        String bucket = gsUrl.substring(5, i);
-        String object = gsUrl.substring(i + 1);
-        try {
-            object = URLEncoder.encode(object, "UTF8");
-        } catch (UnsupportedEncodingException e) {
-            // This isn't going to happen
-            log.error(e);
-        }
-
-        return "https://www.googleapis.com/storage/v1/b/" + bucket + "/o/" + object;
-
     }
 
 
