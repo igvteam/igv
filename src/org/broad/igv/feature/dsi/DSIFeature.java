@@ -57,11 +57,12 @@ public class DSIFeature implements Feature {
         StringBuffer buffer = new StringBuffer();
         buffer.append("Chromosome: " + chr +
                 "<br>Position: " + (position + 1) +
+                "<br>Type: " + type +
                 "<br>Base: " + base +
                 "<br>Total: " + total +
                 "<br>Methylated: " + meth +
-                "<br>Unmethylated: " + unmeth +
-                "<br>Type: " + type);
+                "<br>Unmethylated: " + unmeth);
+
 
         if (f != Integer.MIN_VALUE) {
             buffer.append("<hr>");
