@@ -40,6 +40,7 @@ import org.broad.igv.dev.api.batch.Command;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ga4gh.Ga4ghAPIHelper;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.RegionScoreType;
@@ -378,7 +379,7 @@ public class CommandExecutor {
     /**
      * Load function for port and batch script
      *
-     * @param fileString
+     * @param fileString path to file
      * @param param2
      * @param param3
      * @return
@@ -530,13 +531,6 @@ public class CommandExecutor {
             } else {
                 ResourceLocator rl = new ResourceLocator(f);
 
-                if (rl.isLocal()) {
-                    File file = new File(rl.getPath());
-                    if (!file.exists()) {
-                        return "Error: " + f + " does not exist.";
-                    }
-                }
-
                 if (names != null) {
                     rl.setName(names.get(fi));
                 }
@@ -548,12 +542,25 @@ public class CommandExecutor {
                 }
                 if (formats != null) {
                     String format = formats.get(fi);
-                    if (!format.startsWith(".")) format = "." + format;
+                    if (!("ga4gh".equals(format)) && !format.startsWith(".")) format = "." + format;
                     rl.setType(format);
                 }
-                if (params != null) {
-                    String trackLine = createTrackLine(params);
-                    rl.setTrackLine(trackLine);
+
+                if ("ga4gh".equals(rl.getType())) {
+                    // TODO -- distinguish reads and variants
+                    rl.setAttribute("provider", Ga4ghAPIHelper.GA4GH_GOOGLE_PROVIDER);
+                } else {
+                    if (params != null) {
+                        String trackLine = createTrackLine(params);
+                        rl.setTrackLine(trackLine);
+                    }
+
+                    if (rl.isLocal()) {
+                        File file = new File(rl.getPath());
+                        if (!file.exists()) {
+                            return "Error: " + f + " does not exist.";
+                        }
+                    }
                 }
                 fileLocators.add(rl);
             }
