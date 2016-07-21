@@ -39,6 +39,7 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ga4gh.Ga4ghAPIHelper;
+import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.RegionScoreType;
@@ -195,6 +196,13 @@ public class CommandExecutor {
                     FrameManager.incrementZoom(1);
                 } else if (cmd.equals("zoomout")) {
                     FrameManager.incrementZoom(-1);
+                } else if ("oauth".equals(cmd)) {
+                    try {
+                        OAuthUtils.getInstance().setAccessToken(param1);
+                    } catch (IOException e1) {
+                        log.error(e1);
+                        return e1.getMessage();
+                    }
                 } else {
                     result = "UNKOWN COMMAND: " + command;
                     log.error(result);
@@ -215,10 +223,15 @@ public class CommandExecutor {
             }
             log.debug("Finished sleeping");
 
-        } catch (IOException e) {
+        } catch (
+                IOException e
+                )
+
+        {
             log.error(e);
             result = "Error: " + e.getMessage();
         }
+
         log.info(result);
 
         return result;
