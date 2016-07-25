@@ -80,6 +80,12 @@ public class DirectoryManager {
     }
 
 
+    public static void setIgvDirectory(File dir) {
+        log.info("IGV Directory: " + dir.getAbsolutePath());
+        IGV_DIRECTORY = dir;
+    }
+
+
     public static File getIgvDirectory() {
 
         if (IGV_DIRECTORY == null) {

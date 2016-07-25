@@ -41,6 +41,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -76,6 +77,13 @@ public class Main {
 
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
 
+        Main.IGVArgs igvArgs = new Main.IGVArgs(args);
+
+        // Do this early
+        if (igvArgs.igvDirectory != null) {
+            setIgvDirectory(igvArgs);
+        }
+
         initApplication();
 
         JFrame frame = new JFrame();
@@ -83,7 +91,33 @@ public class Main {
         ImageIcon icon = new ImageIcon(Main.class.getResource("mainframeicon.png"));
         if (icon != null) frame.setIconImage(icon.getImage());
         open(frame, args);
+    }
 
+    private static void setIgvDirectory(IGVArgs igvArgs) {
+
+        File dir = new File(igvArgs.igvDirectory);
+        if (!dir.exists()) {
+
+            // doesn't exist -- try to create it
+            try {
+                dir.mkdir();
+            } catch (Exception e) {
+                log.error("Error creating igv directory " + dir.getAbsolutePath(), e);
+                return;
+            }
+
+            if (dir.isDirectory()) {
+                if (dir.canWrite()) {
+                    DirectoryManager.setIgvDirectory(dir);
+                } else {
+                    log.error("IGV directory '" + dir.getAbsolutePath() + "'is not writable");
+                }
+            } else {
+                log.error("'" + dir.getAbsolutePath() + "' is not a directory");
+            }
+        } else {
+          log.error("'" + dir.getAbsolutePath() + "' not found");
+        }
     }
 
     private static void initApplication() {
@@ -353,6 +387,7 @@ public class Main {
         private String indexFile = null;
         private String coverageFile = null;
         private String name = null;
+        public String igvDirectory = null;
 
         IGVArgs(String[] args) {
             if (args != null) {
@@ -375,6 +410,7 @@ public class Main {
             CmdLineParser.Option indexFileOption = parser.addStringOption('i', "indexFile");
             CmdLineParser.Option coverageFileOption = parser.addStringOption('c', "coverageFile");
             CmdLineParser.Option nameOption = parser.addStringOption('n', "name");
+            CmdLineParser.Option igvDirectoryOption = parser.addStringOption("igvDirectory");
 
             try {
                 parser.parse(args);
@@ -392,6 +428,7 @@ public class Main {
             indexFile = (String) parser.getOptionValue(indexFileOption);
             coverageFile = (String) parser.getOptionValue(coverageFileOption);
             name = (String) parser.getOptionValue(nameOption);
+            igvDirectory = (String) parser.getOptionValue(igvDirectoryOption);
 
             String[] nonOptionArgs = parser.getRemainingArgs();
             if (nonOptionArgs != null && nonOptionArgs.length > 0) {
