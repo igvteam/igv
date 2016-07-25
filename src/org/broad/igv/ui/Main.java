@@ -97,7 +97,16 @@ public class Main {
     private static void setIgvDirectory(IGVArgs igvArgs) {
 
         File dir = new File(igvArgs.igvDirectory);
-        if (dir.exists()) {
+        if (!dir.exists()) {
+
+            // doesn't exist -- try to create it
+            try {
+                dir.mkdir();
+            } catch (Exception e) {
+                log.error("Error creating igv directory " + dir.getAbsolutePath(), e);
+                return;
+            }
+
             if (dir.isDirectory()) {
                 if (dir.canWrite()) {
                     DirectoryManager.setIgvDirectory(dir);
@@ -108,8 +117,7 @@ public class Main {
                 log.error("'" + dir.getAbsolutePath() + "' is not a directory");
             }
         } else {
-            // doesn't exist
-            log.error("'" + dir.getAbsolutePath() + "' not found");
+          log.error("'" + dir.getAbsolutePath() + "' not found");
         }
 
     }
