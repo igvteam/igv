@@ -26,7 +26,6 @@
 
 package org.broad.igv.tools.sort;
 
-import com.mysql.jdbc.NotImplemented;
 import htsjdk.samtools.*;
 import htsjdk.samtools.util.CloserUtil;
 import org.apache.log4j.Logger;

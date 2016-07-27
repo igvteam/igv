@@ -28,7 +28,6 @@
 
 package org.broad.igv.variant;
 
-import oracle.jdbc.proxy.annotation.Pre;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.FeatureUtils;
