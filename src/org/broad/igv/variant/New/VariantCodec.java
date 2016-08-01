@@ -1,6 +1,5 @@
 package org.broad.igv.variant.New;
 
-import EDU.oswego.cs.dl.util.concurrent.FJTask;
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.readers.LineIterator;
 import org.apache.log4j.Logger;
@@ -16,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.sun.tools.doclets.formats.html.markup.HtmlStyle.header;
 
 /**
  * Created by jrobinso on 7/29/16.
