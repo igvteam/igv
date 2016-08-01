@@ -267,6 +267,8 @@ public class MAFtoSAM {
             out.println("@SQ\tSN:" + chr + "\tLN:" + sequenceDictionary.get(chr));
         }
 
+        out.println("@PG\tPN:lastZ\tID:lastZ");
+        out.println("@PG\tPN:MAFtoSAM\tID:MAFtoSAM");
     }
 
     private static String collapseCigar(String cigarString) {
