@@ -80,6 +80,9 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     private static Stroke thickStroke = new BasicStroke(2.0f);
 
+    // Minimum pixel width to render a small indel
+    private final int MIN_INDEL_PX_WIDTH = 3;
+
     // Bisulfite constants
     private final Color bisulfiteColorFw1 = new Color(195, 195, 195);
     private final Color bisulfiteColorRev1 = new Color(195, 210, 195);
@@ -697,7 +700,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
 
                 // Draw the gap if it is sufficiently large at the current zoom.
-                boolean drawGap = (gapPxWidth >= 3);
+                boolean drawGap = (gapPxWidth >= MIN_INDEL_PX_WIDTH);
                 if (!drawGap) {
                     continue;
                 }
@@ -1051,6 +1054,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         if (insertions != null) {
             for (AlignmentBlock aBlock : insertions) {
                 int x = (int) ((aBlock.getStart() - origin) / locScale);
+                int pxWidth = (int) (aBlock.getBases().length / locScale);
                 int h = (int) Math.max(1, rect.getHeight() - 2);
                 int y = (int) (rect.getY() + (rect.getHeight() - h) / 2);
 
@@ -1067,7 +1071,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                     gInsertion.fillRect(x - 5, y, 10, 2);
                     gInsertion.fillRect(x - 3, y, 6, h);
                     gInsertion.fillRect(x - 5, y + h - 2, 10, 2);
-                } else {
+                } else if (pxWidth >= MIN_INDEL_PX_WIDTH) {
                     Graphics2D gInsertion = context.getGraphic2DForColor(purple);
                     gInsertion.fillRect(x - 2, y, 4, 2);
                     gInsertion.fillRect(x - 1, y, 2, h);
