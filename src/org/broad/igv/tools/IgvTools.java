@@ -177,7 +177,7 @@ public class IgvTools {
     private static CmdLineParser.Option outputDirOption = null;
 
     // MAF to SAM
-    private static CmdLineParser.Option includeSequence = null;
+    private static CmdLineParser.Option noSATag = null;
     private static CmdLineParser.Option combineAlignments = null;
 
     // Trackline
@@ -451,9 +451,8 @@ public class IgvTools {
                 validateArgsLength(nonOptionArgs, 3, basic_syntax);
                 String inputFile = nonOptionArgs[1];
                 String outputFile = nonOptionArgs[2];
-                Boolean includeSequenceOption = (Boolean) parser.getOptionValue(includeSequence, false);
-                Boolean combineAlignmentsOption = (Boolean) parser.getOptionValue(combineAlignments, false);
-                MAFtoSAM.convert(inputFile, outputFile, includeSequenceOption.booleanValue(), combineAlignmentsOption.booleanValue());
+                Boolean noSATagOption = (Boolean) parser.getOptionValue(noSATag, false);
+                MAFtoSAM.convert(inputFile, outputFile, noSATagOption);
 
             } else if (command.equals(CMD_SUMWIGS)) {
                 sumWigs(nonOptionArgs[1], nonOptionArgs[2]);
@@ -601,8 +600,7 @@ public class IgvTools {
 
         if (command.equals(CMD_MAFTOSAM)) {
             // MAF to SAM
-            includeSequence = parser.addBooleanOption('s', "includeSequence");
-            combineAlignments = parser.addBooleanOption('c', "combineAlignments");
+            noSATag = parser.addBooleanOption("noSATag");
         }
 
 

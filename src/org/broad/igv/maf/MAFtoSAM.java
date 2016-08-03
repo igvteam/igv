@@ -46,20 +46,31 @@ import java.util.*;
 
 public class MAFtoSAM {
 
+    public static final int READ_PAIRED_FLAG = 0x1;
+    public static final int PROPER_PAIR_FLAG = 0x2;
+    public static final int READ_UNMAPPED_FLAG = 0x4;
+    public static final int MATE_UNMAPPED_FLAG = 0x8;
+    public static final int READ_STRAND_FLAG = 0x10;
+    public static final int MATE_STRAND_FLAG = 0x20;
+    public static final int FIRST_OF_PAIR_FLAG = 0x40;
+    public static final int SECOND_OF_PAIR_FLAG = 0x80;
+    public static final int NOT_PRIMARY_ALIGNMENT_FLAG = 0x100;
+    public static final int READ_FAILS_VENDOR_QUALITY_CHECK_FLAG = 0x200;
+    public static final int DUPLICATE_READ_FLAG = 0x400;
+    public static final int SUPPLEMENTARY_FLAG = 0x800;
+
 
     public static void main(String[] args) throws IOException {
         String inputPath = args[0];
         String outputPath = args.length > 1 ? args[1] : args[0] + ".sam";
-        convert(inputPath, outputPath, true, false);
+        convert(inputPath, outputPath, false);
     }
 
 
-    public static void convert(String path, String outputPath, boolean includeSequence, boolean groupByReadName) throws IOException {
+    public static void convert(String path, String outputPath, boolean noSATag) throws IOException {
 
-        String samOutput = outputPath.endsWith(".sam") ? outputPath : outputPath + ".sam";
-        String unsortedOutput = outputPath + ".unsorted.sam";
-        String sortedOutput = outputPath + "sorted.sam";
-        int readCounter = 1;
+        File unsortedOutput = new File(outputPath + ".unsorted.sam");
+        File outputFile = new File(outputPath);
 
         BufferedReader reader = ParsingUtils.openBufferedReader(path);
         PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(unsortedOutput)));
@@ -68,100 +79,134 @@ public class MAFtoSAM {
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("a ")) {
                 // Parse alignments until blank line
-                parseBlock(reader, out, sequenceDictionary, includeSequence);
+                parseBlock(reader, out, sequenceDictionary);
             }
         }
         out.flush();
         out.close();
         reader.close();
 
-        // Now sort sam records
-        //Sorter sorter = SorterFactory.getSorter(new File(unsortedOutput), new File(sortedOutput));
-        //sorter.run();
+        // Insert header and  SA tags
+        addSATags(unsortedOutput, outputFile, sequenceDictionary);
 
-        // Finally insert sam header
-        out = new PrintWriter(new BufferedWriter(new FileWriter(samOutput)));
-        outputHeader(sequenceDictionary, out);
 
-        reader = ParsingUtils.openBufferedReader(unsortedOutput);
-        while ((line = reader.readLine()) != null) {
-            out.println(line);
-        }
-        out.flush();
-        out.close();
-        reader.close();
-
-        (new File(unsortedOutput)).deleteOnExit();
-       // (new File(sortedOutput)).deleteOnExit();
+    //   unsortedOutput.deleteOnExit();
 
     }
 
-//    private static String combineReads(String unsortedOutput) throws IOException {
-//
-//        String groupedOutput = unsortedOutput + ".grouped.sam";
-//        String combinedOutput = unsortedOutput + ".combined.sam";
-//
-//        Sorter sorter = SorterFactory.getSorter(new File(unsortedOutput), new File(groupedOutput));
-//        sorter.setComparator(SAMSorter.ReadNameComparator);
-//        sorter.run();
-//
-//        // Get Sam file reader, output header, then iterate through sam records combining those with like read names
-//
-//        BufferedReader reader = new BufferedReader(new FileReader(groupedOutput));
-//        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(combinedOutput)));
-//        String line;
-//        String[] lastRecord = null;
-//        while ((line = reader.readLine()) != null) {
-//            if (line.startsWith("@")) {
-//                out.println(line);
-//            } else {
-//                String[] record = Globals.tabPattern.split(line);
-//
-//                if (lastRecord != null && lastRecord[0].equals(record[0])) {
-//
-//                    Cigar lastCigar = TextCigarCodec.decode(lastRecord[5]);
-//                    int lastEnd = Integer.parseInt(lastRecord[3]) + lastCigar.getReferenceLength()-1;
-//                    int gap = Integer.parseInt(record[3]) - lastEnd - 1;
-//
-//                    if(gap < 1) {
-//                     // Don't try to combine overlapping records
-//                        printRecord(out, lastRecord);
-//                        lastRecord = record;
-//                    }
-//                    else {
-//
-//                        String newCigar = lastRecord[5] + (gap + "D") + record[5];
-//                        lastRecord[5] = newCigar;
-//                        if (lastRecord[9].equals("*") || record[9].equals("*")) {
-//                            lastRecord[9] = "*";
-//                        } else {
-//                            lastRecord[9] = lastRecord[9] + record[9];
-//                        }
-//                    }
-//
-//                } else {
-//                    if(lastRecord != null) printRecord(out, lastRecord);
-//                    lastRecord = record;
-//                }
-//            }
-//        }
-//
-//        // Last one
-//        if(lastRecord != null) printRecord(out, lastRecord);
-//
-//        out.flush();
-//        out.close();
-//
-//       // (new File(groupedOutput)).deleteOnExit();
-//        (new File(combinedOutput)).deleteOnExit();
-//
-//        return combinedOutput;
-//
-//    }
+    private static void addSATags(File inputFile, File outputFile, Map<String, Integer> sequenceDictionary) throws IOException {
+
+        String groupedOutput = inputFile.getAbsolutePath() + ".grouped.sam";
+        Sorter sorter = SorterFactory.getSorter(inputFile, new File(groupedOutput));
+        sorter.setComparator(SAMSorter.ReadNameComparator);
+        sorter.run();
+
+        // Get Sam file reader, output header, then iterate through sam records combining those with like read names
+
+        BufferedReader reader = new BufferedReader(new FileReader(groupedOutput));
+        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
+        outputHeader(sequenceDictionary, out);
 
 
-    private static void parseBlock(BufferedReader reader, PrintWriter out, Map<String, Integer> sequenceDictionary,
-                                   boolean includeSequence) throws IOException {
+        String line;
+        String[] lastRecord = null;
+
+        List<String[]> chimericAlignments = new ArrayList<>();
+
+        while ((line = reader.readLine()) != null) {
+            if (line.startsWith("@")) {
+                out.println(line);
+            } else {
+                String[] record = Globals.tabPattern.split(line);
+
+                if (lastRecord == null || lastRecord[0].equals(record[0])) {
+                    chimericAlignments.add(record);
+                } else {
+                    if (chimericAlignments.size() > 0) {
+                        printChimericAlignments(out, chimericAlignments);
+                    }
+                    chimericAlignments.clear();
+                    chimericAlignments.add(record);
+                }
+                lastRecord = record;
+            }
+        }
+
+        // Last one
+        if (chimericAlignments.size() > 0) {
+            printChimericAlignments(out, chimericAlignments);
+        }
+
+        out.flush();
+        out.close();
+
+        (new File(groupedOutput)).deleteOnExit();
+
+    }
+
+    private static void printChimericAlignments(PrintWriter out, List<String[]> chimericAlignments) {
+
+        if (chimericAlignments.size() == 1) {
+            // Not chimeric, just print
+            printRecord(out, chimericAlignments.get(0));
+            out.println();
+        } else {
+
+            for (int i = 0; i < chimericAlignments.size(); i++) {
+
+                String[] thisRecord = chimericAlignments.get(i);
+
+                StringBuffer saTag = new StringBuffer("SA:Z:");
+
+
+                // Build up the SA string -- essentially a list of the other parts of this chmeric alignment.
+                for (int j = 0; j < chimericAlignments.size(); j++) {
+
+                    if (j == i) continue;
+
+                    String[] supRecord = chimericAlignments.get(j);
+
+                    // This is fragile, but we control the order
+                    String nm;
+                    String nmString = supRecord[11];
+                    if (nmString.startsWith("NM:i:")) {
+                        nm = nmString.substring(5);
+                    } else {
+                        nm = "0";
+                    }
+
+                    boolean isNegativeStrand = (Integer.parseInt(supRecord[1]) & READ_STRAND_FLAG) != 0;
+
+                    saTag.append(supRecord[2] + "," + supRecord[3] + "," + (isNegativeStrand ? "-," : "+,") +
+                            supRecord[5] + "," + supRecord[4] + "," + nm + ";");
+                }
+
+                if (i > 0) {
+                    int flags = Integer.parseInt(thisRecord[1]) | SUPPLEMENTARY_FLAG;
+                    thisRecord[1] = Integer.toString(flags);
+                }
+
+                printRecord(out, thisRecord);
+
+                out.print("\t" +saTag.toString());
+
+                out.println();
+
+
+            }
+        }
+
+    }
+
+    private static void printRecord(PrintWriter out, String[] record) {
+        out.print(record[0]);
+        for (int i = 1; i < record.length; i++) {
+            out.print("\t" + record[i]);
+        }
+    }
+
+
+    private static void parseBlock(BufferedReader reader, PrintWriter out, Map<String, Integer> sequenceDictionary) throws IOException {
 
         String line;
         SequenceLine referenceLine = null;
@@ -174,6 +219,7 @@ public class MAFtoSAM {
                 return; // return someething
             }
             if (line.startsWith("s ")) {
+
                 if (null == referenceLine) {
                     referenceLine = parseSequenceLine(line);
                     refBytes = referenceLine.text.getBytes();
@@ -186,7 +232,10 @@ public class MAFtoSAM {
                     }
                     sequenceDictionary.put(chr, referenceLine.srcSize);
                 } else {
+
                     queryLine = parseSequenceLine(line);
+
+                    int flags = queryLine.strand == '+' ? 0 : 16;
 
                     // Build cigar string one byte at a time
                     byte[] queryBytes = queryLine.text.getBytes();
@@ -196,7 +245,8 @@ public class MAFtoSAM {
                     }
 
                     String cigarString = "";
-
+                    int nm = 0;
+                    boolean indel = false;
                     for (int i = 0; i < queryBytes.length; i++) {
                         byte q = queryBytes[i];
                         byte ref = refBytes[i];
@@ -206,12 +256,24 @@ public class MAFtoSAM {
                                 //ignore, caused by insertion in another alignment;
                             } else {
                                 cigarString += "D";
+                                if (!indel) {
+                                    indel = true;
+                                    nm++;
+                                }
                             }
                         } else {
                             if (ref == '-') {
                                 cigarString += "I";
+                                if (!indel) {
+                                    indel = true;
+                                    nm++;
+                                }
                             } else {
+                                indel = false;
                                 cigarString += "M";
+                                if (queryBytes[i] != refBytes[i]) {
+                                    nm++;
+                                }
                             }
                         }
                     }
@@ -221,33 +283,27 @@ public class MAFtoSAM {
                     String readName = queryLine.src;
 
                     String barcode = null;
-                    String molcode = null;
                     if (readName.contains("Barcode")) {
 
                         int bcIdx = readName.indexOf("Barcode") + 8;
                         int endIdx = readName.indexOf(':', bcIdx);
                         barcode = readName.substring(bcIdx, endIdx);
-                        molcode = readName.substring(0, endIdx);
-
-                        // Parse barcode & make tags
-
                     }
 
 
                     // Output SAM record
-                    int flag = 0;
                     int start = referenceLine.start + 1;
                     int mapq = 30;
                     String rnext = "*";
                     int pnext = 0;
                     int tlen = 0;
-                    String seq = includeSequence ? collapseSequence(queryLine.text) : "*";
+                    String seq = collapseSequence(queryLine.text);
                     String qual = "*";
 
-                    out.print(readName + "\t" + flag + "\t" + chr + "\t" + start + "\t" + mapq + "\t" + cigarString + "\t" +
-                            rnext + "\t" + pnext + "\t" + tlen + "\t" + seq + "\t" + qual);
+                    out.print(readName + "\t" + flags + "\t" + chr + "\t" + start + "\t" + mapq + "\t" + cigarString + "\t" +
+                            rnext + "\t" + pnext + "\t" + tlen + "\t" + seq + "\t" + qual + "\tNM:i:" + nm);
                     if (barcode != null) {
-                        out.print("\tBX:Z:" + barcode + "\tBC:Z:" + barcode + "\tMI:Z:" + molcode);
+                        out.print("\tBC:Z:" + barcode);
                     }
                     out.println();
                 }
@@ -262,12 +318,11 @@ public class MAFtoSAM {
         List<String> chrNames = new ArrayList<String>(sequenceDictionary.keySet());
         Collections.sort(chrNames, ChromosomeNameComparator.get());
 
-        out.println("@HD\tVN:1.5\t SO:coordinate");
+        out.println("@HD\tVN:1.5");
         for (String chr : chrNames) {
             out.println("@SQ\tSN:" + chr + "\tLN:" + sequenceDictionary.get(chr));
         }
 
-        out.println("@PG\tPN:lastZ\tID:lastZ");
         out.println("@PG\tPN:MAFtoSAM\tID:MAFtoSAM");
     }
 
