@@ -1159,7 +1159,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         Color color = alignment.getColor();
         if (color != null) return color;   // Color has been explicitly set
 
-        Color c = alignment.isSupplementary() ? Color.darkGray : grey1;
+        Color c = grey1;
 
         ColorOption colorOption = renderOptions.getColorOption();
         switch (colorOption) {
