@@ -90,7 +90,7 @@ public class MAFtoSAM {
         addSATags(unsortedOutput, outputFile, sequenceDictionary);
 
 
-    //   unsortedOutput.deleteOnExit();
+       unsortedOutput.deleteOnExit();
 
     }
 
