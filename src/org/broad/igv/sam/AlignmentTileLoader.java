@@ -80,7 +80,8 @@ public class AlignmentTileLoader {
     public AlignmentTileLoader(AlignmentReader reader) {
         this.reader = reader;
 
-        moleculo = this.reader.getPlatforms().contains("MOLECULO");
+        Set<String> platforms = this.reader.getPlatforms();
+        moleculo = platforms != null && platforms.contains("MOLECULO");
 
         activeLoaders.add(new WeakReference<AlignmentTileLoader>(this));
     }
