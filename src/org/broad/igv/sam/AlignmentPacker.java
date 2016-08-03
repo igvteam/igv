@@ -74,7 +74,7 @@ public class AlignmentPacker {
         List<Alignment> alList = interval.getAlignments();
         // TODO -- means to undo this
         if (renderOptions.isLinkedReads()) {
-            alList = linkByTag(alList, renderOptions.getColorByTag());
+            alList = linkByTag(alList, renderOptions.getLinkByTag());
         }
 
         if (renderOptions.groupByOption == null) {
@@ -139,7 +139,8 @@ public class AlignmentPacker {
 
         boolean isPairedAlignments = renderOptions.isViewPairs() || renderOptions.isPairedArcView();
         String colorByTag = renderOptions.getColorByTag();
-        boolean isLinkedReads = renderOptions.isLinkedReads() && colorByTag != null;
+        String linkByTag = renderOptions.getLinkByTag();
+        boolean isLinkedReads = renderOptions.isLinkedReads() && linkByTag != null;
 
         if (isPairedAlignments) {
             pairs = new HashMap<String, PairedAlignment>(1000);

@@ -234,6 +234,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             IGV.getInstance().addAlignmentTrackEventListener(this);
         }
 
+        // TODO -- hack for experimentation.  Generalize
+        if (dataManager.isMoleculo()) {
+            renderOptions.linkedReads = true;
+            renderOptions.linkByTag = "BC";
+        }
+
     }
 
     /**
@@ -997,41 +1003,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
 
-    public boolean isLinkedReads() {
-        return renderOptions.linkedReads;
-    }
-
-    public void setLinkedReads(boolean linkedReads, String tag) {
-
-        renderOptions.linkedReads = linkedReads;
-        if (linkedReads == true) {
-            this.renderRollback = new RenderRollback(renderOptions, getDisplayMode());
-            renderOptions.setColorOption(ColorOption.TAG);
-            renderOptions.setColorByTag(tag);
- //           renderOptions.setColorOption(ColorOption.MAPPED_SIZE);
-
-            if (dataManager.isPhased()) {
-                renderOptions.groupByOption = GroupOption.TAG;
-                renderOptions.setGroupByTag("HP");
-            }
-            expandedHeight = 10;
-            showGroupLine = false;
-            setDisplayMode(DisplayMode.SQUISHED);
-        } else {
-            if (this.renderRollback != null) {
-                this.renderRollback.restore(renderOptions);
-            }
-        }
-
-        dataManager.packAlignments(renderOptions);
-        refresh();
-    }
-
     class RenderRollback {
         ColorOption colorOption;
         GroupOption groupByOption;
         String groupByTag;
         String colorByTag;
+        String linkByTag;
         DisplayMode displayMode;
         int expandedHeight;
         boolean showGroupLine;
@@ -1044,6 +1021,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             this.displayMode = displayMode;
             this.expandedHeight = AlignmentTrack.this.expandedHeight;
             this.showGroupLine = AlignmentTrack.this.showGroupLine;
+            this.linkByTag = renderOptions.linkByTag;
         }
 
         void restore(RenderOptions renderOptions) {
@@ -1051,6 +1029,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             renderOptions.groupByOption = this.groupByOption;
             renderOptions.colorByTag = this.colorByTag;
             renderOptions.groupByTag = this.groupByTag;
+            renderOptions.linkByTag = this.linkByTag;
             AlignmentTrack.this.expandedHeight = this.expandedHeight;
             AlignmentTrack.this.showGroupLine = this.showGroupLine;
             AlignmentTrack.this.setDisplayMode(this.displayMode);
@@ -1129,6 +1108,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         private String groupByTag;
         @XmlAttribute
         private String sortByTag;
+        @XmlAttribute
+        private String linkByTag;
         @XmlAttribute
         private boolean linkedReads;
         @XmlAttribute
@@ -1290,6 +1271,14 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             this.groupByTag = groupByTag;
         }
 
+        public String getLinkByTag() {
+            return linkByTag;
+        }
+
+        public void setLinkByTag(String linkByTag) {
+            this.linkByTag = linkByTag;
+        }
+
         public GroupOption getGroupByOption() {
             return groupByOption;
         }
@@ -1336,6 +1325,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             if (dataManager.isTenX()) {
                 addTenXItems();
+            }
+
+            if (dataManager.isMoleculo()) {
+                addMoleculoItems();
             }
 
             addSeparator();
@@ -2226,40 +2219,100 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         public void addTenXItems() {
 
-            if (dataManager.isTenX()) {
+            addSeparator();
 
-                addSeparator();
+            final JMenuItem bxItem = new JCheckBoxMenuItem("View linked reads (BX)");
+            final JMenuItem miItem = new JCheckBoxMenuItem("View linked reads (MI)");
 
-                final JMenuItem bxItem = new JCheckBoxMenuItem("View linked reads (BX)");
-                final JMenuItem miItem = new JCheckBoxMenuItem("View linked reads (MI)");
+            if (isLinkedReads()) {
+                bxItem.setSelected("BX".equals(renderOptions.linkByTag));
+                miItem.setSelected("MI".equals(renderOptions.linkByTag));
+            } else {
+                bxItem.setSelected(false);
+                miItem.setSelected(false);
+            }
 
-                if(isLinkedReads()) {
-                    bxItem.setSelected("BX".equals(renderOptions.colorByTag));
-                    miItem.setSelected("MI".equals(renderOptions.colorByTag));
+            bxItem.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent aEvt) {
+                    boolean linkedReads = bxItem.isSelected();
+                    setLinkedReads(linkedReads, "BX");
                 }
-                else {
-                    bxItem.setSelected(false);
-                    miItem.setSelected(false);
+            });
+            add(bxItem);
+
+            miItem.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent aEvt) {
+                    boolean linkedReads = miItem.isSelected();
+                    setLinkedReads(linkedReads, "MI");
                 }
+            });
+            add(miItem);
 
-                bxItem.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent aEvt) {
-                        boolean linkedReads = bxItem.isSelected();
-                        setLinkedReads(linkedReads, "BX");
-                    }
-                });
-                add(bxItem);
+        }
 
-                miItem.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent aEvt) {
-                        boolean linkedReads = miItem.isSelected();
-                        setLinkedReads(linkedReads, "MI");
-                    }
-                });
-                add(miItem);
+        public void addMoleculoItems() {
 
+
+            addSeparator();
+
+            final JMenuItem bxItem = new JCheckBoxMenuItem("View linked reads (BC)");
+
+            if (isLinkedReads()) {
+                bxItem.setSelected("BC".equals(renderOptions.linkByTag));
+            } else {
+                bxItem.setSelected(false);
+            }
+
+            bxItem.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent aEvt) {
+                    boolean linkedReads = bxItem.isSelected();
+                    setLinkedReads(linkedReads, "BC");
+                }
+            });
+            add(bxItem);
+
+
+        }
+    }
+
+
+    public boolean isLinkedReads() {
+        return renderOptions.linkedReads;
+    }
+
+    public void setLinkedReads(boolean linkedReads, String tag) {
+
+        renderOptions.linkedReads = linkedReads;
+        if (linkedReads == true) {
+            this.renderRollback = new RenderRollback(renderOptions, getDisplayMode());
+
+            if ("BC".equals(tag)) {
+                // Moleculo -- crude test
+                renderOptions.setLinkByTag(tag);
+
+            } else {
+                // TenX -- ditto
+                renderOptions.setColorOption(ColorOption.TAG);
+                renderOptions.setColorByTag(tag);
+                renderOptions.setLinkByTag(tag);
+                //           renderOptions.setColorOption(ColorOption.MAPPED_SIZE);
+
+                if (dataManager.isPhased()) {
+                    renderOptions.groupByOption = GroupOption.TAG;
+                    renderOptions.setGroupByTag("HP");
+                }
+                expandedHeight = 10;
+                showGroupLine = false;
+                setDisplayMode(DisplayMode.SQUISHED);
+            }
+        } else {
+            if (this.renderRollback != null) {
+                this.renderRollback.restore(renderOptions);
             }
         }
+
+        dataManager.packAlignments(renderOptions);
+        refresh();
     }
 
     /**

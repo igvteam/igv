@@ -197,6 +197,12 @@ public class AlignmentReaderFactory {
                 }
             }
         }
+
+        // Hack for Moleculo
+        if(header.getProgramRecord("MAFtoSAM") != null) {
+            platforms.add("MOLECULO");
+        }
+
         return platforms;
     }
 

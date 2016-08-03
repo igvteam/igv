@@ -63,6 +63,7 @@ public class AlignmentTileLoader {
     private boolean pairedEnd = false;
     private boolean tenX = false;
     private boolean phased = false;
+    private boolean moleculo = false;
 
     static void cancelReaders() {
         for (WeakReference<AlignmentTileLoader> readerRef : activeLoaders) {
@@ -78,6 +79,9 @@ public class AlignmentTileLoader {
 
     public AlignmentTileLoader(AlignmentReader reader) {
         this.reader = reader;
+
+        moleculo = this.reader.getPlatforms().contains("MOLECULO");
+
         activeLoaders.add(new WeakReference<AlignmentTileLoader>(this));
     }
 
@@ -183,10 +187,11 @@ public class AlignmentTileLoader {
                     }
                 }
 
-                if(!tenX && record.getAttribute("BX")!= null) {
+                // TODO -- this is not reliable tests for TenX.  Other platforms might use BX
+                if (!tenX && record.getAttribute("BX") != null) {
                     tenX = true;
                 }
-                if(tenX && !phased && record.getAttribute("HP") != null) {
+                if (tenX && !phased && record.getAttribute("HP") != null) {
                     phased = true;
                 }
 
@@ -243,7 +248,6 @@ public class AlignmentTileLoader {
                     stats.computeExpectedOrientation();
                 }
             }
-
 
 
             // Clean up any remaining unmapped mate sequences
@@ -327,6 +331,10 @@ public class AlignmentTileLoader {
         return reader.getPlatforms();
     }
 
+    public boolean isMoleculo() {
+        return moleculo;
+    }
+
     /**
      * Caches alignments, coverage, splice junctions, and downsampled intervals
      */
@@ -377,7 +385,7 @@ public class AlignmentTileLoader {
 
             this.indelLimit = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MIN_INDEL_SIZE);
             this.showAlignments = showAlignments;
-            
+
             long seed = System.currentTimeMillis();
             //System.out.println("seed: " + seed);
             RAND.setSeed(seed);

@@ -30,7 +30,6 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.MonocolorScale;
@@ -344,7 +343,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 } else if (alignment instanceof PairedAlignment) {
                     drawPairedAlignment((PairedAlignment) alignment, rowRect, trackRect, context, renderOptions, leaveMargin, selectedReadNames, font, alignmentCounts);
                 } else if (alignment instanceof LinkedAlignment) {
-                    drawExtendedAlignment((LinkedAlignment) alignment, rowRect, trackRect, context, renderOptions, leaveMargin, selectedReadNames, font, alignmentCounts);
+                    drawLinkedAlignment((LinkedAlignment) alignment, rowRect, trackRect, context, renderOptions, leaveMargin, selectedReadNames, font, alignmentCounts);
                 } else {
                     Color alignmentColor = getAlignmentColor(alignment, renderOptions);
                     Graphics2D g = context.getGraphic2DForColor(alignmentColor);
@@ -371,7 +370,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         }
     }
 
-    private void drawExtendedAlignment(LinkedAlignment alignment, Rectangle rowRect, Rectangle trackRect, RenderContext context, RenderOptions renderOptions, boolean leaveMargin, Map<String, Color> selectedReadNames, Font font, AlignmentCounts alignmentCounts) {
+    private void drawLinkedAlignment(LinkedAlignment alignment, Rectangle rowRect, Rectangle trackRect, RenderContext context, RenderOptions renderOptions, boolean leaveMargin, Map<String, Color> selectedReadNames, Font font, AlignmentCounts alignmentCounts) {
 
         double origin = context.getOrigin();
         double locScale = context.getScale();

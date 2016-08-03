@@ -445,6 +445,10 @@ public class AlignmentDataManager implements IGVEventObserver {
         return reader.isPhased();
     }
 
+    public boolean isMoleculo() {
+        return reader.isMoleculo();
+    }
+
     public static class DownsampleOptions {
         private boolean downsample;
         private int sampleWindowSize;
