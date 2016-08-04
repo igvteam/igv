@@ -27,6 +27,7 @@ package org.broad.igv.feature.genome;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ParsingUtils;
 import htsjdk.tribble.readers.AsciiLineReader;
 
@@ -52,9 +53,8 @@ public class FastaUtils {
      * @param inputPath
      * @param outputPath
      * @return
-     * @throws org.broad.igv.exceptions.DataLoadException
-     *          If the fasta file cannot be indexed, for instance
-     *          because the lines are of an uneven length
+     * @throws org.broad.igv.exceptions.DataLoadException If the fasta file cannot be indexed, for instance
+     *                                                    because the lines are of an uneven length
      */
     public static void createIndexFile(String inputPath, String outputPath) throws DataLoadException, IOException {
 
@@ -106,9 +106,9 @@ public class FastaUtils {
                     //Header line
                     curContig = WHITE_SPACE.split(line)[0];
                     curContig = curContig.substring(1);
-                    if(allContigs.contains(curContig)){
+                    if (allContigs.contains(curContig)) {
                         throw new DataLoadException("Contig '" + curContig + "' found multiple times in file.", inputPath);
-                    }else{
+                    } else {
                         allContigs.add(curContig);
                     }
 
@@ -147,6 +147,8 @@ public class FastaUtils {
                 }
                 lastPosition = reader.getPosition();
             }
+        } catch (Exception e) {
+            MessageUtils.showErrorMessage("Could not create index file: " + outputPath, e);
         } finally {
             if (reader != null) reader.close();
             if (writer != null) writer.close();
