@@ -142,7 +142,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack {
         else {
             for (int i = tmp; i < inViewScores.size(); i++) {
                 if (inViewScores.get(i).getStart() > end) {
-                    endIdx = i - 1;
+                    endIdx = i;
                     break;
                 }
             }
