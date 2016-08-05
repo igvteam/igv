@@ -20,6 +20,7 @@ public class LinkedAlignment implements Alignment {
     final String tag;
     final String barcode;
     String haplotype;
+    Strand strand;
     List<Alignment> alignments;
     String chr;
     int alignmentStart;
@@ -46,6 +47,9 @@ public class LinkedAlignment implements Alignment {
 
             Object hp = alignment.getAttribute("HP");
             haplotype = hp == null ? "" : hp.toString();
+
+            strand = alignment.getReadStrand();
+
         } else {
 
             if (!this.chr.equals(alignment.getChr())) {
@@ -62,6 +66,10 @@ public class LinkedAlignment implements Alignment {
                     this.haplotype = " MIXED";
                 }
             }
+
+            if(strand != alignment.getReadStrand()) {
+                strand = Strand.NONE;   // i.e. mixed
+            }
         }
 
         alignments.add(alignment);
@@ -69,6 +77,10 @@ public class LinkedAlignment implements Alignment {
 
     public String getBarcode() {
         return barcode;
+    }
+
+    public Strand getStrand() {
+        return strand;
     }
 
     @Override

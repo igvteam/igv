@@ -114,7 +114,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public enum ColorOption {
         INSERT_SIZE, READ_STRAND, FIRST_OF_PAIR_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, BISULFITE, NOMESEQ,
-        TAG, NONE, UNEXPECTED_PAIR, MAPPED_SIZE
+        TAG, NONE, UNEXPECTED_PAIR, MAPPED_SIZE, LINK_STRAND
     }
 
     public enum SortOption {
@@ -1323,6 +1323,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 addIonTorrentAuxiliaryViews(e);
             }
 
+            addSupplItems();
+
             if (dataManager.isTenX()) {
                 addTenXItems();
             }
@@ -2217,6 +2219,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             add(groupMenu);
         }
 
+
+
         public void addTenXItems() {
 
             addSeparator();
@@ -2270,8 +2274,28 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 }
             });
             add(bxItem);
+        }
+
+        public void addSupplItems() {
 
 
+            addSeparator();
+
+            final JMenuItem bxItem = new JCheckBoxMenuItem("View linked reads");
+
+            if (isLinkedReads()) {
+                bxItem.setSelected("READNMAME".equals(renderOptions.linkByTag));
+            } else {
+                bxItem.setSelected(false);
+            }
+
+            bxItem.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent aEvt) {
+                    boolean linkedReads = bxItem.isSelected();
+                    setLinkedReads(linkedReads, "READNAME");
+                }
+            });
+            add(bxItem);
         }
     }
 
@@ -2286,15 +2310,18 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         if (linkedReads == true) {
             this.renderRollback = new RenderRollback(renderOptions, getDisplayMode());
 
-            if ("BC".equals(tag)) {
-                // Moleculo -- crude test
-                renderOptions.setLinkByTag(tag);
+            renderOptions.setLinkByTag(tag);
 
-            } else {
+            if ("BC".equals(tag)) {
+
+            } else if("READNAME".equals(tag)) {
+                renderOptions.setColorOption(ColorOption.LINK_STRAND);
+            }
+            else {
                 // TenX -- ditto
                 renderOptions.setColorOption(ColorOption.TAG);
                 renderOptions.setColorByTag(tag);
-                renderOptions.setLinkByTag(tag);
+
                 //           renderOptions.setColorOption(ColorOption.MAPPED_SIZE);
 
                 if (dataManager.isPhased()) {

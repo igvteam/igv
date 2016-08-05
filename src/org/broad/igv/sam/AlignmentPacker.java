@@ -269,21 +269,28 @@ public class AlignmentPacker {
     private List<Alignment> linkByTag(List<Alignment> alList, String tag) {
 
         List<Alignment> bcList = new ArrayList<>(alList.size() / 10);
-        Map<String, LinkedAlignment> map = new HashMap<>(bcList.size() * 2);
+        Map<Object, LinkedAlignment> map = new HashMap<>(bcList.size() * 2);
 
         for (Alignment a : alList) {
-            Object attr = a.getAttribute(tag);
-            if (attr == null) {
-                bcList.add(a);
-            } else {
-                String bc = a.getAttribute(tag).toString();
-                LinkedAlignment linkedAlignment = map.get(bc);
-                if (linkedAlignment == null) {
-                    linkedAlignment = new LinkedAlignment(tag, bc);
-                    map.put(bc, linkedAlignment);
-                    bcList.add(linkedAlignment);
+
+            if(a.isPrimary()) {
+                Object bc = ("READNAME".equals(tag)) ? a.getReadName() :  a.getAttribute(tag);
+
+                if (bc == null) {
+                    bcList.add(a);
+                } else {
+                    LinkedAlignment linkedAlignment = map.get(bc);
+                    if (linkedAlignment == null) {
+                        linkedAlignment = new LinkedAlignment(tag, bc.toString());
+                        map.put(bc, linkedAlignment);
+                        bcList.add(linkedAlignment);
+                    }
+                    linkedAlignment.addAlignment(a);
                 }
-                linkedAlignment.addAlignment(a);
+            }
+            else {
+                // Don't link secondary reads
+                bcList.add(a);
             }
         }
         return bcList;

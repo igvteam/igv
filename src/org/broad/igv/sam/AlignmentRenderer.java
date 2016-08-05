@@ -1209,6 +1209,11 @@ public class AlignmentRenderer implements FeatureRenderer {
                     }
                 }
                 break;
+            case LINK_STRAND:
+                if(alignment instanceof LinkedAlignment && ((LinkedAlignment) alignment).getStrand() == Strand.NONE) {
+                    c = LL_COLOR;
+                }
+                break;
 
 
             default:
