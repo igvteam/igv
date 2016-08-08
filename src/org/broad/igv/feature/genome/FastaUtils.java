@@ -26,6 +26,7 @@
 package org.broad.igv.feature.genome;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ParsingUtils;
@@ -149,6 +150,7 @@ public class FastaUtils {
             }
         } catch (Exception e) {
             MessageUtils.showErrorMessage("Could not create index file: " + outputPath, e);
+            if( Globals.isTesting()) throw e;
         } finally {
             if (reader != null) reader.close();
             if (writer != null) writer.close();
