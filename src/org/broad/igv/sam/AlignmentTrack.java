@@ -1323,14 +1323,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 addIonTorrentAuxiliaryViews(e);
             }
 
-            addSupplItems();
-
             if (dataManager.isTenX()) {
                 addTenXItems();
             }
-
-            if (dataManager.isMoleculo()) {
-                addMoleculoItems();
+            else {
+                addSupplItems();     // Are SA tags mutually exlcusive with 10X?
             }
 
             addSeparator();
@@ -2254,37 +2251,15 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         }
 
-        public void addMoleculoItems() {
-
-
-            addSeparator();
-
-            final JMenuItem bxItem = new JCheckBoxMenuItem("View linked reads (BC)");
-
-            if (isLinkedReads()) {
-                bxItem.setSelected("BC".equals(renderOptions.linkByTag));
-            } else {
-                bxItem.setSelected(false);
-            }
-
-            bxItem.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent aEvt) {
-                    boolean linkedReads = bxItem.isSelected();
-                    setLinkedReads(linkedReads, "BC");
-                }
-            });
-            add(bxItem);
-        }
-
         public void addSupplItems() {
 
 
             addSeparator();
 
-            final JMenuItem bxItem = new JCheckBoxMenuItem("View linked reads");
+            final JMenuItem bxItem = new JCheckBoxMenuItem("Link supplementary alignments");
 
             if (isLinkedReads()) {
-                bxItem.setSelected("READNMAME".equals(renderOptions.linkByTag));
+                bxItem.setSelected("READNAME".equals(renderOptions.linkByTag));
             } else {
                 bxItem.setSelected(false);
             }
