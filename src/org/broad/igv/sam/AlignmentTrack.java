@@ -123,7 +123,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     public enum GroupOption {
-        STRAND, SAMPLE, READ_GROUP, FIRST_OF_PAIR_STRAND, TAG, PAIR_ORIENTATION, MATE_CHROMOSOME, NONE, SUPPLEMENTARY
+        STRAND, SAMPLE, READ_GROUP, FIRST_OF_PAIR_STRAND, TAG, PAIR_ORIENTATION, MATE_CHROMOSOME, NONE, SUPPLEMENTARY, BASE_AT_POS
     }
 
     public enum BisulfiteContext {
@@ -498,6 +498,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         dataManager.packAlignments(renderOptions);
 
     }
+
+    public void groupAlignmentsByBaseAtPos(GroupOption option, Range pos) {
+        renderOptions.groupByOption = GroupOption.BASE_AT_POS;
+        renderOptions.setGroupByBaseAtPos(pos);
+        dataManager.packAlignments(renderOptions);
+    };
 
     public void packAlignments() {
         dataManager.packAlignments(renderOptions);
@@ -1116,6 +1122,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         private boolean flagLargeInsertions;
         private int largeInsertionsThreshold;
 
+        private Range groupByBaseAtPos = null;
+
         RenderOptions() {
             PreferenceManager prefs = PreferenceManager.getInstance();
 
@@ -1271,6 +1279,14 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             this.groupByTag = groupByTag;
         }
 
+        public Range getGroupByBaseAtPos() {
+            return groupByBaseAtPos;
+        }
+
+        public void setGroupByBaseAtPos(Range groupByBaseAtPos) {
+            this.groupByBaseAtPos = groupByBaseAtPos;
+        }
+
         public String getLinkByTag() {
             return linkByTag;
         }
@@ -1331,7 +1347,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             }
 
             addSeparator();
-            addGroupMenuItem();
+            addGroupMenuItem(e);
             addSortMenuItem();
             addColorByMenuItem();
             addPackMenuItem();
@@ -1514,7 +1530,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             return mi;
         }
 
-        public void addGroupMenuItem() {//ReferenceFrame frame) {
+        public void addGroupMenuItem(final TrackClickEvent te) {//ReferenceFrame frame) {
+            final MouseEvent me = te.getMouseEvent();
+            final ReferenceFrame frame = te.getFrame();
+            final Range range = frame.getCurrentRange();
+            final String chrom = range.getChr();
+            final int chromStart = (int) frame.getChromosomePosition(me.getX());
             // Change track height by attribute
             JMenu groupMenu = new JMenu("Group alignments by");
             ButtonGroup group = new ButtonGroup();
@@ -1552,6 +1573,31 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             tagOption.setSelected(renderOptions.groupByOption == GroupOption.TAG);
             groupMenu.add(tagOption);
             group.add(tagOption);
+
+            Range oldSortByBaseAtPos = renderOptions.getGroupByBaseAtPos();
+            if (renderOptions.groupByOption == GroupOption.BASE_AT_POS) { // already sorted by the base at a position
+                JCheckBoxMenuItem oldBaseAtPosOption = new JCheckBoxMenuItem("base at " + oldSortByBaseAtPos.getChr() +
+                    ":" + Globals.DECIMAL_FORMAT.format(1+oldSortByBaseAtPos.getStart()));
+                groupMenu.add(oldBaseAtPosOption);
+                oldBaseAtPosOption.setSelected(true);
+            }
+
+            if (renderOptions.groupByOption != GroupOption.BASE_AT_POS || oldSortByBaseAtPos == null ||
+                !oldSortByBaseAtPos.getChr().equals(chrom) || oldSortByBaseAtPos.getStart() != chromStart) { // not already sorted by this position
+                JCheckBoxMenuItem newBaseAtPosOption = new JCheckBoxMenuItem("base at " + chrom +
+                    ":" + Globals.DECIMAL_FORMAT.format(1+chromStart));
+                newBaseAtPosOption.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent aEvt) {
+                        renderOptions.groupByOption = GroupOption.BASE_AT_POS;
+                        Range groupByBaseAtPos = new Range(chrom, chromStart, chromStart + 1);
+                        renderOptions.setGroupByBaseAtPos(groupByBaseAtPos);
+                        IGV.getInstance().groupAlignmentTracksByBaseAtPos(GroupOption.BASE_AT_POS, groupByBaseAtPos);
+                        refresh();
+                    }
+                });
+                groupMenu.add(newBaseAtPosOption);
+                group.add(newBaseAtPosOption);
+            }
 
             add(groupMenu);
         }
