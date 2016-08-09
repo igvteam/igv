@@ -341,7 +341,7 @@ public class AlignmentPacker {
                             if (NULL_GROUP_VALUE.equals(o2)) {
                                 return -1;
                             } else {
-                                return o2.compareToIgnoreCase(o1);
+                                return o1.compareToIgnoreCase(o2);
                             }
                         }
                     }
