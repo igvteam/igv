@@ -46,7 +46,7 @@ public class LinkedAlignment implements Alignment {
             lastAlignmentEnd = alignment.getAlignmentEnd();
 
             Object hp = alignment.getAttribute("HP");
-            haplotype = hp == null ? "" : hp.toString();
+            haplotype = hp == null ? null : hp.toString();
 
             strand = alignment.getReadStrand();
 
@@ -59,15 +59,15 @@ public class LinkedAlignment implements Alignment {
             lastAlignmentEnd = alignment.getAlignmentEnd();
             alignmentEnd = Math.max(alignment.getAlignmentEnd(), this.alignmentEnd);
 
-            if (!this.haplotype.equals(" MIXED")) {
-                Object hp = alignment.getAttribute("HP");
-                String haplotype = hp == null ? "" : hp.toString();
-                if (!this.haplotype.equals(haplotype)) {
-                    this.haplotype = " MIXED";
+            Object hp = alignment.getAttribute("HP");
+            if (hp != null) {
+                if (!hp.toString().equals(this.haplotype)) {
+                    this.haplotype = "MIXED";
                 }
             }
 
-            if(strand != alignment.getReadStrand()) {
+
+            if (strand != alignment.getReadStrand()) {
                 strand = Strand.NONE;   // i.e. mixed
             }
         }
@@ -125,10 +125,9 @@ public class LinkedAlignment implements Alignment {
         StringBuffer buffer = new StringBuffer();
 
         buffer.append("Linking id (" + tag + ") = " + this.barcode);
-        buffer.append("<br>Haplotype = " + this.haplotype);
-        buffer.append("<br>Reference span = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(getAlignmentStart() + 1) + "-" +
-                Globals.DECIMAL_FORMAT.format(getAlignmentEnd()) + " (" + (isNegativeStrand() ? "-" : "+") + ")" +
-                " = " + Globals.DECIMAL_FORMAT.format(getAlignmentEnd() - getAlignmentStart()) + "bp<br>");
+        if (this.haplotype != null) buffer.append("<br>Haplotype = " + this.haplotype);
+        buffer.append("<br># alignments = " + alignments.size());
+        buffer.append("<br>Total span = " + Globals.DECIMAL_FORMAT.format(getAlignmentEnd() - getAlignmentStart()) + "bp<br>");
 
 
         for (Alignment a : alignments) {
@@ -147,8 +146,7 @@ public class LinkedAlignment implements Alignment {
     public Object getAttribute(String key) {
         if ("HP".equals(key)) {
             return haplotype;
-        }
-        else {
+        } else {
             return attributes.get(key);
         }
     }
