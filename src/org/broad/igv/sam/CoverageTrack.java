@@ -269,7 +269,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             // Trim scores
             int startIdx = FeatureUtils.getIndexBefore(start, inViewScores);
             int endIdx = inViewScores.size() - 1;   // Starting guess
-            int tmp = FeatureUtils.getIndexBefore(end, inViewScores);
+            int tmp = Math.max(0, FeatureUtils.getIndexBefore(end, inViewScores));
             for (int i = tmp; i < inViewScores.size(); i++) {
                 if (inViewScores.get(i).getStart() > end) {
                     endIdx = i - 1;
