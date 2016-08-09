@@ -7,9 +7,12 @@
     <Resource name="Gencode V24 Basic"
               path="https://s3.amazonaws.com/igv.broadinstitute.org/data/hg38/gencode.v24.basic.annotation.sorted.gtf.gz"
               hyperlink="http://www.gencodegenes.org/"/>
-<!--    <Resource name="All Snps 1.4.2"
-              path="https://data.broadinstitute.org/igvdata/annotations/hg38/snp142.snp.gz"
-              hyperlink="https://genome.ucsc.edu/cgi-bin/hgTrackUi?g=snp142"/>-->
+    <Resource name="All Snps 1.4.2"
+              path="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/dbsnp142_All.vcf.gz"
+              hyperlink="http://www.ncbi.nlm.nih.gov/variation/docs/human_variation_vcf/"/>
+    <Resource name="Common Snps 1.4.2"
+              path="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/dbsnp142_common_all.vcf.gz"
+              hyperlink="http://www.ncbi.nlm.nih.gov/variation/docs/human_variation_vcf/"/>
     <Resource name="Phastcons (20 way)"
               path="https://data.broadinstitute.org/igvdata/annotations/hg38/hg38.phastCons20way.bw"
               hyperlink="https://genome.ucsc.edu/cgi-bin/hgTrackUi?g=cons20way"/>
