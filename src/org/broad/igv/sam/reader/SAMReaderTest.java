@@ -150,7 +150,7 @@ public class SAMReaderTest {
     }
 
     private static void testQueryBam() throws FileNotFoundException, IOException {
-        String path = "http://data.broadinstitute.org/igvdata/1KG/DCC_merged/freeze5/NA12878.pilot2.SLX.bam";
+        String path = "https://data.broadinstitute.org/igvdata/1KG/DCC_merged/freeze5/NA12878.pilot2.SLX.bam";
 
         String chr = "1";
         int start = 50542554; //557000;  //

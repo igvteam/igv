@@ -54,7 +54,7 @@ public class ProbeToLocusMap {
 
     enum Platform {Affymetrix, Agilient, Illumina, Methylation, Mirna, unknown}
 
-    public static final String SERVER_URL = "http://data.broadinstitute.org";
+    public static final String SERVER_URL = "https://data.broadinstitute.org";
 
     private static Logger log = Logger.getLogger(ProbeToLocusMap.class);
     private static String affyGenesMappingURL =

@@ -39,7 +39,7 @@ public class OneKGUtils {
 
 
     static final String prefix = "http://1000genomes.s3.amazonaws.com/";
-    static final String prefix2 = "http://data.broadinstitute.org/igvdata/1KG/b37/";
+    static final String prefix2 = "https://data.broadinstitute.org/igvdata/1KG/b37/";
 
     /**
      * Input files contain lines of the form

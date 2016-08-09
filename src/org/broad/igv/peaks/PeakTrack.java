@@ -150,9 +150,9 @@ public class PeakTrack extends AbstractTrack {
 
     /**
      * timePoints=0,30,60,120
-     * peaks=http://data.broadinstitute.org/igvdata/ichip/peaks/AHR.peak
-     * signals=http://data.broadinstitute.org/igvdata/ichip/tdf/compressed/AHR.merged.bam.tdf
-     * timeSignals=http://data.broadinstitute.org/igvdata/ichip/tdf/timecourses/AHR_0/AHR_0.merged.bam.tdf,http...
+     * peaks=https://data.broadinstitute.org/igvdata/ichip/peaks/AHR.peak
+     * signals=https://data.broadinstitute.org/igvdata/ichip/tdf/compressed/AHR.merged.bam.tdf
+     * timeSignals=https://data.broadinstitute.org/igvdata/ichip/tdf/timecourses/AHR_0/AHR_0.merged.bam.tdf,http...
      *
      * @param path
      * @throws IOException

@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Global name="Annotations" version="1">
 
-    <Resource name="Common Snps 1.4.2"
-              path="http://data.broadinstitute.org/igvdata/annotations/hg38/snp142Common.snp.gz"
-              hyperlink="https://genome.ucsc.edu/cgi-bin/hgTrackUi?g=snp142"/>
-    <Resource name="All Snps 1.4.2"
-              path="http://data.broadinstitute.org/igvdata/annotations/hg38/snp142.snp.gz"
-              hyperlink="https://genome.ucsc.edu/cgi-bin/hgTrackUi?g=snp142"/>
+    <Resource name="Gencode V24"
+              path="https://s3.amazonaws.com/igv.broadinstitute.org/data/hg38/gencode.v24.annotation.sorted.gtf.gz"
+              hyperlink="http://www.gencodegenes.org/"/>
+    <Resource name="Gencode V24 Basic"
+              path="https://s3.amazonaws.com/igv.broadinstitute.org/data/hg38/gencode.v24.basic.annotation.sorted.gtf.gz"
+              hyperlink="http://www.gencodegenes.org/"/>
+<!--    <Resource name="All Snps 1.4.2"
+              path="https://data.broadinstitute.org/igvdata/annotations/hg38/snp142.snp.gz"
+              hyperlink="https://genome.ucsc.edu/cgi-bin/hgTrackUi?g=snp142"/>-->
     <Resource name="Phastcons (20 way)"
-              path="http://data.broadinstitute.org/igvdata/annotations/hg38/hg38.phastCons20way.bw"
+              path="https://data.broadinstitute.org/igvdata/annotations/hg38/hg38.phastCons20way.bw"
               hyperlink="https://genome.ucsc.edu/cgi-bin/hgTrackUi?g=cons20way"/>
     <Resource trackLine='viewLimits=0:100' name="GC %"
               path="http://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/gc5BaseBw/gc5Base.bw"/>

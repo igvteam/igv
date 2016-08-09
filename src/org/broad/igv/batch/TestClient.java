@@ -38,7 +38,7 @@ import java.util.List;
 public class TestClient {
 
     static private String sessionURL = "http://www.broadinstitute.org/mmgp/textReader/IGV/mmrc_session.xml";
-    static private String fileURL = "http://data.broadinstitute.org/igvdata/cshcourse/rwpe.washu.merged.bam";
+    static private String fileURL = "https://data.broadinstitute.org/igvdata/cshcourse/rwpe.washu.merged.bam";
 
     public static void main(String args[]) throws IOException {
         Socket socket = null;
@@ -74,14 +74,14 @@ public class TestClient {
 
 
 
-        //http://localhost:60151/load?file=http://data.broadinstitute.org/igvdata/tcga/gbmsubtypes/Broad.080528.subtypes.seg.gz&genome=hg18&locus=EGFR%20PTEN
+        //http://localhost:60151/load?file=https://data.broadinstitute.org/igvdata/tcga/gbmsubtypes/Broad.080528.subtypes.seg.gz&genome=hg18&locus=EGFR%20PTEN
 
     }
 
 
     private static void testMultiLocus(PrintWriter out, BufferedReader in) throws IOException {
 
-        String cmd = "load http://data.broadinstitute.org/igvdata/tcga/gbmsubtypes/Broad.080528.subtypes.seg.gz";
+        String cmd = "load https://data.broadinstitute.org/igvdata/tcga/gbmsubtypes/Broad.080528.subtypes.seg.gz";
         out.println(cmd);
         String response = in.readLine();
         System.out.println(cmd + " " + response);
@@ -92,7 +92,7 @@ public class TestClient {
         System.out.println(cmd + " " + response);
 
 
-        //http://localhost:60151/load?file=http://data.broadinstitute.org/igvdata/tcga/gbmsubtypes/Broad.080528.subtypes.seg.gz&genome=hg18&locus=EGFR%20PTEN
+        //http://localhost:60151/load?file=https://data.broadinstitute.org/igvdata/tcga/gbmsubtypes/Broad.080528.subtypes.seg.gz&genome=hg18&locus=EGFR%20PTEN
 
     }
 
