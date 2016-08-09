@@ -20,6 +20,8 @@ public class LinkedAlignment implements Alignment {
     final String tag;
     final String barcode;
     String haplotype;
+    String sample;
+    String readGroup;
     Strand strand;
     List<Alignment> alignments;
     String chr;
@@ -49,6 +51,8 @@ public class LinkedAlignment implements Alignment {
             haplotype = hp == null ? null : hp.toString();
 
             strand = alignment.getReadStrand();
+            sample = alignment.getSample();
+            readGroup = alignment.getReadGroup();
 
         } else {
 
@@ -65,10 +69,14 @@ public class LinkedAlignment implements Alignment {
                     this.haplotype = "MIXED";
                 }
             }
-
-
             if (strand != alignment.getReadStrand()) {
                 strand = Strand.NONE;   // i.e. mixed
+            }
+            if (sample != null && !sample.equals(alignment.getSample())) {
+                sample = null;
+            }
+            if (readGroup != null && !readGroup.equals(alignment.getReadGroup())) {
+                readGroup = null;
             }
         }
 
@@ -122,25 +130,32 @@ public class LinkedAlignment implements Alignment {
 
     @Override
     public String getValueString(double position, WindowFunction windowFunction) {
-        StringBuffer buffer = new StringBuffer();
 
-        buffer.append("Linking id (" + tag + ") = " + this.barcode);
-        if (this.haplotype != null) buffer.append("<br>Haplotype = " + this.haplotype);
-        buffer.append("<br># alignments = " + alignments.size());
-        buffer.append("<br>Total span = " + Globals.DECIMAL_FORMAT.format(getAlignmentEnd() - getAlignmentStart()) + "bp<br>");
-
-
-        for (Alignment a : alignments) {
-            if (a.contains(position)) {
-                buffer.append("----------------------<br>");
-                buffer.append(a.getValueString(position, windowFunction));
-                break;
+        if (alignments.size() == 1) {
+            return alignments.get(0).getValueString(position, windowFunction);
+        } else {
+            StringBuffer buffer = new StringBuffer();
+            buffer.append("Linking id (" + tag + ") = " + this.barcode);
+            if (this.haplotype != null) buffer.append("<br>Haplotype = " + this.haplotype);
+            buffer.append("<br># alignments = " + alignments.size());
+            buffer.append("<br>Strands = ");
+            for (Alignment a : alignments) {
+                buffer.append(a.getReadStrand() == Strand.POSITIVE ? "+" : "-");
             }
+            buffer.append("<br>Total span = " + Globals.DECIMAL_FORMAT.format(getAlignmentEnd() - getAlignmentStart()) + "bp<br>");
+
+
+            for (Alignment a : alignments) {
+                if (a.contains(position)) {
+                    buffer.append("----------------------<br>");
+                    buffer.append(a.getValueString(position, windowFunction));
+                    break;
+                }
+            }
+
+            return buffer.toString();
         }
-
-        return buffer.toString();
     }
-
 
     @Override
     public Object getAttribute(String key) {
@@ -227,7 +242,7 @@ public class LinkedAlignment implements Alignment {
 
     @Override
     public boolean isNegativeStrand() {
-        return false;
+        return strand == Strand.NEGATIVE;
     }
 
     @Override
@@ -247,7 +262,24 @@ public class LinkedAlignment implements Alignment {
 
     @Override
     public byte getBase(double position) {
-        return 0;
+
+        byte base = 0;
+
+        for (Alignment al : alignments) {
+            if (al.contains(position)) {
+                byte b = al.getBase(position);
+                if (base == 0) {
+                    base = b;
+                } else {
+                    if (base != b) {
+                        base = 0;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return base;
     }
 
     @Override
@@ -287,11 +319,12 @@ public class LinkedAlignment implements Alignment {
 
     @Override
     public String getSample() {
-        return null;
+        return sample;
     }
 
     @Override
     public String getReadGroup() {
+
         return null;
     }
 

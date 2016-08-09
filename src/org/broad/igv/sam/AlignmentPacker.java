@@ -293,6 +293,24 @@ public class AlignmentPacker {
                 bcList.add(a);
             }
         }
+
+        // Now copy list, de-linking orhpaned alignments (alignments with no linked mates)
+        List<Alignment> delinkedList = new ArrayList<>(alList.size());
+        for(Alignment a : bcList) {
+            if(a instanceof LinkedAlignment) {
+                final List<Alignment> alignments = ((LinkedAlignment) a).alignments;
+                if(alignments.size() == 1) {
+                    delinkedList.add(alignments.get(0));
+                }
+                else {
+                    delinkedList.add(a);
+                }
+            }
+            else {
+                delinkedList.add(a);
+            }
+        }
+
         return bcList;
     }
 

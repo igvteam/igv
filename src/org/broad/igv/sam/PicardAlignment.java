@@ -241,8 +241,6 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
                 tagsToHide.add(s);
             }
         }
-        // Always hide the read group (RG) tag, as it is displayed as a special case.
-        tagsToHide.add("RG");
 
         StringBuffer buf = new StringBuffer();
         SAMRecord record = getRecord();
@@ -288,6 +286,10 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
                     buf.append(tagValue);
                 }
 
+            }
+
+            if(samHiddenTagsPref != null && samHiddenTagsPref.trim().length() > 0) {
+                buf.append("<br>Hidden tags: " + samHiddenTagsPref);
             }
             buf.append("<br>-------------------");
         }
