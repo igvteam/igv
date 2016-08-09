@@ -48,6 +48,7 @@ import org.broad.igv.batch.CommandListener;
 import org.broad.igv.dev.api.IGVPlugin;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.Locus;
+import org.broad.igv.feature.Range;
 import org.broad.igv.feature.MaximumContigGenomeException;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.*;
@@ -1975,6 +1976,14 @@ public class IGV implements IGVEventObserver {
         for (Track t : getAllTracks()) {
             if (t instanceof AlignmentTrack) {
                 ((AlignmentTrack) t).groupAlignments(option, tag);
+            }
+        }
+    }
+
+    public void groupAlignmentTracksByBaseAtPos(AlignmentTrack.GroupOption option, Range pos) {
+        for (Track t: getAllTracks()) {
+            if (t instanceof AlignmentTrack) {
+                ((AlignmentTrack) t).groupAlignmentsByBaseAtPos(option, pos);
             }
         }
     }
