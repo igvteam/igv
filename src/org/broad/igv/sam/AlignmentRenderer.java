@@ -664,6 +664,17 @@ public class AlignmentRenderer implements FeatureRenderer {
         Graphics2D unknownGapGraphics = context.getGraphic2DForColor(unknownGapColor);
         Graphics2D skippedRegionGapGraphics = context.getGraphic2DForColor(skippedColor);
 
+        // Get a graphics context for drawing individual basepairs.
+        Graphics2D bpGraphics = (Graphics2D) context.getGraphics().create();
+        int dX = (int) Math.max(1, (1.0 / locScale));
+        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+            bpGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        }
+        if (dX >= 8) {
+            Font f = FontManager.getFont(Font.BOLD, Math.min(dX, 12));
+            bpGraphics.setFont(f);
+        }
+
         // Get a graphics context to indicate the end of a read.
         Graphics2D terminalGraphics = context.getGraphic2DForColor(Color.DARK_GRAY);
         boolean largeEnoughForArrow = (h > 10);
@@ -760,7 +771,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                         break; // done examining blocks
                     }
 
-                    drawBases(context, rowRect, alignment, aBlock, alignmentCounts, quickConsensus, alignmentColor, renderOptions);
+                    drawBases(context, bpGraphics, rowRect, alignment, aBlock, alignmentCounts, quickConsensus, alignmentColor, renderOptions);
                 }
             }
         }
@@ -785,6 +796,7 @@ public class AlignmentRenderer implements FeatureRenderer {
      * that is proportional to the base quality score, or flow signal deviation, whichever is selected.
      *
      * @param context
+     * @param g
      * @param rect
      * @param baseAlignment
      * @param block
@@ -794,6 +806,7 @@ public class AlignmentRenderer implements FeatureRenderer {
      * @param renderOptions
      */
     private void drawBases(RenderContext context,
+                           Graphics2D g,
                            Rectangle rect,
                            Alignment baseAlignment,
                            AlignmentBlock block,
@@ -837,19 +850,10 @@ public class AlignmentRenderer implements FeatureRenderer {
         double locScale = context.getScale();
         double origin = context.getOrigin();
 
-        // Compute bounds, get a graphics to use,  and compute a font
+        // Compute bounds
         int pY = (int) rect.getY();
         int dY = (int) rect.getHeight();
         int dX = (int) Math.max(1, (1.0 / locScale));
-        Graphics2D g = (Graphics2D) context.getGraphics().create();
-        PreferenceManager prefs = PreferenceManager.getInstance();
-        if (prefs.getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
-            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        }
-        if (dX >= 8) {
-            Font f = FontManager.getFont(Font.BOLD, Math.min(dX, 12));
-            g.setFont(f);
-        }
 
         BisulfiteBaseInfo bisinfo = null;
         boolean nomeseqMode = (renderOptions.getColorOption().equals(AlignmentTrack.ColorOption.NOMESEQ));
