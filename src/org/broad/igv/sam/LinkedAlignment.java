@@ -147,7 +147,7 @@ public class LinkedAlignment implements Alignment {
 
             for (Alignment a : alignments) {
                 if (a.contains(position)) {
-                    buffer.append("----------------------<br>");
+                    buffer.append("<hr>");
                     buffer.append(a.getValueString(position, windowFunction));
                     break;
                 }
