@@ -756,8 +756,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         }
 
         // Draw basepairs / mismatches.
-        if ((locScale < 5) || (AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) && (locScale < 100))) // Is 100 here going to kill some machines? bpb
-        {
+        if (locScale < 100) {
             if (renderOptions.showMismatches || renderOptions.showAllBases) {
                 boolean quickConsensus = prefs.getAsBoolean(PreferenceManager.SAM_QUICK_CONSENSUS_MODE);
                 for (AlignmentBlock aBlock: alignment.getAlignmentBlocks()) {
