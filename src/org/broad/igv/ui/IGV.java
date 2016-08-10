@@ -330,18 +330,15 @@ public class IGV implements IGVEventObserver {
 
     public void receiveEvent(Object event) {
 
-        if(event instanceof ViewChange) {
+        if (event instanceof ViewChange) {
             ViewChange e = (ViewChange) event;
-            if(e.type == ViewChange.Type.ChromosomeChange) {
+            if (e.type == ViewChange.Type.ChromosomeChange) {
                 chromosomeChangeEvent(e.chrName, false);
-            }
-            else {
+            } else {
                 repaintDataAndHeaderPanels();
                 repaintStatusAndZoomSlider();
             }
-        }
-
-        else {
+        } else {
             log.info("Unknown event type: " + event.getClass());
         }
     }
@@ -986,7 +983,7 @@ public class IGV implements IGVEventObserver {
         mainFrame.repaint();
         //getContentPane().repaint();
         contentPane.getCommandBar().updateComponentStates();
-       // menuBar.createFileMenu();
+        // menuBar.createFileMenu();
     }
 
     final public void refreshCommandBar() {
@@ -1845,16 +1842,17 @@ public class IGV implements IGVEventObserver {
      * Load the data file into the specified panel.   Triggered via drag and drop.
      */
     public void load(ResourceLocator locator, TrackPanel panel) throws DataLoadException {
+
         // If this is a session  TODO -- need better "is a session?" test
         if (locator.getPath().endsWith(".xml") || locator.getPath().endsWith(("session"))) {
             boolean merge = false;  // TODO -- ask user?
             this.doRestoreSession(locator.getPath(), null, merge);
+        } else {
+            // Not a session, load into target panel
+            List<Track> tracks = load(locator);
+            panel.addTracks(tracks);
+            doRefresh();
         }
-
-        // Not a session, load into target panel
-        List<Track> tracks = load(locator);
-        panel.addTracks(tracks);
-        doRefresh();
     }
 
     /**
@@ -1981,7 +1979,7 @@ public class IGV implements IGVEventObserver {
     }
 
     public void groupAlignmentTracksByBaseAtPos(AlignmentTrack.GroupOption option, Range pos) {
-        for (Track t: getAllTracks()) {
+        for (Track t : getAllTracks()) {
             if (t instanceof AlignmentTrack) {
                 ((AlignmentTrack) t).groupAlignmentsByBaseAtPos(option, pos);
             }
@@ -2145,7 +2143,7 @@ public class IGV implements IGVEventObserver {
         int right = Math.max(otherIndex, clickedTrackIndex);
         for (int i = left; i <= right; i++) {
             Track t = allTracks.get(i);
-            if(t.isVisible()) {
+            if (t.isVisible()) {
                 t.setSelected(true);
             }
         }
