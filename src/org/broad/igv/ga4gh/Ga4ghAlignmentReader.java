@@ -54,9 +54,11 @@ public class Ga4ghAlignmentReader implements AlignmentReader<Alignment> {
     Map<String, String> chromosomeMappings;
 
     public Ga4ghAlignmentReader(Ga4ghProvider provider, String readsetId) {
-        this.provider = provider;
+        this.provider = provider == null ? Ga4ghAPIHelper.GA4GH_GOOGLE_PROVIDER : provider;
         this.readsetId = readsetId;
         this.chromosomeMappings = new HashMap<String, String>();
+
+
     }
 
     @Override
