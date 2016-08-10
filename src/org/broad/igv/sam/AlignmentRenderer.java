@@ -419,8 +419,16 @@ public class AlignmentRenderer implements FeatureRenderer {
         int h = (int) Math.max(1, rect.getHeight() - 2);
         int y = (int) (rect.getY() + (rect.getHeight() - h) / 2);
         int arrowLength = Math.min(5, w / 6);
+
+        int d = Math.max(0, (int) (arrowLength + 2 - AlignmentPacker.MIN_ALIGNMENT_SPACING / context.getScale()));
+        if(alignment.isNegativeStrand()) x += d;
+        if(!alignment.isNegativeStrand()) w -= d;
+
+
+
         int[] xPoly = null;
         int[] yPoly = {y, y, y + h / 2, y + h, y + h};
+
 
         // Don't draw off edge of clipping rect
         if (x < rect.x && (x + w) > (rect.x + rect.width)) {
