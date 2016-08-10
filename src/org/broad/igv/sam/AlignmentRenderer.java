@@ -568,20 +568,36 @@ public class AlignmentRenderer implements FeatureRenderer {
      * Draw a single ungapped block in an alignment.
      */
     private void drawAlignmentBlock(Graphics2D blockGraphics, Graphics2D outlineGraphics, Graphics2D terminalGraphics,
-        boolean isNegativeStrand, int alignmentChromStart, int alignmentChromEnd, int blockChromStart, int blockChromEnd,
-        int blockPxStart, int blockPxWidth, int y, int h, boolean largeEnoughForArrow, int arrowPxWidth) {
+                                    boolean isNegativeStrand, int alignmentChromStart, int alignmentChromEnd, int blockChromStart, int blockChromEnd,
+                                    int blockPxStart, int blockPxWidth, int y, int h, boolean largeEnoughForArrow, int arrowPxWidth,
+                                    double locSale) {
 
-        if (blockPxWidth == 0) { return; } // skip blocks too small to render
+        if (blockPxWidth == 0) {
+            return;
+        } // skip blocks too small to render
 
         int blockPxEnd = blockPxStart + blockPxWidth;
+
         boolean leftmost = (blockChromStart == alignmentChromStart),
-            rightmost = (blockChromEnd == alignmentChromEnd);
+                rightmost = (blockChromEnd == alignmentChromEnd);
+
+        int delta = Math.max(0, (int) (arrowPxWidth + 2 - AlignmentPacker.MIN_ALIGNMENT_SPACING / locSale));
+        if(leftmost && isNegativeStrand && largeEnoughForArrow) blockPxStart += delta;
+        if(rightmost && !isNegativeStrand && largeEnoughForArrow) blockPxEnd -= delta;
 
         // Draw block as a rectangle; use a pointed hexagon in terminal block to indicate strand.
-        int[] xPoly = { blockPxStart - (leftmost && isNegativeStrand && largeEnoughForArrow ? arrowPxWidth : 0), blockPxStart,
-                        blockPxEnd, blockPxEnd + (rightmost && !isNegativeStrand && largeEnoughForArrow ? arrowPxWidth : 0),
-                        blockPxEnd, blockPxStart },
-              yPoly = { y + h/2, y, y, y + h/2, y + h, y + h };
+        int[] xPoly = {blockPxStart - (leftmost && isNegativeStrand && largeEnoughForArrow ? arrowPxWidth : 0),
+                blockPxStart,
+                blockPxEnd,
+                blockPxEnd + (rightmost && !isNegativeStrand && largeEnoughForArrow ? arrowPxWidth : 0),
+                blockPxEnd,
+                blockPxStart},
+                yPoly = {y + h / 2,
+                        y,
+                        y,
+                        y + h / 2,
+                        y + h,
+                        y + h};
         Shape blockShape = new Polygon(xPoly, yPoly, xPoly.length);
 
         blockGraphics.fill(blockShape);
@@ -647,14 +663,11 @@ public class AlignmentRenderer implements FeatureRenderer {
             c = (c == null) ? Color.blue : c;
             outlineGraphics = context.getGraphic2DForColor(c);
             outlineGraphics.setStroke(thickStroke);
-        }
-        else if (renderOptions.flagUnmappedPairs && alignment.isPaired() && !alignment.getMate().isMapped()) {
+        } else if (renderOptions.flagUnmappedPairs && alignment.isPaired() && !alignment.getMate().isMapped()) {
             outlineGraphics = context.getGraphic2DForColor(Color.red);
-        }
-        else if (alignment.isSupplementary()) {
+        } else if (alignment.isSupplementary()) {
             outlineGraphics = context.getGraphic2DForColor(SUPPLEMENTARY_OUTLINE_COLOR);
-        }
-        else if (alignment.getMappingQuality() == 0 && renderOptions.flagZeroQualityAlignments) {
+        } else if (alignment.getMappingQuality() == 0 && renderOptions.flagZeroQualityAlignments) {
             outlineGraphics = context.getGraphic2DForColor(OUTLINE_COLOR);
         }
 
@@ -682,12 +695,12 @@ public class AlignmentRenderer implements FeatureRenderer {
         /* Process the alignment. */
         AlignmentBlock firstBlock = blocks[0], lastBlock = blocks[blocks.length - 1];
         int alignmentChromStart = (int) firstBlock.getStart(),
-            alignmentChromEnd = (int) (lastBlock.getStart() + lastBlock.getLength()),
-            alignmentPxWidth = (int) Math.max(1, (alignmentChromEnd - alignmentChromStart) / locScale),
-            arrowPxWidth = Math.min(5, alignmentPxWidth / 6);
+                alignmentChromEnd = (int) (lastBlock.getStart() + lastBlock.getLength()),
+                alignmentPxWidth = (int) Math.max(1, (alignmentChromEnd - alignmentChromStart) / locScale),
+                arrowPxWidth = Math.min(5, alignmentPxWidth / 6);
         // BED-style coordinate for the visible context.  Do not draw outside the context.
         int contextChromStart = (int) context.getOrigin(),
-            contextChromEnd = (int) context.getEndLocation();
+                contextChromEnd = (int) context.getEndLocation();
         // BED-style start coordinate for the next alignment block to draw.
         int blockChromStart = (int) Math.max(alignmentChromStart, contextChromStart);
 
@@ -697,15 +710,14 @@ public class AlignmentRenderer implements FeatureRenderer {
         if (gaps != null) {
             for (Gap gap : gaps) {
                 int gapChromStart = (int) gap.getStart(),
-                    gapChromWidth = (int) gap.getnBases(),
-                    gapChromEnd = gapChromStart + gapChromWidth,
-                    gapPxWidth = (int) Math.max(1, gapChromWidth / locScale),
-                    gapPxEnd = (int) ((Math.min(contextChromEnd, gapChromEnd) - contextChromStart) / locScale);
+                        gapChromWidth = (int) gap.getnBases(),
+                        gapChromEnd = gapChromStart + gapChromWidth,
+                        gapPxWidth = (int) Math.max(1, gapChromWidth / locScale),
+                        gapPxEnd = (int) ((Math.min(contextChromEnd, gapChromEnd) - contextChromStart) / locScale);
 
                 if (gapChromEnd <= contextChromStart) { // gap ends before the visible context
                     continue; // move to next gap
-                }
-                else if (gapChromStart >= contextChromEnd) { // gap starts after the visible context
+                } else if (gapChromStart >= contextChromEnd) { // gap starts after the visible context
                     break; // done examining gaps
                 }
 
@@ -717,19 +729,18 @@ public class AlignmentRenderer implements FeatureRenderer {
 
                 // Draw the preceding alignment block.
                 int blockPxStart = (int) ((blockChromStart - contextChromStart) / locScale),
-                    blockChromEnd = gapChromStart,
-                    blockPxWidth = (int)  Math.max(1, (blockChromEnd - blockChromStart) / locScale),
-                    blockPxEnd = blockPxStart + blockPxWidth;
+                        blockChromEnd = gapChromStart,
+                        blockPxWidth = (int) Math.max(1, (blockChromEnd - blockChromStart) / locScale),
+                        blockPxEnd = blockPxStart + blockPxWidth;
                 drawAlignmentBlock(g, outlineGraphics, terminalGraphics, alignment.isNegativeStrand(),
-                    alignmentChromStart, alignmentChromEnd, blockChromStart, blockChromEnd,
-                    blockPxStart, blockPxWidth, y, h, largeEnoughForArrow, arrowPxWidth);
+                        alignmentChromStart, alignmentChromEnd, blockChromStart, blockChromEnd,
+                        blockPxStart, blockPxWidth, y, h, largeEnoughForArrow, arrowPxWidth, locScale);
 
                 // Draw the gap line.
                 Graphics2D gapGraphics = defaultGapGraphics;
                 if (gap.getType() == SAMAlignment.UNKNOWN) {
                     gapGraphics = unknownGapGraphics;
-                }
-                else if (gap.getType() == SAMAlignment.SKIPPED_REGION) {
+                } else if (gap.getType() == SAMAlignment.SKIPPED_REGION) {
                     gapGraphics = skippedRegionGapGraphics;
                 }
 
@@ -742,13 +753,13 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         // Draw the final block after the last gap.
         int blockPxStart = (int) ((blockChromStart - contextChromStart) / locScale),
-            blockChromEnd = (int) Math.min(contextChromEnd, alignmentChromEnd),
-            blockPxWidth = (int)  Math.max(1, (blockChromEnd - blockChromStart) / locScale),
-            blockPxEnd = blockPxStart + blockPxWidth,
-            lastBlockPxEnd = blockPxEnd;
+                blockChromEnd = (int) Math.min(contextChromEnd, alignmentChromEnd),
+                blockPxWidth = (int) Math.max(1, (blockChromEnd - blockChromStart) / locScale),
+                blockPxEnd = blockPxStart + blockPxWidth,
+                lastBlockPxEnd = blockPxEnd;
         drawAlignmentBlock(g, outlineGraphics, terminalGraphics, alignment.isNegativeStrand(),
-            alignmentChromStart, alignmentChromEnd, blockChromStart, blockChromEnd,
-            blockPxStart, blockPxWidth, y, h, largeEnoughForArrow, arrowPxWidth);
+                alignmentChromStart, alignmentChromEnd, blockChromStart, blockChromEnd,
+                blockPxStart, blockPxWidth, y, h, largeEnoughForArrow, arrowPxWidth, locScale);
 
         // Render insertions if locScale < 1 bp / pixel (base level)
         if (locScale < 1) {
@@ -759,14 +770,13 @@ public class AlignmentRenderer implements FeatureRenderer {
         if (locScale < 100) {
             if (renderOptions.showMismatches || renderOptions.showAllBases) {
                 boolean quickConsensus = prefs.getAsBoolean(PreferenceManager.SAM_QUICK_CONSENSUS_MODE);
-                for (AlignmentBlock aBlock: alignment.getAlignmentBlocks()) {
+                for (AlignmentBlock aBlock : alignment.getAlignmentBlocks()) {
                     int aBlockChromStart = (int) aBlock.getStart(),
-                        aBlockChromEnd = (int) (aBlock.getStart() + aBlock.getLength());
+                            aBlockChromEnd = (int) (aBlock.getStart() + aBlock.getLength());
 
                     if (aBlockChromEnd <= contextChromStart) { // block ends before the visible context
                         continue; // move to next block
-                    }
-                    else if (aBlockChromStart >= contextChromEnd) { // block starts after the visible context
+                    } else if (aBlockChromStart >= contextChromEnd) { // block starts after the visible context
                         break; // done examining blocks
                     }
 
@@ -903,9 +913,9 @@ public class AlignmentRenderer implements FeatureRenderer {
 
                 BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(idx);
                 if (isSoftClipped || bisulfiteMode ||
-                    // In "quick consensus" mode, only show mismatches at positions with a consistent alternative basepair.
-                    (!quickConsensus || alignmentCounts.isMismatch(loc, reference[idx], chr, prefs.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD)))
-                   ) {
+                        // In "quick consensus" mode, only show mismatches at positions with a consistent alternative basepair.
+                        (!quickConsensus || alignmentCounts.isMismatch(loc, reference[idx], chr, prefs.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD)))
+                        ) {
                     drawBase(g, color, c, pX, pY, dX, dY, bisulfiteMode, bisstatus);
                 }
             }
@@ -1213,7 +1223,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
                 break;
             case LINK_STRAND:
-                if(alignment instanceof LinkedAlignment && ((LinkedAlignment) alignment).getStrand() == Strand.NONE) {
+                if (alignment instanceof LinkedAlignment && ((LinkedAlignment) alignment).getStrand() == Strand.NONE) {
                     c = LL_COLOR;
                 }
                 break;

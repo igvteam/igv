@@ -47,7 +47,7 @@ public class AlignmentPacker {
     /**
      * Minimum gap between the end of one alignment and start of another.
      */
-    public static final int MIN_ALIGNMENT_SPACING = 5;
+    public static final int MIN_ALIGNMENT_SPACING = 2;
     private static final Comparator<Alignment> lengthComparator = new Comparator<Alignment>() {
         public int compare(Alignment row1, Alignment row2) {
             return (row2.getEnd() - row2.getStart()) -
