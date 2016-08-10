@@ -150,7 +150,9 @@ public class FastaUtils {
             }
         } catch (Exception e) {
             MessageUtils.showErrorMessage("Could not create index file: " + outputPath, e);
-            if( Globals.isTesting()) throw e;
+            if( Globals.isTesting()) {
+                throw new DataLoadException(e.getMessage());
+            }
         } finally {
             if (reader != null) reader.close();
             if (writer != null) writer.close();
