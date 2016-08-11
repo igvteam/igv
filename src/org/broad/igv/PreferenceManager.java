@@ -1415,7 +1415,9 @@ public class PreferenceManager implements PropertyManager {
             PreferenceManager.SAM_FILTER_SECONDARY_ALIGNMENTS,
             PreferenceManager.SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS,
             PreferenceManager.SAM_JUNCTION_MIN_FLANKING_WIDTH,
-            PreferenceManager.SAM_JUNCTION_MIN_COVERAGE
+            PreferenceManager.SAM_JUNCTION_MIN_COVERAGE,
+            PreferenceManager.SAM_FLAG_LARGE_INSERTIONS,
+            PreferenceManager.SAM_LARGE_INSERTIONS_THRESHOLD
     );
 
 

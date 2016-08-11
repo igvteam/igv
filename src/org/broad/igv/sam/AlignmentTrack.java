@@ -882,6 +882,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 break;
             case RELOAD:
                 clearCaches();
+                setRenderOptions(new RenderOptions());
                 break;
         }
 
