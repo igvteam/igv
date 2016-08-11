@@ -97,11 +97,6 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
             // affecting other tracks.
             Font font = FontManager.getFont(track.getFontSize());
             Graphics2D fontGraphics = (Graphics2D) context.getGraphic2DForColor(Color.BLACK).create();
-
-            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
-                fontGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
-            }
             fontGraphics.setFont(font);
 
             //determine whether to show flanking regions
@@ -271,10 +266,7 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
         }
 
         Graphics2D g2D = context.getGraphic2DForColor(color);
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
-            g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        }
+
         //Height of top of an arc of maximum depth
         int maxPossibleArcHeight = (trackRectangle.height - 1) / 2;
 

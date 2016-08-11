@@ -55,6 +55,14 @@ public class RenderContext {
         this.graphicCache = new HashMap();
         this.referenceFrame = referenceFrame;
         this.visibleRect = visibleRect;
+        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        }
+    }
+
+    public Graphics2D getGraphics() {
+        return graphics;
     }
 
     public Graphics2D getGraphic2D(Object key) {
@@ -70,7 +78,6 @@ public class RenderContext {
         }
         return g;
     }
-
 
     public Graphics2D getGraphic2DForColor(Color color) {
 
@@ -108,9 +115,6 @@ public class RenderContext {
         return panel;
     }
 
-    public Graphics2D getGraphics() {
-        return graphics;
-    }
 
     public int getZoom() {
         return referenceFrame.getZoom();

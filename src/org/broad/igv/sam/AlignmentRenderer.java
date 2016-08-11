@@ -688,11 +688,8 @@ public class AlignmentRenderer implements FeatureRenderer {
         }
 
         // Get a graphics context for drawing individual basepairs.
-        Graphics2D bpGraphics = (Graphics2D) context.getGraphics().create();
+        Graphics2D bpGraphics = context.getGraphic2D("BASE");
         int dX = (int) Math.max(1, (1.0 / locScale));
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
-            bpGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        }
         if (dX >= 8) {
             Font f = FontManager.getFont(Font.BOLD, Math.min(dX, 12));
             bpGraphics.setFont(f);

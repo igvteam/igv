@@ -204,7 +204,7 @@ public class VariantRenderer { //extends FeatureRenderer {
 
         int tOffset = 6;
         int bOffset = 8;
-        Graphics2D g = (Graphics2D) context.getGraphics().create();
+        Graphics2D g = (Graphics2D) context.getGraphic2D("GENOTYPE");
 
         if (dX >= 10) {
             if (dY > 24) {

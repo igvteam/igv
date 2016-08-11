@@ -119,12 +119,11 @@ abstract public class LegendPanel extends JPanel {
         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
             ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
-        paintLegend(g);
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
+        paintLegend((Graphics2D)g);
 
     }
 
-    abstract protected void paintLegend(Graphics g);
+    abstract protected void paintLegend(Graphics2D g);
 
     /**
      * Open the user preferences dialog

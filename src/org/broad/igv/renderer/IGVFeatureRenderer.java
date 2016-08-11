@@ -124,12 +124,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             // affecting other tracks.
             Font font = FontManager.getFont(track.getFontSize());
             Graphics2D fontGraphics = (Graphics2D) context.getGraphic2DForColor(Color.BLACK).create();
-
-            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
-                fontGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            }
-
-
             fontGraphics.setFont(font);
 
             // Track coordinates
@@ -290,8 +284,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         (int) trackRectangleMaxX, (int) trackRectangleMaxY - 1);
             }
 
-            fontGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
         }
     }
 
@@ -380,11 +372,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         double locationScale = context.getScale();
 
         Graphics2D fontGraphics = context.getGraphic2DForColor(Color.WHITE);
-
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
-            exonNumberGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            fontGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        }
 
         boolean colorToggle = true;
 
