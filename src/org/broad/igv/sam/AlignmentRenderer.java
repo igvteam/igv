@@ -679,11 +679,6 @@ public class AlignmentRenderer implements FeatureRenderer {
             outlineGraphics = context.getGraphic2DForColor(OUTLINE_COLOR);
         }
 
-        // Define the graphics contexts for various types of gap.
-        Graphics2D defaultGapGraphics = context.getGraphic2DForColor(deletionColor);
-        defaultGapGraphics.setStroke(thickStroke);
-        Graphics2D unknownGapGraphics = context.getGraphic2DForColor(unknownGapColor);
-        Graphics2D skippedRegionGapGraphics = context.getGraphic2DForColor(skippedColor);
 
         // Get a graphics context for drawing individual basepairs.
         Graphics2D bpGraphics = (Graphics2D) context.getGraphics().create();
@@ -745,6 +740,12 @@ public class AlignmentRenderer implements FeatureRenderer {
                         blockPxStart, blockPxWidth, y, h, largeEnoughForArrow, arrowPxWidth, locScale);
 
                 // Draw the gap line.
+                // Define the graphics contexts for various types of gap.
+                Graphics2D defaultGapGraphics = context.getGraphic2DForColor(deletionColor);
+                defaultGapGraphics.setStroke(thickStroke);
+                Graphics2D unknownGapGraphics = context.getGraphic2DForColor(unknownGapColor);
+                Graphics2D skippedRegionGapGraphics = context.getGraphic2DForColor(skippedColor);
+
                 Graphics2D gapGraphics = defaultGapGraphics;
                 if (gap.getType() == SAMAlignment.UNKNOWN) {
                     gapGraphics = unknownGapGraphics;

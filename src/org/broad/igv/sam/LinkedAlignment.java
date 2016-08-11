@@ -191,8 +191,22 @@ public class LinkedAlignment implements Alignment {
 
     @Override
     public AlignmentBlock[] getInsertions() {
-        return null;
+
+        int n = 0;
+        for (Alignment a : alignments) {
+            n += a.getInsertions().length;
+        }
+        AlignmentBlock[] insertions = new AlignmentBlock[n];
+
+        n = 0;
+        for (Alignment a : alignments) {
+            AlignmentBlock[] blocks = a.getInsertions();
+            System.arraycopy(blocks, 0, insertions, n, blocks.length);
+            n += blocks.length;
+        }
+        return insertions;
     }
+    
 
     @Override
     public String getCigarString() {
