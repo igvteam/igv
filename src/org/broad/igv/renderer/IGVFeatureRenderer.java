@@ -290,8 +290,9 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         (int) trackRectangleMaxX, (int) trackRectangleMaxY - 1);
             }
 
-            fontGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
+            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+                fontGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            }
         }
     }
 

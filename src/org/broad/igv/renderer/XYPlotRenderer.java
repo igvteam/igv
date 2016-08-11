@@ -340,7 +340,9 @@ public abstract class XYPlotRenderer extends DataRenderer {
     private static Graphics2D getBaselineGraphics(RenderContext context) {
         Graphics2D baselineGraphics;
         baselineGraphics = (Graphics2D) context.getGraphic2DForColor(Color.lightGray).create();
-        baselineGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+            baselineGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        }
         return baselineGraphics;
     }
 
