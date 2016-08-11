@@ -133,7 +133,7 @@ public class HeatmapLegendPanel extends LegendPanel {
         });
     }
 
-    protected void paintLegend(Graphics g) {
+    protected void paintLegend(Graphics2D g) {
         if (orientation == Orientation.HORIZONTAL) {
             paintHorizontal(g);
         } else {
@@ -141,107 +141,85 @@ public class HeatmapLegendPanel extends LegendPanel {
         }
     }
 
-    protected void paintHorizontal(Graphics g) {
+    protected void paintHorizontal(Graphics2D g2D) {
 
         DecimalFormat formatter = new DecimalFormat("0.0");
 
-        Graphics2D g2D = null;
+        g2D.setFont(FontManager.getFont(10));
 
-        try {
-            g2D = (Graphics2D) g.create();
-            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
-                g2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            }
-            g2D.setFont(FontManager.getFont(10));
+        int npts = 5;
+        double max = colorScale.getMaximum();
+        double min = colorScale.getMinimum();
 
-            int npts = 5;
-            double max = colorScale.getMaximum();
-            double min = colorScale.getMinimum();
+        int w = getWidth() - 20;
+        double dx = ((double) w) / npts;
+        double dxj = dx / 10;
+        double delta = (max - min) / npts;
+        double deltaj = delta / 10;
 
-            int w = getWidth() - 20;
-            double dx = ((double) w) / npts;
-            double dxj = dx / 10;
-            double delta = (max - min) / npts;
-            double deltaj = delta / 10;
+        for (int i = 0; i < npts + 1; i++) {
+            for (int j = i * 10; j < i * 10 + 10; j++) {
+                double val = min + j * deltaj;
 
-            for (int i = 0; i < npts + 1; i++) {
-                for (int j = i * 10; j < i * 10 + 10; j++) {
-                    double val = min + j * deltaj;
+                Color c = colorScale.getColor((float) val);
 
-                    Color c = colorScale.getColor((float) val);
+                g2D.setColor(c);
 
-                    g2D.setColor(c);
+                int x0 = (int) (j * dxj);
+                int x1 = (int) ((j + 1) * dxj);
 
-                    int x0 = (int) (j * dxj);
-                    int x1 = (int) ((j + 1) * dxj);
-
-                    g2D.fillRect(x0, 0, (x1 - x0), (int) (getHeight() / 2));
-                }
-
-                double labelVal = min + i * delta;
-                int x0 = (int) (i * dx);
-
-                g2D.setColor(Color.BLACK);
-                g2D.drawString(formatter.format(labelVal), x0, (int) getHeight() - 5);
+                g2D.fillRect(x0, 0, (x1 - x0), (int) (getHeight() / 2));
             }
 
+            double labelVal = min + i * delta;
+            int x0 = (int) (i * dx);
 
-        } finally {
-            g2D.dispose();
+            g2D.setColor(Color.BLACK);
+            g2D.drawString(formatter.format(labelVal), x0, (int) getHeight() - 5);
         }
+
     }
 
-    void paintVertical(Graphics g) {
+    void paintVertical(Graphics2D g2D) {
+
         DecimalFormat formatter = new DecimalFormat("0.0");
 
-        Graphics2D g2D = null;
+        g2D.setFont(FontManager.getFont(10));
 
-        try {
-            g2D = (Graphics2D) g.create();
-            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
-                g2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            }
-            g2D.setFont(FontManager.getFont(10));
+        int npts = 5;
+        double max = colorScale.getMaximum();
+        double min = colorScale.getMinimum();
 
-            int npts = 5;
-            double max = colorScale.getMaximum();
-            double min = colorScale.getMinimum();
+        int h = getWidth() - 20;
+        double dy = ((double) h) / npts;
+        double dyj = dy / 10;
+        double delta = (max - min) / npts;
+        double deltaj = delta / 10;
 
-            int h = getWidth() - 20;
-            double dy = ((double) h) / npts;
-            double dyj = dy / 10;
-            double delta = (max - min) / npts;
-            double deltaj = delta / 10;
-
-            int x0 = 10;
-            int dx = 10;
-            int y0;
-            int y1 = 0;
+        int x0 = 10;
+        int dx = 10;
+        int y0;
+        int y1 = 0;
 
 
-            for (int i = 0; i < npts + 1; i++) {
-                for (int j = i * 10; j < i * 10 + 10; j++) {
-                    double val = min + j * deltaj;
+        for (int i = 0; i < npts + 1; i++) {
+            for (int j = i * 10; j < i * 10 + 10; j++) {
+                double val = min + j * deltaj;
 
-                    Color c = colorScale.getColor((float) val);
+                Color c = colorScale.getColor((float) val);
 
-                    g2D.setColor(c);
+                g2D.setColor(c);
 
-                    y0 = (int) (j * dyj);
-                    y1 = (int) ((j + 1) * dyj);
+                y0 = (int) (j * dyj);
+                y1 = (int) ((j + 1) * dyj);
 
-                    g2D.fillRect(x0, y0, dx, y1 - y0);
-                }
-
-                double labelVal = min + i * delta;
-
-                g2D.setColor(Color.BLACK);
-                g2D.drawString(formatter.format(labelVal), x0 + 15, y1 - 5);
+                g2D.fillRect(x0, y0, dx, y1 - y0);
             }
 
+            double labelVal = min + i * delta;
 
-        } finally {
-            g2D.dispose();
+            g2D.setColor(Color.BLACK);
+            g2D.drawString(formatter.format(labelVal), x0 + 15, y1 - 5);
         }
     }
 

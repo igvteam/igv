@@ -90,10 +90,6 @@ public class SequenceTrack extends AbstractTrack {
         if (sequenceVisible) {
             graphics.setFont(font);
             int textBaseline = trackRectangle.y + 12;
-
-            if(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
-                graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,  RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            }
             graphics.drawString(NAME, trackRectangle.x + 5, textBaseline);
 
             int rx = trackRectangle.x + trackRectangle.width - 20;

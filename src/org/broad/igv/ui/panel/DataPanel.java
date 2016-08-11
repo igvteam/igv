@@ -125,7 +125,7 @@ public class DataPanel extends JComponent implements Paintable {
             final Rectangle damageRect = clipBounds == null ? visibleRect : clipBounds.intersection(visibleRect);
             Graphics2D graphics2D = (Graphics2D) g; //(Graphics2D) g.create();
 
-            context = new RenderContextImpl(this, graphics2D, frame, visibleRect);
+            context = new RenderContext(this, graphics2D, frame, visibleRect);
 
             if (Globals.IS_MAC) {
                 this.applyMacPerformanceHints((Graphics2D) g);
@@ -223,7 +223,7 @@ public class DataPanel extends JComponent implements Paintable {
         RenderContext context = null;
         try {
 
-            context = new RenderContextImpl(null, g, frame, rect);
+            context = new RenderContext(null, g, frame, rect);
             final Collection<TrackGroup> groups = new ArrayList(parent.getTrackGroups());
             int width = rect.width;
             painter.paint(groups, context, width, getBackground(), rect);

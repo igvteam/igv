@@ -108,52 +108,42 @@ public class MutationLegendPanel extends LegendPanel {
 
 
     @Override
-    public void paintLegend(Graphics g) {
+    public void paintLegend(Graphics2D g2D) {
 
 
         if (colorTable == null) {
             return;
         }
 
-        Graphics2D g2D = null;
+        g2D.setFont(FontManager.getFont(10));
 
-        try {
-            g2D = (Graphics2D) g.create();
-            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
-                g2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        FontMetrics fm = g2D.getFontMetrics();
+        int dh = fm.getHeight() / 2 + 3;
+
+        int x = 0;
+        int lineHeight = 12;
+        int y = lineHeight;
+        int colCount = 0;
+
+        for (Map.Entry<String, Color> entry : colorTable.entrySet()) {
+
+            String mutType = entry.getKey();
+            String label = mutType.replace("_", " ");
+            int labelWidth = (int) fm.getStringBounds(label, g2D).getWidth();
+
+            g2D.setColor(entry.getValue());
+            g2D.fillRect(x, y, 10, 10);
+            g2D.setColor(Color.BLACK);
+            g2D.drawRect(x, y, 10, 10);
+            g2D.drawString(label, x + 20, y + dh);
+            x += labelWidth + 40;
+            colCount++;
+
+            if (colCount % 5 == 0) {
+                y += lineHeight + 5;
+                x = 0;
             }
-            g2D.setFont(FontManager.getFont(10));
-
-            FontMetrics fm = g2D.getFontMetrics();
-            int dh = fm.getHeight() / 2 + 3;
-
-            int x = 0;
-            int lineHeight = 12;
-            int y = lineHeight;
-            int colCount = 0;
-
-            for (Map.Entry<String, Color> entry : colorTable.entrySet()) {
-
-                String mutType = entry.getKey();
-                String label = mutType.replace("_", " ");
-                int labelWidth = (int) fm.getStringBounds(label, g2D).getWidth();
-
-                g2D.setColor(entry.getValue());
-                g2D.fillRect(x, y, 10, 10);
-                g2D.setColor(Color.BLACK);
-                g2D.drawRect(x, y, 10, 10);
-                g2D.drawString(label, x + 20, y + dh);
-                x += labelWidth + 40;
-                colCount++;
-
-                if (colCount % 5 == 0) {
-                    y += lineHeight + 5;
-                    x = 0;
-                }
-            }
-
-        } finally {
-            g2D.dispose();
         }
+
     }
 }

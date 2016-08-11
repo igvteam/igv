@@ -197,7 +197,7 @@ public class SashimiPlot extends JFrame {
         geneTrack.setDisplayMode(Track.DisplayMode.SQUISHED);
 
         geneTrack.clearPackedFeatures();
-        RenderContext context = new RenderContextImpl(geneComponent, null, frame, null);
+        RenderContext context = new RenderContext(geneComponent, null, frame, null);
         geneTrack.setForceLoadSync(true);
         geneTrack.load(context.getReferenceFrame());
 
@@ -256,7 +256,7 @@ public class SashimiPlot extends JFrame {
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
             Rectangle visibleRect = getVisibleRect();
-            RenderContext context = new RenderContextImpl(this, (Graphics2D) g, frame, visibleRect);
+            RenderContext context = new RenderContext(this, (Graphics2D) g, frame, visibleRect);
             track.render(context, visibleRect);
         }
 
@@ -682,7 +682,7 @@ public class SashimiPlot extends JFrame {
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             Rectangle visibleRect = getVisibleRect();
-            RenderContext context = new RenderContextImpl(this, (Graphics2D) g, frame, visibleRect);
+            RenderContext context = new RenderContext(this, (Graphics2D) g, frame, visibleRect);
             drawGenomicAxis(context, visibleRect);
         }
 

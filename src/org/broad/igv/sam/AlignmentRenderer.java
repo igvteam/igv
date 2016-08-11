@@ -579,8 +579,7 @@ public class AlignmentRenderer implements FeatureRenderer {
      */
     private void drawAlignmentBlock(Graphics2D blockGraphics, Graphics2D outlineGraphics, Graphics2D terminalGraphics,
                                     boolean isNegativeStrand, int alignmentChromStart, int alignmentChromEnd, int blockChromStart, int blockChromEnd,
-                                    int blockPxStart, int blockPxWidth, int y, int h, boolean largeEnoughForArrow, int arrowPxWidth,
-                                    double locSale) {
+                                    int blockPxStart, int blockPxWidth, int y, int h, double locSale) {
 
         if (blockPxWidth == 0) {
             return;
@@ -589,34 +588,43 @@ public class AlignmentRenderer implements FeatureRenderer {
         int blockPxEnd = blockPxStart + blockPxWidth;
 
         boolean leftmost = (blockChromStart == alignmentChromStart),
-                rightmost = (blockChromEnd == alignmentChromEnd);
+                rightmost = (blockChromEnd == alignmentChromEnd),
+                tallEnoughForArrow = h > 8;
 
-        int delta = Math.max(0, (int) (arrowPxWidth + 2 - AlignmentPacker.MIN_ALIGNMENT_SPACING / locSale));
-        if(leftmost && isNegativeStrand && largeEnoughForArrow) blockPxStart += delta;
-        if(rightmost && !isNegativeStrand && largeEnoughForArrow) blockPxEnd -= delta;
 
-        // Draw block as a rectangle; use a pointed hexagon in terminal block to indicate strand.
-        int[] xPoly = {blockPxStart - (leftmost && isNegativeStrand && largeEnoughForArrow ? arrowPxWidth : 0),
-                blockPxStart,
-                blockPxEnd,
-                blockPxEnd + (rightmost && !isNegativeStrand && largeEnoughForArrow ? arrowPxWidth : 0),
-                blockPxEnd,
-                blockPxStart},
-                yPoly = {y + h / 2,
-                        y,
-                        y,
-                        y + h / 2,
-                        y + h,
-                        y + h};
-        Shape blockShape = new Polygon(xPoly, yPoly, xPoly.length);
+        if(h == 1) {
+            blockGraphics.drawLine(blockPxStart, y, blockPxEnd, y);
+        }
+        else {
+            Shape blockShape;
+            int arrowPxWidth = Math.min(5, blockPxWidth / 6);
+            int delta = Math.max(0, (int) (arrowPxWidth + 2 - AlignmentPacker.MIN_ALIGNMENT_SPACING / locSale));
+            if (leftmost && isNegativeStrand && tallEnoughForArrow) blockPxStart += delta;
+            if (rightmost && !isNegativeStrand && tallEnoughForArrow) blockPxEnd -= delta;
 
-        blockGraphics.fill(blockShape);
-        if (outlineGraphics != null) {
-            outlineGraphics.draw(blockShape);
+            // Draw block as a rectangle; use a pointed hexagon in terminal block to indicate strand.
+            int[] xPoly = {blockPxStart - (leftmost && isNegativeStrand && tallEnoughForArrow ? arrowPxWidth : 0),
+                    blockPxStart,
+                    blockPxEnd,
+                    blockPxEnd + (rightmost && !isNegativeStrand && tallEnoughForArrow ? arrowPxWidth : 0),
+                    blockPxEnd,
+                    blockPxStart},
+                    yPoly = {y + h / 2,
+                            y,
+                            y,
+                            y + h / 2,
+                            y + h,
+                            y + h};
+            blockShape = new Polygon(xPoly, yPoly, xPoly.length);
+
+            blockGraphics.fill(blockShape);
+            if (outlineGraphics != null) {
+                outlineGraphics.draw(blockShape);
+            }
         }
 
         // If the block is too small for a pointed hexagon arrow, then indicate strand with a line.
-        if (!largeEnoughForArrow) {
+        if (!tallEnoughForArrow) {
             int tH = Math.max(1, h - 1);
             if (leftmost && isNegativeStrand) {
                 terminalGraphics.drawLine(blockPxStart, y, blockPxStart, y + tH);
@@ -691,33 +699,28 @@ public class AlignmentRenderer implements FeatureRenderer {
             largeIndelGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
 
+        // Get a graphics context for drawing individual basepairs.
+        Graphics2D bpGraphics = context.getGraphic2D("BASE");
+        int dX = (int) Math.max(1, (1.0 / locScale));
+        if (dX >= 8) {
+            Font f = FontManager.getFont(Font.BOLD, Math.min(dX, 12));
+            bpGraphics.setFont(f);
+        }
+
         // Define the graphics contexts for various types of gap.
         Graphics2D defaultGapGraphics = context.getGraphic2DForColor(deletionColor);
         defaultGapGraphics.setStroke(thickStroke);
         Graphics2D unknownGapGraphics = context.getGraphic2DForColor(unknownGapColor);
         Graphics2D skippedRegionGapGraphics = context.getGraphic2DForColor(skippedColor);
 
-        // Get a graphics context for drawing individual basepairs.
-        Graphics2D bpGraphics = (Graphics2D) context.getGraphics().create();
-        int dX = (int) Math.max(1, (1.0 / locScale));
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
-            bpGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        }
-        if (dX >= 8) {
-            Font f = FontManager.getFont(Font.BOLD, Math.min(dX, 12));
-            bpGraphics.setFont(f);
-        }
-
         // Get a graphics context to indicate the end of a read.
         Graphics2D terminalGraphics = context.getGraphic2DForColor(Color.DARK_GRAY);
-        boolean largeEnoughForArrow = (h > 10);
 
         /* Process the alignment. */
         AlignmentBlock firstBlock = blocks[0], lastBlock = blocks[blocks.length - 1];
         int alignmentChromStart = (int) firstBlock.getStart(),
-                alignmentChromEnd = (int) (lastBlock.getStart() + lastBlock.getLength()),
-                alignmentPxWidth = (int) Math.max(1, (alignmentChromEnd - alignmentChromStart) / locScale),
-                arrowPxWidth = Math.min(5, alignmentPxWidth / 6);
+                alignmentChromEnd = (int) (lastBlock.getStart() + lastBlock.getLength());
+
         // BED-style coordinate for the visible context.  Do not draw outside the context.
         int contextChromStart = (int) context.getOrigin(),
                 contextChromEnd = (int) context.getEndLocation();
@@ -754,7 +757,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                         blockPxEnd = blockPxStart + blockPxWidth;
                 drawAlignmentBlock(g, outlineGraphics, terminalGraphics, alignment.isNegativeStrand(),
                         alignmentChromStart, alignmentChromEnd, blockChromStart, blockChromEnd,
-                        blockPxStart, blockPxWidth, y, h, largeEnoughForArrow, arrowPxWidth, locScale);
+                        blockPxStart, blockPxWidth, y, h, locScale);
 
                 // Draw the gap line.
                 Graphics2D gapGraphics = defaultGapGraphics;
@@ -784,7 +787,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 lastBlockPxEnd = blockPxEnd;
         drawAlignmentBlock(g, outlineGraphics, terminalGraphics, alignment.isNegativeStrand(),
                 alignmentChromStart, alignmentChromEnd, blockChromStart, blockChromEnd,
-                blockPxStart, blockPxWidth, y, h, largeEnoughForArrow, arrowPxWidth, locScale);
+                blockPxStart, blockPxWidth, y, h, locScale);
 
         // Draw insertions.
         drawInsertions(contextChromStart, rowRect, locScale, alignment, smallInsertionGraphics, largeIndelGraphics, renderOptions);

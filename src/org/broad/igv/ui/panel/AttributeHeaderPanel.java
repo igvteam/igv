@@ -95,7 +95,7 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
 
         if (keys != null && keys.size() > 0) {
 
-            final Graphics2D graphics2 = (Graphics2D) graphics.create();
+            final Graphics2D graphics2 = (Graphics2D) graphics;
             if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
                 graphics2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             }
@@ -118,7 +118,6 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
             transform = AffineTransform.getQuadrantRotateInstance(-1);
             graphics2.transform(transform);
             graphics2.setFont(font);
-            graphics2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             FontMetrics fm = graphics2.getFontMetrics();
             int fontAscent = fm.getHeight();
 
