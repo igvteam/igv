@@ -137,8 +137,8 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_NOMESEQ_ENABLED = "SAM.NOMESEQ_ENABLED";
     public static final String SAM_COUNT_DELETED_BASES_COVERED = "SAM.COUNT_DELETED_BASES_COVERED";
 
-    public static final String SAM_FLAG_LARGE_INSERTIONS = "SAM.FLAG_LARGE_INSERTIONS";
-    public static final String SAM_LARGE_INSERTIONS_THRESHOLD = "SAM.LARGE_INSERTIONS_THRESOLD";
+    public static final String SAM_FLAG_LARGE_INDELS = "SAM.FLAG_LARGE_INDELS";
+    public static final String SAM_LARGE_INDELS_THRESHOLD = "SAM.LARGE_INSERTIONS_THRESOLD";
 
     public static final String SAM_SHOW_GROUP_SEPARATOR = "SAM.SHOW_GROUP_SEPARATOR";
     public static final String SAM_COMPLETE_READS_ONLY = "SAM.COMPLETE_READS_ONLY";
@@ -1119,8 +1119,8 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_SHOW_JUNCTION_FLANKINGREGIONS, "true");
         defaultValues.put(SAM_NOMESEQ_ENABLED, "false");
         defaultValues.put(SAM_COUNT_DELETED_BASES_COVERED, "false");
-        defaultValues.put(SAM_FLAG_LARGE_INSERTIONS, "false");
-        defaultValues.put(SAM_LARGE_INSERTIONS_THRESHOLD, "1");
+        defaultValues.put(SAM_FLAG_LARGE_INDELS, "false");
+        defaultValues.put(SAM_LARGE_INDELS_THRESHOLD, "1");
         defaultValues.put(SAM_SORT_OPTION, "NUCLEOTIDE");
         defaultValues.put(SAM_SHOW_GROUP_SEPARATOR, "true");
         defaultValues.put(SAM_COMPLETE_READS_ONLY, "false");
@@ -1416,8 +1416,8 @@ public class PreferenceManager implements PropertyManager {
             PreferenceManager.SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS,
             PreferenceManager.SAM_JUNCTION_MIN_FLANKING_WIDTH,
             PreferenceManager.SAM_JUNCTION_MIN_COVERAGE,
-            PreferenceManager.SAM_FLAG_LARGE_INSERTIONS,
-            PreferenceManager.SAM_LARGE_INSERTIONS_THRESHOLD
+            PreferenceManager.SAM_FLAG_LARGE_INDELS,
+            PreferenceManager.SAM_LARGE_INDELS_THRESHOLD
     );
 
 

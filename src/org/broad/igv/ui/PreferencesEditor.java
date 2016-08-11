@@ -266,8 +266,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
         jLabel11b = new JLabel();
         samHiddenTagsField = new JTextField();
         panel10 = new JPanel();
-        samFlagInsertionsCB = new JCheckBox();
-        samFlagInsertionsThresholdField = new JTextField();
+        samFlagIndelsCB = new JCheckBox();
+        samFlagIndelsThresholdField = new JTextField();
         label31 = new JLabel();
         panel8 = new JPanel();
         samFilterDuplicatesCB = new JCheckBox();
@@ -1613,31 +1613,31 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 panel10.setBorder(null);
                                 panel10.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 5));
 
-                                //---- samFlagInsertionsCB ----
-                                samFlagInsertionsCB.setText("Flag insertions larger than: ");
-                                samFlagInsertionsCB.addActionListener(new ActionListener() {
+                                //---- samFlagIndelsCB ----
+                                samFlagIndelsCB.setText("Label indels larger than: ");
+                                samFlagIndelsCB.addActionListener(new ActionListener() {
                                     @Override
                                     public void actionPerformed(ActionEvent e) {
-                                        samFlagInsertionsCBActionPerformed(e);
+                                        samFlagIndelsCBActionPerformed(e);
                                     }
                                 });
-                                panel10.add(samFlagInsertionsCB);
+                                panel10.add(samFlagIndelsCB);
 
-                                //---- samFlagInsertionsThresholdField ----
-                                samFlagInsertionsThresholdField.setPreferredSize(new Dimension(60, 28));
-                                samFlagInsertionsThresholdField.addActionListener(new ActionListener() {
+                                //---- samFlagIndelsThresholdField ----
+                                samFlagIndelsThresholdField.setPreferredSize(new Dimension(60, 28));
+                                samFlagIndelsThresholdField.addActionListener(new ActionListener() {
                                     @Override
                                     public void actionPerformed(ActionEvent e) {
-                                        samFlagInsertionsThresholdFieldActionPerformed(e);
+                                        samFlagIndelsThresholdFieldActionPerformed(e);
                                     }
                                 });
-                                samFlagInsertionsThresholdField.addFocusListener(new FocusAdapter() {
+                                samFlagIndelsThresholdField.addFocusListener(new FocusAdapter() {
                                     @Override
                                     public void focusLost(FocusEvent e) {
-                                        samFlagInsertionsThresholdFieldFocusLost(e);
+                                        samFlagIndelsThresholdFieldFocusLost(e);
                                     }
                                 });
-                                panel10.add(samFlagInsertionsThresholdField);
+                                panel10.add(samFlagIndelsThresholdField);
 
                                 //---- label31 ----
                                 label31.setText("bases");
@@ -3483,22 +3483,22 @@ public class PreferencesEditor extends javax.swing.JDialog {
         }
     }
 
-    private void samFlagInsertionsCBActionPerformed(ActionEvent e) {
-        final boolean flagInsertions = samFlagInsertionsCB.isSelected();
-        updatedPreferenceMap.put(PreferenceManager.SAM_FLAG_LARGE_INSERTIONS, String.valueOf(flagInsertions));
-        samFlagInsertionsThresholdField.setEnabled(flagInsertions);
+    private void samFlagIndelsCBActionPerformed(ActionEvent e) {
+        final boolean flagInsertions = samFlagIndelsCB.isSelected();
+        updatedPreferenceMap.put(PreferenceManager.SAM_FLAG_LARGE_INDELS, String.valueOf(flagInsertions));
+        samFlagIndelsThresholdField.setEnabled(flagInsertions);
     }
 
 
-    private void samFlagInsertionsThresholdFieldActionPerformed(ActionEvent e) {
-        String insertionThreshold = samFlagInsertionsThresholdField.getText().trim();
+    private void samFlagIndelsThresholdFieldActionPerformed(ActionEvent e) {
+        String insertionThreshold = samFlagIndelsThresholdField.getText().trim();
         try {
             int tmp = Integer.parseInt(insertionThreshold);
             if (tmp <= 0) {
                 inputValidated = false;
                 MessageUtils.showMessage("Insertion threshold must be a positive integer.");
             } else {
-                updatedPreferenceMap.put(PreferenceManager.SAM_LARGE_INSERTIONS_THRESHOLD, insertionThreshold);
+                updatedPreferenceMap.put(PreferenceManager.SAM_LARGE_INDELS_THRESHOLD, insertionThreshold);
             }
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
@@ -3506,8 +3506,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
         }
     }
 
-    private void samFlagInsertionsThresholdFieldFocusLost(FocusEvent e) {
-        samFlagInsertionsThresholdFieldActionPerformed(null);
+    private void samFlagIndelsThresholdFieldFocusLost(FocusEvent e) {
+        samFlagIndelsThresholdFieldActionPerformed(null);
     }
 
     private void downsampleReadsCBActionPerformed(ActionEvent e) {
@@ -4577,8 +4577,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
         featureVisibilityWindowField.setText(prefMgr.get(PreferenceManager.DEFAULT_VISIBILITY_WINDOW));
 
         showAlignmentTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_ALIGNMENT_TRACK));
-        samFlagInsertionsThresholdField.setText(prefMgr.get(PreferenceManager.SAM_LARGE_INSERTIONS_THRESHOLD));
-        samFlagInsertionsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FLAG_LARGE_INSERTIONS));
+        samFlagIndelsThresholdField.setText(prefMgr.get(PreferenceManager.SAM_LARGE_INDELS_THRESHOLD));
+        samFlagIndelsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FLAG_LARGE_INDELS));
 
         resetVCFColorChoosers();
 
@@ -4774,8 +4774,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JLabel jLabel11b;
     private JTextField samHiddenTagsField;
     private JPanel panel10;
-    private JCheckBox samFlagInsertionsCB;
-    private JTextField samFlagInsertionsThresholdField;
+    private JCheckBox samFlagIndelsCB;
+    private JTextField samFlagIndelsThresholdField;
     private JLabel label31;
     private JPanel panel8;
     private JCheckBox samFilterDuplicatesCB;

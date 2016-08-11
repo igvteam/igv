@@ -1120,7 +1120,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         @XmlAttribute
         private boolean linkedReads;
         @XmlAttribute
-        private boolean flagLargeInsertions;
+        private boolean flagLargeIndels;
         private int largeInsertionsThreshold;
 
         private Range groupByBaseAtPos = null;
@@ -1158,8 +1158,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             peStats = new HashMap<String, PEStats>();
 
-            flagLargeInsertions = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_LARGE_INSERTIONS);
-            largeInsertionsThreshold = prefs.getAsInt(PreferenceManager.SAM_LARGE_INSERTIONS_THRESHOLD);
+            flagLargeIndels = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_LARGE_INDELS);
+            largeInsertionsThreshold = prefs.getAsInt(PreferenceManager.SAM_LARGE_INDELS_THRESHOLD);
         }
 
 
@@ -1300,8 +1300,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             return groupByOption;
         }
 
-        public boolean isFlagLargeInsertions() {
-            return flagLargeInsertions;
+        public boolean isFlagLargeIndels() {
+            return flagLargeIndels;
         }
 
         public int getLargeInsertionsThreshold() {

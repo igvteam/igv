@@ -26,6 +26,7 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
@@ -45,6 +46,7 @@ import org.broad.igv.util.ChromosomeColors;
 import java.awt.*;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.QuadCurve2D;
+import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.List;
 
@@ -679,6 +681,21 @@ public class AlignmentRenderer implements FeatureRenderer {
             outlineGraphics = context.getGraphic2DForColor(OUTLINE_COLOR);
         }
 
+        // Define a graphics context for small insertions.
+        Graphics2D smallInsertionGraphics = context.getGraphic2DForColor(purple);
+
+        // Define a graphics context for indel labels.
+        Graphics2D largeIndelGraphics = (Graphics2D) context.getGraphics().create();
+        largeIndelGraphics.setFont(FontManager.getFont(Font.BOLD, h-2));
+        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+            largeIndelGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        }
+
+        // Define the graphics contexts for various types of gap.
+        Graphics2D defaultGapGraphics = context.getGraphic2DForColor(deletionColor);
+        defaultGapGraphics.setStroke(thickStroke);
+        Graphics2D unknownGapGraphics = context.getGraphic2DForColor(unknownGapColor);
+        Graphics2D skippedRegionGapGraphics = context.getGraphic2DForColor(skippedColor);
 
         // Get a graphics context for drawing individual basepairs.
         Graphics2D bpGraphics = (Graphics2D) context.getGraphics().create();
@@ -740,12 +757,6 @@ public class AlignmentRenderer implements FeatureRenderer {
                         blockPxStart, blockPxWidth, y, h, largeEnoughForArrow, arrowPxWidth, locScale);
 
                 // Draw the gap line.
-                // Define the graphics contexts for various types of gap.
-                Graphics2D defaultGapGraphics = context.getGraphic2DForColor(deletionColor);
-                defaultGapGraphics.setStroke(thickStroke);
-                Graphics2D unknownGapGraphics = context.getGraphic2DForColor(unknownGapColor);
-                Graphics2D skippedRegionGapGraphics = context.getGraphic2DForColor(skippedColor);
-
                 Graphics2D gapGraphics = defaultGapGraphics;
                 if (gap.getType() == SAMAlignment.UNKNOWN) {
                     gapGraphics = unknownGapGraphics;
@@ -754,6 +765,11 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
 
                 gapGraphics.drawLine(blockPxEnd + 1, y + h / 2, gapPxEnd, y + h / 2);
+
+                // Label the size of the deletion if it is "large" and the label fits.
+                if (renderOptions.isFlagLargeIndels() && gapChromWidth > renderOptions.getLargeInsertionsThreshold()) {
+                    drawLargeIndelLabel(largeIndelGraphics, false, Globals.DECIMAL_FORMAT.format(gapChromWidth), blockPxEnd + (int) (gapPxWidth/2), y, h, gapPxWidth);
+                }
 
                 // Start the next alignment block after the gap.
                 blockChromStart = gapChromEnd;
@@ -770,10 +786,8 @@ public class AlignmentRenderer implements FeatureRenderer {
                 alignmentChromStart, alignmentChromEnd, blockChromStart, blockChromEnd,
                 blockPxStart, blockPxWidth, y, h, largeEnoughForArrow, arrowPxWidth, locScale);
 
-        // Render insertions if locScale < 1 bp / pixel (base level)
-        if (locScale < 1) {
-            drawInsertions(contextChromStart, rowRect, locScale, alignment, context, renderOptions);
-        }
+        // Draw insertions.
+        drawInsertions(contextChromStart, rowRect, locScale, alignment, smallInsertionGraphics, largeIndelGraphics, renderOptions);
 
         // Draw basepairs / mismatches.
         if (locScale < 100) {
@@ -1069,15 +1083,48 @@ public class AlignmentRenderer implements FeatureRenderer {
         return color;
     }
 
-    private void drawInsertions(double origin, Rectangle rect, double locScale, Alignment alignment, RenderContext context, RenderOptions renderOptions) {
+    private void drawLargeIndelLabel(Graphics2D g, boolean isInsertion, String labelText, int pxCenter, int pxTop, int pxH, int pxWmax) {
+        final int pxPad = 2;   // text padding in the label
+        final int pxWing = 2;  // width of the cursor "wing"
 
+        // Calculate the width required to draw the label
+        Rectangle2D textBounds = g.getFontMetrics().getStringBounds(labelText, g);
+        int pxTextW = 2*pxPad + (int) textBounds.getWidth();
+        boolean doesTextFit = (pxTextW < pxWmax);
+
+        if (!doesTextFit && !isInsertion) {
+            return;
+        } // only label deletions when the text fits
+
+        // Calculate the pixel bounds of the label
+        int pxW = (int) Math.max(2, Math.min(pxTextW, pxWmax)),
+            pxLeft = pxCenter - (int) Math.ceil(pxW / 2),
+            pxRight = pxLeft + pxW;
+
+        // Draw the label
+        g.setColor(isInsertion ? purple : Color.white);
+        g.fillRect(pxLeft, pxTop, pxRight-pxLeft, pxH);
+
+        if (isInsertion) {
+            g.fillRect(pxLeft-pxWing, pxTop, pxRight-pxLeft+2*pxWing, 2);
+            g.fillRect(pxLeft-pxWing, pxTop+pxH-2, pxRight-pxLeft+2*pxWing, 2);
+        } // draw "wings" For insertions
+
+        if (doesTextFit) {
+            g.setColor(isInsertion ? Color.white : purple);
+            g.drawString(labelText, pxLeft+pxPad, pxTop+pxH-2);
+        } // draw the text if it fits
+    }
+
+    private void drawInsertions(double origin, Rectangle rect, double locScale, Alignment alignment,
+                                Graphics2D gSmallInsertion, Graphics2D gLargeInsertion, RenderOptions renderOptions) {
         AlignmentBlock[] insertions = alignment.getInsertions();
         if (insertions != null) {
             for (AlignmentBlock aBlock : insertions) {
                 int x = (int) ((aBlock.getStart() - origin) / locScale);
                 int pxWidth = (int) (aBlock.getBases().length / locScale);
                 int h = (int) Math.max(1, rect.getHeight() - 2);
-                int y = (int) (rect.getY() + (rect.getHeight() - h) / 2);
+                int y = (int) (rect.getY() + (rect.getHeight() - h) / 2) - 1;
 
                 // Don't draw out of clipping rect
                 if (x > rect.getMaxX()) {
@@ -1086,17 +1133,12 @@ public class AlignmentRenderer implements FeatureRenderer {
                     continue;
                 }
 
-                if (renderOptions.isFlagLargeInsertions() &&
-                        aBlock.getBases().length > renderOptions.getLargeInsertionsThreshold()) {
-                    Graphics2D gInsertion = context.getGraphic2DForColor(Color.red);
-                    gInsertion.fillRect(x - 5, y, 10, 2);
-                    gInsertion.fillRect(x - 3, y, 6, h);
-                    gInsertion.fillRect(x - 5, y + h - 2, 10, 2);
+                if (renderOptions.isFlagLargeIndels() && aBlock.getBases().length > renderOptions.getLargeInsertionsThreshold()) {
+                    drawLargeIndelLabel(gLargeInsertion, true, Globals.DECIMAL_FORMAT.format(aBlock.getBases().length), x-1, y, h, pxWidth);
                 } else if (pxWidth >= MIN_INDEL_PX_WIDTH) {
-                    Graphics2D gInsertion = context.getGraphic2DForColor(purple);
-                    gInsertion.fillRect(x - 2, y, 4, 2);
-                    gInsertion.fillRect(x - 1, y, 2, h);
-                    gInsertion.fillRect(x - 2, y + h - 2, 4, 2);
+                    gSmallInsertion.fillRect(x - 2, y, 4, 2);
+                    gSmallInsertion.fillRect(x - 1, y, 2, h);
+                    gSmallInsertion.fillRect(x - 2, y + h - 2, 4, 2);
                 }
             }
         }
