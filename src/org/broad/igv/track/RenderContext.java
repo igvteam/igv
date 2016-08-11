@@ -23,41 +23,126 @@
  * THE SOFTWARE.
  */
 
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package org.broad.igv.track;
 
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * @author Jim Robinson
- * @date 4/13/12
+ * @author jrobinso
  */
-public interface RenderContext {
+public class RenderContext {
 
-    Graphics2D getGraphic2DForColor(Color color);
+    private Graphics2D graphics;
+    private Map<Object, Graphics2D> graphicCache;
+    private ReferenceFrame referenceFrame;
+    private JComponent panel;
+    private Rectangle visibleRect;
 
-    String getChr();
 
-    double getOrigin();
+    public RenderContext(JComponent panel, Graphics2D graphics, ReferenceFrame referenceFrame, Rectangle visibleRect) {
+        this.graphics = graphics;
+        this.panel = panel;
+        this.graphicCache = new HashMap();
+        this.referenceFrame = referenceFrame;
+        this.visibleRect = visibleRect;
+    }
 
-    double getEndLocation();
+    public Graphics2D getGraphic2D(Object key) {
 
-    double getScale();
+        Graphics2D g = graphicCache.get(key);
+        if (g == null) {
+            g = (Graphics2D) graphics.create();
+            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            }
+            graphicCache.put(key, g);
+        }
+        return g;
+    }
 
-    Rectangle getVisibleRect();
 
-    JComponent getPanel();
+    public Graphics2D getGraphic2DForColor(Color color) {
 
-    Graphics2D getGraphics();
+        Graphics2D g = getGraphic2D(color);
+        g.setColor(color);
+        return g;
+    }
 
-    int getZoom();
 
-    ReferenceFrame getReferenceFrame();
+    public Color getBackgroundColor() {
+        return panel.getBackground();
+    }
 
-    int bpToScreenPixel(double location);
+    public String getChr() {
+        return referenceFrame.getChrName();
+    }
 
-    void dispose();
+    public double getOrigin() {
+        return referenceFrame.getOrigin();
+    }
+
+    public double getEndLocation() {
+        return referenceFrame.getEnd();
+    }
+
+    public double getScale() {
+        return referenceFrame.getScale();
+    }
+
+    public Rectangle getVisibleRect() {
+        return visibleRect;
+    }
+
+    public JComponent getPanel() {
+        return panel;
+    }
+
+    public Graphics2D getGraphics() {
+        return graphics;
+    }
+
+    public int getZoom() {
+        return referenceFrame.getZoom();
+    }
+
+    public ReferenceFrame getReferenceFrame() {
+        return referenceFrame;
+    }
+
+    public int bpToScreenPixel(double location) {
+        final double scale = getScale();
+        final double origin = getOrigin();
+        return (int) ((location - origin) / scale);
+
+    }
+
+    /**
+     * Release graphics objects
+     *
+     * @throws java.lang.Throwable
+     */
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        dispose();
+    }
+
+    public void dispose() {
+        for (Graphics2D g : graphicCache.values()) {
+            g.dispose();
+        }
+        graphicCache.clear();
+    }
 
 }
