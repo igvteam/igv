@@ -1,15 +1,10 @@
 <component name="libraryTable">
   <library name="lib">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/test/lib/fest-util-1.1.3.jar!/" />
-      <root url="jar://$PROJECT_DIR$/test/lib/fest-reflect-1.2.jar!/" />
-      <root url="jar://$PROJECT_DIR$/test/lib/fest-assert-1.2.jar!/" />
-      <root url="jar://$PROJECT_DIR$/test/lib/ant.jar!/" />
-      <root url="jar://$PROJECT_DIR$/test/lib/JavaAgent.jar!/" />
-      <root url="jar://$PROJECT_DIR$/test/lib/jcip-annotations-1.0.jar!/" />
-      <root url="jar://$PROJECT_DIR$/test/lib/fest-swing-1.2.1.jar!/" />
+      <root url="file://$PROJECT_DIR$/test/lib" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
+    <jarDirectory url="file://$PROJECT_DIR$/test/lib" recursive="false" />
   </library>
 </component>
