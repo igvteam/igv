@@ -683,8 +683,6 @@ public class AlignmentRenderer implements FeatureRenderer {
             outlineGraphics.setStroke(thickStroke);
         } else if (renderOptions.flagUnmappedPairs && alignment.isPaired() && !alignment.getMate().isMapped()) {
             outlineGraphics = context.getGraphic2DForColor(Color.red);
-        } else if (alignment.isSupplementary()) {
-            outlineGraphics = context.getGraphic2DForColor(SUPPLEMENTARY_OUTLINE_COLOR);
         } else if (alignment.getMappingQuality() == 0 && renderOptions.flagZeroQualityAlignments) {
             outlineGraphics = context.getGraphic2DForColor(OUTLINE_COLOR);
         }
@@ -1108,6 +1106,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         g.setColor(isInsertion ? purple : Color.white);
         g.fillRect(pxLeft, pxTop, pxRight-pxLeft, pxH);
 
+        // TODO -- record this "object" for popup text
         if (isInsertion) {
             g.fillRect(pxLeft-pxWing, pxTop, pxRight-pxLeft+2*pxWing, 2);
             g.fillRect(pxLeft-pxWing, pxTop+pxH-2, pxRight-pxLeft+2*pxWing, 2);
