@@ -291,7 +291,6 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
             if(samHiddenTagsPref != null && samHiddenTagsPref.trim().length() > 0) {
                 buf.append("<br>Hidden tags: " + samHiddenTagsPref);
             }
-            buf.append("<br>-------------------");
         }
         return buf.toString();
     }

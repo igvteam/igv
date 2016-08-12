@@ -550,8 +550,8 @@ public abstract class SAMAlignment implements Alignment {
         int maxCigarStringLength = 60;
         if (cigarString.length() > maxCigarStringLength) {
             // Match only full <length><operator> pairs at the beginning and end of the string.
-            Matcher lMatcher = Pattern.compile("^(.{1," + Integer.toString(maxCigarStringLength/2 - 1) + "}[A-Z])").matcher(cigarString);
-            Matcher rMatcher = Pattern.compile("[A-Z](.{1," + Integer.toString(maxCigarStringLength/2) + "})$").matcher(cigarString);
+            Matcher lMatcher = Pattern.compile("^(.{1," + Integer.toString(maxCigarStringLength / 2 - 1) + "}[A-Z])").matcher(cigarString);
+            Matcher rMatcher = Pattern.compile("[A-Z](.{1," + Integer.toString(maxCigarStringLength / 2) + "})$").matcher(cigarString);
             cigarString = (lMatcher.find() ? lMatcher.group(1) : "") + "..." + (rMatcher.find() ? rMatcher.group(1) : "");
         }
 
@@ -560,27 +560,26 @@ public abstract class SAMAlignment implements Alignment {
         Matcher rclipMatcher = Pattern.compile("(([0-9]+)S)?(([0-9]+)H)?$").matcher(cigarString);
         int lclipHard = 0, lclipSoft = 0, rclipHard = 0, rclipSoft = 0;
         if (lclipMatcher.find()) {
-            lclipHard = lclipMatcher.group(2) == null ? 0 : Integer.parseInt(lclipMatcher.group(2),10);
-            lclipSoft = lclipMatcher.group(4) == null ? 0 : Integer.parseInt(lclipMatcher.group(4),10);
+            lclipHard = lclipMatcher.group(2) == null ? 0 : Integer.parseInt(lclipMatcher.group(2), 10);
+            lclipSoft = lclipMatcher.group(4) == null ? 0 : Integer.parseInt(lclipMatcher.group(4), 10);
         }
         if (rclipMatcher.find()) {
-            rclipHard = rclipMatcher.group(4) == null ? 0 : Integer.parseInt(rclipMatcher.group(4),10);
-            rclipSoft = rclipMatcher.group(2) == null ? 0 : Integer.parseInt(rclipMatcher.group(2),10);
+            rclipHard = rclipMatcher.group(4) == null ? 0 : Integer.parseInt(rclipMatcher.group(4), 10);
+            rclipSoft = rclipMatcher.group(2) == null ? 0 : Integer.parseInt(rclipMatcher.group(2), 10);
         }
 
         buf.append("----------------------" + "<br>");
-        buf.append("Mapping = " + (isPrimary() ? (isSupplementary() ?  "Supplementary" : "Primary") : "Secondary") +
-            (isDuplicate() ? " Duplicate" : "") + (isVendorFailedRead() ? " Failed QC" : "") +
-            " @ MAPQ " + Globals.DECIMAL_FORMAT.format(getMappingQuality()) + "<br>");
+        buf.append("Mapping = " + (isPrimary() ? (isSupplementary() ? "Supplementary" : "Primary") : "Secondary") +
+                (isDuplicate() ? " Duplicate" : "") + (isVendorFailedRead() ? " Failed QC" : "") +
+                " @ MAPQ " + Globals.DECIMAL_FORMAT.format(getMappingQuality()) + "<br>");
         buf.append("Reference span = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(getAlignmentStart() + 1) + "-" +
-            Globals.DECIMAL_FORMAT.format(getAlignmentEnd()) + " (" + (isNegativeStrand() ? "-" : "+") + ")" +
-            " = " + Globals.DECIMAL_FORMAT.format(getAlignmentEnd()-getAlignmentStart()) + "bp<br>");
+                Globals.DECIMAL_FORMAT.format(getAlignmentEnd()) + " (" + (isNegativeStrand() ? "-" : "+") + ")" +
+                " = " + Globals.DECIMAL_FORMAT.format(getAlignmentEnd() - getAlignmentStart()) + "bp<br>");
         buf.append("Cigar = " + cigarString + "<br>");
         buf.append("Clipping = ");
         if (lclipHard + lclipSoft + rclipHard + rclipSoft == 0) {
             buf.append("None");
-        }
-        else {
+        } else {
             if (lclipHard + lclipSoft > 0) {
                 buf.append("Left");
                 if (lclipHard > 0) {
@@ -629,7 +628,7 @@ public abstract class SAMAlignment implements Alignment {
                                 bufAppendFlowSignals(block, buf, offset);
                             }
                         }
-                        buf.append("----------------------"); // NB: no <br> required
+                      //  buf.append("----------------------"); // NB: no <br> required
                         return buf.toString();
                     } else {
                         byte[] bases = block.getBases();
@@ -643,28 +642,6 @@ public abstract class SAMAlignment implements Alignment {
         }
 
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
-
-        for (AlignmentBlock block : this.alignmentBlocks) {
-            if (block.contains(basePosition)) {
-                int offset = basePosition - block.getStart();
-                byte base = block.getBase(offset);
-
-                if (base == 0 && this.getReadSequence().equals("=") && !block.isSoftClipped() && genome != null) {
-                    base = genome.getReference(chr, basePosition);
-
-                }
-
-                byte quality = block.getQuality(offset);
-                buf.append("Location = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
-                buf.append("Base = " + (char) base +  " @ QV " + Globals.DECIMAL_FORMAT.format(quality) + "<br>");
-
-                // flow signals
-                if (block.hasFlowSignals()) {
-                    bufAppendFlowSignals(block, buf, offset);
-                }
-
-            }
-        }
 
         if (this.isPaired()) {
             buf.append("----------------------<br>");
@@ -687,6 +664,13 @@ public abstract class SAMAlignment implements Alignment {
             }
         }
 
+        Object suppAlignment = this.getAttribute("SA");
+        if (suppAlignment != null) {
+            buf.append(getSupplAlignmentString(suppAlignment.toString()));
+            buf.append("<br>");
+        }
+
+
         String attributeString = getAttributeString(truncate);
         if (attributeString != null && attributeString.length() > 0) {
             buf.append("----------------------");
@@ -697,6 +681,49 @@ public abstract class SAMAlignment implements Alignment {
         if (mateSequence != null) {
             buf.append("----------------------<br>");
             buf.append("Mate sequence: " + mateSequence);
+        }
+
+
+        // Specific base
+
+        for (AlignmentBlock block : this.alignmentBlocks) {
+            if (block.contains(basePosition)) {
+
+                buf.append("<hr>");
+                int offset = basePosition - block.getStart();
+                byte base = block.getBase(offset);
+
+                if (base == 0 && this.getReadSequence().equals("=") && !block.isSoftClipped() && genome != null) {
+                    base = genome.getReference(chr, basePosition);
+
+                }
+
+                byte quality = block.getQuality(offset);
+                buf.append("Location = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
+                buf.append("Base = " + (char) base + " @ QV " + Globals.DECIMAL_FORMAT.format(quality) + "<br>");
+
+                // flow signals
+                if (block.hasFlowSignals()) {
+                    bufAppendFlowSignals(block, buf, offset);
+                }
+
+                break;
+            }
+        }
+
+        return buf.toString();
+    }
+
+
+    // chr21,26002386,-,11785S1115M,60,0;chr21,26001844,+,1115S111M1D41M1D394M11239S,60,4;
+    private String getSupplAlignmentString(String sa) {
+
+        StringBuffer buf = new StringBuffer();
+        buf.append("SupplementaryAlignments");
+        String[] records = Globals.semicolonPattern.split(sa);
+        for (String rec : records) {
+            SupplementaryAlignment a = new SupplementaryAlignment(rec);
+            buf.append("<br>" + a.printString());
         }
         return buf.toString();
     }
@@ -884,25 +911,6 @@ public abstract class SAMAlignment implements Alignment {
         }
     }
 
-    //(String chr, int start, boolean negativeStrand,boolean isReadUnmappedFlag) {
-    //SA = X,82962991,+,18S51M31S,0,0;
-    static List<ReadMate> parseSupplementaryTag(String sa) {
-
-        List<ReadMate> mates = new ArrayList();
-        String[] records = Globals.semicolonPattern.split(sa);
-        for (String rec : records) {
-            String[] tokens = Globals.commaPattern.split(rec);
-            String seq = tokens[0];
-            int pos = Integer.parseInt(tokens[1]);
-            boolean negStrand = tokens[2].equals("-");
-            String cigar = tokens[3];
-            int mapQ = Integer.parseInt(tokens[4]);
-            int numMismatches = Integer.parseInt(tokens[5]);
-            mates.add(new ReadMate(seq, pos, negStrand, true));
-        }
-        return mates;
-    }
-
     public void setChr(String chr) {
         this.chr = chr;
     }
@@ -925,5 +933,70 @@ public abstract class SAMAlignment implements Alignment {
         }
     }
 
+    public static class SupplementaryAlignment {
+
+        public String chr;
+        public int start;
+        public char strand;
+        public int mapQ;
+        public int numMismatches;
+        public int lenOnRef;
+
+
+        public SupplementaryAlignment(String rec) {
+            String[] tokens = Globals.commaPattern.split(rec);
+            chr = tokens[0];
+            start = Integer.parseInt(tokens[1]);
+            strand = tokens[2].charAt(0);
+            mapQ = Integer.parseInt(tokens[4]);
+            numMismatches = Integer.parseInt(tokens[5]);
+            lenOnRef = computeLengthOnReference(tokens[3]);
+        }
+
+        public String printString() {
+            // chr6:43,143,415-43,149,942 (-) @ MAPQ 60 NM 763
+            return chr + ":" + Globals.DECIMAL_FORMAT.format(start) + "-" + Globals.DECIMAL_FORMAT.format(start + lenOnRef)
+                    + " (" + strand + ") = " + Globals.DECIMAL_FORMAT.format(lenOnRef) + "bp  @MAPQ " + mapQ + " NM" + numMismatches;
+        }
+
+
+        int computeLengthOnReference(String cigarString) {
+
+            int len = 0;
+            StringBuffer buf = new StringBuffer();
+
+            for (char c : cigarString.toCharArray()) {
+
+                if (c > 47 && c < 58) {
+                    buf.append(c);
+                } else {
+                    switch (c) {
+                        case 'N':
+                        case 'D':
+                        case 'M':
+                        case '=':
+                        case 'X':
+                            len += Integer.parseInt(buf.toString());
+                    }
+                    buf.setLength(0);
+                }
+
+            }
+            return len;
+        }
+    }
+
+    public String getSynopsisString() {
+
+        char st = isNegativeStrand() ? '-' : '+';
+        Object nm = getAttribute("NM");
+        String numMismatches = nm == null ? "?" : nm.toString();
+        int lenOnRef = getAlignmentEnd() - getAlignmentStart();
+
+        return chr + ":" + Globals.DECIMAL_FORMAT.format(getAlignmentStart()) + "-" +
+                Globals.DECIMAL_FORMAT.format(getAlignmentEnd())
+                + " (" + st + ") = " + Globals.DECIMAL_FORMAT.format(lenOnRef) + "BP  @MAPQ " + getMappingQuality() + " NM" + numMismatches;
+
+    }
 
 }

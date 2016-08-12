@@ -142,7 +142,14 @@ public class LinkedAlignment implements Alignment {
             for (Alignment a : alignments) {
                 buffer.append(a.getReadStrand() == Strand.POSITIVE ? "+" : "-");
             }
-            buffer.append("<br>Total span = " + Globals.DECIMAL_FORMAT.format(getAlignmentEnd() - getAlignmentStart()) + "bp<br>");
+            buffer.append("<br>Total span = " + Globals.DECIMAL_FORMAT.format(getAlignmentEnd() - getAlignmentStart()) + "bp");
+
+            for (Alignment a : alignments) {
+                if (a instanceof SAMAlignment) {
+                    buffer.append("<br>");
+                    buffer.append(((SAMAlignment) a).getSynopsisString());
+                }
+            }
 
 
             for (Alignment a : alignments) {

@@ -224,6 +224,7 @@ public class Ga4ghAlignment extends SAMAlignment {
 
         StringBuffer buffer = new StringBuffer();
         for (Map.Entry<String, String> entry : tags.entrySet()) {
+            buffer.append("<br>");
             buffer.append(entry.getKey() + ": " + entry.getValue());
         }
         return buffer.toString();
