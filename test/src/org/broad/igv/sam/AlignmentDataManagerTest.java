@@ -94,7 +94,7 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
         AlignmentTrack.RenderOptions renderOptions = new AlignmentTrack.RenderOptions();
         frame.setBounds(0, end - start);
 
-        RenderContextImpl context = new RenderContextImpl(null, null, frame, null);
+        RenderContext context = new RenderContext(null, null, frame, null);
 
         int lastStart = genome.getChromosome(chr).getLength() - 4 * halfwidth;
         int[] starts = new int[]{500, 5000, 15000, start, 500000, lastStart};
@@ -148,7 +148,7 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
         ReferenceFrame frame = new ReferenceFrame(frameName);
         AlignmentTrack.RenderOptions renderOptions = new AlignmentTrack.RenderOptions();
         frame.setBounds(0, end - start);
-        RenderContextImpl context = new RenderContextImpl(null, null, frame, null);
+        RenderContext context = new RenderContext(null, null, frame, null);
 
         for (int pp = 0; pp < numPans; pp++) {
             shift = pp * panInterval;
