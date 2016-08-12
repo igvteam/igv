@@ -3793,16 +3793,16 @@
                     <string>javax.swing.JCheckBox</string> 
                     <void method="setProperty"> 
                      <string>text</string> 
-                     <string>Flag insertions larger than: </string> 
+                     <string>Label indels larger than: </string> 
                     </void> 
                     <void property="name"> 
-                     <string>samFlagInsertionsCB</string> 
+                     <string>samFlagIndelsCB</string> 
                     </void> 
                     <void method="addEvent"> 
                      <object class="com.jformdesigner.model.FormEvent"> 
                       <string>java.awt.event.ActionListener</string> 
                       <string>actionPerformed</string> 
-                      <string>samFlagInsertionsCBActionPerformed</string> 
+                      <string>samFlagIndelsCBActionPerformed</string> 
                       <boolean>true</boolean> 
                      </object> 
                     </void> 
@@ -3819,13 +3819,13 @@
                      </object> 
                     </void> 
                     <void property="name"> 
-                     <string>samFlagInsertionsThresholdField</string> 
+                     <string>samFlagIndelsThresholdField</string> 
                     </void> 
                     <void method="addEvent"> 
                      <object class="com.jformdesigner.model.FormEvent"> 
                       <string>java.awt.event.ActionListener</string> 
                       <string>actionPerformed</string> 
-                      <string>samFlagInsertionsThresholdFieldActionPerformed</string> 
+                      <string>samFlagIndelsThresholdFieldActionPerformed</string> 
                       <boolean>true</boolean> 
                      </object> 
                     </void> 
@@ -3833,7 +3833,7 @@
                      <object class="com.jformdesigner.model.FormEvent"> 
                       <string>java.awt.event.FocusListener</string> 
                       <string>focusLost</string> 
-                      <string>samFlagInsertionsThresholdFieldFocusLost</string> 
+                      <string>samFlagIndelsThresholdFieldFocusLost</string> 
                       <boolean>true</boolean> 
                      </object> 
                     </void> 
