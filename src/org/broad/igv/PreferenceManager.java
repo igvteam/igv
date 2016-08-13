@@ -144,7 +144,11 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_COMPLETE_READS_ONLY = "SAM.COMPLETE_READS_ONLY";
 
     public static final String SAM_REDUCED_MEMORY_MODE = "SAM.REDUCED_MEMORY_MODE";
-    public static final String SAM_MIN_INDEL_SIZE = "SAM.MIN_INDEL_SIZE";
+
+    public static final String SAM_HIDE_SMALL_INDEL_BP = "SAM.HIDE_SMALL_INDEL_BP";
+    public static final String SAM_HIDE_SMALL_INDEL_PIXEL = "SAM.HIDE_SMALL_INDEL";
+    public static final String SAM_SMALL_INDEL_BP_THRESHOLD = "SAM.MIN_INDEL_BP_THRESHOLD";
+    public static final String SAM_SMALL_INDELS_PIXEL_THRESHOLD = "SAM.MIN_INDEL_PIXEL_THRESHOLD";
 
     public static final String SAM_SHOW_ALIGNMENT_TRACK = "SAM.SHOW_ALIGNMENT_TRACK";
 
@@ -1127,7 +1131,11 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_SHOW_ALL_BASES, "false");
 
         defaultValues.put(SAM_REDUCED_MEMORY_MODE, "false");
-        defaultValues.put(SAM_MIN_INDEL_SIZE, "10");
+
+        defaultValues.put(SAM_HIDE_SMALL_INDEL_BP, "false");
+        defaultValues.put(SAM_SMALL_INDEL_BP_THRESHOLD, "0");
+        defaultValues.put(SAM_HIDE_SMALL_INDEL_PIXEL, "true");
+        defaultValues.put(SAM_SMALL_INDELS_PIXEL_THRESHOLD, "3");
 
         defaultValues.put(SAM_SHOW_ALIGNMENT_TRACK, "true");
 

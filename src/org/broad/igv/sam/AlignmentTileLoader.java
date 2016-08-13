@@ -384,7 +384,7 @@ public class AlignmentTileLoader {
             this.end = end;
             this.downsampledIntervals = new ArrayList<DownsampledInterval>();
 
-            this.indelLimit = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MIN_INDEL_SIZE);
+            this.indelLimit = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDEL_BP_THRESHOLD);
             this.showAlignments = showAlignments;
 
             long seed = System.currentTimeMillis();

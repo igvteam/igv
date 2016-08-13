@@ -81,9 +81,6 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     private static Stroke thickStroke = new BasicStroke(2.0f);
 
-    // Minimum pixel width to render a small indel
-    private final int MIN_INDEL_PX_WIDTH = 3;
-
     // Bisulfite constants
     private final Color bisulfiteColorFw1 = new Color(195, 195, 195);
     private final Color bisulfiteColorRev1 = new Color(195, 210, 195);
@@ -667,7 +664,11 @@ public class AlignmentRenderer implements FeatureRenderer {
             return;
         }
 
-        int indelThreshold = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MIN_INDEL_SIZE);
+        boolean hideSmallIndelsBP = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_BP);
+        int indelThresholdBP = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDEL_BP_THRESHOLD);
+        boolean hideSmallIndelsPixel = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_PIXEL);
+        int indexThresholdPixel = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDELS_PIXEL_THRESHOLD);
+
 
         // Scale and position of the alignment rendering.
         double locScale = context.getScale();
@@ -744,7 +745,8 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
 
                 // Draw the gap if it is sufficiently large at the current zoom.
-                boolean drawGap = (gapChromWidth > indelThreshold && gapPxWidth >= MIN_INDEL_PX_WIDTH);
+                boolean drawGap = ((!hideSmallIndelsBP || gapChromWidth > indelThresholdBP) &&
+                        (!hideSmallIndelsPixel || gapPxWidth >= indexThresholdPixel));
                 if (!drawGap) {
                     continue;
                 }
@@ -1125,7 +1127,11 @@ public class AlignmentRenderer implements FeatureRenderer {
         AlignmentBlock[] insertions = alignment.getInsertions();
         if (insertions != null) {
 
-            int indelThreshold = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MIN_INDEL_SIZE);
+            boolean hideSmallIndelsBP = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_BP);
+            int indelThresholdBP = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDEL_BP_THRESHOLD);
+            boolean hideSmallIndelsPixel = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_PIXEL);
+            int indexThresholdPixel = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDELS_PIXEL_THRESHOLD);
+
 
             for (AlignmentBlock aBlock : insertions) {
 
@@ -1141,10 +1147,11 @@ public class AlignmentRenderer implements FeatureRenderer {
                     continue;
                 }
 
-                if (aBlock.getBases().length > indelThreshold) {
+                if ((!hideSmallIndelsBP || aBlock.getBases().length > indelThresholdBP) &&
+                        (!hideSmallIndelsPixel || pxWidth >= indexThresholdPixel)) {
                     if (renderOptions.isFlagLargeIndels() && aBlock.getBases().length > renderOptions.getLargeInsertionsThreshold()) {
                         drawLargeIndelLabel(gLargeInsertion, true, Globals.DECIMAL_FORMAT.format(aBlock.getBases().length), x - 1, y, h, pxWidth);
-                    } else if (pxWidth >= MIN_INDEL_PX_WIDTH) {
+                    } else {
                         gSmallInsertion.fillRect(x - 2, y, 4, 2);
                         gSmallInsertion.fillRect(x - 1, y, 2, h);
                         gSmallInsertion.fillRect(x - 2, y + h - 2, 4, 2);
