@@ -1127,7 +1127,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_SHOW_ALL_BASES, "false");
 
         defaultValues.put(SAM_REDUCED_MEMORY_MODE, "false");
-        defaultValues.put(SAM_MIN_INDEL_SIZE, "25");
+        defaultValues.put(SAM_MIN_INDEL_SIZE, "10");
 
         defaultValues.put(SAM_SHOW_ALIGNMENT_TRACK, "true");
 

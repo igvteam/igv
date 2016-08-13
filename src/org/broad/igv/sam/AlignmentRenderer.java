@@ -423,9 +423,8 @@ public class AlignmentRenderer implements FeatureRenderer {
         int arrowLength = Math.min(5, w / 6);
 
         int d = Math.max(0, (int) (arrowLength + 2 - AlignmentPacker.MIN_ALIGNMENT_SPACING / context.getScale()));
-        if(alignment.isNegativeStrand()) x += d;
-        if(!alignment.isNegativeStrand()) w -= d;
-
+        if (alignment.isNegativeStrand()) x += d;
+        if (!alignment.isNegativeStrand()) w -= d;
 
 
         int[] xPoly = null;
@@ -592,10 +591,9 @@ public class AlignmentRenderer implements FeatureRenderer {
                 tallEnoughForArrow = h > 8;
 
 
-        if(h == 1) {
+        if (h == 1) {
             blockGraphics.drawLine(blockPxStart, y, blockPxEnd, y);
-        }
-        else {
+        } else {
             Shape blockShape;
             int arrowPxWidth = Math.min(5, blockPxWidth / 6);
             int delta = Math.max(0, (int) (arrowPxWidth + 2 - AlignmentPacker.MIN_ALIGNMENT_SPACING / locSale));
@@ -669,6 +667,8 @@ public class AlignmentRenderer implements FeatureRenderer {
             return;
         }
 
+        int indelThreshold = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MIN_INDEL_SIZE);
+
         // Scale and position of the alignment rendering.
         double locScale = context.getScale();
         int h = (int) Math.max(1, rowRect.getHeight() - (leaveMargin ? 2 : 0));
@@ -692,7 +692,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         // Define a graphics context for indel labels.
         Graphics2D largeIndelGraphics = (Graphics2D) context.getGraphics().create();
-        largeIndelGraphics.setFont(FontManager.getFont(Font.BOLD, h-2));
+        largeIndelGraphics.setFont(FontManager.getFont(Font.BOLD, h - 2));
         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
             largeIndelGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
@@ -729,6 +729,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         // skipping over gaps that are too small to show at the curren resolution.
         java.util.List<Gap> gaps = alignment.getGaps();
         if (gaps != null) {
+
             for (Gap gap : gaps) {
                 int gapChromStart = (int) gap.getStart(),
                         gapChromWidth = (int) gap.getnBases(),
@@ -743,7 +744,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
 
                 // Draw the gap if it is sufficiently large at the current zoom.
-                boolean drawGap = (gapPxWidth >= MIN_INDEL_PX_WIDTH);
+                boolean drawGap = (gapChromWidth > indelThreshold && gapPxWidth >= MIN_INDEL_PX_WIDTH);
                 if (!drawGap) {
                     continue;
                 }
@@ -769,7 +770,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
                 // Label the size of the deletion if it is "large" and the label fits.
                 if (renderOptions.isFlagLargeIndels() && gapChromWidth > renderOptions.getLargeInsertionsThreshold()) {
-                    drawLargeIndelLabel(largeIndelGraphics, false, Globals.DECIMAL_FORMAT.format(gapChromWidth), (int) ((blockPxEnd + gapPxEnd)/2), y, h, gapPxEnd-blockPxEnd-2);
+                    drawLargeIndelLabel(largeIndelGraphics, false, Globals.DECIMAL_FORMAT.format(gapChromWidth), (int) ((blockPxEnd + gapPxEnd) / 2), y, h, gapPxEnd - blockPxEnd - 2);
                 }
 
                 // Start the next alignment block after the gap.
@@ -1090,7 +1091,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         // Calculate the width required to draw the label
         Rectangle2D textBounds = g.getFontMetrics().getStringBounds(labelText, g);
-        int pxTextW = 2*pxPad + (int) textBounds.getWidth();
+        int pxTextW = 2 * pxPad + (int) textBounds.getWidth();
         boolean doesTextFit = (pxTextW < pxWmax);
 
         if (!doesTextFit && !isInsertion) {
@@ -1099,30 +1100,35 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         // Calculate the pixel bounds of the label
         int pxW = (int) Math.max(2, Math.min(pxTextW, pxWmax)),
-            pxLeft = pxCenter - (int) Math.ceil(pxW / 2),
-            pxRight = pxLeft + pxW;
+                pxLeft = pxCenter - (int) Math.ceil(pxW / 2),
+                pxRight = pxLeft + pxW;
 
         // Draw the label
         g.setColor(isInsertion ? purple : Color.white);
-        g.fillRect(pxLeft, pxTop, pxRight-pxLeft, pxH);
+        g.fillRect(pxLeft, pxTop, pxRight - pxLeft, pxH);
 
         // TODO -- record this "object" for popup text
         if (isInsertion) {
-            g.fillRect(pxLeft-pxWing, pxTop, pxRight-pxLeft+2*pxWing, 2);
-            g.fillRect(pxLeft-pxWing, pxTop+pxH-2, pxRight-pxLeft+2*pxWing, 2);
+            g.fillRect(pxLeft - pxWing, pxTop, pxRight - pxLeft + 2 * pxWing, 2);
+            g.fillRect(pxLeft - pxWing, pxTop + pxH - 2, pxRight - pxLeft + 2 * pxWing, 2);
         } // draw "wings" For insertions
 
         if (doesTextFit) {
             g.setColor(isInsertion ? Color.white : purple);
-            g.drawString(labelText, pxLeft+pxPad, pxTop+pxH-2);
+            g.drawString(labelText, pxLeft + pxPad, pxTop + pxH - 2);
         } // draw the text if it fits
     }
 
     private void drawInsertions(double origin, Rectangle rect, double locScale, Alignment alignment,
                                 Graphics2D gSmallInsertion, Graphics2D gLargeInsertion, RenderOptions renderOptions) {
+
         AlignmentBlock[] insertions = alignment.getInsertions();
         if (insertions != null) {
+
+            int indelThreshold = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MIN_INDEL_SIZE);
+
             for (AlignmentBlock aBlock : insertions) {
+
                 int x = (int) ((aBlock.getStart() - origin) / locScale);
                 int pxWidth = (int) (aBlock.getBases().length / locScale);
                 int h = (int) Math.max(1, rect.getHeight() - 2);
@@ -1135,12 +1141,14 @@ public class AlignmentRenderer implements FeatureRenderer {
                     continue;
                 }
 
-                if (renderOptions.isFlagLargeIndels() && aBlock.getBases().length > renderOptions.getLargeInsertionsThreshold()) {
-                    drawLargeIndelLabel(gLargeInsertion, true, Globals.DECIMAL_FORMAT.format(aBlock.getBases().length), x-1, y, h, pxWidth);
-                } else if (pxWidth >= MIN_INDEL_PX_WIDTH) {
-                    gSmallInsertion.fillRect(x - 2, y, 4, 2);
-                    gSmallInsertion.fillRect(x - 1, y, 2, h);
-                    gSmallInsertion.fillRect(x - 2, y + h - 2, 4, 2);
+                if (aBlock.getBases().length > indelThreshold) {
+                    if (renderOptions.isFlagLargeIndels() && aBlock.getBases().length > renderOptions.getLargeInsertionsThreshold()) {
+                        drawLargeIndelLabel(gLargeInsertion, true, Globals.DECIMAL_FORMAT.format(aBlock.getBases().length), x - 1, y, h, pxWidth);
+                    } else if (pxWidth >= MIN_INDEL_PX_WIDTH) {
+                        gSmallInsertion.fillRect(x - 2, y, 4, 2);
+                        gSmallInsertion.fillRect(x - 1, y, 2, h);
+                        gSmallInsertion.fillRect(x - 2, y + h - 2, 4, 2);
+                    }
                 }
             }
         }
