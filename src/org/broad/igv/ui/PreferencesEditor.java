@@ -102,11 +102,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         // TODO add your code here
     }
 
-    private void quickConsensusModeCBActionPerformed() {
-        // TODO add your code here
-    }
-
-
     public PreferencesEditor(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -3175,7 +3170,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 String.valueOf(showSoftClippedCB.isSelected()));
     }
 
-    private void quickConsensusModeCBActionPerformed(ActionEvent e) {
+
+    private void quickConsensusModeCBActionPerformed() {
         updatedPreferenceMap.put(
                 PreferenceManager.SAM_QUICK_CONSENSUS_MODE,
                 String.valueOf(quickConsensusModeCB.isSelected()));
