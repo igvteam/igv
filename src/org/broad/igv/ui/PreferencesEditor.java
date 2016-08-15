@@ -1350,7 +1350,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 panel9.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 5));
 
                                 //---- hideIndelsBasesCB ----
-                                hideIndelsBasesCB.setText("Hide indels smaller than: ");
+                                hideIndelsBasesCB.setText("Hide indels < ");
                                 hideIndelsBasesCB.addActionListener(e -> hideIndelsBasesCBActionPerformed(e));
                                 panel9.add(hideIndelsBasesCB);
 
@@ -1378,7 +1378,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             panel36.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
 
                             //---- hideIndelsPixelsCB ----
-                            hideIndelsPixelsCB.setText("Hide indels smaller than: ");
+                            hideIndelsPixelsCB.setText("Hide indels < ");
                             hideIndelsPixelsCB.addActionListener(e -> hideIndelsPixelsCBActionPerformed(e));
                             panel36.add(hideIndelsPixelsCB);
 

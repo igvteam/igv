@@ -667,7 +667,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         boolean hideSmallIndelsBP = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_BP);
         int indelThresholdBP = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDEL_BP_THRESHOLD);
         boolean hideSmallIndelsPixel = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_PIXEL);
-        int indexThresholdPixel = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDELS_PIXEL_THRESHOLD);
+        double indelThresholdPixel = (double) PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDELS_PIXEL_THRESHOLD);
 
 
         // Scale and position of the alignment rendering.
@@ -735,8 +735,8 @@ public class AlignmentRenderer implements FeatureRenderer {
                 int gapChromStart = (int) gap.getStart(),
                         gapChromWidth = (int) gap.getnBases(),
                         gapChromEnd = gapChromStart + gapChromWidth,
-                        gapPxWidth = (int) Math.max(1, gapChromWidth / locScale),
                         gapPxEnd = (int) ((Math.min(contextChromEnd, gapChromEnd) - contextChromStart) / locScale);
+                double gapPxWidthExact = ((double) gapChromWidth) / locScale;
 
                 if (gapChromEnd <= contextChromStart) { // gap ends before the visible context
                     continue; // move to next gap
@@ -745,8 +745,8 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
 
                 // Draw the gap if it is sufficiently large at the current zoom.
-                boolean drawGap = ((!hideSmallIndelsBP || gapChromWidth > indelThresholdBP) &&
-                        (!hideSmallIndelsPixel || gapPxWidth >= indexThresholdPixel));
+                boolean drawGap = ((!hideSmallIndelsBP || gapChromWidth >= indelThresholdBP) &&
+                        (!hideSmallIndelsPixel || gapPxWidthExact >= indelThresholdPixel));
                 if (!drawGap) {
                     continue;
                 }
@@ -1130,13 +1130,12 @@ public class AlignmentRenderer implements FeatureRenderer {
             boolean hideSmallIndelsBP = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_BP);
             int indelThresholdBP = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDEL_BP_THRESHOLD);
             boolean hideSmallIndelsPixel = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_PIXEL);
-            int indexThresholdPixel = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDELS_PIXEL_THRESHOLD);
-
+            double indelThresholdPixel = (double) PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDELS_PIXEL_THRESHOLD);
 
             for (AlignmentBlock aBlock : insertions) {
-
                 int x = (int) ((aBlock.getStart() - origin) / locScale);
-                int pxWidth = (int) (aBlock.getBases().length / locScale);
+                int bpWidth = aBlock.getBases().length;
+                double pxWidthExact = ((double) bpWidth) / locScale;
                 int h = (int) Math.max(1, rect.getHeight() - 2);
                 int y = (int) (rect.getY() + (rect.getHeight() - h) / 2) - 1;
 
@@ -1147,10 +1146,10 @@ public class AlignmentRenderer implements FeatureRenderer {
                     continue;
                 }
 
-                if ((!hideSmallIndelsBP || aBlock.getBases().length > indelThresholdBP) &&
-                        (!hideSmallIndelsPixel || pxWidth >= indexThresholdPixel)) {
-                    if (renderOptions.isFlagLargeIndels() && aBlock.getBases().length > renderOptions.getLargeInsertionsThreshold()) {
-                        drawLargeIndelLabel(gLargeInsertion, true, Globals.DECIMAL_FORMAT.format(aBlock.getBases().length), x - 1, y, h, pxWidth);
+                if ((!hideSmallIndelsBP || bpWidth >= indelThresholdBP) &&
+                        (!hideSmallIndelsPixel || pxWidthExact >= indelThresholdPixel)) {
+                    if (renderOptions.isFlagLargeIndels() && bpWidth > renderOptions.getLargeInsertionsThreshold()) {
+                        drawLargeIndelLabel(gLargeInsertion, true, Globals.DECIMAL_FORMAT.format(bpWidth), x - 1, y, h, (int) pxWidthExact);
                     } else {
                         gSmallInsertion.fillRect(x - 2, y, 4, 2);
                         gSmallInsertion.fillRect(x - 1, y, 2, h);
