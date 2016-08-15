@@ -1136,7 +1136,8 @@ public class AlignmentRenderer implements FeatureRenderer {
             for (AlignmentBlock aBlock : insertions) {
 
                 int x = (int) ((aBlock.getStart() - origin) / locScale);
-                int pxWidth = (int) (aBlock.getBases().length / locScale);
+                int bpWidth = aBlock.getBases().length;
+                int pxWidth = (int) (bpWidth / locScale);
                 int h = (int) Math.max(1, rect.getHeight() - 2);
                 int y = (int) (rect.getY() + (rect.getHeight() - h) / 2) - 1;
 
@@ -1147,10 +1148,10 @@ public class AlignmentRenderer implements FeatureRenderer {
                     continue;
                 }
 
-                if ((!hideSmallIndelsBP || aBlock.getBases().length > indelThresholdBP) &&
+                if ((!hideSmallIndelsBP || bpWidth > indelThresholdBP) &&
                         (!hideSmallIndelsPixel || pxWidth >= indelThresholdPixel)) {
-                    if (renderOptions.isFlagLargeIndels() && aBlock.getBases().length > renderOptions.getLargeInsertionsThreshold()) {
-                        drawLargeIndelLabel(gLargeInsertion, true, Globals.DECIMAL_FORMAT.format(aBlock.getBases().length), x - 1, y, h, pxWidth);
+                    if (renderOptions.isFlagLargeIndels() && bpWidth > renderOptions.getLargeInsertionsThreshold()) {
+                        drawLargeIndelLabel(gLargeInsertion, true, Globals.DECIMAL_FORMAT.format(bpWidth), x - 1, y, h, pxWidth);
                     } else {
                         gSmallInsertion.fillRect(x - 2, y, 4, 2);
                         gSmallInsertion.fillRect(x - 1, y, 2, h);
