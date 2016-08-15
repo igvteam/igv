@@ -3736,7 +3736,7 @@
                     <string>javax.swing.JCheckBox</string>
                     <void method="setProperty">
                      <string>text</string>
-                     <string>Hide indels smaller than: </string>
+                     <string>Hide indels < </string>
                     </void>
                     <void property="name">
                      <string>hideIndelsBasesCB</string>
@@ -3824,7 +3824,7 @@
                   <string>javax.swing.JCheckBox</string>
                   <void method="setProperty">
                    <string>text</string>
-                   <string>Hide indels smaller than: </string>
+                   <string>Hide indels < </string>
                   </void>
                   <void property="name">
                    <string>hideIndelsPixelsCB</string>
