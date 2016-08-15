@@ -667,7 +667,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         boolean hideSmallIndelsBP = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_BP);
         int indelThresholdBP = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDEL_BP_THRESHOLD);
         boolean hideSmallIndelsPixel = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_PIXEL);
-        int indexThresholdPixel = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDELS_PIXEL_THRESHOLD);
+        int indelThresholdPixel = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDELS_PIXEL_THRESHOLD);
 
 
         // Scale and position of the alignment rendering.
@@ -746,7 +746,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
                 // Draw the gap if it is sufficiently large at the current zoom.
                 boolean drawGap = ((!hideSmallIndelsBP || gapChromWidth > indelThresholdBP) &&
-                        (!hideSmallIndelsPixel || gapPxWidth >= indexThresholdPixel));
+                        (!hideSmallIndelsPixel || gapPxWidth >= indelThresholdPixel));
                 if (!drawGap) {
                     continue;
                 }
@@ -1130,7 +1130,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             boolean hideSmallIndelsBP = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_BP);
             int indelThresholdBP = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDEL_BP_THRESHOLD);
             boolean hideSmallIndelsPixel = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_PIXEL);
-            int indexThresholdPixel = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDELS_PIXEL_THRESHOLD);
+            int indelThresholdPixel = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDELS_PIXEL_THRESHOLD);
 
 
             for (AlignmentBlock aBlock : insertions) {
@@ -1148,7 +1148,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
 
                 if ((!hideSmallIndelsBP || aBlock.getBases().length > indelThresholdBP) &&
-                        (!hideSmallIndelsPixel || pxWidth >= indexThresholdPixel)) {
+                        (!hideSmallIndelsPixel || pxWidth >= indelThresholdPixel)) {
                     if (renderOptions.isFlagLargeIndels() && aBlock.getBases().length > renderOptions.getLargeInsertionsThreshold()) {
                         drawLargeIndelLabel(gLargeInsertion, true, Globals.DECIMAL_FORMAT.format(aBlock.getBases().length), x - 1, y, h, pxWidth);
                     } else {
