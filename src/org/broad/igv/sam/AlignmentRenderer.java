@@ -44,7 +44,6 @@ import org.broad.igv.ui.color.*;
 import org.broad.igv.util.ChromosomeColors;
 
 import java.awt.*;
-import java.awt.geom.GeneralPath;
 import java.awt.geom.QuadCurve2D;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
@@ -761,7 +760,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         // Draw basepairs / mismatches.
         if (locScale < 100) {
             if (renderOptions.showMismatches || renderOptions.showAllBases) {
-                boolean quickConsensus = prefs.getAsBoolean(PreferenceManager.SAM_QUICK_CONSENSUS_MODE);
+                boolean quickConsensus = renderOptions.quickConsensusMode;
                 for (AlignmentBlock aBlock : alignment.getAlignmentBlocks()) {
                     int aBlockChromStart = (int) aBlock.getStart(),
                             aBlockChromEnd = (int) (aBlock.getStart() + aBlock.getLength());

@@ -408,7 +408,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         final boolean leaveMargin = getDisplayMode() == DisplayMode.EXPANDED;
 
 
-            maximumHeight = Integer.MAX_VALUE;
+        maximumHeight = Integer.MAX_VALUE;
 
         // Divide rectangle into equal height levels
         double y = inputRect.getY();
@@ -496,7 +496,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         renderOptions.groupByOption = GroupOption.BASE_AT_POS;
         renderOptions.setGroupByBaseAtPos(pos);
         dataManager.packAlignments(renderOptions);
-    };
+    }
 
     public void packAlignments() {
         dataManager.packAlignments(renderOptions);
@@ -836,6 +836,48 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         return null;
     }
 
+
+    /**
+     * Get the most "specific" alignment at the specified location.  Specificity refers to the smallest alignemnt
+     * in a group that contains the location (i.e. if a group of linked alignments overlap take the smallest one).
+     *
+     * @param te
+     * @return
+     */
+    private Alignment getSpecficAlignment(TrackClickEvent te) {
+
+        Alignment alignment = getAlignment(te);
+        if (alignment != null) {
+            final ReferenceFrame frame = te.getFrame();
+            MouseEvent e = te.getMouseEvent();
+            final double location = frame.getChromosomePosition(e.getX());
+
+            if (alignment instanceof LinkedAlignment) {
+
+                Alignment sa = null;
+                for (Alignment a : ((LinkedAlignment) alignment).alignments) {
+                    if (a.contains(location)) {
+                        if (sa == null || (a.getAlignmentEnd() - a.getAlignmentStart() < sa.getAlignmentEnd() - sa.getAlignmentStart())) {
+                            sa = a;
+                        }
+                    }
+                }
+                alignment = sa;
+
+            } else if (alignment instanceof PairedAlignment) {
+                Alignment sa = null;
+                if (((PairedAlignment) alignment).firstAlignment.contains(location)) {
+                    sa = ((PairedAlignment) alignment).firstAlignment;
+                } else if (((PairedAlignment) alignment).secondAlignment.contains(location)) {
+                    sa = ((PairedAlignment) alignment).secondAlignment;
+                }
+                alignment = sa;
+            }
+        }
+        return alignment;
+    }
+
+
     /**
      * Handle an AlignmentTrackEvent.
      *
@@ -1081,7 +1123,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         private boolean linkedReads;
         @XmlAttribute
         private boolean flagLargeIndels;
+        @XmlAttribute
         private int largeInsertionsThreshold;
+
+        @XmlAttribute
+        boolean quickConsensusMode;
+
 
         BisulfiteContext bisulfiteContext;
 
@@ -1106,6 +1153,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             minInsertSizePercentile = prefs.getAsFloat(PreferenceManager.SAM_MIN_INSERT_SIZE_PERCENTILE);
             maxInsertSizePercentile = prefs.getAsFloat(PreferenceManager.SAM_MAX_INSERT_SIZE_PERCENTILE);
             showAllBases = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_ALL_BASES);
+            quickConsensusMode = prefs.getAsBoolean(PreferenceManager.SAM_QUICK_CONSENSUS_MODE);
             colorOption = CollUtils.valueOf(ColorOption.class, prefs.get(PreferenceManager.SAM_COLOR_BY), ColorOption.NONE);
             groupByOption = null;
             flagZeroQualityAlignments = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_ZERO_QUALITY);
@@ -1269,6 +1317,14 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         public void setLinkedReads(boolean linkedReads) {
             this.linkedReads = linkedReads;
         }
+
+        public boolean isQuickConsensusMode() {
+            return quickConsensusMode;
+        }
+
+        public void setQuickConsensusMode(boolean quickConsensusMode) {
+            this.quickConsensusMode = quickConsensusMode;
+        }
     }
 
     class PopupMenu extends IGVPopupMenu {
@@ -1296,8 +1352,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             if (dataManager.isTenX()) {
                 addTenXItems();
-            }
-            else {
+            } else {
                 addSupplItems();     // Are SA tags mutually exlcusive with 10X?
             }
 
@@ -1314,6 +1369,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             misMatchesItem.addActionListener(new Deselector(misMatchesItem, showAllItem));
             showAllItem.addActionListener(new Deselector(showAllItem, misMatchesItem));
+
+            addQuickConsensusModeItem();
 
             addSeparator();
             addViewAsPairsMenuItem();
@@ -1527,15 +1584,15 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             Range oldSortByBaseAtPos = renderOptions.getGroupByBaseAtPos();
             if (renderOptions.groupByOption == GroupOption.BASE_AT_POS) { // already sorted by the base at a position
                 JCheckBoxMenuItem oldBaseAtPosOption = new JCheckBoxMenuItem("base at " + oldSortByBaseAtPos.getChr() +
-                    ":" + Globals.DECIMAL_FORMAT.format(1+oldSortByBaseAtPos.getStart()));
+                        ":" + Globals.DECIMAL_FORMAT.format(1 + oldSortByBaseAtPos.getStart()));
                 groupMenu.add(oldBaseAtPosOption);
                 oldBaseAtPosOption.setSelected(true);
             }
 
             if (renderOptions.groupByOption != GroupOption.BASE_AT_POS || oldSortByBaseAtPos == null ||
-                !oldSortByBaseAtPos.getChr().equals(chrom) || oldSortByBaseAtPos.getStart() != chromStart) { // not already sorted by this position
+                    !oldSortByBaseAtPos.getChr().equals(chrom) || oldSortByBaseAtPos.getStart() != chromStart) { // not already sorted by this position
                 JCheckBoxMenuItem newBaseAtPosOption = new JCheckBoxMenuItem("base at " + chrom +
-                    ":" + Globals.DECIMAL_FORMAT.format(1+chromStart));
+                        ":" + Globals.DECIMAL_FORMAT.format(1 + chromStart));
                 newBaseAtPosOption.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent aEvt) {
                         renderOptions.groupByOption = GroupOption.BASE_AT_POS;
@@ -1878,6 +1935,22 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             return item;
         }
 
+        public JMenuItem addQuickConsensusModeItem() {
+            // Change track height by attribute
+            final JMenuItem item = new JCheckBoxMenuItem("Quick consensus mode");
+            item.setSelected(renderOptions.quickConsensusMode);
+
+            item.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+                    renderOptions.setQuickConsensusMode(item.isSelected());
+                    refresh();
+                }
+            });
+            add(item);
+            return item;
+        }
+
         public JMenuItem addShowMismatchesMenuItem() {
             // Change track height by attribute
             final JMenuItem item = new JCheckBoxMenuItem("Show mismatched bases");
@@ -2090,10 +2163,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             final JMenuItem item = new JMenuItem("Blat read sequence");
             add(item);
 
-            final Alignment alignment = getAlignment(te);
+            Alignment alignment = getSpecficAlignment(te);
             if (alignment == null) {
                 item.setEnabled(false);
-                return;
             }
 
             final String seq = alignment.getReadSequence();
@@ -2199,7 +2271,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
 
 
-
         public void addTenXItems() {
 
             addSeparator();
@@ -2271,10 +2342,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             if ("BC".equals(tag)) {
 
-            } else if("READNAME".equals(tag)) {
+            } else if ("READNAME".equals(tag)) {
                 renderOptions.setColorOption(ColorOption.LINK_STRAND);
-            }
-            else {
+            } else {
                 // TenX -- ditto
                 renderOptions.setColorOption(ColorOption.TAG);
                 renderOptions.setColorByTag(tag);
