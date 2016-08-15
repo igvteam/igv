@@ -407,12 +407,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         Rectangle visibleRect = context.getVisibleRect();
         final boolean leaveMargin = getDisplayMode() == DisplayMode.EXPANDED;
 
-        if (renderOptions.isPairedArcView()) {
-            maximumHeight = (int) inputRect.getHeight();
-            AlignmentRenderer.getInstance().clearCurveMaps();
-        } else {
+
             maximumHeight = Integer.MAX_VALUE;
-        }
 
         // Divide rectangle into equal height levels
         double y = inputRect.getY();
@@ -445,10 +441,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 if ((visibleRect != null && y > visibleRect.getMaxY())) {
                     return;
                 }
-                if (renderOptions.isPairedArcView()) {
-                    y = Math.min(getY() + getHeight(), visibleRect.getMaxY());
-                    y -= h;
-                }
+
 
                 if (y + h > visibleRect.getY()) {
                     Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
@@ -800,20 +793,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 }
                 return null;
             }
-        } else if (renderOptions.isPairedArcView()) {
-            Alignment feature = null;
-            //All alignments stacked at the bottom
-            double xloc = (position - frame.getOrigin()) / frame.getScale();
-            SortedSet<Shape> arcs = AlignmentRenderer.getInstance().curveOverlap(xloc);
-            int halfLength = 2;
-            int sideLength = 2 * halfLength;
-            for (Shape curve : arcs) {
-                if (curve.intersects(xloc - halfLength, y - halfLength, sideLength, sideLength)) {
-                    feature = AlignmentRenderer.getInstance().getAlignmentForCurve(curve);
-                    break;
-                }
-            }
-            return feature == null ? null : feature.getValueString(position, getWindowFunction());
         } else {
             Alignment feature = getAlignmentAt(position, y, frame);
             return feature == null ? null : feature.getValueString(position, getWindowFunction());
@@ -1043,25 +1022,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
     }
 
-    public boolean isPairedArcView() {
-        return this.renderOptions.isPairedArcView();
-    }
-
-    public void setPairedArcView(boolean option) {
-        if (option == this.isPairedArcView()) {
-            return;
-        }
-
-        //TODO This is dumb and bad UI design
-        //Should use a combo box or something
-        if (option) {
-            setViewAsPairs(false);
-        }
-
-        renderOptions.setPairedArcView(option);
-        dataManager.packAlignments(renderOptions);
-        refresh();
-    }
 
     public boolean isRemoved() {
         return removed;
@@ -1103,8 +1063,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         private ColorOption colorOption;
         @XmlAttribute
         GroupOption groupByOption = null;
-        BisulfiteContext bisulfiteContext;
         //ContinuousColorScale insertSizeColorScale;
+        @XmlAttribute
         private boolean viewPairs = false;
         private boolean pairedArcView = false;
         public boolean flagZeroQualityAlignments = true;
@@ -1122,6 +1082,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         @XmlAttribute
         private boolean flagLargeIndels;
         private int largeInsertionsThreshold;
+
+        BisulfiteContext bisulfiteContext;
 
         private Range groupByBaseAtPos = null;
 
@@ -1187,14 +1149,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         public void setShowMismatches(boolean showMismatches) {
             this.showMismatches = showMismatches;
             if (showMismatches) this.showAllBases = false;
-        }
-
-        public boolean isPairedArcView() {
-            return pairedArcView;
-        }
-
-        public void setPairedArcView(boolean pairedArcView) {
-            this.pairedArcView = pairedArcView;
         }
 
         public int getMinInsertSize() {
@@ -1363,11 +1317,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             addSeparator();
             addViewAsPairsMenuItem();
-
-            boolean viewPairArcsPresent = Boolean.parseBoolean(System.getProperty("pairedArcViewPresent", "false"));
-            if (viewPairArcsPresent) {
-                addViewPairedArcsMenuItem();
-            }
 
             addGoToMate(e);
             showMateRegion(e);
@@ -1814,20 +1763,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     }
                 });
             }
-            add(item);
-        }
-
-        public void addViewPairedArcsMenuItem() {
-            final JMenuItem item = new JCheckBoxMenuItem("View paired arcs");
-            item.setSelected(isPairedArcView());
-            item.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent aEvt) {
-                    boolean isPairedArcView = item.isSelected();
-                    setPairedArcView(isPairedArcView);
-                }
-            });
-            item.setEnabled(dataManager.isPairedEnd());
             add(item);
         }
 

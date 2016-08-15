@@ -600,7 +600,6 @@ public abstract class SAMAlignment implements Alignment {
             }
         }
         buf.append("<br>");
-        buf.append("----------------------<br>");
 
         // First check insertions.  Position is zero based, block coords 1 based
         if (this.insertions != null) {
@@ -666,6 +665,7 @@ public abstract class SAMAlignment implements Alignment {
 
         Object suppAlignment = this.getAttribute("SA");
         if (suppAlignment != null) {
+            buf.append("----------------------<br>");
             buf.append(getSupplAlignmentString(suppAlignment.toString()));
             buf.append("<br>");
         }

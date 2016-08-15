@@ -490,22 +490,11 @@ public class AlignmentRenderer implements FeatureRenderer {
             Font font,
             AlignmentCounts alignmentCounts) {
 
-        //Only plot outliers
-        if (renderOptions.isPairedArcView() && getOutlierStatus(pair, renderOptions) == 0) {
-            return;
-        }
-
         double locScale = context.getScale();
 
-        Color alignmentColor1;
+        Color alignmentColor1 = getAlignmentColor(pair.firstAlignment, renderOptions);
         Color alignmentColor2 = null;
-        if (renderOptions.isPairedArcView()) {
-            renderOptions.setColorOption(ColorOption.INSERT_SIZE);
-            alignmentColor1 = getAlignmentColor(pair, renderOptions);
-            alignmentColor2 = alignmentColor1;
-        } else {
-            alignmentColor1 = getAlignmentColor(pair.firstAlignment, renderOptions);
-        }
+
 
         Graphics2D g = context.getGraphic2DForColor(alignmentColor1);
         g.setFont(font);
@@ -539,34 +528,10 @@ public class AlignmentRenderer implements FeatureRenderer {
         int h = (int) Math.max(1, rowRect.getHeight() - (leaveMargin ? 2 : 0));
         int y = (int) (rowRect.getY());
 
+        startX = Math.max(rowRect.x, startX);
+        endX = Math.min(rowRect.x + rowRect.width, endX);
+        gLine.drawLine(startX, y + h / 2, endX, y + h / 2);
 
-        if (renderOptions.isPairedArcView()) {
-            int relation = compareToBounds(pair, renderOptions);
-            if (relation <= -1 || relation >= +1) {
-                return;
-            }
-            GeneralPath path = new GeneralPath(GeneralPath.WIND_NON_ZERO, 4);
-            int curveHeight = (int) Math.log(endX - startX) * h;
-
-            double botY = y + h / 2;
-            double topY = y + h / 2 - curveHeight;
-            double midX = (endX + startX) / 2;
-
-            path.moveTo(startX, botY);
-            path.quadTo(midX, topY, endX, botY);
-            path.quadTo(midX, topY - 2, startX, botY);
-            path.closePath();
-            arcsByStart.add(path);
-            arcsByEnd.add(path);
-            curveMap.put(path, pair);
-            gLine.setColor(alignmentColor2);
-
-            gLine.draw(path);
-        } else {
-            startX = Math.max(rowRect.x, startX);
-            endX = Math.min(rowRect.x + rowRect.width, endX);
-            gLine.drawLine(startX, y + h / 2, endX, y + h / 2);
-        }
 
     }
 
@@ -811,20 +776,6 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
             }
         }
-
-        //Draw straight line up for viewing arc pairs, if mate on a different chromosome
-        if (renderOptions.isPairedArcView()) {
-            try {
-                Graphics2D gLine = context.getGraphic2DForColor(alignmentColor);
-                if (!alignment.getChr().equalsIgnoreCase(alignment.getMate().getChr())) {
-                    gLine.drawLine(lastBlockPxEnd, y + h / 2, lastBlockPxEnd, (int) trackRect.getMinY());
-                }
-
-            } catch (NullPointerException e) {
-                //Don't have the info, don't plot anything
-            }
-        }
-
     }
 
     /**
