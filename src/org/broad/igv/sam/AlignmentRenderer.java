@@ -745,7 +745,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
 
                 // Draw the gap if it is sufficiently large at the current zoom.
-                boolean drawGap = ((!hideSmallIndelsBP || gapChromWidth > indelThresholdBP) &&
+                boolean drawGap = ((!hideSmallIndelsBP || gapChromWidth >= indelThresholdBP) &&
                         (!hideSmallIndelsPixel || gapPxWidthExact >= indelThresholdPixel));
                 if (!drawGap) {
                     continue;
@@ -1146,7 +1146,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                     continue;
                 }
 
-                if ((!hideSmallIndelsBP || bpWidth > indelThresholdBP) &&
+                if ((!hideSmallIndelsBP || bpWidth >= indelThresholdBP) &&
                         (!hideSmallIndelsPixel || pxWidthExact >= indelThresholdPixel)) {
                     if (renderOptions.isFlagLargeIndels() && bpWidth > renderOptions.getLargeInsertionsThreshold()) {
                         drawLargeIndelLabel(gLargeInsertion, true, Globals.DECIMAL_FORMAT.format(bpWidth), x - 1, y, h, (int) pxWidthExact);
