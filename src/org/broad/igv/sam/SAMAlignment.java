@@ -537,6 +537,10 @@ public abstract class SAMAlignment implements Alignment {
         if (sample != null) {
             buf.append("Sample = " + sample + "<br>");
         }
+        String library = getLibrary();
+        if (library != null) {
+            buf.append("Library = " + library + "<br>");
+        }
         String readGroup = getReadGroup();
         if (readGroup != null) {
             buf.append("Read group = " + readGroup + "<br>");

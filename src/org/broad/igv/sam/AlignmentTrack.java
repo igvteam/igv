@@ -113,7 +113,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     public enum ColorOption {
-        INSERT_SIZE, READ_STRAND, FIRST_OF_PAIR_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, BISULFITE, NOMESEQ,
+        INSERT_SIZE, READ_STRAND, FIRST_OF_PAIR_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, LIBRARY, BISULFITE, NOMESEQ,
         TAG, NONE, UNEXPECTED_PAIR, MAPPED_SIZE, LINK_STRAND
     }
 
@@ -123,7 +123,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     public enum GroupOption {
-        STRAND, SAMPLE, READ_GROUP, FIRST_OF_PAIR_STRAND, TAG, PAIR_ORIENTATION, MATE_CHROMOSOME, NONE, SUPPLEMENTARY, BASE_AT_POS
+        STRAND, SAMPLE, READ_GROUP, LIBRARY, FIRST_OF_PAIR_STRAND, TAG, PAIR_ORIENTATION, MATE_CHROMOSOME, NONE, SUPPLEMENTARY, BASE_AT_POS
     }
 
     public enum BisulfiteContext {
@@ -1552,6 +1552,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             mappings.put("read strand", GroupOption.STRAND);
             mappings.put("first-in-pair strand", GroupOption.FIRST_OF_PAIR_STRAND);
             mappings.put("sample", GroupOption.SAMPLE);
+            mappings.put("library", GroupOption.LIBRARY);
             mappings.put("read group", GroupOption.READ_GROUP);
             mappings.put("chromosome of mate", GroupOption.MATE_CHROMOSOME);
             mappings.put("pair orientation", GroupOption.PAIR_ORIENTATION);
@@ -1723,7 +1724,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             mappings.put("read group", ColorOption.READ_GROUP);
             mappings.put("sample", ColorOption.SAMPLE);
-
+            mappings.put("library", ColorOption.LIBRARY);
 
             for (Map.Entry<String, ColorOption> el : mappings.entrySet()) {
                 JRadioButtonMenuItem mi = getColorMenuItem(el.getKey(), el.getValue());

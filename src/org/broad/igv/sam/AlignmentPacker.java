@@ -379,6 +379,8 @@ public class AlignmentPacker {
                 return String.valueOf(al.isNegativeStrand());
             case SAMPLE:
                 return al.getSample();
+            case LIBRARY:
+                return al.getLibrary();
             case READ_GROUP:
                 return al.getReadGroup();
             case TAG:

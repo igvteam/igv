@@ -1206,6 +1206,12 @@ public class AlignmentRenderer implements FeatureRenderer {
                     c = sampleColors.get(sample);
                 }
                 break;
+            case LIBRARY:
+                String library = alignment.getLibrary();
+                if (library != null) {
+                    c = sampleColors.get(library);
+                }
+                break;
             case TAG:
                 final String tag = renderOptions.getColorByTag();
                 if (tag != null) {
