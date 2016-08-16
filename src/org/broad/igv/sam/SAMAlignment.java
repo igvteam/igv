@@ -555,6 +555,17 @@ public abstract class SAMAlignment implements Alignment {
             cigarString = (lMatcher.find() ? lMatcher.group(1) : "") + "..." + (rMatcher.find() ? rMatcher.group(1) : "");
         }
 
+
+        buf.append("----------------------" + "<br>");
+        buf.append("Mapping = " + (isPrimary() ? (isSupplementary() ? "Supplementary" : "Primary") : "Secondary") +
+                (isDuplicate() ? " Duplicate" : "") + (isVendorFailedRead() ? " Failed QC" : "") +
+                " @ MAPQ " + Globals.DECIMAL_FORMAT.format(getMappingQuality()) + "<br>");
+        buf.append("Reference span = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(getAlignmentStart() + 1) + "-" +
+                Globals.DECIMAL_FORMAT.format(getAlignmentEnd()) + " (" + (isNegativeStrand() ? "-" : "+") + ")" +
+                " = " + Globals.DECIMAL_FORMAT.format(getAlignmentEnd() - getAlignmentStart()) + "bp<br>");
+        buf.append("Cigar = " + cigarString + "<br>");
+        buf.append("Clipping = ");
+
         // Identify the number of hard and soft clipped bases.
         Matcher lclipMatcher = Pattern.compile("^(([0-9]+)H)?(([0-9]+)S)?").matcher(cigarString);
         Matcher rclipMatcher = Pattern.compile("(([0-9]+)S)?(([0-9]+)H)?$").matcher(cigarString);
@@ -568,15 +579,6 @@ public abstract class SAMAlignment implements Alignment {
             rclipSoft = rclipMatcher.group(2) == null ? 0 : Integer.parseInt(rclipMatcher.group(2), 10);
         }
 
-        buf.append("----------------------" + "<br>");
-        buf.append("Mapping = " + (isPrimary() ? (isSupplementary() ? "Supplementary" : "Primary") : "Secondary") +
-                (isDuplicate() ? " Duplicate" : "") + (isVendorFailedRead() ? " Failed QC" : "") +
-                " @ MAPQ " + Globals.DECIMAL_FORMAT.format(getMappingQuality()) + "<br>");
-        buf.append("Reference span = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(getAlignmentStart() + 1) + "-" +
-                Globals.DECIMAL_FORMAT.format(getAlignmentEnd()) + " (" + (isNegativeStrand() ? "-" : "+") + ")" +
-                " = " + Globals.DECIMAL_FORMAT.format(getAlignmentEnd() - getAlignmentStart()) + "bp<br>");
-        buf.append("Cigar = " + cigarString + "<br>");
-        buf.append("Clipping = ");
         if (lclipHard + lclipSoft + rclipHard + rclipSoft == 0) {
             buf.append("None");
         } else {
@@ -627,7 +629,7 @@ public abstract class SAMAlignment implements Alignment {
                                 bufAppendFlowSignals(block, buf, offset);
                             }
                         }
-                      //  buf.append("----------------------"); // NB: no <br> required
+                        //  buf.append("----------------------"); // NB: no <br> required
                         return buf.toString();
                     } else {
                         byte[] bases = block.getBases();
@@ -993,10 +995,38 @@ public abstract class SAMAlignment implements Alignment {
         String numMismatches = nm == null ? "?" : nm.toString();
         int lenOnRef = getAlignmentEnd() - getAlignmentStart();
 
+        int[] clipping = getClipping(getCigarString());
+        String clippingString = "";
+        if (clipping[0] + clipping[1] + clipping[2] + clipping[3] > 0) {
+            if (clipping[0] > 0) clippingString += clipping[0] + "H";
+            if (clipping[1] > 0) clippingString += clipping[1] + "S";
+            clippingString += " ... ";
+            if (clipping[3] > 0) clippingString += clipping[3] + "S";
+            if (clipping[2] > 0) clippingString += clipping[2] + "H";
+        }
+
         return chr + ":" + Globals.DECIMAL_FORMAT.format(getAlignmentStart()) + "-" +
                 Globals.DECIMAL_FORMAT.format(getAlignmentEnd())
-                + " (" + st + ") = " + Globals.DECIMAL_FORMAT.format(lenOnRef) + "BP  @MAPQ " + getMappingQuality() + " NM" + numMismatches;
+                + " (" + st + ") = " + Globals.DECIMAL_FORMAT.format(lenOnRef) + "BP  @MAPQ=" + getMappingQuality() +
+                " NM=" + numMismatches + " CLIPPING=" + clippingString;
 
+    }
+
+
+    private int[] getClipping(String cigarString) {
+        // Identify the number of hard and soft clipped bases.
+        Matcher lclipMatcher = Pattern.compile("^(([0-9]+)H)?(([0-9]+)S)?").matcher(cigarString);
+        Matcher rclipMatcher = Pattern.compile("(([0-9]+)S)?(([0-9]+)H)?$").matcher(cigarString);
+        int lclipHard = 0, lclipSoft = 0, rclipHard = 0, rclipSoft = 0;
+        if (lclipMatcher.find()) {
+            lclipHard = lclipMatcher.group(2) == null ? 0 : Integer.parseInt(lclipMatcher.group(2), 10);
+            lclipSoft = lclipMatcher.group(4) == null ? 0 : Integer.parseInt(lclipMatcher.group(4), 10);
+        }
+        if (rclipMatcher.find()) {
+            rclipHard = rclipMatcher.group(4) == null ? 0 : Integer.parseInt(rclipMatcher.group(4), 10);
+            rclipSoft = rclipMatcher.group(2) == null ? 0 : Integer.parseInt(rclipMatcher.group(2), 10);
+        }
+        return new int[]{lclipHard, lclipSoft, rclipHard, rclipSoft};
     }
 
 }
