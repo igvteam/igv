@@ -1321,12 +1321,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 panel10.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 5));
 
                                 //---- samFlagIndelsCB ----
-                                samFlagIndelsCB.setText("Label indels larger than:   ");
+                                samFlagIndelsCB.setText("Label indels > ");
                                 samFlagIndelsCB.addActionListener(e -> samFlagIndelsCBActionPerformed(e));
                                 panel10.add(samFlagIndelsCB);
 
                                 //---- samFlagIndelsThresholdField ----
-                                samFlagIndelsThresholdField.setPreferredSize(new Dimension(60, 28));
+                                samFlagIndelsThresholdField.setPreferredSize(new Dimension(60, 26));
                                 samFlagIndelsThresholdField.addActionListener(e -> {
 			samFlagIndelsThresholdFieldActionPerformed(e);
 			samFlagIndelsThresholdFieldActionPerformed(e);
@@ -1355,7 +1355,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 panel9.add(hideIndelsBasesCB);
 
                                 //---- hideIndelsBasesField ----
-                                hideIndelsBasesField.setPreferredSize(new Dimension(60, 28));
+                                hideIndelsBasesField.setPreferredSize(new Dimension(60, 26));
                                 hideIndelsBasesField.addActionListener(e -> hideIndelsBasesFieldActionPerformed(e));
                                 hideIndelsBasesField.addFocusListener(new FocusAdapter() {
                                     @Override

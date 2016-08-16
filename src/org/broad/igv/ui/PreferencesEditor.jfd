@@ -3646,7 +3646,7 @@
                     <string>javax.swing.JCheckBox</string>
                     <void method="setProperty">
                      <string>text</string>
-                     <string>Label indels larger than:   </string>
+                     <string>Label indels &gt; </string>
                     </void>
                     <void property="name">
                      <string>samFlagIndelsCB</string>
@@ -3668,7 +3668,7 @@
                      <string>preferredSize</string>
                      <object class="java.awt.Dimension">
                       <int>60</int>
-                      <int>28</int>
+                      <int>26</int>
                      </object>
                     </void>
                     <void property="name">
@@ -3736,7 +3736,7 @@
                     <string>javax.swing.JCheckBox</string>
                     <void method="setProperty">
                      <string>text</string>
-                     <string>Hide indels < </string>
+                     <string>Hide indels &lt; </string>
                     </void>
                     <void property="name">
                      <string>hideIndelsBasesCB</string>
@@ -3758,7 +3758,7 @@
                      <string>preferredSize</string>
                      <object class="java.awt.Dimension">
                       <int>60</int>
-                      <int>28</int>
+                      <int>26</int>
                      </object>
                     </void>
                     <void property="name">
@@ -3824,7 +3824,7 @@
                   <string>javax.swing.JCheckBox</string>
                   <void method="setProperty">
                    <string>text</string>
-                   <string>Hide indels < </string>
+                   <string>Hide indels &lt; </string>
                   </void>
                   <void property="name">
                    <string>hideIndelsPixelsCB</string>
