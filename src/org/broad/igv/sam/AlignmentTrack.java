@@ -2166,6 +2166,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             Alignment alignment = getSpecficAlignment(te);
             if (alignment == null) {
                 item.setEnabled(false);
+                return;
             }
 
             final String seq = alignment.getReadSequence();

@@ -25,10 +25,8 @@
 
 package org.broad.igv.maf;
 
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.SequenceRenderer;
-import org.broad.igv.sam.AlignmentRenderer;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
@@ -131,7 +129,7 @@ public class MAFRenderer {
             int dX = (int) (1.0 / locScale);
 
             // Get a graphics to use
-            Graphics2D g = context.getGraphic2D("SEQUENCE");
+            Graphics2D g = context.getGraphics2D("SEQUENCE");
 
             if (dX >= 8) {
                 Font f = FontManager.getFont(Font.BOLD, Math.min(dX, 12));

@@ -65,7 +65,7 @@ public class RenderContext {
         return graphics;
     }
 
-    public Graphics2D getGraphic2D(Object key) {
+    public Graphics2D getGraphics2D(Object key) {
 
         Graphics2D g = graphicCache.get(key);
         if (g == null) {
@@ -81,7 +81,7 @@ public class RenderContext {
 
     public Graphics2D getGraphic2DForColor(Color color) {
 
-        Graphics2D g = getGraphic2D(color);
+        Graphics2D g = getGraphics2D(color);
         g.setColor(color);
         return g;
     }

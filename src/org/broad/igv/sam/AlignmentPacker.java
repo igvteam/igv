@@ -303,6 +303,7 @@ public class AlignmentPacker {
                     delinkedList.add(alignments.get(0));
                 }
                 else {
+                    a.finish();
                     delinkedList.add(a);
                 }
             }
@@ -311,7 +312,7 @@ public class AlignmentPacker {
             }
         }
 
-        return bcList;
+        return delinkedList;
     }
 
 

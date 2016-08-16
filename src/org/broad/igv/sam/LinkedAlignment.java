@@ -1,6 +1,7 @@
 package org.broad.igv.sam;
 
 import org.broad.igv.Globals;
+import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
 
@@ -156,7 +157,6 @@ public class LinkedAlignment implements Alignment {
                 if (a.contains(position)) {
                     buffer.append("<hr>");
                     buffer.append(a.getValueString(position, windowFunction));
-                    break;
                 }
             }
 
@@ -361,7 +361,7 @@ public class LinkedAlignment implements Alignment {
 
     @Override
     public void finish() {
-
+        alignments.sort(FeatureUtils.FEATURE_START_COMPARATOR);
     }
 
     @Override
