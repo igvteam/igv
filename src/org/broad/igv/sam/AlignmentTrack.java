@@ -1741,7 +1741,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getColorByTag());
                     if (tag != null && tag.trim().length() > 0) {
                         renderOptions.setColorByTag(tag);
-                        PreferenceManager.getInstance();
                         refresh();
                     }
                 }
