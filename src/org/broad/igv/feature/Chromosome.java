@@ -109,6 +109,6 @@ public class Chromosome {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, length);
+        return Objects.hash(index, length);
     }
 }
