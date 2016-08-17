@@ -36,6 +36,7 @@ package org.broad.igv.feature;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Simple representation of a chromosome.  Basically a name, length, and optionally a list of cytobands.
@@ -99,7 +100,15 @@ public class Chromosome {
         return name;
     }
 
+    @Override
     public boolean equals(Object obj) {
-        return ((Chromosome)obj).getIndex() == index;
+        return (obj instanceof Chromosome) &&
+                ((Chromosome)obj).getIndex() == getIndex()
+                && ((Chromosome)obj).getLength() == getLength();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, length);
     }
 }
