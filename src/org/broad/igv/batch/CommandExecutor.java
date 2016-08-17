@@ -945,6 +945,8 @@ public class CommandExecutor {
             return AlignmentTrack.GroupOption.STRAND;
         } else if (str.equalsIgnoreCase("sample")) {
             return AlignmentTrack.GroupOption.SAMPLE;
+        } else if (str.equalsIgnoreCase("library")) {
+            return AlignmentTrack.GroupOption.LIBRARY;
         } else if (str.equalsIgnoreCase("readGroup") || str.equalsIgnoreCase("read_group")) {
             return AlignmentTrack.GroupOption.READ_GROUP;
         } else {
