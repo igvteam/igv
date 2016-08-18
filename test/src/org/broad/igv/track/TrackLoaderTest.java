@@ -79,12 +79,6 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testLoadBEDFtp() throws Exception {
-        String filepath = "ftp://ftp.broadinstitute.org/distribution/igv/TEST/cpgIslands with spaces.hg18.bed";
-        tstLoadFi(filepath, 1, false);
-    }
-
-    @Test
     public void testLoadBEDNotIndexed() throws Exception {
         String filepath = TestUtils.DATA_DIR + "bed/intervalTest.bed";
         if (TrackLoader.isIndexed(new ResourceLocator(filepath), null)) {
@@ -336,12 +330,6 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
         }
 
 
-    }
-
-    @Test
-    public void testLoadBAMFtp() throws Exception {
-        String path = "ftp://ftp.broadinstitute.org/pub/igv/TEST/HG00171.hg18.bam";
-        tstLoadFi(path, 3, false);
     }
 
     /**

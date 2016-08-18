@@ -126,10 +126,6 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
         tstGetLastModified(HttpUtilsTest.broadURLString);
     }
 
-    @Test
-    public void testGetLastModified_FTP() throws Exception{
-        tstGetLastModified(TestUtils.AVAILABLE_FTP_URL);
-    }
 
     @Test
     public void testGetLastModified_File() throws Exception{

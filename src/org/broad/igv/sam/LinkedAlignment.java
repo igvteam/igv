@@ -168,7 +168,7 @@ public class LinkedAlignment implements Alignment {
                     buffer.append(a.getValueString(position, windowFunction));
                 }
             }
-            
+
 
             return buffer.toString();
         }

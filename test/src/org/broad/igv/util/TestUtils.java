@@ -74,8 +74,7 @@ public class TestUtils {
     public static final String DATA_DIR = "test/data/";
     public static final String TMP_OUTPUT_DIR = DATA_DIR + "out/";
     public static final String defaultGenome = DATA_DIR + "/genomes/hg18.unittest.genome";
-    public static final String AVAILABLE_FTP_URL = "ftp://ftp.broadinstitute.org/pub/igv/TEST/test.txt";
-    public static final String UNAVAILABLE_FTP_URL = "ftp://www.example.com/file.txt";
+
     //This is so ant can set the large data directory
     private static String LARGE_DATA_DIR_KEY = "LARGE_DATA_DIR";
     public static String LARGE_DATA_DIR = "test/largedata/";
