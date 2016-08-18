@@ -370,7 +370,7 @@ public class AlignmentPacker {
 
         switch (groupBy) {
             case STRAND:
-                return String.valueOf(al.isNegativeStrand());
+                return al.isNegativeStrand() ? "-" : "+";
             case SAMPLE:
                 return al.getSample();
             case LIBRARY:
@@ -402,7 +402,7 @@ public class AlignmentPacker {
                     return mate.getChr();
                 }
             case SUPPLEMENTARY:
-                return String.valueOf(!al.isSupplementary());
+                return al.isSupplementary() ? "SUPPLEMENTARY" : "";
             case BASE_AT_POS:
                 // Use a string prefix to enforce grouping rules:
                 //    1: alignments with a base at the position

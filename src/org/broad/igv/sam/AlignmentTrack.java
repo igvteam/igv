@@ -47,6 +47,7 @@ import org.broad.igv.session.Session;
 import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.tools.PFMExporter;
 import org.broad.igv.track.*;
+import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.InsertSizeSettingsDialog;
 import org.broad.igv.ui.SashimiPlot;
@@ -80,6 +81,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
@@ -92,6 +94,7 @@ import java.util.List;
 
 public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEventListener {
 
+    public static final int GROUP_LABEL_HEIGHT = 10;
     private static Logger log = Logger.getLogger(AlignmentTrack.class);
     static final int GROUP_MARGIN = 5;
     static final int TOP_MARGIN = 20;
@@ -170,17 +173,17 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private int squishedHeight = maxSquishedHeight;
     private FeatureRenderer renderer;
 
-    private HashMap<String, Color> selectedReadNames = new HashMap();
-    private int selectionColorIndex = 0;
     private int minHeight = 50;
     private AlignmentDataManager dataManager;
-    private Genome genome;
     private Rectangle alignmentsRect;
     private Rectangle downsampleRect;
     private ColorTable readNamePalette;
+
+    // Dynamic fields
     // The "DataPanel" containing the track.  This field might be null at any given time.  It is updated each repaint.
     private JComponent dataPanel;
-
+    private HashMap<String, Color> selectedReadNames = new HashMap();
+    private HashMap<Rectangle, String> groupNames = new HashMap<>();
 
     public static void sortAlignmentTracks(SortOption option, String tag) {
         IGV.getInstance().sortAlignmentTracks(option, tag);
@@ -201,7 +204,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     public AlignmentTrack(ResourceLocator locator, AlignmentDataManager dataManager, Genome genome) {
         super(locator);
 
-        this.genome = genome;
         this.dataManager = dataManager;
 
         ionTorrent = dataManager.isIonTorrent();
@@ -328,6 +330,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public void render(RenderContext context, Rectangle rect) {
 
+        Graphics2D g = context.getGraphics2D("LABEL");
+        g.setFont(FontManager.getFont(GROUP_LABEL_HEIGHT));
+
         dataPanel = context.getPanel();
 
         // Split track rectangle into sections.
@@ -343,8 +348,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         if (context.getScale() > dataManager.getMinVisibleScale()) {
             Rectangle visibleRect = context.getVisibleRect().intersection(rect);
-            Graphics2D g = context.getGraphic2DForColor(Color.gray);
-            GraphicUtils.drawCenteredText("Zoom in to see alignments.", visibleRect, g);
+            Graphics2D g2 = context.getGraphic2DForColor(Color.gray);
+            GraphicUtils.drawCenteredText("Zoom in to see alignments.", visibleRect, g2);
             return;
         }
 
@@ -382,6 +387,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     private void renderAlignments(RenderContext context, Rectangle inputRect) {
+
+        groupNames.clear();
 
         //log.debug("Render features");
         PackedAlignments groups = dataManager.getGroups(context, renderOptions);
@@ -423,17 +430,20 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         Graphics2D groupBorderGraphics = context.getGraphic2DForColor(AlignmentRenderer.GROUP_DIVIDER_COLOR);
         int nGroups = groups.size();
         int groupNumber = 0;
+        GroupOption groupOption = renderOptions.getGroupByOption();
+        String groupByTag = renderOptions.getGroupByTag();
+
         for (Map.Entry<String, List<Row>> entry : groups.entrySet()) {
+
             groupNumber++;
+            double yGroup = y;  // Remember this for label
 
             // Loop through the alignment rows for this group
             List<Row> rows = entry.getValue();
             for (Row row : rows) {
-
                 if ((visibleRect != null && y > visibleRect.getMaxY())) {
                     return;
                 }
-
 
                 if (y + h > visibleRect.getY()) {
                     Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
@@ -445,15 +455,34 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 }
                 y += h;
             }
-
-            // Draw a subtle divider line between groups
-            if (showGroupLine) {
-                if (groupNumber < nGroups) {
-                    int borderY = (int) y + GROUP_MARGIN / 2;
-                    groupBorderGraphics.drawLine(inputRect.x, borderY, inputRect.width, borderY);
+            if (groupOption != GroupOption.NONE) {
+                // Draw a subtle divider line between groups
+                if (showGroupLine) {
+                    if (groupNumber < nGroups) {
+                        int borderY = (int) y + GROUP_MARGIN / 2;
+                        GraphicUtils.drawDottedDashLine(groupBorderGraphics, inputRect.x, borderY, inputRect.width, borderY);
+                    }
                 }
+
+                // Label the group, if there is room
+
+                double groupHeight = rows.size() * h;
+                if (groupHeight > GROUP_LABEL_HEIGHT + 2) {
+                    String groupName = entry.getKey();
+                    Graphics2D g = context.getGraphics2D("LABEL");
+                    FontMetrics fm = g.getFontMetrics();
+                    Rectangle2D stringBouds = fm.getStringBounds(groupName, g);
+                    Rectangle rect = new Rectangle(inputRect.x, (int) yGroup, (int) stringBouds.getWidth() + 10, (int) stringBouds.getHeight());
+                    GraphicUtils.drawVerticallyCenteredText(
+                            groupName, 5, rect, context.getGraphics2D("LABEL"), false, true);
+
+                    groupNames.put(new Rectangle(inputRect.x, (int) yGroup, inputRect.width, (int) (y - yGroup)), groupName);
+                }
+
             }
             y += GROUP_MARGIN;
+
+
         }
 
         final int bottom = inputRect.y + inputRect.height;
@@ -787,8 +816,17 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             }
         } else {
             Alignment feature = getAlignmentAt(position, y, frame);
-            return feature == null ? null : feature.getValueString(position, getWindowFunction());
-
+            if (feature != null) {
+                return feature.getValueString(position, getWindowFunction());
+            } else {
+                for (Map.Entry<Rectangle, String> groupNameEntry : groupNames.entrySet()) {
+                    Rectangle r = groupNameEntry.getKey();
+                    if (y >= r.y && y < r.y + r.height) {
+                        return groupNameEntry.getValue();
+                    }
+                }
+            }
+            return null;
         }
     }
 
@@ -2336,7 +2374,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             renderOptions.setLinkByTag(tag);
 
-             if ("READNAME".equals(tag)) {
+            if ("READNAME".equals(tag)) {
                 renderOptions.setColorOption(ColorOption.LINK_STRAND);
             } else {
                 // TenX -- ditto
