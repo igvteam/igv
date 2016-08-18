@@ -87,16 +87,14 @@ public abstract class SAMAlignment implements Alignment {
             'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N'
     };
     private static final String FLOW_SIGNAL_TAG = "ZF";
+    protected int alignmentStart;
+    protected int alignmentEnd;
 
 
     String chr;
     protected int start;  // <= Might differ from alignment start if soft clipping is considered
     protected int end;    // ditto
     protected Color color = null;
-
-    protected String readGroup;
-    protected String library;
-    protected String sample;
 
     ReadMate mate;
     AlignmentBlockImpl[] alignmentBlocks;
@@ -789,20 +787,8 @@ public abstract class SAMAlignment implements Alignment {
         this.end = end;
     }
 
-    public String getSample() {
-        return sample;
-    }
-
-    public String getReadGroup() {
-        return readGroup;
-    }
-
 
     public abstract Object getAttribute(String key);
-
-    public String getLibrary() {
-        return library;
-    }
 
     public java.util.List<Gap> getGaps() {
         return gaps;

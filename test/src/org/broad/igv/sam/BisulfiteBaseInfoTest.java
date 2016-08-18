@@ -51,6 +51,9 @@ public class BisulfiteBaseInfoTest {
 
     static class TestAlignment extends SAMAlignment {
 
+        protected String readGroup;
+        protected String library;
+        protected String sample;
         boolean isNegativeStrand = false;
         private Strand firstOfPairStrand;
         private Strand secondOfPairStrand;
@@ -239,6 +242,14 @@ public class BisulfiteBaseInfoTest {
 
         public boolean isNegativeStrand() {
             return false;
+        }
+
+        public String getReadGroup() {
+            return readGroup;
+        }
+
+        public String getLibrary() {
+            return library;
         }
     }
 }

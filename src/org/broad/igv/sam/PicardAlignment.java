@@ -60,7 +60,7 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
     private static final int DUPLICATE_READ_FLAG = 0x400;
     private static final int SUPPLEMENTARY_ALIGNMENT_FLAG = 0x800;
 
-
+    private SAMReadGroupRecord readGroupRecord;
     private int flags;
 
     /**
@@ -94,19 +94,15 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
                     record.getMateUnmappedFlag()));
         }
 
-        String keySequence = null;
         SAMFileHeader header = record.getHeader();
+        String keySequence = null;
         String flowOrder = null;
         if (header != null) {
-            readGroup = (String) record.getAttribute("RG");
+            String readGroup = (String) record.getAttribute("RG");
             if (readGroup != null) {
-                SAMReadGroupRecord rgRec = header.getReadGroup(readGroup);
-                if (rgRec != null) {
-                    this.sample = rgRec.getSample();
-                    this.library = rgRec.getLibrary();
-                    flowOrder = rgRec.getFlowOrder();
-                    keySequence = rgRec.getKeySequence();
-                }
+                this.readGroupRecord = header.getReadGroup(readGroup);
+                keySequence = this.readGroupRecord.getKeySequence();
+                flowOrder = this.readGroupRecord.getFlowOrder();
             }
         }
 
@@ -179,6 +175,7 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
     public boolean isVendorFailedRead() {
         return (flags & READ_FAILS_VENDOR_QUALITY_CHECK_FLAG) != 0;
     }
+
     @Override
     public boolean isPrimary() {
         return (flags & NOT_PRIMARY_ALIGNMENT_FLAG) == 0;
@@ -236,7 +233,7 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
         ArrayList<String> tagsToHide = new ArrayList<String>();
 
         String samHiddenTagsPref = prefMgr.get(PreferenceManager.SAM_HIDDEN_TAGS);
-        for (String s: (samHiddenTagsPref == null ? "" : samHiddenTagsPref).split("[, ]")) {
+        for (String s : (samHiddenTagsPref == null ? "" : samHiddenTagsPref).split("[, ]")) {
             if (!s.equals("")) {
                 tagsToHide.add(s);
             }
@@ -248,7 +245,9 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
         if (attributes != null && !attributes.isEmpty()) {
 
             for (SAMRecord.SAMTagAndValue tag : attributes) {
-                if (tagsToHide.contains(tag.tag)) { continue; }
+                if (tagsToHide.contains(tag.tag)) {
+                    continue;
+                }
                 buf.append("<br>" + tag.tag + " = ");
 
                 if (tag.value.getClass().isArray()) { // ignore array types
@@ -288,7 +287,7 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
 
             }
 
-            if(samHiddenTagsPref != null && samHiddenTagsPref.trim().length() > 0) {
+            if (samHiddenTagsPref != null && samHiddenTagsPref.trim().length() > 0) {
                 buf.append("<br>Hidden tags: " + samHiddenTagsPref);
             }
         }
@@ -363,4 +362,15 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
         return r;
     }
 
+    public String getSample() {
+        return readGroupRecord == null ? null : readGroupRecord.getSample();
+    }
+
+    public String getReadGroup() {
+        return readGroupRecord == null ? null : readGroupRecord.getId();
+    }
+
+    public String getLibrary() {
+        return readGroupRecord == null ? null : readGroupRecord.getLibrary();
+    }
 }

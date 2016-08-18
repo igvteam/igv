@@ -50,8 +50,7 @@ public class Ga4ghAlignment extends SAMAlignment {
     private static Logger log = Logger.getLogger(Ga4ghAlignment.class);
 
     private final Map<String, String> tags;
-    protected int alignmentStart;
-    protected int alignmentEnd;
+
     int inferredInsertSize;
     int mappingQuality = 255;  // 255 by default
     String readName;
@@ -306,6 +305,19 @@ public class Ga4ghAlignment extends SAMAlignment {
         CigarMap.put("PAD", "P");
         CigarMap.put("SEQUENCE_MATCH", "=");
         CigarMap.put("SEQUENCE_MISMATCH", "X");
+    }
+
+    // ReadGroup properties not currently supported for GA4GH
+    public String getSample() {
+        return null;
+    }
+
+    public String getReadGroup() {
+        return null;
+    }
+
+    public String getLibrary() {
+        return null;
     }
 
     ;
