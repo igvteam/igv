@@ -101,8 +101,10 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
             String readGroup = (String) record.getAttribute("RG");
             if (readGroup != null) {
                 this.readGroupRecord = header.getReadGroup(readGroup);
-                keySequence = this.readGroupRecord.getKeySequence();
-                flowOrder = this.readGroupRecord.getFlowOrder();
+                if(this.readGroupRecord != null) {
+                    keySequence = this.readGroupRecord.getKeySequence();
+                    flowOrder = this.readGroupRecord.getFlowOrder();
+                }
             }
         }
 
