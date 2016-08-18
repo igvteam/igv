@@ -1140,7 +1140,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_HIDE_SMALL_INDEL_PIXEL, "true");
         defaultValues.put(SAM_SMALL_INDELS_PIXEL_THRESHOLD, "3");
 
-        defaultValues.put(SAM_LINK_READS, "true");
+        defaultValues.put(SAM_LINK_READS, "false");
         defaultValues.put(SAM_LINK_TAG, "READNAME");
 
         defaultValues.put(SAM_SHOW_ALIGNMENT_TRACK, "true");

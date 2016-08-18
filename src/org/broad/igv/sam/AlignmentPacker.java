@@ -125,9 +125,7 @@ public class AlignmentPacker {
         Map<String, PairedAlignment> pairs = null;
 
         boolean isPairedAlignments = renderOptions.isViewPairs();
-        String colorByTag = renderOptions.getColorByTag();
         String linkByTag = renderOptions.getLinkByTag();
-        boolean isLinkedReads = renderOptions.isLinkedReads() && linkByTag != null;
 
         if (isPairedAlignments) {
             pairs = new HashMap<String, PairedAlignment>(1000);
@@ -261,7 +259,16 @@ public class AlignmentPacker {
         for (Alignment a : alList) {
 
             if(a.isPrimary()) {
-                Object bc = ("READNAME".equals(tag)) ? a.getReadName() :  a.getAttribute(tag);
+                Object bc;
+                if("READNAME".equals(tag)) {
+                    bc = a.getReadName();
+                    if(a.isPaired()) {
+                        bc += a.isFirstOfPair() ? "/1" : "/2";
+                    }
+                }
+                else {
+                    bc = a.getAttribute(tag);
+                }
 
                 if (bc == null) {
                     bcList.add(a);
