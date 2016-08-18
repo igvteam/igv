@@ -365,7 +365,9 @@ public class AlignmentRenderer implements FeatureRenderer {
         }
     }
 
-    private void drawLinkedAlignment(LinkedAlignment alignment, Rectangle rowRect, RenderContext context, RenderOptions renderOptions, boolean leaveMargin, Map<String, Color> selectedReadNames, AlignmentCounts alignmentCounts) {
+    private void drawLinkedAlignment(LinkedAlignment alignment, Rectangle rowRect, RenderContext context,
+                                     RenderOptions renderOptions, boolean leaveMargin,
+                                     Map<String, Color> selectedReadNames, AlignmentCounts alignmentCounts) {
 
         double origin = context.getOrigin();
         double locScale = context.getScale();

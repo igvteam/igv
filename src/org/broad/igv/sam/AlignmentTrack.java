@@ -118,8 +118,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     public enum SortOption {
-        START, STRAND, NUCLEOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FIRST_OF_PAIR_STRAND, MATE_CHR, TAG, SUPPLEMENTARY, NONE,
-        MAX_GAP;
+        START, STRAND, NUCLEOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FIRST_OF_PAIR_STRAND, MATE_CHR, TAG, SUPPLEMENTARY, NONE;
     }
 
     public enum GroupOption {
@@ -233,13 +232,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         if (!Globals.isHeadless()) {
             IGV.getInstance().addAlignmentTrackEventListener(this);
         }
-
-        // TODO -- hack for experimentation.  Generalize
-        if (dataManager.isMoleculo()) {
-            renderOptions.linkedReads = true;
-            renderOptions.linkByTag = "BC";
-        }
-
     }
 
     /**
@@ -1170,6 +1162,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             flagLargeIndels = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_LARGE_INDELS);
             largeInsertionsThreshold = prefs.getAsInt(PreferenceManager.SAM_LARGE_INDELS_THRESHOLD);
+
+            linkedReads = prefs.getAsBoolean(PreferenceManager.SAM_LINK_READS);
+            linkByTag = prefs.get(PreferenceManager.SAM_LINK_TAG);
         }
 
 
@@ -2341,16 +2336,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             renderOptions.setLinkByTag(tag);
 
-            if ("BC".equals(tag)) {
-
-            } else if ("READNAME".equals(tag)) {
+             if ("READNAME".equals(tag)) {
                 renderOptions.setColorOption(ColorOption.LINK_STRAND);
             } else {
                 // TenX -- ditto
                 renderOptions.setColorOption(ColorOption.TAG);
                 renderOptions.setColorByTag(tag);
-
-                //           renderOptions.setColorOption(ColorOption.MAPPED_SIZE);
 
                 if (dataManager.isPhased()) {
                     renderOptions.groupByOption = GroupOption.TAG;

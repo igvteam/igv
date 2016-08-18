@@ -1,15 +1,14 @@
 package org.broad.igv.sam;
 
+import htsjdk.tribble.Feature;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Class for experimenting with 10X linked reads.
@@ -18,50 +17,58 @@ import java.util.Map;
 public class LinkedAlignment implements Alignment {
 
 
-    final String tag;
-    final String barcode;
+    final String tag;       // Tag used to link, or "READNAME"
+    final String name;   // Tag value  (usually barcode or readname)
+
     String haplotype;
     String sample;
     String readGroup;
-    Strand strand;
-    List<Alignment> alignments;
+    String library;
+
     String chr;
+    Strand strand;
     int alignmentStart;
     int alignmentEnd;
-    int lastAlignmentEnd = 0;
-    int maxGap = 0;
+
+    List<Alignment> alignments;
+
+
     Map<String, Object> attributes;
 
     public LinkedAlignment(String tag, String bc) {
         attributes = new HashMap<>();
         this.tag = tag;
-        this.barcode = bc;
-        attributes.put(tag, barcode);
+        this.name = bc;
+        attributes.put(tag, name);
         alignments = new ArrayList<>();
     }
 
     public void addAlignment(Alignment alignment) {
 
+        String sample = alignment.getSample();
+        String readGroup = alignment.getReadGroup();
+        String library = alignment.getLibrary();
+
         if (alignments.isEmpty()) {
             this.chr = alignment.getChr();
             alignmentStart = alignment.getAlignmentStart();
             alignmentEnd = alignment.getAlignmentEnd();
-            lastAlignmentEnd = alignment.getAlignmentEnd();
 
             Object hp = alignment.getAttribute("HP");
             haplotype = hp == null ? null : hp.toString();
 
             strand = alignment.getReadStrand();
-            sample = alignment.getSample();
-            readGroup = alignment.getReadGroup();
+            this.sample = sample == null ? "" : sample;
+            this.readGroup = readGroup == null ? "" : readGroup;
+            this.library = library == null ? "" : library;
 
         } else {
 
             if (!this.chr.equals(alignment.getChr())) {
                 throw new RuntimeException("Mixed chromosome linked alignments not supported");
             }
-            maxGap = Math.max(alignment.getAlignmentStart() - lastAlignmentEnd, maxGap);
-            lastAlignmentEnd = alignment.getAlignmentEnd();
+
+            alignmentStart = Math.min(alignment.getAlignmentStart(), this.alignmentStart);
             alignmentEnd = Math.max(alignment.getAlignmentEnd(), this.alignmentEnd);
 
             Object hp = alignment.getAttribute("HP");
@@ -70,22 +77,22 @@ public class LinkedAlignment implements Alignment {
                     this.haplotype = "MIXED";
                 }
             }
-            if (strand != alignment.getReadStrand()) {
-                strand = Strand.NONE;   // i.e. mixed
+            if (this.strand != alignment.getReadStrand()) {
+                this.strand = Strand.NONE;   // i.e. mixed
             }
-            if (sample != null && !sample.equals(alignment.getSample())) {
-                sample = null;
+            if (!this.sample.equals(sample)) {
+                this.sample += ", " + sample;
             }
-            if (readGroup != null && !readGroup.equals(alignment.getReadGroup())) {
-                readGroup = null;
+            if (!this.readGroup.equals(readGroup)) {
+                this.readGroup += ", " + readGroup;
             }
+            if (!this.library.equals(library)) {
+                this.library += ", " + library;
+            }
+
         }
 
         alignments.add(alignment);
-    }
-
-    public String getBarcode() {
-        return barcode;
     }
 
     public Strand getStrand() {
@@ -111,7 +118,6 @@ public class LinkedAlignment implements Alignment {
     @Override
     public int getStart() {
         return this.alignmentStart;
-
     }
 
     @Override
@@ -136,22 +142,25 @@ public class LinkedAlignment implements Alignment {
             return alignments.get(0).getValueString(position, windowFunction);
         } else {
             StringBuffer buffer = new StringBuffer();
-            buffer.append("Linking id (" + tag + ") = " + this.barcode);
+            buffer.append("Linking id (" + tag + ") = " + this.name);
             if (this.haplotype != null) buffer.append("<br>Haplotype = " + this.haplotype);
             buffer.append("<br># alignments = " + alignments.size());
-            buffer.append("<br>Strands = ");
-            for (Alignment a : alignments) {
-                buffer.append(a.getReadStrand() == Strand.POSITIVE ? "+" : "-");
-            }
             buffer.append("<br>Total span = " + Globals.DECIMAL_FORMAT.format(getAlignmentEnd() - getAlignmentStart()) + "bp");
 
-            for (Alignment a : alignments) {
-                if (a instanceof SAMAlignment) {
-                    buffer.append("<br>");
-                    buffer.append(((SAMAlignment) a).getSynopsisString());
+            // Link by readname == supplementary alignments.  Crude "is 10x?" test
+            if ("READNAME".equals(tag)) {
+                buffer.append("<br>Strands = ");
+                for (Alignment a : alignments) {
+                    buffer.append(a.getReadStrand() == Strand.POSITIVE ? "+" : "-");
+                }
+
+                for (Alignment a : alignments) {
+                    if (a instanceof SAMAlignment) {
+                        buffer.append("<br>");
+                        buffer.append(((SAMAlignment) a).getSynopsisString());
+                    }
                 }
             }
-
 
             for (Alignment a : alignments) {
                 if (a.contains(position)) {
@@ -159,6 +168,7 @@ public class LinkedAlignment implements Alignment {
                     buffer.append(a.getValueString(position, windowFunction));
                 }
             }
+            
 
             return buffer.toString();
         }
@@ -183,7 +193,7 @@ public class LinkedAlignment implements Alignment {
 
     @Override
     public String getReadName() {
-        return null;
+        return "READNAME".equals(tag) ? name : null;
     }
 
     @Override
@@ -213,7 +223,7 @@ public class LinkedAlignment implements Alignment {
         }
         return insertions;
     }
-    
+
 
     @Override
     public String getCigarString() {
@@ -361,7 +371,7 @@ public class LinkedAlignment implements Alignment {
 
     @Override
     public void finish() {
-        alignments.sort(FeatureUtils.FEATURE_START_COMPARATOR);
+        alignments.sort(ALIGNMENT_START_COMPARATOR);
     }
 
     @Override
@@ -383,5 +393,11 @@ public class LinkedAlignment implements Alignment {
     public String getContig() {
         return null;
     }
+
+    static final Comparator<Alignment> ALIGNMENT_START_COMPARATOR = new Comparator<Alignment>() {
+        public int compare(Alignment o1, Alignment o2) {
+            return o1.getAlignmentStart() - o2.getAlignmentStart();
+        }
+    };
 
 }
