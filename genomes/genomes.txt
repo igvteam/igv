@@ -28,8 +28,8 @@ Chicken (galGal3)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/galGal3
 Chicken (galGal4)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/galGal4.genome	galGal4
 Chicken (galGal5)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/galGal5.genome	galGal5
 Chimp (panTro2)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/panTro2.genome	panTro2
-Chimp (panTro3) https://s3.amazonaws.com/igv.broadinstitute.org/genomes/panTro3.genome  panTro3
-Chimp (panTro4) https://s3.amazonaws.com/igv.broadinstitute.org/genomes/panTro4.genome  panTro4
+Chimp (panTro3)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/panTro3.genome	panTro3
+Chimp (panTro4)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/panTro4.genome	panTro4
 Cat (felCat5)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/felCat5.genome	felCat5
 Cow (bosTau3)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/bosTau3.genome	bosTau3
 Cow (bosTau4)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/bosTau4.genome	bosTau4

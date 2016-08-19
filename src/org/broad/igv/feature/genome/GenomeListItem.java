@@ -29,6 +29,7 @@ import org.broad.igv.util.HttpUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.zip.ZipException;
 
 /**
@@ -60,10 +61,13 @@ public class GenomeListItem {
         this.id = id;
     }
 
+    public String printString() {
+        return this.id + "  " +  this.displayableName + "   " + this.location;
+    }
+
     public String getDisplayableName() {
         return displayableName;
     }
-
 
     public String getId() {
         return id;
@@ -102,10 +106,7 @@ public class GenomeListItem {
 
     @Override
     public int hashCode() {
-        int result = displayableName != null ? displayableName.hashCode() : 0;
-        result = 31 * result + (location != null ? location.hashCode() : 0);
-        result = 31 * result + (id != null ? id.hashCode() : 0);
-        return result;
+        return Objects.hash(displayableName, location, id);
     }
 
     /**

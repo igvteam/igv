@@ -246,6 +246,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
                         Genome genome;
 
                         igv.resetSession(null);
+
                         genome = igv.getGenomeManager().loadGenome(genomeListItem.getLocation(), null);
 
                         updateChromosFromGenome(genome);
@@ -303,6 +304,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
             if (!(selItem instanceof GenomeListItem)) {
                 return;
             }
+            log.info("Loading " + ((GenomeListItem) selItem).printString());
             GenomeListItem genomeListItem = (GenomeListItem) selItem;
             loadGenomeListItem(genomeListItem);
         }
