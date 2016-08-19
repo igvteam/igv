@@ -267,7 +267,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         return false;
     }
 
-    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
+    public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
         return "Multiple alignments";
     }
 

@@ -149,12 +149,12 @@ public class MergedTracks extends DataTrack {
     }
 
     @Override
-    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
+    public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
         StringBuilder builder = new StringBuilder(memberTracks.size() + 2);
         builder.append(getName());
         builder.append("<br/>--------------<br/>");
         for (Track track : memberTracks) {
-            String curS = track.getValueStringAt(chr, position, y, frame);
+            String curS = track.getValueStringAt(chr, position, mouseX, mouseY, frame);
             if (curS != null) {
                 builder.append(curS);
                 builder.append("<br/>--------------<br/>");

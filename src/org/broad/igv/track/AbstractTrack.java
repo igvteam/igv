@@ -592,7 +592,7 @@ public abstract class AbstractTrack implements Track {
     protected boolean openTooltipWindow(TrackClickEvent e) {
         ReferenceFrame frame = e.getFrame();
         final MouseEvent me = e.getMouseEvent();
-        String popupText = getValueStringAt(frame.getChrName(), e.getChromosomePosition(), e.getMouseEvent().getY(), frame);
+        String popupText = getValueStringAt(frame.getChrName(), e.getChromosomePosition(), e.getMouseEvent().getX(), e.getMouseEvent().getY(), frame);
 
         if (popupText != null) {
 
@@ -971,11 +971,10 @@ public abstract class AbstractTrack implements Track {
      *
      * @param chr
      * @param position
-     * @param y
-     * @param frame
-     * @return
+     * @param mouseX
+     *@param frame  @return
      */
-    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
+    public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
         return null;
     }
 

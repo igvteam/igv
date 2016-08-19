@@ -336,10 +336,10 @@ public class GisticTrack extends AbstractTrack {
      *
      * @param chr
      * @param position
-     * @param ignore
-     * @return
+     * @param mouseX
+     *@param ignore  @return
      */
-    public String getValueStringAt(String chr, double position, int ignore, ReferenceFrame frame) {
+    public String getValueStringAt(String chr, double position, int mouseX, int ignore, ReferenceFrame frame) {
 
         // give a 2 pixel window, otherwise very narrow features will be missed.
         double bpPerPixel = frame.getScale();

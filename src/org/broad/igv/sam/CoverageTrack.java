@@ -50,9 +50,6 @@ import org.broad.igv.ui.DataRangeDialog;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
-import org.broad.igv.ui.event.DataLoadedEvent;
-import org.broad.igv.ui.event.ViewChange;
-import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.FileDialogUtils;
@@ -70,7 +67,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -347,7 +343,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         return false;
     }
 
-    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
+    public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
 
         float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
         float minVisibleScale = (maxRange * 1000) / 700;
@@ -768,7 +764,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         JMenuItem copyDetails = new JMenuItem("Copy Details to Clipboard");
         copyDetails.setEnabled(false);
         if (te.getFrame() != null) {
-            final String details = getValueStringAt(te.getFrame().getChrName(), te.getChromosomePosition(), te.getMouseEvent().getY(), te.getFrame());
+            final String details = getValueStringAt(te.getFrame().getChrName(), te.getChromosomePosition(), te.getMouseEvent().getX(), te.getMouseEvent().getY(), te.getFrame());
             copyDetails.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {

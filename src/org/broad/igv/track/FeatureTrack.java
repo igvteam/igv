@@ -55,7 +55,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.swing.*;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.MarshalException;
@@ -417,15 +416,15 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      *
      * @param chr
      * @param position in genomic coordinates
-     * @param y        - pixel position in panel coordinates (i.e. not track coordinates)
+     * @param mouseX
      * @return
      */
-    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
+    public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
 
 
         if (showFeatures) {
 
-            List<Feature> allFeatures = getAllFeatureAt(position, y, frame);
+            List<Feature> allFeatures = getAllFeatureAt(position, mouseY, frame);
             if (allFeatures == null) {
                 return null;
             }

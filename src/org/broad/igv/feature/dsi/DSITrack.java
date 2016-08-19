@@ -1,10 +1,8 @@
 package org.broad.igv.feature.dsi;
 
 import htsjdk.tribble.Feature;
-import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.FeatureTrack;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
@@ -22,9 +20,9 @@ public class DSITrack extends FeatureTrack {
 
 
     @Override
-    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
+    public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
 
-        List<Feature> allFeatures = getAllFeatureAt(position, y, frame);
+        List<Feature> allFeatures = getAllFeatureAt(position, mouseY, frame);
         if (allFeatures == null) {
             return null;
         }

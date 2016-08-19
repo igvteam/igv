@@ -247,7 +247,7 @@ public class SashimiPlot extends JFrame {
         }
 
         public void updateToolTipText(TrackClickEvent tce) {
-            toolTipText = track.getValueStringAt(tce.getFrame().getChrName(), tce.getChromosomePosition(), tce.getMouseEvent().getY(), tce.getFrame());
+            toolTipText = track.getValueStringAt(tce.getFrame().getChrName(), tce.getChromosomePosition(), tce.getMouseEvent().getX(), tce.getMouseEvent().getY(), tce.getFrame());
             toolTipText = "<html>" + toolTipText;
             setToolTipText(toolTipText);
         }

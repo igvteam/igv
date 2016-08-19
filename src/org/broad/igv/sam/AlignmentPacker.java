@@ -415,14 +415,14 @@ public class AlignmentPacker {
 
                     byte[] baseAtPos = new byte[] {al.getBase(pos.getStart())};
                     if (baseAtPos[0] == 0) { // gap at position
-                        return "2: Gap";
+                        return "2:";
                     }
                     else { // base at position
                         return "1:" + new String(baseAtPos);
                     }
                 }
                 else { // does not overlap position
-                    return "3: NA";
+                    return "3:";
                 }
         }
         return null;

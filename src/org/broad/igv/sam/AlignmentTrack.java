@@ -213,8 +213,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         PreferenceManager prefs = PreferenceManager.getInstance();
 
-
-        renderer = AlignmentRenderer.getInstance();
+        renderer = new AlignmentRenderer(this);
 
         showGroupLine = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_GROUP_SEPARATOR);
         setDisplayMode(DisplayMode.EXPANDED);
@@ -800,9 +799,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         return dataManager;
     }
 
-    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
+    public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
 
-        if (downsampleRect != null && y > downsampleRect.y && y <= downsampleRect.y + downsampleRect.height) {
+        if (downsampleRect != null && mouseY > downsampleRect.y && mouseY <= downsampleRect.y + downsampleRect.height) {
             AlignmentInterval loadedInterval = dataManager.getLoadedInterval(frame.getCurrentRange());
             if (loadedInterval == null) {
                 return null;
@@ -815,13 +814,13 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 return null;
             }
         } else {
-            Alignment feature = getAlignmentAt(position, y, frame);
+            Alignment feature = getAlignmentAt(position, mouseY, frame);
             if (feature != null) {
                 return feature.getValueString(position, getWindowFunction());
             } else {
                 for (Map.Entry<Rectangle, String> groupNameEntry : groupNames.entrySet()) {
                     Rectangle r = groupNameEntry.getKey();
-                    if (y >= r.y && y < r.y + r.height) {
+                    if (mouseY >= r.y && mouseY < r.y + r.height) {
                         return groupNameEntry.getValue();
                     }
                 }

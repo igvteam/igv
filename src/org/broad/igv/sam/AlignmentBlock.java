@@ -31,12 +31,7 @@ import org.broad.igv.feature.genome.Genome;
  * Created by jrobinso on 9/22/15.
  */
 public interface AlignmentBlock {
-
     boolean contains(int position);
-
-    void setPixelRange(int start, int end);
-
-    boolean containsPixel(int pixel);
 
     int getLength();
 

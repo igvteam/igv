@@ -79,12 +79,12 @@ public class MutationTrack extends FeatureTrack {
      *
      * @param chr
      * @param position in genomic coordinates
-     * @param y        - pixel position in panel coordinates (i.e. not track coordinates)
+     * @param mouseX
      * @return
      */
     @Override
-    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
-        return super.getValueStringAt(chr, position, y, frame);    //To change body of overridden methods use File | Settings | File Templates.
+    public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
+        return super.getValueStringAt(chr, position, mouseX, mouseY, frame);    //To change body of overridden methods use File | Settings | File Templates.
     }
 
     @Override

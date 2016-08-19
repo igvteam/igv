@@ -489,7 +489,7 @@ public class GWASTrack extends AbstractTrack {
     }
 
 
-    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
+    public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
 
         int location = (int) position;
 
@@ -505,7 +505,7 @@ public class GWASTrack extends AbstractTrack {
             maxDistance = maxDistance * 1000;
         }
 
-        int index = findIndex(chr, y, location, maxDistance);
+        int index = findIndex(chr, mouseY, location, maxDistance);
 
         // If there is a data point at the given location, fetch description
         return index >= 0 ? getDescription(chr, index) : null;

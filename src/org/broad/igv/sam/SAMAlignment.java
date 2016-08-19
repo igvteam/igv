@@ -529,6 +529,48 @@ public abstract class SAMAlignment implements Alignment {
         int basePosition = (int) position;
         StringBuffer buf = new StringBuffer();
 
+
+        // First check insertions.  Position is zero based, block coords 1 based
+        if (this.insertions != null) {
+            for (AlignmentBlock block : this.insertions) {
+                double insertionLeft = block.getStart() - .25;
+                double insertionRight = block.getStart() + .25;
+                if (position > insertionLeft && position < insertionRight) {
+                    if (block.hasFlowSignals()) {
+                        int offset;
+                        buf = new StringBuffer();
+                        buf.append("Insertion: " + new String(block.getBases()) + "<br>");
+                        buf.append("Base phred quality = ");
+                        for (offset = 0; offset < block.getLength(); offset++) {
+                            byte quality = block.getQuality(offset);
+                            if (0 < offset) {
+                                buf.append(",");
+                            }
+                            buf.append(quality);
+                        }
+                        buf.append("<br>");
+                        for (offset = 0; offset < block.getLength(); offset++) {
+                            byte base = block.getBase(offset);
+                            if (base > 0) {
+                                buf.append((char) base + ": ");
+                                bufAppendFlowSignals(block, buf, offset);
+                            }
+                        }
+                        //  buf.append("----------------------"); // NB: no <br> required
+                        return buf.toString();
+                    } else {
+                        byte[] bases = block.getBases();
+
+                        return bases == null ?
+                                "Insertion: " + block.getLength() + " bases" :
+                                "Insertion: " + new String(block.getBases());
+                    }
+                }
+            }
+        }
+
+        // Not over an insertion
+
         buf.append("Read name = " + getReadName() + "<br>");
 
         String sample = getSample();
@@ -605,44 +647,6 @@ public abstract class SAMAlignment implements Alignment {
         }
         buf.append("<br>");
 
-        // First check insertions.  Position is zero based, block coords 1 based
-        if (this.insertions != null) {
-            for (AlignmentBlock block : this.insertions) {
-                double insertionLeft = block.getStart() - .25;
-                double insertionRight = block.getStart() + .25;
-                if (position > insertionLeft && position < insertionRight) {
-                    if (block.hasFlowSignals()) {
-                        int offset;
-                        buf = new StringBuffer();
-                        buf.append("Insertion: " + new String(block.getBases()) + "<br>");
-                        buf.append("Base phred quality = ");
-                        for (offset = 0; offset < block.getLength(); offset++) {
-                            byte quality = block.getQuality(offset);
-                            if (0 < offset) {
-                                buf.append(",");
-                            }
-                            buf.append(quality);
-                        }
-                        buf.append("<br>");
-                        for (offset = 0; offset < block.getLength(); offset++) {
-                            byte base = block.getBase(offset);
-                            if (base > 0) {
-                                buf.append((char) base + ": ");
-                                bufAppendFlowSignals(block, buf, offset);
-                            }
-                        }
-                        //  buf.append("----------------------"); // NB: no <br> required
-                        return buf.toString();
-                    } else {
-                        byte[] bases = block.getBases();
-
-                        return bases == null ?
-                                "Insertion: " + block.getLength() + " bases" :
-                                "Insertion: " + new String(block.getBases());
-                    }
-                }
-            }
-        }
 
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
 

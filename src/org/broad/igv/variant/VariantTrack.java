@@ -871,23 +871,22 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      *
      * @param chr
      * @param position - position in UCSC "0 based"  genomic coordinates
-     * @param y        - pixel position in panel coordinates (i.e. not track coordinates)
-     * @param frame
-     * @return
+     * @param mouseX
+     *@param frame  @return
      */
-    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
+    public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
 
         try {
             double maxDistance = 10 * frame.getScale();
-            if (y < top + getVariantsHeight()) {
-                int modY = areFeaturesStacked() ? y : -1;
+            if (mouseY < top + getVariantsHeight()) {
+                int modY = areFeaturesStacked() ? mouseY : -1;
                 Variant variant = getFeatureClosest(position, modY, frame.getName(), maxDistance);
                 if (variant == null) return null;
 
                 return getVariantToolTip(variant);
             } else {
                 if (sampleBounds == null || sampleBounds.isEmpty()) return null;
-                String sample = getSampleAtPosition(y);
+                String sample = getSampleAtPosition(mouseY);
                 if (sample == null) return null;
 
                 Variant variant = getFeatureClosest(position, -1, frame.getName(), maxDistance);

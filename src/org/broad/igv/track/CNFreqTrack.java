@@ -78,7 +78,7 @@ public class CNFreqTrack extends AbstractTrack {
     }
 
 
-    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
+    public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
 
         List<LocusScore> ampScores = data.getAmpCounts(chr);
         List<LocusScore> delScores = data.getDelCounts(chr);

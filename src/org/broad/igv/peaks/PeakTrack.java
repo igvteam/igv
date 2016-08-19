@@ -336,7 +336,7 @@ public class PeakTrack extends AbstractTrack {
     }
 
 
-    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
+    public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
         try {
             boolean foundValue = false;
             StringBuffer buf = new StringBuffer();

@@ -422,8 +422,8 @@ public class DataPanel extends JComponent implements Paintable {
                     if (overlays != null) {
                         for (Track overlay : overlays) {
                             if ((overlay != track) && (overlay.getValueStringAt(
-                                    frame.getChrName(), position, y, frame) != null)) {
-                                String valueString = overlay.getValueStringAt(frame.getChrName(), position, y, frame);
+                                    frame.getChrName(), position, x, y, frame) != null)) {
+                                String valueString = overlay.getValueStringAt(frame.getChrName(), position, x, y, frame);
                                 if (valueString != null) {
                                     popupTextBuffer.append(valueString);
                                     popupTextBuffer.append("<br>");
@@ -434,7 +434,7 @@ public class DataPanel extends JComponent implements Paintable {
                         }
                     }
                     if (!foundOverlaidFeature) {
-                        String valueString = track.getValueStringAt(frame.getChrName(), position, y, frame);
+                        String valueString = track.getValueStringAt(frame.getChrName(), position, x, y, frame);
                         if (valueString != null) {
                             if (foundOverlaidFeature) {
                                 popupTextBuffer.append("---------------------<br>");

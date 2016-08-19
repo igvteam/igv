@@ -38,7 +38,6 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.FeatureUtils;
-import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -259,11 +258,10 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack {
      *
      * @param chr
      * @param position
-     * @param y
-     * @param frame
-     * @return
+     * @param mouseX
+     *@param frame  @return
      */
-    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
+    public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
         StringBuffer buf = new StringBuffer();
         LocusScore score = getLocusScoreAt(chr, position, frame);
         // If there is no value here, return null to signal no popup

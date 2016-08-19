@@ -59,13 +59,13 @@ public class AlignmentRenderer implements FeatureRenderer {
     private static Color DEFAULT_ALIGNMENT_COLOR = new Color(185, 185, 185); //200, 200, 200);
     private static final Color negStrandColor = new Color(150, 150, 230);
     private static final Color posStrandColor = new Color(230, 150, 150);
-    private final Color LR_COLOR = DEFAULT_ALIGNMENT_COLOR; // "Normal" alignment color
-    private final Color RL_COLOR = new Color(0, 150, 0);
-    private final Color RR_COLOR = new Color(20, 50, 200);
-    private final Color LL_COLOR = new Color(0, 150, 150);
+    private static final Color LR_COLOR = DEFAULT_ALIGNMENT_COLOR; // "Normal" alignment color
+    private static final Color RL_COLOR = new Color(0, 150, 0);
+    private static final Color RR_COLOR = new Color(20, 50, 200);
+    private static final Color LL_COLOR = new Color(0, 150, 150);
     private static Color smallISizeColor = new Color(0, 0, 150);
     private static Color largeISizeColor = new Color(150, 0, 0);
-    private final Color OUTLINE_COLOR = new Color(185, 185, 185);
+    private static final Color OUTLINE_COLOR = new Color(185, 185, 185);
 
     // Indel colors
     private static Color purple = new Color(118, 24, 220);
@@ -74,15 +74,15 @@ public class AlignmentRenderer implements FeatureRenderer {
     private static Color unknownGapColor = new Color(0, 150, 0);
 
     // Bisulfite colors
-    private final Color bisulfiteColorFw1 = new Color(195, 195, 195);
-    private final Color bisulfiteColorRev1 = new Color(195, 210, 195);
-    private final Color nomeseqColor = new Color(195, 195, 195);
+    private static final Color bisulfiteColorFw1 = new Color(195, 195, 195);
+    private static final Color bisulfiteColorRev1 = new Color(195, 210, 195);
+    private static final Color nomeseqColor = new Color(195, 195, 195);
 
     private static Map<String, AlignmentTrack.OrientationType> frOrientationTypes;
     private static Map<String, AlignmentTrack.OrientationType> f1f2OrientationTypes;
     private static Map<String, AlignmentTrack.OrientationType> f2f1OrientationTypes;
     private static Map<String, AlignmentTrack.OrientationType> rfOrientationTypes;
-    private Map<AlignmentTrack.OrientationType, Color> typeToColorMap;
+    private static  Map<AlignmentTrack.OrientationType, Color> typeToColorMap;
     public static HashMap<Character, Color> nucleotideColors;
 
     public static final HSLColorTable tenXColorTable1 = new HSLColorTable(30);
@@ -93,21 +93,10 @@ public class AlignmentRenderer implements FeatureRenderer {
     // A "dummy" reference for soft-clipped reads.
     private static byte[] softClippedReference = new byte[1000];
 
-
-    static {
-        initializeTagTypes();
-        setNucleotideColors();
-    }
-
-    PreferenceManager prefs;
-
-    private ColorTable readGroupColors;
-    private ColorTable sampleColors;
-    private Map<String, ColorTable> tagValueColors;
-    private ColorTable defaultTagColors;
-
-    // TODO -- why is this a singleton?
-    private static AlignmentRenderer instance;
+    private static ColorTable readGroupColors;
+    private static ColorTable sampleColors;
+    private static Map<String, ColorTable> tagValueColors;
+    private static ColorTable defaultTagColors;
 
     private static void setNucleotideColors() {
 
@@ -131,21 +120,6 @@ public class AlignmentRenderer implements FeatureRenderer {
         nucleotideColors.put('g', g);
         nucleotideColors.put('N', n);
         nucleotideColors.put('n', n);
-
-    }
-
-    public static AlignmentRenderer getInstance() {
-        if (instance == null) {
-            instance = new AlignmentRenderer();
-        }
-        return instance;
-    }
-
-
-    private AlignmentRenderer() {
-        this.prefs = PreferenceManager.getInstance();
-        initializeTagColors();
-
 
     }
 
@@ -232,7 +206,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         f1f2OrientationTypes.put("F2F1", AlignmentTrack.OrientationType.RL);
     }
 
-    private void initializeTagColors() {
+    private static void initializeTagColors() {
         ColorPalette palette = ColorUtilities.getPalette("Pastel 1");  // TODO let user choose
         readGroupColors = new PaletteColorTable(palette);
         sampleColors = new PaletteColorTable(palette);
@@ -247,6 +221,23 @@ public class AlignmentRenderer implements FeatureRenderer {
         typeToColorMap.put(null, DEFAULT_ALIGNMENT_COLOR);
     }
 
+
+
+    static {
+        initializeTagTypes();
+        setNucleotideColors();
+        initializeTagColors();
+    }
+
+
+
+    PreferenceManager prefs;
+    AlignmentTrack track;
+
+    public  AlignmentRenderer(AlignmentTrack track) {
+        this.prefs = PreferenceManager.getInstance();
+        this.track = track;
+    }
 
     private void initializeGraphics(RenderContext context) {
 
@@ -739,8 +730,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
                 // Label the size of the deletion if it is "large" and the label fits.
                 if (renderOptions.isFlagLargeIndels() && gapChromWidth > renderOptions.getLargeInsertionsThreshold()) {
-                    drawLargeIndelLabel(largeIndelGraphics, false, Globals.DECIMAL_FORMAT.format(gapChromWidth),
-                            (int) ((blockPxEnd + gapPxEnd) / 2), y, h, gapPxEnd - blockPxEnd - 2, null);
+                    drawLargeIndelLabel(largeIndelGraphics, false, Globals.DECIMAL_FORMAT.format(gapChromWidth), (int) ((blockPxEnd + gapPxEnd) / 2), y, h, gapPxEnd - blockPxEnd - 2);
                 }
 
                 // Start the next alignment block after the gap.
@@ -1039,7 +1029,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         return color;
     }
 
-    private void drawLargeIndelLabel(Graphics2D g, boolean isInsertion, String labelText, int pxCenter, int pxTop, int pxH, int pxWmax, AlignmentBlock block) {
+    private void drawLargeIndelLabel(Graphics2D g, boolean isInsertion, String labelText, int pxCenter, int pxTop, int pxH, int pxWmax) {
         final int pxPad = 2;   // text padding in the label
         final int pxWing = 2;  // width of the cursor "wing"
 
@@ -1065,14 +1055,12 @@ public class AlignmentRenderer implements FeatureRenderer {
         if (isInsertion) {
             g.fillRect(pxLeft - pxWing, pxTop, pxRight - pxLeft + 2 * pxWing, 2);
             g.fillRect(pxLeft - pxWing, pxTop + pxH - 2, pxRight - pxLeft + 2 * pxWing, 2);
-            block.setPixelRange(pxLeft, pxRight);
         } // draw "wings" For insertions
 
         if (doesTextFit) {
             g.setColor(isInsertion ? Color.white : purple);
             g.drawString(labelText, pxLeft + pxPad, pxTop + pxH - 2);
         } // draw the text if it fits
-
     }
 
     private void drawInsertions(Rectangle rect, Alignment alignment, RenderContext context, RenderOptions renderOptions) {
@@ -1104,14 +1092,13 @@ public class AlignmentRenderer implements FeatureRenderer {
                 if ((!hideSmallIndelsBP || bpWidth >= indelThresholdBP) &&
                         (!hideSmallIndelsPixel || pxWidthExact >= indelThresholdPixel)) {
                     if (renderOptions.isFlagLargeIndels() && bpWidth > renderOptions.getLargeInsertionsThreshold()) {
-                        drawLargeIndelLabel(context.getGraphics2D("INDEL_LABEL"), true, Globals.DECIMAL_FORMAT.format(bpWidth), x - 1, y, h, (int) pxWidthExact, aBlock);
+                        drawLargeIndelLabel(context.getGraphics2D("INDEL_LABEL"), true, Globals.DECIMAL_FORMAT.format(bpWidth), x - 1, y, h, (int) pxWidthExact);
                     } else {
                         Graphics2D g = context.getGraphics();
                         g.setColor(purple);
                         g.fillRect(x - 2, y, 4, 2);
                         g.fillRect(x - 1, y, 2, h);
                         g.fillRect(x - 2, y + h - 2, 4, 2);
-                        aBlock.setPixelRange(x-2, x+2);
                     }
                 }
             }

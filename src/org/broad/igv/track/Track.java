@@ -190,7 +190,7 @@ public interface Track extends Persistable{
 
     boolean isShowDataRange();
 
-    String getValueStringAt(String chr, double position, int y, ReferenceFrame frame);
+    String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame);
 
     float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName);
 
