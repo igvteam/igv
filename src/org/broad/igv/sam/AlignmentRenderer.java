@@ -739,7 +739,8 @@ public class AlignmentRenderer implements FeatureRenderer {
 
                 // Label the size of the deletion if it is "large" and the label fits.
                 if (renderOptions.isFlagLargeIndels() && gapChromWidth > renderOptions.getLargeInsertionsThreshold()) {
-                    drawLargeIndelLabel(largeIndelGraphics, false, Globals.DECIMAL_FORMAT.format(gapChromWidth), (int) ((blockPxEnd + gapPxEnd) / 2), y, h, gapPxEnd - blockPxEnd - 2);
+                    drawLargeIndelLabel(largeIndelGraphics, false, Globals.DECIMAL_FORMAT.format(gapChromWidth),
+                            (int) ((blockPxEnd + gapPxEnd) / 2), y, h, gapPxEnd - blockPxEnd - 2, null);
                 }
 
                 // Start the next alignment block after the gap.
@@ -1038,7 +1039,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         return color;
     }
 
-    private void drawLargeIndelLabel(Graphics2D g, boolean isInsertion, String labelText, int pxCenter, int pxTop, int pxH, int pxWmax) {
+    private void drawLargeIndelLabel(Graphics2D g, boolean isInsertion, String labelText, int pxCenter, int pxTop, int pxH, int pxWmax, AlignmentBlock block) {
         final int pxPad = 2;   // text padding in the label
         final int pxWing = 2;  // width of the cursor "wing"
 
@@ -1064,12 +1065,14 @@ public class AlignmentRenderer implements FeatureRenderer {
         if (isInsertion) {
             g.fillRect(pxLeft - pxWing, pxTop, pxRight - pxLeft + 2 * pxWing, 2);
             g.fillRect(pxLeft - pxWing, pxTop + pxH - 2, pxRight - pxLeft + 2 * pxWing, 2);
+            block.setPixelRange(pxLeft, pxRight);
         } // draw "wings" For insertions
 
         if (doesTextFit) {
             g.setColor(isInsertion ? Color.white : purple);
             g.drawString(labelText, pxLeft + pxPad, pxTop + pxH - 2);
         } // draw the text if it fits
+
     }
 
     private void drawInsertions(Rectangle rect, Alignment alignment, RenderContext context, RenderOptions renderOptions) {
@@ -1101,13 +1104,14 @@ public class AlignmentRenderer implements FeatureRenderer {
                 if ((!hideSmallIndelsBP || bpWidth >= indelThresholdBP) &&
                         (!hideSmallIndelsPixel || pxWidthExact >= indelThresholdPixel)) {
                     if (renderOptions.isFlagLargeIndels() && bpWidth > renderOptions.getLargeInsertionsThreshold()) {
-                        drawLargeIndelLabel(context.getGraphics2D("INDEL_LABEL"), true, Globals.DECIMAL_FORMAT.format(bpWidth), x - 1, y, h, (int) pxWidthExact);
+                        drawLargeIndelLabel(context.getGraphics2D("INDEL_LABEL"), true, Globals.DECIMAL_FORMAT.format(bpWidth), x - 1, y, h, (int) pxWidthExact, aBlock);
                     } else {
                         Graphics2D g = context.getGraphics();
                         g.setColor(purple);
                         g.fillRect(x - 2, y, 4, 2);
                         g.fillRect(x - 1, y, 2, h);
                         g.fillRect(x - 2, y + h - 2, 4, 2);
+                        aBlock.setPixelRange(x-2, x+2);
                     }
                 }
             }

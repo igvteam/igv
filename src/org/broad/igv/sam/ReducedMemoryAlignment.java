@@ -363,6 +363,8 @@ public class ReducedMemoryAlignment implements Alignment {
 
         int start;
         int length;
+        int pixelStart;
+        int pixelEnd;
         boolean softClipped;
 
         @Override
@@ -371,6 +373,16 @@ public class ReducedMemoryAlignment implements Alignment {
             return offset >= 0 && offset < getLength();
         }
 
+        @Override
+        public void setPixelRange(int start, int end) {
+            this.pixelStart = start;
+            this.pixelEnd = end;
+        }
+
+        @Override
+        public boolean containsPixel(int pixel) {
+            return pixel >= this.pixelStart && pixel <= this.pixelEnd;
+        }
 
         @Override
         public int getLength() {

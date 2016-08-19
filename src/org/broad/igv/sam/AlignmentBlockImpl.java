@@ -46,6 +46,8 @@ public class AlignmentBlockImpl implements AlignmentBlock {
     Alignment alignment;
     int offset;
     int end;
+    private int pixelStart;
+    private int pixelEnd;
 
 
     public AlignmentBlockImpl(String chr, int start, byte[] bases, byte[] qualities) {
@@ -67,6 +69,16 @@ public class AlignmentBlockImpl implements AlignmentBlock {
     public boolean contains(int position) {
         int offset = position - start;
         return offset >= 0 && offset < getLength();
+    }
+    @Override
+    public void setPixelRange(int start, int end) {
+        this.pixelStart = start;
+        this.pixelEnd = end;
+    }
+
+    @Override
+    public boolean containsPixel(int pixel) {
+        return pixel >= this.pixelStart && pixel <= this.pixelEnd;
     }
 
     @Override
