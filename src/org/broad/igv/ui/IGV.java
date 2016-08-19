@@ -635,8 +635,12 @@ public class IGV implements IGVEventObserver {
             // Display the dialog
             file = FileDialogUtils.chooseFile("Load Genome", importDirectory, FileDialog.LOAD);
 
+
             // If a file selection was made
             if (file != null) {
+                log.info("Loading genome: file.name=" + file.getName() + "  file.path=" + file.getPath() +
+                        "  file.absolutePath=" + file.getAbsolutePath());
+
                 if (monitor != null) {
                     progressDialog = ProgressBar.showProgressDialog(mainFrame, "Loading Genome...", monitor, false);
                 }
