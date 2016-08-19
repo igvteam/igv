@@ -207,7 +207,7 @@ public class SpliceJunctionFeature extends BasicFeature {
      *
      * @position -- 1 based coordinates
      */
-    public String getValueString(double position, WindowFunction ignored) {
+    public String getValueString(double position, WindowFunction ignored, int mouseX) {
         StringBuffer valueString = new StringBuffer();
         String name = getName();
         if (name != null) {

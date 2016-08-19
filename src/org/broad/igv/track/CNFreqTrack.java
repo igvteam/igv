@@ -88,9 +88,9 @@ public class CNFreqTrack extends AbstractTrack {
             LocusScore ampScore = ampScores.get(i);
             if (position >= ampScore.getStart() && position <= ampScore.getEnd()) {
                 buf.append("# of samples with log2(cn/2) &gt; &nbsp; " + data.getAmpThreshold() + ": ");
-                buf.append(ampScore.getValueString(position, null));
+                buf.append(ampScore.getValueString(position, null, mouseX));
                 buf.append("<br># of samples with log2(cn/2) &lt;  " + data.getDelThreshold() + ":  ");
-                buf.append(delScores.get(i).getValueString(position, null));
+                buf.append(delScores.get(i).getValueString(position, null, mouseX));
             }
         }
         return buf.length() == 0 ? null : buf.toString();

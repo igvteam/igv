@@ -113,7 +113,7 @@ public interface Alignment extends LocusScore {
 
     String getLibrary();
 
-    String getClipboardString(double location);
+    String getClipboardString(double location, int mouseX);
 
 
     void finish();

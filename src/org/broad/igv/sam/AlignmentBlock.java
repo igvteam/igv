@@ -31,6 +31,7 @@ import org.broad.igv.feature.genome.Genome;
  * Created by jrobinso on 9/22/15.
  */
 public interface AlignmentBlock {
+
     boolean contains(int position);
 
     int getLength();
@@ -49,11 +50,14 @@ public interface AlignmentBlock {
 
     boolean isSoftClipped();
 
-    void reduce(Genome genome);
 
     boolean hasBases();
 
     FlowSignalSubContext getFlowSignalSubContext(int offset);
 
     boolean hasFlowSignals();
+
+    void setPixelRange(int s, int e);
+
+    boolean containsPixel(int x) ;
 }

@@ -33,7 +33,6 @@ import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.collections.MultiMap;
 
 import java.awt.*;
-import java.util.*;
 
 /**
  * @author jrobinso
@@ -66,7 +65,7 @@ public class VCFFeature implements IGVFeature, htsjdk.tribble.Feature {
         return getQuality();
     }
 
-    public String getValueString(double position, WindowFunction windowFunction) {
+    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
         StringBuffer buf = new StringBuffer();
         if (id != null && id.length() > 0) {
             buf.append(id + "<br>");

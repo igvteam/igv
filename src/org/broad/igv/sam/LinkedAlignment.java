@@ -1,8 +1,6 @@
 package org.broad.igv.sam;
 
-import htsjdk.tribble.Feature;
 import org.broad.igv.Globals;
-import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
 
@@ -136,10 +134,10 @@ public class LinkedAlignment implements Alignment {
     }
 
     @Override
-    public String getValueString(double position, WindowFunction windowFunction) {
+    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
 
         if (alignments.size() == 1) {
-            return alignments.get(0).getValueString(position, windowFunction);
+            return alignments.get(0).getValueString(position, windowFunction, mouseX);
         } else {
             StringBuffer buffer = new StringBuffer();
             buffer.append("Linking id (" + tag + ") = " + this.name);
@@ -147,7 +145,7 @@ public class LinkedAlignment implements Alignment {
             buffer.append("<br># alignments = " + alignments.size());
             buffer.append("<br>Total span = " + Globals.DECIMAL_FORMAT.format(getAlignmentEnd() - getAlignmentStart()) + "bp");
 
-            // Link by readname == supplementary alignments.  Crude "is 10x?" test
+            // Link by readname == supplementary alignments.  Crude "is not 10x?" test
             if ("READNAME".equals(tag)) {
                 buffer.append("<br>Strands = ");
                 for (Alignment a : alignments) {
@@ -165,7 +163,7 @@ public class LinkedAlignment implements Alignment {
             for (Alignment a : alignments) {
                 if (a.contains(position)) {
                     buffer.append("<hr>");
-                    buffer.append(a.getValueString(position, windowFunction));
+                    buffer.append(a.getValueString(position, windowFunction, mouseX));
                 }
             }
 
@@ -365,7 +363,7 @@ public class LinkedAlignment implements Alignment {
     }
 
     @Override
-    public String getClipboardString(double location) {
+    public String getClipboardString(double location, int mouseX) {
         return null;
     }
 

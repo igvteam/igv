@@ -26,18 +26,10 @@
 package org.broad.igv.gwas;
 
 import org.broad.igv.feature.AbstractFeature;
-import org.broad.igv.feature.Exon;
-import org.broad.igv.feature.IGVFeature;
-import org.broad.igv.feature.Strand;
 import org.broad.igv.tdf.BufferedByteWriter;
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.util.collections.MultiMap;
-import htsjdk.tribble.Feature;
 
-import java.awt.*;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Represents an eQTL value
@@ -116,7 +108,7 @@ public class EQTLFeature extends AbstractFeature {
     }
 
     @Override
-    public String getValueString(double position, WindowFunction windowFunction) {
+    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
         StringBuilder sb = new StringBuilder();
         sb.append(snp);
         sb.append("<br>" + geneId);

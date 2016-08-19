@@ -273,7 +273,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack {
             buf.append("Data scale: " + getDataRange().getMinimum() + " - " + getDataRange().getMaximum() + "<br>");
         }
 
-        buf.append(score.getValueString(position, getWindowFunction()));
+        buf.append(score.getValueString(position, getWindowFunction(), mouseX));
         return buf.toString();
     }
 

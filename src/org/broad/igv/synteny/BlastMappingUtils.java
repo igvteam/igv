@@ -29,11 +29,9 @@ package org.broad.igv.synteny;
 
 import org.broad.igv.data.DataUtils;
 import org.broad.igv.data.WiggleDataset;
-import org.broad.igv.data.WiggleParser;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.util.ResourceLocator;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -181,7 +179,7 @@ public class BlastMappingUtils {
             this.end = end;
         }
 
-        public String getValueString(double position, WindowFunction windowFunction) {
+        public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
             return "Value: " + score;
             //throw new UnsupportedOperationException("Not supported yet.");
         }

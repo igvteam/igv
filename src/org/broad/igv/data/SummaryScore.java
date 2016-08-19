@@ -93,7 +93,7 @@ public class SummaryScore implements LocusScore {
         return value;
     }
 
-    public String getValueString(double position, WindowFunction wf) {
+    public String getValueString(double position, WindowFunction wf, int mouseX) {
         return "Value:  " + getScore() + (wf == null ? "" : " (" + wf.toString() + ")");
     }
 

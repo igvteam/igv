@@ -95,9 +95,10 @@ public class MethylScore implements LocusScore {
      *
      * @param position       Zero-based genome position
      * @param windowFunction
+     * @param mouseX
      * @return
      */
-    public String getValueString(double position, WindowFunction windowFunction) {
+    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
         return percentMethylated + "%" + " [" + totalCount + "]" +
                 (strand == Strand.POSITIVE ? " (+)" : (strand == Strand.NEGATIVE ? " (-)" : ""));
     }

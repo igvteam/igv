@@ -1335,7 +1335,7 @@ public class TrackMenuUtils {
                 if (f instanceof IGVFeature) {
                     String details =  f.getChr() + ":" + (f.getStart() + 1) + "-" + f.getEnd() +
                             System.getProperty("line.separator") + System.getProperty("line.separator");
-                    String valueString = ((IGVFeature) f).getValueString(location, null);
+                    String valueString = ((IGVFeature) f).getValueString(location, null, mouseX);
                     if (details != null) {
                         details += valueString;
                         details = details.replace("<br>", System.getProperty("line.separator"));

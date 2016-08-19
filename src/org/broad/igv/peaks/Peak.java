@@ -28,7 +28,6 @@ package org.broad.igv.peaks;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.WindowFunction;
-import htsjdk.tribble.Feature;
 
 /**
  * Note:  implementing tribble.Feature will allow us to index these files in the future.
@@ -135,7 +134,7 @@ public class Peak implements LocusScore, htsjdk.tribble.Feature {
 
     String valueString;
 
-    public String getValueString(double position, WindowFunction windowFunction) {
+    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
         if (valueString == null) {
             StringBuffer buf = new StringBuffer();
             buf.append("Combined Score: " + getScore());

@@ -40,7 +40,7 @@ public class NamedScore extends BasicScore {
         this.probe = probe;
     }
 
-    public String getValueString(double position, WindowFunction windowFunction) {
+    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
         StringBuffer buf = new StringBuffer();
         buf.append("Value: " + score);
         if(probe != null && probe.length() > 0) {

@@ -102,7 +102,7 @@ public class UCSCSnpFeature implements IGVFeature, htsjdk.tribble.Feature {
 
 
     @Override
-    public String getValueString(double position, WindowFunction windowFunction) {
+    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
         return getDescription();
     }
 

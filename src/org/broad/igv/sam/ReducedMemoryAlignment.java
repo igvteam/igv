@@ -33,8 +33,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
@@ -230,11 +228,11 @@ public class ReducedMemoryAlignment implements Alignment {
         return this;
     }
 
-    public String getClipboardString(double location) {
-        return getValueString(location, null);
+    public String getClipboardString(double location, int mouseX) {
+        return getValueString(location, null, mouseX);
     }
 
-    public String getValueString(double position, WindowFunction ignored) {
+    public String getValueString(double position, WindowFunction ignored, int mouseX) {
 
         StringBuffer buf = new StringBuffer();
 
@@ -355,6 +353,9 @@ public class ReducedMemoryAlignment implements Alignment {
 
     public static class ReducedMemoryAlignmentBlock implements AlignmentBlock {
 
+        private int pixelStart;
+        private int pixelEnd;
+
         ReducedMemoryAlignmentBlock(int start, int length, boolean softClipped) {
             this.start = start;
             this.length = length;
@@ -364,6 +365,19 @@ public class ReducedMemoryAlignment implements Alignment {
         int start;
         int length;
         boolean softClipped;
+
+
+        @Override
+        public void setPixelRange(int s, int e) {
+            this.pixelStart = s;
+            this.pixelEnd = e;
+        }
+
+        @Override
+        public boolean containsPixel(int x) {
+            return x >= this.pixelStart && x <= this.pixelEnd;
+        }
+
 
         @Override
         public boolean contains(int position) {
@@ -412,10 +426,6 @@ public class ReducedMemoryAlignment implements Alignment {
             return softClipped;
         }
 
-        @Override
-        public void reduce(Genome genome) {
-
-        }
 
         @Override
         public boolean hasBases() {

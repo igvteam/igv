@@ -293,9 +293,7 @@ public class GobyAlignment implements Alignment {
             bases[i] = (byte) softClippedBasesLeft.charAt(i);
             scores[i] = hasSoftClippedQuality ? softClippedQuality[i] : readQualScores[j++];
         }
-        final AlignmentBlockImpl alignmentBlock = new AlignmentBlockImpl(getChr(), position,
-                bases,
-                scores);
+        final AlignmentBlockImpl alignmentBlock = new AlignmentBlockImpl( position, bases, scores);
         alignmentBlock.setSoftClipped(true);
         blocks.add(alignmentBlock);
 
@@ -364,11 +362,11 @@ public class GobyAlignment implements Alignment {
                         leftScores = leftScores.subList(0, deletionPosition);
                         rightScores = rightScores.subList(deletionPosition, rightScores.size());
 
-                        AlignmentBlock left = new AlignmentBlockImpl(getChr(), block.getStart(),
+                        AlignmentBlock left = new AlignmentBlockImpl(block.getStart(),
                                 leftBases.toByteArray(new byte[leftBases.size()]),
                                 leftScores.toByteArray(new byte[leftScores.size()]));
 
-                        AlignmentBlock right = new AlignmentBlockImpl(getChr(), block.getStart() + leftBases.size()
+                        AlignmentBlock right = new AlignmentBlockImpl(block.getStart() + leftBases.size()
                                 + var.getFrom().length(),
                                 rightBases.toByteArray(new byte[rightBases.size()]),
                                 rightScores.toByteArray(new byte[rightScores.size()]));
@@ -395,7 +393,7 @@ public class GobyAlignment implements Alignment {
                          ByteArrayList scores) {
 
         blocks.add(
-                new AlignmentBlockImpl(getChr(), start,
+                new AlignmentBlockImpl(start,
                         bases.toByteArray(new byte[bases.size()]),
                         scores.toByteArray(new byte[scores.size()])));
         start += bases.size();
@@ -747,14 +745,15 @@ public class GobyAlignment implements Alignment {
      * The default behavior is to just copy the tooltip text.
      *
      * @param location
+     * @param mouseX
      * @return
      */
-    public String getClipboardString(double location) {
-        return getValueString(location, null);
+    public String getClipboardString(double location, int mouseX) {
+        return getValueString(location, null, mouseX);
     }
 
 
-    public String getValueString(double position, WindowFunction windowFunction) {
+    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
         //  //LOG.info("getValueString");
         MutableString buffer = new MutableString();
 

@@ -83,7 +83,7 @@ public class CompositeScore implements LocusScore {
         return value;
     }
 
-    public String getValueString(double position, WindowFunction windowFunction) {
+    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
         if (data == null) {
             return "";
         }

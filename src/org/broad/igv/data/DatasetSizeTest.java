@@ -133,7 +133,7 @@ public class DatasetSizeTest {
             return null;  //To change body of implemented methods use File | Settings | File Templates.
         }
 
-        public String getValueString(double position, WindowFunction windowFunction) {
+        public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
             return null;  //To change body of implemented methods use File | Settings | File Templates.
         }
 

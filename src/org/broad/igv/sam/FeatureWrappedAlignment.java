@@ -64,7 +64,7 @@ public class FeatureWrappedAlignment implements Alignment {
             for (Exon exon : f.getExons()) {
                 int length = exon.getLength();
                 byte[] seq = new byte[length];
-                blocks[i] = new AlignmentBlockImpl(getChr(), exon.getStart(), seq, seq);
+                blocks[i] = new AlignmentBlockImpl(exon.getStart(), seq, seq);
                 i++;
             }
         }
@@ -151,11 +151,11 @@ public class FeatureWrappedAlignment implements Alignment {
         return this;
     }
 
-    public String getClipboardString(double location) {
-        return getValueString(location, null);
+    public String getClipboardString(double location, int mouseX) {
+        return getValueString(location, null, mouseX);
     }
 
-    public String getValueString(double position, WindowFunction windowFunction) {
+    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
         return readName + "<br>Read length = " + (getEnd() - getStart());
     }
 

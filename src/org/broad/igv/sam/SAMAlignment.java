@@ -244,7 +244,7 @@ public abstract class SAMAlignment implements Alignment {
 
         if (cigarString.equals("*")) {
             alignmentBlocks = new AlignmentBlockImpl[1];
-            alignmentBlocks[0] = new AlignmentBlockImpl(getChr(), getStart(), readBases, readBaseQualities);
+            alignmentBlocks[0] = new AlignmentBlockImpl(getStart(), readBases, readBaseQualities);
             return;
         }
 
@@ -464,10 +464,10 @@ public abstract class SAMAlignment implements Alignment {
 
         AlignmentBlockImpl block;
         if (fBlockBuilder != null) {
-            block = new AlignmentBlockImpl(chr, blockStart, blockBases, blockQualities,
+            block = new AlignmentBlockImpl(blockStart, blockBases, blockQualities,
                     fBlockBuilder.getFlowSignalContext(readBases, fromIdx, nBases));
         } else {
-            block = new AlignmentBlockImpl(chr, blockStart, blockBases, blockQualities);
+            block = new AlignmentBlockImpl(blockStart, blockBases, blockQualities);
         }
 
         return block;
@@ -515,16 +515,16 @@ public abstract class SAMAlignment implements Alignment {
         }
     }
 
-    public String getClipboardString(double location) {
-        return getValueStringImpl(location, false);
+    public String getClipboardString(double location, int mouseX) {
+        return getValueStringImpl(location, mouseX, false);
     }
 
 
-    public String getValueString(double position, WindowFunction windowFunction) {
-        return getValueStringImpl(position, true);
+    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
+        return getValueStringImpl(position, mouseX, true);
     }
 
-    private String getValueStringImpl(double position, boolean truncate) {
+    private String getValueStringImpl(double position, int mouseX, boolean truncate) {
 
         int basePosition = (int) position;
         StringBuffer buf = new StringBuffer();
@@ -533,9 +533,8 @@ public abstract class SAMAlignment implements Alignment {
         // First check insertions.  Position is zero based, block coords 1 based
         if (this.insertions != null) {
             for (AlignmentBlock block : this.insertions) {
-                double insertionLeft = block.getStart() - .25;
-                double insertionRight = block.getStart() + .25;
-                if (position > insertionLeft && position < insertionRight) {
+
+                if (block.containsPixel(mouseX)) {
                     if (block.hasFlowSignals()) {
                         int offset;
                         buf = new StringBuffer();

@@ -33,34 +33,40 @@ import org.broad.igv.feature.genome.Genome;
 
 public class AlignmentBlockImpl implements AlignmentBlock {
 
-    private String chr;
     private int start;
     private byte[] bases;
     private int length = -1;
     public byte[] qualities;
-
     private boolean softClipped = false;
-
     private FlowSignalContext fContext = null;
-
-    Alignment alignment;
-    int offset;
-    int end;
+    private int pixelStart;
+    private int pixelEnd;
 
 
-    public AlignmentBlockImpl(String chr, int start, byte[] bases, byte[] qualities) {
-        this.chr = chr;
+    public AlignmentBlockImpl(int start, byte[] bases, byte[] qualities) {
+
         this.start = start;
         this.bases = bases;
         this.length = bases.length;
         this.qualities = qualities;
     }
 
-    protected AlignmentBlockImpl(String chr, int start, byte[] bases, byte[] qualities, FlowSignalContext fContext) {
-        this(chr, start, bases, qualities);
+    protected AlignmentBlockImpl(int start, byte[] bases, byte[] qualities, FlowSignalContext fContext) {
+        this(start, bases, qualities);
         if (fContext != null && fContext.getNrSignals() == bases.length) {
             this.fContext = fContext;
         }
+    }
+
+    @Override
+    public void setPixelRange(int s, int e) {
+        this.pixelStart = s;
+        this.pixelEnd = e;
+    }
+
+    @Override
+    public boolean containsPixel(int x) {
+        return x >= this.pixelStart && x <= this.pixelEnd;
     }
 
     @Override
@@ -115,11 +121,6 @@ public class AlignmentBlockImpl implements AlignmentBlock {
         return softClipped;
     }
 
-    @Override
-    public void reduce(Genome genome) {
-
-    }
-
     public void setSoftClipped(boolean softClipped) {
         this.softClipped = softClipped;
     }
@@ -144,6 +145,7 @@ public class AlignmentBlockImpl implements AlignmentBlock {
 
     /**
      * Whether this AlignmentBlock has non-null bases
+     *
      * @return
      */
     @Override
@@ -155,7 +157,7 @@ public class AlignmentBlockImpl implements AlignmentBlock {
     @Override
     public FlowSignalSubContext getFlowSignalSubContext(int offset) {
 
-        return  this.fContext == null ? null :
+        return this.fContext == null ? null :
                 new FlowSignalSubContext(this.fContext.getSignalForOffset(offset),
                         this.fContext.getBasesForOffset(offset), this.fContext.getFlowOrderIndexForOffset(offset));
     }

@@ -28,7 +28,6 @@ package org.broad.igv.data.rnai;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.track.WindowFunction;
@@ -215,9 +214,10 @@ public class RNAIGeneScore implements LocusScore {
      * Method description
      *
      * @param ignored
+     * @param mouseX
      * @return
      */
-    public String getValueString(double position, WindowFunction ignored) {
+    public String getValueString(double position, WindowFunction ignored, int mouseX) {
 
         StringBuffer buf = new StringBuffer(100);
         buf.append("<b>Gene: " + gene.getName() + "</b><br>");

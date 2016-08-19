@@ -525,11 +525,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     /**
      * Copy the contents of the popup text to the system clipboard.
      */
-    public void copyToClipboard(final TrackClickEvent e, Alignment alignment, double location) {
+    public void copyToClipboard(final TrackClickEvent e, Alignment alignment, double location, int mouseX) {
 
         if (alignment != null) {
             StringBuffer buf = new StringBuffer();
-            buf.append(alignment.getValueString(location, null).replace("<br>", "\n"));
+            buf.append(alignment.getValueString(location, null, mouseX).replace("<br>", "\n"));
             buf.append("\n");
             buf.append("Alignment start position = " + alignment.getChr() + ":" + (alignment.getAlignmentStart() + 1));
             buf.append("\n");
@@ -816,7 +816,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         } else {
             Alignment feature = getAlignmentAt(position, mouseY, frame);
             if (feature != null) {
-                return feature.getValueString(position, getWindowFunction());
+                return feature.getValueString(position, getWindowFunction(), mouseX);
             } else {
                 for (Map.Entry<Rectangle, String> groupNameEntry : groupNames.entrySet()) {
                     Rectangle r = groupNameEntry.getKey();
@@ -1823,7 +1823,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 item.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent aEvt) {
-                        copyToClipboard(te, alignment, location);
+                        copyToClipboard(te, alignment, location, me.getX());
 
                     }
                 });

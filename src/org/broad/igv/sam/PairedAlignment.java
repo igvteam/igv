@@ -178,32 +178,33 @@ public class PairedAlignment implements Alignment {
      * does not "know" from what window function it was derived
      *
      * @param windowFunction
+     * @param mouseX
      * @return
      */
-    public String getValueString(double position, WindowFunction windowFunction) {
+    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
         StringBuffer buf = new StringBuffer();
         if (secondAlignment != null) {
             buf.append("<table><tr><td valign=\"top\">");
         }
         buf.append("<b>Left alignment</b><br/>");
-        buf.append(firstAlignment.getValueString(position, windowFunction));
+        buf.append(firstAlignment.getValueString(position, windowFunction, mouseX));
         if (secondAlignment != null) {
             buf.append("</td><td valign=\"top\">");
             buf.append("<b>Right alignment</b><br/>");
-            buf.append(secondAlignment.getValueString(position, windowFunction));
+            buf.append(secondAlignment.getValueString(position, windowFunction, mouseX));
             buf.append("</td></tr></table>");
         }
         return buf.toString();
     }
 
 
-    public String getClipboardString(double position) {
+    public String getClipboardString(double position, int mouseX) {
         StringBuffer buf = new StringBuffer();
         buf.append("<b>Left alignment</b><br/>");
-        buf.append(firstAlignment.getClipboardString(position));
+        buf.append(firstAlignment.getClipboardString(position, mouseX));
         if (secondAlignment != null) {
             buf.append("<br/><b>Right alignment</b><br/>");
-            buf.append(secondAlignment.getClipboardString(position));
+            buf.append(secondAlignment.getClipboardString(position, mouseX));
         }
         return buf.toString();
     }

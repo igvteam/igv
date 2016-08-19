@@ -81,10 +81,10 @@ public class EncodePeakFeature extends BasicFeature implements SignalFeature {
     }
 
     @Override
-    public String getValueString(double position, WindowFunction ignored) {
+    public String getValueString(double position, WindowFunction ignored, int mouseX) {
 
         StringBuffer desc = new StringBuffer();
-        desc.append(super.getValueString(position, ignored));
+        desc.append(super.getValueString(position, ignored, mouseX));
 
         desc.append("<br>Signal Value: " + signal);
         desc.append("<br>pValue (-log10): " + PValue);

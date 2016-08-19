@@ -60,7 +60,7 @@ public class Segment extends BasicScore {
         return new Segment(start, extendedStart, end, extendedEnd, score, description);
     }
 
-    public String getValueString(double position, WindowFunction ignored) {
+    public String getValueString(double position, WindowFunction ignored, int mouseX) {
         String valueString = "Value: " + getScore();
         if (description != null) {
             valueString += description;

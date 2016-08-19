@@ -173,11 +173,11 @@ public class DotAlignedAlignment implements Alignment {
         return this;
     }
 
-    public String getClipboardString(double location) {
-        return getValueString(location, null);
+    public String getClipboardString(double location, int mouseX) {
+        return getValueString(location, null, mouseX);
     }
 
-    public String getValueString(double position, WindowFunction windowFunction) {
+    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
         return readName + "<br>Read length = " + (getEnd() - getStart());
     }
 

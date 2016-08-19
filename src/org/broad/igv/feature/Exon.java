@@ -263,7 +263,7 @@ public class Exon extends AbstractFeature implements IExon {
         return copy;
     }
 
-    public String getValueString(double position, WindowFunction windowFunction) {
+    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
 
         StringBuffer buffer = new StringBuffer();
 

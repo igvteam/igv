@@ -26,7 +26,6 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.util.collections.MultiMap;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +58,7 @@ public class GFFFeature extends BasicFeature {
     }
 
     @Override
-    public String getValueString(double position, WindowFunction ignored) {
+    public String getValueString(double position, WindowFunction ignored, int mouseX) {
 
         StringBuffer valueString = new StringBuffer();
 

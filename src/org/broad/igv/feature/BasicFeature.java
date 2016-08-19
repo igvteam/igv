@@ -130,7 +130,7 @@ public class BasicFeature extends AbstractFeature {
     /**
      * Defined in interface {@linkplain LocusScore}
      */
-    public String getValueString(double position, WindowFunction ignored) {
+    public String getValueString(double position, WindowFunction ignored, int mouseX) {
         StringBuffer valueString = new StringBuffer();
 
 
@@ -162,7 +162,7 @@ public class BasicFeature extends AbstractFeature {
         if (this.exons != null) {
             for (Exon exon : exons) {
                 if (posZero >= exon.getStart() && posZero < exon.getEnd()) {
-                    String exonString = exon.getValueString(position, ignored);
+                    String exonString = exon.getValueString(position, ignored, mouseX);
                     if (exonString != null && exonString.length() > 0) {
                         valueString.append("<br>--------------<br>");
                         valueString.append(exonString);
