@@ -179,7 +179,7 @@ public class Mutation implements IGVFeature {
     }
 
 
-    public String getValueString(double position, WindowFunction ignored, int mouseX) {
+    public String getValueString(double position, int mouseX, WindowFunction ignored) {
         if (refAllele != null) {
             StringBuffer buffer = new StringBuffer();
             buffer.append(getDescription());

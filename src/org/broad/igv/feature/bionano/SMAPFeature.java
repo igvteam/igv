@@ -84,7 +84,7 @@ public class SMAPFeature extends AbstractFeature {
     }
 
     @Override
-    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
+    public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
 
         StringBuffer buf = new StringBuffer();
         buf.append("<b>Type:&nbsp;" + type + "</b>");
@@ -95,7 +95,7 @@ public class SMAPFeature extends AbstractFeature {
         if(partialFeatures != null) {
             for(SMAPFeature pf : partialFeatures) {
                 buf.append("<hr>");
-                buf.append(pf.getValueString(position, windowFunction, mouseX));
+                buf.append(pf.getValueString(position, mouseX, windowFunction));
             }
         }
 

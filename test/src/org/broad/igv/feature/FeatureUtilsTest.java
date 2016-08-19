@@ -172,7 +172,7 @@ public class FeatureUtilsTest {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
+        public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

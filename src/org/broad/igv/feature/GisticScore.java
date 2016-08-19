@@ -160,7 +160,7 @@ public class GisticScore implements LocusScore {
         this.end = end;
     }
 
-    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
+    public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
         return "";
     }
 

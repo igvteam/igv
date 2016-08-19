@@ -55,7 +55,7 @@ public class ExpDiffValue extends CufflinksValue implements LocusScore {
     }
 
     @Override
-    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
+    public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
 
         StringBuilder sb = new StringBuilder();
         sb.append(getChr() + ":" + (getStart() + 1) + "-" + getEnd());

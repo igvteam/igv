@@ -187,7 +187,7 @@ public class DRangerFeature extends AbstractFeature {
 
     // site1	site2	quality	score
 
-    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
+    public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
         StringBuffer buf = new StringBuffer();
         if (index > 0) {
             buf.append("Index:   " + index + "<br>");

@@ -108,7 +108,7 @@ public class EQTLFeature extends AbstractFeature {
     }
 
     @Override
-    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
+    public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
         StringBuilder sb = new StringBuilder();
         sb.append(snp);
         sb.append("<br>" + geneId);

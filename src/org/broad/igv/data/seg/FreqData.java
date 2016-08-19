@@ -288,7 +288,7 @@ public class FreqData {
             return this;  //To change body of implemented methods use File | Settings | File Templates.
         }
 
-        public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
+        public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
             int cnt = Math.abs(Math.round(count));
             int percent = ((cnt * 100) / numberOfSamples);
             return cnt + " (" + percent + "%)";

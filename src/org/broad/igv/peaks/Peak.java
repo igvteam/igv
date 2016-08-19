@@ -134,7 +134,7 @@ public class Peak implements LocusScore, htsjdk.tribble.Feature {
 
     String valueString;
 
-    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
+    public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
         if (valueString == null) {
             StringBuffer buf = new StringBuffer();
             buf.append("Combined Score: " + getScore());

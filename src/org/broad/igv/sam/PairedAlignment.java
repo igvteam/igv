@@ -177,21 +177,21 @@ public class PairedAlignment implements Alignment {
      * in so it can be used t annotate the value.  The LocusScore object itself
      * does not "know" from what window function it was derived
      *
-     * @param windowFunction
      * @param mouseX
+     * @param windowFunction
      * @return
      */
-    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
+    public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
         StringBuffer buf = new StringBuffer();
         if (secondAlignment != null) {
             buf.append("<table><tr><td valign=\"top\">");
         }
         buf.append("<b>Left alignment</b><br/>");
-        buf.append(firstAlignment.getValueString(position, windowFunction, mouseX));
+        buf.append(firstAlignment.getValueString(position, mouseX, windowFunction));
         if (secondAlignment != null) {
             buf.append("</td><td valign=\"top\">");
             buf.append("<b>Right alignment</b><br/>");
-            buf.append(secondAlignment.getValueString(position, windowFunction, mouseX));
+            buf.append(secondAlignment.getValueString(position, mouseX, windowFunction));
             buf.append("</td></tr></table>");
         }
         return buf.toString();

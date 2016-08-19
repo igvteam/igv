@@ -529,7 +529,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         if (alignment != null) {
             StringBuffer buf = new StringBuffer();
-            buf.append(alignment.getValueString(location, null, mouseX).replace("<br>", "\n"));
+            buf.append(alignment.getValueString(location, mouseX, null).replace("<br>", "\n"));
             buf.append("\n");
             buf.append("Alignment start position = " + alignment.getChr() + ":" + (alignment.getAlignmentStart() + 1));
             buf.append("\n");
@@ -816,7 +816,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         } else {
             Alignment feature = getAlignmentAt(position, mouseY, frame);
             if (feature != null) {
-                return feature.getValueString(position, getWindowFunction(), mouseX);
+                return feature.getValueString(position, mouseX, getWindowFunction());
             } else {
                 for (Map.Entry<Rectangle, String> groupNameEntry : groupNames.entrySet()) {
                     Rectangle r = groupNameEntry.getKey();

@@ -58,7 +58,7 @@ public class GFFFeature extends BasicFeature {
     }
 
     @Override
-    public String getValueString(double position, WindowFunction ignored, int mouseX) {
+    public String getValueString(double position, int mouseX, WindowFunction ignored) {
 
         StringBuffer valueString = new StringBuffer();
 

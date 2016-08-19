@@ -65,7 +65,7 @@ public class VCFFeature implements IGVFeature, htsjdk.tribble.Feature {
         return getQuality();
     }
 
-    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
+    public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
         StringBuffer buf = new StringBuffer();
         if (id != null && id.length() > 0) {
             buf.append(id + "<br>");

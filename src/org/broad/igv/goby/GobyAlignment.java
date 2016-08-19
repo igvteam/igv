@@ -749,11 +749,11 @@ public class GobyAlignment implements Alignment {
      * @return
      */
     public String getClipboardString(double location, int mouseX) {
-        return getValueString(location, null, mouseX);
+        return getValueString(location, mouseX, null);
     }
 
 
-    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
+    public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
         //  //LOG.info("getValueString");
         MutableString buffer = new MutableString();
 

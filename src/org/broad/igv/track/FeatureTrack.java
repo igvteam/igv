@@ -440,7 +440,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                     }
 
                     IGVFeature igvFeature = (IGVFeature) feature;
-                    String vs = igvFeature.getValueString(position, null, mouseX);
+                    String vs = igvFeature.getValueString(position, mouseX, null);
                     buf.append(vs);
 
                     if (IGV.getInstance().isShowDetailsOnClick()) {

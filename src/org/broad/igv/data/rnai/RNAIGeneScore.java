@@ -213,11 +213,11 @@ public class RNAIGeneScore implements LocusScore {
     /**
      * Method description
      *
-     * @param ignored
      * @param mouseX
+     * @param ignored
      * @return
      */
-    public String getValueString(double position, WindowFunction ignored, int mouseX) {
+    public String getValueString(double position, int mouseX, WindowFunction ignored) {
 
         StringBuffer buf = new StringBuffer(100);
         buf.append("<b>Gene: " + gene.getName() + "</b><br>");

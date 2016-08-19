@@ -347,7 +347,7 @@ public class PeakTrack extends AbstractTrack {
                 LocusScore score = getLocusScoreAt(scores, position, frame);
                 if (score != null) {
                     foundValue = true;
-                    buf.append(score.getValueString(position, getWindowFunction(), mouseX));
+                    buf.append(score.getValueString(position, mouseX, getWindowFunction()));
                     if (showSignals) {
                         buf.append("<br>");
                     }

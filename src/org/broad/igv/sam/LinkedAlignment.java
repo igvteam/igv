@@ -134,17 +134,17 @@ public class LinkedAlignment implements Alignment {
     }
 
     @Override
-    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
+    public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
 
         if (alignments.size() == 1) {
-            return alignments.get(0).getValueString(position, windowFunction, mouseX);
+            return alignments.get(0).getValueString(position, mouseX, windowFunction);
         } else {
 
             // First check to see if we are over an insertion.   Insertions take precedence.
             for(Alignment a : alignments) {
                 for(AlignmentBlock block : a.getInsertions()) {
                     if(block.containsPixel(mouseX)) {
-                        return a.getValueString(position, windowFunction, mouseX);
+                        return a.getValueString(position, mouseX, windowFunction);
                     }
                 }
             }
@@ -173,7 +173,7 @@ public class LinkedAlignment implements Alignment {
             for (Alignment a : alignments) {
                 if (a.contains(position)) {
                     buffer.append("<hr>");
-                    buffer.append(a.getValueString(position, windowFunction, mouseX));
+                    buffer.append(a.getValueString(position, mouseX, windowFunction));
                 }
             }
 

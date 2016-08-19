@@ -179,7 +179,7 @@ public class BlastMappingUtils {
             this.end = end;
         }
 
-        public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
+        public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
             return "Value: " + score;
             //throw new UnsupportedOperationException("Not supported yet.");
         }

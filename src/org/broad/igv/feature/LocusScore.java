@@ -48,10 +48,10 @@ public interface LocusScore extends htsjdk.tribble.Feature {
      * does not "know" from what window function it was derived
      *
      * @param position       Zero-based genome position
-     * @param windowFunction
      * @param mouseX
+     * @param windowFunction
      * @return
      */
-    public String getValueString(double position, WindowFunction windowFunction, int mouseX);
+    public String getValueString(double position, int mouseX, WindowFunction windowFunction);
 
 }

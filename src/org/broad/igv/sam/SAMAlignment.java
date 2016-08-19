@@ -520,7 +520,7 @@ public abstract class SAMAlignment implements Alignment {
     }
 
 
-    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
+    public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
         return getValueStringImpl(position, mouseX, true);
     }
 

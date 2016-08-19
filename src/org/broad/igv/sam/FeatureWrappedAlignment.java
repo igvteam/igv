@@ -152,10 +152,10 @@ public class FeatureWrappedAlignment implements Alignment {
     }
 
     public String getClipboardString(double location, int mouseX) {
-        return getValueString(location, null, mouseX);
+        return getValueString(location, mouseX, null);
     }
 
-    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
+    public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
         return readName + "<br>Read length = " + (getEnd() - getStart());
     }
 

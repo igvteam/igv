@@ -69,12 +69,12 @@ public class SMAPPairedFeature extends AbstractFeature {
 
 
     @Override
-    public String getValueString(double position, WindowFunction windowFunction, int mouseX) {
+    public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
 
         StringBuffer buf = new StringBuffer();
-        buf.append(feature1.getValueString(position, windowFunction, mouseX));
+        buf.append(feature1.getValueString(position, mouseX, windowFunction));
         buf.append("<hr>");
-        buf.append(feature2.getValueString(position, windowFunction, mouseX));
+        buf.append(feature2.getValueString(position, mouseX, windowFunction));
         return buf.toString();
 
     }
