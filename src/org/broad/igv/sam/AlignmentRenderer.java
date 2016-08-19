@@ -631,6 +631,8 @@ public class AlignmentRenderer implements FeatureRenderer {
             return;
         }
 
+        boolean flagLargeIndels = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_LARGE_INDELS);
+        int largeInsertionsThreshold = prefs.getAsInt(PreferenceManager.SAM_LARGE_INDELS_THRESHOLD);
         boolean hideSmallIndelsBP = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_BP);
         int indelThresholdBP = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDEL_BP_THRESHOLD);
         boolean hideSmallIndelsPixel = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_PIXEL);
@@ -728,8 +730,9 @@ public class AlignmentRenderer implements FeatureRenderer {
 
                 gapGraphics.drawLine(blockPxEnd + 1, y + h / 2, gapPxEnd, y + h / 2);
 
+
                 // Label the size of the deletion if it is "large" and the label fits.
-                if (renderOptions.isFlagLargeIndels() && gapChromWidth > renderOptions.getLargeInsertionsThreshold()) {
+                if (flagLargeIndels && gapChromWidth > largeInsertionsThreshold) {
                     drawLargeIndelLabel(largeIndelGraphics, false, Globals.DECIMAL_FORMAT.format(gapChromWidth), (int) ((blockPxEnd + gapPxEnd) / 2), y, h, gapPxEnd - blockPxEnd - 2, null);
                 }
 
@@ -1072,6 +1075,9 @@ public class AlignmentRenderer implements FeatureRenderer {
         AlignmentBlock[] insertions = alignment.getInsertions();
         double origin = context.getOrigin();
         double locScale = context.getScale();
+        boolean flagLargeIndels = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_LARGE_INDELS);
+        int largeInsertionsThreshold = prefs.getAsInt(PreferenceManager.SAM_LARGE_INDELS_THRESHOLD);
+
         if (insertions != null) {
 
             boolean hideSmallIndelsBP = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_BP);
@@ -1095,7 +1101,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
                 if ((!hideSmallIndelsBP || bpWidth >= indelThresholdBP) &&
                         (!hideSmallIndelsPixel || pxWidthExact >= indelThresholdPixel)) {
-                    if (renderOptions.isFlagLargeIndels() && bpWidth > renderOptions.getLargeInsertionsThreshold()) {
+                    if (flagLargeIndels && bpWidth > largeInsertionsThreshold) {
                         drawLargeIndelLabel(context.getGraphics2D("INDEL_LABEL"), true, Globals.DECIMAL_FORMAT.format(bpWidth), x - 1, y, h, (int) pxWidthExact, aBlock);
                     } else {
 

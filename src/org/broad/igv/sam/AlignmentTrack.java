@@ -1150,10 +1150,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         private String linkByTag;
         @XmlAttribute
         private boolean linkedReads;
-        @XmlAttribute
-        private boolean flagLargeIndels;
-        @XmlAttribute
-        private int largeInsertionsThreshold;
+
 
         @XmlAttribute
         boolean quickConsensusMode;
@@ -1197,10 +1194,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             peStats = new HashMap<String, PEStats>();
 
-            flagLargeIndels = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_LARGE_INDELS);
-            largeInsertionsThreshold = prefs.getAsInt(PreferenceManager.SAM_LARGE_INDELS_THRESHOLD);
-
-            linkedReads = prefs.getAsBoolean(PreferenceManager.SAM_LINK_READS);
+           linkedReads = prefs.getAsBoolean(PreferenceManager.SAM_LINK_READS);
             linkByTag = prefs.get(PreferenceManager.SAM_LINK_TAG);
         }
 
@@ -1332,14 +1326,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         public GroupOption getGroupByOption() {
             return groupByOption;
-        }
-
-        public boolean isFlagLargeIndels() {
-            return flagLargeIndels;
-        }
-
-        public int getLargeInsertionsThreshold() {
-            return largeInsertionsThreshold;
         }
 
         public boolean isLinkedReads() {
