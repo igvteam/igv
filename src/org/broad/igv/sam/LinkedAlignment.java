@@ -139,6 +139,16 @@ public class LinkedAlignment implements Alignment {
         if (alignments.size() == 1) {
             return alignments.get(0).getValueString(position, windowFunction, mouseX);
         } else {
+
+            // First check to see if we are over an insertion.   Insertions take precedence.
+            for(Alignment a : alignments) {
+                for(AlignmentBlock block : a.getInsertions()) {
+                    if(block.containsPixel(mouseX)) {
+                        return a.getValueString(position, windowFunction, mouseX);
+                    }
+                }
+            }
+
             StringBuffer buffer = new StringBuffer();
             buffer.append("Linking id (" + tag + ") = " + this.name);
             if (this.haplotype != null) buffer.append("<br>Haplotype = " + this.haplotype);

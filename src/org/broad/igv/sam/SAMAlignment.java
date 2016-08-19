@@ -558,11 +558,19 @@ public abstract class SAMAlignment implements Alignment {
                         //  buf.append("----------------------"); // NB: no <br> required
                         return buf.toString();
                     } else {
-                        byte[] bases = block.getBases();
 
-                        return bases == null ?
-                                "Insertion: " + block.getLength() + " bases" :
-                                "Insertion: " + new String(block.getBases());
+                        byte[] bases = block.getBases();
+                        if (bases == null) {
+                            return "Insertion: " + block.getLength() + " bases";
+                        } else {
+                            if (bases.length < 50) {
+                                return "Insertion: " + new String(bases);
+                            } else {
+                                int len = bases.length;
+                                return "Insertion: " + new String(Arrays.copyOfRange(bases, 0, 25)) + "..." +
+                                        new String(Arrays.copyOfRange(bases, len - 25, len));
+                            }
+                        }
                     }
                 }
             }
@@ -723,6 +731,7 @@ public abstract class SAMAlignment implements Alignment {
 
 
     // chr21,26002386,-,11785S1115M,60,0;chr21,26001844,+,1115S111M1D41M1D394M11239S,60,4;
+
     private String getSupplAlignmentString(String sa) {
 
         StringBuffer buf = new StringBuffer();
