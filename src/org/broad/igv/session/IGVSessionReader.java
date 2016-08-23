@@ -321,6 +321,7 @@ public class IGVSessionReader implements SessionReader {
         }
 
         this.rootPath = sessionPath;
+
         processRootNode(session, nodes.item(0), additionalInformation, sessionPath);
 
         // Add tracks not explicitly allocated to panels.  It is legal to define sessions with the Resources
@@ -397,7 +398,7 @@ public class IGVSessionReader implements SessionReader {
                 if (!genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
                     String genomePath = genomeId;
                     if (!ParsingUtils.pathExists(genomePath)) {
-                        genomePath = FileUtils.getAbsolutePath(session.getPath(), genomeId);
+                        genomePath = getAbsolutePath(genomeId, rootPath, session.getPath());
                     }
                     if (ParsingUtils.pathExists(genomePath)) {
                         try {
@@ -559,9 +560,11 @@ public class IGVSessionReader implements SessionReader {
     }
 
     private void processResources(Session session, Element element, HashMap additionalInformation, String rootPath, String alternateRootPath) {
+
         dataFiles = new ArrayList();
         missingDataFiles = new ArrayList();
         NodeList elements = element.getChildNodes();
+
         process(session, elements, additionalInformation, rootPath, alternateRootPath);
 
         if (missingDataFiles.size() > 0) {

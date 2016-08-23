@@ -66,10 +66,10 @@ public class UCSCSessionReader implements SessionReader {
      *
      * @param inputStream
      * @param session
-     * @param sessionName
+     * @param sessionPath
      * @throws IOException
      */
-    public void loadSession(InputStream inputStream, Session session, String sessionName) throws IOException {
+    public void loadSession(InputStream inputStream, Session session, String sessionPath) throws IOException {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 
