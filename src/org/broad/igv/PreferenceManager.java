@@ -1104,7 +1104,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_BASE_QUALITY_MIN, "5");
         defaultValues.put(SAM_BASE_QUALITY_MAX, "20");
         defaultValues.put(SAM_FILTER_URL, null);
-        defaultValues.put(SAM_HIDDEN_TAGS, "SA,MD");
+        defaultValues.put(SAM_HIDDEN_TAGS, "SA,MD,XA,RG");
         defaultValues.put(SAM_QUALITY_THRESHOLD, "0");
         defaultValues.put(SAM_ALLELE_THRESHOLD, "0.2f");
         defaultValues.put(SAM_ALLELE_USE_QUALITY, "true");
