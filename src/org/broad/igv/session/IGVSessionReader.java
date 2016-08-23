@@ -397,7 +397,7 @@ public class IGVSessionReader implements SessionReader {
                 if (!genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
                     String genomePath = genomeId;
                     if (!ParsingUtils.pathExists(genomePath)) {
-                        genomePath = FileUtils.getAbsolutePath(session.getPath(), genomeId);
+                        genomePath = getAbsolutePath(genomeId, rootPath, session.getPath());
                     }
                     if (ParsingUtils.pathExists(genomePath)) {
                         try {
