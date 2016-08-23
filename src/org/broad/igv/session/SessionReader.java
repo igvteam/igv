@@ -33,5 +33,5 @@ import java.io.InputStream;
  * @date 1/12/12
  */
 public interface SessionReader {
-    void loadSession(InputStream inputStream, Session session, String sessionName) throws IOException;
+    void loadSession(InputStream inputStream, Session session, String sessionPath) throws IOException;
 }
