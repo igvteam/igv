@@ -43,7 +43,7 @@ public class IGVEventBus {
     private static IGVEventBus instance;
 
     public static synchronized IGVEventBus getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             instance = new IGVEventBus();
         }
         return instance;
@@ -74,12 +74,13 @@ public class IGVEventBus {
     }
 
     public void post(Object event) {
-        Set<IGVEventObserver> observerSet = observerMap.get(event.getClass());
-        if(observerSet == null) {
+        Set<IGVEventObserver> observerSet = observerMap.get(event.getClass());  // Make a copy in case original is modified during loop
+        if (observerSet == null) {
             log.info("No observers for event type: " + event.getClass());
-        }
-        else {
-            for(IGVEventObserver observer : observerSet) {
+        } else {
+            // Make a copy in case original is modified during loop
+            Collection<IGVEventObserver> observers = new ArrayList<>(observerSet);
+            for (IGVEventObserver observer : observers) {
                 observer.receiveEvent(event);
             }
         }
