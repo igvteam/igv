@@ -718,7 +718,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
 
                 // Draw the gap line.
-                Graphics2D gapGraphics = g;
+                Graphics2D gapGraphics = context.getGraphics2D("GAP");
                 if (gap.getType() == SAMAlignment.UNKNOWN) {
                     gapGraphics.setColor(unknownGapColor);
                 } else if (gap.getType() == SAMAlignment.SKIPPED_REGION) {
