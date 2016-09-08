@@ -90,7 +90,7 @@ public class MAFtoSAM {
         addSATags(unsortedOutput, outputFile, sequenceDictionary);
 
 
-       unsortedOutput.deleteOnExit();
+        unsortedOutput.deleteOnExit();
 
     }
 
@@ -113,6 +113,7 @@ public class MAFtoSAM {
 
         List<String[]> chimericAlignments = new ArrayList<>();
 
+        // Records should now be sorted by read name
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("@")) {
                 out.println(line);
@@ -152,6 +153,24 @@ public class MAFtoSAM {
             out.println();
         } else {
 
+            // Mark all but one alignment in the list as primary
+            int primaryRecordIndex = 0;
+            int longestSequence = chimericAlignments.get(0)[9].length();
+            for(int i=1; i<chimericAlignments.size(); i++) {
+                String[] thisRecord = chimericAlignments.get(i);
+                int seqLength = thisRecord[9].length();
+                if(seqLength > longestSequence) {
+                    longestSequence = seqLength;
+                    primaryRecordIndex = i;
+                }
+            }
+
+            for(int i=0; i<chimericAlignments.size(); i++) {
+                if(i == primaryRecordIndex) continue;
+                String[] thisRecord = chimericAlignments.get(i);
+                thisRecord[1] = String.valueOf(Integer.parseInt(thisRecord[1]) | NOT_PRIMARY_ALIGNMENT_FLAG);
+            }
+
             for (int i = 0; i < chimericAlignments.size(); i++) {
 
                 String[] thisRecord = chimericAlignments.get(i);
@@ -188,7 +207,7 @@ public class MAFtoSAM {
 
                 printRecord(out, thisRecord);
 
-                out.print("\t" +saTag.toString());
+                out.print("\t" + saTag.toString());
 
                 out.println();
 
@@ -213,10 +232,24 @@ public class MAFtoSAM {
         SequenceLine queryLine;
         byte[] refBytes = null;
         String chr = null;
+        float score = -1;
 
         while ((line = reader.readLine()) != null) {
             if (line.trim().length() == 0) {
                 return; // return someething
+            }
+            if (line.startsWith("a")) {
+                score = -1; // Reset score
+                String[] tokens = Globals.whitespacePattern.split(line);
+                for (String token : tokens) {
+                    if (token.startsWith("score=")) {
+                        try {
+                            score = Float.parseFloat(token.substring(6));
+                        } catch (NumberFormatException e) {
+                            System.err.println("Could not parse score: " + token);
+                        }
+                    }
+                }
             }
             if (line.startsWith("s ")) {
 
@@ -304,6 +337,9 @@ public class MAFtoSAM {
                             rnext + "\t" + pnext + "\t" + tlen + "\t" + seq + "\t" + qual + "\tNM:i:" + nm);
                     if (barcode != null) {
                         out.print("\tBC:Z:" + barcode);
+                    }
+                    if(score > 0) {
+                        out.print("\tsc:f:" + String.valueOf(score));
                     }
                     out.println();
                 }
