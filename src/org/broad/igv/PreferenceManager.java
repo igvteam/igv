@@ -79,15 +79,6 @@ public class PreferenceManager implements PropertyManager {
 
     public static final String UNLOAD_ON_GENOME_CHANGE = "UNLOAD_ON_GENOME_CHANGE";
 
-    /**
-     * Added by Chantal Roth, June 25th 2012
-     */
-    public static final String IONTORRENT_FLOWDIST_HIDE_FIRST_HP = "IONTORRENT.FLOWDIST_HIDE_FIRST_HP";
-    public static final String IONTORRENT_FLOWDIST_BINSIZE = "IONTORRENT.FLOWDIST_BINSIZE";
-    public static final String IONTORRENT_FLOWDIST_CHARTTYPE = "IONTORRENT.FLOWDIST_CHARTTYPE";
-    public static final String IONTORRENT_SERVER = "IONTORRENT.SERVER";
-    public static final String IONTORRENT_RESULTS = "IONTORRENT.RESULTS";
-
     public static final String SAM_ALLELE_THRESHOLD = "SAM.ALLELE_THRESHOLD";
     public static final String SAM_ALLELE_USE_QUALITY = "SAM.ALLELE_USE_QUALITY";
     public static final String SAM_QUALITY_THRESHOLD = "SAM.QUALITY_THRESHOLD";
@@ -1065,12 +1056,6 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SHOW_SINGLE_TRACK_PANE_KEY, "false");
         defaultValues.put(SHOW_EXPAND_ICON, "false");
         defaultValues.put(SHOW_DEFAULT_TRACK_ATTRIBUTES, "false");
-
-        defaultValues.put(IONTORRENT_FLOWDIST_HIDE_FIRST_HP, "true");
-        defaultValues.put(IONTORRENT_FLOWDIST_BINSIZE, "15");
-        defaultValues.put(IONTORRENT_FLOWDIST_CHARTTYPE, "LINE");
-        defaultValues.put(IONTORRENT_SERVER, "ioneast.ite");
-        defaultValues.put(IONTORRENT_RESULTS, "/results/analysis/output/Home/");
 
         defaultValues.put(CHART_DRAW_TOP_BORDER, "false");
         defaultValues.put(CHART_DRAW_BOTTOM_BORDER, "false");

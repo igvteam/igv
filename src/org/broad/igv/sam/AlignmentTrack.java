@@ -25,13 +25,7 @@
 
 package org.broad.igv.sam;
 
-//~--- non-JDK imports --------------------------------------------------------
 
-import com.iontorrent.data.FlowDistribution;
-import com.iontorrent.data.ReadInfo;
-import com.iontorrent.utils.LocationListener;
-import com.iontorrent.utils.SimpleDialog;
-import com.iontorrent.views.FlowSignalDistributionPanel;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -539,143 +533,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             clipboard.setContents(stringSelection, null);
         }
 
-    }
-
-    /**
-     * Copy the contents of the popup text to the system clipboard.
-     */
-    public void copyFlowSignalDistribution(final TrackClickEvent e, int location) {
-        ArrayList<FlowDistribution> dists = getFlowSignalDistribution(e.getFrame(), location);
-        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        String json = "";
-        for (FlowDistribution dist : dists) {
-            json += dist.toJson() + "\n";
-        }
-        clipboard.setContents(new StringSelection(json), null);
-    }
-
-    /**
-     * by default, returns both for forward and backward strand
-     */
-    private ArrayList<FlowDistribution> getFlowSignalDistribution(ReferenceFrame frame, int location) {
-        return getFlowSignalDistribution(frame, location, true, true);
-    }
-
-    private ArrayList<FlowDistribution> getFlowSignalDistribution(ReferenceFrame frame, int location, boolean forward, boolean reverse) {
-        // one for each base!
-        ArrayList<TreeMap<Short, Integer>> alleletrees = new ArrayList<TreeMap<Short, Integer>>();
-
-        int nrflows = 0;
-        ArrayList<FlowDistribution> alleledist = new ArrayList<FlowDistribution>();
-        String bases = "";
-        // also store information on read and position
-
-
-        ArrayList<ArrayList<ReadInfo>> allelereadinfos = new ArrayList<ArrayList<ReadInfo>>();
-        AlignmentInterval interval = dataManager.getLoadedInterval(frame.getCurrentRange());
-        Iterator<Alignment> alignmentIterator = interval.getAlignmentIterator();
-        while (alignmentIterator.hasNext()) {
-            Alignment alignment = alignmentIterator.next();
-            if ((alignment.isNegativeStrand() && !reverse) || (!alignment.isNegativeStrand() && !forward)) {
-                continue;
-            }
-            if (!alignment.contains(location)) {
-                continue;
-            }
-            // we don't want the beginning or the end of the alignment! HP might might give misleading results
-            if (alignment.getAlignmentStart() == location || alignment.getAlignmentEnd() == location) {
-                log.info(location + " for read " + alignment.getReadName() + " is at an end, not taking it");
-                continue;
-            }
-            // also throw away positions near the end if we have the same base until the end if the user preference is set that way
-            boolean hideFirstHPs = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.IONTORRENT_FLOWDIST_HIDE_FIRST_HP);
-
-            if (hideFirstHPs) {
-                char baseatpos = (char) alignment.getBase(location);
-                boolean hp = true;
-                for (int pos = alignment.getAlignmentStart(); pos < location; pos++) {
-                    if ((char) alignment.getBase(pos) != baseatpos) {
-                        hp = false;
-                        break;
-                    }
-                }
-                if (hp) {
-                    log.info("Got all same bases " + baseatpos + " for read " + alignment.getReadName() + " at START.");
-                    continue;
-                }
-                hp = true;
-                for (int pos = location + 1; pos < alignment.getAlignmentEnd(); pos++) {
-                    if ((char) alignment.getBase(pos) != baseatpos) {
-                        hp = false;
-                        break;
-                    }
-                }
-                if (hp) {
-                    log.info("Got all same bases " + baseatpos + " for read " + alignment.getReadName() + " at END");
-                    continue;
-                }
-            }
-            AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
-            for (int i = 0; i < blocks.length; i++) {
-                AlignmentBlock block = blocks[i];
-                int posinblock = (int) location - block.getStart();
-                if (!block.contains((int) location) || !block.hasFlowSignals()) {
-                    continue;
-                }
-
-                int flownr = block.getFlowSignalSubContext(posinblock).getFlowOrderIndex();
-                nrflows++;
-                short flowSignal = block.getFlowSignalSubContext(posinblock).getCurrentSignal();
-
-                char base = (char) block.getBase(posinblock);
-
-                int whichbase = bases.indexOf(base);
-                TreeMap<Short, Integer> map = null;
-                ArrayList<ReadInfo> readinfos = null;
-                if (whichbase < 0) {
-                    bases += base;
-                    map = new TreeMap<Short, Integer>();
-                    alleletrees.add(map);
-                    readinfos = new ArrayList<ReadInfo>();
-                    allelereadinfos.add(readinfos);
-                } else {
-                    map = alleletrees.get(whichbase);
-                    readinfos = allelereadinfos.get(whichbase);
-                }
-                ReadInfo readinfo = new ReadInfo(alignment.getReadName(), flownr, flowSignal, base);
-                readinfos.add(readinfo);
-                if (map.containsKey(flowSignal)) {
-                    // increment
-                    map.put(flowSignal, map.get(flowSignal) + 1);
-                } else {
-                    // insert
-                    map.put(flowSignal, 1);
-                }
-            }
-        }
-
-        String locus = Locus.getFormattedLocusString(frame.getChrName(), (int) location, (int) location);
-
-        int which = 0;
-        for (TreeMap<Short, Integer> map : alleletrees) {
-            String name = "";
-            if (forward && reverse) {
-                name += "both strand";
-            } else if (forward) {
-                name += "forward strand";
-            } else {
-                name += "reverse strand";
-            }
-            char base = bases.charAt(which);
-            name += ", " + base + ", " + nrflows + " flows";
-            String info = locus + ", " + bases;
-
-            FlowDistribution dist = new FlowDistribution(location, nrflows, map, name, base, forward, reverse, info);
-            dist.setReadInfos(allelereadinfos.get(which));
-            alleledist.add(dist);
-            which++;
-        }
-        return alleledist;
     }
 
     /**
@@ -1363,11 +1220,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             add(TrackMenuUtils.getTrackRenameItem(tracks));
             addCopyToClipboardItem(e);
 
-            if (ionTorrent) {
-                addCopyFlowSignalDistributionToClipboardItem(e);
-                addIonTorrentAuxiliaryViews(e);
-            }
-
             if (dataManager.isTenX()) {
                 addTenXItems();
             } else {
@@ -1557,7 +1409,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         public void addGroupMenuItem(final TrackClickEvent te) {//ReferenceFrame frame) {
             final MouseEvent me = te.getMouseEvent();
-            final ReferenceFrame frame = te.getFrame();
+            ReferenceFrame frame = te.getFrame();
+            if(frame == null) {
+                frame = FrameManager.getDefaultFrame();  // Clicked over name panel, not a specific frame
+            }
             final Range range = frame.getCurrentRange();
             final String chrom = range.getChr();
             final int chromStart = (int) frame.getChromosomePosition(me.getX());
@@ -1821,25 +1676,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             add(item);
         }
 
-        public void addCopyFlowSignalDistributionToClipboardItem(final TrackClickEvent te) {
-            final MouseEvent me = te.getMouseEvent();
-            JMenuItem item = new JMenuItem("Copy the flow signal distrubtion for this base to the clipboard");
-            final ReferenceFrame frame = te.getFrame();
-            if (frame == null) {
-                item.setEnabled(false);
-            } else {
-                final int location = (int) (frame.getChromosomePosition(me.getX()));
-
-                // Change track height by attribute
-                item.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent aEvt) {
-                        copyFlowSignalDistribution(te, location);
-                    }
-                });
-            }
-            add(item);
-        }
 
         public void addViewAsPairsMenuItem() {
             final JMenuItem item = new JCheckBoxMenuItem("View as pairs");
@@ -2228,68 +2064,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         }
 
-        private void addIonTorrentAuxiliaryViews(final TrackClickEvent e) {
-
-            JMenu groupMenu = new JMenu("View flow signal distrubtion for this base for");
-            ButtonGroup group = new ButtonGroup();
-
-
-            JCheckBoxMenuItem itemb = new JCheckBoxMenuItem("forward and reverse (2 data series)");
-            groupMenu.add(itemb);
-            group.add(itemb);
-            itemb.setSelected(true);
-            itemb.setFont(itemb.getFont().deriveFont(Font.BOLD));
-
-            JCheckBoxMenuItem item = new JCheckBoxMenuItem("both strands combined");
-            groupMenu.add(item);
-            group.add(item);
-
-            JCheckBoxMenuItem itemf = new JCheckBoxMenuItem("forward strand only");
-            groupMenu.add(itemf);
-            group.add(itemf);
-
-            JCheckBoxMenuItem itemr = new JCheckBoxMenuItem("reverse strand only");
-            groupMenu.add(itemr);
-            group.add(itemr);
-
-            final ReferenceFrame frame = e.getFrame();
-            if (frame == null) {
-                item.setEnabled(false);
-                itemf.setEnabled(false);
-                itemr.setEnabled(false);
-                itemb.setEnabled(false);
-            } else {
-                final int location = (int) (frame.getChromosomePosition(e.getMouseEvent().getX()));
-                // Change track height by attribute
-                item.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent aEvt) {
-                        showFlowSignalDistribution(location, e.getFrame(), true, true);
-                    }
-                });
-                itemf.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent aEvt) {
-                        showFlowSignalDistribution(location, e.getFrame(), true, false);
-                    }
-                });
-                itemr.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent aEvt) {
-                        showFlowSignalDistribution(location, e.getFrame(), false, true);
-                    }
-                });
-                itemb.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent aEvt) {
-                        showFlowSignalDistribution(location, e.getFrame(), false, false);
-                    }
-                });
-            }
-            add(groupMenu);
-        }
-
-
         public void addTenXItems() {
 
             addSeparator();
@@ -2405,54 +2179,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
     }
 
-    /**
-     * if neither forward nor reverse, create 2 charts in one
-     */
-    private void showFlowSignalDistribution(final int location, final ReferenceFrame frame, final boolean forward, final boolean reverse) {
-        FlowDistribution[] distributions = getFlowDistributions(forward, reverse, frame, location);
-
-        final FlowSignalDistributionPanel distributionPanel = new FlowSignalDistributionPanel(distributions);
-        LocationListener listener = new LocationListener() {
-
-            @Override
-            public void locationChanged(int newLocation) {
-                log.info("Got new location from panel: " + newLocation + ", (old location was: " + location + ")");
-                FlowDistribution[] newdist = getFlowDistributions(forward, reverse, frame, newLocation);
-                distributionPanel.setDistributions(newdist);
-                //frame.jumpTo(frame.getChrName(), location, location);
-
-                frame.centerOnLocation(newLocation + 1);
-                IGV.repaintPanelsHeadlessSafe();
-            }
-        };
-        distributionPanel.setListener(listener);
-
-        // listen to left/right mouse clicks from panel and navigate accordingly
-        SimpleDialog dia = new SimpleDialog("Flow Signal Distribution", distributionPanel, 800, 500);
-    }
-
-    private FlowDistribution[] getFlowDistributions(boolean forward, boolean reverse, ReferenceFrame frame, int location) {
-        FlowDistribution distributions[] = null;
-        if (forward || reverse) {
-            ArrayList<FlowDistribution> dists = getFlowSignalDistribution(frame, location, forward, reverse);
-            distributions = new FlowDistribution[dists.size()];
-            for (int i = 0; i < dists.size(); i++) {
-                distributions[i] = dists.get(i);
-            }
-        } else {
-            ArrayList<FlowDistribution> distsf = getFlowSignalDistribution(frame, location, true, false);
-            ArrayList<FlowDistribution> distsr = getFlowSignalDistribution(frame, location, false, true);
-            distributions = new FlowDistribution[distsf.size() + distsr.size()];
-            for (int i = 0; i < distsf.size(); i++) {
-                distributions[i] = distsf.get(i);
-            }
-            for (int i = 0; i < distsr.size(); i++) {
-                distributions[i + distsf.size()] = distsr.get(i);
-            }
-
-        }
-        return distributions;
-    }
 
     @SubtlyImportant
     private static AlignmentTrack getNextTrack() {

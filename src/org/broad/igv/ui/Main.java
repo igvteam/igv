@@ -117,7 +117,7 @@ public class Main {
                 log.error("'" + dir.getAbsolutePath() + "' is not a directory");
             }
         } else {
-          log.error("'" + dir.getAbsolutePath() + "' not found");
+            log.error("'" + dir.getAbsolutePath() + "' not found");
         }
 
     }
@@ -480,11 +480,7 @@ public class Main {
                 String key = arg.substring(0, eq);
                 String val = arg.substring(eq + 1);
 
-                if (key.equalsIgnoreCase("server")) {
-                    PreferenceManager.getInstance().put(PreferenceManager.IONTORRENT_SERVER, val);
-                    log.info("Got server: " + key + "=" + val);
-                    return null;
-                } else if (key.equalsIgnoreCase("sessionURL") || key.equalsIgnoreCase("file")) {
+                if (key.equalsIgnoreCase("sessionURL") || key.equalsIgnoreCase("file")) {
 
                     if (val.endsWith(".xml") || val.endsWith(".php") || val.endsWith(".php3")
                             || val.endsWith(".session")) {

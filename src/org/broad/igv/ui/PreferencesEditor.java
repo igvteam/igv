@@ -341,20 +341,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         label27 = new JLabel();
         label35 = new JLabel();
         proxyWhitelistTextArea = new JTextField();
-        panel28 = new JScrollPane();
-        ionTorrentPanel = new JPanel();
-        panel6 = new JPanel();
-        hideFirstHP = new JCheckBox();
-        binSizeText = new JTextField();
-        label28 = new JLabel();
-        label29 = new JLabel();
-        radioLine = new JRadioButton();
-        radioArea = new JRadioButton();
-        radioBar = new JRadioButton();
-        radioStacked = new JRadioButton();
-        panel7 = new JPanel();
-        label30 = new JLabel();
-        textServer = new JTextField();
         panel30 = new JScrollPane();
         dbPanel = new JPanel();
         label20 = new JLabel();
@@ -2013,137 +1999,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
             }
             tabbedPane.addTab("Proxy", panel27);
 
-            //======== panel28 ========
-            {
-
-                //======== ionTorrentPanel ========
-                {
-                    ionTorrentPanel.setLayout(new BoxLayout(ionTorrentPanel, BoxLayout.Y_AXIS));
-
-                    //======== panel6 ========
-                    {
-                        panel6.setBorder(new TitledBorder("Flow signal distribution chart options"));
-                        panel6.setLayout(null);
-
-                        //---- hideFirstHP ----
-                        hideFirstHP.setText("Skip flow signals for homo polymers at start or end of read (including HP of size 1)");
-                        hideFirstHP.setToolTipText("Discards flow signals from HP at beginning or end of reads (including HP of size 1), in order to not skew the results due to short reads");
-                        hideFirstHP.setSelected(true);
-                        hideFirstHP.addActionListener(e -> {
-			showJunctionTrackCBActionPerformed(e);
-			hideFirstHPActionPerformed(e);
-		});
-                        panel6.add(hideFirstHP);
-                        hideFirstHP.setBounds(new Rectangle(new Point(5, 25), hideFirstHP.getPreferredSize()));
-
-                        //---- binSizeText ----
-                        binSizeText.setToolTipText("The size of the bins by which the data in the chart is grouped. Small bin size means small granularity, large bin size means smoother chart");
-                        binSizeText.setText("15");
-                        binSizeText.addActionListener(e -> {
-			junctionFlankingTextFieldActionPerformed(e);
-			binSizeTextActionPerformed(e);
-			binSizeTextActionPerformed(e);
-		});
-                        binSizeText.addFocusListener(new FocusAdapter() {
-                            @Override
-                            public void focusLost(FocusEvent e) {
-                                junctionFlankingTextFieldFocusLost(e);
-                                binSizeTextFocusLost(e);
-                            }
-                        });
-                        panel6.add(binSizeText);
-                        binSizeText.setBounds(135, 55, 95, 25);
-
-                        //---- label28 ----
-                        label28.setText("Bin size in chart:");
-                        panel6.add(label28);
-                        label28.setBounds(10, 55, 125, label28.getPreferredSize().height);
-
-                        //---- label29 ----
-                        label29.setText("Default chart type:");
-                        panel6.add(label29);
-                        label29.setBounds(new Rectangle(new Point(10, 90), label29.getPreferredSize()));
-
-                        //---- radioLine ----
-                        radioLine.setText("line chart");
-                        radioLine.addActionListener(e -> {
-			radioButton1ActionPerformed(e);
-			radioLineActionPerformed(e);
-		});
-                        panel6.add(radioLine);
-                        radioLine.setBounds(new Rectangle(new Point(135, 90), radioLine.getPreferredSize()));
-
-                        //---- radioArea ----
-                        radioArea.setText("area chart");
-                        radioArea.addActionListener(e -> radioAreaActionPerformed(e));
-                        panel6.add(radioArea);
-                        radioArea.setBounds(new Rectangle(new Point(135, 115), radioArea.getPreferredSize()));
-
-                        //---- radioBar ----
-                        radioBar.setText("bar chart");
-                        radioBar.addActionListener(e -> radioBarActionPerformed(e));
-                        panel6.add(radioBar);
-                        radioBar.setBounds(new Rectangle(new Point(135, 140), radioBar.getPreferredSize()));
-
-                        //---- radioStacked ----
-                        radioStacked.setText("(stacked bar chart)");
-                        radioStacked.addActionListener(e -> radioStackedActionPerformed(e));
-                        panel6.add(radioStacked);
-                        radioStacked.setBounds(new Rectangle(new Point(135, 165), radioStacked.getPreferredSize()));
-
-                        { // compute preferred size
-                            Dimension preferredSize = new Dimension();
-                            for(int i = 0; i < panel6.getComponentCount(); i++) {
-                                Rectangle bounds = panel6.getComponent(i).getBounds();
-                                preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                                preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                            }
-                            Insets insets = panel6.getInsets();
-                            preferredSize.width += insets.right;
-                            preferredSize.height += insets.bottom;
-                            panel6.setMinimumSize(preferredSize);
-                            panel6.setPreferredSize(preferredSize);
-                        }
-                    }
-                    ionTorrentPanel.add(panel6);
-
-                    //======== panel7 ========
-                    {
-                        panel7.setBorder(new TitledBorder("Server settings"));
-                        panel7.setLayout(null);
-
-                        //---- label30 ----
-                        label30.setText("Default Ion Torrent Server:");
-                        panel7.add(label30);
-                        label30.setBounds(new Rectangle(new Point(15, 25), label30.getPreferredSize()));
-
-                        //---- textServer ----
-                        textServer.setText("ioneast.ite");
-                        textServer.setToolTipText("Used to launch other applications (such as Torrent Scout Light)");
-                        textServer.addActionListener(e -> textServerActionPerformed(e));
-                        panel7.add(textServer);
-                        textServer.setBounds(220, 20, 475, textServer.getPreferredSize().height);
-
-                        { // compute preferred size
-                            Dimension preferredSize = new Dimension();
-                            for(int i = 0; i < panel7.getComponentCount(); i++) {
-                                Rectangle bounds = panel7.getComponent(i).getBounds();
-                                preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                                preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                            }
-                            Insets insets = panel7.getInsets();
-                            preferredSize.width += insets.right;
-                            preferredSize.height += insets.bottom;
-                            panel7.setMinimumSize(preferredSize);
-                            panel7.setPreferredSize(preferredSize);
-                        }
-                    }
-                    ionTorrentPanel.add(panel7);
-                }
-                panel28.setViewportView(ionTorrentPanel);
-            }
-            tabbedPane.addTab("IonTorrent", panel28);
-
             //======== panel30 ========
             {
 
@@ -2534,10 +2389,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         ButtonGroup buttonGroup1 = new ButtonGroup();
         buttonGroup1.add(expMapToLociCB);
         buttonGroup1.add(expMapToGeneCB);
-        buttonGroup1.add(radioLine);
-        buttonGroup1.add(radioArea);
-        buttonGroup1.add(radioBar);
-        buttonGroup1.add(radioStacked);
     }// </editor-fold>//GEN-END:initComponents
 
     private void backgroundColorPanelMouseClicked(MouseEvent e) {
@@ -2552,20 +2403,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     }
 
-    private void extractBinSize() {
-        String sbin = this.binSizeText.getText();
-        if (sbin != null) {
-            sbin = sbin.trim();
-            try {
-                Integer.parseInt(sbin);
-                updatedPreferenceMap.put(PreferenceManager.IONTORRENT_FLOWDIST_BINSIZE, sbin);
-            } catch (NumberFormatException numberFormatException) {
-                inputValidated = false;
-                MessageUtils.showMessage(
-                        "Bin size must be an integer.");
-            }
-        }
-    }
+
 
     private void resetBackgroundButtonActionPerformed(ActionEvent e) {
         final PreferenceManager prefMgr = PreferenceManager.getInstance();
@@ -2583,58 +2421,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         updateFontField();
     }
 
-    private void binSizeTextActionPerformed(ActionEvent e) {
-        extractBinSize();
-    }
-
-    private void hideFirstHPActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(
-                PreferenceManager.IONTORRENT_FLOWDIST_HIDE_FIRST_HP,
-                String.valueOf(this.hideFirstHP.isSelected()));
-    }
-
-    private void radioButton1ActionPerformed(ActionEvent e) {
-        if (this.radioLine.isSelected()) {
-            updatedPreferenceMap.put(PreferenceManager.IONTORRENT_FLOWDIST_CHARTTYPE, "LINE");
-        }
-    }
-
-    private void radioLineActionPerformed(ActionEvent e) {
-        if (this.radioLine.isSelected()) {
-            updatedPreferenceMap.put(PreferenceManager.IONTORRENT_FLOWDIST_CHARTTYPE, "LINE");
-        }
-    }
-
-    private void radioAreaActionPerformed(ActionEvent e) {
-        if (this.radioArea.isSelected()) {
-            updatedPreferenceMap.put(PreferenceManager.IONTORRENT_FLOWDIST_CHARTTYPE, "AREA");
-        }
-    }
-
-    private void radioBarActionPerformed(ActionEvent e) {
-        if (this.radioBar.isSelected()) {
-            updatedPreferenceMap.put(PreferenceManager.IONTORRENT_FLOWDIST_CHARTTYPE, "BAR");
-        }
-    }
-
-
-    private void radioStackedActionPerformed(ActionEvent e) {
-        if (this.radioStacked.isSelected()) {
-            updatedPreferenceMap.put(PreferenceManager.IONTORRENT_FLOWDIST_CHARTTYPE, "STACKED");
-        }
-    }
-
-    private void textServerActionPerformed(ActionEvent e) {
-        String server = this.textServer.getText();
-        if (server != null) {
-            server = server.trim();
-            updatedPreferenceMap.put(PreferenceManager.IONTORRENT_SERVER, server);
-        }
-    }
-
-    private void binSizeTextFocusLost(FocusEvent e) {
-        extractBinSize();
-    }
 
     private void filterSecondaryAlignmentsCBActionPerformed(ActionEvent e) {
         updatedPreferenceMap.put(
@@ -3984,25 +3770,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         labelYAxisCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.CHART_DRAW_Y_AXIS));
         showAllHeatmapFeauresCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.CHART_SHOW_ALL_HEATMAP));
 
-        /** Ion Torrent (Chantal Roth) */
-        this.binSizeText.setText(prefMgr.get(PreferenceManager.IONTORRENT_FLOWDIST_BINSIZE));
-        boolean hideHp = prefMgr.getAsBoolean(PreferenceManager.IONTORRENT_FLOWDIST_HIDE_FIRST_HP);
-        this.hideFirstHP.setSelected(hideHp);
-        String type = PreferenceManager.getInstance().get(PreferenceManager.IONTORRENT_FLOWDIST_CHARTTYPE);
-        if (type == null) type = "LINE";
-        if (type != null) {
-            type = type.trim().toUpperCase();
-            if (type.equals("LINE")) this.radioLine.setSelected(true);
-            else if (type.equals("AREA")) this.radioArea.setSelected(true);
-            else if (type.equals("BAR")) this.radioBar.setSelected(true);
-            else if (type.equals("STACKED")) this.radioStacked.setSelected(true);
-        }
-        String server = PreferenceManager.getInstance().get(PreferenceManager.IONTORRENT_SERVER);
-        if (server != null) this.textServer.setText(server);
-
-        //this.r.setText(prefMgr.get(PreferenceManager.IONTORRENT_FLOWDIST_BINSIZE));
-        //this..setText(prefMgr.get(PreferenceManager.IONTORRENT_FLOWDIST_BINSIZE));
-
         samMaxWindowSizeField.setText(prefMgr.get(PreferenceManager.SAM_MAX_VISIBLE_RANGE));
         samSamplingWindowField.setText(prefMgr.get(PreferenceManager.SAM_SAMPLING_WINDOW));
         samDownsampleCountField.setText(prefMgr.get(PreferenceManager.SAM_SAMPLING_COUNT));
@@ -4403,20 +4170,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JLabel label27;
     private JLabel label35;
     private JTextField proxyWhitelistTextArea;
-    private JScrollPane panel28;
-    private JPanel ionTorrentPanel;
-    private JPanel panel6;
-    private JCheckBox hideFirstHP;
-    private JTextField binSizeText;
-    private JLabel label28;
-    private JLabel label29;
-    private JRadioButton radioLine;
-    private JRadioButton radioArea;
-    private JRadioButton radioBar;
-    private JRadioButton radioStacked;
-    private JPanel panel7;
-    private JLabel label30;
-    private JTextField textServer;
     private JScrollPane panel30;
     private JPanel dbPanel;
     private JLabel label20;
