@@ -382,7 +382,8 @@ public class FileUtils {
             String basePath = referencePath.substring(0, idx);
             absolutePath = basePath + "/" + inputPath;
         } else {
-            File parent = new File(referencePath).getParentFile();
+            File referenceFile = new File(referencePath);
+            File parent = referenceFile.isDirectory() ? referenceFile : referenceFile.getParentFile();
             File file = new File(parent, inputPath);
             try {
                 absolutePath = file.getCanonicalPath();

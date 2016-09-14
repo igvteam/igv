@@ -52,9 +52,9 @@ public class TutorialUtils {
 
 
     public static void main(String[] args) throws IOException {
-        //extractFasta(args[0], args[1], args[2]);
+        extractFasta(args[0], args[1], args[2]);
         // extractAlignments(args[0], args[1], args[2]);
-        extractFeatures(args[0], args[1], args[2]);
+        //extractFeatures(args[0], args[1], args[2]);
     }
 
     static void extractFasta(String inputFasta, String outputFasta, String regionsFile) throws IOException {
