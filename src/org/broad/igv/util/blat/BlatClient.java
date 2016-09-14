@@ -248,7 +248,6 @@ public class BlatClient {
                     Genome genome = IGV.hasInstance() ? GenomeManager.getInstance().getCurrentGenome() : null;
                     PSLCodec codec = new PSLCodec(genome, true);
 
-                    // TODO -- something better than this!
                     String db = genome.getId();
                     String species = genome.getSpecies();
                     if (species == null) {

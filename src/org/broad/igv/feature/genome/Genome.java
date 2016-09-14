@@ -64,6 +64,7 @@ public class Genome {
     private Sequence sequence;
     private FeatureTrack geneTrack;
     private String species;
+    private String ucscID;
 
     /**
      * @param id
@@ -77,6 +78,7 @@ public class Genome {
         this.chrAliasTable = new HashMap<String, String>();
         this.sequence = sequence;
         chromosomeNames = sequence.getChromosomeNames();
+        this.ucscID = ucsdIDMap.containsKey(id) ? ucsdIDMap.get(id) : id;
 
         List<Chromosome> tmpChromos = new ArrayList<Chromosome>(chromosomeNames.size());
         int maxLength = -1;
@@ -98,6 +100,7 @@ public class Genome {
             ChromosomeComparator.sortChromosomeList(tmpChromos, maxLength / 10, chromosomeMap);
             chromosomeNames = new ArrayList<String>(chromosomeMap.keySet());
         }
+
 
         initializeChromosomeAliases();
     }
@@ -152,7 +155,7 @@ public class Genome {
      */
     public void addChrAliases(Collection<Collection<String>> synonymsList) {
 
-        if(chrAliasTable == null) chrAliasTable = new HashMap<String, String>();
+        if (chrAliasTable == null) chrAliasTable = new HashMap<String, String>();
 
         // Convert names to a set for fast "contains" testing.
         Set<String> chrNameSet = new HashSet<String>(chromosomeNames);
@@ -201,7 +204,7 @@ public class Genome {
 
                 // Also strip version number out, if present
                 int dotIndex = alias.lastIndexOf('.');
-                if(dotIndex > 0) {
+                if (dotIndex > 0) {
                     alias = alias.substring(0, dotIndex);
                     autoAliases.put(alias, name);
                 }
@@ -259,6 +262,7 @@ public class Genome {
         }
         return autoAliases;
     }
+
     /**
      * Extract the user friendly name from an NCBI accession
      * example: gi|125745044|ref|NC_002229.3|  =>  NC_002229.3
@@ -364,18 +368,18 @@ public class Genome {
         return new ChromosomeCoordinate(c, bp);
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
+
     public String getId() {
         return id;
     }
 
+    public String getUCSCId() {
+        return ucscID == null ? id : ucscID;
+    }
+
     public String getSpecies() {
         if (species == null) {
-            species = Genome.getSpeciesForID(id);
+            species = Genome.getSpeciesForID(getUCSCId());
         }
         return species;
     }
@@ -520,8 +524,7 @@ public class Genome {
     }
 
 
-    // TODO A hack (
-    // obviously),  we need to record a species in the genome definitions
+    // TODO A hack (obviously),  we need to record a species in the genome definitions
     private static Map<String, String> ucscSpeciesMap;
 
     private static synchronized String getSpeciesForID(String id) {
@@ -562,6 +565,16 @@ public class Genome {
             }
         }
         return null;
+    }
+
+    // Map some common IGV genome IDs to UCSC equivalents.  Primarily for BLAT usage
+    private static Map<String, String> ucsdIDMap;
+
+    static {
+        ucsdIDMap = new HashMap<>();
+        ucsdIDMap.put("1kg_ref", "hg18");
+        ucsdIDMap.put("1kg_v37", "hg19");
+        ucsdIDMap.put("b37", "hg19");
     }
 
 
