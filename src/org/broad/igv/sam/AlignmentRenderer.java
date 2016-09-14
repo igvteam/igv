@@ -732,7 +732,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
 
                 // Label the size of the deletion if it is "large" and the label fits.
-                if (flagLargeIndels && gapChromWidth > largeInsertionsThreshold) {
+                if (flagLargeIndels && (gap.getType() == SAMAlignment.DELETION) && gapChromWidth > largeInsertionsThreshold) {
                     drawLargeIndelLabel(largeIndelGraphics, false, Globals.DECIMAL_FORMAT.format(gapChromWidth), (int) ((blockPxEnd + gapPxEnd) / 2), y, h, gapPxEnd - blockPxEnd - 2, null);
                 }
 
