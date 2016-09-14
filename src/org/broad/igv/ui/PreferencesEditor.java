@@ -133,8 +133,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     // Generated using JFormDesigner non-commercial license
     private void initComponents() {
+        panel20 = new JScrollPane();
+        panel9 = new JPanel();
         tabbedPane = new JTabbedPane();
-        panel22 = new JScrollPane();
         generalPanel = new JPanel();
         vSpacer7 = new JPanel(null);
         jPanel10 = new JPanel();
@@ -168,7 +169,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         scaleFontsCB = new JCheckBox();
         label8 = new JLabel();
         resetBackgroundButton = new JButton();
-        panel23 = new JScrollPane();
         tracksPanel = new JPanel();
         vSpacer1 = new JPanel(null);
         jLabel5 = new JLabel();
@@ -182,7 +182,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         normalizeCoverageCB = new JCheckBox();
         missingDataExplanation8 = new JLabel();
         expandIconCB = new JCheckBox();
-        panel24 = new JScrollPane();
         overlaysPanel = new JPanel();
         jPanel5 = new JPanel();
         jLabel3 = new JLabel();
@@ -213,7 +212,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         label43 = new JLabel();
         alleleFreqRB = new JRadioButton();
         alleleFractionRB = new JRadioButton();
-        panel25 = new JScrollPane();
         chartPanel = new JPanel();
         jPanel4 = new JPanel();
         topBorderCB = new JCheckBox();
@@ -230,7 +228,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         label13 = new JLabel();
         showAllHeatmapFeauresCB = new JCheckBox();
         label14 = new JLabel();
-        panel20 = new JScrollPane();
         alignmentPanel = new JPanel();
         jPanel11 = new JPanel();
         panel32 = new JPanel();
@@ -251,24 +248,21 @@ public class PreferencesEditor extends javax.swing.JDialog {
         samDownsampleCountField = new JTextField();
         jLabel13 = new JLabel();
         samSamplingWindowField = new JTextField();
-        panel12 = new JPanel();
-        jLabel15 = new JLabel();
-        mappingQualityThresholdField = new JTextField();
         panel11 = new JPanel();
         samShadeMismatchedBaseCB = new JCheckBox();
         samMinBaseQualityField = new JTextField();
         label2 = new JLabel();
         samMaxBaseQualityField = new JTextField();
-        panel9 = new JPanel();
-        filterCB = new JCheckBox();
-        filterURL = new JTextField();
-        panel31b = new JPanel();
-        jLabel11b = new JLabel();
-        samHiddenTagsField = new JTextField();
         panel10 = new JPanel();
         samFlagInsertionsCB = new JCheckBox();
         samFlagInsertionsThresholdField = new JTextField();
         label31 = new JLabel();
+        panel12 = new JPanel();
+        jLabel15 = new JLabel();
+        mappingQualityThresholdField = new JTextField();
+        panel31b = new JPanel();
+        jLabel11b = new JLabel();
+        samHiddenTagsField = new JTextField();
         panel8 = new JPanel();
         samFilterDuplicatesCB = new JCheckBox();
         samFlagUnmappedPairCB = new JCheckBox();
@@ -305,7 +299,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         insertSizeMinPercentileField = new JTextField();
         jLabel18 = new JLabel();
         insertSizeMaxPercentileField = new JTextField();
-        panel26 = new JScrollPane();
         expressionPane = new JPanel();
         jPanel8 = new JPanel();
         panel18 = new JPanel();
@@ -319,7 +312,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         panel14 = new JPanel();
         probeMappingFileTextField = new JTextField();
         probeMappingBrowseButton = new JButton();
-        panel27 = new JScrollPane();
         proxyPanel = new JPanel();
         jPanel15 = new JPanel();
         label3 = new JLabel();
@@ -338,7 +330,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         label27 = new JLabel();
         label35 = new JLabel();
         proxyWhitelistTextArea = new JTextField();
-        panel28 = new JScrollPane();
         ionTorrentPanel = new JPanel();
         panel6 = new JPanel();
         hideFirstHP = new JCheckBox();
@@ -352,7 +343,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         panel7 = new JPanel();
         label30 = new JLabel();
         textServer = new JTextField();
-        panel30 = new JScrollPane();
         dbPanel = new JPanel();
         label20 = new JLabel();
         panel21 = new JPanel();
@@ -362,7 +352,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         dbHostField = new JTextField();
         label18 = new JLabel();
         dbPortField = new JTextField();
-        panel29 = new JScrollPane();
         advancedPanel = new JPanel();
         clearGenomeCacheButton = new JButton();
         enablePortCB = new JCheckBox();
@@ -403,2611 +392,2538 @@ public class PreferencesEditor extends javax.swing.JDialog {
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
 
-        //======== tabbedPane ========
+        //======== panel20 ========
         {
-            tabbedPane.setPreferredSize(new Dimension(805, 800));
 
-            //======== panel22 ========
+            //======== panel9 ========
             {
+                panel9.setLayout(new BorderLayout());
 
-                //======== generalPanel ========
+                //======== tabbedPane ========
                 {
-                    generalPanel.setLayout(new BorderLayout());
+                    tabbedPane.setPreferredSize(new Dimension(805, 800));
 
-                    //---- vSpacer7 ----
-                    vSpacer7.setPreferredSize(new Dimension(10, 20));
-                    generalPanel.add(vSpacer7, BorderLayout.NORTH);
-
-                    //======== jPanel10 ========
+                    //======== generalPanel ========
                     {
-                        jPanel10.setBorder(null);
-                        jPanel10.setLayout(new GridBagLayout());
-                        ((GridBagLayout) jPanel10.getLayout()).columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-                        ((GridBagLayout) jPanel10.getLayout()).rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-                        ((GridBagLayout) jPanel10.getLayout()).columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
-                        ((GridBagLayout) jPanel10.getLayout()).rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                        generalPanel.setLayout(new BorderLayout());
 
-                        //---- sessionPathsCB ----
-                        sessionPathsCB.setText("Use relative paths in sessions");
-                        sessionPathsCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                sessionPathsCBActionPerformed(e);
-                            }
-                        });
-                        jPanel10.add(sessionPathsCB, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 15, 5), 0, 0));
+                        //---- vSpacer7 ----
+                        vSpacer7.setPreferredSize(new Dimension(10, 20));
+                        generalPanel.add(vSpacer7, BorderLayout.NORTH);
 
-                        //---- missingDataExplanation ----
-                        missingDataExplanation.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
-                        missingDataExplanation.setText("(NAME, DATA_TYPE, and DATA_FILE).");
-                        jPanel10.add(missingDataExplanation, new GridBagConstraints(3, 4, 5, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 15, 5), 0, 0));
-
-                        //---- showDefaultTrackAttributesCB ----
-                        showDefaultTrackAttributesCB.setText("Show default track attributes");
-                        showDefaultTrackAttributesCB.setToolTipText("Display default track attributes (NAME, DATA_TYPE, and DATA_FILE) in the attribute panel.");
-                        showDefaultTrackAttributesCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                showDefaultTrackAttributesCBActionPerformed(e);
-                            }
-                        });
-                        jPanel10.add(showDefaultTrackAttributesCB, new GridBagConstraints(0, 4, 2, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 15, 5), 0, 0));
-
-                        //---- combinePanelsCB ----
-                        combinePanelsCB.setText("Display all tracks in a single panel");
-                        combinePanelsCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                combinePanelsCBActionPerformed(e);
-                            }
-                        });
-                        jPanel10.add(combinePanelsCB, new GridBagConstraints(0, 2, 3, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 15, 5), 0, 0));
-
-                        //---- showAttributesDisplayCheckBox ----
-                        showAttributesDisplayCheckBox.setText("Show attribute panel");
-                        showAttributesDisplayCheckBox.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                showAttributesDisplayCheckBoxActionPerformed(e);
-                            }
-                        });
-                        jPanel10.add(showAttributesDisplayCheckBox, new GridBagConstraints(0, 3, 2, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 15, 5), 0, 0));
-
-                        //---- searchZoomCB ----
-                        searchZoomCB.setText("Zoom to features");
-                        searchZoomCB.setToolTipText("This option controls the behavior of feature searches.  If true, the zoom level is changed as required to size the view to the feature size.  If false, the zoom level is unchanged.");
-                        searchZoomCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                searchZoomCBActionPerformed(e);
-                            }
-                        });
-                        jPanel10.add(searchZoomCB, new GridBagConstraints(0, 6, 2, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 15, 5), 0, 0));
-
-                        //---- label4 ----
-                        label4.setText("Feature flanking region (bp or %): ");
-                        label4.setToolTipText("Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.  A negative number is interpreted as a percentage.");
-                        jPanel10.add(label4, new GridBagConstraints(0, 9, 4, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 10, 15, 5), 0, 0));
-
-                        //---- geneListFlankingField ----
-                        geneListFlankingField.setToolTipText("Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.  A negative number is interpreted as a percentage.");
-                        geneListFlankingField.addFocusListener(new FocusAdapter() {
-                            @Override
-                            public void focusLost(FocusEvent e) {
-                                geneListFlankingFieldFocusLost(e);
-                            }
-                        });
-                        geneListFlankingField.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                geneListFlankingFieldActionPerformed(e);
-                            }
-                        });
-                        jPanel10.add(geneListFlankingField, new GridBagConstraints(4, 9, 3, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 15, 5), 0, 0));
-
-                        //---- zoomToFeatureExplanation2 ----
-                        zoomToFeatureExplanation2.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
-                        zoomToFeatureExplanation2.setText("<html><i>&lt; 0 is interpreted as a percentage.</b>");
-                        zoomToFeatureExplanation2.setVerticalAlignment(SwingConstants.TOP);
-                        jPanel10.add(zoomToFeatureExplanation2, new GridBagConstraints(7, 9, 1, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                                new Insets(0, 0, 15, 5), 0, 0));
-
-                        //---- label6 ----
-                        label6.setText("Sequence resolution threshold (bp/pixel):");
-                        jPanel10.add(label6, new GridBagConstraints(0, 11, 4, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 10, 15, 5), 0, 0));
-
-                        //---- seqResolutionThreshold ----
-                        seqResolutionThreshold.addFocusListener(new FocusAdapter() {
-                            @Override
-                            public void focusLost(FocusEvent e) {
-                                seqResolutionThresholdFocusLost(e);
-                            }
-                        });
-                        seqResolutionThreshold.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                seqResolutionThresholdActionPerformed(e);
-                            }
-                        });
-                        jPanel10.add(seqResolutionThreshold, new GridBagConstraints(4, 11, 3, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 15, 5), 0, 0));
-
-                        //---- label10 ----
-                        label10.setText("Default font:");
-                        label10.setLabelFor(defaultFontField);
-                        jPanel10.add(label10, new GridBagConstraints(0, 12, 1, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 10, 15, 5), 0, 0));
-
-                        //---- fontChangeButton ----
-                        fontChangeButton.setText("Change...");
-                        fontChangeButton.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                fontChangeButtonActionPerformed(e);
-                            }
-                        });
-                        jPanel10.add(fontChangeButton, new GridBagConstraints(6, 12, 1, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 15, 5), 0, 0));
-
-                        //---- showRegionBoundariesCB ----
-                        showRegionBoundariesCB.setText("Show region boundaries");
-                        showRegionBoundariesCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                showRegionBoundariesCBActionPerformed(e);
-                            }
-                        });
-                        jPanel10.add(showRegionBoundariesCB, new GridBagConstraints(0, 5, 4, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 15, 5), 0, 0));
-
-                        //---- label7 ----
-                        label7.setText("Background color (click to change):");
-                        jPanel10.add(label7, new GridBagConstraints(0, 14, 3, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 10, 15, 5), 0, 0));
-
-                        //======== backgroundColorPanel ========
+                        //======== jPanel10 ========
                         {
-                            backgroundColorPanel.setPreferredSize(new Dimension(20, 20));
-                            backgroundColorPanel.setBorder(new BevelBorder(BevelBorder.RAISED));
-                            backgroundColorPanel.addMouseListener(new MouseAdapter() {
+                            jPanel10.setBorder(null);
+                            jPanel10.setLayout(new GridBagLayout());
+                            ((GridBagLayout)jPanel10.getLayout()).columnWidths = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                            ((GridBagLayout)jPanel10.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                            ((GridBagLayout)jPanel10.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                            ((GridBagLayout)jPanel10.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+
+                            //---- sessionPathsCB ----
+                            sessionPathsCB.setText("Use relative paths in sessions");
+                            sessionPathsCB.addActionListener(new ActionListener() {
                                 @Override
-                                public void mouseClicked(MouseEvent e) {
-                                    backgroundColorPanelMouseClicked(e);
+                                public void actionPerformed(ActionEvent e) {
+                                    sessionPathsCBActionPerformed(e);
                                 }
                             });
-                            backgroundColorPanel.setLayout(null);
-                        }
-                        jPanel10.add(backgroundColorPanel, new GridBagConstraints(3, 14, 2, 1, 0.0, 0.0,
+                            jPanel10.add(sessionPathsCB, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 0, 15, 5), 0, 0));
 
-                        //---- showMissingDataCB ----
-                        showMissingDataCB.setText("Distinguish missing data");
-                        showMissingDataCB.setToolTipText("Distinguish regions with zero values from regions with no data on plots (e.g. bar charts).  Regions with no data are indicated with a gray background.");
-                        showMissingDataCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                showMissingDataCBActionPerformed(e);
-                            }
-                        });
-                        jPanel10.add(showMissingDataCB, new GridBagConstraints(0, 1, 2, 1, 0.0, 0.0,
+                            //---- missingDataExplanation ----
+                            missingDataExplanation.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
+                            missingDataExplanation.setText("(NAME, DATA_TYPE, and DATA_FILE).");
+                            jPanel10.add(missingDataExplanation, new GridBagConstraints(3, 4, 5, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 0, 15, 5), 0, 0));
 
-                        //---- label32 ----
-                        label32.setText("<html><i>Distinguish regions with value of zero from regions with no data.");
-                        jPanel10.add(label32, new GridBagConstraints(2, 1, 6, 1, 0.0, 0.0,
+                            //---- showDefaultTrackAttributesCB ----
+                            showDefaultTrackAttributesCB.setText("Show default track attributes");
+                            showDefaultTrackAttributesCB.setToolTipText("Display default track attributes (NAME, DATA_TYPE, and DATA_FILE) in the attribute panel.");
+                            showDefaultTrackAttributesCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    showDefaultTrackAttributesCBActionPerformed(e);
+                                }
+                            });
+                            jPanel10.add(showDefaultTrackAttributesCB, new GridBagConstraints(0, 4, 2, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 0, 15, 5), 0, 0));
 
-                        //---- enableGoogleCB ----
-                        enableGoogleCB.setText("Enable Google access");
-                        enableGoogleCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                enableGoogleCBActionPerformed(e);
-                            }
-                        });
-                        jPanel10.add(enableGoogleCB, new GridBagConstraints(0, 7, 1, 1, 0.0, 0.0,
+                            //---- combinePanelsCB ----
+                            combinePanelsCB.setText("Display all tracks in a single panel");
+                            combinePanelsCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    combinePanelsCBActionPerformed(e);
+                                }
+                            });
+                            jPanel10.add(combinePanelsCB, new GridBagConstraints(0, 2, 3, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 0, 15, 5), 0, 0));
 
-                        //---- label33 ----
-                        label33.setText("Enable loading from Google apis.");
-                        label33.setFont(new Font("Lucida Grande", Font.ITALIC, 13));
-                        jPanel10.add(label33, new GridBagConstraints(3, 7, 5, 1, 0.0, 0.0,
+                            //---- showAttributesDisplayCheckBox ----
+                            showAttributesDisplayCheckBox.setText("Show attribute panel");
+                            showAttributesDisplayCheckBox.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    showAttributesDisplayCheckBoxActionPerformed(e);
+                                }
+                            });
+                            jPanel10.add(showAttributesDisplayCheckBox, new GridBagConstraints(0, 3, 2, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 0, 15, 5), 0, 0));
 
-                        //---- saveGoogleCredentialsCB ----
-                        saveGoogleCredentialsCB.setText("Save Google credentials");
-                        saveGoogleCredentialsCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                saveGoogleCredentialsCBActionPerformed(e);
-                            }
-                        });
-                        jPanel10.add(saveGoogleCredentialsCB, new GridBagConstraints(0, 8, 1, 1, 0.0, 0.0,
+                            //---- searchZoomCB ----
+                            searchZoomCB.setText("Zoom to features");
+                            searchZoomCB.setToolTipText("This option controls the behavior of feature searches.  If true, the zoom level is changed as required to size the view to the feature size.  If false, the zoom level is unchanged.");
+                            searchZoomCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    searchZoomCBActionPerformed(e);
+                                }
+                            });
+                            jPanel10.add(searchZoomCB, new GridBagConstraints(0, 6, 2, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 0, 15, 5), 0, 0));
 
-                        //---- label34 ----
-                        label34.setText("Save authorization credentials across sessions");
-                        label34.setFont(new Font("Lucida Grande", Font.ITALIC, 13));
-                        jPanel10.add(label34, new GridBagConstraints(3, 8, 5, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 15, 5), 0, 0));
-
-                        //---- textField1 ----
-                        textField1.setText("Default visibility window (kilobases):");
-                        textField1.setToolTipText("A value > 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.  The threshold (\"visibility window\") can be overridden explicitly for individual tracks via the track menu.");
-                        jPanel10.add(textField1, new GridBagConstraints(0, 10, 3, 1, 0.0, 0.0,
+                            //---- label4 ----
+                            label4.setText("Feature flanking region (bp or %): ");
+                            label4.setToolTipText("Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.  A negative number is interpreted as a percentage.");
+                            jPanel10.add(label4, new GridBagConstraints(0, 9, 4, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 10, 15, 5), 0, 0));
 
-                        //---- featureVisibilityWindowField ----
-                        featureVisibilityWindowField.setToolTipText("A value > 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.  The threshold (\"visibility window\") can be overridden explicitly for individual tracks via the track menu.");
-                        featureVisibilityWindowField.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                featureVisibilityWindowFieldActionPerformed(e);
-                            }
-                        });
-                        featureVisibilityWindowField.addFocusListener(new FocusAdapter() {
-                            @Override
-                            public void focusLost(FocusEvent e) {
-                                featureVisibilityWindowFieldFocusLost(e);
-                            }
-                        });
-                        jPanel10.add(featureVisibilityWindowField, new GridBagConstraints(4, 10, 3, 1, 0.0, 0.0,
+                            //---- geneListFlankingField ----
+                            geneListFlankingField.setToolTipText("Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.  A negative number is interpreted as a percentage.");
+                            geneListFlankingField.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    geneListFlankingFieldFocusLost(e);
+                                }
+                            });
+                            geneListFlankingField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    geneListFlankingFieldActionPerformed(e);
+                                }
+                            });
+                            jPanel10.add(geneListFlankingField, new GridBagConstraints(4, 9, 3, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 0, 15, 5), 0, 0));
 
-                        //---- zoomToFeatureExplanation3 ----
-                        zoomToFeatureExplanation3.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
-                        zoomToFeatureExplanation3.setText("<html><i>&lt; 0 disables visibility window.</b>");
-                        zoomToFeatureExplanation3.setVerticalAlignment(SwingConstants.TOP);
-                        jPanel10.add(zoomToFeatureExplanation3, new GridBagConstraints(7, 10, 1, 1, 0.0, 0.0,
+                            //---- zoomToFeatureExplanation2 ----
+                            zoomToFeatureExplanation2.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
+                            zoomToFeatureExplanation2.setText("<html><i>&lt; 0 is interpreted as a percentage.</b>");
+                            zoomToFeatureExplanation2.setVerticalAlignment(SwingConstants.TOP);
+                            jPanel10.add(zoomToFeatureExplanation2, new GridBagConstraints(7, 9, 1, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
                                 new Insets(0, 0, 15, 5), 0, 0));
 
-                        //---- defaultFontField ----
-                        defaultFontField.setEditable(false);
-                        jPanel10.add(defaultFontField, new GridBagConstraints(1, 12, 4, 1, 0.0, 0.0,
+                            //---- label6 ----
+                            label6.setText("Sequence resolution threshold (bp/pixel):");
+                            jPanel10.add(label6, new GridBagConstraints(0, 11, 4, 1, 0.0, 0.0,
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 10, 15, 5), 0, 0));
+
+                            //---- seqResolutionThreshold ----
+                            seqResolutionThreshold.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    seqResolutionThresholdFocusLost(e);
+                                }
+                            });
+                            seqResolutionThreshold.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    seqResolutionThresholdActionPerformed(e);
+                                }
+                            });
+                            jPanel10.add(seqResolutionThreshold, new GridBagConstraints(4, 11, 3, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 0, 15, 5), 0, 0));
 
-                        //---- resetFontButton ----
-                        resetFontButton.setText("Reset to default");
-                        resetFontButton.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                resetFontButtonActionPerformed(e);
+                            //---- label10 ----
+                            label10.setText("Default font:");
+                            label10.setLabelFor(defaultFontField);
+                            jPanel10.add(label10, new GridBagConstraints(0, 12, 1, 1, 0.0, 0.0,
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 10, 15, 5), 0, 0));
+
+                            //---- fontChangeButton ----
+                            fontChangeButton.setText("Change...");
+                            fontChangeButton.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    fontChangeButtonActionPerformed(e);
+                                }
+                            });
+                            jPanel10.add(fontChangeButton, new GridBagConstraints(6, 12, 1, 1, 0.0, 0.0,
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
+
+                            //---- showRegionBoundariesCB ----
+                            showRegionBoundariesCB.setText("Show region boundaries");
+                            showRegionBoundariesCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    showRegionBoundariesCBActionPerformed(e);
+                                }
+                            });
+                            jPanel10.add(showRegionBoundariesCB, new GridBagConstraints(0, 5, 4, 1, 0.0, 0.0,
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
+
+                            //---- label7 ----
+                            label7.setText("Background color (click to change):");
+                            jPanel10.add(label7, new GridBagConstraints(0, 14, 3, 1, 0.0, 0.0,
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 10, 15, 5), 0, 0));
+
+                            //======== backgroundColorPanel ========
+                            {
+                                backgroundColorPanel.setPreferredSize(new Dimension(20, 20));
+                                backgroundColorPanel.setBorder(new BevelBorder(BevelBorder.RAISED));
+                                backgroundColorPanel.addMouseListener(new MouseAdapter() {
+                                    @Override
+                                    public void mouseClicked(MouseEvent e) {
+                                        backgroundColorPanelMouseClicked(e);
+                                    }
+                                });
+                                backgroundColorPanel.setLayout(null);
                             }
-                        });
-                        jPanel10.add(resetFontButton, new GridBagConstraints(7, 12, 1, 1, 0.0, 0.0,
+                            jPanel10.add(backgroundColorPanel, new GridBagConstraints(3, 14, 2, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 0, 15, 5), 0, 0));
 
-                        //---- scaleFontsCB ----
-                        scaleFontsCB.setText("Scale fonts");
-                        scaleFontsCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                scaleFontsCBActionPerformed(e);
-                            }
-                        });
-                        jPanel10.add(scaleFontsCB, new GridBagConstraints(0, 13, 2, 1, 0.0, 0.0,
+                            //---- showMissingDataCB ----
+                            showMissingDataCB.setText("Distinguish missing data");
+                            showMissingDataCB.setToolTipText("Distinguish regions with zero values from regions with no data on plots (e.g. bar charts).  Regions with no data are indicated with a gray background.");
+                            showMissingDataCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    showMissingDataCBActionPerformed(e);
+                                }
+                            });
+                            jPanel10.add(showMissingDataCB, new GridBagConstraints(0, 1, 2, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 0, 15, 5), 0, 0));
 
-                        //---- label8 ----
-                        label8.setText("<html><i>Scale fonts for high resolution screens.  Requires restart.");
-                        jPanel10.add(label8, new GridBagConstraints(2, 13, 7, 1, 0.0, 0.0,
+                            //---- label32 ----
+                            label32.setText("<html><i>Distinguish regions with value of zero from regions with no data.");
+                            jPanel10.add(label32, new GridBagConstraints(2, 1, 6, 1, 0.0, 0.0,
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
+
+                            //---- enableGoogleCB ----
+                            enableGoogleCB.setText("Enable Google access");
+                            enableGoogleCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    enableGoogleCBActionPerformed(e);
+                                }
+                            });
+                            jPanel10.add(enableGoogleCB, new GridBagConstraints(0, 7, 1, 1, 0.0, 0.0,
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
+
+                            //---- label33 ----
+                            label33.setText("Enable loading from Google apis.");
+                            label33.setFont(new Font("Lucida Grande", Font.ITALIC, 13));
+                            jPanel10.add(label33, new GridBagConstraints(3, 7, 5, 1, 0.0, 0.0,
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
+
+                            //---- saveGoogleCredentialsCB ----
+                            saveGoogleCredentialsCB.setText("Save Google credentials");
+                            saveGoogleCredentialsCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    saveGoogleCredentialsCBActionPerformed(e);
+                                }
+                            });
+                            jPanel10.add(saveGoogleCredentialsCB, new GridBagConstraints(0, 8, 1, 1, 0.0, 0.0,
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
+
+                            //---- label34 ----
+                            label34.setText("Save authorization credentials across sessions");
+                            label34.setFont(new Font("Lucida Grande", Font.ITALIC, 13));
+                            jPanel10.add(label34, new GridBagConstraints(3, 8, 5, 1, 0.0, 0.0,
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
+
+                            //---- textField1 ----
+                            textField1.setText("Default visibility window (kilobases):");
+                            textField1.setToolTipText("A value > 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.  The threshold (\"visibility window\") can be overridden explicitly for individual tracks via the track menu.");
+                            jPanel10.add(textField1, new GridBagConstraints(0, 10, 3, 1, 0.0, 0.0,
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 10, 15, 5), 0, 0));
+
+                            //---- featureVisibilityWindowField ----
+                            featureVisibilityWindowField.setToolTipText("A value > 0 will set a default threshold windows size in kilobases above which features from indexed files are not loaded.  The threshold (\"visibility window\") can be overridden explicitly for individual tracks via the track menu.");
+                            featureVisibilityWindowField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    featureVisibilityWindowFieldActionPerformed(e);
+                                }
+                            });
+                            featureVisibilityWindowField.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    featureVisibilityWindowFieldFocusLost(e);
+                                }
+                            });
+                            jPanel10.add(featureVisibilityWindowField, new GridBagConstraints(4, 10, 3, 1, 0.0, 0.0,
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
+
+                            //---- zoomToFeatureExplanation3 ----
+                            zoomToFeatureExplanation3.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
+                            zoomToFeatureExplanation3.setText("<html><i>&lt; 0 disables visibility window.</b>");
+                            zoomToFeatureExplanation3.setVerticalAlignment(SwingConstants.TOP);
+                            jPanel10.add(zoomToFeatureExplanation3, new GridBagConstraints(7, 10, 1, 1, 0.0, 0.0,
+                                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                                new Insets(0, 0, 15, 5), 0, 0));
+
+                            //---- defaultFontField ----
+                            defaultFontField.setEditable(false);
+                            jPanel10.add(defaultFontField, new GridBagConstraints(1, 12, 4, 1, 0.0, 0.0,
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
+
+                            //---- resetFontButton ----
+                            resetFontButton.setText("Reset to default");
+                            resetFontButton.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    resetFontButtonActionPerformed(e);
+                                }
+                            });
+                            jPanel10.add(resetFontButton, new GridBagConstraints(7, 12, 1, 1, 0.0, 0.0,
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
+
+                            //---- scaleFontsCB ----
+                            scaleFontsCB.setText("Scale fonts");
+                            scaleFontsCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    scaleFontsCBActionPerformed(e);
+                                }
+                            });
+                            jPanel10.add(scaleFontsCB, new GridBagConstraints(0, 13, 2, 1, 0.0, 0.0,
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                new Insets(0, 0, 15, 5), 0, 0));
+
+                            //---- label8 ----
+                            label8.setText("<html><i>Scale fonts for high resolution screens.  Requires restart.");
+                            jPanel10.add(label8, new GridBagConstraints(2, 13, 7, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 0, 15, 0), 0, 0));
 
-                        //---- resetBackgroundButton ----
-                        resetBackgroundButton.setText("Reset to default");
-                        resetBackgroundButton.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                resetBackgroundButtonActionPerformed(e);
-                            }
-                        });
-                        jPanel10.add(resetBackgroundButton, new GridBagConstraints(7, 14, 1, 1, 0.0, 0.0,
+                            //---- resetBackgroundButton ----
+                            resetBackgroundButton.setText("Reset to default");
+                            resetBackgroundButton.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    resetBackgroundButtonActionPerformed(e);
+                                }
+                            });
+                            jPanel10.add(resetBackgroundButton, new GridBagConstraints(7, 14, 1, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 0, 15, 5), 0, 0));
+                        }
+                        generalPanel.add(jPanel10, BorderLayout.CENTER);
                     }
-                    generalPanel.add(jPanel10, BorderLayout.CENTER);
-                }
-                panel22.setViewportView(generalPanel);
-            }
-            tabbedPane.addTab("General", panel22);
+                    tabbedPane.addTab("General", generalPanel);
 
-            //======== panel23 ========
-            {
-
-                //======== tracksPanel ========
-                {
-                    tracksPanel.setMinimumSize(new Dimension(700, 407));
-                    tracksPanel.setLayout(new GridBagLayout());
-                    ((GridBagLayout) tracksPanel.getLayout()).columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0};
-                    ((GridBagLayout) tracksPanel.getLayout()).rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-                    ((GridBagLayout) tracksPanel.getLayout()).columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
-                    ((GridBagLayout) tracksPanel.getLayout()).rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
-                    tracksPanel.add(vSpacer1, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                    //======== tracksPanel ========
+                    {
+                        tracksPanel.setMinimumSize(new Dimension(700, 407));
+                        tracksPanel.setLayout(new GridBagLayout());
+                        ((GridBagLayout)tracksPanel.getLayout()).columnWidths = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0};
+                        ((GridBagLayout)tracksPanel.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                        ((GridBagLayout)tracksPanel.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                        ((GridBagLayout)tracksPanel.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                        tracksPanel.add(vSpacer1, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 10), 0, 0));
 
-                    //---- jLabel5 ----
-                    jLabel5.setText("Default Track Height, Charts (Pixels)");
-                    tracksPanel.add(jLabel5, new GridBagConstraints(2, 1, 2, 1, 0.0, 0.0,
+                        //---- jLabel5 ----
+                        jLabel5.setText("Default Track Height, Charts (Pixels)");
+                        tracksPanel.add(jLabel5, new GridBagConstraints(2, 1, 2, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 10), 0, 0));
 
-                    //---- defaultChartTrackHeightField ----
-                    defaultChartTrackHeightField.setText("40");
-                    defaultChartTrackHeightField.setMinimumSize(new Dimension(60, 28));
-                    defaultChartTrackHeightField.setToolTipText("Default height of chart tracks (barcharts, scatterplots, etc)");
-                    defaultChartTrackHeightField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            defaultChartTrackHeightFieldActionPerformed(e);
-                        }
-                    });
-                    defaultChartTrackHeightField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            defaultChartTrackHeightFieldFocusLost(e);
-                        }
-                    });
-                    tracksPanel.add(defaultChartTrackHeightField, new GridBagConstraints(4, 1, 2, 1, 0.0, 0.0,
+                        //---- defaultChartTrackHeightField ----
+                        defaultChartTrackHeightField.setText("40");
+                        defaultChartTrackHeightField.setMinimumSize(new Dimension(60, 28));
+                        defaultChartTrackHeightField.setToolTipText("Default height of chart tracks (barcharts, scatterplots, etc)");
+                        defaultChartTrackHeightField.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                defaultChartTrackHeightFieldActionPerformed(e);
+                            }
+                        });
+                        defaultChartTrackHeightField.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                defaultChartTrackHeightFieldFocusLost(e);
+                            }
+                        });
+                        tracksPanel.add(defaultChartTrackHeightField, new GridBagConstraints(4, 1, 2, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 10), 0, 0));
 
-                    //---- trackNameAttributeLabel ----
-                    trackNameAttributeLabel.setText("Track Name Attribute");
-                    trackNameAttributeLabel.setToolTipText("Name of an attribute to be used to label tracks.  If provided, tracks will be labeled with the corresponding attribute values from the sample information file");
-                    tracksPanel.add(trackNameAttributeLabel, new GridBagConstraints(2, 3, 1, 1, 0.0, 0.0,
+                        //---- trackNameAttributeLabel ----
+                        trackNameAttributeLabel.setText("Track Name Attribute");
+                        trackNameAttributeLabel.setToolTipText("Name of an attribute to be used to label tracks.  If provided, tracks will be labeled with the corresponding attribute values from the sample information file");
+                        tracksPanel.add(trackNameAttributeLabel, new GridBagConstraints(2, 3, 1, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 10), 0, 0));
 
-                    //---- trackNameAttributeField ----
-                    trackNameAttributeField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            trackNameAttributeFieldActionPerformed(e);
-                        }
-                    });
-                    trackNameAttributeField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            trackNameAttributeFieldFocusLost(e);
-                        }
-                    });
-                    tracksPanel.add(trackNameAttributeField, new GridBagConstraints(3, 3, 3, 1, 0.0, 0.0,
+                        //---- trackNameAttributeField ----
+                        trackNameAttributeField.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                trackNameAttributeFieldActionPerformed(e);
+                            }
+                        });
+                        trackNameAttributeField.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                trackNameAttributeFieldFocusLost(e);
+                            }
+                        });
+                        tracksPanel.add(trackNameAttributeField, new GridBagConstraints(3, 3, 3, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 10), 0, 0));
 
-                    //---- jLabel8 ----
-                    jLabel8.setText("Default Track Height, Other (Pixels)");
-                    tracksPanel.add(jLabel8, new GridBagConstraints(2, 2, 2, 1, 0.0, 0.0,
+                        //---- jLabel8 ----
+                        jLabel8.setText("Default Track Height, Other (Pixels)");
+                        tracksPanel.add(jLabel8, new GridBagConstraints(2, 2, 2, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 10), 0, 0));
 
-                    //---- defaultTrackHeightField ----
-                    defaultTrackHeightField.setText("15");
-                    defaultTrackHeightField.setMinimumSize(new Dimension(60, 28));
-                    defaultTrackHeightField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            defaultTrackHeightFieldActionPerformed(e);
-                        }
-                    });
-                    defaultTrackHeightField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            defaultTrackHeightFieldFocusLost(e);
-                        }
-                    });
-                    tracksPanel.add(defaultTrackHeightField, new GridBagConstraints(4, 2, 1, 1, 0.0, 0.0,
+                        //---- defaultTrackHeightField ----
+                        defaultTrackHeightField.setText("15");
+                        defaultTrackHeightField.setMinimumSize(new Dimension(60, 28));
+                        defaultTrackHeightField.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                defaultTrackHeightFieldActionPerformed(e);
+                            }
+                        });
+                        defaultTrackHeightField.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                defaultTrackHeightFieldFocusLost(e);
+                            }
+                        });
+                        tracksPanel.add(defaultTrackHeightField, new GridBagConstraints(4, 2, 1, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 10), 0, 0));
-                    tracksPanel.add(hSpacer1, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 15, 10), 0, 0));
-
-                    //---- expandCB ----
-                    expandCB.setText("Expand Feature Tracks");
-                    expandCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            expandCBActionPerformed(e);
-                        }
-                    });
-                    tracksPanel.add(expandCB, new GridBagConstraints(2, 5, 2, 1, 0.0, 0.0,
+                        tracksPanel.add(hSpacer1, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 10), 0, 0));
 
-                    //---- normalizeCoverageCB ----
-                    normalizeCoverageCB.setText("Normalize Coverage Data");
-                    normalizeCoverageCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            normalizeCoverageCBActionPerformed(e);
-                        }
-                    });
-                    normalizeCoverageCB.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            normalizeCoverageCBFocusLost(e);
-                        }
-                    });
-                    tracksPanel.add(normalizeCoverageCB, new GridBagConstraints(2, 7, 2, 1, 0.0, 0.0,
+                        //---- expandCB ----
+                        expandCB.setText("Expand Feature Tracks");
+                        expandCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                expandCBActionPerformed(e);
+                            }
+                        });
+                        tracksPanel.add(expandCB, new GridBagConstraints(2, 5, 2, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 10), 0, 0));
 
-                    //---- missingDataExplanation8 ----
-                    missingDataExplanation8.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
-                    missingDataExplanation8.setText("<html><i> Applies to coverage tracks computed with igvtools (.tdf files).  If selected, coverage values are scaled by (1,000,000 / totalCount),  where totalCount is the total number of features or alignments.");
-                    missingDataExplanation8.setMaximumSize(new Dimension(500, 2147483647));
-                    missingDataExplanation8.setPreferredSize(new Dimension(500, 50));
-                    tracksPanel.add(missingDataExplanation8, new GridBagConstraints(2, 8, 6, 2, 0.0, 0.0,
+                        //---- normalizeCoverageCB ----
+                        normalizeCoverageCB.setText("Normalize Coverage Data");
+                        normalizeCoverageCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                normalizeCoverageCBActionPerformed(e);
+                            }
+                        });
+                        normalizeCoverageCB.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                normalizeCoverageCBFocusLost(e);
+                            }
+                        });
+                        tracksPanel.add(normalizeCoverageCB, new GridBagConstraints(2, 7, 2, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 15, 10), 0, 0));
+
+                        //---- missingDataExplanation8 ----
+                        missingDataExplanation8.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
+                        missingDataExplanation8.setText("<html><i> Applies to coverage tracks computed with igvtools (.tdf files).  If selected, coverage values are scaled by (1,000,000 / totalCount),  where totalCount is the total number of features or alignments.");
+                        missingDataExplanation8.setMaximumSize(new Dimension(500, 2147483647));
+                        missingDataExplanation8.setPreferredSize(new Dimension(500, 50));
+                        tracksPanel.add(missingDataExplanation8, new GridBagConstraints(2, 8, 6, 2, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 0, 0), 0, 0));
 
-                    //---- expandIconCB ----
-                    expandIconCB.setText("Show Expand Icon");
-                    expandIconCB.setToolTipText("If checked, displays an expand/collapse icon on feature tracks.");
-                    expandIconCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            expandIconCBActionPerformed(e);
-                        }
-                    });
-                    tracksPanel.add(expandIconCB, new GridBagConstraints(2, 6, 2, 1, 0.0, 0.0,
+                        //---- expandIconCB ----
+                        expandIconCB.setText("Show Expand Icon");
+                        expandIconCB.setToolTipText("If checked, displays an expand/collapse icon on feature tracks.");
+                        expandIconCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                expandIconCBActionPerformed(e);
+                            }
+                        });
+                        tracksPanel.add(expandIconCB, new GridBagConstraints(2, 6, 2, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 15, 10), 0, 0));
-                }
-                panel23.setViewportView(tracksPanel);
-            }
-            tabbedPane.addTab("Tracks", panel23);
-
-            //======== panel24 ========
-            {
-
-                //======== overlaysPanel ========
-                {
-                    overlaysPanel.setLayout(null);
-
-                    //======== jPanel5 ========
-                    {
-                        jPanel5.setBorder(new TitledBorder("MAF Somatic Mutations"));
-                        jPanel5.setLayout(null);
-
-                        //---- jLabel3 ----
-                        jLabel3.setText("Linking attribute column:");
-                        jPanel5.add(jLabel3);
-                        jLabel3.setBounds(new Rectangle(new Point(65, 86), jLabel3.getPreferredSize()));
-
-                        //---- overlayAttributeTextField ----
-                        overlayAttributeTextField.setText("LINKING_ID");
-                        overlayAttributeTextField.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                overlayAttributeTextFieldActionPerformed(e);
-                            }
-                        });
-                        overlayAttributeTextField.addFocusListener(new FocusAdapter() {
-                            @Override
-                            public void focusLost(FocusEvent e) {
-                                overlayAttributeTextFieldFocusLost(e);
-                            }
-                        });
-                        jPanel5.add(overlayAttributeTextField);
-                        overlayAttributeTextField.setBounds(240, 80, 228, overlayAttributeTextField.getPreferredSize().height);
-
-                        //---- overlayTrackCB ----
-                        overlayTrackCB.setSelected(true);
-                        overlayTrackCB.setText("Overlay mutation tracks");
-                        overlayTrackCB.setActionCommand("overlayTracksCB");
-                        overlayTrackCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                overlayTrackCBActionPerformed(e);
-                            }
-                        });
-                        jPanel5.add(overlayTrackCB);
-                        overlayTrackCB.setBounds(new Rectangle(new Point(6, 51), overlayTrackCB.getPreferredSize()));
-
-                        //---- jLabel2 ----
-                        jLabel2.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
-                        jPanel5.add(jLabel2);
-                        jLabel2.setBounds(new Rectangle(new Point(6, 6), jLabel2.getPreferredSize()));
-
-                        //---- jLabel4 ----
-                        jLabel4.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
-                        jPanel5.add(jLabel4);
-                        jLabel4.setBounds(new Rectangle(new Point(6, 12), jLabel4.getPreferredSize()));
-
-                        //---- colorCodeMutationsCB ----
-                        colorCodeMutationsCB.setText("Color code mutations");
-                        colorCodeMutationsCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                colorMutationsCBActionPerformed(e);
-                            }
-                        });
-                        jPanel5.add(colorCodeMutationsCB);
-                        colorCodeMutationsCB.setBounds(new Rectangle(new Point(0, 295), colorCodeMutationsCB.getPreferredSize()));
-
-                        //---- chooseMutationColorsButton ----
-                        chooseMutationColorsButton.setText("Choose colors");
-                        chooseMutationColorsButton.setFont(UIManager.getFont("Button.font"));
-                        chooseMutationColorsButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-                        chooseMutationColorsButton.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                chooseMutationColorsButtonActionPerformed(e);
-                            }
-                        });
-                        jPanel5.add(chooseMutationColorsButton);
-                        chooseMutationColorsButton.setBounds(new Rectangle(new Point(185, 292), chooseMutationColorsButton.getPreferredSize()));
-
-                        //---- label11 ----
-                        label11.setText("<html><i>Name of a sample attribute column to link mutation and data tracks");
-                        label11.setVerticalAlignment(SwingConstants.TOP);
-                        jPanel5.add(label11);
-                        label11.setBounds(110, 115, 360, 50);
-
-                        //---- showOrphanedMutationsCB ----
-                        showOrphanedMutationsCB.setText("Show orphaned mutation tracks");
-                        showOrphanedMutationsCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                showOrphanedMutationsCBActionPerformed(e);
-                            }
-                        });
-                        jPanel5.add(showOrphanedMutationsCB);
-                        showOrphanedMutationsCB.setBounds(new Rectangle(new Point(70, 180), showOrphanedMutationsCB.getPreferredSize()));
-
-                        //---- label12 ----
-                        label12.setText("<html><i>Select to show mutation tracks with no corresponding data track.");
-                        label12.setVerticalAlignment(SwingConstants.TOP);
-                        jPanel5.add(label12);
-                        label12.setBounds(110, 210, 360, 55);
-
-                        { // compute preferred size
-                            Dimension preferredSize = new Dimension();
-                            for (int i = 0; i < jPanel5.getComponentCount(); i++) {
-                                Rectangle bounds = jPanel5.getComponent(i).getBounds();
-                                preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                                preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                            }
-                            Insets insets = jPanel5.getInsets();
-                            preferredSize.width += insets.right;
-                            preferredSize.height += insets.bottom;
-                            jPanel5.setMinimumSize(preferredSize);
-                            jPanel5.setPreferredSize(preferredSize);
-                        }
                     }
-                    overlaysPanel.add(jPanel5);
-                    jPanel5.setBounds(20, 365, 690, 344);
+                    tabbedPane.addTab("Tracks", tracksPanel);
 
-                    //======== panel33 ========
+                    //======== overlaysPanel ========
                     {
-                        panel33.setBorder(new TitledBorder("VCF Variant Colors"));
-                        panel33.setLayout(null);
+                        overlaysPanel.setLayout(null);
 
-                        //---- label36 ----
-                        label36.setText("Homozygous reference");
-                        panel33.add(label36);
-                        label36.setBounds(6, 22, 339, 29);
-                        panel33.add(homRefColorChooser);
-                        homRefColorChooser.setBounds(345, 22, 55, 29);
-
-                        //---- label38 ----
-                        label38.setText("Homozygous variant");
-                        panel33.add(label38);
-                        label38.setBounds(6, 51, 339, 29);
-                        panel33.add(homVarColorChooser);
-                        homVarColorChooser.setBounds(345, 51, 55, 29);
-
-                        //---- label37 ----
-                        label37.setText("Heterozygous variant");
-                        panel33.add(label37);
-                        label37.setBounds(6, 80, 339, 29);
-                        panel33.add(hetVarColorChooser);
-                        hetVarColorChooser.setBounds(345, 80, 55, 29);
-
-                        //---- label40 ----
-                        label40.setText("No call");
-                        panel33.add(label40);
-                        label40.setBounds(6, 109, 339, 29);
-                        panel33.add(noCallColorChooser);
-                        noCallColorChooser.setBounds(345, 109, 55, 29);
-
-                        //---- label41 ----
-                        label41.setText("Allele freq - reference");
-                        panel33.add(label41);
-                        label41.setBounds(6, 138, 339, 29);
-                        panel33.add(afRefColorChooser);
-                        afRefColorChooser.setBounds(345, 138, 55, 29);
-
-                        //---- label42 ----
-                        label42.setText("Allele freq - variant");
-                        panel33.add(label42);
-                        label42.setBounds(6, 167, 339, 29);
-                        panel33.add(afVarColorChooser);
-                        afVarColorChooser.setBounds(345, 167, 55, 29);
-
-                        //---- resetVCFButton ----
-                        resetVCFButton.setText("Reset to defaults");
-                        resetVCFButton.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                resetVCFButtonActionPerformed(e);
-                            }
-                        });
-                        panel33.add(resetVCFButton);
-                        resetVCFButton.setBounds(5, 265, 144, resetVCFButton.getPreferredSize().height);
-
-                        //======== panel35 ========
+                        //======== jPanel5 ========
                         {
-                            panel35.setLayout(new FlowLayout(FlowLayout.LEFT));
+                            jPanel5.setBorder(new TitledBorder("MAF Somatic Mutations"));
+                            jPanel5.setLayout(null);
 
-                            //---- label43 ----
-                            label43.setText("Color variant by: ");
-                            panel35.add(label43);
+                            //---- jLabel3 ----
+                            jLabel3.setText("Linking attribute column:");
+                            jPanel5.add(jLabel3);
+                            jLabel3.setBounds(new Rectangle(new Point(65, 86), jLabel3.getPreferredSize()));
 
-                            //---- alleleFreqRB ----
-                            alleleFreqRB.setText("Allele frequency");
-                            panel35.add(alleleFreqRB);
-
-                            //---- alleleFractionRB ----
-                            alleleFractionRB.setText("Allele fraction");
-                            panel35.add(alleleFractionRB);
-                        }
-                        panel33.add(panel35);
-                        panel35.setBounds(5, 220, 450, panel35.getPreferredSize().height);
-
-                        { // compute preferred size
-                            Dimension preferredSize = new Dimension();
-                            for (int i = 0; i < panel33.getComponentCount(); i++) {
-                                Rectangle bounds = panel33.getComponent(i).getBounds();
-                                preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                                preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                            }
-                            Insets insets = panel33.getInsets();
-                            preferredSize.width += insets.right;
-                            preferredSize.height += insets.bottom;
-                            panel33.setMinimumSize(preferredSize);
-                            panel33.setPreferredSize(preferredSize);
-                        }
-                    }
-                    overlaysPanel.add(panel33);
-                    panel33.setBounds(20, 25, 690, 325);
-
-                    { // compute preferred size
-                        Dimension preferredSize = new Dimension();
-                        for (int i = 0; i < overlaysPanel.getComponentCount(); i++) {
-                            Rectangle bounds = overlaysPanel.getComponent(i).getBounds();
-                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                        }
-                        Insets insets = overlaysPanel.getInsets();
-                        preferredSize.width += insets.right;
-                        preferredSize.height += insets.bottom;
-                        overlaysPanel.setMinimumSize(preferredSize);
-                        overlaysPanel.setPreferredSize(preferredSize);
-                    }
-                }
-                panel24.setViewportView(overlaysPanel);
-            }
-            tabbedPane.addTab("Variants", panel24);
-
-            //======== panel25 ========
-            {
-
-                //======== chartPanel ========
-                {
-                    chartPanel.setLayout(null);
-
-                    //======== jPanel4 ========
-                    {
-                        jPanel4.setBorder(null);
-                        jPanel4.setLayout(null);
-
-                        //---- topBorderCB ----
-                        topBorderCB.setText("Draw Top Border");
-                        topBorderCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                topBorderCBActionPerformed(e);
-                                topBorderCBActionPerformed(e);
-                            }
-                        });
-                        jPanel4.add(topBorderCB);
-                        topBorderCB.setBounds(new Rectangle(new Point(30, 36), topBorderCB.getPreferredSize()));
-
-                        //---- label1 ----
-                        label1.setFont(label1.getFont());
-                        label1.setText("<html><b>Default settings for barcharts and scatterplots:");
-                        jPanel4.add(label1);
-                        label1.setBounds(10, 10, 380, 25);
-
-                        //---- chartDrawTrackNameCB ----
-                        chartDrawTrackNameCB.setText("Draw Track Label");
-                        chartDrawTrackNameCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                chartDrawTrackNameCBActionPerformed(e);
-                            }
-                        });
-                        jPanel4.add(chartDrawTrackNameCB);
-                        chartDrawTrackNameCB.setBounds(new Rectangle(new Point(30, 126), chartDrawTrackNameCB.getPreferredSize()));
-
-                        //---- bottomBorderCB ----
-                        bottomBorderCB.setText("Draw Bottom Border");
-                        bottomBorderCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                bottomBorderCBActionPerformed(e);
-                            }
-                        });
-                        jPanel4.add(bottomBorderCB);
-                        bottomBorderCB.setBounds(new Rectangle(new Point(30, 66), bottomBorderCB.getPreferredSize()));
-
-                        //---- jLabel7 ----
-                        jLabel7.setText("<html><i>Dynamically rescale to the range of the data in view.");
-                        jPanel4.add(jLabel7);
-                        jLabel7.setBounds(220, 170, 371, 50);
-
-                        //---- colorBordersCB ----
-                        colorBordersCB.setText("Color Borders");
-                        colorBordersCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                colorBordersCBActionPerformed(e);
-                            }
-                        });
-                        jPanel4.add(colorBordersCB);
-                        colorBordersCB.setBounds(new Rectangle(new Point(30, 96), colorBordersCB.getPreferredSize()));
-
-                        //---- labelYAxisCB ----
-                        labelYAxisCB.setText("Label Y Axis");
-                        labelYAxisCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                labelYAxisCBActionPerformed(e);
-                            }
-                        });
-                        jPanel4.add(labelYAxisCB);
-                        labelYAxisCB.setBounds(new Rectangle(new Point(30, 156), labelYAxisCB.getPreferredSize()));
-
-                        //---- autoscaleCB ----
-                        autoscaleCB.setText("Continuous Autoscale");
-                        autoscaleCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                autoscaleCBActionPerformed(e);
-                            }
-                        });
-                        jPanel4.add(autoscaleCB);
-                        autoscaleCB.setBounds(new Rectangle(new Point(30, 186), autoscaleCB.getPreferredSize()));
-
-                        //---- jLabel9 ----
-                        jLabel9.setText("<html><i>Draw a label centered over the track. ");
-                        jPanel4.add(jLabel9);
-                        jLabel9.setBounds(220, 159, 355, jLabel9.getPreferredSize().height);
-
-                        //---- showDatarangeCB ----
-                        showDatarangeCB.setText("Show Data Range");
-                        showDatarangeCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                showDatarangeCBActionPerformed(e);
-                            }
-                        });
-                        showDatarangeCB.addFocusListener(new FocusAdapter() {
-                            @Override
-                            public void focusLost(FocusEvent e) {
-                                showDatarangeCBFocusLost(e);
-                            }
-                        });
-                        jPanel4.add(showDatarangeCB);
-                        showDatarangeCB.setBounds(30, 216, showDatarangeCB.getPreferredSize().width, 26);
-
-                        { // compute preferred size
-                            Dimension preferredSize = new Dimension();
-                            for (int i = 0; i < jPanel4.getComponentCount(); i++) {
-                                Rectangle bounds = jPanel4.getComponent(i).getBounds();
-                                preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                                preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                            }
-                            Insets insets = jPanel4.getInsets();
-                            preferredSize.width += insets.right;
-                            preferredSize.height += insets.bottom;
-                            jPanel4.setMinimumSize(preferredSize);
-                            jPanel4.setPreferredSize(preferredSize);
-                        }
-                    }
-                    chartPanel.add(jPanel4);
-                    jPanel4.setBounds(20, 20, 650, 290);
-
-                    //======== panel1 ========
-                    {
-                        panel1.setBorder(null);
-                        panel1.setLayout(null);
-
-                        //---- label13 ----
-                        label13.setText("<html><b>Default settings for heatmaps:");
-                        panel1.add(label13);
-                        label13.setBounds(10, 5, 250, 30);
-
-                        //---- showAllHeatmapFeauresCB ----
-                        showAllHeatmapFeauresCB.setText("Show all features");
-                        showAllHeatmapFeauresCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                showAllHeatmapFeauresCBActionPerformed(e);
-                            }
-                        });
-                        panel1.add(showAllHeatmapFeauresCB);
-                        showAllHeatmapFeauresCB.setBounds(new Rectangle(new Point(20, 45), showAllHeatmapFeauresCB.getPreferredSize()));
-
-                        //---- label14 ----
-                        label14.setText("<html><i>Paint all features/segments with a minimum width of 1 pixel.  If not checked, features/segments with screen widths less than 1 pixel are not drawn.");
-                        panel1.add(label14);
-                        label14.setBounds(200, 35, 425, 60);
-                    }
-                    chartPanel.add(panel1);
-                    panel1.setBounds(20, 340, 650, 135);
-
-                    { // compute preferred size
-                        Dimension preferredSize = new Dimension();
-                        for (int i = 0; i < chartPanel.getComponentCount(); i++) {
-                            Rectangle bounds = chartPanel.getComponent(i).getBounds();
-                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                        }
-                        Insets insets = chartPanel.getInsets();
-                        preferredSize.width += insets.right;
-                        preferredSize.height += insets.bottom;
-                        chartPanel.setMinimumSize(preferredSize);
-                        chartPanel.setPreferredSize(preferredSize);
-                    }
-                }
-                panel25.setViewportView(chartPanel);
-            }
-            tabbedPane.addTab("Charts", panel25);
-
-            //======== panel20 ========
-            {
-
-                //======== alignmentPanel ========
-                {
-                    alignmentPanel.setLayout(new BoxLayout(alignmentPanel, BoxLayout.Y_AXIS));
-
-                    //======== jPanel11 ========
-                    {
-                        jPanel11.setBorder(new TitledBorder("Track Display Options"));
-                        jPanel11.setLayout(new FlowLayout(FlowLayout.LEFT));
-
-                        //======== panel32 ========
-                        {
-                            panel32.setLayout(new FlowLayout(FlowLayout.LEFT));
-
-                            //---- label39 ----
-                            label39.setText("On initial load show:");
-                            panel32.add(label39);
-
-                            //---- showAlignmentTrackCB ----
-                            showAlignmentTrackCB.setText("Alignment Track");
-                            showAlignmentTrackCB.setHorizontalAlignment(SwingConstants.LEFT);
-                            showAlignmentTrackCB.addActionListener(new ActionListener() {
+                            //---- overlayAttributeTextField ----
+                            overlayAttributeTextField.setText("LINKING_ID");
+                            overlayAttributeTextField.addActionListener(new ActionListener() {
                                 @Override
                                 public void actionPerformed(ActionEvent e) {
-                                    showAlignmentTrackCBActionPerformed(e);
+                                    overlayAttributeTextFieldActionPerformed(e);
                                 }
                             });
-                            panel32.add(showAlignmentTrackCB);
-
-                            //---- showCovTrackCB ----
-                            showCovTrackCB.setText("Coverage Track");
-                            showCovTrackCB.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    showCovTrackCBActionPerformed(e);
-                                }
-                            });
-                            panel32.add(showCovTrackCB);
-
-                            //---- showJunctionTrackCB ----
-                            showJunctionTrackCB.setText("Splice Junction Track");
-                            showJunctionTrackCB.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    showJunctionTrackCBActionPerformed(e);
-                                }
-                            });
-                            panel32.add(showJunctionTrackCB);
-                        }
-                        jPanel11.add(panel32);
-                    }
-                    alignmentPanel.add(jPanel11);
-
-                    //======== jPanel12 ========
-                    {
-                        jPanel12.setBorder(new TitledBorder("Alignment Track Options"));
-                        jPanel12.setLayout(new BoxLayout(jPanel12, BoxLayout.Y_AXIS));
-
-                        //======== panel13 ========
-                        {
-                            panel13.setLayout(new GridLayout(7, 0));
-
-                            //======== panel31 ========
-                            {
-                                panel31.setLayout(new FlowLayout(FlowLayout.LEFT));
-
-                                //---- jLabel11 ----
-                                jLabel11.setText("Visibility range threshold (kb):");
-                                jLabel11.setPreferredSize(new Dimension(250, 16));
-                                panel31.add(jLabel11);
-
-                                //---- samMaxWindowSizeField ----
-                                samMaxWindowSizeField.setText("jTextField1");
-                                samMaxWindowSizeField.setPreferredSize(new Dimension(80, 28));
-                                samMaxWindowSizeField.addFocusListener(new FocusAdapter() {
-                                    @Override
-                                    public void focusLost(FocusEvent e) {
-                                        samMaxWindowSizeFieldFocusLost(e);
-                                    }
-                                });
-                                samMaxWindowSizeField.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        samMaxWindowSizeFieldActionPerformed(e);
-                                    }
-                                });
-                                panel31.add(samMaxWindowSizeField);
-
-                                //---- jLabel12 ----
-                                jLabel12.setText("<html><i>Range at which alignments become visible");
-                                panel31.add(jLabel12);
-                            }
-                            panel13.add(panel31);
-
-                            //======== panel4 ========
-                            {
-                                panel4.setBorder(null);
-                                panel4.setLayout(new FlowLayout(FlowLayout.LEFT));
-
-                                //---- downsampleReadsCB ----
-                                downsampleReadsCB.setText("Downsample reads");
-                                downsampleReadsCB.setHorizontalAlignment(SwingConstants.LEFT);
-                                downsampleReadsCB.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        downsampleReadsCBActionPerformed(e);
-                                    }
-                                });
-                                panel4.add(downsampleReadsCB);
-                                panel4.add(hSpacer3);
-
-                                //---- label23 ----
-                                label23.setText("Max read count:");
-                                panel4.add(label23);
-
-                                //---- samDownsampleCountField ----
-                                samDownsampleCountField.setPreferredSize(new Dimension(100, 28));
-                                samDownsampleCountField.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        samDownsampleCountFieldActionPerformed(e);
-                                    }
-                                });
-                                samDownsampleCountField.addFocusListener(new FocusAdapter() {
-                                    @Override
-                                    public void focusLost(FocusEvent e) {
-                                        samDownsampleCountFieldFocusLost(e);
-                                    }
-                                });
-                                panel4.add(samDownsampleCountField);
-
-                                //---- jLabel13 ----
-                                jLabel13.setText("per window size (bases):");
-                                panel4.add(jLabel13);
-
-                                //---- samSamplingWindowField ----
-                                samSamplingWindowField.setText("jTextField1");
-                                samSamplingWindowField.setPreferredSize(new Dimension(100, 28));
-                                samSamplingWindowField.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        samSamplingWindowFieldActionPerformed(e);
-                                    }
-                                });
-                                samSamplingWindowField.addFocusListener(new FocusAdapter() {
-                                    @Override
-                                    public void focusLost(FocusEvent e) {
-                                        samSamplingWindowFieldFocusLost(e);
-                                    }
-                                });
-                                panel4.add(samSamplingWindowField);
-                            }
-                            panel13.add(panel4);
-
-                            //======== panel12 ========
-                            {
-                                panel12.setLayout(new FlowLayout(FlowLayout.LEFT));
-
-                                //---- jLabel15 ----
-                                jLabel15.setText("Mapping quality threshold:");
-                                panel12.add(jLabel15);
-
-                                //---- mappingQualityThresholdField ----
-                                mappingQualityThresholdField.setText("0");
-                                mappingQualityThresholdField.setPreferredSize(new Dimension(60, 28));
-                                mappingQualityThresholdField.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        mappingQualityThresholdFieldActionPerformed(e);
-                                    }
-                                });
-                                mappingQualityThresholdField.addFocusListener(new FocusAdapter() {
-                                    @Override
-                                    public void focusLost(FocusEvent e) {
-                                        mappingQualityThresholdFieldFocusLost(e);
-                                    }
-                                });
-                                panel12.add(mappingQualityThresholdField);
-                            }
-                            panel13.add(panel12);
-
-                            //======== panel11 ========
-                            {
-                                panel11.setBorder(null);
-                                panel11.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 5));
-
-                                //---- samShadeMismatchedBaseCB ----
-                                samShadeMismatchedBaseCB.setText("Shade mismatched bases by quality:");
-                                samShadeMismatchedBaseCB.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        samShadeMismatchedBaseCBActionPerformed(e);
-                                    }
-                                });
-                                panel11.add(samShadeMismatchedBaseCB);
-
-                                //---- samMinBaseQualityField ----
-                                samMinBaseQualityField.setText("0");
-                                samMinBaseQualityField.setPreferredSize(new Dimension(60, 28));
-                                samMinBaseQualityField.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        samMinBaseQualityFieldActionPerformed(e);
-                                    }
-                                });
-                                samMinBaseQualityField.addFocusListener(new FocusAdapter() {
-                                    @Override
-                                    public void focusLost(FocusEvent e) {
-                                        samMinBaseQualityFieldFocusLost(e);
-                                    }
-                                });
-                                panel11.add(samMinBaseQualityField);
-
-                                //---- label2 ----
-                                label2.setText("to");
-                                panel11.add(label2);
-
-                                //---- samMaxBaseQualityField ----
-                                samMaxBaseQualityField.setText("0");
-                                samMaxBaseQualityField.setPreferredSize(new Dimension(60, 28));
-                                samMaxBaseQualityField.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        samMaxBaseQualityFieldActionPerformed(e);
-                                    }
-                                });
-                                samMaxBaseQualityField.addFocusListener(new FocusAdapter() {
-                                    @Override
-                                    public void focusLost(FocusEvent e) {
-                                        samMaxBaseQualityFieldFocusLost(e);
-                                    }
-                                });
-                                panel11.add(samMaxBaseQualityField);
-                            }
-                            panel13.add(panel11);
-
-                            //======== panel9 ========
-                            {
-                                panel9.setBorder(null);
-                                panel9.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 5));
-
-                                //---- filterCB ----
-                                filterCB.setText("Filter alignments by read group");
-                                filterCB.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        filterCBActionPerformed(e);
-                                    }
-                                });
-                                panel9.add(filterCB);
-
-                                //---- filterURL ----
-                                filterURL.setText("URL or path to filter file");
-                                filterURL.setEnabled(false);
-                                filterURL.setPreferredSize(new Dimension(500, 28));
-                                filterURL.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        filterURLActionPerformed(e);
-                                    }
-                                });
-                                filterURL.addFocusListener(new FocusAdapter() {
-                                    @Override
-                                    public void focusLost(FocusEvent e) {
-                                        filterURLFocusLost(e);
-                                    }
-                                });
-                                panel9.add(filterURL);
-                            }
-                            panel13.add(panel9);
-
-                            //======== panel31b ========
-                            {
-                                panel31b.setLayout(new FlowLayout(FlowLayout.LEFT));
-
-                                //---- jLabel11b ----
-                                jLabel11b.setText("Hidden SAM tags:");
-                                jLabel11b.setPreferredSize(new Dimension(120, 16));
-                                panel31b.add(jLabel11b);
-
-                                //---- samHiddenTagsField ----
-                                samHiddenTagsField.setPreferredSize(new Dimension(250, 28));
-                                samHiddenTagsField.addFocusListener(new FocusAdapter() {
-                                    @Override
-                                    public void focusLost(FocusEvent e) {
-                                        samHiddenTagsFieldFocusLost(e);
-                                    }
-                                });
-                                samHiddenTagsField.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        samHiddenTagsFieldActionPerformed(e);
-                                    }
-                                });
-                                panel31b.add(samHiddenTagsField);
-                            }
-                            panel13.add(panel31b);
-
-                            //======== panel10 ========
-                            {
-                                panel10.setBorder(null);
-                                panel10.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 5));
-
-                                //---- samFlagInsertionsCB ----
-                                samFlagInsertionsCB.setText("Flag insertions larger than: ");
-                                samFlagInsertionsCB.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        samFlagInsertionsCBActionPerformed(e);
-                                    }
-                                });
-                                panel10.add(samFlagInsertionsCB);
-
-                                //---- samFlagInsertionsThresholdField ----
-                                samFlagInsertionsThresholdField.setPreferredSize(new Dimension(60, 28));
-                                samFlagInsertionsThresholdField.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        samFlagInsertionsThresholdFieldActionPerformed(e);
-                                    }
-                                });
-                                samFlagInsertionsThresholdField.addFocusListener(new FocusAdapter() {
-                                    @Override
-                                    public void focusLost(FocusEvent e) {
-                                        samFlagInsertionsThresholdFieldFocusLost(e);
-                                    }
-                                });
-                                panel10.add(samFlagInsertionsThresholdField);
-
-                                //---- label31 ----
-                                label31.setText("bases");
-                                panel10.add(label31);
-                            }
-                            panel13.add(panel10);
-                        }
-                        jPanel12.add(panel13);
-
-                        //======== panel8 ========
-                        {
-                            panel8.setLayout(new GridLayout(4, 1));
-
-                            //---- samFilterDuplicatesCB ----
-                            samFilterDuplicatesCB.setText("Filter duplicate reads");
-                            samFilterDuplicatesCB.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    samShowDuplicatesCBActionPerformed(e);
-                                }
-                            });
-                            panel8.add(samFilterDuplicatesCB);
-
-                            //---- samFlagUnmappedPairCB ----
-                            samFlagUnmappedPairCB.setText("Flag unmapped pairs");
-                            samFlagUnmappedPairCB.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    samFlagUnmappedPairCBActionPerformed(e);
-                                }
-                            });
-                            panel8.add(samFlagUnmappedPairCB);
-
-                            //---- filterFailedReadsCB ----
-                            filterFailedReadsCB.setText("Filter vendor failed reads");
-                            filterFailedReadsCB.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    filterVendorFailedReadsCBActionPerformed(e);
-                                }
-                            });
-                            panel8.add(filterFailedReadsCB);
-
-                            //---- showSoftClippedCB ----
-                            showSoftClippedCB.setText("Show soft-clipped bases");
-                            showSoftClippedCB.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    showSoftClippedCBActionPerformed(e);
-                                }
-                            });
-                            panel8.add(showSoftClippedCB);
-
-                            //---- filterSecondaryAlignmentsCB ----
-                            filterSecondaryAlignmentsCB.setText("Filter secondary alignments");
-                            filterSecondaryAlignmentsCB.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    filterSecondaryAlignmentsCBActionPerformed(e);
-                                }
-                            });
-                            panel8.add(filterSecondaryAlignmentsCB);
-
-                            //---- showCenterLineCB ----
-                            showCenterLineCB.setText("Show center line");
-                            showCenterLineCB.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    showCenterLineCBActionPerformed(e);
-                                }
-                            });
-                            panel8.add(showCenterLineCB);
-
-                            //---- filterSupplementaryAlignmentsCB ----
-                            filterSupplementaryAlignmentsCB.setText("Filter supplementary alignments");
-                            filterSupplementaryAlignmentsCB.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    filterSupplementaryAlignmentsCBActionPerformed(e);
-                                }
-                            });
-                            panel8.add(filterSupplementaryAlignmentsCB);
-                        }
-                        jPanel12.add(panel8);
-                    }
-                    alignmentPanel.add(jPanel12);
-
-                    //---- vSpacer5 ----
-                    vSpacer5.setPreferredSize(new Dimension(10, 5));
-                    alignmentPanel.add(vSpacer5);
-
-                    //======== panel34 ========
-                    {
-                        panel34.setBorder(new TitledBorder("Coverage Track Options"));
-                        panel34.setLayout(new FlowLayout(FlowLayout.LEFT));
-
-                        //======== panel5 ========
-                        {
-                            panel5.setLayout(new FlowLayout(FlowLayout.LEFT));
-
-                            //---- jLabel26 ----
-                            jLabel26.setText("Coverage allele-fraction threshold:");
-                            panel5.add(jLabel26);
-
-                            //---- snpThresholdField ----
-                            snpThresholdField.setText("0");
-                            snpThresholdField.setPreferredSize(new Dimension(60, 28));
-                            snpThresholdField.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    snpThresholdFieldActionPerformed(e);
-                                }
-                            });
-                            snpThresholdField.addFocusListener(new FocusAdapter() {
+                            overlayAttributeTextField.addFocusListener(new FocusAdapter() {
                                 @Override
                                 public void focusLost(FocusEvent e) {
-                                    snpThresholdFieldFocusLost(e);
+                                    overlayAttributeTextFieldFocusLost(e);
                                 }
                             });
-                            panel5.add(snpThresholdField);
+                            jPanel5.add(overlayAttributeTextField);
+                            overlayAttributeTextField.setBounds(240, 80, 228, overlayAttributeTextField.getPreferredSize().height);
 
-                            //---- hSpacer2 ----
-                            hSpacer2.setPreferredSize(new Dimension(50, 10));
-                            panel5.add(hSpacer2);
-                        }
-                        panel34.add(panel5);
-
-                        //---- useAlleleQualityCB ----
-                        useAlleleQualityCB.setText("Quality weight allele fraction");
-                        useAlleleQualityCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                useAlleleQualityCBActionPerformed(e);
-                            }
-                        });
-                        panel34.add(useAlleleQualityCB);
-                    }
-                    alignmentPanel.add(panel34);
-
-                    //======== panel3 ========
-                    {
-                        panel3.setBorder(new TitledBorder("Splice Junction Track Options"));
-                        panel3.setLayout(new FlowLayout(FlowLayout.LEFT));
-
-                        //---- showJunctionFlankingRegionsCB ----
-                        showJunctionFlankingRegionsCB.setText("Show flanking regions");
-                        showJunctionFlankingRegionsCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                showJunctionFlankingRegionsCBActionPerformed(e);
-                            }
-                        });
-                        panel3.add(showJunctionFlankingRegionsCB);
-
-                        //---- label15 ----
-                        label15.setText("Min flanking width:");
-                        panel3.add(label15);
-
-                        //---- junctionFlankingTextField ----
-                        junctionFlankingTextField.setPreferredSize(new Dimension(80, 28));
-                        junctionFlankingTextField.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                junctionFlankingTextFieldActionPerformed(e);
-                            }
-                        });
-                        junctionFlankingTextField.addFocusListener(new FocusAdapter() {
-                            @Override
-                            public void focusLost(FocusEvent e) {
-                                junctionFlankingTextFieldFocusLost(e);
-                            }
-                        });
-                        panel3.add(junctionFlankingTextField);
-
-                        //---- label16 ----
-                        label16.setText("Min junction coverage:");
-                        panel3.add(label16);
-
-                        //---- junctionCoverageTextField ----
-                        junctionCoverageTextField.setPreferredSize(new Dimension(80, 28));
-                        junctionCoverageTextField.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                junctionCoverageTextFieldActionPerformed(e);
-                            }
-                        });
-                        junctionCoverageTextField.addFocusListener(new FocusAdapter() {
-                            @Override
-                            public void focusLost(FocusEvent e) {
-                                junctionCoverageTextFieldFocusLost(e);
-                            }
-                        });
-                        panel3.add(junctionCoverageTextField);
-                    }
-                    alignmentPanel.add(panel3);
-
-                    //---- vSpacer6 ----
-                    vSpacer6.setPreferredSize(new Dimension(10, 5));
-                    alignmentPanel.add(vSpacer6);
-
-                    //======== panel2 ========
-                    {
-                        panel2.setBorder(new TitledBorder("Insert Size Options"));
-                        panel2.setToolTipText("These options control the color coding of paired alignments by inferred insert size.  Base pair values set default values.  If \"compute\" is selected, values are computed from the actual size distribution of each library.");
-                        panel2.setLayout(new GridLayout());
-
-                        //======== panel19 ========
-                        {
-                            panel19.setLayout(new GridLayout());
-
-                            //======== panel16 ========
-                            {
-                                panel16.setLayout(new GridBagLayout());
-                                ((GridBagLayout) panel16.getLayout()).columnWidths = new int[]{0, 0, 0, 0};
-                                ((GridBagLayout) panel16.getLayout()).rowHeights = new int[]{0, 0, 0};
-                                ((GridBagLayout) panel16.getLayout()).columnWeights = new double[]{0.0, 0.0, 0.0, 1.0E-4};
-                                ((GridBagLayout) panel16.getLayout()).rowWeights = new double[]{0.0, 0.0, 1.0E-4};
-
-                                //---- label9 ----
-                                label9.setText("Defaults ");
-                                panel16.add(label9, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                        new Insets(0, 0, 5, 5), 0, 0));
-
-                                //---- jLabel20 ----
-                                jLabel20.setText("Minimum (bp):");
-                                panel16.add(jLabel20, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                        new Insets(0, 0, 5, 5), 0, 0));
-
-                                //---- insertSizeMinThresholdField ----
-                                insertSizeMinThresholdField.setText("0");
-                                insertSizeMinThresholdField.setPreferredSize(new Dimension(60, 28));
-                                insertSizeMinThresholdField.setMinimumSize(new Dimension(60, 28));
-                                insertSizeMinThresholdField.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        insertSizeThresholdFieldActionPerformed(e);
-                                        insertSizeMinThresholdFieldActionPerformed(e);
-                                        insertSizeMinThresholdFieldActionPerformed(e);
-                                        insertSizeMinThresholdFieldActionPerformed(e);
-                                    }
-                                });
-                                insertSizeMinThresholdField.addFocusListener(new FocusAdapter() {
-                                    @Override
-                                    public void focusLost(FocusEvent e) {
-                                        insertSizeThresholdFieldFocusLost(e);
-                                        insertSizeMinThresholdFieldFocusLost(e);
-                                    }
-                                });
-                                panel16.add(insertSizeMinThresholdField, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                        new Insets(0, 0, 5, 0), 0, 0));
-
-                                //---- jLabel17 ----
-                                jLabel17.setText("Maximum (bp):");
-                                panel16.add(jLabel17, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
-                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                        new Insets(0, 0, 0, 5), 0, 0));
-
-                                //---- insertSizeThresholdField ----
-                                insertSizeThresholdField.setText("0");
-                                insertSizeThresholdField.setPreferredSize(new Dimension(60, 28));
-                                insertSizeThresholdField.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        insertSizeThresholdFieldActionPerformed(e);
-                                        insertSizeThresholdFieldActionPerformed(e);
-                                    }
-                                });
-                                insertSizeThresholdField.addFocusListener(new FocusAdapter() {
-                                    @Override
-                                    public void focusLost(FocusEvent e) {
-                                        insertSizeThresholdFieldFocusLost(e);
-                                    }
-                                });
-                                panel16.add(insertSizeThresholdField, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
-                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                        new Insets(0, 0, 0, 0), 0, 0));
-                            }
-                            panel19.add(panel16);
-
-                            //======== panel15 ========
-                            {
-                                panel15.setLayout(new GridBagLayout());
-                                ((GridBagLayout) panel15.getLayout()).columnWidths = new int[]{0, 0, 0, 0};
-                                ((GridBagLayout) panel15.getLayout()).rowHeights = new int[]{0, 0, 0};
-                                ((GridBagLayout) panel15.getLayout()).columnWeights = new double[]{0.0, 0.0, 0.0, 1.0E-4};
-                                ((GridBagLayout) panel15.getLayout()).rowWeights = new double[]{0.0, 0.0, 1.0E-4};
-
-                                //---- isizeComputeCB ----
-                                isizeComputeCB.setText("Compute");
-                                isizeComputeCB.setToolTipText("Min and max values are computed from the actual size distribution of each library.");
-                                isizeComputeCB.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        isizeComputeCBActionPerformed(e);
-                                        isizeComputeCBActionPerformed(e);
-                                        isizeComputeCBActionPerformed(e);
-                                    }
-                                });
-                                panel15.add(isizeComputeCB, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                        new Insets(0, 0, 5, 5), 0, 0));
-
-                                //---- jLabel30 ----
-                                jLabel30.setText("Minimum (percentile):");
-                                panel15.add(jLabel30, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                        new Insets(0, 0, 5, 5), 0, 0));
-
-                                //---- insertSizeMinPercentileField ----
-                                insertSizeMinPercentileField.setText("0");
-                                insertSizeMinPercentileField.setPreferredSize(new Dimension(60, 28));
-                                insertSizeMinPercentileField.setMinimumSize(new Dimension(60, 28));
-                                insertSizeMinPercentileField.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        insertSizeThresholdFieldActionPerformed(e);
-                                        insertSizeMinThresholdFieldActionPerformed(e);
-                                        insertSizeMinThresholdFieldActionPerformed(e);
-                                        insertSizeMinThresholdFieldActionPerformed(e);
-                                        insertSizeMinPercentileFieldActionPerformed(e);
-                                    }
-                                });
-                                insertSizeMinPercentileField.addFocusListener(new FocusAdapter() {
-                                    @Override
-                                    public void focusLost(FocusEvent e) {
-                                        insertSizeThresholdFieldFocusLost(e);
-                                        insertSizeMinThresholdFieldFocusLost(e);
-                                        insertSizeMinPercentileFieldFocusLost(e);
-                                    }
-                                });
-                                panel15.add(insertSizeMinPercentileField, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                        new Insets(0, 0, 5, 0), 0, 0));
-
-                                //---- jLabel18 ----
-                                jLabel18.setText("Maximum (percentile):");
-                                panel15.add(jLabel18, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
-                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                        new Insets(0, 0, 0, 5), 0, 0));
-
-                                //---- insertSizeMaxPercentileField ----
-                                insertSizeMaxPercentileField.setText("0");
-                                insertSizeMaxPercentileField.setPreferredSize(new Dimension(60, 28));
-                                insertSizeMaxPercentileField.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        insertSizeThresholdFieldActionPerformed(e);
-                                        insertSizeThresholdFieldActionPerformed(e);
-                                        insertSizeMaxPercentileFieldActionPerformed(e);
-                                    }
-                                });
-                                insertSizeMaxPercentileField.addFocusListener(new FocusAdapter() {
-                                    @Override
-                                    public void focusLost(FocusEvent e) {
-                                        insertSizeThresholdFieldFocusLost(e);
-                                        insertSizeMaxPercentileFieldFocusLost(e);
-                                    }
-                                });
-                                panel15.add(insertSizeMaxPercentileField, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
-                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                        new Insets(0, 0, 0, 0), 0, 0));
-                            }
-                            panel19.add(panel15);
-                        }
-                        panel2.add(panel19);
-                    }
-                    alignmentPanel.add(panel2);
-                }
-                panel20.setViewportView(alignmentPanel);
-            }
-            tabbedPane.addTab("Alignments", panel20);
-
-            //======== panel26 ========
-            {
-
-                //======== expressionPane ========
-                {
-                    expressionPane.setLayout(null);
-
-                    //======== jPanel8 ========
-                    {
-                        jPanel8.setLayout(null);
-
-                        //======== panel18 ========
-                        {
-                            panel18.setLayout(new GridBagLayout());
-                            ((GridBagLayout) panel18.getLayout()).columnWidths = new int[]{0, 0};
-                            ((GridBagLayout) panel18.getLayout()).rowHeights = new int[]{0, 0, 0, 0, 0};
-                            ((GridBagLayout) panel18.getLayout()).columnWeights = new double[]{0.0, 1.0E-4};
-                            ((GridBagLayout) panel18.getLayout()).rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 1.0E-4};
-
-                            //---- jLabel24 ----
-                            jLabel24.setText("Expression probe mapping options: ");
-                            panel18.add(jLabel24, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 15, 0), 0, 0));
-
-                            //---- jLabel21 ----
-                            jLabel21.setText("<html><i>Note: Changes will not affect currently loaded datasets.");
-                            panel18.add(jLabel21, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 15, 0), 0, 0));
-
-                            //---- expMapToLociCB ----
-                            expMapToLociCB.setText("<html>Map probes to target loci");
-                            expMapToLociCB.addActionListener(new ActionListener() {
+                            //---- overlayTrackCB ----
+                            overlayTrackCB.setSelected(true);
+                            overlayTrackCB.setText("Overlay mutation tracks");
+                            overlayTrackCB.setActionCommand("overlayTracksCB");
+                            overlayTrackCB.addActionListener(new ActionListener() {
                                 @Override
                                 public void actionPerformed(ActionEvent e) {
-                                    expMapToLociCBActionPerformed(e);
+                                    overlayTrackCBActionPerformed(e);
                                 }
                             });
-                            panel18.add(expMapToLociCB, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 15, 0), 0, 0));
+                            jPanel5.add(overlayTrackCB);
+                            overlayTrackCB.setBounds(new Rectangle(new Point(6, 51), overlayTrackCB.getPreferredSize()));
 
-                            //---- expMapToGeneCB ----
-                            expMapToGeneCB.setText("Map probes to genes");
-                            expMapToGeneCB.addActionListener(new ActionListener() {
+                            //---- jLabel2 ----
+                            jLabel2.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
+                            jPanel5.add(jLabel2);
+                            jLabel2.setBounds(new Rectangle(new Point(6, 6), jLabel2.getPreferredSize()));
+
+                            //---- jLabel4 ----
+                            jLabel4.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
+                            jPanel5.add(jLabel4);
+                            jLabel4.setBounds(new Rectangle(new Point(6, 12), jLabel4.getPreferredSize()));
+
+                            //---- colorCodeMutationsCB ----
+                            colorCodeMutationsCB.setText("Color code mutations");
+                            colorCodeMutationsCB.addActionListener(new ActionListener() {
                                 @Override
                                 public void actionPerformed(ActionEvent e) {
-                                    expMapToGeneCBActionPerformed(e);
-                                    expMapToGeneCBActionPerformed(e);
+                                    colorMutationsCBActionPerformed(e);
                                 }
                             });
-                            panel18.add(expMapToGeneCB, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 0, 0), 0, 0));
-                        }
-                        jPanel8.add(panel18);
-                        panel18.setBounds(new Rectangle(new Point(20, 20), panel18.getPreferredSize()));
+                            jPanel5.add(colorCodeMutationsCB);
+                            colorCodeMutationsCB.setBounds(new Rectangle(new Point(0, 295), colorCodeMutationsCB.getPreferredSize()));
 
-                        //======== panel17 ========
-                        {
-                            panel17.setLayout(new GridLayout(3, 1));
-
-                            //---- useProbeMappingCB ----
-                            useProbeMappingCB.setText("Use probe mapping file");
-                            useProbeMappingCB.addActionListener(new ActionListener() {
+                            //---- chooseMutationColorsButton ----
+                            chooseMutationColorsButton.setText("Choose colors");
+                            chooseMutationColorsButton.setFont(UIManager.getFont("Button.font"));
+                            chooseMutationColorsButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+                            chooseMutationColorsButton.addActionListener(new ActionListener() {
                                 @Override
                                 public void actionPerformed(ActionEvent e) {
-                                    useProbeMappingCBActionPerformed(e);
+                                    chooseMutationColorsButtonActionPerformed(e);
                                 }
                             });
-                            panel17.add(useProbeMappingCB);
+                            jPanel5.add(chooseMutationColorsButton);
+                            chooseMutationColorsButton.setBounds(new Rectangle(new Point(185, 292), chooseMutationColorsButton.getPreferredSize()));
 
-                            //---- label22 ----
-                            label22.setText("<html><i>File path or URL to BED file containing genomic locations of probes:");
-                            panel17.add(label22);
+                            //---- label11 ----
+                            label11.setText("<html><i>Name of a sample attribute column to link mutation and data tracks");
+                            label11.setVerticalAlignment(SwingConstants.TOP);
+                            jPanel5.add(label11);
+                            label11.setBounds(110, 115, 360, 50);
 
-                            //======== panel14 ========
-                            {
-                                panel14.setLayout(null);
-
-                                //---- probeMappingFileTextField ----
-                                probeMappingFileTextField.addFocusListener(new FocusAdapter() {
-                                    @Override
-                                    public void focusLost(FocusEvent e) {
-                                        probeMappingFileTextFieldFocusLost(e);
-                                    }
-                                });
-                                probeMappingFileTextField.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        probeMappingFileTextFieldActionPerformed(e);
-                                    }
-                                });
-                                panel14.add(probeMappingFileTextField);
-                                probeMappingFileTextField.setBounds(0, 0, 581, probeMappingFileTextField.getPreferredSize().height);
-
-                                //---- probeMappingBrowseButton ----
-                                probeMappingBrowseButton.setText("Browse");
-                                probeMappingBrowseButton.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        probeMappingBrowseButtonActionPerformed(e);
-                                    }
-                                });
-                                panel14.add(probeMappingBrowseButton);
-                                probeMappingBrowseButton.setBounds(new Rectangle(new Point(592, 0), probeMappingBrowseButton.getPreferredSize()));
-
-                                { // compute preferred size
-                                    Dimension preferredSize = new Dimension();
-                                    for (int i = 0; i < panel14.getComponentCount(); i++) {
-                                        Rectangle bounds = panel14.getComponent(i).getBounds();
-                                        preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                                        preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                                    }
-                                    Insets insets = panel14.getInsets();
-                                    preferredSize.width += insets.right;
-                                    preferredSize.height += insets.bottom;
-                                    panel14.setMinimumSize(preferredSize);
-                                    panel14.setPreferredSize(preferredSize);
+                            //---- showOrphanedMutationsCB ----
+                            showOrphanedMutationsCB.setText("Show orphaned mutation tracks");
+                            showOrphanedMutationsCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    showOrphanedMutationsCBActionPerformed(e);
                                 }
+                            });
+                            jPanel5.add(showOrphanedMutationsCB);
+                            showOrphanedMutationsCB.setBounds(new Rectangle(new Point(70, 180), showOrphanedMutationsCB.getPreferredSize()));
+
+                            //---- label12 ----
+                            label12.setText("<html><i>Select to show mutation tracks with no corresponding data track.");
+                            label12.setVerticalAlignment(SwingConstants.TOP);
+                            jPanel5.add(label12);
+                            label12.setBounds(110, 210, 360, 55);
+
+                            { // compute preferred size
+                                Dimension preferredSize = new Dimension();
+                                for(int i = 0; i < jPanel5.getComponentCount(); i++) {
+                                    Rectangle bounds = jPanel5.getComponent(i).getBounds();
+                                    preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                                    preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                                }
+                                Insets insets = jPanel5.getInsets();
+                                preferredSize.width += insets.right;
+                                preferredSize.height += insets.bottom;
+                                jPanel5.setMinimumSize(preferredSize);
+                                jPanel5.setPreferredSize(preferredSize);
                             }
-                            panel17.add(panel14);
                         }
-                        jPanel8.add(panel17);
-                        panel17.setBounds(20, 247, 735, panel17.getPreferredSize().height);
+                        overlaysPanel.add(jPanel5);
+                        jPanel5.setBounds(20, 365, 690, 344);
+
+                        //======== panel33 ========
+                        {
+                            panel33.setBorder(new TitledBorder("VCF Variant Colors"));
+                            panel33.setLayout(null);
+
+                            //---- label36 ----
+                            label36.setText("Homozygous reference");
+                            panel33.add(label36);
+                            label36.setBounds(6, 22, 339, 29);
+                            panel33.add(homRefColorChooser);
+                            homRefColorChooser.setBounds(345, 22, 55, 29);
+
+                            //---- label38 ----
+                            label38.setText("Homozygous variant");
+                            panel33.add(label38);
+                            label38.setBounds(6, 51, 339, 29);
+                            panel33.add(homVarColorChooser);
+                            homVarColorChooser.setBounds(345, 51, 55, 29);
+
+                            //---- label37 ----
+                            label37.setText("Heterozygous variant");
+                            panel33.add(label37);
+                            label37.setBounds(6, 80, 339, 29);
+                            panel33.add(hetVarColorChooser);
+                            hetVarColorChooser.setBounds(345, 80, 55, 29);
+
+                            //---- label40 ----
+                            label40.setText("No call");
+                            panel33.add(label40);
+                            label40.setBounds(6, 109, 339, 29);
+                            panel33.add(noCallColorChooser);
+                            noCallColorChooser.setBounds(345, 109, 55, 29);
+
+                            //---- label41 ----
+                            label41.setText("Allele freq - reference");
+                            panel33.add(label41);
+                            label41.setBounds(6, 138, 339, 29);
+                            panel33.add(afRefColorChooser);
+                            afRefColorChooser.setBounds(345, 138, 55, 29);
+
+                            //---- label42 ----
+                            label42.setText("Allele freq - variant");
+                            panel33.add(label42);
+                            label42.setBounds(6, 167, 339, 29);
+                            panel33.add(afVarColorChooser);
+                            afVarColorChooser.setBounds(345, 167, 55, 29);
+
+                            //---- resetVCFButton ----
+                            resetVCFButton.setText("Reset to defaults");
+                            resetVCFButton.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    resetVCFButtonActionPerformed(e);
+                                }
+                            });
+                            panel33.add(resetVCFButton);
+                            resetVCFButton.setBounds(5, 265, 144, resetVCFButton.getPreferredSize().height);
+
+                            //======== panel35 ========
+                            {
+                                panel35.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+                                //---- label43 ----
+                                label43.setText("Color variant by: ");
+                                panel35.add(label43);
+
+                                //---- alleleFreqRB ----
+                                alleleFreqRB.setText("Allele frequency");
+                                panel35.add(alleleFreqRB);
+
+                                //---- alleleFractionRB ----
+                                alleleFractionRB.setText("Allele fraction");
+                                panel35.add(alleleFractionRB);
+                            }
+                            panel33.add(panel35);
+                            panel35.setBounds(5, 220, 450, panel35.getPreferredSize().height);
+
+                            { // compute preferred size
+                                Dimension preferredSize = new Dimension();
+                                for(int i = 0; i < panel33.getComponentCount(); i++) {
+                                    Rectangle bounds = panel33.getComponent(i).getBounds();
+                                    preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                                    preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                                }
+                                Insets insets = panel33.getInsets();
+                                preferredSize.width += insets.right;
+                                preferredSize.height += insets.bottom;
+                                panel33.setMinimumSize(preferredSize);
+                                panel33.setPreferredSize(preferredSize);
+                            }
+                        }
+                        overlaysPanel.add(panel33);
+                        panel33.setBounds(20, 25, 690, 325);
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
-                            for (int i = 0; i < jPanel8.getComponentCount(); i++) {
-                                Rectangle bounds = jPanel8.getComponent(i).getBounds();
+                            for(int i = 0; i < overlaysPanel.getComponentCount(); i++) {
+                                Rectangle bounds = overlaysPanel.getComponent(i).getBounds();
                                 preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                                 preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
                             }
-                            Insets insets = jPanel8.getInsets();
+                            Insets insets = overlaysPanel.getInsets();
                             preferredSize.width += insets.right;
                             preferredSize.height += insets.bottom;
-                            jPanel8.setMinimumSize(preferredSize);
-                            jPanel8.setPreferredSize(preferredSize);
+                            overlaysPanel.setMinimumSize(preferredSize);
+                            overlaysPanel.setPreferredSize(preferredSize);
                         }
                     }
-                    expressionPane.add(jPanel8);
-                    jPanel8.setBounds(10, 30, 755, 470);
+                    tabbedPane.addTab("Variants", overlaysPanel);
 
-                    { // compute preferred size
-                        Dimension preferredSize = new Dimension();
-                        for (int i = 0; i < expressionPane.getComponentCount(); i++) {
-                            Rectangle bounds = expressionPane.getComponent(i).getBounds();
-                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                        }
-                        Insets insets = expressionPane.getInsets();
-                        preferredSize.width += insets.right;
-                        preferredSize.height += insets.bottom;
-                        expressionPane.setMinimumSize(preferredSize);
-                        expressionPane.setPreferredSize(preferredSize);
-                    }
-                }
-                panel26.setViewportView(expressionPane);
-            }
-            tabbedPane.addTab("Probes", panel26);
-
-            //======== panel27 ========
-            {
-
-                //======== proxyPanel ========
-                {
-                    proxyPanel.setLayout(new BoxLayout(proxyPanel, BoxLayout.X_AXIS));
-
-                    //======== jPanel15 ========
+                    //======== chartPanel ========
                     {
-                        jPanel15.setLayout(null);
+                        chartPanel.setLayout(null);
 
-                        //---- label3 ----
-                        label3.setText("<html>Note:  do not use these settings unless you receive error or warning messages about server connections.  On most systems the correct settings will be automatically copied from your web browser.");
-                        jPanel15.add(label3);
-                        label3.setBounds(22, 20, 630, 63);
+                        //======== jPanel4 ========
+                        {
+                            jPanel4.setBorder(null);
+                            jPanel4.setLayout(null);
 
-                        //---- clearProxySettingsButton ----
-                        clearProxySettingsButton.setText("Clear All");
-                        clearProxySettingsButton.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                clearProxySettingsButtonActionPerformed(e);
+                            //---- topBorderCB ----
+                            topBorderCB.setText("Draw Top Border");
+                            topBorderCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    topBorderCBActionPerformed(e);
+                                    topBorderCBActionPerformed(e);
+                                }
+                            });
+                            jPanel4.add(topBorderCB);
+                            topBorderCB.setBounds(new Rectangle(new Point(30, 36), topBorderCB.getPreferredSize()));
+
+                            //---- label1 ----
+                            label1.setFont(label1.getFont());
+                            label1.setText("<html><b>Default settings for barcharts and scatterplots:");
+                            jPanel4.add(label1);
+                            label1.setBounds(10, 10, 380, 25);
+
+                            //---- chartDrawTrackNameCB ----
+                            chartDrawTrackNameCB.setText("Draw Track Label");
+                            chartDrawTrackNameCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    chartDrawTrackNameCBActionPerformed(e);
+                                }
+                            });
+                            jPanel4.add(chartDrawTrackNameCB);
+                            chartDrawTrackNameCB.setBounds(new Rectangle(new Point(30, 126), chartDrawTrackNameCB.getPreferredSize()));
+
+                            //---- bottomBorderCB ----
+                            bottomBorderCB.setText("Draw Bottom Border");
+                            bottomBorderCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    bottomBorderCBActionPerformed(e);
+                                }
+                            });
+                            jPanel4.add(bottomBorderCB);
+                            bottomBorderCB.setBounds(new Rectangle(new Point(30, 66), bottomBorderCB.getPreferredSize()));
+
+                            //---- jLabel7 ----
+                            jLabel7.setText("<html><i>Dynamically rescale to the range of the data in view.");
+                            jPanel4.add(jLabel7);
+                            jLabel7.setBounds(220, 170, 371, 50);
+
+                            //---- colorBordersCB ----
+                            colorBordersCB.setText("Color Borders");
+                            colorBordersCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    colorBordersCBActionPerformed(e);
+                                }
+                            });
+                            jPanel4.add(colorBordersCB);
+                            colorBordersCB.setBounds(new Rectangle(new Point(30, 96), colorBordersCB.getPreferredSize()));
+
+                            //---- labelYAxisCB ----
+                            labelYAxisCB.setText("Label Y Axis");
+                            labelYAxisCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    labelYAxisCBActionPerformed(e);
+                                }
+                            });
+                            jPanel4.add(labelYAxisCB);
+                            labelYAxisCB.setBounds(new Rectangle(new Point(30, 156), labelYAxisCB.getPreferredSize()));
+
+                            //---- autoscaleCB ----
+                            autoscaleCB.setText("Continuous Autoscale");
+                            autoscaleCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    autoscaleCBActionPerformed(e);
+                                }
+                            });
+                            jPanel4.add(autoscaleCB);
+                            autoscaleCB.setBounds(new Rectangle(new Point(30, 186), autoscaleCB.getPreferredSize()));
+
+                            //---- jLabel9 ----
+                            jLabel9.setText("<html><i>Draw a label centered over the track. ");
+                            jPanel4.add(jLabel9);
+                            jLabel9.setBounds(220, 159, 355, jLabel9.getPreferredSize().height);
+
+                            //---- showDatarangeCB ----
+                            showDatarangeCB.setText("Show Data Range");
+                            showDatarangeCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    showDatarangeCBActionPerformed(e);
+                                }
+                            });
+                            showDatarangeCB.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    showDatarangeCBFocusLost(e);
+                                }
+                            });
+                            jPanel4.add(showDatarangeCB);
+                            showDatarangeCB.setBounds(30, 216, showDatarangeCB.getPreferredSize().width, 26);
+
+                            { // compute preferred size
+                                Dimension preferredSize = new Dimension();
+                                for(int i = 0; i < jPanel4.getComponentCount(); i++) {
+                                    Rectangle bounds = jPanel4.getComponent(i).getBounds();
+                                    preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                                    preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                                }
+                                Insets insets = jPanel4.getInsets();
+                                preferredSize.width += insets.right;
+                                preferredSize.height += insets.bottom;
+                                jPanel4.setMinimumSize(preferredSize);
+                                jPanel4.setPreferredSize(preferredSize);
                             }
-                        });
-                        jPanel15.add(clearProxySettingsButton);
-                        clearProxySettingsButton.setBounds(new Rectangle(new Point(15, 620), clearProxySettingsButton.getPreferredSize()));
+                        }
+                        chartPanel.add(jPanel4);
+                        jPanel4.setBounds(20, 20, 650, 290);
 
-                        //---- proxyUsernameField ----
-                        proxyUsernameField.setText("jTextField1");
-                        proxyUsernameField.setEnabled(false);
-                        proxyUsernameField.setPreferredSize(new Dimension(500, 28));
-                        proxyUsernameField.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                proxyUsernameFieldActionPerformed(e);
+                        //======== panel1 ========
+                        {
+                            panel1.setBorder(null);
+                            panel1.setLayout(null);
+
+                            //---- label13 ----
+                            label13.setText("<html><b>Default settings for heatmaps:");
+                            panel1.add(label13);
+                            label13.setBounds(10, 5, 250, 30);
+
+                            //---- showAllHeatmapFeauresCB ----
+                            showAllHeatmapFeauresCB.setText("Show all features");
+                            showAllHeatmapFeauresCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    showAllHeatmapFeauresCBActionPerformed(e);
+                                }
+                            });
+                            panel1.add(showAllHeatmapFeauresCB);
+                            showAllHeatmapFeauresCB.setBounds(new Rectangle(new Point(20, 45), showAllHeatmapFeauresCB.getPreferredSize()));
+
+                            //---- label14 ----
+                            label14.setText("<html><i>Paint all features/segments with a minimum width of 1 pixel.  If not checked, features/segments with screen widths less than 1 pixel are not drawn.");
+                            panel1.add(label14);
+                            label14.setBounds(200, 35, 425, 60);
+                        }
+                        chartPanel.add(panel1);
+                        panel1.setBounds(20, 340, 650, 135);
+
+                        { // compute preferred size
+                            Dimension preferredSize = new Dimension();
+                            for(int i = 0; i < chartPanel.getComponentCount(); i++) {
+                                Rectangle bounds = chartPanel.getComponent(i).getBounds();
+                                preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                                preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
                             }
-                        });
-                        proxyUsernameField.addFocusListener(new FocusAdapter() {
-                            @Override
-                            public void focusLost(FocusEvent e) {
-                                proxyUsernameFieldFocusLost(e);
+                            Insets insets = chartPanel.getInsets();
+                            preferredSize.width += insets.right;
+                            preferredSize.height += insets.bottom;
+                            chartPanel.setMinimumSize(preferredSize);
+                            chartPanel.setPreferredSize(preferredSize);
+                        }
+                    }
+                    tabbedPane.addTab("Charts", chartPanel);
+
+                    //======== alignmentPanel ========
+                    {
+                        alignmentPanel.setLayout(new BoxLayout(alignmentPanel, BoxLayout.Y_AXIS));
+
+                        //======== jPanel11 ========
+                        {
+                            jPanel11.setBorder(new TitledBorder("Track Display Options"));
+                            jPanel11.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+                            //======== panel32 ========
+                            {
+                                panel32.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+                                //---- label39 ----
+                                label39.setText("On initial load show:");
+                                panel32.add(label39);
+
+                                //---- showAlignmentTrackCB ----
+                                showAlignmentTrackCB.setText("Alignment Track");
+                                showAlignmentTrackCB.setHorizontalAlignment(SwingConstants.LEFT);
+                                showAlignmentTrackCB.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        showAlignmentTrackCBActionPerformed(e);
+                                    }
+                                });
+                                panel32.add(showAlignmentTrackCB);
+
+                                //---- showCovTrackCB ----
+                                showCovTrackCB.setText("Coverage Track");
+                                showCovTrackCB.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        showCovTrackCBActionPerformed(e);
+                                    }
+                                });
+                                panel32.add(showCovTrackCB);
+
+                                //---- showJunctionTrackCB ----
+                                showJunctionTrackCB.setText("Splice Junction Track");
+                                showJunctionTrackCB.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        showJunctionTrackCBActionPerformed(e);
+                                    }
+                                });
+                                panel32.add(showJunctionTrackCB);
                             }
-                        });
-                        jPanel15.add(proxyUsernameField);
-                        proxyUsernameField.setBounds(120, 495, 615, proxyUsernameField.getPreferredSize().height);
+                            jPanel11.add(panel32);
+                        }
+                        alignmentPanel.add(jPanel11);
 
-                        //---- jLabel28 ----
-                        jLabel28.setText("Username:");
-                        jPanel15.add(jLabel28);
-                        jLabel28.setBounds(20, 495, jLabel28.getPreferredSize().width, 28);
+                        //======== jPanel12 ========
+                        {
+                            jPanel12.setBorder(new TitledBorder("Alignment Track Options"));
+                            jPanel12.setLayout(new BoxLayout(jPanel12, BoxLayout.Y_AXIS));
 
-                        //---- authenticateProxyCB ----
-                        authenticateProxyCB.setText("Authentication required");
-                        authenticateProxyCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                authenticateProxyCBActionPerformed(e);
+                            //======== panel13 ========
+                            {
+                                panel13.setLayout(new GridLayout(6, 0));
+
+                                //======== panel31 ========
+                                {
+                                    panel31.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+                                    //---- jLabel11 ----
+                                    jLabel11.setText("Visibility range threshold (kb):");
+                                    jLabel11.setPreferredSize(new Dimension(250, 16));
+                                    panel31.add(jLabel11);
+
+                                    //---- samMaxWindowSizeField ----
+                                    samMaxWindowSizeField.setText("jTextField1");
+                                    samMaxWindowSizeField.setPreferredSize(new Dimension(80, 28));
+                                    samMaxWindowSizeField.addFocusListener(new FocusAdapter() {
+                                        @Override
+                                        public void focusLost(FocusEvent e) {
+                                            samMaxWindowSizeFieldFocusLost(e);
+                                        }
+                                    });
+                                    samMaxWindowSizeField.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            samMaxWindowSizeFieldActionPerformed(e);
+                                        }
+                                    });
+                                    panel31.add(samMaxWindowSizeField);
+
+                                    //---- jLabel12 ----
+                                    jLabel12.setText("<html><i>Range at which alignments become visible");
+                                    panel31.add(jLabel12);
+                                }
+                                panel13.add(panel31);
+
+                                //======== panel4 ========
+                                {
+                                    panel4.setBorder(null);
+                                    panel4.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 5));
+
+                                    //---- downsampleReadsCB ----
+                                    downsampleReadsCB.setText("Downsample reads");
+                                    downsampleReadsCB.setHorizontalAlignment(SwingConstants.LEFT);
+                                    downsampleReadsCB.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            downsampleReadsCBActionPerformed(e);
+                                        }
+                                    });
+                                    panel4.add(downsampleReadsCB);
+                                    panel4.add(hSpacer3);
+
+                                    //---- label23 ----
+                                    label23.setText("Max read count:");
+                                    panel4.add(label23);
+
+                                    //---- samDownsampleCountField ----
+                                    samDownsampleCountField.setPreferredSize(new Dimension(100, 28));
+                                    samDownsampleCountField.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            samDownsampleCountFieldActionPerformed(e);
+                                        }
+                                    });
+                                    samDownsampleCountField.addFocusListener(new FocusAdapter() {
+                                        @Override
+                                        public void focusLost(FocusEvent e) {
+                                            samDownsampleCountFieldFocusLost(e);
+                                        }
+                                    });
+                                    panel4.add(samDownsampleCountField);
+
+                                    //---- jLabel13 ----
+                                    jLabel13.setText("per window size (bases):");
+                                    panel4.add(jLabel13);
+
+                                    //---- samSamplingWindowField ----
+                                    samSamplingWindowField.setText("jTextField1");
+                                    samSamplingWindowField.setPreferredSize(new Dimension(100, 28));
+                                    samSamplingWindowField.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            samSamplingWindowFieldActionPerformed(e);
+                                        }
+                                    });
+                                    samSamplingWindowField.addFocusListener(new FocusAdapter() {
+                                        @Override
+                                        public void focusLost(FocusEvent e) {
+                                            samSamplingWindowFieldFocusLost(e);
+                                        }
+                                    });
+                                    panel4.add(samSamplingWindowField);
+                                }
+                                panel13.add(panel4);
+
+                                //======== panel11 ========
+                                {
+                                    panel11.setBorder(null);
+                                    panel11.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 5));
+
+                                    //---- samShadeMismatchedBaseCB ----
+                                    samShadeMismatchedBaseCB.setText("Shade mismatched bases by quality:");
+                                    samShadeMismatchedBaseCB.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            samShadeMismatchedBaseCBActionPerformed(e);
+                                        }
+                                    });
+                                    panel11.add(samShadeMismatchedBaseCB);
+
+                                    //---- samMinBaseQualityField ----
+                                    samMinBaseQualityField.setText("0");
+                                    samMinBaseQualityField.setPreferredSize(new Dimension(60, 28));
+                                    samMinBaseQualityField.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            samMinBaseQualityFieldActionPerformed(e);
+                                        }
+                                    });
+                                    samMinBaseQualityField.addFocusListener(new FocusAdapter() {
+                                        @Override
+                                        public void focusLost(FocusEvent e) {
+                                            samMinBaseQualityFieldFocusLost(e);
+                                        }
+                                    });
+                                    panel11.add(samMinBaseQualityField);
+
+                                    //---- label2 ----
+                                    label2.setText("to");
+                                    panel11.add(label2);
+
+                                    //---- samMaxBaseQualityField ----
+                                    samMaxBaseQualityField.setText("0");
+                                    samMaxBaseQualityField.setPreferredSize(new Dimension(60, 28));
+                                    samMaxBaseQualityField.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            samMaxBaseQualityFieldActionPerformed(e);
+                                        }
+                                    });
+                                    samMaxBaseQualityField.addFocusListener(new FocusAdapter() {
+                                        @Override
+                                        public void focusLost(FocusEvent e) {
+                                            samMaxBaseQualityFieldFocusLost(e);
+                                        }
+                                    });
+                                    panel11.add(samMaxBaseQualityField);
+                                }
+                                panel13.add(panel11);
+
+                                //======== panel10 ========
+                                {
+                                    panel10.setBorder(null);
+                                    panel10.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 5));
+
+                                    //---- samFlagInsertionsCB ----
+                                    samFlagInsertionsCB.setText("Flag insertions larger than: ");
+                                    samFlagInsertionsCB.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            samFlagInsertionsCBActionPerformed(e);
+                                        }
+                                    });
+                                    panel10.add(samFlagInsertionsCB);
+
+                                    //---- samFlagInsertionsThresholdField ----
+                                    samFlagInsertionsThresholdField.setPreferredSize(new Dimension(60, 28));
+                                    samFlagInsertionsThresholdField.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            samFlagInsertionsThresholdFieldActionPerformed(e);
+                                        }
+                                    });
+                                    samFlagInsertionsThresholdField.addFocusListener(new FocusAdapter() {
+                                        @Override
+                                        public void focusLost(FocusEvent e) {
+                                            samFlagInsertionsThresholdFieldFocusLost(e);
+                                        }
+                                    });
+                                    panel10.add(samFlagInsertionsThresholdField);
+
+                                    //---- label31 ----
+                                    label31.setText("bases");
+                                    panel10.add(label31);
+                                }
+                                panel13.add(panel10);
+
+                                //======== panel12 ========
+                                {
+                                    panel12.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+                                    //---- jLabel15 ----
+                                    jLabel15.setText("Mapping quality threshold:");
+                                    panel12.add(jLabel15);
+
+                                    //---- mappingQualityThresholdField ----
+                                    mappingQualityThresholdField.setText("0");
+                                    mappingQualityThresholdField.setPreferredSize(new Dimension(60, 28));
+                                    mappingQualityThresholdField.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            mappingQualityThresholdFieldActionPerformed(e);
+                                        }
+                                    });
+                                    mappingQualityThresholdField.addFocusListener(new FocusAdapter() {
+                                        @Override
+                                        public void focusLost(FocusEvent e) {
+                                            mappingQualityThresholdFieldFocusLost(e);
+                                        }
+                                    });
+                                    panel12.add(mappingQualityThresholdField);
+                                }
+                                panel13.add(panel12);
+
+                                //======== panel31b ========
+                                {
+                                    panel31b.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+                                    //---- jLabel11b ----
+                                    jLabel11b.setText("Hidden SAM tags:");
+                                    jLabel11b.setPreferredSize(new Dimension(120, 16));
+                                    panel31b.add(jLabel11b);
+
+                                    //---- samHiddenTagsField ----
+                                    samHiddenTagsField.setText("jTextField1b");
+                                    samHiddenTagsField.setPreferredSize(new Dimension(250, 28));
+                                    samHiddenTagsField.addFocusListener(new FocusAdapter() {
+                                        @Override
+                                        public void focusLost(FocusEvent e) {
+                                            samHiddenTagsFieldFocusLost(e);
+                                        }
+                                    });
+                                    samHiddenTagsField.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            samHiddenTagsFieldActionPerformed(e);
+                                        }
+                                    });
+                                    panel31b.add(samHiddenTagsField);
+                                }
+                                panel13.add(panel31b);
                             }
-                        });
-                        jPanel15.add(authenticateProxyCB);
-                        authenticateProxyCB.setBounds(20, 455, 571, authenticateProxyCB.getPreferredSize().height);
+                            jPanel12.add(panel13);
 
-                        //---- jLabel29 ----
-                        jLabel29.setText("Password:");
-                        jPanel15.add(jLabel29);
-                        jLabel29.setBounds(20, 540, 66, 28);
+                            //======== panel8 ========
+                            {
+                                panel8.setLayout(new GridLayout(4, 1));
 
-                        //---- proxyPasswordField ----
-                        proxyPasswordField.setText("jPasswordField1");
-                        proxyPasswordField.setEnabled(false);
-                        proxyPasswordField.addFocusListener(new FocusAdapter() {
-                            @Override
-                            public void focusLost(FocusEvent e) {
-                                proxyPasswordFieldFocusLost(e);
+                                //---- samFilterDuplicatesCB ----
+                                samFilterDuplicatesCB.setText("Filter duplicate reads");
+                                samFilterDuplicatesCB.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        samShowDuplicatesCBActionPerformed(e);
+                                    }
+                                });
+                                panel8.add(samFilterDuplicatesCB);
+
+                                //---- samFlagUnmappedPairCB ----
+                                samFlagUnmappedPairCB.setText("Flag unmapped pairs");
+                                samFlagUnmappedPairCB.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        samFlagUnmappedPairCBActionPerformed(e);
+                                    }
+                                });
+                                panel8.add(samFlagUnmappedPairCB);
+
+                                //---- filterFailedReadsCB ----
+                                filterFailedReadsCB.setText("Filter vendor failed reads");
+                                filterFailedReadsCB.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        filterVendorFailedReadsCBActionPerformed(e);
+                                    }
+                                });
+                                panel8.add(filterFailedReadsCB);
+
+                                //---- showSoftClippedCB ----
+                                showSoftClippedCB.setText("Show soft-clipped bases");
+                                showSoftClippedCB.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        showSoftClippedCBActionPerformed(e);
+                                    }
+                                });
+                                panel8.add(showSoftClippedCB);
+
+                                //---- filterSecondaryAlignmentsCB ----
+                                filterSecondaryAlignmentsCB.setText("Filter secondary alignments");
+                                filterSecondaryAlignmentsCB.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        filterSecondaryAlignmentsCBActionPerformed(e);
+                                    }
+                                });
+                                panel8.add(filterSecondaryAlignmentsCB);
+
+                                //---- showCenterLineCB ----
+                                showCenterLineCB.setText("Show center line");
+                                showCenterLineCB.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        showCenterLineCBActionPerformed(e);
+                                    }
+                                });
+                                panel8.add(showCenterLineCB);
+
+                                //---- filterSupplementaryAlignmentsCB ----
+                                filterSupplementaryAlignmentsCB.setText("Filter supplementary alignments");
+                                filterSupplementaryAlignmentsCB.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        filterSupplementaryAlignmentsCBActionPerformed(e);
+                                    }
+                                });
+                                panel8.add(filterSupplementaryAlignmentsCB);
                             }
-                        });
-                        jPanel15.add(proxyPasswordField);
-                        proxyPasswordField.setBounds(120, 540, 615, proxyPasswordField.getPreferredSize().height);
+                            jPanel12.add(panel8);
+                        }
+                        alignmentPanel.add(jPanel12);
 
-                        //---- proxyHostField ----
-                        proxyHostField.setText("jTextField1");
-                        proxyHostField.setPreferredSize(new Dimension(500, 28));
-                        proxyHostField.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                proxyHostFieldActionPerformed(e);
+                        //---- vSpacer5 ----
+                        vSpacer5.setPreferredSize(new Dimension(10, 5));
+                        alignmentPanel.add(vSpacer5);
+
+                        //======== panel34 ========
+                        {
+                            panel34.setBorder(new TitledBorder("Coverage Track Options"));
+                            panel34.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+                            //======== panel5 ========
+                            {
+                                panel5.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+                                //---- jLabel26 ----
+                                jLabel26.setText("Coverage allele-fraction threshold:");
+                                panel5.add(jLabel26);
+
+                                //---- snpThresholdField ----
+                                snpThresholdField.setText("0");
+                                snpThresholdField.setPreferredSize(new Dimension(60, 28));
+                                snpThresholdField.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        snpThresholdFieldActionPerformed(e);
+                                    }
+                                });
+                                snpThresholdField.addFocusListener(new FocusAdapter() {
+                                    @Override
+                                    public void focusLost(FocusEvent e) {
+                                        snpThresholdFieldFocusLost(e);
+                                    }
+                                });
+                                panel5.add(snpThresholdField);
+
+                                //---- hSpacer2 ----
+                                hSpacer2.setPreferredSize(new Dimension(50, 10));
+                                panel5.add(hSpacer2);
                             }
-                        });
-                        proxyHostField.addFocusListener(new FocusAdapter() {
-                            @Override
-                            public void focusLost(FocusEvent e) {
-                                proxyHostFieldFocusLost(e);
+                            panel34.add(panel5);
+
+                            //---- useAlleleQualityCB ----
+                            useAlleleQualityCB.setText("Quality weight allele fraction");
+                            useAlleleQualityCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    useAlleleQualityCBActionPerformed(e);
+                                }
+                            });
+                            panel34.add(useAlleleQualityCB);
+                        }
+                        alignmentPanel.add(panel34);
+
+                        //======== panel3 ========
+                        {
+                            panel3.setBorder(new TitledBorder("Splice Junction Track Options"));
+                            panel3.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+                            //---- showJunctionFlankingRegionsCB ----
+                            showJunctionFlankingRegionsCB.setText("Show flanking regions");
+                            showJunctionFlankingRegionsCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    showJunctionFlankingRegionsCBActionPerformed(e);
+                                }
+                            });
+                            panel3.add(showJunctionFlankingRegionsCB);
+
+                            //---- label15 ----
+                            label15.setText("Min flanking width:");
+                            panel3.add(label15);
+
+                            //---- junctionFlankingTextField ----
+                            junctionFlankingTextField.setPreferredSize(new Dimension(80, 28));
+                            junctionFlankingTextField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    junctionFlankingTextFieldActionPerformed(e);
+                                }
+                            });
+                            junctionFlankingTextField.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    junctionFlankingTextFieldFocusLost(e);
+                                }
+                            });
+                            panel3.add(junctionFlankingTextField);
+
+                            //---- label16 ----
+                            label16.setText("Min junction coverage:");
+                            panel3.add(label16);
+
+                            //---- junctionCoverageTextField ----
+                            junctionCoverageTextField.setPreferredSize(new Dimension(80, 28));
+                            junctionCoverageTextField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    junctionCoverageTextFieldActionPerformed(e);
+                                }
+                            });
+                            junctionCoverageTextField.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    junctionCoverageTextFieldFocusLost(e);
+                                }
+                            });
+                            panel3.add(junctionCoverageTextField);
+                        }
+                        alignmentPanel.add(panel3);
+
+                        //---- vSpacer6 ----
+                        vSpacer6.setPreferredSize(new Dimension(10, 5));
+                        alignmentPanel.add(vSpacer6);
+
+                        //======== panel2 ========
+                        {
+                            panel2.setBorder(new TitledBorder("Insert Size Options"));
+                            panel2.setToolTipText("These options control the color coding of paired alignments by inferred insert size.  Base pair values set default values.  If \"compute\" is selected, values are computed from the actual size distribution of each library.");
+                            panel2.setLayout(new GridLayout());
+
+                            //======== panel19 ========
+                            {
+                                panel19.setLayout(new GridLayout());
+
+                                //======== panel16 ========
+                                {
+                                    panel16.setLayout(new GridBagLayout());
+                                    ((GridBagLayout)panel16.getLayout()).columnWidths = new int[] {0, 0, 0, 0};
+                                    ((GridBagLayout)panel16.getLayout()).rowHeights = new int[] {0, 0, 0};
+                                    ((GridBagLayout)panel16.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 1.0E-4};
+                                    ((GridBagLayout)panel16.getLayout()).rowWeights = new double[] {0.0, 0.0, 1.0E-4};
+
+                                    //---- label9 ----
+                                    label9.setText("Defaults ");
+                                    panel16.add(label9, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                        new Insets(0, 0, 5, 5), 0, 0));
+
+                                    //---- jLabel20 ----
+                                    jLabel20.setText("Minimum (bp):");
+                                    panel16.add(jLabel20, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                        new Insets(0, 0, 5, 5), 0, 0));
+
+                                    //---- insertSizeMinThresholdField ----
+                                    insertSizeMinThresholdField.setText("0");
+                                    insertSizeMinThresholdField.setPreferredSize(new Dimension(60, 28));
+                                    insertSizeMinThresholdField.setMinimumSize(new Dimension(60, 28));
+                                    insertSizeMinThresholdField.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            insertSizeThresholdFieldActionPerformed(e);
+                                            insertSizeMinThresholdFieldActionPerformed(e);
+                                            insertSizeMinThresholdFieldActionPerformed(e);
+                                            insertSizeMinThresholdFieldActionPerformed(e);
+                                        }
+                                    });
+                                    insertSizeMinThresholdField.addFocusListener(new FocusAdapter() {
+                                        @Override
+                                        public void focusLost(FocusEvent e) {
+                                            insertSizeThresholdFieldFocusLost(e);
+                                            insertSizeMinThresholdFieldFocusLost(e);
+                                        }
+                                    });
+                                    panel16.add(insertSizeMinThresholdField, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
+                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                        new Insets(0, 0, 5, 0), 0, 0));
+
+                                    //---- jLabel17 ----
+                                    jLabel17.setText("Maximum (bp):");
+                                    panel16.add(jLabel17, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
+                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                        new Insets(0, 0, 0, 5), 0, 0));
+
+                                    //---- insertSizeThresholdField ----
+                                    insertSizeThresholdField.setText("0");
+                                    insertSizeThresholdField.setPreferredSize(new Dimension(60, 28));
+                                    insertSizeThresholdField.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            insertSizeThresholdFieldActionPerformed(e);
+                                            insertSizeThresholdFieldActionPerformed(e);
+                                        }
+                                    });
+                                    insertSizeThresholdField.addFocusListener(new FocusAdapter() {
+                                        @Override
+                                        public void focusLost(FocusEvent e) {
+                                            insertSizeThresholdFieldFocusLost(e);
+                                        }
+                                    });
+                                    panel16.add(insertSizeThresholdField, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
+                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                        new Insets(0, 0, 0, 0), 0, 0));
+                                }
+                                panel19.add(panel16);
+
+                                //======== panel15 ========
+                                {
+                                    panel15.setLayout(new GridBagLayout());
+                                    ((GridBagLayout)panel15.getLayout()).columnWidths = new int[] {0, 0, 0, 0};
+                                    ((GridBagLayout)panel15.getLayout()).rowHeights = new int[] {0, 0, 0};
+                                    ((GridBagLayout)panel15.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 1.0E-4};
+                                    ((GridBagLayout)panel15.getLayout()).rowWeights = new double[] {0.0, 0.0, 1.0E-4};
+
+                                    //---- isizeComputeCB ----
+                                    isizeComputeCB.setText("Compute");
+                                    isizeComputeCB.setToolTipText("Min and max values are computed from the actual size distribution of each library.");
+                                    isizeComputeCB.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            isizeComputeCBActionPerformed(e);
+                                            isizeComputeCBActionPerformed(e);
+                                            isizeComputeCBActionPerformed(e);
+                                        }
+                                    });
+                                    panel15.add(isizeComputeCB, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                        new Insets(0, 0, 5, 5), 0, 0));
+
+                                    //---- jLabel30 ----
+                                    jLabel30.setText("Minimum (percentile):");
+                                    panel15.add(jLabel30, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                        new Insets(0, 0, 5, 5), 0, 0));
+
+                                    //---- insertSizeMinPercentileField ----
+                                    insertSizeMinPercentileField.setText("0");
+                                    insertSizeMinPercentileField.setPreferredSize(new Dimension(60, 28));
+                                    insertSizeMinPercentileField.setMinimumSize(new Dimension(60, 28));
+                                    insertSizeMinPercentileField.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            insertSizeThresholdFieldActionPerformed(e);
+                                            insertSizeMinThresholdFieldActionPerformed(e);
+                                            insertSizeMinThresholdFieldActionPerformed(e);
+                                            insertSizeMinThresholdFieldActionPerformed(e);
+                                            insertSizeMinPercentileFieldActionPerformed(e);
+                                        }
+                                    });
+                                    insertSizeMinPercentileField.addFocusListener(new FocusAdapter() {
+                                        @Override
+                                        public void focusLost(FocusEvent e) {
+                                            insertSizeThresholdFieldFocusLost(e);
+                                            insertSizeMinThresholdFieldFocusLost(e);
+                                            insertSizeMinPercentileFieldFocusLost(e);
+                                        }
+                                    });
+                                    panel15.add(insertSizeMinPercentileField, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
+                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                        new Insets(0, 0, 5, 0), 0, 0));
+
+                                    //---- jLabel18 ----
+                                    jLabel18.setText("Maximum (percentile):");
+                                    panel15.add(jLabel18, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
+                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                        new Insets(0, 0, 0, 5), 0, 0));
+
+                                    //---- insertSizeMaxPercentileField ----
+                                    insertSizeMaxPercentileField.setText("0");
+                                    insertSizeMaxPercentileField.setPreferredSize(new Dimension(60, 28));
+                                    insertSizeMaxPercentileField.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            insertSizeThresholdFieldActionPerformed(e);
+                                            insertSizeThresholdFieldActionPerformed(e);
+                                            insertSizeMaxPercentileFieldActionPerformed(e);
+                                        }
+                                    });
+                                    insertSizeMaxPercentileField.addFocusListener(new FocusAdapter() {
+                                        @Override
+                                        public void focusLost(FocusEvent e) {
+                                            insertSizeThresholdFieldFocusLost(e);
+                                            insertSizeMaxPercentileFieldFocusLost(e);
+                                        }
+                                    });
+                                    panel15.add(insertSizeMaxPercentileField, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
+                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                        new Insets(0, 0, 0, 0), 0, 0));
+                                }
+                                panel19.add(panel15);
                             }
-                        });
-                        jPanel15.add(proxyHostField);
-                        proxyHostField.setBounds(120, 155, 615, proxyHostField.getPreferredSize().height);
+                            panel2.add(panel19);
+                        }
+                        alignmentPanel.add(panel2);
+                    }
+                    tabbedPane.addTab("Alignments", alignmentPanel);
 
-                        //---- proxyPortField ----
-                        proxyPortField.setText("jTextField1");
-                        proxyPortField.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                proxyPortFieldActionPerformed(e);
+                    //======== expressionPane ========
+                    {
+                        expressionPane.setLayout(null);
+
+                        //======== jPanel8 ========
+                        {
+                            jPanel8.setLayout(null);
+
+                            //======== panel18 ========
+                            {
+                                panel18.setLayout(new GridBagLayout());
+                                ((GridBagLayout)panel18.getLayout()).columnWidths = new int[] {0, 0};
+                                ((GridBagLayout)panel18.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0};
+                                ((GridBagLayout)panel18.getLayout()).columnWeights = new double[] {0.0, 1.0E-4};
+                                ((GridBagLayout)panel18.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 1.0E-4};
+
+                                //---- jLabel24 ----
+                                jLabel24.setText("Expression probe mapping options: ");
+                                panel18.add(jLabel24, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                    new Insets(0, 0, 15, 0), 0, 0));
+
+                                //---- jLabel21 ----
+                                jLabel21.setText("<html><i>Note: Changes will not affect currently loaded datasets.");
+                                panel18.add(jLabel21, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                    new Insets(0, 0, 15, 0), 0, 0));
+
+                                //---- expMapToLociCB ----
+                                expMapToLociCB.setText("<html>Map probes to target loci");
+                                expMapToLociCB.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        expMapToLociCBActionPerformed(e);
+                                    }
+                                });
+                                panel18.add(expMapToLociCB, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                    new Insets(0, 0, 15, 0), 0, 0));
+
+                                //---- expMapToGeneCB ----
+                                expMapToGeneCB.setText("Map probes to genes");
+                                expMapToGeneCB.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        expMapToGeneCBActionPerformed(e);
+                                        expMapToGeneCBActionPerformed(e);
+                                    }
+                                });
+                                panel18.add(expMapToGeneCB, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
+                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                                    new Insets(0, 0, 0, 0), 0, 0));
                             }
-                        });
-                        proxyPortField.addFocusListener(new FocusAdapter() {
-                            @Override
-                            public void focusLost(FocusEvent e) {
-                                proxyPortFieldFocusLost(e);
+                            jPanel8.add(panel18);
+                            panel18.setBounds(new Rectangle(new Point(20, 20), panel18.getPreferredSize()));
+
+                            //======== panel17 ========
+                            {
+                                panel17.setLayout(new GridLayout(3, 1));
+
+                                //---- useProbeMappingCB ----
+                                useProbeMappingCB.setText("Use probe mapping file");
+                                useProbeMappingCB.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        useProbeMappingCBActionPerformed(e);
+                                    }
+                                });
+                                panel17.add(useProbeMappingCB);
+
+                                //---- label22 ----
+                                label22.setText("<html><i>File path or URL to BED file containing genomic locations of probes:");
+                                panel17.add(label22);
+
+                                //======== panel14 ========
+                                {
+                                    panel14.setLayout(null);
+
+                                    //---- probeMappingFileTextField ----
+                                    probeMappingFileTextField.addFocusListener(new FocusAdapter() {
+                                        @Override
+                                        public void focusLost(FocusEvent e) {
+                                            probeMappingFileTextFieldFocusLost(e);
+                                        }
+                                    });
+                                    probeMappingFileTextField.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            probeMappingFileTextFieldActionPerformed(e);
+                                        }
+                                    });
+                                    panel14.add(probeMappingFileTextField);
+                                    probeMappingFileTextField.setBounds(0, 0, 581, probeMappingFileTextField.getPreferredSize().height);
+
+                                    //---- probeMappingBrowseButton ----
+                                    probeMappingBrowseButton.setText("Browse");
+                                    probeMappingBrowseButton.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            probeMappingBrowseButtonActionPerformed(e);
+                                        }
+                                    });
+                                    panel14.add(probeMappingBrowseButton);
+                                    probeMappingBrowseButton.setBounds(new Rectangle(new Point(592, 0), probeMappingBrowseButton.getPreferredSize()));
+
+                                    { // compute preferred size
+                                        Dimension preferredSize = new Dimension();
+                                        for(int i = 0; i < panel14.getComponentCount(); i++) {
+                                            Rectangle bounds = panel14.getComponent(i).getBounds();
+                                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                                        }
+                                        Insets insets = panel14.getInsets();
+                                        preferredSize.width += insets.right;
+                                        preferredSize.height += insets.bottom;
+                                        panel14.setMinimumSize(preferredSize);
+                                        panel14.setPreferredSize(preferredSize);
+                                    }
+                                }
+                                panel17.add(panel14);
                             }
-                        });
-                        jPanel15.add(proxyPortField);
-                        proxyPortField.setBounds(120, 213, 615, proxyPortField.getPreferredSize().height);
+                            jPanel8.add(panel17);
+                            panel17.setBounds(20, 247, 735, panel17.getPreferredSize().height);
 
-                        //---- jLabel27 ----
-                        jLabel27.setText("Proxy port:");
-                        jPanel15.add(jLabel27);
-                        jLabel27.setBounds(20, 213, 95, 28);
-
-                        //---- jLabel23 ----
-                        jLabel23.setText("Proxy host:");
-                        jPanel15.add(jLabel23);
-                        jLabel23.setBounds(20, 155, 95, 28);
-
-                        //---- useProxyCB ----
-                        useProxyCB.setText("Use proxy");
-                        useProxyCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                useProxyCBActionPerformed(e);
+                            { // compute preferred size
+                                Dimension preferredSize = new Dimension();
+                                for(int i = 0; i < jPanel8.getComponentCount(); i++) {
+                                    Rectangle bounds = jPanel8.getComponent(i).getBounds();
+                                    preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                                    preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                                }
+                                Insets insets = jPanel8.getInsets();
+                                preferredSize.width += insets.right;
+                                preferredSize.height += insets.bottom;
+                                jPanel8.setMinimumSize(preferredSize);
+                                jPanel8.setPreferredSize(preferredSize);
                             }
-                        });
-                        jPanel15.add(useProxyCB);
-                        useProxyCB.setBounds(new Rectangle(new Point(20, 105), useProxyCB.getPreferredSize()));
+                        }
+                        expressionPane.add(jPanel8);
+                        jPanel8.setBounds(10, 30, 755, 470);
 
-                        //---- proxyTypeCB ----
-                        proxyTypeCB.setModel(new DefaultComboBoxModel(new String[]{
+                        { // compute preferred size
+                            Dimension preferredSize = new Dimension();
+                            for(int i = 0; i < expressionPane.getComponentCount(); i++) {
+                                Rectangle bounds = expressionPane.getComponent(i).getBounds();
+                                preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                                preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                            }
+                            Insets insets = expressionPane.getInsets();
+                            preferredSize.width += insets.right;
+                            preferredSize.height += insets.bottom;
+                            expressionPane.setMinimumSize(preferredSize);
+                            expressionPane.setPreferredSize(preferredSize);
+                        }
+                    }
+                    tabbedPane.addTab("Probes", expressionPane);
+
+                    //======== proxyPanel ========
+                    {
+                        proxyPanel.setLayout(new BoxLayout(proxyPanel, BoxLayout.X_AXIS));
+
+                        //======== jPanel15 ========
+                        {
+                            jPanel15.setLayout(null);
+
+                            //---- label3 ----
+                            label3.setText("<html>Note:  do not use these settings unless you receive error or warning messages about server connections.  On most systems the correct settings will be automatically copied from your web browser.");
+                            jPanel15.add(label3);
+                            label3.setBounds(22, 20, 630, 63);
+
+                            //---- clearProxySettingsButton ----
+                            clearProxySettingsButton.setText("Clear All");
+                            clearProxySettingsButton.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    clearProxySettingsButtonActionPerformed(e);
+                                }
+                            });
+                            jPanel15.add(clearProxySettingsButton);
+                            clearProxySettingsButton.setBounds(new Rectangle(new Point(15, 620), clearProxySettingsButton.getPreferredSize()));
+
+                            //---- proxyUsernameField ----
+                            proxyUsernameField.setText("jTextField1");
+                            proxyUsernameField.setEnabled(false);
+                            proxyUsernameField.setPreferredSize(new Dimension(500, 28));
+                            proxyUsernameField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    proxyUsernameFieldActionPerformed(e);
+                                }
+                            });
+                            proxyUsernameField.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    proxyUsernameFieldFocusLost(e);
+                                }
+                            });
+                            jPanel15.add(proxyUsernameField);
+                            proxyUsernameField.setBounds(120, 495, 615, proxyUsernameField.getPreferredSize().height);
+
+                            //---- jLabel28 ----
+                            jLabel28.setText("Username:");
+                            jPanel15.add(jLabel28);
+                            jLabel28.setBounds(20, 495, jLabel28.getPreferredSize().width, 28);
+
+                            //---- authenticateProxyCB ----
+                            authenticateProxyCB.setText("Authentication required");
+                            authenticateProxyCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    authenticateProxyCBActionPerformed(e);
+                                }
+                            });
+                            jPanel15.add(authenticateProxyCB);
+                            authenticateProxyCB.setBounds(20, 455, 571, authenticateProxyCB.getPreferredSize().height);
+
+                            //---- jLabel29 ----
+                            jLabel29.setText("Password:");
+                            jPanel15.add(jLabel29);
+                            jLabel29.setBounds(20, 540, 66, 28);
+
+                            //---- proxyPasswordField ----
+                            proxyPasswordField.setText("jPasswordField1");
+                            proxyPasswordField.setEnabled(false);
+                            proxyPasswordField.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    proxyPasswordFieldFocusLost(e);
+                                }
+                            });
+                            jPanel15.add(proxyPasswordField);
+                            proxyPasswordField.setBounds(120, 540, 615, proxyPasswordField.getPreferredSize().height);
+
+                            //---- proxyHostField ----
+                            proxyHostField.setText("jTextField1");
+                            proxyHostField.setPreferredSize(new Dimension(500, 28));
+                            proxyHostField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    proxyHostFieldActionPerformed(e);
+                                }
+                            });
+                            proxyHostField.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    proxyHostFieldFocusLost(e);
+                                }
+                            });
+                            jPanel15.add(proxyHostField);
+                            proxyHostField.setBounds(120, 155, 615, proxyHostField.getPreferredSize().height);
+
+                            //---- proxyPortField ----
+                            proxyPortField.setText("jTextField1");
+                            proxyPortField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    proxyPortFieldActionPerformed(e);
+                                }
+                            });
+                            proxyPortField.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    proxyPortFieldFocusLost(e);
+                                }
+                            });
+                            jPanel15.add(proxyPortField);
+                            proxyPortField.setBounds(120, 213, 615, proxyPortField.getPreferredSize().height);
+
+                            //---- jLabel27 ----
+                            jLabel27.setText("Proxy port:");
+                            jPanel15.add(jLabel27);
+                            jLabel27.setBounds(20, 213, 95, 28);
+
+                            //---- jLabel23 ----
+                            jLabel23.setText("Proxy host:");
+                            jPanel15.add(jLabel23);
+                            jLabel23.setBounds(20, 155, 95, 28);
+
+                            //---- useProxyCB ----
+                            useProxyCB.setText("Use proxy");
+                            useProxyCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    useProxyCBActionPerformed(e);
+                                }
+                            });
+                            jPanel15.add(useProxyCB);
+                            useProxyCB.setBounds(new Rectangle(new Point(20, 105), useProxyCB.getPreferredSize()));
+
+                            //---- proxyTypeCB ----
+                            proxyTypeCB.setModel(new DefaultComboBoxModel(new String[] {
                                 "HTTP",
                                 "SOCKS",
                                 "DIRECT"
-                        }));
-                        proxyTypeCB.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                proxyTypeCBActionPerformed(e);
-                            }
-                        });
-                        jPanel15.add(proxyTypeCB);
-                        proxyTypeCB.setBounds(120, 271, 615, proxyTypeCB.getPreferredSize().height);
+                            }));
+                            proxyTypeCB.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    proxyTypeCBActionPerformed(e);
+                                }
+                            });
+                            jPanel15.add(proxyTypeCB);
+                            proxyTypeCB.setBounds(120, 271, 615, proxyTypeCB.getPreferredSize().height);
 
-                        //---- label27 ----
-                        label27.setText("Proxy type:");
-                        jPanel15.add(label27);
-                        label27.setBounds(20, 271, 95, 27);
+                            //---- label27 ----
+                            label27.setText("Proxy type:");
+                            jPanel15.add(label27);
+                            label27.setBounds(20, 271, 95, 27);
 
-                        //---- label35 ----
-                        label35.setText("<html>Whitelist:  <i>comma delimited list of hosts to whitelist (bypass proxy)</i>");
-                        jPanel15.add(label35);
-                        label35.setBounds(new Rectangle(new Point(20, 328), label35.getPreferredSize()));
+                            //---- label35 ----
+                            label35.setText("<html>Whitelist:  <i>comma delimited list of hosts to whitelist (bypass proxy)</i>");
+                            jPanel15.add(label35);
+                            label35.setBounds(new Rectangle(new Point(20, 328), label35.getPreferredSize()));
 
-                        //---- proxyWhitelistTextArea ----
-                        proxyWhitelistTextArea.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                proxyWhitelistTextAreaActionPerformed(e);
-                            }
-                        });
-                        proxyWhitelistTextArea.addFocusListener(new FocusAdapter() {
-                            @Override
-                            public void focusLost(FocusEvent e) {
-                                proxyWhitelistTextAreaFocusLost(e);
-                            }
-                        });
-                        jPanel15.add(proxyWhitelistTextArea);
-                        proxyWhitelistTextArea.setBounds(20, 355, 715, 35);
+                            //---- proxyWhitelistTextArea ----
+                            proxyWhitelistTextArea.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    proxyWhitelistTextAreaActionPerformed(e);
+                                }
+                            });
+                            proxyWhitelistTextArea.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    proxyWhitelistTextAreaFocusLost(e);
+                                }
+                            });
+                            jPanel15.add(proxyWhitelistTextArea);
+                            proxyWhitelistTextArea.setBounds(20, 355, 715, 35);
 
-                        { // compute preferred size
-                            Dimension preferredSize = new Dimension();
-                            for (int i = 0; i < jPanel15.getComponentCount(); i++) {
-                                Rectangle bounds = jPanel15.getComponent(i).getBounds();
-                                preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                                preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                            { // compute preferred size
+                                Dimension preferredSize = new Dimension();
+                                for(int i = 0; i < jPanel15.getComponentCount(); i++) {
+                                    Rectangle bounds = jPanel15.getComponent(i).getBounds();
+                                    preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                                    preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                                }
+                                Insets insets = jPanel15.getInsets();
+                                preferredSize.width += insets.right;
+                                preferredSize.height += insets.bottom;
+                                jPanel15.setMinimumSize(preferredSize);
+                                jPanel15.setPreferredSize(preferredSize);
                             }
-                            Insets insets = jPanel15.getInsets();
-                            preferredSize.width += insets.right;
-                            preferredSize.height += insets.bottom;
-                            jPanel15.setMinimumSize(preferredSize);
-                            jPanel15.setPreferredSize(preferredSize);
                         }
+                        proxyPanel.add(jPanel15);
                     }
-                    proxyPanel.add(jPanel15);
-                }
-                panel27.setViewportView(proxyPanel);
-            }
-            tabbedPane.addTab("Proxy", panel27);
+                    tabbedPane.addTab("Proxy", proxyPanel);
 
-            //======== panel28 ========
-            {
-
-                //======== ionTorrentPanel ========
-                {
-                    ionTorrentPanel.setLayout(new BoxLayout(ionTorrentPanel, BoxLayout.Y_AXIS));
-
-                    //======== panel6 ========
+                    //======== ionTorrentPanel ========
                     {
-                        panel6.setBorder(new TitledBorder("Flow signal distribution chart options"));
-                        panel6.setLayout(null);
+                        ionTorrentPanel.setLayout(new BoxLayout(ionTorrentPanel, BoxLayout.Y_AXIS));
 
-                        //---- hideFirstHP ----
-                        hideFirstHP.setText("Skip flow signals for homo polymers at start or end of read (including HP of size 1)");
-                        hideFirstHP.setToolTipText("Discards flow signals from HP at beginning or end of reads (including HP of size 1), in order to not skew the results due to short reads");
-                        hideFirstHP.setSelected(true);
-                        hideFirstHP.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                showJunctionTrackCBActionPerformed(e);
-                                hideFirstHPActionPerformed(e);
+                        //======== panel6 ========
+                        {
+                            panel6.setBorder(new TitledBorder("Flow signal distribution chart options"));
+                            panel6.setLayout(null);
+
+                            //---- hideFirstHP ----
+                            hideFirstHP.setText("Skip flow signals for homo polymers at start or end of read (including HP of size 1)");
+                            hideFirstHP.setToolTipText("Discards flow signals from HP at beginning or end of reads (including HP of size 1), in order to not skew the results due to short reads");
+                            hideFirstHP.setSelected(true);
+                            hideFirstHP.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    showJunctionTrackCBActionPerformed(e);
+                                    hideFirstHPActionPerformed(e);
+                                }
+                            });
+                            panel6.add(hideFirstHP);
+                            hideFirstHP.setBounds(new Rectangle(new Point(5, 25), hideFirstHP.getPreferredSize()));
+
+                            //---- binSizeText ----
+                            binSizeText.setToolTipText("The size of the bins by which the data in the chart is grouped. Small bin size means small granularity, large bin size means smoother chart");
+                            binSizeText.setText("15");
+                            binSizeText.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    junctionFlankingTextFieldActionPerformed(e);
+                                    binSizeTextActionPerformed(e);
+                                    binSizeTextActionPerformed(e);
+                                }
+                            });
+                            binSizeText.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    junctionFlankingTextFieldFocusLost(e);
+                                    binSizeTextFocusLost(e);
+                                }
+                            });
+                            panel6.add(binSizeText);
+                            binSizeText.setBounds(135, 55, 95, 25);
+
+                            //---- label28 ----
+                            label28.setText("Bin size in chart:");
+                            panel6.add(label28);
+                            label28.setBounds(10, 55, 125, label28.getPreferredSize().height);
+
+                            //---- label29 ----
+                            label29.setText("Default chart type:");
+                            panel6.add(label29);
+                            label29.setBounds(new Rectangle(new Point(10, 90), label29.getPreferredSize()));
+
+                            //---- radioLine ----
+                            radioLine.setText("line chart");
+                            radioLine.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    radioButton1ActionPerformed(e);
+                                    radioLineActionPerformed(e);
+                                }
+                            });
+                            panel6.add(radioLine);
+                            radioLine.setBounds(new Rectangle(new Point(135, 90), radioLine.getPreferredSize()));
+
+                            //---- radioArea ----
+                            radioArea.setText("area chart");
+                            radioArea.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    radioAreaActionPerformed(e);
+                                }
+                            });
+                            panel6.add(radioArea);
+                            radioArea.setBounds(new Rectangle(new Point(135, 115), radioArea.getPreferredSize()));
+
+                            //---- radioBar ----
+                            radioBar.setText("bar chart");
+                            radioBar.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    radioBarActionPerformed(e);
+                                }
+                            });
+                            panel6.add(radioBar);
+                            radioBar.setBounds(new Rectangle(new Point(135, 140), radioBar.getPreferredSize()));
+
+                            //---- radioStacked ----
+                            radioStacked.setText("(stacked bar chart)");
+                            radioStacked.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    radioStackedActionPerformed(e);
+                                }
+                            });
+                            panel6.add(radioStacked);
+                            radioStacked.setBounds(new Rectangle(new Point(135, 165), radioStacked.getPreferredSize()));
+
+                            { // compute preferred size
+                                Dimension preferredSize = new Dimension();
+                                for(int i = 0; i < panel6.getComponentCount(); i++) {
+                                    Rectangle bounds = panel6.getComponent(i).getBounds();
+                                    preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                                    preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                                }
+                                Insets insets = panel6.getInsets();
+                                preferredSize.width += insets.right;
+                                preferredSize.height += insets.bottom;
+                                panel6.setMinimumSize(preferredSize);
+                                panel6.setPreferredSize(preferredSize);
                             }
-                        });
-                        panel6.add(hideFirstHP);
-                        hideFirstHP.setBounds(new Rectangle(new Point(5, 25), hideFirstHP.getPreferredSize()));
-
-                        //---- binSizeText ----
-                        binSizeText.setToolTipText("The size of the bins by which the data in the chart is grouped. Small bin size means small granularity, large bin size means smoother chart");
-                        binSizeText.setText("15");
-                        binSizeText.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                junctionFlankingTextFieldActionPerformed(e);
-                                binSizeTextActionPerformed(e);
-                                binSizeTextActionPerformed(e);
-                            }
-                        });
-                        binSizeText.addFocusListener(new FocusAdapter() {
-                            @Override
-                            public void focusLost(FocusEvent e) {
-                                junctionFlankingTextFieldFocusLost(e);
-                                binSizeTextFocusLost(e);
-                            }
-                        });
-                        panel6.add(binSizeText);
-                        binSizeText.setBounds(135, 55, 95, 25);
-
-                        //---- label28 ----
-                        label28.setText("Bin size in chart:");
-                        panel6.add(label28);
-                        label28.setBounds(10, 55, 125, label28.getPreferredSize().height);
-
-                        //---- label29 ----
-                        label29.setText("Default chart type:");
-                        panel6.add(label29);
-                        label29.setBounds(new Rectangle(new Point(10, 90), label29.getPreferredSize()));
-
-                        //---- radioLine ----
-                        radioLine.setText("line chart");
-                        radioLine.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                radioButton1ActionPerformed(e);
-                                radioLineActionPerformed(e);
-                            }
-                        });
-                        panel6.add(radioLine);
-                        radioLine.setBounds(new Rectangle(new Point(135, 90), radioLine.getPreferredSize()));
-
-                        //---- radioArea ----
-                        radioArea.setText("area chart");
-                        radioArea.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                radioAreaActionPerformed(e);
-                            }
-                        });
-                        panel6.add(radioArea);
-                        radioArea.setBounds(new Rectangle(new Point(135, 115), radioArea.getPreferredSize()));
-
-                        //---- radioBar ----
-                        radioBar.setText("bar chart");
-                        radioBar.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                radioBarActionPerformed(e);
-                            }
-                        });
-                        panel6.add(radioBar);
-                        radioBar.setBounds(new Rectangle(new Point(135, 140), radioBar.getPreferredSize()));
-
-                        //---- radioStacked ----
-                        radioStacked.setText("(stacked bar chart)");
-                        radioStacked.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                radioStackedActionPerformed(e);
-                            }
-                        });
-                        panel6.add(radioStacked);
-                        radioStacked.setBounds(new Rectangle(new Point(135, 165), radioStacked.getPreferredSize()));
-
-                        { // compute preferred size
-                            Dimension preferredSize = new Dimension();
-                            for (int i = 0; i < panel6.getComponentCount(); i++) {
-                                Rectangle bounds = panel6.getComponent(i).getBounds();
-                                preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                                preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                            }
-                            Insets insets = panel6.getInsets();
-                            preferredSize.width += insets.right;
-                            preferredSize.height += insets.bottom;
-                            panel6.setMinimumSize(preferredSize);
-                            panel6.setPreferredSize(preferredSize);
                         }
-                    }
-                    ionTorrentPanel.add(panel6);
+                        ionTorrentPanel.add(panel6);
 
-                    //======== panel7 ========
-                    {
-                        panel7.setBorder(new TitledBorder("Server settings"));
-                        panel7.setLayout(null);
+                        //======== panel7 ========
+                        {
+                            panel7.setBorder(new TitledBorder("Server settings"));
+                            panel7.setLayout(null);
 
-                        //---- label30 ----
-                        label30.setText("Default Ion Torrent Server:");
-                        panel7.add(label30);
-                        label30.setBounds(new Rectangle(new Point(15, 25), label30.getPreferredSize()));
+                            //---- label30 ----
+                            label30.setText("Default Ion Torrent Server:");
+                            panel7.add(label30);
+                            label30.setBounds(new Rectangle(new Point(15, 25), label30.getPreferredSize()));
 
-                        //---- textServer ----
-                        textServer.setText("ioneast.ite");
-                        textServer.setToolTipText("Used to launch other applications (such as Torrent Scout Light)");
-                        textServer.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                textServerActionPerformed(e);
+                            //---- textServer ----
+                            textServer.setText("ioneast.ite");
+                            textServer.setToolTipText("Used to launch other applications (such as Torrent Scout Light)");
+                            textServer.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    textServerActionPerformed(e);
+                                }
+                            });
+                            panel7.add(textServer);
+                            textServer.setBounds(220, 20, 475, textServer.getPreferredSize().height);
+
+                            { // compute preferred size
+                                Dimension preferredSize = new Dimension();
+                                for(int i = 0; i < panel7.getComponentCount(); i++) {
+                                    Rectangle bounds = panel7.getComponent(i).getBounds();
+                                    preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                                    preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                                }
+                                Insets insets = panel7.getInsets();
+                                preferredSize.width += insets.right;
+                                preferredSize.height += insets.bottom;
+                                panel7.setMinimumSize(preferredSize);
+                                panel7.setPreferredSize(preferredSize);
                             }
-                        });
-                        panel7.add(textServer);
-                        textServer.setBounds(220, 20, 475, textServer.getPreferredSize().height);
-
-                        { // compute preferred size
-                            Dimension preferredSize = new Dimension();
-                            for (int i = 0; i < panel7.getComponentCount(); i++) {
-                                Rectangle bounds = panel7.getComponent(i).getBounds();
-                                preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                                preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                            }
-                            Insets insets = panel7.getInsets();
-                            preferredSize.width += insets.right;
-                            preferredSize.height += insets.bottom;
-                            panel7.setMinimumSize(preferredSize);
-                            panel7.setPreferredSize(preferredSize);
                         }
+                        ionTorrentPanel.add(panel7);
                     }
-                    ionTorrentPanel.add(panel7);
-                }
-                panel28.setViewportView(ionTorrentPanel);
-            }
-            tabbedPane.addTab("IonTorrent", panel28);
+                    tabbedPane.addTab("Ion Torrent", ionTorrentPanel);
 
-            //======== panel30 ========
-            {
-
-                //======== dbPanel ========
-                {
-                    dbPanel.setLayout(null);
-
-                    //---- label20 ----
-                    label20.setText("<html><b>Database configuration  <i>(experimental, subject to change)");
-                    label20.setFont(new Font("Lucida Grande", Font.PLAIN, 14));
-                    dbPanel.add(label20);
-                    label20.setBounds(new Rectangle(new Point(50, 20), label20.getPreferredSize()));
-
-                    //======== panel21 ========
+                    //======== dbPanel ========
                     {
-                        panel21.setLayout(new GridBagLayout());
-                        ((GridBagLayout) panel21.getLayout()).columnWidths = new int[]{0, 0, 0};
-                        ((GridBagLayout) panel21.getLayout()).rowHeights = new int[]{0, 0, 0, 0};
-                        ((GridBagLayout) panel21.getLayout()).columnWeights = new double[]{0.0, 0.0, 1.0E-4};
-                        ((GridBagLayout) panel21.getLayout()).rowWeights = new double[]{0.0, 0.0, 0.0, 1.0E-4};
+                        dbPanel.setLayout(null);
 
-                        //---- label17 ----
-                        label17.setText("Host:");
-                        panel21.add(label17, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                        //---- label20 ----
+                        label20.setText("<html><b>Database configuration  <i>(experimental, subject to change)");
+                        label20.setFont(new Font("Lucida Grande", Font.PLAIN, 14));
+                        dbPanel.add(label20);
+                        label20.setBounds(new Rectangle(new Point(50, 20), label20.getPreferredSize()));
+
+                        //======== panel21 ========
+                        {
+                            panel21.setLayout(new GridBagLayout());
+                            ((GridBagLayout)panel21.getLayout()).columnWidths = new int[] {0, 0, 0};
+                            ((GridBagLayout)panel21.getLayout()).rowHeights = new int[] {0, 0, 0, 0};
+                            ((GridBagLayout)panel21.getLayout()).columnWeights = new double[] {0.0, 0.0, 1.0E-4};
+                            ((GridBagLayout)panel21.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 1.0E-4};
+
+                            //---- label17 ----
+                            label17.setText("Host:");
+                            panel21.add(label17, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 0, 5, 5), 0, 0));
 
-                        //---- label19 ----
-                        label19.setText("Name:");
-                        panel21.add(label19, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+                            //---- label19 ----
+                            label19.setText("Name:");
+                            panel21.add(label19, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 0, 5, 5), 0, 0));
 
-                        //---- dbNameField ----
-                        dbNameField.setPreferredSize(new Dimension(500, 28));
-                        dbNameField.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                dbNameFieldActionPerformed(e);
-                            }
-                        });
-                        dbNameField.addFocusListener(new FocusAdapter() {
-                            @Override
-                            public void focusLost(FocusEvent e) {
-                                dbNameFieldFocusLost(e);
-                            }
-                        });
-                        panel21.add(dbNameField, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
+                            //---- dbNameField ----
+                            dbNameField.setPreferredSize(new Dimension(500, 28));
+                            dbNameField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    dbNameFieldActionPerformed(e);
+                                }
+                            });
+                            dbNameField.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    dbNameFieldFocusLost(e);
+                                }
+                            });
+                            panel21.add(dbNameField, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 0, 5, 0), 0, 0));
 
-                        //---- dbHostField ----
-                        dbHostField.setPreferredSize(new Dimension(500, 28));
-                        dbHostField.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                dbHostFieldActionPerformed(e);
-                            }
-                        });
-                        dbHostField.addFocusListener(new FocusAdapter() {
-                            @Override
-                            public void focusLost(FocusEvent e) {
-                                dbHostFieldFocusLost(e);
-                            }
-                        });
-                        panel21.add(dbHostField, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                            //---- dbHostField ----
+                            dbHostField.setPreferredSize(new Dimension(500, 28));
+                            dbHostField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    dbHostFieldActionPerformed(e);
+                                }
+                            });
+                            dbHostField.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    dbHostFieldFocusLost(e);
+                                }
+                            });
+                            panel21.add(dbHostField, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 0, 5, 0), 0, 0));
 
-                        //---- label18 ----
-                        label18.setText("Port:");
-                        panel21.add(label18, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+                            //---- label18 ----
+                            label18.setText("Port:");
+                            panel21.add(label18, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 0, 0, 5), 0, 0));
 
-                        //---- dbPortField ----
-                        dbPortField.setPreferredSize(new Dimension(500, 28));
-                        dbPortField.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                dbPortFieldActionPerformed(e);
-                            }
-                        });
-                        dbPortField.addFocusListener(new FocusAdapter() {
-                            @Override
-                            public void focusLost(FocusEvent e) {
-                                dbPortFieldFocusLost(e);
-                            }
-                        });
-                        panel21.add(dbPortField, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
+                            //---- dbPortField ----
+                            dbPortField.setPreferredSize(new Dimension(500, 28));
+                            dbPortField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    dbPortFieldActionPerformed(e);
+                                }
+                            });
+                            dbPortField.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    dbPortFieldFocusLost(e);
+                                }
+                            });
+                            panel21.add(dbPortField, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 0, 0, 0), 0, 0));
-                    }
-                    dbPanel.add(panel21);
-                    panel21.setBounds(new Rectangle(new Point(20, 76), panel21.getPreferredSize()));
-
-                    { // compute preferred size
-                        Dimension preferredSize = new Dimension();
-                        for (int i = 0; i < dbPanel.getComponentCount(); i++) {
-                            Rectangle bounds = dbPanel.getComponent(i).getBounds();
-                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
                         }
-                        Insets insets = dbPanel.getInsets();
-                        preferredSize.width += insets.right;
-                        preferredSize.height += insets.bottom;
-                        dbPanel.setMinimumSize(preferredSize);
-                        dbPanel.setPreferredSize(preferredSize);
-                    }
-                }
-                panel30.setViewportView(dbPanel);
-            }
-            tabbedPane.addTab("Database", panel30);
-
-            //======== panel29 ========
-            {
-
-                //======== advancedPanel ========
-                {
-                    advancedPanel.setBorder(new EmptyBorder(1, 10, 1, 10));
-                    advancedPanel.setLayout(new GridBagLayout());
-                    ((GridBagLayout) advancedPanel.getLayout()).columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-                    ((GridBagLayout) advancedPanel.getLayout()).rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-                    ((GridBagLayout) advancedPanel.getLayout()).columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
-                    ((GridBagLayout) advancedPanel.getLayout()).rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
-
-                    //---- clearGenomeCacheButton ----
-                    clearGenomeCacheButton.setText("Clear Genome Cache");
-                    clearGenomeCacheButton.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            clearGenomeCacheButtonActionPerformed(e);
-                        }
-                    });
-                    advancedPanel.add(clearGenomeCacheButton, new GridBagConstraints(7, 2, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 5), 0, 0));
-
-                    //---- enablePortCB ----
-                    enablePortCB.setText("Enable port");
-                    enablePortCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            enablePortCBActionPerformed(e);
-                        }
-                    });
-                    advancedPanel.add(enablePortCB, new GridBagConstraints(0, 0, 3, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 5), 0, 0));
-
-                    //---- portField ----
-                    portField.setText("60151");
-                    portField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            portFieldActionPerformed(e);
-                        }
-                    });
-                    portField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            portFieldFocusLost(e);
-                        }
-                    });
-                    advancedPanel.add(portField, new GridBagConstraints(4, 0, 2, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 5), 0, 0));
-
-                    //---- jLabel22 ----
-                    jLabel22.setFont(new Font("Lucida Grande", Font.ITALIC, 13));
-                    jLabel22.setText("Enable port to send commands and http requests to IGV. ");
-                    advancedPanel.add(jLabel22, new GridBagConstraints(6, 0, 3, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 0), 0, 0));
-
-                    //---- vSpacer12 ----
-                    vSpacer12.setPreferredSize(new Dimension(10, 40));
-                    advancedPanel.add(vSpacer12, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 5), 0, 0));
-
-                    //---- genomeUpdateCB ----
-                    genomeUpdateCB.setText("<html>Automatically check for updated genomes.    &nbsp;&nbsp;&nbsp;   <i>Most users should leave this checked.");
-                    genomeUpdateCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            genomeUpdateCBActionPerformed(e);
-                        }
-                    });
-                    advancedPanel.add(genomeUpdateCB, new GridBagConstraints(0, 6, 8, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 5), 0, 0));
-
-                    //---- jLabel6 ----
-                    jLabel6.setText("Data Registry URL");
-                    advancedPanel.add(jLabel6, new GridBagConstraints(2, 4, 3, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 5), 0, 0));
-
-                    //---- dataServerURLTextField ----
-                    dataServerURLTextField.setEnabled(false);
-                    dataServerURLTextField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            dataServerURLTextFieldActionPerformed(e);
-                        }
-                    });
-                    dataServerURLTextField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            dataServerURLTextFieldFocusLost(e);
-                        }
-                    });
-                    advancedPanel.add(dataServerURLTextField, new GridBagConstraints(5, 4, 4, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 0), 0, 0));
-
-                    //---- jLabel1 ----
-                    jLabel1.setText("Genome Server URL");
-                    advancedPanel.add(jLabel1, new GridBagConstraints(2, 3, 3, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 5), 0, 0));
-
-                    //---- genomeServerURLTextField ----
-                    genomeServerURLTextField.setText("jTextField1");
-                    genomeServerURLTextField.setEnabled(false);
-                    genomeServerURLTextField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            genomeServerURLTextFieldActionPerformed(e);
-                        }
-                    });
-                    genomeServerURLTextField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            genomeServerURLTextFieldFocusLost(e);
-                        }
-                    });
-                    advancedPanel.add(genomeServerURLTextField, new GridBagConstraints(5, 3, 4, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 0), 0, 0));
-
-                    //---- editServerPropertiesCB ----
-                    editServerPropertiesCB.setText("Edit server properties");
-                    editServerPropertiesCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            editServerPropertiesCBActionPerformed(e);
-                        }
-                    });
-                    advancedPanel.add(editServerPropertiesCB, new GridBagConstraints(0, 2, 5, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 5), 0, 0));
-
-                    //---- jButton1 ----
-                    jButton1.setText("Reset to Defaults");
-                    jButton1.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            jButton1ActionPerformed(e);
-                        }
-                    });
-                    advancedPanel.add(jButton1, new GridBagConstraints(5, 2, 2, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 5), 0, 0));
-
-                    //---- vSpacer11 ----
-                    vSpacer11.setPreferredSize(new Dimension(10, 40));
-                    advancedPanel.add(vSpacer11, new GridBagConstraints(0, 5, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 5), 0, 0));
-
-                    //---- autoFileDisoveryCB ----
-                    autoFileDisoveryCB.setText("Automatically discover index and coverage files.");
-                    autoFileDisoveryCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            autoFileDisoveryCBActionPerformed(e);
-                        }
-                    });
-                    advancedPanel.add(autoFileDisoveryCB, new GridBagConstraints(0, 7, 8, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 5), 0, 0));
-
-                    //---- igvDirectoryButton ----
-                    igvDirectoryButton.setText("Move...");
-                    igvDirectoryButton.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            igvDirectoryButtonActionPerformed(e);
-                        }
-                    });
-                    advancedPanel.add(igvDirectoryButton, new GridBagConstraints(8, 15, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 0, 0), 0, 0));
-
-                    //---- igvDirectoryField ----
-                    igvDirectoryField.setBorder(new BevelBorder(BevelBorder.LOWERED));
-                    advancedPanel.add(igvDirectoryField, new GridBagConstraints(2, 15, 6, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 0, 5), 0, 0));
-
-                    //---- label21 ----
-                    label21.setText("IGV Directory: ");
-                    advancedPanel.add(label21, new GridBagConstraints(0, 14, 4, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 5), 0, 0));
-
-                    //======== tooltipOptionsPanel ========
-                    {
-                        tooltipOptionsPanel.setLayout(null);
-
-                        //---- label24 ----
-                        label24.setText("Tooltip initial delay (ms)");
-                        tooltipOptionsPanel.add(label24);
-                        label24.setBounds(0, 11, 185, label24.getPreferredSize().height);
-
-                        //---- label25 ----
-                        label25.setText("Tooltip reshow delay (ms)");
-                        tooltipOptionsPanel.add(label25);
-                        label25.setBounds(0, 38, 185, 23);
-
-                        //---- label26 ----
-                        label26.setText("Tooltip dismiss delay (ms)");
-                        tooltipOptionsPanel.add(label26);
-                        label26.setBounds(0, 70, 185, 16);
-
-                        //---- toolTipInitialDelayField ----
-                        toolTipInitialDelayField.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                toolTipInitialDelayFieldActionPerformed(e);
-                            }
-                        });
-                        toolTipInitialDelayField.addFocusListener(new FocusAdapter() {
-                            @Override
-                            public void focusLost(FocusEvent e) {
-                                toolTipInitialDelayFieldFocusLost(e);
-                            }
-                        });
-                        tooltipOptionsPanel.add(toolTipInitialDelayField);
-                        toolTipInitialDelayField.setBounds(220, 5, 455, toolTipInitialDelayField.getPreferredSize().height);
-
-                        //---- tooltipReshowDelayField ----
-                        tooltipReshowDelayField.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                tooltipReshowDelayFieldActionPerformed(e);
-                            }
-                        });
-                        tooltipReshowDelayField.addFocusListener(new FocusAdapter() {
-                            @Override
-                            public void focusLost(FocusEvent e) {
-                                tooltipReshowDelayFieldFocusLost(e);
-                            }
-                        });
-                        tooltipOptionsPanel.add(tooltipReshowDelayField);
-                        tooltipReshowDelayField.setBounds(220, 35, 455, 28);
-
-                        //---- tooltipDismissDelayField ----
-                        tooltipDismissDelayField.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                tooltipDismissDelayFieldActionPerformed(e);
-                            }
-                        });
-                        tooltipDismissDelayField.addFocusListener(new FocusAdapter() {
-                            @Override
-                            public void focusLost(FocusEvent e) {
-                                tooltipDismissDelayFieldFocusLost(e);
-                            }
-                        });
-                        tooltipOptionsPanel.add(tooltipDismissDelayField);
-                        tooltipDismissDelayField.setBounds(220, 64, 455, 28);
+                        dbPanel.add(panel21);
+                        panel21.setBounds(new Rectangle(new Point(20, 76), panel21.getPreferredSize()));
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
-                            for (int i = 0; i < tooltipOptionsPanel.getComponentCount(); i++) {
-                                Rectangle bounds = tooltipOptionsPanel.getComponent(i).getBounds();
+                            for(int i = 0; i < dbPanel.getComponentCount(); i++) {
+                                Rectangle bounds = dbPanel.getComponent(i).getBounds();
                                 preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                                 preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
                             }
-                            Insets insets = tooltipOptionsPanel.getInsets();
+                            Insets insets = dbPanel.getInsets();
                             preferredSize.width += insets.right;
                             preferredSize.height += insets.bottom;
-                            tooltipOptionsPanel.setMinimumSize(preferredSize);
-                            tooltipOptionsPanel.setPreferredSize(preferredSize);
+                            dbPanel.setMinimumSize(preferredSize);
+                            dbPanel.setPreferredSize(preferredSize);
                         }
                     }
-                    advancedPanel.add(tooltipOptionsPanel, new GridBagConstraints(0, 10, 9, 1, 0.0, 0.0,
+                    tabbedPane.addTab("Database", dbPanel);
+
+                    //======== advancedPanel ========
+                    {
+                        advancedPanel.setBorder(new EmptyBorder(1, 10, 1, 10));
+                        advancedPanel.setLayout(new GridBagLayout());
+                        ((GridBagLayout)advancedPanel.getLayout()).columnWidths = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                        ((GridBagLayout)advancedPanel.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                        ((GridBagLayout)advancedPanel.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                        ((GridBagLayout)advancedPanel.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+
+                        //---- clearGenomeCacheButton ----
+                        clearGenomeCacheButton.setText("Clear Genome Cache");
+                        clearGenomeCacheButton.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                clearGenomeCacheButtonActionPerformed(e);
+                            }
+                        });
+                        advancedPanel.add(clearGenomeCacheButton, new GridBagConstraints(7, 2, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
+
+                        //---- enablePortCB ----
+                        enablePortCB.setText("Enable port");
+                        enablePortCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                enablePortCBActionPerformed(e);
+                            }
+                        });
+                        advancedPanel.add(enablePortCB, new GridBagConstraints(0, 0, 3, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
+
+                        //---- portField ----
+                        portField.setText("60151");
+                        portField.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                portFieldActionPerformed(e);
+                            }
+                        });
+                        portField.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                portFieldFocusLost(e);
+                            }
+                        });
+                        advancedPanel.add(portField, new GridBagConstraints(4, 0, 2, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
+
+                        //---- jLabel22 ----
+                        jLabel22.setFont(new Font("Lucida Grande", Font.ITALIC, 13));
+                        jLabel22.setText("Enable port to send commands and http requests to IGV. ");
+                        advancedPanel.add(jLabel22, new GridBagConstraints(6, 0, 3, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 5, 0), 0, 0));
 
-                    //---- antialiasingCB ----
-                    antialiasingCB.setText("Enable antialiasing");
-                    antialiasingCB.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            antialiasingCBActionPerformed(e);
-                        }
-                    });
-                    advancedPanel.add(antialiasingCB, new GridBagConstraints(0, 8, 5, 1, 0.0, 0.0,
+                        //---- vSpacer12 ----
+                        vSpacer12.setPreferredSize(new Dimension(10, 40));
+                        advancedPanel.add(vSpacer12, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 5, 5), 0, 0));
 
-                    //---- label5 ----
-                    label5.setText("BLAT URL");
-                    advancedPanel.add(label5, new GridBagConstraints(1, 12, 2, 1, 0.0, 0.0,
+                        //---- genomeUpdateCB ----
+                        genomeUpdateCB.setText("<html>Automatically check for updated genomes.    &nbsp;&nbsp;&nbsp;   <i>Most users should leave this checked.");
+                        genomeUpdateCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                genomeUpdateCBActionPerformed(e);
+                            }
+                        });
+                        advancedPanel.add(genomeUpdateCB, new GridBagConstraints(0, 6, 8, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 5, 5), 0, 0));
 
-                    //---- blatURLField ----
-                    blatURLField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            blatURLFieldFocusLost(e);
-                        }
-                    });
-                    blatURLField.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            blatURLFieldActionPerformed(e);
-                        }
-                    });
-                    advancedPanel.add(blatURLField, new GridBagConstraints(3, 12, 6, 1, 0.0, 0.0,
+                        //---- jLabel6 ----
+                        jLabel6.setText("Data Registry URL");
+                        advancedPanel.add(jLabel6, new GridBagConstraints(2, 4, 3, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
+
+                        //---- dataServerURLTextField ----
+                        dataServerURLTextField.setEnabled(false);
+                        dataServerURLTextField.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                dataServerURLTextFieldActionPerformed(e);
+                            }
+                        });
+                        dataServerURLTextField.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                dataServerURLTextFieldFocusLost(e);
+                            }
+                        });
+                        advancedPanel.add(dataServerURLTextField, new GridBagConstraints(5, 4, 4, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 5, 0), 0, 0));
 
-                    //---- vSpacer8 ----
-                    vSpacer8.setPreferredSize(new Dimension(10, 40));
-                    advancedPanel.add(vSpacer8, new GridBagConstraints(1, 11, 1, 1, 0.0, 0.0,
+                        //---- jLabel1 ----
+                        jLabel1.setText("Genome Server URL");
+                        advancedPanel.add(jLabel1, new GridBagConstraints(2, 3, 3, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 5, 5), 0, 0));
 
-                    //---- vSpacer9 ----
-                    vSpacer9.setPreferredSize(new Dimension(10, 40));
-                    advancedPanel.add(vSpacer9, new GridBagConstraints(0, 9, 1, 1, 0.0, 0.0,
+                        //---- genomeServerURLTextField ----
+                        genomeServerURLTextField.setText("jTextField1");
+                        genomeServerURLTextField.setEnabled(false);
+                        genomeServerURLTextField.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                genomeServerURLTextFieldActionPerformed(e);
+                            }
+                        });
+                        genomeServerURLTextField.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                genomeServerURLTextFieldFocusLost(e);
+                            }
+                        });
+                        advancedPanel.add(genomeServerURLTextField, new GridBagConstraints(5, 3, 4, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 0), 0, 0));
+
+                        //---- editServerPropertiesCB ----
+                        editServerPropertiesCB.setText("Edit server properties");
+                        editServerPropertiesCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                editServerPropertiesCBActionPerformed(e);
+                            }
+                        });
+                        advancedPanel.add(editServerPropertiesCB, new GridBagConstraints(0, 2, 5, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 5, 5), 0, 0));
 
-                    //---- vSpacer10 ----
-                    vSpacer10.setPreferredSize(new Dimension(10, 40));
-                    advancedPanel.add(vSpacer10, new GridBagConstraints(1, 13, 1, 1, 0.0, 0.0,
+                        //---- jButton1 ----
+                        jButton1.setText("Reset to Defaults");
+                        jButton1.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                jButton1ActionPerformed(e);
+                            }
+                        });
+                        advancedPanel.add(jButton1, new GridBagConstraints(5, 2, 2, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 5, 5), 0, 0));
+
+                        //---- vSpacer11 ----
+                        vSpacer11.setPreferredSize(new Dimension(10, 40));
+                        advancedPanel.add(vSpacer11, new GridBagConstraints(0, 5, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
+
+                        //---- autoFileDisoveryCB ----
+                        autoFileDisoveryCB.setText("Automatically discover index and coverage files.");
+                        autoFileDisoveryCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                autoFileDisoveryCBActionPerformed(e);
+                            }
+                        });
+                        advancedPanel.add(autoFileDisoveryCB, new GridBagConstraints(0, 7, 8, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
+
+                        //---- igvDirectoryButton ----
+                        igvDirectoryButton.setText("Move...");
+                        igvDirectoryButton.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                igvDirectoryButtonActionPerformed(e);
+                            }
+                        });
+                        advancedPanel.add(igvDirectoryButton, new GridBagConstraints(8, 15, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 0, 0), 0, 0));
+
+                        //---- igvDirectoryField ----
+                        igvDirectoryField.setBorder(new BevelBorder(BevelBorder.LOWERED));
+                        advancedPanel.add(igvDirectoryField, new GridBagConstraints(2, 15, 6, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 0, 5), 0, 0));
+
+                        //---- label21 ----
+                        label21.setText("IGV Directory: ");
+                        advancedPanel.add(label21, new GridBagConstraints(0, 14, 4, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
+
+                        //======== tooltipOptionsPanel ========
+                        {
+                            tooltipOptionsPanel.setLayout(null);
+
+                            //---- label24 ----
+                            label24.setText("Tooltip initial delay (ms)");
+                            tooltipOptionsPanel.add(label24);
+                            label24.setBounds(0, 11, 185, label24.getPreferredSize().height);
+
+                            //---- label25 ----
+                            label25.setText("Tooltip reshow delay (ms)");
+                            tooltipOptionsPanel.add(label25);
+                            label25.setBounds(0, 38, 185, 23);
+
+                            //---- label26 ----
+                            label26.setText("Tooltip dismiss delay (ms)");
+                            tooltipOptionsPanel.add(label26);
+                            label26.setBounds(0, 70, 185, 16);
+
+                            //---- toolTipInitialDelayField ----
+                            toolTipInitialDelayField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    toolTipInitialDelayFieldActionPerformed(e);
+                                }
+                            });
+                            toolTipInitialDelayField.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    toolTipInitialDelayFieldFocusLost(e);
+                                }
+                            });
+                            tooltipOptionsPanel.add(toolTipInitialDelayField);
+                            toolTipInitialDelayField.setBounds(220, 5, 455, toolTipInitialDelayField.getPreferredSize().height);
+
+                            //---- tooltipReshowDelayField ----
+                            tooltipReshowDelayField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    tooltipReshowDelayFieldActionPerformed(e);
+                                }
+                            });
+                            tooltipReshowDelayField.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    tooltipReshowDelayFieldFocusLost(e);
+                                }
+                            });
+                            tooltipOptionsPanel.add(tooltipReshowDelayField);
+                            tooltipReshowDelayField.setBounds(220, 35, 455, 28);
+
+                            //---- tooltipDismissDelayField ----
+                            tooltipDismissDelayField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    tooltipDismissDelayFieldActionPerformed(e);
+                                }
+                            });
+                            tooltipDismissDelayField.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    tooltipDismissDelayFieldFocusLost(e);
+                                }
+                            });
+                            tooltipOptionsPanel.add(tooltipDismissDelayField);
+                            tooltipDismissDelayField.setBounds(220, 64, 455, 28);
+
+                            { // compute preferred size
+                                Dimension preferredSize = new Dimension();
+                                for(int i = 0; i < tooltipOptionsPanel.getComponentCount(); i++) {
+                                    Rectangle bounds = tooltipOptionsPanel.getComponent(i).getBounds();
+                                    preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                                    preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                                }
+                                Insets insets = tooltipOptionsPanel.getInsets();
+                                preferredSize.width += insets.right;
+                                preferredSize.height += insets.bottom;
+                                tooltipOptionsPanel.setMinimumSize(preferredSize);
+                                tooltipOptionsPanel.setPreferredSize(preferredSize);
+                            }
+                        }
+                        advancedPanel.add(tooltipOptionsPanel, new GridBagConstraints(0, 10, 9, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 0), 0, 0));
+
+                        //---- antialiasingCB ----
+                        antialiasingCB.setText("Enable antialiasing");
+                        antialiasingCB.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                antialiasingCBActionPerformed(e);
+                            }
+                        });
+                        advancedPanel.add(antialiasingCB, new GridBagConstraints(0, 8, 5, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
+
+                        //---- label5 ----
+                        label5.setText("BLAT URL");
+                        advancedPanel.add(label5, new GridBagConstraints(1, 12, 2, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
+
+                        //---- blatURLField ----
+                        blatURLField.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                blatURLFieldFocusLost(e);
+                            }
+                        });
+                        blatURLField.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                blatURLFieldActionPerformed(e);
+                            }
+                        });
+                        advancedPanel.add(blatURLField, new GridBagConstraints(3, 12, 6, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 0), 0, 0));
+
+                        //---- vSpacer8 ----
+                        vSpacer8.setPreferredSize(new Dimension(10, 40));
+                        advancedPanel.add(vSpacer8, new GridBagConstraints(1, 11, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
+
+                        //---- vSpacer9 ----
+                        vSpacer9.setPreferredSize(new Dimension(10, 40));
+                        advancedPanel.add(vSpacer9, new GridBagConstraints(0, 9, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
+
+                        //---- vSpacer10 ----
+                        vSpacer10.setPreferredSize(new Dimension(10, 40));
+                        advancedPanel.add(vSpacer10, new GridBagConstraints(1, 13, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
+                    }
+                    tabbedPane.addTab("Advanced", advancedPanel);
                 }
-                panel29.setViewportView(advancedPanel);
+                panel9.add(tabbedPane, BorderLayout.NORTH);
+
+                //======== okCancelButtonPanel ========
+                {
+                    okCancelButtonPanel.setPreferredSize(new Dimension(178, 29));
+                    okCancelButtonPanel.setGroupGap(0);
+
+                    //---- okButton ----
+                    okButton.setText("OK");
+                    okButton.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            okButtonActionPerformed(e);
+                        }
+                    });
+                    okCancelButtonPanel.add(okButton);
+
+                    //---- cancelButton ----
+                    cancelButton.setText("Cancel");
+                    cancelButton.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            cancelButtonActionPerformed(e);
+                        }
+                    });
+                    okCancelButtonPanel.add(cancelButton);
+                }
+                panel9.add(okCancelButtonPanel, BorderLayout.SOUTH);
             }
-            tabbedPane.addTab("Advanced", panel29);
+            panel20.setViewportView(panel9);
         }
-        contentPane.add(tabbedPane, BorderLayout.NORTH);
-
-        //======== okCancelButtonPanel ========
-        {
-            okCancelButtonPanel.setPreferredSize(new Dimension(178, 29));
-            okCancelButtonPanel.setGroupGap(0);
-
-            //---- okButton ----
-            okButton.setText("OK");
-            okButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    okButtonActionPerformed(e);
-                }
-            });
-            okCancelButtonPanel.add(okButton);
-
-            //---- cancelButton ----
-            cancelButton.setText("Cancel");
-            cancelButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    cancelButtonActionPerformed(e);
-                }
-            });
-            okCancelButtonPanel.add(cancelButton);
-        }
-        contentPane.add(okCancelButtonPanel, BorderLayout.SOUTH);
+        contentPane.add(panel20, BorderLayout.CENTER);
         pack();
         setLocationRelativeTo(getOwner());
 
@@ -4017,22 +3933,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         updatedPreferenceMap.put(PreferenceManager.SAM_SHOW_COV_TRACK, String.valueOf(showCovTrackCB.isSelected()));
     }
 
-    private void filterCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterCBActionPerformed
-        updatedPreferenceMap.put(PreferenceManager.SAM_FILTER_ALIGNMENTS, String.valueOf(filterCB.isSelected()));
-        filterURL.setEnabled(filterCB.isSelected());
-    }
-
-    private void filterURLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterURLActionPerformed
-        updatedPreferenceMap.put(
-                PreferenceManager.SAM_FILTER_URL,
-                String.valueOf(filterURL.getText()));
-
-    }
-
-    private void filterURLFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_filterURLFocusLost
-        filterURLActionPerformed(null);
-    }
-
     private void portFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_portFieldActionPerformed
         String portString = portField.getText().trim();
         try {
@@ -4481,10 +4381,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         samMinBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
         samMaxBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
         showCovTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_COV_TRACK));
-        filterCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_ALIGNMENTS));
-        if (prefMgr.get(PreferenceManager.SAM_FILTER_URL) != null) {
-            filterURL.setText(prefMgr.get(PreferenceManager.SAM_FILTER_URL));
-        }
+
         String samHiddenTags = prefMgr.get(PreferenceManager.SAM_HIDDEN_TAGS), samHiddenTagsClean = "";
         for (String s: (samHiddenTags == null ? "" : samHiddenTags).split("[, ]")) {
             if (!s.equals("")) {
@@ -4623,8 +4520,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
+    private JScrollPane panel20;
+    private JPanel panel9;
     private JTabbedPane tabbedPane;
-    private JScrollPane panel22;
     private JPanel generalPanel;
     private JPanel vSpacer7;
     private JPanel jPanel10;
@@ -4658,7 +4556,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox scaleFontsCB;
     private JLabel label8;
     private JButton resetBackgroundButton;
-    private JScrollPane panel23;
     private JPanel tracksPanel;
     private JPanel vSpacer1;
     private JLabel jLabel5;
@@ -4672,7 +4569,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox normalizeCoverageCB;
     private JLabel missingDataExplanation8;
     private JCheckBox expandIconCB;
-    private JScrollPane panel24;
     private JPanel overlaysPanel;
     private JPanel jPanel5;
     private JLabel jLabel3;
@@ -4703,7 +4599,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JLabel label43;
     private JRadioButton alleleFreqRB;
     private JRadioButton alleleFractionRB;
-    private JScrollPane panel25;
     private JPanel chartPanel;
     private JPanel jPanel4;
     private JCheckBox topBorderCB;
@@ -4720,7 +4615,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JLabel label13;
     private JCheckBox showAllHeatmapFeauresCB;
     private JLabel label14;
-    private JScrollPane panel20;
     private JPanel alignmentPanel;
     private JPanel jPanel11;
     private JPanel panel32;
@@ -4741,24 +4635,21 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JTextField samDownsampleCountField;
     private JLabel jLabel13;
     private JTextField samSamplingWindowField;
-    private JPanel panel12;
-    private JLabel jLabel15;
-    private JTextField mappingQualityThresholdField;
     private JPanel panel11;
     private JCheckBox samShadeMismatchedBaseCB;
     private JTextField samMinBaseQualityField;
     private JLabel label2;
     private JTextField samMaxBaseQualityField;
-    private JPanel panel9;
-    private JCheckBox filterCB;
-    private JTextField filterURL;
-    private JPanel panel31b;
-    private JLabel jLabel11b;
-    private JTextField samHiddenTagsField;
     private JPanel panel10;
     private JCheckBox samFlagInsertionsCB;
     private JTextField samFlagInsertionsThresholdField;
     private JLabel label31;
+    private JPanel panel12;
+    private JLabel jLabel15;
+    private JTextField mappingQualityThresholdField;
+    private JPanel panel31b;
+    private JLabel jLabel11b;
+    private JTextField samHiddenTagsField;
     private JPanel panel8;
     private JCheckBox samFilterDuplicatesCB;
     private JCheckBox samFlagUnmappedPairCB;
@@ -4795,7 +4686,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JTextField insertSizeMinPercentileField;
     private JLabel jLabel18;
     private JTextField insertSizeMaxPercentileField;
-    private JScrollPane panel26;
     private JPanel expressionPane;
     private JPanel jPanel8;
     private JPanel panel18;
@@ -4809,7 +4699,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JPanel panel14;
     private JTextField probeMappingFileTextField;
     private JButton probeMappingBrowseButton;
-    private JScrollPane panel27;
     private JPanel proxyPanel;
     private JPanel jPanel15;
     private JLabel label3;
@@ -4828,7 +4717,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JLabel label27;
     private JLabel label35;
     private JTextField proxyWhitelistTextArea;
-    private JScrollPane panel28;
     private JPanel ionTorrentPanel;
     private JPanel panel6;
     private JCheckBox hideFirstHP;
@@ -4842,7 +4730,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JPanel panel7;
     private JLabel label30;
     private JTextField textServer;
-    private JScrollPane panel30;
     private JPanel dbPanel;
     private JLabel label20;
     private JPanel panel21;
@@ -4852,7 +4739,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JTextField dbHostField;
     private JLabel label18;
     private JTextField dbPortField;
-    private JScrollPane panel29;
     private JPanel advancedPanel;
     private JButton clearGenomeCacheButton;
     private JCheckBox enablePortCB;
