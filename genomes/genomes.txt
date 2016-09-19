@@ -35,6 +35,7 @@ Cow (bosTau3)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/bosTau3.gen
 Cow (bosTau4)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/bosTau4.genome	bosTau4
 Cow (bosTau6)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/bosTau6.genome	bosTau6
 Cow (bosTau7)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/bosTau7.genome	bosTau7
+Cow (bosTau8)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/bosTau8.genome	bosTau8
 D. discoideum (05-13-2009)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/D.discoideum.genome	D.discoideum
 D. melanogaster (5.9)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/dmel_5.9.genome	dmel_5.9
 D. melanogaster (dm2)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/dm2.genome	dm2
