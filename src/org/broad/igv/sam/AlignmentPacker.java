@@ -159,7 +159,9 @@ public class AlignmentPacker {
 
             if (al.isMapped()) {
                 Alignment alignment = al;
-                if (isPairedAlignments && al.isPaired() && al.getMate().isMapped() && al.getMate().getChr().equals(al.getChr())) {
+
+                // Pair alignments -- do not pair secondaryalignments
+                if (isPairedAlignments && isPairable(al)) {
                     String readName = al.getReadName();
                     PairedAlignment pair = pairs.get(readName);
                     if (pair == null) {
@@ -174,6 +176,8 @@ public class AlignmentPacker {
 
                     }
                 }
+
+                // Allocate to bucket.
                 // Negative "bucketNumbers" can arise with soft clips at the left edge of the chromosome. Allocate
                 // these alignments to the first bucket.
                 int bucketNumber = Math.max(0, al.getStart() - curRangeStart);
@@ -249,6 +253,13 @@ public class AlignmentPacker {
         }
 
 
+    }
+
+    private boolean isPairable(Alignment al) {
+        return al.isPrimary() &&
+                al.isPaired() &&
+                al.getMate().isMapped() &&
+                al.getMate().getChr().equals(al.getChr());
     }
 
     private List<Alignment> linkByTag(List<Alignment> alList, String tag) {
