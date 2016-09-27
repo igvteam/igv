@@ -75,8 +75,9 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     private static final Color borderGray = new Color(200, 200, 200);
 
     private final static int DEFAULT_EXPANDED_GENOTYPE_HEIGHT = 15;
-    private final int DEFAULT_SQUISHED_GENOTYPE_HEIGHT = 4;
+    private final static int DEFAULT_SQUISHED_GENOTYPE_HEIGHT = 4;
     private final static int DEFAULT_VARIANT_BAND_HEIGHT = 25;
+    private final static int DEFAULT_SQUISHED_VARIANT_BAND_HEIGHT = 10;
     private final static int MAX_FILTER_LINES = 15;
 
 
@@ -114,6 +115,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     /**
      * The height of the top band representing the variant call
      */
+    @XmlAttribute
     private int variantBandHeight = DEFAULT_VARIANT_BAND_HEIGHT;
 
     /**
@@ -124,11 +126,13 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     /**
      * Boolean indicating if samples are grouped.
      */
+    @XmlAttribute
     private boolean grouped;
 
     /**
      * The id of the group used to group samples.
      */
+    @XmlAttribute
     private String groupByAttribute;
 
     /**
@@ -427,6 +431,21 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         }
     }
 
+    @Override
+    public void setDisplayMode(DisplayMode mode) {
+
+        variantBandHeight = mode == DisplayMode.SQUISHED ? DEFAULT_SQUISHED_VARIANT_BAND_HEIGHT : DEFAULT_VARIANT_BAND_HEIGHT;
+
+        if(mode == DisplayMode.SQUISHED) {
+            // Compute row height needed to display all genotypes, if possible
+            final int groupCount = samplesByGroups.size();
+            final int margins = (groupCount - 1) * 3;
+            int sampleCount = allSamples.size();
+            squishedHeight = Math.min(DEFAULT_SQUISHED_GENOTYPE_HEIGHT, Math.max(1, (height - variantBandHeight - margins) / sampleCount));
+        }
+
+        super.setDisplayMode(mode);
+    }
 
     /**
      * Render the features in the supplied rectangle.
