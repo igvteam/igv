@@ -701,33 +701,6 @@ public class PreferenceManager implements PropertyManager {
 
 
     /**
-     * @param directory
-     */
-    public void setLastSessionDirectory(File directory) {
-
-        put(LAST_SESSION_DIRECTORY, directory.getAbsolutePath());
-    }
-
-    /**
-     * @return
-     */
-    public File getLastSessionDirectory() {
-
-        File sessionDirectory = null;
-
-        String lastFilePath = get(LAST_SESSION_DIRECTORY, null);
-
-        if (lastFilePath != null) {
-
-            // Create the session directory
-            sessionDirectory = new File(lastFilePath);
-        }
-
-        return sessionDirectory;
-    }
-
-
-    /**
      * @param recentSessions
      */
     public void setRecentSessions(String recentSessions) {
