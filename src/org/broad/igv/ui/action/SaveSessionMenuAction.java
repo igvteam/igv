@@ -80,7 +80,7 @@ public class SaveSessionMenuAction extends MenuAction {
 
         String initFile = currentSessionFilePath == null ? UIConstants.DEFAULT_SESSION_FILE : currentSessionFilePath;
         sessionFile = FileDialogUtils.chooseFile("Save Session",
-                PreferenceManager.getInstance().getLastSessionDirectory(),
+                PreferenceManager.getInstance().getLastTrackDirectory(),
                 new File(initFile),
                 FileDialogUtils.SAVE);
 
@@ -104,7 +104,7 @@ public class SaveSessionMenuAction extends MenuAction {
         try {
             saveSession(igv, sf);
             // No errors so save last location
-            PreferenceManager.getInstance().setLastSessionDirectory(sf.getParentFile());
+            PreferenceManager.getInstance().setLastTrackDirectory(sf.getParentFile());
 
         } catch (Exception e2) {
             JOptionPane.showMessageDialog(igv.getMainFrame(), "There was an error writing to " + sf.getName() + "(" + e2.getMessage() + ")");
