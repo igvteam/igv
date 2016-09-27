@@ -287,7 +287,7 @@ public class SAMWriter {
     }
 
     private static void checkExportableAlignmentFile(String typeString){
-        String[] validExts = new String[]{".bam", ".sam", ".bam.list", ".sam.list"};
+        String[] validExts = new String[]{".cram", ".bam", ".sam", ".bam.list", ".sam.list"};
         boolean isValidExt = false;
         for(String validExt: validExts){
             isValidExt |= typeString.endsWith(validExt);

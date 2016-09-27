@@ -68,7 +68,7 @@ public class DataPanelPainter {
 
 
         } finally {
-            graphics2D.dispose();
+            if(graphics2D != null) graphics2D.dispose();
         }
     }
 

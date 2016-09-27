@@ -52,7 +52,10 @@ public class TutorialUtils {
 
 
     public static void main(String[] args) throws IOException {
-        extractFasta(args[0], args[1], args[2]);
+        sliceFasta(args[0], args[1], args[2]);
+        //sampleVCF(args[0], args[1], Integer.parseInt(args[2]));
+        //sliceVCF(args[0], args[1], args[2], Integer.parseInt(args[3]), Integer.parseInt(args[4]));
+        //extractFasta(args[0], args[1], args[2]);
         // extractAlignments(args[0], args[1], args[2]);
         //extractFeatures(args[0], args[1], args[2]);
     }
@@ -205,6 +208,117 @@ public class TutorialUtils {
         }
 
         return regions;
+    }
+
+    static void sliceVCF(String inputFile, String outputFile, String chr, int start, int end) throws IOException {
+
+        BufferedReader reader = null;
+        PrintWriter out = null;
+
+
+        try {
+            reader =  ParsingUtils.openBufferedReader(inputFile);
+            out = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
+
+            String nextLine;
+            while ((nextLine = reader.readLine()) != null) {
+                if (nextLine.startsWith("#")) {
+                    out.println(nextLine);
+                } else {
+                    String[] tokens = Globals.tabPattern.split(nextLine);
+                    String c = tokens[0];
+
+                    if (c.equals(chr)) {
+                        int pos = Integer.parseInt(tokens[1]);
+                        if (pos >= start && pos <= end) {
+                            out.println(nextLine);
+                        }
+                        if (pos > end) {
+                            break;
+                        }
+                    }
+                }
+            }
+        } finally {
+            if (out != null) out.close();
+            if (reader != null) reader.close();
+        }
+    }
+
+
+
+    // Keep every nth sample (genotype).
+    static void sampleVCF(String inputFile, String outputFile, int n) throws IOException {
+
+        BufferedReader reader = null;
+        PrintWriter out = null;
+
+        try {
+            reader = new BufferedReader(new FileReader(inputFile));
+            out = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
+
+            String nextLine;
+            while ((nextLine = reader.readLine()) != null) {
+                if (nextLine.startsWith("##")) {
+                    out.println(nextLine);
+                } else {
+                    String[] tokens = Globals.tabPattern.split(nextLine);
+                    for(int i=0; i<9; i++) {
+                        out.print(tokens[i]);
+                        if(i < 8) out.print('\t');
+                    }
+
+                    for(int i=9; i<tokens.length; i+=n) {
+
+                        if(i < tokens.length) {
+                            out.print('\t');
+                            out.print(tokens[i]);
+                        }
+                    }
+
+                    out.println();
+                }
+            }
+        } finally {
+            if (out != null) out.close();
+            if (reader != null) reader.close();
+        }
+    }
+
+    static void sliceFasta(String inputFasta, String outputFasta, String chr) throws IOException {
+
+        BufferedReader reader = null;
+        PrintWriter outFasta = null;
+
+        try {
+            reader = ParsingUtils.openBufferedReader(inputFasta);
+            outFasta = new PrintWriter(new BufferedWriter(new FileWriter(outputFasta)));
+
+            String nextLine;
+            boolean chrFound = false;
+            while ((nextLine = reader.readLine()) != null) {
+
+                if(chrFound) {
+                    if(nextLine.startsWith(">")) {
+                        break;  // Done
+                    }
+                    else {
+                        outFasta.println(nextLine);
+                    }
+                }
+
+                else {
+                    if(nextLine.startsWith(">" + chr)) {
+                        outFasta.println(nextLine);
+                        chrFound = true;
+                    }
+                }
+            }
+
+
+        } finally {
+            if (outFasta != null) outFasta.close();
+        }
     }
 
 
