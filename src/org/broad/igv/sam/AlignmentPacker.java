@@ -162,7 +162,11 @@ public class AlignmentPacker {
 
             if (al.isMapped()) {
                 Alignment alignment = al;
-                if (pairAlignments && al.isPaired() && al.getMate().isMapped() && al.getMate().getChr().equals(al.getChr())) {
+                if (pairAlignments &&
+                        al.isPaired() &&
+                        al.isPrimary() &&
+                        al.getMate().isMapped() &&
+                        al.getMate().getChr().equals(al.getChr())) {
                     String readName = al.getReadName();
                     PairedAlignment pair = pairs.get(readName);
                     if (pair == null) {
