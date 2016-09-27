@@ -220,7 +220,7 @@ public class SashimiPlot extends JFrame {
 
         getRenderer(trackComponent.track).setDataManager(dataManager);
         getRenderer(trackComponent.track).setCoverageTrack(coverageTrack);
-        //getRenderer(trackComponent.track).getCoverageTrack().rescale(trackComponent.frame);
+        getRenderer(trackComponent.track).getCoverageTrack().rescale(trackComponent.frame);
 
         dataManager.setMinJunctionCoverage(minJunctionCoverage);
 

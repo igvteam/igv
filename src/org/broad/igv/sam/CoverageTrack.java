@@ -215,33 +215,33 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         frame.getEventBus().post(new ViewChange.Result());
     }
 
-//    public void rescale(ReferenceFrame iframe) {
-//        List<ReferenceFrame> frameList = new ArrayList<ReferenceFrame>();
-//        if (iframe != null) frameList.add(iframe);
-//        if (globalAutoScale) {
-//            frameList.addAll(FrameManager.getFrames());
-//        }
-//
-//        if (autoScale && dataManager != null) {
-//
-//            int max = 10;
-//            for (ReferenceFrame frame : frameList) {
-//                AlignmentInterval interval = dataManager.getLoadedInterval(frame.getCurrentRange());
-//                if (interval == null) continue;
-//
-//                int origin = (int) frame.getOrigin();
-//                int end = (int) frame.getEnd() + 1;
-//
-//                int intervalMax = interval.getMaxCount(origin, end);
-//                max = intervalMax > max ? intervalMax : max;
-//            }
-//
-//            DataRange newRange = new DataRange(0, max);
-//            newRange.setType(getDataRange().getType());
-//            super.setDataRange(newRange);
-//
-//        }
-//    }
+    public void rescale(ReferenceFrame iframe) {
+        List<ReferenceFrame> frameList = new ArrayList<ReferenceFrame>();
+        if (iframe != null) frameList.add(iframe);
+        if (globalAutoScale) {
+            frameList.addAll(FrameManager.getFrames());
+        }
+
+        if (autoScale && dataManager != null) {
+
+            int max = 10;
+            for (ReferenceFrame frame : frameList) {
+                AlignmentInterval interval = dataManager.getLoadedInterval(frame.getCurrentRange());
+                if (interval == null) continue;
+
+                int origin = (int) frame.getOrigin();
+                int end = (int) frame.getEnd() + 1;
+
+                int intervalMax = interval.getMaxCount(origin, end);
+                max = intervalMax > max ? intervalMax : max;
+            }
+
+            DataRange newRange = new DataRange(0, max);
+            newRange.setType(getDataRange().getType());
+            super.setDataRange(newRange);
+
+        }
+    }
 
 
     public void render(RenderContext context, Rectangle rect) {
