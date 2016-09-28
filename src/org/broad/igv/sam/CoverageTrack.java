@@ -50,6 +50,7 @@ import org.broad.igv.ui.DataRangeDialog;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.FileDialogUtils;
@@ -392,6 +393,34 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
         return 0;
+    }
+
+    public void rescale(ReferenceFrame iframe) {
+        List<ReferenceFrame> frameList = new ArrayList<ReferenceFrame>();
+        if (iframe != null) frameList.add(iframe);
+        if (globalAutoScale) {
+            frameList.addAll(FrameManager.getFrames());
+        }
+
+        if (autoScale && dataManager != null) {
+
+            int max = 10;
+            for (ReferenceFrame frame : frameList) {
+                AlignmentInterval interval = dataManager.getLoadedInterval(frame.getCurrentRange());
+                if (interval == null) continue;
+
+                int origin = (int) frame.getOrigin();
+                int end = (int) frame.getEnd() + 1;
+
+                int intervalMax = interval.getMaxCount(origin, end);
+                max = intervalMax > max ? intervalMax : max;
+            }
+
+            DataRange newRange = new DataRange(0, max);
+            newRange.setType(getDataRange().getType());
+            super.setDataRange(newRange);
+
+        }
     }
 
     /**
