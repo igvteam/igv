@@ -44,20 +44,15 @@ public class GenomeUtils {
 
     public static void main(String[] args) throws IOException {
 
-//        String directory = ".";
-//        if (args.length > 0) {
-//            directory = args[0];
-//        }
-//        String genomeList = "http://igv.broadinstitute.org/genomes/genomes.txt";
-//        if (args.length > 1) {
-//            genomeList = args[0];
-//        }
-//        exportAllChromSizes(new File(directory), genomeList);
+        String directory = args[1];
+        String genomeList = args[0];
 
-        mergeINCDCNames(
-                new File("genomes/alias/hg38_alias.tab"),
-                new File("/Users/jrobinso/projects/INSDC/GCF_000001405.26.assembly.txt"),
-                new File("/Users/jrobinso/projects/INSDC"));
+        updateChromSizes(new File(directory), genomeList);
+
+//        mergeINCDCNames(
+//                new File("genomes/alias/hg38_alias.tab"),
+//                new File("/Users/jrobinso/projects/INSDC/GCF_000001405.26.assembly.txt"),
+//                new File("/Users/jrobinso/projects/INSDC"));
 
     }
 
@@ -70,9 +65,10 @@ public class GenomeUtils {
      * @param genomeListPath
      * @throws IOException
      */
-    public static void exportAllChromSizes(File directory, String genomeListPath) throws IOException {
+    public static void updateChromSizes(File directory, String genomeListPath) throws IOException {
 
-        //<Server-Side Genome List>
+        // http://igv.broadinstitute.org/genomes/genomes.txt
+        // <Server-Side Genome List>
         // Human hg19	http://igv.broadinstitute.org/genomes/hg19.genome	hg19
         BufferedReader br = null;
 
@@ -82,6 +78,14 @@ public class GenomeUtils {
             while ((nextLine = br.readLine()) != null) {
                 String[] tokens = nextLine.split("\t");
                 if (tokens.length > 2) {
+                    String genomeID = tokens[2];
+
+                    File outputFile = new File(directory, genomeID + ".chrom.sizes");
+                    if(outputFile.exists()) {
+                        continue;
+                    }
+
+                    System.out.println("Updating " + genomeID);
                     String genomePath = tokens[1];
                     try {
                         Genome genome = GenomeManager.getInstance().loadGenome(genomePath, null);
