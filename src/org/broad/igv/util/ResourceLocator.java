@@ -455,7 +455,7 @@ public class ResourceLocator {
     /**
      * FOR LOAD FROM SERVER
      */
-    public static enum AttributeType {
+    public enum AttributeType {
 
         DB_URL("serverURL"),
         PATH("path"),
@@ -469,7 +469,8 @@ public class ResourceLocator {
         RESOURCE_TYPE("resourceType"),
         TRACK_LINE("trackLine"),
         COVERAGE("coverage"),
-        COLOR("color");
+        COLOR("color"),
+        INDEX("index");
 
         private String name;
 
