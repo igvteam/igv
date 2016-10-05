@@ -234,12 +234,12 @@ public class ResourceTree {
             String resourceType = getAttribute(xmlNode, RESOURCE_TYPE.getText());
             locator.setType(resourceType);
 
-
             String sampleId = getAttribute(xmlNode, SAMPLE_ID.getText());
             if (sampleId == null) {
                 // legacy option
                 sampleId = getAttribute(xmlNode, ID.getText());
             }
+            locator.setIndexPath(getAttribute(xmlNode, INDEX.getText()));
             locator.setSampleId(sampleId);
             locator.setFeatureInfoURL(getAttribute(xmlNode, URL.getText()));
             locator.setDescription(getAttribute(xmlNode, DESCRIPTION.getText()));
