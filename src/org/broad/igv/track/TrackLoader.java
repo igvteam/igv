@@ -170,11 +170,7 @@ public class TrackLoader {
                 loadRNAiHPScoreFile(locator);
             } else if (typeString.contains(".tabblastn") || typeString.endsWith(".orthologs")) {
                 loadSyntentyMapping(locator, newTracks);
-            } else if (typeString.endsWith(".sam") || typeString.endsWith(".bam") || typeString.endsWith(".cram") ||
-                    typeString.endsWith(".sam.list") || typeString.endsWith(".bam.list") ||
-                    typeString.endsWith(".aligned") || typeString.endsWith(".sai") ||
-                    typeString.endsWith(".bai") || typeString.equals("alist") ||
-                    typeString.equals(Ga4ghAPIHelper.RESOURCE_TYPE)) {
+            } else if (isAlignmentTrack(typeString)) {
                 loadAlignmentsTrack(locator, newTracks, genome);
             } else if (typeString.endsWith(".wig") || typeString.endsWith(".bedgraph") || typeString.endsWith(".bdg") ||
                     typeString.endsWith("cpg.txt") || typeString.endsWith(".expr")) {
@@ -262,6 +258,14 @@ public class TrackLoader {
             throw new DataLoadException(e.getMessage());
         }
 
+    }
+
+    public static boolean isAlignmentTrack(String typeString) {
+        return typeString.endsWith(".sam") || typeString.endsWith(".bam") || typeString.endsWith(".cram") ||
+                typeString.endsWith(".sam.list") || typeString.endsWith(".bam.list") ||
+                typeString.endsWith(".aligned") || typeString.endsWith(".sai") ||
+                typeString.endsWith(".bai") || typeString.equals("alist") ||
+                typeString.equals(Ga4ghAPIHelper.RESOURCE_TYPE);
     }
 
     private void loadSMAPFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {

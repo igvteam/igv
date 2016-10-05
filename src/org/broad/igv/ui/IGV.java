@@ -1871,10 +1871,7 @@ public class IGV implements IGVEventObserver {
             return getVcfBamPanel();
         } else if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY)) {
             return getTrackPanel(DATA_PANEL_NAME);
-        } else if (path.endsWith(".sam") || path.endsWith(".bam") ||
-                path.endsWith(".sam.list") || path.endsWith(".bam.list") ||
-                path.endsWith(".aligned") || "ga4gh".equals(locator.getType())) {
-
+        } else if (TrackLoader.isAlignmentTrack(locator.getTypeString())) {
             String newPanelName = "Panel" + System.currentTimeMillis();
             return addDataPanel(newPanelName).getTrackPanel();
         } else {
