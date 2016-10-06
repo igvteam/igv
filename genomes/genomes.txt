@@ -141,6 +141,7 @@ T. gondii (ME49)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/T_gondii
 Tomato (2.31)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/SL2.31.genome	SL2.31
 Tomato (2.40)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/SL2.40.genome	SL2.40
 Tomato (ITAG2.3)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/ITAG2.3.genome	ITAG2.3
+Trout (CCAF000000000)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/CCAF000000000.genome	CCAF000000000
 V. vitifera	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/vvinifera.genome	vvitifera
 Vibrio cholerae N16961	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/VcholeraeN16961.genome	VcholeraeN16961
 X. tropicalis (xenTro2)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/xenTro2.genome	xenTro2
