@@ -192,8 +192,10 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                         boolean enableMethylationRateSupport) {
         super(locator, source);
 
-        String path = locator != null ? locator.getPath() : null;
         PreferenceManager prefMgr = PreferenceManager.getInstance();
+
+        String path = locator == null ? null : locator.getPath();
+
 
         this.renderer = new VariantRenderer(this);
 
@@ -220,9 +222,16 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         }
 
         // If sample->bam list file is supplied enable vcfToBamMode.
+        String vcfToBamMapping = locator == null ? null : locator.getMappingPath();
+
         boolean bypassFileAutoDiscovery = prefMgr.getAsBoolean(PreferenceManager.BYPASS_FILE_AUTO_DISCOVERY);
-        String vcfToBamMapping = path != null ? path + ".mapping" : null;
-        if (!bypassFileAutoDiscovery && ParsingUtils.pathExists(vcfToBamMapping)) {
+        if (vcfToBamMapping == null && path != null && !bypassFileAutoDiscovery) {
+            if (ParsingUtils.pathExists(path + ".mapping")) {
+                vcfToBamMapping = path + ".mapping";
+            }
+        }
+
+        if (vcfToBamMapping != null && !vcfToBamMapping.equals(".")) {
             loadAlignmentMappings(vcfToBamMapping);
         }
 
@@ -872,7 +881,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      * @param chr
      * @param position - position in UCSC "0 based"  genomic coordinates
      * @param mouseX
-     *@param frame  @return
+     * @param frame    @return
      */
     public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
 

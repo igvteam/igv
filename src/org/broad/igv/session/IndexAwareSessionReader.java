@@ -108,6 +108,7 @@ public class IndexAwareSessionReader implements SessionReader {
                         if (coverageURL != null) {
                             locator.setCoverage(coverageURL);
                         }
+
                         loadedTracks.put(dataURL, igv.load(locator));
                     }
                 } else {

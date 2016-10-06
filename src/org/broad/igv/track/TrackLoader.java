@@ -951,7 +951,7 @@ public class TrackLoader {
                     OAuthUtils.isGoogleCloud(locator.getPath()))) {
 
                 String covPath = locator.getCoverage();
-                if (covPath == null) {
+                if (covPath == null && !covPath.equals(".")) {
                     boolean bypassFileAutoDiscovery = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.BYPASS_FILE_AUTO_DISCOVERY);
                     String path = locator.getPath();
                     if (!bypassFileAutoDiscovery && !path.contains("/query.cgi?")) {
@@ -959,7 +959,7 @@ public class TrackLoader {
                     }
 
                 }
-                if (covPath != null) {
+                if (covPath != null  && !covPath.equals(".")) {
                     if (FileUtils.resourceExists(covPath)) {
                         log.debug("Loading TDF for coverage: " + covPath);
                         try {
