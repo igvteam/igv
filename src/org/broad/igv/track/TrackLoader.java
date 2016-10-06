@@ -951,7 +951,7 @@ public class TrackLoader {
                     OAuthUtils.isGoogleCloud(locator.getPath()))) {
 
                 String covPath = locator.getCoverage();
-                if (covPath == null && !covPath.equals(".")) {
+                if (covPath == null) {
                     boolean bypassFileAutoDiscovery = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.BYPASS_FILE_AUTO_DISCOVERY);
                     String path = locator.getPath();
                     if (!bypassFileAutoDiscovery && !path.contains("/query.cgi?")) {
