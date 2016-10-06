@@ -247,6 +247,7 @@ public class IGVSessionReader implements SessionReader {
         DESCRIPTION("description"),
         TYPE("type"),
         COVERAGE("coverage"),
+        MAPPING("mapping"),
         TRACK_LINE("trackLine"),
 
         CHR("chr"),
@@ -705,6 +706,7 @@ public class IGVSessionReader implements SessionReader {
         String description = getAttribute(element, SessionAttribute.DESCRIPTION.getText());
         String type = getAttribute(element, SessionAttribute.TYPE.getText());
         String coverage = getAttribute(element, SessionAttribute.COVERAGE.getText());
+        String mapping = getAttribute(element, SessionAttribute.MAPPING.getText());
         String trackLine = getAttribute(element, SessionAttribute.TRACK_LINE.getText());
         String colorString = getAttribute(element, SessionAttribute.COLOR.getText());
         String index = getAttribute(element, SessionAttribute.INDEX.getText());
@@ -739,10 +741,14 @@ public class IGVSessionReader implements SessionReader {
         if (index != null) resourceLocator.setIndexPath(index);
 
         if (coverage != null) {
-            String absoluteCoveragePath = getAbsolutePath(coverage, rootPath, alternateRootPath);
+            String absoluteCoveragePath = coverage.equals(".") ? coverage : getAbsolutePath(coverage, rootPath, alternateRootPath);
             resourceLocator.setCoverage(absoluteCoveragePath);
         }
 
+        if (mapping != null) {
+            String absoluteMappingPath = mapping.equals(".") ? mapping : getAbsolutePath(mapping, rootPath, alternateRootPath);
+            resourceLocator.setMappingPath(absoluteMappingPath);
+        }
 
         String url = getAttribute(element, SessionAttribute.URL.getText());
         if (url == null) {

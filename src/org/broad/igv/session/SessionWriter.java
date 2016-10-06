@@ -354,6 +354,9 @@ public class SessionWriter {
                     if (resourceLocator.getCoverage() != null) {
                         dataFileElement.setAttribute(SessionAttribute.COVERAGE.getText(), resourceLocator.getCoverage());
                     }
+                    if (resourceLocator.getMappingPath() != null) {
+                        dataFileElement.setAttribute(SessionAttribute.MAPPING.getText(), resourceLocator.getMappingPath());
+                    }
                     if (resourceLocator.getTrackLine() != null) {
                         dataFileElement.setAttribute(SessionAttribute.TRACK_LINE.getText(), resourceLocator.getTrackLine());
                     }

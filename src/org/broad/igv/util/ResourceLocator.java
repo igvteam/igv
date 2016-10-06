@@ -68,6 +68,19 @@ public class ResourceLocator {
     String indexPath;
 
     /**
+     *
+     /**
+     * Path to an associated density file.  This is used primarily for sequence alignments
+     */
+    String coverage;
+
+    /**
+     * Optional path to an associated variant->bam mapping file (vcf only)
+     */
+
+    String mappingPath;
+
+    /**
      * URL to a page with general information about the resource
      */
     String trackInforURL;
@@ -87,10 +100,6 @@ public class ResourceLocator {
      */
     String type;
 
-    /**
-     * Path to an associated density file.  This is used primarily for sequence alignments
-     */
-    String coverage;
 
     /**
      * A UCSC style track line.  Overrides value in file, if any.
@@ -412,6 +421,15 @@ public class ResourceLocator {
         return path + ".bai";
     }
 
+    public String getMappingPath() {
+        return mappingPath;
+    }
+
+    public void setMappingPath(String mappingPath) {
+        this.mappingPath = mappingPath;
+    }
+
+
     /**
      * Add the {@code indexExtension} to the path in locator, preserving
      * query string elements if present
@@ -439,7 +457,9 @@ public class ResourceLocator {
         if (locator.getIndexPath() != null) {
             return locator.getIndexPath();
         }
-        String indexExtension = (locator.getURLPath().toLowerCase().endsWith(".gz") || locator.getPath().toLowerCase().endsWith(".bgz")) ? ".tbi" : Tribble.STANDARD_INDEX_EXTENSION;
+        String indexExtension =
+                (locator.getURLPath().toLowerCase().endsWith(".gz") || locator.getPath().toLowerCase().endsWith(".bgz")) ? ".tbi" : Tribble.STANDARD_INDEX_EXTENSION;
+
         return appendToPath(locator, indexExtension);
     }
 
@@ -469,6 +489,7 @@ public class ResourceLocator {
         RESOURCE_TYPE("resourceType"),
         TRACK_LINE("trackLine"),
         COVERAGE("coverage"),
+        MAPPING("mapping"),
         COLOR("color"),
         INDEX("index");
 

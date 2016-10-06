@@ -247,6 +247,7 @@ public class ResourceTree {
             locator.setName(name);
             // Special element for alignment tracks
             locator.setCoverage(getAttribute(xmlNode, COVERAGE.getText()));
+            locator.setMappingPath(getAttribute(xmlNode, MAPPING.getText()));
 
             String colorString = getAttribute(xmlNode, COLOR.getText());
             if (colorString != null) {
