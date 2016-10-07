@@ -77,13 +77,12 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         boolean indexExists = FileUtils.resourceExists(idxPath);
 
         // Optionally let the user create an index.
-        final int tenMB = 10000000;
+        final int hundredMB = 100000000;
         final int oneGB = 1000000000;
         long size = FileUtils.getLength(locator.getPath());
-        final boolean indexRequired =
-                (VariantTrack.isVCF(locator.getTypeString()) && size > tenMB) || size > oneGB;
+        final boolean indexRequired =  size > oneGB;
         if (!Globals.isHeadless() && locator.isLocal() && !locator.getPath().endsWith(".gz") && !indexExists) {
-            if (size > tenMB) {
+            if (size > hundredMB) {
                 createIndex(locator, indexRequired);   // Note, might return null.
             }
         }
@@ -113,7 +112,8 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         File newIdxFile = new File(locator.getPath() + ".idx");
         String messageText = "An index file for " + baseFile.getAbsolutePath() + " could not " +
                 "be located. An index is " + (indexRequired ? "required" : "recommended") +
-                " to view files of this size.   Click \"Go\" to create one now.";
+                " to view files of this size.   Click \"Go\" to create one now or \"Cancel" +
+                " to proceed without an index.";
         IndexCreatorDialog dialog = IndexCreatorDialog.createShowDialog(IGV.getMainFrame(), baseFile, newIdxFile, messageText);
         return (Index) dialog.getIndex();
     }
