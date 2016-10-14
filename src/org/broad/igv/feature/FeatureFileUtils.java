@@ -31,6 +31,7 @@ import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import htsjdk.tribble.Feature;
+import org.broadinstitute.gatk.utils.collections.PrimitivePair;
 
 import java.io.*;
 import java.util.*;
@@ -155,7 +156,7 @@ public class FeatureFileUtils {
                 String[] tokens = Globals.commaPattern.split(nextLine);
                 String probe = tokens[0];
 
-                if(tokens.length < 1 || (tokens.length > 2 && !includeMultiMappings)) continue;
+                if (tokens.length < 1 || (tokens.length > 2 && !includeMultiMappings)) continue;
 
                 for (int i = 1; i < tokens.length; i++) {
 
@@ -169,8 +170,8 @@ public class FeatureFileUtils {
                 }
             }
         } finally {
-            if(br != null) br.close();
-            if(pw != null) pw.close();
+            if (br != null) br.close();
+            if (pw != null) pw.close();
         }
 
 
@@ -417,6 +418,83 @@ public class FeatureFileUtils {
         }
     }
 
+    /*
+ 0     `bin` smallint(5) unsigned NOT NULL,
+ 1 `name` varchar(255) NOT NULL,
+ 2 `chrom` varchar(255) NOT NULL,
+ 3 `strand` char(1) NOT NULL,
+ 4 `txStart` int(10) unsigned NOT NULL,
+ 5 `txEnd` int(10) unsigned NOT NULL,
+ 6 `cdsStart` int(10) unsigned NOT NULL,
+ 7 `cdsEnd` int(10) unsigned NOT NULL,
+ 8 `exonCount` int(10) unsigned NOT NULL,
+ 9 `exonStarts` longblob NOT NULL,
+ 10 `exonEnds` longblob NOT NULL,
+ 11 `score` int(11) DEFAULT NULL,
+ 12 `name2` varchar(255) NOT NULL,
+ 13 `cdsStartStat` enum('none','unk','incmpl','cmpl') NOT NULL,
+ 14 `cdsEndStat` enum('none','unk','incmpl','cmpl') NOT NULL,
+ 15 `exonFrames` longblob NOT NULL,
+     */
+    static void refgeneToBed(String iFile, String outputFile) throws IOException {
+
+        BufferedReader br = null;
+        PrintWriter pw = null;
+
+        try {
+            br = new BufferedReader(new FileReader(iFile));
+            pw = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
+
+            String nextLine;
+            while ((nextLine = br.readLine()) != null) {
+
+                if (nextLine.startsWith("#") || nextLine.startsWith("track") || nextLine.startsWith("browser")) {
+                    pw.println(nextLine);
+                    continue;
+                }
+
+                String[] tokens = Globals.whitespacePattern.split(nextLine);
+
+                String chr = tokens[2];
+                int start = Integer.parseInt(tokens[4]);
+                String end = tokens[5];
+                String name = tokens[12];
+                String score = "1000";
+                String strand = tokens[3];
+                String thickStart = tokens[6];
+                String thickEnd = tokens[7];
+                String itemRGB = ".";
+                int blockCount = Integer.parseInt(tokens[8]);
+
+                String exonStarts = tokens[9];
+                String[] stok = Globals.commaPattern.split(exonStarts);
+                String[] etok = Globals.commaPattern.split(tokens[10]);
+
+                String blockStarts = "";
+                String blockSizes = "";
+
+                for (int i = 0; i < blockCount; i++) {
+                    final int bs = Integer.parseInt(stok[i]);
+                    blockStarts += String.valueOf(bs - start);
+                    blockSizes += String.valueOf(Integer.parseInt(etok[i]) - bs);
+                    if (i != blockCount - 1) {
+                        blockStarts += ",";
+                        blockSizes += ",";
+                    }
+                }
+
+                pw.println(chr + "\t" + start + "\t" + end + "\t" + name + "\t" + score + "\t" + strand + "\t" +
+                        thickStart + "\t" + thickEnd + "\t" + itemRGB + "\t" + blockCount + "\t" + blockSizes + "\t" + blockStarts);
+
+
+            }
+
+        } finally {
+            if (br != null) br.close();
+            if (pw != null) pw.close();
+        }
+    }
+
 
     private static void mergeExons(BasicFeature gene, List<Exon> exons) {
         Set<IExon> exonProxies = new HashSet<IExon>(gene.getExons());
@@ -501,9 +579,8 @@ public class FeatureFileUtils {
     }
 
 
-
-    public static void main(String [] args) throws IOException {
-        splitGffFileByType(args[0], args[1]);
+    public static void main(String[] args) throws IOException {
+        refgeneToBed(args[0], args[1]);
     }
 
 }
