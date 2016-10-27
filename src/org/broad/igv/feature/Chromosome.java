@@ -99,7 +99,16 @@ public class Chromosome {
         return name;
     }
 
+    @Override
     public boolean equals(Object obj) {
-        return ((Chromosome)obj).getIndex() == index;
+        return (obj instanceof Chromosome) &&
+                ((Chromosome)obj).getIndex() == getIndex()
+                && ((Chromosome)obj).getLength() == getLength();
+    }
+
+    @Override
+    public int hashCode() {
+        return index + length;
+    }
     }
 }
