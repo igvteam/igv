@@ -30,7 +30,6 @@ import htsjdk.samtools.*;
 import htsjdk.samtools.util.CloserUtil;
 import org.apache.log4j.Logger;
 import org.broad.igv.ui.IGV;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.File;
 import java.io.IOException;
@@ -99,7 +98,7 @@ public class BAMSorter implements Sorter {
 
     @Override
     public void setComparator(Comparator<SortableRecord> comparator) {
-        throw new NotImplementedException();
+        throw new RuntimeException("Not implemented");
 
     }
 
