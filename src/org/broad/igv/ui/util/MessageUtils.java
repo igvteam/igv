@@ -89,7 +89,7 @@ public class MessageUtils {
 
             //Really long messages should be scrollable
             if(message.length() > 200){
-                Dimension size = new Dimension(1000, content.getHeight());
+                Dimension size = new Dimension(1000, content.getHeight() + 100);
                 content.setPreferredSize(size);
                 JScrollPane pane = new JScrollPane(content);
                 dispMessage = pane;
