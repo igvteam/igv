@@ -102,13 +102,13 @@ public class Chromosome {
     @Override
     public boolean equals(Object obj) {
         return (obj instanceof Chromosome) &&
-                ((Chromosome)obj).getIndex() == getIndex()
-                && ((Chromosome)obj).getLength() == getLength();
+                ((Chromosome) obj).getIndex() == getIndex()
+                && ((Chromosome) obj).getLength() == getLength();
     }
 
     @Override
     public int hashCode() {
         return index + length;
     }
-    }
+    
 }
