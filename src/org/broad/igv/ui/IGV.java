@@ -82,6 +82,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.net.NoRouteToHostException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -2576,7 +2577,8 @@ public class IGV implements IGVEventObserver {
                     }
                 } else if (igvArgs.getDataFileString() != null) {
                     // Not an xml file, assume its a list of data files
-                    String[] dataFiles = igvArgs.getDataFileString().split(",");
+                    String decodedString = URLDecoder.decode(igvArgs.getDataFileString());
+                    String[] dataFiles = decodedString.split(",");
                     String[] names = null;
                     if (igvArgs.getName() != null) {
                         names = igvArgs.getName().split(",");
