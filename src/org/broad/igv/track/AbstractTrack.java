@@ -148,11 +148,11 @@ public abstract class AbstractTrack implements Track {
 
     @XmlJavaTypeAdapter(SessionXmlAdapters.Color.class)
     @XmlAttribute(name = "color")
-    private Color posColor = Color.blue.darker();
+    protected Color posColor = Color.blue.darker();
 
     @XmlJavaTypeAdapter(SessionXmlAdapters.Color.class)
     @XmlAttribute
-    private Color altColor = posColor;
+    protected Color altColor = posColor;
 
     @XmlAttribute(name = "featureVisibilityWindow")
     protected int visibilityWindow = -1;
@@ -755,9 +755,12 @@ public abstract class AbstractTrack implements Track {
      * @return
      */
     public ContinuousColorScale getColorScale() {
+
         if (colorScale == null) {
 
-            if (IGV.hasInstance()) {
+            // If color & altColor are explicitly set use these for the scale
+
+            if (posColor == null && altColor == null && IGV.hasInstance()) {
                 ContinuousColorScale defaultScale = IGV.getInstance().getSession().getColorScale(trackType);
                 if (defaultScale != null) {
                     return defaultScale;

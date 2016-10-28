@@ -855,7 +855,7 @@ public class PreferenceManager implements PropertyManager {
      * @param type
      * @return
      */
-    public ContinuousColorScale getDefaultColorScale(TrackType type) {
+    public static ContinuousColorScale getDefaultColorScale(TrackType type) {
         switch (type) {
             case LOH:
                 return new ContinuousColorScale(0, -1, 0, 1, Color.red, UIConstants.LIGHT_YELLOW, Color.blue);
@@ -871,18 +871,22 @@ public class PreferenceManager implements PropertyManager {
                 return cs;
 
             case GENE_EXPRESSION:
-                cs = new ContinuousColorScale(-0.1, -1.5, 0.1, 1.5, Color.BLUE, Color.WHITE, Color.RED);
+                cs = getDefaultColorScale(Color.BLUE, Color.WHITE, Color.RED);
                 cs.setNoDataColor(new Color(225, 225, 225));
                 return cs;
 
             case COPY_NUMBER:
             case ALLELE_SPECIFIC_COPY_NUMBER:
             case CNV:
-                return new ContinuousColorScale(-0.1, -1.5, 0.1, 1.5, Color.BLUE, Color.WHITE, Color.RED);
+                return getDefaultColorScale(Color.BLUE, Color.WHITE, Color.RED);
 
             default:
                 return null;
         }
+    }
+
+    public static ContinuousColorScale getDefaultColorScale(Color negColor, Color neutralColor, Color posColor) {
+        return new ContinuousColorScale(-0.1, -1.5, 0.1, 1.5, negColor, neutralColor, posColor);
     }
 
     /**

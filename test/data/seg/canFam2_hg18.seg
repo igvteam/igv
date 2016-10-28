@@ -1,4 +1,5 @@
 #type=CNV
+#track color="0,155,0" altColor="155,0,155"
 SampleID	Chr	Start	End	ignore	Value
 0123-A	chr5	66826484	67815025	1	0
 0123-A	chr9	20028561	22275372	1	0
