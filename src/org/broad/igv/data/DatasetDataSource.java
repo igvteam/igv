@@ -38,6 +38,7 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackType;
+import org.broad.igv.track.WindowFunction;
 
 import java.util.HashMap;
 import java.util.List;
@@ -55,7 +56,6 @@ public class DatasetDataSource extends AbstractDataSource {
     GenomeSummaryData genomeSummaryData;
 
     /**
-     *
      * @param trackId
      * @param dataset
      * @param genome
@@ -87,23 +87,72 @@ public class DatasetDataSource extends AbstractDataSource {
     @Override
     protected DataTile getRawData(String chr, int startLocation, int endLocation) {
 
-        if (chr.equals(Globals.CHR_ALL) && genomeSummaryData != null) {
+        if (chr.equals(Globals.CHR_ALL) && genomeSummaryData != null && windowFunction != WindowFunction.none) {
             int[] startLocs = genomeSummaryData.getLocations();
             int[] endLocs = null;
             float[] data = genomeSummaryData.getData(trackId);
             return new DataTile(startLocs, endLocs, data, null);
+        }
+        if (chr.equals(Globals.CHR_ALL)) {
+            return getWGRawData();
         } else {
             int[] startLocs = dataset.getStartLocations(chr);
             int[] endLocs = dataset.getEndLocations(chr);
-            float[] data =  dataset.getData(trackId, chr);
+            float[] data = dataset.getData(trackId, chr);
             String[] features = dataset.getFeatureNames(chr);
 
-            if (startLocs == null|| (data == null) || data.length == 0) {
+            if (startLocs == null || (data == null) || data.length == 0) {
                 return null;
             }
 
             return new DataTile(startLocs, endLocs, data, features);
         }
+    }
+
+    /**
+     * Create a tile for WG data.  This is used when genome summary data is not useful => window function == none
+     *
+     * @return
+     */
+    private DataTile getWGRawData() {
+
+        int size = 0;
+        for (String chr : genome.getAllChromosomeNames()) {
+            int[] s = dataset.getStartLocations(chr);
+            int[] e = dataset.getEndLocations(chr);
+            float[] d = dataset.getData(trackId, chr);
+            if (s != null && d != null) size += s.length;
+        }
+        if (size == 0) return null;
+
+        int[] startLocs = new int[size];
+        int[] endLocs = new int[size];
+        float[] data = new float[size];
+        String[] features = new String[size];
+
+        int i = 0;
+        for (String chr : genome.getAllChromosomeNames()) {
+            int[] s = dataset.getStartLocations(chr);
+            int[] e = dataset.getEndLocations(chr);
+            float[] d = dataset.getData(trackId, chr);
+            String[] f = dataset.getFeatureNames(chr);
+
+            if (s != null && d != null) {
+                int l = s.length;
+                for (int j = 0; j < l; j++) {
+
+                    startLocs[i] = genome.getGenomeCoordinate(chr, s[j]);
+                    endLocs[i] = e == null ? startLocs[i] + 1 : genome.getGenomeCoordinate(chr, e[j]);
+                    data[i] = d[j];
+                    if (f != null) features[i] = f[j];
+
+                    i++;
+                }
+            }
+
+        }
+        return new DataTile(startLocs, endLocs, data, features);
+
     }
 
     @Override
@@ -115,8 +164,7 @@ public class DatasetDataSource extends AbstractDataSource {
     public TrackType getTrackType() {
         try {
             return dataset.getType();
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             return TrackType.OTHER;
         }
     }

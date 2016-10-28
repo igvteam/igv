@@ -624,7 +624,7 @@ public class TrackLoader {
 
         final String path = locator.getPath();
         long size = FileUtils.getLength(path);
-        int maxSize = 50000000;  // 50 mb
+        int maxSize = 200000000;  // 200 mb
         if (path.endsWith(".gz") || path.endsWith(".bgz")) {
             maxSize /= 4;
         }
@@ -633,7 +633,7 @@ public class TrackLoader {
 
             String message = "The file " + path + " is large (" + (size / 1000000) + " mb).  It is recommended " +
                     "that large files be converted to the binary <i>.tdf</i> format using the IGVTools " +
-                    "<b>tile</b> command. Loading  unconverted ascii fies of this size can lead to poor " +
+                    "<b>toTDF</b> command. Loading  unconverted ascii fies of this size can lead to poor " +
                     "performance or unresponsiveness (freezing).  " +
                     "<br><br>IGVTools can be launched from the <b>Tools</b> menu or separately as a " +
                     "command line program. See the user guide for more details.<br><br>Click <b>Continue</b> " +
