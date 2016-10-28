@@ -35,6 +35,7 @@ import java.awt.*;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -273,7 +274,7 @@ public class ResourceLocator {
         if (name == null) {
             if (path.startsWith("http://") || path.startsWith("https://")) {
                 try {
-                    return new File((new URL(path)).getPath()).getName();
+                    return new File((new URL(URLDecoder.decode(path))).getPath()).getName();
                 } catch (MalformedURLException e) {
                     return path;
                 }
