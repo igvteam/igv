@@ -92,9 +92,11 @@ import org.broad.igv.variant.util.PedigreeUtils;
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.variant.vcf.VCFHeader;
 
+import java.awt.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.*;
+import java.util.List;
 
 /**
  * User: jrobinso
@@ -1149,7 +1151,19 @@ public class TrackLoader {
             String freqTrackId = path;
             String freqTrackName = "CNV Summary";
             CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);
+
+            if(props != null) {
+                freqTrack.setProperties(props);
+            }
+
             newTracks.add(freqTrack);
+        }
+
+        ContinuousColorScale colorScale = null;
+        if(props != null) {
+            Color maxColor = props.getColor();
+            Color minColor = props.getAltColor();
+            colorScale = PreferenceManager.getDefaultColorScale(minColor, Color.white, maxColor);
         }
 
         for (String trackName : ds.getSampleNames()) {
@@ -1161,6 +1175,9 @@ public class TrackLoader {
 
             if (props != null) {
                 track.setProperties(props);
+            }
+            if(colorScale != null) {
+                track.setColorScale(colorScale);
             }
 
             newTracks.add(track);
