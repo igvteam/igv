@@ -44,14 +44,12 @@ import java.util.Map;
 public class TDFUtils {
 
     public static void main(String[] args) throws FileNotFoundException {
-        //chr1:170,118,422-170,764,140
-        TDFUtils.dumpIndex("/Users/jrobinso/IGV/gbm/GBM.transcriptome__agilentg4502a_07_2__unc_edu__Level_3__unc_lowess_normalization_gene_level__data.data.tdf");
-        //TDFUtils.dumpAllTiles("/Users/jrobinso/projects/client/compressed.tdf");
-        //TDFUtils.tdfToBedgraph("/Users/jrobinso/IGV/time_course/cebpb_0.merged.bam.tdf",
-        //        "/Users/jrobinso/IGV/time_course/test.wig");
-        //TDFUtils.dumpTile("/Users/jrobinso/IGV/allaml.dataset.gct.tdf", "/chr4/raw", 130);
-        //TDFUtils.dumpDatasets("/Users/jrobinso/IGV/affy_1552717.gct.tdf");
-        //TDFUtils.dumpDatasets("/Volumes/igv/tools/OV-1116.capture.tumor.20b.cov.tdf");
+        //TDFUtils.dumpIndex(args[0]);
+        //TDFUtils.dumpAllTiles(args[0]);
+        //TDFUtils.tdfToBedgraph(args[0], args[1])
+        TDFUtils.dumpTile(args[0], args[1], Integer.parseInt(args[2])); //"allaml.dataset.gct.tdf", "/chr4/raw", 130);
+        //TDFUtils.dumpDatasets(args[0]);
+        //TDFUtils.dumpDatasets(args[0]);
     }
 
     public static void dumpIndex(String tdfFile) {
@@ -300,7 +298,7 @@ public class TDFUtils {
     chr1:241356465-241356657
     chr1:241358198-241358223
     chr1:241359291-241359329
-    
+
     chr4:119691730-119691768
     chr4:119692843-119692868
     chr4:119694419-119694611

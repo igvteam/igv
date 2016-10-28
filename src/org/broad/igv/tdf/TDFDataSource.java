@@ -368,6 +368,9 @@ public class TDFDataSource implements CoverageDataSource {
     public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom) {
 
         Chromosome chromosome = genome.getChromosome(chr);
+        if(chromosome != null) {
+            endLocation = Math.min(chromosome.getLength(), endLocation);
+        }
 
         String tmp = chrNameMap.get(chr);
         String querySeq = tmp == null ? chr : tmp;
@@ -380,9 +383,9 @@ public class TDFDataSource implements CoverageDataSource {
             ArrayList scores = new ArrayList();
 
             // TODO -- this whole section could be computed once and stored,  it is only a function of the genome, chr, and zoom level.
-            double tileWidth = 0;
+            int tileWidth = 0;
             if (chr.equals(Globals.CHR_ALL)) {
-                tileWidth = (genome.getNominalLength() / 1000.0);
+                tileWidth = (int) Math.ceil(genome.getNominalLength() / 1000.0);
             } else {
                 if (chromosome != null) {
                     tileWidth = chromosome.getLength() / ((int) Math.pow(2.0, zoom));
@@ -393,8 +396,8 @@ public class TDFDataSource implements CoverageDataSource {
             }
 
 
-            int startTile = (int) (startLocation / tileWidth);
-            int endTile = (int) (endLocation / tileWidth);
+            int startTile = (startLocation / tileWidth);
+            int endTile = ((endLocation - 1) / tileWidth);
             for (int t = startTile; t <= endTile; t++) {
                 List<LocusScore> cachedScores = getCachedSummaryScores(querySeq, zoom, t, tileWidth);
                 if (cachedScores != null) {
