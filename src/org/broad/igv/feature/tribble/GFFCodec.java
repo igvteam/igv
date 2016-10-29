@@ -398,6 +398,13 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
                 return id;
             }
 
+            // Try <type>_id convention
+            id = attributes.get(type + "_id");
+            if (id != null && id.length() > 0) {
+                return id;
+            }
+
+
             for (String nf : idFields) {
                 if (attributes.containsKey(nf)) {
                     String tmp = attributes.get(nf).trim();
