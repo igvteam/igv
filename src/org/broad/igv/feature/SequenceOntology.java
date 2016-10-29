@@ -60,6 +60,7 @@ public class SequenceOntology {
 
         utrTypes.addAll(SequenceOntology.fivePrimeUTRTypes);
         utrTypes.addAll(SequenceOntology.threePrimeUTRTypes);
+        utrTypes.add("UTR");    // Some Ensemble gtf files
         cdsTypes.add("CDS");
         cdsTypes.add("cds");
 
