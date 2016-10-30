@@ -75,6 +75,7 @@ public class TDFDataSource implements CoverageDataSource {
         this.trackName = trackName;
         this.reader = reader;
         this.availableFunctions = reader.getWindowFunctions();
+        this.availableFunctions.add(WindowFunction.none);   // Always available => raw data
 
         TDFGroup rootGroup = reader.getGroup("/");
         try {
@@ -183,16 +184,16 @@ public class TDFDataSource implements CoverageDataSource {
 
         List<LocusScore> scores;
 
-        if (zoom <= this.maxPrecomputedZoom) {
+        if (zoom <= this.maxPrecomputedZoom && windowFunction != WindowFunction.none) {
             // Window function == none => no windowing, so its not clear what to do.  For now use mean
-            WindowFunction wf = (windowFunction == WindowFunction.none ? WindowFunction.mean : windowFunction);
+           // WindowFunction wf = (windowFunction == WindowFunction.none ? WindowFunction.mean : windowFunction);
 
             List<TDFTile> tiles = null;
             if (querySeq.equals(Globals.CHR_ALL) && !isChrOrderValid()) {
-                TDFTile wgTile = reader.getWholeGenomeTile(genome, wf);
+                TDFTile wgTile = reader.getWholeGenomeTile(genome, windowFunction);
                 tiles = Arrays.asList(wgTile);
             } else {
-                TDFDataset ds = reader.getDataset(querySeq, zoom, wf);
+                TDFDataset ds = reader.getDataset(querySeq, zoom, windowFunction);
                 if (ds != null) {
                     tiles = ds.getTiles(startLocation, endLocation);
                 }

@@ -56,8 +56,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
 
     Collection<WindowFunction> availableWindowFunctions =
-            Arrays.asList(WindowFunction.min, WindowFunction.mean, WindowFunction.max);
-    WindowFunction windowFunction = WindowFunction.mean;
+            Arrays.asList(WindowFunction.min, WindowFunction.mean, WindowFunction.max, WindowFunction.none);
 
     BBFileReader reader;
     private BBZoomLevels levels;
@@ -65,7 +64,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
     // Feature visibility window (for bigBed)
     private int featureVisiblityWindow = -1;
 
-    private List<LocusScore> wholeGenomeScores;
+    private Map<WindowFunction, List<LocusScore>> wholeGenomeScores;
 
     // Lookup table to support chromosome aliasing.
     private Map<String, String> chrNameMap = new HashMap();
@@ -81,9 +80,10 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         super(genome);
 
         this.reader = reader;
-        levels = reader.getZoomLevels();
+        this.levels = reader.getZoomLevels();
+        this.wholeGenomeScores = new HashMap();
 
-        if(reader.isBigWigFile()) initMinMax();
+        if (reader.isBigWigFile()) initMinMax();
 
         // Assume 1000 pixel screen, pick visibility level to be @ highest resolution zoom.
         // TODO -- something smarter, like scaling by actual density
@@ -163,12 +163,6 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         return TrackType.OTHER;
     }
 
-    public void setWindowFunction(WindowFunction statType) {
-        // Invalidate caches
-        wholeGenomeScores = null;
-
-        this.windowFunction = statType;
-    }
 
     public boolean isLogNormalized() {
         return false;
@@ -183,9 +177,6 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         return 0;
     }
 
-    public WindowFunction getWindowFunction() {
-        return windowFunction;
-    }
 
     public Collection<WindowFunction> getAvailableWindowFunctions() {
         return availableWindowFunctions;
@@ -323,10 +314,11 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
     private List<LocusScore> getWholeGenomeScores() {
 
-        if (genome.getHomeChromosome().equals(Globals.CHR_ALL)) {
-            if (wholeGenomeScores == null) {
+        if (genome.getHomeChromosome().equals(Globals.CHR_ALL) && windowFunction != WindowFunction.none) {
+            if (wholeGenomeScores.get(windowFunction) == null) {
                 double scale = genome.getNominalLength() / screenWidth;
-                wholeGenomeScores = new ArrayList<LocusScore>();
+                ArrayList<LocusScore> scores = new ArrayList<LocusScore>();
+                wholeGenomeScores.put(windowFunction, scores);
 
                 for (String chrName : genome.getLongChromosomeNames()) {
                     Chromosome chr = genome.getChromosome(chrName);
@@ -353,14 +345,14 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
                         }
 
                         int genomeEnd = genome.getGenomeCoordinate(chrName, rec.getChromEnd());
-                        wholeGenomeScores.add(new BasicScore(genomeStart, genomeEnd, value));
+                        scores.add(new BasicScore(genomeStart, genomeEnd, value));
                         lastGenomeEnd = genomeEnd;
                     }
                 }
 
 
             }
-            return wholeGenomeScores;
+            return wholeGenomeScores.get(windowFunction);
         } else {
             return null;
         }
@@ -370,7 +362,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
     @Override
     public void dispose() {
         super.dispose();
-        if(reader != null) {
+        if (reader != null) {
             reader.close();
         }
     }
@@ -403,7 +395,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public  class WrappedIterator implements Iterator<Feature> {
+    public class WrappedIterator implements Iterator<Feature> {
 
         BigBedIterator bedIterator;
 
@@ -418,7 +410,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         public Feature next() {
             BedFeature feat = bedIterator.next();
             String[] restOfFields = feat.getRestOfFields();
-            String [] tokens = new String[restOfFields.length + 3];
+            String[] tokens = new String[restOfFields.length + 3];
             tokens[0] = feat.getChromosome();
             tokens[1] = String.valueOf(feat.getStartBase());
             tokens[2] = String.valueOf(feat.getEndBase());
@@ -454,7 +446,6 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
             return chr.equals(this.chr) && start >= this.start && end <= this.end;
         }
     }
-
 
 
 }
