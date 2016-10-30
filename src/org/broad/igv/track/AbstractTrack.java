@@ -709,6 +709,9 @@ public abstract class AbstractTrack implements Track {
         }
         if (properties.getRendererClass() != null) {
             setRendererClass(properties.getRendererClass());
+            if(properties.getRendererClass() == PointsRenderer.class) {
+                setWindowFunction(WindowFunction.none);
+            }
         }
         if (properties.getWindowingFunction() != null) {
             setWindowFunction(properties.getWindowingFunction());

@@ -48,7 +48,7 @@ public abstract class AbstractDataSource implements DataSource {
 
     // DataManager dataManager;
     boolean cacheSummaryTiles = true;
-    WindowFunction windowFunction = WindowFunction.mean;
+    protected WindowFunction windowFunction = WindowFunction.mean;
     LRUCache<String, SummaryTile> summaryTileCache = new LRUCache(10);
     protected Genome genome;
 
@@ -126,9 +126,13 @@ public abstract class AbstractDataSource implements DataSource {
     public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom) {
 
 
-        List<LocusScore> scores = getPrecomputedSummaryScores(chr, startLocation, endLocation, zoom);
-        if (scores != null) {
-            return scores;
+        List<LocusScore> scores = null;
+
+        if(windowFunction != WindowFunction.none) {
+            scores = getPrecomputedSummaryScores(chr, startLocation, endLocation, zoom);
+            if (scores != null) {
+                return scores;
+            }
         }
 
         List<SummaryTile> tiles = getSummaryTilesForRange(chr, startLocation, endLocation, zoom);
@@ -215,12 +219,7 @@ public abstract class AbstractDataSource implements DataSource {
 
     SummaryTile computeSummaryTile(String chr, int startLocation, int endLocation, int nBins) {
 
-
-        // TODO -- we should use an index here
-        int longestGene = getLongestFeature(chr);
-
-        int adjustedStart = Math.max(startLocation - longestGene, 0);
-        DataTile rawTile = getRawData(chr, adjustedStart, endLocation);
+        DataTile rawTile = getRawData(chr, startLocation, endLocation);
         SummaryTile tile = new SummaryTile();
 
         if (rawTile != null && !rawTile.isEmpty() && nBins > 0) {

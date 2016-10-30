@@ -163,7 +163,7 @@ public class TrackMenuUtils {
 
             if (track instanceof DataTrack) {
                 hasDataTracks = true;
-            } else if(track instanceof CoverageTrack) {
+            } else if (track instanceof CoverageTrack) {
                 hasDataTracks = true;
                 hasCoverageTracks = true;
             } else if (track instanceof FeatureTrack) {
@@ -248,7 +248,11 @@ public class TrackMenuUtils {
             log.trace("enter getDataPopupMenu");
         }
 
-        if(!hasCoverageTracks) {
+        if (!hasCoverageTracks) {
+
+
+            // The "Points" renderer cannot be used with
+
             final String[] labels = {"Heatmap", "Bar Chart", "Points", "Line Plot"};
             final Class[] renderers = {HeatmapRenderer.class, BarChartRenderer.class,
                     PointsRenderer.class, LineplotRenderer.class
@@ -284,44 +288,48 @@ public class TrackMenuUtils {
             menu.addSeparator();
 
 
-            // Get union of all valid window functions for selected tracks
-            Set<WindowFunction> avaibleWindowFunctions = new HashSet();
+            // Get intersection of all valid window functions for selected tracks
+            Set<WindowFunction> avaibleWindowFunctions = new LinkedHashSet<>();
+            avaibleWindowFunctions.addAll(Arrays.asList(ORDERED_WINDOW_FUNCTIONS));
             for (Track track : tracks) {
-                avaibleWindowFunctions.addAll(track.getAvailableWindowFunctions());
+                avaibleWindowFunctions.retainAll(track.getAvailableWindowFunctions());
             }
-            avaibleWindowFunctions.add(WindowFunction.none);
-
 
             // dataPopupMenu.addSeparator();
             // Collection all window functions for selected tracks
-            Set<WindowFunction> currentWindowFunctions = new HashSet<WindowFunction>();
+            WindowFunction currentWindowFunction = null;
             for (Track track : tracks) {
-                if (track.getWindowFunction() != null) {
-                    currentWindowFunctions.add(track.getWindowFunction());
+                final WindowFunction twf = track.getWindowFunction();
+                if (currentWindowFunction == null) {
+                    currentWindowFunction = twf;
+                } else {
+                    if (twf != currentWindowFunction) {
+                        currentWindowFunction = null;     // Multiple window functions
+                        break;
+                    }
                 }
             }
 
-            if (avaibleWindowFunctions.size() > 1 || currentWindowFunctions.size() > 1) {
+            if (avaibleWindowFunctions.size() > 0) {
                 JLabel statisticsHeading = new JLabel(LEADING_HEADING_SPACER + "Windowing Function", JLabel.LEFT);
                 statisticsHeading.setFont(UIConstants.boldFont);
 
                 menu.add(statisticsHeading);
 
-                for (final WindowFunction wf : ORDERED_WINDOW_FUNCTIONS) {
+                for (final WindowFunction wf : avaibleWindowFunctions) {
                     JCheckBoxMenuItem item = new JCheckBoxMenuItem(wf.getValue());
-                    if (avaibleWindowFunctions.contains(wf) || currentWindowFunctions.contains(wf)) {
-                        if (currentWindowFunctions.contains(wf)) {
-                            item.setSelected(true);
-                        }
-                        item.addActionListener(new ActionListener() {
 
-                            public void actionPerformed(ActionEvent evt) {
-                                changeStatType(wf.toString(), tracks);
-                            }
-                        });
-                        menu.add(item);
-                    }
+                    item.setSelected(currentWindowFunction == wf);
+
+                    item.addActionListener(new ActionListener() {
+
+                        public void actionPerformed(ActionEvent evt) {
+                            changeStatType(wf.toString(), tracks);
+                        }
+                    });
+                    menu.add(item);
                 }
+
                 menu.addSeparator();
             }
         }
@@ -329,7 +337,7 @@ public class TrackMenuUtils {
 
         menu.add(getDataRangeItem(tracks));
 
-        if(!hasCoverageTracks) menu.add(getHeatmapScaleItem(tracks));
+        if (!hasCoverageTracks) menu.add(getHeatmapScaleItem(tracks));
 
         if (tracks.size() > 0) {
             menu.add(getLogScaleItem(tracks));
@@ -337,7 +345,7 @@ public class TrackMenuUtils {
 
         menu.add(getAutoscaleItem(tracks));
 
-        if (tracks.size() > 1 ) {
+        if (tracks.size() > 1) {
             menu.add(getGroupAutoscaleItem(tracks));
         }
 
@@ -347,7 +355,7 @@ public class TrackMenuUtils {
         Track firstTrack = tracks.iterator().next();
         boolean merged = (tracks.size() == 1 && firstTrack instanceof MergedTracks);
 
-        if(tracks.size() > 1 || merged) {
+        if (tracks.size() > 1 || merged) {
             menu.addSeparator();
             final List<DataTrack> dataTrackList = Lists.newArrayList(Iterables.filter(tracks, DataTrack.class));
             final JMenuItem overlayGroups = new JMenuItem("Overlay Tracks");
@@ -466,8 +474,8 @@ public class TrackMenuUtils {
             Track t = tracks.iterator().next();
             Feature f = t.getFeatureAtMousePosition(te);
 
-            ReferenceFrame frame=te.getFrame();
-            if(frame == null && !FrameManager.isGeneListMode()) {
+            ReferenceFrame frame = te.getFrame();
+            if (frame == null && !FrameManager.isGeneListMode()) {
                 frame = FrameManager.getDefaultFrame();
             }
 
@@ -494,7 +502,7 @@ public class TrackMenuUtils {
 
                 featurePopupMenu.add(getCopySequenceItem(sequenceFeature));
 
-                if(frame != null) {
+                if (frame != null) {
                     Range r = frame.getCurrentRange();
                     featurePopupMenu.add(getExtendViewItem(featureName, sequenceFeature, r));
                 }
@@ -534,10 +542,10 @@ public class TrackMenuUtils {
 
         for (int i = 0; i < arcDirectionLabels.length; i++) {
             JCheckBoxMenuItem item = new JCheckBoxMenuItem(arcDirectionLabels[i]);
-            final int n = (i==0) ? 1 : -1 ;
+            final int n = (i == 0) ? 1 : -1;
             for (Track track : tracks) {
                 if (track instanceof BasePairTrack) {
-                    if (((BasePairTrack) track).getDirection() == n){
+                    if (((BasePairTrack) track).getDirection() == n) {
                         item.setSelected(true);
                     }
                 }
@@ -673,7 +681,7 @@ public class TrackMenuUtils {
                 FeatureTrack fTrack = (FeatureTrack) track;
 
                 String trackLine = fTrack.getExportTrackLine();
-                if(trackLine != null) {
+                if (trackLine != null) {
                     writer.println(trackLine);
                 }
 
@@ -1290,12 +1298,12 @@ public class TrackMenuUtils {
 
         PrintWriter pw = null;
         try {
-             pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+            pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
 
             List<String> attributes = AttributeManager.getInstance().getVisibleAttributes();
 
             pw.print("Name");
-            for(String att : attributes) {
+            for (String att : attributes) {
                 pw.print("\t" + att);
             }
             pw.println();
@@ -1304,7 +1312,7 @@ public class TrackMenuUtils {
                 //We preserve the alpha value. This is motivated by MergedTracks
                 pw.print(track.getName());
 
-                for(String att : attributes) {
+                for (String att : attributes) {
                     String val = track.getAttributeValue(att);
                     pw.print("\t" + (val == null ? "" : val));
                 }
@@ -1316,7 +1324,7 @@ public class TrackMenuUtils {
             MessageUtils.showErrorMessage("Error writing to file", e);
             log.error(e);
         } finally {
-            if(pw != null) pw.close();
+            if (pw != null) pw.close();
         }
 
     }
@@ -1333,7 +1341,7 @@ public class TrackMenuUtils {
 
                 double location = frame.getChromosomePosition(mouseX);
                 if (f instanceof IGVFeature) {
-                    String details =  f.getChr() + ":" + (f.getStart() + 1) + "-" + f.getEnd() +
+                    String details = f.getChr() + ":" + (f.getStart() + 1) + "-" + f.getEnd() +
                             System.getProperty("line.separator") + System.getProperty("line.separator");
                     String valueString = ((IGVFeature) f).getValueString(location, mouseX, null);
                     if (details != null) {
