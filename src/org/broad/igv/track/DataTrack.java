@@ -135,7 +135,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack {
         int endIdx = inViewScores.size() - 1;   // Starting guess
         int tmp = FeatureUtils.getIndexBefore(end, inViewScores);
 
-        if(tmp < 0)
+        if (tmp < 0)
             return Collections.EMPTY_LIST;
 
         else {
@@ -156,18 +156,18 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack {
     public Range getInViewRange(ReferenceFrame referenceFrame) {
 
         List<LocusScore> scores = getInViewScores(referenceFrame);
-        if(scores.size() > 0) {
-            float min = scores.get(0).getScore();
-            float max = min;
-            for(int i=1; i<scores.size(); i++) {
-                LocusScore score = scores.get(i);
+        if (scores.size() > 0) {
+            float min = Float.MAX_VALUE;
+            float max = -Float.MAX_VALUE;
+            for (LocusScore score : scores) {
                 float value = score.getScore();
-                min = Math.min(value, min);
-                max = Math.max(value, max);
+                if (!Float.isNaN(value)) {
+                    min = Math.min(value, min);
+                    max = Math.max(value, max);
+                }
             }
             return new Range(min, max);
-        }
-        else {
+        } else {
             return null;
         }
 

@@ -85,7 +85,7 @@ public class TDFDataSource implements CoverageDataSource {
         }
         try {
             String dataGenome = rootGroup.getAttribute("genome");
-            // TODO -- throw exception if data genome != current genome 
+            // TODO -- throw exception if data genome != current genome
         } catch (Exception e) {
             log.error("Unknown genome " + rootGroup.getAttribute("genome"));
             throw new RuntimeException("Unknown genome " + rootGroup.getAttribute("genome"));
@@ -217,10 +217,22 @@ public class TDFDataSource implements CoverageDataSource {
 
         } else {
 
-            int chrLength = getChrLength(querySeq);
-            if (chrLength == 0) {
-                return Collections.emptyList();
+            if(querySeq.equals(genome.getHomeChromosome())) {
+                scores = getWGRawScores();
             }
+            else {
+                scores = getLocusScoresForChr(querySeq, startLocation, endLocation, zoom);
+            }
+        }
+        return scores;
+    }
+
+    private List<LocusScore> getLocusScoresForChr(String chr, int startLocation, int endLocation, int zoom) {
+        List<LocusScore> scores;
+        int chrLength = getChrLength(chr);
+        if (chrLength == 0) {
+            scores = Collections.emptyList();
+        } else {
             endLocation = Math.min(endLocation, chrLength);
             // By definition there are 2^z tiles per chromosome, and 700 bins per tile, where z is the zoom level.
             // By definition there are 2^z tiles per chromosome, and 700 bins per tile, where z is the zoom level.
@@ -228,8 +240,7 @@ public class TDFDataSource implements CoverageDataSource {
             //int z = Math.min(zReq, maxZoom);
             int nTiles = (int) Math.pow(2, zoom);
             double binSize = Math.max(1, (((double) chrLength) / nTiles) / 700);
-
-            scores = computeSummaryScores(querySeq, startLocation, endLocation, binSize);
+            scores = computeSummaryScores(chr, startLocation, endLocation, binSize);
         }
         return scores;
     }
@@ -242,6 +253,40 @@ public class TDFDataSource implements CoverageDataSource {
             Chromosome c = genome.getChromosome(chr);
             return c == null ? 0 : c.getLength();
         }
+    }
+
+    private List <LocusScore> getWGRawScores() {
+
+        List<LocusScore> scores = new ArrayList(10000);
+
+        for(String chr : genome.getAllChromosomeNames()) {
+            Chromosome c = genome.getChromosome(chr);
+
+            String dsName = "/" + chr + "/raw";
+            TDFDataset rawDataset = reader.getDataset(dsName);
+            if (rawDataset != null) {
+                List<TDFTile> rawTiles = rawDataset.getTiles(0, c.getLength());
+                if (rawTiles.size() > 0) {
+                    for (TDFTile rawTile : rawTiles) {
+                        // Tile of raw data
+                        if (rawTile != null && rawTile.getSize() > 0) {
+
+                            for (int i = 0; i < rawTile.getSize(); i++) {
+                                int s = genome.getGenomeCoordinate(chr, rawTile.getStartPosition(i));
+                                int e = genome.getGenomeCoordinate(chr, Math.max(s, rawTile.getEndPosition(i) - 1));
+                                float v = rawTile.getValue(trackNumber, i);
+                                if (!Float.isNaN(v)) {
+                                    v *= normalizationFactor;
+                                }
+                                scores.add(new BasicScore(s, e, v));
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+        return scores;
     }
 
     private List<LocusScore> computeSummaryScores(String chr, int startLocation, int endLocation, double scale) {
