@@ -417,7 +417,7 @@ public class ParsingUtils {
                             } catch (NumberFormatException e) {
                                 log.error("height must be an integer: " + value);
                             }
-                            
+
                         } else if (key.equals("url")) {
                             trackProperties.setUrl(value);
                         } else if (key.equals("graphtype")) {
@@ -500,11 +500,11 @@ public class ParsingUtils {
                         } else if (key.equals("alternateexoncolor")) {
                             trackProperties.setAlternateExonColor(valueLowerCase.equals("on") || value.equals("1"));
                         } else if (key.equals("visibility")) {
-                            if (valueLowerCase.equals("1") || valueLowerCase.equals("dense")) {
+                            if (valueLowerCase.equals("1") || valueLowerCase.equals("dense") || valueLowerCase.equals("collapsed")) {
                                 trackProperties.setDisplayMode(Track.DisplayMode.COLLAPSED);
-                            } else if (valueLowerCase.equals("2") || valueLowerCase.equals("3") || valueLowerCase.equals("pack")) {
+                            } else if (valueLowerCase.equals("2") || valueLowerCase.equals("3") || valueLowerCase.equals("pack") || valueLowerCase.equals("expanded")) {
                                 trackProperties.setDisplayMode(Track.DisplayMode.EXPANDED);
-                            } else if (valueLowerCase.equals("4") || valueLowerCase.equals("squish")) {
+                            } else if (valueLowerCase.equals("4") || valueLowerCase.equals("squish") || valueLowerCase.equals("squished")) {
                                 trackProperties.setDisplayMode(Track.DisplayMode.SQUISHED);
                             }
                         } else if (key.equals("genome") || key.equals("db")) {
