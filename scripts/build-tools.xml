@@ -99,7 +99,7 @@
         <zip destfile="${deploy.dir}/igvtools_${version}.zip" whenempty="fail" defaultexcludes="true">
             <zipfileset dir="${ant.project.name}-dist" includes="${jarname}.jar" prefix="${title}"/>
             <zipfileset refid="scripts" prefix="${title}" filemode="755"/>
-            <zipfileset dir="${docs.dir}" includes="igvtools_readme.txt" prefix="${title}"/>
+            <zipfileset dir="${scripts.dir}" includes="igvtools_readme.txt" prefix="${title}"/>
             <zipfileset dir="${genome.dir}"  prefix="${title}/genomes"/>
         </zip>
     </target>

@@ -83,7 +83,7 @@
             <fileset file="${dist.dir}${batik-codec-finame}"/>
             <fileset file="${dist.dir}${goby-io-finame}"/>
             <fileset refid="scripts"/>
-            <fileset file="docs/readme.txt"/>
+            <fileset file="readme.txt"/>
         </copy>
     </target>
 
