@@ -761,11 +761,10 @@ public abstract class AbstractTrack implements Track {
 
         if (colorScale == null) {
 
-            // If color & altColor are explicitly set use these for the scale
-
-            if (posColor == null && altColor == null && IGV.hasInstance()) {
+            if (IGV.hasInstance()) {
                 ContinuousColorScale defaultScale = IGV.getInstance().getSession().getColorScale(trackType);
                 if (defaultScale != null) {
+                    colorScale = defaultScale;
                     return defaultScale;
                 }
             }

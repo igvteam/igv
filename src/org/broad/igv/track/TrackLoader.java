@@ -961,7 +961,7 @@ public class TrackLoader {
                     }
 
                 }
-                if (covPath != null  && !covPath.equals(".")) {
+                if (covPath != null && !covPath.equals(".")) {
                     if (FileUtils.resourceExists(covPath)) {
                         log.debug("Loading TDF for coverage: " + covPath);
                         try {
@@ -1152,7 +1152,7 @@ public class TrackLoader {
             String freqTrackName = "CNV Summary";
             CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);
 
-            if(props != null) {
+            if (props != null) {
                 freqTrack.setProperties(props);
             }
 
@@ -1160,10 +1160,12 @@ public class TrackLoader {
         }
 
         ContinuousColorScale colorScale = null;
-        if(props != null) {
+        if (props != null) {
             Color maxColor = props.getColor();
             Color minColor = props.getAltColor();
-            colorScale = PreferenceManager.getDefaultColorScale(minColor, Color.white, maxColor);
+            if (maxColor != null && minColor != null) {
+                colorScale = PreferenceManager.getDefaultColorScale(minColor, Color.white, maxColor);
+            }
         }
 
         for (String trackName : ds.getSampleNames()) {
@@ -1176,7 +1178,7 @@ public class TrackLoader {
             if (props != null) {
                 track.setProperties(props);
             }
-            if(colorScale != null) {
+            if (colorScale != null) {
                 track.setColorScale(colorScale);
             }
 

@@ -55,8 +55,8 @@ public class CNFreqTrack extends AbstractTrack {
 
         float nSamples = data.getNumberOfSamples();
         this.setDataRange(new DataRange(-nSamples, 0, nSamples));
-        if(this.posColor == null) this.posColor = Color.red;
-        if(this.altColor == null) this.altColor = Color.blue;
+        this.posColor = Color.red;
+        this.altColor = Color.blue;
 
         renderer = new BarChartRenderer();
 
