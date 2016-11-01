@@ -43,6 +43,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -432,7 +433,7 @@ public class Main {
 
             String[] nonOptionArgs = parser.getRemainingArgs();
             if (nonOptionArgs != null && nonOptionArgs.length > 0) {
-                String firstArg = nonOptionArgs[0];
+                String firstArg = URLDecoder.decode(nonOptionArgs[0]);
                 if (firstArg != null && !firstArg.equals("ignore")) {
                     log.info("Loading: " + firstArg);
                     if (firstArg.endsWith(".xml") || firstArg.endsWith(".php") || firstArg.endsWith(".php3")
