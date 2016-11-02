@@ -21,7 +21,7 @@ Nature Biotechnology 29, 24-26 (2011)
 
 
 Helga Thorvaldsdottir, James T. Robinson, Jill P. Mesirov.
-`Integrative Genomics Viewer (IGV): `high-performance genomics data visualization
+Integrative Genomics Viewer (IGV): `high-performance genomics data visualization
 and exploration`_. Briefings in Bioinformatics 14, 178-192 (2013).
 
 __
