@@ -16,16 +16,15 @@ Citing IGV
 To cite your use of IGV in your publication:
 
 James T. Robinson, Helga Thorvaldsdottir, Wendy Winckler, Mitchell Guttman,
-Eric S. Lander, Gad Getz, Jill P. Mesirov. `Integrative Genomics Viewer`_. 
+Eric S. Lander, Gad Getz, Jill P. Mesirov. `Integrative Genomics Viewer`_.
 Nature Biotechnology 29, 24-26 (2011)
 
 
 Helga Thorvaldsdottir, James T. Robinson, Jill P. Mesirov.
-`Integrative Genomics Viewer (IGV): high-performance genomics data visualization
-and exploration`. Briefings in Bioinformatics 14, 178-192 (2013).
+`Integrative Genomics Viewer (IGV): `high-performance genomics data visualization
+and exploration`_. Briefings in Bioinformatics 14, 178-192 (2013).
 
 __
 .. _Integrative Genomics Viewer: http://www.nature.com/nbt/journal/v29/n1/abs/nbt.1754.html
 
-.. _Integrative Genomics Viewer (IGV): high-performance genomics data visualization and exploration
-   http://bib.oxfordjournals.org/cgi/content/full/bbs017?ijkey=qTgjFwbRBAzRZWC&amp;keytype=ref
+.. _high-performance genomics data visualization and exploration: http://bib.oxfordjournals.org/cgi/content/full/bbs017?ijkey=qTgjFwbRBAzRZWC&amp;keytype=ref
