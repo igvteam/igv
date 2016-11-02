@@ -50,15 +50,7 @@ public class ReadmeParserTest {
     public void tearDown() {
         parser = null;
     }
-
-    @Test
-    public void testGetBadCmd() throws Exception {
-        String fake_cmd = "fake_cmd";
-        String info = parser.getDocForCommand(fake_cmd);
-        assertTrue(info.contains("Command " + fake_cmd + " not found"));
-    }
-
-
+    
     @Test
     public void testGetCommands() throws Exception {
         String[] commands = {"count", "sort", "tile", "index", "sort", "version", "toTDF", "formatexp", "gui"};
