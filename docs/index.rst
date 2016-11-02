@@ -11,7 +11,7 @@ interactive exploration of large, integrated genomic datasets. It supports a wid
 variety of data types, including array-based and next-generation
 sequence data, and genomic annotations.
 
-`Release Notes <releaseNotes.md>`_
+`Release Notes <releaseNotes.html>`_
 
 Citing IGV
 ----------
