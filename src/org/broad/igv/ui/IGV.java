@@ -69,6 +69,7 @@ import org.broad.igv.ui.util.*;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.*;
 import org.broad.igv.variant.VariantTrack;
+import sun.awt.CGraphicsDevice;
 
 import javax.swing.*;
 import java.awt.*;
@@ -2725,6 +2726,7 @@ public class IGV implements IGVEventObserver {
 
     }
 
+
     public static void copySequenceToClipboard(Genome genome, String chr, int start, int end) {
         try {
             IGV.getMainFrame().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -2771,5 +2773,24 @@ public class IGV implements IGVEventObserver {
         return completed;
     }
 
+
+
+    private void getRealDPI() {
+        // find the display device of interest
+        final GraphicsDevice defaultScreenDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+
+        // on OS X, it would be CGraphicsDevice
+        if (defaultScreenDevice instanceof CGraphicsDevice) {
+            final CGraphicsDevice device = (CGraphicsDevice) defaultScreenDevice;
+
+            // this is the missing correction factor, it's equal to 2 on HiDPI a.k.a. Retina displays
+            final int scaleFactor = device.getScaleFactor();
+
+            // now we can compute the real DPI of the screen
+            final double realDPI = scaleFactor * (device.getXResolution() + device.getYResolution()) / 2;
+
+            System.out.println("scale factor = " + scaleFactor + "    realDPI = " + realDPI);
+        }
+    }
 
 }
