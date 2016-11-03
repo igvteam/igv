@@ -132,7 +132,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack {
 
         // Trim scores
         int startIdx = FeatureUtils.getIndexBefore(start, inViewScores);
-        int endIdx = inViewScores.size() - 1;   // Starting guess
+        int endIdx = inViewScores.size();   // Starting guess
         int tmp = FeatureUtils.getIndexBefore(end, inViewScores);
 
         if (tmp < 0)
@@ -141,7 +141,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack {
         else {
             for (int i = tmp; i < inViewScores.size(); i++) {
                 if (inViewScores.get(i).getStart() > end) {
-                    endIdx = i;
+                    endIdx = i+1;
                     break;
                 }
             }
