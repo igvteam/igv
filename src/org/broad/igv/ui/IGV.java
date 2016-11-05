@@ -69,7 +69,6 @@ import org.broad.igv.ui.util.*;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.*;
 import org.broad.igv.variant.VariantTrack;
-import sun.awt.CGraphicsDevice;
 
 import javax.swing.*;
 import java.awt.*;
