@@ -32,6 +32,7 @@ import org.apache.commons.math.stat.StatUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.CombinedDataSource;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.FeatureUtils;
@@ -75,17 +76,6 @@ public class TrackMenuUtils {
 
     static Logger log = Logger.getLogger(TrackMenuUtils.class);
     final static String LEADING_HEADING_SPACER = "  ";
-    private static final WindowFunction[] ORDERED_WINDOW_FUNCTIONS = new WindowFunction[]{
-            WindowFunction.min,
-            WindowFunction.percentile2,
-            WindowFunction.percentile10,
-            WindowFunction.median,
-            WindowFunction.mean,
-            WindowFunction.percentile90,
-            WindowFunction.percentile98,
-            WindowFunction.max,
-            WindowFunction.none
-    };
 
     private static List<TrackMenuItemBuilder> trackMenuItems = new ArrayList<TrackMenuItemBuilder>();
 
@@ -288,8 +278,7 @@ public class TrackMenuUtils {
 
 
             // Get intersection of all valid window functions for selected tracks
-            Set<WindowFunction> avaibleWindowFunctions = new LinkedHashSet();
-            avaibleWindowFunctions.addAll(Arrays.asList(ORDERED_WINDOW_FUNCTIONS));
+            Set<WindowFunction> avaibleWindowFunctions = new LinkedHashSet(AbstractDataSource.ORDERED_WINDOW_FUNCTIONS);
             for (Track track : tracks) {
                 avaibleWindowFunctions.retainAll(track.getAvailableWindowFunctions());
             }
