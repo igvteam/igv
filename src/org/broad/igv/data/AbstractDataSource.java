@@ -44,6 +44,17 @@ import java.util.*;
  */
 public abstract class AbstractDataSource implements DataSource {
 
+    public static List<WindowFunction> ORDERED_WINDOW_FUNCTIONS = Arrays.asList(new WindowFunction[]{
+            WindowFunction.min,
+            WindowFunction.percentile2,
+            WindowFunction.percentile10,
+            WindowFunction.median,
+            WindowFunction.mean,
+            WindowFunction.percentile90,
+            WindowFunction.percentile98,
+            WindowFunction.max,
+            WindowFunction.none
+    });
     private static Logger log = Logger.getLogger(AbstractDataSource.class);
 
     // DataManager dataManager;
@@ -128,7 +139,7 @@ public abstract class AbstractDataSource implements DataSource {
 
         List<LocusScore> scores = null;
 
-        if(windowFunction != WindowFunction.none) {
+        if (windowFunction != WindowFunction.none) {
             scores = getPrecomputedSummaryScores(chr, startLocation, endLocation, zoom);
             if (scores != null) {
                 return scores;
@@ -351,23 +362,13 @@ public abstract class AbstractDataSource implements DataSource {
         return windowFunction;
     }
 
-    // TODO -- get window functions dynamically from data
-    static List<WindowFunction> wfs = new ArrayList();
-
-
-    static {
-        wfs.add(WindowFunction.min);
-        wfs.add(WindowFunction.percentile10);
-        wfs.add(WindowFunction.median);
-        wfs.add(WindowFunction.mean);
-        wfs.add(WindowFunction.percentile90);
-        wfs.add(WindowFunction.max);
-
-    }
-
-
+    /**
+     * Default
+     *
+     * @return
+     */
     public Collection<WindowFunction> getAvailableWindowFunctions() {
-        return wfs;
+        return ORDERED_WINDOW_FUNCTIONS;
     }
 
     @Override
