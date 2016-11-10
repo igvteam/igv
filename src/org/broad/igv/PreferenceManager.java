@@ -300,6 +300,8 @@ public class PreferenceManager implements PropertyManager {
 
     public static final String SESSION_RELATIVE_PATH = "SESSION.RELATIVE_PATH";
 
+    public static final String CHECK_VERSION = "CHECK_VERSION";
+
     IGVPreferences preferences;
     Map<String, String> defaultValues;
 
@@ -1230,6 +1232,7 @@ public class PreferenceManager implements PropertyManager {
 
         defaultValues.put(SHOW_LOS, "true");
 
+        defaultValues.put(CHECK_VERSION, "true");
     }
 
     /**

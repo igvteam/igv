@@ -145,7 +145,7 @@ public class Main {
         System.setProperty("awt.useSystemAAFontSettings", "on");
         System.setProperty("swing.aatext", "true");
 
-        checkVersion();
+        if(PreferenceManager.getInstance().getAsBoolean("CHECK_VERSION")) checkVersion();
 
 
     }
@@ -168,7 +168,7 @@ public class Main {
             Version thisVersion = Version.getVersion(Globals.VERSION);
             if (thisVersion == null) return;  // Can't compare
 
-            Globals.CONNECT_TIMEOUT = 5000;
+            Globals.CONNECT_TIMEOUT = 2000;
             Globals.READ_TIMEOUT = 1000;
             final String serverVersionString = HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
             // See if user has specified to skip this update
@@ -193,7 +193,6 @@ public class Main {
 //                        }
 //                    }
 //                });
-
             }
 
         } catch (Exception e) {
