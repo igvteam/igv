@@ -145,7 +145,8 @@ public class Main {
         System.setProperty("awt.useSystemAAFontSettings", "on");
         System.setProperty("swing.aatext", "true");
 
-        if(PreferenceManager.getInstance().getAsBoolean("CHECK_VERSION")) checkVersion();
+
+        checkVersion();
 
 
     }
@@ -161,46 +162,47 @@ public class Main {
 
     private static void checkVersion() {
 
-        int readTimeout = Globals.READ_TIMEOUT;
-        int connectTimeout = Globals.CONNECT_TIMEOUT;
 
-        try {
-            Version thisVersion = Version.getVersion(Globals.VERSION);
-            if (thisVersion == null) return;  // Can't compare
+        Runnable runnable = new Runnable() {
+            public void run() {
+                try {
+                    Version thisVersion = Version.getVersion(Globals.VERSION);
+                    if (thisVersion == null) return;  // Can't compare
 
-            Globals.CONNECT_TIMEOUT = 2000;
-            Globals.READ_TIMEOUT = 1000;
-            final String serverVersionString = HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
-            // See if user has specified to skip this update
+                    final String serverVersionString = HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
+                    // See if user has specified to skip this update
 
-            final String skipString = PreferenceManager.getInstance().get(PreferenceManager.SKIP_VERSION);
-            HashSet<String> skipVersion = new HashSet<String>(Arrays.asList(skipString.split(",")));
-            if (skipVersion.contains(serverVersionString)) return;
+                    final String skipString = PreferenceManager.getInstance().get(PreferenceManager.SKIP_VERSION);
+                    HashSet<String> skipVersion = new HashSet<String>(Arrays.asList(skipString.split(",")));
+                    if (skipVersion.contains(serverVersionString)) return;
 
-            Version serverVersion = Version.getVersion(serverVersionString.trim());
-            if (serverVersion == null) return;
+                    Version serverVersion = Version.getVersion(serverVersionString.trim());
+                    if (serverVersion == null) return;
 
-            if (thisVersion.lessThan(serverVersion)) {
+                    if (thisVersion.lessThan(serverVersion)) {
 
-                log.info("A later version of IGV is available (" + serverVersionString + ")");
-//                final VersionUpdateDialog dlg = new VersionUpdateDialog(serverVersionString);
-//                SwingUtilities.invokeAndWait(new Runnable() {
-//                    public void run() {
-//                        dlg.setVisible(true);
-//                        if (dlg.isSkipVersion()) {
-//                            String newSkipString = skipString + "," + serverVersionString;
-//                            PreferenceManager.getInstance().put(PreferenceManager.SKIP_VERSION, newSkipString);
-//                        }
-//                    }
-//                });
+                        log.info("A later version of IGV is available (" + serverVersionString + ")");
+        //                final VersionUpdateDialog dlg = new VersionUpdateDialog(serverVersionString);
+        //                SwingUtilities.invokeAndWait(new Runnable() {
+        //                    public void run() {
+        //                        dlg.setVisible(true);
+        //                        if (dlg.isSkipVersion()) {
+        //                            String newSkipString = skipString + "," + serverVersionString;
+        //                            PreferenceManager.getInstance().put(PreferenceManager.SKIP_VERSION, newSkipString);
+        //                        }
+        //                    }
+        //                });
+                    }
+
+                } catch (Exception e) {
+                    log.error("Error checking version", e);
+                } finally {
+
+                }
             }
+        };
 
-        } catch (Exception e) {
-            log.error("Error checking version", e);
-        } finally {
-            Globals.CONNECT_TIMEOUT = connectTimeout;
-            Globals.READ_TIMEOUT = readTimeout;
-        }
+        (new Thread(runnable)).start();
 
     }
 
