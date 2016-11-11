@@ -47,7 +47,7 @@ import org.broad.igv.dev.db.SQLCodecSource;
 import org.broad.igv.dev.db.SampleInfoSQLReader;
 import org.broad.igv.dev.db.SegmentedSQLReader;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.feature.basepair.BasePairFileParser;
+import org.broad.igv.feature.basepair.BasePairTrack;
 import org.broad.igv.feature.CachingFeatureSource;
 import org.broad.igv.feature.GisticFileParser;
 import org.broad.igv.feature.MutationTrackLoader;
@@ -1235,8 +1235,10 @@ public class TrackLoader {
 
 
     private void loadBasePairFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-        BasePairFileParser parser = new BasePairFileParser();
-        newTracks.add(parser.loadTrack(locator, genome)); // should create one track from the given file
+        String name = locator.getTrackName();
+        String path = locator.getPath();
+        String id = path + "_" + name;
+        newTracks.add(new BasePairTrack(locator, id, name, genome));
     }
 
     public static boolean isIndexed(ResourceLocator locator, Genome genome) {

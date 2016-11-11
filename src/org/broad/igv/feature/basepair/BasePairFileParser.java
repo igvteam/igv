@@ -17,9 +17,7 @@ public class BasePairFileParser {
 
     static Logger log = Logger.getLogger(BasePairFileParser.class);
 
-    BasePairTrack track;
-
-    public BasePairTrack loadTrack(ResourceLocator locator, Genome genome) {
+    public static BasePairData loadData(ResourceLocator locator, Genome genome) {
         AsciiLineReader reader = null;
 
         List<Color> colors = new ArrayList();
@@ -106,8 +104,7 @@ public class BasePairFileParser {
         //    System.out.println(row);
         //}
 
-        track = new BasePairTrack(basePairData, locator.getTrackName());
-        return track;
+        return basePairData;
     }
 
 }
