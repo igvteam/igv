@@ -28,8 +28,6 @@ package org.broad.igv.feature;
 
 import org.broad.igv.feature.basepair.BasePairFeature;
 import org.broad.igv.Globals;
-import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.ResourceLocator;
 
 
 import java.awt.Color;
@@ -47,6 +45,7 @@ public class BasePairFileUtils {
 
     static ArrayList<Point> loadDotBracket(String inFile) throws
             FileNotFoundException, IOException {
+        // TODO: add error messages for misformatted file
         ArrayList<Point> pairs = new ArrayList<>();
 
         BufferedReader br = null;
@@ -97,75 +96,79 @@ public class BasePairFileUtils {
             if (br != null) br.close();
         }
 
-        /*BufferedReader br = null;
-        PrintWriter pw = null;
-
-        try {
-            br = new BufferedReader(new FileReader(iFile));
-            pw = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
-
-            String nextLine;
-            while ((nextLine = br.readLine()) != null) {
-
-                if (nextLine.startsWith("#") || nextLine.startsWith("track") || nextLine.startsWith("browser")) {
-                    pw.println(nextLine);
-                    continue;
-                }
-
-                String[] tokens = Globals.whitespacePattern.split(nextLine);
-
-                String chr = tokens[2];
-                int start = Integer.parseInt(tokens[4]);
-                String end = tokens[5];
-                String name = tokens[12];
-                String score = "1000";
-                String strand = tokens[3];
-                String thickStart = tokens[6];
-                String thickEnd = tokens[7];
-                String itemRGB = ".";
-                int blockCount = Integer.parseInt(tokens[8]);
-
-                String exonStarts = tokens[9];
-                String[] stok = Globals.commaPattern.split(exonStarts);
-                String[] etok = Globals.commaPattern.split(tokens[10]);
-
-                String blockStarts = "";
-                String blockSizes = "";
-
-                for (int i = 0; i < blockCount; i++) {
-                    final int bs = Integer.parseInt(stok[i]);
-                    blockStarts += String.valueOf(bs - start);
-                    blockSizes += String.valueOf(Integer.parseInt(etok[i]) - bs);
-                    if (i != blockCount - 1) {
-                        blockStarts += ",";
-                        blockSizes += ",";
-                    }
-                }
-
-                pw.println(chr + "\t" + start + "\t" + end + "\t" + name + "\t" + score + "\t" + strand + "\t" +
-                        thickStart + "\t" + thickEnd + "\t" + itemRGB + "\t" + blockCount + "\t" + blockSizes + "\t" + blockStarts);
-            }
-
-        } finally {
-            if (br != null) br.close();
-            if (pw != null) pw.close();
-        }*/
-
-
         return pairs;
     }
 
     static ArrayList<Point> loadConnectTable(String inFile) throws
             FileNotFoundException, IOException {
+        // TODO: add error messages for misformatted file
         ArrayList<Point> pairs = new ArrayList<>();
+
+        BufferedReader br = null;
+
+        try {
+            br = new BufferedReader(new FileReader(inFile));
+            int seqLength = Integer.parseInt(Globals.whitespacePattern.split(br.readLine().trim())[0]);
+
+            String nextLine;
+            int n = 1;
+            while ((nextLine = br.readLine()) != null && n <= seqLength) {
+                String[] s = Globals.whitespacePattern.split(nextLine.trim());
+                int left = Integer.parseInt(s[0])-1;
+                int right = Integer.parseInt(s[4])-1;
+                if (right > left) pairs.add(new Point(left, right));
+                n++;
+            }
+
+        } finally {
+            if (br != null) br.close();
+        }
 
         return pairs;
     }
 
     static ArrayList<ArrayList<Point>> loadPairingProb(String inFile) throws
             FileNotFoundException, IOException {
-        ArrayList<Point> pairs = new ArrayList<>();
+        // TODO: add probability threshold color legend to track dropdown menu
+        // TODO: support alternate thresholds, interactive threshold update from track UI?
+
         ArrayList<ArrayList<Point>> binnedPairs = new ArrayList<>();
+
+        double[] probThresh = {0.1, 0.3, 0.8};
+        double[] negLogTenProbThresh = {0,0,0};
+        for (int i=0; i<probThresh.length; i++) {
+            negLogTenProbThresh[i] = -Math.log10(probThresh[i]);
+        }
+
+        for (int i=0; i<probThresh.length; i++) binnedPairs.add(new ArrayList<>());
+
+        BufferedReader br = null;
+
+        try {
+            br = new BufferedReader(new FileReader(inFile));
+            // skip header lines
+            br.readLine();
+            br.readLine();
+
+            String nextLine;
+            while ((nextLine = br.readLine()) != null) {
+                String[] s = Globals.whitespacePattern.split(nextLine.trim());
+                int left = Integer.parseInt(s[0])-1;
+                int right = Integer.parseInt(s[1])-1;
+                double negLogTenProb = Double.parseDouble(s[2]);
+                int binIndex = -1;
+                for (int i=probThresh.length-1; i>=0; i--){
+                    if (negLogTenProb <= negLogTenProbThresh[i]) {
+                        binIndex = i;
+                        break;
+                    }
+                }
+                if (binIndex != -1) binnedPairs.get(binIndex).add(new Point(left, right));
+            }
+
+        } finally {
+            if (br != null) br.close();
+        }
 
         return binnedPairs;
     }
@@ -318,6 +321,13 @@ public class BasePairFileUtils {
             FileNotFoundException, IOException {
 
         ArrayList<Point> pairs = loadConnectTable(inFile);
+        // FIXME: transform coords here using left and strand
+        LinkedList<BasePairFeature> arcs = pairsToHelices(pairs, chromosome);
+        ArrayList<Color> colors = new ArrayList<>();
+        colors.add(Color.black);
+        ArrayList<LinkedList<BasePairFeature>> groupedArcs = new ArrayList<>();
+        groupedArcs.add(arcs); // list of length 1 for this case (arcs only have 1 color)
+        writeBasePairFile(bpFile, colors, groupedArcs);
     }
 
     public static void pairingProbToBasePairFile(String inFile,
@@ -328,6 +338,15 @@ public class BasePairFileUtils {
             FileNotFoundException, IOException {
 
         ArrayList<ArrayList<Point>> binnedPairs = loadPairingProb(inFile);
+        ArrayList<LinkedList<BasePairFeature>> groupedArcs = new ArrayList<>();
+        for (ArrayList<Point> pairGroup : binnedPairs){
+            groupedArcs.add(pairsToHelices(pairGroup, chromosome));
+        }
+        ArrayList<Color> colors = new ArrayList<>();
+        colors.add(new Color(255, 204, 0));
+        colors.add(new Color(72, 143, 205));
+        colors.add(new Color(81, 184, 72));
+        writeBasePairFile(bpFile, colors, groupedArcs);
     }
 
 

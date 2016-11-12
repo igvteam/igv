@@ -33,7 +33,7 @@ public class BasePairFileParser {
             nextLine = reader.readLine();
             rowCounter++;
             while (nextLine.substring(0, 6).equals("color:")) {
-                String[] tokens = Globals.singleTabMultiSpacePattern.split(nextLine, -1);
+                String[] tokens = Globals.whitespacePattern.split(nextLine, -1);
                 int r = Integer.parseInt(tokens[1]);
                 int g = Integer.parseInt(tokens[2]);
                 int b = Integer.parseInt(tokens[3]);
@@ -49,9 +49,7 @@ public class BasePairFileParser {
 
             while (nextLine != null) {
 
-                String[] tokens = Globals.singleTabMultiSpacePattern.split(nextLine, -1);
-
-                int nTokens = tokens.length;
+                String[] tokens = Globals.whitespacePattern.split(nextLine, -1);
 
                 String chr = (genome == null ? tokens[0] : genome.getCanonicalChrName(tokens[0]));   // TODO Future use
 
@@ -85,7 +83,7 @@ public class BasePairFileParser {
 
             }
 
-            basePairData.finish();   // Insure features are sorted by start position, important for rendering optimization
+            basePairData.finish();   // ensure features are sorted by start position, important for rendering optimization
 
         } catch (Exception e) {
             log.error("Error parsing base pair file", e);
