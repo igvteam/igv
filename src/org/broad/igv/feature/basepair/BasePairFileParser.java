@@ -32,37 +32,37 @@ public class BasePairFileParser {
             // read lines specifying arc colors
             nextLine = reader.readLine();
             rowCounter++;
-            while (nextLine.substring(0,6).equals("color:")){
-                String[] tokens = Globals.tabPattern.split(nextLine, -1);
+            while (nextLine.substring(0, 6).equals("color:")) {
+                String[] tokens = Globals.singleTabMultiSpacePattern.split(nextLine, -1);
                 int r = Integer.parseInt(tokens[1]);
                 int g = Integer.parseInt(tokens[2]);
                 int b = Integer.parseInt(tokens[3]);
-                Color color = new Color(r,g,b,255);
+                Color color = new Color(r, g, b, 255);
                 colors.add(color);
                 nextLine = reader.readLine();
                 rowCounter++;
             }
 
-            for (Color color : colors){
+            for (Color color : colors) {
                 rowsByColor.put(color, new ArrayList());
             }
 
             while (nextLine != null) {
 
-                String[] tokens = Globals.tabPattern.split(nextLine, -1);
+                String[] tokens = Globals.singleTabMultiSpacePattern.split(nextLine, -1);
 
                 int nTokens = tokens.length;
 
                 String chr = (genome == null ? tokens[0] : genome.getCanonicalChrName(tokens[0]));   // TODO Future use
 
-                int startLeftNuc = Integer.parseInt(tokens[1])-1; // stick to IGV's 0-based coordinate convention
-                int startRightNuc = Integer.parseInt(tokens[2])-1;
-                int endLeftNuc = Integer.parseInt(tokens[3])-1;
-                int endRightNuc = Integer.parseInt(tokens[4])-1;
+                int startLeftNuc = Integer.parseInt(tokens[1]) - 1; // stick to IGV's 0-based coordinate convention
+                int startRightNuc = Integer.parseInt(tokens[2]) - 1;
+                int endLeftNuc = Integer.parseInt(tokens[3]) - 1;
+                int endRightNuc = Integer.parseInt(tokens[4]) - 1;
                 Color color = colors.get(Integer.parseInt(tokens[5]));
 
                 BasePairFeature feature;
-                if (startLeftNuc <= endRightNuc){
+                if (startLeftNuc <= endRightNuc) {
                     feature = new BasePairFeature(chr,
                             Math.min(startLeftNuc, startRightNuc),
                             Math.max(startLeftNuc, startRightNuc),

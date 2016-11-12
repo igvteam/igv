@@ -57,8 +57,6 @@ public class BasePairRenderer {
 
                 //System.out.println("Color: "+data.colors[i]);
                 int arcCount = 0;
-                // TODO: only render arcs whose interior overlaps the viewing area - i.e. if an arc starts left of the window and ends right of the window, should still render
-
 
                 //System.out.println("In arcRenderer.draw(): ");
                 //System.out.println("    track.width = " + trackRectangle.width);
@@ -103,9 +101,10 @@ public class BasePairRenderer {
     /**
      * Draw a filled arc between two regions of equal length
      *
-     * @param startLeft  the starting position of the feature, whether on-screen or not
-     * @param endLeft    the ending position of the feature, whether on-screen or not
-     * @param pixelWidth  the width of the arc in pixels
+     * @param startLeft  the starting position of the feature, whether on-screen or not (outer left corner of arc)
+     * @param startRight (inner left corner of arc)
+     * @param endLeft    the ending position of the feature, whether on-screen or not (inner right corner of arc)
+     * @param endRight   (outer right corner of arc)
      * @param trackRectangle
      * @param context
      * @param featureColor       the color specified for this feature.  May be null.

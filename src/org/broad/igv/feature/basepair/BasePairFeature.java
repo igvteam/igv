@@ -70,4 +70,12 @@ public class BasePairFeature implements Feature{
     public int getEnd() {
         return endRight;
     }
+
+    public String toStringNoColor() {
+        return getChr() + "\t" + startLeft + "\t" + startRight + "\t" + endLeft + "\t" + endRight;
+    }
+
+    public String toString() {
+        return toStringNoColor() + "\t" + color;
+    }
 }

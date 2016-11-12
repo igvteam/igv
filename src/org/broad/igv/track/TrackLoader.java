@@ -48,6 +48,8 @@ import org.broad.igv.dev.db.SampleInfoSQLReader;
 import org.broad.igv.dev.db.SegmentedSQLReader;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.basepair.BasePairTrack;
+import org.broad.igv.feature.BasePairFileUtils;
+//import org.broad.igv.feature.basepair.BasePairConverterDialog;
 import org.broad.igv.feature.CachingFeatureSource;
 import org.broad.igv.feature.GisticFileParser;
 import org.broad.igv.feature.MutationTrackLoader;
@@ -202,6 +204,12 @@ public class TrackLoader {
             } else if (typeString.endsWith("mage-tab") || ExpressionFileParser.parsableMAGE_TAB(locator)) {
                 locator.setDescription("MAGE_TAB");
                 loadGctFile(locator, newTracks, genome);
+            } else if (typeString.endsWith(".db") || typeString.endsWith(".dbn")) {
+                convertLoadStructureFile(locator, newTracks, genome, "dotBracket");
+            } else if (typeString.endsWith(".ct")) {
+                convertLoadStructureFile(locator, newTracks, genome, "connectTable");
+            } else if (typeString.endsWith(".dp")) {
+                convertLoadStructureFile(locator, newTracks, genome, "pairingProb");
             } else if (typeString.endsWith(".bp")) {
                 loadBasePairFile(locator, newTracks, genome);
             } else if (GWASParser.isGWASFile(typeString)) {
@@ -1233,8 +1241,43 @@ public class TrackLoader {
         PedigreeUtils.parseTrioFile(locator.getPath());
     }
 
+    /**
+     * Convert various RNA structure formats to a more easily parseable format
+     * in genomic coordinates, then load converted file.
+     *
+     * @param locator
+     * @param newTracks
+     * @param genome
+     * @param fileType
+     * @throws IOException
+     */
+    private void convertLoadStructureFile(ResourceLocator locator,
+                                          List<Track> newTracks,
+                                          Genome genome,
+                                          String fileType) throws IOException {
+        String inPath = locator.getPath();
+        String outPath = inPath + ".bp";
+        //XX dialog = XX.createShowDialog(IGV.getMainFrame());
+        //String chrom = dialog.getChromosome();
+        //int new_start = dialog.getNewStart();
+        //String strand = dialog.getStrand();
+        //String chrom = "HIV-1_NL4-3";
+        String chrom = "dummy_chrom";
+        String strand = "+";
+        int left = 1;
+        if (fileType == "connectTable") {
+            BasePairFileUtils.connectTableToBasePairFile(inPath, outPath, chrom, strand, left);
+        } else if (fileType == "pairingProb") {
+            BasePairFileUtils.pairingProbToBasePairFile(inPath, outPath, chrom, strand, left);
+        } else if (fileType == "dotBracket") {
+            BasePairFileUtils.dotBracketToBasePairFile(inPath, outPath, chrom, strand, left);
+        }
+        loadBasePairFile(new ResourceLocator(outPath), newTracks, genome);
+    }
 
-    private void loadBasePairFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+    private void loadBasePairFile(ResourceLocator locator,
+                                  List<Track> newTracks,
+                                  Genome genome) throws IOException {
         String name = locator.getTrackName();
         String path = locator.getPath();
         String id = path + "_" + name;
