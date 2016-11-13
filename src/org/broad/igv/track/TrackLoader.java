@@ -1262,7 +1262,7 @@ public class TrackLoader {
         //int new_start = dialog.getNewStart();
         //String strand = dialog.getStrand();
         //String chrom = "HIV-1_NL4-3";
-        String chrom = "dummy_chrom";
+        String chrom = "tmRNA";
         String strand = "+";
         int left = 1;
         if (fileType == "connectTable") {

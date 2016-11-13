@@ -33,7 +33,31 @@ import org.broad.igv.Globals;
 import java.awt.Color;
 import java.awt.Point;
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.*;
+
+
+// workaround to allow multiple return from loadDotBracket() and loadConnectTable()
+class SeqLenAndPairs {
+    public int seqLen;
+    public  ArrayList<Point> pairs;
+    public SeqLenAndPairs(int seqLen, ArrayList<Point> pairs) {
+        this.seqLen = seqLen;
+        this.pairs = pairs;
+    }
+}
+
+// workaround to allow multiple return from loadPairingProb
+class SeqLenAndBinnedPairs {
+    public int seqLen;
+    public  ArrayList<ArrayList<Point>> binnedPairs;
+    public SeqLenAndBinnedPairs(int seqLen, ArrayList<ArrayList<Point>> binnedPairs) {
+        this.seqLen = seqLen;
+        this.binnedPairs = binnedPairs;
+    }
+}
+
+
 
 /**
  * @author sbusan
@@ -43,10 +67,65 @@ public class BasePairFileUtils {
     // TODO: support bpseq, stockholm, other formats?
     // TODO: warning dialog on file overwrite
 
-    static ArrayList<Point> loadDotBracket(String inFile) throws
+    /**
+     *
+     * @param arcs
+     * @param seqLen
+     * @param newLeft   1-based genomic coordinate for left-most
+     *                  position for input pairs sequence after transformation.
+     *                  If strand is "-", this will end up being the 3-prime end
+     *                  of the transcript (but the left end in genomic coords).
+     * @param strand    "+" or "-"
+     * @return
+     */
+    static LinkedList<BasePairFeature> transformArcs(LinkedList<BasePairFeature> arcs,
+                                                    int seqLen,
+                                                    int newLeft,
+                                                    String strand){
+        LinkedList<BasePairFeature> transArcs = new LinkedList<>();
+        if (strand == "+"){
+            for (BasePairFeature arc : arcs){
+                String chr = arc.getChr();
+                int startLeft = arc.getStartLeft() + newLeft - 1;
+                int startRight = arc.getStartRight() + newLeft - 1;
+                int endLeft = arc.getEndLeft() + newLeft - 1;
+                int endRight = arc.getEndRight() + newLeft - 1;
+                Color color = arc.getColor();
+                BasePairFeature transArc = new BasePairFeature(chr,
+                                                               startLeft,
+                                                               startRight,
+                                                               endLeft,
+                                                               endRight,
+                                                               color);
+                transArcs.add(transArc);
+            }
+        } else if (strand == "-"){
+            for (BasePairFeature arc : arcs){
+                String chr = arc.getChr();
+                int startLeft = seqLen - arc.getEndRight() + newLeft;
+                int startRight = seqLen - arc.getEndLeft() + newLeft;
+                int endLeft = seqLen - arc.getStartRight() + newLeft;
+                int endRight = seqLen - arc.getStartLeft() + newLeft;
+                Color color = arc.getColor();
+                BasePairFeature transArc = new BasePairFeature(chr,
+                                                               startLeft,
+                                                               startRight,
+                                                               endLeft,
+                                                               endRight,
+                                                               color);
+                transArcs.add(transArc);
+            }
+        } else {
+            throw new RuntimeException("Unrecognized strand (options: \"+\",\"-\")");
+        }
+        return transArcs;
+    }
+
+    static SeqLenAndPairs loadDotBracket(String inFile) throws
             FileNotFoundException, IOException {
         // TODO: add error messages for misformatted file
         ArrayList<Point> pairs = new ArrayList<>();
+        int seqLen = 0;
 
         BufferedReader br = null;
 
@@ -86,36 +165,38 @@ public class BasePairFileUtils {
                 if (n >= 0) {
                     openIndices.get(n).add(i);
                 } else if (k >= 0) {
-                    int left = i;
-                    int right = openIndices.get(k).pollLast();
+                    int left = i+1;
+                    int right = openIndices.get(k).pollLast()+1;
                     pairs.add(new Point(left, right));
                 }
             }
+            seqLen = struct.length();
 
         } finally {
             if (br != null) br.close();
         }
 
-        return pairs;
+        return new SeqLenAndPairs(seqLen, pairs);
     }
 
-    static ArrayList<Point> loadConnectTable(String inFile) throws
+    static SeqLenAndPairs loadConnectTable(String inFile) throws
             FileNotFoundException, IOException {
         // TODO: add error messages for misformatted file
         ArrayList<Point> pairs = new ArrayList<>();
+        int seqLen = 0;
 
         BufferedReader br = null;
 
         try {
             br = new BufferedReader(new FileReader(inFile));
-            int seqLength = Integer.parseInt(Globals.whitespacePattern.split(br.readLine().trim())[0]);
+            seqLen = Integer.parseInt(Globals.whitespacePattern.split(br.readLine().trim())[0]);
 
             String nextLine;
             int n = 1;
-            while ((nextLine = br.readLine()) != null && n <= seqLength) {
+            while ((nextLine = br.readLine()) != null && n <= seqLen) {
                 String[] s = Globals.whitespacePattern.split(nextLine.trim());
-                int left = Integer.parseInt(s[0])-1;
-                int right = Integer.parseInt(s[4])-1;
+                int left = Integer.parseInt(s[0]);
+                int right = Integer.parseInt(s[4]);
                 if (right > left) pairs.add(new Point(left, right));
                 n++;
             }
@@ -124,15 +205,16 @@ public class BasePairFileUtils {
             if (br != null) br.close();
         }
 
-        return pairs;
+        return new SeqLenAndPairs(seqLen, pairs);
     }
 
-    static ArrayList<ArrayList<Point>> loadPairingProb(String inFile) throws
+    static SeqLenAndBinnedPairs loadPairingProb(String inFile) throws
             FileNotFoundException, IOException {
         // TODO: add probability threshold color legend to track dropdown menu
         // TODO: support alternate thresholds, interactive threshold update from track UI?
 
         ArrayList<ArrayList<Point>> binnedPairs = new ArrayList<>();
+        int seqLen = 0;
 
         double[] probThresh = {0.1, 0.3, 0.8};
         double[] negLogTenProbThresh = {0,0,0};
@@ -146,15 +228,14 @@ public class BasePairFileUtils {
 
         try {
             br = new BufferedReader(new FileReader(inFile));
-            // skip header lines
-            br.readLine();
+            seqLen = Integer.parseInt(Globals.whitespacePattern.split(br.readLine().trim())[0]);
             br.readLine();
 
             String nextLine;
             while ((nextLine = br.readLine()) != null) {
                 String[] s = Globals.whitespacePattern.split(nextLine.trim());
-                int left = Integer.parseInt(s[0])-1;
-                int right = Integer.parseInt(s[1])-1;
+                int left = Integer.parseInt(s[0]);
+                int right = Integer.parseInt(s[1]);
                 double negLogTenProb = Double.parseDouble(s[2]);
                 int binIndex = -1;
                 for (int i=probThresh.length-1; i>=0; i--){
@@ -170,7 +251,7 @@ public class BasePairFileUtils {
             if (br != null) br.close();
         }
 
-        return binnedPairs;
+        return new SeqLenAndBinnedPairs(seqLen, binnedPairs);
     }
 
 
@@ -200,7 +281,7 @@ public class BasePairFileUtils {
     }
 
     /**
-     * Merge adjacent basepairs into helices.
+     * Merge adjacent basepairs into helices. This makes assumptions about input pair list order.
      *
      * @param pairs
      * @param chromosome
@@ -303,9 +384,11 @@ public class BasePairFileUtils {
                                                 int left) throws
             FileNotFoundException, IOException {
 
-        ArrayList<Point> pairs = loadDotBracket(inFile);
-        // FIXME: transform coords here using left and strand
+        SeqLenAndPairs s = loadDotBracket(inFile);
+        ArrayList<Point> pairs = s.pairs;
+        int seqLen = s.seqLen;
         LinkedList<BasePairFeature> arcs = pairsToHelices(pairs, chromosome);
+        arcs = transformArcs(arcs, seqLen, left, strand);
         ArrayList<Color> colors = new ArrayList<>();
         colors.add(Color.black);
         ArrayList<LinkedList<BasePairFeature>> groupedArcs = new ArrayList<>();
@@ -320,9 +403,11 @@ public class BasePairFileUtils {
                                                   int left) throws
             FileNotFoundException, IOException {
 
-        ArrayList<Point> pairs = loadConnectTable(inFile);
-        // FIXME: transform coords here using left and strand
+        SeqLenAndPairs s = loadConnectTable(inFile);
+        ArrayList<Point> pairs = s.pairs;
+        int seqLen = s.seqLen;
         LinkedList<BasePairFeature> arcs = pairsToHelices(pairs, chromosome);
+        arcs = transformArcs(arcs, seqLen, left, strand);
         ArrayList<Color> colors = new ArrayList<>();
         colors.add(Color.black);
         ArrayList<LinkedList<BasePairFeature>> groupedArcs = new ArrayList<>();
@@ -337,10 +422,13 @@ public class BasePairFileUtils {
                                                  int left) throws
             FileNotFoundException, IOException {
 
-        ArrayList<ArrayList<Point>> binnedPairs = loadPairingProb(inFile);
+        SeqLenAndBinnedPairs s = loadPairingProb(inFile);
+        ArrayList<ArrayList<Point>> binnedPairs = s.binnedPairs;
+        int seqLen = s.seqLen;
         ArrayList<LinkedList<BasePairFeature>> groupedArcs = new ArrayList<>();
         for (ArrayList<Point> pairGroup : binnedPairs){
-            groupedArcs.add(pairsToHelices(pairGroup, chromosome));
+            groupedArcs.add(transformArcs(pairsToHelices(pairGroup, chromosome),
+                                           seqLen, left, strand));
         }
         ArrayList<Color> colors = new ArrayList<>();
         colors.add(new Color(255, 204, 0));
