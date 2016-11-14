@@ -145,6 +145,7 @@ Trout (CCAF000000000)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/CC
 V. vitifera	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/vvinifera.genome	vvitifera
 Vibrio cholerae N16961	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/VcholeraeN16961.genome	VcholeraeN16961
 X. tropicalis (xenTro2)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/xenTro2.genome	xenTro2
+X. tropicalis v9.0	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/xenTro9.genome	xenTro9
 X. laevis (7.1)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/laevis_7.1.genome	laevis_7.1
 Zebra Finch (taeGut1)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/taeGut1.genome	taeGut1
 Zebrafish (Zv7/danRer5)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/zebrafish.genome	zebrafish
