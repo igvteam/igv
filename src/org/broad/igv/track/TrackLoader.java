@@ -47,7 +47,9 @@ import org.broad.igv.dev.db.SQLCodecSource;
 import org.broad.igv.dev.db.SampleInfoSQLReader;
 import org.broad.igv.dev.db.SegmentedSQLReader;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.feature.basepair.BasePairFileParser;
+import org.broad.igv.feature.basepair.BasePairTrack;
+import org.broad.igv.feature.BasePairFileUtils;
+import org.broad.igv.feature.ShapeFileUtils;
 import org.broad.igv.feature.CachingFeatureSource;
 import org.broad.igv.feature.GisticFileParser;
 import org.broad.igv.feature.MutationTrackLoader;
@@ -83,6 +85,8 @@ import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.ConvertFileDialog;
+import org.broad.igv.ui.util.ConvertOptions;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
@@ -174,6 +178,8 @@ public class TrackLoader {
                 loadSyntentyMapping(locator, newTracks);
             } else if (isAlignmentTrack(typeString)) {
                 loadAlignmentsTrack(locator, newTracks, genome);
+            } else if (typeString.endsWith(".shape") || typeString.endsWith(".map")) {
+                convertLoadShapeFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".wig") || typeString.endsWith(".bedgraph") || typeString.endsWith(".bdg") ||
                     typeString.endsWith("cpg.txt") || typeString.endsWith(".expr")) {
                 loadWigFile(locator, newTracks, genome);
@@ -202,6 +208,12 @@ public class TrackLoader {
             } else if (typeString.endsWith("mage-tab") || ExpressionFileParser.parsableMAGE_TAB(locator)) {
                 locator.setDescription("MAGE_TAB");
                 loadGctFile(locator, newTracks, genome);
+            } else if (typeString.endsWith(".db") || typeString.endsWith(".dbn")) {
+                convertLoadStructureFile(locator, newTracks, genome, "dotBracket");
+            } else if (typeString.endsWith(".ct")) {
+                convertLoadStructureFile(locator, newTracks, genome, "connectTable");
+            } else if (typeString.endsWith(".dp")) {
+                convertLoadStructureFile(locator, newTracks, genome, "pairingProb");
             } else if (typeString.endsWith(".bp")) {
                 loadBasePairFile(locator, newTracks, genome);
             } else if (GWASParser.isGWASFile(typeString)) {
@@ -1233,10 +1245,68 @@ public class TrackLoader {
         PedigreeUtils.parseTrioFile(locator.getPath());
     }
 
+    /**
+     * Convert an RNA chemical reactivity file (.shape, .map) into a .wig file
+     * and load.
 
-    private void loadBasePairFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-        BasePairFileParser parser = new BasePairFileParser();
-        newTracks.add(parser.loadTrack(locator, genome)); // should create one track from the given file
+     */
+    private void convertLoadShapeFile(ResourceLocator locator,
+                                      List<Track> newTracks,
+                                      Genome genome) throws IOException {
+        String inPath = locator.getPath();
+        String fileName = locator.getFileName();
+        String outPath = inPath + ".wig";
+        String message = "The chemical reactivity file <br> &nbsp;&nbsp;" + fileName + "<br> needs to be converted to IGV chromosome <br>" +
+                         "coordinates and .wig format before loading. <br><br>Click <b>Continue</b> " +
+                         "to save converted file to <br> &nbsp;&nbsp;" + fileName+".wig" +
+                         "<br>and load with the selected options, or <b>Cancel</b> to skip this<br>file.";
+
+        ConvertOptions opts =  ConvertFileDialog.showConvertFileDialog(message);
+        if (opts.doConvert) {
+            ShapeFileUtils.shapeToWigFile(inPath, outPath, opts.chrom, opts.strand, opts.start);
+            loadWigFile(new ResourceLocator(outPath), newTracks, genome);
+        }
+    }
+
+    /**
+     * Convert various RNA structure formats to a more easily parseable format
+     * in genomic coordinates, then load converted file.
+
+     */
+    private void convertLoadStructureFile(ResourceLocator locator,
+                                          List<Track> newTracks,
+                                          Genome genome,
+                                          String fileType) throws IOException {
+        String inPath = locator.getPath();
+        String fileName = locator.getFileName();
+        String outPath = inPath + ".bp";
+
+        String message = "The RNA structure file <br> &nbsp;&nbsp;" + fileName + "<br> needs to be converted to IGV chromosome <br>" +
+                         "coordinates and .bp format before loading. <br><br>Click <b>Continue</b> " +
+                         "to save converted file to <br> &nbsp;&nbsp;" + fileName+".bp" +
+                         "<br>and load with the selected options, or <b>Cancel</b> to skip this<br>file.";
+
+        ConvertOptions opts =  ConvertFileDialog.showConvertFileDialog(message);
+
+        if (opts.doConvert){
+            if (fileType == "connectTable") {
+                BasePairFileUtils.connectTableToBasePairFile(inPath, outPath, opts.chrom, opts.strand, opts.start);
+            } else if (fileType == "pairingProb") {
+                BasePairFileUtils.pairingProbToBasePairFile(inPath, outPath, opts.chrom, opts.strand, opts.start);
+            } else if (fileType == "dotBracket") {
+                BasePairFileUtils.dotBracketToBasePairFile(inPath, outPath, opts.chrom, opts.strand, opts.start);
+            }
+            loadBasePairFile(new ResourceLocator(outPath), newTracks, genome);
+        }
+    }
+
+    private void loadBasePairFile(ResourceLocator locator,
+                                  List<Track> newTracks,
+                                  Genome genome) throws IOException {
+        String name = locator.getTrackName();
+        String path = locator.getPath();
+        String id = path + "_" + name;
+        newTracks.add(new BasePairTrack(locator, id, name, genome));
     }
 
     public static boolean isIndexed(ResourceLocator locator, Genome genome) {
