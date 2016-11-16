@@ -49,7 +49,7 @@ import org.broad.igv.dev.db.SegmentedSQLReader;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.basepair.BasePairTrack;
 import org.broad.igv.feature.BasePairFileUtils;
-//import org.broad.igv.feature.basepair.BasePairConverterDialog;
+import org.broad.igv.feature.ShapeFileUtils;
 import org.broad.igv.feature.CachingFeatureSource;
 import org.broad.igv.feature.GisticFileParser;
 import org.broad.igv.feature.MutationTrackLoader;
@@ -85,6 +85,8 @@ import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.ConvertFileDialog;
+import org.broad.igv.ui.util.ConvertOptions;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
@@ -176,6 +178,8 @@ public class TrackLoader {
                 loadSyntentyMapping(locator, newTracks);
             } else if (isAlignmentTrack(typeString)) {
                 loadAlignmentsTrack(locator, newTracks, genome);
+            } else if (typeString.endsWith(".shape") || typeString.endsWith(".map")) {
+                convertLoadShapeFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".wig") || typeString.endsWith(".bedgraph") || typeString.endsWith(".bdg") ||
                     typeString.endsWith("cpg.txt") || typeString.endsWith(".expr")) {
                 loadWigFile(locator, newTracks, genome);
@@ -1242,37 +1246,58 @@ public class TrackLoader {
     }
 
     /**
+     * Convert an RNA chemical reactivity file (.shape, .map) into a .wig file
+     * and load.
+
+     */
+    private void convertLoadShapeFile(ResourceLocator locator,
+                                      List<Track> newTracks,
+                                      Genome genome) throws IOException {
+        String inPath = locator.getPath();
+        String fileName = locator.getFileName();
+        String outPath = inPath + ".wig";
+        String message = "The chemical reactivity file <br> &nbsp;&nbsp;" + fileName + "<br> needs to be converted to IGV chromosome <br>" +
+                         "coordinates and .wig format before loading. <br><br>Click <b>Continue</b> " +
+                         "to save converted file to <br> &nbsp;&nbsp;" + fileName+".wig" +
+                         "<br>and load with the selected options, or <b>Cancel</b> to skip this<br>file.";
+
+        ConvertOptions opts =  ConvertFileDialog.showConvertFileDialog(message);
+        if (opts.doConvert) {
+            ShapeFileUtils.shapeToWigFile(inPath, outPath, opts.chrom, opts.strand, opts.start);
+            loadWigFile(new ResourceLocator(outPath), newTracks, genome);
+        }
+    }
+
+    /**
      * Convert various RNA structure formats to a more easily parseable format
      * in genomic coordinates, then load converted file.
-     *
-     * @param locator
-     * @param newTracks
-     * @param genome
-     * @param fileType
-     * @throws IOException
+
      */
     private void convertLoadStructureFile(ResourceLocator locator,
                                           List<Track> newTracks,
                                           Genome genome,
                                           String fileType) throws IOException {
         String inPath = locator.getPath();
+        String fileName = locator.getFileName();
         String outPath = inPath + ".bp";
-        //XX dialog = XX.createShowDialog(IGV.getMainFrame());
-        //String chrom = dialog.getChromosome();
-        //int new_start = dialog.getNewStart();
-        //String strand = dialog.getStrand();
-        //String chrom = "HIV-1_NL4-3";
-        String chrom = "tmRNA";
-        String strand = "+";
-        int left = 1;
-        if (fileType == "connectTable") {
-            BasePairFileUtils.connectTableToBasePairFile(inPath, outPath, chrom, strand, left);
-        } else if (fileType == "pairingProb") {
-            BasePairFileUtils.pairingProbToBasePairFile(inPath, outPath, chrom, strand, left);
-        } else if (fileType == "dotBracket") {
-            BasePairFileUtils.dotBracketToBasePairFile(inPath, outPath, chrom, strand, left);
+
+        String message = "The RNA structure file <br> &nbsp;&nbsp;" + fileName + "<br> needs to be converted to IGV chromosome <br>" +
+                         "coordinates and .bp format before loading. <br><br>Click <b>Continue</b> " +
+                         "to save converted file to <br> &nbsp;&nbsp;" + fileName+".bp" +
+                         "<br>and load with the selected options, or <b>Cancel</b> to skip this<br>file.";
+
+        ConvertOptions opts =  ConvertFileDialog.showConvertFileDialog(message);
+
+        if (opts.doConvert){
+            if (fileType == "connectTable") {
+                BasePairFileUtils.connectTableToBasePairFile(inPath, outPath, opts.chrom, opts.strand, opts.start);
+            } else if (fileType == "pairingProb") {
+                BasePairFileUtils.pairingProbToBasePairFile(inPath, outPath, opts.chrom, opts.strand, opts.start);
+            } else if (fileType == "dotBracket") {
+                BasePairFileUtils.dotBracketToBasePairFile(inPath, outPath, opts.chrom, opts.strand, opts.start);
+            }
+            loadBasePairFile(new ResourceLocator(outPath), newTracks, genome);
         }
-        loadBasePairFile(new ResourceLocator(outPath), newTracks, genome);
     }
 
     private void loadBasePairFile(ResourceLocator locator,

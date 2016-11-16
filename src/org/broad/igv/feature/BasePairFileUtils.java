@@ -33,11 +33,10 @@ import org.broad.igv.Globals;
 import java.awt.Color;
 import java.awt.Point;
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.*;
 
 
-// workaround to allow multiple return from loadDotBracket() and loadConnectTable()
+// multiple return from loadDotBracket() and loadConnectTable()
 class SeqLenAndPairs {
     public int seqLen;
     public  ArrayList<Point> pairs;
@@ -47,7 +46,7 @@ class SeqLenAndPairs {
     }
 }
 
-// workaround to allow multiple return from loadPairingProb
+// multiple return from loadPairingProb()
 class SeqLenAndBinnedPairs {
     public int seqLen;
     public  ArrayList<ArrayList<Point>> binnedPairs;
@@ -68,6 +67,8 @@ public class BasePairFileUtils {
     // TODO: warning dialog on file overwrite
 
     /**
+     * Convert RNA-based transcript coordinates to stranded chromosome coords for
+     * base-pairing arcs.
      *
      * @param arcs
      * @param seqLen
@@ -83,40 +84,30 @@ public class BasePairFileUtils {
                                                     int newLeft,
                                                     String strand){
         LinkedList<BasePairFeature> transArcs = new LinkedList<>();
-        if (strand == "+"){
-            for (BasePairFeature arc : arcs){
-                String chr = arc.getChr();
-                int startLeft = arc.getStartLeft() + newLeft - 1;
-                int startRight = arc.getStartRight() + newLeft - 1;
-                int endLeft = arc.getEndLeft() + newLeft - 1;
-                int endRight = arc.getEndRight() + newLeft - 1;
-                Color color = arc.getColor();
-                BasePairFeature transArc = new BasePairFeature(chr,
-                                                               startLeft,
-                                                               startRight,
-                                                               endLeft,
-                                                               endRight,
-                                                               color);
-                transArcs.add(transArc);
+        for (BasePairFeature arc : arcs){
+            String chr = arc.getChr();
+            Color color = arc.getColor();
+            int startLeft, startRight, endLeft, endRight;
+            if (strand == "+"){
+                startLeft = arc.getStartLeft() + newLeft - 1;
+                startRight = arc.getStartRight() + newLeft - 1;
+                endLeft = arc.getEndLeft() + newLeft - 1;
+                endRight = arc.getEndRight() + newLeft - 1;
+            } else if (strand == "-"){
+                startLeft = seqLen - arc.getEndRight() + newLeft;
+                startRight = seqLen - arc.getEndLeft() + newLeft;
+                endLeft = seqLen - arc.getStartRight() + newLeft;
+                endRight = seqLen - arc.getStartLeft() + newLeft;
+            } else {
+                throw new RuntimeException("Unrecognized strand (options: \"+\",\"-\")");
             }
-        } else if (strand == "-"){
-            for (BasePairFeature arc : arcs){
-                String chr = arc.getChr();
-                int startLeft = seqLen - arc.getEndRight() + newLeft;
-                int startRight = seqLen - arc.getEndLeft() + newLeft;
-                int endLeft = seqLen - arc.getStartRight() + newLeft;
-                int endRight = seqLen - arc.getStartLeft() + newLeft;
-                Color color = arc.getColor();
-                BasePairFeature transArc = new BasePairFeature(chr,
-                                                               startLeft,
-                                                               startRight,
-                                                               endLeft,
-                                                               endRight,
-                                                               color);
-                transArcs.add(transArc);
-            }
-        } else {
-            throw new RuntimeException("Unrecognized strand (options: \"+\",\"-\")");
+            BasePairFeature transArc = new BasePairFeature(chr,
+                                                           startLeft,
+                                                           startRight,
+                                                           endLeft,
+                                                           endRight,
+                                                           color);
+            transArcs.add(transArc);
         }
         return transArcs;
     }
@@ -282,10 +273,7 @@ public class BasePairFileUtils {
 
     /**
      * Merge adjacent basepairs into helices. This makes assumptions about input pair list order.
-     *
-     * @param pairs
-     * @param chromosome
-     * @return
+
      */
     static LinkedList<BasePairFeature> pairsToHelices(ArrayList<Point> pairs,
                                                       String chromosome) {
@@ -376,7 +364,12 @@ public class BasePairFileUtils {
         return helices;
     }
 
-
+    /**
+     * Convert a base pairing structure file in dot-bracket notation
+     * (also known as Vienna format) to an easily parseable .bp arcs file. Does not
+     * currently handle mapping coords to spliced transcripts.
+     *
+     */
     public static void dotBracketToBasePairFile(String inFile,
                                                 String bpFile,
                                                 String chromosome,
@@ -396,6 +389,12 @@ public class BasePairFileUtils {
         writeBasePairFile(bpFile, colors, groupedArcs);
     }
 
+    /**
+     * Convert a connectivity table file as output by RNAStructure
+     * to an easily parseable .bp arcs file. Does not
+     * currently handle mapping coords to spliced transcripts.
+
+     */
     public static void connectTableToBasePairFile(String inFile,
                                                   String bpFile,
                                                   String chromosome,
@@ -415,6 +414,12 @@ public class BasePairFileUtils {
         writeBasePairFile(bpFile, colors, groupedArcs);
     }
 
+    /**
+     * Convert a pairing probability file as output by RNAStructure
+     * and/or SuperFold to an easily parseable .bp arcs file. Does not
+     * currently handle mapping coords to spliced transcripts.
+
+     */
     public static void pairingProbToBasePairFile(String inFile,
                                                  String bpFile,
                                                  String chromosome,
@@ -438,29 +443,8 @@ public class BasePairFileUtils {
     }
 
 
-    /**
-     * Convert a base pairing structure file in dot-bracket notation
-     * (also known as Vienna format) to an easily parseable .bp arcs file. Does not
-     * currently handle mapping coords to spliced transcripts.
-     *
-     * @param dbFile        Input file
-     * @param bpFile        Output file
-     * @param chromosome    Associated IGV chromosome
-     * @param strand        Associated strand ("+" or "-")
-     * @param left          Starting left-most position (0-based)
-     */
 
 
-    /**
-     * Convert a pairing probability file as output by RNAStructure
-     * and/or SuperFold to an easily parseable .bp arcs file. Does not
-     * currently handle mapping coords to spliced transcripts.
-     *
-     * @param dpFile        Input file
-     * @param bpFile        Output file
-     * @param chromosome    Associated IGV chromosome
-     * @param strand        Associated strand ("+" or "-")
-     * @param left          Starting left-most position (0-based)
-     */
+
 
 }

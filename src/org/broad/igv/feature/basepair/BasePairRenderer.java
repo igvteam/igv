@@ -12,6 +12,7 @@ import java.awt.*;
 import java.awt.geom.GeneralPath;
 
 // TODO: add vertical scaling option so arcs fit on track, or clip arcs outside of track rect?
+// TODO: add visualization for very zoomed-out views
 
 public class BasePairRenderer {
 
@@ -44,7 +45,7 @@ public class BasePairRenderer {
         int end = (int) (origin + trackRectangle.width * nucsPerPixel) + 1;
         if (end <= start) return;
 
-        // TODO: should make this a function (ugh no multiple value return from java functions)
+        // TODO: make this a function
 
         java.util.List<BasePairFeature> featureList = data.getFeatures(context.getChr());
 
