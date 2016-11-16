@@ -222,11 +222,6 @@ public class VariantRenderer { //extends FeatureRenderer {
 
         Genotype genotype = variant.getGenotype(sampleName);
 
-        if (sampleName.equals("CYP26B1-B12")) {
-            System.out.println(genotype.getTypeString() + "   " + genotype.getGenotypeString() + "  " + isFiltered);
-        }
-
-
         if (genotype == null) {
             log.error("Genotype not found for sample " + sampleName);
         } else {
