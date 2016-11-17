@@ -178,10 +178,14 @@ public class AminoAcidManager {
 
         // Sequence must be divisible by 3. It is the responsibility of the
         // calling program to send a sequence properly aligned.
-        int readLength = sequence.length() / 3;
+        int l = sequence.length();
+        int rem = l % 3;
+        int readLength = l / 3;
         List<AminoAcid> acids = new ArrayList<AminoAcid>(readLength);
 
-        for (int i = 0; i <= sequence.length() - 3; i += 3) {
+        int start = direction == Strand.POSITIVE ? 0 : rem;
+
+        for (int i = start; i <= sequence.length() - 3; i += 3) {
             String codon = sequence.substring(i, i + 3).toUpperCase();
             if (direction == Strand.NEGATIVE) {
                 codon = getNucleotideComplement(codon);
@@ -210,9 +214,14 @@ public class AminoAcidManager {
         if (seqBytes == null) {
             return null;
         } else {
+
+            int l = seqBytes.length;
+            int rem = l % 3;
+            int aaStart = strand == Strand.POSITIVE ? 0 : rem;
+
             String nucSequence = new String(seqBytes);
             List<AminoAcid> acids = getAminoAcids(strand, nucSequence);
-            return new AminoAcidSequence(strand, startPosition, acids, currentCodonTable.getKey());
+            return new AminoAcidSequence(strand, startPosition + aaStart, acids, currentCodonTable.getKey());
         }
     }
 
