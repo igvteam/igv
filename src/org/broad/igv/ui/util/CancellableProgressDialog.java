@@ -172,7 +172,10 @@ public class CancellableProgressDialog extends JDialog {
      * @param monitor Optional (may be null). Status text is updated based on monitor.updateStatus
      * @return
      */
-    public static CancellableProgressDialog showCancellableProgressDialog(Frame dialogsParent, String title, final ActionListener buttonActionListener, final boolean autoClose, ProgressMonitor monitor){
+    public static CancellableProgressDialog showCancellableProgressDialog(Frame dialogsParent,
+                                                                          String title, final
+                                                                          ActionListener buttonActionListener,
+                                                                          final boolean autoClose, ProgressMonitor monitor){
         final CancellableProgressDialog progressDialog = new CancellableProgressDialog(dialogsParent);
 
         progressDialog.setTitle(title);
