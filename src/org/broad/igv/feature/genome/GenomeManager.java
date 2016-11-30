@@ -1215,7 +1215,7 @@ public class GenomeManager {
                                        String chrAliasFileName,
                                        String genomeDisplayName,
                                        String genomeId,
-                                       ProgressMonitor monitor)
+                                       javax.swing.ProgressMonitor monitor)
             throws IOException {
 
         File refFlatFile = null;
@@ -1238,15 +1238,18 @@ public class GenomeManager {
             chrAliasFile = new File(chrAliasFileName);
         }
 
-        if (monitor != null) monitor.fireProgress(25);
+        if (monitor != null) monitor.setProgress(25);
 
         (new GenomeImporter()).createGenomeArchive(genomeFile, genomeId,
                 genomeDisplayName, fastaFileName, refFlatFile, cytobandFile, chrAliasFile);
 
-        if (monitor != null) monitor.fireProgress(75);
+        if (monitor != null) monitor.setProgress(75);
 
         GenomeListItem newItem = new GenomeListItem(genomeDisplayName, genomeFile.getAbsolutePath(), genomeId);
         addGenomeItem(newItem, true);
+
+        if (monitor != null) monitor.setProgress(100);
+
         return newItem;
 
     }
@@ -1367,7 +1370,6 @@ public class GenomeManager {
      * the specified {@code newSequencePath}. Works by creating a temp file and renaming
      *
      * @param targetFile      A .genome file, in zip format
-     * @param newSequencePath
      * @return boolean indicating success or failure.
      * @throws IOException
      */

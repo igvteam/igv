@@ -490,7 +490,7 @@ public class IGV implements IGVEventObserver {
     }
 
 
-    public void doDefineGenome(ProgressMonitor monitor) {
+    public void doDefineGenome(javax.swing.ProgressMonitor monitor) {
 
         ProgressBar.ProgressDialog progressDialog = null;
         File archiveFile = null;
@@ -505,9 +505,6 @@ public class IGV implements IGVEventObserver {
                 return;
             }
 
-            if (monitor != null) {
-                progressDialog = ProgressBar.showProgressDialog(mainFrame, "Defining Genome...", monitor, false);
-            }
 
             String cytobandFileName = genomeBuilderDialog.getCytobandFileName();
             String geneAnnotFileName = genomeBuilderDialog.getGeneAnnotFileName();
@@ -526,7 +523,7 @@ public class IGV implements IGVEventObserver {
                 contentPane.getCommandBar().selectGenome(genomeListItem.getId());
             }
             if (monitor != null) {
-                monitor.fireProgressChange(100);
+                monitor.setProgress(100);
             }
 
         } catch (MaximumContigGenomeException e) {

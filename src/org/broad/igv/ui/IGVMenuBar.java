@@ -568,7 +568,8 @@ public class IGVMenuBar extends JMenuBar {
                 new MenuAction("Create .genome File...", null, KeyEvent.VK_D) {
                     @Override
                     public void actionPerformed(ActionEvent event) {
-                        org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
+                        javax.swing.ProgressMonitor monitor = new javax.swing.ProgressMonitor(IGV.getInstance().getMainPanel(),
+                                "Creating genome", null, 0, 100);
                         igv.doDefineGenome(monitor);
                     }
                 };
