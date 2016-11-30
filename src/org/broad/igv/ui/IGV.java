@@ -481,7 +481,7 @@ public class IGV {
     }
 
 
-    public void doDefineGenome(ProgressMonitor monitor) {
+    public void doDefineGenome(javax.swing.ProgressMonitor monitor) {
 
         ProgressBar.ProgressDialog progressDialog = null;
         File archiveFile = null;
@@ -496,9 +496,6 @@ public class IGV {
                 return;
             }
 
-            if (monitor != null) {
-                progressDialog = ProgressBar.showProgressDialog(mainFrame, "Defining Genome...", monitor, false);
-            }
 
             String cytobandFileName = genomeBuilderDialog.getCytobandFileName();
             String geneAnnotFileName = genomeBuilderDialog.getGeneAnnotFileName();
@@ -517,7 +514,7 @@ public class IGV {
                 contentPane.getCommandBar().selectGenome(genomeListItem.getId());
             }
             if (monitor != null) {
-                monitor.fireProgressChange(100);
+                monitor.setProgress(100);
             }
 
         } catch (MaximumContigGenomeException e) {
@@ -568,11 +565,10 @@ public class IGV {
         Runnable showDialog = new Runnable() {
             @Override
             public void run() {
+
                 Collection<GenomeListItem> inputListItems = GenomeManager.getInstance().getServerGenomeArchiveList();
                 if (inputListItems == null) {
-                    //Not necessary to display a message, getServerGenomeArchiveList does it already
-                    //IOException exc = new IOException("Unable to reach genome server");
-                    //MessageUtils.showErrorMessage(exc.getMessage(), exc);
+                    //Could not reach genome server.  Not necessary to display a message, getServerGenomeArchiveList does it already
                     return;
                 }
 
@@ -583,7 +579,9 @@ public class IGV {
                 if (selectedValues != null && selectedValues.size() >= 1) {
 
                     if (selectedValues.size() == 1 && dialog.downloadSequence()) {
+
                         GenomeListItem oldItem = selectedValues.get(0);
+
                         GenomeSelectionDialog.downloadGenome(getMainFrame(), oldItem);
 
                         File newLocation = new File(DirectoryManager.getGenomeCacheDirectory().getAbsolutePath(), Utilities.getFileNameFromURL(oldItem.getLocation()));

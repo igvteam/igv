@@ -42,7 +42,7 @@ public class URLDownloader implements Runnable {
 
     private static Logger log = Logger.getLogger(URLDownloader.class);
 
-    private ProgressMonitor monitor = null;
+    private javax.swing.ProgressMonitor monitor = null;
 
     private final URL srcUrl;
     private final File outputFile;
@@ -100,7 +100,6 @@ public class URLDownloader implements Runnable {
         OutputStream out = null;
 
         long downloaded = 0;
-        long downSinceLast = 0;
         String curStatus;
         String msg1 = String.format("downloaded of %s total", contentLength >= 0 ? bytesToByteCountString(contentLength) : "unknown");
         int perc = 0;
@@ -111,21 +110,26 @@ public class URLDownloader implements Runnable {
             byte[] buf = new byte[64 * 1024];
             int counter = 0;
             int interval = 100;
-            int bytesRead = 0;
+            int bytesRead;
             while (!this.cancelled && (bytesRead = is.read(buf)) != -1) {
                 out.write(buf, 0, bytesRead);
                 downloaded += bytesRead;
-                downSinceLast += bytesRead;
                 counter = (counter + 1) % interval;
                 if (counter == 0 && this.monitor != null) {
                     curStatus = String.format("%s %s", bytesToByteCountString(downloaded), msg1);
-                    this.monitor.updateStatus(curStatus);
+                    this.monitor.setNote(curStatus);
                     if (contentLength >= 0) {
-                        perc = (int) ((downSinceLast * 100) / contentLength);
-                        this.monitor.fireProgressChange(perc);
-                        if (perc >= 1) downSinceLast = 0;
+                        perc = (int) ((downloaded * 100) / contentLength);
+                        this.monitor.setProgress(perc);
                     }
                 }
+
+                if(this.monitor != null && this.monitor.isCanceled()) {
+                    is.close();
+                    outputFile.delete();
+                    this.cancelled = true;
+                }
+
             }
             log.info("Download complete.  Total bytes downloaded = " + downloaded);
         } catch (IOException e) {
@@ -140,14 +144,15 @@ public class URLDownloader implements Runnable {
         }
         long fileLength = outputFile.length();
 
+
         if (this.cancelled) return RunnableResult.CANCELLED;
 
         boolean knownComplete = contentLength == fileLength;
         //Assume success if file length not known
         if (knownComplete || contentLength < 0) {
             if (this.monitor != null) {
-                this.monitor.fireProgressChange(100);
-                this.monitor.updateStatus("Done");
+                this.monitor.setProgress(100);
+                this.monitor.setNote("Done");
             }
             return RunnableResult.SUCCESS;
         } else {
@@ -178,7 +183,7 @@ public class URLDownloader implements Runnable {
         return true;
     }
 
-    public void setMonitor(ProgressMonitor monitor) {
+    public void setMonitor(javax.swing.ProgressMonitor monitor) {
         this.monitor = monitor;
     }
 

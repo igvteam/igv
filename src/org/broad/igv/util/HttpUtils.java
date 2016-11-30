@@ -458,7 +458,7 @@ public class HttpUtils {
             urlDownloader.run();
             return urlDownloader;
         } else {
-            ProgressMonitor monitor = new ProgressMonitor();
+            javax.swing.ProgressMonitor monitor = new javax.swing.ProgressMonitor(IGV.getInstance().getMainPanel(), "Downloading " + outputFile.getName(), "", 0, 100);
             urlDownloader.setMonitor(monitor);
             ActionListener buttonListener = new ActionListener() {
                 @Override
@@ -466,15 +466,15 @@ public class HttpUtils {
                     urlDownloader.cancel(true);
                 }
             };
-            String permText = "Downloading " + url;
-            String title = dialogTitle != null ? dialogTitle : permText;
-            CancellableProgressDialog dialog = CancellableProgressDialog.showCancellableProgressDialog(dialogsParent, title, buttonListener, false, monitor);
-            dialog.setPermText(permText);
+          //  String permText = "Downloading " + url;
+          //  String title = dialogTitle != null ? dialogTitle : permText;
+          //  CancellableProgressDialog dialog = CancellableProgressDialog.showCancellableProgressDialog(dialogsParent, title, buttonListener, false, monitor);
+          //  dialog.setPermText(permText);
 
-            Dimension dms = new Dimension(600, 150);
-            dialog.setPreferredSize(dms);
-            dialog.setSize(dms);
-            dialog.validate();
+          //  Dimension dms = new Dimension(600, 150);
+          //  dialog.setPreferredSize(dms);
+          //  dialog.setSize(dms);
+          //  dialog.validate();
 
             LongRunningTask.submit(urlDownloader);
             return urlDownloader;

@@ -579,7 +579,8 @@ public class IGVMenuBar extends JMenuBar {
                 new MenuAction("Create .genome File...", null, KeyEvent.VK_D) {
                     @Override
                     public void actionPerformed(ActionEvent event) {
-                        org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
+                        javax.swing.ProgressMonitor monitor = new javax.swing.ProgressMonitor(IGV.getInstance().getMainPanel(),
+                                "Creating genome", null, 0, 100);
                         igv.doDefineGenome(monitor);
                     }
                 };
@@ -597,9 +598,9 @@ public class IGVMenuBar extends JMenuBar {
                 dialog2.setVisible(true);
                 boolean cancelled = dialog2.isCancelled();
                 List<GenomeListItem> removedValuesList = dialog2.getRemovedValuesList();
+
                 if (!cancelled) {
-                    GenomeManager.getInstance().buildGenomeItemList();
-                    igv.getContentPane().getCommandBar().refreshGenomeListComboBox();
+
                     if (removedValuesList != null && !removedValuesList.isEmpty()) {
                         try {
                             GenomeManager.getInstance().deleteDownloadedGenomes(removedValuesList);
@@ -608,7 +609,20 @@ public class IGVMenuBar extends JMenuBar {
                         }
                         GenomeManager.getInstance().updateImportedGenomePropertyFile();
                         notifyGenomesAddedRemoved(removedValuesList, false);
+
+                        String defaultGenomeKey = PreferenceManager.getInstance().get(PreferenceManager.DEFAULT_GENOME_KEY);
+                        for (GenomeListItem item : removedValuesList) {
+                            if (defaultGenomeKey.equals(item.getId())) {
+                                PreferenceManager.getInstance().remove(PreferenceManager.DEFAULT_GENOME_KEY);
+                                break;
+                            }
+                        }
                     }
+
+                    GenomeManager.getInstance().buildGenomeItemList();
+
+                    igv.getContentPane().getCommandBar().refreshGenomeListComboBox();
+
                 }
             }
         };

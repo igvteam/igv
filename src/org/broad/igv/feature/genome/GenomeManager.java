@@ -147,7 +147,7 @@ public class GenomeManager {
             Genome newGenome = null;
 
             if (monitor != null) {
-                monitor.fireProgressChange(25);
+                monitor.fireProgress(25);
             }
 
             // Clear Feature DB
@@ -179,7 +179,7 @@ public class GenomeManager {
             if (aliases != null) newGenome.addChrAliases(aliases);
 
             if (monitor != null) {
-                monitor.fireProgressChange(25);
+                monitor.fireProgress(25);
             }
 
             setCurrentGenome(newGenome);
@@ -559,8 +559,10 @@ public class GenomeManager {
         // Look in cache first
         try {
             if (cachedFile.exists()) {
+
                 //Check to see cached version has a custom sequence
                 GenomeDescriptor cachedDescriptor = parseGenomeArchiveFile(cachedFile);
+
                 //File sizes won't be the same if the local version has a different sequence location
                 boolean remoteModfied = HttpUtils.getInstance().remoteIsNewer(cachedFile, genomeArchiveURL,
                         !cachedDescriptor.hasCustomSequenceLocation());
@@ -568,6 +570,7 @@ public class GenomeManager {
                 // Force an update of cached genome if file length does not equal remote content length
                 boolean forceUpdate = remoteModfied &&
                         PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AUTO_UPDATE_GENOMES);
+
                 if (forceUpdate) {
                     log.info("Refreshing genome: " + genomeArchiveURL.toString());
                     File tmpFile = new File(cachedFile.getAbsolutePath() + ".tmp");
@@ -1212,7 +1215,7 @@ public class GenomeManager {
                                        String chrAliasFileName,
                                        String genomeDisplayName,
                                        String genomeId,
-                                       ProgressMonitor monitor)
+                                       javax.swing.ProgressMonitor monitor)
             throws IOException {
 
         File refFlatFile = null;
@@ -1235,15 +1238,18 @@ public class GenomeManager {
             chrAliasFile = new File(chrAliasFileName);
         }
 
-        if (monitor != null) monitor.fireProgressChange(25);
+        if (monitor != null) monitor.setProgress(25);
 
         (new GenomeImporter()).createGenomeArchive(genomeFile, genomeId,
                 genomeDisplayName, fastaFileName, refFlatFile, cytobandFile, chrAliasFile);
 
-        if (monitor != null) monitor.fireProgressChange(75);
+        if (monitor != null) monitor.setProgress(75);
 
         GenomeListItem newItem = new GenomeListItem(genomeDisplayName, genomeFile.getAbsolutePath(), genomeId);
         addGenomeItem(newItem, true);
+
+        if (monitor != null) monitor.setProgress(100);
+
         return newItem;
 
     }
@@ -1261,7 +1267,7 @@ public class GenomeManager {
 
         //Whether the srcGenome is simply a fasta file
         boolean isFastaFile = FastaUtils.isFastaPath(srcPath);
-        boolean showProgressDialog = !Globals.isHeadless() && !Globals.isBatch();
+
         String srcFileName = Utilities.getFileNameFromURL(srcPath);
 
         if (isFastaFile) {
@@ -1269,12 +1275,15 @@ public class GenomeManager {
             return downloadFasta(srcPath, targetDir, srcFileName, dialogsParent);
 
         } else if (srcFileName.endsWith(Globals.GENOME_FILE_EXTENSION)) {
-            //Most useful case of a .genome file, which contains nearly everything in it, except the
-            //sequence which is a fasta file stored elsewhere
+
+            //A .genome file, which references a remote fasta file
+
             String genomeName = Utilities.getFileNameFromURL(srcPath);
             File srcGenomeArchive = new File(targetDir, genomeName);
             RunnableResult genomeResult = HttpUtils.getInstance().downloadFile(srcPath, srcGenomeArchive);
-            if (!genomeResult.isSuccess()) return genomeResult;
+            if (!genomeResult.isSuccess()) {
+                return genomeResult;
+            }
 
             GenomeDescriptor descriptor = parseGenomeArchiveFile(srcGenomeArchive);
 
@@ -1290,14 +1299,13 @@ public class GenomeManager {
             }
 
             String sequenceFileName = Utilities.getFileNameFromURL(sequencePath);
-            File localSequenceFile = new File(targetDir, sequenceFileName);
 
             // Copy file directly from the server to local area
             // Shows cancellable dialog
             RunnableResult fastaResult = downloadFasta(sequencePath, targetDir, sequenceFileName, dialogsParent);
             if (fastaResult.isSuccess()) {
                 //Rewrite properties file to point to local fasta
-                rewriteSequenceLocation(targetGenomeFile, localSequenceFile.getAbsolutePath());
+                rewriteSequenceLocation(targetGenomeFile, sequenceFileName);
             }
             return fastaResult;
         } else {
@@ -1362,11 +1370,10 @@ public class GenomeManager {
      * the specified {@code newSequencePath}. Works by creating a temp file and renaming
      *
      * @param targetFile      A .genome file, in zip format
-     * @param newSequencePath
      * @return boolean indicating success or failure.
      * @throws IOException
      */
-    static boolean rewriteSequenceLocation(File targetFile, String newSequencePath) throws IOException {
+    static boolean rewriteSequenceLocation(File targetFile, String sequenceFileName) throws IOException {
 
         ZipFile targetZipFile = new ZipFile(targetFile);
         boolean success = false;
@@ -1385,7 +1392,7 @@ public class GenomeManager {
 
             //Copy over property.txt, only replacing a few properties
             inputProperties.load(reader);
-            inputProperties.put(Globals.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY, newSequencePath);
+            inputProperties.put(Globals.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY, sequenceFileName);
             inputProperties.put(Globals.GENOME_ARCHIVE_CUSTOM_SEQUENCE_LOCATION_KEY, Boolean.TRUE.toString());
 
 

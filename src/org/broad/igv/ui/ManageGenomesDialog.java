@@ -108,12 +108,6 @@ public class ManageGenomesDialog extends JDialog {
                     countHasSeq++;
                 }
             }
-
-            if(countHasSeq > 0){
-                String msg = String.format("%d of the genomes you chose to remove have downloaded sequences. Those will be deleted as well. Are you sure?", countHasSeq);
-                boolean sure = MessageUtils.confirm(msg);
-                if(!sure) return;
-            }
         }
 
         cancelled = false;
