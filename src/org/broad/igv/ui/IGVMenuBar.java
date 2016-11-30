@@ -586,9 +586,9 @@ public class IGVMenuBar extends JMenuBar {
                 dialog2.setVisible(true);
                 boolean cancelled = dialog2.isCancelled();
                 List<GenomeListItem> removedValuesList = dialog2.getRemovedValuesList();
+
                 if (!cancelled) {
-                    GenomeManager.getInstance().buildGenomeItemList();
-                    igv.getContentPane().getCommandBar().refreshGenomeListComboBox();
+
                     if (removedValuesList != null && !removedValuesList.isEmpty()) {
                         try {
                             GenomeManager.getInstance().deleteDownloadedGenomes(removedValuesList);
@@ -597,7 +597,20 @@ public class IGVMenuBar extends JMenuBar {
                         }
                         GenomeManager.getInstance().updateImportedGenomePropertyFile();
                         notifyGenomesAddedRemoved(removedValuesList, false);
+
+                        String defaultGenomeKey = PreferenceManager.getInstance().get(PreferenceManager.DEFAULT_GENOME_KEY);
+                        for (GenomeListItem item : removedValuesList) {
+                            if (defaultGenomeKey.equals(item.getId())) {
+                                PreferenceManager.getInstance().remove(PreferenceManager.DEFAULT_GENOME_KEY);
+                                break;
+                            }
+                        }
                     }
+
+                    GenomeManager.getInstance().buildGenomeItemList();
+
+                    igv.getContentPane().getCommandBar().refreshGenomeListComboBox();
+
                 }
             }
         };

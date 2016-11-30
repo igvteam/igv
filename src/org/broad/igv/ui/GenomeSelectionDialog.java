@@ -162,6 +162,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
     }
 
     static void downloadGenome(final Frame dialogsParent, final GenomeListItem genomeListItem) {
+
         final File targetDir = DirectoryManager.getGenomeCacheDirectory();
         if(!targetDir.exists()){
             targetDir.mkdirs();

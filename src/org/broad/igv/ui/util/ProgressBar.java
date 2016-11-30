@@ -78,7 +78,7 @@ public class ProgressBar extends JPanel
                 progressBar.setValue(progress);
 
 
-                if (progress > 99 && closeOnCompletion) {
+                if (progress == 100 && closeOnCompletion) {
                     setReady(false); // Accept no more input
                     progressParentWindow.setVisible(false);
                 }

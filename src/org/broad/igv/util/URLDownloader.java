@@ -100,7 +100,6 @@ public class URLDownloader implements Runnable {
         OutputStream out = null;
 
         long downloaded = 0;
-        long downSinceLast = 0;
         String curStatus;
         String msg1 = String.format("downloaded of %s total", contentLength >= 0 ? bytesToByteCountString(contentLength) : "unknown");
         int perc = 0;
@@ -111,19 +110,17 @@ public class URLDownloader implements Runnable {
             byte[] buf = new byte[64 * 1024];
             int counter = 0;
             int interval = 100;
-            int bytesRead = 0;
+            int bytesRead;
             while (!this.cancelled && (bytesRead = is.read(buf)) != -1) {
                 out.write(buf, 0, bytesRead);
                 downloaded += bytesRead;
-                downSinceLast += bytesRead;
                 counter = (counter + 1) % interval;
                 if (counter == 0 && this.monitor != null) {
                     curStatus = String.format("%s %s", bytesToByteCountString(downloaded), msg1);
                     this.monitor.updateStatus(curStatus);
                     if (contentLength >= 0) {
-                        perc = (int) ((downSinceLast * 100) / contentLength);
+                        perc = (int) ((downloaded * 100) / contentLength);
                         this.monitor.fireProgressChange(perc);
-                        if (perc >= 1) downSinceLast = 0;
                     }
                 }
             }
@@ -146,7 +143,7 @@ public class URLDownloader implements Runnable {
         //Assume success if file length not known
         if (knownComplete || contentLength < 0) {
             if (this.monitor != null) {
-                this.monitor.fireProgressChange(100);
+                this.monitor.fireProgress(100);
                 this.monitor.updateStatus("Done");
             }
             return RunnableResult.SUCCESS;

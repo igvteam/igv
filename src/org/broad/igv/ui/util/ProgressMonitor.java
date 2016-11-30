@@ -76,6 +76,26 @@ public class ProgressMonitor {
         }
     }
 
+    /**
+     * Sends an event to update the listening progress bar.
+     *
+     * @param newValue This value is the percent amount completed (which goes from 0 to 100).
+     */
+    public void fireProgress(final int newValue) {
+
+        if (isReady) {
+
+            PropertyChangeEvent event =
+                    new PropertyChangeEvent(
+                            this,
+                            PROGRESS_PROPERTY,
+                            oldValue,
+                            newValue);
+            propertyChangeSupport.firePropertyChange(event);
+            oldValue = newValue;
+        }
+    }
+
     public void updateStatus(String newStatus){
         if(isReady){
             PropertyChangeEvent event = new PropertyChangeEvent(this, STATUS_PROPERTY,
