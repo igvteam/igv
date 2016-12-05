@@ -2,7 +2,7 @@
 Reference
 =========
 
-  ::   {
+     {
       "id": string, 
       "fastaURL": string, 
       "indexURL": string, 
