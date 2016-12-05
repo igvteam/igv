@@ -3,11 +3,11 @@ Reference
 =========
 
     {
-      "id": string,
-      "fastaURL": string,
-      "indexURL": string,
-      "cytobandURL": string,
-      "indexed": string,
+      "id": string, 
+      "fastaURL": string, 
+      "indexURL": string, 
+      "cytobandURL": string, 
+      "indexed": string, 
     }
 
     
