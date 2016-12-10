@@ -80,7 +80,7 @@ public class BisulfiteBaseInfo {
 
         myContext = bisulfiteContext;
         byte[] inRead = block.getBases();
-        if(inRead != null) {
+        if (inRead != null) {
             int alignmentLen = inRead.length;
 
             // We will only need reverse complement if the strand and paired end status don't match (2nd ends are G->A)
@@ -112,6 +112,14 @@ public class BisulfiteBaseInfo {
                 byte refbase = reference[idx];
                 byte readbase = read[idx];
                 if (readbase == '=') readbase = refbase;
+
+                // Force both bases to upper case
+                if (refbase > 90) {
+                    refbase = (byte) (refbase - 32);
+                }
+                if (readbase > 90) {
+                    readbase = (byte) (readbase - 32);
+                }
 
                 Color out = null;
                 boolean matchesContext = false;
@@ -195,13 +203,13 @@ public class BisulfiteBaseInfo {
      * @param idx
      * @param bisulfiteContext
      * @return Returns the context that matched (in the case of the base class, this is always the same
-     *         as the context passed in, derived classes might return a different context).
-     *         If we don't match, return null.
+     * as the context passed in, derived classes might return a different context).
+     * If we don't match, return null.
      */
     protected BisulfiteContext contextIsMatching(byte[] reference, byte[] read, int idx,
                                                  BisulfiteContext bisulfiteContext) {
 
-        if(BisulfiteContext.NONE == bisulfiteContext) {
+        if (BisulfiteContext.NONE == bisulfiteContext) {
             return bisulfiteContext;
         }
 
@@ -302,8 +310,8 @@ public class BisulfiteBaseInfo {
     /**
      * @param item
      * @return 0 if the cytosine context is not symmetric, else the number of
-     *         base pairs to shift the position by (caller must be careful to shift
-     *         relative to the strand the cytosine is on).
+     * base pairs to shift the position by (caller must be careful to shift
+     * relative to the strand the cytosine is on).
      */
     protected double getBisulfiteSymmetricCytosineShift(BisulfiteContext item) {
         double out = 0.0;
