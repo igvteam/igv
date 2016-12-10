@@ -30,15 +30,33 @@ public class BasePairTrack extends AbstractTrack {
         basePairRenderer.draw(basePairData, context, rect);
     }
 
+
+    public void checkHeight(RenderContext context, Rectangle rect) {
+
+        java.util.List<BasePairFeature> featureList = basePairData.getFeatures(context.getChr());
+
+        if (featureList != null) {
+            int maxL = 0;
+            for (BasePairFeature feature : featureList) {
+                //if(feature.startLeft > context.getEndLocation()) break;
+                //else if(feature.endRight < context.getOrigin()) continue;
+                maxL = Math.max(maxL, feature.getEndRight() - feature.getStartLeft());
+            }
+            int height = (int) (maxL / (2 * context.getScale()));
+            setHeight(height, true);
+
+        }
+    }
+
     public Renderer getRenderer() {
         return null;
     }
 
-    public int getDirection(){
+    public int getDirection() {
         return basePairRenderer.getDirection();
     }
 
-    public void setDirection(int d){
+    public void setDirection(int d) {
         basePairRenderer.setDirection(d);
     }
 }
