@@ -95,12 +95,21 @@ public class BisulfiteCounts {
 
                 // The read base can be an equals sign, so change that to the actual ref base
                 byte refbase =  reference[idx];
-
+                if (refbase > 90) {
+                    refbase = (byte) (refbase - 32);     // Uppercase
+                }
 
                 // Strand has already been accounted for
                 if (refbase == 'C') {
                     byte readbase = read[idx];
-                    if (readbase == '=') readbase = refbase;
+                    if (readbase == '=') {
+                        readbase = refbase;
+                    }
+
+                    // Force both bases to upper case
+                    if (readbase > 90) {
+                        readbase = (byte) (readbase - 32);
+                    }
 
                     if (AlignmentUtils.compareBases((byte) 'C', readbase) || AlignmentUtils.compareBases((byte) 'T', readbase)) {
 
