@@ -349,7 +349,7 @@ public class CommandListener implements Runnable {
                 String sortTag = params.get("sortTag");
                 result = cmdExe.loadFiles(file, index, coverage, name, format, locus, merge, params, sort, sortTag);
             } else {
-                return ("ERROR Parameter \"file\" is required");
+                result = "OK";  // No files, perhaps genome only
             }
         } else if (command.equals("/reload") || command.equals("/goto")) {
             String locus = params.get("locus");
