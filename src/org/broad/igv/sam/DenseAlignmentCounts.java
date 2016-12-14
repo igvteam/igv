@@ -305,13 +305,9 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
     protected void incrementInsertion(AlignmentBlock insBlock) {
         int pos = insBlock.getStart();
         int offset = pos - start;
-        // Insertions are between bases.  increment count on either side
+        // Insertions are between bases.  increment count at position just before insertion
         if (offset >= 0 && offset < ins.length) {
-            ins[offset] = ins[offset] + 1;
-            offset--;
-            if (offset >= 0) {
-                ins[offset] = ins[offset] + 1;
-            }
+           ins[offset] = ins[offset] + 1;
         }
     }
 
