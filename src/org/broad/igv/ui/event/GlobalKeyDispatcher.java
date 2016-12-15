@@ -151,6 +151,18 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         inputMap.put(prevExonKey, "prevExon");
         actionMap.put("prevExon", prevExonAction);
 
+        // Set the focus to the "search" box
+        final KeyStroke searchBoxKeyCtrl = KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.CTRL_MASK, false);
+        final KeyStroke searchBoxKeyMeta = KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.META_MASK, false);
+        final Action searchBoxAction = new EnableWrappedAction(new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                igv.focusSearchBox();
+            };
+        });
+        inputMap.put(searchBoxKeyCtrl, "focusSearch");
+        inputMap.put(searchBoxKeyMeta, "focusSearch");
+        actionMap.put("focusSearch", searchBoxAction);
+
         // Show extras menu
         final KeyStroke extrasKey = KeyStroke.getKeyStroke(KeyEvent.VK_T, KeyEvent.ALT_MASK, false);
         final Action extrasAction = new EnableWrappedAction(new AbstractAction() {
