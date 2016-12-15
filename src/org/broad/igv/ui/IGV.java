@@ -651,9 +651,15 @@ public class IGV {
     }
 
     public void loadGenomeById(String genomeId) {
+
+        final Genome currentGenome = genomeManager.getCurrentGenome();
+        if(currentGenome != null && genomeId.equals(currentGenome.getId())) {
+            return; // Already loaded
+        }
+
         if (ParsingUtils.pathExists(genomeId)) {
             try {
-                IGV.getInstance().loadGenome(genomeId, null, false);
+                loadGenome(genomeId, null, false);
             } catch (IOException e) {
                 log.error("Error loading genome file: " + genomeId, e);
             }
