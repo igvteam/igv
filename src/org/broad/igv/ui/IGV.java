@@ -489,6 +489,11 @@ public class IGV implements IGVEventObserver {
         return contentPane.getCommandBar().getSelectableGenomeIDs();
     }
 
+    // Set the focus on the command bar search box
+    public void focusSearchBox() {
+        contentPane.getCommandBar().focusSearchBox();
+    }
+
 
     public void doDefineGenome(javax.swing.ProgressMonitor monitor) {
 
