@@ -206,7 +206,6 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         Set<Integer> filteredSnps = knownSnps == null ? null : knownSnps.get(chr);
 
         if (filteredSnps == null || !filteredSnps.contains(pos + 1)) {
-
             float threshold = snpThreshold * (qualityWeight ? getTotalQuality(pos) : getTotalCount(pos));
             float mismatchQualitySum = 0;
 
@@ -218,7 +217,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
                     }
 
                 }
-                return mismatchQualitySum >= threshold;
+                return (mismatchQualitySum >= threshold) && (threshold > 0); // (threshold > 0) avoids mismatch call in columns with all 0 quality
             }
         }
         return false;
