@@ -647,7 +647,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         locationPanel.add(Box.createHorizontalStrut(5), JideBoxLayout.FIX);
 
         searchTextField = new JTextField();
-        searchTextField.setToolTipText("Enter a gene of locus, e.f. EGFR,   chr1,   or chr1:100,000-200,000");
+        searchTextField.setToolTipText("Enter a gene or locus, e.f. EGFR,   chr1,   or chr1:100,000-200,000");
         searchTextField.setMaximumSize(new java.awt.Dimension(250, 15));
         searchTextField.setMinimumSize(new java.awt.Dimension(100, 28));
         searchTextField.setPreferredSize(new java.awt.Dimension(230, 28));
