@@ -668,6 +668,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             outlineGraphics = context.getGraphic2DForColor(OUTLINE_COLOR);
         }
 
+        // Get a graphics context for drawing clipping indicators.
         Graphics2D clippedGraphics = context.getGraphic2DForColor(clippedColor);
         clippedGraphics.setStroke(new BasicStroke(1.5f));
 
@@ -687,9 +688,12 @@ public class AlignmentRenderer implements FeatureRenderer {
         AlignmentBlock firstBlock = blocks[0], lastBlock = blocks[blocks.length - 1];
         int alignmentChromStart = (int) firstBlock.getStart(),
                 alignmentChromEnd = (int) (lastBlock.getStart() + lastBlock.getLength());
+        /* Clipping */
+        boolean flagClipping = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_CLIPPING);
+        int clippingThreshold = prefs.getAsInt(PreferenceManager.SAM_CLIPPING_THRESHOLD);
         int[] clipping = SAMAlignment.getClipping(alignment.getCigarString());
-        boolean leftClipped = (clipping[0] + clipping[1]) > 0;
-        boolean rightClipped = (clipping[2] + clipping[3]) > 0;
+        boolean leftClipped = flagClipping && ((clipping[0] + clipping[1]) > clippingThreshold);
+        boolean rightClipped = flagClipping && ((clipping[2] + clipping[3]) > clippingThreshold);
 
         // BED-style coordinate for the visible context.  Do not draw outside the context.
         int contextChromStart = (int) context.getOrigin(),
