@@ -3753,6 +3753,100 @@
                         <int>0</int>
                        </void>
                       </object>
+                      <void method="setProperty">
+                       <string>border</string>
+                       <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/>
+                      </void>
+                      <void property="name">
+                       <string>panel10clip</string>
+                      </void>
+                      <void method="add">
+                       <object class="com.jformdesigner.model.FormComponent">
+                        <string>javax.swing.JCheckBox</string>
+                        <void method="setProperty">
+                         <string>text</string>
+                         <string>Flag clipping &gt; </string>
+                        </void>
+                        <void property="name">
+                         <string>samFlagClippingCB</string>
+                        </void>
+                        <void method="addEvent">
+                         <object class="com.jformdesigner.model.FormEvent">
+                          <string>java.awt.event.ActionListener</string>
+                          <string>actionPerformed</string>
+                          <string>samFlagClippingCBActionPerformed</string>
+                          <boolean>true</boolean>
+                         </object>
+                        </void>
+                       </object>
+                      </void>
+                      <void method="add">
+                       <object class="com.jformdesigner.model.FormComponent">
+                        <string>javax.swing.JTextField</string>
+                        <void method="setProperty">
+                         <string>preferredSize</string>
+                         <object class="java.awt.Dimension">
+                          <int>60</int>
+                          <int>26</int>
+                         </object>
+                        </void>
+                        <void property="name">
+                         <string>samFlagClippingThresholdField</string>
+                        </void>
+                        <void method="addEvent">
+                         <object class="com.jformdesigner.model.FormEvent">
+                          <string>java.awt.event.ActionListener</string>
+                          <string>actionPerformed</string>
+                          <string>samFlagClippingThresholdFieldActionPerformed</string>
+                          <boolean>true</boolean>
+                         </object>
+                        </void>
+                        <void method="addEvent">
+                         <object class="com.jformdesigner.model.FormEvent">
+                          <string>java.awt.event.FocusListener</string>
+                          <string>focusLost</string>
+                          <string>samFlagClippingThresholdFieldFocusLost</string>
+                          <boolean>true</boolean>
+                         </object>
+                        </void>
+                        <void method="addEvent">
+                         <object class="com.jformdesigner.model.FormEvent">
+                          <string>java.awt.event.ActionListener</string>
+                          <string>actionPerformed</string>
+                          <string>samFlagClippingThresholdFieldActionPerformed</string>
+                          <boolean>true</boolean>
+                         </object>
+                        </void>
+                       </object>
+                      </void>
+                      <void method="add">
+                       <object class="com.jformdesigner.model.FormComponent">
+                        <string>javax.swing.JLabel</string>
+                        <void method="setProperty">
+                         <string>text</string>
+                         <string> bases</string>
+                        </void>
+                        <void property="name">
+                         <string>label31clip</string>
+                        </void>
+                       </object>
+                      </void>
+                     </object>
+                    </void>
+                    <void method="add">
+                     <object class="com.jformdesigner.model.FormContainer">
+                      <string>javax.swing.JPanel</string>
+                      <object class="com.jformdesigner.model.FormLayoutManager">
+                       <class>java.awt.FlowLayout</class>
+                       <void method="setProperty">
+                        <string>alignment</string>
+                        <int>0</int>
+                       </void>
+                       <void method="setProperty">
+                        <string>hgap</string>
+                        <int>0</int>
+                       </void>
+                      </object>
                       <void property="name">
                        <string>panel9</string>
                       </void>

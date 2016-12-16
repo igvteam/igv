@@ -67,6 +67,9 @@ public class AlignmentRenderer implements FeatureRenderer {
     private static Color largeISizeColor = new Color(150, 0, 0);
     private static final Color OUTLINE_COLOR = new Color(185, 185, 185);
 
+    // Clipping colors
+    private static Color clippedColor = new Color(255, 20, 147);
+
     // Indel colors
     private static Color purple = new Color(118, 24, 220);
     private static Color deletionColor = Color.black;
@@ -534,11 +537,11 @@ public class AlignmentRenderer implements FeatureRenderer {
     /**
      * Draw a single ungapped block in an alignment.
      */
-    private void drawAlignmentBlock(Graphics2D blockGraphics, Graphics2D outlineGraphics,
+    private void drawAlignmentBlock(Graphics2D blockGraphics, Graphics2D outlineGraphics, Graphics2D clippedGraphics,
                                     boolean isNegativeStrand, int alignmentChromStart,
                                     int alignmentChromEnd, int blockChromStart, int blockChromEnd,
                                     int blockPxStart, int blockPxWidth, int y, int h, double locSale,
-                                    boolean overlapped) {
+                                    boolean overlapped, boolean leftClipped, boolean rightClipped) {
 
         if (blockPxWidth == 0) {
             return;
@@ -549,7 +552,6 @@ public class AlignmentRenderer implements FeatureRenderer {
         boolean leftmost = (blockChromStart == alignmentChromStart),
                 rightmost = (blockChromEnd == alignmentChromEnd),
                 tallEnoughForArrow = h > 8;
-
 
         if (h == 1) {
             blockGraphics.drawLine(blockPxStart, y, blockPxEnd, y);
@@ -580,6 +582,14 @@ public class AlignmentRenderer implements FeatureRenderer {
             blockGraphics.fill(blockShape);
             if (outlineGraphics != null) {
                 outlineGraphics.draw(blockShape);
+            }
+            if (leftmost && leftClipped) {
+                clippedGraphics.drawLine(xPoly[0], yPoly[0], xPoly[1], yPoly[1]);
+                clippedGraphics.drawLine(xPoly[5], yPoly[5], xPoly[0], yPoly[0]);
+            }
+            if (rightmost && rightClipped) {
+                clippedGraphics.drawLine(xPoly[2], yPoly[2], xPoly[3], yPoly[3]);
+                clippedGraphics.drawLine(xPoly[3], yPoly[3], xPoly[4], yPoly[4]);
             }
         }
 
@@ -658,6 +668,9 @@ public class AlignmentRenderer implements FeatureRenderer {
             outlineGraphics = context.getGraphic2DForColor(OUTLINE_COLOR);
         }
 
+        // Get a graphics context for drawing clipping indicators.
+        Graphics2D clippedGraphics = context.getGraphic2DForColor(clippedColor);
+        clippedGraphics.setStroke(new BasicStroke(1.5f));
 
         // Define a graphics context for indel labels.
         Graphics2D largeIndelGraphics = context.getGraphics2D("INDEL_LABEL");
@@ -675,6 +688,12 @@ public class AlignmentRenderer implements FeatureRenderer {
         AlignmentBlock firstBlock = blocks[0], lastBlock = blocks[blocks.length - 1];
         int alignmentChromStart = (int) firstBlock.getStart(),
                 alignmentChromEnd = (int) (lastBlock.getStart() + lastBlock.getLength());
+        /* Clipping */
+        boolean flagClipping = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_CLIPPING);
+        int clippingThreshold = prefs.getAsInt(PreferenceManager.SAM_CLIPPING_THRESHOLD);
+        int[] clipping = SAMAlignment.getClipping(alignment.getCigarString());
+        boolean leftClipped = flagClipping && ((clipping[0] + clipping[1]) > clippingThreshold);
+        boolean rightClipped = flagClipping && ((clipping[2] + clipping[3]) > clippingThreshold);
 
         // BED-style coordinate for the visible context.  Do not draw outside the context.
         int contextChromStart = (int) context.getOrigin(),
@@ -712,9 +731,9 @@ public class AlignmentRenderer implements FeatureRenderer {
                         blockChromEnd = gapChromStart,
                         blockPxWidth = (int) Math.max(1, (blockChromEnd - blockChromStart) / locScale - 1),
                         blockPxEnd = blockPxStart + blockPxWidth;
-                drawAlignmentBlock(g, outlineGraphics, alignment.isNegativeStrand(),
+                drawAlignmentBlock(g, outlineGraphics, clippedGraphics, alignment.isNegativeStrand(),
                         alignmentChromStart, alignmentChromEnd, blockChromStart, blockChromEnd,
-                        blockPxStart, blockPxWidth, y, h, locScale, overlapped);
+                        blockPxStart, blockPxWidth, y, h, locScale, overlapped, leftClipped, rightClipped);
 
 
                 // Draw the gap line.
@@ -745,9 +764,9 @@ public class AlignmentRenderer implements FeatureRenderer {
         int blockPxStart = (int) ((blockChromStart - contextChromStart) / locScale),
                 blockChromEnd = (int) Math.min(contextChromEnd, alignmentChromEnd),
                 blockPxWidth = (int) Math.max(1, (blockChromEnd - blockChromStart) / locScale - 1);
-        drawAlignmentBlock(g, outlineGraphics, alignment.isNegativeStrand(),
+        drawAlignmentBlock(g, outlineGraphics, clippedGraphics, alignment.isNegativeStrand(),
                 alignmentChromStart, alignmentChromEnd, blockChromStart, blockChromEnd,
-                blockPxStart, blockPxWidth, y, h, locScale, overlapped);
+                blockPxStart, blockPxWidth, y, h, locScale, overlapped, leftClipped, rightClipped);
 
         // Draw insertions.
         drawInsertions(rowRect, alignment, context, renderOptions);
@@ -844,7 +863,6 @@ public class AlignmentRenderer implements FeatureRenderer {
         } else if (bisulfiteMode) {
             bisinfo = new BisulfiteBaseInfo(reference, baseAlignment, block, renderOptions.bisulfiteContext);
         }
-
 
         for (int loc = start; loc < end; loc++) {
             int idx = loc - start;

@@ -262,6 +262,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
         samFlagIndelsCB = new JCheckBox();
         samFlagIndelsThresholdField = new JTextField();
         label31 = new JLabel();
+        panel10clip = new JPanel();
+        samFlagClippingCB = new JCheckBox();
+        samFlagClippingThresholdField = new JTextField();
+        label31clip = new JLabel();
         panel9 = new JPanel();
         hideIndelsBasesCB = new JCheckBox();
         hideIndelsBasesField = new JTextField();
@@ -1175,7 +1179,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                                 //======== panel13 ========
                                 {
-                                    panel13.setLayout(new GridLayout(6, 0));
+                                    panel13.setLayout(new GridLayout(7, 0));
 
                                     //======== panel31 ========
                                     {
@@ -1324,9 +1328,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                         //---- samFlagIndelsThresholdField ----
                                         samFlagIndelsThresholdField.setPreferredSize(new Dimension(60, 26));
                                         samFlagIndelsThresholdField.addActionListener(e -> {
-			samFlagIndelsThresholdFieldActionPerformed(e);
-			samFlagIndelsThresholdFieldActionPerformed(e);
-		});
+                                            samFlagIndelsThresholdFieldActionPerformed(e);
+                                        });
                                         samFlagIndelsThresholdField.addFocusListener(new FocusAdapter() {
                                             @Override
                                             public void focusLost(FocusEvent e) {
@@ -1340,6 +1343,35 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                         panel10.add(label31);
                                     }
                                     panel13.add(panel10);
+
+                                    //======== panel10clip ========
+                                    {
+                                        panel10clip.setBorder(null);
+                                        panel10clip.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 5));
+
+                                        //---- samFlagClippingCB ----
+                                        samFlagClippingCB.setText("Flag clipping > ");
+                                        samFlagClippingCB.addActionListener(e -> samFlagClippingCBActionPerformed(e));
+                                        panel10clip.add(samFlagClippingCB);
+
+                                        //---- samFlagClippingThresholdField ----
+                                        samFlagClippingThresholdField.setPreferredSize(new Dimension(60, 26));
+                                        samFlagClippingThresholdField.addActionListener(e -> {
+                                            samFlagClippingThresholdFieldActionPerformed(e);
+                                        });
+                                        samFlagClippingThresholdField.addFocusListener(new FocusAdapter() {
+                                            @Override
+                                            public void focusLost(FocusEvent e) {
+                                                samFlagClippingThresholdFieldFocusLost(e);
+                                            }
+                                        });
+                                        panel10clip.add(samFlagClippingThresholdField);
+
+                                        //---- label31clip ----
+                                        label31clip.setText(" bases");
+                                        panel10clip.add(label31clip);
+                                    }
+                                    panel13.add(panel10clip);
 
                                     //======== panel9 ========
                                     {
@@ -2813,6 +2845,32 @@ public class PreferencesEditor extends javax.swing.JDialog {
         }
     }
 
+    private void samFlagClippingCBActionPerformed(ActionEvent e) {
+        final boolean flagClipping = samFlagClippingCB.isSelected();
+        updatedPreferenceMap.put(PreferenceManager.SAM_FLAG_CLIPPING, String.valueOf(flagClipping));
+        samFlagClippingThresholdField.setEnabled(flagClipping);
+    }
+
+
+    private void samFlagClippingThresholdFieldFocusLost(FocusEvent e) {
+        samFlagClippingThresholdFieldActionPerformed(null);
+    }
+
+    private void samFlagClippingThresholdFieldActionPerformed(ActionEvent e) {
+        String clippingThreshold = samFlagClippingThresholdField.getText().trim();
+        try {
+            int tmp = Integer.parseInt(clippingThreshold);
+            if (tmp < 0) {
+                inputValidated = false;
+                MessageUtils.showMessage("Clipping threshold must be a non-negative integer.");
+            } else {
+                updatedPreferenceMap.put(PreferenceManager.SAM_CLIPPING_THRESHOLD, clippingThreshold);
+            }
+        } catch (NumberFormatException numberFormatException) {
+            inputValidated = false;
+            MessageUtils.showMessage("Clipping threshold must be a non-negative integer.");
+        }
+    }
 
     private void hideIndelsBasesCBActionPerformed(ActionEvent e) {
         final boolean flagInsertions = hideIndelsBasesCB.isSelected();
@@ -3904,6 +3962,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
         samFlagIndelsThresholdField.setText(prefMgr.get(PreferenceManager.SAM_LARGE_INDELS_THRESHOLD));
         samFlagIndelsThresholdField.setEnabled(samFlagIndelsCB.isSelected());
 
+        samFlagClippingCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FLAG_CLIPPING));
+        samFlagClippingThresholdField.setText(prefMgr.get(PreferenceManager.SAM_CLIPPING_THRESHOLD));
+        samFlagClippingThresholdField.setEnabled(samFlagClippingCB.isSelected());
+
         hideIndelsBasesCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_BP));
         hideIndelsBasesField.setText(prefMgr.get(PreferenceManager.SAM_SMALL_INDEL_BP_THRESHOLD));
         hideIndelsBasesField.setEnabled(hideIndelsBasesCB.isSelected());
@@ -4105,6 +4167,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox samFlagIndelsCB;
     private JTextField samFlagIndelsThresholdField;
     private JLabel label31;
+    private JPanel panel10clip;
+    private JCheckBox samFlagClippingCB;
+    private JTextField samFlagClippingThresholdField;
+    private JLabel label31clip;
     private JPanel panel9;
     private JCheckBox hideIndelsBasesCB;
     private JTextField hideIndelsBasesField;
