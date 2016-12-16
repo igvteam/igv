@@ -1015,7 +1015,7 @@ public abstract class SAMAlignment implements Alignment {
     }
 
 
-    private int[] getClipping(String cigarString) {
+    public static int[] getClipping(String cigarString) {
         // Identify the number of hard and soft clipped bases.
         Matcher lclipMatcher = Pattern.compile("^(([0-9]+)H)?(([0-9]+)S)?").matcher(cigarString);
         Matcher rclipMatcher = Pattern.compile("(([0-9]+)S)?(([0-9]+)H)?$").matcher(cigarString);
