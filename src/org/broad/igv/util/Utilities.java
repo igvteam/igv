@@ -245,4 +245,23 @@ public class Utilities {
         }
 
     }
+
+    public static boolean isAllLetters(String s) {
+         byte [] bytes = s.getBytes();
+         for(int i=0; i<bytes.length; i++) {
+             if(!isLetter(bytes[i])) {
+                 return false;
+             }
+         }
+         return true;
+     }
+
+    public  static boolean isLetter(int codePoint) {
+         return ((((1 << Character.UPPERCASE_LETTER) |
+                 (1 << Character.LOWERCASE_LETTER) |
+                 (1 << Character.TITLECASE_LETTER) |
+                 (1 << Character.MODIFIER_LETTER) |
+                 (1 << Character.OTHER_LETTER)) >> Character.getType(codePoint)) & 1)
+                 != 0;
+     }
 }

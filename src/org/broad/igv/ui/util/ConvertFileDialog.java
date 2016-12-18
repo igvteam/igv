@@ -72,7 +72,7 @@ public class ConvertFileDialog extends JDialog {
         startTextField.setFormatterFactory(factory);*/
 
         DefaultComboBoxModel boxModel = new DefaultComboBoxModel();
-        for (String chrom : chromosomes){
+        for (String chrom : chromosomes) {
             boxModel.addElement(chrom);
         }
         chromBox.setModel(boxModel);
@@ -82,8 +82,8 @@ public class ConvertFileDialog extends JDialog {
 
     public static ConvertOptions showConvertFileDialog(String message) {
         ConvertFileDialog dlg = new ConvertFileDialog(IGV.getMainFrame(),
-                                                      message,
-                                                      IGV.getInstance().getGenomeManager().getCurrentGenome().getAllChromosomeNames());
+                message,
+                IGV.getInstance().getGenomeManager().getCurrentGenome().getAllChromosomeNames());
         dlg.setVisible(true);
         dlg.opts.chrom = dlg.chromBox.getSelectedItem().toString();
         dlg.opts.start = Integer.parseInt(dlg.startTextField.getText());
@@ -180,7 +180,7 @@ public class ConvertFileDialog extends JDialog {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < contentPanel.getComponentCount(); i++) {
+                    for (int i = 0; i < contentPanel.getComponentCount(); i++) {
                         Rectangle bounds = contentPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -198,22 +198,32 @@ public class ConvertFileDialog extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 0, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 0, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
-                cancelButton.addActionListener(e -> cancelButtonActionPerformed(e));
+                cancelButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        cancelButtonActionPerformed(e);
+                    }
+                });
                 buttonBar.add(cancelButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 5, 5), 0, 0));
 
                 //---- okButton ----
                 okButton.setText("OK");
-                okButton.addActionListener(e -> okButtonActionPerformed(e));
+                okButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        okButtonActionPerformed(e);
+                    }
+                });
                 buttonBar.add(okButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 5, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }

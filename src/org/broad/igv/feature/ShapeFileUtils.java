@@ -54,7 +54,7 @@ public class ShapeFileUtils {
                                                   int seqLen,
                                                   int newLeft,
                                                   String strand){
-        LinkedList<LocAndVal> transProfile = new LinkedList<>();
+        LinkedList<LocAndVal> transProfile = new LinkedList<LocAndVal>();
         for (LocAndVal d : profile){
             int loc = d.loc;
             double val = d.val;
@@ -73,7 +73,7 @@ public class ShapeFileUtils {
     static LinkedList<LocAndVal> loadShape(String inFile) throws
             FileNotFoundException, IOException {
         // TODO: add error messages for misformatted file
-        LinkedList<LocAndVal> profile = new LinkedList<>();
+        LinkedList<LocAndVal> profile = new LinkedList<LocAndVal>();
 
         BufferedReader br = null;
 
