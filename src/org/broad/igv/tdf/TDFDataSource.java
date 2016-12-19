@@ -217,7 +217,7 @@ public class TDFDataSource implements CoverageDataSource {
 
         } else {
 
-            if(querySeq.equals(genome.getHomeChromosome())) {
+            if(querySeq.equals(Globals.CHR_ALL)) {
                 scores = getWGRawScores();
             }
             else {
