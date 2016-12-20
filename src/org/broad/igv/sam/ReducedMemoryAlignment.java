@@ -605,7 +605,17 @@ public class ReducedMemoryAlignment implements Alignment {
 
 
         @Override
-        public boolean isMismatch(int pos, byte ref, String chr, float snpThreshold) {
+        public boolean isConsensusMismatch(int pos, byte ref, String chr, float snpThreshold) {
+            return false;
+        }
+
+        @Override
+        public boolean isConsensusDeletion(int pos, float snpThreshold) {
+            return false;
+        }
+
+        @Override
+        public boolean isConsensusInsertion(int pos, float snpThreshold) {
             return false;
         }
 

@@ -647,7 +647,8 @@ public class AlignmentRenderer implements FeatureRenderer {
         int indelThresholdBP = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDEL_BP_THRESHOLD);
         boolean hideSmallIndelsPixel = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_PIXEL);
         double indelThresholdPixel = (double) PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDELS_PIXEL_THRESHOLD);
-
+        boolean quickConsensus = renderOptions.quickConsensusMode;
+        final float snpThreshold = prefs.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD);
 
         // Scale and position of the alignment rendering.
         double locScale = context.getScale();
@@ -688,6 +689,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         AlignmentBlock firstBlock = blocks[0], lastBlock = blocks[blocks.length - 1];
         int alignmentChromStart = (int) firstBlock.getStart(),
                 alignmentChromEnd = (int) (lastBlock.getStart() + lastBlock.getLength());
+
         /* Clipping */
         boolean flagClipping = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_CLIPPING);
         int clippingThreshold = prefs.getAsInt(PreferenceManager.SAM_CLIPPING_THRESHOLD);
@@ -722,6 +724,16 @@ public class AlignmentRenderer implements FeatureRenderer {
                 // Draw the gap if it is sufficiently large at the current zoom.
                 boolean drawGap = ((!hideSmallIndelsBP || gapChromWidth >= indelThresholdBP) &&
                         (!hideSmallIndelsPixel || gapPxWidthExact >= indelThresholdPixel));
+
+                //Check deletion consistency
+                if(drawGap && quickConsensus) {
+                    for(int pos=gapChromStart; pos < gapChromEnd; pos++) {
+                        if(!alignmentCounts.isConsensusDeletion(pos, snpThreshold)){
+                            drawGap = false;
+                            break;
+                        }
+                    }
+                }
                 if (!drawGap) {
                     continue;
                 }
@@ -769,12 +781,11 @@ public class AlignmentRenderer implements FeatureRenderer {
                 blockPxStart, blockPxWidth, y, h, locScale, overlapped, leftClipped, rightClipped);
 
         // Draw insertions.
-        drawInsertions(rowRect, alignment, context, renderOptions);
+        drawInsertions(rowRect, alignment, context, renderOptions, alignmentCounts);
 
         // Draw basepairs / mismatches.
         if (locScale < 100) {
             if (renderOptions.showMismatches || renderOptions.showAllBases) {
-                boolean quickConsensus = renderOptions.quickConsensusMode;
                 for (AlignmentBlock aBlock : alignment.getAlignmentBlocks()) {
                     int aBlockChromStart = (int) aBlock.getStart(),
                             aBlockChromEnd = (int) (aBlock.getStart() + aBlock.getLength());
@@ -785,7 +796,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                         break; // done examining blocks
                     }
 
-                    drawBases(context, bpGraphics, rowRect, alignment, aBlock, alignmentCounts, quickConsensus, alignmentColor, renderOptions);
+                    drawBases(context, bpGraphics, rowRect, alignment, aBlock, alignmentCounts, alignmentColor, renderOptions);
                 }
             }
         }
@@ -801,7 +812,6 @@ public class AlignmentRenderer implements FeatureRenderer {
      * @param baseAlignment
      * @param block
      * @param alignmentCounts
-     * @param quickConsensus
      * @param alignmentColor
      * @param renderOptions
      */
@@ -811,7 +821,6 @@ public class AlignmentRenderer implements FeatureRenderer {
                            Alignment baseAlignment,
                            AlignmentBlock block,
                            AlignmentCounts alignmentCounts,
-                           boolean quickConsensus,
                            Color alignmentColor,
                            RenderOptions renderOptions) {
 
@@ -830,6 +839,9 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         ShadeBasesOption shadeBasesOption = renderOptions.shadeBasesOption;
         ColorOption colorOption = renderOptions.getColorOption();
+        final boolean quickConsensus = renderOptions.quickConsensusMode;
+        final float snpThreshold = prefs.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD);
+
 
         // Disable showAllBases in bisulfite mode
         boolean showAllBases = renderOptions.showAllBases &&
@@ -902,9 +914,10 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
 
                 BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(idx);
+
                 if (isSoftClipped || bisulfiteMode ||
                         // In "quick consensus" mode, only show mismatches at positions with a consistent alternative basepair.
-                        (!quickConsensus || alignmentCounts.isMismatch(loc, reference[idx], chr, prefs.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD)))
+                        (!quickConsensus || alignmentCounts.isConsensusMismatch(loc, reference[idx], chr, snpThreshold))
                         ) {
                     drawBase(g, color, c, pX, pY, dX, dY, bisulfiteMode, bisstatus);
                 }
@@ -1088,13 +1101,16 @@ public class AlignmentRenderer implements FeatureRenderer {
         if(insertionBlock != null) insertionBlock.setPixelRange(pxLeft, pxRight);
     }
 
-    private void drawInsertions(Rectangle rect, Alignment alignment, RenderContext context, RenderOptions renderOptions) {
+    private void drawInsertions(Rectangle rect, Alignment alignment, RenderContext context, RenderOptions renderOptions,
+                                AlignmentCounts alignmentCounts) {
 
         AlignmentBlock[] insertions = alignment.getInsertions();
         double origin = context.getOrigin();
         double locScale = context.getScale();
         boolean flagLargeIndels = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_LARGE_INDELS);
         int largeInsertionsThreshold = prefs.getAsInt(PreferenceManager.SAM_LARGE_INDELS_THRESHOLD);
+        boolean quickConsensus = renderOptions.quickConsensusMode;
+        final float snpThreshold = prefs.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD);
 
         if (insertions != null) {
 
@@ -1118,7 +1134,8 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
 
                 if ((!hideSmallIndelsBP || bpWidth >= indelThresholdBP) &&
-                        (!hideSmallIndelsPixel || pxWidthExact >= indelThresholdPixel)) {
+                        (!hideSmallIndelsPixel || pxWidthExact >= indelThresholdPixel) &&
+                        (!quickConsensus || alignmentCounts.isConsensusInsertion(aBlock.getStart(), snpThreshold))) {
                     if (flagLargeIndels && bpWidth > largeInsertionsThreshold) {
                         drawLargeIndelLabel(context.getGraphics2D("INDEL_LABEL"), true, Globals.DECIMAL_FORMAT.format(bpWidth), x - 1, y, h, (int) pxWidthExact, aBlock);
                     } else {

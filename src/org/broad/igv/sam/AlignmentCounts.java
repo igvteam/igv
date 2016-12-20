@@ -57,7 +57,11 @@ public interface AlignmentCounts extends Feature {
 
     String getValueStringAt(int pos);
 
-    boolean isMismatch(int pos, byte ref, String chr, float snpThreshold);
+    boolean isConsensusMismatch(int pos, byte ref, String chr, float snpThreshold);
+
+    boolean isConsensusDeletion(int pos, float snpThreshold);
+
+    boolean isConsensusInsertion(int pos, float snpThreshold);
 
     BisulfiteCounts getBisulfiteCounts();
 
@@ -66,6 +70,5 @@ public interface AlignmentCounts extends Feature {
     boolean hasBaseCounts();
 
     void finish();
-
 
 }

@@ -530,7 +530,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
                         // Test to see if any single nucleotide mismatch  (nucleotide other than the reference)
                         // has a quality weight > 20% of the total
-                        // Skip this test if the position is in the list of known snps or if the reference is unknown
                         boolean mismatch = false;
 
                         if (refBases != null) {
@@ -540,7 +539,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                                     mismatch = (bc != null && (bc.methylatedCount + bc.unmethylatedCount) > 0);
                                 } else {
                                     byte ref = refBases[refIdx];
-                                    mismatch = alignmentCounts.isMismatch(pos, ref, context.getChr(), snpThreshold);
+                                    mismatch = alignmentCounts.isConsensusMismatch(pos, ref, context.getChr(), snpThreshold);
                                 }
                             }
                         }
