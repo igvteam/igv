@@ -944,6 +944,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
     // Set the focus in the search box
     public void focusSearchBox() {
         searchTextField.requestFocusInWindow();
+        searchTextField.selectAll();
     }
 
     private void goButtonActionPerformed(java.awt.event.ActionEvent evt) {    // GEN-FIRST:event_goButtonActionPerformed
