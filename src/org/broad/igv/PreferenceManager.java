@@ -108,12 +108,14 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_SAMPLING_WINDOW = "SAM.SAMPLING_WINDOW";
     public static final String SAM_DOWNSAMPLE_READS = "SAM.DOWNSAMPLE_READS";
     public static final String SAM_SORT_OPTION = "SAM.SORT_OPTION";
+    public static final String SAM_GROUP_OPTION = "SAM.GROUP_OPTION";
     public static final String SAM_SHOW_ALL_BASES = "SAM.SHOW_ALL_BASES";
 
     public static final String SAM_COLOR_BY = "SAM.COLOR_BY";
     public static final String SAM_COLOR_BY_TAG = "SAM.COLOR_BY_TAG";
     public static final String SAM_SORT_BY_TAG = "SAM.SORT_BY_TAG";
     public static final String SAM_GROUP_BY_TAG = "SAM.GROUP_BY_TAG";
+    public static final String SAM_GROUP_BY_POS = "SAM.GROUP_BY_POS";
     public static final String SAM_BISULFITE_CONTEXT = "SAM.BISULFITE_CONTEXT";
     public static final String SAM_FILTER_FAILED_READS = "SAM.FILTER_FAILED_READS";
     public static final String SAM_COMPUTE_ISIZES = "SAM.COMPUTE_ISIZES";
@@ -130,7 +132,7 @@ public class PreferenceManager implements PropertyManager {
 
     public static final String SAM_FLAG_LARGE_INDELS = "SAM.FLAG_LARGE_INDELS";
     public static final String SAM_LARGE_INDELS_THRESHOLD = "SAM.LARGE_INSERTIONS_THRESOLD";
-    
+
     public static final String SAM_FLAG_CLIPPING = "SAM.FLAG_CLIPPING";
     public static final String SAM_CLIPPING_THRESHOLD = "SAM.CLIPPING_THRESHOLD";
 
@@ -1081,6 +1083,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_COLOR_BY, "UNEXPECTED_PAIR");
         defaultValues.put(SAM_COLOR_BY_TAG, "");
         defaultValues.put(SAM_GROUP_BY_TAG, "");
+        defaultValues.put(SAM_GROUP_BY_POS, "");
         defaultValues.put(SAM_SORT_BY_TAG, "");
         defaultValues.put(SAM_BISULFITE_CONTEXT, "CG");
         defaultValues.put(SAM_COMPUTE_ISIZES, "true");
@@ -1096,6 +1099,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_FLAG_CLIPPING, "false");
         defaultValues.put(SAM_CLIPPING_THRESHOLD, "0");
         defaultValues.put(SAM_SORT_OPTION, "NUCLEOTIDE");
+        defaultValues.put(SAM_GROUP_OPTION, "NONE");
         defaultValues.put(SAM_SHOW_GROUP_SEPARATOR, "true");
         defaultValues.put(SAM_COMPLETE_READS_ONLY, "false");
         defaultValues.put(SAM_SHOW_ALL_BASES, "false");

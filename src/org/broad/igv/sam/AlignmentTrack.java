@@ -498,15 +498,14 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
      * @see AlignmentDataManager#packAlignments
      */
     public void groupAlignments(GroupOption option, String tag, Range pos) {
-        if (tag != null) {
+        if (option == GroupOption.TAG && tag != null) {
             renderOptions.setGroupByTag(tag);
         }
-        if (pos != null) {
+        if (option == GroupOption.BASE_AT_POS && pos != null) {
             renderOptions.setGroupByPos(pos);
         }
         renderOptions.groupByOption = (option == GroupOption.NONE ? null : option);
         dataManager.packAlignments(renderOptions);
-
     }
 
     public void packAlignments() {
@@ -1035,7 +1034,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             showAllBases = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_ALL_BASES);
             quickConsensusMode = prefs.getAsBoolean(PreferenceManager.SAM_QUICK_CONSENSUS_MODE);
             colorOption = CollUtils.valueOf(ColorOption.class, prefs.get(PreferenceManager.SAM_COLOR_BY), ColorOption.NONE);
-            groupByOption = null;
+            groupByOption = CollUtils.valueOf(GroupOption.class, prefs.get(PreferenceManager.SAM_GROUP_OPTION), GroupOption.NONE);
             flagZeroQualityAlignments = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_ZERO_QUALITY);
             bisulfiteContext = DEFAULT_BISULFITE_CONTEXT;
 
@@ -1043,6 +1042,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             colorByTag = prefs.get(PreferenceManager.SAM_COLOR_BY_TAG);
             sortByTag = prefs.get(PreferenceManager.SAM_SORT_BY_TAG);
             groupByTag = prefs.get(PreferenceManager.SAM_GROUP_BY_TAG);
+            setGroupByPos(prefs.get(PreferenceManager.SAM_GROUP_BY_POS));
 
             //updateColorScale();
 
@@ -1168,6 +1168,22 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         public void setGroupByPos(Range groupByPos) {
             this.groupByPos = groupByPos;
+        }
+
+        public void setGroupByPos(String pos) {
+            if (pos == null) {
+                this.groupByPos = null;
+            }
+            else {
+                String[] posParts = pos.split(" ");
+                if (posParts.length != 2) {
+                    this.groupByPos = null;
+                }
+                else {
+                    int posChromStart = Integer.valueOf(posParts[1]);
+                    this.groupByPos = new Range(posParts[0], posChromStart, posChromStart+1);
+                }
+            }
         }
 
         public String getLinkByTag() {

@@ -1982,6 +1982,14 @@ public class IGV implements IGVEventObserver {
      * @api
      */
     public void groupAlignmentTracks(AlignmentTrack.GroupOption option, String tag, Range pos) {
+        final PreferenceManager prefMgr = PreferenceManager.getInstance();
+        prefMgr.put(PreferenceManager.SAM_GROUP_OPTION, option.toString());
+        if (option == AlignmentTrack.GroupOption.TAG && tag != null) {
+            prefMgr.put(PreferenceManager.SAM_GROUP_BY_TAG, tag);
+        }
+        if (option == AlignmentTrack.GroupOption.BASE_AT_POS && pos != null) {
+            prefMgr.put(PreferenceManager.SAM_GROUP_BY_POS, pos.getChr() + " " + String.valueOf(pos.getStart()));
+        }
         for (Track t : getAllTracks()) {
             if (t instanceof AlignmentTrack) {
                 ((AlignmentTrack) t).groupAlignments(option, tag, pos);
