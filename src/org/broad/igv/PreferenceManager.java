@@ -525,7 +525,14 @@ public class PreferenceManager implements PropertyManager {
                     reloadSAM = true;
                     break;
                 }
+            }
 
+            boolean refreshSAM = false;
+            for (String key: SAM_REFRESH_KEYS) {
+                if (updatedPreferenceMap.containsKey(key)) {
+                    refreshSAM = true;
+                    break;
+                }
             }
 
             if (reloadSAM) {
@@ -533,6 +540,10 @@ public class PreferenceManager implements PropertyManager {
                     igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.VISIBILITY_WINDOW);
                 }
                 igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.RELOAD);
+            }
+            // A reload is harsher than a refresh; only send the weaker request if the stronger one is not sent.
+            if (!reloadSAM && refreshSAM) {
+                igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.REFRESH);
             }
             if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_ALLELE_THRESHOLD)) {
                 igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.ALLELE_THRESHOLD);
@@ -1390,8 +1401,6 @@ public class PreferenceManager implements PropertyManager {
             PreferenceManager.SAM_FILTER_URL,
             PreferenceManager.SAM_MAX_VISIBLE_RANGE,
             PreferenceManager.SAM_SHOW_DUPLICATES,
-            PreferenceManager.SAM_QUICK_CONSENSUS_MODE,
-            PreferenceManager.SAM_ALLELE_THRESHOLD,
             PreferenceManager.SAM_SHOW_SOFT_CLIPPED,
             PreferenceManager.SAM_SAMPLING_COUNT,
             PreferenceManager.SAM_SAMPLING_WINDOW,
@@ -1400,10 +1409,18 @@ public class PreferenceManager implements PropertyManager {
             PreferenceManager.SAM_FILTER_SECONDARY_ALIGNMENTS,
             PreferenceManager.SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS,
             PreferenceManager.SAM_JUNCTION_MIN_FLANKING_WIDTH,
-            PreferenceManager.SAM_JUNCTION_MIN_COVERAGE,
-       //     PreferenceManager.SAM_FLAG_LARGE_INDELS,
-            PreferenceManager.SAM_LARGE_INDELS_THRESHOLD
+            PreferenceManager.SAM_JUNCTION_MIN_COVERAGE
     );
 
+    /**
+     * List of keys that do not affect the alignments loaded but do affect how those
+     * alignments are drawn.  A refresh is softer than a reload.
+    */
+    static java.util.List<String> SAM_REFRESH_KEYS = Arrays.asList(
+        PreferenceManager.SAM_QUICK_CONSENSUS_MODE,
+        PreferenceManager.SAM_ALLELE_THRESHOLD,
+        PreferenceManager.SAM_FLAG_LARGE_INDELS,
+        PreferenceManager.SAM_LARGE_INDELS_THRESHOLD
+    );
 
 }

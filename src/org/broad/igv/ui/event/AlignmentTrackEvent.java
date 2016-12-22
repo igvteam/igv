@@ -33,7 +33,7 @@ import java.util.EventObject;
  */
 public class AlignmentTrackEvent extends EventObject {
 
-    public enum Type {SPLICE_JUNCTION, VISIBILITY_WINDOW, ALLELE_THRESHOLD, RELOAD, VISIBLE}
+    public enum Type {SPLICE_JUNCTION, VISIBILITY_WINDOW, ALLELE_THRESHOLD, RELOAD, REFRESH, VISIBLE}
 
     private Type type;
     private boolean booleanValue;
