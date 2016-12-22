@@ -497,19 +497,16 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
      * @param option
      * @see AlignmentDataManager#packAlignments
      */
-    public void groupAlignments(GroupOption option, String tag) {
+    public void groupAlignments(GroupOption option, String tag, Range pos) {
         if (tag != null) {
             renderOptions.setGroupByTag(tag);
+        }
+        if (pos != null) {
+            renderOptions.setGroupByBaseAtPos(pos);
         }
         renderOptions.groupByOption = (option == GroupOption.NONE ? null : option);
         dataManager.packAlignments(renderOptions);
 
-    }
-
-    public void groupAlignmentsByBaseAtPos(GroupOption option, Range pos) {
-        renderOptions.groupByOption = GroupOption.BASE_AT_POS;
-        renderOptions.setGroupByBaseAtPos(pos);
-        dataManager.packAlignments(renderOptions);
     }
 
     public void packAlignments() {
@@ -1398,7 +1395,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             mi.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
-                    IGV.getInstance().groupAlignmentTracks(option, null);
+                    IGV.getInstance().groupAlignmentTracks(option, null, null);
                     refresh();
 
                 }
@@ -1445,7 +1442,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getGroupByTag());
                     if (tag != null && tag.trim().length() > 0) {
                         renderOptions.setGroupByTag(tag);
-                        IGV.getInstance().groupAlignmentTracks(GroupOption.TAG, tag);
+                        IGV.getInstance().groupAlignmentTracks(GroupOption.TAG, tag, null);
                         refresh();
                     }
 
@@ -1472,7 +1469,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                         renderOptions.groupByOption = GroupOption.BASE_AT_POS;
                         Range groupByBaseAtPos = new Range(chrom, chromStart, chromStart + 1);
                         renderOptions.setGroupByBaseAtPos(groupByBaseAtPos);
-                        IGV.getInstance().groupAlignmentTracksByBaseAtPos(GroupOption.BASE_AT_POS, groupByBaseAtPos);
+                        IGV.getInstance().groupAlignmentTracks(GroupOption.BASE_AT_POS, null, groupByBaseAtPos);
                         refresh();
                     }
                 });

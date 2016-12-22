@@ -1981,18 +1981,10 @@ public class IGV implements IGVEventObserver {
      * @param option
      * @api
      */
-    public void groupAlignmentTracks(AlignmentTrack.GroupOption option, String tag) {
+    public void groupAlignmentTracks(AlignmentTrack.GroupOption option, String tag, Range pos) {
         for (Track t : getAllTracks()) {
             if (t instanceof AlignmentTrack) {
-                ((AlignmentTrack) t).groupAlignments(option, tag);
-            }
-        }
-    }
-
-    public void groupAlignmentTracksByBaseAtPos(AlignmentTrack.GroupOption option, Range pos) {
-        for (Track t : getAllTracks()) {
-            if (t instanceof AlignmentTrack) {
-                ((AlignmentTrack) t).groupAlignmentsByBaseAtPos(option, pos);
+                ((AlignmentTrack) t).groupAlignments(option, tag, pos);
             }
         }
     }
