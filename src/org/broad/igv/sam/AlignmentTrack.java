@@ -502,7 +502,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             renderOptions.setGroupByTag(tag);
         }
         if (pos != null) {
-            renderOptions.setGroupByBaseAtPos(pos);
+            renderOptions.setGroupByPos(pos);
         }
         renderOptions.groupByOption = (option == GroupOption.NONE ? null : option);
         dataManager.packAlignments(renderOptions);
@@ -1012,7 +1012,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         BisulfiteContext bisulfiteContext;
 
-        private Range groupByBaseAtPos = null;
+        private Range groupByPos = null;
 
         RenderOptions() {
             PreferenceManager prefs = PreferenceManager.getInstance();
@@ -1162,12 +1162,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             this.groupByTag = groupByTag;
         }
 
-        public Range getGroupByBaseAtPos() {
-            return groupByBaseAtPos;
+        public Range getGroupByPos() {
+            return groupByPos;
         }
 
-        public void setGroupByBaseAtPos(Range groupByBaseAtPos) {
-            this.groupByBaseAtPos = groupByBaseAtPos;
+        public void setGroupByPos(Range groupByPos) {
+            this.groupByPos = groupByPos;
         }
 
         public String getLinkByTag() {
@@ -1452,29 +1452,29 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             groupMenu.add(tagOption);
             group.add(tagOption);
 
-            Range oldSortByBaseAtPos = renderOptions.getGroupByBaseAtPos();
+            Range oldGroupByPos = renderOptions.getGroupByPos();
             if (renderOptions.groupByOption == GroupOption.BASE_AT_POS) { // already sorted by the base at a position
-                JCheckBoxMenuItem oldBaseAtPosOption = new JCheckBoxMenuItem("base at " + oldSortByBaseAtPos.getChr() +
-                        ":" + Globals.DECIMAL_FORMAT.format(1 + oldSortByBaseAtPos.getStart()));
-                groupMenu.add(oldBaseAtPosOption);
-                oldBaseAtPosOption.setSelected(true);
+                JCheckBoxMenuItem oldGroupByPosOption = new JCheckBoxMenuItem("base at " + oldGroupByPos.getChr() +
+                        ":" + Globals.DECIMAL_FORMAT.format(1 + oldGroupByPos.getStart()));
+                groupMenu.add(oldGroupByPosOption);
+                oldGroupByPosOption.setSelected(true);
             }
 
-            if (renderOptions.groupByOption != GroupOption.BASE_AT_POS || oldSortByBaseAtPos == null ||
-                    !oldSortByBaseAtPos.getChr().equals(chrom) || oldSortByBaseAtPos.getStart() != chromStart) { // not already sorted by this position
-                JCheckBoxMenuItem newBaseAtPosOption = new JCheckBoxMenuItem("base at " + chrom +
+            if (renderOptions.groupByOption != GroupOption.BASE_AT_POS || oldGroupByPos == null ||
+                    !oldGroupByPos.getChr().equals(chrom) || oldGroupByPos.getStart() != chromStart) { // not already sorted by this position
+                JCheckBoxMenuItem newGroupByPosOption = new JCheckBoxMenuItem("base at " + chrom +
                         ":" + Globals.DECIMAL_FORMAT.format(1 + chromStart));
-                newBaseAtPosOption.addActionListener(new ActionListener() {
+                newGroupByPosOption.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent aEvt) {
                         renderOptions.groupByOption = GroupOption.BASE_AT_POS;
-                        Range groupByBaseAtPos = new Range(chrom, chromStart, chromStart + 1);
-                        renderOptions.setGroupByBaseAtPos(groupByBaseAtPos);
-                        IGV.getInstance().groupAlignmentTracks(GroupOption.BASE_AT_POS, null, groupByBaseAtPos);
+                        Range groupByPos = new Range(chrom, chromStart, chromStart + 1);
+                        renderOptions.setGroupByPos(groupByPos);
+                        IGV.getInstance().groupAlignmentTracks(GroupOption.BASE_AT_POS, null, groupByPos);
                         refresh();
                     }
                 });
-                groupMenu.add(newBaseAtPosOption);
-                group.add(newBaseAtPosOption);
+                groupMenu.add(newGroupByPosOption);
+                group.add(newGroupByPosOption);
             }
 
             add(groupMenu);

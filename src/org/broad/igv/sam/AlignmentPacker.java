@@ -377,7 +377,7 @@ public class AlignmentPacker {
 
         AlignmentTrack.GroupOption groupBy = renderOptions.groupByOption;
         String tag = renderOptions.getGroupByTag();
-        Range pos = renderOptions.getGroupByBaseAtPos();
+        Range pos = renderOptions.getGroupByPos();
 
         switch (groupBy) {
             case STRAND:
