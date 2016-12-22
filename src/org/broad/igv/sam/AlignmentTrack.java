@@ -1457,9 +1457,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 public void actionPerformed(ActionEvent aEvt) {
                     String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getGroupByTag());
                     if (tag != null && tag.trim().length() > 0) {
-                        renderOptions.setGroupByTag(tag);
                         IGV.getInstance().groupAlignmentTracks(GroupOption.TAG, tag, null);
-                        refresh();
                     }
 
                 }
@@ -1482,11 +1480,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                         ":" + Globals.DECIMAL_FORMAT.format(1 + chromStart));
                 newGroupByPosOption.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent aEvt) {
-                        renderOptions.groupByOption = GroupOption.BASE_AT_POS;
                         Range groupByPos = new Range(chrom, chromStart, chromStart + 1);
-                        renderOptions.setGroupByPos(groupByPos);
                         IGV.getInstance().groupAlignmentTracks(GroupOption.BASE_AT_POS, null, groupByPos);
-                        refresh();
                     }
                 });
                 groupMenu.add(newGroupByPosOption);
