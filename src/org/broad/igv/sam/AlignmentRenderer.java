@@ -645,8 +645,6 @@ public class AlignmentRenderer implements FeatureRenderer {
         int largeInsertionsThreshold = prefs.getAsInt(PreferenceManager.SAM_LARGE_INDELS_THRESHOLD);
         boolean hideSmallIndelsBP = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_BP);
         int indelThresholdBP = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDEL_BP_THRESHOLD);
-        boolean hideSmallIndelsPixel = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_PIXEL);
-        double indelThresholdPixel = (double) PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDELS_PIXEL_THRESHOLD);
         boolean quickConsensus = renderOptions.quickConsensusMode;
         final float snpThreshold = prefs.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD);
 
@@ -721,9 +719,8 @@ public class AlignmentRenderer implements FeatureRenderer {
                     break; // done examining gaps
                 }
 
-                // Draw the gap if it is sufficiently large at the current zoom.
-                boolean drawGap = ((!hideSmallIndelsBP || gapChromWidth >= indelThresholdBP) &&
-                        (!hideSmallIndelsPixel || gapPxWidthExact >= indelThresholdPixel));
+                // Draw the gap if it is sufficiently large
+                boolean drawGap = (!hideSmallIndelsBP || gapChromWidth >= indelThresholdBP);
 
                 //Check deletion consistency
                 if(drawGap && quickConsensus) {
@@ -1116,8 +1113,6 @@ public class AlignmentRenderer implements FeatureRenderer {
 
             boolean hideSmallIndelsBP = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_BP);
             int indelThresholdBP = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDEL_BP_THRESHOLD);
-            boolean hideSmallIndelsPixel = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_PIXEL);
-            double indelThresholdPixel = (double) PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDELS_PIXEL_THRESHOLD);
 
             for (AlignmentBlock aBlock : insertions) {
                 int x = (int) ((aBlock.getStart() - origin) / locScale);
@@ -1134,7 +1129,6 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
 
                 if ((!hideSmallIndelsBP || bpWidth >= indelThresholdBP) &&
-                        (!hideSmallIndelsPixel || pxWidthExact >= indelThresholdPixel) &&
                         (!quickConsensus || alignmentCounts.isConsensusInsertion(aBlock.getStart(), snpThreshold))) {
                     if (flagLargeIndels && bpWidth > largeInsertionsThreshold) {
                         drawLargeIndelLabel(context.getGraphics2D("INDEL_LABEL"), true, Globals.DECIMAL_FORMAT.format(bpWidth), x - 1, y, h, (int) pxWidthExact, aBlock);
