@@ -271,8 +271,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         hideIndelsBasesField = new JTextField();
         label45 = new JLabel();
         panel36 = new JPanel();
-        hideIndelsPixelsCB = new JCheckBox();
-        hideIndelsPixelsField = new JTextField();
         label46 = new JLabel();
         panel8 = new JPanel();
         samFilterDuplicatesCB = new JCheckBox();
@@ -1400,32 +1398,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                     panel13.add(panel9);
                                 }
                                 jPanel12.add(panel13);
-
-                                //======== panel36 ========
-                                {
-                                    panel36.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
-
-                                    //---- hideIndelsPixelsCB ----
-                                    hideIndelsPixelsCB.setText("Hide indels < ");
-                                    hideIndelsPixelsCB.addActionListener(e -> hideIndelsPixelsCBActionPerformed(e));
-                                    panel36.add(hideIndelsPixelsCB);
-
-                                    //---- hideIndelsPixelsField ----
-                                    hideIndelsPixelsField.setPreferredSize(new Dimension(60, 26));
-                                    hideIndelsPixelsField.addActionListener(e -> hideIndelsPixelsFieldActionPerformed(e));
-                                    hideIndelsPixelsField.addFocusListener(new FocusAdapter() {
-                                        @Override
-                                        public void focusLost(FocusEvent e) {
-                                            hideIndelsPixelsFieldFocusLost(e);
-                                        }
-                                    });
-                                    panel36.add(hideIndelsPixelsField);
-
-                                    //---- label46 ----
-                                    label46.setText(" pixels");
-                                    panel36.add(label46);
-                                }
-                                jPanel12.add(panel36);
 
                                 //======== panel8 ========
                                 {
@@ -2900,34 +2872,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }
 
 
-    private void hideIndelsPixelsCBActionPerformed(ActionEvent e) {
-        final boolean flagInsertions = hideIndelsPixelsCB.isSelected();
-        updatedPreferenceMap.put(PreferenceManager.SAM_HIDE_SMALL_INDEL_PIXEL, String.valueOf(flagInsertions));
-        hideIndelsPixelsField.setEnabled(flagInsertions);
-
-    }
-
-    private void hideIndelsPixelsFieldFocusLost(FocusEvent e) {
-        hideIndelsPixelsFieldActionPerformed(null);
-    }
-
-    private void hideIndelsPixelsFieldActionPerformed(ActionEvent e) {
-        String threshold = hideIndelsPixelsField.getText().trim();
-        try {
-            int tmp = Integer.parseInt(threshold);
-            if (tmp <= 0) {
-                inputValidated = false;
-                MessageUtils.showMessage("Threshold must be a positive integer.");
-            } else {
-                updatedPreferenceMap.put(PreferenceManager.SAM_SMALL_INDELS_PIXEL_THRESHOLD, threshold);
-            }
-        } catch (NumberFormatException numberFormatException) {
-            inputValidated = false;
-            MessageUtils.showMessage("Threshold must be a positive integer.");
-        }
-    }
-
-
     private void downsampleReadsCBActionPerformed(ActionEvent e) {
         final boolean downsample = downsampleReadsCB.isSelected();
         updatedPreferenceMap.put(PreferenceManager.SAM_DOWNSAMPLE_READS, String.valueOf(downsample));
@@ -3970,10 +3914,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         hideIndelsBasesField.setText(prefMgr.get(PreferenceManager.SAM_SMALL_INDEL_BP_THRESHOLD));
         hideIndelsBasesField.setEnabled(hideIndelsBasesCB.isSelected());
 
-        hideIndelsPixelsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_PIXEL));
-        hideIndelsPixelsField.setText(prefMgr.get(PreferenceManager.SAM_SMALL_INDELS_PIXEL_THRESHOLD));
-        hideIndelsPixelsField.setEnabled(hideIndelsPixelsCB.isSelected());
-
         resetVCFColorChoosers();
 
         updateFontField();
@@ -4176,8 +4116,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JTextField hideIndelsBasesField;
     private JLabel label45;
     private JPanel panel36;
-    private JCheckBox hideIndelsPixelsCB;
-    private JTextField hideIndelsPixelsField;
     private JLabel label46;
     private JPanel panel8;
     private JCheckBox samFilterDuplicatesCB;

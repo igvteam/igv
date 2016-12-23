@@ -130,7 +130,7 @@ public class PreferenceManager implements PropertyManager {
 
     public static final String SAM_FLAG_LARGE_INDELS = "SAM.FLAG_LARGE_INDELS";
     public static final String SAM_LARGE_INDELS_THRESHOLD = "SAM.LARGE_INSERTIONS_THRESOLD";
-    
+
     public static final String SAM_FLAG_CLIPPING = "SAM.FLAG_CLIPPING";
     public static final String SAM_CLIPPING_THRESHOLD = "SAM.CLIPPING_THRESHOLD";
 
@@ -140,9 +140,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_REDUCED_MEMORY_MODE = "SAM.REDUCED_MEMORY_MODE";
 
     public static final String SAM_HIDE_SMALL_INDEL_BP = "SAM.HIDE_SMALL_INDEL_BP";
-    public static final String SAM_HIDE_SMALL_INDEL_PIXEL = "SAM.HIDE_SMALL_INDEL";
     public static final String SAM_SMALL_INDEL_BP_THRESHOLD = "SAM.MIN_INDEL_BP_THRESHOLD";
-    public static final String SAM_SMALL_INDELS_PIXEL_THRESHOLD = "SAM.MIN_INDEL_PIXEL_THRESHOLD";
 
     public static final String SAM_LINK_READS = "SAM.LINK_READS";
     public static final String SAM_LINK_TAG = "SAM.LINK_TAG";
@@ -1104,8 +1102,6 @@ public class PreferenceManager implements PropertyManager {
 
         defaultValues.put(SAM_HIDE_SMALL_INDEL_BP, "false");
         defaultValues.put(SAM_SMALL_INDEL_BP_THRESHOLD, "0");
-        defaultValues.put(SAM_HIDE_SMALL_INDEL_PIXEL, "true");
-        defaultValues.put(SAM_SMALL_INDELS_PIXEL_THRESHOLD, "3");
 
         defaultValues.put(SAM_LINK_READS, "false");
         defaultValues.put(SAM_LINK_TAG, "READNAME");
