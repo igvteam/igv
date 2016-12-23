@@ -220,7 +220,6 @@ public class MergedAlignmentReader implements AlignmentReader {
 
             void close() {
                 if (iterator != null) {
-                    System.out.println("Closing " + this);
                     iterator.close();
                     iterator = null;
                 }

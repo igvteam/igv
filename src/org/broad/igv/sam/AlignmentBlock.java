@@ -50,12 +50,7 @@ public interface AlignmentBlock {
 
     boolean isSoftClipped();
 
-
     boolean hasBases();
-
-    FlowSignalSubContext getFlowSignalSubContext(int offset);
-
-    boolean hasFlowSignals();
 
     void setPixelRange(int s, int e);
 

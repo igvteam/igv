@@ -59,7 +59,7 @@ public interface AlignmentCounts extends Feature {
 
     boolean isConsensusMismatch(int pos, byte ref, String chr, float snpThreshold);
 
-    boolean isConsensusDeletion(int pos, float snpThreshold);
+    boolean isConsensusDeletion(int start, int end, float snpThreshold);
 
     boolean isConsensusInsertion(int pos, float snpThreshold);
 

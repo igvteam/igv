@@ -102,7 +102,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private boolean showGroupLine;
 
     public enum ShadeBasesOption {
-        NONE, QUALITY, FLOW_SIGNAL_DEVIATION_READ, FLOW_SIGNAL_DEVIATION_REFERENCE
+        NONE, QUALITY
     }
 
     public enum ExperimentType {
@@ -1862,8 +1862,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 Map<String, ShadeBasesOption> mappings = new LinkedHashMap<String, ShadeBasesOption>();
                 mappings.put("none", ShadeBasesOption.NONE);
                 mappings.put("quality", ShadeBasesOption.QUALITY);
-                mappings.put("read flow signal deviation", ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ);
-                mappings.put("reference flow signal deviation", ShadeBasesOption.FLOW_SIGNAL_DEVIATION_REFERENCE);
 
                 for (Map.Entry<String, ShadeBasesOption> el : mappings.entrySet()) {
                     JCheckBoxMenuItem mi = getShadeBasesMenuItem(el.getKey(), el.getValue());

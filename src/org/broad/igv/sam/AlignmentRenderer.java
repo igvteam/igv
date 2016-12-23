@@ -85,7 +85,7 @@ public class AlignmentRenderer implements FeatureRenderer {
     private static Map<String, AlignmentTrack.OrientationType> f1f2OrientationTypes;
     private static Map<String, AlignmentTrack.OrientationType> f2f1OrientationTypes;
     private static Map<String, AlignmentTrack.OrientationType> rfOrientationTypes;
-    private static  Map<AlignmentTrack.OrientationType, Color> typeToColorMap;
+    private static Map<AlignmentTrack.OrientationType, Color> typeToColorMap;
     public static HashMap<Character, Color> nucleotideColors;
 
     public static final HSLColorTable tenXColorTable1 = new HSLColorTable(30);
@@ -225,7 +225,6 @@ public class AlignmentRenderer implements FeatureRenderer {
     }
 
 
-
     static {
         initializeTagTypes();
         setNucleotideColors();
@@ -233,11 +232,10 @@ public class AlignmentRenderer implements FeatureRenderer {
     }
 
 
-
     PreferenceManager prefs;
     AlignmentTrack track;
 
-    public  AlignmentRenderer(AlignmentTrack track) {
+    public AlignmentRenderer(AlignmentTrack track) {
         this.prefs = PreferenceManager.getInstance();
         this.track = track;
     }
@@ -722,15 +720,10 @@ public class AlignmentRenderer implements FeatureRenderer {
                 // Draw the gap if it is sufficiently large
                 boolean drawGap = (!hideSmallIndelsBP || gapChromWidth >= indelThresholdBP);
 
-                //Check deletion consistency
-                if(drawGap && quickConsensus) {
-                    for(int pos=gapChromStart; pos < gapChromEnd; pos++) {
-                        if(!alignmentCounts.isConsensusDeletion(pos, snpThreshold)){
-                            drawGap = false;
-                            break;
-                        }
-                    }
-                }
+                //Check deletion consistency  -- TODO this needs work, disabled for now
+                //if (drawGap && quickConsensus) {
+                //    drawGap = alignmentCounts.isConsensusDeletion(gapChromStart, gap.getnBases(), snpThreshold);
+                //}
                 if (!drawGap) {
                     continue;
                 }
@@ -891,10 +884,6 @@ public class AlignmentRenderer implements FeatureRenderer {
                 if (ShadeBasesOption.QUALITY == shadeBasesOption) {
                     byte qual = block.getQuality(loc - start);
                     color = getShadedColor(qual, color, alignmentColor, prefs);
-                } else if (ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ == shadeBasesOption || ShadeBasesOption.FLOW_SIGNAL_DEVIATION_REFERENCE == shadeBasesOption) {
-                    if (block.hasFlowSignals()) {
-                        color = getFlowSignalColor(reference, misMatch, genome, block, chr, start, loc, idx, shadeBasesOption, alignmentColor, color);
-                    }
                 }
 
                 double bisulfiteXaxisShift = (bisulfiteMode) ? bisinfo.getXaxisShift(idx) : 0;
@@ -921,79 +910,6 @@ public class AlignmentRenderer implements FeatureRenderer {
             }
         }
 
-    }
-
-    /**
-     * NB: this may estimate the reference homopolymer length incorrect in some cases, especially when we have
-     * an overcall/undercall situation.  Proper estimation of the reads observed versus expected homopolymer
-     * length should use flow signal alignment (SamToFlowspace): https://github.com/iontorrent/Ion-Variant-Hunter
-     *
-     * @param reference
-     * @param misMatch
-     * @param genome
-     * @param block
-     * @param chr
-     * @param start
-     * @param loc
-     * @param idx
-     * @param shadeBasesOption
-     * @param alignmentColor
-     * @param color
-     * @return
-     */
-    private Color getFlowSignalColor(byte[] reference, boolean misMatch, Genome genome,
-                                     AlignmentBlock block, String chr, int start, int loc, int idx,
-                                     ShadeBasesOption shadeBasesOption,
-                                     Color alignmentColor, Color color) {
-        int flowSignal = (int) block.getFlowSignalSubContext(loc - start).getCurrentSignal();
-        int expectedFlowSignal;
-        if (ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ == shadeBasesOption) {
-            expectedFlowSignal = 100 * (short) ((flowSignal + 50.0) / 100.0);
-        } else {
-            // NB: this may estimate the reference homopolymer length incorrect in some cases, especially when we have
-            // an overcall/undercall situation.  Proper estimation of the reads observed versus expected homopolymer
-            // length should use flow signal alignment (SamToFlowspace): https://github.com/iontorrent/Ion-Variant-Hunter
-            if (!misMatch) {
-                byte refbase = reference[idx];
-                int pos; // zero based
-                expectedFlowSignal = 100;
-
-                // Count HP length
-                pos = start + idx - 1;
-                while (0 <= pos && genome.getReference(chr, pos) == refbase) {
-                    pos--;
-                    expectedFlowSignal += 100;
-                }
-                pos = start + idx + 1;
-                while (pos < genome.getChromosome(chr).getLength() && genome.getReference(chr, pos) == refbase) {
-                    pos++;
-                    expectedFlowSignal += 100;
-                }
-            } else {
-                expectedFlowSignal = 0;
-            }
-        }
-        int flowSignalDiff = (expectedFlowSignal < flowSignal) ? (flowSignal - expectedFlowSignal) : (expectedFlowSignal - flowSignal);
-        // NB: this next section is some mangling to use the base quality color preferences...
-        if (flowSignalDiff <= 0) {
-            flowSignalDiff = 0;
-        } else if (50 < flowSignalDiff) {
-            flowSignalDiff = 50;
-        }
-        flowSignalDiff = 50 - flowSignalDiff; // higher is better
-        int minQ = prefs.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MIN);
-        int maxQ = prefs.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MAX);
-        flowSignalDiff = flowSignalDiff * (maxQ - minQ) / 50;
-        byte qual;
-        if (Byte.MAX_VALUE < flowSignalDiff) {
-            qual = Byte.MAX_VALUE;
-        } else if (flowSignalDiff < Byte.MIN_VALUE) {
-            qual = Byte.MIN_VALUE;
-        } else {
-            qual = (byte) flowSignalDiff;
-        }
-        // Finally, get the color
-        return getShadedColor(qual, color, alignmentColor, prefs);
     }
 
     /**
@@ -1095,7 +1011,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             g.drawString(labelText, pxLeft + pxPad, pxTop + pxH - 2);
         } // draw the text if it fits
 
-        if(insertionBlock != null) insertionBlock.setPixelRange(pxLeft, pxRight);
+        if (insertionBlock != null) insertionBlock.setPixelRange(pxLeft, pxRight);
     }
 
     private void drawInsertions(Rectangle rect, Alignment alignment, RenderContext context, RenderOptions renderOptions,
@@ -1106,8 +1022,11 @@ public class AlignmentRenderer implements FeatureRenderer {
         double locScale = context.getScale();
         boolean flagLargeIndels = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_LARGE_INDELS);
         int largeInsertionsThreshold = prefs.getAsInt(PreferenceManager.SAM_LARGE_INDELS_THRESHOLD);
-        boolean quickConsensus = renderOptions.quickConsensusMode;
         final float snpThreshold = prefs.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD);
+
+        // TODO Quick consensus for insertions needs worked -- disabled for now
+        boolean quickConsensus = false ;//renderOptions.quickConsensusMode;
+
 
         if (insertions != null) {
 
@@ -1140,7 +1059,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                         g.fillRect(x - 1, y, 2, h);
                         g.fillRect(x - 2, y + h - 2, 4, 2);
 
-                        aBlock.setPixelRange(x-2, x+4);
+                        aBlock.setPixelRange(x - 2, x + 4);
                     }
                 }
             }

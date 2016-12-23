@@ -112,7 +112,7 @@ public class AlignmentTileLoader {
                            int end,
                            SpliceJunctionHelper spliceJunctionHelper,
                            AlignmentDataManager.DownsampleOptions downsampleOptions,
-                           Map<String, PEStats> peStats,
+                           ReadStats readStats, Map<String, PEStats> peStats,
                            AlignmentTrack.BisulfiteContext bisulfiteContext,
                            boolean showAlignments,
                            ProgressMonitor monitor) {
@@ -156,6 +156,10 @@ public class AlignmentTileLoader {
                 }
 
                 Alignment record = iter.next();
+
+                if(readStats != null) {
+                    readStats.addAlignment(record);
+                };
 
                 // Set mate sequence of unmapped mates
                 // Put a limit on the total size of this collection.
@@ -248,6 +252,10 @@ public class AlignmentTileLoader {
                     stats.computeInsertSize(minPercentile, maxPercentile);
                     stats.computeExpectedOrientation();
                 }
+            }
+
+            if(readStats != null) {
+                readStats.compute();
             }
 
 

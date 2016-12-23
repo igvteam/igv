@@ -239,8 +239,7 @@ public abstract class SAMAlignment implements Alignment {
      * @param flowOrder         from the RG.FO header tag, null if not present
      * @param flowOrderStart
      */
-    protected void createAlignmentBlocks(String cigarString, byte[] readBases, byte[] readBaseQualities,
-                                         short[] flowSignals, String flowOrder, int flowOrderStart) {
+    protected void createAlignmentBlocks(String cigarString, byte[] readBases, byte[] readBaseQualities) {
 
         if (cigarString.equals("*")) {
             alignmentBlocks = new AlignmentBlockImpl[1];
@@ -313,13 +312,6 @@ public abstract class SAMAlignment implements Alignment {
         int insertionIdx = 0;
         int gapIdx = 0;
 
-        FlowSignalContextBuilder fBlockBuilder = null;
-        if (null != flowSignals) {
-            if (0 < readBases.length) {
-                fBlockBuilder = new FlowSignalContextBuilder(flowSignals, flowOrder, flowOrderStart, readBases, fromIdx, this.isNegativeStrand());
-            }
-        }
-
         prevOp = 0;
         for (int i = 0; i < operators.size(); i++) {
             CigarOperator op = operators.get(i);
@@ -330,8 +322,8 @@ public abstract class SAMAlignment implements Alignment {
                 }
                 if (operatorIsMatch(showSoftClipped, op.operator)) {
 
-                    AlignmentBlockImpl block = buildAlignmentBlock(fBlockBuilder, readBases, readBaseQualities,
-                            getChr(), blockStart, fromIdx, op.nBases, true);
+                    AlignmentBlockImpl block = buildAlignmentBlock(readBases, readBaseQualities,
+                            blockStart, fromIdx, op.nBases, true);
 
                     if (op.operator == SOFT_CLIP) {
                         block.setSoftClipped(true);
@@ -367,8 +359,8 @@ public abstract class SAMAlignment implements Alignment {
                     // This gap is between blocks split by insertion.   It is a zero
                     // length gap but must be accounted for.
                     gapTypes[gapIdx++] = ZERO_GAP;
-                    AlignmentBlockImpl block = buildAlignmentBlock(fBlockBuilder, readBases, readBaseQualities,
-                            getChr(), blockStart, fromIdx, op.nBases, false);
+                    AlignmentBlockImpl block = buildAlignmentBlock(readBases, readBaseQualities,
+                            blockStart, fromIdx, op.nBases, false);
 
                     insertions[insertionIdx++] = block;
                     fromIdx += op.nBases;
@@ -432,8 +424,7 @@ public abstract class SAMAlignment implements Alignment {
 
     }
 
-    private static AlignmentBlockImpl buildAlignmentBlock(FlowSignalContextBuilder fBlockBuilder, byte[] readBases,
-                                                          byte[] readBaseQualities, String chr, int blockStart,
+    private static AlignmentBlockImpl buildAlignmentBlock(byte[] readBases, byte[] readBaseQualities, int blockStart,
                                                           int fromIdx, int nBases, boolean checkNBasesAvailable) {
 
         byte[] blockBases = new byte[nBases];
@@ -462,63 +453,15 @@ public abstract class SAMAlignment implements Alignment {
             System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, nBases);
         }
 
-        AlignmentBlockImpl block;
-        if (fBlockBuilder != null) {
-            block = new AlignmentBlockImpl(blockStart, blockBases, blockQualities,
-                    fBlockBuilder.getFlowSignalContext(readBases, fromIdx, nBases));
-        } else {
-            block = new AlignmentBlockImpl(blockStart, blockBases, blockQualities);
-        }
+        AlignmentBlockImpl block = new AlignmentBlockImpl(blockStart, blockBases, blockQualities);
 
         return block;
     }
 
 
-    private static void bufAppendFlowSignals(AlignmentBlock block, StringBuffer buf, int offset) {
-        if (block.hasFlowSignals()) {
-            // flow signals
-            int i, j, n = 0;
-            FlowSignalSubContext f = block.getFlowSignalSubContext(offset);
-            if (null != f && null != f.getSignals() && null != f.getBases()) {
-                buf.append("FZ = ");
-                StringBuffer spos = new StringBuffer();
-                spos.append("Flow position = ").append(f.getFlowOrderIndex());
-
-                for (i = 0; i < f.getNrSignalTypes(); i++) {
-                    short[] signals = f.getSignalsOfType(i);
-                    char[] bases = f.getBasesOfType(i);
-                    if (null != signals && 0 < signals.length) {
-                        if (1 == i) {
-                            if (0 < n) {
-                                buf.append(",");
-                            }
-                            buf.append("[");
-                        }
-                        for (j = 0; j < signals.length; j++) {
-                            if (1 != i && 0 < n) {
-                                buf.append(",");
-                            }
-                            buf.append(bases[j]);
-                            buf.append(signals[j]);
-
-                            n++;
-                        }
-                        if (1 == i) {
-                            buf.append("]");
-                        }
-                    }
-                }
-                buf.append("<br>").append(spos);
-                buf.append("<br>");
-                // maybe also add flow order?
-            }
-        }
-    }
-
     public String getClipboardString(double location, int mouseX) {
         return getValueStringImpl(location, mouseX, false);
     }
-
 
     public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
         return getValueStringImpl(position, mouseX, true);
@@ -535,43 +478,20 @@ public abstract class SAMAlignment implements Alignment {
             for (AlignmentBlock block : this.insertions) {
 
                 if (block.containsPixel(mouseX)) {
-                    if (block.hasFlowSignals()) {
-                        int offset;
-                        buf = new StringBuffer();
-                        buf.append("Insertion: " + new String(block.getBases()) + "<br>");
-                        buf.append("Base phred quality = ");
-                        for (offset = 0; offset < block.getLength(); offset++) {
-                            byte quality = block.getQuality(offset);
-                            if (0 < offset) {
-                                buf.append(",");
-                            }
-                            buf.append(quality);
-                        }
-                        buf.append("<br>");
-                        for (offset = 0; offset < block.getLength(); offset++) {
-                            byte base = block.getBase(offset);
-                            if (base > 0) {
-                                buf.append((char) base + ": ");
-                                bufAppendFlowSignals(block, buf, offset);
-                            }
-                        }
-                        //  buf.append("----------------------"); // NB: no <br> required
-                        return buf.toString();
-                    } else {
 
                         byte[] bases = block.getBases();
                         if (bases == null) {
-                            return "Insertion: " + block.getLength() + " bases";
+                            buf.append("Insertion: " + block.getLength() + " bases");
                         } else {
                             if (bases.length < 50) {
-                                return "Insertion: " + new String(bases);
+                                buf.append( "Insertion: " + new String(bases));
                             } else {
                                 int len = bases.length;
-                                return "Insertion: " + new String(Arrays.copyOfRange(bases, 0, 25)) + "..." +
-                                        new String(Arrays.copyOfRange(bases, len - 25, len));
+                                buf.append( "Insertion: " + new String(Arrays.copyOfRange(bases, 0, 25)) + "..." +
+                                        new String(Arrays.copyOfRange(bases, len - 25, len)));
                             }
                         }
-                    }
+                    return buf.toString();
                 }
             }
         }
@@ -716,11 +636,6 @@ public abstract class SAMAlignment implements Alignment {
                 byte quality = block.getQuality(offset);
                 buf.append("Location = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
                 buf.append("Base = " + (char) base + " @ QV " + Globals.DECIMAL_FORMAT.format(quality) + "<br>");
-
-                // flow signals
-                if (block.hasFlowSignals()) {
-                    bufAppendFlowSignals(block, buf, offset);
-                }
 
                 break;
             }

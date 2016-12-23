@@ -119,8 +119,7 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
 
         setPairOrientation();
         setPairStrands();
-        createAlignmentBlocks(record.getCigarString(), record.getReadBases(), record.getBaseQualities(),
-                getFlowSignals(flowOrder, keySequence), flowOrder, this.getFlowSignalsStart());
+        createAlignmentBlocks(record.getCigarString(), record.getReadBases(), record.getBaseQualities());
 
 
     }      // End constructor
@@ -294,74 +293,6 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
             }
         }
         return buf.toString();
-    }
-
-    /**
-     * @param flowOrder   the flow order corresponding to this read
-     * @param keySequence sequence the key sequence corresponding to this read
-     * @return the flow signals in 100x format (SFF), only if they exist (FZ tag),
-     * if the key sequence and flow order are found in the read group header tag
-     * (RG.KS and RG.FO).  Note: the array proceeds in the sequencing direction.
-     */
-    public short[] getFlowSignals(String flowOrder, String keySequence) {
-        short[] r = null;
-        int i;
-        int startFlow, keySignalOverlap;
-        char firstBase;
-
-        if (null == flowOrder || null == keySequence) {
-            return null;
-        }
-
-        startFlow = this.getFlowSignalsStart();
-        if (startFlow < 0) {
-            return null;
-        }
-
-        // get the # of bases that the first base in the read overlaps with the last base(s) in the key
-        SAMRecord record = getRecord();
-        if (this.isNegativeStrand()) {
-            firstBase = (char) NT2COMP[record.getReadBases()[record.getReadLength() - 1]];
-        } else {
-            firstBase = (char) record.getReadBases()[0];
-        }
-        keySignalOverlap = 0;
-        for (i = keySequence.length() - 1; 0 <= i && keySequence.charAt(i) == firstBase; i--) {
-            keySignalOverlap += 100;
-        }
-
-        Object attribute = record.getAttribute("FZ");
-        if (null == attribute) {
-            return null;
-        } else if (attribute instanceof short[]) {
-            short[] signals = (short[]) attribute;
-            r = new short[signals.length - startFlow];
-            for (i = startFlow; i < signals.length; i++) {
-                r[i - startFlow] = signals[i];
-            }
-        } else if (attribute instanceof int[]) {
-            int[] signals = (int[]) attribute;
-            r = new short[signals.length - startFlow];
-            System.arraycopy(signals, startFlow, r, 0, r.length);
-        } else if (attribute instanceof byte[]) {
-            byte[] signals = (byte[]) attribute;
-            r = new short[signals.length - startFlow];
-            for (i = startFlow; i < signals.length; i++) {
-                r[i - startFlow] = signals[i];
-            }
-        } else {
-            return null;
-        }
-        // Subtract the key's contribution to the first base
-        if (0 < keySignalOverlap && 0 < r.length) {
-            if (r[0] <= keySignalOverlap) {
-                r[0] = 0;
-            } else {
-                r[0] -= keySignalOverlap;
-            }
-        }
-
-        return r;
     }
 
     public String getSample() {

@@ -38,7 +38,6 @@ public class AlignmentBlockImpl implements AlignmentBlock {
     private int length = -1;
     public byte[] qualities;
     private boolean softClipped = false;
-    private FlowSignalContext fContext = null;
     private int pixelStart;
     private int pixelEnd;
 
@@ -49,13 +48,6 @@ public class AlignmentBlockImpl implements AlignmentBlock {
         this.bases = bases;
         this.length = bases.length;
         this.qualities = qualities;
-    }
-
-    protected AlignmentBlockImpl(int start, byte[] bases, byte[] qualities, FlowSignalContext fContext) {
-        this(start, bases, qualities);
-        if (fContext != null && fContext.getNrSignals() == bases.length) {
-            this.fContext = fContext;
-        }
     }
 
     @Override
@@ -151,21 +143,6 @@ public class AlignmentBlockImpl implements AlignmentBlock {
     @Override
     public boolean hasBases() {
         return this.bases != null;
-    }
-
-
-    @Override
-    public FlowSignalSubContext getFlowSignalSubContext(int offset) {
-
-        return this.fContext == null ? null :
-                new FlowSignalSubContext(this.fContext.getSignalForOffset(offset),
-                        this.fContext.getBasesForOffset(offset), this.fContext.getFlowOrderIndexForOffset(offset));
-    }
-
-
-    @Override
-    public boolean hasFlowSignals() {
-        return (null != this.fContext);
     }
 
 

@@ -231,14 +231,22 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         return false;
     }
 
-    public boolean isConsensusDeletion(int pos, float snpThreshold) {
-        float threshold = snpThreshold * getTotalCount(pos);
-        return (this.getDelCount(pos) >= threshold);
+    public boolean isConsensusDeletion(int start, int width, float snpThreshold) {
+
+        // We require deletion counts > threshold for at least 1/2 the width
+
+        int end = start + width;
+        int count = 0;
+        for(int i=start; i< end; i++) {
+            int totalCoverad = getTotalCount(i) + getDelCount(i);
+            if(getDelCount(i) >= snpThreshold * totalCoverad) count++;
+        }
+        return count >= 0.5 * width;
     }
 
     @Override
     public boolean isConsensusInsertion(int pos, float snpThreshold) {
-        float threshold = snpThreshold * getTotalCount(pos);
+        float threshold = snpThreshold * (getTotalCount(pos) + getDelCount(pos)); // For this purpose consider deletions as covered
         return (this.getInsCount(pos) >= threshold);
     }
 

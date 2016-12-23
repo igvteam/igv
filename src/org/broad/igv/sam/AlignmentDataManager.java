@@ -60,6 +60,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     private AlignmentTileLoader reader;
     private CoverageTrack coverageTrack;
     private Map<String, PEStats> peStats;
+    private ReadStats readStats;
     private AlignmentTrack.ExperimentType experimentType;
     private SpliceJunctionHelper.LoadOptions loadOptions;
     private Object loadLock = new Object();
@@ -68,6 +69,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
         this.locator = locator;
         reader = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator));
+        readStats = new ReadStats(1000);
         peStats = new HashMap();
         initLoadOptions();
         initChrMap(genome);
@@ -335,7 +337,7 @@ public class AlignmentDataManager implements IGVEventObserver {
 
         SpliceJunctionHelper spliceJunctionHelper = new SpliceJunctionHelper(this.loadOptions);
         AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, spliceJunctionHelper,
-                downsampleOptions, peStats, bisulfiteContext, showAlignments, monitor);
+                downsampleOptions, readStats, peStats, bisulfiteContext, showAlignments, monitor);
 
         List<Alignment> alignments = t.getAlignments();
         List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();

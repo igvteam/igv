@@ -124,7 +124,7 @@ public class Ga4ghAlignment extends SAMAlignment {
         this.tags = generateTags(infoObject);
         setPairOrientation();
         setPairStrands();
-        createAlignmentBlocks(this.cigarString, this.readSequence.getBytes(), baseQualities, null, null, -1);
+        createAlignmentBlocks(this.cigarString, this.readSequence.getBytes(), baseQualities);
     }
 
     public static boolean hasNonNullValue(JsonObject json, String name) {
