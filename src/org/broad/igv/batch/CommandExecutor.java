@@ -829,7 +829,7 @@ public class CommandExecutor {
     }
 
     private void group(String groupArg, String tagArg) {
-        igv.groupAlignmentTracks(getAlignmentGroupOption(groupArg), tagArg);
+        igv.groupAlignmentTracks(getAlignmentGroupOption(groupArg), tagArg, null);
         igv.repaintDataPanels();
     }
 
