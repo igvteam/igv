@@ -40,6 +40,7 @@ import java.util.Map;
 /**
  * @author jrobinso
  */
+
 public class RenderContext {
 
     private Graphics2D graphics;
@@ -47,6 +48,7 @@ public class RenderContext {
     private ReferenceFrame referenceFrame;
     private JComponent panel;
     private Rectangle visibleRect;
+    private boolean merged = false;
 
 
     public RenderContext(JComponent panel, Graphics2D graphics, ReferenceFrame referenceFrame, Rectangle visibleRect) {
@@ -147,6 +149,14 @@ public class RenderContext {
             g.dispose();
         }
         graphicCache.clear();
+    }
+
+    public boolean isMerged() {
+        return merged;
+    }
+
+    public void setMerged(boolean merged) {
+        this.merged = merged;
     }
 
 }

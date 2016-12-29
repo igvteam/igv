@@ -335,7 +335,7 @@ public class TrackMenuUtils {
 
         menu.add(getAutoscaleItem(tracks));
 
-        if (tracks.size() > 1) {
+        if (tracks.size() > 1 || (tracks.size() == 1 && tracks.iterator().next() instanceof MergedTracks)) {
             menu.add(getGroupAutoscaleItem(tracks));
         }
 
