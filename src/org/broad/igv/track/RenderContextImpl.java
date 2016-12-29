@@ -47,6 +47,7 @@ public class RenderContextImpl implements RenderContext {
     private ReferenceFrame referenceFrame;
     private JComponent panel;
     private Rectangle visibleRect;
+    boolean merged;
 
 
     public RenderContextImpl(JComponent panel, Graphics2D graphics, ReferenceFrame referenceFrame, Rectangle visibleRect) {
@@ -114,6 +115,15 @@ public class RenderContextImpl implements RenderContext {
         return referenceFrame;
     }
 
+    @Override
+    public boolean isMerged() {
+        return merged;
+    }
+
+    public void setMerged(boolean merged) {
+        this.merged = merged;
+    }
+
     public int bpToScreenPixel(double location) {
         final double scale = getScale();
         final double origin = getOrigin();
@@ -131,6 +141,8 @@ public class RenderContextImpl implements RenderContext {
         super.finalize();
         dispose();
     }
+
+
 
     public void dispose() {
         for (Graphics2D g : graphicCacheByColor.values()) {

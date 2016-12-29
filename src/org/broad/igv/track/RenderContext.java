@@ -58,6 +58,10 @@ public interface RenderContext {
 
     int bpToScreenPixel(double location);
 
+    void setMerged(boolean b);
+
+    boolean isMerged();
+
     void dispose();
 
 }

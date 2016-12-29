@@ -54,7 +54,7 @@ import java.util.List;
  * @date 2013-Nov-05
  */
 @XmlType(factoryMethod = "getNextTrack")
-public class MergedTracks extends DataTrack {
+public class MergedTracks extends DataTrack implements ScalableTrack {
 
     @XmlAttribute
     protected Class clazz = MergedTracks.class;
@@ -110,6 +110,7 @@ public class MergedTracks extends DataTrack {
     @Override
     public void render(RenderContext context, Rectangle rect) {
 
+        context.setMerged(true);
         for (Track track : memberTracks) {
             track.render(context, rect);
         }
@@ -178,7 +179,7 @@ public class MergedTracks extends DataTrack {
 
     @Override
     public boolean getAutoScale() {
-        boolean autoScale = super.getAutoScale();
+        boolean autoScale = true;
         for (Track track : memberTracks) {
             autoScale &= track.getAutoScale();
         }
@@ -187,9 +188,18 @@ public class MergedTracks extends DataTrack {
 
     @Override
     public void setAutoScale(boolean autoScale) {
-        super.setAutoScale(autoScale);
         for (Track track : memberTracks) {
             track.setAutoScale(autoScale);
+        }
+    }
+
+    @Override
+    public void setAttributeValue(String name, String value) {
+        super.setAttributeValue(name, value);
+        if(name.equals(AttributeManager.GROUP_AUTOSCALE)) {
+            for (Track track : memberTracks) {
+                track.setAttributeValue(name, value);
+            }
         }
     }
 
@@ -274,6 +284,32 @@ public class MergedTracks extends DataTrack {
 //            m.marshal(element, trackElement);
 //        }
 //    }
+
+    @Override
+    public Range getInViewRange(ReferenceFrame referenceFrame) {
+
+        List<LocusScore> scores = new ArrayList<LocusScore>();
+        for(DataTrack track : memberTracks) {
+            scores.addAll(track.getInViewScores(referenceFrame));
+        }
+
+        if (scores.size() > 0) {
+            float min = Float.MAX_VALUE;
+            float max = -Float.MAX_VALUE;
+            for (LocusScore score : scores) {
+                float value = score.getScore();
+                if (!Float.isNaN(value)) {
+                    min = Math.min(value, min);
+                    max = Math.max(value, max);
+                }
+            }
+            return new Range(min, max);
+        } else {
+            return null;
+        }
+
+    }
+
 
     private enum ChangeTrackMethod {
         POSITIVE, NEGATIVE
