@@ -159,7 +159,6 @@ public class ReferenceFrameTest extends AbstractHeadlessTest{
 
     static void assertConsistent(ReferenceFrame frame){
         assertEquals(frame.getEnd(), frame.origin + frame.locationScale * frame.widthInPixels);
-        assertEquals(frame.getnTiles(), Math.pow(2, frame.zoom));
     }
 
     static void assertLociFramesConsistent(List<String> loci, List<ReferenceFrame> frameList){

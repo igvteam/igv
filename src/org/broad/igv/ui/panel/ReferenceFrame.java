@@ -51,6 +51,7 @@ import org.broad.igv.util.LongRunningTask;
 public class ReferenceFrame {
 
     private static Logger log = Logger.getLogger(ReferenceFrame.class);
+
     /**
      * The nominal viewport width in pixels.
      */
@@ -355,42 +356,6 @@ public class ReferenceFrame {
         return false;
     }
 
-    /**
-     * Recalculate the locationScale, based on {@link #initialLocus}, {@link #origin}, and
-     * {@link #widthInPixels}
-     * DOES NOT alter zoom value
-     */
-    protected synchronized void computeLocationScale() {
-        Genome genome = getGenome();
-
-        //Should consider getting rid of this. We don't have
-        //a chromosome length without a genome, not always a problem
-        if (genome != null) {
-
-            // The end location, in base pairs.
-            // If negative, we use the whole chromosome
-            int setEnd = -1;
-            if (this.initialLocus != null) setEnd = this.initialLocus.getEnd();
-
-            if (setEnd > 0 && widthInPixels > 0) {
-                this.locationScale = ((setEnd - origin) / widthInPixels);
-                this.initialLocus = null;
-            } else {
-                double virtualPixelSize = getTilesTimesBinsPerTile();
-                double nPixel = Math.max(virtualPixelSize, widthInPixels);
-                this.locationScale = (((double) getChromosomeLength()) / nPixel);
-            }
-        }
-    }
-
-    /**
-     * Recalculate the zoom value based on current start/end
-     * locationScale is not altered
-     */
-    protected void computeZoom() {
-        int newZoom = calculateZoom(getOrigin(), getEnd());
-        setZoomWithinLimits(newZoom);
-    }
 
     /**
      * Record the current state of the frame in history.
@@ -401,21 +366,6 @@ public class ReferenceFrame {
      */
     public void recordHistory() {
         IGV.getInstance().getSession().getHistory().push(getFormattedLocusString(), zoom);
-    }
-
-    private void jumpToChromosomeForGenomeLocation(double locationMB) {
-        double startMB = 0;
-
-        for (String chr : getGenome().getLongChromosomeNames()) {
-            double endMB = startMB + getGenome().getChromosome(chr).getLength() / 1000.0;
-
-            if ((locationMB > startMB) && (locationMB <= endMB)) {
-                this.setChromosomeName(chr);
-                break;
-            }
-
-            startMB = endMB;
-        }
     }
 
     public void shiftOriginPixels(int delta) {
@@ -492,32 +442,6 @@ public class ReferenceFrame {
         getEventBus().post(ViewChange.LocusChangeResult(chrName, start, end));
     }
 
-    /**
-     * Called before scaling and zooming, during jumpTo.
-     * Intended to be overridden
-     *
-     * @param locus
-     */
-    protected void beforeScaleZoom(Locus locus) {
-        calculateMaxZoom();
-    }
-
-    /**
-     * Calculate the zoom level given start/end in bp.
-     * Doesn't change anything
-     *
-     * @param start
-     * @param end
-     * @return
-     */
-    protected int calculateZoom(double start, double end) {
-        return (int) Math.round((Math.log((getChromosomeLength() / (end - start)) * (((double) widthInPixels) / binsPerTile)) / Globals.log2));
-    }
-
-    protected static Genome getGenome() {
-        return GenomeManager.getInstance().getCurrentGenome();
-    }
-
     public double getOrigin() {
         return origin;
     }
@@ -528,10 +452,6 @@ public class ReferenceFrame {
 
     public double getEnd() {
         return origin + getScale() * widthInPixels;
-    }
-
-    protected double getnTiles() {
-        return nTiles;
     }
 
     public int getZoom() {
@@ -549,10 +469,6 @@ public class ReferenceFrame {
 
     public int getAdjustedZoom() {
         return zoom - minZoom;
-    }
-
-    public double getMaxPixel() {
-        return getTilesTimesBinsPerTile();
     }
 
     /**
@@ -643,31 +559,6 @@ public class ReferenceFrame {
         return getChromosomeLength(this.chrName);
     }
 
-    private static int getChromosomeLength(String chrName) {
-        Genome genome = getGenome();
-
-        if (genome == null) {
-            return 1;
-        }
-
-        if (chrName.equals("All")) {
-            // TODO -- remove the hardcoded unit divider ("1000")
-            return (int) (genome.getNominalLength() / 1000);
-        } else {
-            Chromosome chromosome = genome.getChromosome(chrName);
-            if (chromosome == null) {
-                log.error("Null chromosome: " + chrName);
-                if (genome.getChromosomes().size() == 0) {
-                    return 1;
-                } else {
-                    return genome.getChromosomes().iterator().next().getLength();
-                }
-            }
-            return chromosome.getLength();
-        }
-    }
-
-
     public double getTilesTimesBinsPerTile() {
         return nTiles * (double) binsPerTile;
     }
@@ -730,5 +621,99 @@ public class ReferenceFrame {
     public int getStateHash() {
         return (chrName + origin + locationScale + widthInPixels).hashCode();
     }
+
+
+    /**
+     * Recalculate the locationScale, based on {@link #initialLocus}, {@link #origin}, and
+     * {@link #widthInPixels}
+     * DOES NOT alter zoom value
+     */
+    private synchronized void computeLocationScale() {
+        Genome genome = getGenome();
+
+        //Should consider getting rid of this. We don't have
+        //a chromosome length without a genome, not always a problem
+        if (genome != null) {
+
+            // The end location, in base pairs.
+            // If negative, we use the whole chromosome
+            int setEnd = -1;
+            if (this.initialLocus != null) setEnd = this.initialLocus.getEnd();
+
+            if (setEnd > 0 && widthInPixels > 0) {
+                this.locationScale = ((setEnd - origin) / widthInPixels);
+                this.initialLocus = null;
+            } else {
+                double virtualPixelSize = getTilesTimesBinsPerTile();
+                double nPixel = Math.max(virtualPixelSize, widthInPixels);
+                this.locationScale = (((double) getChromosomeLength()) / nPixel);
+            }
+        }
+    }
+
+    /**
+     * Recalculate the zoom value based on current start/end
+     * locationScale is not altered
+     */
+    private void computeZoom() {
+        int newZoom = calculateZoom(getOrigin(), getEnd());
+        setZoomWithinLimits(newZoom);
+    }
+
+
+    /**
+     * Called before scaling and zooming, during jumpTo.
+     * Intended to be overridden
+     *
+     * @param locus
+     */
+    private void beforeScaleZoom(Locus locus) {
+        calculateMaxZoom();
+    }
+
+    /**
+     * Calculate the zoom level given start/end in bp.
+     * Doesn't change anything
+     *
+     * @param start
+     * @param end
+     * @return
+     */
+    private int calculateZoom(double start, double end) {
+        return (int) Math.round((Math.log((getChromosomeLength() / (end - start)) * (((double) widthInPixels) / binsPerTile)) / Globals.log2));
+    }
+
+
+    private static int getChromosomeLength(String chrName) {
+        Genome genome = getGenome();
+
+        if (genome == null) {
+            return 1;
+        }
+
+        if (chrName.equals("All")) {
+            // Genome coordinates are in kb => divde by 1000
+            return (int) (genome.getNominalLength() / 1000);
+        } else {
+            Chromosome chromosome = genome.getChromosome(chrName);
+            if (chromosome == null) {
+                log.error("Null chromosome: " + chrName);
+                if (genome.getChromosomes().size() == 0) {
+                    return 1;
+                } else {
+                    return genome.getChromosomes().iterator().next().getLength();
+                }
+            }
+            return chromosome.getLength();
+        }
+    }
+
+
+
+    private static Genome getGenome() {
+        return GenomeManager.getInstance().getCurrentGenome();
+    }
+
+
 }
 
