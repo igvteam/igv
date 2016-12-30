@@ -71,7 +71,6 @@ public class RulerPanel extends JPanel {
 
     // TODO -- get from preferences
     boolean drawSpan = true;
-    boolean drawEllipsis = false;
     private Font tickFont = FontManager.getFont(Font.BOLD, 9);
     private Font spanFont = FontManager.getFont(Font.BOLD, 12);
 
@@ -141,11 +140,7 @@ public class RulerPanel extends JPanel {
             if (drawSpan) {
                 drawSpan(g);
             }
-            if (drawEllipsis) {
-                drawEllipsis(g);
-            }
         }
-
     }
 
     private void drawSpan(Graphics g) {
@@ -180,21 +175,6 @@ public class RulerPanel extends JPanel {
         g.fillPolygon(arrowX, arrowY, arrowX.length);
 
         g.drawString(rangeString, strPosition, getHeight() - 35);
-
-    }
-
-    private void drawEllipsis(Graphics g) {
-        double cytobandScale = ((double) frame.getChromosomeLength()) / getWidth();
-
-        double maxPixel = frame.getMaxPixel();
-        //visibleFraction = maxPixel < 0 ? 0 : ((double) getViewContext().getDataPanelWidth()) / maxPixel;
-
-        int start = (int) ((frame.getOrigin()) / cytobandScale);
-        int span = (int) ((getWidth() * frame.getScale()) / cytobandScale);
-        int end = start + span;
-
-        g.drawLine(start, 0, 0, getHeight());
-        g.drawLine(end, 0, getWidth(), getHeight());
 
     }
 
