@@ -669,7 +669,9 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         // Get a graphics context for drawing clipping indicators.
         Graphics2D clippedGraphics = context.getGraphic2DForColor(clippedColor);
-        clippedGraphics.setStroke(new BasicStroke(1.5f));
+        if (h > 5) {
+            clippedGraphics.setStroke(new BasicStroke(1.5f));
+        }
 
         // Get a graphics context for drawing strand indicators.
         Graphics2D strandGraphics = context.getGraphics2D("STRAND");
@@ -745,16 +747,18 @@ public class AlignmentRenderer implements FeatureRenderer {
 
                 // Draw the gap line.
                 Graphics2D gapGraphics = context.getGraphics2D("GAP");
+                int ggOffset = 0;
                 if (gap.getType() == SAMAlignment.UNKNOWN) {
                     gapGraphics.setColor(unknownGapColor);
                 } else if (gap.getType() == SAMAlignment.SKIPPED_REGION) {
                     gapGraphics.setColor(skippedColor);
-                } else {
+                } else if (h > 5) {
                     gapGraphics = context.getGraphics2D("THICK_STROKE");
                     gapGraphics.setColor(deletionColor);
+                    ggOffset = 0;
                 }
 
-                gapGraphics.drawLine(blockPxEnd + 1, y + h / 2, gapPxEnd, y + h / 2);
+                gapGraphics.drawLine(blockPxEnd + ggOffset, y + h / 2, gapPxEnd - ggOffset, y + h / 2);
 
 
                 // Label the size of the deletion if it is "large" and the label fits.
