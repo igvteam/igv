@@ -986,11 +986,12 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         final int pxPad = 2;   // text padding in the label
         final int pxWing = 2;  // width of the cursor "wing"
+        final int minTextHeight = 8; // min height to draw text
 
         // Calculate the width required to draw the label
         Rectangle2D textBounds = g.getFontMetrics().getStringBounds(labelText, g);
         int pxTextW = 2 * pxPad + (int) textBounds.getWidth();
-        boolean doesTextFit = (pxTextW < pxWmax);
+        boolean doesTextFit = (pxH >= minTextHeight) && (pxTextW < pxWmax);
 
         if (!doesTextFit && !isInsertion) {
             return;
