@@ -51,7 +51,11 @@ public interface FeatureRenderer {
      * @param selectedReadNames
      * @param alignmentCounts
      */
-    public void renderAlignments(List<Alignment> alignments, RenderContext context,
-                                 Rectangle rowRect, Rectangle trackRect, AlignmentTrack.RenderOptions renderOptions,
-                                 boolean leaveMargin, Map<String, Color> selectedReadNames, AlignmentCounts alignmentCounts);
+    void renderAlignments(List<Alignment> alignments, RenderContext context,
+                          Rectangle rowRect, Rectangle trackRect, AlignmentTrack.RenderOptions renderOptions,
+                          boolean leaveMargin, Map<String, Color> selectedReadNames, AlignmentCounts alignmentCounts);
+
+    void renderInsertions(List<Alignment> alignments,
+                          RenderContext context,
+                          Rectangle rowRect);
 }

@@ -148,6 +148,8 @@ public class IGV implements IGVEventObserver {
             Collections.synchronizedCollection(new ArrayList<>());
 
     private List<JComponent> otherToolMenus = new ArrayList<>();
+
+    // Vertical line that follows the mouse
     private boolean rulerEnabled;
 
     /**
@@ -331,17 +333,17 @@ public class IGV implements IGVEventObserver {
 
     public void receiveEvent(Object event) {
 
-        if (event instanceof ViewChange) {
-            ViewChange e = (ViewChange) event;
-            if (e.type == ViewChange.Type.ChromosomeChange) {
-                chromosomeChangeEvent(e.chrName, false);
-            } else {
-                repaintDataAndHeaderPanels();
-                repaintStatusAndZoomSlider();
-            }
-        } else {
-            log.info("Unknown event type: " + event.getClass());
-        }
+//        if (event instanceof ViewChange) {
+//            ViewChange e = (ViewChange) event;
+//            if (e.type == ViewChange.Type.ChromosomeChange) {
+//                chromosomeChangeEvent(e.chrName, false);
+//            } else {
+//                repaintDataAndHeaderPanels();
+//                repaintStatusAndZoomSlider();
+//            }
+//        } else {
+//            log.info("Unknown event type: " + event.getClass());
+//        }
     }
 
 
@@ -395,88 +397,6 @@ public class IGV implements IGVEventObserver {
         for (TrackPanel tp : getTrackPanels()) {
             DataPanelContainer dp = tp.getScrollPane().getDataPanel();
             dp.setCurrentTool(null);
-        }
-
-    }
-
-    private void chromosomeChangeEvent(String chrName, boolean updateCommandBar) {
-        contentPane.chromosomeChanged(chrName);
-        repaintDataAndHeaderPanels(updateCommandBar);
-        contentPane.getCommandBar().updateComponentStates();
-    }
-
-    public void repaintStatusAndZoomSlider() {
-        contentPane.getCommandBar().updateComponentStates();
-        contentPane.getCommandBar().repaint();
-    }
-
-    /**
-     * Repaints dataAndHeaderPanels as well as
-     * zoom controls IFF IGV has instance && not headless.
-     * Mostly use for testing
-     */
-    public static void repaintPanelsHeadlessSafe() {
-        if (IGV.hasInstance() && !Globals.isHeadless()) {
-            IGV.getInstance().repaintDataAndHeaderPanels();
-            IGV.getInstance().repaintStatusAndZoomSlider();
-        }
-    }
-
-    /**
-     * Repaint panels containing data, specifically the dataTrackPanel,
-     * featureTrackPanel, and headerPanel.
-     */
-    public void repaintDataAndHeaderPanels() {
-        repaintDataAndHeaderPanels(true);
-    }
-
-    public void repaintDataPanels() {
-        repaintDataAndHeaderPanels(false);
-    }
-
-    /**
-     * Repaint the header and data panels.
-     * <p/>
-     * Note:  If running in Batch mode we force synchronous painting.  This is necessary as the
-     * paint() command triggers loading of data.  If allowed to proceed asynchronously the "snapshot" batch command
-     * might execute before the data from a previous command has loaded.
-     *
-     * @param updateCommandBar
-     */
-    public void repaintDataAndHeaderPanels(boolean updateCommandBar) {
-        if (Globals.isBatch()) {
-            Runnable r = new Runnable() {
-                public void run() {
-                    contentPane.revalidateDataPanels();
-                    rootPane.paintImmediately(rootPane.getBounds());
-                }
-            };
-            if (SwingUtilities.isEventDispatchThread()) {
-                r.run();
-            } else {
-                try {
-                    SwingUtilities.invokeAndWait(r);
-                } catch (InterruptedException e) {
-                    // Just continue
-                    log.error(e);
-                } catch (InvocationTargetException e) {
-                    log.error(e.getMessage());
-                    throw new RuntimeException(e);
-                }
-            }
-        } else {
-            contentPane.revalidateDataPanels();
-            rootPane.repaint();
-        }
-
-        if (updateCommandBar) {
-            contentPane.updateCurrentCoordinates();
-        }
-    }
-
-    public void repaintNamePanels() {
-        for (TrackPanel tp : getTrackPanels()) {
-            tp.getScrollPane().getNamePanel().repaint();
         }
 
     }
@@ -878,17 +798,6 @@ public class IGV implements IGVEventObserver {
         resetFrames();
     }
 
-    public void resetFrames() {
-        contentPane.getMainPanel().headerPanelContainer.createHeaderPanels();
-        for (TrackPanel tp : getTrackPanels()) {
-            tp.createDataPanels();
-        }
-
-        contentPane.getCommandBar().setGeneListMode(FrameManager.isGeneListMode());
-        contentPane.getMainPanel().applicationHeaderPanel.revalidate();
-        contentPane.getMainPanel().validate();
-        contentPane.getMainPanel().repaint();
-    }
 
     final public void doViewPreferences() {
         doViewPreferences(null);
@@ -988,16 +897,6 @@ public class IGV implements IGVEventObserver {
         }
 
 
-    }
-
-
-    final public void doRefresh() {
-
-        contentPane.getMainPanel().revalidate();
-        mainFrame.repaint();
-        //getContentPane().repaint();
-        contentPane.getCommandBar().updateComponentStates();
-        // menuBar.createFileMenu();
     }
 
     final public void refreshCommandBar() {
@@ -2800,5 +2699,111 @@ public class IGV implements IGVEventObserver {
 //            System.out.println("scale factor = " + scaleFactor + "    realDPI = " + realDPI);
 //        }
 //    }
+
+
+    public void resetFrames() {
+        contentPane.getMainPanel().headerPanelContainer.createHeaderPanels();
+        for (TrackPanel tp : getTrackPanels()) {
+            tp.createDataPanels();
+        }
+
+        contentPane.getCommandBar().setGeneListMode(FrameManager.isGeneListMode());
+        contentPane.getMainPanel().applicationHeaderPanel.revalidate();
+        contentPane.getMainPanel().validate();
+        contentPane.getMainPanel().repaint();
+    }
+
+    final public void doRefresh() {
+
+        contentPane.getMainPanel().revalidate();
+        mainFrame.repaint();
+        getContentPane().repaint();
+        contentPane.getCommandBar().updateComponentStates();
+       // menuBar.createFileMenu();
+    }
+
+
+    private void chromosomeChangeEvent(String chrName, boolean updateCommandBar) {
+        contentPane.chromosomeChanged(chrName);
+        repaintDataAndHeaderPanels(updateCommandBar);
+        contentPane.getCommandBar().updateComponentStates();
+    }
+
+    public void repaintStatusAndZoomSlider() {
+        contentPane.getCommandBar().updateComponentStates();
+        contentPane.getCommandBar().repaint();
+    }
+
+    /**
+     * Repaints dataAndHeaderPanels as well as
+     * zoom controls IFF IGV has instance && not headless.
+     * Mostly use for testing
+     */
+    public static void repaintPanelsHeadlessSafe() {
+        if (IGV.hasInstance() && !Globals.isHeadless()) {
+            IGV.getInstance().repaintDataAndHeaderPanels();
+            IGV.getInstance().repaintStatusAndZoomSlider();
+        }
+    }
+
+    /**
+     * Repaint panels containing data, specifically the dataTrackPanel,
+     * featureTrackPanel, and headerPanel.
+     */
+    public void repaintDataAndHeaderPanels() {
+        repaintDataAndHeaderPanels(true);
+    }
+
+    public void repaintDataPanels() {
+        repaintDataAndHeaderPanels(false);
+    }
+
+    /**
+     * Repaint the header and data panels.
+     * <p/>
+     * Note:  If running in Batch mode we force synchronous painting.  This is necessary as the
+     * paint() command triggers loading of data.  If allowed to proceed asynchronously the "snapshot" batch command
+     * might execute before the data from a previous command has loaded.
+     *
+     * @param updateCommandBar
+     */
+    public void repaintDataAndHeaderPanels(boolean updateCommandBar) {
+        System.out.println("repaintDataAndHeaderPanels");
+        if (Globals.isBatch()) {
+            Runnable r = new Runnable() {
+                public void run() {
+                    contentPane.revalidateDataPanels();
+                    rootPane.paintImmediately(rootPane.getBounds());
+                }
+            };
+            if (SwingUtilities.isEventDispatchThread()) {
+                r.run();
+            } else {
+                try {
+                    SwingUtilities.invokeAndWait(r);
+                } catch (InterruptedException e) {
+                    // Just continue
+                    log.error(e);
+                } catch (InvocationTargetException e) {
+                    log.error(e.getMessage());
+                    throw new RuntimeException(e);
+                }
+            }
+        } else {
+            contentPane.revalidateDataPanels();
+            rootPane.repaint();
+        }
+
+        if (updateCommandBar) {
+            contentPane.updateCurrentCoordinates();
+        }
+    }
+
+    public void repaintNamePanels() {
+        for (TrackPanel tp : getTrackPanels()) {
+            tp.getScrollPane().getNamePanel().repaint();
+        }
+
+    }
 
 }

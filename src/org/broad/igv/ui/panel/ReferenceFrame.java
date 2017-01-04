@@ -37,12 +37,15 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.sam.InsertionManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.event.IGVEventBus;
 import org.broad.igv.ui.event.IGVEventObserver;
 import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
+
+import java.util.List;
 
 
 /**
@@ -120,6 +123,7 @@ public class ReferenceFrame {
     protected volatile double locationScale;
 
     protected Locus initialLocus = null;
+    private List<InsertionManager.Insertion> insertions;
 
 
     public ReferenceFrame(String name) {
@@ -146,6 +150,7 @@ public class ReferenceFrame {
         //this.setEnd = otherFrame.setEnd;
         this.widthInPixels = otherFrame.widthInPixels;
         this.zoom = otherFrame.zoom;
+        this.insertions = otherFrame.insertions;
         this.maxZoom = otherFrame.maxZoom;
     }
 
@@ -508,7 +513,59 @@ public class ReferenceFrame {
      * @return
      */
     public double getChromosomePosition(int screenPosition) {
+
+//        if (insertions != null && insertions.size() > 0) {
+//            double start = getOrigin();
+//            double scale = getScale();
+//            double p0 = 0, w;
+//
+//            for (InsertionManager.Insertion i : insertions) {
+//
+//                w = (i.position - start) / scale;
+//                if(screenPosition < w) {
+//                    return start + scale * (screenPosition - p0);
+//                }
+//
+//                p0 += w + i.size / scale;
+//                if(screenPosition < p0) {
+//                    return 0;   // In the gap (insertion
+//                }
+//
+//                start = i.position;
+//            }
+//            return start + scale * (screenPosition - p0);
+//
+//        } else
+            return origin + getScale() * screenPosition;
+
+    }
+
+    public double getChromosomePosition2(int screenPosition) {
+
+        if (insertions != null && insertions.size() > 0) {
+            double start = getOrigin();
+            double scale = getScale();
+            double p0 = 0, w;
+
+            for (InsertionManager.Insertion i : insertions) {
+
+                w = (i.position - start) / scale;
+                if(screenPosition < w) {
+                    return start + scale * (screenPosition - p0);
+                }
+
+                p0 += w + i.size / scale;
+                if(screenPosition < p0) {
+                    return 0;   // In the gap (insertion
+                }
+
+                start = i.position;
+            }
+            return start + scale * (screenPosition - p0);
+
+        } else
         return origin + getScale() * screenPosition;
+
     }
 
     /**
@@ -709,6 +766,13 @@ public class ReferenceFrame {
     }
 
 
+    public void setInsertions(List<InsertionManager.Insertion> insertions) {
+        this.insertions = insertions;
+    }
+
+    public List<InsertionManager.Insertion> getInsertions() {
+        return insertions;
+    }
 
     private static Genome getGenome() {
         return GenomeManager.getInstance().getCurrentGenome();
