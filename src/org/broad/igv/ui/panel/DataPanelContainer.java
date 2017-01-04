@@ -283,7 +283,6 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
                 autoscaleGroup(Arrays.asList(track));
             }
 
-
         }
 
         if (autoscaleGroups.size() > 0) {

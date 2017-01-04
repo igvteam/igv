@@ -64,7 +64,7 @@ public class ReferenceFrameTest extends AbstractHeadlessTest{
     public void testSetBounds_chr1() throws Exception{
         frame.setChromosomeName("chr1");
 
-        double oldLocScale = frame.locationScale;
+        double oldLocScale = frame.getScale();
         double oldOrigin = frame.getOrigin();
         double oldEnd = frame.getEnd();
         int oldWidth = frame.getWidthInPixels();
@@ -75,7 +75,7 @@ public class ReferenceFrameTest extends AbstractHeadlessTest{
 
         assertEquals(oldOrigin, frame.getOrigin());
         assertEquals(oldEnd, frame.getEnd(), 1.0);
-        assertEquals(oldLocScale, frame.locationScale * multiplier, 2.0);
+        assertEquals(oldLocScale, frame.getScale() * multiplier, 2.0);
 
         assertConsistent();
     }
@@ -125,7 +125,7 @@ public class ReferenceFrameTest extends AbstractHeadlessTest{
 
         assertConsistent();
 
-        assertEquals(oldZoom + incrAmount, frame.zoom);
+        assertEquals(oldZoom + incrAmount, frame.getZoom());
         assertEquals(oldCenter, frame.getCenter(), 2.0);
 
         double scaleMultiplier = Math.pow(2.0, incrAmount);
@@ -158,7 +158,7 @@ public class ReferenceFrameTest extends AbstractHeadlessTest{
     }
 
     static void assertConsistent(ReferenceFrame frame){
-        assertEquals(frame.getEnd(), frame.origin + frame.locationScale * frame.widthInPixels);
+        assertEquals(frame.getEnd(), frame.getOrigin() + frame.getScale() * frame.getWidthInPixels());
     }
 
     static void assertLociFramesConsistent(List<String> loci, List<ReferenceFrame> frameList){

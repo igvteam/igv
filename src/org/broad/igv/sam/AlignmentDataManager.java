@@ -160,15 +160,6 @@ public class AlignmentDataManager implements IGVEventObserver {
         return reader.getSequenceNames();
     }
 
-
-    public boolean isIonTorrent() {
-        Set<String> platforms = reader.getPlatforms();
-        if (platforms != null) {
-            return platforms.contains("IONTORRENT");
-        }
-        return false;
-    }
-
     public Collection<AlignmentInterval> getLoadedIntervals() {
         return this.loadedIntervalCache.values();
     }
@@ -256,7 +247,6 @@ public class AlignmentDataManager implements IGVEventObserver {
             }
             loadAlignments(chr, adjustedStart, adjustedEnd, renderOptions, referenceFrame);
         }
-
     }
 
     public synchronized PackedAlignments getGroups(RenderContext context, AlignmentTrack.RenderOptions renderOptions) {
@@ -336,6 +326,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         }
 
         SpliceJunctionHelper spliceJunctionHelper = new SpliceJunctionHelper(this.loadOptions);
+
         AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, spliceJunctionHelper,
                 downsampleOptions, readStats, peStats, bisulfiteContext, showAlignments, monitor);
 

@@ -155,7 +155,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     static final BisulfiteContext DEFAULT_BISULFITE_CONTEXT = BisulfiteContext.CG;
 
-    private boolean ionTorrent;
     private SequenceTrack sequenceTrack;
     private CoverageTrack coverageTrack;
     private SpliceJunctionTrack spliceJunctionTrack;
@@ -200,8 +199,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         super(locator);
 
         this.dataManager = dataManager;
-
-        ionTorrent = dataManager.isIonTorrent();
 
         minimumHeight = 50;
         maximumHeight = Integer.MAX_VALUE;
@@ -493,6 +490,67 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         final int bottom = inputRect.y + inputRect.height;
         groupBorderGraphics.drawLine(inputRect.x, bottom, inputRect.width, bottom);
+    }
+
+    public void renderInsertions(RenderContext context, Rectangle inputRect) {
+
+
+        inputRect.y += DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_2;
+
+        //log.debug("Render features");
+        PackedAlignments groups = dataManager.getGroups(context, renderOptions);
+        if (groups == null) {
+            //Assume we are still loading.
+            //This might not always be true
+            return;
+        }
+
+        Rectangle visibleRect = context.getVisibleRect();
+
+
+        maximumHeight = Integer.MAX_VALUE;
+
+        // Divide rectangle into equal height levels
+        double y = inputRect.getY();
+        double h;
+        if (getDisplayMode() == DisplayMode.EXPANDED) {
+            h = expandedHeight;
+        } else {
+
+            int visHeight = visibleRect.height;
+            int depth = dataManager.getNLevels();
+            if (depth == 0) {
+                squishedHeight = Math.min(maxSquishedHeight, Math.max(1, expandedHeight));
+            } else {
+                squishedHeight = Math.min(maxSquishedHeight, Math.max(1, Math.min(expandedHeight, visHeight / depth)));
+            }
+            h = squishedHeight;
+        }
+
+
+        for (Map.Entry<String, List<Row>> entry : groups.entrySet()) {
+
+
+            // Loop through the alignment rows for this group
+            List<Row> rows = entry.getValue();
+            for (Row row : rows) {
+                if ((visibleRect != null && y > visibleRect.getMaxY())) {
+                    return;
+                }
+
+                if (y + h > visibleRect.getY()) {
+                    Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
+                    renderer.renderInsertions(row.alignments, context, rowRectangle);
+                    row.y = y;
+                    row.h = h;
+                }
+                y += h;
+            }
+
+            y += GROUP_MARGIN;
+
+
+        }
     }
 
     /**
@@ -1063,7 +1121,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             peStats = new HashMap<String, PEStats>();
 
-           linkedReads = prefs.getAsBoolean(PreferenceManager.SAM_LINK_READS);
+            linkedReads = prefs.getAsBoolean(PreferenceManager.SAM_LINK_READS);
             linkByTag = prefs.get(PreferenceManager.SAM_LINK_TAG);
         }
 
@@ -1188,15 +1246,13 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         public void setGroupByPos(String pos) {
             if (pos == null) {
                 this.groupByPos = null;
-            }
-            else {
+            } else {
                 String[] posParts = pos.split(" ");
                 if (posParts.length != 2) {
                     this.groupByPos = null;
-                }
-                else {
+                } else {
                     int posChromStart = Integer.valueOf(posParts[1]);
-                    this.groupByPos = new Range(posParts[0], posChromStart, posChromStart+1);
+                    this.groupByPos = new Range(posParts[0], posChromStart, posChromStart + 1);
                 }
             }
         }
@@ -1438,7 +1494,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         public void addGroupMenuItem(final TrackClickEvent te) {//ReferenceFrame frame) {
             final MouseEvent me = te.getMouseEvent();
             ReferenceFrame frame = te.getFrame();
-            if(frame == null) {
+            if (frame == null) {
                 frame = FrameManager.getDefaultFrame();  // Clicked over name panel, not a specific frame
             }
             final Range range = frame.getCurrentRange();
@@ -1878,74 +1934,29 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         public void addShadeBaseByMenuItem() {
 
-            if (ionTorrent) {
-                JMenu groupMenu = new JMenu("Shade bases by...");
-                ButtonGroup group = new ButtonGroup();
-
-                Map<String, ShadeBasesOption> mappings = new LinkedHashMap<String, ShadeBasesOption>();
-                mappings.put("none", ShadeBasesOption.NONE);
-                mappings.put("quality", ShadeBasesOption.QUALITY);
-
-                for (Map.Entry<String, ShadeBasesOption> el : mappings.entrySet()) {
-                    JCheckBoxMenuItem mi = getShadeBasesMenuItem(el.getKey(), el.getValue());
-                    groupMenu.add(mi);
-                    group.add(mi);
-                }
-
-                add(groupMenu);
-            } else {
-                final JMenuItem item = new JCheckBoxMenuItem("Shade base by quality");
-                item.setSelected(renderOptions.shadeBasesOption == ShadeBasesOption.QUALITY);
-                item.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent aEvt) {
-                        UIUtilities.invokeOnEventThread(new Runnable() {
-
-                            public void run() {
-                                if (item.isSelected()) {
-                                    renderOptions.shadeBasesOption = ShadeBasesOption.QUALITY;
-                                } else {
-                                    renderOptions.shadeBasesOption = ShadeBasesOption.NONE;
-                                }
-                                refresh();
-                            }
-                        });
-                    }
-                });
-
-                add(item);
-            }
-
-        }
-
-        private JCheckBoxMenuItem getShadeBasesMenuItem(String label, final ShadeBasesOption option) {
-            final JCheckBoxMenuItem mi = new JCheckBoxMenuItem(label);
-            mi.setSelected(renderOptions.shadeBasesOption == option);
-
-            if (option == ShadeBasesOption.NONE) {
-                mi.setSelected(renderOptions.shadeBasesOption == null || renderOptions.shadeBasesOption == option);
-            }
-            mi.addActionListener(new ActionListener() {
+            final JMenuItem item = new JCheckBoxMenuItem("Shade base by quality");
+            item.setSelected(renderOptions.shadeBasesOption == ShadeBasesOption.QUALITY);
+            item.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
                     UIUtilities.invokeOnEventThread(new Runnable() {
 
                         public void run() {
-                            if (mi.isSelected()) {
-                                renderOptions.shadeBasesOption = option;
+                            if (item.isSelected()) {
+                                renderOptions.shadeBasesOption = ShadeBasesOption.QUALITY;
                             } else {
                                 renderOptions.shadeBasesOption = ShadeBasesOption.NONE;
                             }
                             refresh();
                         }
                     });
-
                 }
             });
 
-            return mi;
-        }
+            add(item);
 
+
+        }
 
         public void addShowItems() {
 

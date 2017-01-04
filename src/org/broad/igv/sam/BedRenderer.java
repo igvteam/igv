@@ -76,4 +76,9 @@ public class BedRenderer implements FeatureRenderer {
         }
 
     }
+
+    @Override
+    public void renderInsertions(List<Alignment> alignments, RenderContext context, Rectangle rowRect) {
+
+    }
 }

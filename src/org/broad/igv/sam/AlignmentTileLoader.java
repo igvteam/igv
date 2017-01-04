@@ -271,6 +271,9 @@ public class AlignmentTileLoader {
             }
             t.finish();
 
+            // TODO -- make this optional (on a preference)
+            InsertionManager.getInstance().processAlignments(t.alignments);
+
 
         } catch (java.nio.BufferUnderflowException e) {
             // This almost always indicates a corrupt BAM index, or less frequently a corrupt bam file
