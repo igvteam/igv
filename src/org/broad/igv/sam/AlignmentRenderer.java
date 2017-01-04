@@ -776,7 +776,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 blockPxStart, blockPxWidth, y, h, locScale, overlapped, leftClipped, rightClipped);
 
         // Draw insertions.
-        drawInsertions(rowRect, alignment, context, renderOptions, alignmentCounts);
+        drawInsertions(rowRect, alignment, context, renderOptions, alignmentCounts, leaveMargin);
 
         // Draw basepairs / mismatches.
         if (locScale < 100) {
@@ -1007,7 +1007,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         g.fillRect(pxLeft, pxTop, pxRight - pxLeft, pxH);
 
         // TODO -- record this "object" for popup text
-        if (isInsertion) {
+        if (isInsertion && pxH > 5) {
             g.fillRect(pxLeft - pxWing, pxTop, pxRight - pxLeft + 2 * pxWing, 2);
             g.fillRect(pxLeft - pxWing, pxTop + pxH - 2, pxRight - pxLeft + 2 * pxWing, 2);
         } // draw "wings" For insertions
@@ -1021,7 +1021,7 @@ public class AlignmentRenderer implements FeatureRenderer {
     }
 
     private void drawInsertions(Rectangle rect, Alignment alignment, RenderContext context, RenderOptions renderOptions,
-                                AlignmentCounts alignmentCounts) {
+                                AlignmentCounts alignmentCounts, boolean leaveMargin) {
 
         AlignmentBlock[] insertions = alignment.getInsertions();
         double origin = context.getOrigin();
@@ -1043,8 +1043,8 @@ public class AlignmentRenderer implements FeatureRenderer {
                 int x = (int) ((aBlock.getStart() - origin) / locScale);
                 int bpWidth = aBlock.getBases().length;
                 double pxWidthExact = ((double) bpWidth) / locScale;
-                int h = (int) Math.max(1, rect.getHeight() - 2);
-                int y = (int) (rect.getY() + (rect.getHeight() - h) / 2) - 1;
+                int h = (int) Math.max(1, rect.getHeight() - (leaveMargin ? 2 : 0));
+                int y = (int) (rect.getY() + (rect.getHeight() - h) / 2) - (leaveMargin ? 1 : 0);
 
                 // Don't draw out of clipping rect
                 if (x > rect.getMaxX()) {
