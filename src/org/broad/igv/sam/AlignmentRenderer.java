@@ -267,6 +267,8 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         g = context.getGraphics2D("BASE");
 
+        g = context.getGraphics2D("STRAND");
+        g.setColor(Color.DARK_GRAY);
     }
 
     /**
@@ -535,7 +537,8 @@ public class AlignmentRenderer implements FeatureRenderer {
     /**
      * Draw a single ungapped block in an alignment.
      */
-    private void drawAlignmentBlock(Graphics2D blockGraphics, Graphics2D outlineGraphics, Graphics2D clippedGraphics,
+    private void drawAlignmentBlock(Graphics2D blockGraphics, Graphics2D outlineGraphics,
+                                    Graphics2D clippedGraphics, Graphics2D strandGraphics,
                                     boolean isNegativeStrand, int alignmentChromStart,
                                     int alignmentChromEnd, int blockChromStart, int blockChromEnd,
                                     int blockPxStart, int blockPxWidth, int y, int h, double locSale,
@@ -594,13 +597,12 @@ public class AlignmentRenderer implements FeatureRenderer {
         // If the block is too small for a pointed hexagon arrow, then indicate strand with a line.
         if (!tallEnoughForArrow) {
             int tH = Math.max(1, h - 1);
+
             if (leftmost && isNegativeStrand) {
-                blockGraphics.setColor(Color.DARK_GRAY);
-                blockGraphics.drawLine(blockPxStart, y, blockPxStart, y + tH);
+                strandGraphics.drawLine(blockPxStart, y, blockPxStart, y + tH);
             }
             if (rightmost && !isNegativeStrand) {
-                blockGraphics.setColor(Color.DARK_GRAY);
-                blockGraphics.drawLine(blockPxEnd, y, blockPxEnd, y + tH);
+                strandGraphics.drawLine(blockPxEnd, y, blockPxEnd, y + tH);
             }
         }
     }
@@ -669,6 +671,9 @@ public class AlignmentRenderer implements FeatureRenderer {
         Graphics2D clippedGraphics = context.getGraphic2DForColor(clippedColor);
         clippedGraphics.setStroke(new BasicStroke(1.5f));
 
+        // Get a graphics context for drawing strand indicators.
+        Graphics2D strandGraphics = context.getGraphics2D("STRAND");
+
         // Define a graphics context for indel labels.
         Graphics2D largeIndelGraphics = context.getGraphics2D("INDEL_LABEL");
         largeIndelGraphics.setFont(FontManager.getFont(Font.BOLD, h - 2));
@@ -733,7 +738,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                         blockChromEnd = gapChromStart,
                         blockPxWidth = (int) Math.max(1, (blockChromEnd - blockChromStart) / locScale - 1),
                         blockPxEnd = blockPxStart + blockPxWidth;
-                drawAlignmentBlock(g, outlineGraphics, clippedGraphics, alignment.isNegativeStrand(),
+                drawAlignmentBlock(g, outlineGraphics, clippedGraphics, strandGraphics, alignment.isNegativeStrand(),
                         alignmentChromStart, alignmentChromEnd, blockChromStart, blockChromEnd,
                         blockPxStart, blockPxWidth, y, h, locScale, overlapped, leftClipped, rightClipped);
 
@@ -766,7 +771,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         int blockPxStart = (int) ((blockChromStart - contextChromStart) / locScale),
                 blockChromEnd = (int) Math.min(contextChromEnd, alignmentChromEnd),
                 blockPxWidth = (int) Math.max(1, (blockChromEnd - blockChromStart) / locScale - 1);
-        drawAlignmentBlock(g, outlineGraphics, clippedGraphics, alignment.isNegativeStrand(),
+        drawAlignmentBlock(g, outlineGraphics, clippedGraphics, strandGraphics, alignment.isNegativeStrand(),
                 alignmentChromStart, alignmentChromEnd, blockChromStart, blockChromEnd,
                 blockPxStart, blockPxWidth, y, h, locScale, overlapped, leftClipped, rightClipped);
 
