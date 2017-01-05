@@ -586,11 +586,11 @@ public class AlignmentRenderer implements FeatureRenderer {
             }
             if (leftmost && leftClipped) {
                 clippedGraphics.drawLine(xPoly[0], yPoly[0], xPoly[1], yPoly[1]);
-                clippedGraphics.drawLine(xPoly[5], yPoly[5], xPoly[0], yPoly[0]);
+                clippedGraphics.drawLine(xPoly[5], yPoly[5]-1, xPoly[0], yPoly[0]);
             }
             if (rightmost && rightClipped) {
                 clippedGraphics.drawLine(xPoly[2], yPoly[2], xPoly[3], yPoly[3]);
-                clippedGraphics.drawLine(xPoly[3], yPoly[3], xPoly[4], yPoly[4]);
+                clippedGraphics.drawLine(xPoly[3], yPoly[3], xPoly[4], yPoly[4]-1);
             }
         }
 
@@ -670,7 +670,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         // Get a graphics context for drawing clipping indicators.
         Graphics2D clippedGraphics = context.getGraphic2DForColor(clippedColor);
         if (h > 5) {
-            clippedGraphics.setStroke(new BasicStroke(1.5f));
+            clippedGraphics.setStroke(new BasicStroke(1.2f));
         }
 
         // Get a graphics context for drawing strand indicators.
