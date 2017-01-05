@@ -678,13 +678,13 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         // Define a graphics context for indel labels.
         Graphics2D largeIndelGraphics = context.getGraphics2D("INDEL_LABEL");
-        largeIndelGraphics.setFont(FontManager.getFont(Font.BOLD, h - 2));
+        largeIndelGraphics.setFont(FontManager.getFont(Font.BOLD, h-1));
 
         // Get a graphics context for drawing individual basepairs.
         Graphics2D bpGraphics = context.getGraphics2D("BASE");
         int dX = (int) Math.max(1, (1.0 / locScale));
         if (dX >= 8) {
-            Font f = FontManager.getFont(Font.BOLD, Math.min(dX, 12));
+            Font f = FontManager.getFont(Font.BOLD, Math.min(dX, h));
             bpGraphics.setFont(f);
         }
 
@@ -795,7 +795,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                         break; // done examining blocks
                     }
 
-                    drawBases(context, bpGraphics, rowRect, alignment, aBlock, alignmentCounts, alignmentColor, renderOptions);
+                    drawBases(context, bpGraphics, rowRect, alignment, aBlock, alignmentCounts, alignmentColor, leaveMargin, renderOptions);
                 }
             }
         }
@@ -812,6 +812,7 @@ public class AlignmentRenderer implements FeatureRenderer {
      * @param block
      * @param alignmentCounts
      * @param alignmentColor
+     * @param leaveMargin
      * @param renderOptions
      */
     private void drawBases(RenderContext context,
@@ -821,6 +822,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                            AlignmentBlock block,
                            AlignmentCounts alignmentCounts,
                            Color alignmentColor,
+                           boolean leaveMargin,
                            RenderOptions renderOptions) {
 
         boolean isSoftClipped = block.isSoftClipped();
@@ -914,7 +916,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                         // In "quick consensus" mode, only show mismatches at positions with a consistent alternative basepair.
                         (!quickConsensus || alignmentCounts.isConsensusMismatch(loc, reference[idx], chr, snpThreshold))
                         ) {
-                    drawBase(g, color, c, pX, pY, dX, dY, bisulfiteMode, bisstatus);
+                    drawBase(g, color, c, pX, pY, dX, dY - (leaveMargin ? 2 : 0), bisulfiteMode, bisstatus);
                 }
             }
         }
@@ -937,9 +939,9 @@ public class AlignmentRenderer implements FeatureRenderer {
      */
     private void drawBase(Graphics2D g, Color color, char c, int pX, int pY, int dX, int dY, boolean bisulfiteMode,
                           DisplayStatus bisstatus) {
-        if (((dY >= 12) && (dX >= 8)) && (!bisulfiteMode || (bisulfiteMode && bisstatus.equals(DisplayStatus.CHARACTER)))) {
+        if (((dY >= 12) && (dX >= dY)) && (!bisulfiteMode || (bisulfiteMode && bisstatus.equals(DisplayStatus.CHARACTER)))) {
             g.setColor(color);
-            GraphicUtils.drawCenteredText(new char[]{c}, pX, pY + 1, dX, dY - 2, g);
+            GraphicUtils.drawCenteredText(new char[]{c}, pX, pY-1, dX, dY, g);
         } else {
 
             int pX0i = pX, dXi = dX;
@@ -957,11 +959,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
             if (color != null) {
                 g.setColor(color);
-                if (dY < 10) {
-                    g.fillRect(pX0i, pY, dXi, dY);
-                } else {
-                    g.fillRect(pX0i, pY + 1, dW, dY - 3);
-                }
+                g.fillRect(pX0i, pY, dXi, dY);
             }
         }
     }
@@ -1018,7 +1016,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         if (doesTextFit) {
             g.setColor(isInsertion ? Color.white : purple);
-            g.drawString(labelText, pxLeft + pxPad, pxTop + pxH - 2);
+            GraphicUtils.drawCenteredText(labelText, pxLeft, pxTop+1, pxW, pxH, g);
         } // draw the text if it fits
 
         if (insertionBlock != null) insertionBlock.setPixelRange(pxLeft, pxRight);
