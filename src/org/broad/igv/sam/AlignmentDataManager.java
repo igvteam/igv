@@ -216,6 +216,12 @@ public class AlignmentDataManager implements IGVEventObserver {
         }
     }
 
+
+    public boolean isLoaded(ReferenceFrame frame) {
+        return loadedIntervalCache.getIntervalForRange(frame.getCurrentRange()) != null;
+    }
+
+
     public void load(ReferenceFrame referenceFrame,
                      AlignmentTrack.RenderOptions renderOptions,
                      boolean expandEnds) {

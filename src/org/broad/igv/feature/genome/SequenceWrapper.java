@@ -31,6 +31,7 @@ package org.broad.igv.feature.genome;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.Range;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ObjectCache;
 
 import java.util.Hashtable;
@@ -85,6 +86,21 @@ public class SequenceWrapper implements Sequence {
     @Override
     public int getChromosomeLength(String chrname) {
         return sequence.getChromosomeLength(chrname);
+    }
+
+    @Override
+    public boolean isLoaded(ReferenceFrame frame) {
+        if(!cacheSequences) return false;
+
+        int startTile = (int) frame.getOrigin() / tileSize;
+        int endTile = (int) frame.getEnd() / tileSize;
+        String chr = frame.getChrName();
+        for(int i=startTile; i <= endTile; i++) {
+            String key = getKey(chr, i);
+            if (!sequenceCache.containsKey(key)) return false;
+
+        }
+       return true;
     }
 
     /**

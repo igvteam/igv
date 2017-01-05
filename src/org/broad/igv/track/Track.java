@@ -63,6 +63,9 @@ public interface Track extends Persistable{
      */
     String getId();
 
+    default boolean isLoaded(ReferenceFrame frame) {
+        return false;  // Return false by default to be safe.
+    }
 
     void load(ReferenceFrame frame);
 

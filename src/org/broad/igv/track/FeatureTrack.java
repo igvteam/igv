@@ -688,6 +688,11 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         super.setDisplayMode(mode);
     }
 
+    @Override
+    public boolean isLoaded(ReferenceFrame frame) {
+        return source.isLoaded(frame);
+    }
+
     public void load(ReferenceFrame frame) {
         PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
         String chr = frame.getChrName();
@@ -961,8 +966,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             LongRunningTask.submit(runnable);
         } else {
             runnable.run();
-        }
-
+       }
     }
 
     public void setForceLoadSync(boolean forceLoadSync) {

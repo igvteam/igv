@@ -33,6 +33,8 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.AminoAcidManager;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.renderer.SequenceRenderer;
@@ -177,6 +179,18 @@ public class SequenceTrack extends AbstractTrack {
         PreferenceManager.getInstance().put(PreferenceManager.SHOW_SEQUENCE_TRANSLATION, shouldShowTranslation);
     }
 
+
+    @Override
+    public boolean isLoaded(ReferenceFrame frame) {
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        return genome.sequenceIsLoaded(frame);
+    }
+
+    @Override
+    public void load(ReferenceFrame referenceFrame) {
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        genome.getSequence(referenceFrame.getChrName(), (int) referenceFrame.getOrigin(),(int) referenceFrame.getEnd());
+    }
 
     /**
      * Override to return a specialized popup menu

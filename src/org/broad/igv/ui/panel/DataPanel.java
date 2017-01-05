@@ -38,7 +38,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
-import org.broad.igv.sam.InsertionManager;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.AbstractDataPanelTool;
 import org.broad.igv.ui.IGV;
@@ -56,6 +55,9 @@ import java.awt.event.MouseWheelEvent;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * The batch panel for displaying tracks and data.  A DataPanel is always associated with a ReferenceFrame.  Normally
@@ -121,6 +123,27 @@ public class DataPanel extends JComponent implements Paintable {
         RenderContext context = null;
         try {
 
+            List<Track> visibleTracks = visibleUnloadedTracks();
+            if (visibleTracks.size() > 0) {
+                try {
+                    CompletableFuture[] futures = new CompletableFuture[visibleTracks.size()];
+                    for (int i = 0; i < visibleTracks.size(); i++) {
+                        final Track track = visibleTracks.get(i);
+                        futures[i] = CompletableFuture.runAsync(() -> {
+                            System.out.println("Loading " + track);
+                            track.load(frame);
+                        });
+                    }
+
+                    CompletableFuture.allOf(futures).get();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
             Rectangle clipBounds = g.getClipBounds();
             final Rectangle visibleRect = getVisibleRect();
             final Rectangle damageRect = clipBounds == null ? visibleRect : clipBounds.intersection(visibleRect);
@@ -151,6 +174,7 @@ public class DataPanel extends JComponent implements Paintable {
             int trackWidth = getWidth();
 
             computeMousableRegions(groups, trackWidth);
+
             painter.paint(groups, context, trackWidth, getBackground(), damageRect);
 
 
@@ -173,6 +197,14 @@ public class DataPanel extends JComponent implements Paintable {
                 context.dispose();
             }
         }
+    }
+
+    private List<Track> visibleUnloadedTracks() {
+        return parent.getTrackGroups().stream().
+                filter(TrackGroup::isVisible).
+                flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
+                filter(track -> track.isLoaded(frame) == false).
+                collect(Collectors.toList());
     }
 
     /**
@@ -496,23 +528,23 @@ public class DataPanel extends JComponent implements Paintable {
                 }
 
                 WaitCursorManager.CursorToken token = null;
-                if(showWaitCursor) token = WaitCursorManager.showWaitCursor();
+                if (showWaitCursor) token = WaitCursorManager.showWaitCursor();
                 try {
-                    if(zoomIncr > Integer.MIN_VALUE){
+                    if (zoomIncr > Integer.MIN_VALUE) {
                         frame.doZoomIncrement(zoomIncr);
-                    }else if(shiftOriginPixels > Integer.MIN_VALUE){
+                    } else if (shiftOriginPixels > Integer.MIN_VALUE) {
                         frame.shiftOriginPixels(shiftOriginPixels);
-                    }else{
+                    } else {
                         return;
                     }
 
                     //Assume that anything special enough to warrant a wait cursor
                     //should be in history
-                    if(showWaitCursor){
+                    if (showWaitCursor) {
                         frame.recordHistory();
                     }
                 } finally {
-                    if(token != null) WaitCursorManager.removeWaitCursor(token);
+                    if (token != null) WaitCursorManager.removeWaitCursor(token);
                 }
 
             }
@@ -580,7 +612,7 @@ public class DataPanel extends JComponent implements Paintable {
             }
             updateTooltipText(e.getX(), e.getY());
 
-            if(IGV.getInstance().isRulerEnabled()) {
+            if (IGV.getInstance().isRulerEnabled()) {
                 IGV.getInstance().repaintDataPanels();
             }
 

@@ -39,6 +39,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.ui.panel.ReferenceFrame;
 
 import java.io.*;
 import java.util.*;
@@ -578,4 +579,7 @@ public class Genome {
     }
 
 
+    public boolean sequenceIsLoaded(ReferenceFrame frame) {
+        return sequence.isLoaded(frame);
+    }
 }
