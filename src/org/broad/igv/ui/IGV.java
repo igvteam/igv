@@ -333,17 +333,17 @@ public class IGV implements IGVEventObserver {
 
     public void receiveEvent(Object event) {
 
-//        if (event instanceof ViewChange) {
-//            ViewChange e = (ViewChange) event;
-//            if (e.type == ViewChange.Type.ChromosomeChange) {
-//                chromosomeChangeEvent(e.chrName, false);
-//            } else {
-//                repaintDataAndHeaderPanels();
-//                repaintStatusAndZoomSlider();
-//            }
-//        } else {
-//            log.info("Unknown event type: " + event.getClass());
-//        }
+        if (event instanceof ViewChange) {
+            ViewChange e = (ViewChange) event;
+            if (e.type == ViewChange.Type.ChromosomeChange) {
+                chromosomeChangeEvent(e.chrName, false);
+            } else {
+                repaintDataAndHeaderPanels();
+                repaintStatusAndZoomSlider();
+            }
+        } else {
+            log.info("Unknown event type: " + event.getClass());
+        }
     }
 
 
@@ -2768,7 +2768,7 @@ public class IGV implements IGVEventObserver {
      * @param updateCommandBar
      */
     public void repaintDataAndHeaderPanels(boolean updateCommandBar) {
-        System.out.println("repaintDataAndHeaderPanels");
+
         if (Globals.isBatch()) {
             Runnable r = new Runnable() {
                 public void run() {

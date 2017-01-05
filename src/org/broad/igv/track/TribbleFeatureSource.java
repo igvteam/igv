@@ -334,6 +334,11 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         }
 
         @Override
+        public boolean isLoaded(ReferenceFrame frame) {
+            return true;
+        }
+
+        @Override
         public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
             return coverageData == null ? Collections.<LocusScore>emptyList() :
                     coverageData.getSummaryScoresForRange(chr, start, end, zoom);

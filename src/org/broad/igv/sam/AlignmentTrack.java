@@ -314,6 +314,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     @Override
+    public boolean isLoaded(ReferenceFrame frame) {
+        return dataManager.isLoaded(frame);
+    }
+
+    @Override
     public void load(ReferenceFrame referenceFrame) {
         dataManager.load(referenceFrame, renderOptions, true);
     }

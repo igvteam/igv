@@ -53,12 +53,12 @@ public class LongRunningTask implements Callable {
     }
 
     public static Future submit(Runnable runnable) {
-        if (Globals.isBatch() || !SwingUtilities.isEventDispatchThread()) {
+ //       if (Globals.isBatch() || !SwingUtilities.isEventDispatchThread()) {
             runnable.run();
             return null;
-        } else {
-            return threadExecutor.submit(new LongRunningTask(runnable));
-        }
+//        } else {
+//            return threadExecutor.submit(new LongRunningTask(runnable));
+//        }
     }
 
     private LongRunningTask(Runnable runnable) {

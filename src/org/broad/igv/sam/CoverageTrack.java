@@ -163,6 +163,17 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     }
 
+    @Override
+    public boolean isLoaded(ReferenceFrame frame) {
+        return dataManager.isLoaded(frame);
+    }
+
+    @Override
+    public void load(ReferenceFrame referenceFrame) {
+        dataManager.load(referenceFrame, renderOptions, true);
+    }
+
+    
     public void setSnpThreshold(float snpThreshold) {
         this.snpThreshold = snpThreshold;
     }
