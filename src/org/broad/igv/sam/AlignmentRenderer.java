@@ -678,7 +678,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         // Define a graphics context for indel labels.
         Graphics2D largeIndelGraphics = context.getGraphics2D("INDEL_LABEL");
-        largeIndelGraphics.setFont(FontManager.getFont(Font.BOLD, h-1));
+        largeIndelGraphics.setFont(FontManager.getFont(Font.BOLD, h-2));
 
         // Get a graphics context for drawing individual basepairs.
         Graphics2D bpGraphics = context.getGraphics2D("BASE");
@@ -941,7 +941,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                           DisplayStatus bisstatus) {
         if (((dY >= 12) && (dX >= dY)) && (!bisulfiteMode || (bisulfiteMode && bisstatus.equals(DisplayStatus.CHARACTER)))) {
             g.setColor(color);
-            GraphicUtils.drawCenteredText(new char[]{c}, pX, pY-1, dX, dY, g);
+            GraphicUtils.drawCenteredText(new char[]{c}, pX, pY, dX, dY, g);
         } else {
 
             int pX0i = pX, dXi = dX;
@@ -987,7 +987,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                                      int pxTop, int pxH, int pxWmax, AlignmentBlock insertionBlock) {
 
         final int pxPad = 2;   // text padding in the label
-        final int pxWing = 2;  // width of the cursor "wing"
+        final int pxWing = (pxH > 10 ? 2 : 1);  // width of the cursor "wing"
         final int minTextHeight = 8; // min height to draw text
 
         // Calculate the width required to draw the label
@@ -1008,7 +1008,6 @@ public class AlignmentRenderer implements FeatureRenderer {
         g.setColor(isInsertion ? purple : Color.white);
         g.fillRect(pxLeft, pxTop, pxRight - pxLeft, pxH);
 
-        // TODO -- record this "object" for popup text
         if (isInsertion && pxH > 5) {
             g.fillRect(pxLeft - pxWing, pxTop, pxRight - pxLeft + 2 * pxWing, 2);
             g.fillRect(pxLeft - pxWing, pxTop + pxH - 2, pxRight - pxLeft + 2 * pxWing, 2);
@@ -1016,7 +1015,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         if (doesTextFit) {
             g.setColor(isInsertion ? Color.white : purple);
-            GraphicUtils.drawCenteredText(labelText, pxLeft, pxTop+1, pxW, pxH, g);
+            GraphicUtils.drawCenteredText(labelText, pxLeft, pxTop, pxW, pxH, g);
         } // draw the text if it fits
 
         if (insertionBlock != null) insertionBlock.setPixelRange(pxLeft, pxRight);
@@ -1060,14 +1059,14 @@ public class AlignmentRenderer implements FeatureRenderer {
                     if (flagLargeIndels && bpWidth > largeInsertionsThreshold) {
                         drawLargeIndelLabel(context.getGraphics2D("INDEL_LABEL"), true, Globals.DECIMAL_FORMAT.format(bpWidth), x - 1, y, h, (int) pxWidthExact, aBlock);
                     } else {
-
+                        int pxWing = (h > 10 ? 2 : (h > 5) ? 1 : 0);
                         Graphics2D g = context.getGraphics();
                         g.setColor(purple);
-                        g.fillRect(x - 2, y, 4, 2);
-                        g.fillRect(x - 1, y, 2, h);
-                        g.fillRect(x - 2, y + h - 2, 4, 2);
+                        g.fillRect(x, y, 2, h);
+                        g.fillRect(x - pxWing, y, 2 + 2*pxWing, 2);
+                        g.fillRect(x - pxWing, y + h - 2, 2 + 2*pxWing, 2);
 
-                        aBlock.setPixelRange(x - 2, x + 4);
+                        aBlock.setPixelRange(x - pxWing, x + 2 + pxWing);
                     }
                 }
             }
