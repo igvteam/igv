@@ -552,13 +552,13 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         boolean leftmost = (blockChromStart == alignmentChromStart),
                 rightmost = (blockChromEnd == alignmentChromEnd),
-                tallEnoughForArrow = h > 8;
+                tallEnoughForArrow = h > 6;
 
         if (h == 1) {
             blockGraphics.drawLine(blockPxStart, y, blockPxEnd, y);
         } else {
             Shape blockShape;
-            int arrowPxWidth = Math.min(5, blockPxWidth / 6);
+            int arrowPxWidth = Math.min(Math.min(5,h/2), blockPxWidth / 6);
             if (!overlapped) {
                 int delta = Math.max(0, (int) (arrowPxWidth + 1 - AlignmentPacker.MIN_ALIGNMENT_SPACING / locSale));
                 if (leftmost && isNegativeStrand && tallEnoughForArrow) blockPxStart += delta;
