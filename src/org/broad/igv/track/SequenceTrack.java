@@ -181,9 +181,10 @@ public class SequenceTrack extends AbstractTrack {
 
 
     @Override
-    public boolean isLoaded(ReferenceFrame frame) {
+    public boolean isReadyToPaint(ReferenceFrame frame) {
+        int resolutionThreshold = PreferenceManager.getInstance().getAsInt(PreferenceManager.MAX_SEQUENCE_RESOLUTION);
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        return genome.sequenceIsLoaded(frame);
+        return frame.getScale() >= resolutionThreshold  || genome.sequenceIsLoaded(frame);
     }
 
     @Override

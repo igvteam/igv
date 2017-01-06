@@ -85,6 +85,8 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.prefs.Preferences;
 
@@ -331,27 +333,6 @@ public class IGV implements IGVEventObserver {
     }
 
 
-    public void receiveEvent(Object event) {
-
-        if (event instanceof ViewChange) {
-            ViewChange e = (ViewChange) event;
-            if (e.type == ViewChange.Type.ChromosomeChange) {
-                chromosomeChangeEvent(e.chrName, false);
-            } else {
-                repaintDataAndHeaderPanels();
-                repaintStatusAndZoomSlider();
-            }
-        } else {
-            log.info("Unknown event type: " + event.getClass());
-        }
-    }
-
-
-    public void repaint() {
-        mainFrame.repaint();
-    }
-
-
     public GhostGlassPane getDnDGlassPane() {
         return dNdGlassPane;
     }
@@ -591,7 +572,7 @@ public class IGV implements IGVEventObserver {
     public void loadGenomeById(String genomeId) {
 
         final Genome currentGenome = genomeManager.getCurrentGenome();
-        if(currentGenome != null && genomeId.equals(currentGenome.getId())) {
+        if (currentGenome != null && genomeId.equals(currentGenome.getId())) {
             return; // Already loaded
         }
 
@@ -1279,6 +1260,7 @@ public class IGV implements IGVEventObserver {
      * Add a new data panel set
      */
     public TrackPanelScrollPane addDataPanel(String name) {
+
         return contentPane.getMainPanel().addDataPanel(name);
     }
 
@@ -1611,67 +1593,44 @@ public class IGV implements IGVEventObserver {
     /**
      * Load resources into IGV. Tracks are added to the appropriate panel
      *
+     * NOTE: this must be run on the event tread as UI components are added here.
+     *
      * @param locators
      */
     public void loadResources(Collection<ResourceLocator> locators) {
 
-        //Set<TrackPanel> changedPanels = new HashSet();
+        UIUtilities.invokeOnEventThread(() -> {
+            log.info("Loading " + locators.size() + " resources.");
+            final MessageCollection messages = new MessageCollection();
 
-        log.info("Loading " + locators.size() + " resources.");
-        final MessageCollection messages = new MessageCollection();
+            for (final ResourceLocator locator : locators) {
 
-
-        // Load files concurrently -- TODO, put a limit on # of threads?
-        List<Thread> threads = new ArrayList<Thread>(locators.size());
-
-        for (final ResourceLocator locator : locators) {
-
-            // If its a local file, check explicitly for existence (rather than rely on exception)
-            if (locator.isLocal()) {
-                File trackSetFile = new File(locator.getPath());
-                if (!trackSetFile.exists()) {
-                    messages.append("File not found: " + locator.getPath() + "\n");
-                    continue;
-                }
-            }
-
-            Runnable runnable = new Runnable() {
-                public void run() {
-                    try {
-                        List<Track> tracks = load(locator);
-                        log.debug(tracks.size() + " new tracks loaded");
-                        addTracks(tracks, locator);
-                    } catch (Exception e) {
-                        log.error("Error loading track", e);
-                        messages.append("Error loading " + locator + ": " + e.getMessage());
+                // If its a local file, check explicitly for existence (rather than rely on exception)
+                if (locator.isLocal()) {
+                    File trackSetFile = new File(locator.getPath());
+                    if (!trackSetFile.exists()) {
+                        messages.append("File not found: " + locator.getPath() + "\n");
+                        continue;
                     }
                 }
-            };
 
-            //Thread thread = new Thread(runnable);
-            //thread.start();
-            //threads.add(thread);
-            runnable.run();
-        }
+                try {
+                    List<Track> tracks = load(locator);
+                    log.debug(tracks.size() + " new tracks loaded");
+                    addTracks(tracks, locator);
+                } catch (Exception e) {
+                    log.error("Error loading track", e);
+                    messages.append("Error loading " + locator + ": " + e.getMessage());
+                }
 
-        // Wait for all threads to complete
-        for (Thread t : threads) {
-            try {
-                t.join();
-            } catch (InterruptedException ignore) {
-                log.error(ignore.getMessage(), ignore);
-                messages.append("Thread interrupted: " + ignore.getMessage());
             }
-        }
-
-        resetGroups();
-        resetOverlayTracks();
-
-        if (!messages.isEmpty()) {
-            for (String message : messages.getMessages()) {
-                MessageUtils.showMessage(message);
+            if (!messages.isEmpty()) {
+                for (String message : messages.getMessages()) {
+                    MessageUtils.showMessage(message);
+                }
             }
-        }
+        });
+
     }
 
     /**
@@ -1681,6 +1640,7 @@ public class IGV implements IGVEventObserver {
      * @param panelName
      * @api
      */
+
     public void addTracks(List<Track> tracks, PanelName panelName) {
         TrackPanel panel = getTrackPanel(panelName.getName());
         panel.addTracks(tracks);
@@ -2701,7 +2661,29 @@ public class IGV implements IGVEventObserver {
 //    }
 
 
+    public void receiveEvent(Object event) {
+
+        if (event instanceof ViewChange) {
+            ViewChange e = (ViewChange) event;
+            if (e.type == ViewChange.Type.ChromosomeChange) {
+                chromosomeChangeEvent(e.chrName, false);
+            } else {
+                repaintDataAndHeaderPanels();
+                repaintStatusAndZoomSlider();
+            }
+        } else {
+            log.info("Unknown event type: " + event.getClass());
+        }
+    }
+
+
+    public void repaint() {
+        //   Preloader.preload();
+        mainFrame.repaint();
+    }
+
     public void resetFrames() {
+        //  Preloader.preload();
         contentPane.getMainPanel().headerPanelContainer.createHeaderPanels();
         for (TrackPanel tp : getTrackPanels()) {
             tp.createDataPanels();
@@ -2714,12 +2696,12 @@ public class IGV implements IGVEventObserver {
     }
 
     final public void doRefresh() {
-
+        //     Preloader.preload();
         contentPane.getMainPanel().revalidate();
         mainFrame.repaint();
         getContentPane().repaint();
         contentPane.getCommandBar().updateComponentStates();
-       // menuBar.createFileMenu();
+        // menuBar.createFileMenu();
     }
 
 
@@ -2769,6 +2751,7 @@ public class IGV implements IGVEventObserver {
      */
     public void repaintDataAndHeaderPanels(boolean updateCommandBar) {
 
+
         if (Globals.isBatch()) {
             Runnable r = new Runnable() {
                 public void run() {
@@ -2790,8 +2773,14 @@ public class IGV implements IGVEventObserver {
                 }
             }
         } else {
-            contentPane.revalidateDataPanels();
-            rootPane.repaint();
+
+            Preloader.preload().thenRunAsync(() -> {
+                System.out.println("thenRunAsync " + Thread.currentThread());
+                contentPane.revalidateDataPanels();
+                rootPane.repaint();
+            });
+
+
         }
 
         if (updateCommandBar) {
@@ -2803,7 +2792,7 @@ public class IGV implements IGVEventObserver {
         for (TrackPanel tp : getTrackPanels()) {
             tp.getScrollPane().getNamePanel().repaint();
         }
-
     }
+
 
 }

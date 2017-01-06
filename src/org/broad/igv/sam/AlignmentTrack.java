@@ -314,7 +314,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     @Override
-    public boolean isLoaded(ReferenceFrame frame) {
+    public boolean isReadyToPaint(ReferenceFrame frame) {
         return dataManager.isLoaded(frame);
     }
 

@@ -55,9 +55,6 @@ import java.awt.event.MouseWheelEvent;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 /**
  * The batch panel for displaying tracks and data.  A DataPanel is always associated with a ReferenceFrame.  Normally
@@ -122,28 +119,6 @@ public class DataPanel extends JComponent implements Paintable {
         super.paintComponent(g);
         RenderContext context = null;
         try {
-
-            List<Track> visibleTracks = visibleUnloadedTracks();
-            if (visibleTracks.size() > 0) {
-                try {
-                    CompletableFuture[] futures = new CompletableFuture[visibleTracks.size()];
-                    for (int i = 0; i < visibleTracks.size(); i++) {
-                        final Track track = visibleTracks.get(i);
-                        futures[i] = CompletableFuture.runAsync(() -> {
-                            System.out.println("Loading " + track);
-                            track.load(frame);
-                        });
-                    }
-
-                    CompletableFuture.allOf(futures).get();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
-
-            }
-
             Rectangle clipBounds = g.getClipBounds();
             final Rectangle visibleRect = getVisibleRect();
             final Rectangle damageRect = clipBounds == null ? visibleRect : clipBounds.intersection(visibleRect);
@@ -199,12 +174,11 @@ public class DataPanel extends JComponent implements Paintable {
         }
     }
 
-    private List<Track> visibleUnloadedTracks() {
+    private boolean allTracksLoaded() {
         return parent.getTrackGroups().stream().
                 filter(TrackGroup::isVisible).
                 flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
-                filter(track -> track.isLoaded(frame) == false).
-                collect(Collectors.toList());
+                allMatch(track -> track.isReadyToPaint(frame));
     }
 
     /**

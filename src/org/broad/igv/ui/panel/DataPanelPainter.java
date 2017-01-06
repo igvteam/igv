@@ -43,6 +43,7 @@ import org.broad.igv.ui.UIConstants;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class DataPanelPainter {
@@ -56,6 +57,8 @@ public class DataPanelPainter {
                                    Rectangle visibleRect) {
 
         Graphics2D graphics2D = null;
+log.info("Paint");
+
 
         try {
             graphics2D = (Graphics2D) context.getGraphics().create();
@@ -231,21 +234,6 @@ public class DataPanelPainter {
             }
         }
 
-    }
-
-    private List<Track> getVisibleTracks(final Collection<TrackGroup> groups) {
-        // Find the tracks that need loaded, we go to this bother to avoid loading tracks scrolled out of view
-        final List<Track> visibleTracks = new ArrayList<Track>();
-        for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
-            TrackGroup group = groupIter.next();
-            List<Track> trackList = new ArrayList(group.getVisibleTracks());
-            for (Track track : trackList) {
-                if (track != null && track.isVisible()) {
-                    visibleTracks.add(track);
-                }
-            }
-        }
-        return visibleTracks;
     }
 
 

@@ -102,6 +102,16 @@ public class SpliceJunctionTrack extends FeatureTrack {
         return context.getScale() < minVisibleScale;
     }
 
+    @Override
+    public boolean isReadyToPaint(ReferenceFrame frame) {
+        if(this.alignmentTrack != null && this.alignmentTrack.isVisible()) {
+            return true;
+        }
+        else {
+            return dataManager.isLoaded(frame);
+        }
+    }
+
     public boolean isRemoved() {
         return removed;
     }

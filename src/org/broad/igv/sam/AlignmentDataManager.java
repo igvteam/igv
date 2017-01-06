@@ -43,7 +43,9 @@ import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.Utilities;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -218,7 +220,8 @@ public class AlignmentDataManager implements IGVEventObserver {
 
 
     public boolean isLoaded(ReferenceFrame frame) {
-        return loadedIntervalCache.getIntervalForRange(frame.getCurrentRange()) != null;
+        return frame.getScale() > getMinVisibleScale() ||
+                loadedIntervalCache.getIntervalForRange(frame.getCurrentRange()) != null;
     }
 
 
@@ -282,32 +285,26 @@ public class AlignmentDataManager implements IGVEventObserver {
                                             final AlignmentTrack.RenderOptions renderOptions,
                                             final ReferenceFrame frame) {
 
+        if (SwingUtilities.isEventDispatchThread()) return;
+
         if (isLoading || chr.equals(Globals.CHR_ALL)) {
             return;
         }
 
         isLoading = true;
 
-        NamedRunnable runnable = new NamedRunnable() {
 
-            public String getName() {
-                return "loadAlignments";
-            }
+        log.debug("Loading alignments: " + chr + ":" + start + "-" + end + " for " + AlignmentDataManager.this);
 
-            public void run() {
+        AlignmentInterval loadedInterval = loadInterval(chr, start, end, renderOptions);
+        loadedIntervalCache.add(loadedInterval);
 
-                log.debug("Loading alignments: " + chr + ":" + start + "-" + end + " for " + AlignmentDataManager.this);
+        packAlignments(renderOptions);
+        IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
 
-                AlignmentInterval loadedInterval = loadInterval(chr, start, end, renderOptions);
-                loadedIntervalCache.add(loadedInterval);
+        isLoading = false;
 
-                packAlignments(renderOptions);
-                IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
 
-                isLoading = false;
-            }
-        };
-        LongRunningTask.submit(runnable);
     }
 
     AlignmentInterval loadInterval(String chr, int start, int end, AlignmentTrack.RenderOptions renderOptions) {

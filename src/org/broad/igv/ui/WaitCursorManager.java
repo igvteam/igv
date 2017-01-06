@@ -65,10 +65,6 @@ public class WaitCursorManager {
         IGV.getRootPane().getGlassPane().setVisible(true);
         CursorToken token = new CursorToken();
         tokens.add(token);
-
-        //if(tokens.size() == 1) UIUtilities.activateMainFrame();   // neccessary for busy cursor
-        // Return a token representing this wait cursor set.  The token is used to release the
-        // wait cursor.
         return token;
     }
 

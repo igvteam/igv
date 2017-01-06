@@ -514,59 +514,34 @@ public class ReferenceFrame {
      */
     public double getChromosomePosition(int screenPosition) {
 
-//        if (insertions != null && insertions.size() > 0) {
-//            double start = getOrigin();
-//            double scale = getScale();
-//            double p0 = 0, w;
-//
-//            for (InsertionManager.Insertion i : insertions) {
-//
-//                w = (i.position - start) / scale;
-//                if(screenPosition < w) {
-//                    return start + scale * (screenPosition - p0);
-//                }
-//
-//                p0 += w + i.size / scale;
-//                if(screenPosition < p0) {
-//                    return 0;   // In the gap (insertion
-//                }
-//
-//                start = i.position;
-//            }
-//            return start + scale * (screenPosition - p0);
-//
-//        } else
-            return origin + getScale() * screenPosition;
-
-    }
-
-    public double getChromosomePosition2(int screenPosition) {
-
         if (insertions != null && insertions.size() > 0) {
             double start = getOrigin();
             double scale = getScale();
-            double p0 = 0, w;
+            double a = 0,
+                    b = 0;
 
             for (InsertionManager.Insertion i : insertions) {
 
-                w = (i.position - start) / scale;
-                if(screenPosition < w) {
-                    return start + scale * (screenPosition - p0);
+                b = a + (i.position - start) / scale; // Screen position of insertion start
+                if(screenPosition < b) {
+                    return start + scale * (screenPosition - a);
                 }
 
-                p0 += w + i.size / scale;
-                if(screenPosition < p0) {
-                    return 0;   // In the gap (insertion
+                a =  b + i.size / scale;  // Screen position of insertion end
+                if(screenPosition < a) {
+                    return i.position;   // In the gap 
                 }
 
                 start = i.position;
             }
-            return start + scale * (screenPosition - p0);
+            return start + scale * (screenPosition - a);
 
-        } else
-        return origin + getScale() * screenPosition;
+        } else {
+            return origin + getScale() * screenPosition;
+        }
 
     }
+
 
     /**
      * Return the screen position corresponding to the chromosomal position.

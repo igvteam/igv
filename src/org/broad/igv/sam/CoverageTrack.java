@@ -164,8 +164,13 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     }
 
     @Override
-    public boolean isLoaded(ReferenceFrame frame) {
-        return dataManager.isLoaded(frame);
+    public boolean isReadyToPaint(ReferenceFrame frame) {
+        if(this.alignmentTrack != null && this.alignmentTrack.isVisible()) {
+            return true;
+        }
+        else {
+            return dataManager.isLoaded(frame);
+        }
     }
 
     @Override
