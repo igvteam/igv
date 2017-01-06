@@ -1103,7 +1103,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_SHOW_JUNCTION_FLANKINGREGIONS, "true");
         defaultValues.put(SAM_NOMESEQ_ENABLED, "false");
         defaultValues.put(SAM_COUNT_DELETED_BASES_COVERED, "false");
-        defaultValues.put(SAM_FLAG_LARGE_INDELS, "false");
+        defaultValues.put(SAM_FLAG_LARGE_INDELS, "true");
         defaultValues.put(SAM_LARGE_INDELS_THRESHOLD, "1");
         defaultValues.put(SAM_FLAG_CLIPPING, "false");
         defaultValues.put(SAM_CLIPPING_THRESHOLD, "0");
