@@ -291,21 +291,6 @@ public class IGV implements IGVEventObserver {
         rootPane.setJMenuBar(menuBar);
         glassPane = rootPane.getGlassPane();
         glassPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        glassPane.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                if (Globals.isDevelopment()) {
-                    Component cButton = contentPane.getStatusBar().getCancelButton();
-                    int tX = -(contentPane.getStatusBar().getX() + cButton.getX());
-                    int tY = -(contentPane.getY() + contentPane.getStatusBar().getY());
-                    e.translatePoint(tX, tY);
-                    if (cButton.contains(e.getPoint())) {
-                        contentPane.getStatusBar().getCancelButton().doClick();
-                    }
-                }
-            }
-        });
         dNdGlassPane = new GhostGlassPane();
 
         mainFrame.pack();

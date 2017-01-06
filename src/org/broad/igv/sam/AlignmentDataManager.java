@@ -316,22 +316,10 @@ public class AlignmentDataManager implements IGVEventObserver {
         final AlignmentTrack.BisulfiteContext bisulfiteContext =
                 renderOptions != null ? renderOptions.bisulfiteContext : null;
 
-        ProgressMonitor monitor = null;
-        //Show cancel button
-        if (IGV.hasInstance() && !Globals.isBatch() && !Globals.isHeadless()) {
-            ActionListener cancelListener = new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    AlignmentTileLoader.cancelReaders();
-                }
-            };
-            IGV.getInstance().getContentPane().getStatusBar().activateCancelButton(cancelListener);
-        }
-
         SpliceJunctionHelper spliceJunctionHelper = new SpliceJunctionHelper(this.loadOptions);
 
         AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, spliceJunctionHelper,
-                downsampleOptions, readStats, peStats, bisulfiteContext, showAlignments, monitor);
+                downsampleOptions, readStats, peStats, bisulfiteContext, showAlignments);
 
         List<Alignment> alignments = t.getAlignments();
         List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();

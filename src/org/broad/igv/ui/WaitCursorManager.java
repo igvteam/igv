@@ -80,7 +80,6 @@ public class WaitCursorManager {
         tokens.remove(token);
         if (tokens.isEmpty()) {
             IGV.getRootPane().getGlassPane().setVisible(false);
-            IGV.getInstance().getContentPane().getStatusBar().deactivateCancelButton();
         }
     }
 
