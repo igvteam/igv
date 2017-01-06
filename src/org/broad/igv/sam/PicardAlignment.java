@@ -231,7 +231,8 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
         // List of tags to skip.  Some tags, like MD and SA, are both quite verbose and not easily
         // interpreted by a human reader.  It is best to just hide these tags.  The list of tags
         // to hide is set through the SAM_HIDDEN_TAGS preference.
-        ArrayList<String> tagsToHide = new ArrayList<String>();
+        ArrayList<String> tagsToHide = new ArrayList<String>(),
+            tagsHidden = new ArrayList<String>();
 
         String samHiddenTagsPref = prefMgr.get(PreferenceManager.SAM_HIDDEN_TAGS);
         for (String s : (samHiddenTagsPref == null ? "" : samHiddenTagsPref).split("[, ]")) {
@@ -247,6 +248,7 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
 
             for (SAMRecord.SAMTagAndValue tag : attributes) {
                 if (tagsToHide.contains(tag.tag)) {
+                    tagsHidden.add(tag.tag);
                     continue;
                 }
                 buf.append("<br>" + tag.tag + " = ");
@@ -288,8 +290,8 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
 
             }
 
-            if (samHiddenTagsPref != null && samHiddenTagsPref.trim().length() > 0) {
-                buf.append("<br>Hidden tags: " + samHiddenTagsPref);
+            if (tagsHidden.size() > 0) {
+                buf.append("<br>Hidden tags: " + String.join(", ", tagsHidden));
             }
         }
         return buf.toString();
