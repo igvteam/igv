@@ -280,6 +280,7 @@ public class MainPanel extends JPanel implements Paintable {
 
         TrackPanel trackPanel = new TrackPanel(name, this);
         final TrackPanelScrollPane sp = new TrackPanelScrollPane();
+
         sp.setViewportView(trackPanel);
         //sp.setPreferredSize(new Dimension(700, 300));
 

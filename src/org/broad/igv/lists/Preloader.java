@@ -25,14 +25,17 @@
 
 package org.broad.igv.lists;
 
-import org.broad.igv.feature.Locus;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 /**
  * This class added to preload data when using gene lists.   Its actually more general than that,  but its motivation
@@ -43,28 +46,39 @@ import java.util.Collection;
  */
 public class Preloader {
 
-    public static synchronized void preload() {
+    public static synchronized CompletableFuture preload() {
 
-        Collection<Track> trackList = IGV.getInstance().getAllTracks();
-        int flankingRegion = 1; //PreferenceManager.getInstance().getAsInt(PreferenceManager.FLANKING_REGION) + 1;
-        String genomeId = GenomeManager.getInstance().getGenomeId();
-        for (ReferenceFrame frame : FrameManager.getFrames()) {
-            Locus locus = frame.getInitialLocus();
-            if (locus != null) {
-                for (Track track : trackList) {
-                    if (track == null) continue;
-                    if (track.isVisible()) {
-                        if (track instanceof DataTrack) {
-                            DataTrack dt = (DataTrack) track;
-                            RenderContext context = new RenderContext(null, null, frame, null);
-                           // int start = Math.max(0, locus.getStart() - flankingRegion);
-                           // int end = locus.getEnd() + flankingRegion;
-                            dt.loadScores(context.getReferenceFrame());
-                        }
-                    }
+
+        Collection<Track> trackList = visibleTracks();
+        final List<ReferenceFrame> frames = FrameManager.getFrames();
+        List<CompletableFuture> futures = new ArrayList(trackList.size() * frames.size());
+        for (ReferenceFrame frame : frames) {
+            for (Track track : trackList) {
+                if (track.isReadyToPaint(frame) == false) {
+                    futures.add(CompletableFuture.runAsync(() -> {
+                        System.out.println("Preload " + Thread.currentThread());
+                        System.out.println("Preloading" + track);
+                        track.load(frame);
+                    }));
                 }
             }
         }
-    }
-}
 
+        if (futures.size() > 0) {
+            WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
+            CompletableFuture[] futureArray = futures.toArray(new CompletableFuture[futures.size()]);
+            return CompletableFuture.allOf(futureArray).thenRun(() -> WaitCursorManager.removeWaitCursor(token));
+        }
+        else {
+            return CompletableFuture.completedFuture(null);
+        }
+    }
+
+    public  static List<Track> visibleTracks() {
+        return IGV.getInstance().getAllTracks().stream().
+                filter(Track::isVisible).
+                collect(Collectors.toList());
+    }
+
+
+}

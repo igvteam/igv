@@ -63,8 +63,8 @@ public interface Track extends Persistable{
      */
     String getId();
 
-    default boolean isLoaded(ReferenceFrame frame) {
-        return false;  // Return false by default to be safe.
+    default boolean isReadyToPaint(ReferenceFrame frame) {
+        return true;  // Subclasses should override
     }
 
     void load(ReferenceFrame frame);

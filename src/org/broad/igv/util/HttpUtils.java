@@ -635,6 +635,7 @@ public class HttpUtils {
     private HttpURLConnection openConnection(
             URL url, Map<String, String> requestProperties, String method, int redirectCount) throws IOException {
 
+        log.info("Open connection");
         // Map amazon cname aliases to the full hosts -- neccessary to avoid ssl certificate errors in Java 1.8
         url = mapCname(url);
 

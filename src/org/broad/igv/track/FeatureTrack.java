@@ -246,14 +246,13 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      */
     public void receiveEvent(Object e) {
         if (e instanceof DataLoadedEvent) {
-            DataLoadedEvent event = (DataLoadedEvent) e;
-            if (IGV.hasInstance()) {
-                // TODO -- WHY IS THIS HERE????
-                //TODO Assuming this is necessary, there can be many data loaded events in succession,
-                //don't want to layout for each one
-                IGV.getInstance().layoutMainPanel();
-            }
-            event.getReferenceFrame().getEventBus().post( ViewChange.Result());
+//            DataLoadedEvent event = (DataLoadedEvent) e;
+//            if (IGV.hasInstance()) {
+//                // TODO -- WHY IS THIS HERE????
+//                //TODO Assuming this is necessary, there can be many data loaded events in succession,
+//                //don't want to layout for each one
+//                IGV.getInstance().layoutMainPanel();
+//            }
         } else {
             log.info("Unknown event type: " + e.getClass());
         }
@@ -689,7 +688,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public boolean isLoaded(ReferenceFrame frame) {
+    public boolean isReadyToPaint(ReferenceFrame frame) {
         return source.isLoaded(frame);
     }
 
