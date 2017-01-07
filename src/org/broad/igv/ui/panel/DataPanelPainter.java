@@ -57,8 +57,7 @@ public class DataPanelPainter {
                                    Rectangle visibleRect) {
 
         Graphics2D graphics2D = null;
-log.info("Paint");
-
+//log.info("Paint");
 
         try {
             graphics2D = (Graphics2D) context.getGraphics().create();

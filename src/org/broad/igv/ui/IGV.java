@@ -291,6 +291,8 @@ public class IGV implements IGVEventObserver {
         rootPane.setJMenuBar(menuBar);
         glassPane = rootPane.getGlassPane();
         glassPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        consumeEvents(glassPane);
+
         dNdGlassPane = new GhostGlassPane();
 
         mainFrame.pack();
@@ -315,6 +317,44 @@ public class IGV implements IGVEventObserver {
         mainFrame.setBounds(applicationBounds);
 
         IGVEventBus.getInstance().subscribe(ViewChange.class, this);
+    }
+
+    private void consumeEvents(Component glassPane) {
+        glassPane.addMouseListener(new MouseAdapter()
+        {
+            @Override
+            public void mouseClicked(MouseEvent e)
+            {
+                e.consume();
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e)
+            {
+                e.consume();
+            }
+        });
+        glassPane.setFocusable(true);
+        glassPane.addKeyListener(new KeyListener()
+        {
+            @Override
+            public void keyTyped(KeyEvent e)
+            {
+                e.consume();
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e)
+            {
+                e.consume();
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e)
+            {
+                e.consume();
+            }
+        });
     }
 
 
@@ -633,9 +673,6 @@ public class IGV implements IGVEventObserver {
         Future toRet = null;
         if (locators != null && !locators.isEmpty()) {
 
-            // NOTE:  this work CANNOT be done on the dispatch thread, it will potentially cause deadlock if
-            // dialogs are opened or other Swing tasks are done.
-
             NamedRunnable runnable = new NamedRunnable() {
                 public void run() {
 
@@ -745,7 +782,6 @@ public class IGV implements IGVEventObserver {
                         }
                         session.setCurrentGeneList(geneList);
                     }
-                    Preloader.preload();
                     resetFrames();
                 } finally {
                     WaitCursorManager.removeWaitCursor(token);
@@ -1584,7 +1620,6 @@ public class IGV implements IGVEventObserver {
      */
     public void loadResources(Collection<ResourceLocator> locators) {
 
-        UIUtilities.invokeOnEventThread(() -> {
             log.info("Loading " + locators.size() + " resources.");
             final MessageCollection messages = new MessageCollection();
 
@@ -1601,7 +1636,6 @@ public class IGV implements IGVEventObserver {
 
                 try {
                     List<Track> tracks = load(locator);
-                    log.debug(tracks.size() + " new tracks loaded");
                     addTracks(tracks, locator);
                 } catch (Exception e) {
                     log.error("Error loading track", e);
@@ -1614,7 +1648,6 @@ public class IGV implements IGVEventObserver {
                     MessageUtils.showMessage(message);
                 }
             }
-        });
 
     }
 
@@ -2668,7 +2701,7 @@ public class IGV implements IGVEventObserver {
     }
 
     public void resetFrames() {
-        //  Preloader.preload();
+
         contentPane.getMainPanel().headerPanelContainer.createHeaderPanels();
         for (TrackPanel tp : getTrackPanels()) {
             tp.createDataPanels();
@@ -2681,7 +2714,7 @@ public class IGV implements IGVEventObserver {
     }
 
     final public void doRefresh() {
-        //     Preloader.preload();
+
         contentPane.getMainPanel().revalidate();
         mainFrame.repaint();
         getContentPane().repaint();
@@ -2759,11 +2792,9 @@ public class IGV implements IGVEventObserver {
             }
         } else {
 
-            Preloader.preload().thenRunAsync(() -> {
-                System.out.println("thenRunAsync " + Thread.currentThread());
                 contentPane.revalidateDataPanels();
                 rootPane.repaint();
-            });
+           // );
 
 
         }

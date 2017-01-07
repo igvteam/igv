@@ -63,10 +63,19 @@ public interface Track extends Persistable{
      */
     String getId();
 
-    default boolean isReadyToPaint(ReferenceFrame frame) {
-        return true;  // Subclasses should override
-    }
+    /**
+     * Return true if the track is ready to paint (has all required data loaded).
+     *
+     * @param frame
+     * @return
+     */
+    boolean isReadyToPaint(ReferenceFrame frame);
 
+    /**
+     * Load required resources ot paint the reference frame.
+     *
+     * @param frame
+     */
     void load(ReferenceFrame frame);
 
     /**

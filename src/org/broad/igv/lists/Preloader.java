@@ -25,16 +25,22 @@
 
 package org.broad.igv.lists;
 
+import org.apache.batik.bridge.CursorManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
+import org.broad.igv.ui.panel.DataPanel;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.util.LongRunningTask;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -45,6 +51,10 @@ import java.util.stream.Collectors;
  * @date Mar 22, 2011
  */
 public class Preloader {
+
+    private static Logger log = Logger.getLogger(Preloader.class);
+
+    private static final ExecutorService threadExecutor = Executors.newFixedThreadPool(5);
 
     public static synchronized CompletableFuture preload() {
 
@@ -68,17 +78,52 @@ public class Preloader {
             WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
             CompletableFuture[] futureArray = futures.toArray(new CompletableFuture[futures.size()]);
             return CompletableFuture.allOf(futureArray).thenRun(() -> WaitCursorManager.removeWaitCursor(token));
-        }
-        else {
+        } else {
             return CompletableFuture.completedFuture(null);
         }
     }
 
-    public  static List<Track> visibleTracks() {
+    public static List<Track> visibleTracks() {
         return IGV.getInstance().getAllTracks().stream().
                 filter(Track::isVisible).
                 collect(Collectors.toList());
     }
 
+
+    public static synchronized void load(final DataPanel dataPanel) {
+
+        ReferenceFrame frame = dataPanel.getFrame();
+log.info("Enter load for " + frame.getFormattedLocusString());
+        Collection<Track> trackList = dataPanel.visibleTracks();
+        List<CompletableFuture> futures = new ArrayList(trackList.size());
+        for (Track track : trackList) {
+            if (track.isReadyToPaint(frame) == false) {
+                futures.add(CompletableFuture.runAsync(() -> {
+                    log.info("Loading " + track.getName() + " " + frame.getFormattedLocusString());
+                    WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
+                    track.load(frame);
+                    WaitCursorManager.removeWaitCursor(token);
+                    log.info("Loaded " + track.getName() + " " + frame.getFormattedLocusString());
+                }, threadExecutor));
+            }
+        }
+
+        if (futures.size() > 0) {
+            CompletableFuture[] futureArray = futures.toArray(new CompletableFuture[futures.size()]);
+            CompletableFuture.allOf(futureArray).thenRun(() -> {
+                List<Track> unloadedTracks = dataPanel.notloadedTracks();
+                if (unloadedTracks.size() > 0) {
+                    log.info("Unloaded tracks for " + frame.getFormattedLocusString() + "  " + unloadedTracks);
+                }
+
+                log.info("Call repaint " + dataPanel.hashCode() + " " + dataPanel.allTracksLoaded());
+                dataPanel.loadInProgress = false;
+                dataPanel.repaint();
+
+            });
+        }
+
+        log.info("Exit load for " + frame.getFormattedLocusString());
+    }
 
 }

@@ -121,9 +121,7 @@ public class PeakTrack extends AbstractTrack {
         try {
             long t0 = System.currentTimeMillis();
             parser = new PeakParser(locator.getPath());
-            this.getAllPeaks("chr2");
-            long dt = System.currentTimeMillis() - t0;
-            //log.info("Loaded bin: " + locator.getPath() + ": " + dt);
+
 
             TrackProperties props = new TrackProperties();
             ParsingUtils.parseTrackLine(parser.trackLine, props);
@@ -148,70 +146,6 @@ public class PeakTrack extends AbstractTrack {
     }
 
 
-    /**
-     * timePoints=0,30,60,120
-     * peaks=https://data.broadinstitute.org/igvdata/ichip/peaks/AHR.peak
-     * signals=https://data.broadinstitute.org/igvdata/ichip/tdf/compressed/AHR.merged.bam.tdf
-     * timeSignals=https://data.broadinstitute.org/igvdata/ichip/tdf/timecourses/AHR_0/AHR_0.merged.bam.tdf,http...
-     *
-     * @param path
-     * @throws IOException
-     */
-
-    private void parse(String path) throws IOException {
-
-        BufferedReader br = null;
-
-
-        try {
-            br = ParsingUtils.openBufferedReader(path);
-
-            String nextLine = br.readLine();
-            if (nextLine.startsWith("track")) {
-                TrackProperties props = new TrackProperties();
-                ParsingUtils.parseTrackLine(nextLine, props);
-                setProperties(props);
-            }
-
-            nextLine = br.readLine();
-            String[] tokens = nextLine.split("=");
-            if (tokens.length < 2 || !tokens[0].equals("timePoints")) {
-                throw new RuntimeException("Unexpected timePoints line: " + nextLine);
-            }
-            tokens = tokens[1].split(",");
-            nTimePoints = tokens.length;
-
-            nextLine = br.readLine();
-            tokens = nextLine.split("=");
-            if (tokens.length < 2 || !tokens[0].equals("peaks")) {
-                throw new RuntimeException("Unexpected timePoints line: " + nextLine);
-            }
-            peaksPath = tokens[1];
-
-
-            nextLine = br.readLine();
-            tokens = nextLine.split("=");
-            if (tokens.length < 2 || !tokens[0].equals("signals")) {
-                throw new RuntimeException("Unexpected timePoints line: " + nextLine);
-            }
-            signalPath = tokens[1];
-
-            nextLine = br.readLine();
-            tokens = nextLine.split("=");
-            if (tokens.length < 2 || !tokens[0].equals("timeSignals")) {
-                throw new RuntimeException("Unexpected timePoints line: " + nextLine);
-            }
-            timeSignalPaths = tokens[1].split(",");
-
-
-        } finally {
-            if (br != null) br.close();
-        }
-
-
-    }
-
-
     @Override
     public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
         return new PeakTrackMenu(this, te);
@@ -229,6 +163,11 @@ public class PeakTrack extends AbstractTrack {
         } else {
             scoreDataRange = axisDefinition;
         }
+    }
+
+    @Override
+    public boolean isReadyToPaint(ReferenceFrame frame) {
+        return filteredPeakMap.containsKey(frame.getChrName());
     }
 
     @Override

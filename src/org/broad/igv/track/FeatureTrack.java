@@ -120,10 +120,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     protected FeatureSource source;
 
-    protected boolean featuresLoading = false;
-
-    //track which row of the expanded track is selected by the user.
-    //Selection goes away if tracks are collpased
+    //track which row of the expanded track is selected by the user. Selection goes away if tracks are collpased
     protected int selectedFeatureRowIndex = NO_FEATURE_ROW_SELECTED;
 
     //Feature selected by the user.  This is repopulated on each handleDataClick() call.
@@ -138,11 +135,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     private static final String PLUGIN_SOURCE = "PluginSource";
     private static final String SEQUENCE_MATCH_SOURCE = "SequenceMatchSource";
 
-    private static Object loadLock = new Object();
-
-    //Force this track to load data synchronously.
-    //With this set to false, it chooses depending on the source
-    private boolean forceLoadSync = false;
 
     String trackLine = null;
 
@@ -536,7 +528,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         int rowHeight;
         DisplayMode mode = getDisplayMode();
-        switch(mode) {
+        switch (mode) {
             case SQUISHED:
                 rowHeight = getSquishedRowHeight();
                 break;
@@ -547,7 +539,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                 rowHeight = getHeight();
         }
 
-       return Math.max(0, Math.min(levelRects.size()-1, (int) ((y - this.getY() - this.margin)/ rowHeight)));
+        return Math.max(0, Math.min(levelRects.size() - 1, (int) ((y - this.getY() - this.margin) / rowHeight)));
 
     }
 
@@ -689,7 +681,15 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
-        return source.isLoaded(frame);
+        if (!isShowFeatures(frame)) {
+            return true;  // Ready by definition (nothing to paint)
+        } else {
+            PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
+            String chr = frame.getChrName();
+            int start = (int) frame.getOrigin();
+            int end = (int) frame.getEnd();
+            return (packedFeatures != null && packedFeatures.containsInterval(chr, start, end));
+        }
     }
 
     public void load(ReferenceFrame frame) {
@@ -697,14 +697,55 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         String chr = frame.getChrName();
         int start = (int) frame.getOrigin();
         int end = (int) frame.getEnd();
-        if (packedFeatures == null || !packedFeatures.containsInterval(chr, start, end)) {
-            try {
-                frame.getEventBus().unsubscribe(FeatureTrack.this);
-            } catch (IllegalArgumentException e) {
-                //Don't care
+        loadFeatures(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd(), frame);
+    }
+
+    /**
+     * Loads and segregates features into rows such that they do not overlap.
+     *
+     * @param chr
+     * @param start
+     * @param end
+     */
+    protected void loadFeatures(final String chr, final int start, final int end, final ReferenceFrame referenceFrame) {
+
+        try {
+
+            int delta = (end - start) / 2;
+            int expandedStart = start - delta;
+            int expandedEnd = end + delta;
+
+            //Make sure we are only querying within the chromosome we allow for somewhat pathological cases of start
+            //being negative and end being outside, but only if directly queried. Our expansion should not
+            //set start < 0 or end > chromosomeLength
+            if (start >= 0) {
+                expandedStart = Math.max(0, expandedStart);
             }
-            loadFeatures(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd(), frame);
+
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
+            if (genome != null) {
+                Chromosome c = genome.getChromosome(chr);
+                if (c != null && end < c.getLength()) expandedEnd = Math.min(c.getLength(), expandedEnd);
+            }
+
+            Iterator<Feature> iter = source.getFeatures(chr, expandedStart, expandedEnd);
+            if (iter == null) {
+                PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd);
+                packedFeaturesMap.put(referenceFrame.getName(), pf);
+            } else {
+                PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd, iter, getName());
+                packedFeaturesMap.put(referenceFrame.getName(), pf);
+            }
+
+        } catch (Exception e) {
+            // Mark the interval with an empty feature list to prevent an endless loop of load attempts.
+            PackedFeatures pf = new PackedFeatures(chr, start, end);
+            packedFeaturesMap.put(referenceFrame.getName(), pf);
+            String msg = "Error loading features for interval: " + chr + ":" + start + "-" + end + " <br>" + e.toString();
+            MessageUtils.showMessage(msg);
+            log.error(msg, e);
         }
+
     }
 
     @Override
@@ -714,7 +755,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         renderRect.height -= margin;
 
 
-        showFeatures = isShowFeatures(context);
+        showFeatures = isShowFeatures(context.getReferenceFrame());
         if (showFeatures) {
             if (lastFeatureMode != null) {
                 super.setDisplayMode(lastFeatureMode);
@@ -741,12 +782,12 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     }
 
-    protected boolean isShowFeatures(RenderContext context) {
+    protected boolean isShowFeatures(ReferenceFrame frame) {
 
-        if (context.getChr().equals(Globals.CHR_ALL)) {
+        if (frame.getChrName().equals(Globals.CHR_ALL)) {
             return false;
         } else {
-            double windowSize = context.getEndLocation() - context.getOrigin();
+            double windowSize = frame.getEnd() - frame.getOrigin();
             int vw = getVisibilityWindow();
             return (vw <= 0 || windowSize <= vw);
         }
@@ -803,10 +844,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      */
     protected void renderFeatures(RenderContext context, Rectangle inputRect) {
 
-        if (featuresLoading || fatalLoadError) {
-            return;
-        }
-
         if (log.isTraceEnabled()) {
             String msg = String.format("renderFeatures: %s frame: %s", getName(), context.getReferenceFrame().getName());
             log.trace(msg);
@@ -861,7 +898,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                     Rectangle rect = new Rectangle(inputRect.x, inputRect.y, inputRect.width, (int) h);
                     int i = 0;
 
-                    if(renderer instanceof FeatureRenderer) ((FeatureRenderer) renderer).reset();
+                    if (renderer instanceof FeatureRenderer) ((FeatureRenderer) renderer).reset();
                     for (PackedFeatures.FeatureRow row : rows) {
                         levelRects.add(new Rectangle(rect));
                         renderer.render(row.features, context, levelRects.get(i), this);
@@ -882,95 +919,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-
-    /**
-     * Loads and segregates features into rows such that they do not overlap.  Loading is done in a background
-     * thread.
-     *
-     * @param chr
-     * @param start
-     * @param end
-     */
-    protected void loadFeatures(final String chr, final int start, final int end, final ReferenceFrame referenceFrame) {
-
-        boolean aSync = !forceLoadSync && !(source instanceof FeatureCollectionSource);
-
-
-        NamedRunnable runnable = new NamedRunnable() {
-            public void run() {
-                try {
-                    featuresLoading = true;
-
-                    synchronized (loadLock) {
-                        if (log.isTraceEnabled()) {
-                            log.trace(String.format("Loading features: %s:%d-%d", chr, start, end));
-                        }
-
-
-                        int delta = (end - start) / 2;
-                        int expandedStart = start - delta;
-                        int expandedEnd = end + delta;
-
-                        //Make sure we are only querying within the chromosome
-                        //we allow for somewhat pathological cases of start
-                        //being negative and end being outside, but
-                        //only if directly queried. Our expansion should not
-                        //set start < 0 or end > chromosomeLength
-                        if (start >= 0) {
-                            expandedStart = Math.max(0, expandedStart);
-                        }
-
-
-                        Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                        if (genome != null) {
-                            Chromosome c = genome.getChromosome(chr);
-                            if (c != null && end < c.getLength()) expandedEnd = Math.min(c.getLength(), expandedEnd);
-                        }
-
-                        Iterator<Feature> iter = source.getFeatures(chr, expandedStart, expandedEnd);
-                        if (iter == null) {
-                            PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd);
-                            packedFeaturesMap.put(referenceFrame.getName(), pf);
-                        } else {
-                            //dhmay putting a switch in for different packing behavior in splice junction tracks.
-                            //This should probably be switched somewhere else, but that would require a big refactor.
-                            PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd, iter, getName());
-                            packedFeaturesMap.put(referenceFrame.getName(), pf);
-                        }
-                    }
-
-                    //Now that features are loaded, we may need to repaint
-                    //to accommodate.
-                    referenceFrame.getEventBus().post(new DataLoadedEvent(referenceFrame));
-                } catch (Exception e) {
-                    // Mark the interval with an empty feature list to prevent an endless loop of load
-                    // attempts.
-                    PackedFeatures pf = new PackedFeatures(chr, start, end);
-                    packedFeaturesMap.put(referenceFrame.getName(), pf);
-                    String msg = "Error loading features for interval: " + chr + ":" + start + "-" + end + " <br>" + e.toString();
-                    MessageUtils.showMessage(msg);
-                    log.error(msg, e);
-                } finally {
-                    featuresLoading = false;
-                }
-            }
-
-            public String getName() {
-                return "Load features: " + FeatureTrack.this.getName();
-            }
-        };
-
-        if (aSync) {
-            referenceFrame.getEventBus().subscribe(DataLoadedEvent.class, FeatureTrack.this);
-            LongRunningTask.submit(runnable);
-        } else {
-            runnable.run();
-       }
-    }
-
-    public void setForceLoadSync(boolean forceLoadSync) {
-        this.forceLoadSync = forceLoadSync;
-    }
 
 
     /**

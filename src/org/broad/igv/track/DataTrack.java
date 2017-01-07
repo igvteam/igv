@@ -70,9 +70,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack {
     private DataRenderer renderer;
 
     // TODO -- memory leak.  This needs to get cleared when the gene list changes
-    private HashMap<String, LoadedDataInterval> loadedIntervalCache = new HashMap(200);
-    private boolean featuresLoading = false;
-
+    private HashMap<String, LoadedDataInterval<List<LocusScore>>> loadedIntervalCache = new HashMap(200);
 
     public DataTrack(ResourceLocator locator, String id, String name) {
         super(locator, id, name);
@@ -81,10 +79,34 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack {
     }
 
 
-    public void render(RenderContext context, Rectangle rect) {
-        if (featuresLoading) {
-            return;
+    @Override
+    public boolean isReadyToPaint(ReferenceFrame frame) {
+        String chr = frame.getChrName();
+        int start = (int) frame.getOrigin();
+        int end = (int) frame.getEnd();
+        int zoom = frame.getZoom();
+        LoadedDataInterval interval = loadedIntervalCache.get(frame.getName());
+        return (interval != null && interval.contains(chr, start, end, zoom));
+
+    }
+
+
+    public synchronized void load(ReferenceFrame referenceFrame) {
+
+        String chr = referenceFrame.getChrName();
+        int start = (int) referenceFrame.getOrigin();
+        int end = (int) referenceFrame.getEnd() + 1;
+        int zoom = referenceFrame.getZoom();
+
+
+        LoadedDataInterval interval = loadedIntervalCache.get(referenceFrame.getName());
+        if (interval == null || !interval.contains(chr, start, end, zoom)) {
+            loadScores(referenceFrame);
         }
+    }
+
+
+    public void render(RenderContext context, Rectangle rect) {
 
         List<LocusScore> inViewScores = getInViewScores(context.getReferenceFrame());
 
@@ -123,9 +145,9 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack {
 
         List<LocusScore> inViewScores = null;
 
-        LoadedDataInterval interval = loadedIntervalCache.get(referenceFrame.getName());
+        LoadedDataInterval<List<LocusScore>> interval = loadedIntervalCache.get(referenceFrame.getName());
         if (interval != null && interval.contains(chr, start, end, zoom)) {
-            inViewScores = interval.getScores();
+            inViewScores = interval.getFeatures();
         } else {
             inViewScores = loadScores(referenceFrame);
         }
@@ -141,7 +163,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack {
         else {
             for (int i = tmp; i < inViewScores.size(); i++) {
                 if (inViewScores.get(i).getStart() > end) {
-                    endIdx = i+1;
+                    endIdx = i + 1;
                     break;
                 }
             }
@@ -173,19 +195,6 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack {
 
     }
 
-    public synchronized void load(ReferenceFrame referenceFrame) {
-
-        String chr = referenceFrame.getChrName();
-        int start = (int) referenceFrame.getOrigin();
-        int end = (int) referenceFrame.getEnd() + 1;
-        int zoom = referenceFrame.getZoom();
-
-
-        LoadedDataInterval interval = loadedIntervalCache.get(referenceFrame.getName());
-        if (interval == null || !interval.contains(chr, start, end, zoom)) {
-            loadScores(referenceFrame);
-        }
-    }
 
     public List<LocusScore> loadScores(final ReferenceFrame referenceFrame) {
 
@@ -195,7 +204,6 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack {
         int zoom = referenceFrame.getZoom();
 
         try {
-            featuresLoading = true;
             int maxEnd = end;
             Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
@@ -212,12 +220,11 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack {
             int expandedStart = Math.max(0, start - delta);
             int expandedEnd = Math.min(maxEnd, end + delta);
             List<LocusScore> inViewScores = getSummaryScores(queryChr, expandedStart, expandedEnd, zoom);
-            LoadedDataInterval interval = new LoadedDataInterval(chr, start, end, zoom, inViewScores);
+            LoadedDataInterval<List<LocusScore>> interval = new LoadedDataInterval<>(chr, start, end, zoom, inViewScores);
             loadedIntervalCache.put(referenceFrame.getName(), interval);
             return inViewScores;
 
         } finally {
-            featuresLoading = false;
         }
 
     }
@@ -259,7 +266,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack {
      * @param chr
      * @param position
      * @param mouseX
-     *@param frame  @return
+     * @param frame    @return
      */
     public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
         StringBuffer buf = new StringBuffer();
@@ -327,12 +334,12 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack {
                 frameName += type;
             }
 
-            LoadedDataInterval loadedInterval = loadedIntervalCache.get(frameName);
+            LoadedDataInterval<List<LocusScore>> loadedInterval = loadedIntervalCache.get(frameName);
             if (loadedInterval != null && loadedInterval.contains(chr, start, end, zoom)) {
-                scores = loadedInterval.getScores();
+                scores = loadedInterval.getFeatures();
             } else {
                 scores = this.getSummaryScores(chr, start, end, zoom);
-                loadedIntervalCache.put(frameName, new LoadedDataInterval(chr, start, end, zoom, scores));
+                loadedIntervalCache.put(frameName, new LoadedDataInterval<>(chr, start, end, zoom, scores));
             }
 
 

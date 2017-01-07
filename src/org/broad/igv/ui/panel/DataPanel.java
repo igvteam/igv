@@ -38,6 +38,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.lists.Preloader;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.AbstractDataPanelTool;
 import org.broad.igv.ui.IGV;
@@ -55,6 +56,7 @@ import java.awt.event.MouseWheelEvent;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * The batch panel for displaying tracks and data.  A DataPanel is always associated with a ReferenceFrame.  Normally
@@ -75,6 +77,8 @@ public class DataPanel extends JComponent implements Paintable {
     DataPanelContainer parent;
     private DataPanelPainter painter;
     private String tooltipText = "";
+
+    public boolean loadInProgress  = false;
 
 
     public DataPanel(ReferenceFrame frame, DataPanelContainer parent) {
@@ -119,6 +123,17 @@ public class DataPanel extends JComponent implements Paintable {
         super.paintComponent(g);
         RenderContext context = null;
         try {
+
+            long t0 = System.currentTimeMillis();
+
+            if(!allTracksLoaded()) {
+                if(!loadInProgress) {
+                    loadInProgress = true;
+                    Preloader.load(this);
+                }
+                return;
+            }
+
             Rectangle clipBounds = g.getClipBounds();
             final Rectangle visibleRect = getVisibleRect();
             final Rectangle damageRect = clipBounds == null ? visibleRect : clipBounds.intersection(visibleRect);
@@ -126,32 +141,13 @@ public class DataPanel extends JComponent implements Paintable {
 
             context = new RenderContext(this, graphics2D, frame, visibleRect);
 
-            if (Globals.IS_MAC) {
-                this.applyMacPerformanceHints((Graphics2D) g);
-            }
-
             final Collection<TrackGroup> groups = parent.getTrackGroups();
-
-            // If there are no tracks to paint, just exit
-            boolean hasTracks = false;
-            for (TrackGroup group : groups) {
-                if (group.getVisibleTracks().size() > 0) {
-                    hasTracks = true;
-                    break;
-                }
-            }
-            if (!hasTracks) {
-                removeMousableRegions();
-                return;
-            }
-
 
             int trackWidth = getWidth();
 
             computeMousableRegions(groups, trackWidth);
 
             painter.paint(groups, context, trackWidth, getBackground(), damageRect);
-
 
             // If there is a partial ROI in progress draw it first
             if (currentTool instanceof RegionOfInterestTool) {
@@ -166,6 +162,9 @@ public class DataPanel extends JComponent implements Paintable {
             drawAllRegions(g);
 
 
+            long dt = System.currentTimeMillis() - t0;
+            PanTool.repaintTime(dt);
+//            System.out.println("Paint time=" + dt);
         } finally {
 
             if (context != null) {
@@ -174,11 +173,26 @@ public class DataPanel extends JComponent implements Paintable {
         }
     }
 
-    private boolean allTracksLoaded() {
+
+    public boolean allTracksLoaded() {
         return parent.getTrackGroups().stream().
                 filter(TrackGroup::isVisible).
                 flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
                 allMatch(track -> track.isReadyToPaint(frame));
+    }
+    public List<Track> notloadedTracks() {
+        return parent.getTrackGroups().stream().
+                filter(TrackGroup::isVisible).
+                flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
+                filter(track -> track.isReadyToPaint(frame) == false).
+                collect(Collectors.toList());
+    }
+
+    public  List<Track> visibleTracks() {
+        return parent.getTrackGroups().stream().
+                filter(TrackGroup::isVisible).
+                flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
+                collect(Collectors.toList());
     }
 
     /**
@@ -532,28 +546,6 @@ public class DataPanel extends JComponent implements Paintable {
         addMouseMotionListener(mouseAdapter);
         addMouseListener(mouseAdapter);
         addMouseWheelListener(mouseAdapter);
-    }
-
-
-    /**
-     * Some performance hings from the Mac developer mailing list.  Might improve
-     * graphics performance?
-     * <p/>
-     * // TODO  do timing tests with and without these hints
-     *
-     * @param g2D
-     */
-    private void applyMacPerformanceHints(Graphics2D g2D) {
-
-        // From mac mailint list.  Might help performance ?
-        g2D.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
-        g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-        g2D.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
-        g2D.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
-        g2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-        g2D.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
-
-
     }
 
     protected void removeMousableRegions() {

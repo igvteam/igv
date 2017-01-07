@@ -185,6 +185,39 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
+    public boolean isReadyToPaint(ReferenceFrame frame) {
+
+        if (frame.getScale() > 1) return true;   // Zoomed out, nothing to pain
+
+        String chr = frame.getChrName();
+        int start = (int) frame.getOrigin();
+        int end = (int) frame.getEnd();
+        return loadedAlignments != null && loadedAlignments.contains(chr, start, end);
+    }
+
+    @Override
+    public void load(ReferenceFrame frame) {
+        String chr = frame.getChrName();
+        double origin = frame.getOrigin();
+        double w = frame.getEnd() - origin;
+
+        // Get some buffer (+/- 1/2 screen)
+        String mafChr = chrMappings == null ? chr : chrMappings.get(chr);
+        int start = (int) Math.max(0, origin - w);
+        int end = (int) (origin + 2 * w);
+
+        List<MultipleAlignmentBlock> alignments = null;
+        try {
+            alignments = reader.loadAlignments(mafChr, start, end);
+        } catch (IOException e) {
+            log.error(e);
+            throw new RuntimeException(e);
+        }
+
+        loadedAlignments = new MAFCache(chr, start, end, alignments);
+    }
+
     public void render(RenderContext context, Rectangle rect) {
 
         double locScale = context.getScale();
@@ -202,35 +235,20 @@ public class MultipleAlignmentTrack extends AbstractTrack {
 
         }
 
-        double origin = context.getOrigin();
-        String chr = context.getChr();
+        ReferenceFrame frame = context.getReferenceFrame();
+        String chr = frame.getChrName();
+        int start = (int) frame.getOrigin();
+        int end = (int) frame.getEnd();
 
-        // Get some buffer (+/- 1/2 screen)
-        int w = (int) ((rect.width * locScale) / 2);
-        int start = (int) Math.max(0, origin - w);
-        int end = (int) (origin + rect.width * locScale + w);
-
-
-        try {
-            List<MultipleAlignmentBlock> alignments = null;
-            if (loadedAlignments != null && loadedAlignments.contains(chr, start, end)) {
-                alignments = loadedAlignments.getAlignments();
-            } else {
-                String mafChr = chrMappings == null ? chr : chrMappings.get(chr);
-                alignments = reader.loadAlignments(mafChr, start, end);
-                loadedAlignments = new MAFCache(chr, start, end, alignments);
-            }
-
+        List<MultipleAlignmentBlock> alignments = null;
+        if (loadedAlignments != null && loadedAlignments.contains(chr, start, end)) {
+            alignments = loadedAlignments.getAlignments();
             if (alignments != null) {
                 for (MultipleAlignmentBlock ma : alignments) {
                     renderAlignment(context, rect, ma);
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
-
-
     }
 
     private void renderAlignment(RenderContext context, Rectangle trackRectangle, MultipleAlignmentBlock ma) {
@@ -285,7 +303,6 @@ public class MultipleAlignmentTrack extends AbstractTrack {
     @Override
     public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
         IGVPopupMenu menu = new IGVPopupMenu();
-
 
 
         if (getId().endsWith("hg18.maf.dict") || getId().endsWith("hg19.maf.dict")) {

@@ -35,8 +35,7 @@ import org.broad.igv.feature.AminoAcid;
 import org.broad.igv.feature.AminoAcidManager;
 import org.broad.igv.feature.AminoAcidSequence;
 import org.broad.igv.feature.Strand;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.track.LoadedDataInterval;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.UIConstants;
@@ -113,15 +112,22 @@ public class SequenceRenderer {
     }
 
     /**
+     * @param sequenceInterval
      * @param context
      * @param trackRectangle
      * @param showColorSpace
      * @param showTranslation Should we show the translated amino acids?
      */
-    public void draw(RenderContext context, Rectangle trackRectangle,
+    public void draw(LoadedDataInterval<byte[]> sequenceInterval, RenderContext context, Rectangle trackRectangle,
                      boolean showColorSpace, boolean showTranslation,
                      int resolutionThreshold) {
 
+
+        String chr = context.getChr();
+        if(!chr.equals(sequenceInterval.range.chr)) {
+            log.error("Chromosome mismatch in sequence track");
+            return;
+        }
 
         if (context.getScale() >= resolutionThreshold) {
             // Zoomed out too far to see sequences.  This can happen when in gene list view and one of the frames
@@ -130,17 +136,14 @@ public class SequenceRenderer {
 
         } else {
             double locScale = context.getScale();
-            double origin = context.getOrigin();
-            String chr = context.getChr();
-            //String genomeId = context.getGenomeId();
-            Genome genome = GenomeManager.getInstance().getCurrentGenome();
+            int start = (int) context.getOrigin();
+            int end = (int) (start + trackRectangle.width * locScale) + 1;
 
-            //The location of the first base that is loaded, which may include padding around what's visible
-            int start = Math.max(0, (int) origin - 1);
-            //The location of the last base that is loaded
-            int end = (int) (origin + trackRectangle.width * locScale) + 1;
 
-            if (end <= start) return;
+            byte[] seq = sequenceInterval.getFeatures();
+            int sequenceStart = sequenceInterval.range.start;
+
+            if (end <= sequenceStart) return;
 
             int firstCodonOffset = 0;
             int lastCodonOffset = 0;
@@ -149,21 +152,13 @@ public class SequenceRenderer {
             //If we're translating, we need to start with the first bp of the first codon, in frame 3, and
             //end with the last bp of the last codon, in frame 1
             if (showTranslation) {
-                if (start > 1) {
+                if (sequenceStart > 1) {
                     firstCodonOffset = 2;
-                    start -= firstCodonOffset;
+                    sequenceStart -= firstCodonOffset;
                 }
 
                 lastCodonOffset = 2;
                 end += lastCodonOffset;
-            }
-
-            byte[] seq = genome.getSequence(chr, start, end);
-            if (seq == null) {
-                this.hasSequence = false;
-                return;
-            } else {
-                this.hasSequence = true;
             }
 
             //The combined height of sequence and (optionally) colorspace bands
@@ -177,7 +172,7 @@ public class SequenceRenderer {
                 Rectangle translatedSequenceRect = new Rectangle(trackRectangle.x, trackRectangle.y + untranslatedSequenceHeight,
                         (int) trackRectangle.getWidth(), (int) trackRectangle.getHeight() - untranslatedSequenceHeight);
                 if (context.getScale() < AMINO_ACID_RESOLUTION) {
-                    translatedSequenceDrawer.draw(context, start, translatedSequenceRect, seq, strand);
+                    translatedSequenceDrawer.draw(context, sequenceStart, translatedSequenceRect, seq, strand);
                 }
             }
 
@@ -208,14 +203,14 @@ public class SequenceRenderer {
                 }
 
                 // Loop through base pair coordinates
-                int firstVisibleNucleotideStart = start;
-                int lastVisibleNucleotideEnd = Math.min(end, seq.length + start);
+                int firstVisibleNucleotideStart = sequenceStart;
+                int lastVisibleNucleotideEnd = Math.min(end, seq.length + sequenceStart);
                 int lastPx0 = -1;
                 int scale = Math.max(1, (int) context.getScale());
-                for (int loc = firstVisibleNucleotideStart; loc < lastVisibleNucleotideEnd; loc += scale) {
+                for (int loc = start; loc < lastVisibleNucleotideEnd; loc += scale) {
                     for (; loc < lastVisibleNucleotideEnd; loc++) {
-                        int idx = loc - start;
-                        int pX0 = (int) ((loc - origin) / locScale);
+                        int idx = loc - sequenceStart;
+                        int pX0 = (int) ((loc - start) / locScale);
                         if (pX0 > lastPx0) {
                             lastPx0 = pX0;
                             char c = (char) seq[idx];

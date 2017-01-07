@@ -34,6 +34,7 @@ import org.broad.igv.renderer.PointsRenderer;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.AbstractTrack;
 import org.broad.igv.track.RenderContext;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ResourceLocator;
 
@@ -70,18 +71,49 @@ public class MethylTrack extends AbstractTrack {
 
         boolean isWGBS;
         if (reader.getAutoSql() != null && reader.getAutoSql().startsWith("table BisulfiteSeq")) {
-            resolutionThreshold = FIVE_MB;
+            resolutionThreshold = FIVE_MB / 1000;
             dataSource = new CachingMethylSource(new BBMethylDataSource(reader, BBMethylDataSource.Type.USC, genome), resolutionThreshold);
             //dataSource = new BBMethylDataSource(reader, BBMethylDataSource.Type.USC, genome);
         } else {
             isWGBS = dataResourceLocator.getPath().contains("BiSeq_cpgMethylation");
-            resolutionThreshold = isWGBS ? FIVE_MB : FIFTY_MB;
+            resolutionThreshold = (isWGBS ? FIVE_MB : FIFTY_MB) / 1000;
             dataSource = new CachingMethylSource(new BBMethylDataSource(reader, BBMethylDataSource.Type.ZILLER, genome), resolutionThreshold);
             //dataSource = new BBMethylDataSource(reader, BBMethylDataSource.Type.USC, genome);
         }
 
         loadedRange = new Range("", -1, -1, Collections.<MethylScore>emptyList());
         setDataRange(new DataRange(0, 100));
+    }
+
+    @Override
+    public boolean isReadyToPaint(ReferenceFrame frame) {
+        if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > resolutionThreshold) {
+            return true;
+        } else {
+            String chr = frame.getChrName();
+            int start = (int) frame.getOrigin();
+            int end = (int) frame.getEnd();
+            return loadedRange.contains(chr, start, end);
+        }
+    }
+
+    @Override
+    public void load(ReferenceFrame frame) {
+
+        String chr = frame.getChrName();
+        int start = (int) frame.getOrigin();
+        int end = (int) frame.getEnd();
+        int width = (end - start) / 2;
+        int expandedStart = Math.max(0, start - width);
+        int expandedEnd = end + width;
+
+        List<MethylScore> scores = new ArrayList<MethylScore>(1000);
+        Iterator<MethylScore> iter = dataSource.query(chr, expandedStart, expandedEnd);
+        while (iter.hasNext()) {
+            scores.add(iter.next());
+        }
+        loadedRange = new Range(chr, expandedStart, expandedEnd, scores);
+
     }
 
     /**
@@ -93,7 +125,7 @@ public class MethylTrack extends AbstractTrack {
      */
     public void render(final RenderContext context, final Rectangle rect) {
 
-        if (context.getChr().equals(Globals.CHR_ALL) || context.getScale() * rect.width > resolutionThreshold) {
+        if (context.getChr().equals(Globals.CHR_ALL) || context.getScale() > resolutionThreshold) {
             Graphics2D g = context.getGraphic2DForColor(Color.gray);
             Rectangle textRect = new Rectangle(rect);
 
@@ -111,31 +143,6 @@ public class MethylTrack extends AbstractTrack {
         final int end = (int) context.getEndLocation();
         if (loadedRange.contains(chr, start, end)) {
             renderer.render(loadedRange.scores, context, rect, this);
-        } else {
-            if (!loading) {
-                loading = true;
-                Runnable runnable = new Runnable() {
-                    public void run() {
-
-                        try {
-                            int width = (end - start) / 2;
-                            int expandedStart = Math.max(0, start - width);
-                            int expandedEnd = end + width;
-
-                            List<MethylScore> scores = new ArrayList<MethylScore>(1000);
-                            Iterator<MethylScore> iter = dataSource.query(chr, expandedStart, expandedEnd);
-                            while (iter.hasNext()) {
-                                scores.add(iter.next());
-                            }
-                            loadedRange = new Range(chr, expandedStart, expandedEnd, scores);
-                            context.getPanel().repaint(); //rect);
-                        } finally {
-                            loading = false;
-                        }
-                    }
-                };
-                LongRunningTask.submit(runnable);
-            }
         }
     }
 

@@ -31,17 +31,26 @@ package org.broad.igv.ui.panel;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.apache.commons.math.stat.StatUtils;
 import org.broad.igv.ui.AbstractDataPanelTool;
 import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 
 /**
  *
  */
 public class PanTool extends AbstractDataPanelTool {
+
+    private static int throttleTimeMS = 50;
+
+    private static double [] repaintTimes = new double[100];
+    private static int repaintTimeCount = 0;
 
     private int previousYDirection = 0;    // Drag Directions: 1=up, 0=none 0r -1=down
     //private int lastMousePressedY;
@@ -52,6 +61,9 @@ public class PanTool extends AbstractDataPanelTool {
     private JScrollBar verticalScrollBar;
     private boolean isDragging = false;
     private Cursor dragCursor;
+    private long lastDragEventTime = 0;
+
+
 
     private ReferenceFrame referenceFrame;
 
@@ -84,24 +96,24 @@ public class PanTool extends AbstractDataPanelTool {
     @Override
     public void mousePressed(final MouseEvent e) {
 
-        if(e.isPopupTrigger()) {
+        if (e.isPopupTrigger()) {
             return;
         }
-        
+
         lastMousePoint = e.getPoint();
         cumulativeDeltaX = 0;
         cumulativeDeltaY = 0;
 
     }
 
-    public void setReferenceFrame(ReferenceFrame frame){
+    public void setReferenceFrame(ReferenceFrame frame) {
         this.referenceFrame = frame;
     }
 
 
     @Override
     public ReferenceFrame getReferenceFame() {
-        if(referenceFrame != null) {
+        if (referenceFrame != null) {
             return referenceFrame;
         }
         return super.getReferenceFame();
@@ -111,6 +123,7 @@ public class PanTool extends AbstractDataPanelTool {
 
         if (isDragging) {
             isDragging = false;
+            lastDragEventTime = 0;
             getReferenceFame().dragStopped();
         }
         Component panel = (Component) e.getSource();
@@ -121,9 +134,17 @@ public class PanTool extends AbstractDataPanelTool {
     @Override
     final public void mouseDragged(final MouseEvent e) {
 
+        long currentTime = System.currentTimeMillis();
+
+        if ((currentTime - lastDragEventTime) < throttleTimeMS) {
+            return;
+        }
+
+        //System.out.println("T=" + ctr);
+        lastDragEventTime = currentTime;
 
         try {
-            Component panel = (Component) e.getSource();            
+            Component panel = (Component) e.getSource();
             panel.setCursor(dragCursor);
             if (lastMousePoint == null) {
                 lastMousePoint = e.getPoint();
@@ -188,6 +209,21 @@ public class PanTool extends AbstractDataPanelTool {
         } finally {
             lastMousePoint = e.getPoint();    // Always save the last Point
         }
+    }
+
+    /**
+     * Adaptively throttle the drag time based on repaint times.  Its pointless to drag faster than we can repaint.
+     *
+     * @param t
+     */
+    public static void repaintTime(double t) {
+            repaintTimes[repaintTimeCount++] = t;
+            if (repaintTimeCount == repaintTimes.length) {
+                double p = StatUtils.percentile(repaintTimes, 95);
+                throttleTimeMS = Math.max(5, Math.min(200, (int) p));
+                repaintTimeCount = 0;
+            }
+
     }
 
 }

@@ -5,6 +5,7 @@ import org.broad.igv.feature.genome.*;
 import org.broad.igv.renderer.*;
 import org.broad.igv.track.AbstractTrack;
 import org.broad.igv.track.RenderContext;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
 import java.awt.*;
@@ -20,10 +21,22 @@ public class BasePairTrack extends AbstractTrack {
 
     private BasePairRenderer basePairRenderer = new BasePairRenderer();
     private BasePairData basePairData;
+    Genome genome;
 
     public BasePairTrack(ResourceLocator locator, String id, String name, Genome genome) {
         super(locator, id, name);
-        basePairData = BasePairFileParser.loadData(locator, genome);
+        this.genome = genome;
+
+    }
+
+    @Override
+    public boolean isReadyToPaint(ReferenceFrame frame) {
+        return basePairData != null;
+    }
+
+    @Override
+    public void load(ReferenceFrame frame) {
+        basePairData = BasePairFileParser.loadData(this.getResourceLocator(), genome);
     }
 
     public void render(RenderContext context, Rectangle rect) {

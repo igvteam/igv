@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.AminoAcidManager;
+import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -49,6 +50,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.util.*;
 
 
 /**
@@ -61,6 +63,12 @@ public class SequenceTrack extends AbstractTrack {
     private static final int SEQUENCE_HEIGHT = 14;
 
     private static String NAME = "Sequence";
+
+    /**
+     * Map of reference frame -> cached sequence.  Need a map to support gene lists
+     */
+    private HashMap<String, LoadedDataInterval<byte[]>> loadedIntervalCache = new HashMap(200);
+
 
     private SequenceRenderer sequenceRenderer = new SequenceRenderer();
 
@@ -106,12 +114,43 @@ public class SequenceTrack extends AbstractTrack {
                 graphics.setFont(font);
             }
 
-            graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,  RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
+            graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
         }
     }
 
     private void drawArrow(Graphics2D graphics) {
         GraphicUtils.drawHorizontalArrow(graphics, arrowRect, strand == Strand.POSITIVE);
+    }
+
+
+    @Override
+    public boolean isReadyToPaint(ReferenceFrame frame) {
+
+        int resolutionThreshold = PreferenceManager.getInstance().getAsInt(PreferenceManager.MAX_SEQUENCE_RESOLUTION);
+        boolean visible = frame.getScale() < resolutionThreshold && !frame.getChrName().equals(Globals.CHR_ALL);
+
+        if (!visible) {
+            return true; // Nothing to paint
+        } else {
+            LoadedDataInterval<byte[]> interval = loadedIntervalCache.get(frame.getName());
+            return interval != null && interval.contains(frame);
+        }
+    }
+
+    @Override
+    public void load(ReferenceFrame referenceFrame) {
+
+        String chr = referenceFrame.getChrName();
+        int start = (int) referenceFrame.getOrigin();
+        int end = (int) referenceFrame.getEnd() + 1;
+        int w = end - start;
+        // Expand a bit for panning
+        start = Math.max(0, start - w / 2);
+        end += w / 2;
+
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        byte[] seq = genome.getSequence(chr, start, end);
+        loadedIntervalCache.put(referenceFrame.getName(), new LoadedDataInterval<>(chr, start, end, seq));
     }
 
     /**
@@ -121,21 +160,22 @@ public class SequenceTrack extends AbstractTrack {
      * @param rect
      */
     public void render(RenderContext context, Rectangle rect) {
-        // Are we zoomed in far enough to show the sequence?  Scale is
-        // in BP / pixel,  need at least 1 pixel  per bp in order to show sequence.
 
         int resolutionThreshold = PreferenceManager.getInstance().getAsInt(PreferenceManager.MAX_SEQUENCE_RESOLUTION);
-        // TODO -- this should be calculated from a "rescale" event
-        boolean visible = FrameManager.getMinimumScale() < resolutionThreshold &&
+
+        boolean visible = context.getReferenceFrame().getScale() < resolutionThreshold &&
                 !context.getChr().equals(Globals.CHR_ALL);
 
         if (visible != sequenceVisible) {
             sequenceVisible = visible;
-            IGV.getInstance().doRefresh();
+            IGV.getInstance().doRefresh();  // <= TODO needed to expand/contract track.  Find less disruptive method.
         }
         if (sequenceVisible) {
-            sequenceRenderer.setStrand(strand);
-            sequenceRenderer.draw(context, rect, showColorSpace, shouldShowTranslation, resolutionThreshold);
+            LoadedDataInterval<byte[]> sequenceInterval = loadedIntervalCache.get(context.getReferenceFrame().getName());
+            if (sequenceInterval != null) {
+                sequenceRenderer.setStrand(strand);
+                sequenceRenderer.draw(sequenceInterval, context, rect, showColorSpace, shouldShowTranslation, resolutionThreshold);
+            }
         }
     }
 
@@ -179,19 +219,6 @@ public class SequenceTrack extends AbstractTrack {
         PreferenceManager.getInstance().put(PreferenceManager.SHOW_SEQUENCE_TRANSLATION, shouldShowTranslation);
     }
 
-
-    @Override
-    public boolean isReadyToPaint(ReferenceFrame frame) {
-        int resolutionThreshold = PreferenceManager.getInstance().getAsInt(PreferenceManager.MAX_SEQUENCE_RESOLUTION);
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        return frame.getScale() >= resolutionThreshold  || genome.sequenceIsLoaded(frame);
-    }
-
-    @Override
-    public void load(ReferenceFrame referenceFrame) {
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        genome.getSequence(referenceFrame.getChrName(), (int) referenceFrame.getOrigin(),(int) referenceFrame.getEnd());
-    }
 
     /**
      * Override to return a specialized popup menu

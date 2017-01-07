@@ -66,6 +66,15 @@ public class CNFreqTrack extends AbstractTrack {
 
     }
 
+    @Override
+    public boolean isReadyToPaint(ReferenceFrame frame) {
+        return true;  // Track is initialized with all data
+    }
+
+    @Override
+    public void load(ReferenceFrame frame) {
+        // Track is initialized with all data
+    }
 
     public void render(RenderContext context, Rectangle rect) {
 

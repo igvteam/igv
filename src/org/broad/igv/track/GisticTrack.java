@@ -66,6 +66,8 @@ public class GisticTrack extends AbstractTrack {
 
     private double maxGScore = 0;
 
+    private boolean hasScores = false;
+
     /**
      * Map of chromosome -> sorted list of scores
      */
@@ -74,7 +76,6 @@ public class GisticTrack extends AbstractTrack {
     Map<String, List<GisticScore>> delScoreMap;
 
     GisticTrackRenderer renderer;
-
 
     public GisticTrack(ResourceLocator locator) {
         super(locator);
@@ -88,17 +89,24 @@ public class GisticTrack extends AbstractTrack {
     }
 
     @Override
+    public boolean isReadyToPaint(ReferenceFrame frame) {
+        return hasScores;
+    }
+
+    @Override
+    public void load(ReferenceFrame referenceFrame) {
+        //
+    }
+
+    @Override
     public int getMinimumHeight() {
         return 25;
     }
 
 
-    /**
-     * Method description
-     *
-     * @param scores
-     */
     public void setScores(List<GisticScore> scores) {
+
+        this.hasScores = true;
 
         for (GisticScore score : scores) {
             String chr = score.getChromosome();

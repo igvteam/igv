@@ -40,8 +40,8 @@ import org.broad.igv.util.Utilities;
  */
 public class Range implements Feature {
 
-    protected String chr = null;
-    protected int start = -1;
+    public String chr = null;
+    public int start = -1;
     protected int end = -1;
 
     public Range(String chr, int start, int end){
