@@ -609,10 +609,12 @@ public class AlignmentRenderer implements FeatureRenderer {
         } else {
             Shape blockShape;
             int arrowPxWidth = Math.min(Math.min(5,h/2), blockPxWidth / 6);
+
             if (!overlapped) {
-                int delta = Math.max(0, (int) (arrowPxWidth + 1 - AlignmentPacker.MIN_ALIGNMENT_SPACING / locSale));
-                if (leftmost && isNegativeStrand && tallEnoughForArrow) blockPxStart += delta;
-                if (rightmost && !isNegativeStrand && tallEnoughForArrow) blockPxEnd -= delta;
+                int pixelGap = (int) (AlignmentPacker.MIN_ALIGNMENT_SPACING / locSale);
+                if(pixelGap < arrowPxWidth) {
+                    arrowPxWidth = Math.max(0, arrowPxWidth - pixelGap);
+                }
             }
 
             // Draw block as a rectangle; use a pointed hexagon in terminal block to indicate strand.
@@ -645,16 +647,16 @@ public class AlignmentRenderer implements FeatureRenderer {
         }
 
         // If the block is too small for a pointed hexagon arrow, then indicate strand with a line.
-        if (!tallEnoughForArrow) {
-            int tH = Math.max(1, h - 1);
-
-            if (leftmost && isNegativeStrand) {
-                strandGraphics.drawLine(blockPxStart, y, blockPxStart, y + tH);
-            }
-            if (rightmost && !isNegativeStrand) {
-                strandGraphics.drawLine(blockPxEnd, y, blockPxEnd, y + tH);
-            }
-        }
+//        if (!tallEnoughForArrow) {
+//            int tH = Math.max(1, h - 1);
+//
+//            if (leftmost && isNegativeStrand) {
+//                strandGraphics.drawLine(blockPxStart, y, blockPxStart, y + tH);
+//            }
+//            if (rightmost && !isNegativeStrand) {
+//                strandGraphics.drawLine(blockPxEnd, y, blockPxEnd, y + tH);
+//            }
+//        }
     }
 
     /**
@@ -766,7 +768,6 @@ public class AlignmentRenderer implements FeatureRenderer {
                         gapChromWidth = (int) gap.getnBases(),
                         gapChromEnd = gapChromStart + gapChromWidth,
                         gapPxEnd = (int) ((Math.min(contextChromEnd, gapChromEnd) - contextChromStart) / locScale);
-                double gapPxWidthExact = ((double) gapChromWidth) / locScale;
 
                 if (gapChromEnd <= contextChromStart) { // gap ends before the visible context
                     continue; // move to next gap
@@ -790,10 +791,10 @@ public class AlignmentRenderer implements FeatureRenderer {
                         blockChromEnd = gapChromStart,
                         blockPxWidth = (int) Math.max(1, (blockChromEnd - blockChromStart) / locScale - 1),
                         blockPxEnd = blockPxStart + blockPxWidth;
+
                 drawAlignmentBlock(g, outlineGraphics, clippedGraphics, strandGraphics, alignment.isNegativeStrand(),
                         alignmentChromStart, alignmentChromEnd, blockChromStart, blockChromEnd,
                         blockPxStart, blockPxWidth, y, h, locScale, overlapped, leftClipped, rightClipped);
-
 
                 // Draw the gap line.
                 Graphics2D gapGraphics = context.getGraphics2D("GAP");
@@ -809,8 +810,6 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
 
                 gapGraphics.drawLine(blockPxEnd + ggOffset, y + h / 2, gapPxEnd - ggOffset, y + h / 2);
-
-
                 // Label the size of the deletion if it is "large" and the label fits.
                 if (flagLargeIndels && (gap.getType() == SAMAlignment.DELETION) && gapChromWidth > largeInsertionsThreshold) {
                     drawLargeIndelLabel(largeIndelGraphics, false, Globals.DECIMAL_FORMAT.format(gapChromWidth), (int) ((blockPxEnd + gapPxEnd) / 2), y, h, gapPxEnd - blockPxEnd - 2, null);
