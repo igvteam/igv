@@ -34,9 +34,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.CombinedDataSource;
-import org.broad.igv.feature.Exon;
-import org.broad.igv.feature.FeatureUtils;
-import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.feature.*;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.basepair.BasePairTrack;
 import org.broad.igv.feature.genome.Genome;
@@ -1349,12 +1347,19 @@ public class TrackMenuUtils {
 
 
     public static JMenuItem getCopySequenceItem(final Feature f) {
+
+        final Strand strand;
+        if(f instanceof IGVFeature) {
+            strand = ((IGVFeature) f).getStrand();
+        } else {
+           strand = Strand.NONE;
+        }
+
         JMenuItem item = new JMenuItem("Copy Sequence");
         item.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent evt) {
                 Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                IGV.copySequenceToClipboard(genome, f.getChr(), f.getStart(), f.getEnd());
+                IGV.copySequenceToClipboard(genome, f.getChr(), f.getStart(), f.getEnd(), strand);
             }
         });
         return item;

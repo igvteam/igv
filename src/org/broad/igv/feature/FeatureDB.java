@@ -363,7 +363,7 @@ public class FeatureDB {
                     }
                     tempNT = new String(nuclSequence);
                     if (bf.getStrand() == Strand.NEGATIVE) {
-                        tempNT = AminoAcidManager.getNucleotideComplement(tempNT);
+                        tempNT = AminoAcidManager.getReverseComplement(tempNT);
                     }
 
                     if (tempNT.toUpperCase().equals(brefNT)) {

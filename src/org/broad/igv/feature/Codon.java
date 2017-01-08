@@ -115,7 +115,7 @@ class Codon {
         }
 
         if (strand == Strand.NEGATIVE) {
-            aas = AminoAcidManager.getNucleotideComplement(aas);
+            aas = AminoAcidManager.getReverseComplement(aas);
         }
 
         this.sequence = aas;

@@ -185,7 +185,7 @@ public class AminoAcidManager {
         for (int i = 0; i <= sequence.length() - 3; i += 3) {
             String codon = sequence.substring(i, i + 3).toUpperCase();
             if (direction == Strand.NEGATIVE) {
-                codon = getNucleotideComplement(codon);
+                codon = getReverseComplement(codon);
             }
             AminoAcid aa = currentCodonTable.getAminoAcid(codon);
             acids.add(aa);
@@ -261,7 +261,7 @@ public class AminoAcidManager {
         return aa;
     }
 
-    public static String getNucleotideComplement(String sequence) {
+    public static String getReverseComplement(String sequence) {
         char[] complement = new char[sequence.length()];
         int jj = complement.length;
         for (int ii = 0; ii < sequence.length(); ii++) {
@@ -269,20 +269,28 @@ public class AminoAcidManager {
             jj--;
             switch (c) {
                 case 'T':
-                case 't':
                     complement[jj] = 'A';
                     break;
                 case 'A':
-                case 'a':
                     complement[jj] = 'T';
                     break;
                 case 'C':
-                case 'c':
                     complement[jj] = 'G';
                     break;
                 case 'G':
-                case 'g':
                     complement[jj] = 'C';
+                    break;
+                case 't':
+                    complement[jj] = 'a';
+                    break;
+                case 'a':
+                    complement[jj] = 't';
+                    break;
+                case 'c':
+                    complement[jj] = 'g';
+                    break;
+                case 'g':
+                    complement[jj] = 'c';
                     break;
                 default:
                     complement[jj] = c;

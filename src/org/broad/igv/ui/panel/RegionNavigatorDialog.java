@@ -30,6 +30,7 @@ import com.google.common.eventbus.Subscribe;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.ui.IGV;
@@ -817,7 +818,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
                                 JOptionPane.showMessageDialog(RegionNavigatorDialog.this, "Region is to large to copy sequence data.");
                             } else {
                                 IGV.copySequenceToClipboard(GenomeManager.getInstance().getCurrentGenome(),
-                                        chr, start, end);
+                                        chr, start, end, Strand.NONE);
                             }
                         }
                     });
