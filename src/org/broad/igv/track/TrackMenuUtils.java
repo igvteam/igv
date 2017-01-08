@@ -888,9 +888,6 @@ public class TrackMenuUtils {
                             t.removeAttribute(AttributeManager.GROUP_AUTOSCALE);
                         }
                     }
-
-                    DataPanelContainer.resetStateHash();
-
                     IGV.getInstance().repaint();
                 }
             });
@@ -905,14 +902,14 @@ public class TrackMenuUtils {
         autoscaleItem.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {
+
                 int nextAutoscaleGroup = IGV.getInstance().getSession().getNextAutoscaleGroup();
+
                 for (Track t : selectedTracks) {
                     t.setAttributeValue(AttributeManager.GROUP_AUTOSCALE, String.valueOf(nextAutoscaleGroup));
                     t.setAutoScale(false);
                 }
                 IGV.getInstance().getSession().incrementNextAutoscaleGroup();
-
-                DataPanelContainer.resetStateHash();
 
                 PreferenceManager.getInstance().setShowAttributeView(true);
                 IGV.getInstance().getMainPanel().invalidate();
@@ -1072,7 +1069,6 @@ public class TrackMenuUtils {
             return;
         }
 
-        DataPanelContainer.resetStateHash();
         IGV.getInstance().removeTracks(selectedTracks);
         IGV.getInstance().doRefresh();
     }

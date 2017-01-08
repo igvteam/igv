@@ -51,14 +51,7 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
 
     private static Logger log = Logger.getLogger(DataPanelContainer.class);
 
-    static int lastStateHash = 0;   // TODO -- could synchronization be an issue?
-
     TrackPanel parent;
-
-
-    public static void resetStateHash() {
-        lastStateHash = 0;
-    }
 
 
     public DataPanelContainer(TrackPanel trackPanel) {
@@ -259,11 +252,6 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
 
     private void autoscale() {
 
-        int stateHash = FrameManager.getStateHash();
-
-      //  if(lastFrameStateHash == stateHash) return;
-
-        lastStateHash = stateHash;
 
         final Collection<Track> trackList = IGV.getInstance().getAllTracks();
 
@@ -271,16 +259,30 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
 
         for (Track track : trackList) {
 
-            if(!track.isVisible()) continue;
+            if (!track.isVisible()) continue;
 
             String asGroup = track.getAttributeValue(AttributeManager.GROUP_AUTOSCALE);
             if (asGroup != null) {
                 if (!autoscaleGroups.containsKey(asGroup)) {
                     autoscaleGroups.put(asGroup, new ArrayList<Track>());
                 }
-                autoscaleGroups.get(asGroup).add(track);
+
+                if (track instanceof MergedTracks) {
+                    for (Track mt : ((MergedTracks) track).getMemberTracks()) {
+                        autoscaleGroups.get(asGroup).add(track);
+                    }
+                } else {
+                    autoscaleGroups.get(asGroup).add(track);
+                }
             } else if (track.getAutoScale()) {
-                autoscaleGroup(Arrays.asList(track));
+
+                if (track instanceof MergedTracks) {
+                    for (Track mt : ((MergedTracks) track).getMemberTracks()) {
+                        autoscaleGroup(Arrays.asList(mt));
+                    }
+                } else {
+                    autoscaleGroup(Arrays.asList(track));
+                }
             }
 
 
