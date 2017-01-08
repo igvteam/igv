@@ -303,6 +303,32 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
     }
 
 
+    @Override
+    public Range getInViewRange(ReferenceFrame referenceFrame) {
+
+        List<LocusScore> scores = new ArrayList<LocusScore>();
+        for(DataTrack track : memberTracks) {
+            scores.addAll(track.getInViewScores(referenceFrame));
+        }
+
+        if (scores.size() > 0) {
+            float min = Float.MAX_VALUE;
+            float max = -Float.MAX_VALUE;
+            for (LocusScore score : scores) {
+                float value = score.getScore();
+                if (!Float.isNaN(value)) {
+                    min = Math.min(value, min);
+                    max = Math.max(value, max);
+                }
+            }
+            return new Range(min, max);
+        } else {
+            return null;
+        }
+
+    }
+
+
     private enum ChangeTrackMethod {
         POSITIVE, NEGATIVE
     }

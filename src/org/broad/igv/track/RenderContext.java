@@ -43,48 +43,36 @@ import java.util.Map;
 
 public class RenderContext {
 
+
     private Graphics2D graphics;
-    private Map<Object, Graphics2D> graphicCache;
+    private Map<Color, Graphics2D> graphicCacheByColor;
     private ReferenceFrame referenceFrame;
     private JComponent panel;
     private Rectangle visibleRect;
-    private boolean merged = false;
+    boolean merged;
 
 
     public RenderContext(JComponent panel, Graphics2D graphics, ReferenceFrame referenceFrame, Rectangle visibleRect) {
         this.graphics = graphics;
         this.panel = panel;
-        this.graphicCache = new HashMap();
+        this.graphicCacheByColor = new HashMap();
         this.referenceFrame = referenceFrame;
         this.visibleRect = visibleRect;
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING) && graphics != null) {
-            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        }
     }
 
-    public Graphics2D getGraphics() {
-        return graphics;
-    }
+    public Graphics2D getGraphic2DForColor(Color color) {
 
-    public Graphics2D getGraphics2D(Object key) {
-
-        Graphics2D g = graphicCache.get(key);
+        Graphics2D g = graphicCacheByColor.get(color);
         if (g == null) {
             g = (Graphics2D) graphics.create();
             if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             }
-            graphicCache.put(key, g);
+            graphicCacheByColor.put(color, g);
+            g.setColor(color);
+
         }
-        return g;
-    }
-
-    public Graphics2D getGraphic2DForColor(Color color) {
-
-        Graphics2D g = getGraphics2D(color);
-        g.setColor(color);
         return g;
     }
 
@@ -117,6 +105,9 @@ public class RenderContext {
         return panel;
     }
 
+    public Graphics2D getGraphics() {
+        return graphics;
+    }
 
     public int getZoom() {
         return referenceFrame.getZoom();
@@ -124,6 +115,15 @@ public class RenderContext {
 
     public ReferenceFrame getReferenceFrame() {
         return referenceFrame;
+    }
+
+    @Override
+    public boolean isMerged() {
+        return merged;
+    }
+
+    public void setMerged(boolean merged) {
+        this.merged = merged;
     }
 
     public int bpToScreenPixel(double location) {
@@ -144,19 +144,13 @@ public class RenderContext {
         dispose();
     }
 
+
+
     public void dispose() {
-        for (Graphics2D g : graphicCache.values()) {
+        for (Graphics2D g : graphicCacheByColor.values()) {
             g.dispose();
         }
-        graphicCache.clear();
-    }
-
-    public boolean isMerged() {
-        return merged;
-    }
-
-    public void setMerged(boolean merged) {
-        this.merged = merged;
+        graphicCacheByColor.clear();
     }
 
 }
