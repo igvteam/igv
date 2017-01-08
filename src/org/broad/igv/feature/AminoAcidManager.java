@@ -174,18 +174,15 @@ public class AminoAcidManager {
      * @param sequence
      * @return
      */
+
     List<AminoAcid> getAminoAcids(Strand direction, String sequence) {
 
         // Sequence must be divisible by 3. It is the responsibility of the
         // calling program to send a sequence properly aligned.
-        int l = sequence.length();
-        int rem = l % 3;
-        int readLength = l / 3;
+        int readLength = sequence.length() / 3;
         List<AminoAcid> acids = new ArrayList<AminoAcid>(readLength);
 
-        int start = direction == Strand.POSITIVE ? 0 : rem;
-
-        for (int i = start; i <= sequence.length() - 3; i += 3) {
+        for (int i = 0; i <= sequence.length() - 3; i += 3) {
             String codon = sequence.substring(i, i + 3).toUpperCase();
             if (direction == Strand.NEGATIVE) {
                 codon = getNucleotideComplement(codon);
