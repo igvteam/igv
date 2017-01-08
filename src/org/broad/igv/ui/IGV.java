@@ -2719,7 +2719,6 @@ public class IGV implements IGVEventObserver {
         mainFrame.repaint();
         getContentPane().repaint();
         contentPane.getCommandBar().updateComponentStates();
-        // menuBar.createFileMenu();
     }
 
 
@@ -2732,18 +2731,6 @@ public class IGV implements IGVEventObserver {
     public void repaintStatusAndZoomSlider() {
         contentPane.getCommandBar().updateComponentStates();
         contentPane.getCommandBar().repaint();
-    }
-
-    /**
-     * Repaints dataAndHeaderPanels as well as
-     * zoom controls IFF IGV has instance && not headless.
-     * Mostly use for testing
-     */
-    public static void repaintPanelsHeadlessSafe() {
-        if (IGV.hasInstance() && !Globals.isHeadless()) {
-            IGV.getInstance().repaintDataAndHeaderPanels();
-            IGV.getInstance().repaintStatusAndZoomSlider();
-        }
     }
 
     /**

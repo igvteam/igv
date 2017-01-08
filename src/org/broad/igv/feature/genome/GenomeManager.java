@@ -43,6 +43,8 @@ import org.broad.igv.feature.*;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.IGVMenuBar;
+import org.broad.igv.ui.event.GenomeChangeEvent;
+import org.broad.igv.ui.event.IGVEventBus;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressMonitor;
@@ -119,6 +121,7 @@ public class GenomeManager {
             PreferenceManager.getInstance().setDefaultGenome(currentGenome.getId());
         }
         this.currentGenome = currentGenome;
+        IGVEventBus.getInstance().post(new GenomeChangeEvent(currentGenome.getId()));
     }
 
     public boolean isServerGenomeListUnreachable() {
