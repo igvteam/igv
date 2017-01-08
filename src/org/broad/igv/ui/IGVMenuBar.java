@@ -44,7 +44,6 @@ import org.broad.igv.gs.GSOpenSessionMenuAction;
 import org.broad.igv.gs.GSSaveSessionMenuAction;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.lists.GeneListManagerUI;
-import org.broad.igv.lists.VariantListManager;
 import org.broad.igv.tools.IgvToolsGui;
 import org.broad.igv.tools.motiffinder.MotifFinderPlugin;
 import org.broad.igv.track.CombinedDataSourceDialog;
@@ -1030,15 +1029,6 @@ public class IGVMenuBar extends JMenuBar {
         menuAction = new ResetPreferencesAction("Reset Preferences", IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuItems.add(new JSeparator());
-
-        menuAction = new MenuAction("Variant list ...  *EXPERIMENTAL*") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                VariantListManager.openNavigator(IGV.getMainFrame());
-            }
-        };
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuItems.add(new JSeparator());
 

@@ -71,7 +71,6 @@ import org.broad.igv.gwas.GWASParser;
 import org.broad.igv.gwas.GWASTrack;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
-import org.broad.igv.lists.VariantListManager;
 import org.broad.igv.maf.MultipleAlignmentTrack;
 import org.broad.igv.methyl.MethylTrack;
 import org.broad.igv.peaks.PeakTrack;
@@ -149,11 +148,7 @@ public class TrackLoader {
                 loadVCFListFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".trio")) {
                 loadTrioData(locator);
-            } else if (typeString.endsWith("varlist")) {
-                VariantListManager.loadVariants(locator);
-            } else if (typeString.endsWith("samplepathmap")) {
-                VariantListManager.loadSamplePathMap(locator);
-            } else if (typeString.endsWith(".rnai.gct")) {
+            }  else if (typeString.endsWith(".rnai.gct")) {
                 loadRnaiGctFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".gct") || typeString.endsWith("res") || typeString.endsWith("tab")) {
                 loadGctFile(locator, newTracks, genome);
