@@ -38,7 +38,6 @@ public class TrackSet {
 
     private String name;
     List<Track> dataTracks;
-    int[] tileBoundaries;
 
     public TrackSet(List<Track> dataTracks) {
         this.dataTracks = dataTracks;
