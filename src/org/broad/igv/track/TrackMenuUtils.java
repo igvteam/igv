@@ -899,7 +899,9 @@ public class TrackMenuUtils {
         autoscaleItem.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {
+
                 int nextAutoscaleGroup = IGV.getInstance().getSession().getNextAutoscaleGroup();
+
                 for (Track t : selectedTracks) {
                     t.setAttributeValue(AttributeManager.GROUP_AUTOSCALE, String.valueOf(nextAutoscaleGroup));
                     t.setAutoScale(false);

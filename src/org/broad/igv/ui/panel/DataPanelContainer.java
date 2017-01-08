@@ -27,8 +27,6 @@ package org.broad.igv.ui.panel;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.feature.FeatureUtils;
-import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
@@ -273,16 +271,30 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
 
         for (Track track : trackList) {
 
-            if(!track.isVisible()) continue;
+            if (!track.isVisible()) continue;
 
             String asGroup = track.getAttributeValue(AttributeManager.GROUP_AUTOSCALE);
             if (asGroup != null) {
                 if (!autoscaleGroups.containsKey(asGroup)) {
                     autoscaleGroups.put(asGroup, new ArrayList<Track>());
                 }
-                autoscaleGroups.get(asGroup).add(track);
+
+                if (track instanceof MergedTracks) {
+                    for (Track mt : ((MergedTracks) track).getMemberTracks()) {
+                        autoscaleGroups.get(asGroup).add(track);
+                    }
+                } else {
+                    autoscaleGroups.get(asGroup).add(track);
+                }
             } else if (track.getAutoScale()) {
-                autoscaleGroup(Arrays.asList(track));
+
+                if (track instanceof MergedTracks) {
+                    for (Track mt : ((MergedTracks) track).getMemberTracks()) {
+                        autoscaleGroup(Arrays.asList(mt));
+                    }
+                } else {
+                    autoscaleGroup(Arrays.asList(track));
+                }
             }
 
 

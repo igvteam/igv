@@ -95,7 +95,7 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
     }
 
     @XmlElement(name = MEMBER_TRACK_TAG_NAME)
-    Collection<DataTrack> getMemberTracks() {
+    public Collection<DataTrack> getMemberTracks() {
         return this.memberTracks;
     }
 
@@ -204,6 +204,17 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
     }
 
     @Override
+    public void removeAttribute(String name) {
+        super.removeAttribute(name);
+        if(name.equals(AttributeManager.GROUP_AUTOSCALE)) {
+            for (Track track : memberTracks) {
+                track.removeAttribute(name);
+            }
+        }
+    }
+
+
+    @Override
     public ContinuousColorScale getColorScale() {
         return super.getColorScale();
     }
@@ -277,13 +288,6 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
         return menu;
     }
 
-    //Not clear whether this is necessary, don't think it is, the real problem is loading not saving
-//    public void marshalMemberTracks(Marshaller m, Element trackElement) throws JAXBException{
-//        for(DataTrack memberTrack: memberTracks){
-//            JAXBElement element = new JAXBElement<DataTrack>(new QName("", DataTrack.DATA_TRACK), DataTrack.class, memberTrack);
-//            m.marshal(element, trackElement);
-//        }
-//    }
 
     @Override
     public Range getInViewRange(ReferenceFrame referenceFrame) {
