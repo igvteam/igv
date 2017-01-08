@@ -30,6 +30,7 @@
 package org.broad.igv.ui.panel;
 
 import org.broad.igv.Globals;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
@@ -182,7 +183,7 @@ public class RegionOfInterestPanel extends JPanel {
 
                     public void run() {
                         Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                        IGV.copySequenceToClipboard(genome, roi.getChr(), roi.getStart(), roi.getEnd());
+                        IGV.copySequenceToClipboard(genome, roi.getChr(), roi.getStart(), roi.getEnd(), Strand.NONE);
                     }
                 });
             }

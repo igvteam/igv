@@ -47,10 +47,8 @@ import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.dev.api.IGVPlugin;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.feature.Locus;
+import org.broad.igv.feature.*;
 import org.broad.igv.feature.Range;
-import org.broad.igv.feature.MaximumContigGenomeException;
-import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.*;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.Preloader;
@@ -671,7 +669,7 @@ public class IGV implements IGVEventObserver {
     public void loadGenomeById(String genomeId) {
 
         final Genome currentGenome = genomeManager.getCurrentGenome();
-        if(currentGenome != null && genomeId.equals(currentGenome.getId())) {
+        if (currentGenome != null && genomeId.equals(currentGenome.getId())) {
             return; // Already loaded
         }
 
@@ -2734,22 +2732,20 @@ public class IGV implements IGVEventObserver {
 
     }
 
-
-    public static void copySequenceToClipboard(Genome genome, String chr, int start, int end) {
+    public static void copySequenceToClipboard(Genome genome, String chr, int start, int end, Strand strand) {
         try {
             IGV.getMainFrame().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             byte[] seqBytes = genome.getSequence(chr, start, end);
 
             if (seqBytes == null) {
-                MessageUtils.showMessage("Sequence not available. Try enabling http byte-range requests");
+                MessageUtils.showMessage("Sequence not available");
             } else {
                 String sequence = new String(seqBytes);
-                //TODO This will complement sequence if sequence track is flipped
-                //Might be un-intuitive to user if they do it from region dialog
-//                SequenceTrack sequenceTrack = IGV.getInstance().getSequenceTrack();
-//                if(sequenceTrack != null && sequenceTrack.getStrand() == Strand.NEGATIVE){
-//                    sequence = AminoAcidManager.getNucleotideComplement(sequence);
-//                }
+
+                SequenceTrack sequenceTrack = IGV.getInstance().getSequenceTrack();
+                if (strand == Strand.NEGATIVE || (sequenceTrack != null && sequenceTrack.getStrand() == Strand.NEGATIVE)) {
+                    sequence = AminoAcidManager.getReverseComplement(sequence);
+                }
                 StringUtils.copyTextToClipboard(sequence);
             }
 
