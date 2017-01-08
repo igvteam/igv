@@ -51,14 +51,7 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
 
     private static Logger log = Logger.getLogger(DataPanelContainer.class);
 
-    static int lastStateHash = 0;   // TODO -- could synchronization be an issue?
-
     TrackPanel parent;
-
-
-    public static void resetStateHash() {
-        lastStateHash = 0;
-    }
 
 
     public DataPanelContainer(TrackPanel trackPanel) {
@@ -258,12 +251,6 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
 
 
     private void autoscale() {
-
-        int stateHash = FrameManager.getStateHash();
-
-        //if(lastStateHash == stateHash) return;
-
-        lastStateHash = stateHash;
 
         final Collection<Track> trackList = IGV.getInstance().getAllTracks();
 
