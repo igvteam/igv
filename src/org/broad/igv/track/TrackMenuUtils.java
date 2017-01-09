@@ -1380,7 +1380,15 @@ public class TrackMenuUtils {
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {
-                BlatClient.doBlatQuery(f.getChr(), f.getStart(), f.getEnd());
+
+                final Strand strand;
+                if(f instanceof IGVFeature) {
+                    strand = ((IGVFeature) f).getStrand();
+                } else {
+                    strand = Strand.NONE;
+                }
+
+                BlatClient.doBlatQuery(f.getChr(), f.getStart(), f.getEnd(), strand);
             }
         });
         return item;

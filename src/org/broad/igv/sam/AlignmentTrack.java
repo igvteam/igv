@@ -32,6 +32,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.lists.GeneList;
@@ -310,11 +311,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private int getRowHeight() {
         if (getDisplayMode() == DisplayMode.EXPANDED) {
             return expandedHeight;
-        }
-        else if (getDisplayMode() == DisplayMode.COLLAPSED) {
+        } else if (getDisplayMode() == DisplayMode.COLLAPSED) {
             return collapsedHeight;
-        }
-        else {
+        } else {
             return squishedHeight;
         }
     }
@@ -419,11 +418,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         double h;
         if (getDisplayMode() == DisplayMode.EXPANDED) {
             h = expandedHeight;
-        }
-        else if (getDisplayMode() == DisplayMode.COLLAPSED) {
+        } else if (getDisplayMode() == DisplayMode.COLLAPSED) {
             h = collapsedHeight;
-        }
-        else {
+        } else {
 
             int visHeight = visibleRect.height;
             int depth = dataManager.getNLevels();
@@ -2057,7 +2054,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             final JMenuItem item = new JMenuItem("Blat read sequence");
             add(item);
 
-            Alignment alignment = getSpecficAlignment(te);
+            final Alignment alignment = getSpecficAlignment(te);
             if (alignment == null) {
                 item.setEnabled(false);
                 return;
@@ -2072,7 +2069,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent aEvt) {
-                    BlatClient.doBlatQuery(seq);
+                    String blatSeq = alignment.getReadStrand() == Strand.NEGATIVE ?
+                            SequenceTrack.getReverseComplement(seq) : seq;
+                    BlatClient.doBlatQuery(blatSeq);
                 }
             });
 

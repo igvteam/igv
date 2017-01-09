@@ -199,7 +199,7 @@ public class RegionOfInterestPanel extends JPanel {
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                BlatClient.doBlatQuery(roi.getChr(), roi.getStart(), roi.getEnd());
+                BlatClient.doBlatQuery(roi.getChr(), roi.getStart(), roi.getEnd(), Strand.NONE);
             }
         });
         popupMenu.add(item);
