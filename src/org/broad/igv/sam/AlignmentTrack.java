@@ -96,6 +96,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     static final int DOWNAMPLED_ROW_HEIGHT = 3;
     static final int DS_MARGIN_2 = 5;
 
+    private final AlignmentRenderer renderer;
+
     private boolean showSpliceJunctions;
     private boolean removed = false;
     private RenderRollback renderRollback;
@@ -165,7 +167,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private int collapsedHeight = 9;
     private int maxSquishedHeight = 5;
     private int squishedHeight = maxSquishedHeight;
-    private FeatureRenderer renderer;
 
     private int minHeight = 50;
     private AlignmentDataManager dataManager;
@@ -500,6 +501,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     public void renderInsertions(RenderContext context, Rectangle inputRect) {
 
 
+        boolean leaveMargin = getDisplayMode() != DisplayMode.COLLAPSED.SQUISHED;
+
         inputRect.y += DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_2;
 
         //log.debug("Render features");
@@ -545,7 +548,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                 if (y + h > visibleRect.getY()) {
                     Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
-                    renderer.renderInsertions(row.alignments, context, rowRectangle);
+                    renderer.renderInsertions(row.alignments, context, rowRectangle, leaveMargin);
                     row.y = y;
                     row.h = h;
                 }

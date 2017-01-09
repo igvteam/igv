@@ -51,7 +51,6 @@ import org.broad.igv.feature.*;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.*;
 import org.broad.igv.lists.GeneList;
-import org.broad.igv.lists.Preloader;
 import org.broad.igv.peaks.PeakCommandBar;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.session.IGVSessionReader;
@@ -75,7 +74,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.io.*;
-import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.net.NoRouteToHostException;
@@ -83,8 +81,6 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.prefs.Preferences;
 
@@ -2621,7 +2617,7 @@ public class IGV implements IGVEventObserver {
 
                 SequenceTrack sequenceTrack = IGV.getInstance().getSequenceTrack();
                 if (strand == Strand.NEGATIVE || (sequenceTrack != null && sequenceTrack.getStrand() == Strand.NEGATIVE)) {
-                    sequence = AminoAcidManager.getReverseComplement(sequence);
+                    sequence = SequenceTrack.getReverseComplement(sequence);
                 }
                 StringUtils.copyTextToClipboard(sequence);
             }

@@ -55,6 +55,13 @@ public class ReferenceFrame {
 
     private static Logger log = Logger.getLogger(ReferenceFrame.class);
 
+
+    /**
+     * The origin in bp
+     */
+    protected volatile double origin = 0;
+
+
     /**
      * The nominal viewport width in pixels.
      */
@@ -112,10 +119,6 @@ public class ReferenceFrame {
      */
     //private double maxPixel;
 
-    /**
-     * The origin in bp
-     */
-    protected volatile double origin = 0;
 
     /**
      * The location (x axis) locationScale in base pairs / virtual pixel
@@ -529,7 +532,7 @@ public class ReferenceFrame {
 
                 a =  b + i.size / scale;  // Screen position of insertion end
                 if(screenPosition < a) {
-                    return i.position;   // In the gap 
+                    return i.position;   // In the gap
                 }
 
                 start = i.position;

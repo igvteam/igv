@@ -245,7 +245,7 @@ public class Exon extends AbstractFeature implements IExon {
                         seqBytes = tmp;
                     }
 
-                    aminoAcidSequence = AminoAcidManager.getInstance().getAminoAcidSequence(getStrand(), readStart, seqBytes);
+                    aminoAcidSequence = AminoAcidManager.getInstance().getAminoAcidSequence(getStrand(), readStart, new String(seqBytes));
                 }
             }
         }

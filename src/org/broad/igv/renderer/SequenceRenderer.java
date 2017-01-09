@@ -32,11 +32,11 @@ package org.broad.igv.renderer;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.AminoAcid;
-import org.broad.igv.feature.AminoAcidManager;
 import org.broad.igv.feature.AminoAcidSequence;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.track.LoadedDataInterval;
 import org.broad.igv.track.RenderContext;
+import org.broad.igv.track.SequenceTrack;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.color.ColorUtilities;
@@ -73,7 +73,7 @@ public class SequenceRenderer {
 
     public SequenceRenderer() {
 
-        if(nucleotideColors == null) setNucleotideColors();
+        if (nucleotideColors == null) setNucleotideColors();
 
         translatedSequenceDrawer = new TranslatedSequenceDrawer();
     }
@@ -81,7 +81,7 @@ public class SequenceRenderer {
 
     public static Map<Character, Color> getNucleotideColors() {
 
-        if(nucleotideColors == null) setNucleotideColors();
+        if (nucleotideColors == null) setNucleotideColors();
         return nucleotideColors;
 
     }
@@ -94,9 +94,9 @@ public class SequenceRenderer {
 
         Color a = ColorUtilities.stringToColor(prefs.get(PreferenceManager.COLOR_A), new Color(0, 150, 0));
         Color c = ColorUtilities.stringToColor(prefs.get(PreferenceManager.COLOR_C), Color.blue);
-        Color t = ColorUtilities.stringToColor(prefs.get(PreferenceManager.COLOR_T),  Color.red);
-        Color g = ColorUtilities.stringToColor(prefs.get(PreferenceManager.COLOR_G),  Color.gray);
-        Color n = ColorUtilities.stringToColor(prefs.get(PreferenceManager.COLOR_N),  Color.gray);
+        Color t = ColorUtilities.stringToColor(prefs.get(PreferenceManager.COLOR_T), Color.red);
+        Color g = ColorUtilities.stringToColor(prefs.get(PreferenceManager.COLOR_G), Color.gray);
+        Color n = ColorUtilities.stringToColor(prefs.get(PreferenceManager.COLOR_N), Color.gray);
 
         nucleotideColors.put('A', a);
         nucleotideColors.put('a', a);
@@ -116,15 +116,15 @@ public class SequenceRenderer {
      * @param context
      * @param trackRectangle
      * @param showColorSpace
-     * @param showTranslation Should we show the translated amino acids?
+     * @param showTranslation  Should we show the translated amino acids?
      */
-    public void draw(LoadedDataInterval<byte[]> sequenceInterval, RenderContext context, Rectangle trackRectangle,
+    public void draw(LoadedDataInterval<SequenceTrack.SeqCache> sequenceInterval, RenderContext context, Rectangle trackRectangle,
                      boolean showColorSpace, boolean showTranslation,
                      int resolutionThreshold) {
 
 
         String chr = context.getChr();
-        if(!chr.equals(sequenceInterval.range.chr)) {
+        if (!chr.equals(sequenceInterval.range.chr)) {
             log.error("Chromosome mismatch in sequence track");
             return;
         }
@@ -139,31 +139,13 @@ public class SequenceRenderer {
             int start = (int) context.getOrigin();
             int end = (int) (start + trackRectangle.width * locScale) + 1;
 
-
-            byte[] seq = sequenceInterval.getFeatures();
-            int sequenceStart = sequenceInterval.range.start;
-
+            SequenceTrack.SeqCache cache = sequenceInterval.getFeatures();
+            byte[] seq = cache.seq;
+            int sequenceStart = cache.start;
             if (end <= sequenceStart) return;
-
-            int firstCodonOffset = 0;
-            int lastCodonOffset = 0;
-
-
-            //If we're translating, we need to start with the first bp of the first codon, in frame 3, and
-            //end with the last bp of the last codon, in frame 1
-            if (showTranslation) {
-                if (sequenceStart > 1) {
-                    firstCodonOffset = 2;
-                    sequenceStart -= firstCodonOffset;
-                }
-
-                lastCodonOffset = 2;
-                end += lastCodonOffset;
-            }
 
             //The combined height of sequence and (optionally) colorspace bands
             int untranslatedSequenceHeight = (int) trackRectangle.getHeight();
-
 
             if (showTranslation) {
                 untranslatedSequenceHeight = showColorSpace ? (int) trackRectangle.getHeight() / AMINO_ACID_RESOLUTION * 2 :
@@ -172,7 +154,7 @@ public class SequenceRenderer {
                 Rectangle translatedSequenceRect = new Rectangle(trackRectangle.x, trackRectangle.y + untranslatedSequenceHeight,
                         (int) trackRectangle.getWidth(), (int) trackRectangle.getHeight() - untranslatedSequenceHeight);
                 if (context.getScale() < AMINO_ACID_RESOLUTION) {
-                    translatedSequenceDrawer.draw(context, sequenceStart, translatedSequenceRect, seq, strand);
+                    translatedSequenceDrawer.draw(context, sequenceStart, translatedSequenceRect, cache, strand);
                 }
             }
 
@@ -375,15 +357,11 @@ public class SequenceRenderer {
 
         protected static final Color NUCLEOTIDE_SEPARATOR_COLOR = new Color(150, 150, 150, 120);
 
-        /**
-         * @param context
-         * @param start          Must be the first base involved in any codon that's even partially visible
-         * @param trackRectangle
-         * @param seq
-         */
-        public void draw(RenderContext context, int start, Rectangle trackRectangle, byte[] seq, Strand strand) {
+        public void draw(RenderContext context, int start, Rectangle trackRectangle, SequenceTrack.SeqCache cache, Strand strand) {
+
             //each band gets 1/3 of the height, rounded
             int idealHeightPerBand = trackRectangle.height / 3;
+
             //In this situation, band height is more equal if we tweak things a bit
             if (trackRectangle.height % 3 == 2)
                 idealHeightPerBand++;
@@ -421,22 +399,24 @@ public class SequenceRenderer {
             //Technically we could calculate these, but I haven't managed to do that without some wiggle
             Set<Integer> nucleotideLineXPositions = new HashSet<Integer>();
 
+            AminoAcidSequence [] aa = strand == Strand.POSITIVE ? cache.posAA : cache.negAA;
+
             //only draw nucleotide lines the last time this is called
             drawOneTranslation(context, start, bandRectangle, 0, shouldDrawLetters, fontSize,
-                    nucleotideLineXPositions, seq, strand);
+                    nucleotideLineXPositions, aa[0], strand);
 
             //rf 1
             bandRectangle.y = trackRectangle.y + heightAlreadyUsed;
             bandRectangle.height = idealHeightPerBand;
             heightAlreadyUsed += bandRectangle.height;
             drawOneTranslation(context, start, bandRectangle, 1, shouldDrawLetters, fontSize,
-                    nucleotideLineXPositions, seq, strand);
+                    nucleotideLineXPositions, aa[1], strand);
 
             //rf 2
             bandRectangle.y = trackRectangle.y + heightAlreadyUsed;
             bandRectangle.height = trackRectangle.height - heightAlreadyUsed;
             drawOneTranslation(context, start, bandRectangle, 2, shouldDrawLetters, fontSize,
-                    nucleotideLineXPositions, seq, strand);
+                    nucleotideLineXPositions, aa[2], strand);
 
             if (shouldDrawNucleotideLines) {
                 Graphics2D graphicsForNucleotideLines = context.getGraphic2DForColor(NUCLEOTIDE_SEPARATOR_COLOR);
@@ -471,7 +451,7 @@ public class SequenceRenderer {
         protected void drawOneTranslation(RenderContext context, int start,
                                           Rectangle bandRectangle, int readingFrame,
                                           boolean shouldDrawLetters, int fontSize,
-                                          Set<Integer> nucleotideLineXPositions, byte[] seq,
+                                          Set<Integer> nucleotideLineXPositions, AminoAcidSequence aaSequence,
                                           Strand strand) {
 
             double locScale = context.getScale();
@@ -480,67 +460,57 @@ public class SequenceRenderer {
             Graphics2D fontGraphics = context.getGraphics2D("AA_FONT");
             fontGraphics.setColor(AA_FONT_COLOR);
 
-            //The start location of the first codon that overlaps this region
-            int readingFrameOfFullSeq = start % 3;
-            int indexOfFirstCodonStart = readingFrame - readingFrameOfFullSeq;
-            if (indexOfFirstCodonStart < 0)
-                indexOfFirstCodonStart += 3;
-
-            if (seq != null && seq.length > 0) {
+            if (aaSequence != null && aaSequence.hasNonNullSequence()) {
                 Graphics2D g = context.getGraphics2D("TRANSLATION");
-                String nucSequence = new String(seq, indexOfFirstCodonStart, seq.length - indexOfFirstCodonStart);
-                AminoAcidSequence aaSequence = AminoAcidManager.getInstance().
-                        getAminoAcidSequence(strand, start + indexOfFirstCodonStart, nucSequence);
 
-                if ((aaSequence != null) && aaSequence.hasNonNullSequence()) {
-                    //This rectangle holds a single AA glyph. x and width will be updated in the for loop
-                    Rectangle aaRect = new Rectangle(0, bandRectangle.y, 1, bandRectangle.height);
+                //This rectangle holds a single AA glyph. x and width will be updated in the for loop
+                Rectangle aaRect = new Rectangle(0, bandRectangle.y, 1, bandRectangle.height);
 
-                    //start position for this amino acid. Will increment in for loop below
-                    int aaSeqStartPosition = aaSequence.getStartPosition();
+                //start position for this amino acid. Will increment in for loop below
+                int aaSeqStartPosition =  aaSequence.getStart(); // + readingFrame;
 
-                    //calculated oddness or evenness of first amino acid
-                    int firstFullAcidIndex = (int) Math.floor((aaSeqStartPosition - readingFrame) / 3);
-                    boolean odd = (firstFullAcidIndex % 2) == 1;
+                //calculated oddness or evenness of first amino acid
+                int firstFullAcidIndex = (int) Math.floor((aaSeqStartPosition - readingFrame) / 3);
+                boolean odd = (firstFullAcidIndex % 2) == 1;
 
-                    if (shouldDrawLetters) {
-                        Font f = FontManager.getFont(Font.BOLD, fontSize);
-                        g.setFont(f);
-                    }
+                if (shouldDrawLetters) {
+                    Font f = FontManager.getFont(Font.BOLD, fontSize);
+                    g.setFont(f);
+                }
 
-                    for (AminoAcid acid : aaSequence.getSequence()) {
-                        if (acid != null) {
-                            //calculate x pixel boundaries of this AA rectangle
-                            int px = getPixelFromChromosomeLocation(context.getChr(), aaSeqStartPosition, origin, locScale);
-                            int px2 = getPixelFromChromosomeLocation(context.getChr(), aaSeqStartPosition + 3,
-                                    origin, locScale);
+                for (AminoAcid acid : aaSequence.getSequence()) {
+                    if (acid != null) {
+                        //calculate x pixel boundaries of this AA rectangle
+                        int px = getPixelFromChromosomeLocation(context.getChr(), aaSeqStartPosition, origin, locScale);
+                        int px2 = getPixelFromChromosomeLocation(context.getChr(), aaSeqStartPosition + 3,
+                                origin, locScale);
 
-                            //if x boundaries of this AA overlap the band rectangle
-                            if ((px <= bandRectangle.getMaxX()) && (px2 >= bandRectangle.getX())) {
-                                aaRect.x = px;
-                                aaRect.width = px2 - px;
+                        //if x boundaries of this AA overlap the band rectangle
+                        if ((px <= bandRectangle.getMaxX()) && (px2 >= bandRectangle.getX())) {
+                            aaRect.x = px;
+                            aaRect.width = px2 - px;
 
-                                nucleotideLineXPositions.add(aaRect.x);
-                                nucleotideLineXPositions.add(aaRect.x + aaRect.width);
+                            nucleotideLineXPositions.add(aaRect.x);
+                            nucleotideLineXPositions.add(aaRect.x + aaRect.width);
 
-                                Graphics2D bgGraphics =
-                                        context.getGraphic2DForColor(getColorForAminoAcid(acid.getSymbol(), odd));
+                            Graphics2D bgGraphics =
+                                    context.getGraphic2DForColor(getColorForAminoAcid(acid.getSymbol(), odd));
 
-                                bgGraphics.fill(aaRect);
+                            bgGraphics.fill(aaRect);
 
-                                if (shouldDrawLetters) {
-                                    String acidString = new String(new char[]{acid.getSymbol()});
-                                    GraphicUtils.drawCenteredText(acidString, aaRect, fontGraphics);
-                                }
+                            if (shouldDrawLetters) {
+                                String acidString = new String(new char[]{acid.getSymbol()});
+                                GraphicUtils.drawCenteredText(acidString, aaRect, fontGraphics);
                             }
-                            //need to switch oddness whether we displayed the AA or not,
-                            //because oddness is calculated from first AA
-                            odd = !odd;
-
-                            aaSeqStartPosition += 3;
                         }
+                        //need to switch oddness whether we displayed the AA or not,
+                        //because oddness is calculated from first AA
+                        odd = !odd;
+
+                        aaSeqStartPosition += 3;
                     }
                 }
+
             }
         }
 

@@ -121,7 +121,7 @@ public class GenomeManager {
             PreferenceManager.getInstance().setDefaultGenome(currentGenome.getId());
         }
         this.currentGenome = currentGenome;
-        IGVEventBus.getInstance().post(new GenomeChangeEvent(currentGenome.getId()));
+        if(currentGenome != null) IGVEventBus.getInstance().post(new GenomeChangeEvent(currentGenome.getId()));
     }
 
     public boolean isServerGenomeListUnreachable() {

@@ -37,9 +37,7 @@ import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.util.collections.MultiMap;
-import org.broad.igv.variant.VariantRenderer;
 
 import java.awt.*;
 import java.awt.font.LineMetrics;
@@ -626,7 +624,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         if ((aaSequence != null) && aaSequence.hasNonNullSequence()) {
             Rectangle aaRect = new Rectangle(pStart, yOffset - blockHeight / 2, 1, blockHeight);
 
-            int aaSeqStartPosition = aaSequence.getStartPosition();
+            int aaSeqStartPosition = aaSequence.getStart();
             boolean odd =  exon.getAminoAcidNumber(exon.getCdStart()) % 2 == 1;
 
             for (AminoAcid acid : aaSequence.getSequence()) {

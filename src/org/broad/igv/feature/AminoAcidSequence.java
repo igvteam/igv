@@ -39,7 +39,7 @@ import java.util.List;
 public class AminoAcidSequence {
 
     private final Strand strand;
-    private final int startPosition;
+    private final int start;                // Genomic position for start of sequence.
     private final List<AminoAcid> sequence;
 
     private boolean nonNullSequence;
@@ -52,7 +52,7 @@ public class AminoAcidSequence {
 
     public AminoAcidSequence(Strand strand, int startPosition, List<AminoAcid> sequence, AminoAcidManager.CodonTableKey codonTableKey) {
         this.strand = strand;
-        this.startPosition = startPosition;
+        this.start = startPosition;
         this.sequence = sequence;
         this.codonTableKey = codonTableKey;
 
@@ -72,8 +72,8 @@ public class AminoAcidSequence {
         return strand;
     }
 
-    public int getStartPosition() {
-        return startPosition;
+    public int getStart() {
+        return start;
     }
 
     public List<AminoAcid> getSequence() {

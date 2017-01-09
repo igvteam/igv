@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.track.SequenceTrack;
 import org.broad.igv.util.collections.MultiMap;
 import htsjdk.tribble.Feature;
 
@@ -363,7 +364,7 @@ public class FeatureDB {
                     }
                     tempNT = new String(nuclSequence);
                     if (bf.getStrand() == Strand.NEGATIVE) {
-                        tempNT = AminoAcidManager.getReverseComplement(tempNT);
+                        tempNT = SequenceTrack.getReverseComplement(tempNT);
                     }
 
                     if (tempNT.toUpperCase().equals(brefNT)) {
