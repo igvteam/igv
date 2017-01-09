@@ -57,36 +57,16 @@ public class SequenceRenderer {
 
     private static Logger log = Logger.getLogger(SequenceRenderer.class);
 
-    //Maximum scale at which the track is displayed
-    //public static final int MAX_SCALE_FOR_RENDER = 1000;
-    public static final int AMINO_ACID_RESOLUTION = 5;
+    private static final int AMINO_ACID_RESOLUTION = 5;
 
     private static Map<Character, Color> nucleotideColors;
 
-    protected TranslatedSequenceDrawer translatedSequenceDrawer;
-
-    //are we rendering positive or negative strand?
-    protected Strand strand = Strand.POSITIVE;
-
-    //Have we successfully downloaded sequence info?
-    private boolean hasSequence = true;
-
-    public SequenceRenderer() {
-
-        if (nucleotideColors == null) setNucleotideColors();
-
-        translatedSequenceDrawer = new TranslatedSequenceDrawer();
-    }
-
-
     public static Map<Character, Color> getNucleotideColors() {
-
         if (nucleotideColors == null) setNucleotideColors();
         return nucleotideColors;
-
     }
 
-    public static void setNucleotideColors() {
+    private synchronized static void setNucleotideColors() {
 
         PreferenceManager prefs = PreferenceManager.getInstance();
 
@@ -111,15 +91,23 @@ public class SequenceRenderer {
 
     }
 
-    /**
-     * @param sequenceInterval
-     * @param context
-     * @param trackRectangle
-     * @param showColorSpace
-     * @param showTranslation  Should we show the translated amino acids?
-     */
-    public void draw(LoadedDataInterval<SequenceTrack.SeqCache> sequenceInterval, RenderContext context, Rectangle trackRectangle,
-                     boolean showColorSpace, boolean showTranslation,
+
+    private TranslatedSequenceDrawer translatedSequenceDrawer;
+
+    private Strand strand = Strand.POSITIVE;
+
+
+    public SequenceRenderer() {
+        if (nucleotideColors == null) setNucleotideColors();
+        translatedSequenceDrawer = new TranslatedSequenceDrawer();
+    }
+
+
+
+    public void draw(LoadedDataInterval<SequenceTrack.SeqCache> sequenceInterval,
+                     RenderContext context,
+                     Rectangle trackRectangle,
+                     boolean showTranslation,
                      int resolutionThreshold) {
 
 
@@ -148,8 +136,7 @@ public class SequenceRenderer {
             int untranslatedSequenceHeight = (int) trackRectangle.getHeight();
 
             if (showTranslation) {
-                untranslatedSequenceHeight = showColorSpace ? (int) trackRectangle.getHeight() / AMINO_ACID_RESOLUTION * 2 :
-                        (int) (trackRectangle.getHeight() / 4);
+                untranslatedSequenceHeight = (int) (trackRectangle.getHeight() / 4);
                 // Draw translated sequence
                 Rectangle translatedSequenceRect = new Rectangle(trackRectangle.x, trackRectangle.y + untranslatedSequenceHeight,
                         (int) trackRectangle.getWidth(), (int) trackRectangle.getHeight() - untranslatedSequenceHeight);
@@ -164,15 +151,11 @@ public class SequenceRenderer {
 
 
             byte[] seqCS = null;
-            if (showColorSpace) {
-                seqCS = SOLIDUtils.convertToColorSpace(seq);
-            }
 
             if (seq != null && seq.length > 0) {
-                int hCS = (showColorSpace ? untranslatedSequenceRect.height / 2 : 0);
-                int yBase = hCS + untranslatedSequenceRect.y + 2;
+                int yBase =  untranslatedSequenceRect.y + 2;
                 int yCS = untranslatedSequenceRect.y + 2;
-                int dY = (showColorSpace ? hCS : untranslatedSequenceRect.height) - 4;
+                int dY = untranslatedSequenceRect.height - 4;
                 int dX = (int) (1.0 / locScale);
                 // Create a graphics to use
                 Graphics2D g = context.getGraphics2D("SEQUENCE");
@@ -185,42 +168,37 @@ public class SequenceRenderer {
                 }
 
                 // Loop through base pair coordinates
-                int firstVisibleNucleotideStart = sequenceStart;
                 int lastVisibleNucleotideEnd = Math.min(end, seq.length + sequenceStart);
                 int lastPx0 = -1;
                 int scale = Math.max(1, (int) context.getScale());
-                for (int loc = start; loc < lastVisibleNucleotideEnd; loc += scale) {
-                    for (; loc < lastVisibleNucleotideEnd; loc++) {
+                double origin = context.getOrigin();
+                for (int loc = start - 1; loc < lastVisibleNucleotideEnd; loc += scale) {
+                    int pX0 = (int) ((loc - origin) / locScale);
+                    // Skip drawing if we haven't advanced 1 pixel past last nt.  Low zoom
+                    if (pX0 > lastPx0) {
+                        lastPx0 = pX0;
+
                         int idx = loc - sequenceStart;
-                        int pX0 = (int) ((loc - start) / locScale);
-                        if (pX0 > lastPx0) {
-                            lastPx0 = pX0;
-                            char c = (char) seq[idx];
-                            if (Strand.NEGATIVE.equals(strand))
-                                c = complementChar(c);
-                            Color color = nucleotideColors.get(c);
-                            if (fontSize >= 8) {
-                                if (color == null) {
-                                    color = Color.black;
-                                }
+                        if(idx < 0 ) continue;
+                        if(idx >= seq.length) break;
+
+                        char c = (char) seq[idx];
+                        if (Strand.NEGATIVE.equals(strand)) c = complementChar(c);
+
+                        Color color = nucleotideColors.get(c);
+                        if (fontSize >= 8) {
+                            if (color == null) {
+                                color = Color.black;
+                            }
+                            g.setColor(color);
+                            drawCenteredText(g, new char[]{c}, pX0, yBase + 2, dX, dY - 2);
+                        } else {
+                            int bw = Math.max(1, dX - 1);
+                            if (color != null) {
                                 g.setColor(color);
-                                drawCenteredText(g, new char[]{c}, pX0, yBase + 2, dX, dY - 2);
-                                if (showColorSpace) {
-                                    // draw color space #.  Color space is shifted to be between bases as it represents
-                                    // two bases.
-                                    g.setColor(Color.black);
-                                    String cCS = String.valueOf(seqCS[idx]);
-                                    drawCenteredText(g, cCS.toCharArray(), pX0 - dX / 2, yCS + 2, dX, dY - 2);
-                                }
-                            } else {
-                                int bw = Math.max(1, dX - 1);
-                                if (color != null) {
-                                    g.setColor(color);
-                                    g.fillRect(pX0, yBase, bw, dY);
-                                }
+                                g.fillRect(pX0, yBase, bw, dY);
                             }
                         }
-                        break;
                     }
                 }
             }
@@ -323,12 +301,6 @@ public class SequenceRenderer {
     public void setStrand(Strand strand) {
         this.strand = strand;
     }
-
-    public boolean hasSequence() {
-        return this.hasSequence;
-    }
-
-
     /**
      * @author Damon May
      *         This class draws three amino acid bands representing the 3-frame translation of one strand
@@ -399,23 +371,23 @@ public class SequenceRenderer {
             //Technically we could calculate these, but I haven't managed to do that without some wiggle
             Set<Integer> nucleotideLineXPositions = new HashSet<Integer>();
 
-            AminoAcidSequence [] aa = strand == Strand.POSITIVE ? cache.posAA : cache.negAA;
+            AminoAcidSequence[] aa = strand == Strand.POSITIVE ? cache.posAA : cache.negAA;
 
             //only draw nucleotide lines the last time this is called
-            drawOneTranslation(context, start, bandRectangle, 0, shouldDrawLetters, fontSize,
+            drawOneTranslation(context, bandRectangle, 0, shouldDrawLetters, fontSize,
                     nucleotideLineXPositions, aa[0], strand);
 
             //rf 1
             bandRectangle.y = trackRectangle.y + heightAlreadyUsed;
             bandRectangle.height = idealHeightPerBand;
             heightAlreadyUsed += bandRectangle.height;
-            drawOneTranslation(context, start, bandRectangle, 1, shouldDrawLetters, fontSize,
+            drawOneTranslation(context, bandRectangle, 1, shouldDrawLetters, fontSize,
                     nucleotideLineXPositions, aa[1], strand);
 
             //rf 2
             bandRectangle.y = trackRectangle.y + heightAlreadyUsed;
             bandRectangle.height = trackRectangle.height - heightAlreadyUsed;
-            drawOneTranslation(context, start, bandRectangle, 2, shouldDrawLetters, fontSize,
+            drawOneTranslation(context, bandRectangle, 2, shouldDrawLetters, fontSize,
                     nucleotideLineXPositions, aa[2], strand);
 
             if (shouldDrawNucleotideLines) {
@@ -448,7 +420,7 @@ public class SequenceRenderer {
          * @param seq                      nucleotide sequence starting at start
          *                                 for the beginning and end of aminoacid boxes
          */
-        protected void drawOneTranslation(RenderContext context, int start,
+        protected void drawOneTranslation(RenderContext context,
                                           Rectangle bandRectangle, int readingFrame,
                                           boolean shouldDrawLetters, int fontSize,
                                           Set<Integer> nucleotideLineXPositions, AminoAcidSequence aaSequence,
@@ -467,7 +439,7 @@ public class SequenceRenderer {
                 Rectangle aaRect = new Rectangle(0, bandRectangle.y, 1, bandRectangle.height);
 
                 //start position for this amino acid. Will increment in for loop below
-                int aaSeqStartPosition =  aaSequence.getStart(); // + readingFrame;
+                int aaSeqStartPosition = aaSequence.getStart(); // + readingFrame;
 
                 //calculated oddness or evenness of first amino acid
                 int firstFullAcidIndex = (int) Math.floor((aaSeqStartPosition - readingFrame) / 3);

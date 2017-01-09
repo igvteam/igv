@@ -78,10 +78,6 @@ public class SequenceTrack extends AbstractTrack {
 
     Strand strand = Strand.POSITIVE;
 
-    /**
-     * If true show sequence in "color space"  (for SOLID alignments).  Currently not implemented.
-     */
-    private boolean showColorSpace = false;
     private Rectangle arrowRect;
 
     public SequenceTrack(String name) {
@@ -132,6 +128,7 @@ public class SequenceTrack extends AbstractTrack {
 
     @Override
     public void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRectangle) {
+
         Font font = FontManager.getFont(fontSize);
         if (sequenceVisible) {
             graphics.setFont(font);
@@ -240,7 +237,7 @@ public class SequenceTrack extends AbstractTrack {
             LoadedDataInterval<SeqCache> sequenceInterval = loadedIntervalCache.get(context.getReferenceFrame().getName());
             if (sequenceInterval != null) {
                 sequenceRenderer.setStrand(strand);
-                sequenceRenderer.draw(sequenceInterval, context, rect, showColorSpace, shouldShowTranslation, resolutionThreshold);
+                sequenceRenderer.draw(sequenceInterval, context, rect, shouldShowTranslation, resolutionThreshold);
             }
         }
     }
@@ -248,7 +245,7 @@ public class SequenceTrack extends AbstractTrack {
 
     @Override
     public int getHeight() {
-        return sequenceVisible ? SEQUENCE_HEIGHT + (showColorSpace ? SEQUENCE_HEIGHT : 0) +
+        return sequenceVisible ? SEQUENCE_HEIGHT  +
                 (shouldShowTranslation ? SequenceRenderer.TranslatedSequenceDrawer.TOTAL_HEIGHT : 0) :
                 0;
     }
@@ -371,14 +368,6 @@ public class SequenceTrack extends AbstractTrack {
         return nvs;
     }
 
-    public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
-        if (sequenceVisible && !this.sequenceRenderer.hasSequence()) {
-            return "Sequence info not found. Make sure the server in question supports byte-range requests, and that "
-                    + "there are no firewalls which remove this information";
-        } else {
-            return null;
-        }
-    }
 
     public Strand getStrand() {
         return this.strand;
