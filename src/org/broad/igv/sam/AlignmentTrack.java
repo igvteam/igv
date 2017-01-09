@@ -38,6 +38,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.lists.GeneList;
@@ -2058,6 +2059,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent aEvt) {
+                    String blatSeq = alignment.getReadStrand() == Strand.NEGATIVE ?
+                            SequenceTrack.getReverseComplement(seq) : seq;
                     BlatClient.doBlatQuery(seq);
                 }
             });

@@ -171,8 +171,9 @@ public class SequenceTrack extends AbstractTrack {
 
     private void flipStrand() {
         strand = (strand == Strand.POSITIVE ? Strand.NEGATIVE : Strand.POSITIVE);
-        repaint();
         IGV.getInstance().clearSelections();
+        repaint();
+
     }
 
     public void setShouldShowTranslation(boolean shouldShowTranslation) {
@@ -269,8 +270,7 @@ public class SequenceTrack extends AbstractTrack {
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
         if (sequenceVisible && !this.sequenceRenderer.hasSequence()) {
-            return "Sequence info not found. Make sure the server in question supports byte-range requests, and that "
-                    + "there are no firewalls which remove this information";
+            return "Sequence info not found";
         } else {
             return null;
         }
@@ -280,5 +280,44 @@ public class SequenceTrack extends AbstractTrack {
         return this.strand;
     }
 
+
+
+    public static String getReverseComplement(String sequence) {
+        char[] complement = new char[sequence.length()];
+        int jj = complement.length;
+        for (int ii = 0; ii < sequence.length(); ii++) {
+            char c = sequence.charAt(ii);
+            jj--;
+            switch (c) {
+                case 'T':
+                    complement[jj] = 'A';
+                    break;
+                case 'A':
+                    complement[jj] = 'T';
+                    break;
+                case 'C':
+                    complement[jj] = 'G';
+                    break;
+                case 'G':
+                    complement[jj] = 'C';
+                    break;
+                case 't':
+                    complement[jj] = 'a';
+                    break;
+                case 'a':
+                    complement[jj] = 't';
+                    break;
+                case 'c':
+                    complement[jj] = 'g';
+                    break;
+                case 'g':
+                    complement[jj] = 'c';
+                    break;
+                default:
+                    complement[jj] = c;
+            }
+        }
+        return new String(complement);
+    }
 
 }
