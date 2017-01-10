@@ -73,7 +73,7 @@ public class ManageGenomesDialog extends JDialog {
     }
 
     private void initData() {
-        allListItems = new ArrayList<GenomeListItem>(GenomeManager.getInstance().getGenomes());
+        allListItems = new ArrayList<GenomeListItem>(GenomeManager.getInstance().getGenomeListItems());
         for(GenomeListItem item: allListItems){
             if(item.hasDownloadedSequence()){
                 haveLocalGenomes = true;

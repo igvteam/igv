@@ -595,7 +595,7 @@ public class GWASTrack extends AbstractTrack {
             public void actionPerformed(ActionEvent e) {
                 showAxis = axisItem.isSelected();
                 PreferenceManager.getInstance().put(PreferenceManager.GWAS_SHOW_AXIS, String.valueOf(showAxis));
-                IGV.getInstance().repaintDataPanels();
+                IGV.getInstance().revalidateTrackPanels();
 
             }
         });
@@ -611,7 +611,7 @@ public class GWASTrack extends AbstractTrack {
                 useChrColors = true;
                 alternatingColors = false;
                 updateColorPreferences();
-                IGV.getInstance().repaintDataPanels();
+                IGV.getInstance().revalidateTrackPanels();
 
             }
         });
@@ -628,7 +628,7 @@ public class GWASTrack extends AbstractTrack {
                 useChrColors = false;
                 alternatingColors = true;
                 updateColorPreferences();
-                IGV.getInstance().repaintDataPanels();
+                IGV.getInstance().revalidateTrackPanels();
             }
         });
         menu.add(colorItem);
@@ -646,7 +646,7 @@ public class GWASTrack extends AbstractTrack {
                 useChrColors = false;
                 alternatingColors = false;
                 updateColorPreferences();
-                IGV.getInstance().repaintDataPanels();
+                IGV.getInstance().revalidateTrackPanels();
 
             }
         });
@@ -672,7 +672,7 @@ public class GWASTrack extends AbstractTrack {
                     primaryColor = color;
                     String colorString = ColorUtilities.colorToString(primaryColor);
                     PreferenceManager.getInstance().put(PreferenceManager.GWAS_PRIMARY_COLOR, colorString);
-                    IGV.getInstance().repaintDataPanels();
+                    IGV.getInstance().revalidateTrackPanels();
                 }
             }
         });
@@ -690,7 +690,7 @@ public class GWASTrack extends AbstractTrack {
                     secondaryColor = color;
                     String colorString = ColorUtilities.colorToString(secondaryColor);
                     PreferenceManager.getInstance().put(PreferenceManager.GWAS_SECONDARY_COLOR, colorString);
-                    IGV.getInstance().repaintDataPanels();
+                    IGV.getInstance().revalidateTrackPanels();
                 }
 
             }
@@ -741,7 +741,7 @@ public class GWASTrack extends AbstractTrack {
                     }
                     this.minPointSize = value;
                     updatePointSizePreferences();
-                    IGV.getInstance().repaintDataPanels();
+                    IGV.getInstance().revalidateTrackPanels();
                 }
 
             } catch (NumberFormatException numberFormatException) {
@@ -771,7 +771,7 @@ public class GWASTrack extends AbstractTrack {
                     }
                     this.maxPointSize = value;
                     updatePointSizePreferences();
-                    IGV.getInstance().repaintDataPanels();
+                    IGV.getInstance().revalidateTrackPanels();
                 }
 
             } catch (NumberFormatException numberFormatException) {

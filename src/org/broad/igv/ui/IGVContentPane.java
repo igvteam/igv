@@ -110,7 +110,7 @@ public class IGVContentPane extends JPanel {
         }
     }
 
-    public void revalidateDataPanels() {
+    public void revalidateTrackPanels() {
         for (TrackPanel tp : mainPanel.getTrackPanels()) {
             tp.getScrollPane().getDataPanel().revalidate();
         }
@@ -140,13 +140,6 @@ public class IGVContentPane extends JPanel {
         return igvCommandBar;
     }
 
-    public void chromosomeChanged(String chrName) {
-        igvCommandBar.chromosomeChanged(chrName);
-    }
-
-    public void updateCurrentCoordinates() {
-        igvCommandBar.updateCurrentCoordinates();
-    }
 
     public ApplicationStatusBar getStatusBar() {
 

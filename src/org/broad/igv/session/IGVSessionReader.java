@@ -383,6 +383,7 @@ public class IGVSessionReader implements SessionReader {
         }
 
         if (genomeId != null && genomeId.length() > 0) {
+
             if (genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
                 // We don't have to reload the genome, but the gene track for the current genome should be restored.
                 if (hasGeneTrack || hasSeqTrack) {
@@ -395,7 +396,9 @@ public class IGVSessionReader implements SessionReader {
                 // save the path and restore it.
                 String sessionPath = session.getPath();
                 //Loads genome from list, or from server or cache
+
                 igv.selectGenomeFromList(genomeId);
+
                 if (!genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
                     String genomePath = genomeId;
                     if (!ParsingUtils.pathExists(genomePath)) {
@@ -403,8 +406,8 @@ public class IGVSessionReader implements SessionReader {
                     }
                     if (ParsingUtils.pathExists(genomePath)) {
                         try {
-                            IGV.getInstance().loadGenome(genomePath, null, hasGeneTrack);
-                        } catch (IOException e) {
+                            GenomeManager.getInstance().loadGenome(genomePath, null);
+                        } catch (Exception e) {
                             throw new RuntimeException("Error loading genome: " + genomeId);
                         }
                     } else {

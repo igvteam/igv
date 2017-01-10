@@ -35,7 +35,6 @@ package org.broad.igv.ui.legend;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.renderer.ContinuousColorScale;
-import org.broad.igv.sam.PEStats;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -114,7 +113,7 @@ public class HeatmapLegendPanel extends LegendPanel {
 
                 colorScale = dialog.getColorScheme();
                 PreferenceManager.getInstance().setColorScale(type, colorScale);
-                IGV.getInstance().repaintDataPanels();
+                IGV.getInstance().revalidateTrackPanels();
                 try {
 
                     reloadPreferences();

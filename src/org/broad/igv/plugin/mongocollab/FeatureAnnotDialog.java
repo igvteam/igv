@@ -148,7 +148,7 @@ public class FeatureAnnotDialog extends JDialog {
                 ft.clearPackedFeatures();
             }
         }
-        IGV.getInstance().repaintDataPanels();
+        IGV.getInstance().revalidateTrackPanels();
     }
 
     private void delButtonActionPerformed(ActionEvent e) {

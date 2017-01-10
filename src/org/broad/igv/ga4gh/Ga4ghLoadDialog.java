@@ -146,7 +146,7 @@ public class Ga4ghLoadDialog extends JDialog {
             try {
                 GenomeListItem item = GenomeManager.getInstance().findGenomeListItemById(genomeId);
                 if (item != null) {
-                    IGV.getInstance().loadGenomeById(genomeId);
+                    GenomeManager.getInstance().loadGenomeById(genomeId);
                 }
             } catch (IOException e) {
                 e.printStackTrace();

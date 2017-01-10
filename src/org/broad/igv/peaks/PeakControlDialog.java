@@ -32,7 +32,6 @@ package org.broad.igv.peaks;
 import javax.swing.event.*;
 import org.broad.igv.ui.IGV;
 import java.awt.*;
-import java.awt.event.*;
 import java.beans.*;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -56,13 +55,13 @@ public class PeakControlDialog extends JDialog {
 
     private void scoreSliderStateChanged(ChangeEvent e) {
         PeakTrack.setScoreThreshold(scoreSlider.getValue());
-        IGV.getInstance().repaintDataPanels();
+        IGV.getInstance().revalidateTrackPanels();
 
     }
 
     private void foldChangeSliderStateChanged(ChangeEvent e) {
         PeakTrack.setFoldChangeThreshold(foldChangeSlider.getValue());
-        IGV.getInstance().repaintDataPanels();
+        IGV.getInstance().revalidateTrackPanels();
     }
 
     private void slider1PropertyChange(PropertyChangeEvent e) {

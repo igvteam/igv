@@ -27,6 +27,7 @@ package org.broad.igv.ui;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.util.TestUtils;
 import org.junit.*;
@@ -123,7 +124,7 @@ public class AbstractHeadedTest {
             assertTrue(IGV.getInstance().waitForNotify(1000));
         }
         if (genomeFile != null) {
-            igv.loadGenome(genomeFile, null, true);
+            GenomeManager.getInstance().loadGenome(genomeFile, null);
             genome = igv.getGenomeManager().getCurrentGenome();
         }
         return igv;

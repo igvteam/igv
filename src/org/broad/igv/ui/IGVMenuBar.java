@@ -543,8 +543,17 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                     @Override
                     public void actionPerformed(ActionEvent event) {
                         try {
-                            org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
-                            igv.doLoadGenome(monitor);
+                            File importDirectory = PreferenceManager.getInstance().getLastGenomeImportDirectory();
+                            if (importDirectory == null) {
+                                PreferenceManager.getInstance().setLastGenomeImportDirectory(DirectoryManager.getUserDirectory());
+                            }
+                            // Display the dialog
+                            File file = FileDialogUtils.chooseFile("Load Genome", importDirectory, FileDialog.LOAD);
+
+                            // If a file selection was made
+                            if (file != null) {
+                                GenomeManager.getInstance().loadGenome(file.getAbsolutePath(), null);
+                            }
                         } catch (Exception e) {
                             MessageUtils.showErrorMessage(e.getMessage(), e);
                         }
@@ -563,7 +572,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction = new MenuAction("Load Genome From Server...", null) {
             @Override
             public void actionPerformed(ActionEvent event) {
-                IGV.getInstance().loadGenomeFromServerAction();
+                IGV.getInstance().loadGenomeFromServer();
             }
         };
         menuAction.setToolTipText(LOAD_GENOME_SERVER_TOOLTIP);
@@ -578,7 +587,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                     public void actionPerformed(ActionEvent event) {
                         javax.swing.ProgressMonitor monitor = new javax.swing.ProgressMonitor(IGV.getInstance().getMainPanel(),
                                 "Creating genome", null, 0, 100);
-                        igv.doDefineGenome(monitor);
+                        igv.defineGenome(monitor);
                     }
                 };
 
@@ -1290,7 +1299,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     public void receiveEvent(final Object event) {
 
         if(event instanceof GenomeChangeEvent) {
-            UIUtilities.invokeOnEventThread(() -> encodeMenuItem.setVisible (EncodeFileBrowser.genomeSupported(((GenomeChangeEvent) event).genomeID)));
+            UIUtilities.invokeOnEventThread(() -> encodeMenuItem.setVisible (EncodeFileBrowser.genomeSupported(((GenomeChangeEvent) event).genome.getId())));
         }
     }
 }

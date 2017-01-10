@@ -917,7 +917,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public static void refresh() {
         IGV.getInstance().getContentPane().getMainPanel().invalidate();
-        IGV.getInstance().repaintDataPanels();
+        IGV.getInstance().revalidateTrackPanels();
     }
 
     public static boolean isBisulfiteColorType(ColorOption o) {

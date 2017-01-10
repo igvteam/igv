@@ -212,7 +212,7 @@ public class RegionOfInterestPanel extends JPanel {
 
             public void actionPerformed(ActionEvent e) {
                 IGV.getInstance().getSession().getRegionsOfInterest(frame.getChrName()).remove(roi);
-                IGV.getInstance().repaintDataAndHeaderPanels();
+                IGV.getInstance().revalidateTrackPanels();
             }
         });
         popupMenu.add(item);
@@ -251,13 +251,13 @@ public class RegionOfInterestPanel extends JPanel {
                 setToolTipText(roi.getTooltip());
                 if (selectedRegion != roi) {
                     selectedRegion = roi;
-                    IGV.getInstance().repaintDataPanels();
+                    IGV.getInstance().revalidateTrackPanels();
                 }
 
             } else {
                 if (selectedRegion != null) {
                     selectedRegion = null;
-                    IGV.getInstance().repaintDataPanels();
+                    IGV.getInstance().revalidateTrackPanels();
                 }
                 setToolTipText("");
                 setCursor(Cursor.getDefaultCursor());
@@ -268,7 +268,7 @@ public class RegionOfInterestPanel extends JPanel {
         public void mouseExited(MouseEvent mouseEvent) {
             if (selectedRegion != null) {
                 selectedRegion = null;
-                IGV.getInstance().repaintDataPanels();
+                IGV.getInstance().revalidateTrackPanels();
             }
         }
 

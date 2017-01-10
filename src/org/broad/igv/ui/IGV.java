@@ -75,7 +75,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.io.*;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
 import java.net.NoRouteToHostException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -311,41 +310,35 @@ public class IGV implements IGVEventObserver {
         mainFrame.setBounds(applicationBounds);
 
         IGVEventBus.getInstance().subscribe(ViewChange.class, this);
+        IGVEventBus.getInstance().subscribe(GenomeChangeEvent.class, this);
     }
 
     private void consumeEvents(Component glassPane) {
-        glassPane.addMouseListener(new MouseAdapter()
-        {
+        glassPane.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e)
-            {
+            public void mouseClicked(MouseEvent e) {
                 e.consume();
             }
 
             @Override
-            public void mousePressed(MouseEvent e)
-            {
+            public void mousePressed(MouseEvent e) {
                 e.consume();
             }
         });
         glassPane.setFocusable(true);
-        glassPane.addKeyListener(new KeyListener()
-        {
+        glassPane.addKeyListener(new KeyListener() {
             @Override
-            public void keyTyped(KeyEvent e)
-            {
+            public void keyTyped(KeyEvent e) {
                 e.consume();
             }
 
             @Override
-            public void keyReleased(KeyEvent e)
-            {
+            public void keyReleased(KeyEvent e) {
                 e.consume();
             }
 
             @Override
-            public void keyPressed(KeyEvent e)
-            {
+            public void keyPressed(KeyEvent e) {
                 e.consume();
             }
         });
@@ -401,26 +394,22 @@ public class IGV implements IGVEventObserver {
 
     }
 
-    public void selectGenomeFromList(String genomeId) {
-        contentPane.getCommandBar().selectGenome(genomeId);
-    }
-
-    public Collection<String> getSelectableGenomeIDs() {
-        return contentPane.getCommandBar().getSelectableGenomeIDs();
-    }
-
     // Set the focus on the command bar search box
     public void focusSearchBox() {
         contentPane.getCommandBar().focusSearchBox();
     }
 
 
-    public void doDefineGenome(javax.swing.ProgressMonitor monitor) {
+    public void selectGenomeFromList(String genomeId) {
+        contentPane.getCommandBar().selectGenome(genomeId);
+    }
+
+
+    public void defineGenome(javax.swing.ProgressMonitor monitor) {
 
         ProgressBar.ProgressDialog progressDialog = null;
         File archiveFile = null;
 
-        CursorToken token = WaitCursorManager.showWaitCursor();
         try {
             GenomeBuilderDialog genomeBuilderDialog = new GenomeBuilderDialog(mainFrame, this);
             genomeBuilderDialog.setVisible(true);
@@ -460,7 +449,7 @@ public class IGV implements IGVEventObserver {
 
             log.error("Failed to define genome: " + genomePath, e);
 
-            JOptionPane.showMessageDialog(mainFrame, "Failed to define the current genome " +
+            JOptionPane.showMessageDialog(mainFrame, "Failed to define genome " +
                     genomePath + "\n" + e.getMessage());
         } catch (GenomeException e) {
             log.error("Failed to define genome.", e);
@@ -477,24 +466,10 @@ public class IGV implements IGVEventObserver {
             if (progressDialog != null) {
                 progressDialog.setVisible(false);
             }
-            WaitCursorManager.removeWaitCursor(token);
         }
     }
 
-    public GenomeListItem getGenomeSelectedInDropdown() {
-        return contentPane.getCommandBar().getGenomeSelectedInDropdown();
-    }
-
-    /**
-     * Gets the collection of genome display names currently in use.
-     *
-     * @return Set of display names.
-     */
-    public Collection<String> getGenomeDisplayNames() {
-        return contentPane.getCommandBar().getGenomeDisplayNames();
-    }
-
-    void loadGenomeFromServerAction() {
+    void loadGenomeFromServer() {
 
         Runnable showDialog = new Runnable() {
             @Override
@@ -529,120 +504,19 @@ public class IGV implements IGVEventObserver {
                     }
 
                     if (selectedValues.size() > 0) {
-                        GenomeManager.getInstance().addGenomeItems(selectedValues, false);
-                        getContentPane().getCommandBar().refreshGenomeListComboBox();
-                        selectGenomeFromList(selectedValues.get(0).getId());
+                   //     GenomeManager.getInstance().addGenomeItems(selectedValues, false);
+                        GenomeManager.getInstance().loadGenome(selectedValues.get(0).getLocation(), null);
+                  //      contentPane.getCommandBar().selectGenome(selectedValues.get(0).getId());
                     }
                 }
             }
         };
-        LongRunningTask.submit(showDialog);
-    }
 
-    /**
-     * Load a .genome file directly.  This method really belongs in IGVMenuBar.
-     *
-     * @param monitor
-     * @return
-     */
-    public void doLoadGenome(ProgressMonitor monitor) {
-
-        ProgressBar.ProgressDialog progressDialog = null;
-        File file = null;
-        CursorToken token = WaitCursorManager.showWaitCursor();
-        try {
-            File importDirectory = PreferenceManager.getInstance().getLastGenomeImportDirectory();
-            if (importDirectory == null) {
-                PreferenceManager.getInstance().setLastGenomeImportDirectory(DirectoryManager.getUserDirectory());
-            }
-
-            // Display the dialog
-            file = FileDialogUtils.chooseFile("Load Genome", importDirectory, FileDialog.LOAD);
-
-
-            // If a file selection was made
-            if (file != null) {
-                log.info("Loading genome: file.name=" + file.getName() + "  file.path=" + file.getPath() +
-                        "  file.absolutePath=" + file.getAbsolutePath());
-
-                if (monitor != null) {
-                    progressDialog = ProgressBar.showProgressDialog(mainFrame, "Loading Genome...", monitor, false);
-                }
-
-                loadGenome(file.getAbsolutePath(), monitor, true);
-
-            }
-        } catch (IOException e) {
-            MessageUtils.showMessage("<html>Error loading: " + file.getAbsolutePath() + "<br>" + e.getMessage());
-            log.error("Error loading: " + file.getAbsolutePath(), e);
-        } finally {
-            WaitCursorManager.removeWaitCursor(token);
-            if (monitor != null) {
-                monitor.fireProgressChange(100);
-            }
-
-            if (progressDialog != null) {
-                progressDialog.setVisible(false);
-            }
-        }
-
-    }
-
-    public void loadGenomeById(String genomeId) {
-
-        final Genome currentGenome = genomeManager.getCurrentGenome();
-        if (currentGenome != null && genomeId.equals(currentGenome.getId())) {
-            return; // Already loaded
-        }
-
-        if (ParsingUtils.pathExists(genomeId)) {
-            try {
-                loadGenome(genomeId, null, false);
-            } catch (IOException e) {
-                log.error("Error loading genome file: " + genomeId, e);
-            }
+        if (SwingUtilities.isEventDispatchThread()) {
+            LongRunningTask.submit(showDialog);
         } else {
-            contentPane.getCommandBar().selectGenome(genomeId);
+            showDialog.run();
         }
-    }
-
-    public void loadGenome(String path, ProgressMonitor monitor, boolean userDefined) throws IOException {
-        loadGenome(path, monitor, true, userDefined);
-    }
-
-    /**
-     * @param path
-     * @param monitor
-     * @param addGenomeTrack Whether to display the gene track as well
-     * @throws IOException
-     */
-    public void loadGenome(String path, ProgressMonitor monitor, boolean addGenomeTrack, boolean userDefined) throws IOException {
-
-        File file = new File(path);
-        if (file.exists()) {
-            File directory = file.getAbsoluteFile().getParentFile();
-            PreferenceManager.getInstance().setLastGenomeImportDirectory(directory);
-        }
-
-        resetSession(null);
-
-        Genome genome = getGenomeManager().loadGenome(path, monitor, addGenomeTrack);
-        //If genome loading cancelled
-        if (genome == null) return;
-
-        final String name = genome.getDisplayName();
-        final String id = genome.getId();
-
-        GenomeListItem genomeListItem = new GenomeListItem(name, path, id);
-        getGenomeManager().addGenomeItem(genomeListItem, userDefined);
-
-        IGVCommandBar cmdBar = contentPane.getCommandBar();
-        cmdBar.refreshGenomeListComboBox();
-        cmdBar.selectGenome(genomeListItem.getId());
-        cmdBar.updateChromosFromGenome(genome);
-
-        FrameManager.getDefaultFrame().setChromosomeName(genome.getHomeChromosome(), true);
-
     }
 
 
@@ -1607,41 +1481,41 @@ public class IGV implements IGVEventObserver {
 
     /**
      * Load resources into IGV. Tracks are added to the appropriate panel
-     *
+     * <p>
      * NOTE: this must be run on the event tread as UI components are added here.
      *
      * @param locators
      */
     public void loadResources(Collection<ResourceLocator> locators) {
 
-            log.info("Loading " + locators.size() + " resources.");
-            final MessageCollection messages = new MessageCollection();
+        log.info("Loading " + locators.size() + " resources.");
+        final MessageCollection messages = new MessageCollection();
 
-            for (final ResourceLocator locator : locators) {
+        for (final ResourceLocator locator : locators) {
 
-                // If its a local file, check explicitly for existence (rather than rely on exception)
-                if (locator.isLocal()) {
-                    File trackSetFile = new File(locator.getPath());
-                    if (!trackSetFile.exists()) {
-                        messages.append("File not found: " + locator.getPath() + "\n");
-                        continue;
-                    }
-                }
-
-                try {
-                    List<Track> tracks = load(locator);
-                    addTracks(tracks, locator);
-                } catch (Exception e) {
-                    log.error("Error loading track", e);
-                    messages.append("Error loading " + locator + ": " + e.getMessage());
-                }
-
-            }
-            if (!messages.isEmpty()) {
-                for (String message : messages.getMessages()) {
-                    MessageUtils.showMessage(message);
+            // If its a local file, check explicitly for existence (rather than rely on exception)
+            if (locator.isLocal()) {
+                File trackSetFile = new File(locator.getPath());
+                if (!trackSetFile.exists()) {
+                    messages.append("File not found: " + locator.getPath() + "\n");
+                    continue;
                 }
             }
+
+            try {
+                List<Track> tracks = load(locator);
+                addTracks(tracks, locator);
+            } catch (Exception e) {
+                log.error("Error loading track", e);
+                messages.append("Error loading " + locator + ": " + e.getMessage());
+            }
+
+        }
+        if (!messages.isEmpty()) {
+            for (String message : messages.getMessages()) {
+                MessageUtils.showMessage(message);
+            }
+        }
 
     }
 
@@ -2187,7 +2061,7 @@ public class IGV implements IGVEventObserver {
         for (TrackPanel trackPanel : getTrackPanels()) {
             trackPanel.sortByRegionsScore(r, type, frame, sortedSamples);
         }
-        repaintDataPanels();
+        revalidateTrackPanels();
     }
 
 
@@ -2412,7 +2286,7 @@ public class IGV implements IGVEventObserver {
             }
 
             if (igvArgs.getGenomeId() != null) {
-                IGV.getInstance().loadGenomeById(igvArgs.getGenomeId());
+                GenomeManager.getInstance().loadGenomeById(igvArgs.getGenomeId());
             } else if (igvArgs.getSessionFile() == null) {
                 String genomeId = preferenceManager.getDefaultGenome();
                 contentPane.getCommandBar().selectGenome(genomeId);
@@ -2629,7 +2503,7 @@ public class IGV implements IGVEventObserver {
 
 
     /**
-     * Wrapper for igv.wait(timeout)
+     * Wrapper for igv.wait(timeout).   Used during unit tests.
      *
      * @param timeout
      * @return True if method completed before interruption (not necessarily before timeout), otherwise false
@@ -2650,45 +2524,20 @@ public class IGV implements IGVEventObserver {
         return completed;
     }
 
-//
-//    NOTE:  MAC ONLY,  WILL NOT COMPILE ON OTHER PLATFORMS
-//    private void getRealDPI() {
-//        // find the display device of interest
-//        final GraphicsDevice defaultScreenDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-//
-//        // on OS X, it would be CGraphicsDevice
-//        if (defaultScreenDevice instanceof CGraphicsDevice) {
-//            final CGraphicsDevice device = (CGraphicsDevice) defaultScreenDevice;
-//
-//            // this is the missing correction factor, it's equal to 2 on HiDPI a.k.a. Retina displays
-//            final int scaleFactor = device.getScaleFactor();
-//
-//            // now we can compute the real DPI of the screen
-//            final double realDPI = scaleFactor * (device.getXResolution() + device.getYResolution()) / 2;
-//
-//            System.out.println("scale factor = " + scaleFactor + "    realDPI = " + realDPI);
-//        }
-//    }
-
-
     public void receiveEvent(Object event) {
 
         if (event instanceof ViewChange) {
-            ViewChange e = (ViewChange) event;
-            if (e.type == ViewChange.Type.ChromosomeChange) {
-                chromosomeChangeEvent(e.chrName, false);
-            } else {
-                repaintDataAndHeaderPanels();
-                repaintStatusAndZoomSlider();
-            }
+            revalidateTrackPanels();
+        } else if (event instanceof GenomeChangeEvent) {
+            doRefresh();
         } else {
             log.info("Unknown event type: " + event.getClass());
         }
+
     }
 
 
     public void repaint() {
-        //   Preloader.preload();
         mainFrame.repaint();
     }
 
@@ -2710,31 +2559,6 @@ public class IGV implements IGVEventObserver {
         contentPane.getMainPanel().revalidate();
         mainFrame.repaint();
         getContentPane().repaint();
-        contentPane.getCommandBar().updateComponentStates();
-    }
-
-
-    private void chromosomeChangeEvent(String chrName, boolean updateCommandBar) {
-        contentPane.chromosomeChanged(chrName);
-        repaintDataAndHeaderPanels(updateCommandBar);
-        contentPane.getCommandBar().updateComponentStates();
-    }
-
-    public void repaintStatusAndZoomSlider() {
-        contentPane.getCommandBar().updateComponentStates();
-        contentPane.getCommandBar().repaint();
-    }
-
-    /**
-     * Repaint panels containing data, specifically the dataTrackPanel,
-     * featureTrackPanel, and headerPanel.
-     */
-    public void repaintDataAndHeaderPanels() {
-        repaintDataAndHeaderPanels(true);
-    }
-
-    public void repaintDataPanels() {
-        repaintDataAndHeaderPanels(false);
     }
 
     /**
@@ -2743,43 +2567,16 @@ public class IGV implements IGVEventObserver {
      * Note:  If running in Batch mode we force synchronous painting.  This is necessary as the
      * paint() command triggers loading of data.  If allowed to proceed asynchronously the "snapshot" batch command
      * might execute before the data from a previous command has loaded.
-     *
-     * @param updateCommandBar
      */
-    public void repaintDataAndHeaderPanels(boolean updateCommandBar) {
-
+    public void revalidateTrackPanels() {
 
         if (Globals.isBatch()) {
-            Runnable r = new Runnable() {
-                public void run() {
-                    contentPane.revalidateDataPanels();
-                    rootPane.paintImmediately(rootPane.getBounds());
-                }
-            };
-            if (SwingUtilities.isEventDispatchThread()) {
-                r.run();
-            } else {
-                try {
-                    SwingUtilities.invokeAndWait(r);
-                } catch (InterruptedException e) {
-                    // Just continue
-                    log.error(e);
-                } catch (InvocationTargetException e) {
-                    log.error(e.getMessage());
-                    throw new RuntimeException(e);
-                }
-            }
+            contentPane.revalidateTrackPanels();
+            rootPane.paintImmediately(rootPane.getBounds());
         } else {
+            contentPane.revalidateTrackPanels();
+            rootPane.repaint();
 
-                contentPane.revalidateDataPanels();
-                rootPane.repaint();
-           // );
-
-
-        }
-
-        if (updateCommandBar) {
-            contentPane.updateCurrentCoordinates();
         }
     }
 
@@ -2788,6 +2585,27 @@ public class IGV implements IGVEventObserver {
             tp.getScrollPane().getNamePanel().repaint();
         }
     }
+
+
+//
+//    NOTE:  MAC ONLY,  WILL NOT COMPILE ON OTHER PLATFORMS
+//    private void getRealDPI() {
+//        // find the display device of interest
+//        final GraphicsDevice defaultScreenDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+//
+//        // on OS X, it would be CGraphicsDevice
+//        if (defaultScreenDevice instanceof CGraphicsDevice) {
+//            final CGraphicsDevice device = (CGraphicsDevice) defaultScreenDevice;
+//
+//            // this is the missing correction factor, it's equal to 2 on HiDPI a.k.a. Retina displays
+//            final int scaleFactor = device.getScaleFactor();
+//
+//            // now we can compute the real DPI of the screen
+//            final double realDPI = scaleFactor * (device.getXResolution() + device.getYResolution()) / 2;
+//
+//            System.out.println("scale factor = " + scaleFactor + "    realDPI = " + realDPI);
+//        }
+//    }
 
 
 }

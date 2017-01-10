@@ -836,7 +836,7 @@ public class TrackMenuUtils {
 
             public void actionPerformed(ActionEvent evt) {
                 FeatureTrack.setDrawBorder(drawBorderItem.isSelected());
-                IGV.getInstance().repaintDataPanels();
+                IGV.getInstance().revalidateTrackPanels();
             }
         });
 
@@ -860,7 +860,7 @@ public class TrackMenuUtils {
                 for (Track t : selectedTracks) {
                     t.getDataRange().setType(scaleType);
                 }
-                IGV.getInstance().repaintDataPanels();
+                IGV.getInstance().revalidateTrackPanels();
             }
         });
 
@@ -959,7 +959,7 @@ public class TrackMenuUtils {
                             ((DataTrack) t).setShowDataRange(showDataRange);
                         }
                     }
-                    IGV.getInstance().repaintDataPanels();
+                    IGV.getInstance().revalidateTrackPanels();
                 }
             });
         }

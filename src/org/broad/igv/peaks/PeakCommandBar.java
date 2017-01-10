@@ -63,12 +63,12 @@ public class PeakCommandBar extends JPanel {
 
     private void scoreSliderStateChanged(ChangeEvent e) {
         PeakTrack.setScoreThreshold(scoreSlider.getValue());
-        IGV.getInstance().repaintDataPanels();
+        IGV.getInstance().revalidateTrackPanels();
     }
 
     private void foldChangeSliderStateChanged(ChangeEvent e) {
         PeakTrack.setFoldChangeThreshold(foldChangeSlider.getValue());
-        IGV.getInstance().repaintDataPanels();
+        IGV.getInstance().revalidateTrackPanels();
 
     }
 

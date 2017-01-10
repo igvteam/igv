@@ -227,7 +227,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                         String lastSortTag = prefMgr.get(PreferenceManager.SAM_SORT_BY_TAG);
 
                         igv.sortAlignmentTracks(option, lastSortTag);
-                        igv.repaintDataPanels();
+                        igv.revalidateTrackPanels();
                     } catch (IllegalArgumentException e1) {
                         log.error("Unrecognized sort option: " + sortOptionString);
                     }
@@ -288,7 +288,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
             public void actionPerformed(ActionEvent e) {
                 boolean currentSetting = prefMgr.getAsBoolean(PreferenceManager.SAM_COMPLETE_READS_ONLY);
                 prefMgr.put(PreferenceManager.SAM_COMPLETE_READS_ONLY, !currentSetting);
-                igv.repaintDataPanels();
+                igv.revalidateTrackPanels();
             }
         };
         inputMap.put(completeReadKey, "completeReads");

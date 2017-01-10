@@ -139,6 +139,10 @@ public class Session implements IGVEventObserver {
         history.push(defaultFrame.getFormattedLocusString(), defaultFrame.getZoom());
     }
 
+    public void clearHistory() {
+        history.clear();
+    }
+
     public String getSessionVersion() {
         return String.valueOf(version);
     }

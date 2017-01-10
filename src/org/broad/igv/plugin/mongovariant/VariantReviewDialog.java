@@ -141,7 +141,7 @@ public class VariantReviewDialog extends JDialog {
                     ((VariantTrack) t).clearPackedFeatures();
                 }
             }
-            IGV.getInstance().repaintDataPanels();
+            IGV.getInstance().revalidateTrackPanels();
         }
     }
 

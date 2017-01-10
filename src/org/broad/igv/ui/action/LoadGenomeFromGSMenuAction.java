@@ -26,6 +26,7 @@
 package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.gs.GSFileBrowser;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
@@ -58,7 +59,7 @@ public class LoadGenomeFromGSMenuAction extends MenuAction {
 
             String url = dlg.getFileURL();
             if (url != null) {
-                igv.loadGenome(url, null, true);
+                GenomeManager.getInstance().loadGenome(url, null);
             }
         } catch (Exception e1) {
             log.error("Error fetching directory listing on GenomeSpace server.", e1);

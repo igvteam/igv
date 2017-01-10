@@ -26,14 +26,16 @@
 
 package org.broad.igv.ui.event;
 
+import org.broad.igv.feature.genome.Genome;
+
 /**
  * Created by jrobinso on 1/7/17.
  */
 public class GenomeChangeEvent {
 
-    public String genomeID;
+    public Genome genome;
 
-    public GenomeChangeEvent(String genomeID) {
-        this.genomeID = genomeID;
+    public GenomeChangeEvent(Genome genome) {
+        this.genome = genome;
     }
 }

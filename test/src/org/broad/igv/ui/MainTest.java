@@ -152,7 +152,7 @@ public class MainTest {
     @Test
     public void testLoadGenomeById() throws Exception {
         String genomeId = "mm7";
-        Collection<GenomeListItem> genomeListItems = GenomeManager.getInstance().getGenomes();
+        Collection<GenomeListItem> genomeListItems = GenomeManager.getInstance().getGenomeListItems();
         for (GenomeListItem gen : genomeListItems) {
             assertNotSame("Bad test setup, test genome in display list", gen.getId(), genomeId);
         }

@@ -30,7 +30,6 @@
 
 package org.broad.igv.batch;
 
-import com.google.common.collect.Iterables;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -376,8 +375,8 @@ public class CommandExecutor {
         }
         if (ParsingUtils.pathExists(genomePath)) {
             try {
-                igv.loadGenome(genomePath, null, true);
-            } catch (IOException e) {
+                GenomeManager.getInstance().loadGenome(genomePath, null);
+            } catch (Exception e) {
                 throw new RuntimeException("Error loading genome: " + genomeID);
             }
         } else {
@@ -825,12 +824,12 @@ public class CommandExecutor {
             igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag);
 
         }
-        igv.repaintDataPanels();
+        igv.revalidateTrackPanels();
     }
 
     private void group(String groupArg, String tagArg) {
         igv.groupAlignmentTracks(getAlignmentGroupOption(groupArg), tagArg, null);
-        igv.repaintDataPanels();
+        igv.revalidateTrackPanels();
     }
 
 
