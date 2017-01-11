@@ -199,7 +199,7 @@ public class GenomeManager {
                 monitor.fireProgress(25);
             }
 
-            IGV.getInstance().resetSession(null);
+            if(IGV.hasInstance()) IGV.getInstance().resetSession(null);
 
             if (!genomeItemMap.containsKey(newGenome.getId())) {
                 GenomeListItem genomeListItem = new GenomeListItem(newGenome.getDisplayName(), genomePath, newGenome.getId());
