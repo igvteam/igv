@@ -37,14 +37,12 @@ import org.broad.igv.util.Utilities;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * Write SAM/BAM Alignments to a file or stream
  * <p/>
+ *
  * @author jacob
  * @since 2012/05/04
  */
@@ -68,15 +66,15 @@ public class SAMWriter {
     public int writeToStream(OutputStream stream, Iterator<PicardAlignment> alignments, boolean bam) {
 
         SAMFileWriterImpl writer;
-       // if (bam) {
-       //     return 0;   // Don't know how to output bams
-       //     //writer = new BAMFileWriter(stream, null);
-       // } else {
-            writer = new SAMTextWriter(stream);
+        // if (bam) {
+        //     return 0;   // Don't know how to output bams
+        //     //writer = new BAMFileWriter(stream, null);
+        // } else {
+        writer = new SAMTextWriter(stream);
 
-            writer.setHeader(header);
-            return writeAlignments(writer, alignments);
-       // }
+        writer.setHeader(header);
+        return writeAlignments(writer, alignments);
+        // }
     }
 
     private int writeAlignments(SAMFileWriter writer, Iterator<PicardAlignment> alignments) {
@@ -204,7 +202,7 @@ public class SAMWriter {
 
         @Override
         public PicardAlignment next() {
-            if(!hasNext()) throw new NoSuchElementException("No more SamAlignments");
+            if (!hasNext()) throw new NoSuchElementException("No more SamAlignments");
             PicardAlignment next = nextAlignment;
             advance();
             return next;
@@ -220,7 +218,7 @@ public class SAMWriter {
             return this;
         }
 
-        private boolean passLocFilter(Alignment al){
+        private boolean passLocFilter(Alignment al) {
             return this.chr != null && this.overlaps(al.getChr(), al.getStart(), al.getEnd());
         }
 
@@ -234,6 +232,7 @@ public class SAMWriter {
 
     /**
      * Use Picard to write alignments which are already stored in memory
+     *
      * @param dataManager
      * @param outFile
      * @param sequence
@@ -243,7 +242,7 @@ public class SAMWriter {
      * @throws IOException
      */
     public static int writeAlignmentFilePicard(AlignmentDataManager dataManager, File outFile,
-                                               String sequence, int start, int end) throws IOException{
+                                               String sequence, int start, int end) throws IOException {
 
         ResourceLocator inlocator = dataManager.getLocator();
         checkExportableAlignmentFile(inlocator.getTypeString());
@@ -254,15 +253,30 @@ public class SAMWriter {
         fileHeader.setSortOrder(SAMFileHeader.SortOrder.coordinate);
 
         Range range = new Range(sequence, start, end);
-        Iterator<Alignment> iter = dataManager.getLoadedInterval(range).getAlignmentIterator();
-        Iterator<PicardAlignment> samIter = new SamAlignmentIterable(iter, sequence, start, end);
+        AlignmentInterval interval = dataManager.getLoadedInterval(range);
+        if (interval != null) {
+            List<Alignment> alignments = new ArrayList(interval.getAlignments());
 
-        SAMWriter writer = new SAMWriter(fileHeader);
-        return writer.writeToFile(outFile, samIter, true);
+            // We need to sort if soft-clipping is on, so just sort always.  Its cheap.
+            Collections.sort(alignments, new Comparator<Alignment>() {
+                @Override
+                public int compare(Alignment o1, Alignment o2) {
+                    return o1.getAlignmentStart() - o2.getAlignmentStart();
+                }
+            });
+
+            Iterator<PicardAlignment> samIter = new SamAlignmentIterable(alignments.iterator(), sequence, start, end);
+
+            SAMWriter writer = new SAMWriter(fileHeader);
+            return writer.writeToFile(outFile, samIter, true);
+        } else {
+            return 0;
+        }
     }
 
     /**
      * Use Picard to write alignment subset, as read from a file
+     *
      * @param inlocator
      * @param outPath
      * @param sequence
@@ -271,7 +285,7 @@ public class SAMWriter {
      * @return
      */
     public static int writeAlignmentFilePicard(ResourceLocator inlocator, String outPath,
-                                                String sequence, int start, int end) throws IOException{
+                                               String sequence, int start, int end) throws IOException {
 
         checkExportableAlignmentFile(inlocator.getTypeString());
 
@@ -286,13 +300,13 @@ public class SAMWriter {
         return count;
     }
 
-    private static void checkExportableAlignmentFile(String typeString){
-        String[] validExts = new String[]{".bam", ".sam", ".bam.list", ".sam.list"};
+    private static void checkExportableAlignmentFile(String typeString) {
+        String[] validExts = new String[]{".cram", ".bam", ".sam", ".bam.list", ".sam.list"};
         boolean isValidExt = false;
-        for(String validExt: validExts){
+        for (String validExt : validExts) {
             isValidExt |= typeString.endsWith(validExt);
         }
-        if(!isValidExt){
+        if (!isValidExt) {
             throw new IllegalArgumentException("Input alignment valid not valid for export");
         }
     }
