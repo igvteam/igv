@@ -1311,8 +1311,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             add(TrackMenuUtils.getTrackRenameItem(tracks));
             addCopyToClipboardItem(e);
 
-            addSeparator();
-            addExpandInsertions();
+   //         addSeparator();
+  //          addExpandInsertions();
 
             if (dataManager.isTenX()) {
                 addTenXItems();
