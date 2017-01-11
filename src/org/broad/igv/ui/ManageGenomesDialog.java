@@ -109,9 +109,7 @@ public class ManageGenomesDialog extends JDialog {
                 }
             }
         }
-
         cancelled = false;
-        PreferenceManager.getInstance().saveGenomeIdDisplayList(allListItems);
         setVisible(false);
     }
 

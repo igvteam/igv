@@ -1511,13 +1511,11 @@ public class GenomeManager {
             genomeItemMap.put(genomeListItem.getId(), genomeListItem);
             if (userDefined) userDefinedGenomeArchiveList.add(genomeListItem);
         }
-        PreferenceManager.getInstance().saveGenomeIdDisplayList(genomeItemMap.values());
         updateImportedGenomePropertyFile();
     }
 
     public void addGenomeItem(GenomeListItem genomeListItem, boolean userDefined) {
         genomeItemMap.put(genomeListItem.getId(), genomeListItem);
-        PreferenceManager.getInstance().saveGenomeIdDisplayList(genomeItemMap.values());
         if (userDefined) {
             userDefinedGenomeArchiveList.add(genomeListItem);
         }
@@ -1671,7 +1669,6 @@ public class GenomeManager {
     public void removeGenomeListItem(GenomeListItem genomeListItem) {
 
         genomeItemMap.remove(genomeListItem.getId());
-        PreferenceManager.getInstance().saveGenomeIdDisplayList(getGenomeListItems());
 
         if (userDefinedGenomeArchiveList != null && userDefinedGenomeArchiveList.contains(genomeListItem)) {
             userDefinedGenomeArchiveList.remove(genomeListItem);

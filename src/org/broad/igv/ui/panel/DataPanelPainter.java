@@ -70,7 +70,7 @@ public class DataPanelPainter {
             referenceFrame.setInsertions(InsertionManager.getInstance().getInsertions(referenceFrame.getOrigin(), referenceFrame.getEnd()));
             List<InsertionManager.Insertion> insertions = referenceFrame.getInsertions();
 
-            if (insertions != null && insertions.size() > 0) {
+            if (AlignmentTrack.expandInsertions && insertions != null && insertions.size() > 0) {
                 ReferenceFrame tempFrame = new ReferenceFrame(referenceFrame);
                 double start = context.getOrigin();
                 double scale = context.getScale();

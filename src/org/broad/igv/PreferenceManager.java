@@ -187,11 +187,8 @@ public class PreferenceManager implements PropertyManager {
     final static public String LAST_TRACK_DIRECTORY = "LAST_TRACK_DIRECTORY";
     final static public String LAST_SNAPSHOT_DIRECTORY = "LAST_SNAPSHOT_DIRECTORY";
     final static public String LAST_GENOME_IMPORT_DIRECTORY = "LAST_GENOME_IMPORT_DIRECTORY";
-    final static public String LAST_SESSION_DIRECTORY = "LAST_SESSION_DIRECTORY";
     final static public String DEFAULT_GENOME_KEY = "DEFAULT_GENOME_KEY";
-    final static public String LAST_CHROMOSOME_VIEWED_KEY = "LAST_CHROMOSOME_VIEWED_KEY";
     final static public String HISTORY_DELIMITER = ";";
-    final static public String GENOME_ID_DISPLAY_LIST_KEY = "GENOME_LIST";
     final static public String DETAILS_BEHAVIOR_KEY = "DETAILS_BEHAVIOR";
     final static public String DEFAULT_VISIBILITY_WINDOW = "DEFAULT_VISIBILITY_WINDOW";
 
@@ -209,8 +206,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String OVERLAY_MUTATIONS_WHOLE_GENOME = "OVERLAY_MUTATIONS_WHOLE_GENOME";
     public static final String COLOR_MUTATIONS = "COVER_OVERLAY_KEY";
     public static final String TRACK_ATTRIBUTE_NAME_KEY = "TRACK_ATTRIBUTE_NAME_KEY";
-    public static final String DATA_SERVER_URL_KEY = "MASTER_RESOURCE_FILE_KEY";
-    //public static final String CHECKED_RESOURCES_KEY = "CHECKED_RESOURCES_KEY";
+    public static final String DATA_SERVER_URL_KEY = "MASTER_RESOURCE_FILE_KEY";;
     public static final String DEFINE_GENOME_INPUT_DIRECTORY_KEY = "DEFINE_GENOME_INPUT_DIRECTORY_KEY";
 
     public static final String VARIANT_COLOR_BY_ALLELE_FREQ = "VARIANT_COLOR_BY_ALLELE_FREQ";
@@ -232,7 +228,6 @@ public class PreferenceManager implements PropertyManager {
     public static final String PROXY_HOST = "PROXY.HOST";
     public static final String PROXY_PORT = "PROXY.PORT";
     public static final String PROXY_AUTHENTICATE = "PROXY.AUTHENTICATE";
-    public static final String PROXY_NTLM = "PROXY.NTLM";
     public static final String PROXY_USER = "PROXY.USERNAME";
     public static final String PROXY_PW = "PROXY.PW";
     public static final String PROXY_TYPE = "PROXY.TYPE";
@@ -770,18 +765,6 @@ public class PreferenceManager implements PropertyManager {
         put(PreferenceManager.SHOW_ATTRIBUTE_VIEWS_KEY, Boolean.toString(isShowable));
     }
 
-
-    public void setLastChromosomeViewed(String chromosome) {
-        put(LAST_CHROMOSOME_VIEWED_KEY, chromosome);
-    }
-
-
-    public String getLastChromosomeViewed() {
-        String chromosome = get(LAST_CHROMOSOME_VIEWED_KEY, "chr1");
-        return chromosome;
-    }
-
-
     public void setDefaultGenome(String genomeId) {
         put(DEFAULT_GENOME_KEY, genomeId);
     }
@@ -1269,19 +1252,6 @@ public class PreferenceManager implements PropertyManager {
 
         genomeString = genomeString.substring(0, genomeString.length() - 1);
         return genomeString;
-    }
-
-    public void saveGenomeIdDisplayList(Collection<GenomeListItem> genomeListItems) {
-        preferences.put(GENOME_ID_DISPLAY_LIST_KEY, generateGenomeIdString(genomeListItems));
-    }
-
-    /**
-     * Returns a list of genomeIds to display in the combo box
-     *
-     * @return
-     */
-    public String[] getGenomeIdDisplayList() {
-        return getArray(GENOME_ID_DISPLAY_LIST_KEY);
     }
 
     /**

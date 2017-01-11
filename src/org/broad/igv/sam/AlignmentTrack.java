@@ -89,8 +89,12 @@ import java.util.List;
 
 public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEventListener {
 
-    public static final int GROUP_LABEL_HEIGHT = 10;
     private static Logger log = Logger.getLogger(AlignmentTrack.class);
+
+    public static boolean expandInsertions = false;
+
+    public static final int GROUP_LABEL_HEIGHT = 10;
+
     static final int GROUP_MARGIN = 5;
     static final int TOP_MARGIN = 20;
     static final int DS_MARGIN_0 = 2;
@@ -1309,6 +1313,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             add(TrackMenuUtils.getTrackRenameItem(tracks));
             addCopyToClipboardItem(e);
 
+            addSeparator();
+            addExpandInsertions();
+
             if (dataManager.isTenX()) {
                 addTenXItems();
             } else {
@@ -1368,6 +1375,19 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             addSeparator();
             addShowItems();
 
+        }
+
+        public JMenuItem addExpandInsertions() {
+
+            final JMenuItem item = new JCheckBoxMenuItem("Expand insertions");
+            item.setSelected(expandInsertions);
+
+            item.addActionListener(aEvt -> {
+                expandInsertions = !expandInsertions;
+                refresh();
+            });
+            add(item);
+            return item;
         }
 
         /**

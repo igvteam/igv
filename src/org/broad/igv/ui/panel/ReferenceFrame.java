@@ -37,6 +37,7 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.InsertionManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.event.IGVEventBus;
@@ -377,7 +378,14 @@ public class ReferenceFrame {
         IGV.getInstance().getSession().getHistory().push(getFormattedLocusString(), zoom);
     }
 
+
+
     public void shiftOriginPixels(int delta) {
+
+        if(AlignmentTrack.expandInsertions) {
+            return;  // Disable panning in expanded insertion mode for now
+        }
+
         double shiftBP = delta * getScale();
         setOrigin(origin + shiftBP);
         getEventBus().post(ViewChange.Result());
@@ -518,12 +526,13 @@ public class ReferenceFrame {
      */
     public double getChromosomePosition(int screenPosition) {
 
-        if (insertions != null && insertions.size() > 0) {
+        if (AlignmentTrack.expandInsertions && insertions != null && insertions.size() > 0) {
             double start = getOrigin();
             double scale = getScale();
             double a = 0,
                     b = 0;
 
+            //TODO -- replace this linear search
             for (InsertionManager.Insertion i : insertions) {
 
                 b = a + (i.position - start) / scale; // Screen position of insertion start
