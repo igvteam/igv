@@ -382,9 +382,9 @@ public class ReferenceFrame {
 
     public void shiftOriginPixels(int delta) {
 
-        if(IGV.getInstance().getSession().expandInsertions) {
-            return;  // Disable panning in expanded insertion mode for now
-        }
+//        if(IGV.getInstance().getSession().expandInsertions) {
+//            return;  // Disable panning in expanded insertion mode for now
+//        }
 
         double shiftBP = delta * getScale();
         setOrigin(origin + shiftBP);
