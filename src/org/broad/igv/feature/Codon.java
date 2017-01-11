@@ -26,6 +26,7 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.track.SequenceTrack;
 
 /**
  * @author Jim Robinson
@@ -115,7 +116,7 @@ class Codon {
         }
 
         if (strand == Strand.NEGATIVE) {
-            aas = AminoAcidManager.getReverseComplement(aas);
+            aas = SequenceTrack.getReverseComplement(aas);
         }
 
         this.sequence = aas;

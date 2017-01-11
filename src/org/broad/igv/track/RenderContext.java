@@ -126,6 +126,14 @@ public class RenderContext {
         return referenceFrame;
     }
 
+    public boolean isMerged() {
+        return merged;
+    }
+
+    public void setMerged(boolean merged) {
+        this.merged = merged;
+    }
+
     public int bpToScreenPixel(double location) {
         final double scale = getScale();
         final double origin = getOrigin();
@@ -151,12 +159,5 @@ public class RenderContext {
         graphicCache.clear();
     }
 
-    public boolean isMerged() {
-        return merged;
-    }
-
-    public void setMerged(boolean merged) {
-        this.merged = merged;
-    }
 
 }

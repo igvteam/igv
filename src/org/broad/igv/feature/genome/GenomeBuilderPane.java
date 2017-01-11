@@ -189,7 +189,7 @@ public class GenomeBuilderPane extends javax.swing.JPanel implements Serializabl
             return false;
         }
 
-        Collection<String> inUseIds = igv.getSelectableGenomeIDs();
+        Collection<String> inUseIds = GenomeManager.getInstance().getSelectableGenomeIDs();
         if (inUseIds.contains(id)) {
             JOptionPane.showMessageDialog(this,
                     "The genome ID '" + id + "' is already in use - please select another!");
@@ -206,7 +206,7 @@ public class GenomeBuilderPane extends javax.swing.JPanel implements Serializabl
             return false;
         }
 
-        Collection<String> inUseDisplayNames = igv.getGenomeDisplayNames();
+        Collection<String> inUseDisplayNames = GenomeManager.getInstance().getGenomeDisplayNames();
 
         if (inUseDisplayNames.contains(displayName)) {
             JOptionPane.showMessageDialog(this,

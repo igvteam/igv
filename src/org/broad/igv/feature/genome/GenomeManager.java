@@ -43,6 +43,9 @@ import org.broad.igv.feature.*;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.IGVMenuBar;
+import org.broad.igv.ui.event.GenomeChangeEvent;
+import org.broad.igv.ui.event.IGVEventBus;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressMonitor;
@@ -58,6 +61,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.*;
 
 /**
@@ -69,6 +73,7 @@ public class GenomeManager {
 
     private static final String ACT_USER_DEFINED_GENOME_LIST_FILE = "user-defined-genomes.txt";
     public static final String TEST_USER_DEFINED_GENOME_LIST_FILE = "test-user-defined-genomes.txt";
+    public static final GenomeListItem DEFAULT_GENOME = new GenomeListItem("Human hg19", "http://s3.amazonaws.com/igv.broadinstitute.org/genomes/hg19.genome", "hg19");
 
     public static String getUserDefinedGenomeListFile() {
         if (Globals.isTesting()) {
@@ -86,13 +91,12 @@ public class GenomeManager {
     private LinkedHashSet<GenomeListItem> userDefinedGenomeArchiveList;
     private List<GenomeListItem> serverGenomeArchiveList;
     private List<GenomeListItem> cachedGenomeArchiveList;
-    private Set<String> excludedArchivesUrls = new HashSet();
 
     /**
      * Map from genomeID -> GenomeListItem
      * ID comparison will be case insensitive
      */
-    private Map<String, GenomeListItem> genomeItemMap = new CI.CILinkedHashMap<GenomeListItem>();
+    private Map<String, GenomeListItem> genomeItemMap = new CI.CILinkedHashMap<>();
 
     public static void main(String[] args) {
         if (args.length >= 1 && args[0].equals("genList")) {
@@ -113,33 +117,46 @@ public class GenomeManager {
 
     }
 
-
-    public void setCurrentGenome(Genome currentGenome) {
-        if (currentGenome != null) {
-            PreferenceManager.getInstance().setDefaultGenome(currentGenome.getId());
+    public void setCurrentGenome(Genome genome) {
+        if (genome != null) {
+            PreferenceManager.getInstance().setDefaultGenome(genome.getId());
         }
-        this.currentGenome = currentGenome;
+        this.currentGenome = genome;
+        if (genome != null) {
+            IGV.getInstance().getSession().clearHistory();
+            FrameManager.getDefaultFrame().setChromosomeName(genome.getHomeChromosome(), true);
+            IGVEventBus.getInstance().post(new GenomeChangeEvent(genome));
+        }
     }
 
     public boolean isServerGenomeListUnreachable() {
         return serverGenomeListUnreachable;
     }
 
-    public Genome loadGenome(String genomePath, ProgressMonitor monitor) throws IOException {
-        return loadGenome(genomePath, monitor, true);
+    public void loadGenomeById(String genomeId) {
+
+        final Genome currentGenome = getCurrentGenome();
+        if (currentGenome != null && genomeId.equals(currentGenome.getId())) {
+            return; // Already loaded
+        }
+
+        try {
+            if (org.broad.igv.util.ParsingUtils.pathExists(genomeId)) {
+                loadGenome(genomeId, null);
+
+            } else {
+                GenomeListItem item = findGenomeListItemById(genomeId);
+                loadGenome(item.getLocation(), null);
+
+            }
+        } catch (IOException e) {
+            log.error("Error loading genome: " + genomeId, e);
+            throw new RuntimeException("Error loading genome: " + genomeId);
+        }
+
     }
 
-    /**
-     * Load a genome from the given path.  Could be a .genome, .gbk, chrom.sizes, or fasta file
-     *
-     * @param genomePath     File, http, or ftp path to the .genome or indexed fasta file
-     * @param monitor        ProgressMonitor  Monitor object, can be null
-     * @param addGenomeTrack Whether to add the genomeTrack to IGV
-     * @return Genome
-     * @throws FileNotFoundException
-     */
-    public Genome loadGenome(String genomePath, ProgressMonitor monitor, boolean addGenomeTrack)
-            throws IOException {
+    public Genome loadGenome(String genomePath, ProgressMonitor monitor) {
 
         try {
             log.info("Loading genome: " + genomePath);
@@ -182,21 +199,34 @@ public class GenomeManager {
                 monitor.fireProgress(25);
             }
 
+            IGV.getInstance().resetSession(null);
+
+            if (!genomeItemMap.containsKey(newGenome.getId())) {
+                GenomeListItem genomeListItem = new GenomeListItem(newGenome.getDisplayName(), genomePath, newGenome.getId());
+                final Set<String> serverGenomeIDs = getServerGenomeIDs();
+                boolean userDefined = !serverGenomeIDs.contains(newGenome.getId());
+                addGenomeItem(genomeListItem, userDefined);
+            }
+
             setCurrentGenome(newGenome);
 
-            if (IGV.hasInstance() && !Globals.isHeadless() && addGenomeTrack) {
+
+
+            if (IGV.hasInstance()) {
                 FeatureTrack geneFeatureTrack = newGenome.getGeneTrack();
                 IGV.getInstance().setGenomeTracks(geneFeatureTrack);
             }
+
 
             log.info("Genome loaded.  id= " + newGenome.getId());
 
             return currentGenome;
 
         } catch (SocketException e) {
-            throw new GenomeServerException("Server connection error", e);
+            throw new RuntimeException("Server connection error", e);
+        } catch (IOException e) {
+            throw new RuntimeException("IO Exception", e);
         }
-
     }
 
     /**
@@ -713,7 +743,8 @@ public class GenomeManager {
      * @throws IOException
      */
     public List<GenomeListItem> getGenomeArchiveList() {
-        List<GenomeListItem> genomeArchiveList = getServerGenomeArchiveList(this.excludedArchivesUrls);
+
+        List<GenomeListItem> genomeArchiveList = getServerGenomeArchiveList();
 
         if (genomeArchiveList == null) {
             try {
@@ -741,25 +772,19 @@ public class GenomeManager {
     }
 
 
-    /**
-     * Calls {@link #getServerGenomeArchiveList(Set)} with default set of excluded URLs
-     *
-     * @return
-     */
-    public List<GenomeListItem> getServerGenomeArchiveList() {
-        return getServerGenomeArchiveList(excludedArchivesUrls);
+    public Set<String> getServerGenomeIDs() {
+        return getServerGenomeArchiveList().stream().map(GenomeListItem::getId).collect(Collectors.toSet());
     }
 
     /**
      * Gets a list of all the server genome archive files that
      * IGV knows about.
      *
-     * @param excludedArchivesUrls The set of file location to exclude in the return list.
      * @return List<GenomeListItem>
      * @throws IOException
      * @see GenomeListItem
      */
-    public List<GenomeListItem> getServerGenomeArchiveList(Set excludedArchivesUrls) {
+    public List<GenomeListItem> getServerGenomeArchiveList() {
 
         if (serverGenomeListUnreachable) {
             return null;
@@ -798,12 +823,6 @@ public class GenomeManager {
                         String[] fields = genomeRecord.split("\t");
                         if ((fields != null) && (fields.length >= 3)) {
 
-                            // Throw away records we don't want to see
-                            if (excludedArchivesUrls != null) {
-                                if (excludedArchivesUrls.contains(fields[1])) {
-                                    continue;
-                                }
-                            }
 
                             String name = fields[0];
                             String url = fields[1];
@@ -869,16 +888,20 @@ public class GenomeManager {
      * @return
      */
     public GenomeListItem findGenomeListItemById(String genomeId) throws IOException {
+
         GenomeListItem matchingItem = genomeItemMap.get(genomeId);
+
         if (matchingItem == null) {
-            // If genome archive was not found, check things not
-            //currently loaded
+            // If genome archive was not found, check things not currently loaded
             matchingItem = searchGenomeList(genomeId, getGenomeArchiveList());
-            if (matchingItem != null) return matchingItem;
+            if (matchingItem != null) {
+                return matchingItem;
+            }
 
             matchingItem = searchGenomeList(genomeId, getUserDefinedGenomeArchiveList());
-            if (matchingItem != null) return matchingItem;
-
+            if (matchingItem != null) {
+                return matchingItem;
+            }
         }
         return matchingItem;
     }
@@ -893,8 +916,33 @@ public class GenomeManager {
         return null;
     }
 
-    public List<GenomeListItem> getGenomes() {
-        return new ArrayList<GenomeListItem>(genomeItemMap.values());
+    public List<GenomeListItem> getGenomeListItems() {
+        return new ArrayList<>(genomeItemMap.values());
+    }
+
+    public Collection<String> getGenomeDisplayNames() {
+
+        Set<String> displayNames = new HashSet<String>();
+        Collection<GenomeListItem> listItems = GenomeManager.getInstance().getGenomeListItems();
+        for (GenomeListItem genomeListItem : listItems) {
+            displayNames.add(genomeListItem.getDisplayableName());
+        }
+        return displayNames;
+    }
+
+    /**
+     * Gets the collection of genome list items ids currently in use.
+     *
+     * @return Set of ids.
+     */
+    public Collection<String> getSelectableGenomeIDs() {
+
+        Set<String> ids = new HashSet<String>();
+        Collection<GenomeListItem> listItems = getGenomeListItems();
+        for (GenomeListItem genomeListItem : listItems) {
+            ids.add(genomeListItem.getId());
+        }
+        return ids;
     }
 
     /**
@@ -903,58 +951,31 @@ public class GenomeManager {
      */
     public void buildGenomeItemList() {
         genomeItemMap.clear();
-        Collection<GenomeListItem> tmpuserDefinedGenomeList = null;
-        Collection<GenomeListItem> tmpcachedGenomeArchiveList = null;
 
         try {
-            tmpcachedGenomeArchiveList = getCachedGenomeArchiveList();
-            tmpuserDefinedGenomeList = getUserDefinedGenomeArchiveList();
+            List<GenomeListItem> list = getCachedGenomeArchiveList();
+            for(GenomeListItem item : list) {
+                genomeItemMap.put(item.getId(), item);
+            }
         } catch (IOException e) {
-            MessageUtils.showErrorMessage("Cannot access user defined genome archive list", e);
+           log.error("Error constructing hosted genome list");
         }
 
-        String[] genomeIdArray = PreferenceManager.getInstance().getGenomeIdDisplayList();
 
-        if (genomeIdArray.length == 0) {
-            genomeIdArray = new String[]{PreferenceManager.getInstance().getDefaultGenome(), "hg18"};
+        try {
+            Collection<GenomeListItem> list = getUserDefinedGenomeArchiveList();
+            for(GenomeListItem item : list) {
+                genomeItemMap.put(item.getId(), item);
+            }
+
+        } catch (IOException e) {
+            log.error("Error constructing user genome list");
         }
 
-        Iterable<GenomeListItem> combinedTmp = Iterables.concat(tmpuserDefinedGenomeList, tmpcachedGenomeArchiveList);
-        addGenomesToMap(genomeIdArray, combinedTmp, genomeItemMap);
-
-    }
-
-    /**
-     * Adds the {@code genomeListItems} to the map by their ids,
-     * in order of {@code keepGenomeIds},
-     * iff the id is in {@code keepGenomeIds} and NOT in genomeMap
-     *
-     * @param genomeListItems
-     * @param keepGenomeIds
-     * @param genomeMap
-     */
-    private void addGenomesToMap(String[] keepGenomeIds, Iterable<GenomeListItem> genomeListItems, Map<String, GenomeListItem> genomeMap) {
-        for (String id : keepGenomeIds) {
-            GenomeListItem genomeListItem = searchGenomeList(id, genomeListItems);
-
-            //If we didn't find the id, it may be a path
-            if (genomeListItem == null) {
-                genomeListItem = buildFromPath(id);
-            }
-
-            if (genomeListItem == null) {
-                /**
-                 * The {@code id} isn't in {@code genomeListItems},
-                 * and it's not a remote path or an existing local path
-                 * We assume it's the ID for a genome stored on the server
-                 */
-                genomeListItem = new GenomeListItem(id, null, id);
-            }
-
-            if (!genomeMap.containsKey(id)) {
-                genomeMap.put(id, genomeListItem);
-            }
+        if (genomeItemMap.isEmpty()) {
+            genomeItemMap.put(DEFAULT_GENOME.getId(), DEFAULT_GENOME);
         }
+
     }
 
 
@@ -1318,7 +1339,7 @@ public class GenomeManager {
      * Download a fasta file. Also attempts to download the index, and create an index
      * if that download fails
      *
-     * @param path     Full source path of fasta
+     * @param path          Full source path of fasta
      * @param targetDir     Destination directory for fasta file
      * @param targetName    Destination file name for fasta file
      * @param dialogsParent Parent of progress dialog shown. None shown if null
@@ -1353,14 +1374,14 @@ public class GenomeManager {
 
     /**
      * Specific to Broad Amazon servers -- use S3 downwload rather than cloudfront
+     *
      * @param path
      * @return
      */
     private String convertToS3(String path) {
-        if(path.startsWith("http://igvdata") || path.startsWith("https://igvdata")) {
+        if (path.startsWith("http://igvdata") || path.startsWith("https://igvdata")) {
             return path.replaceFirst("igvdata", "igv");
-        }
-        else {
+        } else {
             return path;
         }
     }
@@ -1369,7 +1390,7 @@ public class GenomeManager {
      * Rewrite the {@link Globals#GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY} property to equal
      * the specified {@code newSequencePath}. Works by creating a temp file and renaming
      *
-     * @param targetFile      A .genome file, in zip format
+     * @param targetFile A .genome file, in zip format
      * @return boolean indicating success or failure.
      * @throws IOException
      */
@@ -1490,14 +1511,14 @@ public class GenomeManager {
             genomeItemMap.put(genomeListItem.getId(), genomeListItem);
             if (userDefined) userDefinedGenomeArchiveList.add(genomeListItem);
         }
-        PreferenceManager.getInstance().saveGenomeIdDisplayList(genomeItemMap.values());
         updateImportedGenomePropertyFile();
     }
 
     public void addGenomeItem(GenomeListItem genomeListItem, boolean userDefined) {
         genomeItemMap.put(genomeListItem.getId(), genomeListItem);
-        PreferenceManager.getInstance().saveGenomeIdDisplayList(genomeItemMap.values());
-        if (userDefined) userDefinedGenomeArchiveList.add(genomeListItem);
+        if (userDefined) {
+            userDefinedGenomeArchiveList.add(genomeListItem);
+        }
         updateImportedGenomePropertyFile();
     }
 
@@ -1616,10 +1637,6 @@ public class GenomeManager {
         return geneFeatureTrack;
     }
 
-    public void excludedUrl(String location) {
-        excludedArchivesUrls.add(location);
-    }
-
 
     /**
      * Delete the specified .genome files and their sequences, only if they were downloaded from the
@@ -1646,6 +1663,16 @@ public class GenomeManager {
                 }
                 genFile.delete();
             }
+        }
+    }
+
+    public void removeGenomeListItem(GenomeListItem genomeListItem) {
+
+        genomeItemMap.remove(genomeListItem.getId());
+
+        if (userDefinedGenomeArchiveList != null && userDefinedGenomeArchiveList.contains(genomeListItem)) {
+            userDefinedGenomeArchiveList.remove(genomeListItem);
+            GenomeManager.getInstance().updateImportedGenomePropertyFile();
         }
     }
 }

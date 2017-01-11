@@ -163,6 +163,22 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     }
 
+    @Override
+    public boolean isReadyToPaint(ReferenceFrame frame) {
+        if(this.alignmentTrack != null && this.alignmentTrack.isVisible()) {
+            return true;
+        }
+        else {
+            return dataManager.isLoaded(frame);
+        }
+    }
+
+    @Override
+    public void load(ReferenceFrame referenceFrame) {
+        dataManager.load(referenceFrame, renderOptions, true);
+    }
+
+
     public void setSnpThreshold(float snpThreshold) {
         this.snpThreshold = snpThreshold;
     }
@@ -858,7 +874,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                 try {
                     float tmp = Float.parseFloat(value);
                     snpThreshold = tmp;
-                    IGV.getInstance().repaintDataPanels();
+                    IGV.getInstance().revalidateTrackPanels();
                 } catch (Exception exc) {
                     //log
                 }
@@ -940,11 +956,11 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                         TDFReader reader = TDFReader.getReader(file.getAbsolutePath());
                         TDFDataSource ds = new TDFDataSource(reader, 0, getName() + " coverage", genome);
                         setDataSource(ds);
-                        IGV.getInstance().repaintDataPanels();
+                        IGV.getInstance().revalidateTrackPanels();
                     } else if (path.endsWith(".counts")) {
                         CoverageDataSource ds = new GobyCountArchiveDataSource(file);
                         setDataSource(ds);
-                        IGV.getInstance().repaintDataPanels();
+                        IGV.getInstance().revalidateTrackPanels();
                     } else {
                         MessageUtils.showMessage("Coverage data must be in .tdf format");
                     }

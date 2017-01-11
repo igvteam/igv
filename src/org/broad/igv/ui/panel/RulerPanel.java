@@ -187,7 +187,7 @@ public class RulerPanel extends JPanel {
 
         g.setFont(tickFont);
 
-        // TODO -- hack, assumes location unit for whole genome is kilo-base
+        // location unit for whole genome is kilobase
         boolean scaleInKB = frame.getChrName().equals(Globals.CHR_ALL);
 
         int range = (int) (w * frame.getScale());

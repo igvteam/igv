@@ -184,32 +184,4 @@ public class UIUtilities {
         return "OK";
     }
 
-    /**
-     * This crazy hack is the only solution that works on a MAC when attempting to show the glass pane.  Without
-     * this the glass pane, and more importantly its wait cursor,  will not appear until you click the window
-     * header.
-     */
-    public static void activateMainFrame() {
-
-        Frame mainFrame = IGV.getMainFrame();
-
-        try {
-            //remember the last location of mouse
-            final Point oldMouseLocation = MouseInfo.getPointerInfo().getLocation();
-
-            //simulate a mouse click on title bar of window
-            Robot robot = new Robot();
-            robot.mouseMove(mainFrame.getX() + 200, mainFrame.getY() + 5);
-            robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
-            robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
-
-            //move mouse to old location
-            robot.mouseMove((int) oldMouseLocation.getX(), (int) oldMouseLocation.getY());
-        } catch (Exception ex) {
-            //just ignore exception, or you can handle it as you want
-        } finally {
-
-        }
-
-    }
 }

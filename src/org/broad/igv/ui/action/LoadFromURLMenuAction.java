@@ -32,6 +32,7 @@ package org.broad.igv.ui.action;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.HttpResponseException;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ga4gh.GoogleUtils;
 import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.ui.IGV;
@@ -143,8 +144,8 @@ public class LoadFromURLMenuAction extends MenuAction {
                     JOptionPane.QUESTION_MESSAGE);
             if (url != null && url.trim().length() > 0) {
                 try {
-                    igv.loadGenome(url.trim(), null, true);
-                } catch (IOException e1) {
+                    GenomeManager.getInstance().loadGenome(url.trim(), null);
+                } catch (Exception e1) {
                     MessageUtils.showMessage("Error loading genome: " + e1.getMessage());
                 }
             }

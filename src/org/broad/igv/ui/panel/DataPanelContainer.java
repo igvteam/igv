@@ -285,7 +285,6 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
                 }
             }
 
-
         }
 
         if (autoscaleGroups.size() > 0) {

@@ -48,6 +48,7 @@ import org.broad.igv.feature.genome.GenomeServerException;
 import org.broad.igv.session.History;
 import org.broad.igv.ui.action.FitDataToWindowMenuAction;
 import org.broad.igv.ui.action.SearchCommand;
+import org.broad.igv.ui.event.GenomeChangeEvent;
 import org.broad.igv.ui.event.IGVEventBus;
 import org.broad.igv.ui.event.IGVEventObserver;
 import org.broad.igv.ui.event.ViewChange;
@@ -105,8 +106,6 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
     private JideButton forwardButton;
     private JideButton fitToWindowButton;
 
-    private JideButton exomeButton;
-
     public enum SHOW_DETAILS_BEHAVIOR {
         HOVER("Show Details on Hover"), CLICK("Show Details on Click"), NEVER("Never Show Details");
 
@@ -129,10 +128,8 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
     }
 
     public IGVCommandBar() {
-        initComponents();
 
-        // Initialize controls
-        SearchHints hints = new SearchHints(this.searchTextField);
+        initComponents();
 
         String currentChr = getDefaultReferenceFrame().getChrName();
         boolean isWholeGenome = currentChr.equals(Globals.CHR_ALL);
@@ -148,6 +145,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         });
 
         IGVEventBus.getInstance().subscribe(ViewChange.class, this);
+        IGVEventBus.getInstance().subscribe(GenomeChangeEvent.class, this);
     }
 
     private JPopupMenu getPopupMenuToolTipBehavior() {
@@ -211,102 +209,82 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
     }
 
-    public void updateComponentStates() {
-
-        if (exomeButton != null) {
-            exomeButton.setEnabled(!getDefaultReferenceFrame().getChrName().equalsIgnoreCase("all"));
-        }
-    }
-
-    private void loadGenomeListItem(final GenomeListItem genomeListItem) {
-        final Runnable runnable = new Runnable() {
-
-            public void run() {
-                if (genomeListItem != null) {
-                    final IGV igv = IGV.getInstance();
-
-                    //User selected "more", pull up dialog and revert combo box
-                    if (genomeListItem == GenomeListItem.ITEM_MORE) {
-                        selectGenome(GenomeManager.getInstance().getGenomeId());
-                        IGV.getInstance().loadGenomeFromServerAction();
-                        return;
-                    }
-
-                    // If we haven't changed genomes we're done.
-                    if (genomeListItem.getId().equalsIgnoreCase(GenomeManager.getInstance().getGenomeId())) {
-                        return;
-                    }
-
-                    final ProgressMonitor monitor = new ProgressMonitor();
-                    final ProgressBar.ProgressDialog progressDialog = ProgressBar.showProgressDialog(IGV.getMainFrame(), "Loading Genome...", monitor, false);
-
-                    try {
-                        monitor.fireProgressChange(50);
-
-                        Genome genome;
-
-                        igv.resetSession(null);
-
-                        genome = igv.getGenomeManager().loadGenome(genomeListItem.getLocation(), null);
-
-                        updateChromosFromGenome(genome);
-                        monitor.fireProgressChange(25);
-
-                        genomeComboBox.setSelectedItem(genomeListItem);
-
-                        monitor.fireProgressChange(25);
-
-                        FrameManager.getDefaultFrame().setChromosomeName(genome.getHomeChromosome(), true);
-                        IGV.getInstance().doRefresh();
-
-                    } catch (GenomeServerException e) {
-                        log.error("Error loading genome: " + genomeListItem.getLocation(), e);
-                        JOptionPane.showMessageDialog(
-                                IGV.getMainFrame(),
-                                "Error loading genome: " + genomeListItem.getDisplayableName());
-                    } catch (IOException e) {
-                        int choice =
-                                JOptionPane.showConfirmDialog(
-                                        IGV.getMainFrame(), "The genome file [" + genomeListItem.getLocation() +
-                                                "] could not be read. Would you like to remove the selected entry?",
-                                        "", JOptionPane.OK_CANCEL_OPTION);
-
-                        if (choice == JOptionPane.OK_OPTION) {
-                            GenomeManager.getInstance().excludedUrl(genomeListItem.getLocation());
-                            List<GenomeListItem> genomes = GenomeManager.getInstance().getGenomes();
-                            genomes.remove(genomeListItem);
-                            PreferenceManager.getInstance().saveGenomeIdDisplayList(genomes);
-
-                            GenomeManager.getInstance().buildGenomeItemList();
-                            GenomeManager.getInstance().updateImportedGenomePropertyFile();
-                            refreshGenomeListComboBox();
-                        }
-                    } catch (Exception e) {
-                        log.error("Error initializing genome", e);
-                    } finally {
-                        if (progressDialog != null) {
-                            progressDialog.setVisible(false);
-                        }
-                    }
-
-                }
-            }
-        };
-
-        // If we're on the dispatch thread spawn a worker, otherwise just execute.
-        LongRunningTask.submit(runnable);
-    }
-
     class GenomeBoxActionListener implements ActionListener {
 
         public void actionPerformed(ActionEvent actionEvent) {
+
             Object selItem = genomeComboBox.getSelectedItem();
             if (!(selItem instanceof GenomeListItem)) {
                 return;
             }
-            log.info("Loading " + ((GenomeListItem) selItem).printString());
             GenomeListItem genomeListItem = (GenomeListItem) selItem;
             loadGenomeListItem(genomeListItem);
+        }
+
+        private void loadGenomeListItem(final GenomeListItem genomeListItem) {
+            log.info("Enter genome combo box");
+
+            // If we haven't changed genomes do nothing
+            if (genomeListItem.getId().equalsIgnoreCase(GenomeManager.getInstance().getGenomeId())) {
+                return;
+            }
+            log.info("Loading " + genomeListItem.printString());
+
+            final Runnable runnable = new Runnable() {
+
+                public void run() {
+                    if (genomeListItem != null && genomeListItem.getLocation() != null) {
+
+                        log.info("Loading " + genomeListItem.getId());
+
+                        //User selected "more", pull up dialog and revert combo box
+                        if (genomeListItem == GenomeListItem.ITEM_MORE) {
+                            IGV.getInstance().loadGenomeFromServer();
+                            return;
+                        }
+
+                        final ProgressMonitor monitor = new ProgressMonitor();
+                        final ProgressBar.ProgressDialog progressDialog = ProgressBar.showProgressDialog(IGV.getMainFrame(), "Loading Genome...", monitor, false);
+                        try {
+                            GenomeManager.getInstance().loadGenome(genomeListItem.getLocation(), monitor);
+
+                        } catch (GenomeServerException e) {
+                            log.error("Error loading genome: " + genomeListItem.getId() + "  " + genomeListItem.getLocation(), e);
+                            JOptionPane.showMessageDialog(
+                                    IGV.getMainFrame(),
+                                    "Error loading genome: " + genomeListItem.getDisplayableName());
+                        } catch (Exception e) {
+                            int choice =
+                                    JOptionPane.showConfirmDialog(
+                                            IGV.getMainFrame(), "The genome [" + genomeListItem.getId() +
+                                                    "] could not be read. Would you like to remove the selected entry?",
+                                            "", JOptionPane.OK_CANCEL_OPTION);
+
+                            if (choice == JOptionPane.OK_OPTION) {
+                                removeGenomeFromList();
+                                log.error("Error initializing genome", e);
+                            }
+                        } finally {
+                            if (progressDialog != null) {
+                                progressDialog.setVisible(false);
+                            }
+                        }
+
+                    }
+                }
+
+                private void removeGenomeFromList() {
+                    GenomeManager.getInstance().removeGenomeListItem(genomeListItem);
+                    refreshGenomeListComboBox();
+                }
+            };
+
+            // If we're on the dispatch thread spawn a worker, otherwise just execute.
+            if (SwingUtilities.isEventDispatchThread()) {
+                LongRunningTask.submit(runnable);
+            } else {
+                runnable.run();
+            }
         }
     }
 
@@ -355,29 +333,6 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
             }
         });
 
-    }
-
-    /**
-     * Update the command bar properties for the new chromosome name.
-     * Will not cause a chromosome change, intended to be called in RESPONSE
-     * to the chromosome changing
-     *
-     * @param chrName
-     */
-    protected void chromosomeChanged(final String chrName) {
-        UIUtilities.invokeOnEventThread(new Runnable() {
-            @Override
-            public void run() {
-                roiToggleButton.setEnabled(!Globals.CHR_ALL.equals(chrName));
-                zoomControl.setEnabled(!Globals.CHR_ALL.equals(chrName));
-
-                if (chromosomeComboBox.getSelectedItem() != null) {
-                    if (!chromosomeComboBox.getSelectedItem().equals(chrName)) {
-                        setChromosomeComboBoxNoActionListeners(chrName);
-                    }
-                }
-            }
-        });
     }
 
 
@@ -487,45 +442,15 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
 
     /**
-     * Gets the collection of genome display names currently in use.
-     *
-     * @return Set of display names.
-     */
-    public Collection<String> getGenomeDisplayNames() {
-
-        Set<String> displayNames = new HashSet<String>();
-        Collection<GenomeListItem> listItems = GenomeManager.getInstance().getGenomes();
-        for (GenomeListItem genomeListItem : listItems) {
-            displayNames.add(genomeListItem.getDisplayableName());
-        }
-        return displayNames;
-    }
-
-    /**
-     * Gets the collection of genome list items ids currently in use.
-     *
-     * @return Set of ids.
-     */
-    public Collection<String> getSelectableGenomeIDs() {
-
-        Set<String> ids = new HashSet<String>();
-        Collection<GenomeListItem> listItems = GenomeManager.getInstance().getGenomes();
-        for (GenomeListItem genomeListItem : listItems) {
-            ids.add(genomeListItem.getId());
-        }
-        return ids;
-    }
-
-    /**
      * Selects the first genome from the list which matches this genomeId.
      * If not found, checks genomes from the server/user-defined list
      *
      * @param genomeId
      */
     public void selectGenome(String genomeId) {
-        if (!getSelectableGenomeIDs().contains(genomeId)) {
-            // If genome archive was not found, check things not loaded
-            //TODO Should we be doing this here?
+
+        if (!GenomeManager.getInstance().getSelectableGenomeIDs().contains(genomeId)) {
+
             boolean found = false;
             try {
                 found = GenomeManager.getInstance().loadFromArchive(genomeId);
@@ -536,6 +461,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
                 refreshGenomeListComboBox();
             }
         }
+
         // Now select this item in the comboBox
         GenomeListItem matchingItem = GenomeManager.getInstance().getLoadedGenomeListItemById(genomeId);
         if (matchingItem != null) {
@@ -570,7 +496,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
      * @return
      */
     private DefaultComboBoxModel getModelForGenomeListComboBox() {
-        List<GenomeListItem> genomes = GenomeManager.getInstance().getGenomes();
+        List<GenomeListItem> genomes = GenomeManager.getInstance().getGenomeListItems();
         genomes.add(GenomeListItem.ITEM_MORE);
         return new DefaultComboBoxModel(genomes.toArray(new GenomeListItem[0]));
     }
@@ -813,7 +739,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         rulerLineButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 IGV.getInstance().setRulerEnabled(rulerLineButton.isSelected());
-                IGV.getInstance().repaintDataPanels();
+                IGV.getInstance().revalidateTrackPanels();
             }
         });
         toolPanel.add(rulerLineButton, JideBoxLayout.FIX);
@@ -891,6 +817,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         scrollPane.revalidate();
     }
 
+    //<editor-fold desc="Action methods">
     private void homeButtonActionPerformed(java.awt.event.ActionEvent evt) {
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
         if (FrameManager.isGeneListMode()) {
@@ -912,44 +839,55 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
     private void chromosomeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
         JComboBox combobox = (JComboBox) evt.getSource();
         final String chrName = (String) combobox.getSelectedItem();
-        if (chrName != null) {
+        if (chrName != null & !chrName.equals(getDefaultReferenceFrame().getChrName())) {
             getDefaultReferenceFrame().changeChromosome(chrName, true);
         }
-    }
-
-    private void setChromosomeComboBoxNoActionListeners(String chrName) {
-        ActionListener[] listeners = chromosomeComboBox.getActionListeners();
-        for (ActionListener l : listeners) {
-            chromosomeComboBox.removeActionListener(l);
-        }
-
-        chromosomeComboBox.setSelectedItem(chrName);
-
-        for (ActionListener l : listeners) {
-            chromosomeComboBox.addActionListener(l);
-        }
-    }
-
-    public void receiveEvent(Object event) {
-
-        if (event instanceof ViewChange) {
-            String chrName = getDefaultReferenceFrame().getChrName();
-            setChromosomeComboBoxNoActionListeners(chrName);
-            updateCurrentCoordinates();
-        } else {
-            log.info("Unknown event class: " + event.getClass());
-        }
-    }
-
-    // Set the focus in the search box
-    public void focusSearchBox() {
-        searchTextField.requestFocusInWindow();
-        searchTextField.selectAll();
     }
 
     private void goButtonActionPerformed(java.awt.event.ActionEvent evt) {    // GEN-FIRST:event_goButtonActionPerformed
         String searchText = searchTextField.getText();
         searchByLocus(searchText);
+    }
+
+    private void roiToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {    // GEN-FIRST:event_roiToggleButtonActionPerformed
+        if (roiToggleButton.isSelected()) {
+            IGV.getInstance().beginROI(roiToggleButton);
+        } else {
+            IGV.getInstance().endROI();
+        }
+    }
+
+    //</editor-fold>
+
+    public void receiveEvent(Object event) {
+
+        if (event instanceof ViewChange) {
+            if (((ViewChange) event).type == ViewChange.Type.ChromosomeChange) {
+                String chrName = getDefaultReferenceFrame().getChrName();
+                roiToggleButton.setEnabled(!Globals.CHR_ALL.equals(chrName));
+                zoomControl.setEnabled(!Globals.CHR_ALL.equals(chrName));
+                if (!chrName.equals(chromosomeComboBox.getSelectedItem())) {
+                    chromosomeComboBox.setSelectedItem(chrName);
+                }
+            }
+            updateCurrentCoordinates();
+            repaint(); // TODO Is this neccessary?
+        } else if (event instanceof GenomeChangeEvent) {
+            Genome genome = ((GenomeChangeEvent) event).genome;
+            refreshGenomeListComboBox();
+            updateChromosFromGenome(genome);
+        } else {
+            log.info("Unknown event class: " + event.getClass());
+        }
+    }
+
+
+    //<editor-fold desc="Search box">
+    // Set the focus in the search box
+
+    public void focusSearchBox() {
+        searchTextField.requestFocusInWindow();
+        searchTextField.selectAll();
     }
 
 
@@ -967,21 +905,10 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
                 searchTextField.setText(searchText);
                 (new SearchCommand(getDefaultReferenceFrame(), searchText)).execute();
             }
-            //This is not necessary, since we receive a ViewChange.Result later
-            //chromosomeComboBox.setSelectedItem(getDefaultReferenceFrame().getChrName());
         }
 
         if (log.isDebugEnabled()) {
             log.debug("Exit search by locus: " + searchText);
-        }
-    }
-
-
-    private void roiToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {    // GEN-FIRST:event_roiToggleButtonActionPerformed
-        if (roiToggleButton.isSelected()) {
-            IGV.getInstance().beginROI(roiToggleButton);
-        } else {
-            IGV.getInstance().endROI();
         }
     }
 
@@ -1017,4 +944,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
             return false;
         }
     }
+    //</editor-fold>
+
+
 }

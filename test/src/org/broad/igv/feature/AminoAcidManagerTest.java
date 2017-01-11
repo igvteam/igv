@@ -30,7 +30,6 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -214,13 +213,42 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
     @Test
     public void translateSequenceNegative() {
         // From URG$ "end" actually start of coding
-        String seq = "CGACGCCAT";
+        String seq = "ACGACGCCAT";   // "Extra" A at front (size == 10)
         char[] aminoSeq = {'S', 'A', 'M'};
 
         List<AminoAcid> acids = AminoAcidManager.getInstance().getAminoAcids(Strand.NEGATIVE, seq);
         assertEquals(3, acids.size());
         for (int i = 0; i < 3; i++) {
             assertEquals(aminoSeq[i], acids.get(i).getSymbol());
+        }
+    }
+
+    @Test
+    public void computeSequenceNegative() {
+        // From URG$ "end" actually start of coding
+        String seq = "ACGACGCCAT";   // "Extra" A at front (size == 10)
+        char[] aminoSeq = {'S', 'A', 'M'};
+
+        AminoAcidSequence aaSequence = AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, 0, seq);
+        assertEquals(3, aaSequence.getSequence().size());
+        assertEquals(1, aaSequence.getStart());
+        for (int i = 0; i < 3; i++) {
+            assertEquals(aminoSeq[i], aaSequence.getSequence().get(i).getSymbol());
+        }
+    }
+    //getAminoAcidSequence
+    //GGCAGAACCAGCCGACGAGTCAGGCGCCGCATGGTCCCCTT
+    @Test
+    public void computeSequenceNegative2() {
+        // From URG$ "end" actually start of coding
+        String seq = "GGCAGAACCAGCCGACGAGTCAGGCGCCGCATGGTCCCCTT";
+        byte[] aminoSeq1 = "LVLRRTLRRMTGK".getBytes();
+
+        AminoAcidSequence aaSequence = AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, 0, seq);
+        assertEquals(13, aaSequence.getSequence().size());
+        assertEquals(2, aaSequence.getStart());
+        for (int i = 0; i < aminoSeq1.length; i++) {
+            assertEquals(aminoSeq1[i], aaSequence.getSequence().get(i).getSymbol());
         }
     }
 

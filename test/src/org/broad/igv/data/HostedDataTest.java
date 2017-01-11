@@ -108,7 +108,7 @@ public class HostedDataTest extends AbstractHeadlessTest {
             Genome curGenome = null;
             try {
                 curGenome = GenomeManager.getInstance().loadGenome(genomeItem.getLocation(), null);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 recordError(new ResourceLocator(genomeItem.getLocation()), e, failedFiles);
                 continue;
             }
@@ -230,7 +230,7 @@ public class HostedDataTest extends AbstractHeadlessTest {
     private List<GenomeListItem> getServerGenomes() throws IOException {
         String genomeListPath = PreferenceManager.DEFAULT_GENOME_URL;
         PreferenceManager.getInstance().overrideGenomeServerURL(genomeListPath);
-        List<GenomeListItem> serverSideItemList = GenomeManager.getInstance().getServerGenomeArchiveList(null);
+        List<GenomeListItem> serverSideItemList = GenomeManager.getInstance().getServerGenomeArchiveList();
         assertNotNull("Could not retrieve genome list from server", serverSideItemList);
         assertTrue("Genome list empty", serverSideItemList.size() > 0);
         return serverSideItemList;

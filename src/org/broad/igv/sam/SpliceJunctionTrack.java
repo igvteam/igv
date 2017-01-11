@@ -95,11 +95,11 @@ public class SpliceJunctionTrack extends FeatureTrack {
         // Register track
     }
 
-    @Override
-    protected boolean isShowFeatures(RenderContext context) {
+
+    protected boolean isShowFeatures(ReferenceFrame frame) {
         float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
         float minVisibleScale = (maxRange * 1000) / 700;
-        return context.getScale() < minVisibleScale;
+        return frame.getScale() < minVisibleScale;
     }
 
     public boolean isRemoved() {
@@ -228,7 +228,7 @@ public class SpliceJunctionTrack extends FeatureTrack {
 
     @Override
     protected void loadFeatures(String chr, int start, int end, ReferenceFrame referenceFrame) {
-        //dataPanel = context.getPanel();
+
         AlignmentInterval loadedInterval = dataManager.getLoadedInterval(referenceFrame.getCurrentRange());
         if (loadedInterval == null) return;
 
@@ -241,7 +241,6 @@ public class SpliceJunctionTrack extends FeatureTrack {
         int intervalEnd = loadedInterval.getEnd();
         PackedFeatures pf = new PackedFeaturesSpliceJunctions(chr, intervalStart, intervalEnd, features.iterator(), getName());
         packedFeaturesMap.put(referenceFrame.getName(), pf);
-      //  if (context.getPanel() != null) context.getPanel().repaint();
     }
 
     @Override

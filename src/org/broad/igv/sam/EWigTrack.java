@@ -29,6 +29,7 @@
  */
 package org.broad.igv.sam;
 
+import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.DataRange;
@@ -37,6 +38,7 @@ import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.panel.IGVPopupMenu;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
@@ -58,13 +60,16 @@ public class EWigTrack extends AbstractTrack {
     char[] nucleotides = {'A', 'C', 'G', 'T'};
     public static Color grey1 = new Color(230, 230, 230);
     Map<Character, TDFDataSource> baseSources;
-    TDFDataSource scoreSource;
+    TDFDataSource tdfSource;
+
+    // TODO -- memory leak.  This needs to get cleared when the gene list changes
+    private HashMap<String, LoadedInterval> loadedIntervalCache = new HashMap(200);
 
     public EWigTrack(ResourceLocator locator, Genome genome) {
         super(locator);
 
         TDFReader reader = TDFReader.getReader(locator.getPath());
-        scoreSource = new TDFDataSource(reader, 4, "Pi", genome);
+        tdfSource = new TDFDataSource(reader, 4, "Pi", genome);
 
         setDataRange(new DataRange(0, 0, 10));
         baseSources = new HashMap();
@@ -72,6 +77,48 @@ public class EWigTrack extends AbstractTrack {
             TDFDataSource src = new TDFDataSource(reader, i, Character.toString(nucleotides[i]), genome);
             baseSources.put(nucleotides[i], src);
         }
+    }
+
+    @Override
+    public boolean isReadyToPaint(ReferenceFrame frame) {
+
+        final String chr = frame.getChrName();
+        final int start = (int) frame.getOrigin();
+        final int end = (int) frame.getEnd();
+        final int zoom = frame.getZoom();
+
+        LoadedInterval loadedInterval = loadedIntervalCache.get(frame.getName());
+
+        return (loadedInterval != null && loadedInterval.contains(chr, start, end, zoom));
+    }
+
+    @Override
+    public void load(ReferenceFrame context) {
+
+        final String chr = context.getChrName();
+        int start = (int) context.getOrigin();
+        int end = (int) context.getEnd();
+        final int zoom = context.getZoom();
+
+        // Expand start and end a bit for panning
+        int w = end - start;
+        start -= w / 2;
+        end += w / 2;
+
+        List<LocusScore> scores = tdfSource.getSummaryScoresForRange(chr,
+                (int) start,
+                end,
+                zoom);
+
+        Map<Character, List<LocusScore>> nScores = new HashMap();
+        for (Character c : nucleotides) {
+            nScores.put(c, baseSources.get(c).getSummaryScoresForRange(chr,
+                    (int) start,
+                    end,
+                    zoom));
+        }
+
+        loadedIntervalCache.put(context.getName(), new LoadedInterval(chr, start, end, zoom, scores, nScores));
     }
 
     public void render(RenderContext context, Rectangle rect) {
@@ -88,19 +135,22 @@ public class EWigTrack extends AbstractTrack {
 
     private void paint(RenderContext context, Rectangle rect) {
 
-        // The total score
-        List<LocusScore> scores = scoreSource.getSummaryScoresForRange(context.getChr(),
-                (int) context.getOrigin(),
-                (int) context.getEndLocation(),
-                context.getZoom());
-        Map<Character, List<LocusScore>> nScores = new HashMap();
+        ReferenceFrame frame = context.getReferenceFrame();
+        final String chr = frame.getChrName();
+        final int start = (int) frame.getOrigin();
+        final int end = (int) frame.getEnd();
+        final int zoom = frame.getZoom();
 
-        for (Character c : nucleotides) {
-            nScores.put(c, baseSources.get(c).getSummaryScoresForRange(context.getChr(),
-                    (int) context.getOrigin(),
-                    (int) context.getEndLocation(),
-                    context.getZoom()));
+        LoadedInterval loadedInterval = loadedIntervalCache.get(frame.getName());
+
+        if (loadedInterval == null || !loadedInterval.contains(chr, start, end, zoom)) {
+            return;
         }
+
+
+        // The total score
+        List<LocusScore> scores = loadedInterval.scores;
+        Map<Character, List<LocusScore>> nScores = loadedInterval.baseScores;
 
         Map<Character, Color> nucleotideColors = SequenceRenderer.getNucleotideColors();
 
@@ -223,4 +273,28 @@ public class EWigTrack extends AbstractTrack {
 //    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 //        return null;
 //    }
+
+    static public class LoadedInterval {
+
+
+        Locus range;
+        private List<LocusScore> scores;
+        int zoom;
+        Map<Character, List<LocusScore>> baseScores;
+
+        public LoadedInterval(String chr, int start, int end, int zoom,
+                              List<LocusScore> scores,
+                              Map<Character, List<LocusScore>> baseScores) {
+
+            range = new Locus(chr, start, end);
+            this.zoom = zoom;
+            this.scores = scores;
+            this.baseScores = baseScores;
+        }
+
+        public boolean contains(String chr, int start, int end, int zoom) {
+            return this.zoom == zoom && range.contains(chr, start, end);
+        }
+
+    }
 }

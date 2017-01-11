@@ -148,7 +148,7 @@ public class TDFRegressionTests extends AbstractHeadlessTest{
         Genome genome = null;
         try {
             genome = GenomeManager.getInstance().loadGenome(genPath, null);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         Assume.assumeTrue(genome != null);

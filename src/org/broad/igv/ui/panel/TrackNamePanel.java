@@ -545,37 +545,20 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
 
         /**
-         * Mouse was clicked.  Delegate single-click action to the track(s) clicked on.   We won't know if this
-         * is a double click or not until the double-click interval has passed, so defer the action with a
-         * TimerTask.  If a second click arrives it will be canceled.
+         * Mouse was clicked.  Delegateaction to the track(s) clicked on. .
          *
          * @param e
          */
         @Override
         public void mouseClicked(final MouseEvent e) {
-
-            // If this is the second click of a double click, cancel the scheduled single click task.
-            if (e.getClickCount() > 1) {
-                clickScheduler.cancelClickTask();
-                return;
-            }
-
-            TimerTask clickTask = new TimerTask() {
-
-                @Override
-                public void run() {
-                    for (MouseableRegion mouseRegion : mouseRegions) {
-                        if (mouseRegion.containsPoint(e.getX(), e.getY())) {
-                            for (Track t : mouseRegion.getTracks()) {
-                                t.handleNameClick(e);
-                            }
-                            return;
-                        }
-                    }//To change body of implemented methods use File | Settings | File Templates.
+            for (MouseableRegion mouseRegion : mouseRegions) {
+                if (mouseRegion.containsPoint(e.getX(), e.getY())) {
+                    for (Track t : mouseRegion.getTracks()) {
+                        t.handleNameClick(e);
+                        return;
+                    }
                 }
-            };
-            //clickScheduler.scheduleClickTask(clickTask);
-            clickTask.run();
+            }
         }
 
         protected void fireGhostDropEvent(GhostDropEvent evt) {

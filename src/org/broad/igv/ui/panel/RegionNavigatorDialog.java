@@ -767,7 +767,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer, IGVEvent
                 }
                 GeneList geneList = new GeneList("Regions of Interest", loci, false);
                 IGV.getInstance().setGeneList(geneList);
-             //   IGV.getInstance().resetFrames();
+                IGV.getInstance().resetFrames();
 
             }
             updateButtonsEnabled();

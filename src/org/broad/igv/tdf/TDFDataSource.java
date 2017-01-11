@@ -42,6 +42,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.collections.LRUCache;
 
 import java.util.*;
@@ -57,7 +58,7 @@ public class TDFDataSource implements CoverageDataSource {
     int maxPrecomputedZoom = 6;
     private int trackNumber = 0;
     String trackName;
-    LRUCache<String, List<LocusScore>> summaryScoreCache = new LRUCache(20);
+    Map<String, List<LocusScore>> summaryScoreCache = Collections.synchronizedMap(new HashMap<>());
     Genome genome;
     WindowFunction windowFunction = WindowFunction.mean;
     List<WindowFunction> availableFunctions;
@@ -74,8 +75,17 @@ public class TDFDataSource implements CoverageDataSource {
         this.trackNumber = trackNumber;
         this.trackName = trackName;
         this.reader = reader;
+        init();
+
+
+    }
+
+    private void init() {
+
         this.availableFunctions = reader.getWindowFunctions();
-        this.availableFunctions.add(WindowFunction.none);   // Always available => raw data
+        if(this.availableFunctions != null) {
+            this.availableFunctions.add(WindowFunction.none);   // Always available => raw data
+        }
 
         TDFGroup rootGroup = reader.getGroup("/");
         try {
@@ -104,8 +114,6 @@ public class TDFDataSource implements CoverageDataSource {
 
         boolean normalizeCounts = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.NORMALIZE_COVERAGE);
         setNormalize(normalizeCounts);
-
-
     }
 
     public void updateGenome(Genome genome) {
@@ -149,10 +157,6 @@ public class TDFDataSource implements CoverageDataSource {
         return reader == null ? null : reader.getPath();
     }
 
-    public String getTrackName() {
-        return trackName;
-    }
-
     public double getDataMax() {
         return reader.getUpperLimit() * normalizationFactor;
     }
@@ -182,11 +186,15 @@ public class TDFDataSource implements CoverageDataSource {
 
     protected List<LocusScore> getSummaryScores(String querySeq, int startLocation, int endLocation, int zoom) {
 
+        if (this.availableFunctions == null) {
+            init();
+        }
+
         List<LocusScore> scores;
 
         if (zoom <= this.maxPrecomputedZoom && windowFunction != WindowFunction.none) {
             // Window function == none => no windowing, so its not clear what to do.  For now use mean
-           // WindowFunction wf = (windowFunction == WindowFunction.none ? WindowFunction.mean : windowFunction);
+            // WindowFunction wf = (windowFunction == WindowFunction.none ? WindowFunction.mean : windowFunction);
 
             List<TDFTile> tiles = null;
             if (querySeq.equals(Globals.CHR_ALL) && !isChrOrderValid()) {
@@ -217,10 +225,9 @@ public class TDFDataSource implements CoverageDataSource {
 
         } else {
 
-            if(querySeq.equals(Globals.CHR_ALL)) {
+            if (querySeq.equals(Globals.CHR_ALL)) {
                 scores = getWGRawScores();
-            }
-            else {
+            } else {
                 scores = getLocusScoresForChr(querySeq, startLocation, endLocation, zoom);
             }
         }
@@ -255,11 +262,11 @@ public class TDFDataSource implements CoverageDataSource {
         }
     }
 
-    private List <LocusScore> getWGRawScores() {
+    private List<LocusScore> getWGRawScores() {
 
         List<LocusScore> scores = new ArrayList(10000);
 
-        for(String chr : genome.getAllChromosomeNames()) {
+        for (String chr : genome.getAllChromosomeNames()) {
             Chromosome c = genome.getChromosome(chr);
 
             String dsName = "/" + chr + "/raw";
@@ -411,57 +418,52 @@ public class TDFDataSource implements CoverageDataSource {
 
     }
 
+
+
     public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom) {
 
         Chromosome chromosome = genome.getChromosome(chr);
-        if(chromosome != null) {
+        if (chromosome != null) {
             endLocation = Math.min(chromosome.getLength(), endLocation);
         }
 
         String tmp = chrNameMap.get(chr);
         String querySeq = tmp == null ? chr : tmp;
 
-        // If we are in gene list view bypass caching.
-        if (Globals.isHeadless() || FrameManager.isGeneListMode()) {
-            return getSummaryScores(querySeq, startLocation, endLocation, zoom);
+        ArrayList scores = new ArrayList();
+
+        // TODO -- this whole section could be computed once and stored,  it is only a function of the genome, chr, and zoom level.
+        int tileWidth = 0;
+        if (chr.equals(Globals.CHR_ALL)) {
+            tileWidth = (int) Math.ceil(genome.getNominalLength() / 1000.0);
         } else {
-
-            ArrayList scores = new ArrayList();
-
-            // TODO -- this whole section could be computed once and stored,  it is only a function of the genome, chr, and zoom level.
-            int tileWidth = 0;
-            if (chr.equals(Globals.CHR_ALL)) {
-                tileWidth = (int) Math.ceil(genome.getNominalLength() / 1000.0);
-            } else {
-                if (chromosome != null) {
-                    tileWidth = chromosome.getLength() / ((int) Math.pow(2.0, zoom));
-                }
+            if (chromosome != null) {
+                tileWidth = chromosome.getLength() / ((int) Math.pow(2.0, zoom));
             }
-            if (tileWidth == 0) {
-                return null;
-            }
+        }
+        if (tileWidth == 0) {
+            return null;
+        }
 
+        int startTile = (startLocation / tileWidth);
+        int endTile = ((endLocation - 1) / tileWidth);
 
-            int startTile = (startLocation / tileWidth);
-            int endTile = ((endLocation - 1) / tileWidth);
-            for (int t = startTile; t <= endTile; t++) {
-                List<LocusScore> cachedScores = getCachedSummaryScores(querySeq, zoom, t, tileWidth);
-                if (cachedScores != null) {
-                    for (LocusScore s : cachedScores) {
-                        if (s.getEnd() >= startLocation) {
-                            scores.add(s);
-                        } else if (s.getStart() > endLocation) {
-                            break;
-                        }
+        for (int t = startTile; t <= endTile; t++) {
+            List<LocusScore> cachedScores = getCachedSummaryScores(querySeq, zoom, t, tileWidth);
+            if (cachedScores != null) {
+                for (LocusScore s : cachedScores) {
+                    if (s.getEnd() >= startLocation) {
+                        scores.add(s);
+                    } else if (s.getStart() > endLocation) {
+                        break;
                     }
                 }
-
             }
-
-            return scores;
         }
-    }
 
+        return scores;
+
+    }
 
     public TrackType getTrackType() {
         return reader.getTrackType();

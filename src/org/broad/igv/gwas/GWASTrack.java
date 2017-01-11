@@ -60,37 +60,49 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * @author  jussi
- * @since  Nov 23, 2009
+ * @author jussi
+ * @since Nov 23, 2009
  */
 @XmlType(factoryMethod = "getNextTrack")
 public class GWASTrack extends AbstractTrack {
 
     // Color properties
-    @XmlAttribute private int minPointSize;
-    @XmlAttribute private int maxPointSize;
+    @XmlAttribute
+    private int minPointSize;
+    @XmlAttribute
+    private int maxPointSize;
 
-    @XmlAttribute private boolean useChrColors;
-    @XmlAttribute private boolean singleColor;
-    @XmlAttribute private boolean alternatingColors;
+    @XmlAttribute
+    private boolean useChrColors;
+    @XmlAttribute
+    private boolean singleColor;
+    @XmlAttribute
+    private boolean alternatingColors;
 
     @XmlJavaTypeAdapter(SessionXmlAdapters.Color.class)
-    @XmlAttribute private Color primaryColor;
+    @XmlAttribute
+    private Color primaryColor;
     @XmlJavaTypeAdapter(SessionXmlAdapters.Color.class)
-    @XmlAttribute private Color secondaryColor;
+    @XmlAttribute
+    private Color secondaryColor;
 
     private GWASData gData;
     private static final Logger log = Logger.getLogger(GWASTrack.class);
 
     private static final int AXIS_AREA_WIDTH = 60;
-    @XmlAttribute private double trackMinY;
-    @XmlAttribute private double maxY;
-    @XmlAttribute private double scale;
+    @XmlAttribute
+    private double trackMinY;
+    @XmlAttribute
+    private double maxY;
+    @XmlAttribute
+    private double scale;
     private GWASParser parser;
     private static final DecimalFormat formatter = new DecimalFormat();
     //private String displayName = "GWAS Track";
-    @XmlAttribute private String displayName = null;
-    @XmlAttribute private boolean drawYAxis = true;
+    @XmlAttribute
+    private String displayName = null;
+    @XmlAttribute
+    private boolean drawYAxis = true;
     private boolean showAxis = true;
 
     String getDisplayName() {
@@ -142,6 +154,15 @@ public class GWASTrack extends AbstractTrack {
 
     }
 
+    @Override
+    public boolean isReadyToPaint(ReferenceFrame frame) {
+        return true;  // Track is initialized with all data
+    }
+
+    @Override
+    public void load(ReferenceFrame frame) {
+        // Nothing to do, track is initialized with all data
+    }
 
     public void render(RenderContext context, Rectangle arect) {
 
@@ -536,7 +557,7 @@ public class GWASTrack extends AbstractTrack {
 
 
         popupMenu.add(TrackMenuUtils.getTrackRenameItem(tmpTracks));
-         popupMenu.addSeparator();
+        popupMenu.addSeparator();
 
         popupMenu.add(TrackMenuUtils.getDataRangeItem(tmpTracks));
         popupMenu.add(TrackMenuUtils.getChangeTrackHeightItem(tmpTracks));
@@ -574,7 +595,7 @@ public class GWASTrack extends AbstractTrack {
             public void actionPerformed(ActionEvent e) {
                 showAxis = axisItem.isSelected();
                 PreferenceManager.getInstance().put(PreferenceManager.GWAS_SHOW_AXIS, String.valueOf(showAxis));
-                IGV.getInstance().repaintDataPanels();
+                IGV.getInstance().revalidateTrackPanels();
 
             }
         });
@@ -590,7 +611,7 @@ public class GWASTrack extends AbstractTrack {
                 useChrColors = true;
                 alternatingColors = false;
                 updateColorPreferences();
-                IGV.getInstance().repaintDataPanels();
+                IGV.getInstance().revalidateTrackPanels();
 
             }
         });
@@ -607,7 +628,7 @@ public class GWASTrack extends AbstractTrack {
                 useChrColors = false;
                 alternatingColors = true;
                 updateColorPreferences();
-                IGV.getInstance().repaintDataPanels();
+                IGV.getInstance().revalidateTrackPanels();
             }
         });
         menu.add(colorItem);
@@ -625,7 +646,7 @@ public class GWASTrack extends AbstractTrack {
                 useChrColors = false;
                 alternatingColors = false;
                 updateColorPreferences();
-                IGV.getInstance().repaintDataPanels();
+                IGV.getInstance().revalidateTrackPanels();
 
             }
         });
@@ -651,7 +672,7 @@ public class GWASTrack extends AbstractTrack {
                     primaryColor = color;
                     String colorString = ColorUtilities.colorToString(primaryColor);
                     PreferenceManager.getInstance().put(PreferenceManager.GWAS_PRIMARY_COLOR, colorString);
-                    IGV.getInstance().repaintDataPanels();
+                    IGV.getInstance().revalidateTrackPanels();
                 }
             }
         });
@@ -669,7 +690,7 @@ public class GWASTrack extends AbstractTrack {
                     secondaryColor = color;
                     String colorString = ColorUtilities.colorToString(secondaryColor);
                     PreferenceManager.getInstance().put(PreferenceManager.GWAS_SECONDARY_COLOR, colorString);
-                    IGV.getInstance().repaintDataPanels();
+                    IGV.getInstance().revalidateTrackPanels();
                 }
 
             }
@@ -720,7 +741,7 @@ public class GWASTrack extends AbstractTrack {
                     }
                     this.minPointSize = value;
                     updatePointSizePreferences();
-                    IGV.getInstance().repaintDataPanels();
+                    IGV.getInstance().revalidateTrackPanels();
                 }
 
             } catch (NumberFormatException numberFormatException) {
@@ -750,7 +771,7 @@ public class GWASTrack extends AbstractTrack {
                     }
                     this.maxPointSize = value;
                     updatePointSizePreferences();
-                    IGV.getInstance().repaintDataPanels();
+                    IGV.getInstance().revalidateTrackPanels();
                 }
 
             } catch (NumberFormatException numberFormatException) {
@@ -772,7 +793,7 @@ public class GWASTrack extends AbstractTrack {
     }
 
     @SubtlyImportant
-    private static GWASTrack getNextTrack(){
+    private static GWASTrack getNextTrack() {
         return (GWASTrack) IGVSessionReader.getNextTrack();
     }
 }

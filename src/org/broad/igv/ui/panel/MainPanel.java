@@ -38,6 +38,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.List;
 
@@ -278,31 +279,34 @@ public class MainPanel extends JPanel implements Paintable {
      */
     public synchronized TrackPanelScrollPane addDataPanel(String name) {
 
-        TrackPanel trackPanel = new TrackPanel(name, this);
+        final TrackPanel trackPanel = new TrackPanel(name, this);
         final TrackPanelScrollPane sp = new TrackPanelScrollPane();
-        sp.setViewportView(trackPanel);
-        //sp.setPreferredSize(new Dimension(700, 300));
+        Runnable runnable = () -> {
 
-        for (TrackPanel tp : getTrackPanels()) {
-            tp.getScrollPane().minimizeHeight();
-        }
+            sp.setViewportView(trackPanel);
 
-
-        // Insert the new panel just before the feature panel, or at the end if there is no feature panel.
-        int featurePaneIdx = centerSplitPane.indexOfPane(featureTrackScrollPane);
-        if (featurePaneIdx > 0) {
-            centerSplitPane.insertPane(sp, featurePaneIdx);
-        } else {
-            centerSplitPane.add(sp);
-        }
-
-        if (!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY)) {
-            if (sp.getTrackPanel().getTracks().size() == 0) {
-                //If the igv window is too small the divider won't exist and this causes an exception
-                //We solved by setting a minimum size
-                centerSplitPane.setDividerLocation(0, 3);
+            for (TrackPanel tp : getTrackPanels()) {
+                tp.getScrollPane().minimizeHeight();
             }
-        }
+
+            // Insert the new panel just before the feature panel, or at the end if there is no feature panel.
+            int featurePaneIdx = centerSplitPane.indexOfPane(featureTrackScrollPane);
+            if (featurePaneIdx > 0) {
+                centerSplitPane.insertPane(sp, featurePaneIdx);
+            } else {
+                centerSplitPane.add(sp);
+            }
+
+            if (!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY)) {
+                if (sp.getTrackPanel().getTracks().size() == 0) {
+                    //If the igv window is too small the divider won't exist and this causes an exception
+                    //We solved by setting a minimum size
+                    centerSplitPane.setDividerLocation(0, 3);
+                }
+            }
+        };
+
+        UIUtilities.invokeAndWaitOnEventThread(runnable);
 
         return sp;
     }
@@ -448,7 +452,7 @@ public class MainPanel extends JPanel implements Paintable {
                         IGV.getInstance().getSession().getGeneListMode() :
                         Session.GeneListMode.NORMAL;
 
-                float wc =  mode == Session.GeneListMode.NORMAL ?
+                float wc = mode == Session.GeneListMode.NORMAL ?
                         ((float) dataPanelWidth - (frames.size() - 1) * gap) / frames.size() :
                         20;
 

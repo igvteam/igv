@@ -60,6 +60,7 @@ public class Session implements IGVEventObserver {
     private int version;
     private String path;
     private String groupTracksBy;
+    public  boolean expandInsertions = false;
     private int nextAutoscaleGroup;
     private ReferenceFrame referenceFrame = FrameManager.getDefaultFrame();
     private TrackFilter filter;
@@ -137,6 +138,10 @@ public class Session implements IGVEventObserver {
     public void recordHistory() {
         final ReferenceFrame defaultFrame = FrameManager.getDefaultFrame();
         history.push(defaultFrame.getFormattedLocusString(), defaultFrame.getZoom());
+    }
+
+    public void clearHistory() {
+        history.clear();
     }
 
     public String getSessionVersion() {

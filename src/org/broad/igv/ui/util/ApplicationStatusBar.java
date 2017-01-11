@@ -51,8 +51,6 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
     private JLabel messageBox3;
     private JLabel memoryStatus;
 
-    private JButton cancelButton;
-
     java.util.Timer timer;
 
     public ApplicationStatusBar() {
@@ -76,14 +74,6 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
         messageBox.setMinimumSize(new Dimension(135, 10));
         messageBox.setPreferredSize(new Dimension(135, 20));
         add(messageBox, JideBoxLayout.FIX);
-
-        if (Globals.isDevelopment()) {
-            cancelButton = new JideButton(IconFactory.getInstance().getIcon(IconFactory.IconID.CLOSE));
-            cancelButton.setMinimumSize(new Dimension(20, 10));
-            cancelButton.setPreferredSize(new Dimension(20, 20));
-            cancelButton.setBorder(BorderFactory.createLineBorder(Color.black));
-            add(cancelButton, JideBoxLayout.FIX);
-        }
 
         messageBox2 = createMessageField(messageBG, messageFont);
         messageBox2.setMinimumSize(new Dimension(150, 10));
@@ -135,40 +125,6 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
         return messageField;
 
     }
-
-    /**
-     * Set the cancel button
-     */
-    public void activateCancelButton(ActionListener listener) {
-
-        if (Globals.isDevelopment()) {
-            this.cancelButton.addActionListener(listener);
-            this.cancelButton.addActionListener(new CancelButtonActionListener());
-            this.cancelButton.setEnabled(true);
-        }
-
-    }
-
-    public void deactivateCancelButton() {
-        if (Globals.isDevelopment()) {
-            for (ActionListener l : this.cancelButton.getActionListeners()) {
-                this.cancelButton.removeActionListener(l);
-            }
-            this.cancelButton.setEnabled(false);
-        }
-    }
-
-    public JButton getCancelButton() {
-        return cancelButton;
-    }
-
-    class CancelButtonActionListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            deactivateCancelButton();
-        }
-    }
-
 
     class MemoryUpdateTask extends TimerTask {
 

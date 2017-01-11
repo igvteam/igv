@@ -44,11 +44,13 @@ import org.broad.igv.gs.GSOpenSessionMenuAction;
 import org.broad.igv.gs.GSSaveSessionMenuAction;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.lists.GeneListManagerUI;
-import org.broad.igv.lists.VariantListManager;
 import org.broad.igv.tools.IgvToolsGui;
 import org.broad.igv.tools.motiffinder.MotifFinderPlugin;
 import org.broad.igv.track.CombinedDataSourceDialog;
 import org.broad.igv.ui.action.*;
+import org.broad.igv.ui.event.GenomeChangeEvent;
+import org.broad.igv.ui.event.IGVEventBus;
+import org.broad.igv.ui.event.IGVEventObserver;
 import org.broad.igv.ui.legend.LegendDialog;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.MainPanel;
@@ -85,7 +87,7 @@ import static org.broad.igv.ui.UIConstants.*;
  * @author jrobinso
  * @date Apr 4, 2011
  */
-public class IGVMenuBar extends JMenuBar {
+public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(IGVMenuBar.class);
     public static final String GENOMESPACE_REG_TOOLTIP = "Register for GenomeSpace";
@@ -109,6 +111,7 @@ public class IGVMenuBar extends JMenuBar {
 
     private static IGVMenuBar instance;
     private JMenu googleMenu;
+    private JMenuItem encodeMenuItem;
 
     public void notifyGenomeServerReachable(boolean reachable) {
         if (loadFromServerMenuItem != null) {
@@ -145,6 +148,9 @@ public class IGVMenuBar extends JMenuBar {
         for (AbstractButton menu : createMenus()) {
             add(menu);
         }
+
+        IGVEventBus.getInstance().subscribe(GenomeChangeEvent.class, this);
+
 
         //This is for Macs, so showing the about dialog
         //from the command bar does what we want.
@@ -389,7 +395,7 @@ public class IGVMenuBar extends JMenuBar {
     }
 
 
-    private JMenu createFileMenu() {
+    JMenu createFileMenu() {
 
         List<JComponent> menuItems = new ArrayList<JComponent>();
         MenuAction menuAction = null;
@@ -417,11 +423,13 @@ public class IGVMenuBar extends JMenuBar {
             menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         }
 
+
+
+        encodeMenuItem = MenuAndToolbarUtils.createMenuItem(new BrowseEncodeAction("Load from ENCODE (2012)...", KeyEvent.VK_E, igv));
+        menuItems.add(encodeMenuItem);
         String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
-        if (EncodeFileBrowser.genomeSupported(genomeId)) {
-            menuAction = new BrowseEncodeAction("Load from ENCODE...", KeyEvent.VK_E, igv);
-            menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-        }
+        encodeMenuItem.setVisible (EncodeFileBrowser.genomeSupported(genomeId));
+
 
         menuAction = new BrowseGa4ghAction("Load from Ga4gh...", KeyEvent.VK_G, igv);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
@@ -535,8 +543,17 @@ public class IGVMenuBar extends JMenuBar {
                     @Override
                     public void actionPerformed(ActionEvent event) {
                         try {
-                            org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
-                            igv.doLoadGenome(monitor);
+                            File importDirectory = PreferenceManager.getInstance().getLastGenomeImportDirectory();
+                            if (importDirectory == null) {
+                                PreferenceManager.getInstance().setLastGenomeImportDirectory(DirectoryManager.getUserDirectory());
+                            }
+                            // Display the dialog
+                            File file = FileDialogUtils.chooseFile("Load Genome", importDirectory, FileDialog.LOAD);
+
+                            // If a file selection was made
+                            if (file != null) {
+                                GenomeManager.getInstance().loadGenome(file.getAbsolutePath(), null);
+                            }
                         } catch (Exception e) {
                             MessageUtils.showErrorMessage(e.getMessage(), e);
                         }
@@ -555,7 +572,7 @@ public class IGVMenuBar extends JMenuBar {
         menuAction = new MenuAction("Load Genome From Server...", null) {
             @Override
             public void actionPerformed(ActionEvent event) {
-                IGV.getInstance().loadGenomeFromServerAction();
+                IGV.getInstance().loadGenomeFromServer();
             }
         };
         menuAction.setToolTipText(LOAD_GENOME_SERVER_TOOLTIP);
@@ -570,7 +587,7 @@ public class IGVMenuBar extends JMenuBar {
                     public void actionPerformed(ActionEvent event) {
                         javax.swing.ProgressMonitor monitor = new javax.swing.ProgressMonitor(IGV.getInstance().getMainPanel(),
                                 "Creating genome", null, 0, 100);
-                        igv.doDefineGenome(monitor);
+                        igv.defineGenome(monitor);
                     }
                 };
 
@@ -1030,15 +1047,6 @@ public class IGVMenuBar extends JMenuBar {
         menuAction = new ResetPreferencesAction("Reset Preferences", IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuItems.add(new JSeparator());
-
-        menuAction = new MenuAction("Variant list ...  *EXPERIMENTAL*") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                VariantListManager.openNavigator(IGV.getMainFrame());
-            }
-        };
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuItems.add(new JSeparator());
 
@@ -1285,5 +1293,13 @@ public class IGVMenuBar extends JMenuBar {
 
     public void enableGoogleMenu(boolean aBoolean) {
         googleMenu.setVisible(aBoolean);
+    }
+
+    @Override
+    public void receiveEvent(final Object event) {
+
+        if(event instanceof GenomeChangeEvent) {
+            UIUtilities.invokeOnEventThread(() -> encodeMenuItem.setVisible (EncodeFileBrowser.genomeSupported(((GenomeChangeEvent) event).genome.getId())));
+        }
     }
 }

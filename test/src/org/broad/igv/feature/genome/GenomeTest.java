@@ -80,7 +80,7 @@ public class GenomeTest extends AbstractHeadlessTest {
         Genome genome = null;
         try {
             genome = GenomeManager.getInstance().loadGenome(genomeURL, null);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         Assume.assumeNotNull(genome);

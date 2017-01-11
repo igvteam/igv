@@ -114,8 +114,7 @@ public class AlignmentTileLoader {
                            AlignmentDataManager.DownsampleOptions downsampleOptions,
                            ReadStats readStats, Map<String, PEStats> peStats,
                            AlignmentTrack.BisulfiteContext bisulfiteContext,
-                           boolean showAlignments,
-                           ProgressMonitor monitor) {
+                           boolean showAlignments) {
 
         final PreferenceManager prefMgr = PreferenceManager.getInstance();
         boolean filterFailedReads = prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_FAILED_READS);
@@ -217,11 +216,7 @@ public class AlignmentTileLoader {
                     if (cancel) return null;
                     String msg = "Reads loaded: " + alignmentCount;
                     MessageUtils.setStatusBarMessage(msg);
-                    if (monitor != null) {
-                        monitor.updateStatus(msg);
-                    }
                     if (memoryTooLow()) {
-                        if (monitor != null) monitor.fireProgressChange(100);
                         cancelReaders();
                         t.finish();
                         return t;        // <=  TODO need to cancel all readers
@@ -271,6 +266,9 @@ public class AlignmentTileLoader {
             }
             t.finish();
 
+            // TODO -- make this optional (on a preference)
+            InsertionManager.getInstance().processAlignments(t.alignments);
+
 
         } catch (java.nio.BufferUnderflowException e) {
             // This almost always indicates a corrupt BAM index, or less frequently a corrupt bam file
@@ -286,10 +284,6 @@ public class AlignmentTileLoader {
             // for the next time
             cancel = false;
             activeLoaders.remove(ref);
-
-            if (monitor != null) {
-                monitor.fireProgressChange(100);
-            }
 
             if (iter != null) {
                 iter.close();

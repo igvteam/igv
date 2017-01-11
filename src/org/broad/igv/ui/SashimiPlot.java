@@ -198,7 +198,6 @@ public class SashimiPlot extends JFrame {
 
         geneTrack.clearPackedFeatures();
         RenderContext context = new RenderContext(geneComponent, null, frame, null);
-        geneTrack.setForceLoadSync(true);
         geneTrack.load(context.getReferenceFrame());
 
 

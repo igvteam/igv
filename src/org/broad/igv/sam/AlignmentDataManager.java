@@ -33,19 +33,14 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.AlignmentTrack.SortOption;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.track.RenderContext;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.event.DataLoadedEvent;
 import org.broad.igv.ui.event.IGVEventBus;
 import org.broad.igv.ui.event.IGVEventObserver;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.ui.util.ProgressMonitor;
-import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ResourceLocator;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.*;
 import java.io.IOException;
 import java.util.*;
 
@@ -160,15 +155,6 @@ public class AlignmentDataManager implements IGVEventObserver {
         return reader.getSequenceNames();
     }
 
-
-    public boolean isIonTorrent() {
-        Set<String> platforms = reader.getPlatforms();
-        if (platforms != null) {
-            return platforms.contains("IONTORRENT");
-        }
-        return false;
-    }
-
     public Collection<AlignmentInterval> getLoadedIntervals() {
         return this.loadedIntervalCache.values();
     }
@@ -225,6 +211,13 @@ public class AlignmentDataManager implements IGVEventObserver {
         }
     }
 
+
+    public boolean isLoaded(ReferenceFrame frame) {
+        return frame.getScale() > getMinVisibleScale() ||
+                loadedIntervalCache.getIntervalForRange(frame.getCurrentRange()) != null;
+    }
+
+
     public void load(ReferenceFrame referenceFrame,
                      AlignmentTrack.RenderOptions renderOptions,
                      boolean expandEnds) {
@@ -256,7 +249,6 @@ public class AlignmentDataManager implements IGVEventObserver {
             }
             loadAlignments(chr, adjustedStart, adjustedEnd, renderOptions, referenceFrame);
         }
-
     }
 
     public synchronized PackedAlignments getGroups(RenderContext context, AlignmentTrack.RenderOptions renderOptions) {
@@ -286,32 +278,25 @@ public class AlignmentDataManager implements IGVEventObserver {
                                             final AlignmentTrack.RenderOptions renderOptions,
                                             final ReferenceFrame frame) {
 
+        if (SwingUtilities.isEventDispatchThread()) return;
+
         if (isLoading || chr.equals(Globals.CHR_ALL)) {
             return;
         }
 
         isLoading = true;
 
-        NamedRunnable runnable = new NamedRunnable() {
+        log.debug("Loading alignments: " + chr + ":" + start + "-" + end + " for " + AlignmentDataManager.this);
 
-            public String getName() {
-                return "loadAlignments";
-            }
+        AlignmentInterval loadedInterval = loadInterval(chr, start, end, renderOptions);
+        loadedIntervalCache.add(loadedInterval);
 
-            public void run() {
+        packAlignments(renderOptions);
+        IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
 
-                log.debug("Loading alignments: " + chr + ":" + start + "-" + end + " for " + AlignmentDataManager.this);
+        isLoading = false;
 
-                AlignmentInterval loadedInterval = loadInterval(chr, start, end, renderOptions);
-                loadedIntervalCache.add(loadedInterval);
 
-                packAlignments(renderOptions);
-                IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
-
-                isLoading = false;
-            }
-        };
-        LongRunningTask.submit(runnable);
     }
 
     AlignmentInterval loadInterval(String chr, int start, int end, AlignmentTrack.RenderOptions renderOptions) {
@@ -323,21 +308,10 @@ public class AlignmentDataManager implements IGVEventObserver {
         final AlignmentTrack.BisulfiteContext bisulfiteContext =
                 renderOptions != null ? renderOptions.bisulfiteContext : null;
 
-        ProgressMonitor monitor = null;
-        //Show cancel button
-        if (IGV.hasInstance() && !Globals.isBatch() && !Globals.isHeadless()) {
-            ActionListener cancelListener = new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    AlignmentTileLoader.cancelReaders();
-                }
-            };
-            IGV.getInstance().getContentPane().getStatusBar().activateCancelButton(cancelListener);
-        }
-
         SpliceJunctionHelper spliceJunctionHelper = new SpliceJunctionHelper(this.loadOptions);
+
         AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, spliceJunctionHelper,
-                downsampleOptions, readStats, peStats, bisulfiteContext, showAlignments, monitor);
+                downsampleOptions, readStats, peStats, bisulfiteContext, showAlignments);
 
         List<Alignment> alignments = t.getAlignments();
         List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();
