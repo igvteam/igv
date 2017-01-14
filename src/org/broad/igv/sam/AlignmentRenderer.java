@@ -71,7 +71,7 @@ public class AlignmentRenderer {
     private static Color clippedColor = new Color(255, 20, 147);
 
     // Indel colors
-    private static Color purple = new Color(118, 24, 220);
+    public static Color purple = new Color(118, 24, 220);
     private static Color deletionColor = Color.black;
     private static Color skippedColor = new Color(150, 184, 200);
     private static Color unknownGapColor = new Color(0, 150, 0);
@@ -123,6 +123,7 @@ public class AlignmentRenderer {
         nucleotideColors.put('g', g);
         nucleotideColors.put('N', n);
         nucleotideColors.put('n', n);
+        nucleotideColors.put('-', Color.lightGray);
 
     }
 
@@ -359,56 +360,59 @@ public class AlignmentRenderer {
         }
     }
 
-    public void renderInsertions(List<Alignment> alignments,
-                                 RenderContext context,
-                                 Rectangle rowRect,
-                                 boolean leaveMargin) {
 
-        initializeGraphics(context);
+    public void renderExpandedInsertion(InsertionManager.Insertion i,
+                                        List<Alignment> alignments,
+                                        RenderContext context,
+                                        Rectangle rect,
+                                        boolean leaveMargin) {
+
         double origin = context.getOrigin();
         double locScale = context.getScale();
         boolean completeReadsOnly = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_COMPLETE_READS_ONLY);
 
         if ((alignments != null) && (alignments.size() > 0)) {
 
-
             for (Alignment alignment : alignments) {
-                // Compute the start and dend of the alignment in pixels
-                double pixelStart = ((alignment.getStart() - origin) / locScale);
-                double pixelEnd = ((alignment.getEnd() - origin) / locScale);
 
-                // If any any part of the feature fits in the track rectangle draw  it
-                if (pixelEnd < rowRect.x || pixelStart > rowRect.getMaxX()) {
-                    continue;
-                }
+                if (alignment.getEnd() < i.position) continue;
+                if (alignment.getStart() > i.position) break;
 
-                // Optionally only draw alignments that are completely in view
-                if (completeReadsOnly) {
-                    if (pixelStart < rowRect.x || pixelEnd > rowRect.getMaxX()) {
+                AlignmentBlock aBlock = alignment.getInsertionAt(i.position);
+
+                if (aBlock != null) {
+
+                    // Compute the start and dend of the alignment in pixels
+                    double pixelStart = (aBlock.getStart() - origin) / locScale;
+                    double pixelEnd = (aBlock.getEnd() - origin) / locScale;
+                    int x = (int) pixelStart;
+
+                    // If any any part of the feature fits in the track rectangle draw  it
+                    if (pixelEnd < rect.x || pixelStart > rect.getMaxX()) {
                         continue;
+                    }
+
+                    int bpWidth = aBlock.getBases().length;
+                    double pxWidthExact = ((double) bpWidth) / locScale;
+                    int h = (int) Math.max(1, rect.getHeight() - 2);
+                    int y = (int) (rect.getY() + (rect.getHeight() - h) / 2) - 1;
+
+
+                    if (aBlock.getBases() == null) {
+                        Graphics2D g = context.getGraphics();
+                        g.setColor(purple);
+                        g.fillRect(x, y, (int) pxWidthExact, h);
+
+                    } else {
+                        drawExpandedInsertionBases(x, context, rect, aBlock, leaveMargin);
                     }
                 }
 
-                // If the alignment is 3 pixels or less,  draw alignment as a single block,
-                // further detail would not be seen and just add to drawing overhead
-                // Does the change for Bisulfite kill some machines?
-                double pixelWidth = pixelEnd - pixelStart;
 
-                if (pixelWidth < 2) {
-
-
-                } else if (alignment instanceof PairedAlignment) {
-                    //     drawPairedAlignment((PairedAlignment) alignment, rowRect, context, renderOptions, leaveMargin, selectedReadNames, alignmentCounts);
-                } else if (alignment instanceof LinkedAlignment) {
-                    //     drawLinkedAlignment((LinkedAlignment) alignment, rowRect, context, renderOptions, leaveMargin, selectedReadNames, alignmentCounts);
-                } else {
-                    drawExpandedInsertions(rowRect, alignment, context, leaveMargin);
-
-                }
             }
-
         }
     }
+
 
     private void drawLinkedAlignment(LinkedAlignment alignment, Rectangle rowRect, RenderContext context,
                                      RenderOptions renderOptions, boolean leaveMargin,
@@ -1124,61 +1128,16 @@ public class AlignmentRenderer {
         }
     }
 
-    private void drawExpandedInsertions(Rectangle rect, Alignment alignment, RenderContext context, boolean leaveMargin) {
 
-        AlignmentBlock[] insertions = alignment.getInsertions();
-        double origin = context.getOrigin();
-        double locScale = context.getScale();
-
-        if (insertions != null) {
-
-            for (AlignmentBlock aBlock : insertions) {
-
-
-                InsertionManager.Insertion i = InsertionManager.getInstance().getInsertion(aBlock.getStart());
-
-                if (i != null && i.pixelPosition >= 0) {
-
-                    int x = i.pixelPosition;
-
-                    int bpWidth = aBlock.getBases().length;
-                    double pxWidthExact = ((double) bpWidth) / locScale;
-                    int h = (int) Math.max(1, rect.getHeight() - 2);
-                    int y = (int) (rect.getY() + (rect.getHeight() - h) / 2) - 1;
-
-                    // Don't draw out of clipping rect
-                    if (x > rect.getMaxX()) {
-                        break;
-                    } else if (x < rect.getX()) {
-                        continue;
-                    }
-
-                    if(aBlock.getBases() == null) {
-                        Graphics2D g = context.getGraphics();
-                        g.setColor(purple);
-                        g.fillRect(x, y, (int) pxWidthExact, h);
-
-                    }
-                    else {
-                        drawInsertionBases(x, context,rect, aBlock, leaveMargin);
-                    }
-
-
-                    // aBlock.setPixelRange(x - 2, x + 4);
-                }
-
-            }
-        }
-    }
-
-    private void drawInsertionBases(int pixelPosition,
-                                    RenderContext context,
-                                    Rectangle rect,
-                                    AlignmentBlock block,
-                                    boolean leaveMargin) {
+    private void drawExpandedInsertionBases(int pixelPosition,
+                                            RenderContext context,
+                                            Rectangle rect,
+                                            AlignmentBlock block,
+                                            boolean leaveMargin) {
 
         Graphics2D g = context.getGraphics();
         byte[] bases = block.getBases();
+        int padding = block.getPadding();
 
         double locScale = context.getScale();
         double origin = context.getOrigin();
@@ -1188,10 +1147,10 @@ public class AlignmentRenderer {
         int dY = (int) rect.getHeight();
         int dX = (int) Math.max(1, (1.0 / locScale));
 
+        final int size = bases.length + padding;
+        for (int p = 0; p < size; p++) {
 
-        for (int i=0; i<bases.length; i++) {
-
-            char c = (char) bases[i];
+            char  c = p < padding ? '-' : (char) bases[p - padding];
 
             Color color = nucleotideColors.get(c);
             if (color == null) {
@@ -1200,7 +1159,7 @@ public class AlignmentRenderer {
 
             // If there is room for text draw the character, otherwise
             // just draw a rectangle to represent the
-            int pX = (int)  (pixelPosition +  (i / locScale));
+            int pX = (int) (pixelPosition + (p / locScale));
 
             // Don't draw out of clipping rect
             if (pX > rect.getMaxX()) {
@@ -1210,7 +1169,6 @@ public class AlignmentRenderer {
             }
 
             drawBase(g, color, c, pX, pY, dX, dY - (leaveMargin ? 2 : 0), false, null);
-
 
         }
 

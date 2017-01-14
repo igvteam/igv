@@ -30,6 +30,7 @@ import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.feature.Range;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.Utilities;
@@ -235,14 +236,14 @@ public class SAMWriter {
      *
      * @param dataManager
      * @param outFile
-     * @param sequence
+     * @param frame
+     *@param sequence
      * @param start
-     * @param end
-     * @return
+     * @param end    @return
      * @throws IOException
      */
     public static int writeAlignmentFilePicard(AlignmentDataManager dataManager, File outFile,
-                                               String sequence, int start, int end) throws IOException {
+                                               ReferenceFrame frame, String sequence, int start, int end) throws IOException {
 
         ResourceLocator inlocator = dataManager.getLocator();
         checkExportableAlignmentFile(inlocator.getTypeString());
@@ -253,7 +254,7 @@ public class SAMWriter {
         fileHeader.setSortOrder(SAMFileHeader.SortOrder.coordinate);
 
         Range range = new Range(sequence, start, end);
-        AlignmentInterval interval = dataManager.getLoadedInterval(range);
+        AlignmentInterval interval = dataManager.getLoadedInterval(frame);
         if (interval != null) {
             List<Alignment> alignments = new ArrayList(interval.getAlignments());
 

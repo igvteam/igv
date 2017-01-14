@@ -311,7 +311,7 @@ public abstract class SAMAlignment implements Alignment {
         int blockIdx = 0;
         int insertionIdx = 0;
         int gapIdx = 0;
-
+        int padding = 0;
         prevOp = 0;
         for (int i = 0; i < operators.size(); i++) {
             CigarOperator op = operators.get(i);
@@ -361,12 +361,13 @@ public abstract class SAMAlignment implements Alignment {
                     gapTypes[gapIdx++] = ZERO_GAP;
                     AlignmentBlockImpl block = buildAlignmentBlock(readBases, readBaseQualities,
                             blockStart, fromIdx, op.nBases, false);
-
+                    block.setPadding(padding);
                     insertions[insertionIdx++] = block;
                     fromIdx += op.nBases;
+                    padding = 0;
                 } else if (op.operator == PADDING) {
                     //Padding represents a deletion against the padded reference
-                    //But we don't have the padded reference
+                    padding += op.nBases;
                     gapTypes[gapIdx++] = ZERO_GAP;
                 }
             } catch (Exception e) {
@@ -424,6 +425,8 @@ public abstract class SAMAlignment implements Alignment {
 
     }
 
+
+
     private static AlignmentBlockImpl buildAlignmentBlock(byte[] readBases, byte[] readBaseQualities, int blockStart,
                                                           int fromIdx, int nBases, boolean checkNBasesAvailable) {
 
@@ -479,18 +482,18 @@ public abstract class SAMAlignment implements Alignment {
 
                 if (block.containsPixel(mouseX)) {
 
-                        byte[] bases = block.getBases();
-                        if (bases == null) {
-                            buf.append("Insertion: " + block.getLength() + " bases");
+                    byte[] bases = block.getBases();
+                    if (bases == null) {
+                        buf.append("Insertion: " + block.getLength() + " bases");
+                    } else {
+                        if (bases.length < 50) {
+                            buf.append("Insertion: " + new String(bases));
                         } else {
-                            if (bases.length < 50) {
-                                buf.append( "Insertion: " + new String(bases));
-                            } else {
-                                int len = bases.length;
-                                buf.append( "Insertion: " + new String(Arrays.copyOfRange(bases, 0, 25)) + "..." +
-                                        new String(Arrays.copyOfRange(bases, len - 25, len)));
-                            }
+                            int len = bases.length;
+                            buf.append("Insertion: " + new String(Arrays.copyOfRange(bases, 0, 25)) + "..." +
+                                    new String(Arrays.copyOfRange(bases, len - 25, len)));
                         }
+                    }
                     return buf.toString();
                 }
             }
@@ -725,6 +728,15 @@ public abstract class SAMAlignment implements Alignment {
     @Override
     public void finish() {
 
+    }
+
+    @Override
+    public AlignmentBlock getInsertionAt(int position) {
+        for (AlignmentBlock block : insertions) {
+            if (block.getStart() == position) return block;
+            if (block.getStart() > position) return null;  // Blocks increase lineraly
+        }
+        return null;
     }
 
 

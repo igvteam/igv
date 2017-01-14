@@ -102,7 +102,7 @@ public class UIConstants {
     public static Color NO_DATA_COLOR = new Color(200, 200, 200, 150);
     static final public String REMOVE_GENOME_LIST_MENU_ITEM = "Remove Imported Genomes...";
     static final public String GENOME_LIST_SEPARATOR = "--SEPARATOR--";
-    static final public int DEFAULT_DOUBLE_CLICK_INTERVAL = 500;
+    static final public int DEFAULT_DOUBLE_CLICK_INTERVAL = 400;
 
 
     public static int getDoubleClickInterval() {

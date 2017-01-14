@@ -247,7 +247,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             AlignmentInterval interval = null;
             if (dataManager != null) {
                 dataManager.load(context.getReferenceFrame(), renderOptions, true);
-                interval = dataManager.getLoadedInterval(context.getReferenceFrame().getCurrentRange());
+                interval = dataManager.getLoadedInterval(context.getReferenceFrame());
             }
             if (interval != null) {
                 if (interval.contains(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation())) {
@@ -326,7 +326,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
         } else {
 
-            AlignmentInterval interval = dataManager.getLoadedInterval(frame.getCurrentRange());
+            AlignmentInterval interval = dataManager.getLoadedInterval(frame);
             if (interval == null) return null;
 
             int origin = (int) frame.getOrigin();
@@ -374,7 +374,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         }
 
         if (frame.getScale() < minVisibleScale) {
-            AlignmentInterval interval = dataManager.getLoadedInterval(frame.getCurrentRange());
+            AlignmentInterval interval = dataManager.getLoadedInterval(frame);
             if (interval != null && interval.contains(chr, (int) position, (int) position)) {
                 AlignmentCounts counts = interval.getCounts();
                 if (counts != null) {
@@ -422,7 +422,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
             int max = 10;
             for (ReferenceFrame frame : frameList) {
-                AlignmentInterval interval = dataManager.getLoadedInterval(frame.getCurrentRange());
+                AlignmentInterval interval = dataManager.getLoadedInterval(frame);
                 if (interval == null) continue;
 
                 int origin = (int) frame.getOrigin();

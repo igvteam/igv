@@ -53,6 +53,7 @@ import org.broad.igv.feature.genome.*;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.peaks.PeakCommandBar;
 import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.sam.InsertionSelectionEvent;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionReader;
@@ -310,6 +311,7 @@ public class IGV implements IGVEventObserver {
         mainFrame.setBounds(applicationBounds);
 
         IGVEventBus.getInstance().subscribe(ViewChange.class, this);
+        IGVEventBus.getInstance().subscribe(InsertionSelectionEvent.class, this);
         IGVEventBus.getInstance().subscribe(GenomeChangeEvent.class, this);
     }
 
@@ -2526,7 +2528,7 @@ public class IGV implements IGVEventObserver {
 
     public void receiveEvent(Object event) {
 
-        if (event instanceof ViewChange) {
+        if (event instanceof ViewChange || event instanceof InsertionSelectionEvent) {
             revalidateTrackPanels();
         } else if (event instanceof GenomeChangeEvent) {
             doRefresh();

@@ -36,7 +36,6 @@ package org.broad.igv.ui.panel;
 import org.apache.log4j.Logger;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.InsertionManager;
-import org.broad.igv.session.Session;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
@@ -44,6 +43,7 @@ import org.broad.igv.ui.UIConstants;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class DataPanelPainter {
@@ -56,10 +56,13 @@ public class DataPanelPainter {
                                    Color background,
                                    Rectangle visibleRect) {
 
-        Graphics2D graphics2D = null;
-//log.info("Paint");
+
+
+        log.info("Paint ------------------------------------");
+        final double start = context.getOrigin();
 
         try {
+            Graphics2D graphics2D = context.getGraphics();
             graphics2D = (Graphics2D) context.getGraphics().create();
             graphics2D.setBackground(background);
             graphics2D.clearRect(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height);
@@ -70,34 +73,33 @@ public class DataPanelPainter {
             referenceFrame.setInsertions(InsertionManager.getInstance().getInsertions(referenceFrame.getOrigin(), referenceFrame.getEnd()));
             List<InsertionManager.Insertion> insertions = referenceFrame.getInsertions();
 
-            if (IGV.getInstance().getSession().expandInsertions && insertions != null && insertions.size() > 0) {
-                ReferenceFrame tempFrame = new ReferenceFrame(referenceFrame);
-                double start = context.getOrigin();
+            InsertionManager.Insertion i = InsertionManager.getInstance().getSelectedInsertion();
+
+            if (i != null) {
+
                 double scale = context.getScale();
                 int p0 = 0, w;
 
-                for (InsertionManager.Insertion i : insertions) {
+                w = (int) ((i.position - start) / scale);
+                paintSection(groups, context, p0, visibleRect.y, w, visibleRect.height, 0);
 
-                    w = (int) ((i.position - start) / scale);
+                i.pixelPosition = p0 + w;
+                p0 += w;
 
-                    paintSection(groups, context, tempFrame, p0, visibleRect.y, w, visibleRect.height);
 
-                    int g = (int) (i.size / scale);
+                context.getReferenceFrame().origin = i.position;
+                w = (int) Math.ceil(i.size / context.getScale());
+                paintInsertion(i, groups, context, p0, visibleRect.y, w, visibleRect.height);
 
-                    i.pixelPosition = p0 + w;
-
-                    p0 += w + g;
-
-                    tempFrame.setOrigin(i.position);
-                    start = i.position;
-                }
-
+                int g = (int) (i.size / scale);
+                p0 += g;
+                context.getReferenceFrame().origin = i.position;
                 w = width - p0;
                 if (w > 0) {
-                    paintSection(groups, context, tempFrame, p0, visibleRect.y, w, visibleRect.height);
+                    paintSection(groups, context, p0, visibleRect.y, width - p0, visibleRect.height, g);
                 }
 
-                paintInsertions(groups, context, visibleRect);
+
 
             } else {
                 paintFrame(groups, context, width, visibleRect);
@@ -105,57 +107,27 @@ public class DataPanelPainter {
 
 
         } finally {
-            if (graphics2D != null) graphics2D.dispose();
+            context.getReferenceFrame().origin = start;
+            context.dispose();
+
         }
     }
 
-    private void paintInsertions(Collection<TrackGroup> groups, RenderContext context, Rectangle dRect) {
-        int trackY = 0;
 
-        for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
-            TrackGroup group = groupIter.next();
-            if (group.isVisible()) {
-                List<Track> trackList = group.getVisibleTracks();
-                synchronized (trackList) {
+    private void paintSection(Collection<TrackGroup> groups, RenderContext context, int px, int py, int w, int h, int delta) {
 
-                    for (Track track : trackList) {
-                        if (track == null) continue;
-                        int trackHeight = track.getHeight();
-                        if (dRect != null) {
-                            if (trackY > dRect.y + dRect.height) {
-                                break;
-                            } else if (trackY + trackHeight < dRect.y) {
-                                if (track.isVisible()) {
-                                    trackY += trackHeight;
-                                }
-                                continue;
-                            }
-                        }
-
-                        if (track instanceof AlignmentTrack && track.isVisible()) {
-                            Rectangle rect = new Rectangle(dRect.x, trackY, dRect.width, trackHeight);
-                            ((AlignmentTrack) track).renderInsertions(context, rect);
-                        }
-                        if (track.isVisible()) {
-                            trackY += trackHeight;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void paintSection(Collection<TrackGroup> groups, RenderContext context, ReferenceFrame tempFrame, int px, int py, int w, int h) {
-
+        log.info("Paint section " + px + "  " + (px + w));
+        context.clearGraphicsCache();
+        Graphics2D dG = context.getGraphics();
         Rectangle dRect = new Rectangle(0, py, w, h);
-        Graphics2D dG = (Graphics2D) context.getGraphics().create();
-        dG.translate(px, 0);
+        dG.translate(delta, 0);
         dG.setClip(dRect);
+        context.translateX = px;
 
-        RenderContext dContext = new RenderContext(context.getPanel(), dG, tempFrame, dRect);
+        paintFrame(groups, context, w, dRect);
 
-        paintFrame(groups, dContext, w, dRect);
     }
+
 
     private void paintFrame(Collection<TrackGroup> groups, RenderContext dContext, int width, Rectangle dRect) {
         int trackX = 0;
@@ -210,6 +182,53 @@ public class DataPanelPainter {
                 if (group.isDrawBorder()) {
                     Graphics2D graphics2D = dContext.getGraphic2DForColor(Color.black);
                     graphics2D.drawLine(0, trackY, width, trackY);
+                }
+            }
+        }
+    }
+
+
+    private void paintInsertion(InsertionManager.Insertion insertion, Collection<TrackGroup> groups, RenderContext context, int px, int py, int w, int h) {
+
+        log.info("Paint section " + px + "  " + (px + w));
+        context.clearGraphicsCache();
+        Graphics2D dG = context.getGraphics();
+        Rectangle dRect = new Rectangle(0, py, w, h);
+        dG.translate(px, 0);
+        dG.setClip(dRect);
+        context.translateX = px;
+
+        int trackY = 0;
+
+        for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
+            TrackGroup group = groupIter.next();
+            if (group.isVisible()) {
+                List<Track> trackList = group.getVisibleTracks();
+                synchronized (trackList) {
+
+                    for (Track track : trackList) {
+                        if (track == null) continue;
+                        int trackHeight = track.getHeight();
+                        if (dRect != null) {
+                            if (trackY > dRect.y + dRect.height) {
+                                break;
+                            } else if (trackY + trackHeight < dRect.y) {
+                                if (track.isVisible()) {
+                                    trackY += trackHeight;
+                                }
+                                continue;
+                            }
+                        }
+
+                        if (track instanceof AlignmentTrack && track.isVisible()) {
+                            Rectangle rect = new Rectangle(dRect.x, trackY, dRect.width, trackHeight);
+                            ((AlignmentTrack) track).renderExpandedInsertion(insertion, context, rect);
+                        }
+
+                        if (track.isVisible()) {
+                            trackY += trackHeight;
+                        }
+                    }
                 }
             }
         }

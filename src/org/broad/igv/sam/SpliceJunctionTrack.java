@@ -229,7 +229,7 @@ public class SpliceJunctionTrack extends FeatureTrack {
     @Override
     protected void loadFeatures(String chr, int start, int end, ReferenceFrame referenceFrame) {
 
-        AlignmentInterval loadedInterval = dataManager.getLoadedInterval(referenceFrame.getCurrentRange());
+        AlignmentInterval loadedInterval = dataManager.getLoadedInterval(referenceFrame);
         if (loadedInterval == null) return;
 
         SpliceJunctionHelper helper = loadedInterval.getSpliceJunctionHelper();

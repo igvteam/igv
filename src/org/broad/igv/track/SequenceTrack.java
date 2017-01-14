@@ -39,6 +39,8 @@ import org.broad.igv.renderer.Renderer;
 import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.event.IGVEventBus;
+import org.broad.igv.ui.event.IGVEventObserver;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -49,12 +51,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.*;
+import java.util.List;
 
 
 /**
  * @author jrobinso
  */
-public class SequenceTrack extends AbstractTrack {
+public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(SequenceTrack.class);
 
@@ -65,7 +68,7 @@ public class SequenceTrack extends AbstractTrack {
     /**
      * Map of reference frame -> cached sequence.  Need a map to support gene lists
      */
-    private HashMap<String, LoadedDataInterval<SeqCache>> loadedIntervalCache = new HashMap(200);
+    private Map<String, LoadedDataInterval<SeqCache>> loadedIntervalCache = new HashMap(200);
 
 
     private SequenceRenderer sequenceRenderer = new SequenceRenderer();
@@ -84,7 +87,8 @@ public class SequenceTrack extends AbstractTrack {
         super(name);
         setSortable(false);
         shouldShowTranslation = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SEQUENCE_TRANSLATION);
-
+        loadedIntervalCache = Collections.synchronizedMap(new HashMap<>());
+        IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
     }
 
     public static String getReverseComplement(String sequence) {
@@ -125,6 +129,22 @@ public class SequenceTrack extends AbstractTrack {
         return new String(complement);
     }
 
+    public void receiveEvent(Object event) {
+
+        if (event instanceof FrameManager.ChangeEvent) {
+
+            Collection<ReferenceFrame> frames = ((FrameManager.ChangeEvent) event).getFrames();
+            Map<String, LoadedDataInterval<SeqCache>> newCache = Collections.synchronizedMap(new HashMap<>());
+            for (ReferenceFrame f : frames) {
+                newCache.put(f.getName(), loadedIntervalCache.get(f.getName()));
+            }
+            loadedIntervalCache = newCache;
+
+
+        } else {
+            log.info("Unknown event type: " + event.getClass());
+        }
+    }
 
     @Override
     public void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRectangle) {
@@ -185,7 +205,7 @@ public class SequenceTrack extends AbstractTrack {
 
         // Expand a bit for panning and AA caluclation
         start = Math.max(0, start - w / 2 + 2);
-        end =  Math.min(end + w/2 + 2, chromosomeLength);
+        end = Math.min(end + w / 2 + 2, chromosomeLength);
 
         Genome genome = currentGenome;
         String sequence = new String(genome.getSequence(chr, start, end));
@@ -245,7 +265,7 @@ public class SequenceTrack extends AbstractTrack {
 
     @Override
     public int getHeight() {
-        return sequenceVisible ? SEQUENCE_HEIGHT  +
+        return sequenceVisible ? SEQUENCE_HEIGHT +
                 (shouldShowTranslation ? SequenceRenderer.TranslatedSequenceDrawer.TOTAL_HEIGHT : 0) :
                 0;
     }

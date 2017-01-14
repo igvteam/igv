@@ -26,6 +26,9 @@
 
 package org.broad.igv.sam;
 
+import oracle.jdbc.proxy.annotation.Pre;
+import org.broad.igv.PreferenceManager;
+
 import java.util.*;
 
 /**
@@ -40,6 +43,7 @@ public class InsertionManager {
 
     Map<Integer, Insertion> insertionMap;
     List<Integer> positions;
+    private Integer selectedInsertion;
 
     public static synchronized InsertionManager getInstance() {
         return theInstance;
@@ -57,20 +61,32 @@ public class InsertionManager {
 
     public synchronized List<Insertion> getInsertions(double start, double end) {
 
-        this.positions.sort((o1, o2) -> o1 - o2);
-
         List<Insertion> insertions = new ArrayList<>();
         for (int i = 0; i < positions.size(); i++) {
             final Integer key = positions.get(i);
             if (key > end) break;
             if (key >= start) {
                 final Insertion insertion = insertionMap.get(key);
-              //  if (insertion.size > 2) {
-                    insertions.add(insertion);
-              //  }
+                //  if (insertion.size > 2) {
+                insertions.add(insertion);
+                //  }
             }
         }
         return insertions;
+
+    }
+
+    public void setSelected(int position) {
+        this.selectedInsertion = position;
+    }
+
+    public void clearSelected() {
+        this.selectedInsertion = null;
+    }
+
+    public Insertion getSelectedInsertion() {
+
+        return selectedInsertion == null ? null : insertionMap.get(selectedInsertion);
 
     }
 
@@ -80,15 +96,27 @@ public class InsertionManager {
 
     public void processAlignments(List<Alignment> alignments) {
 
+        int minLength = 0;
+        if(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_BP)) {
+            minLength = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDEL_BP_THRESHOLD);
+        }
+
         for (Alignment a : alignments) {
             AlignmentBlock[] blocks = a.getInsertions();
             if (blocks != null) {
                 for (AlignmentBlock block : blocks) {
 
+                    if(block.getBases().length < minLength) continue;
+
                     Integer key = block.getStart();
                     Insertion insertion = insertionMap.get(key);
                     if (insertion == null) {
                         insertion = new Insertion(block.getStart(), block.getLength());
+
+                        if(insertion.size > 1000) {
+                            System.out.println();
+                        }
+
                         insertionMap.put(key, insertion);
                         positions.add(block.getStart());
                     } else {
@@ -97,6 +125,10 @@ public class InsertionManager {
                 }
             }
         }
+
+
+        this.positions = new ArrayList<>(insertionMap.keySet());
+        this.positions.sort((o1, o2) -> o1 - o2);
     }
 
     public static class Insertion {

@@ -45,6 +45,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.DataPanelTool;
+import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
@@ -78,7 +79,7 @@ public class DataPanel extends JComponent implements Paintable {
     private DataPanelPainter painter;
     private String tooltipText = "";
 
-    public boolean loadInProgress  = false;
+    public boolean loadInProgress = false;
 
 
     public DataPanel(ReferenceFrame frame, DataPanelContainer parent) {
@@ -126,8 +127,8 @@ public class DataPanel extends JComponent implements Paintable {
 
             long t0 = System.currentTimeMillis();
 
-            if(!allTracksLoaded()) {
-                if(!loadInProgress) {
+            if (!allTracksLoaded()) {
+                if (!loadInProgress) {
                     loadInProgress = true;
                     Preloader.load(this);
                 }
@@ -180,6 +181,7 @@ public class DataPanel extends JComponent implements Paintable {
                 flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
                 allMatch(track -> track.isReadyToPaint(frame));
     }
+
     public List<Track> notloadedTracks() {
         return parent.getTrackGroups().stream().
                 filter(TrackGroup::isVisible).
@@ -188,7 +190,7 @@ public class DataPanel extends JComponent implements Paintable {
                 collect(Collectors.toList());
     }
 
-    public  List<Track> visibleTracks() {
+    public List<Track> visibleTracks() {
         return parent.getTrackGroups().stream().
                 filter(TrackGroup::isVisible).
                 flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
@@ -567,6 +569,8 @@ public class DataPanel extends JComponent implements Paintable {
          */
         private ClickTaskScheduler clickScheduler = new ClickTaskScheduler();
 
+        long lastClickTime = 0;
+
 
         @Override
         public void mouseMoved(MouseEvent e) {
@@ -653,6 +657,8 @@ public class DataPanel extends JComponent implements Paintable {
         @Override
         public void mouseClicked(final MouseEvent e) {
 
+            long clickTime = System.currentTimeMillis();
+
             // ctrl-mouse down is the mac popup trigger, but you will also get a clck even.  Ignore the click.
             if (Globals.IS_MAC && e.isControlDown()) {
                 return;
@@ -660,11 +666,13 @@ public class DataPanel extends JComponent implements Paintable {
 
             if (currentTool instanceof RegionOfInterestTool) {
                 currentTool.mouseClicked(e);
+                e.consume();
                 return;
             }
 
             if (e.isPopupTrigger()) {
                 doPopupMenu(e);
+                e.consume();
                 return;
             }
 
@@ -675,25 +683,31 @@ public class DataPanel extends JComponent implements Paintable {
                 if (e.isShiftDown()) {
                     final double locationClicked = frame.getChromosomePosition(e.getX());
                     frame.doIncrementZoom(3, locationClicked);
+                    e.consume();
                 } else if (e.isAltDown()) {
                     final double locationClicked = frame.getChromosomePosition(e.getX());
                     frame.doIncrementZoom(-1, locationClicked);
+                    e.consume();
                 } else if ((e.isMetaDown() || e.isControlDown()) && track != null) {
                     TrackClickEvent te = new TrackClickEvent(e, frame);
-
-                    track.handleDataClick(te);
+                    if(track.handleDataClick(te)) {
+                        e.consume();
+                        return;
+                    }
 
                 } else {
 
                     // No modifier, left-click.  Defer processing with a timer until we are sure this is not the
                     // first of a "double-click".
 
-                    if (e.getClickCount() > 1) {
+                    if (clickTime - lastClickTime < UIConstants.getDoubleClickInterval()) {
                         clickScheduler.cancelClickTask();
                         final double locationClicked = frame.getChromosomePosition(e.getX());
                         frame.doIncrementZoom(1, locationClicked);
 
                     } else {
+
+                        lastClickTime = clickTime;
 
                         // Unhandled single click.  Delegate to track or tool unless second click arrives within
                         // double-click interval.

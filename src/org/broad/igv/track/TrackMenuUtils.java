@@ -639,7 +639,7 @@ public class TrackMenuUtils {
             //return SAMWriter.writeAlignmentFilePicard(inlocator, outPath, range.getChr(), range.getStart(), range.getEnd());
 
             //Export those in memory, overlapping current view
-            return SAMWriter.writeAlignmentFilePicard(dataManager, outFile, range.getChr(), range.getStart(), range.getEnd());
+            return SAMWriter.writeAlignmentFilePicard(dataManager, outFile, frame, range.getChr(), range.getStart(), range.getEnd());
         } catch (IOException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);

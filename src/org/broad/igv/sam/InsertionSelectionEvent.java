@@ -1,7 +1,7 @@
 /*
- * The MIT License (MIT)
+ *  The MIT License (MIT)
  *
- * Copyright (c) 2007-2015 Broad Institute
+ * Copyright (c) 2016 University of California San Diego
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -13,51 +13,27 @@
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
+ *
+ *
  */
 
 package org.broad.igv.sam;
 
-import org.broad.igv.feature.genome.Genome;
-
 /**
- * Created by jrobinso on 9/22/15.
+ * Created by jrobinso on 1/12/17.
  */
-public interface AlignmentBlock {
+public class InsertionSelectionEvent {
 
-    boolean contains(int position);
+    public final InsertionManager.Insertion insertion;
 
-    int getLength();
-
-    byte getBase(int offset);
-
-    byte[] getBases();
-
-    int getStart();
-
-    byte getQuality(int offset);
-
-    byte[] getQualities();
-
-    int getEnd();
-
-    boolean isSoftClipped();
-
-    boolean hasBases();
-
-    void setPixelRange(int s, int e);
-
-    boolean containsPixel(int x) ;
-
-    default int getPadding() {
-        return 0;
+    public InsertionSelectionEvent(InsertionManager.Insertion insertion) {
+        this.insertion = insertion;
     }
-
 }

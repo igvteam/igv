@@ -117,4 +117,8 @@ public interface Alignment extends LocusScore {
 
 
     void finish();
+
+    default AlignmentBlock getInsertionAt(int position) {
+        return null;
+    }
 }

@@ -49,6 +49,7 @@ public class RenderContext {
     private JComponent panel;
     private Rectangle visibleRect;
     private boolean merged = false;
+    public transient int translateX;
 
 
     public RenderContext(JComponent panel, Graphics2D graphics, ReferenceFrame referenceFrame, Rectangle visibleRect) {
@@ -63,8 +64,24 @@ public class RenderContext {
         }
     }
 
+    public RenderContext(RenderContext context) {
+        this.graphics = context.getGraphics();
+        this.graphicCache = new HashMap<>();
+        this.referenceFrame = new ReferenceFrame(context.referenceFrame);
+        this.panel = context.panel;
+        this.visibleRect = new Rectangle(context.visibleRect);
+        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING) && graphics != null) {
+            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        }
+    }
+
     public Graphics2D getGraphics() {
         return graphics;
+    }
+
+    public void clearGraphicsCache() {
+        graphicCache.clear();
     }
 
     public Graphics2D getGraphics2D(Object key) {
@@ -134,13 +151,6 @@ public class RenderContext {
         this.merged = merged;
     }
 
-    public int bpToScreenPixel(double location) {
-        final double scale = getScale();
-        final double origin = getOrigin();
-        return (int) ((location - origin) / scale);
-
-    }
-
     /**
      * Release graphics objects
      *
@@ -156,6 +166,7 @@ public class RenderContext {
         for (Graphics2D g : graphicCache.values()) {
             g.dispose();
         }
+        graphics.dispose();
         graphicCache.clear();
     }
 

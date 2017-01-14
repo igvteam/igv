@@ -29,24 +29,23 @@
  */
 package org.broad.igv.sam;
 
-import org.broad.igv.feature.genome.Genome;
-
 public class AlignmentBlockImpl implements AlignmentBlock {
 
     private int start;
     private byte[] bases;
-    private int length = -1;
+    private int basesLength = -1;
     public byte[] qualities;
     private boolean softClipped = false;
     private int pixelStart;
     private int pixelEnd;
+    private int padding = 0;
 
 
     public AlignmentBlockImpl(int start, byte[] bases, byte[] qualities) {
 
         this.start = start;
         this.bases = bases;
-        this.length = bases.length;
+        this.basesLength = bases.length;
         this.qualities = qualities;
     }
 
@@ -62,6 +61,11 @@ public class AlignmentBlockImpl implements AlignmentBlock {
     }
 
     @Override
+    public int getPadding() {
+        return padding;
+    }
+
+    @Override
     public boolean contains(int position) {
         int offset = position - start;
         return offset >= 0 && offset < getLength();
@@ -69,7 +73,7 @@ public class AlignmentBlockImpl implements AlignmentBlock {
 
     @Override
     public int getLength() {
-        return length;
+        return basesLength + padding;
     }
 
     @Override
@@ -146,4 +150,7 @@ public class AlignmentBlockImpl implements AlignmentBlock {
     }
 
 
+    public void setPadding(int padding) {
+        this.padding = padding;
+    }
 }

@@ -60,7 +60,7 @@ public class Session implements IGVEventObserver {
     private int version;
     private String path;
     private String groupTracksBy;
-    public  boolean expandInsertions = false;
+    public  boolean expandInsertions = false; //false;
     private int nextAutoscaleGroup;
     private ReferenceFrame referenceFrame = FrameManager.getDefaultFrame();
     private TrackFilter filter;

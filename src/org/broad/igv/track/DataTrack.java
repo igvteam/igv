@@ -42,10 +42,13 @@ import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.*;
+import org.broad.igv.sam.AlignmentInterval;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.SessionXmlAdapters;
 import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.event.IGVEventBus;
+import org.broad.igv.ui.event.IGVEventObserver;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
@@ -63,19 +66,37 @@ import java.util.List;
  * @author jrobinso
  */
 @XmlType(factoryMethod = "getNextTrack")
-public abstract class DataTrack extends AbstractTrack implements ScalableTrack {
+public abstract class DataTrack extends AbstractTrack implements ScalableTrack, IGVEventObserver {
 
     private static Logger log = Logger.getLogger(DataTrack.class);
 
     private DataRenderer renderer;
 
-    // TODO -- memory leak.  This needs to get cleared when the gene list changes
-    private HashMap<String, LoadedDataInterval<List<LocusScore>>> loadedIntervalCache = new HashMap(200);
+   private Map<String, LoadedDataInterval<List<LocusScore>>> loadedIntervalCache = new HashMap(200);
 
     public DataTrack(ResourceLocator locator, String id, String name) {
         super(locator, id, name);
         autoScale = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_AUTOSCALE);
+        loadedIntervalCache = Collections.synchronizedMap(new HashMap<>());
+        IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
+    }
 
+
+    public void receiveEvent(Object event) {
+
+        if (event instanceof FrameManager.ChangeEvent) {
+
+            Collection<ReferenceFrame> frames = ((FrameManager.ChangeEvent) event).getFrames();
+            Map<String, LoadedDataInterval<List<LocusScore>>> newCache = Collections.synchronizedMap(new HashMap<>());
+            for(ReferenceFrame f : frames) {
+                newCache.put(f.getName(), loadedIntervalCache.get(f.getName()));
+            }
+            loadedIntervalCache = newCache;
+
+
+        } else {
+            log.info("Unknown event type: " + event.getClass());
+        }
     }
 
 

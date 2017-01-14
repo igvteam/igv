@@ -58,7 +58,7 @@ public class ReferenceFrame {
     /**
      * The origin in bp
      */
-    protected volatile double origin = 0;
+    public volatile double origin = 0;
 
 
     /**
@@ -379,7 +379,6 @@ public class ReferenceFrame {
     }
 
 
-
     public void shiftOriginPixels(int delta) {
 
 //        if(IGV.getInstance().getSession().expandInsertions) {
@@ -526,28 +525,29 @@ public class ReferenceFrame {
      */
     public double getChromosomePosition(int screenPosition) {
 
-        if (IGV.getInstance().getSession().expandInsertions && insertions != null && insertions.size() > 0) {
+        InsertionManager.Insertion i = InsertionManager.getInstance().getSelectedInsertion();
+
+        if (i != null && i.position > origin) {
+            // if (IGV.getInstance().getSession().expandInsertions && insertions != null && insertions.size() > 0) {
             double start = getOrigin();
             double scale = getScale();
-            double a = 0,
-                    b = 0;
+            double iEnd = 0,
+                    iStart = 0;
 
-            //TODO -- replace this linear search
-            for (InsertionManager.Insertion i : insertions) {
 
-                b = a + (i.position - start) / scale; // Screen position of insertion start
-                if (screenPosition < b) {
-                    return start + scale * (screenPosition - a);
-                }
-
-                a = b + i.size / scale;  // Screen position of insertion end
-                if (screenPosition < a) {
-                    return i.position;   // In the gap
-                }
-
-                start = i.position;
+            iStart = iEnd + (i.position - start) / scale; // Screen position of insertion start
+            if (screenPosition < iStart) {
+                return start + scale * (screenPosition - iEnd);
             }
-            return start + scale * (screenPosition - a);
+
+            iEnd = iStart + i.size / scale;  // Screen position of insertion end
+            if (screenPosition < iEnd) {
+                return i.position;   // In the gap
+            }
+
+            start = i.position + 1;
+            //    }
+            return start + scale * (screenPosition - iEnd);
 
         } else {
             return origin + getScale() * screenPosition;
