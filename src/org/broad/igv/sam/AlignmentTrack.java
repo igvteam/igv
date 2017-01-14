@@ -81,7 +81,6 @@ import java.awt.geom.Rectangle2D;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * @author jrobinso
@@ -425,23 +424,23 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         // Might be offscreen
         if (!context.getVisibleRect().intersects(rect)) return;
 
-        List<InsertionManager.Insertion> intervals = context.getReferenceFrame().getInsertions();
-        InsertionManager.Insertion selected = InsertionManager.getInstance().getSelectedInsertion();
+        List<InsertionMarker> intervals = context.getReferenceFrame().getInsertionMarkers();
+        InsertionMarker selected = InsertionManager.getInstance().getSelectedInsertion(context.getChr());
 
         int w = (int) ((1.41 * rect.height) / 2);
 
-        for (InsertionManager.Insertion insertion : intervals) {
+        for (InsertionMarker insertionMarker : intervals) {
             final double scale = context.getScale();
             final double origin = context.getOrigin();
-            int midpoint =  (int) ((insertion.position - origin) / scale);
+            int midpoint =  (int) ((insertionMarker.position - origin) / scale);
             int x0 = midpoint - w;
             int x1 = midpoint + w;
 
             Rectangle iRect = new Rectangle(x0 + context.translateX, rect.y, 2*w, rect.height);
 
-            insertionIntervals.add(new InsertionInterval(iRect, insertion));
+            insertionIntervals.add(new InsertionInterval(iRect, insertionMarker));
 
-            Color c = (selected != null && selected.position == insertion.position ) ? Color.red : AlignmentRenderer.purple;
+            Color c = (selected != null && selected.position == insertionMarker.position ) ? Color.red : AlignmentRenderer.purple;
             Graphics2D g = context.getGraphic2DForColor(c);
 
 
@@ -557,7 +556,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
 
-    public void renderExpandedInsertion(InsertionManager.Insertion insertion, RenderContext context, Rectangle inputRect) {
+    public void renderExpandedInsertion(InsertionMarker insertionMarker, RenderContext context, Rectangle inputRect) {
 
 
         boolean leaveMargin = getDisplayMode() != DisplayMode.COLLAPSED.SQUISHED;
@@ -607,7 +606,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                 if (y + h > visibleRect.getY()) {
                     Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
-                    renderer.renderExpandedInsertion(insertion, row.alignments, context, rowRectangle, leaveMargin);
+                    renderer.renderExpandedInsertion(insertionMarker, row.alignments, context, rowRectangle, leaveMargin);
                     row.y = y;
                     row.h = h;
                 }
@@ -873,7 +872,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             InsertionInterval insertionInterval = getInsertionInterval(mouseX, mouseY);
             if(insertionInterval != null) {
-                return "Insertions (" + insertionInterval.insertion.size + " bases)";
+                return "Insertions (" + insertionInterval.insertionMarker.size + " bases)";
             }
             else {
                 Alignment feature = getAlignmentAt(position, mouseY, frame);
@@ -1024,15 +1023,16 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         InsertionInterval insertionInterval = getInsertionInterval(te.getMouseEvent().getX(), te.getMouseEvent().getY());
         if(insertionInterval != null) {
 
-            InsertionManager.Insertion currentSelection = InsertionManager.getInstance().getSelectedInsertion();
-            if(currentSelection != null && currentSelection.position == insertionInterval.insertion.position) {
+            final String chrName = te.getFrame().getChrName();
+            InsertionMarker currentSelection = InsertionManager.getInstance().getSelectedInsertion(chrName);
+            if(currentSelection != null && currentSelection.position == insertionInterval.insertionMarker.position) {
                 InsertionManager.getInstance().clearSelected();
             }
             else {
-                InsertionManager.getInstance().setSelected(insertionInterval.insertion.position);
+                InsertionManager.getInstance().setSelected(chrName, insertionInterval.insertionMarker.position);
             }
 
-            IGVEventBus.getInstance().post(new InsertionSelectionEvent(insertionInterval.insertion));
+            IGVEventBus.getInstance().post(new InsertionSelectionEvent(insertionInterval.insertionMarker));
 
             return true;
         }
@@ -2403,11 +2403,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private static class InsertionInterval {
 
         Rectangle rect;
-        InsertionManager.Insertion insertion;
+        InsertionMarker insertionMarker;
 
-        public InsertionInterval(Rectangle rect, InsertionManager.Insertion insertion) {
+        public InsertionInterval(Rectangle rect, InsertionMarker insertionMarker) {
             this.rect = rect;
-            this.insertion = insertion;
+            this.insertionMarker = insertionMarker;
         }
     }
 }

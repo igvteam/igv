@@ -26,7 +26,6 @@
 
 package org.broad.igv.sam;
 
-import oracle.jdbc.proxy.annotation.Pre;
 import org.broad.igv.PreferenceManager;
 
 import java.util.*;
@@ -40,64 +39,77 @@ public class InsertionManager {
 
     private static InsertionManager theInstance = new InsertionManager();
 
-
-    Map<Integer, Insertion> insertionMap;
-    List<Integer> positions;
-    private Integer selectedInsertion;
+    private Map<String, Map<Integer, InsertionMarker>> insertionMaps;
+    private Map<String, List<Integer>> positionsMap;
+    private Map<String, Integer> selectedInsertions;
 
     public static synchronized InsertionManager getInstance() {
         return theInstance;
     }
 
     private InsertionManager() {
-        this.insertionMap = Collections.synchronizedMap(new HashMap<>(100));
-        this.positions = new ArrayList<>(100);
+        this.insertionMaps = Collections.synchronizedMap(new HashMap<>(100));
+        this.positionsMap = Collections.synchronizedMap(new HashMap<>(100));
+        this.selectedInsertions = Collections.synchronizedMap(new HashMap<>(100));
     }
 
     public void clear() {
-        this.insertionMap.clear();
-        this.positions.clear();
+        this.insertionMaps.clear();
+        this.positionsMap.clear();
+        this.selectedInsertions.clear();;
     }
 
-    public synchronized List<Insertion> getInsertions(double start, double end) {
+    public synchronized List<InsertionMarker> getInsertions(String chrName, double start, double end) {
 
-        List<Insertion> insertions = new ArrayList<>();
+
+        Map<Integer, InsertionMarker> insertionMap = insertionMaps.get(chrName);
+        List<Integer> positions = positionsMap.get(chrName);
+        if(insertionMap == null || positions == null) return null;
+
+        List<InsertionMarker> insertionMarkers = new ArrayList<>();
         for (int i = 0; i < positions.size(); i++) {
             final Integer key = positions.get(i);
             if (key > end) break;
             if (key >= start) {
-                final Insertion insertion = insertionMap.get(key);
-                //  if (insertion.size > 2) {
-                insertions.add(insertion);
-                //  }
+                final InsertionMarker insertionMarker = insertionMap.get(key);
+                insertionMarkers.add(insertionMarker);
             }
         }
-        return insertions;
+        return insertionMarkers;
 
     }
 
-    public void setSelected(int position) {
-        this.selectedInsertion = position;
+    public void setSelected(String chrName, int position) {
+        this.selectedInsertions.put(chrName, position);
     }
 
     public void clearSelected() {
-        this.selectedInsertion = null;
+        this.selectedInsertions.clear();
     }
 
-    public Insertion getSelectedInsertion() {
-
-        return selectedInsertion == null ? null : insertionMap.get(selectedInsertion);
-
+    public InsertionMarker getSelectedInsertion(String chrName) {
+        Integer selectedInsertion = selectedInsertions.get(chrName);
+        Map<Integer, InsertionMarker> insertionMap = insertionMaps.get(chrName);
+        return (selectedInsertion == null  || insertionMap == null) ? null : insertionMap.get(selectedInsertion);
     }
 
-    public Insertion getInsertion(int position) {
-        return insertionMap.get(position);
-    }
 
-    public void processAlignments(List<Alignment> alignments) {
+    public void processAlignments(String chr, List<Alignment> alignments) {
+
+
+        Map<Integer, InsertionMarker> insertionMap = insertionMaps.get(chr);
+        if(insertionMap == null) {
+            insertionMap =  Collections.synchronizedMap(new HashMap<>());
+            insertionMaps.put(chr, insertionMap);
+        }
+        List<Integer> positions = positionsMap.get(chr);
+        if(positions == null) {
+            positions = new ArrayList<>();
+            positionsMap.put(chr, positions);
+        }
 
         int minLength = 0;
-        if(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_BP)) {
+        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_BP)) {
             minLength = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDEL_BP_THRESHOLD);
         }
 
@@ -106,40 +118,29 @@ public class InsertionManager {
             if (blocks != null) {
                 for (AlignmentBlock block : blocks) {
 
-                    if(block.getBases().length < minLength) continue;
+                    if (block.getBases().length < minLength) continue;
 
                     Integer key = block.getStart();
-                    Insertion insertion = insertionMap.get(key);
-                    if (insertion == null) {
-                        insertion = new Insertion(block.getStart(), block.getLength());
+                    InsertionMarker insertionMarker = insertionMap.get(key);
+                    if (insertionMarker == null) {
+                        insertionMarker = new InsertionMarker(block.getStart(), block.getLength());
 
-                        if(insertion.size > 1000) {
+                        if (insertionMarker.size > 1000) {
                             System.out.println();
                         }
 
-                        insertionMap.put(key, insertion);
+                        insertionMap.put(key, insertionMarker);
                         positions.add(block.getStart());
                     } else {
-                        insertion.size = Math.max(insertion.size, block.getLength());
+                        insertionMarker.size = Math.max(insertionMarker.size, block.getLength());
                     }
                 }
             }
         }
 
 
-        this.positions = new ArrayList<>(insertionMap.keySet());
-        this.positions.sort((o1, o2) -> o1 - o2);
-    }
-
-    public static class Insertion {
-        public int position;
-        public int size;
-        public int pixelPosition = -1;
-
-        public Insertion(int position, int size) {
-            this.position = position;
-            this.size = size;
-        }
+        positions.addAll(insertionMap.keySet());
+        positions.sort((o1, o2) -> o1 - o2);
     }
 
 

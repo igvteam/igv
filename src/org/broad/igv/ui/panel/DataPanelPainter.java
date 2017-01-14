@@ -36,6 +36,7 @@ package org.broad.igv.ui.panel;
 import org.apache.log4j.Logger;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.InsertionManager;
+import org.broad.igv.sam.InsertionMarker;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
@@ -43,7 +44,6 @@ import org.broad.igv.ui.UIConstants;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 public class DataPanelPainter {
@@ -70,10 +70,9 @@ public class DataPanelPainter {
 
             // TODO -- this does not belong here
             final ReferenceFrame referenceFrame = context.getReferenceFrame();
-            referenceFrame.setInsertions(InsertionManager.getInstance().getInsertions(referenceFrame.getOrigin(), referenceFrame.getEnd()));
-            List<InsertionManager.Insertion> insertions = referenceFrame.getInsertions();
+            referenceFrame.setInsertionMarkers(InsertionManager.getInstance().getInsertions(referenceFrame.getChrName(), referenceFrame.getOrigin(), referenceFrame.getEnd()));
 
-            InsertionManager.Insertion i = InsertionManager.getInstance().getSelectedInsertion();
+            InsertionMarker i = InsertionManager.getInstance().getSelectedInsertion(referenceFrame.getChrName());
 
             if (i != null) {
 
@@ -188,7 +187,7 @@ public class DataPanelPainter {
     }
 
 
-    private void paintInsertion(InsertionManager.Insertion insertion, Collection<TrackGroup> groups, RenderContext context, int px, int py, int w, int h) {
+    private void paintInsertion(InsertionMarker insertionMarker, Collection<TrackGroup> groups, RenderContext context, int px, int py, int w, int h) {
 
         log.info("Paint section " + px + "  " + (px + w));
         context.clearGraphicsCache();
@@ -222,7 +221,7 @@ public class DataPanelPainter {
 
                         if (track instanceof AlignmentTrack && track.isVisible()) {
                             Rectangle rect = new Rectangle(dRect.x, trackY, dRect.width, trackHeight);
-                            ((AlignmentTrack) track).renderExpandedInsertion(insertion, context, rect);
+                            ((AlignmentTrack) track).renderExpandedInsertion(insertionMarker, context, rect);
                         }
 
                         if (track.isVisible()) {

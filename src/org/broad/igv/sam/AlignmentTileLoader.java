@@ -267,7 +267,7 @@ public class AlignmentTileLoader {
             t.finish();
 
             // TODO -- make this optional (on a preference)
-            InsertionManager.getInstance().processAlignments(t.alignments);
+            InsertionManager.getInstance().processAlignments(chr, t.alignments);
 
 
         } catch (java.nio.BufferUnderflowException e) {

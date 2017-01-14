@@ -362,7 +362,7 @@ public class AlignmentRenderer {
     }
 
 
-    public void renderExpandedInsertion(InsertionManager.Insertion i,
+    public void renderExpandedInsertion(InsertionMarker i,
                                         List<Alignment> alignments,
                                         RenderContext context,
                                         Rectangle rect,

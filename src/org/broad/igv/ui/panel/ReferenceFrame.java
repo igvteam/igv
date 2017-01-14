@@ -38,7 +38,7 @@ import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.InsertionManager;
-import org.broad.igv.session.Session;
+import org.broad.igv.sam.InsertionMarker;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.event.IGVEventBus;
 import org.broad.igv.ui.event.ViewChange;
@@ -125,7 +125,7 @@ public class ReferenceFrame {
     protected volatile double scale;
 
     protected Locus initialLocus = null;
-    private List<InsertionManager.Insertion> insertions;
+    private List<InsertionMarker> insertionMarkers;
 
 
     public ReferenceFrame(String name) {
@@ -152,7 +152,7 @@ public class ReferenceFrame {
         //this.setEnd = otherFrame.setEnd;
         this.widthInPixels = otherFrame.widthInPixels;
         this.zoom = otherFrame.zoom;
-        this.insertions = otherFrame.insertions;
+        this.insertionMarkers = otherFrame.insertionMarkers;
         this.maxZoom = otherFrame.maxZoom;
     }
 
@@ -525,22 +525,22 @@ public class ReferenceFrame {
      */
     public double getChromosomePosition(int screenPosition) {
 
-        InsertionManager.Insertion i = InsertionManager.getInstance().getSelectedInsertion();
+        InsertionMarker i = InsertionManager.getInstance().getSelectedInsertion(getChrName());
 
         if (i != null && i.position > origin) {
-            // if (IGV.getInstance().getSession().expandInsertions && insertions != null && insertions.size() > 0) {
+            // if (IGV.getInstance().getSession().expandInsertions && insertionMarkers != null && insertionMarkers.size() > 0) {
             double start = getOrigin();
             double scale = getScale();
             double iEnd = 0,
                     iStart = 0;
 
 
-            iStart = iEnd + (i.position - start) / scale; // Screen position of insertion start
+            iStart = iEnd + (i.position - start) / scale; // Screen position of insertionMarker start
             if (screenPosition < iStart) {
                 return start + scale * (screenPosition - iEnd);
             }
 
-            iEnd = iStart + i.size / scale;  // Screen position of insertion end
+            iEnd = iStart + i.size / scale;  // Screen position of insertionMarker end
             if (screenPosition < iEnd) {
                 return i.position;   // In the gap
             }
@@ -754,12 +754,12 @@ public class ReferenceFrame {
     }
 
 
-    public void setInsertions(List<InsertionManager.Insertion> insertions) {
-        this.insertions = insertions;
+    public void setInsertionMarkers(List<InsertionMarker> insertionMarkers) {
+        this.insertionMarkers = insertionMarkers;
     }
 
-    public List<InsertionManager.Insertion> getInsertions() {
-        return insertions;
+    public List<InsertionMarker> getInsertionMarkers() {
+        return insertionMarkers;
     }
 
     private static Genome getGenome() {

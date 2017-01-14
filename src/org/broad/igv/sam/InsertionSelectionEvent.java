@@ -31,9 +31,9 @@ package org.broad.igv.sam;
  */
 public class InsertionSelectionEvent {
 
-    public final InsertionManager.Insertion insertion;
+    public final InsertionMarker insertionMarker;
 
-    public InsertionSelectionEvent(InsertionManager.Insertion insertion) {
-        this.insertion = insertion;
+    public InsertionSelectionEvent(InsertionMarker insertionMarker) {
+        this.insertionMarker = insertionMarker;
     }
 }
