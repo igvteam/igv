@@ -33,6 +33,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
+import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
 import org.broad.igv.sam.AlignmentTrack.RenderOptions;
 import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
@@ -373,6 +374,15 @@ public class AlignmentRenderer {
 
         if ((alignments != null) && (alignments.size() > 0)) {
 
+            Graphics2D g = context.getGraphics2D("INSERTIONS");
+            //dhmay adding check for adequate track height
+            double dX = 1 / context.getScale();
+            int fontSize = (int)  Math.min(dX, 12);
+            if (fontSize >= 8) {
+                Font f = FontManager.getFont(Font.BOLD, fontSize);
+                g.setFont(f);
+            }
+
             for (Alignment alignment : alignments) {
 
                 if (alignment.getEnd() < i.position) continue;
@@ -399,7 +409,6 @@ public class AlignmentRenderer {
 
 
                     if (aBlock.getBases() == null) {
-                        Graphics2D g = context.getGraphics();
                         g.setColor(purple);
                         g.fillRect(x, y, (int) pxWidthExact, h);
 
@@ -1135,7 +1144,7 @@ public class AlignmentRenderer {
                                             AlignmentBlock block,
                                             boolean leaveMargin) {
 
-        Graphics2D g = context.getGraphics();
+        Graphics2D g = context.getGraphics2D("INSERTIONS");
         byte[] bases = block.getBases();
         int padding = block.getPadding();
 
@@ -1152,7 +1161,7 @@ public class AlignmentRenderer {
 
             char  c = p < padding ? '-' : (char) bases[p - padding];
 
-            Color color = nucleotideColors.get(c);
+            Color color = SequenceRenderer.nucleotideColors.get(c);
             if (color == null) {
                 color = Color.black;
             }

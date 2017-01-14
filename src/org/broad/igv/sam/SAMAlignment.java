@@ -366,9 +366,8 @@ public abstract class SAMAlignment implements Alignment {
                     fromIdx += op.nBases;
                     padding = 0;
                 } else if (op.operator == PADDING) {
-                    //Padding represents a deletion against the padded reference
+                    // Padding for insertion start, which should be the next operator
                     padding += op.nBases;
-                    gapTypes[gapIdx++] = ZERO_GAP;
                 }
             } catch (Exception e) {
                 log.error("Error processing CIGAR string", e);
@@ -409,10 +408,7 @@ public abstract class SAMAlignment implements Alignment {
                 int nBases = Integer.parseInt(buffer.toString());
                 buffer.setLength(0);
 
-                if (op == PADDING) {
-                    // Just skip padding for now
-                    continue;
-                } else if (prevOp != null && prevOp.operator == op) {
+                 if (prevOp != null && prevOp.operator == op) {
                     prevOp.nBases += nBases;
                 } else {
                     prevOp = new CigarOperator(nBases, op);

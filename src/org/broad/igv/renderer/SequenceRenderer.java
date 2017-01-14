@@ -59,7 +59,7 @@ public class SequenceRenderer {
 
     private static final int AMINO_ACID_RESOLUTION = 5;
 
-    private static Map<Character, Color> nucleotideColors;
+    public static Map<Character, Color> nucleotideColors;
 
     public static Map<Character, Color> getNucleotideColors() {
         if (nucleotideColors == null) setNucleotideColors();
@@ -88,6 +88,7 @@ public class SequenceRenderer {
         nucleotideColors.put('g', g);
         nucleotideColors.put('N', n);
         nucleotideColors.put('n', n);
+        nucleotideColors.put('-', Color.lightGray);
 
     }
 

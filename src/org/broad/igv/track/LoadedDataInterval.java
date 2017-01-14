@@ -62,7 +62,7 @@ public class LoadedDataInterval<T> {
     public boolean contains(ReferenceFrame frame) {
         String chr = frame.getChrName();
         int start = (int) frame.getOrigin();
-        int end = (int) frame.getEnd() + 1;
+        int end = (int) frame.getEnd();
         int zoom = frame.getZoom();
         return this.contains(chr, start, end, zoom);
     }
