@@ -40,6 +40,8 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.ChromosomeCoordinate;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.sam.InsertionManager;
+import org.broad.igv.sam.InsertionMarker;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.WaitCursorManager;
@@ -108,9 +110,7 @@ public class RulerPanel extends JPanel {
             ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
 
-
         render(g);
-
 
         if (dragging) {
             g.setColor(dragColor);
@@ -135,25 +135,25 @@ public class RulerPanel extends JPanel {
             drawChromosomeTicks(g);
         } else {
 
-            drawTicks(g);
+            InsertionMarker i = InsertionManager.getInstance().getSelectedInsertion(frame.getChrName());
+
+            drawTicks(g, i);
 
             if (drawSpan) {
-                drawSpan(g);
+                drawSpan(g, i);
             }
         }
     }
 
-    private void drawSpan(Graphics g) {
+    private void drawSpan(Graphics g, InsertionMarker i) {
 
         //TODO -- hack
         int w = getWidth();
 
         g.setFont(spanFont);
 
-
         int range = (int) (frame.getScale() * w) + 1;
-
-
+        
         // TODO -- hack, assumes location unit for whole genome is kilo-base
         boolean scaleInKB = frame.getChrName().equals(Globals.CHR_ALL);
 
@@ -178,7 +178,7 @@ public class RulerPanel extends JPanel {
 
     }
 
-    private void drawTicks(Graphics g) {
+    private void drawTicks(Graphics g, InsertionMarker i) {
 
         int w = getWidth();
         if (w < 200) {
@@ -362,7 +362,7 @@ public class RulerPanel extends JPanel {
                         for (final ClickLink link : chromosomeRects) {
                             if (link.region.contains(e.getPoint())) {
                                 final String chrName = link.value;
-                                frame.changeChromosome( chrName, true);
+                                frame.changeChromosome(chrName, true);
                             }
                         }
                     }

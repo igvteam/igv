@@ -30,12 +30,13 @@
 package org.broad.igv.track;
 
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.sam.InsertionMarker;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -50,6 +51,7 @@ public class RenderContext {
     private Rectangle visibleRect;
     private boolean merged = false;
     public transient int translateX;
+    private List<InsertionMarker> insertionMarkers;
 
 
     public RenderContext(JComponent panel, Graphics2D graphics, ReferenceFrame referenceFrame, Rectangle visibleRect) {
@@ -171,4 +173,11 @@ public class RenderContext {
     }
 
 
+    public void setInsertionMarkers(List<InsertionMarker> insertionMarkers) {
+        this.insertionMarkers = insertionMarkers;
+    }
+
+    public List<InsertionMarker> getInsertionMarkers() {
+        return insertionMarkers;
+    }
 }

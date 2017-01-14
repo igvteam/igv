@@ -125,7 +125,7 @@ public class ReferenceFrame {
     protected volatile double scale;
 
     protected Locus initialLocus = null;
-    private List<InsertionMarker> insertionMarkers;
+
 
 
     public ReferenceFrame(String name) {
@@ -152,7 +152,6 @@ public class ReferenceFrame {
         //this.setEnd = otherFrame.setEnd;
         this.widthInPixels = otherFrame.widthInPixels;
         this.zoom = otherFrame.zoom;
-        this.insertionMarkers = otherFrame.insertionMarkers;
         this.maxZoom = otherFrame.maxZoom;
     }
 
@@ -563,7 +562,15 @@ public class ReferenceFrame {
      * @return
      */
     public int getScreenPosition(double chromosomePosition) {
-        return (int) ((chromosomePosition - origin) / getScale());
+
+        InsertionMarker i = InsertionManager.getInstance().getSelectedInsertion(chrName);
+
+        if(i == null || i.position < origin ||  i.position > chromosomePosition) {
+            return (int) ((chromosomePosition - origin) / getScale());
+        }
+        else {
+            return (int) ((chromosomePosition + i.size - origin) / getScale());
+        }
     }
 
 
@@ -753,14 +760,6 @@ public class ReferenceFrame {
         }
     }
 
-
-    public void setInsertionMarkers(List<InsertionMarker> insertionMarkers) {
-        this.insertionMarkers = insertionMarkers;
-    }
-
-    public List<InsertionMarker> getInsertionMarkers() {
-        return insertionMarkers;
-    }
 
     private static Genome getGenome() {
         return GenomeManager.getInstance().getCurrentGenome();

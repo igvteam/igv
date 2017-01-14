@@ -68,9 +68,9 @@ public class DataPanelPainter {
             graphics2D.clearRect(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height);
             graphics2D.setColor(Color.BLACK);
 
-            // TODO -- this does not belong here
+
             final ReferenceFrame referenceFrame = context.getReferenceFrame();
-            referenceFrame.setInsertionMarkers(InsertionManager.getInstance().getInsertions(referenceFrame.getChrName(), referenceFrame.getOrigin(), referenceFrame.getEnd()));
+            context.setInsertionMarkers(InsertionManager.getInstance().getInsertions(referenceFrame.getChrName(), referenceFrame.getOrigin(), referenceFrame.getEnd()));
 
             InsertionMarker i = InsertionManager.getInstance().getSelectedInsertion(referenceFrame.getChrName());
 
