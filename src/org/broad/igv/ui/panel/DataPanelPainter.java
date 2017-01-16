@@ -107,8 +107,6 @@ public class DataPanelPainter {
 
         } finally {
             context.getReferenceFrame().origin = start;
-            context.dispose();
-
         }
     }
 

@@ -88,7 +88,7 @@ public class RegionOfInterestTool extends AbstractDataPanelTool {
                     // Create a user Region of Interest
                     if (roiStart == null) {
                         roiStart = (int) referenceFrame.getChromosomePosition(x);
-                        getOwner().repaint();
+                        getOwner().paintImmediately(getOwner().getBounds());
                     } else {
 
                         try {
@@ -108,7 +108,7 @@ public class RegionOfInterestTool extends AbstractDataPanelTool {
                                             start,
                                             end,
                                             null);
-                            // TODO -- get this ugly reference out of here
+
                             IGV.getInstance().endROI();
                             IGV.getInstance().addRegionOfInterest(regionOfInterest);
 
