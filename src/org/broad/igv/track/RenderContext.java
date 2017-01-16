@@ -52,6 +52,7 @@ public class RenderContext {
     private boolean merged = false;
     public transient int translateX;
     private List<InsertionMarker> insertionMarkers;
+    public boolean multiframe = false;
 
 
     public RenderContext(JComponent panel, Graphics2D graphics, ReferenceFrame referenceFrame, Rectangle visibleRect) {

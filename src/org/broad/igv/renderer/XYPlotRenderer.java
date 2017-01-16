@@ -180,7 +180,7 @@ public abstract class XYPlotRenderer extends DataRenderer {
     public void renderAxis(Track track, RenderContext context, Rectangle arect) {
 
         // For now disable axes for all chromosome view
-        if (context.getChr().equals(Globals.CHR_ALL)) {
+        if (context.getChr().equals(Globals.CHR_ALL) || context.multiframe) {
             return;
         }
 

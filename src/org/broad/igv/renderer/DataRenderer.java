@@ -141,7 +141,7 @@ public abstract class DataRenderer implements Renderer<LocusScore> {
      * @param arect
      */
     public static void drawScale(DataRange range, RenderContext context, Rectangle arect){
-        if (range != null) {
+        if (range != null && context.multiframe == false) {
             Graphics2D g = context.getGraphic2DForColor(Color.black);
             Font font = g.getFont();
             Font smallFont = FontManager.getFont(8);

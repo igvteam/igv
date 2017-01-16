@@ -57,7 +57,6 @@ public class DataPanelPainter {
                                    Rectangle visibleRect) {
 
 
-
         log.info("Paint ------------------------------------");
         final double start = context.getOrigin();
 
@@ -85,7 +84,7 @@ public class DataPanelPainter {
                 i.pixelPosition = p0 + w;
                 p0 += w;
 
-
+                context.multiframe = true;
                 context.getReferenceFrame().origin = i.position;
                 w = (int) Math.ceil(i.size / context.getScale());
                 paintInsertion(i, groups, context, p0, visibleRect.y, w, visibleRect.height);
@@ -97,7 +96,6 @@ public class DataPanelPainter {
                 if (w > 0) {
                     paintSection(groups, context, p0, visibleRect.y, width - p0, visibleRect.height, g);
                 }
-
 
 
             } else {
