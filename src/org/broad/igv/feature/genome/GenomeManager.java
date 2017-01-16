@@ -123,8 +123,10 @@ public class GenomeManager {
         }
         this.currentGenome = genome;
         if (genome != null) {
-            IGV.getInstance().getSession().clearHistory();
-            FrameManager.getDefaultFrame().setChromosomeName(genome.getHomeChromosome(), true);
+            if(IGV.hasInstance()) {
+                IGV.getInstance().getSession().clearHistory();
+                FrameManager.getDefaultFrame().setChromosomeName(genome.getHomeChromosome(), true);
+            }
             IGVEventBus.getInstance().post(new GenomeChangeEvent(genome));
         }
     }
