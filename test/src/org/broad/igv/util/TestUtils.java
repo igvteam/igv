@@ -90,7 +90,6 @@ public class TestUtils {
         resetTestUserDefinedGenomes();
         Globals.READ_TIMEOUT = 60 * 1000;
         Globals.CONNECT_TIMEOUT = 60 * 1000;
-        FTPClient.READ_TIMEOUT = 60 * 1000;
 
         //Create output directory if it doesn't exist
         File outDir = new File(TestUtils.TMP_OUTPUT_DIR);

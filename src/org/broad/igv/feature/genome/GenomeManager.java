@@ -1518,7 +1518,7 @@ public class GenomeManager {
 
     public void addGenomeItem(GenomeListItem genomeListItem, boolean userDefined) {
         genomeItemMap.put(genomeListItem.getId(), genomeListItem);
-        if (userDefined) {
+        if (userDefined && userDefinedGenomeArchiveList != null) {
             userDefinedGenomeArchiveList.add(genomeListItem);
         }
         updateImportedGenomePropertyFile();
