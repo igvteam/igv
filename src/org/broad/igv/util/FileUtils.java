@@ -25,6 +25,7 @@
 
 package org.broad.igv.util;
 
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.broad.igv.util.ftp.FTPUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
@@ -465,5 +466,24 @@ public class FileUtils {
                 return -1;
             }
         }
+    }
+
+    /**
+     * Read and return the file contents as a string
+     * @param path
+     * @return
+     */
+    public static String getContents(String path) throws IOException {
+
+        BufferedReader reader = ParsingUtils.openBufferedReader(path);
+
+        StringBuilder contents = new StringBuilder();
+        PrintWriter pw = new PrintWriter(new StringBuilderWriter(contents));
+        String nextLine;
+        while((nextLine = reader.readLine()) != null) {
+            pw.println(nextLine);
+        }
+        return contents.toString();
+
     }
 }

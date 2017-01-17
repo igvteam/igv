@@ -29,9 +29,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import org.apache.log4j.Logger;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 
 import java.awt.*;
@@ -90,13 +92,30 @@ public class OAuthUtils {
 
     private void fetchOauthProperties() throws IOException {
 
-        String propString = HttpUtils.getInstance().getContentsAsString(new URL(PROPERTIES_URL));
-        JsonParser parser = new JsonParser();
-        JsonObject obj = parser.parse(propString).getAsJsonObject().get("installed").getAsJsonObject();
-        authURI = obj.get("auth_uri").getAsString();
-        clientSecret = obj.get("client_secret").getAsString();
-        tokenURI = obj.get("token_uri").getAsString();
-        clientId = obj.get("client_id").getAsString();
+        String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config.json";
+                //PreferenceManager.getInstance().get(PreferenceManager.OAUTH_CONFIG);
+
+        if(oauthConfig == null) {
+            String propString = HttpUtils.getInstance().getContentsAsString(new URL(PROPERTIES_URL));
+            JsonParser parser = new JsonParser();
+            JsonObject obj = parser.parse(propString).getAsJsonObject().get("installed").getAsJsonObject();
+            authURI = obj.get("auth_uri").getAsString();
+            clientSecret = obj.get("client_secret").getAsString();
+            tokenURI = obj.get("token_uri").getAsString();
+            clientId = obj.get("client_id").getAsString();
+        }
+        else {
+            // Experimental -- this will change
+            JsonParser parser = new JsonParser();
+            String json = FileUtils.getContents(oauthConfig);
+            JsonObject obj = parser.parse(json).getAsJsonObject();
+            authURI = obj.get("authorization_endpoint").getAsString();
+            clientSecret = obj.get("client_secret").getAsString();
+            tokenURI = obj.get("token_endpoint").getAsString();
+            clientId = obj.get("client_id").getAsString();
+            GS_HOST = obj.get("hosts").getAsString();
+
+        }
     }
 
     public void openAuthorizationPage() throws IOException, URISyntaxException {
