@@ -131,6 +131,9 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
         initComponents();
 
+        // Initialize controls
+        new SearchHints(this.searchTextField);  // This has the side-effect, apparently, of enabling hints
+
         String currentChr = getDefaultReferenceFrame().getChrName();
         boolean isWholeGenome = currentChr.equals(Globals.CHR_ALL);
 
