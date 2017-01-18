@@ -78,8 +78,11 @@ public class AlignmentDataManager implements IGVEventObserver {
 
             Collection<ReferenceFrame> frames = ((FrameManager.ChangeEvent) event).getFrames();
             Map<ReferenceFrame, AlignmentInterval> newCache = Collections.synchronizedMap(new HashMap<>());
+            // Trim cache to include only current frames
             for(ReferenceFrame f : frames) {
-                newCache.put(f, intervalCache.get(f));
+                if(intervalCache.containsKey(f)) {
+                    newCache.put(f, intervalCache.get(f));
+                }
             }
             intervalCache = newCache;
 
@@ -257,28 +260,6 @@ public class AlignmentDataManager implements IGVEventObserver {
         }
     }
 
-    public synchronized PackedAlignments getGroups(RenderContext context, AlignmentTrack.RenderOptions renderOptions) {
-        load(context.getReferenceFrame(), renderOptions, false);
-        Range range = context.getReferenceFrame().getCurrentRange();
-
-        AlignmentInterval interval = intervalCache.get(context.getReferenceFrame());
-        if (interval != null) {
-            return interval.getPackedAlignments();
-        } else {
-            return null;
-        }
-    }
-
-    public void clear() {
-        intervalCache.clear();
-    }
-
-    public void dumpAlignments() {
-        for (AlignmentInterval interval : intervalCache.values()) {
-            interval.dumpAlignments();
-        }
-    }
-
     private void loadAlignments(final String chr, final int start, final int end,
                                 final AlignmentTrack.RenderOptions renderOptions,
                                 final ReferenceFrame frame) {
@@ -313,6 +294,29 @@ public class AlignmentDataManager implements IGVEventObserver {
         List<Alignment> alignments = t.getAlignments();
         List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();
         return new AlignmentInterval(chr, start, end, alignments, t.getCounts(), spliceJunctionHelper, downsampledIntervals);
+    }
+
+
+    public synchronized PackedAlignments getGroups(RenderContext context, AlignmentTrack.RenderOptions renderOptions) {
+        load(context.getReferenceFrame(), renderOptions, false);
+        Range range = context.getReferenceFrame().getCurrentRange();
+
+        AlignmentInterval interval = intervalCache.get(context.getReferenceFrame());
+        if (interval != null) {
+            return interval.getPackedAlignments();
+        } else {
+            return null;
+        }
+    }
+
+    public void clear() {
+        intervalCache.clear();
+    }
+
+    public void dumpAlignments() {
+        for (AlignmentInterval interval : intervalCache.values()) {
+            interval.dumpAlignments();
+        }
     }
 
     /**
@@ -361,9 +365,11 @@ public class AlignmentDataManager implements IGVEventObserver {
     public int getMaxGroupCount() {
         int groupCount = 0;
         for (AlignmentInterval interval : intervalCache.values()) {
-            PackedAlignments packedAlignments = interval.getPackedAlignments();
-            if (packedAlignments != null) {
-                groupCount = Math.max(groupCount, packedAlignments.size());
+            if(interval != null) {  // Not sure how this happens but it does
+                PackedAlignments packedAlignments = interval.getPackedAlignments();
+                if (packedAlignments != null) {
+                    groupCount = Math.max(groupCount, packedAlignments.size());
+                }
             }
         }
         return groupCount;

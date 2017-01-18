@@ -425,6 +425,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         if (!context.getVisibleRect().intersects(rect)) return;
 
         List<InsertionMarker> intervals = context.getInsertionMarkers();
+        if(intervals == null) return;
+
         InsertionMarker selected = InsertionManager.getInstance().getSelectedInsertion(context.getChr());
 
         int w = (int) ((1.41 * rect.height) / 2);

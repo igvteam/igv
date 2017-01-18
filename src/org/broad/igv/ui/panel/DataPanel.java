@@ -44,6 +44,9 @@ import org.broad.igv.ui.AbstractDataPanelTool;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.WaitCursorManager;
+import org.broad.igv.ui.event.DataLoadedEvent;
+import org.broad.igv.ui.event.IGVEventBus;
+import org.broad.igv.ui.event.IGVEventObserver;
 import org.broad.igv.ui.util.DataPanelTool;
 import org.broad.igv.ui.util.UIUtilities;
 
@@ -66,7 +69,7 @@ import java.util.stream.Collectors;
  *
  * @author jrobinso
  */
-public class DataPanel extends JComponent implements Paintable {
+public class DataPanel extends JComponent implements Paintable, IGVEventObserver {
 
     private static Logger log = Logger.getLogger(DataPanel.class);
     private boolean isWaitingForToolTipText = false;
@@ -95,8 +98,22 @@ public class DataPanel extends JComponent implements Paintable {
         setBackground(PreferenceManager.getInstance().getAsColor(PreferenceManager.BACKGROUND_COLOR));
 
         ToolTipManager.sharedInstance().registerComponent(this);
+
+
+
+    //    IGVEventBus.getInstance().subscribe(DataLoadedEvent.class, this);
     }
 
+    @Override
+    public void receiveEvent(Object event) {
+
+        if(event instanceof  DataLoadedEvent) {
+           if(((DataLoadedEvent) event).referenceFrame == frame) {
+               log.info("Data loaded repaint " + frame);
+               repaint();
+           }
+        }
+    }
 
     /**
      * @return

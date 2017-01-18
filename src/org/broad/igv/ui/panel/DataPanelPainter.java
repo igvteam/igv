@@ -61,8 +61,7 @@ public class DataPanelPainter {
         final double start = context.getOrigin();
 
         try {
-            Graphics2D graphics2D = context.getGraphics();
-            graphics2D = (Graphics2D) context.getGraphics().create();
+            Graphics2D graphics2D = context.getGraphics2D("BACKGROUND");
             graphics2D.setBackground(background);
             graphics2D.clearRect(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height);
             graphics2D.setColor(Color.BLACK);
