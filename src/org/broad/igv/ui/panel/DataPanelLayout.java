@@ -39,7 +39,7 @@ public class DataPanelLayout implements LayoutManager {
 
     private static Logger log = Logger.getLogger(DataPanelLayout.class);
 
-    int hgap = 5;   // TODO <= make this a function of # of panels
+    static final int default_hgap = 6;
 
     static Border panelBorder = BorderFactory.createLineBorder(Color.gray);
 
@@ -73,16 +73,11 @@ public class DataPanelLayout implements LayoutManager {
                 if (m.isVisible()) {
                     Dimension d = m.getPreferredSize();
                     dim.height = Math.max(dim.height, d.height);
-                    if (firstVisibleComponent) {
-                        firstVisibleComponent = false;
-                    } else {
-                        dim.width += hgap;
-                    }
                     dim.width += d.width;
                 }
             }
             Insets insets = target.getInsets();
-            dim.width += insets.left + insets.right + hgap * 2;
+            dim.width += insets.left + insets.right;
             dim.height += insets.top + insets.bottom;
             return dim;
 
@@ -101,6 +96,11 @@ public class DataPanelLayout implements LayoutManager {
             java.util.List<ReferenceFrame> frames = FrameManager.getFrames();
             int h = container.getHeight();
 
+            int hgap = default_hgap;
+            if(frames.size() > 10) {
+                hgap = 1 + 20 / frames.size();
+            }
+
             try {
                 //Sometimes the number of children is not the same as the number of frames.
                 //Not entirely sure why - Jacob S
@@ -108,7 +108,8 @@ public class DataPanelLayout implements LayoutManager {
 
                     Component c = children[i];
                     ReferenceFrame frame = frames.get(i);
-                    c.setBounds(frame.pixelX, 0, frame.getWidthInPixels(), h);
+                    int leftGap = i == 0 ? hgap/2 :  hgap;
+                    c.setBounds(frame.pixelX + leftGap, 0, frame.getWidthInPixels() - hgap, h);
 
                     if (c instanceof JComponent) {
                         if (frame.getWidthInPixels() > 5) {
