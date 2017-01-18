@@ -227,9 +227,9 @@ public class SpliceJunctionTrack extends FeatureTrack {
     }
 
     @Override
-    protected void loadFeatures(String chr, int start, int end, ReferenceFrame referenceFrame) {
+    protected void loadFeatures(String chr, int start, int end, ReferenceFrame frame) {
 
-        AlignmentInterval loadedInterval = dataManager.getLoadedInterval(referenceFrame);
+        AlignmentInterval loadedInterval = dataManager.getLoadedInterval(frame);
         if (loadedInterval == null) return;
 
         SpliceJunctionHelper helper = loadedInterval.getSpliceJunctionHelper();
@@ -240,7 +240,7 @@ public class SpliceJunctionTrack extends FeatureTrack {
         int intervalStart = loadedInterval.getStart();
         int intervalEnd = loadedInterval.getEnd();
         PackedFeatures pf = new PackedFeaturesSpliceJunctions(chr, intervalStart, intervalEnd, features.iterator(), getName());
-        packedFeaturesMap.put(referenceFrame.getName(), pf);
+        packedFeaturesMap.put(frame.getName(), pf);
     }
 
     @Override

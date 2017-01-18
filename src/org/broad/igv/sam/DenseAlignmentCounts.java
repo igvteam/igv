@@ -108,8 +108,14 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
         int startMCI = Math.max(0, (strt-this.start) / MAX_COUNT_INTERVAL);
         int endMCI = Math.max(0, (end-this.start) / MAX_COUNT_INTERVAL);
         endMCI = Math.min(endMCI, maxCounts.length - 1);
-        int max = maxCounts[startMCI];
-        for(int mci= startMCI+1; mci <= endMCI; mci++){
+
+
+        int max = 1;
+        for(int mci= startMCI; mci <= endMCI; mci++){
+            if(mci >= maxCounts.length) {
+                log.error("startMCI index out of range: " + mci + " startMCI=" + startMCI + "  endMCI=" + endMCI);
+                return max;
+            }
             max = Math.max(max, maxCounts[mci]);
         }
         return max;

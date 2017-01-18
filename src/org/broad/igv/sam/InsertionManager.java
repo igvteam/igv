@@ -27,6 +27,8 @@
 package org.broad.igv.sam;
 
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 
 import java.util.*;
 
@@ -97,6 +99,9 @@ public class InsertionManager {
     public void processAlignments(String chr, List<Alignment> alignments) {
 
 
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        chr = genome == null ? chr : genome.getCanonicalChrName(chr);
+
         Map<Integer, InsertionMarker> insertionMap = insertionMaps.get(chr);
         if(insertionMap == null) {
             insertionMap =  Collections.synchronizedMap(new HashMap<>());
@@ -124,11 +129,6 @@ public class InsertionManager {
                     InsertionMarker insertionMarker = insertionMap.get(key);
                     if (insertionMarker == null) {
                         insertionMarker = new InsertionMarker(block.getStart(), block.getLength());
-
-                        if (insertionMarker.size > 1000) {
-                            System.out.println();
-                        }
-
                         insertionMap.put(key, insertionMarker);
                         positions.add(block.getStart());
                     } else {

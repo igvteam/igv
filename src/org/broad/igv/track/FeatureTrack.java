@@ -693,10 +693,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     public void load(ReferenceFrame frame) {
-        PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
-        String chr = frame.getChrName();
-        int start = (int) frame.getOrigin();
-        int end = (int) frame.getEnd();
         loadFeatures(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd(), frame);
     }
 
@@ -707,7 +703,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * @param start
      * @param end
      */
-    protected void loadFeatures(final String chr, final int start, final int end, final ReferenceFrame referenceFrame) {
+    protected void loadFeatures(final String chr, final int start, final int end, final ReferenceFrame frame) {
 
         try {
 
@@ -729,18 +725,20 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             }
 
             Iterator<Feature> iter = source.getFeatures(chr, expandedStart, expandedEnd);
+
             if (iter == null) {
                 PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd);
-                packedFeaturesMap.put(referenceFrame.getName(), pf);
+                packedFeaturesMap.put(frame.getName(), pf);
             } else {
                 PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd, iter, getName());
-                packedFeaturesMap.put(referenceFrame.getName(), pf);
+                packedFeaturesMap.put(frame.getName(), pf);
+                log.info("Loaded " + chr + " " + expandedStart + "-" + expandedEnd);
             }
 
         } catch (Exception e) {
             // Mark the interval with an empty feature list to prevent an endless loop of load attempts.
             PackedFeatures pf = new PackedFeatures(chr, start, end);
-            packedFeaturesMap.put(referenceFrame.getName(), pf);
+            packedFeaturesMap.put(frame.getName(), pf);
             String msg = "Error loading features for interval: " + chr + ":" + start + "-" + end + " <br>" + e.toString();
             MessageUtils.showMessage(msg);
             log.error(msg, e);
@@ -849,9 +847,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             log.trace(msg);
         }
 
-        //Attempt to load the relevant data. Note that there is no guarantee
-        //the data will be loaded once preload exits, as loading may be asynchronous
-        load(context.getReferenceFrame());
         PackedFeatures packedFeatures = packedFeaturesMap.get(context.getReferenceFrame().getName());
 
         if (packedFeatures == null || !packedFeatures.overlapsInterval(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation() + 1)) {
