@@ -49,9 +49,7 @@ import org.broad.igv.ui.SashimiPlot;
 import org.broad.igv.ui.color.ColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
-import org.broad.igv.ui.event.AlignmentTrackEvent;
-import org.broad.igv.ui.event.AlignmentTrackEventListener;
-import org.broad.igv.ui.event.IGVEventBus;
+import org.broad.igv.ui.event.*;
 import org.broad.igv.ui.panel.DataPanel;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
@@ -88,7 +86,7 @@ import java.util.List;
 @XmlType(factoryMethod = "getNextTrack")
 @XmlSeeAlso(AlignmentTrack.RenderOptions.class)
 
-public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEventListener {
+public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEventListener, IGVEventObserver {
 
     private static Logger log = Logger.getLogger(AlignmentTrack.class);
 
@@ -107,7 +105,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private boolean removed = false;
     private RenderRollback renderRollback;
     private boolean showGroupLine;
-    private List<InsertionInterval> insertionIntervals;
+    private Map<ReferenceFrame, List<InsertionInterval>> insertionIntervalsMap;
 
     public enum ShadeBasesOption {
         NONE, QUALITY
@@ -229,13 +227,31 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         readNamePalette = new PaletteColorTable(ColorUtilities.getDefaultPalette());
 
-        this.insertionIntervals = new ArrayList<>();
+        this.insertionIntervalsMap = Collections.synchronizedMap(new HashMap<>());
 
         // Register track
         if (!Globals.isHeadless()) {
             IGV.getInstance().addAlignmentTrackEventListener(this);
         }
+
+        IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
     }
+
+
+    @Override
+    public void receiveEvent(Object event) {
+        // Trim insertionInterval map to current frames
+        if (event instanceof FrameManager.ChangeEvent) {
+            Map<ReferenceFrame, List<InsertionInterval>> newMap = Collections.synchronizedMap(new HashMap<>());
+            for(ReferenceFrame frame : ((FrameManager.ChangeEvent) event).getFrames()) {
+                if(insertionIntervalsMap.containsKey(frame)) {
+                    newMap.put(frame, insertionIntervalsMap.get(frame));
+                }
+            }
+            insertionIntervalsMap = newMap;
+        }
+    }
+
 
     /**
      * Set the experiment type (RNA, Bisulfite, or OTHER)
@@ -341,7 +357,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         } else {
 
         }
-        this.insertionIntervals.clear();
+        List<InsertionInterval> insertionIntervals = getInsertionIntervals(frame);
+        insertionIntervals.clear();
         return dataManager.isLoaded(frame);
     }
 
@@ -406,7 +423,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             final double scale = context.getScale();
             final double origin = context.getOrigin();
 
-            int x0 =  (int) ((interval.getStart() - origin) / scale);
+            int x0 = (int) ((interval.getStart() - origin) / scale);
             int x1 = (int) ((interval.getEnd() - origin) / scale);
             int w = Math.max(1, x1 - x0);
             // If there is room, leave a gap on one side
@@ -418,6 +435,14 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
     }
 
+    private List<InsertionInterval> getInsertionIntervals(ReferenceFrame frame) {
+        List<InsertionInterval> insertionIntervals = insertionIntervalsMap.get(frame);
+        if (insertionIntervals == null) {
+            insertionIntervals = new ArrayList<>();
+            insertionIntervalsMap.put(frame, insertionIntervals);
+        }
+        return insertionIntervals;
+    }
 
     private void renderInsertionIntervals(RenderContext context, Rectangle rect) {
 
@@ -425,29 +450,31 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         if (!context.getVisibleRect().intersects(rect)) return;
 
         List<InsertionMarker> intervals = context.getInsertionMarkers();
-        if(intervals == null) return;
+        if (intervals == null) return;
 
         InsertionMarker selected = InsertionManager.getInstance().getSelectedInsertion(context.getChr());
 
         int w = (int) ((1.41 * rect.height) / 2);
 
+        List<InsertionInterval> insertionIntervals = getInsertionIntervals(context.getReferenceFrame());
+
         for (InsertionMarker insertionMarker : intervals) {
             final double scale = context.getScale();
             final double origin = context.getOrigin();
-            int midpoint =  (int) ((insertionMarker.position - origin) / scale);
+            int midpoint = (int) ((insertionMarker.position - origin) / scale);
             int x0 = midpoint - w;
             int x1 = midpoint + w;
 
-            Rectangle iRect = new Rectangle(x0 + context.translateX, rect.y, 2*w, rect.height);
+            Rectangle iRect = new Rectangle(x0 + context.translateX, rect.y, 2 * w, rect.height);
 
             insertionIntervals.add(new InsertionInterval(iRect, insertionMarker));
 
-            Color c = (selected != null && selected.position == insertionMarker.position ) ? Color.red : AlignmentRenderer.purple;
+            Color c = (selected != null && selected.position == insertionMarker.position) ? Color.red : AlignmentRenderer.purple;
             Graphics2D g = context.getGraphic2DForColor(c);
 
 
-            g.fillPolygon(new Polygon(new int [] {x0, x1, midpoint},
-                    new int [] {rect.y, rect.y, rect.y + rect.height}, 3));
+            g.fillPolygon(new Polygon(new int[]{x0, x1, midpoint},
+                    new int[]{rect.y, rect.y, rect.y + rect.height}, 3));
         }
     }
 
@@ -872,11 +899,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             }
         } else {
 
-            InsertionInterval insertionInterval = getInsertionInterval(mouseX, mouseY);
-            if(insertionInterval != null) {
+            InsertionInterval insertionInterval = getInsertionInterval(frame, mouseX, mouseY);
+            if (insertionInterval != null) {
                 return "Insertions (" + insertionInterval.insertionMarker.size + " bases)";
-            }
-            else {
+            } else {
                 Alignment feature = getAlignmentAt(position, mouseY, frame);
                 if (feature != null) {
                     return feature.getValueString(position, mouseX, getWindowFunction());
@@ -1022,15 +1048,14 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             }
         }
 
-        InsertionInterval insertionInterval = getInsertionInterval(te.getMouseEvent().getX(), te.getMouseEvent().getY());
-        if(insertionInterval != null) {
+        InsertionInterval insertionInterval = getInsertionInterval(te.getFrame(), te.getMouseEvent().getX(), te.getMouseEvent().getY());
+        if (insertionInterval != null) {
 
             final String chrName = te.getFrame().getChrName();
             InsertionMarker currentSelection = InsertionManager.getInstance().getSelectedInsertion(chrName);
-            if(currentSelection != null && currentSelection.position == insertionInterval.insertionMarker.position) {
+            if (currentSelection != null && currentSelection.position == insertionInterval.insertionMarker.position) {
                 InsertionManager.getInstance().clearSelected();
-            }
-            else {
+            } else {
                 InsertionManager.getInstance().setSelected(chrName, insertionInterval.insertionMarker.position);
             }
 
@@ -1061,12 +1086,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
     }
 
-    private InsertionInterval getInsertionInterval(int x, int y) {
-        if (insertionIntervals != null) {
-            for (InsertionInterval i : insertionIntervals) {
-                if (i.rect.contains(x, y)) return i;
-            }
+    private InsertionInterval getInsertionInterval(ReferenceFrame frame, int x, int y) {
+        List<InsertionInterval> insertionIntervals = getInsertionIntervals(frame);
+        for (InsertionInterval i : insertionIntervals) {
+            if (i.rect.contains(x, y)) return i;
         }
+
         return null;
     }
 
