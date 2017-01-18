@@ -298,8 +298,8 @@ public class AlignmentDataManager implements IGVEventObserver {
 
 
     public synchronized PackedAlignments getGroups(RenderContext context, AlignmentTrack.RenderOptions renderOptions) {
-        load(context.getReferenceFrame(), renderOptions, false);
-        Range range = context.getReferenceFrame().getCurrentRange();
+     //   load(context.getReferenceFrame(), renderOptions, false);
+     //   Range range = context.getReferenceFrame().getCurrentRange();
 
         AlignmentInterval interval = intervalCache.get(context.getReferenceFrame());
         if (interval != null) {

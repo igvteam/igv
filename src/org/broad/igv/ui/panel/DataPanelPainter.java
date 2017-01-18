@@ -57,7 +57,6 @@ public class DataPanelPainter {
                                    Rectangle visibleRect) {
 
 
-        log.info("Paint ------------------------------------");
         final double start = context.getOrigin();
 
         try {
@@ -110,7 +109,6 @@ public class DataPanelPainter {
 
     private void paintSection(Collection<TrackGroup> groups, RenderContext context, int px, int py, int w, int h, int delta) {
 
-        log.info("Paint section " + px + "  " + (px + w));
         context.clearGraphicsCache();
         Graphics2D dG = context.getGraphics();
         Rectangle dRect = new Rectangle(0, py, w, h);
@@ -183,8 +181,7 @@ public class DataPanelPainter {
 
 
     private void paintInsertion(InsertionMarker insertionMarker, Collection<TrackGroup> groups, RenderContext context, int px, int py, int w, int h) {
-
-        log.info("Paint section " + px + "  " + (px + w));
+        
         context.clearGraphicsCache();
         Graphics2D dG = context.getGraphics();
         Rectangle dRect = new Rectangle(0, py, w, h);
