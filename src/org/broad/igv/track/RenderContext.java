@@ -166,10 +166,10 @@ public class RenderContext {
     }
 
     public void dispose() {
+        // Note: don't dispose of "this.graphics", its used later to paint the border
         for (Graphics2D g : graphicCache.values()) {
             g.dispose();
         }
-        graphics.dispose();
         graphicCache.clear();
     }
 
