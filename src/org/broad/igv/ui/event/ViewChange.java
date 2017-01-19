@@ -25,6 +25,8 @@
 
 package org.broad.igv.ui.event;
 
+import org.broad.igv.ui.panel.ReferenceFrame;
+
 /**
  * Events corresponding to a change in viewed area (chromosome, position, and/or zoom).
  * <p>
@@ -51,12 +53,12 @@ public class ViewChange {
         this.type = type;
     }
 
-    public ViewChange(Type type, String chrName) {
+    private ViewChange(Type type, String chrName) {
         this.type = type;
         this.chrName = chrName;
     }
 
-    public ViewChange(Type type, String chrName, double start, double end) {
+    private ViewChange(Type type, String chrName, double start, double end) {
         this.type = type;
         this.chrName = chrName;
         this.start = start;

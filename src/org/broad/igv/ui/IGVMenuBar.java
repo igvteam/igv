@@ -115,9 +115,11 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     public void notifyGenomeServerReachable(boolean reachable) {
         if (loadFromServerMenuItem != null) {
-            loadFromServerMenuItem.setEnabled(reachable);
-            String tooltip = reachable ? LOAD_GENOME_SERVER_TOOLTIP : CANNOT_LOAD_GENOME_SERVER_TOOLTIP;
-            loadFromServerMenuItem.setToolTipText(tooltip);
+            UIUtilities.invokeOnEventThread(() -> {
+                loadFromServerMenuItem.setEnabled(reachable);
+                String tooltip = reachable ? LOAD_GENOME_SERVER_TOOLTIP : CANNOT_LOAD_GENOME_SERVER_TOOLTIP;
+                loadFromServerMenuItem.setToolTipText(tooltip);
+            });
         }
     }
 

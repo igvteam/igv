@@ -124,12 +124,24 @@ public class Preloader {
 
                 log.info("Call repaint " + dataPanel.hashCode() + " " + dataPanel.allTracksLoaded());
                 dataPanel.loadInProgress = false;
+
                 dataPanel.repaint();
 
             });
         }
 
         log.info("Exit load for " + frame.getFormattedLocusString());
+    }
+
+    private static SequenceTrack findSequenceTrack(Collection<Track> trackList) {
+
+        for(Track t : trackList) {
+            if(t instanceof SequenceTrack) {
+                return (SequenceTrack) t;
+            }
+        }
+        return null;
+
     }
 
 }
