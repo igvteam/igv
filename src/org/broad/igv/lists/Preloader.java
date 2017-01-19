@@ -27,6 +27,7 @@ package org.broad.igv.lists;
 
 import org.apache.batik.bridge.CursorManager;
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
@@ -93,18 +94,23 @@ public class Preloader {
     public static synchronized void load(final DataPanel dataPanel) {
 
         ReferenceFrame frame = dataPanel.getFrame();
-log.info("Enter load for " + frame.getFormattedLocusString());
         Collection<Track> trackList = dataPanel.visibleTracks();
         List<CompletableFuture> futures = new ArrayList(trackList.size());
         for (Track track : trackList) {
             if (track.isReadyToPaint(frame) == false) {
-                futures.add(CompletableFuture.runAsync(() -> {
+                final Runnable runnable = () -> {
                     log.info("Loading " + track.getName() + " " + frame.getFormattedLocusString());
                     WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
                     track.load(frame);
                     WaitCursorManager.removeWaitCursor(token);
                     log.info("Loaded " + track.getName() + " " + frame.getFormattedLocusString());
-                }, threadExecutor));
+                };
+
+                if(Globals.isBatch()) {
+                    runnable.run();
+                } else {
+                    futures.add(CompletableFuture.runAsync(runnable, threadExecutor));
+                }
             }
         }
 

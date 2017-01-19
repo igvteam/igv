@@ -83,7 +83,6 @@ public class IGVContentPane extends JPanel {
         statusBar.setDebugGraphicsOptions(javax.swing.DebugGraphics.NONE_OPTION);
         add(statusBar, BorderLayout.SOUTH);
 
-
     }
 
     public void addCommandBar(JComponent component) {
@@ -93,35 +92,16 @@ public class IGVContentPane extends JPanel {
         commandBarPanel.invalidate();
     }
 
-    public void removeCommandBar(JComponent component) {
-        commandBarPanel.remove(component);
-        commandBarPanel.invalidate();
-    }
 
     @Override
     public Dimension getPreferredSize() {
         return UIConstants.preferredSize;
     }
 
-
-    public void repaintDataPanels() {
-        for (TrackPanel tp : mainPanel.getTrackPanels()) {
-            tp.getScrollPane().getDataPanel().repaint();
-        }
-    }
-
     public void revalidateTrackPanels() {
         for (TrackPanel tp : mainPanel.getTrackPanels()) {
             tp.getScrollPane().getDataPanel().revalidate();
         }
-    }
-
-
-    final public void doRefresh() {
-
-        mainPanel.revalidate();
-        repaint();
-        //getContentPane().repaint();
     }
 
     /**
