@@ -593,44 +593,47 @@ public class IGV implements IGVEventObserver {
      */
     public void resetPanelHeights(Map<TrackPanelScrollPane, Integer> trackCountMap, Map<TrackPanelScrollPane, Integer> panelSizeMap) {
 
-        double totalHeight = 0;
-        for (TrackPanel tp : getTrackPanels()) {
-            TrackPanelScrollPane sp = tp.getScrollPane();
-            if (trackCountMap.containsKey(sp)) {
-                int prevTrackCount = trackCountMap.get(sp);
-                if (prevTrackCount != sp.getDataPanel().getAllTracks().size()) {
-                    int scrollPosition = panelSizeMap.get(sp);
-                    if (prevTrackCount != 0 && sp.getVerticalScrollBar().isShowing()) {
-                        sp.getVerticalScrollBar().setMaximum(sp.getDataPanel().getHeight());
-                        sp.getVerticalScrollBar().setValue(scrollPosition);
+        UIUtilities.invokeAndWaitOnEventThread(() -> {
+
+            double totalHeight = 0;
+            for (TrackPanel tp : getTrackPanels()) {
+                TrackPanelScrollPane sp = tp.getScrollPane();
+                if (trackCountMap.containsKey(sp)) {
+                    int prevTrackCount = trackCountMap.get(sp);
+                    if (prevTrackCount != sp.getDataPanel().getAllTracks().size()) {
+                        int scrollPosition = panelSizeMap.get(sp);
+                        if (prevTrackCount != 0 && sp.getVerticalScrollBar().isShowing()) {
+                            sp.getVerticalScrollBar().setMaximum(sp.getDataPanel().getHeight());
+                            sp.getVerticalScrollBar().setValue(scrollPosition);
+                        }
                     }
                 }
+                // Give a maximum "weight" of 300 pixels to each panel.  If there are no tracks, give zero
+                if (sp.getTrackPanel().getTracks().size() > 0)
+                    totalHeight += Math.min(300, sp.getTrackPanel().getPreferredPanelHeight());
             }
-            // Give a maximum "weight" of 300 pixels to each panel.  If there are no tracks, give zero
-            if (sp.getTrackPanel().getTracks().size() > 0)
-                totalHeight += Math.min(300, sp.getTrackPanel().getPreferredPanelHeight());
-        }
 
-        // Adjust dividers for data panel.  The data panel divider can be
-        // zero if there are no data tracks loaded.
-        final JideSplitPane centerSplitPane = contentPane.getMainPanel().getCenterSplitPane();
-        int htotal = centerSplitPane.getHeight();
-        int y = 0;
-        int i = 0;
-        for (Component c : centerSplitPane.getComponents()) {
-            if (c instanceof TrackPanelScrollPane) {
-                final TrackPanel trackPanel = ((TrackPanelScrollPane) c).getTrackPanel();
-                if (trackPanel.getTracks().size() > 0) {
-                    int panelWeight = Math.min(300, trackPanel.getPreferredPanelHeight());
-                    int dh = (int) ((panelWeight / totalHeight) * htotal);
-                    y += dh;
+            // Adjust dividers for data panel.  The data panel divider can be
+            // zero if there are no data tracks loaded.
+            final JideSplitPane centerSplitPane = contentPane.getMainPanel().getCenterSplitPane();
+            int htotal = centerSplitPane.getHeight();
+            int y = 0;
+            int i = 0;
+            for (Component c : centerSplitPane.getComponents()) {
+                if (c instanceof TrackPanelScrollPane) {
+                    final TrackPanel trackPanel = ((TrackPanelScrollPane) c).getTrackPanel();
+                    if (trackPanel.getTracks().size() > 0) {
+                        int panelWeight = Math.min(300, trackPanel.getPreferredPanelHeight());
+                        int dh = (int) ((panelWeight / totalHeight) * htotal);
+                        y += dh;
+                    }
+                    centerSplitPane.setDividerLocation(i, y);
+                    i++;
                 }
-                centerSplitPane.setDividerLocation(i, y);
-                i++;
             }
-        }
 
-        contentPane.getMainPanel().invalidate();
+            contentPane.getMainPanel().invalidate();
+        });
     }
 
     public void setGeneList(GeneList geneList) {
@@ -2577,14 +2580,17 @@ public class IGV implements IGVEventObserver {
      */
     public void revalidateTrackPanels() {
 
-        if (Globals.isBatch()) {
-            contentPane.revalidateTrackPanels();
-            rootPane.paintImmediately(rootPane.getBounds());
-        } else {
-            contentPane.revalidateTrackPanels();
-            rootPane.repaint();
+        UIUtilities.invokeAndWaitOnEventThread(() -> {
 
-        }
+            if (Globals.isBatch()) {
+                contentPane.revalidateTrackPanels();
+                rootPane.paintImmediately(rootPane.getBounds());
+            } else {
+                contentPane.revalidateTrackPanels();
+                rootPane.repaint();
+
+            }
+        });
     }
 
     public void repaintNamePanels() {
