@@ -49,6 +49,7 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressMonitor;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.*;
 import org.broad.igv.util.collections.CI;
 import htsjdk.tribble.util.ParsingUtils;
@@ -166,7 +167,7 @@ public class GenomeManager {
             Genome newGenome = null;
 
             if (monitor != null) {
-                monitor.fireProgress(25);
+                UIUtilities.invokeAndWaitOnEventThread(() -> monitor.fireProgress(25));
             }
 
             // Clear Feature DB

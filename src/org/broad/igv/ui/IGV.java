@@ -506,9 +506,9 @@ public class IGV implements IGVEventObserver {
                     }
 
                     if (selectedValues.size() > 0) {
-                   //     GenomeManager.getInstance().addGenomeItems(selectedValues, false);
+                        //     GenomeManager.getInstance().addGenomeItems(selectedValues, false);
                         GenomeManager.getInstance().loadGenome(selectedValues.get(0).getLocation(), null);
-                  //      contentPane.getCommandBar().selectGenome(selectedValues.get(0).getId());
+                        //      contentPane.getCommandBar().selectGenome(selectedValues.get(0).getId());
                     }
                 }
             }
@@ -2249,7 +2249,9 @@ public class IGV implements IGVEventObserver {
      * Swing worker class to startup IGV
      */
     public class StartupRunnable implements Runnable {
+
         Main.IGVArgs igvArgs;
+        ProgressBar.ProgressDialog progressDialog;
 
         StartupRunnable(Main.IGVArgs args) {
             this.igvArgs = args;
@@ -2263,11 +2265,14 @@ public class IGV implements IGVEventObserver {
             BatchRunner.setIsBatchMode(runningBatch);
 
             final ProgressMonitor monitor = new ProgressMonitor();
-            final ProgressBar.ProgressDialog progressDialog = ProgressBar.showProgressDialog(mainFrame, "Initializing...", monitor, false);
-            progressDialog.getProgressBar().setIndeterminate(true);
-            monitor.fireProgressChange(20);
+            UIUtilities.invokeAndWaitOnEventThread(() -> {
+                progressDialog = ProgressBar.showProgressDialog(mainFrame, "Initializing...", monitor, false);
+                progressDialog.getProgressBar().setIndeterminate(true);
+                monitor.fireProgressChange(20);
+            });
 
-            mainFrame.setIconImage(getIconImage());
+
+            UIUtilities.invokeOnEventThread(() -> mainFrame.setIconImage(getIconImage()));
             if (Globals.IS_MAC) {
                 setAppleDockIcon();
             }
@@ -2283,7 +2288,7 @@ public class IGV implements IGVEventObserver {
                 JOptionPane.showMessageDialog(mainFrame, "Network error initializing genome list: " + ex.getMessage());
                 log.error("Network error initializing genome list: ", ex);
             } finally {
-                monitor.fireProgressChange(50);
+                UIUtilities.invokeAndWaitOnEventThread(() -> monitor.fireProgressChange(50));
                 closeWindow(progressDialog);
             }
 

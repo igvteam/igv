@@ -78,20 +78,26 @@ public class Main {
 
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
 
-        Main.IGVArgs igvArgs = new Main.IGVArgs(args);
+        final Main.IGVArgs igvArgs = new Main.IGVArgs(args);
 
         // Do this early
         if (igvArgs.igvDirectory != null) {
             setIgvDirectory(igvArgs);
         }
 
-        initApplication();
+        Runnable runnable = new Runnable() {
+            public void run() {
+                initApplication();
 
-        JFrame frame = new JFrame();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        ImageIcon icon = new ImageIcon(Main.class.getResource("mainframeicon.png"));
-        if (icon != null) frame.setIconImage(icon.getImage());
-        open(frame, igvArgs);
+                JFrame frame = new JFrame();
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                ImageIcon icon = new ImageIcon(Main.class.getResource("mainframeicon.png"));
+                if (icon != null) frame.setIconImage(icon.getImage());
+                open(frame, igvArgs);
+            }
+        };
+
+        SwingUtilities.invokeLater(runnable);
 
     }
 

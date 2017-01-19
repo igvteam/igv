@@ -35,6 +35,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
 import org.broad.igv.ui.TrackFilterPane;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.Filter;
 
 import javax.swing.*;
@@ -285,7 +286,7 @@ public class FilterTracksMenuAction extends MenuAction {
 
     public void setFilterShowAllTracks(boolean value) {
         if (showAllTracksFilterCheckBox != null) {
-            showAllTracksFilterCheckBox.setSelected(value);
+            UIUtilities.invokeAndWaitOnEventThread(() -> showAllTracksFilterCheckBox.setSelected(value));
         }
     }
 

@@ -144,7 +144,7 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
             int usedMemory = (totalMemory - freeMemory);
             String um = format.format(usedMemory);
             String tm = format.format(totalMemory);
-            textField.setText(um + "M of " + tm + "M");
+            UIUtilities.invokeOnEventThread(() -> textField.setText(um + "M of " + tm + "M"));
         }
 
     }

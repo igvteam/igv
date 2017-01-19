@@ -26,6 +26,10 @@
 package org.broad.igv.batch;
 
 
+import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.ui.WaitCursorManager;
+import org.broad.igv.util.ParsingUtils;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -48,9 +52,7 @@ public class TestClient {
             socket = new Socket("127.0.0.1", 60151);
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            //testEcho(out, in);
-            //testMultiLocus(out, in);
-            testLoopBAM(out, in);
+            testMultiLocus(out, in);
         } catch (UnknownHostException e) {
             System.err.println("Unknown host exception: " + e.getMessage());
             System.exit(1);
@@ -65,16 +67,31 @@ public class TestClient {
         }
     }
 
-    private static void testEcho(PrintWriter out, BufferedReader in) throws IOException {
+    private static void runBatchFile(PrintWriter out, BufferedReader in, String inputFile) throws IOException {
 
-        String cmd = "echo";
-        out.println(cmd);
-        String response = in.readLine();
-        System.out.println(cmd + " " + response);
+        String inLine;
+
+        BufferedReader reader = null;
+        try {
+            reader = ParsingUtils.openBufferedReader(inputFile);
+
+            while ((inLine = reader.readLine()) != null) {
+                if (!(inLine.startsWith("#") || inLine.startsWith("//"))) {
+                    System.out.println("Executing Command: " + inLine);
+                    out.println(inLine);
+                    String response = in.readLine();
+                    System.out.println("Response: " + response);
+                }
+            }
 
 
+        } catch (IOException ioe) {
+            throw new DataLoadException(ioe.getMessage(), inputFile);
+        } finally {
 
-        //http://localhost:60151/load?file=https://data.broadinstitute.org/igvdata/tcga/gbmsubtypes/Broad.080528.subtypes.seg.gz&genome=hg18&locus=EGFR%20PTEN
+            if (reader != null) reader.close();
+
+        }
 
     }
 
@@ -92,166 +109,6 @@ public class TestClient {
         System.out.println(cmd + " " + response);
 
 
-        //http://localhost:60151/load?file=https://data.broadinstitute.org/igvdata/tcga/gbmsubtypes/Broad.080528.subtypes.seg.gz&genome=hg18&locus=EGFR%20PTEN
-
     }
 
-    private static void testLoopBAM(PrintWriter out, BufferedReader in) throws IOException {
-
-//        String fileURL = "test/data/bam/test4bams_session.xml";
-        String chr = "chr13";
-        int chrLength = 113000000;
-
-        String cmd = "snapshotDirectory /Users/jrobinso/tmp";
-        String response;
-//        out.println(cmd);
-//        String response = in.readLine();
-//        System.out.println(cmd + " " + response);
-//
-//        cmd = "load " + fileURL;
-//        out.println(cmd);
-//        response = in.readLine();
-//        System.out.println(cmd + " " + response);
-
-        for (int i = 0; i < 100; i++) {
-
-            int start = 1 + (int) (Math.random() * (chrLength - 10000));
-            int end = start + 8000;
-            String locusString = chr + ":" + start + "-" + end;
-            cmd = "goto " + locusString;
-            out.println(cmd);
-            response = in.readLine();
-            System.out.println("" + i + " " + cmd + " " + response);
-
-//            cmd = "snapshot test_" + i + ".png";
-//            out.println(cmd);
-//            response = in.readLine();
-//            System.out.println("" + i + " " + cmd + " " + response);
-        }
-
-    }
-
-
-    /**
-     * This test repeatedly creates new sessions and loads a BAM file.  It reveals a slow memory leak, still
-     * unresolved.
-     *
-     * @param out
-     * @param in
-     * @throws IOException
-     */
-    private static void testLoopSessions(PrintWriter out, BufferedReader in) throws IOException {
-
-        List<String> commands = new ArrayList();
-        commands.add("snapshotDirectory /Users/jrobinso/tmp");
-        commands.add("new");
-        commands.add("load " + fileURL);
-        commands.add("goto chr1:11,554,759-11,555,759");
-        //commands.add("snapshot");
-        //commands.add("collapse");
-        //commands.add("snapshot");
-
-        for (int i = 0; i < 100; i++) {
-
-            for (String cmd : commands) {
-                out.println(cmd);
-                String response = in.readLine();
-                System.out.println("" + i + " " + cmd + " " + response);
-            }
-            String cmd = "snapshot test_" + i + ".png";
-            out.println(cmd);
-            String response = in.readLine();
-            System.out.println("" + i + " " + cmd + " " + response);
-        }
-
-    }
-
-    private static void testFileWithSpaces(PrintWriter out, BufferedReader in) throws IOException {
-        String response;
-        String command = "load \"/Users/jrobinso/projects/Version_1.5_rc2/test/data/gct/file with spaces.gct\"";
-        System.out.println("asking igv to " + command);
-        out.println(command);
-        System.out.println("waiting for response");
-        response = in.readLine();
-        System.out.println(response);
-    }
-
-
-    public static void test2(String[] args) throws IOException {
-
-        Socket socket = null;
-        PrintWriter out = null;
-        BufferedReader in = null;
-
-        try {
-            socket = new Socket("127.0.0.1", 60151);
-            out = new PrintWriter(socket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            doCommands(out, in);
-        } catch (UnknownHostException e) {
-            System.err.println("Unknown host exception: " + e.getMessage());
-            System.exit(1);
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Couldn't get I/O for " + "the connection to IGV");
-            System.exit(1);
-        } finally {
-            in.close();
-            out.close();
-            socket.close();
-        }
-
-
-        try {
-            socket = new Socket("127.0.0.1", 60151);
-            out = new PrintWriter(socket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            doCommands(out, in);
-        } catch (UnknownHostException e) {
-            System.err.println("Unknown host exception: " + e.getMessage());
-            System.exit(1);
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Couldn't get I/O for " + "the connection to: IGV.");
-            System.exit(1);
-        } finally {
-            in.close();
-            out.close();
-            socket.close();
-        }
-    }
-
-    private static void doCommands(PrintWriter out, BufferedReader in) throws IOException {
-
-        out.println("load /Users/jrobinso/igv_session.xml");
-        String response = in.readLine();
-        System.out.println(response);
-
-        out.println("snapshotDirectory /Users/jrobinso");
-        response = in.readLine();
-        System.out.println(response);
-
-        out.println("genome hg18");
-        response = in.readLine();
-        System.out.println(response);
-
-        out.println("goto chr7:41,790,257-68,534,649");
-        //out.println("goto chr1:65,839,697");
-        response = in.readLine();
-        System.out.println(response);
-
-        out.println("sort amplification chr7:55,096,094-55,200,563");
-        response = in.readLine();
-        System.out.println(response);
-
-        out.println("collapse");
-        response = in.readLine();
-        System.out.println(response);
-
-        out.println("snapshot");
-        response = in.readLine();
-        System.out.println(response);
-
-
-    }
 }

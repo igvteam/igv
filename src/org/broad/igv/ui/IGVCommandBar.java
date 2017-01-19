@@ -182,18 +182,20 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         }
 
         if (monitor != null) {
-            monitor.fireProgressChange(1);
+            UIUtilities.invokeOnEventThread(() -> monitor.fireProgressChange(1));
         }
 
-        genomeComboBox.removeAllItems();
-        genomeComboBox.setRenderer(new ComboBoxRenderer());
-        genomeComboBox.setToolTipText(UIConstants.CHANGE_GENOME_TOOLTIP);
+        UIUtilities.invokeAndWaitOnEventThread(() -> {
+            genomeComboBox.removeAllItems();
+            genomeComboBox.setRenderer(new ComboBoxRenderer());
+            genomeComboBox.setToolTipText(UIConstants.CHANGE_GENOME_TOOLTIP);
+        });
 
         GenomeManager.getInstance().buildGenomeItemList();
         refreshGenomeListComboBox();
 
         if (monitor != null) {
-            monitor.fireProgressChange(50);
+            UIUtilities.invokeOnEventThread(() -> monitor.fireProgressChange(50));
         }
 
         genomeComboBox.addActionListener(new GenomeBoxActionListener());
@@ -235,6 +237,9 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
             final Runnable runnable = new Runnable() {
 
+                ProgressMonitor monitor;
+                ProgressBar.ProgressDialog progressDialog;
+
                 public void run() {
                     if (genomeListItem != null && genomeListItem.getLocation() != null) {
 
@@ -246,8 +251,11 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
                             return;
                         }
 
-                        final ProgressMonitor monitor = new ProgressMonitor();
-                        final ProgressBar.ProgressDialog progressDialog = ProgressBar.showProgressDialog(IGV.getMainFrame(), "Loading Genome...", monitor, false);
+                        UIUtilities.invokeAndWaitOnEventThread(() -> {
+                            monitor = new ProgressMonitor();
+                            progressDialog = ProgressBar.showProgressDialog(IGV.getMainFrame(), "Loading Genome...", monitor, false);
+                        });
+
                         try {
                             GenomeManager.getInstance().loadGenome(genomeListItem.getLocation(), monitor);
 
@@ -269,7 +277,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
                             }
                         } finally {
                             if (progressDialog != null) {
-                                progressDialog.setVisible(false);
+                                UIUtilities.invokeOnEventThread(() -> progressDialog.setVisible(false));
                             }
                         }
 
@@ -296,45 +304,43 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         final Genome genome = GenomeManager.getInstance().getCurrentGenome();
         if (genome == null) return;
 
-        List<String> tmp = new ArrayList<String>(genome.getAllChromosomeNames().size());
-        tmp.addAll(genome.getAllChromosomeNames());
-        if (tmp.size() > 1) {
-            String homeChr = genome.getHomeChromosome();
-            if (homeChr.equals(Globals.CHR_ALL)) {
-                tmp.add(0, Globals.CHR_ALL);
-            }
-        }
+        UIUtilities.invokeAndWaitOnEventThread(() -> {
 
-        Graphics2D graphics2D = (Graphics2D) chromosomeComboBox.getGraphics();
-        Font font = chromosomeComboBox.getFont();
-        FontMetrics fontMetrics = chromosomeComboBox.getFontMetrics(font);
-
-        int w = DEFAULT_CHROMOSOME_DROPDOWN_WIDTH;
-        for (String chromosomeName : tmp) {
-            Rectangle2D textBounds = fontMetrics.getStringBounds(chromosomeName, graphics2D);
-            if (textBounds != null) {
-                int width = textBounds.getBounds().width + 50;
-
-                // int width = chromosomeName.length()*fontSize-(fontSize*4);  // TODO Hack figure out whats's wrong with previous line
-                if (width > w) {
-                    w = width;
+            List<String> tmp = new ArrayList<String>(genome.getAllChromosomeNames().size());
+            tmp.addAll(genome.getAllChromosomeNames());
+            if (tmp.size() > 1) {
+                String homeChr = genome.getHomeChromosome();
+                if (homeChr.equals(Globals.CHR_ALL)) {
+                    tmp.add(0, Globals.CHR_ALL);
                 }
             }
-        }
 
-        Object[] chomosomeNames = tmp.toArray();
-        final DefaultComboBoxModel defaultModel = new DefaultComboBoxModel(chomosomeNames);
-        final int dropdownWidth = w;
+            Graphics2D graphics2D = (Graphics2D) chromosomeComboBox.getGraphics();
+            Font font = chromosomeComboBox.getFont();
+            FontMetrics fontMetrics = chromosomeComboBox.getFontMetrics(font);
 
-        chromosomeComboBox.setModel(defaultModel);
-        chromosomeComboBox.setSelectedItem(genome.getHomeChromosome());
+            int w = DEFAULT_CHROMOSOME_DROPDOWN_WIDTH;
+            for (String chromosomeName : tmp) {
+                Rectangle2D textBounds = fontMetrics.getStringBounds(chromosomeName, graphics2D);
+                if (textBounds != null) {
+                    int width = textBounds.getBounds().width + 50;
 
-        UIUtilities.invokeOnEventThread(new Runnable() {
-
-            public void run() {
-                adjustChromosomeDropdownWidth(dropdownWidth);
+                    // int width = chromosomeName.length()*fontSize-(fontSize*4);  // TODO Hack figure out whats's wrong with previous line
+                    if (width > w) {
+                        w = width;
+                    }
+                }
             }
+
+            Object[] chomosomeNames = tmp.toArray();
+            final DefaultComboBoxModel defaultModel = new DefaultComboBoxModel(chomosomeNames);
+            final int dropdownWidth = w;
+
+            chromosomeComboBox.setModel(defaultModel);
+            chromosomeComboBox.setSelectedItem(genome.getHomeChromosome());
+            adjustChromosomeDropdownWidth(dropdownWidth);
         });
+
 
     }
 
@@ -451,7 +457,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
      * @param genomeId
      */
     public void selectGenome(String genomeId) {
-
+        log.info("Selecting genome " + genomeId);
         if (!GenomeManager.getInstance().getSelectableGenomeIDs().contains(genomeId)) {
 
             boolean found = false;
@@ -468,7 +474,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         // Now select this item in the comboBox
         GenomeListItem matchingItem = GenomeManager.getInstance().getLoadedGenomeListItemById(genomeId);
         if (matchingItem != null) {
-            genomeComboBox.setSelectedItem(matchingItem);
+            UIUtilities.invokeAndWaitOnEventThread(() -> genomeComboBox.setSelectedItem(matchingItem));
         }
     }
 
@@ -487,10 +493,12 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
     }
 
     public void refreshGenomeListComboBox() {
-        genomeComboBox.setModel(getModelForGenomeListComboBox());
-        String curId = GenomeManager.getInstance().getGenomeId();
-        Object item = GenomeManager.getInstance().getLoadedGenomeListItemById(curId);
-        genomeComboBox.setSelectedItem(item);
+        UIUtilities.invokeAndWaitOnEventThread(() -> {
+            genomeComboBox.setModel(getModelForGenomeListComboBox());
+            String curId = GenomeManager.getInstance().getGenomeId();
+            Object item = GenomeManager.getInstance().getLoadedGenomeListItemById(curId);
+            genomeComboBox.setSelectedItem(item);
+        });
     }
 
     /**

@@ -27,6 +27,7 @@ package org.broad.igv.plugin;
 
 import org.broad.igv.dev.api.IGVPlugin;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 
@@ -34,12 +35,13 @@ import javax.swing.*;
  * This is probably a case of over-design.
  * This plugin exists solely to structure the tools menu to our liking, it
  * just adds a separator to the menu.
+ *
  * @author jacob
  * @date 2013-Apr-12
  */
-public class AddMenuSeparator implements IGVPlugin{
+public class AddMenuSeparator implements IGVPlugin {
     @Override
     public void init() {
-        IGV.getInstance().addOtherToolMenu(new JSeparator());
+        UIUtilities.invokeAndWaitOnEventThread(() -> IGV.getInstance().addOtherToolMenu(new JSeparator()));
     }
 }

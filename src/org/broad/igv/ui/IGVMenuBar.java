@@ -132,7 +132,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             }
             throw new IllegalStateException("Cannot create another IGVMenuBar, use getInstance");
         }
-        instance = new IGVMenuBar(igv);
+        UIUtilities.invokeAndWaitOnEventThread(() ->instance = new IGVMenuBar(igv));
         return instance;
     }
 
@@ -318,12 +318,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                     //Don't let the user change the path in that case
                     if (tool.defaultPath != null) {
                         JMenuItem setPathItem = new JMenuItem(String.format("Set path to %s...", toolName));
-                        setPathItem.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                (new SetPluginPathDialog(IGV.getMainFrame(), pluginSpecReader, tool)).setVisible(true);
-                                refreshToolsMenu();
-                            }
+                        setPathItem.addActionListener(e -> {
+                            (new SetPluginPathDialog(IGV.getMainFrame(), pluginSpecReader, tool)).setVisible(true);
+                            refreshToolsMenu();
                         });
                         toolMenu.add(setPathItem);
                     }

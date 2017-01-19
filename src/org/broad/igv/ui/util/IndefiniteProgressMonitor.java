@@ -58,7 +58,7 @@ public class IndefiniteProgressMonitor extends ProgressMonitor {
 
     public void stop() {
         timer.cancel();
-        fireProgressChange(100);
+        UIUtilities.invokeOnEventThread(() ->fireProgressChange(100));
     }
 
     class CycleTask extends TimerTask {
@@ -73,11 +73,7 @@ public class IndefiniteProgressMonitor extends ProgressMonitor {
         public void run() {
 
 
-            UIUtilities.invokeOnEventThread(new Runnable() {
-                public void run() {
-                    fireProgressChange(progressIncrement);
-                }
-            });
+            UIUtilities.invokeOnEventThread(() -> fireProgressChange(progressIncrement));
 
 
             long t = System.currentTimeMillis();

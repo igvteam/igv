@@ -44,6 +44,7 @@ import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.collections.DoubleArrayList;
 
 import javax.swing.*;
@@ -72,7 +73,7 @@ public class Gitools implements IGVPlugin{
 
     @Override
     public void init() {
-        addMenuItems();
+        UIUtilities.invokeAndWaitOnEventThread(() ->addMenuItems());
     }
 
     private static void addMenuItems(){
