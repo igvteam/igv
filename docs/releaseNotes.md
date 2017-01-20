@@ -1,6 +1,6 @@
 ## **IGV 2.3,** released April 2013
 
-**New Features and Improvements**
+**New Features and Improvements TESTING**
 
 *   **Motif finder.** This new feature allows you to search for a particular nucleotide sequence in the reference genome, using either regular expression syntax or IUPAC ambiguity codes. Search results are displayed in two new tracks; one displays matches on the positive strand, and the other displays matches on the negative strand. Read more about it [here](http://www.broadinstitute.org/software/igv/node/251).
 
