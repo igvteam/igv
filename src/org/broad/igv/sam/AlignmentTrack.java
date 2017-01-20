@@ -243,8 +243,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         // Trim insertionInterval map to current frames
         if (event instanceof FrameManager.ChangeEvent) {
             Map<ReferenceFrame, List<InsertionInterval>> newMap = Collections.synchronizedMap(new HashMap<>());
-            for(ReferenceFrame frame : ((FrameManager.ChangeEvent) event).getFrames()) {
-                if(insertionIntervalsMap.containsKey(frame)) {
+            for (ReferenceFrame frame : ((FrameManager.ChangeEvent) event).getFrames()) {
+                if (insertionIntervalsMap.containsKey(frame)) {
                     newMap.put(frame, insertionIntervalsMap.get(frame));
                 }
             }
@@ -305,6 +305,17 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     @Override
     public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
+
+        Alignment alignment = getAlignment(te);
+        if (alignment != null && alignment.getInsertions() != null) {
+            for (AlignmentBlock block : alignment.getInsertions()) {
+                if (block.containsPixel(te.getMouseEvent().getX())) {
+                    return new InsertionMenu(block);
+                }
+            }
+        }
+
+
         return new PopupMenu(te);
     }
 
@@ -589,6 +600,16 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
 
         boolean leaveMargin = getDisplayMode() != DisplayMode.COLLAPSED.SQUISHED;
+
+        // Insertion interval
+        Graphics2D g = context.getGraphic2DForColor(Color.red);
+        Rectangle iRect = new Rectangle(inputRect.x, insertionRect.y, inputRect.width, insertionRect.height);
+        g.fill(iRect);
+        List<InsertionInterval> insertionIntervals = getInsertionIntervals(context.getReferenceFrame());
+
+        iRect.x += context.translateX;
+        insertionIntervals.add(new InsertionInterval(iRect, insertionMarker));
+
 
         inputRect.y += DS_MARGIN_0 + DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_0 + INSERTION_ROW_HEIGHT + DS_MARGIN_2;
 
@@ -1481,10 +1502,86 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
     }
 
+    public boolean isLinkedReads() {
+        return renderOptions.linkedReads;
+    }
+
+    public void setLinkedReads(boolean linkedReads, String tag) {
+
+        renderOptions.linkedReads = linkedReads;
+        if (linkedReads == true) {
+            this.renderRollback = new RenderRollback(renderOptions, getDisplayMode());
+
+            renderOptions.setLinkByTag(tag);
+
+            if ("READNAME".equals(tag)) {
+                renderOptions.setColorOption(ColorOption.LINK_STRAND);
+            } else {
+                // TenX -- ditto
+                renderOptions.setColorOption(ColorOption.TAG);
+                renderOptions.setColorByTag(tag);
+
+                if (dataManager.isPhased()) {
+                    renderOptions.groupByOption = GroupOption.TAG;
+                    renderOptions.setGroupByTag("HP");
+                }
+                expandedHeight = 10;
+                showGroupLine = false;
+                setDisplayMode(DisplayMode.SQUISHED);
+            }
+        } else {
+            if (this.renderRollback != null) {
+                this.renderRollback.restore(renderOptions);
+            }
+        }
+
+        dataManager.packAlignments(renderOptions);
+        refresh();
+    }
+
+    /**
+     * Listener for deselecting one component when another is selected
+     */
+    private static class Deselector implements ActionListener {
+
+        private JMenuItem toDeselect;
+        private JMenuItem parent;
+
+        Deselector(JMenuItem parent, JMenuItem toDeselect) {
+            this.parent = parent;
+            this.toDeselect = toDeselect;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (this.parent.isSelected()) {
+                this.toDeselect.setSelected(false);
+            }
+        }
+    }
+
+
+    @SubtlyImportant
+    private static AlignmentTrack getNextTrack() {
+        return (AlignmentTrack) IGVSessionReader.getNextTrack();
+    }
+
+    private static class InsertionInterval {
+
+        Rectangle rect;
+        InsertionMarker insertionMarker;
+
+        public InsertionInterval(Rectangle rect, InsertionMarker insertionMarker) {
+            this.rect = rect;
+            this.insertionMarker = insertionMarker;
+        }
+    }
+
+
     class PopupMenu extends IGVPopupMenu {
 
         PopupMenu(final TrackClickEvent e) {
-            super();
+
             Collection<Track> tracks = new ArrayList();
             tracks.add(AlignmentTrack.this);
 
@@ -2363,78 +2460,47 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
 
-    public boolean isLinkedReads() {
-        return renderOptions.linkedReads;
-    }
+    static class InsertionMenu extends IGVPopupMenu {
 
-    public void setLinkedReads(boolean linkedReads, String tag) {
+        AlignmentBlock insertion;
 
-        renderOptions.linkedReads = linkedReads;
-        if (linkedReads == true) {
-            this.renderRollback = new RenderRollback(renderOptions, getDisplayMode());
+        InsertionMenu(AlignmentBlock insertion) {
 
-            renderOptions.setLinkByTag(tag);
+            this.insertion = insertion;
 
-            if ("READNAME".equals(tag)) {
-                renderOptions.setColorOption(ColorOption.LINK_STRAND);
-            } else {
-                // TenX -- ditto
-                renderOptions.setColorOption(ColorOption.TAG);
-                renderOptions.setColorByTag(tag);
+            addCopySequenceItem();
 
-                if (dataManager.isPhased()) {
-                    renderOptions.groupByOption = GroupOption.TAG;
-                    renderOptions.setGroupByTag("HP");
-                }
-                expandedHeight = 10;
-                showGroupLine = false;
-                setDisplayMode(DisplayMode.SQUISHED);
-            }
-        } else {
-            if (this.renderRollback != null) {
-                this.renderRollback.restore(renderOptions);
+            if (insertion.getBases() != null && insertion.getBases().length > 10) {
+                addBlatItem();
             }
         }
 
-        dataManager.packAlignments(renderOptions);
-        refresh();
-    }
 
-    /**
-     * Listener for deselecting one component when another is selected
-     */
-    private static class Deselector implements ActionListener {
+        public void addCopySequenceItem() {
+            // Change track height by attribute
+            final JMenuItem item = new JMenuItem("Copy insert sequence");
+            add(item);
+            item.addActionListener(aEvt -> StringUtils.copyTextToClipboard(new String(insertion.getBases())));
+        }
 
-        private JMenuItem toDeselect;
-        private JMenuItem parent;
 
-        Deselector(JMenuItem parent, JMenuItem toDeselect) {
-            this.parent = parent;
-            this.toDeselect = toDeselect;
+        public void addBlatItem() {
+            // Change track height by attribute
+            final JMenuItem item = new JMenuItem("Blat insert sequence");
+            add(item);
+
+
+            item.addActionListener(aEvt -> {
+                String blatSeq = new String(insertion.getBases());
+                BlatClient.doBlatQuery(blatSeq);
+            });
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
-            if (this.parent.isSelected()) {
-                this.toDeselect.setSelected(false);
-            }
+        public boolean includeStandardItems() {
+            return false;
         }
     }
 
 
-    @SubtlyImportant
-    private static AlignmentTrack getNextTrack() {
-        return (AlignmentTrack) IGVSessionReader.getNextTrack();
-    }
-
-    private static class InsertionInterval {
-
-        Rectangle rect;
-        InsertionMarker insertionMarker;
-
-        public InsertionInterval(Rectangle rect, InsertionMarker insertionMarker) {
-            this.rect = rect;
-            this.insertionMarker = insertionMarker;
-        }
-    }
 }

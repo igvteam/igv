@@ -274,16 +274,16 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
                 0;
     }
 
-//
-//    @Override
-//    public boolean handleDataClick(TrackClickEvent e) {
-////        setShouldShowTranslation(!shouldShowTranslation);
-////        Object source = e.getMouseEvent().getSource();
-////        if (source instanceof JComponent) {
-////            repaint();
-////        }
-////        return true;
-//    }
+
+    @Override
+    public boolean handleDataClick(TrackClickEvent e) {
+        setShouldShowTranslation(!shouldShowTranslation);
+        Object source = e.getMouseEvent().getSource();
+        if (source instanceof JComponent) {
+            UIUtilities.invokeOnEventThread(() -> repaint());
+        }
+        return true;
+    }
 
     @Override
     public void handleNameClick(final MouseEvent e) {

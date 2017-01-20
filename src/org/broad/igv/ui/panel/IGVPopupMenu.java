@@ -68,6 +68,10 @@ public class IGVPopupMenu extends JPopupMenu {
         });
     }
 
+    public boolean includeStandardItems() {
+        return true;  // Override to suppress save image, export, etc.
+    }
+
     public static void closeAll() {
         synchronized (instances) {
             for (IGVPopupMenu inst : instances) {

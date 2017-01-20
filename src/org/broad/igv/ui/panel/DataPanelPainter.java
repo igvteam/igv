@@ -85,7 +85,7 @@ public class DataPanelPainter {
                 context.multiframe = true;
                 context.getReferenceFrame().origin = i.position;
                 w = (int) Math.ceil(i.size / context.getScale());
-                paintInsertion(i, groups, context, p0, visibleRect.y, w, visibleRect.height);
+                paintExpandedInsertion(i, groups, context, p0, visibleRect.y, w, visibleRect.height);
 
                 int g = (int) (i.size / scale);
                 p0 += g;
@@ -180,7 +180,7 @@ public class DataPanelPainter {
     }
 
 
-    private void paintInsertion(InsertionMarker insertionMarker, Collection<TrackGroup> groups, RenderContext context, int px, int py, int w, int h) {
+    private void paintExpandedInsertion(InsertionMarker insertionMarker, Collection<TrackGroup> groups, RenderContext context, int px, int py, int w, int h) {
         
         context.clearGraphicsCache();
         Graphics2D dG = context.getGraphics();

@@ -377,7 +377,7 @@ public class AlignmentRenderer {
             Graphics2D g = context.getGraphics2D("INSERTIONS");
             //dhmay adding check for adequate track height
             double dX = 1 / context.getScale();
-            int fontSize = (int)  Math.min(dX, 12);
+            int fontSize = (int) Math.min(dX, 12);
             if (fontSize >= 8) {
                 Font f = FontManager.getFont(Font.BOLD, fontSize);
                 g.setFont(f);
@@ -826,7 +826,15 @@ public class AlignmentRenderer {
                 gapGraphics.drawLine(blockPxEnd + ggOffset, y + h / 2, gapPxEnd - ggOffset, y + h / 2);
                 // Label the size of the deletion if it is "large" and the label fits.
                 if (flagLargeIndels && (gap.getType() == SAMAlignment.DELETION) && gapChromWidth > largeInsertionsThreshold) {
-                    drawLargeIndelLabel(largeIndelGraphics, false, Globals.DECIMAL_FORMAT.format(gapChromWidth), (int) ((blockPxEnd + gapPxEnd) / 2), y, h, gapPxEnd - blockPxEnd - 2, null);
+                    drawLargeIndelLabel(largeIndelGraphics,
+                            false,
+                            Globals.DECIMAL_FORMAT.format(gapChromWidth),
+                            ((blockPxEnd + gapPxEnd) / 2),
+                            y,
+                            h,
+                            gapPxEnd - blockPxEnd - 2,
+                            context.translateX,
+                            null);
                 }
 
                 // Start the next alignment block after the gap.
@@ -1048,7 +1056,7 @@ public class AlignmentRenderer {
     }
 
     private void drawLargeIndelLabel(Graphics2D g, boolean isInsertion, String labelText, int pxCenter,
-                                     int pxTop, int pxH, int pxWmax, AlignmentBlock insertionBlock) {
+                                     int pxTop, int pxH, int pxWmax, int translateX, AlignmentBlock insertionBlock) {
 
         final int pxPad = 2;   // text padding in the label
         final int pxWing = (pxH > 10 ? 2 : 1);  // width of the cursor "wing"
@@ -1082,7 +1090,9 @@ public class AlignmentRenderer {
             GraphicUtils.drawCenteredText(labelText, pxLeft, pxTop, pxW, pxH, g);
         } // draw the text if it fits
 
-        if (insertionBlock != null) insertionBlock.setPixelRange(pxLeft, pxRight);
+        if (insertionBlock != null) {
+            insertionBlock.setPixelRange(pxLeft + translateX, pxRight + translateX);
+        }
     }
 
     private void drawInsertions(Rectangle rect, Alignment alignment, RenderContext context, RenderOptions renderOptions,
@@ -1101,10 +1111,16 @@ public class AlignmentRenderer {
 
         if (insertions != null) {
 
+            InsertionMarker expandedInsertion = InsertionManager.getInstance().getSelectedInsertion(context.getReferenceFrame().getChrName());
+            int expandedPosition = expandedInsertion == null ? -1 : expandedInsertion.position;
+
             boolean hideSmallIndelsBP = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_BP);
             int indelThresholdBP = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDEL_BP_THRESHOLD);
 
             for (AlignmentBlock aBlock : insertions) {
+
+                if(aBlock.getStart() == expandedPosition) continue;   // Skip, will be drawn expanded
+
                 int x = (int) ((aBlock.getStart() - origin) / locScale);
                 int bpWidth = aBlock.getBases().length;
                 double pxWidthExact = ((double) bpWidth) / locScale;
@@ -1121,7 +1137,15 @@ public class AlignmentRenderer {
                 if ((!hideSmallIndelsBP || bpWidth >= indelThresholdBP) &&
                         (!quickConsensus || alignmentCounts.isConsensusInsertion(aBlock.getStart(), snpThreshold))) {
                     if (flagLargeIndels && bpWidth > largeInsertionsThreshold) {
-                        drawLargeIndelLabel(context.getGraphics2D("INDEL_LABEL"), true, Globals.DECIMAL_FORMAT.format(bpWidth), x - 1, y, h, (int) pxWidthExact, aBlock);
+                        drawLargeIndelLabel(context.getGraphics2D("INDEL_LABEL"),
+                                true,
+                                Globals.DECIMAL_FORMAT.format(bpWidth),
+                                x - 1,
+                                y,
+                                h,
+                                (int) pxWidthExact,
+                                context.translateX,
+                                aBlock);
                     } else {
                         int pxWing = (h > 10 ? 2 : (h > 5) ? 1 : 0);
                         Graphics2D g = context.getGraphics();
@@ -1130,6 +1154,7 @@ public class AlignmentRenderer {
                         g.fillRect(x - pxWing, y, 2 + 2 * pxWing, 2);
                         g.fillRect(x - pxWing, y + h - 2, 2 + 2 * pxWing, 2);
 
+                        x += context.translateX;
                         aBlock.setPixelRange(x - pxWing, x + 2 + pxWing);
                     }
                 }
@@ -1159,7 +1184,7 @@ public class AlignmentRenderer {
         final int size = bases.length + padding;
         for (int p = 0; p < size; p++) {
 
-            char  c = p < padding ? '-' : (char) bases[p - padding];
+            char c = p < padding ? '-' : (char) bases[p - padding];
 
             Color color = SequenceRenderer.nucleotideColors.get(c);
             if (color == null) {
@@ -1178,8 +1203,11 @@ public class AlignmentRenderer {
             }
 
             drawBase(g, color, c, pX, pY, dX, dY - (leaveMargin ? 2 : 0), false, null);
-
         }
+
+        int leftX = pixelPosition + context.translateX;
+        int rightX = leftX + rect.width;
+        block.setPixelRange(leftX, rightX);
 
     }
 

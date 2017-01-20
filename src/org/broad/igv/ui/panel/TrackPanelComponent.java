@@ -180,6 +180,7 @@ abstract public class TrackPanelComponent extends JPanel {
     }
 
     protected void openPopupMenu(TrackClickEvent te, List<Component> extraItems) {
+
         MouseEvent e = te.getMouseEvent();
 
         final Collection<Track> selectedTracks = getSelectedTracks();
@@ -195,6 +196,7 @@ abstract public class TrackPanelComponent extends JPanel {
             menu = track.getPopupMenu(te);
         }
 
+
         // If still no menu, create a generic one with common items
         if (menu == null) {
             String title = getPopupMenuTitle(e.getX(), e.getY());
@@ -209,34 +211,37 @@ abstract public class TrackPanelComponent extends JPanel {
             }
         }
 
-        TrackMenuUtils.addPluginItems(menu, selectedTracks, te);
+        if(menu.includeStandardItems()) {
 
-        // Add saveImage
-        menu.addSeparator();
-        JMenuItem item = new JMenuItem("Save image...");
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                saveImage();
-            }
-        });
-        menu.add(item);
+            TrackMenuUtils.addPluginItems(menu, selectedTracks, te);
 
-        // Add export features
-        ReferenceFrame frame = FrameManager.getDefaultFrame();
-        JMenuItem exportFeats = TrackMenuUtils.getExportFeatures(selectedTracks, frame);
-        if (exportFeats != null) menu.add(exportFeats);
+            // Add saveImage
+            menu.addSeparator();
+            JMenuItem item = new JMenuItem("Save image...");
+            item.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    saveImage();
+                }
+            });
+            menu.add(item);
 
-        JMenuItem exportNames = new JMenuItem("Export track names...");
-        exportNames.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                TrackMenuUtils.exportTrackNames(selectedTracks);
-            }
-        });
-        menu.add(exportNames);
+            // Add export features
+            ReferenceFrame frame = FrameManager.getDefaultFrame();
+            JMenuItem exportFeats = TrackMenuUtils.getExportFeatures(selectedTracks, frame);
+            if (exportFeats != null) menu.add(exportFeats);
 
-        menu.addSeparator();
-        menu.add(TrackMenuUtils.getRemoveMenuItem(selectedTracks));
+            JMenuItem exportNames = new JMenuItem("Export track names...");
+            exportNames.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    TrackMenuUtils.exportTrackNames(selectedTracks);
+                }
+            });
+            menu.add(exportNames);
+
+            menu.addSeparator();
+            menu.add(TrackMenuUtils.getRemoveMenuItem(selectedTracks));
+        }
 
         menu.show(e.getComponent(), e.getX(), e.getY());
 
