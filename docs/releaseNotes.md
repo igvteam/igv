@@ -171,29 +171,27 @@
 **New Features and Improvements**
 
 *   **BLAT. **You can now do a BLAT search from a _feature_, _alignment_, or _region of interest, _of up to 8 kb in length as detailed [here](http://www.broadinstitute.org/software/igv/BLAT).
-    *   **Features:** <span>Right-click on the feature in the track to see the BLAT command in the pop-up menu. The BLAT input sequence is the section of the reference genome defined by the feature start and end bounds.</span>
+    *   **Features:** Right-click on the feature in the track to see the BLAT command in the pop-up menu. The BLAT input sequence is the section of the reference genome defined by the feature start and end bounds.
     *   **Alignments:** Right-click on the aligned read to see the BLAT command in the pop-up menu. The BLAT input sequence is the read sequence. It is _not _the sequence of the reference genome where the read was aligned.
-    *   **Regions of Interest: **After [creating a region of interest](http://www.broadinstitute.org/software/igv/regionsofinterest), click on the region's red bar to see the BLAT command in the popup menu. The BLAT input sequence is the sequence of the reference genome defined by the region bounds.<span>   </span>
+    *   **Regions of Interest: **After [creating a region of interest](http://www.broadinstitute.org/software/igv/regionsofinterest), click on the region's red bar to see the BLAT command in the popup menu. The BLAT input sequence is the sequence of the reference genome defined by the region bounds.
 
-<span>​</span>By default, the BLAT server hosted at the UCSC Genome Browser is used, but this can be changed in the _Advanced_ preferences (_View > Preferences > Advanced_). Most UCSC derived genomes are supported, including human and mouse genomes.
+   By default, the BLAT server hosted at the UCSC Genome Browser is used, but this can be changed in the _Advanced_ preferences (_View > Preferences > Advanced_). Most UCSC derived genomes are supported, including human and mouse genomes.
 
-*   <span>​</span>**Combine numeric tracks.** From the _Tools _menu, you can now dynamically create new tracks by combining two existing numeric tracks. Operators include add, subtract, multiply, and divide. Note that this does not overlay the two tracks, but rather creates a new data track that combines the data values from both tracks. For example, if you multiply two tracks, and one track has a data value of 10 at a particular locus, and the other track has a value of 2 at that locus, then the new track will have a value of 20. 
+*  **Combine numeric tracks.** From the _Tools _menu, you can now dynamically create new tracks by combining two existing numeric tracks. Operators include add, subtract, multiply, and divide. Note that this does not overlay the two tracks, but rather creates a new data track that combines the data values from both tracks. For example, if you multiply two tracks, and one track has a data value of 10 at a particular locus, and the other track has a value of 2 at that locus, then the new track will have a value of 20. 
 
 *   **Support for Supplementary Alignments**
-    *   <span>Added a new alignment preference to filter supplementary alignments. See _Filter and shading options_ in </span>_View > Preferences > Alignments_<span>.</span>
-    *   <span>Added _Group by supplementary flag_ to the alignment popup track menu.</span>
-    *   <span>Enhanced the pop-up information panel, also referred to as a tooltip, for supplementary alignments.</span>
+    *   Added a new alignment preference to filter supplementary alignments. See _Filter and shading options_ in _View > Preferences > Alignments_.
+    *   Added _Group by supplementary flag_ to the alignment popup track menu.
+    *   Enhanced the pop-up information panel, also referred to as a tooltip, for supplementary alignments.
 
-</div>
-
-*   <span>**Misc**</span>
-    *   <span>Session file paths are now relative where possible (i.e. data file path is relative to session path).</span>
-    *   <span>Added a new batch command to go to whole genome view: “goto all”.  </span>
-    *   <span>You can now optionally disable quality weighting of the allele fraction when displaying single nucleotide mismatches in the coverage track for sequencing data. See "Filter and shading options" in </span>_View > Preferences > Alignments_<span>.</span>
-    *   <span>Nucleotide colors for the sequence track are now settable by adding or editing properties COLOR.A, COLOR.C, COLOR.T, COLOR.G, and COLOR.N in the IGV _pref.properties_ file (see the _igv _directory in your home directory). Similarly for a BAM track with properties SAM.COLOR.A, SAM.COLOR.C, etc., as outlined [here](http://www.broadinstitute.org/software/igv/prefs.properties).</span>
-    *   <span>The exon numbering scheme has been changed to begin at first _coding_ exon, rather than first exon.</span>
-    *   <span>Increased the keyboard left/right scroll speed to 50 pixels per key press.</span>
-    *   <span>Improved memory management for smaller BAM file footprint.</span>
+*   **Misc**
+    *   Session file paths are now relative where possible (i.e. data file path is relative to session path).
+    *   Added a new batch command to go to whole genome view: “goto all”.  
+    *   You can now optionally disable quality weighting of the allele fraction when displaying single nucleotide mismatches in the coverage track for sequencing data. See "Filter and shading options" in _View > Preferences > Alignments_.
+    *   Nucleotide colors for the sequence track are now settable by adding or editing properties COLOR.A, COLOR.C, COLOR.T, COLOR.G, and COLOR.N in the IGV _pref.properties_ file (see the _igv _directory in your home directory). Similarly for a BAM track with properties SAM.COLOR.A, SAM.COLOR.C, etc., as outlined [here](http://www.broadinstitute.org/software/igv/prefs.properties).
+    *   The exon numbering scheme has been changed to begin at first _coding_ exon, rather than first exon.
+    *   Increased the keyboard left/right scroll speed to 50 pixels per key press.
+    *   Improved memory management for smaller BAM file footprint.
 
 ## **IGV 2.3.47 March 26**, 2015
 
