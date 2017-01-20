@@ -1,6 +1,6 @@
 ## **IGV 2.3,** released April 2013
 
-**New Features and Improvements TESTING**
+**New Features and Improvements**
 
 *   **Motif finder.** This new feature allows you to search for a particular nucleotide sequence in the reference genome, using either regular expression syntax or IUPAC ambiguity codes. Search results are displayed in two new tracks; one displays matches on the positive strand, and the other displays matches on the negative strand. Read more about it [here](http://www.broadinstitute.org/software/igv/node/251).
 
@@ -10,7 +10,7 @@
 
 *   **Gitools integration.** Gitools is a framework, developed at the Biomedical Research Park in Barcelona (PRBB), for analysis and visualization of genomic data. Data and results are represented as browsable heatmaps. Data can be exported from IGV in gitools format, or loaded directly into a running gitools session. Available under the _Tools_ menu. See http://www.gitools.org for details. 
 
-##### Bug Fixes
+**Bug Fixes**
 
 *   Improved parsing of GFF3 files, so alternate coding sequences are displayed properly.
 *   Fixed loading of BAM files over FTP.
@@ -18,66 +18,52 @@
 *   Set autoscale to false when scale manually set, don't disable "Set Data Range" when autoscale set.
 *   Trim any leading bases from VCF files which match the reference, so variants are displayed where the variation actually starts.
 
-# **IGV 2.3.2 ** April 22, 2013
+## **IGV 2.3.2 ** April 22, 2013
 
-<div>
-
-##### Bug Fixes
+**Bug Fixes**
 
 *   Cannot load large tdf or tabix files over http from some servers.
 
-# **IGV 2.3.3 ** May 1, 2013
+## **IGV 2.3.3 ** May 1, 2013
 
-<div>
-
-##### Bug Fixes
+**Bug Fixes**
 
 *   Minimum junction setting is ignored in splice junction track.
 *   "Goto mate region" jumps to whole chromosome view when mate is on another chromosome.
 
-# **IGV 2.3.4 ** May 13, 2013
+## **IGV 2.3.4 ** May 13, 2013
 
-##### Bug Fixes
+**Bug Fixes**
 
 *   File handes for "tribble" indexed files are not being closed.
 *   Dragging in split screen / gene list view is broken.
 *   Coverage track height cannot be changed.
 
-# **IGV 2.3.6 ** May  2013
+## **IGV 2.3.6 ** May  2013
 
-##### Bug Fixes
+**Bug Fixes**
 
 *   Null pointer exception creating snapshots from batch script.
 
-</div>
-
-</div>
-
-# **IGV 2.3.7 ** May 30, 2013
-
-<div>
+## **IGV 2.3.7 ** May 30, 2013
 
 *   The region-of-interest (ROI) batch command now takes an optional "name" argument.
 
-##### Bug Fixes
+**Bug Fixes**
 
 *   When viewing VCF files with large numbers of samples view is not refreshed after scrolling vertically.
 *   IGV fails on startup with Java 8
 
-# **IGV 2.3.8 ** May 31, 2013
+## **IGV 2.3.8 ** May 31, 2013
 
-<div>
-
-##### Bug Fixes
+**Bug Fixes**
 
 *   Fails to use proxy settings when performing byte range requests.
 *   Searching for full chromosome causes no view change if already zoomed in
 
-# **IGV 2.3.10  July 7**, 2013
+## **IGV 2.3.10  July 7**, 2013
 
-<div>
-
-##### **New features and Improvements**
+**New features and Improvements**
 
 *   Display message when BEDTools plugin encounters an error
 *   Show genomic location in tooltip of alignment tracks
@@ -85,81 +71,59 @@
 *   Option to override user preferences via a batch comman>
 *   Option to direct igvtools output to stdout for count and sort commands, using the special string 'stdout' as the output file.
 
-##### **Bug Fixes**
+**Bug Fixes**
 
 *   igvtools outputs incorrect wig files (multiple track lines)
 *   SVG files are not readable by some programs (e.g. gimp) on Windows platform due to incorrect encoding.
 
-</div>
 
-</div>
+## **IGV 2.3.12  July 15**, 2013
 
-</div>
-
-# **IGV 2.3.12  July 15**, 2013
-
-<div>
-
-##### **Bug Fixes**
+**Bug Fixes**
 
 *   Some bigwig files fail to load with a "null pointer exception"
 
-# **IGV 2.3.13 August 2**, 2013
+## **IGV 2.3.13 August 2**, 2013
 
 *   Pickup default  proxy settings from environment variables.
 
-<div>**Bug Fixes**
+**Bug Fixes**
 
 *   UTRs not recognized in GFF files
 
-# **IGV 2.3.14 August 6**, 2013
+## **IGV 2.3.14 August 6**, 2013
 
 *   Implement autoscale for splice junction tracks
 
-<div>**Bug Fixes**
+**Bug Fixes**
 
 *   Loading bedgraph files fail with "array index out of bounds" error
 
-# **IGV 2.3.15 August 19**, 2013
+## **IGV 2.3.15 August 19**, 2013
 
-<div>**Bug Fixes**
+**Bug Fixes**
 
 *   Show read sequence of unmapped mates 
 *   Exons not associated with transcripts in GTF files
 *   Splice junction tooltip incomplete in collapsed mode
 
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-# **IGV 2.3.16 August 20**, 2013
+## **IGV 2.3.16 August 20**, 2013
 
 *   Add "export consensus sequence" option to alignment track menu
 
-<div>
-
-# **IGV 2.3.17 August 26**, 2013
-
-<div>
+## **IGV 2.3.17 August 26**, 2013
 
 *   Disable native Mac dialog when IGV is launched from Java Web Start 
 
-# **IGV 2.3.18 September 5**, 2013
-
-<div>
+## **IGV 2.3.18 September 5**, 2013
 
 **Bug Fixes**
 
 *   Autoscale option is reset after navigating to new locus
 *   Reference sequence track is not shown from session files if there is no assoicated annotation track
 
-# **IGV 2.3.19 September 27**, 2013
+## **IGV 2.3.19 September 27**, 2013
 
-<div>
 
 **Bug Fixes**
 
@@ -168,7 +132,7 @@
 *   IGV hangs when viewing soft-clipped alignments at coordinates < 0  (5' end of contig)
 *   Not all exons are displayed from Wormbase GFF files
 
-# **IGV 2.3.23 October 24**, 2013
+## **IGV 2.3.23 October 24**, 2013
 
 **New Features and Improvements**
 
@@ -184,15 +148,7 @@
 *   Cannot read BAM files when server doesn't return Content-Length
 *   Cannot read eQTL files with missing q-value
 
-# **IGV 2.3.26 January 17**, 2014
-
-</div>
-
-</div>
-
-</div>
-
-</div>
+## **IGV 2.3.26 January 17**, 2014
 
 **New Features and Improvements**
 
@@ -205,16 +161,12 @@
 *   Add 'ctrl-s' hotkey for sorting alignments by most recent sort
 *   Read pairs are now downsampled together (both kept or both removed)
 
-<wbr> <wbr>
-
 **Bug Fixes**
 
 *   Fallback from HEAD to GET for HTTP requests if HEAD fails. Useful for loading from cloud providers such as AWS
 *   When long error messages are displayed, they are scrollable
 
-<div>
-
-# **IGV 2.3.46 March 16**, 2015
+## **IGV 2.3.46 March 16**, 2015
 
 **New Features and Improvements**
 
@@ -243,7 +195,7 @@
     *   <span>Increased the keyboard left/right scroll speed to 50 pixels per key press.</span>
     *   <span>Improved memory management for smaller BAM file footprint.</span>
 
-# **IGV 2.3.47 March 26**, 2015
+## **IGV 2.3.47 March 26**, 2015
 
 **New Features and Improvements**
 
@@ -253,13 +205,13 @@
 
 *   Fix SSL certification errors when running under Java 1.8
 
-# **IGV 2.3.49 April 10**, 2015
+## **IGV 2.3.49 April 10**, 2015
 
 **Bug Fixes**
 
 *   "Show centerline" ignored if alignment tracks are zoomed out
 
-# **IGV 2.3.50 April 15**, 2015
+## **IGV 2.3.50 April 15**, 2015
 
 **New Features and Improvements**
 
@@ -271,19 +223,19 @@
 
 *   Null pointer exception preventing startup when scaling fonts on some machines with very-high resolution screens.
 
-# **IGV 2.3.51 April 20, 2015**
+## **IGV 2.3.51 April 20, 2015**
 
 **Bug Fixes**
 
 *   Null pointer exception preventing startup when scaling fonts on some machines with very-high resolution screens.
 
-# **IGV 2.3.52 April 20**, 2015
+## **IGV 2.3.52 April 20**, 2015
 
 **Bug Fixes**
 
 *   BAM files fail to load and hang IGV if server returns a "302" status code for file not found.
 
-# **IGV 2.3.53 May 26, 2015**
+## **IGV 2.3.53 May 26, 2015**
 
 **Bug Fixes**
 
@@ -297,13 +249,13 @@
 *   Determine content length of remote file from partial content response header.
 *   Print version update notice to log instead of popup dialog to prevent batch runs from failing.
 
-# **IGV 2.3.55 May 28, 2015**
+## **IGV 2.3.55 May 28, 2015**
 
 **Bug Fixes**
 
 *   Bug -- ".bam.bai" index file not found in some situations
 
-# **IGV 2.3.56 June 19 , 2015**
+## **IGV 2.3.56 June 19 , 2015**
 
 **New Features and Improvements**
 
@@ -312,20 +264,20 @@
 *   Support ".bdg" as a bedgraph file extension
 *   Ignore "YC" tag in bam records if not convertible to a color
 
-# **IGV 2.3.57 June 19 , 2015**
+## **IGV 2.3.57 June 19 , 2015**
 
 **Bug Fixes**
 
 *   Check for "null" gap types when computing splice junctions.
 
-# **IGV 2.3.58 August 4, 2015**
+## **IGV 2.3.58 August 4, 2015**
 
 **New Features and Improvements**
 
 *   Support for Encode gapped peak files (extension .gappedPeak).
 *   Update htsjdk to version 1.138
 
-# **IGV 2.3.59 August 7 , 2015**
+## **IGV 2.3.59 August 7 , 2015**
 
 **Bug Fixes**
 
@@ -336,7 +288,7 @@
 *   User preference for customizing VCF colors
 *   User preference for turning on "show all bases"
 
-# **IGV 2.3.60 September 21 , 2015**
+## **IGV 2.3.60 September 21 , 2015**
 
 **Bug Fixes**
 
@@ -348,13 +300,13 @@
 *   New bisulfite option to show all "C"s irrespective of context (context = None)
 *   Session files now uses absolute resource paths by default. There is a new option to force use of relative paths in the "General" category of user preferences.
 
-# **IGV 2.3.61 October 20 , 2015**
+## **IGV 2.3.61 October 20 , 2015**
 
 **Bug Fixes**
 
 *   VCF and bed files not loadable from Google cloud storage (gs:// urls)
 
-# **IGV 2.3.67 November 27 , 2015**
+## **IGV 2.3.67 November 27 , 2015**
 
 **Bug Fixes**
 
@@ -364,7 +316,7 @@
 
 *   Add support for exporting features from the Splice Junction track
 
-# **IGV 2.3.68 January 13, 2016**
+## **IGV 2.3.68 January 13, 2016**
 
 **New Features and Improvements**
 
@@ -374,7 +326,7 @@
 
 <a name="2.3.69"></a>
 
-# **IGV 2.3.69 March 8, 2016**
+## **IGV 2.3.69 March 8, 2016**
 
 **New Features and Improvements**
 
@@ -390,7 +342,7 @@
 
 <a name="2.3.71"></a>
 
-# **IGV 2.3.71 March 21, 2016**
+## **IGV 2.3.71 March 21, 2016**
 
 **Bug Fixes**
 
@@ -399,7 +351,7 @@
 
 <a name="2.3.72"></a>
 
-# **IGV 2.3.72 April 1, 2016**
+## **IGV 2.3.72 April 1, 2016**
 
 **Bug Fixes**
 
@@ -407,7 +359,7 @@
 
 <a name="2.3.73"></a>
 
-# **IGV 2.3.73 May 25, 2016**
+## **IGV 2.3.73 May 25, 2016**
 
 **New Features and Improvements**
 
@@ -423,7 +375,7 @@
 
 <a name="2.3.74"></a>
 
-# **IGV 2.3.74 May 25, 2016**
+## **IGV 2.3.74 May 25, 2016**
 
 **Bug Fixes**
 
@@ -431,7 +383,7 @@
 
 <a name="2.3.75"></a>
 
-# **IGV 2.3.75 May 31, 2016**
+## **IGV 2.3.75 May 31, 2016**
 
 **Bug Fixes**
 
@@ -439,7 +391,7 @@
 
 <a name="2.3.76"></a>
 
-# **IGV 2.3.76 June 9, 2016**
+## **IGV 2.3.76 June 9, 2016**
 
 **New Features and Improvements**
 
@@ -451,7 +403,7 @@
 
 <a name="2.3.78"></a>
 
-# **IGV 2.3.78 June 28, 2016**
+## **IGV 2.3.78 June 28, 2016**
 
 **New Features and Improvements**
 
@@ -461,7 +413,7 @@
 
 <a name="2.3.79"></a>
 
-# **IGV 2.3.79 July 9, 2016**
+## **IGV 2.3.79 July 9, 2016**
 
 **New Features and Improvements**
 
@@ -474,7 +426,7 @@
 
 <a name="2.3.80"></a>
 
-# **IGV 2.3.80 August 4, 2016**
+## **IGV 2.3.80 August 4, 2016**
 
 **New Features and Improvements**
 
@@ -490,7 +442,7 @@
 
 <a name="2.3.81"></a>
 
-# **IGV 2.3.81 August 29, 2016**
+## **IGV 2.3.81 August 29, 2016**
 
 **New Features and Improvements**
 
@@ -503,7 +455,7 @@
 
 <a name="2.3.82"></a>
 
-# **IGV 2.3.82 September 27, 2016**
+## **IGV 2.3.82 September 27, 2016**
 
 **Bug Fixes**
 
@@ -511,7 +463,7 @@
 
 <a name="2.3.83"></a>
 
-# **IGV 2.3.83 September 27, 2016**
+## **IGV 2.3.83 September 27, 2016**
 
 **Bug Fixes**
 
@@ -520,7 +472,7 @@
 
 <a name="2.3.84"></a>
 
-# **IGV 2.3.84 October 27, 2016**
+## **IGV 2.3.84 October 27, 2016**
 
 **Bug Fixes**
 
@@ -528,7 +480,7 @@
 
 <a name="2.3.85"></a>
 
-# **IGV 2.3.85 October 30, 2016**
+## **IGV 2.3.85 October 30, 2016**
 
 **Bug Fixes**
 
@@ -540,7 +492,7 @@
 
 <a name="2.3.86"></a>
 
-# **IGV 2.3.86 November 1, 2016**
+## **IGV 2.3.86 November 1, 2016**
 
 **Bug Fixes**
 
