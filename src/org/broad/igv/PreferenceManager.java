@@ -169,8 +169,6 @@ public class PreferenceManager implements PropertyManager {
     public static final String PORT_ENABLED = "PORT_ENABLED";
     public static final String PORT_NUMBER = "PORT_NUMBER";
     public static final String COLOR_SCALE_KEY = "COLOR_SCALE_";
-    public static final String FRAME_BOUNDS_KEY = "IGV.Bounds";
-    public static final String FRAME_STATE_KEY = "IGV.Frame.ExtendedState";
     public static final String RECENT_SESSION_KEY = "IGV.Session.recent.sessions";
     public static final String TRACK_HEIGHT_KEY = "IGV.track.height";
     public static final String CHART_TRACK_HEIGHT_KEY = "IGV.chart.track.height";
@@ -561,52 +559,6 @@ public class PreferenceManager implements PropertyManager {
 
     public void overrideGenomeServerURL(String url) {
         preferences.putOverride(GENOMES_SERVER_URL, url);
-    }
-
-
-    /**
-     * @param bounds
-     */
-    public void setApplicationFrameBounds(Rectangle bounds) {
-
-        StringBuffer buffer = new StringBuffer();
-        buffer.append(bounds.x);
-        buffer.append(",");
-        buffer.append(bounds.y);
-        buffer.append(",");
-        buffer.append(bounds.width);
-        buffer.append(",");
-        buffer.append(bounds.height);
-        put(FRAME_BOUNDS_KEY, buffer.toString());
-    }
-
-    /**
-     * @return
-     */
-    public Rectangle getApplicationFrameBounds() {
-
-        Rectangle bounds = null;
-
-        // Set the application's previous location and size
-        String applicationBounds = preferences.get(FRAME_BOUNDS_KEY, null);
-
-        if (applicationBounds != null) {
-            String[] values = applicationBounds.split(",");
-            int x = Integer.parseInt(values[0]);
-            int y = Integer.parseInt(values[1]);
-            int width = Integer.parseInt(values[2]);
-            int height = Integer.parseInt(values[3]);
-            bounds = new Rectangle(x, y, width, height);
-        }
-        return bounds;
-    }
-
-    /**
-     * @param directory
-     */
-    public void setLastExportedRegionDirectory(File directory) {
-
-        put(LAST_EXPORTED_REGION_DIRECTORY, directory.getAbsolutePath());
     }
 
     /**
@@ -1179,8 +1131,6 @@ public class PreferenceManager implements PropertyManager {
         }
 
         defaultValues.put(DATA_SERVER_URL_KEY, defaultDataURL);
-
-        defaultValues.put(FRAME_STATE_KEY, "" + Frame.NORMAL);
 
         defaultValues.put(CBIO_MUTATION_THRESHOLD, "1");
         defaultValues.put(CBIO_AMPLIFICATION_THRESHOLD, "0.9");
