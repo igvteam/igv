@@ -36,7 +36,6 @@ import com.jidesoft.swing.JideButton;
 import com.jidesoft.swing.JideToggleButton;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.feature.FeatureDB;
@@ -45,6 +44,8 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.GenomeServerException;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.session.History;
 import org.broad.igv.ui.action.FitDataToWindowMenuAction;
 import org.broad.igv.ui.action.SearchCommand;
@@ -75,7 +76,7 @@ import java.awt.geom.Rectangle2D;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.NoRouteToHostException;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -120,7 +121,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         }
     }
 
-    private SHOW_DETAILS_BEHAVIOR detailsBehavior = SHOW_DETAILS_BEHAVIOR.valueOf((PreferenceManager.getInstance().get(PreferenceManager.DETAILS_BEHAVIOR_KEY,
+    private SHOW_DETAILS_BEHAVIOR detailsBehavior = SHOW_DETAILS_BEHAVIOR.valueOf((PreferenceManager.getInstance().get(Constants.DETAILS_BEHAVIOR_KEY,
             SHOW_DETAILS_BEHAVIOR.HOVER.name()).toUpperCase()));
 
     public SHOW_DETAILS_BEHAVIOR getDetailsBehavior() {
@@ -159,7 +160,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
             menuItem.addActionListener(new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
                     detailsBehavior = behavior;
-                    PreferenceManager.getInstance().put(PreferenceManager.DETAILS_BEHAVIOR_KEY, behavior.name());
+                    PreferenceManager.getInstance().put(Constants.DETAILS_BEHAVIOR_KEY, behavior.name());
                 }
             });
             popup.add(menuItem);

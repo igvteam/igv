@@ -25,9 +25,10 @@
 
 package org.broad.igv.track;
 
+import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.Feature;
+import htsjdk.variant.vcf.VCFHeader;
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.bigwig.BigWigDataSource;
 import org.broad.igv.das.DASFeatureSource;
@@ -47,18 +48,16 @@ import org.broad.igv.dev.db.SQLCodecSource;
 import org.broad.igv.dev.db.SampleInfoSQLReader;
 import org.broad.igv.dev.db.SegmentedSQLReader;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.feature.*;
 import org.broad.igv.feature.basepair.BasePairTrack;
-import org.broad.igv.feature.BasePairFileUtils;
-import org.broad.igv.feature.ShapeFileUtils;
-import org.broad.igv.feature.CachingFeatureSource;
-import org.broad.igv.feature.GisticFileParser;
-import org.broad.igv.feature.MutationTrackLoader;
 import org.broad.igv.feature.bionano.SMAPParser;
 import org.broad.igv.feature.bionano.SMAPRenderer;
 import org.broad.igv.feature.dranger.DRangerParser;
 import org.broad.igv.feature.dsi.DSIRenderer;
 import org.broad.igv.feature.dsi.DSITrack;
-import org.broad.igv.feature.genome.*;
+import org.broad.igv.feature.genome.GenbankParser;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
@@ -74,6 +73,7 @@ import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.maf.MultipleAlignmentTrack;
 import org.broad.igv.methyl.MethylTrack;
 import org.broad.igv.peaks.PeakTrack;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.renderer.*;
 import org.broad.igv.sam.*;
 import org.broad.igv.sam.reader.IndexNotFoundException;
@@ -83,23 +83,23 @@ import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.ConfirmDialog;
-import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ConvertFileDialog;
 import org.broad.igv.ui.util.ConvertOptions;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.util.PedigreeUtils;
-import htsjdk.tribble.AsciiFeatureCodec;
-import htsjdk.variant.vcf.VCFHeader;
 
 import java.awt.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.*;
 import java.util.List;
+
+import static org.broad.igv.prefs.Constants.*;
 
 /**
  * User: jrobinso
@@ -627,7 +627,7 @@ public class TrackLoader {
 
     private static boolean checkSize(ResourceLocator locator) {
 
-        if (!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SIZE_WARNING)) {
+        if (!PreferenceManager.getInstance().getAsBoolean(SHOW_SIZE_WARNING)) {
             return true;
         }
 
@@ -648,7 +648,7 @@ public class TrackLoader {
                     "command line program. See the user guide for more details.<br><br>Click <b>Continue</b> " +
                     "to continue loading, or <b>Cancel</b> to skip this file.";
 
-            return ConfirmDialog.optionallyShowConfirmDialog(message, PreferenceManager.SHOW_SIZE_WARNING, true);
+            return ConfirmDialog.optionallyShowConfirmDialog(message, SHOW_SIZE_WARNING, true);
 
 
         }
@@ -942,11 +942,11 @@ public class TrackLoader {
 
             AlignmentTrack alignmentTrack = new AlignmentTrack(locator, dataManager, genome);    // parser.loadTrack(locator, dsName);
             alignmentTrack.setName(dsName);
-            alignmentTrack.setVisible(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_ALIGNMENT_TRACK));
+            alignmentTrack.setVisible(PreferenceManager.getInstance().getAsBoolean(SAM_SHOW_ALIGNMENT_TRACK));
 
             // Create coverage track
             CoverageTrack covTrack = new CoverageTrack(locator, dsName + " Coverage", alignmentTrack, genome);
-            covTrack.setVisible(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_COV_TRACK));
+            covTrack.setVisible(PreferenceManager.getInstance().getAsBoolean(SAM_SHOW_COV_TRACK));
             newTracks.add(covTrack);
             covTrack.setDataManager(dataManager);
             dataManager.setCoverageTrack(covTrack);
@@ -961,7 +961,7 @@ public class TrackLoader {
 
                 String covPath = locator.getCoverage();
                 if (covPath == null) {
-                    boolean bypassFileAutoDiscovery = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.BYPASS_FILE_AUTO_DISCOVERY);
+                    boolean bypassFileAutoDiscovery = PreferenceManager.getInstance().getAsBoolean(BYPASS_FILE_AUTO_DISCOVERY);
                     String path = locator.getPath();
                     if (!bypassFileAutoDiscovery && !path.contains("/query.cgi?")) {
                         covPath = path + ".tdf";
@@ -983,7 +983,7 @@ public class TrackLoader {
                 }
             }
 
-            boolean showSpliceJunctionTrack = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
+            boolean showSpliceJunctionTrack = PreferenceManager.getInstance().getAsBoolean(SAM_SHOW_JUNCTION_TRACK);
 
             SpliceJunctionTrack spliceJunctionTrack = new SpliceJunctionTrack(locator,
                     dsName + " Junctions", dataManager, alignmentTrack, SpliceJunctionTrack.StrandOption.BOTH);

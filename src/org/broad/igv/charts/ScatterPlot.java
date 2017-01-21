@@ -25,12 +25,11 @@
 
 package org.broad.igv.charts;
 
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.track.TrackType;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.color.PaletteColorTable;
 
 import java.awt.*;
 import java.awt.geom.Path2D;

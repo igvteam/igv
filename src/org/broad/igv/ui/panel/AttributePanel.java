@@ -36,13 +36,13 @@ package org.broad.igv.ui.panel;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackGroup;
 import org.broad.igv.ui.IGV;
-
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.Packable;
 
@@ -204,7 +204,7 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
     private void init() {
 
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        if (!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_ATTRIBUTE_VIEWS_KEY)) {
+        if (!PreferenceManager.getInstance().getAsBoolean(Constants.SHOW_ATTRIBUTE_VIEWS_KEY)) {
             setSize(0, getHeight());
         }
         setBackground(new java.awt.Color(255, 255, 255));
@@ -273,7 +273,7 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
 
     private int calculatePackWidth() {
 
-        if (!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_ATTRIBUTE_VIEWS_KEY)) {
+        if (!PreferenceManager.getInstance().getAsBoolean(Constants.SHOW_ATTRIBUTE_VIEWS_KEY)) {
             return 0;
         }
 

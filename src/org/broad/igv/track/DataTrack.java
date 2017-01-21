@@ -35,14 +35,17 @@ package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.renderer.*;
-import org.broad.igv.sam.AlignmentInterval;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.renderer.DataRenderer;
+import org.broad.igv.renderer.GraphicUtils;
+import org.broad.igv.renderer.Renderer;
+import org.broad.igv.renderer.XYPlotRenderer;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.SessionXmlAdapters;
 import org.broad.igv.session.SubtlyImportant;
@@ -76,7 +79,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
 
     public DataTrack(ResourceLocator locator, String id, String name) {
         super(locator, id, name);
-        autoScale = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_AUTOSCALE);
+        autoScale = PreferenceManager.getInstance().getAsBoolean(Constants.CHART_AUTOSCALE);
         loadedIntervalCache = Collections.synchronizedMap(new HashMap<>());
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
     }

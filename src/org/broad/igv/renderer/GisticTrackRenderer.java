@@ -29,7 +29,6 @@
  */
 package org.broad.igv.renderer;
 
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.GisticScore;
 import org.broad.igv.track.GisticTrack;
 import org.broad.igv.track.RenderContext;

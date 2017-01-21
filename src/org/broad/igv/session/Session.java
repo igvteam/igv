@@ -27,10 +27,10 @@ package org.broad.igv.session;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.lists.GeneList;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.sam.InsertionManager;
 import org.broad.igv.track.AttributeManager;
@@ -44,6 +44,8 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ObservableForObject;
 
 import java.util.*;
+
+import static org.broad.igv.prefs.Constants.*;
 
 /**
  * @author eflakes
@@ -210,7 +212,7 @@ public class Session implements IGVEventObserver {
     }
 
     public boolean getOverlayMutationTracks() {
-        final String key = PreferenceManager.OVERLAY_MUTATION_TRACKS;
+        final String key = OVERLAY_MUTATION_TRACKS;
         if (preferences.containsKey(key)) {
             try {
                 return Boolean.parseBoolean(preferences.get(key));
@@ -218,12 +220,12 @@ public class Session implements IGVEventObserver {
                 log.error("Error converting boolean preference " + key + "=" + preferences.get(key));
             }
         }
-        return PreferenceManager.getInstance().getAsBoolean(PreferenceManager.OVERLAY_MUTATION_TRACKS);
+        return PreferenceManager.getInstance().getAsBoolean(OVERLAY_MUTATION_TRACKS);
 
     }
 
     public boolean getColorOverlay() {
-        final String key = PreferenceManager.COLOR_MUTATIONS;
+        final String key = COLOR_MUTATIONS;
         if (preferences.containsKey(key)) {
             try {
                 return Boolean.parseBoolean(preferences.get(key));
@@ -231,26 +233,26 @@ public class Session implements IGVEventObserver {
                 log.error("Error converting boolean preference " + key + "=" + preferences.get(key));
             }
         }
-        return PreferenceManager.getInstance().getAsBoolean(PreferenceManager.COLOR_MUTATIONS);
+        return PreferenceManager.getInstance().getAsBoolean(COLOR_MUTATIONS);
 
     }
 
     public String getOverlayAttribute() {
-        final String key = PreferenceManager.OVERLAY_ATTRIBUTE_KEY;
+        final String key = OVERLAY_ATTRIBUTE_KEY;
         if (preferences.containsKey(key)) {
             return preferences.get(key);
 
         }
-        return PreferenceManager.getInstance().get(PreferenceManager.OVERLAY_ATTRIBUTE_KEY);
+        return PreferenceManager.getInstance().get(OVERLAY_ATTRIBUTE_KEY);
     }
 
     public String getTrackAttributeName() {
-        final String key = PreferenceManager.TRACK_ATTRIBUTE_NAME_KEY;
+        final String key = TRACK_ATTRIBUTE_NAME_KEY;
         if (preferences.containsKey(key)) {
             return preferences.get(key);
 
         }
-        return PreferenceManager.getInstance().get(PreferenceManager.TRACK_ATTRIBUTE_NAME_KEY);
+        return PreferenceManager.getInstance().get(TRACK_ATTRIBUTE_NAME_KEY);
     }
 
 
@@ -442,7 +444,7 @@ public class Session implements IGVEventObserver {
         if (hiddenAttributes != null) {
             extendedHiddenAttributes.addAll(hiddenAttributes);
         }
-        if (!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_DEFAULT_TRACK_ATTRIBUTES)) {
+        if (!PreferenceManager.getInstance().getAsBoolean(SHOW_DEFAULT_TRACK_ATTRIBUTES)) {
 
             extendedHiddenAttributes.addAll(AttributeManager.defaultTrackAttributes);
         }

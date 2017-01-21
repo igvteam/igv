@@ -29,19 +29,18 @@
 
 package org.broad.igv.ui;
 
-import javax.swing.event.*;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 
-import org.broad.igv.PreferenceManager;
-import org.broad.igv.util.HttpUtils;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.net.URI;
+import java.net.URL;
 
 /**
  * @author James Robinson
@@ -64,7 +63,7 @@ public class LOSDialog extends JDialog {
                         final URI mailtoURI = e.getURL().toURI();
                         Desktop.getDesktop().mail(mailtoURI);
                         setVisible(false);
-                        PreferenceManager.getInstance().put(PreferenceManager.SHOW_LOS, false);
+                        PreferenceManager.getInstance().put(Constants.SHOW_LOS, false);
                         dispose();
                     } catch (Exception e1) {
                         e1.printStackTrace();
@@ -85,7 +84,7 @@ public class LOSDialog extends JDialog {
     private void okButtonActionPerformed(ActionEvent e) {
 
         if(!remindMeCB.isSelected()) {
-            PreferenceManager.getInstance().put(PreferenceManager.SHOW_LOS, false);
+            PreferenceManager.getInstance().put(Constants.SHOW_LOS, false);
         }
 
         this.setVisible(false);

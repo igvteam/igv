@@ -25,7 +25,8 @@
 
 package org.broad.igv.ui.color;
 
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,8 +34,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Simple panel for displaying color palettes
@@ -108,7 +110,7 @@ public class ColorPanel extends JPanel implements Serializable {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+        if (PreferenceManager.getInstance().getAsBoolean(Constants.ENABLE_ANTIALISING)) {
             ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
 

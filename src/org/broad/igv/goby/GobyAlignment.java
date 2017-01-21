@@ -34,15 +34,18 @@ import it.unimi.dsi.fastutil.bytes.ByteList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.CharArrayList;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.sam.*;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -123,7 +126,7 @@ public class GobyAlignment implements Alignment {
         int insertedBases = 0;
         int deletedBases = 0;
         final int leftPadding = alignmentEntry.getQueryPosition();
-        boolean showSoftClipped = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED);
+        boolean showSoftClipped = PreferenceManager.getInstance().getAsBoolean(Constants.SAM_SHOW_SOFT_CLIPPED);
         if (showSoftClipped && entry.hasSoftClippedBasesLeft()) {
             int clipLength = entry.getSoftClippedBasesLeft().length();
 

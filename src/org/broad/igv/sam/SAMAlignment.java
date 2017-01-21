@@ -31,14 +31,16 @@ package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -250,7 +252,7 @@ public abstract class SAMAlignment implements Alignment {
         // Create list of cigar operators
         java.util.List<CigarOperator> operators = buildOperators(cigarString);
 
-        boolean showSoftClipped = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED);
+        boolean showSoftClipped = PreferenceManager.getInstance().getAsBoolean(Constants.SAM_SHOW_SOFT_CLIPPED);
 
         int nInsertions = 0;
         int nBlocks = 0;

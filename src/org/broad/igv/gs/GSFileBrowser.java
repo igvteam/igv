@@ -30,10 +30,11 @@
 package org.broad.igv.gs;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.gs.dm.DMUtils;
 import org.broad.igv.gs.dm.GSDirectoryListing;
 import org.broad.igv.gs.dm.GSFileMetadata;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.ui.util.MessageUtils;
 
 import javax.swing.*;
@@ -118,7 +119,7 @@ public class GSFileBrowser extends JDialog {
         fileList.addMouseListener(mouseListener);
 
         String rootdirectory = mode == Mode.OPEN ? DMUtils.DEFAULT_DIRECTORY : DMUtils.PERSONAL_DIRECTORY;
-        URL defaultURL = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER) +
+        URL defaultURL = new URL(PreferenceManager.getInstance().get(Constants.GENOME_SPACE_DM_SERVER) +
                 rootdirectory);
         fetchContents(defaultURL);
     }

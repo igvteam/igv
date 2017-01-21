@@ -28,20 +28,20 @@ package org.broad.igv.ui.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.dev.api.NamedFeatureSearcher;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
-import htsjdk.tribble.Feature;
 
 import javax.swing.*;
 import java.awt.*;
@@ -562,7 +562,7 @@ public class SearchCommand {
     }
 
     private void showFlankedRegion(String chr, int start, int end) {
-        int flankingRegion = PreferenceManager.getInstance().getAsInt(PreferenceManager.FLANKING_REGION);
+        int flankingRegion = PreferenceManager.getInstance().getAsInt(Constants.FLANKING_REGION);
         int delta;
         if((end - start) == 1) {
             delta = 20; // Don't show flanking region for single base jumps, use 40bp window
@@ -575,7 +575,7 @@ public class SearchCommand {
         start = Math.max(0, start - delta);
         end = end + delta;
 
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SEARCH_ZOOM)) {
+        if (PreferenceManager.getInstance().getAsBoolean(Constants.SEARCH_ZOOM)) {
             referenceFrame.jumpTo(chr, start, end);
         } else {
             int center = (start + end) / 2;

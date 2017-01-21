@@ -27,7 +27,7 @@ package org.broad.igv.cli_plugin;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.w3c.dom.Document;

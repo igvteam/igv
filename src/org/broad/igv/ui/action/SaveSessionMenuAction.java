@@ -32,7 +32,7 @@ package org.broad.igv.ui.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionWriter;
 import org.broad.igv.ui.IGV;

@@ -25,9 +25,9 @@
 
 package org.broad.igv.renderer;
 
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.rnai.RNAIGeneScore;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackType;
@@ -36,6 +36,8 @@ import java.awt.*;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+
+import static org.broad.igv.prefs.Constants.CHART_SHOW_ALL_HEATMAP;
 
 /**
  * @author jrobinso
@@ -68,7 +70,7 @@ public class HeatmapRenderer extends DataRenderer {
 
         Color bgColor = colorScale.getNoDataColor();
         context.getGraphic2DForColor(bgColor).fill(rect);
-        boolean showAllFeatures = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_SHOW_ALL_HEATMAP);
+        boolean showAllFeatures = PreferenceManager.getInstance().getAsBoolean(CHART_SHOW_ALL_HEATMAP);
 
         double maxX = rect.getMaxX();
         int minY = (int) rect.getMinY();

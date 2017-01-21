@@ -29,22 +29,23 @@ package org.broad.igv.renderer;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.commons.math.stat.Frequency;
-import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.IGVFeature;
-import org.broad.igv.feature.SpliceJunctionFeature;
-import org.broad.igv.feature.Strand;
-import org.broad.igv.track.FeatureTrack;
-import org.broad.igv.track.RenderContext;
-import org.broad.igv.track.Track;
-import org.broad.igv.ui.FontManager;
+ import org.apache.commons.math.stat.Frequency;
+ import org.apache.log4j.Logger;
+ import org.broad.igv.feature.IGVFeature;
+ import org.broad.igv.feature.SpliceJunctionFeature;
+ import org.broad.igv.feature.Strand;
+ import org.broad.igv.prefs.Constants;
+ import org.broad.igv.prefs.PreferenceManager;
+ import org.broad.igv.track.FeatureTrack;
+ import org.broad.igv.track.RenderContext;
+ import org.broad.igv.track.Track;
+ import org.broad.igv.ui.FontManager;
 
-import java.awt.*;
-import java.awt.geom.GeneralPath;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+ import java.awt.*;
+ import java.awt.geom.GeneralPath;
+ import java.util.ArrayList;
+ import java.util.Collections;
+ import java.util.List;
 
 /**
  * Renderer for splice junctions. Draws a filled-in arc for each junction, with the width of the
@@ -101,7 +102,7 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
 
             //determine whether to show flanking regions
             PreferenceManager prefs = PreferenceManager.getInstance();
-            boolean shouldShowFlankingRegions = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_FLANKINGREGIONS);
+            boolean shouldShowFlankingRegions = prefs.getAsBoolean(Constants.SAM_SHOW_JUNCTION_FLANKINGREGIONS);
 
             // Track coordinates
             double trackRectangleX = trackRectangle.getX();

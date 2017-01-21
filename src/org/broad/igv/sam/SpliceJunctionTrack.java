@@ -28,9 +28,9 @@ package org.broad.igv.sam;
 
 import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.SpliceJunctionFeature;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.*;
@@ -97,7 +97,7 @@ public class SpliceJunctionTrack extends FeatureTrack {
 
 
     protected boolean isShowFeatures(ReferenceFrame frame) {
-        float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
+        float maxRange = PreferenceManager.getInstance().getAsFloat(Constants.SAM_MAX_VISIBLE_RANGE);
         float minVisibleScale = (maxRange * 1000) / 700;
         return frame.getScale() < minVisibleScale;
     }

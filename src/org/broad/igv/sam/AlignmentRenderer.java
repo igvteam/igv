@@ -27,10 +27,10 @@ package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.SequenceRenderer;
@@ -45,8 +45,11 @@ import org.broad.igv.util.ChromosomeColors;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.util.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static org.broad.igv.prefs.Constants.*;
 
 /**
  * @author jrobinso
@@ -108,11 +111,11 @@ public class AlignmentRenderer {
 
         nucleotideColors = new HashMap();
 
-        Color a = ColorUtilities.stringToColor(prefs.get(PreferenceManager.SAM_COLOR_A), Color.green);
-        Color c = ColorUtilities.stringToColor(prefs.get(PreferenceManager.SAM_COLOR_C), Color.blue);
-        Color t = ColorUtilities.stringToColor(prefs.get(PreferenceManager.SAM_COLOR_T), Color.red);
-        Color g = ColorUtilities.stringToColor(prefs.get(PreferenceManager.SAM_COLOR_G), Color.gray);
-        Color n = ColorUtilities.stringToColor(prefs.get(PreferenceManager.SAM_COLOR_N), Color.gray);
+        Color a = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_A), Color.green);
+        Color c = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_C), Color.blue);
+        Color t = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_T), Color.red);
+        Color g = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_G), Color.gray);
+        Color n = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_N), Color.gray);
 
         nucleotideColors.put('A', a);
         nucleotideColors.put('a', a);
@@ -288,7 +291,7 @@ public class AlignmentRenderer {
         initializeGraphics(context);
         double origin = context.getOrigin();
         double locScale = context.getScale();
-        boolean completeReadsOnly = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_COMPLETE_READS_ONLY);
+        boolean completeReadsOnly = PreferenceManager.getInstance().getAsBoolean(SAM_COMPLETE_READS_ONLY);
 
         if ((alignments != null) && (alignments.size() > 0)) {
 
@@ -343,7 +346,7 @@ public class AlignmentRenderer {
             }
 
             // Optionally draw a border around the center base
-            boolean showCenterLine = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_CENTER_LINE);
+            boolean showCenterLine = prefs.getAsBoolean(SAM_SHOW_CENTER_LINE);
             final int bottom = rowRect.y + rowRect.height;
             if (showCenterLine) {
                 // Calculate center lines
@@ -370,7 +373,7 @@ public class AlignmentRenderer {
 
         double origin = context.getOrigin();
         double locScale = context.getScale();
-        boolean completeReadsOnly = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_COMPLETE_READS_ONLY);
+        boolean completeReadsOnly = PreferenceManager.getInstance().getAsBoolean(SAM_COMPLETE_READS_ONLY);
 
         if ((alignments != null) && (alignments.size() > 0)) {
 
@@ -707,12 +710,12 @@ public class AlignmentRenderer {
             return;
         }
 
-        boolean flagLargeIndels = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_LARGE_INDELS);
-        int largeInsertionsThreshold = prefs.getAsInt(PreferenceManager.SAM_LARGE_INDELS_THRESHOLD);
-        boolean hideSmallIndelsBP = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_BP);
-        int indelThresholdBP = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDEL_BP_THRESHOLD);
+        boolean flagLargeIndels = prefs.getAsBoolean(SAM_FLAG_LARGE_INDELS);
+        int largeInsertionsThreshold = prefs.getAsInt(SAM_LARGE_INDELS_THRESHOLD);
+        boolean hideSmallIndelsBP = PreferenceManager.getInstance().getAsBoolean(SAM_HIDE_SMALL_INDEL_BP);
+        int indelThresholdBP = PreferenceManager.getInstance().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
         boolean quickConsensus = renderOptions.quickConsensusMode;
-        final float snpThreshold = prefs.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD);
+        final float snpThreshold = prefs.getAsFloat(SAM_ALLELE_THRESHOLD);
 
         // Scale and position of the alignment rendering.
         double locScale = context.getScale();
@@ -760,8 +763,8 @@ public class AlignmentRenderer {
                 alignmentChromEnd = (int) (lastBlock.getStart() + lastBlock.getLength());
 
         /* Clipping */
-        boolean flagClipping = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_CLIPPING);
-        int clippingThreshold = prefs.getAsInt(PreferenceManager.SAM_CLIPPING_THRESHOLD);
+        boolean flagClipping = prefs.getAsBoolean(SAM_FLAG_CLIPPING);
+        int clippingThreshold = prefs.getAsInt(SAM_CLIPPING_THRESHOLD);
         int[] clipping = SAMAlignment.getClipping(alignment.getCigarString());
         boolean leftClipped = flagClipping && ((clipping[0] + clipping[1]) > clippingThreshold);
         boolean rightClipped = flagClipping && ((clipping[2] + clipping[3]) > clippingThreshold);
@@ -913,7 +916,7 @@ public class AlignmentRenderer {
         ShadeBasesOption shadeBasesOption = renderOptions.shadeBasesOption;
         ColorOption colorOption = renderOptions.getColorOption();
         final boolean quickConsensus = renderOptions.quickConsensusMode;
-        final float snpThreshold = prefs.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD);
+        final float snpThreshold = prefs.getAsFloat(SAM_ALLELE_THRESHOLD);
 
 
         // Disable showAllBases in bisulfite mode
@@ -1038,11 +1041,11 @@ public class AlignmentRenderer {
 
     private Color getShadedColor(byte qual, Color foregroundColor, Color backgroundColor, PreferenceManager prefs) {
         float alpha = 0;
-        int minQ = prefs.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MIN);
+        int minQ = prefs.getAsInt(SAM_BASE_QUALITY_MIN);
         if (qual < minQ) {
             alpha = 0.1f;
         } else {
-            int maxQ = prefs.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MAX);
+            int maxQ = prefs.getAsInt(SAM_BASE_QUALITY_MAX);
             alpha = Math.max(0.1f, Math.min(1.0f, 0.1f + 0.9f * (qual - minQ) / (maxQ - minQ)));
         }
         // Round alpha to nearest 0.1
@@ -1101,9 +1104,9 @@ public class AlignmentRenderer {
         AlignmentBlock[] insertions = alignment.getInsertions();
         double origin = context.getOrigin();
         double locScale = context.getScale();
-        boolean flagLargeIndels = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_LARGE_INDELS);
-        int largeInsertionsThreshold = prefs.getAsInt(PreferenceManager.SAM_LARGE_INDELS_THRESHOLD);
-        final float snpThreshold = prefs.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD);
+        boolean flagLargeIndels = prefs.getAsBoolean(SAM_FLAG_LARGE_INDELS);
+        int largeInsertionsThreshold = prefs.getAsInt(SAM_LARGE_INDELS_THRESHOLD);
+        final float snpThreshold = prefs.getAsFloat(SAM_ALLELE_THRESHOLD);
 
         // TODO Quick consensus for insertions needs worked -- disabled for now
         boolean quickConsensus = false;//renderOptions.quickConsensusMode;
@@ -1114,8 +1117,8 @@ public class AlignmentRenderer {
             InsertionMarker expandedInsertion = InsertionManager.getInstance().getSelectedInsertion(context.getReferenceFrame().getChrName());
             int expandedPosition = expandedInsertion == null ? -1 : expandedInsertion.position;
 
-            boolean hideSmallIndelsBP = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_BP);
-            int indelThresholdBP = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDEL_BP_THRESHOLD);
+            boolean hideSmallIndelsBP = PreferenceManager.getInstance().getAsBoolean(SAM_HIDE_SMALL_INDEL_BP);
+            int indelThresholdBP = PreferenceManager.getInstance().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
 
             for (AlignmentBlock aBlock : insertions) {
 

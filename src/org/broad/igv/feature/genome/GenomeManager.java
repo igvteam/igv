@@ -33,13 +33,14 @@
  */
 package org.broad.igv.feature.genome;
 
-import com.google.common.collect.Iterables;
+import htsjdk.tribble.util.ParsingUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.IGVMenuBar;
@@ -52,7 +53,6 @@ import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.*;
 import org.broad.igv.util.collections.CI;
-import htsjdk.tribble.util.ParsingUtils;
 
 import java.awt.*;
 import java.io.*;
@@ -602,7 +602,7 @@ public class GenomeManager {
 
                 // Force an update of cached genome if file length does not equal remote content length
                 boolean forceUpdate = remoteModfied &&
-                        PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AUTO_UPDATE_GENOMES);
+                        PreferenceManager.getInstance().getAsBoolean(Constants.AUTO_UPDATE_GENOMES);
 
                 if (forceUpdate) {
                     log.info("Refreshing genome: " + genomeArchiveURL.toString());
@@ -844,7 +844,7 @@ public class GenomeManager {
                 log.error("Error fetching genome list: ", e);
                 ConfirmDialog.optionallyShowInfoDialog("Warning: could not connect to the genome server (" +
                                 genomeListURLString + ").    Only locally defined genomes will be available.",
-                        PreferenceManager.SHOW_GENOME_SERVER_WARNING);
+                        Constants.SHOW_GENOME_SERVER_WARNING);
 
             } finally {
                 if (dataReader != null) {

@@ -27,7 +27,8 @@ package org.broad.igv.batch;
 
 import org.apache.commons.lang.StringUtils;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.dev.api.batch.Command;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -108,7 +109,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     @Test
     @Ignore
     public void stressTestSnapshotsHG00171() throws Exception {
-        PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "1000");
+        PreferenceManager.getInstance().put(Constants.SAM_MAX_VISIBLE_RANGE, "1000");
 
         String interv0 = "chr1:151666000-152666000";
         String interv1 = "chr1:154666000-155666000";
@@ -122,9 +123,9 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     @Test
     @Ignore
     public void stressTestSnapshotsBodymap() throws Exception {
-        PreferenceManager.getInstance().put(PreferenceManager.SAM_DOWNSAMPLE_READS, "true");
-        PreferenceManager.getInstance().put(PreferenceManager.SAM_SAMPLING_COUNT, "100");
-        PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "1000");
+        PreferenceManager.getInstance().put(Constants.SAM_DOWNSAMPLE_READS, "true");
+        PreferenceManager.getInstance().put(Constants.SAM_SAMPLING_COUNT, "100");
+        PreferenceManager.getInstance().put(Constants.SAM_MAX_VISIBLE_RANGE, "1000");
 
         String interv0 = "chr12:97,509,534-97,521,909"; //SLC25A3
         String interv1 = "chrX:153,366,844-153,374,196"; //SLC10A3
@@ -188,7 +189,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     private void setCheckMaxDepth(int maxDepth) {
         String res = exec.execute("maxDepth " + maxDepth);
         assertFalse(res.contains("ERROR"));
-        int newMaxDepth = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SAMPLING_COUNT);
+        int newMaxDepth = PreferenceManager.getInstance().getAsInt(Constants.SAM_SAMPLING_COUNT);
         assertEquals(maxDepth, newMaxDepth);
 
     }
@@ -466,7 +467,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
 
     @Test
     public void testPreference() throws Exception {
-        String key = PreferenceManager.DATA_SERVER_URL_KEY;
+        String key = Constants.DATA_SERVER_URL_KEY;
         String val = "myDataServerURL";
 
         assertNotSame(val, PreferenceManager.getInstance().getDataServerURL());

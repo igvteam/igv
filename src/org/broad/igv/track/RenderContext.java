@@ -29,14 +29,17 @@
  */
 package org.broad.igv.track;
 
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.sam.InsertionMarker;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static org.broad.igv.prefs.Constants.ENABLE_ANTIALISING;
 
 /**
  * @author jrobinso
@@ -61,7 +64,7 @@ public class RenderContext {
         this.graphicCache = new HashMap();
         this.referenceFrame = referenceFrame;
         this.visibleRect = visibleRect;
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING) && graphics != null) {
+        if (PreferenceManager.getInstance().getAsBoolean(ENABLE_ANTIALISING) && graphics != null) {
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
@@ -73,7 +76,7 @@ public class RenderContext {
         this.referenceFrame = new ReferenceFrame(context.referenceFrame);
         this.panel = context.panel;
         this.visibleRect = new Rectangle(context.visibleRect);
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING) && graphics != null) {
+        if (PreferenceManager.getInstance().getAsBoolean(ENABLE_ANTIALISING) && graphics != null) {
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
@@ -92,7 +95,7 @@ public class RenderContext {
         Graphics2D g = graphicCache.get(key);
         if (g == null) {
             g = (Graphics2D) graphics.create();
-            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+            if (PreferenceManager.getInstance().getAsBoolean(ENABLE_ANTIALISING)) {
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             }

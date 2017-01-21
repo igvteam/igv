@@ -29,10 +29,11 @@ package org.broad.igv.sam;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -207,8 +208,8 @@ public class SpliceJunctionHelper {
         public final int minReadFlankingWidth;
 
         public LoadOptions() {
-            this(prefs.getAsInt(PreferenceManager.SAM_JUNCTION_MIN_COVERAGE),
-                    prefs.getAsInt(PreferenceManager.SAM_JUNCTION_MIN_FLANKING_WIDTH));
+            this(prefs.getAsInt(Constants.SAM_JUNCTION_MIN_COVERAGE),
+                    prefs.getAsInt(Constants.SAM_JUNCTION_MIN_FLANKING_WIDTH));
         }
 
         public LoadOptions(int minJunctionCoverage, int minReadFlankingWidth) {

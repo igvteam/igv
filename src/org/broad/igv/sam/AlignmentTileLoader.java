@@ -29,18 +29,19 @@ import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.ReadGroupFilter;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.ObjectCache;
 import org.broad.igv.util.RuntimeUtils;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
+
+import static org.broad.igv.prefs.Constants.*;
 
 /**
  * A wrapper for an AlignmentQueryReader that caches query results
@@ -117,14 +118,14 @@ public class AlignmentTileLoader {
                            boolean showAlignments) {
 
         final PreferenceManager prefMgr = PreferenceManager.getInstance();
-        boolean filterFailedReads = prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_FAILED_READS);
-        boolean filterSecondaryAlignments = prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_SECONDARY_ALIGNMENTS);
-        boolean filterSupplementaryAlignments = prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS);
+        boolean filterFailedReads = prefMgr.getAsBoolean(SAM_FILTER_FAILED_READS);
+        boolean filterSecondaryAlignments = prefMgr.getAsBoolean(SAM_FILTER_SECONDARY_ALIGNMENTS);
+        boolean filterSupplementaryAlignments = prefMgr.getAsBoolean(SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS);
         ReadGroupFilter filter = ReadGroupFilter.getFilter();
-        boolean showDuplicates = prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_DUPLICATES);
-        int qualityThreshold = prefMgr.getAsInt(PreferenceManager.SAM_QUALITY_THRESHOLD);
+        boolean showDuplicates = prefMgr.getAsBoolean(SAM_SHOW_DUPLICATES);
+        int qualityThreshold = prefMgr.getAsInt(SAM_QUALITY_THRESHOLD);
 
-        boolean reducedMemory = prefMgr.getAsBoolean(PreferenceManager.SAM_REDUCED_MEMORY_MODE);
+        boolean reducedMemory = prefMgr.getAsBoolean(SAM_REDUCED_MEMORY_MODE);
 
         AlignmentTile t = new AlignmentTile(start, end, spliceJunctionHelper, downsampleOptions, bisulfiteContext, showAlignments, reducedMemory);
 
@@ -241,8 +242,8 @@ public class AlignmentTileLoader {
             // Compute peStats
             if (peStats != null) {
                 // TODO -- something smarter re the percentiles.  For small samples these will revert to min and max
-                double minPercentile = prefMgr.getAsFloat(PreferenceManager.SAM_MIN_INSERT_SIZE_PERCENTILE);
-                double maxPercentile = prefMgr.getAsFloat(PreferenceManager.SAM_MAX_INSERT_SIZE_PERCENTILE);
+                double minPercentile = prefMgr.getAsFloat(SAM_MIN_INSERT_SIZE_PERCENTILE);
+                double maxPercentile = prefMgr.getAsFloat(SAM_MAX_INSERT_SIZE_PERCENTILE);
                 for (PEStats stats : peStats.values()) {
                     stats.computeInsertSize(minPercentile, maxPercentile);
                     stats.computeExpectedOrientation();
@@ -386,7 +387,7 @@ public class AlignmentTileLoader {
             this.end = end;
             this.downsampledIntervals = new ArrayList<DownsampledInterval>();
 
-            this.indelLimit = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SMALL_INDEL_BP_THRESHOLD);
+            this.indelLimit = PreferenceManager.getInstance().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
             this.showAlignments = showAlignments;
 
             long seed = System.currentTimeMillis();

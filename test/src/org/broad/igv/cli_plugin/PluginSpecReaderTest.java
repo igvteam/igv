@@ -25,7 +25,7 @@
 
 package org.broad.igv.cli_plugin;
 
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 

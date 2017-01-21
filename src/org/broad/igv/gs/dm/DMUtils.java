@@ -29,7 +29,8 @@ package org.broad.igv.gs.dm;
 import biz.source_code.base64Coder.Base64Coder;
 import com.google.gson.*;
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.BufferedInputStream;
@@ -123,7 +124,7 @@ public class DMUtils {
         long contentLength = localFile.length();
         String contentType = "application/text";
 
-        String tmp = PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER) + UPLOAD_SERVICE +
+        String tmp = PreferenceManager.getInstance().get(Constants.GENOME_SPACE_DM_SERVER) + UPLOAD_SERVICE +
                 gsPath + "?Content-Length=" + contentLength +
                 "&Content-MD5=" + URLEncoder.encode(base64String, "UTF-8") + "&Content-Type=" + contentType;
 

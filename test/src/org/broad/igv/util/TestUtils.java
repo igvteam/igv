@@ -27,10 +27,9 @@ package org.broad.igv.util;
 
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
-import htsjdk.samtools.util.ftp.FTPClient;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;

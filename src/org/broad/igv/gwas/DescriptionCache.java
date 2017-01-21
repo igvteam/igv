@@ -27,7 +27,8 @@ package org.broad.igv.gwas;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 
 import java.util.ArrayList;
 
@@ -57,7 +58,7 @@ public class DescriptionCache {
     public DescriptionCache() {
 
         PreferenceManager prefs = PreferenceManager.getInstance();
-        this.maxSize = prefs.getAsInt(PreferenceManager.GWAS_DESCRIPTION_CACHE_SIZE);
+        this.maxSize = prefs.getAsInt(Constants.GWAS_DESCRIPTION_CACHE_SIZE);
 
     }
 

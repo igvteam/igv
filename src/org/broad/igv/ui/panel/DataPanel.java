@@ -36,19 +36,21 @@ package org.broad.igv.ui.panel;
 import com.google.common.base.Objects;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.lists.Preloader;
-import org.broad.igv.track.*;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.track.RenderContext;
+import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackClickEvent;
+import org.broad.igv.track.TrackGroup;
 import org.broad.igv.ui.AbstractDataPanelTool;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.event.DataLoadedEvent;
-import org.broad.igv.ui.event.IGVEventBus;
 import org.broad.igv.ui.event.IGVEventObserver;
 import org.broad.igv.ui.util.DataPanelTool;
-import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
@@ -95,7 +97,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         setAutoscrolls(true);
         setToolTipText("");
         painter = new DataPanelPainter();
-        setBackground(PreferenceManager.getInstance().getAsColor(PreferenceManager.BACKGROUND_COLOR));
+        setBackground(PreferenceManager.getInstance().getAsColor(Constants.BACKGROUND_COLOR));
 
         ToolTipManager.sharedInstance().registerComponent(this);
 
@@ -297,7 +299,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
             return;
         }
 
-        boolean drawBars = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_REGION_BARS);
+        boolean drawBars = PreferenceManager.getInstance().getAsBoolean(Constants.SHOW_REGION_BARS);
         Graphics2D graphics2D = (Graphics2D) g.create();
         try {
 

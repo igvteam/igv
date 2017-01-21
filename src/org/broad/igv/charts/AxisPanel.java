@@ -25,8 +25,6 @@
 
 package org.broad.igv.charts;
 
-import org.broad.igv.PreferenceManager;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;

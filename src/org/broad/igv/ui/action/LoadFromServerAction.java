@@ -32,8 +32,8 @@ package org.broad.igv.ui.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.ResourceTree;
 import org.broad.igv.ui.util.MessageUtils;

@@ -37,8 +37,8 @@ package org.broad.igv.ui.panel;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -48,8 +48,9 @@ import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
-import java.util.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jrobinso
@@ -96,7 +97,7 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
         if (keys != null && keys.size() > 0) {
 
             final Graphics2D graphics2 = (Graphics2D) graphics;
-            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+            if (PreferenceManager.getInstance().getAsBoolean(Constants.ENABLE_ANTIALISING)) {
                 graphics2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             }
 

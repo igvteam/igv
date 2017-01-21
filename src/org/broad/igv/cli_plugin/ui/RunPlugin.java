@@ -29,13 +29,13 @@
 
 package org.broad.igv.cli_plugin.ui;
 
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.cli_plugin.Argument;
 import org.broad.igv.cli_plugin.PluginDataSource;
 import org.broad.igv.cli_plugin.PluginFeatureSource;
 import org.broad.igv.cli_plugin.PluginSpecReader;
 import org.broad.igv.feature.CachingFeatureSource;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.track.DataSourceTrack;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.FeatureTrack;

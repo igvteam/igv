@@ -37,7 +37,8 @@ import it.unimi.dsi.lang.MutableString;
 import junit.framework.Assert;
 import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.util.TestUtils;
 import org.junit.Ignore;
@@ -402,7 +403,7 @@ public class GobyAlignmentQueryReaderTest extends AbstractHeadlessTest{
 
         assertTrue(iter.hasNext());
         Alignment igvAlignment = iter.next();
-        boolean showSoftClipped = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED);
+        boolean showSoftClipped = PreferenceManager.getInstance().getAsBoolean(Constants.SAM_SHOW_SOFT_CLIPPED);
 
         Assert.assertEquals(2 + (showSoftClipped ? 1 : 0), igvAlignment.getAlignmentBlocks().length);
         Assert.assertEquals("==A====G===GA=====T============================================",

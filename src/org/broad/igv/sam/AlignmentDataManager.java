@@ -26,9 +26,9 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.sam.AlignmentTrack.SortOption;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.track.RenderContext;
@@ -39,9 +39,10 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
-import javax.swing.*;
 import java.io.IOException;
 import java.util.*;
+
+import static org.broad.igv.prefs.Constants.*;
 
 public class AlignmentDataManager implements IGVEventObserver {
 
@@ -150,7 +151,7 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     public double getMinVisibleScale() {
         PreferenceManager prefs = PreferenceManager.getInstance();
-        float maxRange = prefs.getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
+        float maxRange = prefs.getAsFloat(SAM_MAX_VISIBLE_RANGE);
         return (maxRange * 1000) / 700;
     }
 
@@ -248,7 +249,7 @@ public class AlignmentDataManager implements IGVEventObserver {
             int adjustedEnd = end;
 
             // Expand the interval by the lesser of  +/- a 2 screens, or max visible range
-            int windowSize = Math.min(4 * (end - start), PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MAX_VISIBLE_RANGE) * 1000);
+            int windowSize = Math.min(4 * (end - start), PreferenceManager.getInstance().getAsInt(SAM_MAX_VISIBLE_RANGE) * 1000);
             int center = (end + start) / 2;
             int expand = Math.max(end - start, windowSize / 2);
 
@@ -408,7 +409,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public void alleleThresholdChanged() {
-        coverageTrack.setSnpThreshold(PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD));
+        coverageTrack.setSnpThreshold(PreferenceManager.getInstance().getAsFloat(SAM_ALLELE_THRESHOLD));
     }
 
     public void setShowAlignments(boolean showAlignments) {
@@ -439,9 +440,9 @@ public class AlignmentDataManager implements IGVEventObserver {
 
         public DownsampleOptions() {
             PreferenceManager prefs = PreferenceManager.getInstance();
-            init(prefs.getAsBoolean(PreferenceManager.SAM_DOWNSAMPLE_READS),
-                    prefs.getAsInt(PreferenceManager.SAM_SAMPLING_WINDOW),
-                    prefs.getAsInt(PreferenceManager.SAM_SAMPLING_COUNT));
+            init(prefs.getAsBoolean(SAM_DOWNSAMPLE_READS),
+                    prefs.getAsInt(SAM_SAMPLING_WINDOW),
+                    prefs.getAsInt(SAM_SAMPLING_COUNT));
         }
 
         DownsampleOptions(boolean downsample, int sampleWindowSize, int maxReadCount) {

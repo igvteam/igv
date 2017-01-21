@@ -28,7 +28,6 @@ package org.broad.igv.batch;
 import biz.source_code.base64Coder.Base64Coder;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.ui.IGV;

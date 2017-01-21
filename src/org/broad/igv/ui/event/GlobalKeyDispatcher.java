@@ -29,14 +29,15 @@
  */
 package org.broad.igv.ui.event;
 
+import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
@@ -45,7 +46,6 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.variant.VariantTrack;
-import htsjdk.tribble.Feature;
 
 import javax.swing.*;
 import java.awt.*;
@@ -54,6 +54,8 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+
+import static org.broad.igv.prefs.Constants.*;
 
 /**
  * @author jrobinso
@@ -220,11 +222,11 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         final Action sorAlignmentTracksAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String sortOptionString = prefMgr.get(PreferenceManager.SAM_SORT_OPTION);
+                String sortOptionString = prefMgr.get(SAM_SORT_OPTION);
                 if (sortOptionString != null) {
                     try {
                         AlignmentTrack.SortOption option = AlignmentTrack.SortOption.valueOf(sortOptionString);
-                        String lastSortTag = prefMgr.get(PreferenceManager.SAM_SORT_BY_TAG);
+                        String lastSortTag = prefMgr.get(SAM_SORT_BY_TAG);
 
                         igv.sortAlignmentTracks(option, lastSortTag);
                         igv.revalidateTrackPanels();
@@ -286,8 +288,8 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         final Action completeReadAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                boolean currentSetting = prefMgr.getAsBoolean(PreferenceManager.SAM_COMPLETE_READS_ONLY);
-                prefMgr.put(PreferenceManager.SAM_COMPLETE_READS_ONLY, !currentSetting);
+                boolean currentSetting = prefMgr.getAsBoolean(SAM_COMPLETE_READS_ONLY);
+                prefMgr.put(SAM_COMPLETE_READS_ONLY, !currentSetting);
                 igv.revalidateTrackPanels();
             }
         };

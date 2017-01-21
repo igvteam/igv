@@ -33,8 +33,6 @@
  */
 package org.broad.igv.ui.panel;
 
-import org.broad.igv.PreferenceManager;
-import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.util.IconFactory;
 
 import javax.swing.*;

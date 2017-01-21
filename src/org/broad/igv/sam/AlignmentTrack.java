@@ -28,7 +28,6 @@ package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
@@ -36,6 +35,7 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.lists.GeneList;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.Session;
@@ -49,7 +49,10 @@ import org.broad.igv.ui.SashimiPlot;
 import org.broad.igv.ui.color.ColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
-import org.broad.igv.ui.event.*;
+import org.broad.igv.ui.event.AlignmentTrackEvent;
+import org.broad.igv.ui.event.AlignmentTrackEventListener;
+import org.broad.igv.ui.event.IGVEventBus;
+import org.broad.igv.ui.event.IGVEventObserver;
 import org.broad.igv.ui.panel.DataPanel;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
@@ -61,8 +64,8 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.Utilities;
 import org.broad.igv.util.blat.BlatClient;
-import org.broad.igv.util.extview.ExtendViewClient;
 import org.broad.igv.util.collections.CollUtils;
+import org.broad.igv.util.extview.ExtendViewClient;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -79,6 +82,8 @@ import java.awt.geom.Rectangle2D;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
+
+import static org.broad.igv.prefs.Constants.*;
 
 /**
  * @author jrobinso
@@ -188,8 +193,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     public static void sortAlignmentTracks(SortOption option, String tag) {
         IGV.getInstance().sortAlignmentTracks(option, tag);
         final PreferenceManager prefMgr = PreferenceManager.getInstance();
-        prefMgr.put(PreferenceManager.SAM_SORT_OPTION, option.toString());
-        prefMgr.put(PreferenceManager.SAM_SORT_BY_TAG, tag);
+        prefMgr.put(SAM_SORT_OPTION, option.toString());
+        prefMgr.put(SAM_SORT_BY_TAG, tag);
         refresh();
     }
 
@@ -213,10 +218,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         renderer = new AlignmentRenderer(this);
 
-        showGroupLine = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_GROUP_SEPARATOR);
+        showGroupLine = PreferenceManager.getInstance().getAsBoolean(SAM_SHOW_GROUP_SEPARATOR);
         setDisplayMode(DisplayMode.EXPANDED);
 
-        if (prefs.getAsBoolean(PreferenceManager.SAM_SHOW_REF_SEQ)) {
+        if (prefs.getAsBoolean(SAM_SHOW_REF_SEQ)) {
             sequenceTrack = new SequenceTrack("Reference sequence");
             sequenceTrack.setHeight(14);
         }
@@ -1305,7 +1310,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         RenderOptions() {
             PreferenceManager prefs = PreferenceManager.getInstance();
 
-            String shadeOptionString = prefs.get(PreferenceManager.SAM_SHADE_BASES);
+            String shadeOptionString = prefs.get(SAM_SHADE_BASES);
             if (shadeOptionString.equals("false")) {
                 shadeBasesOption = ShadeBasesOption.NONE;
             } else if (shadeOptionString.equals("true")) {
@@ -1313,32 +1318,32 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             } else {
                 shadeBasesOption = ShadeBasesOption.valueOf(shadeOptionString);
             }
-            shadeCenters = prefs.getAsBoolean(PreferenceManager.SAM_SHADE_CENTER);
-            flagUnmappedPairs = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_UNMAPPED_PAIR);
-            computeIsizes = prefs.getAsBoolean(PreferenceManager.SAM_COMPUTE_ISIZES);
-            minInsertSize = prefs.getAsInt(PreferenceManager.SAM_MIN_INSERT_SIZE_THRESHOLD);
-            maxInsertSize = prefs.getAsInt(PreferenceManager.SAM_MAX_INSERT_SIZE_THRESHOLD);
-            minInsertSizePercentile = prefs.getAsFloat(PreferenceManager.SAM_MIN_INSERT_SIZE_PERCENTILE);
-            maxInsertSizePercentile = prefs.getAsFloat(PreferenceManager.SAM_MAX_INSERT_SIZE_PERCENTILE);
-            showAllBases = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_ALL_BASES);
-            quickConsensusMode = prefs.getAsBoolean(PreferenceManager.SAM_QUICK_CONSENSUS_MODE);
-            colorOption = CollUtils.valueOf(ColorOption.class, prefs.get(PreferenceManager.SAM_COLOR_BY), ColorOption.NONE);
-            groupByOption = CollUtils.valueOf(GroupOption.class, prefs.get(PreferenceManager.SAM_GROUP_OPTION), GroupOption.NONE);
-            flagZeroQualityAlignments = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_ZERO_QUALITY);
+            shadeCenters = prefs.getAsBoolean(SAM_SHADE_CENTER);
+            flagUnmappedPairs = prefs.getAsBoolean(SAM_FLAG_UNMAPPED_PAIR);
+            computeIsizes = prefs.getAsBoolean(SAM_COMPUTE_ISIZES);
+            minInsertSize = prefs.getAsInt(SAM_MIN_INSERT_SIZE_THRESHOLD);
+            maxInsertSize = prefs.getAsInt(SAM_MAX_INSERT_SIZE_THRESHOLD);
+            minInsertSizePercentile = prefs.getAsFloat(SAM_MIN_INSERT_SIZE_PERCENTILE);
+            maxInsertSizePercentile = prefs.getAsFloat(SAM_MAX_INSERT_SIZE_PERCENTILE);
+            showAllBases = prefs.getAsBoolean(SAM_SHOW_ALL_BASES);
+            quickConsensusMode = prefs.getAsBoolean(SAM_QUICK_CONSENSUS_MODE);
+            colorOption = CollUtils.valueOf(ColorOption.class, prefs.get(SAM_COLOR_BY), ColorOption.NONE);
+            groupByOption = CollUtils.valueOf(GroupOption.class, prefs.get(SAM_GROUP_OPTION), GroupOption.NONE);
+            flagZeroQualityAlignments = prefs.getAsBoolean(SAM_FLAG_ZERO_QUALITY);
             bisulfiteContext = DEFAULT_BISULFITE_CONTEXT;
 
 
-            colorByTag = prefs.get(PreferenceManager.SAM_COLOR_BY_TAG);
-            sortByTag = prefs.get(PreferenceManager.SAM_SORT_BY_TAG);
-            groupByTag = prefs.get(PreferenceManager.SAM_GROUP_BY_TAG);
-            setGroupByPos(prefs.get(PreferenceManager.SAM_GROUP_BY_POS));
+            colorByTag = prefs.get(SAM_COLOR_BY_TAG);
+            sortByTag = prefs.get(SAM_SORT_BY_TAG);
+            groupByTag = prefs.get(SAM_GROUP_BY_TAG);
+            setGroupByPos(prefs.get(SAM_GROUP_BY_POS));
 
             //updateColorScale();
 
             peStats = new HashMap<String, PEStats>();
 
-            linkedReads = prefs.getAsBoolean(PreferenceManager.SAM_LINK_READS);
-            linkByTag = prefs.get(PreferenceManager.SAM_LINK_TAG);
+            linkedReads = prefs.getAsBoolean(SAM_LINK_READS);
+            linkByTag = prefs.get(SAM_LINK_TAG);
         }
 
 
@@ -1428,7 +1433,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         public void setColorByTag(String colorByTag) {
             this.colorByTag = colorByTag;
-            PreferenceManager.getInstance().put(PreferenceManager.SAM_COLOR_BY_TAG, colorByTag);
+            PreferenceManager.getInstance().put(SAM_COLOR_BY_TAG, colorByTag);
         }
 
         public String getColorByTag() {
@@ -1726,7 +1731,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
 
             JRadioButtonMenuItem nomeESeqOption = null;
-            boolean showNomeESeq = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_NOMESEQ_ENABLED);
+            boolean showNomeESeq = PreferenceManager.getInstance().getAsBoolean(SAM_NOMESEQ_ENABLED);
             if (showNomeESeq) {
                 nomeESeqOption = new JRadioButtonMenuItem("NOMe-seq bisulfite mode");
                 nomeESeqOption.setSelected(renderOptions.colorOption == ColorOption.NOMESEQ);
@@ -1931,12 +1936,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         private void setBisulfiteContext(BisulfiteContext option) {
             renderOptions.bisulfiteContext = option;
-            PreferenceManager.getInstance().put(PreferenceManager.SAM_BISULFITE_CONTEXT, option.toString());
+            PreferenceManager.getInstance().put(SAM_BISULFITE_CONTEXT, option.toString());
         }
 
         private void setColorOption(ColorOption option) {
             renderOptions.colorOption = option;
-            PreferenceManager.getInstance().put(PreferenceManager.SAM_COLOR_BY, option.toString());
+            PreferenceManager.getInstance().put(SAM_COLOR_BY, option.toString());
 
             // TODO Setting "color-by bisulfite"  also controls the experiment type.  This is temporary, until we
             // expose experimentType directory.

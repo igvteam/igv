@@ -27,16 +27,20 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.broad.igv;
+package org.broad.igv.prefs;
 
 
 import org.apache.log4j.Logger;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.renderer.ColorScaleFactory;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
 import org.broad.igv.track.TrackType;
-import org.broad.igv.ui.*;
+import org.broad.igv.ui.AboutDialog;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.IGVCommandBar;
+import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
@@ -48,6 +52,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+import static org.broad.igv.prefs.Constants.*;
+
 /**
  * Manages user preferences.
  */
@@ -55,269 +61,19 @@ public class PreferenceManager implements PropertyManager {
 
     private static Logger log = Logger.getLogger(PreferenceManager.class);
 
-    public static final String DEFAULT_GENOME = "hg19";
-
-    public static final String SKIP_VERSION = "SKIP_VERSION";
-
-    public static final String SHOW_LOS = "showLOS";
-
-    public static final String INITIAL_TRACK_HEIGHT = "15";
-
-    public static final String TOOLTIP_INITIAL_DELAY = "TOOLTIP.INITIAL_DELAY";
-    public static final String TOOLTIP_RESHOW_DELAY = "TOOLTIP.RESHOW_DELAY";
-    public static final String TOOLTIP_DISMISS_DELAY = "TOOLTIP.DISMISS_DELAY";
-
-
-    public static final String CHART_DRAW_TOP_BORDER = "CHART.DRAW_TOP_BORDER";
-    public static final String CHART_DRAW_BOTTOM_BORDER = "CHART.DRAW_BOTTOM_BORDER";
-    public static final String CHART_COLOR_BORDERS = "CHART.COLOR_BORDERS";
-    public static final String CHART_DRAW_Y_AXIS = "CHART.DRAW_AXIS";
-    public static final String CHART_DRAW_TRACK_NAME = "CHART.DRAW_TRACK_NAME";
-    public static final String CHART_COLOR_TRACK_NAME = "CHART.COLOR_TRACK_NAME";
-    public static final String CHART_AUTOSCALE = "CHART.AUTOSCALE";
-    public static final String CHART_SHOW_DATA_RANGE = "CHART.SHOW_DATA_RANGE";
-
-    public static final String UNLOAD_ON_GENOME_CHANGE = "UNLOAD_ON_GENOME_CHANGE";
-
-    public static final String SAM_ALLELE_THRESHOLD = "SAM.ALLELE_THRESHOLD";
-    public static final String SAM_ALLELE_USE_QUALITY = "SAM.ALLELE_USE_QUALITY";
-    public static final String SAM_QUALITY_THRESHOLD = "SAM.QUALITY_THRESHOLD";
-    public static final String SAM_MAX_INSERT_SIZE_THRESHOLD = "SAM.INSERT_SIZE_THRESHOLD";
-    public static final String SAM_MIN_INSERT_SIZE_THRESHOLD = "SAM.MIN_INSERT_SIZE_THRESHOLD";
-    public static final String SAM_MAX_INSERT_SIZE_PERCENTILE = "SAM.ISIZE_MAX_PERCENTILE";
-    public static final String SAM_MIN_INSERT_SIZE_PERCENTILE = "SAM.MIN_ISIZE_MIN_PERCENTILE";
-    public static final String SAM_AUTO_SORT = "SAM.AUTOSORT";
-    public static final String SAM_SHADE_CENTER = "SAM.SHADE_CENTER";
-    public static final String SAM_SHOW_CENTER_LINE = "SAM.SHOW_CENTER_LINE";
-    public static final String SAM_SHOW_REF_SEQ = "SAM.SHOW_REF_SEQ";
-    public static final String SAM_SHOW_COV_TRACK = "SAM.SHOW_COV_TRACK";
-    public static final String SAM_SHADE_BASES = "SAM.SHADE_BASE_QUALITY";
-    public static final String SAM_BASE_QUALITY_MIN = "SAM.BASE_QUALITY_MIN";
-    public static final String SAM_BASE_QUALITY_MAX = "SAM.BASE_QUALITY_MAX";
-    public static final String SAM_FILTER_ALIGNMENTS = "SAM.FILTER_ALIGNMENTS";
-    public static final String SAM_FILTER_SECONDARY_ALIGNMENTS = "SAM.FILTER_SECONDARY_ALIGNMENTS";
-    public static final String SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS = "SAM.FILTER_SUPPLEMENTARY_ALIGNMENTS";
-    public static final String SAM_FILTER_URL = "SAM.FILTER_URL";
-    public static final String SAM_HIDDEN_TAGS = "SAM.HIDDEN_TAGS";
-    public static final String SAM_MAX_VISIBLE_RANGE = "SAM.MAX_VISIBLE_RANGE";
-    public static final String SAM_SHOW_DUPLICATES = "SAM.SHOW_DUPLICATES";
-    public static final String SAM_QUICK_CONSENSUS_MODE = "SAM.QUICK_CONSENSUS_MODE";
-    public static final String SAM_SHOW_SOFT_CLIPPED = "SAM.SHOW_SOFT_CLIPPED";
-    public static final String SAM_FLAG_UNMAPPED_PAIR = "SAM.FLAG_UNMAPPED_PAIR";
-    public static final String SAM_SAMPLING_COUNT = "SAM.MAX_LEVELS"; // Sampling count
-    public static final String SAM_SAMPLING_WINDOW = "SAM.SAMPLING_WINDOW";
-    public static final String SAM_DOWNSAMPLE_READS = "SAM.DOWNSAMPLE_READS";
-    public static final String SAM_SORT_OPTION = "SAM.SORT_OPTION";
-    public static final String SAM_GROUP_OPTION = "SAM.GROUP_OPTION";
-    public static final String SAM_SHOW_ALL_BASES = "SAM.SHOW_ALL_BASES";
-
-    public static final String SAM_COLOR_BY = "SAM.COLOR_BY";
-    public static final String SAM_COLOR_BY_TAG = "SAM.COLOR_BY_TAG";
-    public static final String SAM_SORT_BY_TAG = "SAM.SORT_BY_TAG";
-    public static final String SAM_GROUP_BY_TAG = "SAM.GROUP_BY_TAG";
-    public static final String SAM_GROUP_BY_POS = "SAM.GROUP_BY_POS";
-    public static final String SAM_BISULFITE_CONTEXT = "SAM.BISULFITE_CONTEXT";
-    public static final String SAM_FILTER_FAILED_READS = "SAM.FILTER_FAILED_READS";
-    public static final String SAM_COMPUTE_ISIZES = "SAM.COMPUTE_ISIZES";
-    public static final String SAM_FLAG_ZERO_QUALITY = "SAM.FLAG_ZERO_QUALITY";
-    //dhmay adding 20110208
-    public static final String SAM_SHOW_JUNCTION_TRACK = "SAM.SHOW_JUNCTION_TRACK";
-    public static final String SAM_JUNCTION_MIN_FLANKING_WIDTH = "SAM.JUNCTION_MIN_FLANKING_WIDTH";
-    public static final String SAM_JUNCTION_MIN_COVERAGE = "SAM.JUNCTION_MIN_COVERAGE";
-    //dhmay adding 20120731
-    public static final String SAM_SHOW_JUNCTION_FLANKINGREGIONS = "SAM.SHOW_JUNCTION_FLANKINGREGIONS";
-
-    public static final String SAM_NOMESEQ_ENABLED = "SAM.NOMESEQ_ENABLED";
-    public static final String SAM_COUNT_DELETED_BASES_COVERED = "SAM.COUNT_DELETED_BASES_COVERED";
-
-    public static final String SAM_FLAG_LARGE_INDELS = "SAM.FLAG_LARGE_INDELS";
-    public static final String SAM_LARGE_INDELS_THRESHOLD = "SAM.LARGE_INSERTIONS_THRESOLD";
-
-    public static final String SAM_FLAG_CLIPPING = "SAM.FLAG_CLIPPING";
-    public static final String SAM_CLIPPING_THRESHOLD = "SAM.CLIPPING_THRESHOLD";
-
-    public static final String SAM_SHOW_GROUP_SEPARATOR = "SAM.SHOW_GROUP_SEPARATOR";
-    public static final String SAM_COMPLETE_READS_ONLY = "SAM.COMPLETE_READS_ONLY";
-
-    public static final String SAM_REDUCED_MEMORY_MODE = "SAM.REDUCED_MEMORY_MODE";
-
-    public static final String SAM_HIDE_SMALL_INDEL_BP = "SAM.HIDE_SMALL_INDEL_BP";
-    public static final String SAM_SMALL_INDEL_BP_THRESHOLD = "SAM.MIN_INDEL_BP_THRESHOLD";
-
-    public static final String SAM_LINK_READS = "SAM.LINK_READS";
-    public static final String SAM_LINK_TAG = "SAM.LINK_TAG";
-
-    public static final String SAM_SHOW_ALIGNMENT_TRACK = "SAM.SHOW_ALIGNMENT_TRACK";
-
-    public static final String COLOR_A = "COLOR.A";
-    public static final String COLOR_C = "COLOR.C";
-    public static final String COLOR_T = "COLOR.T";
-    public static final String COLOR_G = "COLOR.G";
-    public static final String COLOR_N = "COLOR.N";
-    public static final String SAM_COLOR_A = "SAM.COLOR.A";
-    public static final String SAM_COLOR_C = "SAM.COLOR.C";
-    public static final String SAM_COLOR_T = "SAM.COLOR.T";
-    public static final String SAM_COLOR_G = "SAM.COLOR.G";
-    public static final String SAM_COLOR_N = "SAM.COLOR.N";
-
-    public static final String HOMREF_COLOR = "HOMREF.COLOR";
-    public static final String HETVAR_COLOR = "HETVAR.COLOR";
-    public static final String HOMVAR_COLOR = "HOMVAR.COLOR";
-    public static final String NOCALL_COLOR = "NOCALL.COLOR";
-    public static final String AF_REF_COLOR = "AF_REF.COLOR";
-    public static final String AF_VAR_COLOR = "AF_VAR.COLOR";
-
-    public static final String EXPAND_FEAUTRE_TRACKS = "EXPAND_FEATURE_TRACKS";
-    public static final String PORT_ENABLED = "PORT_ENABLED";
-    public static final String PORT_NUMBER = "PORT_NUMBER";
-    public static final String COLOR_SCALE_KEY = "COLOR_SCALE_";
-    public static final String FRAME_BOUNDS_KEY = "IGV.Bounds";
-    public static final String FRAME_STATE_KEY = "IGV.Frame.ExtendedState";
-    public static final String RECENT_SESSION_KEY = "IGV.Session.recent.sessions";
-    public static final String TRACK_HEIGHT_KEY = "IGV.track.height";
-    public static final String CHART_TRACK_HEIGHT_KEY = "IGV.chart.track.height";
-    public static final String CHART_SHOW_ALL_HEATMAP = "CHART.SHOW_ALL_HEATMAP";
-    public static final String SHOW_MISSING_DATA_KEY = "IGV.track.show.missing.data";
-    public static final String SHOW_ATTRIBUTE_VIEWS_KEY = "IGV.track.show.attribute.views";
-    public static final String SHOW_SINGLE_TRACK_PANE_KEY = "IGV.single.track.pane";
-    public static final String GENOMES_SERVER_URL = "IGV.genome.sequence.dir";
-    public static final String JOIN_ADJACENT_SEGMENTS_KEY = "IGV.join.adjacent.segments";
-    public static final String SHOW_REGION_BARS = "SHOW_REGION_BARS";
-    public static final String LAST_EXPORTED_REGION_DIRECTORY = "LAST_EXPORTED_REGION_DIRECTORY";
-    final static public String LAST_TRACK_DIRECTORY = "LAST_TRACK_DIRECTORY";
-    final static public String LAST_SNAPSHOT_DIRECTORY = "LAST_SNAPSHOT_DIRECTORY";
-    final static public String LAST_GENOME_IMPORT_DIRECTORY = "LAST_GENOME_IMPORT_DIRECTORY";
-    final static public String DEFAULT_GENOME_KEY = "DEFAULT_GENOME_KEY";
-    final static public String HISTORY_DELIMITER = ";";
-    final static public String DETAILS_BEHAVIOR_KEY = "DETAILS_BEHAVIOR";
-    final static public String DEFAULT_VISIBILITY_WINDOW = "DEFAULT_VISIBILITY_WINDOW";
-
-    public static final String MUTATION_COLOR_TABLE = "MUTATION_COLOR_TABLE";
-    public static final String MUTATION_INDEL_COLOR_KEY = "MUTATION_INDEL_COLOR_KEY";
-    public static final String MUTATION_MISSENSE_COLOR_KEY = "MUTATION_MISSENSE_COLOR_KEY";
-    public static final String MUTATION_NONSENSE_COLOR_KEY = "MUTATION_NONSENSE_COLOR_KEY";
-    public static final String MUTATION_SPLICE_SITE_COLOR_KEY = "MUTATION_SPLICE_SITE_COLOR_KEY";
-    public static final String MUTATION_SYNONYMOUS_COLOR_KEY = "MUTATION_SYNONYMOUS_COLOR_KEY";
-    public static final String MUTATION_TARGETED_REGION_COLOR_KEY = "MUTATION_TARGETED_REGION_COLOR_KEY";
-    public static final String MUTATION_UNKNOWN_COLOR_KEY = "MUTATION_UNKNOWN_COLOR_KEY";
-    public static final String OVERLAY_MUTATION_TRACKS = "OVERLAY_TRACKS_KEY";
-    public static final String SHOW_ORPHANED_MUTATIONS = "SHOW_ORPHANED_MUTATIONS";
-    public static final String OVERLAY_ATTRIBUTE_KEY = "OVERLAY_ATTRIBUTE_KEY";
-    public static final String OVERLAY_MUTATIONS_WHOLE_GENOME = "OVERLAY_MUTATIONS_WHOLE_GENOME";
-    public static final String COLOR_MUTATIONS = "COVER_OVERLAY_KEY";
-    public static final String TRACK_ATTRIBUTE_NAME_KEY = "TRACK_ATTRIBUTE_NAME_KEY";
-    public static final String DATA_SERVER_URL_KEY = "MASTER_RESOURCE_FILE_KEY";;
-    public static final String DEFINE_GENOME_INPUT_DIRECTORY_KEY = "DEFINE_GENOME_INPUT_DIRECTORY_KEY";
-
-    public static final String VARIANT_COLOR_BY_ALLELE_FREQ = "VARIANT_COLOR_BY_ALLELE_FREQ";
-
-    public static final String PROBE_MAPPING_KEY = "PROBE_MAPPING_KEY";
-    public static final String PROBE_MAPPING_FILE = "PROBE_MAPPING_FILE";
-    public static final String USE_PROBE_MAPPING_FILE = "USE_PROBE_MAPPING_FILE";
-
-    public static final String SEARCH_ZOOM = "SEARCH_ZOOM";
-    public static final String BYPASS_FILE_AUTO_DISCOVERY = "BYPASS_FILE_AUTO_DISCOVERY";
-    public static final String NORMALIZE_COVERAGE = "NORMALIZE_COVERAGE";
-    public static final String SHOW_EXPAND_ICON = "SHOW_EXPAND_ICON";
-    public static final String SHOW_DEFAULT_TRACK_ATTRIBUTES = "SHOW_DEFAULT_TRACK_ATTRIBUTES";
-
-    public static final String SHOW_SIZE_WARNING = "SHOW_SIZE_WARNING";
-    public static final String SHOW_GENOME_SERVER_WARNING = "SHOW_GENOME_SERVER_WARNING";
-
-    public static final String USE_PROXY = "PROXY.USE";
-    public static final String PROXY_HOST = "PROXY.HOST";
-    public static final String PROXY_PORT = "PROXY.PORT";
-    public static final String PROXY_AUTHENTICATE = "PROXY.AUTHENTICATE";
-    public static final String PROXY_USER = "PROXY.USERNAME";
-    public static final String PROXY_PW = "PROXY.PW";
-    public static final String PROXY_TYPE = "PROXY.TYPE";
-    public static final String PROXY_WHITELIST = "PROXY.WHITELIST";
-
-    public static final String KNOWN_SNPS = "KNOWN_SNPS_FILE";
-
-    public static final String FLANKING_REGION = "FLANKING_REGION";
-
-    public static final String SHOW_SEQUENCE_TRANSLATION = "SHOW_SEQUENCE_TRANSLATION";
-    public static final String MAX_SEQUENCE_RESOLUTION = "MAX_SEQUENCE_RESOLUTION";
-
-    public static final String AUTO_UPDATE_GENOMES = "AUTO_UPDATE_GENOMES";
-
-    public static final String GWAS_TRACK_HEIGHT = "GWAS_TRACK_HEIGHT";
-    public static final String GWAS_DESCRIPTION_CACHE_SIZE = "GWAS_DESCRIPTION_CACHE_SIZE";
-    public static final String GWAS_MIN_POINT_SIZE = "GWAS_MIN_POINT_SIZE";
-    public static final String GWAS_MAX_POINT_SIZE = "GWAS_MAX_POINT_SIZE";
-    public static final String GWAS_USE_CHR_COLORS = "GWAS_USE_CHR_COLORS";
-    public static final String GWAS_SINGLE_COLOR = "GWAS_SINGLE_COLOR";
-    public static final String GWAS_ALTERNATING_COLORS = "GWAS_ALTERNATING_COLORS";
-    public static final String GWAS_PRIMARY_COLOR = "GWAS_PRIMARY_COLOR";
-    public static final String GWAS_SECONDARY_COLOR = "GWAS_SECONDARY_COLOR";
-    public static final String GWAS_SHOW_AXIS = "GWAS_SHOW_AXIS";
-
-    public static final String DEFAULT_FONT_SIZE = "DEFAULT_FONT_SIZE";
-    public static final String DEFAULT_FONT_FAMILY = "DEFAULT_FONT_FAMILY";
-    public static final String DEFAULT_FONT_ATTRIBUTE = "DEFAULT_FONT_ATTRIBUTE";
-    public static final String ENABLE_ANTIALISING = "ENABLE_ANTIALIASING";
-    public static final String SCALE_FONTS = "SCALE_FONTS";
-
-    public static final String NAME_PANEL_WIDTH = "NAME_PANEL_WIDTH";
-    public static final String BACKGROUND_COLOR = "BACKGROUND_COLOR";
-
-    public static final String GENOME_SPACE_ENABLE = "GENOME_SPACE_ENABLE";
-    public static final String GENOME_SPACE_DM_SERVER = "GENOME_SPACE_DM_SERVER";
-    public static final String GENOME_SPACE_ATM_SERVER = "GENOME_SPACE_ATM_SERVER";
-    public static final String GENOME_SPACE_IDENTITY_SERVER = "GENOME_SPACE_IDENTITY_SERVER";
-
-    public static final String ENABLE_EXOME_BUTTON = "ENABLE_EXOME_BUTTON";
-
-    public static final String CBIO_MUTATION_THRESHOLD = "CBIO_MUTATION_THRESHOLD";
-    public static final String CBIO_AMPLIFICATION_THRESHOLD = "CBIO_AMPLIFICATION_THRESHOLD";
-    public static final String CBIO_DELETION_THRESHOLD = "CBIO_DELETION_THRESHOLD";
-    public static final String CBIO_EXPRESSION_UP_THRESHOLD = "CBIO_EXPRESSION_UP_THRESHOLD";
-    public static final String CBIO_EXPRESSION_DOWN_THRESHOLD = "CBIO_EXPRESSION_DOWN_THRESHOLD";
-
-
-    public static final String DB_ENABLED = "DB_ENABLED";
-    public static final String DB_HOST = "DB_HOST";
-    public static final String DB_NAME = "DB_NAME";
-    public static final String DB_PORT = "DB_PORT";
-    public static final String DEFAULT_GENOME_URL = "http://igv.broadinstitute.org/genomes/genomes.txt";
-    public static final String DEFAULT_DATA_URL = "https://data.broadinstitute.org/igvdata/$$_dataServerRegistry.txt";
-
-    public static final String IGV_PLUGIN_LIST_KEY = "IGV_PLUGIN_LIST";
-
-    public static final String SASHIMI_SHOW_COVERAGE = "SASHIMI.SHOW_COVERAGE";
-
-    public static final String GOOGLE_API_KEY = "GOOGLE_API_KEY";
-    public static final String ENABLE_GOOGLE_MENU = "ENABLE_GOOGLE_MENU";
-    public static final String SAVE_GOOGLE_CREDENTIALS = "SAVE_GOOGLE_CREDENTIALS";
-
-    public static final String BLAT_URL = "BLAT_URL";
-    public static final String EXTVIEW_URL = "EXTVIEW_URL";
-
-    public static final String GENE_LIST_BED_FORMAT = "GENE_LIST_BED_FORMAT";
-
-    public static final String SESSION_RELATIVE_PATH = "SESSION.RELATIVE_PATH";
-
     IGVPreferences preferences;
+
     Map<String, String> defaultValues;
 
 
-    /**
-     * Cache of preference values.  Profiling reveals that Preferences.get()
-     * is taking huge amounts of time.  There are hundreds of thousands of
-     * calls to this to get the track height,  this is possibly a bad design
-     * decision, however caching the preference values solves the performance
-     * problem for now.
-     */
+    // Cached preference values
     private Map<String, Boolean> booleanCache = new Hashtable();
     private Map<String, Object> objectCache = new Hashtable();
     private Map<TrackType, ContinuousColorScale> colorScaleCache = new Hashtable();
-
     private PaletteColorTable mutationColorScheme = null;
 
 
     public static PreferenceManager getInstance() {
-
         return instance;
     }
 
@@ -529,7 +285,7 @@ public class PreferenceManager implements PropertyManager {
             }
 
             if (reloadSAM) {
-                if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_MAX_VISIBLE_RANGE)) {
+                if (updatedPreferenceMap.containsKey(SAM_MAX_VISIBLE_RANGE)) {
                     igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.VISIBILITY_WINDOW);
                 }
                 igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.RELOAD);
@@ -538,7 +294,7 @@ public class PreferenceManager implements PropertyManager {
             if (!reloadSAM && refreshSAM) {
                 igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.REFRESH);
             }
-            if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_ALLELE_THRESHOLD)) {
+            if (updatedPreferenceMap.containsKey(SAM_ALLELE_THRESHOLD)) {
                 igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.ALLELE_THRESHOLD);
             }
         }
@@ -563,7 +319,7 @@ public class PreferenceManager implements PropertyManager {
 
 
     public String getGenomeListURL() {
-        return get(PreferenceManager.GENOMES_SERVER_URL);
+        return get(GENOMES_SERVER_URL);
     }
 
     public void overrideGenomeServerURL(String url) {
@@ -762,7 +518,7 @@ public class PreferenceManager implements PropertyManager {
     }
 
     public void setShowAttributeView(boolean isShowable) {
-        put(PreferenceManager.SHOW_ATTRIBUTE_VIEWS_KEY, Boolean.toString(isShowable));
+        put(SHOW_ATTRIBUTE_VIEWS_KEY, Boolean.toString(isShowable));
     }
 
     public void setDefaultGenome(String genomeId) {
@@ -981,14 +737,14 @@ public class PreferenceManager implements PropertyManager {
      */
     public void clearProxySettings() {
 
-        remove(PreferenceManager.USE_PROXY);
-        remove(PreferenceManager.PROXY_HOST);
-        remove(PreferenceManager.PROXY_PORT);
-        remove(PreferenceManager.PROXY_AUTHENTICATE);
-        remove(PreferenceManager.PROXY_USER);
-        remove(PreferenceManager.PROXY_PW);
-        remove(PreferenceManager.PROXY_TYPE);
-        remove(PreferenceManager.PROXY_WHITELIST);
+        remove(USE_PROXY);
+        remove(PROXY_HOST);
+        remove(PROXY_PORT);
+        remove(PROXY_AUTHENTICATE);
+        remove(PROXY_USER);
+        remove(PROXY_PW);
+        remove(PROXY_TYPE);
+        remove(PROXY_WHITELIST);
         HttpUtils.getInstance().updateProxySettings();
     }
 
@@ -1362,20 +1118,20 @@ public class PreferenceManager implements PropertyManager {
      * Not all alignment preferences need trigger a reload, this is a subset.
      */
     static java.util.List<String> SAM_RELOAD_KEYS = Arrays.asList(
-            PreferenceManager.SAM_QUALITY_THRESHOLD,
-            PreferenceManager.SAM_FILTER_ALIGNMENTS,
-            PreferenceManager.SAM_FILTER_URL,
-            PreferenceManager.SAM_MAX_VISIBLE_RANGE,
-            PreferenceManager.SAM_SHOW_DUPLICATES,
-            PreferenceManager.SAM_SHOW_SOFT_CLIPPED,
-            PreferenceManager.SAM_SAMPLING_COUNT,
-            PreferenceManager.SAM_SAMPLING_WINDOW,
-            PreferenceManager.SAM_FILTER_FAILED_READS,
-            PreferenceManager.SAM_DOWNSAMPLE_READS,
-            PreferenceManager.SAM_FILTER_SECONDARY_ALIGNMENTS,
-            PreferenceManager.SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS,
-            PreferenceManager.SAM_JUNCTION_MIN_FLANKING_WIDTH,
-            PreferenceManager.SAM_JUNCTION_MIN_COVERAGE
+            SAM_QUALITY_THRESHOLD,
+            SAM_FILTER_ALIGNMENTS,
+            SAM_FILTER_URL,
+            SAM_MAX_VISIBLE_RANGE,
+            SAM_SHOW_DUPLICATES,
+            SAM_SHOW_SOFT_CLIPPED,
+            SAM_SAMPLING_COUNT,
+            SAM_SAMPLING_WINDOW,
+            SAM_FILTER_FAILED_READS,
+            SAM_DOWNSAMPLE_READS,
+            SAM_FILTER_SECONDARY_ALIGNMENTS,
+            SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS,
+            SAM_JUNCTION_MIN_FLANKING_WIDTH,
+            SAM_JUNCTION_MIN_COVERAGE
     );
 
     /**
@@ -1383,10 +1139,10 @@ public class PreferenceManager implements PropertyManager {
      * alignments are drawn.  A refresh is softer than a reload.
     */
     static java.util.List<String> SAM_REFRESH_KEYS = Arrays.asList(
-        PreferenceManager.SAM_QUICK_CONSENSUS_MODE,
-        PreferenceManager.SAM_ALLELE_THRESHOLD,
-        PreferenceManager.SAM_FLAG_LARGE_INDELS,
-        PreferenceManager.SAM_LARGE_INDELS_THRESHOLD
+        SAM_QUICK_CONSENSUS_MODE,
+        SAM_ALLELE_THRESHOLD,
+        SAM_FLAG_LARGE_INDELS,
+        SAM_LARGE_INDELS_THRESHOLD
     );
 
 }

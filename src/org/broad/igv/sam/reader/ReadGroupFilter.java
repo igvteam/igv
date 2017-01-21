@@ -25,12 +25,13 @@
 
 package org.broad.igv.sam.reader;
 
-import org.broad.igv.PreferenceManager;
+import htsjdk.tribble.readers.AsciiLineReader;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,9 +66,9 @@ public class ReadGroupFilter {
 
         PreferenceManager samPrefs = PreferenceManager.getInstance();
 
-        if (samPrefs.getAsBoolean(PreferenceManager.SAM_FILTER_ALIGNMENTS)) {
+        if (samPrefs.getAsBoolean(Constants.SAM_FILTER_ALIGNMENTS)) {
 
-            String filterURL = samPrefs.get(PreferenceManager.SAM_FILTER_URL);
+            String filterURL = samPrefs.get(Constants.SAM_FILTER_URL);
 
             ReadGroupFilter filter = filterURL == null ? null : filterCache.get(filterURL);
 

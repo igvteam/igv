@@ -32,7 +32,8 @@ package org.broad.igv.ui.legend;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -100,7 +101,7 @@ public class MutationLegendPanel extends LegendPanel {
                 ct.put(entry.getKey(), entry.getValue());
             }
             String colorTableString = ct.getMapAsString();
-            PreferenceManager.getInstance().put(PreferenceManager.MUTATION_COLOR_TABLE, colorTableString);
+            PreferenceManager.getInstance().put(Constants.MUTATION_COLOR_TABLE, colorTableString);
             reloadPreferences();
         }
 

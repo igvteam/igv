@@ -30,7 +30,7 @@
 package org.broad.igv.ui.util;
 
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.ui.IGV;
 
 import javax.swing.*;

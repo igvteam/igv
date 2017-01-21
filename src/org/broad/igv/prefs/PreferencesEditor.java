@@ -23,17 +23,20 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.ui;
+package org.broad.igv.prefs;
 
 import com.jidesoft.dialog.ButtonPanel;
 import org.broad.igv.DirectoryManager;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.data.expression.ProbeToLocusMap;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
-import org.broad.igv.ui.color.*;
+import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.IGVMenuBar;
+import org.broad.igv.ui.Main;
+import org.broad.igv.ui.color.ColorChooserPanel;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.ui.legend.ColorMapEditor;
@@ -57,6 +60,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import static org.broad.igv.prefs.Constants.*;
 
 /**
  * @author jrobinso
@@ -83,19 +88,19 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private File newIGVDirectory;
 
     private void scaleFontsCBActionPerformed(ActionEvent e) {
-        PreferenceManager.getInstance().put(PreferenceManager.SCALE_FONTS, scaleFontsCB.isSelected());
+        PreferenceManager.getInstance().put(SCALE_FONTS, scaleFontsCB.isSelected());
     }
 
     private void enableGoogleCBActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(PreferenceManager.ENABLE_GOOGLE_MENU, String.valueOf(enableGoogleCB.isSelected()));
+        updatedPreferenceMap.put(ENABLE_GOOGLE_MENU, String.valueOf(enableGoogleCB.isSelected()));
     }
 
     private void saveGoogleCredentialsCBActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(PreferenceManager.SAVE_GOOGLE_CREDENTIALS, String.valueOf(saveGoogleCredentialsCB.isSelected()));
+        updatedPreferenceMap.put(SAVE_GOOGLE_CREDENTIALS, String.valueOf(saveGoogleCredentialsCB.isSelected()));
     }
 
     private void sessionPathsCBActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(PreferenceManager.SESSION_RELATIVE_PATH, String.valueOf(sessionPathsCB.isSelected()));
+        updatedPreferenceMap.put(SESSION_RELATIVE_PATH, String.valueOf(sessionPathsCB.isSelected()));
     }
 
     private void coverageOnlyCBActionPerformed(ActionEvent e) {
@@ -110,7 +115,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         tabbedPane.setSelectedIndex(lastSelectedIndex);
 
         // Conditionally remove database panel
-        if (!prefMgr.getAsBoolean(PreferenceManager.DB_ENABLED)) {
+        if (!prefMgr.getAsBoolean(DB_ENABLED)) {
             int idx = tabbedPane.indexOfTab("Database");
             if (idx > 0) {
                 tabbedPane.remove(idx);
@@ -270,8 +275,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         hideIndelsBasesCB = new JCheckBox();
         hideIndelsBasesField = new JTextField();
         label45 = new JLabel();
-        panel36 = new JPanel();
-        label46 = new JLabel();
         panel8 = new JPanel();
         samFilterDuplicatesCB = new JCheckBox();
         samFlagUnmappedPairCB = new JCheckBox();
@@ -1177,7 +1180,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                                 //======== panel13 ========
                                 {
-                                    panel13.setLayout(new GridLayout(7, 0));
+                                    panel13.setLayout(new GridLayout(6, 0));
 
                                     //======== panel31 ========
                                     {
@@ -1326,8 +1329,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                         //---- samFlagIndelsThresholdField ----
                                         samFlagIndelsThresholdField.setPreferredSize(new Dimension(60, 26));
                                         samFlagIndelsThresholdField.addActionListener(e -> {
-                                            samFlagIndelsThresholdFieldActionPerformed(e);
-                                        });
+			samFlagIndelsThresholdFieldActionPerformed(e);
+			samFlagIndelsThresholdFieldActionPerformed(e);
+		});
                                         samFlagIndelsThresholdField.addFocusListener(new FocusAdapter() {
                                             @Override
                                             public void focusLost(FocusEvent e) {
@@ -1355,8 +1359,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                         //---- samFlagClippingThresholdField ----
                                         samFlagClippingThresholdField.setPreferredSize(new Dimension(60, 26));
                                         samFlagClippingThresholdField.addActionListener(e -> {
-                                            samFlagClippingThresholdFieldActionPerformed(e);
-                                        });
+			samFlagClippingThresholdFieldActionPerformed(e);
+			samFlagClippingThresholdFieldActionPerformed(e);
+		});
                                         samFlagClippingThresholdField.addFocusListener(new FocusAdapter() {
                                             @Override
                                             public void focusLost(FocusEvent e) {
@@ -2412,9 +2417,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private void backgroundColorPanelMouseClicked(MouseEvent e) {
         final PreferenceManager prefMgr = PreferenceManager.getInstance();
         Color backgroundColor = UIUtilities.showColorChooserDialog("Choose background color",
-                prefMgr.getAsColor(PreferenceManager.BACKGROUND_COLOR));
+                prefMgr.getAsColor(BACKGROUND_COLOR));
         if (backgroundColor != null) {
-            prefMgr.put(PreferenceManager.BACKGROUND_COLOR, ColorUtilities.colorToString(backgroundColor));
+            prefMgr.put(BACKGROUND_COLOR, ColorUtilities.colorToString(backgroundColor));
             IGV.getInstance().getMainPanel().setBackground(backgroundColor);
             backgroundColorPanel.setBackground(backgroundColor);
         }
@@ -2425,10 +2430,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void resetBackgroundButtonActionPerformed(ActionEvent e) {
         final PreferenceManager prefMgr = PreferenceManager.getInstance();
-        prefMgr.remove(PreferenceManager.BACKGROUND_COLOR);
-        Color backgroundColor = prefMgr.getAsColor(PreferenceManager.BACKGROUND_COLOR);
+        prefMgr.remove(BACKGROUND_COLOR);
+        Color backgroundColor = prefMgr.getAsColor(BACKGROUND_COLOR);
         if (backgroundColor != null) {
-            prefMgr.put(PreferenceManager.BACKGROUND_COLOR, ColorUtilities.colorToString(backgroundColor));
+            prefMgr.put(BACKGROUND_COLOR, ColorUtilities.colorToString(backgroundColor));
             IGV.getInstance().getMainPanel().setBackground(backgroundColor);
             backgroundColorPanel.setBackground(backgroundColor);
         }
@@ -2442,31 +2447,31 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void filterSecondaryAlignmentsCBActionPerformed(ActionEvent e) {
         updatedPreferenceMap.put(
-                PreferenceManager.SAM_FILTER_SECONDARY_ALIGNMENTS,
+                SAM_FILTER_SECONDARY_ALIGNMENTS,
                 String.valueOf(filterSecondaryAlignmentsCB.isSelected()));
     }
 
 
     private void filterSupplementaryAlignmentsCBActionPerformed(ActionEvent e) {
         updatedPreferenceMap.put(
-                PreferenceManager.SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS,
+                SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS,
                 String.valueOf(filterSupplementaryAlignmentsCB.isSelected()));
     }
 
     private void antialiasingCBActionPerformed(ActionEvent e) {
         updatedPreferenceMap.put(
-                PreferenceManager.ENABLE_ANTIALISING,
+                ENABLE_ANTIALISING,
                 String.valueOf(antialiasingCB.isSelected()));
 
     }
 
     private void showMissingDataCBActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(PreferenceManager.SHOW_MISSING_DATA_KEY, String.valueOf(
+        updatedPreferenceMap.put(SHOW_MISSING_DATA_KEY, String.valueOf(
                 showMissingDataCB.isSelected()));
     }
 
     private void useAlleleQualityCBActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(PreferenceManager.SAM_ALLELE_USE_QUALITY, String.valueOf(
+        updatedPreferenceMap.put(SAM_ALLELE_USE_QUALITY, String.valueOf(
                 useAlleleQualityCB.isSelected()));
     }
 
@@ -2476,12 +2481,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
         try {
             double val = Double.parseDouble(vw);
             valid = true;
-            updatedPreferenceMap.put(PreferenceManager.DEFAULT_VISIBILITY_WINDOW, vw);
+            updatedPreferenceMap.put(DEFAULT_VISIBILITY_WINDOW, vw);
         } catch (NumberFormatException numberFormatException) {
             valid = false;
         }
         if (!valid && e != null) {
-            junctionFlankingTextField.setText(prefMgr.get(PreferenceManager.DEFAULT_VISIBILITY_WINDOW));
+            junctionFlankingTextField.setText(prefMgr.get(DEFAULT_VISIBILITY_WINDOW));
             MessageUtils.showMessage("Visibility window must be a number");
         }
     }
@@ -2509,11 +2514,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
             // Store the changed preferences
             prefMgr.putAll(updatedPreferenceMap);
 
-            if (updatedPreferenceMap.containsKey(PreferenceManager.PORT_ENABLED) ||
-                    updatedPreferenceMap.containsKey(PreferenceManager.PORT_NUMBER)) {
+            if (updatedPreferenceMap.containsKey(PORT_ENABLED) ||
+                    updatedPreferenceMap.containsKey(PORT_NUMBER)) {
                 CommandListener.halt();
                 if (enablePortCB.isSelected()) {
-                    int port = Integer.parseInt(updatedPreferenceMap.get(PreferenceManager.PORT_NUMBER));
+                    int port = Integer.parseInt(updatedPreferenceMap.get(PORT_NUMBER));
                     CommandListener.start(port);
                 }
             }
@@ -2540,13 +2545,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 Main.updateTooltipSettings();
             }
 
-            if (updatedPreferenceMap.containsKey(PreferenceManager.ENABLE_GOOGLE_MENU)) {
-                IGVMenuBar.getInstance().enableGoogleMenu(Boolean.valueOf(updatedPreferenceMap.get(PreferenceManager.ENABLE_GOOGLE_MENU)));
+            if (updatedPreferenceMap.containsKey(ENABLE_GOOGLE_MENU)) {
+                IGVMenuBar.getInstance().enableGoogleMenu(Boolean.valueOf(updatedPreferenceMap.get(ENABLE_GOOGLE_MENU)));
             }
 
 
-            if (updatedPreferenceMap.containsKey(PreferenceManager.SAVE_GOOGLE_CREDENTIALS)) {
-                OAuthUtils.getInstance().updateSaveOption(Boolean.valueOf(updatedPreferenceMap.get(PreferenceManager.SAVE_GOOGLE_CREDENTIALS)));
+            if (updatedPreferenceMap.containsKey(SAVE_GOOGLE_CREDENTIALS)) {
+                OAuthUtils.getInstance().updateSaveOption(Boolean.valueOf(updatedPreferenceMap.get(SAVE_GOOGLE_CREDENTIALS)));
             }
 
             updatedPreferenceMap.clear();
@@ -2604,12 +2609,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
         if (!chooser.isCanceled()) {
             Font font = chooser.getSelectedFont();
             if (font != null) {
-                prefMgr.put(PreferenceManager.DEFAULT_FONT_FAMILY, font.getFamily());
-                prefMgr.put(PreferenceManager.DEFAULT_FONT_SIZE, String.valueOf(font.getSize()));
+                prefMgr.put(DEFAULT_FONT_FAMILY, font.getFamily());
+                prefMgr.put(DEFAULT_FONT_SIZE, String.valueOf(font.getSize()));
                 int attrs = Font.PLAIN;
                 if (font.isBold()) attrs = Font.BOLD;
                 if (font.isItalic()) attrs |= Font.ITALIC;
-                prefMgr.put(PreferenceManager.DEFAULT_FONT_ATTRIBUTE, String.valueOf(attrs));
+                prefMgr.put(DEFAULT_FONT_ATTRIBUTE, String.valueOf(attrs));
                 FontManager.updateDefaultFont();
                 updateFontField();
                 IGV.getInstance().repaint();
@@ -2619,7 +2624,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
 
     private void expMapToLociCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_expMapToLociCBActionPerformed
-        updatedPreferenceMap.put(PreferenceManager.PROBE_MAPPING_KEY, String.valueOf(expMapToGeneCB.isSelected()));
+        updatedPreferenceMap.put(PROBE_MAPPING_KEY, String.valueOf(expMapToGeneCB.isSelected()));
     }
 
     private void clearGenomeCacheButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearGenomeCacheButtonActionPerformed
@@ -2635,7 +2640,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void dataServerURLTextFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_dataServerURLTextFieldFocusLost
         String attributeName = dataServerURLTextField.getText().trim();
-        updatedPreferenceMap.put(PreferenceManager.DATA_SERVER_URL_KEY, attributeName);
+        updatedPreferenceMap.put(DATA_SERVER_URL_KEY, attributeName);
     }
 
 
@@ -2652,23 +2657,23 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void dataServerURLTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataServerURLTextFieldActionPerformed
         String attributeName = dataServerURLTextField.getText().trim();
-        updatedPreferenceMap.put(PreferenceManager.DATA_SERVER_URL_KEY, attributeName);
+        updatedPreferenceMap.put(DATA_SERVER_URL_KEY, attributeName);
     }
 
     private void genomeServerURLTextFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_genomeServerURLTextFieldFocusLost
         String attributeName = genomeServerURLTextField.getText().trim();
-        updatedPreferenceMap.put(PreferenceManager.GENOMES_SERVER_URL, attributeName);
+        updatedPreferenceMap.put(GENOMES_SERVER_URL, attributeName);
     }
 
     private void genomeServerURLTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_genomeServerURLTextFieldActionPerformed
         String attributeName = genomeServerURLTextField.getText().trim();
-        updatedPreferenceMap.put(PreferenceManager.GENOMES_SERVER_URL, attributeName);
+        updatedPreferenceMap.put(GENOMES_SERVER_URL, attributeName);
     }
 
 
     private void blatURLFieldFocusLost(FocusEvent e) {
         String attributeName = blatURLField.getText().trim();
-        updatedPreferenceMap.put(PreferenceManager.BLAT_URL, attributeName);
+        updatedPreferenceMap.put(BLAT_URL, attributeName);
 
     }
 
@@ -2677,7 +2682,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }
 
     private void expandIconCBActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(PreferenceManager.SHOW_EXPAND_ICON, String.valueOf(expandIconCB.isSelected()));
+        updatedPreferenceMap.put(SHOW_EXPAND_ICON, String.valueOf(expandIconCB.isSelected()));
 
     }
 
@@ -2688,12 +2693,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void showJunctionTrackCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showCovTrackCBActionPerformed
         final boolean junctionTrackEnabled = showJunctionTrackCB.isSelected();
-        updatedPreferenceMap.put(PreferenceManager.SAM_SHOW_JUNCTION_TRACK, String.valueOf(junctionTrackEnabled));
+        updatedPreferenceMap.put(SAM_SHOW_JUNCTION_TRACK, String.valueOf(junctionTrackEnabled));
     }
 
     private void showJunctionFlankingRegionsCBActionPerformed(java.awt.event.ActionEvent evt) {
         final boolean junctionFlankingRegionsEnabled = showJunctionFlankingRegionsCB.isSelected();
-        updatedPreferenceMap.put(PreferenceManager.SAM_SHOW_JUNCTION_FLANKINGREGIONS,
+        updatedPreferenceMap.put(SAM_SHOW_JUNCTION_FLANKINGREGIONS,
                 String.valueOf(junctionFlankingRegionsEnabled));
     }
 
@@ -2708,13 +2713,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
             int val = Integer.parseInt(flankingWidth);
             if (val >= 0) {
                 valid = true;
-                updatedPreferenceMap.put(PreferenceManager.SAM_JUNCTION_MIN_FLANKING_WIDTH, flankingWidth);
+                updatedPreferenceMap.put(SAM_JUNCTION_MIN_FLANKING_WIDTH, flankingWidth);
             }
 
         } catch (NumberFormatException numberFormatException) {
         }
         if (!valid && e != null) {
-            junctionFlankingTextField.setText(prefMgr.get(PreferenceManager.SAM_JUNCTION_MIN_FLANKING_WIDTH));
+            junctionFlankingTextField.setText(prefMgr.get(SAM_JUNCTION_MIN_FLANKING_WIDTH));
             MessageUtils.showMessage("Flanking width must be a positive integer.");
         }
     }
@@ -2730,13 +2735,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
             int val = Integer.parseInt(minCoverage);
             if (val >= 0) {
                 valid = true;
-                updatedPreferenceMap.put(PreferenceManager.SAM_JUNCTION_MIN_COVERAGE, minCoverage);
+                updatedPreferenceMap.put(SAM_JUNCTION_MIN_COVERAGE, minCoverage);
             }
         } catch (NumberFormatException numberFormatException) {
             valid = false;
         }
         if (!valid && e != null) {
-            junctionCoverageTextField.setText(prefMgr.get(PreferenceManager.SAM_JUNCTION_MIN_COVERAGE));
+            junctionCoverageTextField.setText(prefMgr.get(SAM_JUNCTION_MIN_COVERAGE));
             MessageUtils.showMessage("Minimum junction coverage must be a positive integer.");
 
         }
@@ -2751,7 +2756,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         String insertThreshold = insertSizeThresholdField.getText().trim();
         try {
             Integer.parseInt(insertThreshold);
-            updatedPreferenceMap.put(PreferenceManager.SAM_MAX_INSERT_SIZE_THRESHOLD, insertThreshold);
+            updatedPreferenceMap.put(SAM_MAX_INSERT_SIZE_THRESHOLD, insertThreshold);
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
             MessageUtils.showMessage("BlastMapping quality threshold must be an integer.");
@@ -2766,7 +2771,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         String insertThreshold = insertSizeMinThresholdField.getText().trim();
         try {
             Integer.parseInt(insertThreshold);
-            updatedPreferenceMap.put(PreferenceManager.SAM_MIN_INSERT_SIZE_THRESHOLD, insertThreshold);
+            updatedPreferenceMap.put(SAM_MIN_INSERT_SIZE_THRESHOLD, insertThreshold);
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
             MessageUtils.showMessage("BlastMapping quality threshold must be an integer.");
@@ -2782,7 +2787,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         String qualityThreshold = mappingQualityThresholdField.getText().trim();
         try {
             Integer.parseInt(qualityThreshold);
-            updatedPreferenceMap.put(PreferenceManager.SAM_QUALITY_THRESHOLD, qualityThreshold);
+            updatedPreferenceMap.put(SAM_QUALITY_THRESHOLD, qualityThreshold);
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
             MessageUtils.showMessage(
@@ -2792,7 +2797,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void samFlagIndelsCBActionPerformed(ActionEvent e) {
         final boolean flagInsertions = samFlagIndelsCB.isSelected();
-        updatedPreferenceMap.put(PreferenceManager.SAM_FLAG_LARGE_INDELS, String.valueOf(flagInsertions));
+        updatedPreferenceMap.put(SAM_FLAG_LARGE_INDELS, String.valueOf(flagInsertions));
         samFlagIndelsThresholdField.setEnabled(flagInsertions);
     }
 
@@ -2809,7 +2814,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 inputValidated = false;
                 MessageUtils.showMessage("Insertion threshold must be a positive integer.");
             } else {
-                updatedPreferenceMap.put(PreferenceManager.SAM_LARGE_INDELS_THRESHOLD, insertionThreshold);
+                updatedPreferenceMap.put(SAM_LARGE_INDELS_THRESHOLD, insertionThreshold);
             }
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
@@ -2819,7 +2824,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void samFlagClippingCBActionPerformed(ActionEvent e) {
         final boolean flagClipping = samFlagClippingCB.isSelected();
-        updatedPreferenceMap.put(PreferenceManager.SAM_FLAG_CLIPPING, String.valueOf(flagClipping));
+        updatedPreferenceMap.put(SAM_FLAG_CLIPPING, String.valueOf(flagClipping));
         samFlagClippingThresholdField.setEnabled(flagClipping);
     }
 
@@ -2836,7 +2841,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 inputValidated = false;
                 MessageUtils.showMessage("Clipping threshold must be a non-negative integer.");
             } else {
-                updatedPreferenceMap.put(PreferenceManager.SAM_CLIPPING_THRESHOLD, clippingThreshold);
+                updatedPreferenceMap.put(SAM_CLIPPING_THRESHOLD, clippingThreshold);
             }
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
@@ -2846,7 +2851,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void hideIndelsBasesCBActionPerformed(ActionEvent e) {
         final boolean flagInsertions = hideIndelsBasesCB.isSelected();
-        updatedPreferenceMap.put(PreferenceManager.SAM_HIDE_SMALL_INDEL_BP, String.valueOf(flagInsertions));
+        updatedPreferenceMap.put(SAM_HIDE_SMALL_INDEL_BP, String.valueOf(flagInsertions));
         hideIndelsBasesField.setEnabled(flagInsertions);
 
     }
@@ -2863,7 +2868,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 inputValidated = false;
                 MessageUtils.showMessage("Threshold must be a positive integer.");
             } else {
-                updatedPreferenceMap.put(PreferenceManager.SAM_SMALL_INDEL_BP_THRESHOLD, threshold);
+                updatedPreferenceMap.put(SAM_SMALL_INDEL_BP_THRESHOLD, threshold);
             }
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
@@ -2874,7 +2879,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void downsampleReadsCBActionPerformed(ActionEvent e) {
         final boolean downsample = downsampleReadsCB.isSelected();
-        updatedPreferenceMap.put(PreferenceManager.SAM_DOWNSAMPLE_READS, String.valueOf(downsample));
+        updatedPreferenceMap.put(SAM_DOWNSAMPLE_READS, String.valueOf(downsample));
         samSamplingWindowField.setEnabled(downsample);
         samDownsampleCountField.setEnabled(downsample);
     }
@@ -2891,7 +2896,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 inputValidated = false;
                 MessageUtils.showMessage("Down-sampling window must be a positive integer.");
             } else {
-                updatedPreferenceMap.put(PreferenceManager.SAM_SAMPLING_WINDOW, samplingWindowString);
+                updatedPreferenceMap.put(SAM_SAMPLING_WINDOW, samplingWindowString);
             }
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
@@ -2912,7 +2917,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 inputValidated = false;
                 MessageUtils.showMessage("Down-sampling read count must be a positive integer.");
             } else {
-                updatedPreferenceMap.put(PreferenceManager.SAM_SAMPLING_COUNT, maxLevelString);
+                updatedPreferenceMap.put(SAM_SAMPLING_COUNT, maxLevelString);
             }
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
@@ -2923,16 +2928,16 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private void samShadeMismatchedBaseCBActionPerformed(java.awt.event.ActionEvent evt) {
         if (samShadeMismatchedBaseCB.isSelected()) {
             updatedPreferenceMap.put(
-                    PreferenceManager.SAM_SHADE_BASES,
+                    SAM_SHADE_BASES,
                     ShadeBasesOption.QUALITY.toString());
             samMinBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
             samMaxBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
         } else {
             PreferenceManager prefMgr = PreferenceManager.getInstance();
             if (ShadeBasesOption.QUALITY ==
-                    CollUtils.valueOf(ShadeBasesOption.class, prefMgr.get(PreferenceManager.SAM_SHADE_BASES), ShadeBasesOption.QUALITY)) {
+                    CollUtils.valueOf(ShadeBasesOption.class, prefMgr.get(SAM_SHADE_BASES), ShadeBasesOption.QUALITY)) {
                 updatedPreferenceMap.put(
-                        PreferenceManager.SAM_SHADE_BASES,
+                        SAM_SHADE_BASES,
                         ShadeBasesOption.NONE.toString());
                 samMinBaseQualityField.setEnabled(false);
                 samMaxBaseQualityField.setEnabled(false);
@@ -2942,47 +2947,47 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void showCenterLineCBActionPerformed(ActionEvent e) {
         updatedPreferenceMap.put(
-                PreferenceManager.SAM_SHOW_CENTER_LINE,
+                SAM_SHOW_CENTER_LINE,
                 String.valueOf(showCenterLineCB.isSelected()));
 
     }
 
     private void genomeUpdateCBActionPerformed(ActionEvent e) {
         updatedPreferenceMap.put(
-                PreferenceManager.AUTO_UPDATE_GENOMES,
+                AUTO_UPDATE_GENOMES,
                 String.valueOf(this.genomeUpdateCB.isSelected()));
     }
 
 
     private void samFlagUnmappedPairCBActionPerformed(java.awt.event.ActionEvent evt) {
         updatedPreferenceMap.put(
-                PreferenceManager.SAM_FLAG_UNMAPPED_PAIR,
+                SAM_FLAG_UNMAPPED_PAIR,
                 String.valueOf(samFlagUnmappedPairCB.isSelected()));
     }
 
     private void samShowDuplicatesCBActionPerformed(java.awt.event.ActionEvent evt) {
         updatedPreferenceMap.put(
-                PreferenceManager.SAM_SHOW_DUPLICATES,
+                SAM_SHOW_DUPLICATES,
                 String.valueOf(!samFilterDuplicatesCB.isSelected()));
     }
 
     private void showSoftClippedCBActionPerformed(ActionEvent e) {
         updatedPreferenceMap.put(
-                PreferenceManager.SAM_SHOW_SOFT_CLIPPED,
+                SAM_SHOW_SOFT_CLIPPED,
                 String.valueOf(showSoftClippedCB.isSelected()));
     }
 
 
     private void quickConsensusModeCBActionPerformed() {
         updatedPreferenceMap.put(
-                PreferenceManager.SAM_QUICK_CONSENSUS_MODE,
+                SAM_QUICK_CONSENSUS_MODE,
                 String.valueOf(quickConsensusModeCB.isSelected()));
     }
 
 
     private void isizeComputeCBActionPerformed(ActionEvent e) {
         final boolean selected = isizeComputeCB.isSelected();
-        updatedPreferenceMap.put(PreferenceManager.SAM_COMPUTE_ISIZES, String.valueOf(selected));
+        updatedPreferenceMap.put(SAM_COMPUTE_ISIZES, String.valueOf(selected));
         insertSizeThresholdField.setEnabled(!selected);
         insertSizeMinThresholdField.setEnabled(!selected);
         insertSizeMinPercentileField.setEnabled(selected);
@@ -3007,7 +3012,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         String valueString = insertSizeMinPercentileField.getText().trim();
         try {
             Double.parseDouble(valueString);
-            updatedPreferenceMap.put(PreferenceManager.SAM_MIN_INSERT_SIZE_PERCENTILE, valueString);
+            updatedPreferenceMap.put(SAM_MIN_INSERT_SIZE_PERCENTILE, valueString);
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
             MessageUtils.showMessage("Minimum insert size percentile must be a number.");
@@ -3023,7 +3028,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         String valueString = insertSizeMaxPercentileField.getText().trim();
         try {
             Double.parseDouble(valueString);
-            updatedPreferenceMap.put(PreferenceManager.SAM_MAX_INSERT_SIZE_PERCENTILE, valueString);
+            updatedPreferenceMap.put(SAM_MAX_INSERT_SIZE_PERCENTILE, valueString);
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
             MessageUtils.showMessage("Maximum insert size percentile must be a number.");
@@ -3039,7 +3044,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         String maxSAMWindowSize = String.valueOf(samMaxWindowSizeField.getText());
         try {
             Float.parseFloat(maxSAMWindowSize);
-            updatedPreferenceMap.put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, maxSAMWindowSize);
+            updatedPreferenceMap.put(SAM_MAX_VISIBLE_RANGE, maxSAMWindowSize);
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
             MessageUtils.showMessage("Visibility range must be a number.");
@@ -3059,7 +3064,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
             }
         }
         samHiddenTagsClean += ","; // ensure non-empty string, which results in the option being unset
-        updatedPreferenceMap.put(PreferenceManager.SAM_HIDDEN_TAGS, samHiddenTagsClean);
+        updatedPreferenceMap.put(SAM_HIDDEN_TAGS, samHiddenTagsClean);
     }
 
 
@@ -3074,7 +3079,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
             if (value < 1 || value > 10000) {
                 MessageUtils.showMessage("Visibility range must be a number between 1 and 10000.");
             } else {
-                updatedPreferenceMap.put(PreferenceManager.MAX_SEQUENCE_RESOLUTION, seqResolutionSize);
+                updatedPreferenceMap.put(MAX_SEQUENCE_RESOLUTION, seqResolutionSize);
             }
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
@@ -3085,36 +3090,36 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
 
     private void chartDrawTrackNameCBActionPerformed(java.awt.event.ActionEvent evt) {
-        updatedPreferenceMap.put(PreferenceManager.CHART_DRAW_TRACK_NAME,
+        updatedPreferenceMap.put(CHART_DRAW_TRACK_NAME,
                 String.valueOf(chartDrawTrackNameCB.isSelected()));
     }
 
     private void autoscaleCBActionPerformed(java.awt.event.ActionEvent evt) {
-        updatedPreferenceMap.put(PreferenceManager.CHART_AUTOSCALE, String.valueOf(autoscaleCB.isSelected()));
+        updatedPreferenceMap.put(CHART_AUTOSCALE, String.valueOf(autoscaleCB.isSelected()));
     }
 
 
     private void colorBordersCBActionPerformed(java.awt.event.ActionEvent evt) {
         updatedPreferenceMap.put(
-                PreferenceManager.CHART_COLOR_BORDERS,
+                CHART_COLOR_BORDERS,
                 String.valueOf(colorBordersCB.isSelected()));
     }
 
     private void bottomBorderCBActionPerformed(java.awt.event.ActionEvent evt) {
         updatedPreferenceMap.put(
-                PreferenceManager.CHART_DRAW_BOTTOM_BORDER,
+                CHART_DRAW_BOTTOM_BORDER,
                 String.valueOf(bottomBorderCB.isSelected()));
     }
 
     private void topBorderCBActionPerformed(java.awt.event.ActionEvent evt) {
         updatedPreferenceMap.put(
-                PreferenceManager.CHART_DRAW_TOP_BORDER,
+                CHART_DRAW_TOP_BORDER,
                 String.valueOf(topBorderCB.isSelected()));
     }
 
     private void showAllHeatmapFeauresCBActionPerformed(ActionEvent e) {
         updatedPreferenceMap.put(
-                PreferenceManager.CHART_SHOW_ALL_HEATMAP,
+                CHART_SHOW_ALL_HEATMAP,
                 String.valueOf(showAllHeatmapFeauresCB.isSelected()));
     }
 
@@ -3130,13 +3135,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 ct.getColorMap().put(entry.getKey(), entry.getValue());
             }
             String mapString = ct.getMapAsString();
-            updatedPreferenceMap.put(PreferenceManager.MUTATION_COLOR_TABLE, mapString);
+            updatedPreferenceMap.put(MUTATION_COLOR_TABLE, mapString);
         }
     }
 
 
     private void colorMutationsCBActionPerformed(java.awt.event.ActionEvent evt) {
-        updatedPreferenceMap.put(PreferenceManager.COLOR_MUTATIONS, String.valueOf(
+        updatedPreferenceMap.put(COLOR_MUTATIONS, String.valueOf(
                 colorCodeMutationsCB.isSelected()));
     }
 
@@ -3145,50 +3150,50 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
         Color homRefColor = homRefColorChooser.getSelectedColor();
 
-        if (!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.HOMREF_COLOR))) {
-            updatedPreferenceMap.put(PreferenceManager.HOMREF_COLOR, ColorUtilities.colorToString(homRefColor));
+        if (!homRefColor.equals(prefMgr.getAsColor(HOMREF_COLOR))) {
+            updatedPreferenceMap.put(HOMREF_COLOR, ColorUtilities.colorToString(homRefColor));
         }
 
         Color hetVarColor = hetVarColorChooser.getSelectedColor();
 
-        if (!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.HETVAR_COLOR))) {
-            updatedPreferenceMap.put(PreferenceManager.HETVAR_COLOR, ColorUtilities.colorToString(hetVarColor));
+        if (!homRefColor.equals(prefMgr.getAsColor(HETVAR_COLOR))) {
+            updatedPreferenceMap.put(HETVAR_COLOR, ColorUtilities.colorToString(hetVarColor));
         }
 
         Color homVarColor = homVarColorChooser.getSelectedColor();
 
-        if (!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.HOMVAR_COLOR))) {
-            updatedPreferenceMap.put(PreferenceManager.HOMVAR_COLOR, ColorUtilities.colorToString(homVarColor));
+        if (!homRefColor.equals(prefMgr.getAsColor(HOMVAR_COLOR))) {
+            updatedPreferenceMap.put(HOMVAR_COLOR, ColorUtilities.colorToString(homVarColor));
         }
 
         Color noCallColor = noCallColorChooser.getSelectedColor();
 
-        if (!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.NOCALL_COLOR))) {
-            updatedPreferenceMap.put(PreferenceManager.NOCALL_COLOR, ColorUtilities.colorToString(noCallColor));
+        if (!homRefColor.equals(prefMgr.getAsColor(NOCALL_COLOR))) {
+            updatedPreferenceMap.put(NOCALL_COLOR, ColorUtilities.colorToString(noCallColor));
         }
 
         Color afRefColor = afRefColorChooser.getSelectedColor();
 
-        if (!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.AF_REF_COLOR))) {
-            updatedPreferenceMap.put(PreferenceManager.AF_REF_COLOR, ColorUtilities.colorToString(afRefColor));
+        if (!homRefColor.equals(prefMgr.getAsColor(AF_REF_COLOR))) {
+            updatedPreferenceMap.put(AF_REF_COLOR, ColorUtilities.colorToString(afRefColor));
         }
 
         Color afVarColor = afVarColorChooser.getSelectedColor();
 
-        if (!homRefColor.equals(prefMgr.getAsColor(PreferenceManager.AF_VAR_COLOR))) {
-            updatedPreferenceMap.put(PreferenceManager.AF_VAR_COLOR, ColorUtilities.colorToString(afVarColor));
+        if (!homRefColor.equals(prefMgr.getAsColor(AF_VAR_COLOR))) {
+            updatedPreferenceMap.put(AF_VAR_COLOR, ColorUtilities.colorToString(afVarColor));
         }
 
         boolean alleleFreq = alleleFreqRB.isSelected();
-        if (alleleFreq != prefMgr.getAsBoolean(PreferenceManager.VARIANT_COLOR_BY_ALLELE_FREQ)) {
-            updatedPreferenceMap.put(PreferenceManager.VARIANT_COLOR_BY_ALLELE_FREQ, Boolean.toString(alleleFreq));
+        if (alleleFreq != prefMgr.getAsBoolean(VARIANT_COLOR_BY_ALLELE_FREQ)) {
+            updatedPreferenceMap.put(VARIANT_COLOR_BY_ALLELE_FREQ, Boolean.toString(alleleFreq));
         }
 
     }
 
     private void resetVCFButtonActionPerformed(ActionEvent e) {
-        for (String vcfKey : Arrays.asList(PreferenceManager.HOMREF_COLOR, PreferenceManager.HETVAR_COLOR, PreferenceManager.HOMVAR_COLOR,
-                PreferenceManager.NOCALL_COLOR, PreferenceManager.AF_REF_COLOR, PreferenceManager.AF_VAR_COLOR, PreferenceManager.VARIANT_COLOR_BY_ALLELE_FREQ)) {
+        for (String vcfKey : Arrays.asList(HOMREF_COLOR, HETVAR_COLOR, HOMVAR_COLOR,
+                NOCALL_COLOR, AF_REF_COLOR, AF_VAR_COLOR, VARIANT_COLOR_BY_ALLELE_FREQ)) {
             prefMgr.remove(vcfKey);
         }
         resetVCFColorChoosers();
@@ -3196,14 +3201,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
 
     private void resetVCFColorChoosers() {
-        homRefColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.HOMREF_COLOR));
-        hetVarColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.HETVAR_COLOR));
-        homVarColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.HOMVAR_COLOR));
-        noCallColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.NOCALL_COLOR));
-        afRefColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.AF_REF_COLOR));
-        afVarColorChooser.setSelectedColor(prefMgr.getAsColor(PreferenceManager.AF_VAR_COLOR));
+        homRefColorChooser.setSelectedColor(prefMgr.getAsColor(HOMREF_COLOR));
+        hetVarColorChooser.setSelectedColor(prefMgr.getAsColor(HETVAR_COLOR));
+        homVarColorChooser.setSelectedColor(prefMgr.getAsColor(HOMVAR_COLOR));
+        noCallColorChooser.setSelectedColor(prefMgr.getAsColor(NOCALL_COLOR));
+        afRefColorChooser.setSelectedColor(prefMgr.getAsColor(AF_REF_COLOR));
+        afVarColorChooser.setSelectedColor(prefMgr.getAsColor(AF_VAR_COLOR));
 
-        if (prefMgr.getAsBoolean(PreferenceManager.VARIANT_COLOR_BY_ALLELE_FREQ)) {
+        if (prefMgr.getAsBoolean(VARIANT_COLOR_BY_ALLELE_FREQ)) {
             alleleFreqRB.setSelected(true);
             alleleFractionRB.setSelected(false);
         } else {
@@ -3214,12 +3219,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
 
     private void showOrphanedMutationsCBActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(PreferenceManager.SHOW_ORPHANED_MUTATIONS, String.valueOf(
+        updatedPreferenceMap.put(SHOW_ORPHANED_MUTATIONS, String.valueOf(
                 showOrphanedMutationsCB.isSelected()));
     }
 
     private void overlayTrackCBActionPerformed(java.awt.event.ActionEvent evt) {
-        updatedPreferenceMap.put(PreferenceManager.OVERLAY_MUTATION_TRACKS, String.valueOf(
+        updatedPreferenceMap.put(OVERLAY_MUTATION_TRACKS, String.valueOf(
                 overlayTrackCB.isSelected()));
         overlayAttributeTextField.setEnabled(overlayTrackCB.isSelected());
         showOrphanedMutationsCB.setEnabled(overlayTrackCB.isSelected());
@@ -3232,12 +3237,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
         if (attributeName != null) {
             attributeName = attributeName.trim();
         }
-        updatedPreferenceMap.put(PreferenceManager.OVERLAY_ATTRIBUTE_KEY, attributeName);
+        updatedPreferenceMap.put(OVERLAY_ATTRIBUTE_KEY, attributeName);
         updateOverlays = true;
     }//GEN-LAST:event_overlayAttributeTextFieldFocusLost
 
     private void overlayAttributeTextFieldActionPerformed(java.awt.event.ActionEvent evt) {
-        updatedPreferenceMap.put(PreferenceManager.OVERLAY_ATTRIBUTE_KEY, String.valueOf(
+        updatedPreferenceMap.put(OVERLAY_ATTRIBUTE_KEY, String.valueOf(
                 overlayAttributeTextField.getText()));
         updateOverlays = true;
         // TODO add your handling code here:
@@ -3247,7 +3252,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         String defaultTrackHeight = String.valueOf(defaultChartTrackHeightField.getText());
         try {
             Integer.parseInt(defaultTrackHeight);
-            updatedPreferenceMap.put(PreferenceManager.TRACK_HEIGHT_KEY, defaultTrackHeight);
+            updatedPreferenceMap.put(TRACK_HEIGHT_KEY, defaultTrackHeight);
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
             MessageUtils.showMessage("Track height must be an integer number.");
@@ -3258,7 +3263,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         String defaultTrackHeight = String.valueOf(defaultChartTrackHeightField.getText());
         try {
             Integer.parseInt(defaultTrackHeight);
-            updatedPreferenceMap.put(PreferenceManager.TRACK_HEIGHT_KEY, defaultTrackHeight);
+            updatedPreferenceMap.put(TRACK_HEIGHT_KEY, defaultTrackHeight);
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
             MessageUtils.showMessage("Track height must be an integer number.");
@@ -3271,7 +3276,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         if (attributeName != null) {
             attributeName = attributeName.trim();
         }
-        updatedPreferenceMap.put(PreferenceManager.TRACK_ATTRIBUTE_NAME_KEY, attributeName);
+        updatedPreferenceMap.put(TRACK_ATTRIBUTE_NAME_KEY, attributeName);
     }
 
     private void trackNameAttributeFieldActionPerformed(java.awt.event.ActionEvent evt) {
@@ -3279,7 +3284,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         if (attributeName != null) {
             attributeName = attributeName.trim();
         }
-        updatedPreferenceMap.put(PreferenceManager.TRACK_ATTRIBUTE_NAME_KEY, attributeName);
+        updatedPreferenceMap.put(TRACK_ATTRIBUTE_NAME_KEY, attributeName);
     }
 
     private void defaultChartTrackHeightFieldFocusLost(java.awt.event.FocusEvent evt) {
@@ -3290,7 +3295,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         String defaultTrackHeight = String.valueOf(defaultChartTrackHeightField.getText());
         try {
             Integer.parseInt(defaultTrackHeight);
-            updatedPreferenceMap.put(PreferenceManager.CHART_TRACK_HEIGHT_KEY, defaultTrackHeight);
+            updatedPreferenceMap.put(CHART_TRACK_HEIGHT_KEY, defaultTrackHeight);
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
             MessageUtils.showMessage("Track height must be an integer number.");
@@ -3307,7 +3312,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         String flankingRegion = String.valueOf(geneListFlankingField.getText());
         try {
             Integer.parseInt(flankingRegion);
-            updatedPreferenceMap.put(PreferenceManager.FLANKING_REGION, flankingRegion);
+            updatedPreferenceMap.put(FLANKING_REGION, flankingRegion);
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
             MessageUtils.showMessage("Flanking region must be an integer number.");
@@ -3318,29 +3323,29 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void showAttributesDisplayCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {
         boolean state = ((JCheckBox) evt.getSource()).isSelected();
-        updatedPreferenceMap.put(PreferenceManager.SHOW_ATTRIBUTE_VIEWS_KEY, String.valueOf(state));
+        updatedPreferenceMap.put(SHOW_ATTRIBUTE_VIEWS_KEY, String.valueOf(state));
         IGV.getInstance().doShowAttributeDisplay(state);
     }
 
     private void combinePanelsCBActionPerformed(java.awt.event.ActionEvent evt) {
-        updatedPreferenceMap.put(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY, String.valueOf(
+        updatedPreferenceMap.put(SHOW_SINGLE_TRACK_PANE_KEY, String.valueOf(
                 combinePanelsCB.isSelected()));
     }
 
     private void showDefaultTrackAttributesCBActionPerformed(java.awt.event.ActionEvent evt) {
-        updatedPreferenceMap.put(PreferenceManager.SHOW_DEFAULT_TRACK_ATTRIBUTES, String.valueOf(
+        updatedPreferenceMap.put(SHOW_DEFAULT_TRACK_ATTRIBUTES, String.valueOf(
                 showDefaultTrackAttributesCB.isSelected()));
     }
 
 
     private void showRegionBoundariesCBActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(PreferenceManager.SHOW_REGION_BARS, String.valueOf(
+        updatedPreferenceMap.put(SHOW_REGION_BARS, String.valueOf(
                 showRegionBoundariesCB.isSelected()));
     }
 
     private void filterVendorFailedReadsCBActionPerformed(ActionEvent e) {
         updatedPreferenceMap.put(
-                PreferenceManager.SAM_FILTER_FAILED_READS,
+                SAM_FILTER_FAILED_READS,
                 String.valueOf(filterFailedReadsCB.isSelected()));
     }
 
@@ -3349,7 +3354,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         String baseQuality = samMinBaseQualityField.getText().trim();
         try {
             Integer.parseInt(baseQuality);
-            updatedPreferenceMap.put(PreferenceManager.SAM_BASE_QUALITY_MIN, baseQuality);
+            updatedPreferenceMap.put(SAM_BASE_QUALITY_MIN, baseQuality);
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
             MessageUtils.showMessage("Base quality must be an integer.");
@@ -3364,7 +3369,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         String baseQuality = samMaxBaseQualityField.getText().trim();
         try {
             Integer.parseInt(baseQuality);
-            updatedPreferenceMap.put(PreferenceManager.SAM_BASE_QUALITY_MAX, baseQuality);
+            updatedPreferenceMap.put(SAM_BASE_QUALITY_MAX, baseQuality);
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
             MessageUtils.showMessage("Base quality must be an integer.");
@@ -3377,30 +3382,30 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }//GEN-LAST:event_samMaxBaseQualityFieldFocusLost
 
     private void expMapToGeneCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_expMapToGeneCBActionPerformed
-        updatedPreferenceMap.put(PreferenceManager.PROBE_MAPPING_KEY, String.valueOf(expMapToGeneCB.isSelected()));
+        updatedPreferenceMap.put(PROBE_MAPPING_KEY, String.valueOf(expMapToGeneCB.isSelected()));
 
     }//GEN-LAST:event_expMapToGeneCBActionPerformed
 
     private void labelYAxisCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_labelYAxisCBActionPerformed
-        updatedPreferenceMap.put(PreferenceManager.CHART_DRAW_Y_AXIS, String.valueOf(labelYAxisCB.isSelected()));
+        updatedPreferenceMap.put(CHART_DRAW_Y_AXIS, String.valueOf(labelYAxisCB.isSelected()));
     }
 
 
     private void showAlignmentTrackCBActionPerformed(ActionEvent e) {
         final boolean coverageOnlyCBSelected = showAlignmentTrackCB.isSelected();
-        updatedPreferenceMap.put(PreferenceManager.SAM_SHOW_ALIGNMENT_TRACK, String.valueOf(coverageOnlyCBSelected));
+        updatedPreferenceMap.put(SAM_SHOW_ALIGNMENT_TRACK, String.valueOf(coverageOnlyCBSelected));
     }
 
 
     private void showCovTrackCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showCovTrackCBActionPerformed
-        updatedPreferenceMap.put(PreferenceManager.SAM_SHOW_COV_TRACK, String.valueOf(showCovTrackCB.isSelected()));
+        updatedPreferenceMap.put(SAM_SHOW_COV_TRACK, String.valueOf(showCovTrackCB.isSelected()));
     }
 
     private void portFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_portFieldActionPerformed
         String portString = portField.getText().trim();
         try {
             Integer.parseInt(portString);
-            updatedPreferenceMap.put(PreferenceManager.PORT_NUMBER, portString);
+            updatedPreferenceMap.put(PORT_NUMBER, portString);
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
             MessageUtils.showMessage("Port must be an integer.");
@@ -3412,14 +3417,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }
 
     private void enablePortCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enablePortCBActionPerformed
-        updatedPreferenceMap.put(PreferenceManager.PORT_ENABLED, String.valueOf(enablePortCB.isSelected()));
+        updatedPreferenceMap.put(PORT_ENABLED, String.valueOf(enablePortCB.isSelected()));
         portField.setEnabled(enablePortCB.isSelected());
 
     }
 
     private void expandCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_expandCBActionPerformed
         updatedPreferenceMap.put(
-                PreferenceManager.EXPAND_FEAUTRE_TRACKS,
+                EXPAND_FEAUTRE_TRACKS,
                 String.valueOf(expandCB.isSelected()));
     }
 
@@ -3427,19 +3432,19 @@ public class PreferencesEditor extends javax.swing.JDialog {
         // TODO add your handling code here:
         PreferenceManager prefMgr = PreferenceManager.getInstance();
         genomeServerURLTextField.setEnabled(true);
-        genomeServerURLTextField.setText(PreferenceManager.DEFAULT_GENOME_URL);
-        updatedPreferenceMap.put(PreferenceManager.GENOMES_SERVER_URL, null);
+        genomeServerURLTextField.setText(DEFAULT_GENOME_URL);
+        updatedPreferenceMap.put(GENOMES_SERVER_URL, null);
         dataServerURLTextField.setEnabled(true);
-        dataServerURLTextField.setText(PreferenceManager.DEFAULT_DATA_URL);
-        updatedPreferenceMap.put(PreferenceManager.DATA_SERVER_URL_KEY, null);
+        dataServerURLTextField.setText(DEFAULT_DATA_URL);
+        updatedPreferenceMap.put(DATA_SERVER_URL_KEY, null);
     }
 
     private void searchZoomCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchZoomCBActionPerformed
-        updatedPreferenceMap.put(PreferenceManager.SEARCH_ZOOM, String.valueOf(searchZoomCB.isSelected()));
+        updatedPreferenceMap.put(SEARCH_ZOOM, String.valueOf(searchZoomCB.isSelected()));
     }
 
     private void showDatarangeCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showDatarangeCBActionPerformed
-        updatedPreferenceMap.put(PreferenceManager.CHART_SHOW_DATA_RANGE, String.valueOf(showDatarangeCB.isSelected()));
+        updatedPreferenceMap.put(CHART_SHOW_DATA_RANGE, String.valueOf(showDatarangeCB.isSelected()));
     }
 
     private void showDatarangeCBFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_showDatarangeCBFocusLost
@@ -3450,7 +3455,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         String snpThreshold = snpThresholdField.getText().trim();
         try {
             Double.parseDouble(snpThreshold);
-            updatedPreferenceMap.put(PreferenceManager.SAM_ALLELE_THRESHOLD, snpThreshold);
+            updatedPreferenceMap.put(SAM_ALLELE_THRESHOLD, snpThreshold);
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
             MessageUtils.showMessage("Allele frequency threshold must be a number.");
@@ -3462,11 +3467,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }
 
     private void autoFileDisoveryCBActionPerformed(java.awt.event.ActionEvent evt) {
-        updatedPreferenceMap.put(PreferenceManager.BYPASS_FILE_AUTO_DISCOVERY, String.valueOf(!autoFileDisoveryCB.isSelected()));
+        updatedPreferenceMap.put(BYPASS_FILE_AUTO_DISCOVERY, String.valueOf(!autoFileDisoveryCB.isSelected()));
     }
 
     private void normalizeCoverageCBActionPerformed(java.awt.event.ActionEvent evt) {
-        updatedPreferenceMap.put(PreferenceManager.NORMALIZE_COVERAGE, String.valueOf(normalizeCoverageCB.isSelected()));
+        updatedPreferenceMap.put(NORMALIZE_COVERAGE, String.valueOf(normalizeCoverageCB.isSelected()));
         portField.setEnabled(enablePortCB.isSelected());
 
     }
@@ -3494,7 +3499,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         boolean authenticateProxy = authenticateProxyCB.isSelected();
         portField.setEnabled(enablePortCB.isSelected());
         updateProxyState(useProxy, authenticateProxy);
-        updatedPreferenceMap.put(PreferenceManager.USE_PROXY, String.valueOf(useProxy));
+        updatedPreferenceMap.put(USE_PROXY, String.valueOf(useProxy));
 
     }
 
@@ -3505,7 +3510,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         boolean authenticateProxy = authenticateProxyCB.isSelected();
         portField.setEnabled(enablePortCB.isSelected());
         updateProxyState(useProxy, authenticateProxy);
-        updatedPreferenceMap.put(PreferenceManager.PROXY_AUTHENTICATE, String.valueOf(authenticateProxy));
+        updatedPreferenceMap.put(PROXY_AUTHENTICATE, String.valueOf(authenticateProxy));
 
         proxyUsernameField.setEnabled(authenticateProxy);
         proxyPasswordField.setEnabled(authenticateProxy);
@@ -3519,7 +3524,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void proxyHostFieldActionPerformed(java.awt.event.ActionEvent evt) {
         proxySettingsChanged = true;
-        updatedPreferenceMap.put(PreferenceManager.PROXY_HOST, proxyHostField.getText());
+        updatedPreferenceMap.put(PROXY_HOST, proxyHostField.getText());
     }
 
     private void proxyPortFieldFocusLost(java.awt.event.FocusEvent evt) {
@@ -3530,7 +3535,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         try {
             Integer.parseInt(proxyPortField.getText());
             proxySettingsChanged = true;
-            updatedPreferenceMap.put(PreferenceManager.PROXY_PORT, proxyPortField.getText());
+            updatedPreferenceMap.put(PROXY_PORT, proxyPortField.getText());
         } catch (NumberFormatException e) {
             MessageUtils.showMessage("Proxy port must be an integer.");
         }
@@ -3544,7 +3549,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         for (String u : urls) {
             setting += u + ",";
         }
-        updatedPreferenceMap.put(PreferenceManager.PROXY_WHITELIST, setting);
+        updatedPreferenceMap.put(PROXY_WHITELIST, setting);
         proxySettingsChanged = true;
 
     }
@@ -3558,7 +3563,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private void proxyTypeCBActionPerformed(ActionEvent e) {
         proxySettingsChanged = true;
         String proxyTypeString = proxyTypeCB.getSelectedItem().toString();
-        updatedPreferenceMap.put(PreferenceManager.PROXY_TYPE, proxyTypeString);
+        updatedPreferenceMap.put(PROXY_TYPE, proxyTypeString);
     }
 
 
@@ -3571,7 +3576,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private void proxyUsernameFieldActionPerformed(java.awt.event.ActionEvent evt) {
         proxySettingsChanged = true;
         String user = proxyUsernameField.getText();
-        updatedPreferenceMap.put(PreferenceManager.PROXY_USER, user);
+        updatedPreferenceMap.put(PROXY_USER, user);
 
     }
 
@@ -3585,7 +3590,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         proxySettingsChanged = true;
         String pw = new String(proxyPasswordField.getPassword());
         String pwEncoded = Utilities.base64Encode(pw);
-        updatedPreferenceMap.put(PreferenceManager.PROXY_PW, pwEncoded);
+        updatedPreferenceMap.put(PROXY_PW, pwEncoded);
 
     }
 
@@ -3607,7 +3612,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }
 
     private void dbHostFieldActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(PreferenceManager.DB_HOST, dbHostField.getText());
+        updatedPreferenceMap.put(DB_HOST, dbHostField.getText());
     }
 
     private void dbNameFieldFocusLost(FocusEvent e) {
@@ -3615,7 +3620,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }
 
     private void dbNameFieldActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(PreferenceManager.DB_NAME, dbNameField.getText());
+        updatedPreferenceMap.put(DB_NAME, dbNameField.getText());
     }
 
     private void dbPortFieldActionPerformed(ActionEvent e) {
@@ -3626,13 +3631,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
         String portText = dbPortField.getText().trim();
         if (portText.length() == 0) {
-            updatedPreferenceMap.put(PreferenceManager.DB_PORT, "-1");
+            updatedPreferenceMap.put(DB_PORT, "-1");
         } else {
             try {
                 Integer.parseInt(portText);
-                updatedPreferenceMap.put(PreferenceManager.DB_PORT, portText);
+                updatedPreferenceMap.put(DB_PORT, portText);
             } catch (NumberFormatException e1) {
-                updatedPreferenceMap.put(PreferenceManager.DB_PORT, "-1");
+                updatedPreferenceMap.put(DB_PORT, "-1");
             }
         }
 
@@ -3643,7 +3648,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         File f = FileDialogUtils.chooseFile("Probe mapping file (BED format)");
         if (f != null) {
             probeMappingFileTextField.setText(f.getAbsolutePath());
-            updatedPreferenceMap.put(PreferenceManager.PROBE_MAPPING_FILE, f.getAbsolutePath());
+            updatedPreferenceMap.put(PROBE_MAPPING_FILE, f.getAbsolutePath());
         }
 
     }
@@ -3651,7 +3656,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void useProbeMappingCBActionPerformed(ActionEvent e) {
         boolean isSelected = useProbeMappingCB.isSelected();
-        updatedPreferenceMap.put(PreferenceManager.USE_PROBE_MAPPING_FILE, String.valueOf(isSelected));
+        updatedPreferenceMap.put(USE_PROBE_MAPPING_FILE, String.valueOf(isSelected));
         updateProbeMappingOptions(isSelected);
     }
 
@@ -3673,7 +3678,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         String name = probeMappingFileTextField.getText();
         if (name != null) {
             name = name.trim();
-            updatedPreferenceMap.put(PreferenceManager.PROBE_MAPPING_FILE, name);
+            updatedPreferenceMap.put(PROBE_MAPPING_FILE, name);
         }
 
     }
@@ -3687,7 +3692,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         String ttText = toolTipInitialDelayField.getText();
         try {
             Integer.parseInt(ttText);
-            updatedPreferenceMap.put(PreferenceManager.TOOLTIP_INITIAL_DELAY, ttText);
+            updatedPreferenceMap.put(TOOLTIP_INITIAL_DELAY, ttText);
             tooltipSettingsChanged = true;
         } catch (NumberFormatException e1) {
             MessageUtils.showMessage("Tooltip initial delay must be a number.");
@@ -3702,7 +3707,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         String ttText = tooltipReshowDelayField.getText();
         try {
             Integer.parseInt(ttText);
-            updatedPreferenceMap.put(PreferenceManager.TOOLTIP_RESHOW_DELAY, ttText);
+            updatedPreferenceMap.put(TOOLTIP_RESHOW_DELAY, ttText);
             tooltipSettingsChanged = true;
         } catch (NumberFormatException e1) {
             MessageUtils.showMessage("Tooltip reshow delay must be a number.");
@@ -3719,7 +3724,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         String ttText = tooltipDismissDelayField.getText();
         try {
             Integer.parseInt(ttText);
-            updatedPreferenceMap.put(PreferenceManager.TOOLTIP_DISMISS_DELAY, ttText);
+            updatedPreferenceMap.put(TOOLTIP_DISMISS_DELAY, ttText);
             tooltipSettingsChanged = true;
         } catch (NumberFormatException e1) {
             MessageUtils.showMessage("Tooltip dismiss delay must be a number.");
@@ -3736,98 +3741,98 @@ public class PreferencesEditor extends javax.swing.JDialog {
    * */
 
     private void initValues() {
-        combinePanelsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY));
+        combinePanelsCB.setSelected(prefMgr.getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY));
         //drawExonNumbersCB.setSelected(preferenceManager.getDrawExonNumbers());
 
-        showRegionBoundariesCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SHOW_REGION_BARS));
-        defaultChartTrackHeightField.setText(prefMgr.get(PreferenceManager.CHART_TRACK_HEIGHT_KEY));
-        defaultTrackHeightField.setText(prefMgr.get(PreferenceManager.TRACK_HEIGHT_KEY));
-        showOrphanedMutationsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SHOW_ORPHANED_MUTATIONS));
-        overlayAttributeTextField.setText(prefMgr.get(PreferenceManager.OVERLAY_ATTRIBUTE_KEY));
-        overlayTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.OVERLAY_MUTATION_TRACKS));
-        showMissingDataCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SHOW_MISSING_DATA_KEY));
-        showDefaultTrackAttributesCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SHOW_DEFAULT_TRACK_ATTRIBUTES));
-        colorCodeMutationsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.COLOR_MUTATIONS));
+        showRegionBoundariesCB.setSelected(prefMgr.getAsBoolean(SHOW_REGION_BARS));
+        defaultChartTrackHeightField.setText(prefMgr.get(CHART_TRACK_HEIGHT_KEY));
+        defaultTrackHeightField.setText(prefMgr.get(TRACK_HEIGHT_KEY));
+        showOrphanedMutationsCB.setSelected(prefMgr.getAsBoolean(SHOW_ORPHANED_MUTATIONS));
+        overlayAttributeTextField.setText(prefMgr.get(OVERLAY_ATTRIBUTE_KEY));
+        overlayTrackCB.setSelected(prefMgr.getAsBoolean(OVERLAY_MUTATION_TRACKS));
+        showMissingDataCB.setSelected(prefMgr.getAsBoolean(SHOW_MISSING_DATA_KEY));
+        showDefaultTrackAttributesCB.setSelected(prefMgr.getAsBoolean(SHOW_DEFAULT_TRACK_ATTRIBUTES));
+        colorCodeMutationsCB.setSelected(prefMgr.getAsBoolean(COLOR_MUTATIONS));
         overlayAttributeTextField.setEnabled(overlayTrackCB.isSelected());
         showOrphanedMutationsCB.setEnabled(overlayTrackCB.isSelected());
-        seqResolutionThreshold.setText(prefMgr.get(PreferenceManager.MAX_SEQUENCE_RESOLUTION));
+        seqResolutionThreshold.setText(prefMgr.get(MAX_SEQUENCE_RESOLUTION));
 
-        scaleFontsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SCALE_FONTS));
+        scaleFontsCB.setSelected(prefMgr.getAsBoolean(SCALE_FONTS));
 
-        enableGoogleCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.ENABLE_GOOGLE_MENU));
-        saveGoogleCredentialsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAVE_GOOGLE_CREDENTIALS));
+        enableGoogleCB.setSelected(prefMgr.getAsBoolean(ENABLE_GOOGLE_MENU));
+        saveGoogleCredentialsCB.setSelected(prefMgr.getAsBoolean(SAVE_GOOGLE_CREDENTIALS));
 
-        sessionPathsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SESSION_RELATIVE_PATH));
+        sessionPathsCB.setSelected(prefMgr.getAsBoolean(SESSION_RELATIVE_PATH));
 
-        geneListFlankingField.setText(prefMgr.get(PreferenceManager.FLANKING_REGION));
+        geneListFlankingField.setText(prefMgr.get(FLANKING_REGION));
 
-        enablePortCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.PORT_ENABLED));
-        portField.setText(String.valueOf(prefMgr.getAsInt(PreferenceManager.PORT_NUMBER)));
+        enablePortCB.setSelected(prefMgr.getAsBoolean(PORT_ENABLED));
+        portField.setText(String.valueOf(prefMgr.getAsInt(PORT_NUMBER)));
         portField.setEnabled(enablePortCB.isSelected());
 
-        expandCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.EXPAND_FEAUTRE_TRACKS));
-        searchZoomCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SEARCH_ZOOM));
+        expandCB.setSelected(prefMgr.getAsBoolean(EXPAND_FEAUTRE_TRACKS));
+        searchZoomCB.setSelected(prefMgr.getAsBoolean(SEARCH_ZOOM));
 
-        showAttributesDisplayCheckBox.setSelected(prefMgr.getAsBoolean(PreferenceManager.SHOW_ATTRIBUTE_VIEWS_KEY));
-        trackNameAttributeField.setText(prefMgr.get(PreferenceManager.TRACK_ATTRIBUTE_NAME_KEY));
+        showAttributesDisplayCheckBox.setSelected(prefMgr.getAsBoolean(SHOW_ATTRIBUTE_VIEWS_KEY));
+        trackNameAttributeField.setText(prefMgr.get(TRACK_ATTRIBUTE_NAME_KEY));
 
         genomeServerURLTextField.setText(prefMgr.getGenomeListURL());
         dataServerURLTextField.setText(prefMgr.getDataServerURL());
 
-        blatURLField.setText(prefMgr.get(PreferenceManager.BLAT_URL));
+        blatURLField.setText(prefMgr.get(BLAT_URL));
 
         // Chart panel
-        topBorderCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.CHART_DRAW_TOP_BORDER));
-        bottomBorderCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.CHART_DRAW_BOTTOM_BORDER));
-        colorBordersCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.CHART_COLOR_BORDERS));
-        chartDrawTrackNameCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.CHART_DRAW_TRACK_NAME));
-        autoscaleCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.CHART_AUTOSCALE));
-        showDatarangeCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.CHART_SHOW_DATA_RANGE));
-        labelYAxisCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.CHART_DRAW_Y_AXIS));
-        showAllHeatmapFeauresCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.CHART_SHOW_ALL_HEATMAP));
+        topBorderCB.setSelected(prefMgr.getAsBoolean(CHART_DRAW_TOP_BORDER));
+        bottomBorderCB.setSelected(prefMgr.getAsBoolean(CHART_DRAW_BOTTOM_BORDER));
+        colorBordersCB.setSelected(prefMgr.getAsBoolean(CHART_COLOR_BORDERS));
+        chartDrawTrackNameCB.setSelected(prefMgr.getAsBoolean(CHART_DRAW_TRACK_NAME));
+        autoscaleCB.setSelected(prefMgr.getAsBoolean(CHART_AUTOSCALE));
+        showDatarangeCB.setSelected(prefMgr.getAsBoolean(CHART_SHOW_DATA_RANGE));
+        labelYAxisCB.setSelected(prefMgr.getAsBoolean(CHART_DRAW_Y_AXIS));
+        showAllHeatmapFeauresCB.setSelected(prefMgr.getAsBoolean(CHART_SHOW_ALL_HEATMAP));
 
-        samMaxWindowSizeField.setText(prefMgr.get(PreferenceManager.SAM_MAX_VISIBLE_RANGE));
-        samSamplingWindowField.setText(prefMgr.get(PreferenceManager.SAM_SAMPLING_WINDOW));
-        samDownsampleCountField.setText(prefMgr.get(PreferenceManager.SAM_SAMPLING_COUNT));
+        samMaxWindowSizeField.setText(prefMgr.get(SAM_MAX_VISIBLE_RANGE));
+        samSamplingWindowField.setText(prefMgr.get(SAM_SAMPLING_WINDOW));
+        samDownsampleCountField.setText(prefMgr.get(SAM_SAMPLING_COUNT));
 
-        boolean downsample = prefMgr.getAsBoolean(PreferenceManager.SAM_DOWNSAMPLE_READS);
+        boolean downsample = prefMgr.getAsBoolean(SAM_DOWNSAMPLE_READS);
         downsampleReadsCB.setSelected(downsample);
         samSamplingWindowField.setEnabled(downsample);
         samDownsampleCountField.setEnabled(downsample);
 
-        mappingQualityThresholdField.setText(prefMgr.get(PreferenceManager.SAM_QUALITY_THRESHOLD));
-        insertSizeThresholdField.setText(prefMgr.get(PreferenceManager.SAM_MAX_INSERT_SIZE_THRESHOLD));
-        insertSizeMinThresholdField.setText(prefMgr.get(PreferenceManager.SAM_MIN_INSERT_SIZE_THRESHOLD));
-        insertSizeMinPercentileField.setText(prefMgr.get(PreferenceManager.SAM_MIN_INSERT_SIZE_PERCENTILE));
-        insertSizeMaxPercentileField.setText(prefMgr.get(PreferenceManager.SAM_MAX_INSERT_SIZE_PERCENTILE));
+        mappingQualityThresholdField.setText(prefMgr.get(SAM_QUALITY_THRESHOLD));
+        insertSizeThresholdField.setText(prefMgr.get(SAM_MAX_INSERT_SIZE_THRESHOLD));
+        insertSizeMinThresholdField.setText(prefMgr.get(SAM_MIN_INSERT_SIZE_THRESHOLD));
+        insertSizeMinPercentileField.setText(prefMgr.get(SAM_MIN_INSERT_SIZE_PERCENTILE));
+        insertSizeMaxPercentileField.setText(prefMgr.get(SAM_MAX_INSERT_SIZE_PERCENTILE));
 
-        final boolean isizeComputeSelected = prefMgr.getAsBoolean(PreferenceManager.SAM_COMPUTE_ISIZES);
+        final boolean isizeComputeSelected = prefMgr.getAsBoolean(SAM_COMPUTE_ISIZES);
         isizeComputeCB.setSelected(isizeComputeSelected);
         insertSizeThresholdField.setEnabled(!isizeComputeSelected);
         insertSizeMinThresholdField.setEnabled(!isizeComputeSelected);
         insertSizeMinPercentileField.setEnabled(isizeComputeSelected);
         insertSizeMaxPercentileField.setEnabled(isizeComputeSelected);
 
-        snpThresholdField.setText((String.valueOf(prefMgr.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD))));
+        snpThresholdField.setText((String.valueOf(prefMgr.getAsFloat(SAM_ALLELE_THRESHOLD))));
         //samShowZeroQualityCB.setSelected(samPrefs.isShowZeroQuality());
-        useAlleleQualityCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_ALLELE_USE_QUALITY));
-        samFilterDuplicatesCB.setSelected(!prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_DUPLICATES));
-        filterFailedReadsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_FAILED_READS));
-        filterSecondaryAlignmentsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_SECONDARY_ALIGNMENTS));
-        filterSupplementaryAlignmentsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS));
-        showSoftClippedCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED));
-        quickConsensusModeCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_QUICK_CONSENSUS_MODE));
-        samFlagUnmappedPairCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FLAG_UNMAPPED_PAIR));
-        showCenterLineCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_CENTER_LINE));
+        useAlleleQualityCB.setSelected(prefMgr.getAsBoolean(SAM_ALLELE_USE_QUALITY));
+        samFilterDuplicatesCB.setSelected(!prefMgr.getAsBoolean(SAM_SHOW_DUPLICATES));
+        filterFailedReadsCB.setSelected(prefMgr.getAsBoolean(SAM_FILTER_FAILED_READS));
+        filterSecondaryAlignmentsCB.setSelected(prefMgr.getAsBoolean(SAM_FILTER_SECONDARY_ALIGNMENTS));
+        filterSupplementaryAlignmentsCB.setSelected(prefMgr.getAsBoolean(SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS));
+        showSoftClippedCB.setSelected(prefMgr.getAsBoolean(SAM_SHOW_SOFT_CLIPPED));
+        quickConsensusModeCB.setSelected(prefMgr.getAsBoolean(SAM_QUICK_CONSENSUS_MODE));
+        samFlagUnmappedPairCB.setSelected(prefMgr.getAsBoolean(SAM_FLAG_UNMAPPED_PAIR));
+        showCenterLineCB.setSelected(prefMgr.getAsBoolean(SAM_SHOW_CENTER_LINE));
         samShadeMismatchedBaseCB.setSelected(ShadeBasesOption.QUALITY ==
-                CollUtils.valueOf(ShadeBasesOption.class, prefMgr.get(PreferenceManager.SAM_SHADE_BASES), ShadeBasesOption.QUALITY));
-        samMinBaseQualityField.setText((String.valueOf(prefMgr.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MIN))));
-        samMaxBaseQualityField.setText((String.valueOf(prefMgr.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MAX))));
+                CollUtils.valueOf(ShadeBasesOption.class, prefMgr.get(SAM_SHADE_BASES), ShadeBasesOption.QUALITY));
+        samMinBaseQualityField.setText((String.valueOf(prefMgr.getAsInt(SAM_BASE_QUALITY_MIN))));
+        samMaxBaseQualityField.setText((String.valueOf(prefMgr.getAsInt(SAM_BASE_QUALITY_MAX))));
         samMinBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
         samMaxBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
-        showCovTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_COV_TRACK));
+        showCovTrackCB.setSelected(prefMgr.getAsBoolean(SAM_SHOW_COV_TRACK));
 
-        String samHiddenTags = prefMgr.get(PreferenceManager.SAM_HIDDEN_TAGS), samHiddenTagsClean = "";
+        String samHiddenTags = prefMgr.get(SAM_HIDDEN_TAGS), samHiddenTagsClean = "";
         for (String s : (samHiddenTags == null ? "" : samHiddenTags).split("[, ]")) {
             if (!s.equals("")) {
                 samHiddenTagsClean += (samHiddenTagsClean.equals("") ? "" : ",") + s;
@@ -3835,55 +3840,55 @@ public class PreferencesEditor extends javax.swing.JDialog {
         }
         samHiddenTagsField.setText(samHiddenTagsClean);
 
-        final boolean junctionTrackEnabled = prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
+        final boolean junctionTrackEnabled = prefMgr.getAsBoolean(SAM_SHOW_JUNCTION_TRACK);
         showJunctionTrackCB.setSelected(junctionTrackEnabled);
-        showJunctionFlankingRegionsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_FLANKINGREGIONS));
-        junctionFlankingTextField.setText(prefMgr.get(PreferenceManager.SAM_JUNCTION_MIN_FLANKING_WIDTH));
-        junctionCoverageTextField.setText(prefMgr.get(PreferenceManager.SAM_JUNCTION_MIN_COVERAGE));
+        showJunctionFlankingRegionsCB.setSelected(prefMgr.getAsBoolean(SAM_SHOW_JUNCTION_FLANKINGREGIONS));
+        junctionFlankingTextField.setText(prefMgr.get(SAM_JUNCTION_MIN_FLANKING_WIDTH));
+        junctionCoverageTextField.setText(prefMgr.get(SAM_JUNCTION_MIN_COVERAGE));
 
 
-        genomeUpdateCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.AUTO_UPDATE_GENOMES));
-        antialiasingCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.ENABLE_ANTIALISING));
+        genomeUpdateCB.setSelected(prefMgr.getAsBoolean(AUTO_UPDATE_GENOMES));
+        antialiasingCB.setSelected(prefMgr.getAsBoolean(ENABLE_ANTIALISING));
 
-        final boolean mapProbesToGenes = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.PROBE_MAPPING_KEY);
+        final boolean mapProbesToGenes = PreferenceManager.getInstance().getAsBoolean(PROBE_MAPPING_KEY);
         expMapToGeneCB.setSelected(mapProbesToGenes);
         expMapToLociCB.setSelected(!mapProbesToGenes);
 
-        probeMappingFileTextField.setText(prefMgr.get(PreferenceManager.PROBE_MAPPING_FILE));
-        boolean useProbeMapping = prefMgr.getAsBoolean(PreferenceManager.USE_PROBE_MAPPING_FILE);
+        probeMappingFileTextField.setText(prefMgr.get(PROBE_MAPPING_FILE));
+        boolean useProbeMapping = prefMgr.getAsBoolean(USE_PROBE_MAPPING_FILE);
         useProbeMappingCB.setSelected(useProbeMapping);
         updateProbeMappingOptions(useProbeMapping);
 
-        autoFileDisoveryCB.setSelected(!prefMgr.getAsBoolean(PreferenceManager.BYPASS_FILE_AUTO_DISCOVERY));
-        normalizeCoverageCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.NORMALIZE_COVERAGE));
+        autoFileDisoveryCB.setSelected(!prefMgr.getAsBoolean(BYPASS_FILE_AUTO_DISCOVERY));
+        normalizeCoverageCB.setSelected(prefMgr.getAsBoolean(NORMALIZE_COVERAGE));
 
 
-        expandIconCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SHOW_EXPAND_ICON));
+        expandIconCB.setSelected(prefMgr.getAsBoolean(SHOW_EXPAND_ICON));
 
-        boolean useProxy = prefMgr.getAsBoolean(PreferenceManager.USE_PROXY);
+        boolean useProxy = prefMgr.getAsBoolean(USE_PROXY);
         useProxyCB.setSelected(useProxy);
 
-        boolean authenticateProxy = prefMgr.getAsBoolean(PreferenceManager.PROXY_AUTHENTICATE);
+        boolean authenticateProxy = prefMgr.getAsBoolean(PROXY_AUTHENTICATE);
         authenticateProxyCB.setSelected(authenticateProxy);
 
-        proxyHostField.setText(prefMgr.get(PreferenceManager.PROXY_HOST, ""));
-        proxyPortField.setText(prefMgr.get(PreferenceManager.PROXY_PORT, ""));
-        proxyUsernameField.setText(prefMgr.get(PreferenceManager.PROXY_USER, ""));
-        String pwCoded = prefMgr.get(PreferenceManager.PROXY_PW, "");
+        proxyHostField.setText(prefMgr.get(PROXY_HOST, ""));
+        proxyPortField.setText(prefMgr.get(PROXY_PORT, ""));
+        proxyUsernameField.setText(prefMgr.get(PROXY_USER, ""));
+        String pwCoded = prefMgr.get(PROXY_PW, "");
         proxyPasswordField.setText(Utilities.base64Decode(pwCoded));
-        proxyWhitelistTextArea.setText(prefMgr.get(PreferenceManager.PROXY_WHITELIST));
+        proxyWhitelistTextArea.setText(prefMgr.get(PROXY_WHITELIST));
 
-        String proxyTypeString = prefMgr.get(PreferenceManager.PROXY_TYPE, null);
+        String proxyTypeString = prefMgr.get(PROXY_TYPE, null);
         if (proxyTypeString != null) {
             proxyTypeCB.setSelectedItem(proxyTypeString);
         }
 
         backgroundColorPanel.setBackground(
-                PreferenceManager.getInstance().getAsColor(PreferenceManager.BACKGROUND_COLOR));
+                PreferenceManager.getInstance().getAsColor(BACKGROUND_COLOR));
 
-        dbHostField.setText(prefMgr.get(PreferenceManager.DB_HOST));
-        dbNameField.setText(prefMgr.get(PreferenceManager.DB_NAME));
-        String portText = prefMgr.get(PreferenceManager.DB_PORT);
+        dbHostField.setText(prefMgr.get(DB_HOST));
+        dbNameField.setText(prefMgr.get(DB_NAME));
+        String portText = prefMgr.get(DB_PORT);
         if (!portText.equals("-1")) {
             dbPortField.setText(portText);
         }
@@ -3894,24 +3899,24 @@ public class PreferencesEditor extends javax.swing.JDialog {
             igvDirectoryField.setText(igvDirectory.getAbsolutePath());
         }
 
-        tooltipDismissDelayField.setText(prefMgr.get(PreferenceManager.TOOLTIP_DISMISS_DELAY));
-        tooltipReshowDelayField.setText(prefMgr.get(PreferenceManager.TOOLTIP_RESHOW_DELAY));
-        toolTipInitialDelayField.setText(prefMgr.get(PreferenceManager.TOOLTIP_INITIAL_DELAY));
+        tooltipDismissDelayField.setText(prefMgr.get(TOOLTIP_DISMISS_DELAY));
+        tooltipReshowDelayField.setText(prefMgr.get(TOOLTIP_RESHOW_DELAY));
+        toolTipInitialDelayField.setText(prefMgr.get(TOOLTIP_INITIAL_DELAY));
 
-        featureVisibilityWindowField.setText(prefMgr.get(PreferenceManager.DEFAULT_VISIBILITY_WINDOW));
+        featureVisibilityWindowField.setText(prefMgr.get(DEFAULT_VISIBILITY_WINDOW));
 
-        showAlignmentTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_ALIGNMENT_TRACK));
+        showAlignmentTrackCB.setSelected(prefMgr.getAsBoolean(SAM_SHOW_ALIGNMENT_TRACK));
 
-        samFlagIndelsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FLAG_LARGE_INDELS));
-        samFlagIndelsThresholdField.setText(prefMgr.get(PreferenceManager.SAM_LARGE_INDELS_THRESHOLD));
+        samFlagIndelsCB.setSelected(prefMgr.getAsBoolean(SAM_FLAG_LARGE_INDELS));
+        samFlagIndelsThresholdField.setText(prefMgr.get(SAM_LARGE_INDELS_THRESHOLD));
         samFlagIndelsThresholdField.setEnabled(samFlagIndelsCB.isSelected());
 
-        samFlagClippingCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FLAG_CLIPPING));
-        samFlagClippingThresholdField.setText(prefMgr.get(PreferenceManager.SAM_CLIPPING_THRESHOLD));
+        samFlagClippingCB.setSelected(prefMgr.getAsBoolean(SAM_FLAG_CLIPPING));
+        samFlagClippingThresholdField.setText(prefMgr.get(SAM_CLIPPING_THRESHOLD));
         samFlagClippingThresholdField.setEnabled(samFlagClippingCB.isSelected());
 
-        hideIndelsBasesCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_HIDE_SMALL_INDEL_BP));
-        hideIndelsBasesField.setText(prefMgr.get(PreferenceManager.SAM_SMALL_INDEL_BP_THRESHOLD));
+        hideIndelsBasesCB.setSelected(prefMgr.getAsBoolean(SAM_HIDE_SMALL_INDEL_BP));
+        hideIndelsBasesField.setText(prefMgr.get(SAM_SMALL_INDEL_BP_THRESHOLD));
         hideIndelsBasesField.setEnabled(hideIndelsBasesCB.isSelected());
 
         resetVCFColorChoosers();
@@ -3938,7 +3943,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
 
     private void checkForProbeChanges() {
-        if (updatedPreferenceMap.containsKey(PreferenceManager.PROBE_MAPPING_KEY)) {
+        if (updatedPreferenceMap.containsKey(PROBE_MAPPING_KEY)) {
             ProbeToLocusMap.getInstance().clearProbeMappings();
         }
     }
@@ -4115,8 +4120,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox hideIndelsBasesCB;
     private JTextField hideIndelsBasesField;
     private JLabel label45;
-    private JPanel panel36;
-    private JLabel label46;
     private JPanel panel8;
     private JCheckBox samFilterDuplicatesCB;
     private JCheckBox samFlagUnmappedPairCB;

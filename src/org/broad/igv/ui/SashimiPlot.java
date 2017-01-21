@@ -25,8 +25,9 @@
 
 package org.broad.igv.ui;
 
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.IExon;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.renderer.SashimiJunctionRenderer;
 import org.broad.igv.sam.*;
 import org.broad.igv.track.*;
@@ -83,7 +84,7 @@ public class SashimiPlot extends JFrame {
 
     public SashimiPlot(ReferenceFrame iframe, Collection<? extends AlignmentTrack> alignmentTracks, FeatureTrack geneTrack) {
         getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        int minJunctionCoverage = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_JUNCTION_MIN_COVERAGE);
+        int minJunctionCoverage = PreferenceManager.getInstance().getAsInt(Constants.SAM_JUNCTION_MIN_COVERAGE);
 
         this.frame = new ReferenceFrame(iframe);
 
@@ -306,11 +307,11 @@ public class SashimiPlot extends JFrame {
             IGVPopupMenu menu = new IGVPopupMenu();
 
             final JCheckBoxMenuItem showCoverageData = new JCheckBoxMenuItem("Show Exon Coverage Data");
-            showCoverageData.setSelected(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SASHIMI_SHOW_COVERAGE));
+            showCoverageData.setSelected(PreferenceManager.getInstance().getAsBoolean(Constants.SASHIMI_SHOW_COVERAGE));
             showCoverageData.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    PreferenceManager.getInstance().put(PreferenceManager.SASHIMI_SHOW_COVERAGE, showCoverageData.isSelected());
+                    PreferenceManager.getInstance().put(Constants.SASHIMI_SHOW_COVERAGE, showCoverageData.isSelected());
                     SashimiPlot.this.repaint();
                 }
             });

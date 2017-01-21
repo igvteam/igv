@@ -28,8 +28,9 @@
  * and open the template in the editor.
  */
 
-package org.broad.igv;
+package org.broad.igv.prefs;
 
+import org.broad.igv.prefs.IGVPreferences;
 import org.junit.*;
 import static org.junit.Assert.assertEquals;
 

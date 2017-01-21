@@ -31,8 +31,8 @@ package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.RegionNavigatorDialog;
 import org.broad.igv.ui.util.FileDialogUtils;

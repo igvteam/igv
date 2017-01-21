@@ -26,7 +26,8 @@
 package org.broad.igv.gs.dm;
 
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.gs.GSTestAuthenticator;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.track.Track;
@@ -39,7 +40,6 @@ import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.Authenticator;
 import java.net.MalformedURLException;
@@ -81,7 +81,7 @@ public class DMUtilsTest extends AbstractHeadlessTest{
         Authenticator.setDefault(new GSTestAuthenticator());
 
         try {
-            String defaultURLStr = PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER);
+            String defaultURLStr = PreferenceManager.getInstance().get(Constants.GENOME_SPACE_DM_SERVER);
             defaultURL = new URL(defaultURLStr);
             personaldirectoryURL = new URL(defaultURLStr + DMUtils.PERSONAL_DIRECTORY);
             fileURL = new URL(defaultURL + "file");

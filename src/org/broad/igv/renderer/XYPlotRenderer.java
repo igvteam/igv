@@ -33,17 +33,18 @@ package org.broad.igv.renderer;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.UIConstants;
-import org.broad.igv.ui.panel.FrameManager;
 
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.util.List;
+
+import static org.broad.igv.prefs.Constants.*;
 
 /**
  * @author jrobinso
@@ -69,7 +70,7 @@ public abstract class XYPlotRenderer extends DataRenderer {
      */
     public synchronized void renderScores(Track track, List<LocusScore> locusScores, RenderContext context, Rectangle arect) {
 
-        boolean showMissingData = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_MISSING_DATA_KEY);
+        boolean showMissingData = PreferenceManager.getInstance().getAsBoolean(SHOW_MISSING_DATA_KEY);
 
         Graphics2D noDataGraphics = context.getGraphic2DForColor(UIConstants.NO_DATA_COLOR);
         Graphics2D tickGraphics = context.getGraphic2DForColor(Color.BLACK);
@@ -190,12 +191,12 @@ public abstract class XYPlotRenderer extends DataRenderer {
 
         PreferenceManager prefs = PreferenceManager.getInstance();
 
-        Color labelColor = prefs.getAsBoolean(PreferenceManager.CHART_COLOR_TRACK_NAME) ? track.getColor() : Color.black;
+        Color labelColor = prefs.getAsBoolean(CHART_COLOR_TRACK_NAME) ? track.getColor() : Color.black;
         Graphics2D labelGraphics = context.getGraphic2DForColor(labelColor);
 
         labelGraphics.setFont(FontManager.getFont(8));
 
-        if (prefs.getAsBoolean(PreferenceManager.CHART_DRAW_TRACK_NAME)) {
+        if (prefs.getAsBoolean(CHART_DRAW_TRACK_NAME)) {
 
             // Only attempt if track height is > 25 pixels
             if (arect.getHeight() > 25) {
@@ -205,7 +206,7 @@ public abstract class XYPlotRenderer extends DataRenderer {
             }
         }
 
-        if (prefs.getAsBoolean(PreferenceManager.CHART_DRAW_Y_AXIS)) {
+        if (prefs.getAsBoolean(CHART_DRAW_Y_AXIS)) {
 
             Rectangle axisRect = new Rectangle(arect.x, arect.y + 1, AXIS_AREA_WIDTH, arect.height);
 
@@ -281,7 +282,7 @@ public abstract class XYPlotRenderer extends DataRenderer {
             PreferenceManager prefs = PreferenceManager.getInstance();
 
             Color altColor = track.getAltColor();
-            Color borderColor = (prefs.getAsBoolean(PreferenceManager.CHART_COLOR_BORDERS) && altColor != null && altColor.equals(track.getColor()) )
+            Color borderColor = (prefs.getAsBoolean(CHART_COLOR_BORDERS) && altColor != null && altColor.equals(track.getColor()) )
                     ? track.getColor() : Color.lightGray;
             Graphics2D borderGraphics = context.getGraphic2DForColor(borderColor);
 
@@ -303,16 +304,16 @@ public abstract class XYPlotRenderer extends DataRenderer {
             boolean drawBorders = true;
 
             if (minValue * maxValue < 0) {
-                drawBorders = prefs.getAsBoolean(PreferenceManager.CHART_DRAW_BOTTOM_BORDER) &&
-                        prefs.getAsBoolean(PreferenceManager.CHART_DRAW_TOP_BORDER);
+                drawBorders = prefs.getAsBoolean(CHART_DRAW_BOTTOM_BORDER) &&
+                        prefs.getAsBoolean(CHART_DRAW_TOP_BORDER);
             }
 
-            if (drawBorders && prefs.getAsBoolean(PreferenceManager.CHART_DRAW_TOP_BORDER)) {
+            if (drawBorders && prefs.getAsBoolean(CHART_DRAW_TOP_BORDER)) {
                 borderGraphics.drawLine(adjustedRect.x, adjustedRect.y,
                         adjustedRect.x + adjustedRect.width, adjustedRect.y);
             }
 
-            if (drawBorders && prefs.getAsBoolean(PreferenceManager.CHART_DRAW_BOTTOM_BORDER)) {
+            if (drawBorders && prefs.getAsBoolean(CHART_DRAW_BOTTOM_BORDER)) {
                 borderGraphics.drawLine(adjustedRect.x, adjustedRect.y + adjustedRect.height,
                         adjustedRect.x + adjustedRect.width,
                         adjustedRect.y + adjustedRect.height);

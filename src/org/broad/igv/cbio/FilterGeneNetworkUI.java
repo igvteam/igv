@@ -31,8 +31,9 @@ package org.broad.igv.cbio;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.lists.GeneList;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.*;
@@ -178,11 +179,11 @@ public class FilterGeneNetworkUI extends JDialog {
 
 
     private void initThresholdsMap() {
-        thresholdsMap.put(PreferenceManager.CBIO_MUTATION_THRESHOLD, mutInput);
-        thresholdsMap.put(PreferenceManager.CBIO_AMPLIFICATION_THRESHOLD, ampInput);
-        thresholdsMap.put(PreferenceManager.CBIO_DELETION_THRESHOLD, delInput);
-        thresholdsMap.put(PreferenceManager.CBIO_EXPRESSION_UP_THRESHOLD, expUpInput);
-        thresholdsMap.put(PreferenceManager.CBIO_EXPRESSION_DOWN_THRESHOLD, expDownInput);
+        thresholdsMap.put(Constants.CBIO_MUTATION_THRESHOLD, mutInput);
+        thresholdsMap.put(Constants.CBIO_AMPLIFICATION_THRESHOLD, ampInput);
+        thresholdsMap.put(Constants.CBIO_DELETION_THRESHOLD, delInput);
+        thresholdsMap.put(Constants.CBIO_EXPRESSION_UP_THRESHOLD, expUpInput);
+        thresholdsMap.put(Constants.CBIO_EXPRESSION_DOWN_THRESHOLD, expDownInput);
     }
 
     /**
@@ -476,7 +477,7 @@ public class FilterGeneNetworkUI extends JDialog {
             for (Map.Entry<String, JTextField> entry : thresholdsMap.entrySet()) {
                 float fval = Float.parseFloat(entry.getValue().getText());
                 String sval = "" + fval;
-                if (entry.getKey() == PreferenceManager.CBIO_MUTATION_THRESHOLD) {
+                if (entry.getKey() == Constants.CBIO_MUTATION_THRESHOLD) {
                     int ival = Integer.parseInt(entry.getValue().getText());
                     sval = "" + ival;
                 }

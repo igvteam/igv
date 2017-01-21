@@ -30,10 +30,13 @@ package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.AminoAcidManager;
+import org.broad.igv.feature.AminoAcidSequence;
+import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.renderer.SequenceRenderer;
@@ -51,8 +54,13 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.util.*;
-import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.broad.igv.prefs.Constants.MAX_SEQUENCE_RESOLUTION;
+import static org.broad.igv.prefs.Constants.SHOW_SEQUENCE_TRANSLATION;
 
 
 /**
@@ -82,7 +90,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     public SequenceTrack(String name) {
         super(name);
         setSortable(false);
-        shouldShowTranslation = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SEQUENCE_TRANSLATION);
+        shouldShowTranslation = PreferenceManager.getInstance().getAsBoolean(SHOW_SEQUENCE_TRANSLATION);
         loadedIntervalCache = Collections.synchronizedMap(new HashMap<>());
         sequenceVisible = Collections.synchronizedMap(new HashMap<>());
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
@@ -179,7 +187,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
 
-        int resolutionThreshold = PreferenceManager.getInstance().getAsInt(PreferenceManager.MAX_SEQUENCE_RESOLUTION);
+        int resolutionThreshold = PreferenceManager.getInstance().getAsInt(MAX_SEQUENCE_RESOLUTION);
         boolean visible = frame.getScale() < resolutionThreshold && !frame.getChrName().equals(Globals.CHR_ALL);
 
         if (!visible) {
@@ -244,7 +252,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
      */
     public void render(RenderContext context, Rectangle rect) {
 
-        int resolutionThreshold = PreferenceManager.getInstance().getAsInt(PreferenceManager.MAX_SEQUENCE_RESOLUTION);
+        int resolutionThreshold = PreferenceManager.getInstance().getAsInt(MAX_SEQUENCE_RESOLUTION);
 
         boolean visible = context.getReferenceFrame().getScale() < resolutionThreshold &&
                 !context.getChr().equals(Globals.CHR_ALL);
@@ -303,7 +311,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     public void setShouldShowTranslation(boolean shouldShowTranslation) {
         this.shouldShowTranslation = shouldShowTranslation;
         // Remember this choice
-        PreferenceManager.getInstance().put(PreferenceManager.SHOW_SEQUENCE_TRANSLATION, shouldShowTranslation);
+        PreferenceManager.getInstance().put(SHOW_SEQUENCE_TRANSLATION, shouldShowTranslation);
     }
 
 

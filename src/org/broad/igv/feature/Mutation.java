@@ -28,7 +28,7 @@ package org.broad.igv.feature;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorTable;

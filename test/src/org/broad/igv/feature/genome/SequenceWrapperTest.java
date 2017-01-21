@@ -31,7 +31,7 @@
 package org.broad.igv.feature.genome;
 
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.util.HttpUtils;
 import org.junit.After;
 import org.junit.BeforeClass;

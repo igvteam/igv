@@ -33,13 +33,15 @@
  */
 package org.broad.igv.renderer;
 
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 
 import java.awt.*;
 import java.util.List;
+
+import static org.broad.igv.prefs.Constants.ENABLE_ANTIALISING;
 
 /**
  * @author jrobinso
@@ -70,7 +72,7 @@ public class LineplotRenderer extends XYPlotRenderer {
         Graphics2D gPos = context.getGraphic2DForColor(posColor);
         Graphics2D gNeg = context.getGraphic2DForColor(negColor);
 
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+        if (PreferenceManager.getInstance().getAsBoolean(ENABLE_ANTIALISING)) {
             gPos.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             gNeg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         }

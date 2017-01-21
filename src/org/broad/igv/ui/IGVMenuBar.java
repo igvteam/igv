@@ -29,7 +29,6 @@ import apple.dts.samplecode.osxadapter.OSXAdapter;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.cli_plugin.PluginSpecReader;
@@ -44,6 +43,7 @@ import org.broad.igv.gs.GSOpenSessionMenuAction;
 import org.broad.igv.gs.GSSaveSessionMenuAction;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.lists.GeneListManagerUI;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.tools.IgvToolsGui;
 import org.broad.igv.tools.motiffinder.MotifFinderPlugin;
 import org.broad.igv.track.CombinedDataSourceDialog;
@@ -57,7 +57,10 @@ import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.ReorderPanelsDialog;
 import org.broad.igv.ui.util.*;
-import org.broad.igv.util.*;
+import org.broad.igv.util.BrowserLauncher;
+import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.LongRunningTask;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.util.encode.EncodeFileBrowser;
 
@@ -78,6 +81,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+import static org.broad.igv.prefs.Constants.*;
 import static org.broad.igv.ui.UIConstants.*;
 
 /**
@@ -186,7 +190,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menus.add(extrasMenu);
 
         googleMenu = createGoogleMenu();
-        googleMenu.setVisible(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_GOOGLE_MENU));
+        googleMenu.setVisible(PreferenceManager.getInstance().getAsBoolean(ENABLE_GOOGLE_MENU));
         menus.add(googleMenu);
 
         menus.add(createHelpMenu());
@@ -417,7 +421,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_DAS, KeyEvent.VK_D, igv);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.DB_ENABLED)) {
+        if (PreferenceManager.getInstance().getAsBoolean(DB_ENABLED)) {
             menuAction = new LoadFromDatabaseAction("Load from Database...", 0, igv);
             menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         }
@@ -615,10 +619,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                         GenomeManager.getInstance().updateImportedGenomePropertyFile();
                         notifyGenomesAddedRemoved(removedValuesList, false);
 
-                        String defaultGenomeKey = PreferenceManager.getInstance().get(PreferenceManager.DEFAULT_GENOME_KEY);
+                        String defaultGenomeKey = PreferenceManager.getInstance().get(DEFAULT_GENOME_KEY);
                         for (GenomeListItem item : removedValuesList) {
                             if (defaultGenomeKey.equals(item.getId())) {
-                                PreferenceManager.getInstance().remove(PreferenceManager.DEFAULT_GENOME_KEY);
+                                PreferenceManager.getInstance().remove(DEFAULT_GENOME_KEY);
                                 break;
                             }
                         }
@@ -742,7 +746,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                     try {
                         Integer w = Integer.parseInt(newValue);
                         if (w <= 0 || w == 1000) throw new NumberFormatException();
-                        PreferenceManager.getInstance().put(PreferenceManager.NAME_PANEL_WIDTH, newValue);
+                        PreferenceManager.getInstance().put(NAME_PANEL_WIDTH, newValue);
                         mainPanel.setNamePanelWidth(w);
                     } catch (NumberFormatException ex) {
                         MessageUtils.showErrorMessage("Error: value must be a positive integer < 1000.", ex);
@@ -754,7 +758,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuItems.add(panelWidthmenuItem);
 
         // Hide or Show the attribute panels
-        boolean isShow = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_ATTRIBUTE_VIEWS_KEY);
+        boolean isShow = PreferenceManager.getInstance().getAsBoolean(SHOW_ATTRIBUTE_VIEWS_KEY);
         IGV.getInstance().doShowAttributeDisplay(isShow);  // <= WEIRD doing IGV.getInstance() here!
 
         menuAction = new MenuAction("Show Attribute Display", null, KeyEvent.VK_A) {
@@ -950,7 +954,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             final String serverVersionString = HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
             // See if user has specified to skip this update
 
-            final String skipString = PreferenceManager.getInstance().get(PreferenceManager.SKIP_VERSION);
+            final String skipString = PreferenceManager.getInstance().get(SKIP_VERSION);
             HashSet<String> skipVersion = new HashSet<String>(Arrays.asList(skipString.split(",")));
             if (skipVersion.contains(serverVersionString)) return;
 
@@ -965,7 +969,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 dlg.setVisible(true);
                 if (dlg.isSkipVersion()) {
                     String newSkipString = skipString + "," + serverVersionString;
-                    PreferenceManager.getInstance().put(PreferenceManager.SKIP_VERSION, newSkipString);
+                    PreferenceManager.getInstance().put(SKIP_VERSION, newSkipString);
                 }
 
             } else {
@@ -1030,7 +1034,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
-        menu.setVisible(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.GENOME_SPACE_ENABLE));
+        menu.setVisible(PreferenceManager.getInstance().getAsBoolean(GENOME_SPACE_ENABLE));
 
 
         return menu;

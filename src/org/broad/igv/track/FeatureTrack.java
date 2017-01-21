@@ -25,16 +25,18 @@
 
 package org.broad.igv.track;
 
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.TribbleException;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.cli_plugin.PluginFeatureSource;
 import org.broad.igv.cli_plugin.PluginSource;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.renderer.*;
-import org.broad.igv.renderer.Renderer;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.tools.FeatureSearcher;
@@ -44,13 +46,12 @@ import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.event.DataLoadedEvent;
 import org.broad.igv.ui.event.IGVEventBus;
 import org.broad.igv.ui.event.IGVEventObserver;
-import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.*;
+import org.broad.igv.util.BrowserLauncher;
+import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.StringUtils;
 import org.broad.igv.variant.VariantTrack;
-import htsjdk.tribble.Feature;
-import htsjdk.tribble.TribbleException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -218,7 +219,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         int sourceFeatureWindowSize = source.getFeatureWindowSize();
         if (sourceFeatureWindowSize > 0) {  // Only apply a default if the feature source supports visibility window.
-            int defVisibilityWindow = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_VISIBILITY_WINDOW);
+            int defVisibilityWindow = PreferenceManager.getInstance().getAsInt(Constants.DEFAULT_VISIBILITY_WINDOW);
             if (defVisibilityWindow > 0) {
                 setVisibilityWindow(defVisibilityWindow * 1000);
             } else {

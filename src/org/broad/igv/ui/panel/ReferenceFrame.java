@@ -31,20 +31,19 @@ package org.broad.igv.ui.panel;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.sam.InsertionManager;
 import org.broad.igv.sam.InsertionMarker;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.event.IGVEventBus;
 import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.util.MessageUtils;
-
-import java.util.List;
 
 
 /**
@@ -248,7 +247,7 @@ public class ReferenceFrame {
     public void setOrigin(double position) {
         int windowLengthBP = (int) (widthInPixels * getScale());
         double newOrigin;
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED)) {
+        if (PreferenceManager.getInstance().getAsBoolean(Constants.SAM_SHOW_SOFT_CLIPPED)) {
             newOrigin = Math.max(-1000, Math.min(position, getMaxCoordinate() + 1000 - windowLengthBP));
         } else {
             newOrigin = Math.max(0, Math.min(position, getMaxCoordinate() - windowLengthBP));

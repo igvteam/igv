@@ -26,7 +26,7 @@
 package org.broad.igv.variant;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
@@ -35,6 +35,8 @@ import org.broad.igv.ui.color.ColorUtilities;
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.broad.igv.prefs.Constants.*;
 
 /**
  * @author Jesse Whitworth
@@ -96,30 +98,30 @@ public class VariantRenderer { //extends FeatureRenderer {
 
         final PreferenceManager prefMgr = PreferenceManager.getInstance();
 
-        if (!prefMgr.getAsColor(PreferenceManager.AF_VAR_COLOR).equals(colorAlleleBandVar)) {
-            colorAlleleBandVar = prefMgr.getAsColor(PreferenceManager.AF_VAR_COLOR);
+        if (!prefMgr.getAsColor(AF_VAR_COLOR).equals(colorAlleleBandVar)) {
+            colorAlleleBandVar = prefMgr.getAsColor(AF_VAR_COLOR);
             colorAlleleBandVarAlpha = ColorUtilities.getCompositeColor(colorAlleleBandVar, alphaValue);
 
         }
-        if (!prefMgr.getAsColor(PreferenceManager.AF_REF_COLOR).equals(colorAlleleBandRef)) {
-            colorAlleleBandRef = prefMgr.getAsColor(PreferenceManager.AF_REF_COLOR);
+        if (!prefMgr.getAsColor(AF_REF_COLOR).equals(colorAlleleBandRef)) {
+            colorAlleleBandRef = prefMgr.getAsColor(AF_REF_COLOR);
             colorAlleleBandRefAlpha = ColorUtilities.getCompositeColor(colorAlleleBandRef, alphaValue);
 
         }
-        if (!prefMgr.getAsColor(PreferenceManager.HOMREF_COLOR).equals(colorHomRef)) {
-            colorHomRef = prefMgr.getAsColor(PreferenceManager.HOMREF_COLOR);
+        if (!prefMgr.getAsColor(HOMREF_COLOR).equals(colorHomRef)) {
+            colorHomRef = prefMgr.getAsColor(HOMREF_COLOR);
             colorHomRefAlpha = ColorUtilities.getCompositeColor(colorHomRef, alphaValue);
         }
-        if (!prefMgr.getAsColor(PreferenceManager.HOMVAR_COLOR).equals(colorHomVar)) {
-            colorHomVar = prefMgr.getAsColor(PreferenceManager.HOMVAR_COLOR);
+        if (!prefMgr.getAsColor(HOMVAR_COLOR).equals(colorHomVar)) {
+            colorHomVar = prefMgr.getAsColor(HOMVAR_COLOR);
             colorHomVarAlpha = ColorUtilities.getCompositeColor(colorHomVar, alphaValue);
         }
-        if (!prefMgr.getAsColor(PreferenceManager.HETVAR_COLOR).equals(colorHet)) {
-            colorHet = prefMgr.getAsColor(PreferenceManager.HETVAR_COLOR);
+        if (!prefMgr.getAsColor(HETVAR_COLOR).equals(colorHet)) {
+            colorHet = prefMgr.getAsColor(HETVAR_COLOR);
             colorHetAlpha = ColorUtilities.getCompositeColor(colorHet, alphaValue);
         }
-        if (!prefMgr.getAsColor(PreferenceManager.NOCALL_COLOR).equals(colorNoCall)) {
-            colorNoCall = prefMgr.getAsColor(PreferenceManager.NOCALL_COLOR);
+        if (!prefMgr.getAsColor(NOCALL_COLOR).equals(colorNoCall)) {
+            colorNoCall = prefMgr.getAsColor(NOCALL_COLOR);
             colorNoCallAlpha = ColorUtilities.getCompositeColor(colorNoCall, alphaValue);
         }
 

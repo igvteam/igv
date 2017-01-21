@@ -28,6 +28,7 @@ package org.broad.igv;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.*;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.RuntimeUtils;

@@ -26,12 +26,12 @@
 package org.broad.igv.ui;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
-import jargs.gnu.CmdLineParser;
 import htsjdk.samtools.seekablestream.SeekableStreamFactory;
+import jargs.gnu.CmdLineParser;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.ui.event.GlobalKeyDispatcher;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.RuntimeUtils;
@@ -47,6 +47,8 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.HashSet;
+
+import static org.broad.igv.prefs.Constants.*;
 
 
 /**
@@ -162,9 +164,9 @@ public class Main {
     public static void updateTooltipSettings() {
         ToolTipManager.sharedInstance().setEnabled(true);
         final PreferenceManager prefMgr = PreferenceManager.getInstance();
-        ToolTipManager.sharedInstance().setInitialDelay(prefMgr.getAsInt(PreferenceManager.TOOLTIP_INITIAL_DELAY));
-        ToolTipManager.sharedInstance().setReshowDelay(prefMgr.getAsInt(PreferenceManager.TOOLTIP_RESHOW_DELAY));
-        ToolTipManager.sharedInstance().setDismissDelay(prefMgr.getAsInt(PreferenceManager.TOOLTIP_DISMISS_DELAY));
+        ToolTipManager.sharedInstance().setInitialDelay(prefMgr.getAsInt(TOOLTIP_INITIAL_DELAY));
+        ToolTipManager.sharedInstance().setReshowDelay(prefMgr.getAsInt(TOOLTIP_RESHOW_DELAY));
+        ToolTipManager.sharedInstance().setDismissDelay(prefMgr.getAsInt(TOOLTIP_DISMISS_DELAY));
 
     }
 
@@ -179,7 +181,7 @@ public class Main {
                     final String serverVersionString = HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
                     // See if user has specified to skip this update
 
-                    final String skipString = PreferenceManager.getInstance().get(PreferenceManager.SKIP_VERSION);
+                    final String skipString = PreferenceManager.getInstance().get(SKIP_VERSION);
                     HashSet<String> skipVersion = new HashSet<String>(Arrays.asList(skipString.split(",")));
                     if (skipVersion.contains(serverVersionString)) return;
 
@@ -295,10 +297,10 @@ public class Main {
         double resolutionScale = Toolkit.getDefaultToolkit().getScreenResolution() / Globals.DESIGN_DPI;
         final PreferenceManager prefMgr = PreferenceManager.getInstance();
         if (resolutionScale > 1.5) {
-            if (prefMgr.getAsBoolean(PreferenceManager.SCALE_FONTS)) {
+            if (prefMgr.getAsBoolean(SCALE_FONTS)) {
                 FontManager.scaleFontSize(resolutionScale);
-            } else if (prefMgr.hasExplicitValue(PreferenceManager.DEFAULT_FONT_SIZE)) {
-                int fs = prefMgr.getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
+            } else if (prefMgr.hasExplicitValue(DEFAULT_FONT_SIZE)) {
+                int fs = prefMgr.getAsInt(DEFAULT_FONT_SIZE);
                 FontManager.updateSystemFontSize(fs);
             }
         }

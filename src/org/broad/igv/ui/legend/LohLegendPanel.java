@@ -29,7 +29,6 @@
  */
 package org.broad.igv.ui.legend;
 
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.FontManager;
 

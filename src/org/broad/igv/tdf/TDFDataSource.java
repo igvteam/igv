@@ -31,7 +31,6 @@ package org.broad.igv.tdf;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.BasicScore;
 import org.broad.igv.data.CompositeScore;
 import org.broad.igv.data.CoverageDataSource;
@@ -39,11 +38,10 @@ import org.broad.igv.data.NamedScore;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.ui.panel.FrameManager;
-import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.util.collections.LRUCache;
 
 import java.util.*;
 
@@ -112,7 +110,7 @@ public class TDFDataSource implements CoverageDataSource {
 
         intChrMap();
 
-        boolean normalizeCounts = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.NORMALIZE_COVERAGE);
+        boolean normalizeCounts = PreferenceManager.getInstance().getAsBoolean(Constants.NORMALIZE_COVERAGE);
         setNormalize(normalizeCounts);
     }
 

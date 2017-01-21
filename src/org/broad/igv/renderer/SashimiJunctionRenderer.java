@@ -27,19 +27,19 @@ package org.broad.igv.renderer;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.IExon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.SpliceJunctionFeature;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.sam.AlignmentDataManager;
 import org.broad.igv.sam.AlignmentInterval;
 import org.broad.igv.sam.CoverageTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
-import htsjdk.tribble.Feature;
 
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
@@ -47,6 +47,8 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.List;
+
+import static org.broad.igv.prefs.Constants.SASHIMI_SHOW_COVERAGE;
 
 /**
  * Renderer for splice junctions. Draws a filled-in arc for each junction, with the width of the
@@ -181,7 +183,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
         Rectangle coverageRectangle = new Rectangle(trackRectangle);
 
-        final boolean showCoverage = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SASHIMI_SHOW_COVERAGE);
+        final boolean showCoverage = PreferenceManager.getInstance().getAsBoolean(SASHIMI_SHOW_COVERAGE);
 
         if(coverageTrack != null && showCoverage){
             //Only want the coverage track to go so high so that the arcs still have room

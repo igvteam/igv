@@ -29,7 +29,8 @@
 
 package org.broad.igv.tools.ui;
 
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.tools.CoverageCounter;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.tools.Preprocessor;
@@ -552,8 +553,8 @@ public class CoverageGui extends JDialog {
 
                     // Check user prefs for duplicates and min mapping quality
                     int countFlags = 0;
-                    boolean includeDuplicates = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_DUPLICATES);
-                    int minMappingQuality = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_QUALITY_THRESHOLD);
+                    boolean includeDuplicates = PreferenceManager.getInstance().getAsBoolean(Constants.SAM_SHOW_DUPLICATES);
+                    int minMappingQuality = PreferenceManager.getInstance().getAsInt(Constants.SAM_QUALITY_THRESHOLD);
                     if (includeDuplicates) {
                         countFlags += CoverageCounter.INCLUDE_DUPS;
                     }

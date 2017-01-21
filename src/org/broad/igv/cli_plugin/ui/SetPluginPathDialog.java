@@ -29,8 +29,8 @@
 
 package org.broad.igv.cli_plugin.ui;
 
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.cli_plugin.PluginSpecReader;
+import org.broad.igv.prefs.PreferenceManager;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

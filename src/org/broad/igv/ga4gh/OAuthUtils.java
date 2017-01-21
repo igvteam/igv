@@ -30,7 +30,6 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;

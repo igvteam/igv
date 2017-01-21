@@ -5,7 +5,6 @@ package org.broad.igv.feature.basepair;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.RenderContext;
 
 import java.awt.*;

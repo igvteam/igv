@@ -27,10 +27,11 @@ package org.broad.igv.track;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.gwas.GWASTrack;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.renderer.*;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.CoverageTrack;
@@ -48,7 +49,6 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.Utilities;
-import htsjdk.tribble.Feature;
 import org.w3c.dom.Node;
 
 import javax.xml.bind.JAXBException;
@@ -58,6 +58,8 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
+
+import static org.broad.igv.prefs.Constants.*;
 
 /**
  * @author jrobinso
@@ -109,7 +111,7 @@ public abstract class AbstractTrack implements Track {
 
 
     @XmlAttribute
-    protected int fontSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
+    protected int fontSize = PreferenceManager.getInstance().getAsInt(DEFAULT_FONT_SIZE);
     private boolean showDataRange = true;
     private String sampleId;
 
@@ -198,8 +200,8 @@ public abstract class AbstractTrack implements Track {
     }
 
     private void init() {
-        showDataRange = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_SHOW_DATA_RANGE);
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.EXPAND_FEAUTRE_TRACKS)) {
+        showDataRange = PreferenceManager.getInstance().getAsBoolean(CHART_SHOW_DATA_RANGE);
+        if (PreferenceManager.getInstance().getAsBoolean(EXPAND_FEAUTRE_TRACKS)) {
             displayMode = DisplayMode.EXPANDED;
         }
     }
@@ -421,9 +423,9 @@ public abstract class AbstractTrack implements Track {
      */
     private int getDefaultHeight() {
         if (XYPlotRenderer.class.isAssignableFrom(getDefaultRendererClass())) {
-            return PreferenceManager.getInstance().getAsInt(PreferenceManager.CHART_TRACK_HEIGHT_KEY);
+            return PreferenceManager.getInstance().getAsInt(CHART_TRACK_HEIGHT_KEY);
         } else {
-            return PreferenceManager.getInstance().getAsInt(PreferenceManager.TRACK_HEIGHT_KEY);
+            return PreferenceManager.getInstance().getAsInt(TRACK_HEIGHT_KEY);
         }
     }
 
@@ -485,7 +487,7 @@ public abstract class AbstractTrack implements Track {
                 if (overlaid) {
                     return false;
                 } else {
-                    return PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_ORPHANED_MUTATIONS);
+                    return PreferenceManager.getInstance().getAsBoolean(SHOW_ORPHANED_MUTATIONS);
                 }
             }
         }

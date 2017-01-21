@@ -35,7 +35,8 @@ package org.broad.igv.ui.panel;
 
 
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackGroup;
@@ -55,7 +56,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -92,7 +95,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
         super.paintComponent(g);
 
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+        if (PreferenceManager.getInstance().getAsBoolean(Constants.ENABLE_ANTIALISING)) {
             ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
 
@@ -197,7 +200,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
 
         List<Track> tmp = new ArrayList(group.getVisibleTracks());
-        final Color backgroundColor = PreferenceManager.getInstance().getAsColor(PreferenceManager.BACKGROUND_COLOR);
+        final Color backgroundColor = PreferenceManager.getInstance().getAsColor(Constants.BACKGROUND_COLOR);
         graphics2D.setBackground(backgroundColor);
         graphics2D.clearRect(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height);
 

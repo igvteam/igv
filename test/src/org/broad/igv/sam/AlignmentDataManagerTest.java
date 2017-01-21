@@ -27,13 +27,11 @@ package org.broad.igv.sam;
 
 import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.Locus;
-import org.broad.igv.feature.Range;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.sam.reader.ReadGroupFilter;
-import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
@@ -146,10 +144,10 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
             Alignment rec = iter.next();
 
             // the following filters are applied in the Caching reader, so we need to apply them here.
-            boolean filterFailedReads = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_FILTER_FAILED_READS);
+            boolean filterFailedReads = PreferenceManager.getInstance().getAsBoolean(Constants.SAM_FILTER_FAILED_READS);
             ReadGroupFilter filter = ReadGroupFilter.getFilter();
-            boolean showDuplicates = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_DUPLICATES);
-            int qualityThreshold = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_QUALITY_THRESHOLD);
+            boolean showDuplicates = PreferenceManager.getInstance().getAsBoolean(Constants.SAM_SHOW_DUPLICATES);
+            int qualityThreshold = PreferenceManager.getInstance().getAsInt(Constants.SAM_QUALITY_THRESHOLD);
             if (!rec.isMapped() || (!showDuplicates && rec.isDuplicate()) ||
                     (filterFailedReads && rec.isVendorFailedRead()) ||
                     rec.getMappingQuality() < qualityThreshold ||
@@ -221,7 +219,7 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
     @Ignore
     @Test
     public void testQueryLargeFile() throws Exception {
-        PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "5");
+        PreferenceManager.getInstance().put(Constants.SAM_MAX_VISIBLE_RANGE, "5");
         String path = TestUtils.LARGE_DATA_DIR + "ABCD_igvSample.bam";
 
         ResourceLocator loc = new ResourceLocator(path);
@@ -259,8 +257,8 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
 
     @Test
     public void testQueryPiledUp() throws Exception {
-        PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "5");
-        PreferenceManager.getInstance().put(PreferenceManager.SAM_DOWNSAMPLE_READS, "false");
+        PreferenceManager.getInstance().put(Constants.SAM_MAX_VISIBLE_RANGE, "5");
+        PreferenceManager.getInstance().put(Constants.SAM_DOWNSAMPLE_READS, "false");
         String path = TestUtils.DATA_DIR + "aligned/pileup.sorted.aligned";
 
         ResourceLocator loc = new ResourceLocator(path);

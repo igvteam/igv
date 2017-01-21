@@ -29,19 +29,12 @@
 
 package org.broad.igv.ui.util;
 
-import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.IGV;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.text.NumberFormat;
 import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.text.DefaultFormatterFactory;
-import javax.swing.text.NumberFormatter;
-
-import java.util.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
 
 /**
  * Before converting .shape, .map, .ct, .db, or .dp files (associated with individual RNAs)

@@ -27,9 +27,10 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.broad.igv;
+package org.broad.igv.prefs;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.*;
@@ -37,7 +38,7 @@ import java.util.Hashtable;
 import java.util.Map;
 
 /**
- * An alternative to the preference API.  Introduced to work around limits on
+ * An alternative to the Java preference API.  Introduced to work around limits on
  * string length in the default Linux implementation.
  * of Preferences
  *

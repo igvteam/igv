@@ -25,34 +25,18 @@
 
 package org.broad.igv.util.extview;
 
-import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.PSLRecord;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.feature.tribble.PSLCodec;
-import org.broad.igv.track.FeatureCollectionSource;
-import org.broad.igv.track.FeatureSource;
-import org.broad.igv.track.FeatureTrack;
-import org.broad.igv.track.Track;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.sam.Alignment;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.NamedRunnable;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Port of perl script blatPlot.pl   http://genomewiki.cse.ucsc.edu/index.php/Blat_Scripts
@@ -80,7 +64,7 @@ public class ExtendViewClient {
         params.put("r_start", String.valueOf(r_start));
         params.put("r_end", String.valueOf(r_end));
         
-        String $url = PreferenceManager.getInstance().get(PreferenceManager.EXTVIEW_URL);
+        String $url = PreferenceManager.getInstance().get(Constants.EXTVIEW_URL);
         String urlString = ($url + "/FeatureRange/");
         try {
             String result = HttpUtils.getInstance().doPost(new URL(urlString), params);
@@ -124,7 +108,7 @@ public class ExtendViewClient {
         params.put("ref_seq", userSeq);
     
 
-        String $url = PreferenceManager.getInstance().get(PreferenceManager.EXTVIEW_URL);
+        String $url = PreferenceManager.getInstance().get(Constants.EXTVIEW_URL);
         String urlString = ($url + "/ExamineReadAlignment/");
         try {
             String result = HttpUtils.getInstance().doPost(new URL(urlString), params);

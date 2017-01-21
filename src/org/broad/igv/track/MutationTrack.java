@@ -25,10 +25,11 @@
 
 package org.broad.igv.track;
 
+import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Mutation;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TooltipTextFrame;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -37,7 +38,6 @@ import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ResourceLocator;
-import htsjdk.tribble.Feature;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -68,7 +68,7 @@ public class MutationTrack extends FeatureTrack {
     @Override
     public void overlay(RenderContext context, Rectangle rect) {
         if (!context.getChr().equals(Globals.CHR_ALL) ||
-                IGV.getInstance().getSession().getPreferenceAsBoolean(PreferenceManager.OVERLAY_MUTATIONS_WHOLE_GENOME)) {
+                IGV.getInstance().getSession().getPreferenceAsBoolean(Constants.OVERLAY_MUTATIONS_WHOLE_GENOME)) {
             renderFeatures(context, rect);
         }
     }

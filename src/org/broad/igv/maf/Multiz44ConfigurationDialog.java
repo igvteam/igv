@@ -35,8 +35,6 @@
  */
 package org.broad.igv.maf;
 
-import org.broad.igv.PreferenceManager;
-
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;

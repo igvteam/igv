@@ -28,12 +28,12 @@ package org.broad.igv.gs;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 
 import java.io.*;
-import java.net.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * @author jrobinso
@@ -195,7 +195,7 @@ public class GSUtils {
 
     private synchronized static String getDMHost() {
         try {
-            return (new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER))).getHost();
+            return (new URL(PreferenceManager.getInstance().get(Constants.GENOME_SPACE_DM_SERVER))).getHost();
         } catch (MalformedURLException e) {
             log.error(e);
             return null;
@@ -206,7 +206,7 @@ public class GSUtils {
     private synchronized static String getATMHost() {
 
         try {
-            return (new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ATM_SERVER))).getHost();
+            return (new URL(PreferenceManager.getInstance().get(Constants.GENOME_SPACE_ATM_SERVER))).getHost();
         } catch (MalformedURLException e) {
             log.error(e);
             return null;

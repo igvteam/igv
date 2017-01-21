@@ -29,16 +29,20 @@
 
 package org.broad.igv.lists;
 
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.ui.util.MessageUtils;
 
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import javax.swing.*;
-import javax.swing.border.*;
 
 /**
  * @author Jim Robinson
@@ -70,7 +74,7 @@ public class GeneListEditDialog extends JDialog {
             genesField.setText(buf.toString());
         }
 
-        bedCB.setSelected(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.GENE_LIST_BED_FORMAT));
+        bedCB.setSelected(PreferenceManager.getInstance().getAsBoolean(Constants.GENE_LIST_BED_FORMAT));
     }
 
 
@@ -97,7 +101,7 @@ public class GeneListEditDialog extends JDialog {
         }
 
         if(this.bedOptionChanged) {
-            PreferenceManager.getInstance().put(PreferenceManager.GENE_LIST_BED_FORMAT, bedCB.isSelected());
+            PreferenceManager.getInstance().put(Constants.GENE_LIST_BED_FORMAT, bedCB.isSelected());
         }
         
         setVisible(false);

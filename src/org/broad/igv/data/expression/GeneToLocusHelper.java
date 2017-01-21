@@ -25,15 +25,16 @@
 
 package org.broad.igv.data.expression;
 
+import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.Locus;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.session.Session;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ParsingUtils;
-import htsjdk.tribble.Feature;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -70,11 +71,11 @@ public class GeneToLocusHelper {
         String userMappingFile;
         if (!Globals.isHeadless()){
             Session session = IGV.getInstance().getSession();
-            use_probe_mf = session.getPreferenceAsBoolean(PreferenceManager.USE_PROBE_MAPPING_FILE);
-            userMappingFile = session.getPreference(PreferenceManager.PROBE_MAPPING_FILE);
+            use_probe_mf = session.getPreferenceAsBoolean(Constants.USE_PROBE_MAPPING_FILE);
+            userMappingFile = session.getPreference(Constants.PROBE_MAPPING_FILE);
         }else{
-            use_probe_mf = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.USE_PROBE_MAPPING_FILE);
-            userMappingFile = PreferenceManager.getInstance().get(PreferenceManager.PROBE_MAPPING_FILE);
+            use_probe_mf = PreferenceManager.getInstance().getAsBoolean(Constants.USE_PROBE_MAPPING_FILE);
+            userMappingFile = PreferenceManager.getInstance().get(Constants.PROBE_MAPPING_FILE);
         }
         
         if (use_probe_mf) {
