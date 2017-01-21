@@ -42,6 +42,7 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Arrays;
@@ -425,16 +426,16 @@ public class Main {
             } catch (CmdLineParser.UnknownOptionException e) {
                 e.printStackTrace();
             }
-            propertyOverrides = (String) parser.getOptionValue(propertyFileOption);
-            batchFile = (String) parser.getOptionValue(batchFileOption);
+            propertyOverrides = getDecodedValue(parser, propertyFileOption);
+            batchFile = getDecodedValue(parser, batchFileOption);
             port = (String) parser.getOptionValue(portOption);
             genomeId = (String) parser.getOptionValue(genomeOption);
-            dataServerURL = (String) parser.getOptionValue(dataServerOption);
-            genomeServerURL = (String) parser.getOptionValue(genomeServerOption);
-            indexFile = (String) parser.getOptionValue(indexFileOption);
-            coverageFile = (String) parser.getOptionValue(coverageFileOption);
+            dataServerURL = getDecodedValue(parser, dataServerOption);
+            genomeServerURL = getDecodedValue(parser, genomeServerOption);
+            indexFile = getDecodedValue(parser, indexFileOption);
+            coverageFile = getDecodedValue(parser, coverageFileOption);
             name = (String) parser.getOptionValue(nameOption);
-            igvDirectory = (String) parser.getOptionValue(igvDirectoryOption);
+            igvDirectory = getDecodedValue(parser, igvDirectoryOption);
 
             String[] nonOptionArgs = parser.getRemainingArgs();
             if (nonOptionArgs != null && nonOptionArgs.length > 0) {
@@ -452,29 +453,20 @@ public class Main {
                     locusString = nonOptionArgs[1];
                 }
 
-// Alternative implementation
-//                String firstArg = StringUtils.decodeURL(nonOptionArgs[0]);
-//                firstArg=checkEqualsAndExtractParamter(firstArg);
-//                if (firstArg != null && !firstArg.equals("ignore")) {
-//                    log.info("Loading: " + firstArg);
-//                    if (firstArg.endsWith(".xml") || firstArg.endsWith(".php") || firstArg.endsWith(".php3")
-//                            || firstArg.endsWith(".session")) {
-//                        sessionFile = firstArg;
-//
-//                    } else {
-//                        dataFileString = firstArg;
-//                    }
-//                }
-//
-//                if (nonOptionArgs.length > 1) {
-//                    // check if arg contains = for all args
-//                    for (String arg: nonOptionArgs ) {
-//                        arg = checkEqualsAndExtractParamter(arg);
-//                        if (arg != null) locusString = arg;
-//
-//                    }
-//
-//                }
+
+            }
+        }
+
+        private String getDecodedValue(CmdLineParser parser, CmdLineParser.Option option){
+
+            String value =  (String) parser.getOptionValue(option);
+            if(value == null) return null;
+
+            try {
+                return URLDecoder.decode(value, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                log.error(e);
+                return value;
             }
         }
 
