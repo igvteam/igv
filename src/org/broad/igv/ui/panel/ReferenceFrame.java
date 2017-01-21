@@ -37,7 +37,7 @@ import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.InsertionManager;
 import org.broad.igv.sam.InsertionMarker;
 import org.broad.igv.ui.IGV;
@@ -247,7 +247,7 @@ public class ReferenceFrame {
     public void setOrigin(double position) {
         int windowLengthBP = (int) (widthInPixels * getScale());
         double newOrigin;
-        if (PreferenceManager.getInstance().getAsBoolean(Constants.SAM_SHOW_SOFT_CLIPPED)) {
+        if (PreferencesManager.getPreferences().getAsBoolean(Constants.SAM_SHOW_SOFT_CLIPPED)) {
             newOrigin = Math.max(-1000, Math.min(position, getMaxCoordinate() + 1000 - windowLengthBP));
         } else {
             newOrigin = Math.max(0, Math.min(position, getMaxCoordinate() - windowLengthBP));

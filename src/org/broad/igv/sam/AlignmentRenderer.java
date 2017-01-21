@@ -30,7 +30,8 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.SequenceRenderer;
@@ -107,7 +108,7 @@ public class AlignmentRenderer {
 
     private static void setNucleotideColors() {
 
-        PreferenceManager prefs = PreferenceManager.getInstance();
+        IGVPreferences prefs = PreferencesManager.getPreferences();
 
         nucleotideColors = new HashMap();
 
@@ -237,11 +238,11 @@ public class AlignmentRenderer {
     }
 
 
-    PreferenceManager prefs;
+    IGVPreferences prefs;
     AlignmentTrack track;
 
     public AlignmentRenderer(AlignmentTrack track) {
-        this.prefs = PreferenceManager.getInstance();
+        this.prefs = PreferencesManager.getPreferences();
         this.track = track;
     }
 
@@ -291,7 +292,7 @@ public class AlignmentRenderer {
         initializeGraphics(context);
         double origin = context.getOrigin();
         double locScale = context.getScale();
-        boolean completeReadsOnly = PreferenceManager.getInstance().getAsBoolean(SAM_COMPLETE_READS_ONLY);
+        boolean completeReadsOnly = PreferencesManager.getPreferences().getAsBoolean(SAM_COMPLETE_READS_ONLY);
 
         if ((alignments != null) && (alignments.size() > 0)) {
 
@@ -373,7 +374,7 @@ public class AlignmentRenderer {
 
         double origin = context.getOrigin();
         double locScale = context.getScale();
-        boolean completeReadsOnly = PreferenceManager.getInstance().getAsBoolean(SAM_COMPLETE_READS_ONLY);
+        boolean completeReadsOnly = PreferencesManager.getPreferences().getAsBoolean(SAM_COMPLETE_READS_ONLY);
 
         if ((alignments != null) && (alignments.size() > 0)) {
 
@@ -712,8 +713,8 @@ public class AlignmentRenderer {
 
         boolean flagLargeIndels = prefs.getAsBoolean(SAM_FLAG_LARGE_INDELS);
         int largeInsertionsThreshold = prefs.getAsInt(SAM_LARGE_INDELS_THRESHOLD);
-        boolean hideSmallIndelsBP = PreferenceManager.getInstance().getAsBoolean(SAM_HIDE_SMALL_INDEL_BP);
-        int indelThresholdBP = PreferenceManager.getInstance().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
+        boolean hideSmallIndelsBP = PreferencesManager.getPreferences().getAsBoolean(SAM_HIDE_SMALL_INDEL_BP);
+        int indelThresholdBP = PreferencesManager.getPreferences().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
         boolean quickConsensus = renderOptions.quickConsensusMode;
         final float snpThreshold = prefs.getAsFloat(SAM_ALLELE_THRESHOLD);
 
@@ -1039,7 +1040,7 @@ public class AlignmentRenderer {
         }
     }
 
-    private Color getShadedColor(byte qual, Color foregroundColor, Color backgroundColor, PreferenceManager prefs) {
+    private Color getShadedColor(byte qual, Color foregroundColor, Color backgroundColor, IGVPreferences prefs) {
         float alpha = 0;
         int minQ = prefs.getAsInt(SAM_BASE_QUALITY_MIN);
         if (qual < minQ) {
@@ -1117,8 +1118,8 @@ public class AlignmentRenderer {
             InsertionMarker expandedInsertion = InsertionManager.getInstance().getSelectedInsertion(context.getReferenceFrame().getChrName());
             int expandedPosition = expandedInsertion == null ? -1 : expandedInsertion.position;
 
-            boolean hideSmallIndelsBP = PreferenceManager.getInstance().getAsBoolean(SAM_HIDE_SMALL_INDEL_BP);
-            int indelThresholdBP = PreferenceManager.getInstance().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
+            boolean hideSmallIndelsBP = PreferencesManager.getPreferences().getAsBoolean(SAM_HIDE_SMALL_INDEL_BP);
+            int indelThresholdBP = PreferencesManager.getPreferences().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
 
             for (AlignmentBlock aBlock : insertions) {
 

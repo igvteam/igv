@@ -73,7 +73,8 @@ import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.maf.MultipleAlignmentTrack;
 import org.broad.igv.methyl.MethylTrack;
 import org.broad.igv.peaks.PeakTrack;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
 import org.broad.igv.sam.*;
 import org.broad.igv.sam.reader.IndexNotFoundException;
@@ -627,7 +628,7 @@ public class TrackLoader {
 
     private static boolean checkSize(ResourceLocator locator) {
 
-        if (!PreferenceManager.getInstance().getAsBoolean(SHOW_SIZE_WARNING)) {
+        if (!PreferencesManager.getPreferences().getAsBoolean(SHOW_SIZE_WARNING)) {
             return true;
         }
 
@@ -942,11 +943,11 @@ public class TrackLoader {
 
             AlignmentTrack alignmentTrack = new AlignmentTrack(locator, dataManager, genome);    // parser.loadTrack(locator, dsName);
             alignmentTrack.setName(dsName);
-            alignmentTrack.setVisible(PreferenceManager.getInstance().getAsBoolean(SAM_SHOW_ALIGNMENT_TRACK));
+            alignmentTrack.setVisible(PreferencesManager.getPreferences().getAsBoolean(SAM_SHOW_ALIGNMENT_TRACK));
 
             // Create coverage track
             CoverageTrack covTrack = new CoverageTrack(locator, dsName + " Coverage", alignmentTrack, genome);
-            covTrack.setVisible(PreferenceManager.getInstance().getAsBoolean(SAM_SHOW_COV_TRACK));
+            covTrack.setVisible(PreferencesManager.getPreferences().getAsBoolean(SAM_SHOW_COV_TRACK));
             newTracks.add(covTrack);
             covTrack.setDataManager(dataManager);
             dataManager.setCoverageTrack(covTrack);
@@ -961,7 +962,7 @@ public class TrackLoader {
 
                 String covPath = locator.getCoverage();
                 if (covPath == null) {
-                    boolean bypassFileAutoDiscovery = PreferenceManager.getInstance().getAsBoolean(BYPASS_FILE_AUTO_DISCOVERY);
+                    boolean bypassFileAutoDiscovery = PreferencesManager.getPreferences().getAsBoolean(BYPASS_FILE_AUTO_DISCOVERY);
                     String path = locator.getPath();
                     if (!bypassFileAutoDiscovery && !path.contains("/query.cgi?")) {
                         covPath = path + ".tdf";
@@ -983,7 +984,7 @@ public class TrackLoader {
                 }
             }
 
-            boolean showSpliceJunctionTrack = PreferenceManager.getInstance().getAsBoolean(SAM_SHOW_JUNCTION_TRACK);
+            boolean showSpliceJunctionTrack = PreferencesManager.getPreferences().getAsBoolean(SAM_SHOW_JUNCTION_TRACK);
 
             SpliceJunctionTrack spliceJunctionTrack = new SpliceJunctionTrack(locator,
                     dsName + " Junctions", dataManager, alignmentTrack, SpliceJunctionTrack.StrandOption.BOTH);
@@ -1171,7 +1172,7 @@ public class TrackLoader {
             Color maxColor = props.getColor();
             Color minColor = props.getAltColor();
             if (maxColor != null && minColor != null) {
-                colorScale = PreferenceManager.getDefaultColorScale(minColor, Color.white, maxColor);
+                colorScale = IGVPreferences.getDefaultColorScale(minColor, Color.white, maxColor);
             }
         }
 

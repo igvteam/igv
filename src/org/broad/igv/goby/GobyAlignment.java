@@ -38,7 +38,7 @@ import org.broad.igv.data.CharArrayList;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.*;
 import org.broad.igv.track.WindowFunction;
 
@@ -126,7 +126,7 @@ public class GobyAlignment implements Alignment {
         int insertedBases = 0;
         int deletedBases = 0;
         final int leftPadding = alignmentEntry.getQueryPosition();
-        boolean showSoftClipped = PreferenceManager.getInstance().getAsBoolean(Constants.SAM_SHOW_SOFT_CLIPPED);
+        boolean showSoftClipped = PreferencesManager.getPreferences().getAsBoolean(Constants.SAM_SHOW_SOFT_CLIPPED);
         if (showSoftClipped && entry.hasSoftClippedBasesLeft()) {
             int clipLength = entry.getSoftClippedBasesLeft().length();
 

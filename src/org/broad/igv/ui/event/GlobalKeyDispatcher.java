@@ -37,7 +37,8 @@ import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
@@ -109,7 +110,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
     public void init() {
 
         final IGV igv = IGV.getInstance();
-        final PreferenceManager prefMgr = PreferenceManager.getInstance();
+        final IGVPreferences prefMgr = PreferencesManager.getPreferences();
 
         // Next feature
         final KeyStroke nextKey = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_MASK, false);

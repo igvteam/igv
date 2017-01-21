@@ -30,7 +30,8 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -58,7 +59,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
 
 
     public BaseAlignmentCounts(int start, int end, AlignmentTrack.BisulfiteContext bisulfiteContext) {
-        final PreferenceManager prefs = PreferenceManager.getInstance();
+        final IGVPreferences prefs = PreferencesManager.getPreferences();
         String snpsFile = prefs.get(KNOWN_SNPS, null);
         if (snpsFile != null && knownSnps == null) {
             loadKnownSnps(snpsFile);
@@ -212,7 +213,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
      */
     public boolean isConsensusMismatch(int pos, byte ref, String chr, float snpThreshold) {
 
-        boolean qualityWeight = PreferenceManager.getInstance().getAsBoolean(SAM_ALLELE_USE_QUALITY);
+        boolean qualityWeight = PreferencesManager.getPreferences().getAsBoolean(SAM_ALLELE_USE_QUALITY);
 
         Set<Integer> filteredSnps = knownSnps == null ? null : knownSnps.get(chr);
 

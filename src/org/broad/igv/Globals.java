@@ -39,15 +39,18 @@ import java.util.regex.Pattern;
  * Date: Feb 3, 2010
  */
 public class Globals {
+    private static Logger log = Logger.getLogger(Globals.class);
 
     public static final int DESIGN_DPI = 96;
     public static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
-    private static Logger log = Logger.getLogger(Globals.class);
+    final static public String HISTORY_DELIMITER = ";";
+    public static final String DEFAULT_GENOME = "hg19";
+
+    // External resoure URLs
+    public static final String DEFAULT_GENOME_URL = "http://igv.broadinstitute.org/genomes/genomes.txt";
+    public static final String DEFAULT_DATA_URL = "https://data.broadinstitute.org/igvdata/$$_dataServerRegistry.txt";
 
 
-    /**
-     * CONSTANTS
-     */
     public static final String CHR_ALL = "All";
     public static final String TRACK_NAME_ATTRIBUTE = "NAME";
     public static final String TRACK_DATA_FILE_ATTRIBUTE = "DATA FILE";

@@ -51,8 +51,9 @@ import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.*;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.peaks.PeakCommandBar;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesEditor;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.InsertionSelectionEvent;
 import org.broad.igv.session.*;
@@ -211,23 +212,12 @@ public class IGV implements IGVEventObserver {
 
         theInstance = this;
 
-        genomeManager = GenomeManager.getInstance();
+        final IGVPreferences preferences = PreferencesManager.getPreferences();
 
+        genomeManager = GenomeManager.getInstance();
         mainFrame = frame;
         mainFrame.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent windowEvent) {
-                windowCloseEvent();
-            }
 
-            @Override
-            public void windowClosed(WindowEvent windowEvent) {
-                windowCloseEvent();
-            }
-
-            private void windowCloseEvent() {
-                PreferenceManager.getInstance().setApplicationFrameBounds(mainFrame.getBounds());
-            }
 
             @Override
             public void windowLostFocus(WindowEvent windowEvent) {
@@ -289,23 +279,21 @@ public class IGV implements IGVEventObserver {
 
         mainFrame.pack();
 
-        // Set the application's previous location and size
-        Dimension screenBounds = Toolkit.getDefaultToolkit().getScreenSize();
-        Rectangle applicationBounds = PreferenceManager.getInstance().getApplicationFrameBounds();
-        int state = PreferenceManager.getInstance().getAsInt(FRAME_STATE_KEY);
-
-        if (applicationBounds == null || applicationBounds.getMaxX() > screenBounds.getWidth() ||
-                applicationBounds.getMaxY() > screenBounds.getHeight()) {
-            int width = Math.min(1150, (int) screenBounds.getWidth());
-            int height = Math.min(800, (int) screenBounds.getHeight());
-            applicationBounds = new Rectangle(0, 0, width, height);
-        }
-
         //Certain components MUST be visible, so we set minimum size
         //{@link MainPanel#addDataPanel}
         mainFrame.setMinimumSize(new Dimension(300, 300));
 
-        mainFrame.setExtendedState(state);
+        // Set the application's previous location and size
+        Dimension screenBounds = Toolkit.getDefaultToolkit().getScreenSize();
+        Rectangle applicationBounds = preferences.getApplicationFrameBounds();
+
+        if (applicationBounds == null || applicationBounds.getMaxX() > screenBounds.getWidth() ||
+                applicationBounds.getMaxY() > screenBounds.getHeight() ||
+                applicationBounds.width == 0 || applicationBounds.height == 0) {
+            int width = Math.min(1150, (int) screenBounds.getWidth());
+            int height = Math.min(800, (int) screenBounds.getHeight());
+            applicationBounds = new Rectangle(0, 0, width, height);
+        }
         mainFrame.setBounds(applicationBounds);
 
         IGVEventBus.getInstance().subscribe(ViewChange.class, this);
@@ -686,7 +674,7 @@ public class IGV implements IGVEventObserver {
             public void run() {
 
                 boolean originalSingleTrackValue =
-                        PreferenceManager.getInstance().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY);
+                        PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY);
 
                 PreferencesEditor dialog = new PreferencesEditor(mainFrame, true);
                 if (tabToSelect != null) {
@@ -705,7 +693,7 @@ public class IGV implements IGVEventObserver {
                 try {
 
                     //Should data and feature panels be combined ?
-                    boolean singlePanel = PreferenceManager.getInstance().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY);
+                    boolean singlePanel = PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY);
                     if (originalSingleTrackValue != singlePanel) {
                         JOptionPane.showMessageDialog(mainFrame, "Panel option change will take affect after restart.");
                     }
@@ -744,36 +732,23 @@ public class IGV implements IGVEventObserver {
                 }
 
             }
-            PreferenceManager.getInstance().remove(RECENT_SESSION_KEY);
-            PreferenceManager.getInstance().setRecentSessions(recentSessions);
+            PreferencesManager.getPreferences().remove(RECENT_SESSIONS);
+            PreferencesManager.getPreferences().setRecentSessions(recentSessions);
         }
-
-        // Save application location and size
-        PreferenceManager.getInstance().setApplicationFrameBounds(mainFrame.getBounds());
-        PreferenceManager.getInstance().put(FRAME_STATE_KEY, "" + mainFrame.getExtendedState());
 
     }
 
     final public void doShowAttributeDisplay(boolean enableAttributeView) {
 
-        boolean oldState = PreferenceManager.getInstance().getAsBoolean(SHOW_ATTRIBUTE_VIEWS_KEY);
+        boolean oldState = PreferencesManager.getPreferences().getAsBoolean(SHOW_ATTRIBUTE_VIEWS_KEY);
 
         // First store the newly requested state
-        PreferenceManager.getInstance().setShowAttributeView(enableAttributeView);
-
-        //menuItem.setSelected(enableAttributeView);
-
-        // Now, if the state has actually change we
-        // need to refresh everything
-        if (oldState != enableAttributeView) {
+        if(oldState != enableAttributeView) {
+            PreferencesManager.getPreferences().setShowAttributeView(enableAttributeView);
             doRefresh();
         }
 
 
-    }
-
-    final public void refreshCommandBar() {
-        contentPane.getCommandBar().updateCurrentCoordinates();
     }
 
 
@@ -792,7 +767,7 @@ public class IGV implements IGVEventObserver {
             Set<String> selections = dlg.getSelections();
             for (String att : AttributeManager.defaultTrackAttributes) {
                 if (selections.contains(att)) {
-                    PreferenceManager.getInstance().put(SHOW_DEFAULT_TRACK_ATTRIBUTES, true);
+                    PreferencesManager.getPreferences().put(SHOW_DEFAULT_TRACK_ATTRIBUTES, true);
                     break;
                 }
             }
@@ -894,7 +869,7 @@ public class IGV implements IGVEventObserver {
 
     public File selectSnapshotFile(File defaultFile) {
 
-        File snapshotDirectory = PreferenceManager.getInstance().getLastSnapshotDirectory();
+        File snapshotDirectory = PreferencesManager.getPreferences().getLastSnapshotDirectory();
 
         JFileChooser fc = new SnapshotFileChooser(snapshotDirectory, defaultFile);
         fc.showSaveDialog(mainFrame);
@@ -904,7 +879,7 @@ public class IGV implements IGVEventObserver {
         if (file != null) {
             File directory = file.getParentFile();
             if (directory != null) {
-                PreferenceManager.getInstance().setLastSnapshotDirectory(directory);
+                PreferencesManager.getPreferences().setLastSnapshotDirectory(directory);
             }
 
         }
@@ -1116,8 +1091,8 @@ public class IGV implements IGVEventObserver {
     public void resetToFactorySettings() {
 
         try {
-            PreferenceManager.getInstance().clear();
-            boolean isShow = PreferenceManager.getInstance().getAsBoolean(SHOW_ATTRIBUTE_VIEWS_KEY);
+            PreferencesManager.getPreferences().clear();
+            boolean isShow = PreferencesManager.getPreferences().getAsBoolean(SHOW_ATTRIBUTE_VIEWS_KEY);
             doShowAttributeDisplay(isShow);
             Preferences prefs = Preferences.userNodeForPackage(Globals.class);
             prefs.remove(DirectoryManager.IGV_DIR_USERPREF);
@@ -1321,13 +1296,13 @@ public class IGV implements IGVEventObserver {
      * @param def
      * @return
      * @see Session#getPersistent(String, String)
-     * @see PreferenceManager#getPersistent(String, String)
+     * @see IGVPreferences#getPersistent(String, String)
      */
     public static String getPersistent(String key, String def) {
         if (IGV.hasInstance()) {
             return IGV.getInstance().getSession().getPersistent(key, def);
         } else {
-            return PreferenceManager.getInstance().getPersistent(key, def);
+            return PreferencesManager.getPreferences().getPersistent(key, def);
         }
     }
 
@@ -1627,7 +1602,7 @@ public class IGV implements IGVEventObserver {
         String path = locator.getPath().toLowerCase();
         if ("alist".equals(locator.getType())) {
             return getVcfBamPanel();
-        } else if (PreferenceManager.getInstance().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
+        } else if (PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
             return getTrackPanel(DATA_PANEL_NAME);
         } else if (TrackLoader.isAlignmentTrack(locator.getTypeString())) {
             String newPanelName = "Panel" + System.currentTimeMillis();
@@ -1730,7 +1705,7 @@ public class IGV implements IGVEventObserver {
      * @api
      */
     public void groupAlignmentTracks(AlignmentTrack.GroupOption option, String tag, Range pos) {
-        final PreferenceManager prefMgr = PreferenceManager.getInstance();
+        final IGVPreferences prefMgr = PreferencesManager.getPreferences();
         prefMgr.put(SAM_GROUP_OPTION, option.toString());
         if (option == AlignmentTrack.GroupOption.TAG && tag != null) {
             prefMgr.put(SAM_GROUP_BY_TAG, tag);
@@ -1988,7 +1963,7 @@ public class IGV implements IGVEventObserver {
      */
     public void setGenomeTracks(FeatureTrack newGeneTrack) {
 
-        TrackPanel panel = PreferenceManager.getInstance().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY) ?
+        TrackPanel panel = PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY) ?
                 getTrackPanel(DATA_PANEL_NAME) : getTrackPanel(FEATURE_PANEL_NAME);
         SequenceTrack newSeqTrack = new SequenceTrack("Reference sequence");
 
@@ -2278,7 +2253,7 @@ public class IGV implements IGVEventObserver {
                 setAppleDockIcon();
             }
 
-            final PreferenceManager preferenceManager = PreferenceManager.getInstance();
+            final IGVPreferences preferenceManager = PreferencesManager.getPreferences();
 
             try {
                 contentPane.getCommandBar().initializeGenomeList(monitor);
@@ -2471,7 +2446,7 @@ public class IGV implements IGVEventObserver {
                     log.error("Error reading builtin plugin list", e);
                 }
             }
-            pluginClassNames.addAll(Arrays.asList(PreferenceManager.getInstance().getIGVPluginList()));
+            pluginClassNames.addAll(Arrays.asList(PreferencesManager.getPreferences().getIGVPluginList()));
             for (String classname : pluginClassNames) {
                 if (classname.startsWith("#")) continue;
                 try {

@@ -38,7 +38,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
@@ -562,7 +562,7 @@ public class SearchCommand {
     }
 
     private void showFlankedRegion(String chr, int start, int end) {
-        int flankingRegion = PreferenceManager.getInstance().getAsInt(Constants.FLANKING_REGION);
+        int flankingRegion = PreferencesManager.getPreferences().getAsInt(Constants.FLANKING_REGION);
         int delta;
         if((end - start) == 1) {
             delta = 20; // Don't show flanking region for single base jumps, use 40bp window
@@ -575,7 +575,7 @@ public class SearchCommand {
         start = Math.max(0, start - delta);
         end = end + delta;
 
-        if (PreferenceManager.getInstance().getAsBoolean(Constants.SEARCH_ZOOM)) {
+        if (PreferencesManager.getPreferences().getAsBoolean(Constants.SEARCH_ZOOM)) {
             referenceFrame.jumpTo(chr, start, end);
         } else {
             int center = (start + end) / 2;

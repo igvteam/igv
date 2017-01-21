@@ -29,7 +29,7 @@
  */
 package org.broad.igv.track;
 
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.InsertionMarker;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
@@ -64,7 +64,7 @@ public class RenderContext {
         this.graphicCache = new HashMap();
         this.referenceFrame = referenceFrame;
         this.visibleRect = visibleRect;
-        if (PreferenceManager.getInstance().getAsBoolean(ENABLE_ANTIALISING) && graphics != null) {
+        if (PreferencesManager.getPreferences().getAsBoolean(ENABLE_ANTIALISING) && graphics != null) {
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
@@ -76,7 +76,7 @@ public class RenderContext {
         this.referenceFrame = new ReferenceFrame(context.referenceFrame);
         this.panel = context.panel;
         this.visibleRect = new Rectangle(context.visibleRect);
-        if (PreferenceManager.getInstance().getAsBoolean(ENABLE_ANTIALISING) && graphics != null) {
+        if (PreferencesManager.getPreferences().getAsBoolean(ENABLE_ANTIALISING) && graphics != null) {
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
@@ -95,7 +95,7 @@ public class RenderContext {
         Graphics2D g = graphicCache.get(key);
         if (g == null) {
             g = (Graphics2D) graphics.create();
-            if (PreferenceManager.getInstance().getAsBoolean(ENABLE_ANTIALISING)) {
+            if (PreferencesManager.getPreferences().getAsBoolean(ENABLE_ANTIALISING)) {
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             }

@@ -30,7 +30,7 @@
 package org.broad.igv.lists;
 
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.util.MessageUtils;
 
 import javax.swing.*;
@@ -74,7 +74,7 @@ public class GeneListEditDialog extends JDialog {
             genesField.setText(buf.toString());
         }
 
-        bedCB.setSelected(PreferenceManager.getInstance().getAsBoolean(Constants.GENE_LIST_BED_FORMAT));
+        bedCB.setSelected(PreferencesManager.getPreferences().getAsBoolean(Constants.GENE_LIST_BED_FORMAT));
     }
 
 
@@ -101,7 +101,7 @@ public class GeneListEditDialog extends JDialog {
         }
 
         if(this.bedOptionChanged) {
-            PreferenceManager.getInstance().put(Constants.GENE_LIST_BED_FORMAT, bedCB.isSelected());
+            PreferencesManager.getPreferences().put(Constants.GENE_LIST_BED_FORMAT, bedCB.isSelected());
         }
         
         setVisible(false);

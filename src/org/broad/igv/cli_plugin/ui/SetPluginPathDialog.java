@@ -30,7 +30,7 @@
 package org.broad.igv.cli_plugin.ui;
 
 import org.broad.igv.cli_plugin.PluginSpecReader;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -67,7 +67,7 @@ public class SetPluginPathDialog extends JDialog {
     }
 
     private void okButtonActionPerformed(ActionEvent e) {
-        PreferenceManager.getInstance().putToolPath(pluginId, toolName, pathInput.getText());
+        PreferencesManager.getPreferences().putToolPath(pluginId, toolName, pathInput.getText());
         setVisible(false);
     }
 

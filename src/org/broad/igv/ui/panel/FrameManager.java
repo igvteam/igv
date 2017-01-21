@@ -29,7 +29,7 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
@@ -185,7 +185,7 @@ public class FrameManager implements IGVEventObserver {
      * @return
      */
     public static Locus getLocus(String searchString) {
-        int flankingRegion = PreferenceManager.getInstance().getAsInt(Constants.FLANKING_REGION);
+        int flankingRegion = PreferencesManager.getPreferences().getAsInt(Constants.FLANKING_REGION);
         return getLocus(searchString, flankingRegion);
     }
 

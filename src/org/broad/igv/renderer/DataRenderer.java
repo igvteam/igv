@@ -40,7 +40,8 @@ package org.broad.igv.renderer;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
@@ -103,7 +104,7 @@ public abstract class DataRenderer implements Renderer<LocusScore> {
      * @param rect
      */
     public void renderAxis(Track track, RenderContext context, Rectangle rect) {
-        PreferenceManager prefs = PreferenceManager.getInstance();
+        IGVPreferences prefs = PreferencesManager.getPreferences();
 
         // For now disable axes for all chromosome view
         if (context.getChr().equals(Globals.CHR_ALL)) {

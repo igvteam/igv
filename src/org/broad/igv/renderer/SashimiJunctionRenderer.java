@@ -33,7 +33,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.IExon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.SpliceJunctionFeature;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentDataManager;
 import org.broad.igv.sam.AlignmentInterval;
 import org.broad.igv.sam.CoverageTrack;
@@ -183,7 +183,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
         Rectangle coverageRectangle = new Rectangle(trackRectangle);
 
-        final boolean showCoverage = PreferenceManager.getInstance().getAsBoolean(SASHIMI_SHOW_COVERAGE);
+        final boolean showCoverage = PreferencesManager.getPreferences().getAsBoolean(SASHIMI_SHOW_COVERAGE);
 
         if(coverageTrack != null && showCoverage){
             //Only want the coverage track to go so high so that the arcs still have room

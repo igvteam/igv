@@ -27,7 +27,7 @@ package org.broad.igv.cli_plugin;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.w3c.dom.Document;
@@ -287,7 +287,7 @@ public class PluginSpecReader {
      */
     public String getToolPath(Tool tool) {
         //Check settings for path, use default if not there
-        String toolPath = PreferenceManager.getInstance().getToolPath(getId(), tool.name);
+        String toolPath = PreferencesManager.getPreferences().getToolPath(getId(), tool.name);
         if (toolPath == null) {
             toolPath = tool.defaultPath;
         }

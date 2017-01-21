@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.*;
@@ -481,7 +481,7 @@ public class FilterGeneNetworkUI extends JDialog {
                     int ival = Integer.parseInt(entry.getValue().getText());
                     sval = "" + ival;
                 }
-                PreferenceManager.getInstance().put(entry.getKey(), sval);
+                PreferencesManager.getPreferences().put(entry.getKey(), sval);
             }
         } catch (NumberFormatException e) {
             MessageUtils.showMessage("Invalid input. Mutation count must be integers, others must be numeric. " + e.getMessage());
@@ -492,7 +492,7 @@ public class FilterGeneNetworkUI extends JDialog {
 
     private void loadThresholds() {
         for (Map.Entry<String, JTextField> entry : thresholdsMap.entrySet()) {
-            String value = PreferenceManager.getInstance().get(entry.getKey());
+            String value = PreferencesManager.getPreferences().get(entry.getKey());
             entry.getValue().setText(value);
         }
     }
@@ -532,7 +532,7 @@ public class FilterGeneNetworkUI extends JDialog {
 
     private void resetToDefaultsButtonActionPerformed(ActionEvent e) {
         for (Map.Entry<String, JTextField> entry : thresholdsMap.entrySet()) {
-            String value = PreferenceManager.getInstance().getDefaultValue(entry.getKey());
+            String value = PreferencesManager.getPreferences().getDefaultValue(entry.getKey());
             entry.getValue().setText(value);
         }
         saveThresholds();

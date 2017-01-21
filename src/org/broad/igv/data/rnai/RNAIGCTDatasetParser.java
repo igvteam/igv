@@ -33,7 +33,7 @@ import org.broad.igv.exceptions.LoadResourceFromServerException;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
@@ -229,7 +229,7 @@ public class RNAIGCTDatasetParser {
         if (IGV.hasInstance()) {
             RNAI_MAPPING_URL = IGV.getInstance().getSession().getPersistent(RNAI_MAPPING_URL_KEY, DEFAULT_RNAI_MAPPING_URL);
         } else {
-            RNAI_MAPPING_URL = PreferenceManager.getInstance().getPersistent(RNAI_MAPPING_URL_KEY, DEFAULT_RNAI_MAPPING_URL);
+            RNAI_MAPPING_URL = PreferencesManager.getPreferences().getPersistent(RNAI_MAPPING_URL_KEY, DEFAULT_RNAI_MAPPING_URL);
         }
     }
 

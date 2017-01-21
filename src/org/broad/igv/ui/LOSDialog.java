@@ -30,7 +30,7 @@
 package org.broad.igv.ui;
 
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -63,7 +63,7 @@ public class LOSDialog extends JDialog {
                         final URI mailtoURI = e.getURL().toURI();
                         Desktop.getDesktop().mail(mailtoURI);
                         setVisible(false);
-                        PreferenceManager.getInstance().put(Constants.SHOW_LOS, false);
+                        PreferencesManager.getPreferences().put(Constants.SHOW_LOS, false);
                         dispose();
                     } catch (Exception e1) {
                         e1.printStackTrace();
@@ -84,7 +84,7 @@ public class LOSDialog extends JDialog {
     private void okButtonActionPerformed(ActionEvent e) {
 
         if(!remindMeCB.isSelected()) {
-            PreferenceManager.getInstance().put(Constants.SHOW_LOS, false);
+            PreferencesManager.getPreferences().put(Constants.SHOW_LOS, false);
         }
 
         this.setVisible(false);

@@ -705,68 +705,6 @@
                     <string>javax.swing.JCheckBox</string>
                     <void method="setProperty">
                      <string>text</string>
-                     <string>Distinguish missing data</string>
-                    </void>
-                    <void method="setProperty">
-                     <string>toolTipText</string>
-                     <string>Distinguish regions with zero values from regions with no data on plots (e.g. bar charts).  Regions with no data are indicated with a gray background.</string>
-                    </void>
-                    <void property="name">
-                     <string>showMissingDataCB</string>
-                    </void>
-                    <void method="addEvent">
-                     <object class="com.jformdesigner.model.FormEvent">
-                      <string>java.awt.event.ActionListener</string>
-                      <string>actionPerformed</string>
-                      <string>showMissingDataCBActionPerformed</string>
-                      <boolean>true</boolean>
-                     </object>
-                    </void>
-                   </object>
-                   <object class="com.jformdesigner.model.FormLayoutConstraints">
-                    <class>com.jformdesigner.runtime.GridBagConstraintsEx</class>
-                    <void method="setProperty">
-                     <string>gridwidth</string>
-                     <int>2</int>
-                    </void>
-                    <void method="setProperty">
-                     <string>gridy</string>
-                     <int>1</int>
-                    </void>
-                   </object>
-                  </void>
-                  <void method="add">
-                   <object class="com.jformdesigner.model.FormComponent">
-                    <string>javax.swing.JLabel</string>
-                    <void method="setProperty">
-                     <string>text</string>
-                     <string>&lt;html&gt;&lt;i&gt;Distinguish regions with value of zero from regions with no data.</string>
-                    </void>
-                    <void property="name">
-                     <string>label32</string>
-                    </void>
-                   </object>
-                   <object class="com.jformdesigner.model.FormLayoutConstraints">
-                    <class>com.jformdesigner.runtime.GridBagConstraintsEx</class>
-                    <void method="setProperty">
-                     <string>gridx</string>
-                     <int>2</int>
-                    </void>
-                    <void method="setProperty">
-                     <string>gridwidth</string>
-                     <int>6</int>
-                    </void>
-                    <void method="setProperty">
-                     <string>gridy</string>
-                     <int>1</int>
-                    </void>
-                   </object>
-                  </void>
-                  <void method="add">
-                   <object class="com.jformdesigner.model.FormComponent">
-                    <string>javax.swing.JCheckBox</string>
-                    <void method="setProperty">
-                     <string>text</string>
                      <string>Enable Google access</string>
                     </void>
                     <void property="name">
@@ -1528,7 +1466,7 @@
                   <class>com.jformdesigner.runtime.GridBagConstraintsEx</class>
                   <void method="setProperty">
                    <string>gridy</string>
-                   <int>7</int>
+                   <int>6</int>
                   </void>
                   <void method="setProperty">
                    <string>gridwidth</string>
@@ -1577,7 +1515,7 @@
                   <class>com.jformdesigner.runtime.GridBagConstraintsEx</class>
                   <void method="setProperty">
                    <string>gridy</string>
-                   <int>8</int>
+                   <int>7</int>
                   </void>
                   <void method="setProperty">
                    <string>gridwidth</string>
@@ -1589,45 +1527,6 @@
                   </void>
                   <void method="setProperty">
                    <string>gridheight</string>
-                   <int>2</int>
-                  </void>
-                 </object>
-                </void>
-                <void method="add">
-                 <object class="com.jformdesigner.model.FormComponent">
-                  <string>javax.swing.JCheckBox</string>
-                  <void method="setProperty">
-                   <string>text</string>
-                   <string>Show Expand Icon</string>
-                  </void>
-                  <void method="setProperty">
-                   <string>toolTipText</string>
-                   <string>If checked, displays an expand/collapse icon on feature tracks.</string>
-                  </void>
-                  <void property="name">
-                   <string>expandIconCB</string>
-                  </void>
-                  <void method="addEvent">
-                   <object class="com.jformdesigner.model.FormEvent">
-                    <string>java.awt.event.ActionListener</string>
-                    <string>actionPerformed</string>
-                    <string>expandIconCBActionPerformed</string>
-                    <boolean>true</boolean>
-                   </object>
-                  </void>
-                 </object>
-                 <object class="com.jformdesigner.model.FormLayoutConstraints">
-                  <class>com.jformdesigner.runtime.GridBagConstraintsEx</class>
-                  <void method="setProperty">
-                   <string>gridy</string>
-                   <int>6</int>
-                  </void>
-                  <void method="setProperty">
-                   <string>gridwidth</string>
-                   <int>2</int>
-                  </void>
-                  <void method="setProperty">
-                   <string>gridx</string>
                    <int>2</int>
                   </void>
                  </object>

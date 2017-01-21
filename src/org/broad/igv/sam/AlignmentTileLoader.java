@@ -29,7 +29,8 @@ import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.ReadGroupFilter;
 import org.broad.igv.ui.IGV;
@@ -117,7 +118,7 @@ public class AlignmentTileLoader {
                            AlignmentTrack.BisulfiteContext bisulfiteContext,
                            boolean showAlignments) {
 
-        final PreferenceManager prefMgr = PreferenceManager.getInstance();
+        final IGVPreferences prefMgr = PreferencesManager.getPreferences();
         boolean filterFailedReads = prefMgr.getAsBoolean(SAM_FILTER_FAILED_READS);
         boolean filterSecondaryAlignments = prefMgr.getAsBoolean(SAM_FILTER_SECONDARY_ALIGNMENTS);
         boolean filterSupplementaryAlignments = prefMgr.getAsBoolean(SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS);
@@ -387,7 +388,7 @@ public class AlignmentTileLoader {
             this.end = end;
             this.downsampledIntervals = new ArrayList<DownsampledInterval>();
 
-            this.indelLimit = PreferenceManager.getInstance().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
+            this.indelLimit = PreferencesManager.getPreferences().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
             this.showAlignments = showAlignments;
 
             long seed = System.currentTimeMillis();

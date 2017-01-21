@@ -31,7 +31,8 @@ package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
@@ -64,10 +65,10 @@ public class LoadFilesMenuAction extends MenuAction {
 
     private File[] chooseTrackFiles() {
 
-        File lastDirectoryFile = PreferenceManager.getInstance().getLastTrackDirectory();
+        File lastDirectoryFile = PreferencesManager.getPreferences().getLastTrackDirectory();
 
         // Get Track Files
-        final PreferenceManager prefs = PreferenceManager.getInstance();
+        final IGVPreferences prefs = PreferencesManager.getPreferences();
 
         // Tracks.  Simulates multi-file select
         File[] trackFiles = FileDialogUtils.chooseMultiple("Select Files", lastDirectoryFile, null);
@@ -76,7 +77,7 @@ public class LoadFilesMenuAction extends MenuAction {
 
             File lastFile = trackFiles[0];
             if (lastFile != null) {
-                PreferenceManager.getInstance().setLastTrackDirectory(lastFile);
+                PreferencesManager.getPreferences().setLastTrackDirectory(lastFile);
             }
         }
         igv.resetStatusMessage();

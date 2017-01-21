@@ -33,7 +33,7 @@ package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.ResourceTree;
 import org.broad.igv.ui.util.MessageUtils;
@@ -70,7 +70,7 @@ public class LoadFromServerAction extends MenuAction {
     }
 
     public static String getGenomeDataURL(String genomeId) {
-        String urlString = PreferenceManager.getInstance().getDataServerURL();
+        String urlString = PreferencesManager.getPreferences().getDataServerURL();
         String genomeURL = urlString.replaceAll("\\$\\$", genomeId);
         return genomeURL;
     }

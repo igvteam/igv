@@ -34,7 +34,8 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ import java.util.List;
 public class PicardAlignment extends SAMAlignment implements Alignment {
 
     private static Logger log = Logger.getLogger(PicardAlignment.class);
-    private static PreferenceManager prefMgr = PreferenceManager.getInstance();
+    private static IGVPreferences prefMgr = PreferencesManager.getPreferences();
 
     private static final int READ_PAIRED_FLAG = 0x1;
     private static final int PROPER_PAIR_FLAG = 0x2;

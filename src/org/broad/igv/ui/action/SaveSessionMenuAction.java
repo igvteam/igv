@@ -32,7 +32,7 @@ package org.broad.igv.ui.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionWriter;
 import org.broad.igv.ui.IGV;
@@ -80,7 +80,7 @@ public class SaveSessionMenuAction extends MenuAction {
 
         String initFile = currentSessionFilePath == null ? UIConstants.DEFAULT_SESSION_FILE : currentSessionFilePath;
         sessionFile = FileDialogUtils.chooseFile("Save Session",
-                PreferenceManager.getInstance().getLastTrackDirectory(),
+                PreferencesManager.getPreferences().getLastTrackDirectory(),
                 new File(initFile),
                 FileDialogUtils.SAVE);
 
@@ -104,7 +104,7 @@ public class SaveSessionMenuAction extends MenuAction {
         try {
             saveSession(igv, sf);
             // No errors so save last location
-            PreferenceManager.getInstance().setLastTrackDirectory(sf.getParentFile());
+            PreferencesManager.getPreferences().setLastTrackDirectory(sf.getParentFile());
 
         } catch (Exception e2) {
             JOptionPane.showMessageDialog(igv.getMainFrame(), "There was an error writing to " + sf.getName() + "(" + e2.getMessage() + ")");

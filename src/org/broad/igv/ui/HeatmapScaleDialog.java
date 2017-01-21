@@ -37,7 +37,7 @@
 package org.broad.igv.ui;
 
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.color.ColorChooserPanel;
@@ -456,7 +456,7 @@ public class HeatmapScaleDialog extends javax.swing.JDialog {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 HeatmapScaleDialog dialog = new HeatmapScaleDialog(new javax.swing.JFrame(),
-                        (ContinuousColorScale) PreferenceManager.getInstance().getDefaultColorScale(TrackType.COPY_NUMBER));
+                        (ContinuousColorScale) PreferencesManager.getPreferences().getDefaultColorScale(TrackType.COPY_NUMBER));
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     public void windowClosing(java.awt.event.WindowEvent e) {
                         System.exit(0);
@@ -505,7 +505,7 @@ public class HeatmapScaleDialog extends javax.swing.JDialog {
 
             try {
                 g2D = (Graphics2D) g.create();
-                if (PreferenceManager.getInstance().getAsBoolean(Constants.ENABLE_ANTIALISING)) {
+                if (PreferencesManager.getPreferences().getAsBoolean(Constants.ENABLE_ANTIALISING)) {
                     g2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
                 }
                 g2D.setFont(FontManager.getFont(10));

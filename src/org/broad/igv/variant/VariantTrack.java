@@ -33,7 +33,8 @@ import htsjdk.variant.variantcontext.GenotypeType;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.IGVFeature;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.SubtlyImportant;
@@ -194,7 +195,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                         boolean enableMethylationRateSupport) {
         super(locator, source);
 
-        PreferenceManager prefMgr = PreferenceManager.getInstance();
+        IGVPreferences prefMgr = PreferencesManager.getPreferences();
 
         String path = locator == null ? null : locator.getPath();
 

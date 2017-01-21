@@ -35,7 +35,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.AbstractColorScale;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.MonocolorScale;
@@ -517,7 +517,7 @@ public class AttributeManager {
             trackSampleMappings.put(track, sample);
             return sample;
         } else {
-            String key = PreferenceManager.getInstance().get(Constants.OVERLAY_ATTRIBUTE_KEY);
+            String key = PreferencesManager.getPreferences().get(Constants.OVERLAY_ATTRIBUTE_KEY);
             return key == null ? null : getAttribute(track, key);
         }
     }

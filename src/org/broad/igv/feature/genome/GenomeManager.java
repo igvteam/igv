@@ -40,7 +40,7 @@ import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.IGVMenuBar;
@@ -120,7 +120,7 @@ public class GenomeManager {
 
     public void setCurrentGenome(Genome genome) {
         if (genome != null) {
-            PreferenceManager.getInstance().setDefaultGenome(genome.getId());
+            PreferencesManager.getPreferences().setDefaultGenome(genome.getId());
         }
         this.currentGenome = genome;
         if (genome != null) {
@@ -602,7 +602,7 @@ public class GenomeManager {
 
                 // Force an update of cached genome if file length does not equal remote content length
                 boolean forceUpdate = remoteModfied &&
-                        PreferenceManager.getInstance().getAsBoolean(Constants.AUTO_UPDATE_GENOMES);
+                        PreferencesManager.getPreferences().getAsBoolean(Constants.AUTO_UPDATE_GENOMES);
 
                 if (forceUpdate) {
                     log.info("Refreshing genome: " + genomeArchiveURL.toString());
@@ -799,7 +799,7 @@ public class GenomeManager {
             InputStream inputStream = null;
             String genomeListURLString = "";
             try {
-                genomeListURLString = PreferenceManager.getInstance().getGenomeListURL();
+                genomeListURLString = PreferencesManager.getPreferences().getGenomeListURL();
                 URL serverGenomeURL = new URL(genomeListURLString);
 
                 if (HttpUtils.isRemoteURL(genomeListURLString)) {
@@ -1247,7 +1247,7 @@ public class GenomeManager {
         File chrAliasFile = null;
 
         if (genomeFile != null) {
-            PreferenceManager.getInstance().setLastGenomeImportDirectory(genomeFile.getParentFile());
+            PreferencesManager.getPreferences().setLastGenomeImportDirectory(genomeFile.getParentFile());
         }
 
         if ((cytobandFileName != null) && (cytobandFileName.trim().length() != 0)) {

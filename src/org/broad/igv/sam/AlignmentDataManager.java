@@ -28,7 +28,8 @@ package org.broad.igv.sam;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentTrack.SortOption;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.track.RenderContext;
@@ -150,7 +151,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public double getMinVisibleScale() {
-        PreferenceManager prefs = PreferenceManager.getInstance();
+        IGVPreferences prefs = PreferencesManager.getPreferences();
         float maxRange = prefs.getAsFloat(SAM_MAX_VISIBLE_RANGE);
         return (maxRange * 1000) / 700;
     }
@@ -249,7 +250,7 @@ public class AlignmentDataManager implements IGVEventObserver {
             int adjustedEnd = end;
 
             // Expand the interval by the lesser of  +/- a 2 screens, or max visible range
-            int windowSize = Math.min(4 * (end - start), PreferenceManager.getInstance().getAsInt(SAM_MAX_VISIBLE_RANGE) * 1000);
+            int windowSize = Math.min(4 * (end - start), PreferencesManager.getPreferences().getAsInt(SAM_MAX_VISIBLE_RANGE) * 1000);
             int center = (end + start) / 2;
             int expand = Math.max(end - start, windowSize / 2);
 
@@ -409,7 +410,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public void alleleThresholdChanged() {
-        coverageTrack.setSnpThreshold(PreferenceManager.getInstance().getAsFloat(SAM_ALLELE_THRESHOLD));
+        coverageTrack.setSnpThreshold(PreferencesManager.getPreferences().getAsFloat(SAM_ALLELE_THRESHOLD));
     }
 
     public void setShowAlignments(boolean showAlignments) {
@@ -439,7 +440,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         private int maxReadCount;
 
         public DownsampleOptions() {
-            PreferenceManager prefs = PreferenceManager.getInstance();
+            IGVPreferences prefs = PreferencesManager.getPreferences();
             init(prefs.getAsBoolean(SAM_DOWNSAMPLE_READS),
                     prefs.getAsInt(SAM_SAMPLING_WINDOW),
                     prefs.getAsInt(SAM_SAMPLING_COUNT));

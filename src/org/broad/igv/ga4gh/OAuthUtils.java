@@ -92,7 +92,7 @@ public class OAuthUtils {
     private void fetchOauthProperties() throws IOException {
 
         String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config.json";
-                //PreferenceManager.getInstance().get(PreferenceManager.OAUTH_CONFIG);
+                //IGVPreferences.getInstance().get(IGVPreferences.OAUTH_CONFIG);
 
         if(oauthConfig == null) {
             String propString = HttpUtils.getInstance().getContentsAsString(new URL(PROPERTIES_URL));

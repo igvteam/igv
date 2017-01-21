@@ -30,7 +30,7 @@ import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.session.IGVSessionReader.SessionAttribute;
 import org.broad.igv.session.IGVSessionReader.SessionElement;
 import org.broad.igv.track.*;
@@ -321,7 +321,7 @@ public class SessionWriter {
 
                     //REQUIRED ATTRIBUTES - Cannot be null
 
-                    boolean useRelative = PreferenceManager.getInstance().getAsBoolean(Constants.SESSION_RELATIVE_PATH);
+                    boolean useRelative = PreferencesManager.getPreferences().getAsBoolean(Constants.SESSION_RELATIVE_PATH);
 
                     String relativePath = useRelative ?
                             FileUtils.getRelativePath(outputFile.getAbsolutePath(), resourceLocator.getPath()) :

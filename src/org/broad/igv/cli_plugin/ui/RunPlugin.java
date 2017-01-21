@@ -35,7 +35,7 @@ import org.broad.igv.cli_plugin.PluginFeatureSource;
 import org.broad.igv.cli_plugin.PluginSpecReader;
 import org.broad.igv.feature.CachingFeatureSource;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.DataSourceTrack;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.FeatureTrack;
@@ -143,7 +143,7 @@ public class RunPlugin extends JDialog {
 
                 String defValue = argument.getDefaultValue();
                 if(argument.isRemembered()){
-                    String lastValue = PreferenceManager.getInstance().getArgumentValue(pluginId, toolName, commandName, argument.getId());
+                    String lastValue = PreferencesManager.getPreferences().getArgumentValue(pluginId, toolName, commandName, argument.getId());
                     defValue = lastValue != null ? lastValue : defValue;
                 }
 
@@ -206,7 +206,7 @@ public class RunPlugin extends JDialog {
 
             //Save to preferences
             if(value instanceof String && argComp.getKey().isRemembered()){
-                PreferenceManager.getInstance().putArgumentValue(pluginId, toolName, commandName, argComp.getKey().getId(), (String) value);
+                PreferencesManager.getPreferences().putArgumentValue(pluginId, toolName, commandName, argComp.getKey().getId(), (String) value);
             }
         }
         return argumentValues;

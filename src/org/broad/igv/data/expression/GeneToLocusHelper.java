@@ -31,7 +31,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.session.Session;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ParsingUtils;
@@ -74,8 +74,8 @@ public class GeneToLocusHelper {
             use_probe_mf = session.getPreferenceAsBoolean(Constants.USE_PROBE_MAPPING_FILE);
             userMappingFile = session.getPreference(Constants.PROBE_MAPPING_FILE);
         }else{
-            use_probe_mf = PreferenceManager.getInstance().getAsBoolean(Constants.USE_PROBE_MAPPING_FILE);
-            userMappingFile = PreferenceManager.getInstance().get(Constants.PROBE_MAPPING_FILE);
+            use_probe_mf = PreferencesManager.getPreferences().getAsBoolean(Constants.USE_PROBE_MAPPING_FILE);
+            userMappingFile = PreferencesManager.getPreferences().get(Constants.PROBE_MAPPING_FILE);
         }
         
         if (use_probe_mf) {

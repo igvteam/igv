@@ -26,8 +26,8 @@
 package org.broad.igv.batch;
 
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.AbstractHeadedTest;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.StringUtils;
@@ -57,8 +57,8 @@ public class CommandListenerTest extends AbstractHeadedTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        PreferenceManager.getInstance().override(Constants.PORT_ENABLED, "true");
-        PreferenceManager.getInstance().override(Constants.PORT_NUMBER, "" + port);
+        PreferencesManager.getPreferences().override(Constants.PORT_ENABLED, "true");
+        PreferencesManager.getPreferences().override(Constants.PORT_NUMBER, "" + port);
         AbstractHeadedTest.setUpClass();
     }
 

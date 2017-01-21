@@ -26,8 +26,9 @@
 package org.broad.igv.util;
 
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.exceptions.HttpResponseException;
+import org.broad.igv.prefs.PreferencesManager;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -78,7 +79,7 @@ public class IGVHttpClientUtilsTest {
 
         final URL testURL = new URL(hg18URL);
 
-        PreferenceManager mgr = PreferenceManager.getInstance();
+        IGVPreferences mgr = PreferencesManager.getPreferences();
         mgr.override(Constants.PROXY_HOST, "igvdev01.broadinstitute.org");
         mgr.override(Constants.PROXY_PORT, "3128");
         mgr.override(Constants.PROXY_USER, "proxytest");

@@ -27,7 +27,7 @@ package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.batch.BatchRunner;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
 
@@ -72,12 +72,12 @@ public class RunScriptMenuAction extends MenuAction {
 
     private File chooseScriptFile() {
 
-        File lastDirectoryFile = PreferenceManager.getInstance().getLastTrackDirectory();
+        File lastDirectoryFile = PreferencesManager.getPreferences().getLastTrackDirectory();
         File scriptFile = FileDialogUtils.chooseFile("Select Script", lastDirectoryFile, FileDialog.LOAD);
 
         if (scriptFile != null) {
             // Store the last accessed file location
-            PreferenceManager.getInstance().setLastTrackDirectory(scriptFile.getParentFile());
+            PreferencesManager.getPreferences().setLastTrackDirectory(scriptFile.getParentFile());
         }
 
         mainFrame.resetStatusMessage();

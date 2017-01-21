@@ -35,7 +35,7 @@ package org.broad.igv.ui.action;
 import org.apache.commons.math.stat.StatUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 
@@ -152,7 +152,7 @@ public class SetTrackHeightMenuAction extends MenuAction {
             return medianTrackHeight;
         }
 
-        return PreferenceManager.getInstance().getAsInt(Constants.INITIAL_TRACK_HEIGHT);
+        return PreferencesManager.getPreferences().getAsInt(Constants.INITIAL_TRACK_HEIGHT);
 
     }
 }

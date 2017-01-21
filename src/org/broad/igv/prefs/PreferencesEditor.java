@@ -27,6 +27,7 @@ package org.broad.igv.prefs;
 
 import com.jidesoft.dialog.ButtonPanel;
 import org.broad.igv.DirectoryManager;
+import org.broad.igv.Globals;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.data.expression.ProbeToLocusMap;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -79,7 +80,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
             return v;
         }
     });
-    PreferenceManager prefMgr = PreferenceManager.getInstance();
+    IGVPreferences prefMgr = PreferencesManager.getPreferences();
     boolean updateOverlays = false;
     boolean inputValidated = true;
     private static int lastSelectedIndex = 0;
@@ -88,7 +89,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private File newIGVDirectory;
 
     private void scaleFontsCBActionPerformed(ActionEvent e) {
-        PreferenceManager.getInstance().put(SCALE_FONTS, scaleFontsCB.isSelected());
+        PreferencesManager.getPreferences().put(SCALE_FONTS, scaleFontsCB.isSelected());
     }
 
     private void enableGoogleCBActionPerformed(ActionEvent e) {
@@ -158,8 +159,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         showRegionBoundariesCB = new JCheckBox();
         label7 = new JLabel();
         backgroundColorPanel = new JPanel();
-        showMissingDataCB = new JCheckBox();
-        label32 = new JLabel();
         enableGoogleCB = new JCheckBox();
         label33 = new JLabel();
         saveGoogleCredentialsCB = new JCheckBox();
@@ -185,7 +184,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         expandCB = new JCheckBox();
         normalizeCoverageCB = new JCheckBox();
         missingDataExplanation8 = new JLabel();
-        expandIconCB = new JCheckBox();
         panel24 = new JScrollPane();
         overlaysPanel = new JPanel();
         jPanel5 = new JPanel();
@@ -564,20 +562,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                     new Insets(0, 0, 15, 5), 0, 0));
 
-                                //---- showMissingDataCB ----
-                                showMissingDataCB.setText("Distinguish missing data");
-                                showMissingDataCB.setToolTipText("Distinguish regions with zero values from regions with no data on plots (e.g. bar charts).  Regions with no data are indicated with a gray background.");
-                                showMissingDataCB.addActionListener(e -> showMissingDataCBActionPerformed(e));
-                                jPanel10.add(showMissingDataCB, new GridBagConstraints(0, 1, 2, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 15, 5), 0, 0));
-
-                                //---- label32 ----
-                                label32.setText("<html><i>Distinguish regions with value of zero from regions with no data.");
-                                jPanel10.add(label32, new GridBagConstraints(2, 1, 6, 1, 0.0, 0.0,
-                                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                    new Insets(0, 0, 15, 5), 0, 0));
-
                                 //---- enableGoogleCB ----
                                 enableGoogleCB.setText("Enable Google access");
                                 enableGoogleCB.addActionListener(e -> enableGoogleCBActionPerformed(e));
@@ -767,7 +751,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                     normalizeCoverageCBFocusLost(e);
                                 }
                             });
-                            tracksPanel.add(normalizeCoverageCB, new GridBagConstraints(2, 7, 2, 1, 0.0, 0.0,
+                            tracksPanel.add(normalizeCoverageCB, new GridBagConstraints(2, 6, 2, 1, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                                 new Insets(0, 0, 15, 10), 0, 0));
 
@@ -776,17 +760,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             missingDataExplanation8.setText("<html><i> Applies to coverage tracks computed with igvtools (.tdf files).  If selected, coverage values are scaled by (1,000,000 / totalCount),  where totalCount is the total number of features or alignments.");
                             missingDataExplanation8.setMaximumSize(new Dimension(500, 2147483647));
                             missingDataExplanation8.setPreferredSize(new Dimension(500, 50));
-                            tracksPanel.add(missingDataExplanation8, new GridBagConstraints(2, 8, 6, 2, 0.0, 0.0,
+                            tracksPanel.add(missingDataExplanation8, new GridBagConstraints(2, 7, 6, 2, 0.0, 0.0,
                                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 0, 0), 0, 0));
-
-                            //---- expandIconCB ----
-                            expandIconCB.setText("Show Expand Icon");
-                            expandIconCB.setToolTipText("If checked, displays an expand/collapse icon on feature tracks.");
-                            expandIconCB.addActionListener(e -> expandIconCBActionPerformed(e));
-                            tracksPanel.add(expandIconCB, new GridBagConstraints(2, 6, 2, 1, 0.0, 0.0,
-                                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                                new Insets(0, 0, 15, 10), 0, 0));
+                                new Insets(0, 0, 15, 0), 0, 0));
                         }
                         panel23.setViewportView(tracksPanel);
                     }
@@ -2415,7 +2391,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void backgroundColorPanelMouseClicked(MouseEvent e) {
-        final PreferenceManager prefMgr = PreferenceManager.getInstance();
+        final IGVPreferences prefMgr = PreferencesManager.getPreferences();
         Color backgroundColor = UIUtilities.showColorChooserDialog("Choose background color",
                 prefMgr.getAsColor(BACKGROUND_COLOR));
         if (backgroundColor != null) {
@@ -2429,7 +2405,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
 
     private void resetBackgroundButtonActionPerformed(ActionEvent e) {
-        final PreferenceManager prefMgr = PreferenceManager.getInstance();
+        final IGVPreferences prefMgr = PreferencesManager.getPreferences();
         prefMgr.remove(BACKGROUND_COLOR);
         Color backgroundColor = prefMgr.getAsColor(BACKGROUND_COLOR);
         if (backgroundColor != null) {
@@ -2463,11 +2439,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 ENABLE_ANTIALISING,
                 String.valueOf(antialiasingCB.isSelected()));
 
-    }
-
-    private void showMissingDataCBActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(SHOW_MISSING_DATA_KEY, String.valueOf(
-                showMissingDataCB.isSelected()));
     }
 
     private void useAlleleQualityCBActionPerformed(ActionEvent e) {
@@ -2679,11 +2650,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void blatURLFieldActionPerformed(ActionEvent e) {
         blatURLFieldFocusLost(null);
-    }
-
-    private void expandIconCBActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(SHOW_EXPAND_ICON, String.valueOf(expandIconCB.isSelected()));
-
     }
 
     private void normalizeCoverageCBFocusLost(FocusEvent e) {
@@ -2933,7 +2899,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
             samMinBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
             samMaxBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
         } else {
-            PreferenceManager prefMgr = PreferenceManager.getInstance();
+            IGVPreferences prefMgr = PreferencesManager.getPreferences();
             if (ShadeBasesOption.QUALITY ==
                     CollUtils.valueOf(ShadeBasesOption.class, prefMgr.get(SAM_SHADE_BASES), ShadeBasesOption.QUALITY)) {
                 updatedPreferenceMap.put(
@@ -3125,7 +3091,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
 
     private void chooseMutationColorsButtonActionPerformed(ActionEvent e) {
-        PaletteColorTable ct = PreferenceManager.getInstance().getMutationColorScheme();
+        PaletteColorTable ct = PreferencesManager.getPreferences().getMutationColorScheme();
         ColorMapEditor editor = new ColorMapEditor(IGV.getMainFrame(), ct.getColorMap());
         editor.setVisible(true);
 
@@ -3430,12 +3396,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-        PreferenceManager prefMgr = PreferenceManager.getInstance();
+        IGVPreferences prefMgr = PreferencesManager.getPreferences();
         genomeServerURLTextField.setEnabled(true);
-        genomeServerURLTextField.setText(DEFAULT_GENOME_URL);
+        genomeServerURLTextField.setText(Globals.DEFAULT_GENOME_URL);
         updatedPreferenceMap.put(GENOMES_SERVER_URL, null);
         dataServerURLTextField.setEnabled(true);
-        dataServerURLTextField.setText(DEFAULT_DATA_URL);
+        dataServerURLTextField.setText(Globals.DEFAULT_DATA_URL);
         updatedPreferenceMap.put(DATA_SERVER_URL_KEY, null);
     }
 
@@ -3488,7 +3454,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
             this.proxyPasswordField.setText("");
             this.proxyTypeCB.setSelectedIndex(0);
             this.useProxyCB.setSelected(false);
-            PreferenceManager.getInstance().clearProxySettings();
+            PreferencesManager.getPreferences().clearProxySettings();
         }
     }
 
@@ -3736,7 +3702,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
    *    Object selection = geneMappingFile.getSelectedItem();
   String filename = (selection == null ? null : selection.toString().trim());
   updatedPreferenceMap.put(
-  PreferenceManager.USER_PROBE_MAP_KEY,
+  IGVPreferences.USER_PROBE_MAP_KEY,
   filename);
    * */
 
@@ -3750,7 +3716,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         showOrphanedMutationsCB.setSelected(prefMgr.getAsBoolean(SHOW_ORPHANED_MUTATIONS));
         overlayAttributeTextField.setText(prefMgr.get(OVERLAY_ATTRIBUTE_KEY));
         overlayTrackCB.setSelected(prefMgr.getAsBoolean(OVERLAY_MUTATION_TRACKS));
-        showMissingDataCB.setSelected(prefMgr.getAsBoolean(SHOW_MISSING_DATA_KEY));
         showDefaultTrackAttributesCB.setSelected(prefMgr.getAsBoolean(SHOW_DEFAULT_TRACK_ATTRIBUTES));
         colorCodeMutationsCB.setSelected(prefMgr.getAsBoolean(COLOR_MUTATIONS));
         overlayAttributeTextField.setEnabled(overlayTrackCB.isSelected());
@@ -3850,7 +3815,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         genomeUpdateCB.setSelected(prefMgr.getAsBoolean(AUTO_UPDATE_GENOMES));
         antialiasingCB.setSelected(prefMgr.getAsBoolean(ENABLE_ANTIALISING));
 
-        final boolean mapProbesToGenes = PreferenceManager.getInstance().getAsBoolean(PROBE_MAPPING_KEY);
+        final boolean mapProbesToGenes = PreferencesManager.getPreferences().getAsBoolean(PROBE_MAPPING_KEY);
         expMapToGeneCB.setSelected(mapProbesToGenes);
         expMapToLociCB.setSelected(!mapProbesToGenes);
 
@@ -3862,8 +3827,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         autoFileDisoveryCB.setSelected(!prefMgr.getAsBoolean(BYPASS_FILE_AUTO_DISCOVERY));
         normalizeCoverageCB.setSelected(prefMgr.getAsBoolean(NORMALIZE_COVERAGE));
 
-
-        expandIconCB.setSelected(prefMgr.getAsBoolean(SHOW_EXPAND_ICON));
 
         boolean useProxy = prefMgr.getAsBoolean(USE_PROXY);
         useProxyCB.setSelected(useProxy);
@@ -3884,7 +3847,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         }
 
         backgroundColorPanel.setBackground(
-                PreferenceManager.getInstance().getAsColor(BACKGROUND_COLOR));
+                PreferencesManager.getPreferences().getAsColor(BACKGROUND_COLOR));
 
         dbHostField.setText(prefMgr.get(DB_HOST));
         dbNameField.setText(prefMgr.get(DB_NAME));
@@ -4003,8 +3966,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox showRegionBoundariesCB;
     private JLabel label7;
     private JPanel backgroundColorPanel;
-    private JCheckBox showMissingDataCB;
-    private JLabel label32;
     private JCheckBox enableGoogleCB;
     private JLabel label33;
     private JCheckBox saveGoogleCredentialsCB;
@@ -4030,7 +3991,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox expandCB;
     private JCheckBox normalizeCoverageCB;
     private JLabel missingDataExplanation8;
-    private JCheckBox expandIconCB;
     private JScrollPane panel24;
     private JPanel overlaysPanel;
     private JPanel jPanel5;

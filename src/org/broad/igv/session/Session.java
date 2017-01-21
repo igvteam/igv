@@ -30,7 +30,8 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.lists.GeneList;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.sam.InsertionManager;
 import org.broad.igv.track.AttributeManager;
@@ -172,7 +173,7 @@ public class Session implements IGVEventObserver {
         if (colorScales.containsKey(trackType)) {
             return colorScales.get(trackType);
         } else {
-            return PreferenceManager.getInstance().getColorScale(trackType);
+            return PreferencesManager.getPreferences().getColorScale(trackType);
         }
     }
 
@@ -185,7 +186,7 @@ public class Session implements IGVEventObserver {
                 log.error("Error converting boolean preference " + key + "=" + preferences.get(key));
             }
         }
-        return PreferenceManager.getInstance().getAsBoolean(key);
+        return PreferencesManager.getPreferences().getAsBoolean(key);
 
     }
 
@@ -193,7 +194,7 @@ public class Session implements IGVEventObserver {
         if (preferences.containsKey(key)) {
             return (preferences.get(key));
         } else {
-            return PreferenceManager.getInstance().get(key);
+            return PreferencesManager.getPreferences().get(key);
         }
     }
 
@@ -201,13 +202,13 @@ public class Session implements IGVEventObserver {
      * @param key
      * @param def Default value. Not saved
      * @return Preference if found, or else default value
-     * @see PreferenceManager#getPersistent(String, String)
+     * @see IGVPreferences#getPersistent(String, String)
      */
     public String getPersistent(String key, String def) {
         if (preferences.containsKey(key)) {
             return (preferences.get(key));
         } else {
-            return PreferenceManager.getInstance().getPersistent(key, def);
+            return PreferencesManager.getPreferences().getPersistent(key, def);
         }
     }
 
@@ -220,7 +221,7 @@ public class Session implements IGVEventObserver {
                 log.error("Error converting boolean preference " + key + "=" + preferences.get(key));
             }
         }
-        return PreferenceManager.getInstance().getAsBoolean(OVERLAY_MUTATION_TRACKS);
+        return PreferencesManager.getPreferences().getAsBoolean(OVERLAY_MUTATION_TRACKS);
 
     }
 
@@ -233,7 +234,7 @@ public class Session implements IGVEventObserver {
                 log.error("Error converting boolean preference " + key + "=" + preferences.get(key));
             }
         }
-        return PreferenceManager.getInstance().getAsBoolean(COLOR_MUTATIONS);
+        return PreferencesManager.getPreferences().getAsBoolean(COLOR_MUTATIONS);
 
     }
 
@@ -243,7 +244,7 @@ public class Session implements IGVEventObserver {
             return preferences.get(key);
 
         }
-        return PreferenceManager.getInstance().get(OVERLAY_ATTRIBUTE_KEY);
+        return PreferencesManager.getPreferences().get(OVERLAY_ATTRIBUTE_KEY);
     }
 
     public String getTrackAttributeName() {
@@ -252,7 +253,7 @@ public class Session implements IGVEventObserver {
             return preferences.get(key);
 
         }
-        return PreferenceManager.getInstance().get(TRACK_ATTRIBUTE_NAME_KEY);
+        return PreferencesManager.getPreferences().get(TRACK_ATTRIBUTE_NAME_KEY);
     }
 
 
@@ -444,7 +445,7 @@ public class Session implements IGVEventObserver {
         if (hiddenAttributes != null) {
             extendedHiddenAttributes.addAll(hiddenAttributes);
         }
-        if (!PreferenceManager.getInstance().getAsBoolean(SHOW_DEFAULT_TRACK_ATTRIBUTES)) {
+        if (!PreferencesManager.getPreferences().getAsBoolean(SHOW_DEFAULT_TRACK_ATTRIBUTES)) {
 
             extendedHiddenAttributes.addAll(AttributeManager.defaultTrackAttributes);
         }

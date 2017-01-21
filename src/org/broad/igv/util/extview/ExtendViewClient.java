@@ -28,7 +28,7 @@ package org.broad.igv.util.extview;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
@@ -64,7 +64,7 @@ public class ExtendViewClient {
         params.put("r_start", String.valueOf(r_start));
         params.put("r_end", String.valueOf(r_end));
         
-        String $url = PreferenceManager.getInstance().get(Constants.EXTVIEW_URL);
+        String $url = PreferencesManager.getPreferences().get(Constants.EXTVIEW_URL);
         String urlString = ($url + "/FeatureRange/");
         try {
             String result = HttpUtils.getInstance().doPost(new URL(urlString), params);
@@ -108,7 +108,7 @@ public class ExtendViewClient {
         params.put("ref_seq", userSeq);
     
 
-        String $url = PreferenceManager.getInstance().get(Constants.EXTVIEW_URL);
+        String $url = PreferencesManager.getPreferences().get(Constants.EXTVIEW_URL);
         String urlString = ($url + "/ExamineReadAlignment/");
         try {
             String result = HttpUtils.getInstance().doPost(new URL(urlString), params);

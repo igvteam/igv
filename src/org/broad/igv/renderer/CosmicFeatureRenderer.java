@@ -27,7 +27,7 @@ package org.broad.igv.renderer;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.IGVFeature;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
@@ -41,7 +41,7 @@ public class CosmicFeatureRenderer extends FeatureRenderer {
     ColorTable colorScheme;
 
     public CosmicFeatureRenderer() {
-        colorScheme = PreferenceManager.getInstance().getMutationColorScheme();
+        colorScheme = PreferencesManager.getPreferences().getMutationColorScheme();
     }
 
     public String getDisplayName() {

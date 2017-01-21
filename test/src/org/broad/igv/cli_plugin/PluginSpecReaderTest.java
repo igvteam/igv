@@ -25,7 +25,7 @@
 
 package org.broad.igv.cli_plugin;
 
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
@@ -143,7 +143,7 @@ public class PluginSpecReaderTest {
         assertEquals("cat", toolName);
 
         String newpath = "/dev/zero";
-        PreferenceManager.getInstance().putToolPath(reader.getId(), toolName, newpath);
+        PreferencesManager.getPreferences().putToolPath(reader.getId(), toolName, newpath);
         assertEquals(newpath, reader.getToolPath(tool));
     }
 

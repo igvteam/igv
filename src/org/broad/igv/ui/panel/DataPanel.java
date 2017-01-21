@@ -39,7 +39,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.lists.Preloader;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
@@ -97,7 +97,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         setAutoscrolls(true);
         setToolTipText("");
         painter = new DataPanelPainter();
-        setBackground(PreferenceManager.getInstance().getAsColor(Constants.BACKGROUND_COLOR));
+        setBackground(PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR));
 
         ToolTipManager.sharedInstance().registerComponent(this);
 
@@ -299,7 +299,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
             return;
         }
 
-        boolean drawBars = PreferenceManager.getInstance().getAsBoolean(Constants.SHOW_REGION_BARS);
+        boolean drawBars = PreferencesManager.getPreferences().getAsBoolean(Constants.SHOW_REGION_BARS);
         Graphics2D graphics2D = (Graphics2D) g.create();
         try {
 

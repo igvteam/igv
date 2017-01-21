@@ -32,7 +32,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.PSLCodec;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
@@ -134,7 +134,7 @@ public class BlatClient {
         }
 
         //$response;
-        String $url = PreferenceManager.getInstance().get(Constants.BLAT_URL);
+        String $url = PreferencesManager.getPreferences().get(Constants.BLAT_URL);
 
         //if an hgsid was obtained from the output of the first batch
         //then use this.

@@ -33,7 +33,8 @@ import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -202,7 +203,7 @@ public class SpliceJunctionHelper {
 
     public static class LoadOptions {
 
-        private static PreferenceManager prefs = PreferenceManager.getInstance();
+        private static IGVPreferences prefs = PreferencesManager.getPreferences();
 
         public final int minJunctionCoverage;
         public final int minReadFlankingWidth;

@@ -26,8 +26,9 @@
 package org.broad.igv.tools;
 
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.TestUtils;
@@ -46,12 +47,12 @@ import static junit.framework.Assert.assertEquals;
 
 public class CoverageCounterTest extends AbstractHeadlessTest {
 
-    static PreferenceManager preferenceManager;
+    static IGVPreferences preferenceManager;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
         AbstractHeadlessTest.setUpClass();
-        preferenceManager = PreferenceManager.getInstance();
+        preferenceManager = PreferencesManager.getPreferences();
     }
 
     /**

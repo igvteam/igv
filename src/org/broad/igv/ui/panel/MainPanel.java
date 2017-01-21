@@ -27,7 +27,7 @@ package org.broad.igv.ui.panel;
 
 import com.jidesoft.swing.JideSplitPane;
 import org.apache.log4j.Logger;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.session.Session;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.IGV;
@@ -56,7 +56,7 @@ public class MainPanel extends JPanel implements Paintable {
     // private static final int DEFAULT_NAME_PANEL_WIDTH = 160;
 
     private int namePanelX;
-    private int namePanelWidth = PreferenceManager.getInstance().getAsInt(NAME_PANEL_WIDTH);
+    private int namePanelWidth = PreferencesManager.getPreferences().getAsInt(NAME_PANEL_WIDTH);
     private int attributePanelX;
     private int attributePanelWidth;
     private int dataPanelX;
@@ -136,7 +136,7 @@ public class MainPanel extends JPanel implements Paintable {
     }
 
     public void expandNamePanel() {
-        namePanelWidth = PreferenceManager.getInstance().getAsInt(NAME_PANEL_WIDTH);
+        namePanelWidth = PreferencesManager.getPreferences().getAsInt(NAME_PANEL_WIDTH);
         revalidate();
     }
 
@@ -226,7 +226,7 @@ public class MainPanel extends JPanel implements Paintable {
         final TrackPanel dataTrackPanel = new TrackPanel(IGV.DATA_PANEL_NAME, this);
         dataTrackScrollPane.setViewportView(dataTrackPanel);
 
-        if (!PreferenceManager.getInstance().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
+        if (!PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
             featureTrackScrollPane = new TrackPanelScrollPane();
             featureTrackScrollPane.setPreferredSize(new java.awt.Dimension(1021, 50));
             featureTrackScrollPane.setViewportView(new TrackPanel(IGV.FEATURE_PANEL_NAME, this));
@@ -246,13 +246,13 @@ public class MainPanel extends JPanel implements Paintable {
         centerSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
 
         centerSplitPane.add(dataTrackScrollPane, JSplitPane.TOP);
-        if (!PreferenceManager.getInstance().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
+        if (!PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
             centerSplitPane.add(featureTrackScrollPane, JSplitPane.BOTTOM);
         }
 
         add(centerSplitPane, BorderLayout.CENTER);
 
-        setBackground(PreferenceManager.getInstance().getAsColor(BACKGROUND_COLOR));
+        setBackground(PreferencesManager.getPreferences().getAsColor(BACKGROUND_COLOR));
 
 
     }
@@ -298,7 +298,7 @@ public class MainPanel extends JPanel implements Paintable {
                 centerSplitPane.add(sp);
             }
 
-            if (!PreferenceManager.getInstance().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
+            if (!PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
                 if (sp.getTrackPanel().getTracks().size() == 0) {
                     //If the igv window is too small the divider won't exist and this causes an exception
                     //We solved by setting a minimum size
@@ -471,7 +471,7 @@ public class MainPanel extends JPanel implements Paintable {
 
     private int calculateAttributeWidth() {
 
-        if (!PreferenceManager.getInstance().getAsBoolean(SHOW_ATTRIBUTE_VIEWS_KEY)) {
+        if (!PreferencesManager.getPreferences().getAsBoolean(SHOW_ATTRIBUTE_VIEWS_KEY)) {
             return 0;
         }
 

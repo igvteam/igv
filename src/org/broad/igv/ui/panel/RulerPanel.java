@@ -39,7 +39,7 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.ChromosomeCoordinate;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.InsertionManager;
 import org.broad.igv.sam.InsertionMarker;
 import org.broad.igv.ui.FontManager;
@@ -56,7 +56,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.broad.igv.prefs.Constants.DEFAULT_GENOME_KEY;
+import static org.broad.igv.prefs.Constants.DEFAULT_GENOME;
 import static org.broad.igv.prefs.Constants.ENABLE_ANTIALISING;
 
 /**
@@ -108,7 +108,7 @@ public class RulerPanel extends JPanel {
 
         super.paintComponent(g);
 
-        if (PreferenceManager.getInstance().getAsBoolean(ENABLE_ANTIALISING)) {
+        if (PreferencesManager.getPreferences().getAsBoolean(ENABLE_ANTIALISING)) {
             ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
 
@@ -234,7 +234,7 @@ public class RulerPanel extends JPanel {
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
         if (genome == null) {
             log.warn("No genome found");
-            PreferenceManager.getInstance().remove(DEFAULT_GENOME_KEY);
+            PreferencesManager.getPreferences().remove(DEFAULT_GENOME);
             return;
         }
 
@@ -243,8 +243,8 @@ public class RulerPanel extends JPanel {
         chromosomeRects.clear();
         List<String> chrNames = genome.getLongChromosomeNames();
         if (chrNames == null) {
-            log.info("No chromosomes found for genome: " + PreferenceManager.getInstance().getDefaultGenome());
-            PreferenceManager.getInstance().remove(DEFAULT_GENOME_KEY);
+            log.info("No chromosomes found for genome: " + PreferencesManager.getPreferences().getDefaultGenome());
+            PreferencesManager.getPreferences().remove(DEFAULT_GENOME);
         }
         if (chrNames.size() > 500) {
             return;

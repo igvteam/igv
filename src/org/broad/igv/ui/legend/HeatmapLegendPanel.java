@@ -33,7 +33,7 @@ package org.broad.igv.ui.legend;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.FontManager;
@@ -61,7 +61,7 @@ public class HeatmapLegendPanel extends LegendPanel {
 
     public HeatmapLegendPanel(TrackType type) {
         this.type = type;
-        this.colorScale = PreferenceManager.getInstance().getColorScale(type);
+        this.colorScale = PreferencesManager.getPreferences().getColorScale(type);
     }
 
     public HeatmapLegendPanel(TrackType type, Orientation orientation) {
@@ -70,19 +70,19 @@ public class HeatmapLegendPanel extends LegendPanel {
     }
 
     protected void persistResetPreferences() {
-        PreferenceManager.getInstance().setColorScale(type, colorScale);
+        PreferencesManager.getPreferences().setColorScale(type, colorScale);
     }
 
     protected void resetPreferencesToDefault() {
         // TODO -- temporary hack.  We need some specific knowledge fo the implementation
         // in order to edit it,  but do it without a cast
-        colorScale = (ContinuousColorScale) PreferenceManager.getInstance().getDefaultColorScale(type);
+        colorScale = (ContinuousColorScale) PreferencesManager.getPreferences().getDefaultColorScale(type);
         persistResetPreferences();
         showResetDisplay();
     }
 
     protected void reloadPreferences() {
-        PreferenceManager.getInstance().setColorScale(type, colorScale);
+        PreferencesManager.getPreferences().setColorScale(type, colorScale);
         //ColorScaleFactory.clearCache();
         repaint();
     }
@@ -112,7 +112,7 @@ public class HeatmapLegendPanel extends LegendPanel {
                 // in order to edit it,  but do it without a cast
 
                 colorScale = dialog.getColorScheme();
-                PreferenceManager.getInstance().setColorScale(type, colorScale);
+                PreferencesManager.getPreferences().setColorScale(type, colorScale);
                 IGV.getInstance().revalidateTrackPanels();
                 try {
 

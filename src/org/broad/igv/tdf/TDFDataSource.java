@@ -39,7 +39,7 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
 
@@ -110,7 +110,7 @@ public class TDFDataSource implements CoverageDataSource {
 
         intChrMap();
 
-        boolean normalizeCounts = PreferenceManager.getInstance().getAsBoolean(Constants.NORMALIZE_COVERAGE);
+        boolean normalizeCounts = PreferencesManager.getPreferences().getAsBoolean(Constants.NORMALIZE_COVERAGE);
         setNormalize(normalizeCounts);
     }
 

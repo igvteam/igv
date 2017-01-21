@@ -33,7 +33,7 @@ package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -201,7 +201,7 @@ public class TrackGroup {
     public void renderName(Graphics2D g2D, Rectangle rect, boolean isSelected) {
 
         // Calculate fontsize
-        int fontSize = PreferenceManager.getInstance().getAsInt(Constants.DEFAULT_FONT_SIZE);
+        int fontSize = PreferencesManager.getPreferences().getAsInt(Constants.DEFAULT_FONT_SIZE);
 
         Font font = FontManager.getFont(Font.BOLD, fontSize);
         g2D.setFont(font);

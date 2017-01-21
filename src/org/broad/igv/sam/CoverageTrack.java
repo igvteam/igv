@@ -36,7 +36,8 @@ import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.DataRenderer;
@@ -105,7 +106,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     private CoverageDataSource dataSource;
     private DataRenderer dataSourceRenderer;
     private IntervalRenderer intervalRenderer;
-    private PreferenceManager prefs;
+    private IGVPreferences prefs;
     private JMenuItem dataRangeItem;
     private Genome genome;
     private boolean removed = false;
@@ -145,7 +146,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
         setColor(coverageGrey);
 
-        prefs = PreferenceManager.getInstance();
+        prefs = PreferencesManager.getPreferences();
         snpThreshold = prefs.getAsFloat(SAM_ALLELE_THRESHOLD);
         autoScale = DEFAULT_AUTOSCALE;
         showReference = DEFAULT_SHOW_REFERENCE;
@@ -241,7 +242,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     public void drawData(RenderContext context, Rectangle rect) {
 
-        float maxRange = PreferenceManager.getInstance().getAsFloat(SAM_MAX_VISIBLE_RANGE);
+        float maxRange = PreferencesManager.getPreferences().getAsFloat(SAM_MAX_VISIBLE_RANGE);
         float minVisibleScale = (maxRange * 1000) / 700;
 
         if (context.getScale() < minVisibleScale && !context.getChr().equals(Globals.CHR_ALL)) {
@@ -364,7 +365,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
 
-        float maxRange = PreferenceManager.getInstance().getAsFloat(SAM_MAX_VISIBLE_RANGE);
+        float maxRange = PreferencesManager.getPreferences().getAsFloat(SAM_MAX_VISIBLE_RANGE);
         float minVisibleScale = (maxRange * 1000) / 700;
 
         StringBuffer buf = new StringBuffer();
@@ -948,7 +949,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
             public void actionPerformed(ActionEvent e) {
 
-                final PreferenceManager prefs = PreferenceManager.getInstance();
+                final IGVPreferences prefs = PreferencesManager.getPreferences();
                 File initDirectory = prefs.getLastTrackDirectory();
                 File file = FileDialogUtils.chooseFile("Select coverage file", initDirectory, FileDialog.LOAD);
                 if (file != null) {

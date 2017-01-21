@@ -30,7 +30,8 @@
 
 package org.broad.igv.ui;
 
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -59,7 +60,7 @@ public class FontManager {
 
     static public Font getFont(int sz) {
 
-        final PreferenceManager prefManager = PreferenceManager.getInstance();
+        final IGVPreferences prefManager = PreferencesManager.getPreferences();
 
         int size = (int) (scaleFactor * sz);
 
@@ -78,7 +79,7 @@ public class FontManager {
 
         int size = (int) (scaleFactor * sz);
 
-        final PreferenceManager prefManager = PreferenceManager.getInstance();
+        final IGVPreferences prefManager = PreferencesManager.getPreferences();
         String fontFamily = prefManager.get(DEFAULT_FONT_FAMILY);
         String key = fontFamily + "_" + attribute + "_" + size;
         Font font = fontCache.get(key);
@@ -90,7 +91,7 @@ public class FontManager {
     }
 
     public static void updateDefaultFont() {
-        final PreferenceManager prefManager = PreferenceManager.getInstance();
+        final IGVPreferences prefManager = PreferencesManager.getPreferences();
         String fontFamily = prefManager.get(DEFAULT_FONT_FAMILY);
         int fontSize = prefManager.getAsInt(DEFAULT_FONT_SIZE);
         int attribute = prefManager.getAsInt(DEFAULT_FONT_ATTRIBUTE);
@@ -98,7 +99,7 @@ public class FontManager {
     }
 
     public static void resetDefaultFont() {
-        final PreferenceManager prefMgr = PreferenceManager.getInstance();
+        final IGVPreferences prefMgr = PreferencesManager.getPreferences();
         prefMgr.remove(DEFAULT_FONT_SIZE);
         prefMgr.remove(DEFAULT_FONT_FAMILY);
         prefMgr.remove(DEFAULT_FONT_ATTRIBUTE);

@@ -1,19 +1,78 @@
 package org.broad.igv.prefs;
 
+import java.util.Arrays;
+
 /**
  * Created by jrobinso on 1/20/17.
  */
 final public class Constants {
 
+
     private Constants() {}  // Prevent instantiation
 
-    public static final String DEFAULT_GENOME = "hg19";
-    public static final String SKIP_VERSION = "SKIP_VERSION";
-    public static final String SHOW_LOS = "showLOS";
-    public static final String INITIAL_TRACK_HEIGHT = "15";
+    // Preference sets
+    public static final String NULL_CATEGORY = "NULL";
+    public static final String THIRD_GEN = "THIRD_GEN";
+    public static final String RNA = "RNA";
+    
+    // UI behavior
     public static final String TOOLTIP_INITIAL_DELAY = "TOOLTIP.INITIAL_DELAY";
     public static final String TOOLTIP_RESHOW_DELAY = "TOOLTIP.RESHOW_DELAY";
     public static final String TOOLTIP_DISMISS_DELAY = "TOOLTIP.DISMISS_DELAY";
+    public static final String DEFAULT_FONT_SIZE = "DEFAULT_FONT_SIZE";
+    public static final String DEFAULT_FONT_FAMILY = "DEFAULT_FONT_FAMILY";
+    public static final String DEFAULT_FONT_ATTRIBUTE = "DEFAULT_FONT_ATTRIBUTE";
+    public static final String ENABLE_ANTIALISING = "ENABLE_ANTIALIASING";
+    public static final String SCALE_FONTS = "SCALE_FONTS";
+    public static final String NAME_PANEL_WIDTH = "NAME_PANEL_WIDTH";
+    public static final String BACKGROUND_COLOR = "BACKGROUND_COLOR";
+    public static final String SHOW_ATTRIBUTE_VIEWS_KEY = "IGV.track.show.attribute.views";
+    public static final String SHOW_SINGLE_TRACK_PANE_KEY = "IGV.single.track.pane";
+    public static final String DETAILS_BEHAVIOR_KEY = "DETAILS_BEHAVIOR";
+    public static final String SKIP_VERSION = "SKIP_VERSION";
+    public static final String SHOW_DEFAULT_TRACK_ATTRIBUTES = "SHOW_DEFAULT_TRACK_ATTRIBUTES";
+    public static final String SHOW_GENOME_SERVER_WARNING = "SHOW_GENOME_SERVER_WARNING";
+
+    //
+    public static final String RECENT_SESSIONS = "IGV.Session.recent.sessions";
+    public static final String LAST_EXPORTED_REGION_DIRECTORY = "LAST_EXPORTED_REGION_DIRECTORY";
+    public static final String LAST_TRACK_DIRECTORY = "LAST_TRACK_DIRECTORY";
+    public static final String LAST_SNAPSHOT_DIRECTORY = "LAST_SNAPSHOT_DIRECTORY";
+    public static final String LAST_GENOME_IMPORT_DIRECTORY = "LAST_GENOME_IMPORT_DIRECTORY";
+    public static final String DEFINE_GENOME_INPUT_DIRECTORY_KEY = "DEFINE_GENOME_INPUT_DIRECTORY_KEY";
+    public static final String DEFAULT_GENOME = "DEFAULT_GENOME_KEY";
+    public static final String AUTO_UPDATE_GENOMES = "AUTO_UPDATE_GENOMES";
+    public static final String FRAME_BOUNDS_KEY = "IGV.Bounds";
+
+
+    public static final String GENOMES_SERVER_URL = "IGV.genome.sequence.dir";
+    public static final String BLAT_URL = "BLAT_URL";
+    public static final String EXTVIEW_URL = "EXTVIEW_URL";
+    public static final String DATA_SERVER_URL_KEY = "MASTER_RESOURCE_FILE_KEY";
+
+    // Search ("go to") options
+    public static final String SEARCH_ZOOM = "SEARCH_ZOOM";
+    public static final String FLANKING_REGION = "FLANKING_REGION";
+
+    // Generic track options
+    public static final String BYPASS_FILE_AUTO_DISCOVERY = "BYPASS_FILE_AUTO_DISCOVERY";
+    public static final String TRACK_ATTRIBUTE_NAME_KEY = "TRACK_ATTRIBUTE_NAME_KEY";
+    public static final String INITIAL_TRACK_HEIGHT = "15";
+    public static final String COLOR_SCALE_KEY = "COLOR_SCALE_";
+    public static final String TRACK_HEIGHT_KEY = "IGV.track.height";
+    public static final String CHART_TRACK_HEIGHT_KEY = "IGV.chart.track.height";
+    public static final String CHART_SHOW_ALL_HEATMAP = "CHART.SHOW_ALL_HEATMAP";
+    public static final String SHOW_REGION_BARS = "SHOW_REGION_BARS";
+    public static final String DEFAULT_VISIBILITY_WINDOW = "DEFAULT_VISIBILITY_WINDOW";
+    public static final String EXPAND_FEAUTRE_TRACKS = "EXPAND_FEATURE_TRACKS";
+    public static final String IGV_PLUGIN_LIST_KEY = "IGV_PLUGIN_LIST";
+    public static final String SASHIMI_SHOW_COVERAGE = "SASHIMI.SHOW_COVERAGE";
+    public static final String GENE_LIST_BED_FORMAT = "GENE_LIST_BED_FORMAT";
+    public static final String SESSION_RELATIVE_PATH = "SESSION.RELATIVE_PATH";
+    public static final String SHOW_SIZE_WARNING = "SHOW_SIZE_WARNING";
+
+    // Chart (bar, heatmap, plots) options
+    public static final String NORMALIZE_COVERAGE = "NORMALIZE_COVERAGE";
     public static final String CHART_DRAW_TOP_BORDER = "CHART.DRAW_TOP_BORDER";
     public static final String CHART_DRAW_BOTTOM_BORDER = "CHART.DRAW_BOTTOM_BORDER";
     public static final String CHART_COLOR_BORDERS = "CHART.COLOR_BORDERS";
@@ -22,10 +81,12 @@ final public class Constants {
     public static final String CHART_COLOR_TRACK_NAME = "CHART.COLOR_TRACK_NAME";
     public static final String CHART_AUTOSCALE = "CHART.AUTOSCALE";
     public static final String CHART_SHOW_DATA_RANGE = "CHART.SHOW_DATA_RANGE";
-    public static final String UNLOAD_ON_GENOME_CHANGE = "UNLOAD_ON_GENOME_CHANGE";
+
+    // Alignment options
     public static final String SAM_ALLELE_THRESHOLD = "SAM.ALLELE_THRESHOLD";
     public static final String SAM_ALLELE_USE_QUALITY = "SAM.ALLELE_USE_QUALITY";
     public static final String SAM_QUALITY_THRESHOLD = "SAM.QUALITY_THRESHOLD";
+    public static final String SAM_COMPUTE_ISIZES = "SAM.COMPUTE_ISIZES";
     public static final String SAM_MAX_INSERT_SIZE_THRESHOLD = "SAM.INSERT_SIZE_THRESHOLD";
     public static final String SAM_MIN_INSERT_SIZE_THRESHOLD = "SAM.MIN_INSERT_SIZE_THRESHOLD";
     public static final String SAM_MAX_INSERT_SIZE_PERCENTILE = "SAM.ISIZE_MAX_PERCENTILE";
@@ -61,18 +122,46 @@ final public class Constants {
     public static final String SAM_GROUP_BY_POS = "SAM.GROUP_BY_POS";
     public static final String SAM_BISULFITE_CONTEXT = "SAM.BISULFITE_CONTEXT";
     public static final String SAM_FILTER_FAILED_READS = "SAM.FILTER_FAILED_READS";
-    public static final String SAM_COMPUTE_ISIZES = "SAM.COMPUTE_ISIZES";
+
     public static final String SAM_FLAG_ZERO_QUALITY = "SAM.FLAG_ZERO_QUALITY";
-    //dhmay adding 20110208
     public static final String SAM_SHOW_JUNCTION_TRACK = "SAM.SHOW_JUNCTION_TRACK";
     public static final String SAM_JUNCTION_MIN_FLANKING_WIDTH = "SAM.JUNCTION_MIN_FLANKING_WIDTH";
     public static final String SAM_JUNCTION_MIN_COVERAGE = "SAM.JUNCTION_MIN_COVERAGE";
-    //dhmay adding 20120731
+    /**
+     * List of keys that affect the alignments loaded.  This list is used to trigger a reload, if required.
+     * Not all alignment preferences need trigger a reload, this is a subset.
+     */
+    static java.util.List<String> SAM_RELOAD_KEYS = Arrays.asList(
+            SAM_QUALITY_THRESHOLD,
+            SAM_FILTER_ALIGNMENTS,
+            SAM_FILTER_URL,
+            SAM_MAX_VISIBLE_RANGE,
+            SAM_SHOW_DUPLICATES,
+            SAM_SHOW_SOFT_CLIPPED,
+            SAM_SAMPLING_COUNT,
+            SAM_SAMPLING_WINDOW,
+            SAM_FILTER_FAILED_READS,
+            SAM_DOWNSAMPLE_READS,
+            SAM_FILTER_SECONDARY_ALIGNMENTS,
+            SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS,
+            SAM_JUNCTION_MIN_FLANKING_WIDTH,
+            SAM_JUNCTION_MIN_COVERAGE
+    );
     public static final String SAM_SHOW_JUNCTION_FLANKINGREGIONS = "SAM.SHOW_JUNCTION_FLANKINGREGIONS";
     public static final String SAM_NOMESEQ_ENABLED = "SAM.NOMESEQ_ENABLED";
     public static final String SAM_COUNT_DELETED_BASES_COVERED = "SAM.COUNT_DELETED_BASES_COVERED";
     public static final String SAM_FLAG_LARGE_INDELS = "SAM.FLAG_LARGE_INDELS";
     public static final String SAM_LARGE_INDELS_THRESHOLD = "SAM.LARGE_INSERTIONS_THRESOLD";
+    /**
+     * List of keys that do not affect the alignments loaded but do affect how those
+     * alignments are drawn.  A refresh is softer than a reload.
+     */
+    static java.util.List<String> SAM_REFRESH_KEYS = Arrays.asList(
+            SAM_QUICK_CONSENSUS_MODE,
+            SAM_ALLELE_THRESHOLD,
+            SAM_FLAG_LARGE_INDELS,
+            SAM_LARGE_INDELS_THRESHOLD
+    );
     public static final String SAM_FLAG_CLIPPING = "SAM.FLAG_CLIPPING";
     public static final String SAM_CLIPPING_THRESHOLD = "SAM.CLIPPING_THRESHOLD";
     public static final String SAM_SHOW_GROUP_SEPARATOR = "SAM.SHOW_GROUP_SEPARATOR";
@@ -83,46 +172,32 @@ final public class Constants {
     public static final String SAM_LINK_READS = "SAM.LINK_READS";
     public static final String SAM_LINK_TAG = "SAM.LINK_TAG";
     public static final String SAM_SHOW_ALIGNMENT_TRACK = "SAM.SHOW_ALIGNMENT_TRACK";
-    public static final String COLOR_A = "COLOR.A";
-    public static final String COLOR_C = "COLOR.C";
-    public static final String COLOR_T = "COLOR.T";
-    public static final String COLOR_G = "COLOR.G";
-    public static final String COLOR_N = "COLOR.N";
     public static final String SAM_COLOR_A = "SAM.COLOR.A";
     public static final String SAM_COLOR_C = "SAM.COLOR.C";
     public static final String SAM_COLOR_T = "SAM.COLOR.T";
     public static final String SAM_COLOR_G = "SAM.COLOR.G";
     public static final String SAM_COLOR_N = "SAM.COLOR.N";
+    public static final String KNOWN_SNPS = "KNOWN_SNPS_FILE";
+
+    // Sequence track settings
+    public static final String SHOW_SEQUENCE_TRANSLATION = "SHOW_SEQUENCE_TRANSLATION";
+    public static final String MAX_SEQUENCE_RESOLUTION = "MAX_SEQUENCE_RESOLUTION";
+    public static final String COLOR_A = "COLOR.A";
+    public static final String COLOR_C = "COLOR.C";
+    public static final String COLOR_T = "COLOR.T";
+    public static final String COLOR_G = "COLOR.G";
+    public static final String COLOR_N = "COLOR.N";
+
+    // Variant (VCF) track settings
+    public static final String VARIANT_COLOR_BY_ALLELE_FREQ = "VARIANT_COLOR_BY_ALLELE_FREQ";
     public static final String HOMREF_COLOR = "HOMREF.COLOR";
     public static final String HETVAR_COLOR = "HETVAR.COLOR";
     public static final String HOMVAR_COLOR = "HOMVAR.COLOR";
     public static final String NOCALL_COLOR = "NOCALL.COLOR";
     public static final String AF_REF_COLOR = "AF_REF.COLOR";
     public static final String AF_VAR_COLOR = "AF_VAR.COLOR";
-    public static final String EXPAND_FEAUTRE_TRACKS = "EXPAND_FEATURE_TRACKS";
-    public static final String PORT_ENABLED = "PORT_ENABLED";
-    public static final String PORT_NUMBER = "PORT_NUMBER";
-    public static final String COLOR_SCALE_KEY = "COLOR_SCALE_";
-    public static final String FRAME_BOUNDS_KEY = "IGV.Bounds";
-    public static final String FRAME_STATE_KEY = "IGV.Frame.ExtendedState";
-    public static final String RECENT_SESSION_KEY = "IGV.Session.recent.sessions";
-    public static final String TRACK_HEIGHT_KEY = "IGV.track.height";
-    public static final String CHART_TRACK_HEIGHT_KEY = "IGV.chart.track.height";
-    public static final String CHART_SHOW_ALL_HEATMAP = "CHART.SHOW_ALL_HEATMAP";
-    public static final String SHOW_MISSING_DATA_KEY = "IGV.track.show.missing.data";
-    public static final String SHOW_ATTRIBUTE_VIEWS_KEY = "IGV.track.show.attribute.views";
-    public static final String SHOW_SINGLE_TRACK_PANE_KEY = "IGV.single.track.pane";
-    public static final String GENOMES_SERVER_URL = "IGV.genome.sequence.dir";
-    public static final String JOIN_ADJACENT_SEGMENTS_KEY = "IGV.join.adjacent.segments";
-    public static final String SHOW_REGION_BARS = "SHOW_REGION_BARS";
-    public static final String LAST_EXPORTED_REGION_DIRECTORY = "LAST_EXPORTED_REGION_DIRECTORY";
-    final static public String LAST_TRACK_DIRECTORY = "LAST_TRACK_DIRECTORY";
-    final static public String LAST_SNAPSHOT_DIRECTORY = "LAST_SNAPSHOT_DIRECTORY";
-    final static public String LAST_GENOME_IMPORT_DIRECTORY = "LAST_GENOME_IMPORT_DIRECTORY";
-    final static public String DEFAULT_GENOME_KEY = "DEFAULT_GENOME_KEY";
-    final static public String HISTORY_DELIMITER = ";";
-    final static public String DETAILS_BEHAVIOR_KEY = "DETAILS_BEHAVIOR";
-    final static public String DEFAULT_VISIBILITY_WINDOW = "DEFAULT_VISIBILITY_WINDOW";
+
+    // "Mut" and "MAF" mutation track settings
     public static final String MUTATION_COLOR_TABLE = "MUTATION_COLOR_TABLE";
     public static final String MUTATION_INDEL_COLOR_KEY = "MUTATION_INDEL_COLOR_KEY";
     public static final String MUTATION_MISSENSE_COLOR_KEY = "MUTATION_MISSENSE_COLOR_KEY";
@@ -136,33 +211,8 @@ final public class Constants {
     public static final String OVERLAY_ATTRIBUTE_KEY = "OVERLAY_ATTRIBUTE_KEY";
     public static final String OVERLAY_MUTATIONS_WHOLE_GENOME = "OVERLAY_MUTATIONS_WHOLE_GENOME";
     public static final String COLOR_MUTATIONS = "COVER_OVERLAY_KEY";
-    public static final String TRACK_ATTRIBUTE_NAME_KEY = "TRACK_ATTRIBUTE_NAME_KEY";
-    public static final String DATA_SERVER_URL_KEY = "MASTER_RESOURCE_FILE_KEY";
-    public static final String DEFINE_GENOME_INPUT_DIRECTORY_KEY = "DEFINE_GENOME_INPUT_DIRECTORY_KEY";
-    public static final String VARIANT_COLOR_BY_ALLELE_FREQ = "VARIANT_COLOR_BY_ALLELE_FREQ";
-    public static final String PROBE_MAPPING_KEY = "PROBE_MAPPING_KEY";
-    public static final String PROBE_MAPPING_FILE = "PROBE_MAPPING_FILE";
-    public static final String USE_PROBE_MAPPING_FILE = "USE_PROBE_MAPPING_FILE";
-    public static final String SEARCH_ZOOM = "SEARCH_ZOOM";
-    public static final String BYPASS_FILE_AUTO_DISCOVERY = "BYPASS_FILE_AUTO_DISCOVERY";
-    public static final String NORMALIZE_COVERAGE = "NORMALIZE_COVERAGE";
-    public static final String SHOW_EXPAND_ICON = "SHOW_EXPAND_ICON";
-    public static final String SHOW_DEFAULT_TRACK_ATTRIBUTES = "SHOW_DEFAULT_TRACK_ATTRIBUTES";
-    public static final String SHOW_SIZE_WARNING = "SHOW_SIZE_WARNING";
-    public static final String SHOW_GENOME_SERVER_WARNING = "SHOW_GENOME_SERVER_WARNING";
-    public static final String USE_PROXY = "PROXY.USE";
-    public static final String PROXY_HOST = "PROXY.HOST";
-    public static final String PROXY_PORT = "PROXY.PORT";
-    public static final String PROXY_AUTHENTICATE = "PROXY.AUTHENTICATE";
-    public static final String PROXY_USER = "PROXY.USERNAME";
-    public static final String PROXY_PW = "PROXY.PW";
-    public static final String PROXY_TYPE = "PROXY.TYPE";
-    public static final String PROXY_WHITELIST = "PROXY.WHITELIST";
-    public static final String KNOWN_SNPS = "KNOWN_SNPS_FILE";
-    public static final String FLANKING_REGION = "FLANKING_REGION";
-    public static final String SHOW_SEQUENCE_TRANSLATION = "SHOW_SEQUENCE_TRANSLATION";
-    public static final String MAX_SEQUENCE_RESOLUTION = "MAX_SEQUENCE_RESOLUTION";
-    public static final String AUTO_UPDATE_GENOMES = "AUTO_UPDATE_GENOMES";
+
+    // GWAS track options
     public static final String GWAS_TRACK_HEIGHT = "GWAS_TRACK_HEIGHT";
     public static final String GWAS_DESCRIPTION_CACHE_SIZE = "GWAS_DESCRIPTION_CACHE_SIZE";
     public static final String GWAS_MIN_POINT_SIZE = "GWAS_MIN_POINT_SIZE";
@@ -173,36 +223,51 @@ final public class Constants {
     public static final String GWAS_PRIMARY_COLOR = "GWAS_PRIMARY_COLOR";
     public static final String GWAS_SECONDARY_COLOR = "GWAS_SECONDARY_COLOR";
     public static final String GWAS_SHOW_AXIS = "GWAS_SHOW_AXIS";
-    public static final String DEFAULT_FONT_SIZE = "DEFAULT_FONT_SIZE";
-    public static final String DEFAULT_FONT_FAMILY = "DEFAULT_FONT_FAMILY";
-    public static final String DEFAULT_FONT_ATTRIBUTE = "DEFAULT_FONT_ATTRIBUTE";
-    public static final String ENABLE_ANTIALISING = "ENABLE_ANTIALIASING";
-    public static final String SCALE_FONTS = "SCALE_FONTS";
-    public static final String NAME_PANEL_WIDTH = "NAME_PANEL_WIDTH";
-    public static final String BACKGROUND_COLOR = "BACKGROUND_COLOR";
+
+    // Gene expression track options
+    public static final String PROBE_MAPPING_KEY = "PROBE_MAPPING_KEY";
+    public static final String PROBE_MAPPING_FILE = "PROBE_MAPPING_FILE";
+    public static final String USE_PROBE_MAPPING_FILE = "USE_PROBE_MAPPING_FILE";
+
+    // Genome space
     public static final String GENOME_SPACE_ENABLE = "GENOME_SPACE_ENABLE";
     public static final String GENOME_SPACE_DM_SERVER = "GENOME_SPACE_DM_SERVER";
     public static final String GENOME_SPACE_ATM_SERVER = "GENOME_SPACE_ATM_SERVER";
     public static final String GENOME_SPACE_IDENTITY_SERVER = "GENOME_SPACE_IDENTITY_SERVER";
-    public static final String ENABLE_EXOME_BUTTON = "ENABLE_EXOME_BUTTON";
+    
+    // Google
+    public static final String GOOGLE_API_KEY = "GOOGLE_API_KEY";
+    public static final String ENABLE_GOOGLE_MENU = "ENABLE_GOOGLE_MENU";
+    public static final String SAVE_GOOGLE_CREDENTIALS = "SAVE_GOOGLE_CREDENTIALS";
+    
+    // CBIO connections
     public static final String CBIO_MUTATION_THRESHOLD = "CBIO_MUTATION_THRESHOLD";
     public static final String CBIO_AMPLIFICATION_THRESHOLD = "CBIO_AMPLIFICATION_THRESHOLD";
     public static final String CBIO_DELETION_THRESHOLD = "CBIO_DELETION_THRESHOLD";
     public static final String CBIO_EXPRESSION_UP_THRESHOLD = "CBIO_EXPRESSION_UP_THRESHOLD";
     public static final String CBIO_EXPRESSION_DOWN_THRESHOLD = "CBIO_EXPRESSION_DOWN_THRESHOLD";
+
+    // Proxy settings
+    public static final String USE_PROXY = "PROXY.USE";
+    public static final String PROXY_HOST = "PROXY.HOST";
+    public static final String PROXY_PORT = "PROXY.PORT";
+    public static final String PROXY_AUTHENTICATE = "PROXY.AUTHENTICATE";
+    public static final String PROXY_USER = "PROXY.USERNAME";
+    public static final String PROXY_PW = "PROXY.PW";
+    public static final String PROXY_TYPE = "PROXY.TYPE";
+    public static final String PROXY_WHITELIST = "PROXY.WHITELIST";
+    
+    // Port settings
+    public static final String PORT_ENABLED = "PORT_ENABLED";
+    public static final String PORT_NUMBER = "PORT_NUMBER";
+    
+    // Database support -- never deployed
     public static final String DB_ENABLED = "DB_ENABLED";
     public static final String DB_HOST = "DB_HOST";
     public static final String DB_NAME = "DB_NAME";
     public static final String DB_PORT = "DB_PORT";
-    public static final String DEFAULT_GENOME_URL = "http://igv.broadinstitute.org/genomes/genomes.txt";
-    public static final String DEFAULT_DATA_URL = "https://data.broadinstitute.org/igvdata/$$_dataServerRegistry.txt";
-    public static final String IGV_PLUGIN_LIST_KEY = "IGV_PLUGIN_LIST";
-    public static final String SASHIMI_SHOW_COVERAGE = "SASHIMI.SHOW_COVERAGE";
-    public static final String GOOGLE_API_KEY = "GOOGLE_API_KEY";
-    public static final String ENABLE_GOOGLE_MENU = "ENABLE_GOOGLE_MENU";
-    public static final String SAVE_GOOGLE_CREDENTIALS = "SAVE_GOOGLE_CREDENTIALS";
-    public static final String BLAT_URL = "BLAT_URL";
-    public static final String EXTVIEW_URL = "EXTVIEW_URL";
-    public static final String GENE_LIST_BED_FORMAT = "GENE_LIST_BED_FORMAT";
-    public static final String SESSION_RELATIVE_PATH = "SESSION.RELATIVE_PATH";
+    
+    // Letter of support dialog
+    public static final String SHOW_LOS = "showLOS";
+
 }

@@ -28,7 +28,7 @@ package org.broad.igv.feature;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorTable;
@@ -219,7 +219,7 @@ public class Mutation implements IGVFeature {
     }
 
     public Color getColor() {
-        ColorTable colorTable = PreferenceManager.getInstance().getMutationColorScheme();
+        ColorTable colorTable = PreferencesManager.getPreferences().getMutationColorScheme();
         Color c = colorTable.get(getMutationType());
         return c;
     }

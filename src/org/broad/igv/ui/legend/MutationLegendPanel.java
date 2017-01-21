@@ -33,7 +33,7 @@ package org.broad.igv.ui.legend;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -56,7 +56,7 @@ public class MutationLegendPanel extends LegendPanel {
     }
 
     private void init() {
-        PaletteColorTable prefTable = PreferenceManager.getInstance().getMutationColorScheme();
+        PaletteColorTable prefTable = PreferencesManager.getPreferences().getMutationColorScheme();
         colorTable = new PaletteColorTable();
         for (String key : prefTable.getKeys()) {
             colorTable.put(key, prefTable.get(key));
@@ -64,7 +64,7 @@ public class MutationLegendPanel extends LegendPanel {
     }
 
     protected void persistResetPreferences() {
-        PreferenceManager.getInstance().resetMutationColorScheme();
+        PreferencesManager.getPreferences().resetMutationColorScheme();
         reloadPreferences();
     }
 
@@ -91,7 +91,7 @@ public class MutationLegendPanel extends LegendPanel {
      */
     public void edit() {
 
-        PaletteColorTable ct = PreferenceManager.getInstance().getMutationColorScheme();
+        PaletteColorTable ct = PreferencesManager.getPreferences().getMutationColorScheme();
         ColorMapEditor editor = new ColorMapEditor(IGV.getMainFrame(), ct.getColorMap());
         editor.setVisible(true);
 
@@ -101,7 +101,7 @@ public class MutationLegendPanel extends LegendPanel {
                 ct.put(entry.getKey(), entry.getValue());
             }
             String colorTableString = ct.getMapAsString();
-            PreferenceManager.getInstance().put(Constants.MUTATION_COLOR_TABLE, colorTableString);
+            PreferencesManager.getPreferences().put(Constants.MUTATION_COLOR_TABLE, colorTableString);
             reloadPreferences();
         }
 

@@ -38,7 +38,7 @@ import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
@@ -97,7 +97,7 @@ public class GobyCountArchiveDataSource implements CoverageDataSource {
                 this.numSitesSeen = counts.getTotalSitesSeen();
                 hasPrecomputedStats = true;
             }
-            boolean normalizeCounts = PreferenceManager.getInstance().getAsBoolean(Constants.NORMALIZE_COVERAGE);
+            boolean normalizeCounts = PreferencesManager.getPreferences().getAsBoolean(Constants.NORMALIZE_COVERAGE);
             setNormalize(normalizeCounts);
         } catch (IOException ex) {
             LOG.error("Error loading file: " + filename, ex);
@@ -117,7 +117,7 @@ public class GobyCountArchiveDataSource implements CoverageDataSource {
 
     public double getDataMin() {
         //  LOG.info("Call in getDataMin ");
-        boolean normalizeCounts = PreferenceManager.getInstance().getAsBoolean(Constants.NORMALIZE_COVERAGE);
+        boolean normalizeCounts = PreferencesManager.getPreferences().getAsBoolean(Constants.NORMALIZE_COVERAGE);
         setNormalize(normalizeCounts);
         return 0.0;
     }

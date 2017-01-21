@@ -39,7 +39,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ga4gh.Ga4ghAPIHelper;
 import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.RegionScoreType;
@@ -253,7 +253,7 @@ public class CommandExecutor {
     }
 
     private String overridePreference(String prefKey, String prefVal) {
-        PreferenceManager.getInstance().override(prefKey, prefVal);
+        PreferencesManager.getPreferences().override(prefKey, prefVal);
         return "OK";
     }
 
@@ -302,7 +302,7 @@ public class CommandExecutor {
     private String setSamplingWindowSize(String windowSize) {
         try {
             Integer.parseInt(windowSize);
-            PreferenceManager.getInstance().override(Constants.SAM_SAMPLING_WINDOW, String.valueOf(windowSize));
+            PreferencesManager.getPreferences().override(Constants.SAM_SAMPLING_WINDOW, String.valueOf(windowSize));
             return "OK";
         } catch (NumberFormatException e) {
             return "ERROR: SAMPLING WINDOW IS NOT A NUMBER: " + windowSize;
@@ -313,7 +313,7 @@ public class CommandExecutor {
     private String setSamplingReadCount(String samplingReadCount) {
         try {
             Integer.parseInt(samplingReadCount);
-            PreferenceManager.getInstance().override(Constants.SAM_SAMPLING_COUNT, String.valueOf(samplingReadCount));
+            PreferencesManager.getPreferences().override(Constants.SAM_SAMPLING_COUNT, String.valueOf(samplingReadCount));
             return "OK";
         } catch (NumberFormatException e) {
             return "ERROR: SAMPLING READ COUNT IS NOT A NUMBER: " + samplingReadCount;

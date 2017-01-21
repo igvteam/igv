@@ -35,7 +35,7 @@ import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.SubtlyImportant;
@@ -219,7 +219,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         int sourceFeatureWindowSize = source.getFeatureWindowSize();
         if (sourceFeatureWindowSize > 0) {  // Only apply a default if the feature source supports visibility window.
-            int defVisibilityWindow = PreferenceManager.getInstance().getAsInt(Constants.DEFAULT_VISIBILITY_WINDOW);
+            int defVisibilityWindow = PreferencesManager.getPreferences().getAsInt(Constants.DEFAULT_VISIBILITY_WINDOW);
             if (defVisibilityWindow > 0) {
                 setVisibilityWindow(defVisibilityWindow * 1000);
             } else {

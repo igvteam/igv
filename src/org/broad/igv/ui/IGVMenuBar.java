@@ -43,7 +43,7 @@ import org.broad.igv.gs.GSOpenSessionMenuAction;
 import org.broad.igv.gs.GSSaveSessionMenuAction;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.lists.GeneListManagerUI;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.tools.IgvToolsGui;
 import org.broad.igv.tools.motiffinder.MotifFinderPlugin;
 import org.broad.igv.track.CombinedDataSourceDialog;
@@ -190,7 +190,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menus.add(extrasMenu);
 
         googleMenu = createGoogleMenu();
-        googleMenu.setVisible(PreferenceManager.getInstance().getAsBoolean(ENABLE_GOOGLE_MENU));
+        googleMenu.setVisible(PreferencesManager.getPreferences().getAsBoolean(ENABLE_GOOGLE_MENU));
         menus.add(googleMenu);
 
         menus.add(createHelpMenu());
@@ -421,7 +421,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_DAS, KeyEvent.VK_D, igv);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        if (PreferenceManager.getInstance().getAsBoolean(DB_ENABLED)) {
+        if (PreferencesManager.getPreferences().getAsBoolean(DB_ENABLED)) {
             menuAction = new LoadFromDatabaseAction("Load from Database...", 0, igv);
             menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         }
@@ -488,7 +488,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         igv.getRecentSessionList().clear();
 
         // Retrieve the stored session paths
-        String recentSessions = PreferenceManager.getInstance().getRecentSessions();
+        String recentSessions = PreferencesManager.getPreferences().getRecentSessions();
         if (recentSessions != null) {
             String[] sessions = recentSessions.split(";");
             for (String sessionPath : sessions) {
@@ -546,9 +546,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                     @Override
                     public void actionPerformed(ActionEvent event) {
                         try {
-                            File importDirectory = PreferenceManager.getInstance().getLastGenomeImportDirectory();
+                            File importDirectory = PreferencesManager.getPreferences().getLastGenomeImportDirectory();
                             if (importDirectory == null) {
-                                PreferenceManager.getInstance().setLastGenomeImportDirectory(DirectoryManager.getUserDirectory());
+                                PreferencesManager.getPreferences().setLastGenomeImportDirectory(DirectoryManager.getUserDirectory());
                             }
                             // Display the dialog
                             File file = FileDialogUtils.chooseFile("Load Genome", importDirectory, FileDialog.LOAD);
@@ -619,10 +619,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                         GenomeManager.getInstance().updateImportedGenomePropertyFile();
                         notifyGenomesAddedRemoved(removedValuesList, false);
 
-                        String defaultGenomeKey = PreferenceManager.getInstance().get(DEFAULT_GENOME_KEY);
+                        String defaultGenomeKey = PreferencesManager.getPreferences().get(DEFAULT_GENOME);
                         for (GenomeListItem item : removedValuesList) {
                             if (defaultGenomeKey.equals(item.getId())) {
-                                PreferenceManager.getInstance().remove(DEFAULT_GENOME_KEY);
+                                PreferencesManager.getPreferences().remove(DEFAULT_GENOME);
                                 break;
                             }
                         }
@@ -746,7 +746,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                     try {
                         Integer w = Integer.parseInt(newValue);
                         if (w <= 0 || w == 1000) throw new NumberFormatException();
-                        PreferenceManager.getInstance().put(NAME_PANEL_WIDTH, newValue);
+                        PreferencesManager.getPreferences().put(NAME_PANEL_WIDTH, newValue);
                         mainPanel.setNamePanelWidth(w);
                     } catch (NumberFormatException ex) {
                         MessageUtils.showErrorMessage("Error: value must be a positive integer < 1000.", ex);
@@ -758,7 +758,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuItems.add(panelWidthmenuItem);
 
         // Hide or Show the attribute panels
-        boolean isShow = PreferenceManager.getInstance().getAsBoolean(SHOW_ATTRIBUTE_VIEWS_KEY);
+        boolean isShow = PreferencesManager.getPreferences().getAsBoolean(SHOW_ATTRIBUTE_VIEWS_KEY);
         IGV.getInstance().doShowAttributeDisplay(isShow);  // <= WEIRD doing IGV.getInstance() here!
 
         menuAction = new MenuAction("Show Attribute Display", null, KeyEvent.VK_A) {
@@ -766,7 +766,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             public void actionPerformed(ActionEvent e) {
 
                 JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem) e.getSource();
-                PreferenceManager.getInstance().setShowAttributeView(menuItem.getState());
+                PreferencesManager.getPreferences().setShowAttributeView(menuItem.getState());
                 IGV.getInstance().getMainPanel().invalidate();
                 IGV.getInstance().doRefresh();
             }
@@ -954,7 +954,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             final String serverVersionString = HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
             // See if user has specified to skip this update
 
-            final String skipString = PreferenceManager.getInstance().get(SKIP_VERSION);
+            final String skipString = PreferencesManager.getPreferences().get(SKIP_VERSION);
             HashSet<String> skipVersion = new HashSet<String>(Arrays.asList(skipString.split(",")));
             if (skipVersion.contains(serverVersionString)) return;
 
@@ -969,7 +969,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 dlg.setVisible(true);
                 if (dlg.isSkipVersion()) {
                     String newSkipString = skipString + "," + serverVersionString;
-                    PreferenceManager.getInstance().put(SKIP_VERSION, newSkipString);
+                    PreferencesManager.getPreferences().put(SKIP_VERSION, newSkipString);
                 }
 
             } else {
@@ -1034,7 +1034,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
-        menu.setVisible(PreferenceManager.getInstance().getAsBoolean(GENOME_SPACE_ENABLE));
+        menu.setVisible(PreferencesManager.getPreferences().getAsBoolean(GENOME_SPACE_ENABLE));
 
 
         return menu;
@@ -1279,6 +1279,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             IGV.getInstance().saveStateForExit();
 
             Frame mainFrame = IGV.getMainFrame();
+
+            PreferencesManager.getPreferences().setApplicationFrameBounds(mainFrame.getBounds());
+
             // Hide and close the application
             mainFrame.setVisible(false);
             mainFrame.dispose();

@@ -35,7 +35,8 @@ package org.broad.igv.renderer;
  import org.broad.igv.feature.SpliceJunctionFeature;
  import org.broad.igv.feature.Strand;
  import org.broad.igv.prefs.Constants;
- import org.broad.igv.prefs.PreferenceManager;
+ import org.broad.igv.prefs.IGVPreferences;
+ import org.broad.igv.prefs.PreferencesManager;
  import org.broad.igv.track.FeatureTrack;
  import org.broad.igv.track.RenderContext;
  import org.broad.igv.track.Track;
@@ -101,7 +102,7 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
             fontGraphics.setFont(font);
 
             //determine whether to show flanking regions
-            PreferenceManager prefs = PreferenceManager.getInstance();
+            IGVPreferences prefs = PreferencesManager.getPreferences();
             boolean shouldShowFlankingRegions = prefs.getAsBoolean(Constants.SAM_SHOW_JUNCTION_FLANKINGREGIONS);
 
             // Track coordinates

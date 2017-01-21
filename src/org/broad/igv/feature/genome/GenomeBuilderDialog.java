@@ -29,7 +29,7 @@
 
 package org.broad.igv.feature.genome;
 
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
@@ -81,7 +81,7 @@ public class GenomeBuilderDialog extends JDialog {
     }
 
     private File chooseArchiveFile() {
-        File dir = PreferenceManager.getInstance().getLastGenomeImportDirectory();
+        File dir = PreferencesManager.getPreferences().getLastGenomeImportDirectory();
         File initFile = new File(getGenomeId() + ".genome");
         return FileDialogUtils.chooseFile("Save .genome file", dir, initFile, FileDialog.SAVE);
     }

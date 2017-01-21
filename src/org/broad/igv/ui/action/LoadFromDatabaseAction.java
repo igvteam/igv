@@ -32,7 +32,8 @@ package org.broad.igv.ui.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.MessageUtils;
@@ -69,13 +70,13 @@ public class LoadFromDatabaseAction extends MenuAction {
             @Override
             protected Object doInBackground() throws Exception {
 
-                String host = PreferenceManager.getInstance().get(DB_HOST);
+                String host = PreferencesManager.getPreferences().get(DB_HOST);
                 if (host == null || host.trim().length() == 0) {
                     MessageUtils.showMessage("Please set database configuration in user preferences (View > Preferences)");
                     return null;
                 }
 
-                final PreferenceManager preferenceManager = PreferenceManager.getInstance();
+                final IGVPreferences preferenceManager = PreferencesManager.getPreferences();
                 String db = preferenceManager.get(DB_NAME);
                 String port = preferenceManager.get(DB_PORT);
 

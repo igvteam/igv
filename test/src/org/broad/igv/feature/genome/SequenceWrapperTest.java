@@ -31,7 +31,8 @@
 package org.broad.igv.feature.genome;
 
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.util.HttpUtils;
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -50,7 +51,7 @@ import static org.junit.Assert.assertFalse;
 public class SequenceWrapperTest extends AbstractHeadlessTest{
 
     static String seqPath = "http://igvdata.broadinstitute.org/genomes/seq/hg18/";
-    static PreferenceManager preferenceManager;
+    static IGVPreferences preferenceManager;
     static SequenceWrapper helper;
 
     public SequenceWrapperTest() {
@@ -60,7 +61,7 @@ public class SequenceWrapperTest extends AbstractHeadlessTest{
     public static void setUpClass() throws Exception {
         AbstractHeadlessTest.setUpClass();
 
-        preferenceManager = PreferenceManager.getInstance();
+        preferenceManager = PreferencesManager.getPreferences();
         String tmp = SequenceWrapper.checkSequenceURL(seqPath);
         helper = new SequenceWrapper(new IGVSequence(tmp));
     }

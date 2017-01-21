@@ -41,7 +41,7 @@ import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesFactory;
 import org.broad.igv.renderer.DataRenderer;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.Renderer;
@@ -79,7 +79,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
 
     public DataTrack(ResourceLocator locator, String id, String name) {
         super(locator, id, name);
-        autoScale = PreferenceManager.getInstance().getAsBoolean(Constants.CHART_AUTOSCALE);
+        autoScale = PreferencesFactory.getPreferences().getAsBoolean(Constants.CHART_AUTOSCALE);
         loadedIntervalCache = Collections.synchronizedMap(new HashMap<>());
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
     }

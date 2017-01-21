@@ -35,7 +35,8 @@ import org.broad.igv.Globals;
 import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.gs.GSUtils;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.collections.CI;
 import org.broad.igv.util.ftp.FTPUtils;
@@ -381,7 +382,7 @@ public class HttpUtils {
         String user = null;
         String pw = null;
 
-        PreferenceManager prefMgr = PreferenceManager.getInstance();
+        IGVPreferences prefMgr = PreferencesManager.getPreferences();
         useProxy = prefMgr.getAsBoolean(USE_PROXY);
         proxyHost = prefMgr.get(PROXY_HOST, null);
         try {

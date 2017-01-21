@@ -30,7 +30,7 @@
 package org.broad.igv.ui.util;
 
 import org.broad.igv.Globals;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
@@ -63,7 +63,7 @@ public class ConfirmDialog extends JDialog {
 
     private void okButtonActionPerformed(ActionEvent e) {
         if (doNotShowCheckbox.isSelected()) {
-            PreferenceManager.getInstance().put(key, "false");
+            PreferencesManager.getPreferences().put(key, "false");
         }
         okPressed = true;
         setVisible(false);
@@ -71,7 +71,7 @@ public class ConfirmDialog extends JDialog {
 
     private void cancelButtonActionPerformed(ActionEvent e) {
         if (doNotShowCheckbox.isSelected()) {
-            PreferenceManager.getInstance().put(key, "false");
+            PreferencesManager.getPreferences().put(key, "false");
         }
         okPressed = false;
         setVisible(false);
@@ -170,7 +170,7 @@ public class ConfirmDialog extends JDialog {
 
     public static void optionallyShowInfoDialog(String message, String key) {
 
-        boolean show = PreferenceManager.getInstance().getAsBoolean(key);
+        boolean show = PreferencesManager.getPreferences().getAsBoolean(key);
         show &= ( !Globals.isHeadless() && !Globals.isSuppressMessages() );
         if (show) {
             ConfirmDialog dlg = new ConfirmDialog(IGV.getMainFrame(), message, key);
@@ -182,7 +182,7 @@ public class ConfirmDialog extends JDialog {
 
     public static boolean optionallyShowConfirmDialog(String message, String key, boolean defaultValue) {
 
-        boolean show = PreferenceManager.getInstance().getAsBoolean(key);
+        boolean show = PreferencesManager.getPreferences().getAsBoolean(key);
         show &= !(Globals.isSuppressMessages() || Globals.isHeadless() || Globals.isTesting());
         if (show) {
             ConfirmDialog dlg = new ConfirmDialog(IGV.getMainFrame(), message, key);

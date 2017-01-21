@@ -27,9 +27,9 @@ package org.broad.igv.gs.dm;
 
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
 import org.broad.igv.gs.GSTestAuthenticator;
 import org.broad.igv.gs.GSUtils;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
 import org.broad.igv.util.HttpUtils;
@@ -81,7 +81,7 @@ public class DMUtilsTest extends AbstractHeadlessTest{
         Authenticator.setDefault(new GSTestAuthenticator());
 
         try {
-            String defaultURLStr = PreferenceManager.getInstance().get(Constants.GENOME_SPACE_DM_SERVER);
+            String defaultURLStr = PreferencesManager.getPreferences().get(Constants.GENOME_SPACE_DM_SERVER);
             defaultURL = new URL(defaultURLStr);
             personaldirectoryURL = new URL(defaultURLStr + DMUtils.PERSONAL_DIRECTORY);
             fileURL = new URL(defaultURL + "file");

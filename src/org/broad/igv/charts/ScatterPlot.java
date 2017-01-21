@@ -25,7 +25,7 @@
 
 package org.broad.igv.charts;
 
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.color.ColorUtilities;
@@ -215,7 +215,7 @@ public class ScatterPlot {
         TrackType tt = TrackType.valueOf(categoryName);
         ContinuousColorScale scale = colorScales.get(tt);
         if (scale == null) {
-            scale = PreferenceManager.getInstance().getColorScale(tt);// IGV.getInstance().getSession().getColorScale(tt);
+            scale = PreferencesManager.getPreferences().getColorScale(tt);// IGV.getInstance().getSession().getColorScale(tt);
         }
         return scale.getColor((float) categoryValue);
 

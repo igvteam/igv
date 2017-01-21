@@ -35,7 +35,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
@@ -171,21 +171,21 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
     static {
         float max_val = 2 << 10;
 
-        float mut = Float.parseFloat(PreferenceManager.getInstance().get(Constants.CBIO_MUTATION_THRESHOLD));
+        float mut = Float.parseFloat(PreferencesManager.getPreferences().get(Constants.CBIO_MUTATION_THRESHOLD));
         bounds.put(PERCENT_MUTATED, new float[]{mut, max_val});
 
         //See GISTIC supplement, page 20
-        float amp = Float.parseFloat(PreferenceManager.getInstance().get(Constants.CBIO_AMPLIFICATION_THRESHOLD));
+        float amp = Float.parseFloat(PreferencesManager.getPreferences().get(Constants.CBIO_AMPLIFICATION_THRESHOLD));
         bounds.put(PERCENT_CNA_AMPLIFIED, new float[]{amp, max_val});
 
-        float del = Float.parseFloat(PreferenceManager.getInstance().get(Constants.CBIO_DELETION_THRESHOLD));
+        float del = Float.parseFloat(PreferencesManager.getPreferences().get(Constants.CBIO_DELETION_THRESHOLD));
         bounds.put(PERCENT_CNA_HOMOZYGOUSLY_DELETED, new float[]{del, max_val});
 
         //See GISTIC supplement, page 5, just gives greater than or less than 0
-        float expUp = Float.parseFloat(PreferenceManager.getInstance().get(Constants.CBIO_EXPRESSION_UP_THRESHOLD));
+        float expUp = Float.parseFloat(PreferencesManager.getPreferences().get(Constants.CBIO_EXPRESSION_UP_THRESHOLD));
         bounds.put(PERCENT_MRNA_WAY_UP, new float[]{expUp, max_val});
 
-        float expDown = Float.parseFloat(PreferenceManager.getInstance().get(Constants.CBIO_EXPRESSION_DOWN_THRESHOLD));
+        float expDown = Float.parseFloat(PreferencesManager.getPreferences().get(Constants.CBIO_EXPRESSION_DOWN_THRESHOLD));
         bounds.put(PERCENT_MRNA_WAY_DOWN, new float[]{-max_val, -expDown});
 
 

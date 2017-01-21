@@ -33,7 +33,7 @@ package org.broad.igv.feature.genome;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.RunnableResult;
 import org.broad.igv.util.TestUtils;
@@ -255,7 +255,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         String parent = "http://data.broadinstitute.org/igvdata/test";
         URL remURL = new URL(parent + "/" + updatedFile.getName());
 
-        PreferenceManager.getInstance().put(Constants.AUTO_UPDATE_GENOMES, true);
+        PreferencesManager.getPreferences().put(Constants.AUTO_UPDATE_GENOMES, true);
         GenomeManager.getInstance().refreshCache(cachedFile, remURL);
 
         GenomeDescriptor newDescriptor = GenomeManager.parseGenomeArchiveFile(cachedFile);

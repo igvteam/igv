@@ -27,7 +27,8 @@ package org.broad.igv.sam.reader;
 
 import htsjdk.tribble.readers.AsciiLineReader;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ParsingUtils;
@@ -64,7 +65,7 @@ public class ReadGroupFilter {
 
     public static synchronized ReadGroupFilter getFilter() {
 
-        PreferenceManager samPrefs = PreferenceManager.getInstance();
+        IGVPreferences samPrefs = PreferencesManager.getPreferences();
 
         if (samPrefs.getAsBoolean(Constants.SAM_FILTER_ALIGNMENTS)) {
 

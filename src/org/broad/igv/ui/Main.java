@@ -31,7 +31,8 @@ import jargs.gnu.CmdLineParser;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.event.GlobalKeyDispatcher;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.RuntimeUtils;
@@ -163,7 +164,7 @@ public class Main {
 
     public static void updateTooltipSettings() {
         ToolTipManager.sharedInstance().setEnabled(true);
-        final PreferenceManager prefMgr = PreferenceManager.getInstance();
+        final IGVPreferences prefMgr = PreferencesManager.getPreferences();
         ToolTipManager.sharedInstance().setInitialDelay(prefMgr.getAsInt(TOOLTIP_INITIAL_DELAY));
         ToolTipManager.sharedInstance().setReshowDelay(prefMgr.getAsInt(TOOLTIP_RESHOW_DELAY));
         ToolTipManager.sharedInstance().setDismissDelay(prefMgr.getAsInt(TOOLTIP_DISMISS_DELAY));
@@ -181,7 +182,7 @@ public class Main {
                     final String serverVersionString = HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
                     // See if user has specified to skip this update
 
-                    final String skipString = PreferenceManager.getInstance().get(SKIP_VERSION);
+                    final String skipString = PreferencesManager.getPreferences().get(SKIP_VERSION);
                     HashSet<String> skipVersion = new HashSet<String>(Arrays.asList(skipString.split(",")));
                     if (skipVersion.contains(serverVersionString)) return;
 
@@ -197,7 +198,7 @@ public class Main {
         //                        dlg.setVisible(true);
         //                        if (dlg.isSkipVersion()) {
         //                            String newSkipString = skipString + "," + serverVersionString;
-        //                            PreferenceManager.getInstance().put(PreferenceManager.SKIP_VERSION, newSkipString);
+        //                            IGVPreferences.getInstance().put(IGVPreferences.SKIP_VERSION, newSkipString);
         //                        }
         //                    }
         //                });
@@ -263,13 +264,13 @@ public class Main {
 
         // Optional arguments
         if (igvArgs.getPropertyOverrides() != null) {
-            PreferenceManager.getInstance().loadOverrides(igvArgs.getPropertyOverrides());
+            PreferencesManager.loadOverrides(igvArgs.getPropertyOverrides());
         }
         if (igvArgs.getDataServerURL() != null) {
-            PreferenceManager.getInstance().overrideDataServerURL(igvArgs.getDataServerURL());
+            PreferencesManager.getPreferences().overrideDataServerURL(igvArgs.getDataServerURL());
         }
         if (igvArgs.getGenomeServerURL() != null) {
-            PreferenceManager.getInstance().overrideGenomeServerURL(igvArgs.getGenomeServerURL());
+            PreferencesManager.getPreferences().overrideGenomeServerURL(igvArgs.getGenomeServerURL());
         }
 
 
@@ -295,7 +296,7 @@ public class Main {
         }
 
         double resolutionScale = Toolkit.getDefaultToolkit().getScreenResolution() / Globals.DESIGN_DPI;
-        final PreferenceManager prefMgr = PreferenceManager.getInstance();
+        final IGVPreferences prefMgr = PreferencesManager.getPreferences();
         if (resolutionScale > 1.5) {
             if (prefMgr.getAsBoolean(SCALE_FONTS)) {
                 FontManager.scaleFontSize(resolutionScale);

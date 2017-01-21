@@ -30,7 +30,8 @@ import org.broad.igv.feature.genome.ChromosomeCoordinate;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.session.IGVSessionReader;
@@ -129,7 +130,7 @@ public class GWASTrack extends AbstractTrack {
 
         super(locator, id, name);
 
-        PreferenceManager prefs = PreferenceManager.getInstance();
+        IGVPreferences prefs = PreferencesManager.getPreferences();
 
         // Set range from 0 to highest value rounded to greater integer
         int maxValue = (int) Math.ceil(gData.getMaxValue());
@@ -334,14 +335,14 @@ public class GWASTrack extends AbstractTrack {
 
         Rectangle drawingRect = calculateDrawingRect(arect);
 
-        Color labelColor = PreferenceManager.getInstance().getAsBoolean(Constants.CHART_COLOR_TRACK_NAME) ? getColor() : Color.black;
+        Color labelColor = PreferencesManager.getPreferences().getAsBoolean(Constants.CHART_COLOR_TRACK_NAME) ? getColor() : Color.black;
         Graphics2D labelGraphics = context.getGraphic2DForColor(labelColor);
         //Graphics2D labelGraphics = context.getGraphic2DForColor(Color.black);
 
         labelGraphics.setFont(FontManager.getFont(8));
 
         String tmpDisplayName = this.getDisplayName();
-        if (tmpDisplayName != null && tmpDisplayName.length() > 0 && PreferenceManager.getInstance().getAsBoolean(Constants.CHART_DRAW_TRACK_NAME)) {
+        if (tmpDisplayName != null && tmpDisplayName.length() > 0 && PreferencesManager.getPreferences().getAsBoolean(Constants.CHART_DRAW_TRACK_NAME)) {
             // Only attempt if track height is > 25 pixels
             if (arect.getHeight() > 25) {
                 Rectangle labelRect = new Rectangle(arect.x, arect.y + 10, arect.width, 10);
@@ -350,7 +351,7 @@ public class GWASTrack extends AbstractTrack {
             }
         }
 
-        //if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_DRAW_Y_AXIS)) {
+        //if (IGVPreferences.getInstance().getAsBoolean(IGVPreferences.CHART_DRAW_Y_AXIS)) {
         if (this.drawYAxis) {
             labelGraphics = context.getGraphic2DForColor(Color.black);
             labelGraphics.setFont(FontManager.getFont(11));
@@ -595,7 +596,7 @@ public class GWASTrack extends AbstractTrack {
         axisItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 showAxis = axisItem.isSelected();
-                PreferenceManager.getInstance().put(Constants.GWAS_SHOW_AXIS, String.valueOf(showAxis));
+                PreferencesManager.getPreferences().put(Constants.GWAS_SHOW_AXIS, String.valueOf(showAxis));
                 IGV.getInstance().revalidateTrackPanels();
 
             }
@@ -658,9 +659,9 @@ public class GWASTrack extends AbstractTrack {
 
 
     private void updateColorPreferences() {
-        PreferenceManager.getInstance().put(Constants.GWAS_SINGLE_COLOR, String.valueOf(singleColor));
-        PreferenceManager.getInstance().put(Constants.GWAS_USE_CHR_COLORS, String.valueOf(useChrColors));
-        PreferenceManager.getInstance().put(Constants.GWAS_ALTERNATING_COLORS, String.valueOf(alternatingColors));
+        PreferencesManager.getPreferences().put(Constants.GWAS_SINGLE_COLOR, String.valueOf(singleColor));
+        PreferencesManager.getPreferences().put(Constants.GWAS_USE_CHR_COLORS, String.valueOf(useChrColors));
+        PreferencesManager.getPreferences().put(Constants.GWAS_ALTERNATING_COLORS, String.valueOf(alternatingColors));
     }
 
 
@@ -672,7 +673,7 @@ public class GWASTrack extends AbstractTrack {
                 if (color != null) {
                     primaryColor = color;
                     String colorString = ColorUtilities.colorToString(primaryColor);
-                    PreferenceManager.getInstance().put(Constants.GWAS_PRIMARY_COLOR, colorString);
+                    PreferencesManager.getPreferences().put(Constants.GWAS_PRIMARY_COLOR, colorString);
                     IGV.getInstance().revalidateTrackPanels();
                 }
             }
@@ -690,7 +691,7 @@ public class GWASTrack extends AbstractTrack {
                 if (color != null) {
                     secondaryColor = color;
                     String colorString = ColorUtilities.colorToString(secondaryColor);
-                    PreferenceManager.getInstance().put(Constants.GWAS_SECONDARY_COLOR, colorString);
+                    PreferencesManager.getPreferences().put(Constants.GWAS_SECONDARY_COLOR, colorString);
                     IGV.getInstance().revalidateTrackPanels();
                 }
 
@@ -783,8 +784,8 @@ public class GWASTrack extends AbstractTrack {
     }
 
     private void updatePointSizePreferences() {
-        PreferenceManager.getInstance().put(Constants.GWAS_MIN_POINT_SIZE, String.valueOf(minPointSize));
-        PreferenceManager.getInstance().put(Constants.GWAS_MAX_POINT_SIZE, String.valueOf(maxPointSize));
+        PreferencesManager.getPreferences().put(Constants.GWAS_MIN_POINT_SIZE, String.valueOf(minPointSize));
+        PreferencesManager.getPreferences().put(Constants.GWAS_MAX_POINT_SIZE, String.valueOf(maxPointSize));
 
 
     }

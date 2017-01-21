@@ -188,6 +188,9 @@ public class ColorUtilities {
     }
 
     public static Color stringToColor(String string, Color defaultColor) {
+
+        if(string == null) return defaultColor;
+
         try {
             Color c = stringToColorNoDefault(string);
             if (c == null) {

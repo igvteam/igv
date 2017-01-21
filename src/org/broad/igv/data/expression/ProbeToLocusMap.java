@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.LoadResourceFromServerException;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 
@@ -168,7 +168,7 @@ public class ProbeToLocusMap {
         String mappingUrl = mappingUrlCache.getMappingUrl(genomeId, platform);
         if (mappingUrl == null) {
 
-            boolean mapToGenes = PreferenceManager.getInstance().getAsBoolean(Constants.PROBE_MAPPING_KEY);
+            boolean mapToGenes = PreferencesManager.getPreferences().getAsBoolean(Constants.PROBE_MAPPING_KEY);
             if (!mapToGenes) {
                 boolean hasLociMapping = checkForLociMapping(platform, genomeId);
                 if (!hasLociMapping) {

@@ -28,7 +28,7 @@ package org.broad.igv.sam;
 
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 
 import java.util.*;
 
@@ -117,8 +117,8 @@ public class InsertionManager {
         }
 
         int minLength = 0;
-        if (PreferenceManager.getInstance().getAsBoolean(SAM_HIDE_SMALL_INDEL_BP)) {
-            minLength = PreferenceManager.getInstance().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
+        if (PreferencesManager.getPreferences().getAsBoolean(SAM_HIDE_SMALL_INDEL_BP)) {
+            minLength = PreferencesManager.getPreferences().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
         }
 
         for (Alignment a : alignments) {

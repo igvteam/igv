@@ -33,7 +33,8 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.AminoAcid;
 import org.broad.igv.feature.AminoAcidSequence;
 import org.broad.igv.feature.Strand;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.LoadedDataInterval;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.SequenceTrack;
@@ -69,7 +70,7 @@ public class SequenceRenderer {
 
     private synchronized static void setNucleotideColors() {
 
-        PreferenceManager prefs = PreferenceManager.getInstance();
+        IGVPreferences prefs = PreferencesManager.getPreferences();
 
         nucleotideColors = new HashMap();
 

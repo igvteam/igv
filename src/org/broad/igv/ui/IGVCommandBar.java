@@ -45,7 +45,7 @@ import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.GenomeServerException;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.session.History;
 import org.broad.igv.ui.action.FitDataToWindowMenuAction;
 import org.broad.igv.ui.action.SearchCommand;
@@ -121,7 +121,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         }
     }
 
-    private SHOW_DETAILS_BEHAVIOR detailsBehavior = SHOW_DETAILS_BEHAVIOR.valueOf((PreferenceManager.getInstance().get(Constants.DETAILS_BEHAVIOR_KEY,
+    private SHOW_DETAILS_BEHAVIOR detailsBehavior = SHOW_DETAILS_BEHAVIOR.valueOf((PreferencesManager.getPreferences().get(Constants.DETAILS_BEHAVIOR_KEY,
             SHOW_DETAILS_BEHAVIOR.HOVER.name()).toUpperCase()));
 
     public SHOW_DETAILS_BEHAVIOR getDetailsBehavior() {
@@ -160,7 +160,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
             menuItem.addActionListener(new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
                     detailsBehavior = behavior;
-                    PreferenceManager.getInstance().put(Constants.DETAILS_BEHAVIOR_KEY, behavior.name());
+                    PreferencesManager.getPreferences().put(Constants.DETAILS_BEHAVIOR_KEY, behavior.name());
                 }
             });
             popup.add(menuItem);
@@ -266,8 +266,8 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
                                     IGV.getMainFrame(),
                                     "Error loading genome: " + genomeListItem.getDisplayableName());
                         } catch (Exception e) {
-                            int choice =
-                                    JOptionPane.showConfirmDialog(
+                            log.error(e);
+                            int choice = JOptionPane.showConfirmDialog(
                                             IGV.getMainFrame(), "The genome [" + genomeListItem.getId() +
                                                     "] could not be read. Would you like to remove the selected entry?",
                                             "", JOptionPane.OK_CANCEL_OPTION);

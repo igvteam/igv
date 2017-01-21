@@ -41,7 +41,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
 import org.broad.igv.sam.AlignmentDataManager;
 import org.broad.igv.sam.AlignmentTrack;
@@ -594,7 +594,7 @@ public class TrackMenuUtils {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     File outFile = FileDialogUtils.chooseFile("Save Visible Data",
-                            PreferenceManager.getInstance().getLastTrackDirectory(),
+                            PreferencesManager.getPreferences().getLastTrackDirectory(),
                             new File("visibleData.bed"),
                             FileDialogUtils.SAVE);
 
@@ -607,7 +607,7 @@ public class TrackMenuUtils {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     File outFile = FileDialogUtils.chooseFile("Save Visible Data",
-                            PreferenceManager.getInstance().getLastTrackDirectory(),
+                            PreferencesManager.getPreferences().getLastTrackDirectory(),
                             new File("visibleData.sam"),
                             FileDialogUtils.SAVE);
 
@@ -915,7 +915,7 @@ public class TrackMenuUtils {
                 }
                 IGV.getInstance().getSession().incrementNextAutoscaleGroup();
 
-                PreferenceManager.getInstance().setShowAttributeView(true);
+                PreferencesManager.getPreferences().setShowAttributeView(true);
                 IGV.getInstance().getMainPanel().invalidate();
                 IGV.getInstance().doRefresh();
 
@@ -1276,7 +1276,7 @@ public class TrackMenuUtils {
         }
 
         File file = FileDialogUtils.chooseFile("Export track names",
-                PreferenceManager.getInstance().getLastTrackDirectory(),
+                PreferencesManager.getPreferences().getLastTrackDirectory(),
                 new File("trackNames.tab"),
                 FileDialogUtils.SAVE);
 
@@ -1418,7 +1418,7 @@ public class TrackMenuUtils {
             return medianTrackHeight;
         }
 
-        return PreferenceManager.getInstance().getAsInt(Constants.INITIAL_TRACK_HEIGHT);
+        return PreferencesManager.getPreferences().getAsInt(Constants.INITIAL_TRACK_HEIGHT);
 
     }
 

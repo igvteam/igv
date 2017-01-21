@@ -35,7 +35,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ga4gh.GoogleUtils;
 import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.util.LoadFromURLDialog;
@@ -153,8 +153,8 @@ public class LoadFromURLMenuAction extends MenuAction {
 
     private void enableGoogleMenu() {
 
-        if (!PreferenceManager.getInstance().getAsBoolean(Constants.ENABLE_GOOGLE_MENU)) {
-            PreferenceManager.getInstance().put(Constants.ENABLE_GOOGLE_MENU, true);
+        if (!PreferencesManager.getPreferences().getAsBoolean(Constants.ENABLE_GOOGLE_MENU)) {
+            PreferencesManager.getPreferences().put(Constants.ENABLE_GOOGLE_MENU, true);
             IGVMenuBar.getInstance().enableGoogleMenu(true);
         }
     }

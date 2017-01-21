@@ -26,7 +26,8 @@
 package org.broad.igv.variant;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
@@ -96,7 +97,7 @@ public class VariantRenderer { //extends FeatureRenderer {
      */
     private void updateColors() {
 
-        final PreferenceManager prefMgr = PreferenceManager.getInstance();
+        final IGVPreferences prefMgr = PreferencesManager.getPreferences();
 
         if (!prefMgr.getAsColor(AF_VAR_COLOR).equals(colorAlleleBandVar)) {
             colorAlleleBandVar = prefMgr.getAsColor(AF_VAR_COLOR);

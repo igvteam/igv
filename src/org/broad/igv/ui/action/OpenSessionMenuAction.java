@@ -30,7 +30,7 @@
 package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.prefs.PreferenceManager;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.FileDialogUtils;
@@ -71,14 +71,14 @@ public class OpenSessionMenuAction extends MenuAction {
     public void actionPerformed(ActionEvent e) {
 
         if (sessionFile == null || autoload == false) {
-            File lastSessionDirectory = PreferenceManager.getInstance().getLastTrackDirectory();
+            File lastSessionDirectory = PreferencesManager.getPreferences().getLastTrackDirectory();
             File tmpFile = FileDialogUtils.chooseFile("Open Session", lastSessionDirectory, JFileChooser.FILES_ONLY);
 
             if (tmpFile == null) {
                 return;
             }
             sessionFile = tmpFile.getAbsolutePath();
-            PreferenceManager.getInstance().setLastTrackDirectory(tmpFile.getParentFile());
+            PreferencesManager.getPreferences().setLastTrackDirectory(tmpFile.getParentFile());
         }
         doRestoreSession();
 
