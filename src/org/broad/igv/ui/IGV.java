@@ -227,6 +227,19 @@ public class IGV {
 
         mainFrame = frame;
         mainFrame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent windowEvent) {
+                windowCloseEvent();
+            }
+
+            @Override
+            public void windowClosed(WindowEvent windowEvent) {
+                windowCloseEvent();
+            }
+
+            private void windowCloseEvent() {
+                PreferenceManager.getInstance().setApplicationFrameBounds(mainFrame.getBounds());
+            }
 
             @Override
             public void windowLostFocus(WindowEvent windowEvent) {
@@ -301,10 +314,24 @@ public class IGV {
 
         mainFrame.pack();
 
+        // Set the application's previous location and size
+        Dimension screenBounds = Toolkit.getDefaultToolkit().getScreenSize();
+        Rectangle applicationBounds = PreferenceManager.getInstance().getApplicationFrameBounds();
+        int state = PreferenceManager.getInstance().getAsInt(PreferenceManager.FRAME_STATE_KEY);
+
+        if (applicationBounds == null || applicationBounds.getMaxX() > screenBounds.getWidth() ||
+                applicationBounds.getMaxY() > screenBounds.getHeight()) {
+            int width = Math.min(1150, (int) screenBounds.getWidth());
+            int height = Math.min(800, (int) screenBounds.getHeight());
+            applicationBounds = new Rectangle(0, 0, width, height);
+        }
+
         //Certain components MUST be visible, so we set minimum size
         //{@link MainPanel#addDataPanel}
         mainFrame.setMinimumSize(new Dimension(300, 300));
 
+        mainFrame.setExtendedState(state);
+        mainFrame.setBounds(applicationBounds);
     }
 
 
@@ -921,6 +948,10 @@ public class IGV {
             PreferenceManager.getInstance().remove(PreferenceManager.RECENT_SESSION_KEY);
             PreferenceManager.getInstance().setRecentSessions(recentSessions);
         }
+
+        // Save application location and size
+        PreferenceManager.getInstance().setApplicationFrameBounds(mainFrame.getBounds());
+        PreferenceManager.getInstance().put(PreferenceManager.FRAME_STATE_KEY, "" + mainFrame.getExtendedState());
 
     }
 
