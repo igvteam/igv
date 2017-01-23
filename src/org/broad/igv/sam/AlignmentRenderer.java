@@ -608,7 +608,7 @@ public class AlignmentRenderer {
     private void drawAlignmentBlock(Graphics2D blockGraphics, Graphics2D outlineGraphics,
                                     Graphics2D clippedGraphics, Graphics2D strandGraphics,
                                     boolean isNegativeStrand, int alignmentChromStart,
-                                    int alignmentChromEnd, int blockChromStart, int blockChromEnd,
+                                    int alignmentChromEnd, double blockChromStart, int blockChromEnd,
                                     int blockPxStart, int blockPxWidth, int y, int h, double locSale,
                                     boolean overlapped, boolean leftClipped, boolean rightClipped) {
 
@@ -771,10 +771,10 @@ public class AlignmentRenderer {
         boolean rightClipped = flagClipping && ((clipping[2] + clipping[3]) > clippingThreshold);
 
         // BED-style coordinate for the visible context.  Do not draw outside the context.
-        int contextChromStart = (int) context.getOrigin(),
-                contextChromEnd = (int) context.getEndLocation();
+        double contextChromStart =   context.getOrigin(),
+                contextChromEnd =   context.getEndLocation();
         // BED-style start coordinate for the next alignment block to draw.
-        int blockChromStart = (int) Math.max(alignmentChromStart, contextChromStart);
+        double blockChromStart =   Math.max(alignmentChromStart, contextChromStart);
 
         // Draw aligment blocks separated by gaps.  Define the blocks by walking through the gap list,
         // skipping over gaps that are too small to show at the curren resolution.
