@@ -178,12 +178,12 @@ public class ReferenceFrame {
 
     public void changeChromosome(String chrName, boolean recordHistory) {
         boolean changed = setChromosomeName(chrName, false);
-        if (changed) {
+       // if (changed) {
             ViewChange resultEvent = ViewChange.ChromosomeChangeResult(chrName);
             resultEvent.setRecordHistory(recordHistory);
             getEventBus().post(resultEvent);
             changeZoom(0);
-        }
+       // }
     }
 
     public void changeZoom(int newZoom) {
@@ -438,6 +438,7 @@ public class ReferenceFrame {
             this.initialLocus = locus;
             this.chrName = chr;
             if (start >= 0 && end >= 0) {
+                log.info("this.origin = " + start);
                 this.origin = start;
                 beforeScaleZoom(locus);
                 computeLocationScale();

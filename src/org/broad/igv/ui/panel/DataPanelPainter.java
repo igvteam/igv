@@ -57,23 +57,24 @@ public class DataPanelPainter {
                                    Rectangle visibleRect) {
 
 
-        final double start = context.getOrigin();
+        //
 
-        try {
-            Graphics2D graphics2D = context.getGraphics2D("BACKGROUND");
-            graphics2D.setBackground(background);
-            graphics2D.clearRect(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height);
-            graphics2D.setColor(Color.BLACK);
+        Graphics2D graphics2D = context.getGraphics2D("BACKGROUND");
+        graphics2D.setBackground(background);
+        graphics2D.clearRect(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height);
+        graphics2D.setColor(Color.BLACK);
 
 
-            final ReferenceFrame referenceFrame = context.getReferenceFrame();
-            context.setInsertionMarkers(InsertionManager.getInstance().getInsertions(referenceFrame.getChrName(), referenceFrame.getOrigin(), referenceFrame.getEnd()));
+        final ReferenceFrame referenceFrame = context.getReferenceFrame();
+        context.setInsertionMarkers(InsertionManager.getInstance().getInsertions(referenceFrame.getChrName(), referenceFrame.getOrigin(), referenceFrame.getEnd()));
 
-            InsertionMarker i = InsertionManager.getInstance().getSelectedInsertion(referenceFrame.getChrName());
+        InsertionMarker i = InsertionManager.getInstance().getSelectedInsertion(referenceFrame.getChrName());
 
-            if (i != null) {
 
-                double scale = context.getScale();
+        if (i != null) {
+            final double start = referenceFrame.getOrigin();
+            try {
+                double scale = referenceFrame.getScale();
                 int p0 = 0, w;
 
                 w = (int) ((i.position - start) / scale);
@@ -83,7 +84,7 @@ public class DataPanelPainter {
                 p0 += w;
 
                 context.multiframe = true;
-                context.getReferenceFrame().origin = i.position;
+                referenceFrame.origin = i.position;
                 w = (int) Math.ceil(i.size / context.getScale());
                 paintExpandedInsertion(i, groups, context, p0, visibleRect.y, w, visibleRect.height);
 
@@ -94,16 +95,13 @@ public class DataPanelPainter {
                 if (w > 0) {
                     paintSection(groups, context, p0, visibleRect.y, width - p0, visibleRect.height, g);
                 }
-
-
-            } else {
-                paintFrame(groups, context, width, visibleRect);
+            } finally {
+                referenceFrame.origin = start;
             }
-
-
-        } finally {
-            context.getReferenceFrame().origin = start;
+        } else {
+            paintFrame(groups, context, width, visibleRect);
         }
+
     }
 
 
@@ -181,7 +179,7 @@ public class DataPanelPainter {
 
 
     private void paintExpandedInsertion(InsertionMarker insertionMarker, Collection<TrackGroup> groups, RenderContext context, int px, int py, int w, int h) {
-        
+
         context.clearGraphicsCache();
         Graphics2D dG = context.getGraphics();
         Rectangle dRect = new Rectangle(0, py, w, h);

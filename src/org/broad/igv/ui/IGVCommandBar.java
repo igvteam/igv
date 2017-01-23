@@ -575,12 +575,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         chromosomeComboBox.setMaximumSize(new java.awt.Dimension(DEFAULT_CHROMOSOME_DROPDOWN_WIDTH, 30));
         chromosomeComboBox.setMinimumSize(new java.awt.Dimension(DEFAULT_CHROMOSOME_DROPDOWN_WIDTH, 30));
         chromosomeComboBox.setPreferredSize(new java.awt.Dimension(DEFAULT_CHROMOSOME_DROPDOWN_WIDTH, 30));
-        chromosomeComboBox.addActionListener(new java.awt.event.ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                chromosomeComboBoxActionPerformed(evt);
-            }
-        });
+        chromosomeComboBox.addActionListener(evt -> chromosomeComboBoxActionPerformed(evt));
         locationPanel.add(chromosomeComboBox, JideBoxLayout.FIX);
         locationPanel.add(Box.createHorizontalStrut(5), JideBoxLayout.FIX);
 
@@ -871,10 +866,11 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
     //</editor-fold>
 
-    public void receiveEvent(Object event) {
+    public void receiveEvent(Object e) {
 
-        if (event instanceof ViewChange) {
-            if (((ViewChange) event).type == ViewChange.Type.ChromosomeChange) {
+        if (e instanceof ViewChange) {
+            ViewChange event = (ViewChange) e;
+            if (event.type == ViewChange.Type.ChromosomeChange || event.type == ViewChange.Type.LocusChange) {
                 String chrName = getDefaultReferenceFrame().getChrName();
                 roiToggleButton.setEnabled(!Globals.CHR_ALL.equals(chrName));
                 zoomControl.setEnabled(!Globals.CHR_ALL.equals(chrName));
@@ -882,14 +878,16 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
                     chromosomeComboBox.setSelectedItem(chrName);
                 }
             }
+
             updateCurrentCoordinates();
             repaint(); // TODO Is this neccessary?
-        } else if (event instanceof GenomeChangeEvent) {
-            Genome genome = ((GenomeChangeEvent) event).genome;
+        } else if (e instanceof GenomeChangeEvent) {
+            GenomeChangeEvent event = (GenomeChangeEvent) e;
+            Genome genome = event.genome;
             refreshGenomeListComboBox();
             updateChromosFromGenome(genome);
         } else {
-            log.info("Unknown event class: " + event.getClass());
+            log.info("Unknown event class: " + e.getClass());
         }
     }
 
