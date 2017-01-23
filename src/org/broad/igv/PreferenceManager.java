@@ -170,7 +170,6 @@ public class PreferenceManager implements PropertyManager {
     public static final String PORT_NUMBER = "PORT_NUMBER";
     public static final String COLOR_SCALE_KEY = "COLOR_SCALE_";
     public static final String FRAME_BOUNDS_KEY = "IGV.Bounds";
-    public static final String FRAME_STATE_KEY = "IGV.Frame.ExtendedState";
     public static final String RECENT_SESSION_KEY = "IGV.Session.recent.sessions";
     public static final String TRACK_HEIGHT_KEY = "IGV.track.height";
     public static final String CHART_TRACK_HEIGHT_KEY = "IGV.chart.track.height";
@@ -1184,8 +1183,6 @@ public class PreferenceManager implements PropertyManager {
         }
 
         defaultValues.put(DATA_SERVER_URL_KEY, defaultDataURL);
-
-        defaultValues.put(FRAME_STATE_KEY, "" + Frame.NORMAL);
 
         defaultValues.put(CBIO_MUTATION_THRESHOLD, "1");
         defaultValues.put(CBIO_AMPLIFICATION_THRESHOLD, "0.9");

@@ -317,10 +317,9 @@ public class IGV {
         // Set the application's previous location and size
         Dimension screenBounds = Toolkit.getDefaultToolkit().getScreenSize();
         Rectangle applicationBounds = PreferenceManager.getInstance().getApplicationFrameBounds();
-        int state = PreferenceManager.getInstance().getAsInt(PreferenceManager.FRAME_STATE_KEY);
 
         if (applicationBounds == null || applicationBounds.getMaxX() > screenBounds.getWidth() ||
-                applicationBounds.getMaxY() > screenBounds.getHeight()) {
+                applicationBounds.getMaxY() > screenBounds.getHeight() || applicationBounds.width == 0 || applicationBounds.height == 0) {
             int width = Math.min(1150, (int) screenBounds.getWidth());
             int height = Math.min(800, (int) screenBounds.getHeight());
             applicationBounds = new Rectangle(0, 0, width, height);
@@ -330,7 +329,6 @@ public class IGV {
         //{@link MainPanel#addDataPanel}
         mainFrame.setMinimumSize(new Dimension(300, 300));
 
-        mainFrame.setExtendedState(state);
         mainFrame.setBounds(applicationBounds);
     }
 
@@ -951,7 +949,6 @@ public class IGV {
 
         // Save application location and size
         PreferenceManager.getInstance().setApplicationFrameBounds(mainFrame.getBounds());
-        PreferenceManager.getInstance().put(PreferenceManager.FRAME_STATE_KEY, "" + mainFrame.getExtendedState());
 
     }
 
