@@ -107,8 +107,8 @@ public class CombinedDataSource implements DataSource {
 
     public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom){
 
-        List<LocusScore> outerScores = this.source0.getSummaryScores(chr, startLocation, endLocation, zoom);
-        List<LocusScore> innerScores = this.source1.getSummaryScores(chr, startLocation, endLocation, zoom);
+        List<LocusScore> outerScores = this.source0.getSummaryScores(chr, startLocation, endLocation, zoom).getFeatures();
+        List<LocusScore> innerScores = this.source1.getSummaryScores(chr, startLocation, endLocation, zoom).getFeatures();
 
         int initialSize = outerScores.size() + innerScores.size();
         List<LocusScore> combinedScoresList = new ArrayList<LocusScore>(initialSize);

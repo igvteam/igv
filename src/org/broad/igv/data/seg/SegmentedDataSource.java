@@ -74,6 +74,10 @@ public class SegmentedDataSource implements DataSource {
         // ignore
     }
 
+    @Override
+    public boolean isIndexable() {
+        return false;
+    }
 
     public boolean isLogNormalized() {
         return dataset.isLogNormalized();

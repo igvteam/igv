@@ -117,14 +117,18 @@ public class DataSourceTrack extends DataTrack {
         setDataRange(new DataRange(min, baseline, max));
     }
 
-    public List<LocusScore> getSummaryScores(String chr, int startLocation, int endLocation, int zoom) {
+    public LoadedDataInterval<List<LocusScore>> getSummaryScores(String chr, int startLocation, int endLocation, int zoom) {
+
         List<LocusScore> tmp = dataSource.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
+
         if (tmp == null) tmp = Collections.EMPTY_LIST;
         if(!firstDataLoaded && rescaleOnFirst){
             initScale(dataSource, tmp);
             firstDataLoaded = true;
         }
-        return tmp;
+
+
+        return new LoadedDataInterval<>(chr, startLocation, endLocation, zoom, tmp);
     }
 
 

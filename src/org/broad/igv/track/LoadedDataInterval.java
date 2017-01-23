@@ -54,6 +54,9 @@ public class LoadedDataInterval<T> {
         this.zoom = zoom;
         this.scores = scores;
     }
+    public boolean contains(String chr, int start, int end) {
+        return range.contains(chr, start, end);
+    }
 
     public boolean contains(String chr, int start, int end, int zoom) {
         return (this.zoom == -1 || this.zoom == zoom) && range.contains(chr, start, end);

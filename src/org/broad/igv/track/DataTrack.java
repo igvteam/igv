@@ -138,8 +138,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
         int delta = multiLocus ? 1 : (end - start) / 2;
         int expandedStart = Math.max(0, start - delta);
         int expandedEnd = Math.min(maxEnd, end + delta);
-        List<LocusScore> inViewScores = getSummaryScores(queryChr, expandedStart, expandedEnd, zoom);
-        LoadedDataInterval<List<LocusScore>> interval = new LoadedDataInterval<>(chr, expandedStart, expandedEnd, zoom, inViewScores);
+        LoadedDataInterval<List<LocusScore>> interval  = getSummaryScores(queryChr, expandedStart, expandedEnd, zoom);
         loadedIntervalCache.put(referenceFrame.getName(), interval);
 
     }
@@ -182,7 +181,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
         int start = (int) referenceFrame.getOrigin();
         int end = (int) referenceFrame.getEnd() + 1;
         int zoom = referenceFrame.getZoom();
-        if (interval == null || !interval.contains(chr, start, end, zoom)) {
+        if (interval == null ||  !(chr.equals(interval.range.chr))) { // Try the data we have, even if not perfect !interval.contains(chr, start, end, zoom)) {
             return Collections.EMPTY_LIST;
         }
 
@@ -231,36 +230,6 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
 
     }
 
-
-    private List<LocusScore> loadScores(final ReferenceFrame referenceFrame) {
-
-        String chr = referenceFrame.getChrName();
-        int start = (int) referenceFrame.getOrigin();
-        int end = (int) referenceFrame.getEnd() + 1;
-        int zoom = referenceFrame.getZoom();
-
-        int maxEnd = end;
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
-
-        String queryChr = chr;
-        if (genome != null) {
-            queryChr = genome.getCanonicalChrName(chr);
-            Chromosome c = genome.getChromosome(chr);
-            if (c != null) maxEnd = Math.max(c.getLength(), end);
-        }
-
-        // Expand interval +/- 50%, unless in a multi-locus mode with "lots" of frames
-        boolean multiLocus = (FrameManager.getFrames().size() > 4);
-        int delta = multiLocus ? 1 : (end - start) / 2;
-        int expandedStart = Math.max(0, start - delta);
-        int expandedEnd = Math.min(maxEnd, end + delta);
-        List<LocusScore> inViewScores = getSummaryScores(queryChr, expandedStart, expandedEnd, zoom);
-        LoadedDataInterval<List<LocusScore>> interval = new LoadedDataInterval<>(chr, start, end, zoom, inViewScores);
-        loadedIntervalCache.put(referenceFrame.getName(), interval);
-        return inViewScores;
-
-
-    }
 
 
     public void clearCaches() {
@@ -320,7 +289,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
 
     private LocusScore getLocusScoreAt(String chr, double position, ReferenceFrame frame) {
         int zoom = Math.max(0, frame.getZoom());
-        List<LocusScore> scores = getSummaryScores(chr, (int) position - 10, (int) position + 10, zoom);
+        List<LocusScore> scores = getSummaryScores(chr, (int) position - 10, (int) position + 10, zoom).getFeatures();
 
 
         if (scores == null) {
@@ -334,7 +303,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
     }
 
 
-    abstract public List<LocusScore> getSummaryScores(String chr, int startLocation, int endLocation, int zoom);
+    abstract public LoadedDataInterval<List<LocusScore>> getSummaryScores(String chr, int startLocation, int endLocation, int zoom);
 
     /**
      * Get the score over the provided region for the given type. Different types
@@ -371,7 +340,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
             if (loadedInterval != null && loadedInterval.contains(chr, start, end, zoom)) {
                 scores = loadedInterval.getFeatures();
             } else {
-                scores = this.getSummaryScores(chr, start, end, zoom);
+                scores = this.getSummaryScores(chr, start, end, zoom).getFeatures();
                 loadedIntervalCache.put(frameName, new LoadedDataInterval<>(chr, start, end, zoom, scores));
             }
 
@@ -456,7 +425,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
     public double getAverageScore(String chr, int start, int end, int zoom) {
         double regionScore = 0;
         int intervalSum = 0;
-        Collection<LocusScore> scores = getSummaryScores(chr, start, end, zoom);
+        Collection<LocusScore> scores = getSummaryScores(chr, start, end, zoom).getFeatures();
         for (LocusScore score : scores) {
             if ((score.getEnd() >= start) && (score.getStart() <= end)) {
                 int interval = 1; //Math.min(end, score.getEnd()) - Math.max(start, score.getStart());

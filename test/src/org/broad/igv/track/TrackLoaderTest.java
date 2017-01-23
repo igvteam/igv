@@ -282,8 +282,8 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
 
         for (int ii = 0; ii < trials; ii++) {
             int strt = start + ii;
-            List<LocusScore> wigScores = wigTrack.getSummaryScores(chr, strt, end, zoom);
-            List<LocusScore> bigWigScores = bigWigTrack.getSummaryScores(chr, strt, end, zoom);
+            List<LocusScore> wigScores = wigTrack.getSummaryScores(chr, strt, end, zoom).getFeatures();
+            List<LocusScore> bigWigScores = bigWigTrack.getSummaryScores(chr, strt, end, zoom).getFeatures();
             assertEquals(wigScores.size(), bigWigScores.size());
             int ind = 0;
             for (LocusScore ws : wigScores) {

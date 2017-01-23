@@ -62,6 +62,10 @@ public interface DataSource {
 
     public Collection<WindowFunction> getAvailableWindowFunctions();
 
+    default boolean isIndexable() {
+        return true;
+    }
+
     /**
      * Release any resources (file handles, etc)
      */

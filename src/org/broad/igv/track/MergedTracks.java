@@ -25,12 +25,16 @@
 
 package org.broad.igv.track;
 
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
@@ -93,6 +97,22 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
                     if(!group.equals(t.getAttributeValue(AttributeManager.GROUP_AUTOSCALE))) return;
                 }
                 this.setAttributeValue(AttributeManager.GROUP_AUTOSCALE, group);
+            }
+        }
+    }
+
+    @Override
+    public boolean isReadyToPaint(ReferenceFrame frame) {
+       return  this.memberTracks.stream().allMatch((t) -> t.isReadyToPaint(frame));
+    }
+
+
+    @Override
+    public synchronized void load(ReferenceFrame referenceFrame) {
+
+        for(DataTrack t : memberTracks) {
+            if(!t.isReadyToPaint(referenceFrame)) {
+                t.load(referenceFrame);
             }
         }
     }
@@ -177,7 +197,7 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
     }
 
     @Override
-    public List<LocusScore> getSummaryScores(String chr, int startLocation, int endLocation, int zoom) {
+    public LoadedDataInterval<List<LocusScore>> getSummaryScores(String chr, int startLocation, int endLocation, int zoom) {
         return null;
     }
 
