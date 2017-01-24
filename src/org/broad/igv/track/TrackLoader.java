@@ -196,7 +196,12 @@ public class TrackLoader {
             } else if (WiggleParser.isWiggle(locator)) {
                 loadWigFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".maf")) {
-                loadMultipleAlignmentTrack(locator, newTracks, genome);
+                if (MutationTrackLoader.isMutationAnnotationFile(locator)) {
+                    loadMutFile(locator, newTracks, genome); // Must be tried before generic "loadIndexed" below
+                }
+                else {
+                    loadMultipleAlignmentTrack(locator, newTracks, genome);
+                }
             } else if (typeString.endsWith(".maf.dict")) {
                 loadMultipleAlignmentTrack(locator, newTracks, genome);
             } else if (typeString.contains(".peak.bin")) {
