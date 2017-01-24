@@ -33,6 +33,9 @@ import org.broad.igv.sam.*;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.color.ColorPalette;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.event.IGVEventBus;
+import org.broad.igv.ui.event.IGVEventObserver;
+import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.UIUtilities;
 
@@ -56,10 +59,13 @@ import java.util.List;
  * User: jacob
  * Date: 2013-Jan-11
  */
-public class SashimiPlot extends JFrame {
+public class SashimiPlot extends JFrame implements IGVEventObserver {
 
     private List<SpliceJunctionTrack> spliceJunctionTracks;
+
     private ReferenceFrame frame;
+
+    private IGVEventBus eventBus;
 
     /**
      * The minimum allowed origin of the frame. We set scrolling
@@ -83,10 +89,12 @@ public class SashimiPlot extends JFrame {
 
 
     public SashimiPlot(ReferenceFrame iframe, Collection<? extends AlignmentTrack> alignmentTracks, FeatureTrack geneTrack) {
+
         getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         int minJunctionCoverage = PreferencesManager.getPreferences().getAsInt(Constants.SAM_JUNCTION_MIN_COVERAGE);
 
-        this.frame = new ReferenceFrame(iframe);
+        this.eventBus = new IGVEventBus();
+        this.frame = new ReferenceFrame(iframe, eventBus);
 
         minOrigin = this.frame.getOrigin();
         maxEnd = this.frame.getEnd();
@@ -99,8 +107,10 @@ public class SashimiPlot extends JFrame {
         //Add control elements to the top
         getContentPane().add(generateControlPanel(this.frame));
 
-        spliceJunctionTracks = new ArrayList<SpliceJunctionTrack>(alignmentTracks.size());
+        spliceJunctionTracks = new ArrayList<>(alignmentTracks.size());
         int colorInd = 0;
+
+        eventBus.subscribe(ViewChange.class, this);
 
         for (AlignmentTrack alignmentTrack : alignmentTracks) {
 
@@ -125,6 +135,8 @@ public class SashimiPlot extends JFrame {
 
             getContentPane().add(trackComponent);
             spliceJunctionTracks.add(spliceJunctionTrack);
+
+            spliceJunctionTrack.load(iframe);  // <= Must "load" tracks with frame of alignment track (actually just fetches from cache)
         }
 
         Axis axis = createAxis(frame);
@@ -153,10 +165,6 @@ public class SashimiPlot extends JFrame {
         });
 
         Dimension controlSize = new Dimension(200, 30);
-
-        //JSlider scaleSlider = new JSlider(JSlider.HORIZONTAL);
-        //setFixedSize(scaleSlider, controlSize);
-        //controlPanel.add(scaleSlider);
 
         controlPanel.add(zoomSliderPanel);
         setFixedSize(zoomSliderPanel, controlSize);
@@ -229,6 +237,11 @@ public class SashimiPlot extends JFrame {
 
     private SashimiJunctionRenderer getRenderer(SpliceJunctionTrack spliceJunctionTrack) {
         return (SashimiJunctionRenderer) spliceJunctionTrack.getRenderer();
+    }
+
+    @Override
+    public void receiveEvent(Object event) {
+        repaint();
     }
 
     /**

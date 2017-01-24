@@ -42,6 +42,7 @@ public class IGVEventBus {
 
     private static IGVEventBus instance;
 
+    // This is not a singleton,  "instance" is the default bus.  Sashimi plot has its own bus.
     public static synchronized IGVEventBus getInstance() {
         if (instance == null) {
             instance = new IGVEventBus();
@@ -49,7 +50,7 @@ public class IGVEventBus {
         return instance;
     }
 
-    private IGVEventBus() {
+    public IGVEventBus() {
         this.observerMap = new HashMap<>();
     }
 

@@ -38,6 +38,7 @@ import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
+import org.broad.igv.ui.event.IGVEventBus;
 import org.broad.igv.ui.event.IGVEventObserver;
 import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.FrameManager;
@@ -111,7 +112,7 @@ public class Session implements IGVEventObserver {
         }
 
         InsertionManager.getInstance().clear();
-        FrameManager.getDefaultFrame().getEventBus().subscribe(ViewChange.class, this);
+        IGVEventBus.getInstance().subscribe(ViewChange.class, this);
     }
 
 
