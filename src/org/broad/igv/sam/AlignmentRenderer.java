@@ -771,8 +771,9 @@ public class AlignmentRenderer {
         boolean rightClipped = flagClipping && ((clipping[2] + clipping[3]) > clippingThreshold);
 
         // BED-style coordinate for the visible context.  Do not draw outside the context.
-        double contextChromStart =   context.getOrigin(),
-                contextChromEnd =   context.getEndLocation();
+        double contextChromStart = context.getOrigin(),
+                contextChromEnd = Math.ceil(context.getEndLocation());
+
         // BED-style start coordinate for the next alignment block to draw.
         double blockChromStart =   Math.max(alignmentChromStart, contextChromStart);
 
@@ -782,8 +783,8 @@ public class AlignmentRenderer {
         if (gaps != null) {
 
             for (Gap gap : gaps) {
-                int gapChromStart = (int) gap.getStart(),
-                        gapChromWidth = (int) gap.getnBases(),
+                int gapChromStart = gap.getStart(),
+                        gapChromWidth = gap.getnBases(),
                         gapChromEnd = gapChromStart + gapChromWidth,
                         gapPxEnd = (int) ((Math.min(contextChromEnd, gapChromEnd) - contextChromStart) / locScale);
 
