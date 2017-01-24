@@ -219,6 +219,11 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
         setDisplayMode(DisplayMode.EXPANDED);
 
+        int sampleCount = allSamples.size();
+        final int groupCount = samplesByGroups.size();
+        final int margins = (groupCount - 1) * 3;
+        squishedHeight = Math.min(DEFAULT_SQUISHED_GENOTYPE_HEIGHT, Math.max(1, (height - variantBandHeight - margins) / sampleCount));
+
         // Listen for "group by" events.
         if (IGV.hasInstance()) {
             IGV.getInstance().addGroupEventListener(this);
@@ -431,12 +436,13 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         final int expandedHeight = variantBandHeight + margins + (sampleCount * getGenotypeBandHeight());
         if (height < expandedHeight) {
             setDisplayMode(DisplayMode.SQUISHED);
-            squishedHeight = Math.max(1, (height - variantBandHeight - margins) / sampleCount);
         } else {
             if (displayMode != DisplayMode.EXPANDED) {
                 setDisplayMode(DisplayMode.EXPANDED);
             }
         }
+
+        squishedHeight = Math.min(DEFAULT_SQUISHED_GENOTYPE_HEIGHT, Math.max(1, (height - variantBandHeight - margins) / sampleCount));
     }
 
 

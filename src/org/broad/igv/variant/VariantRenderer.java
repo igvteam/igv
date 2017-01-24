@@ -249,7 +249,6 @@ public class VariantRenderer { //extends FeatureRenderer {
                         if (goodBaseCount < VariantTrack.METHYLATION_MIN_BASE_COUNT || Double.isNaN(value)) {
                             b1Color = colorNoCall;
                             b2Color = b1Color;
-
                         } else {
                             float mr = (float) value;
                             mr /= 100f;
