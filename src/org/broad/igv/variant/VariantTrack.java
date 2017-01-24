@@ -579,6 +579,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                     }
                     tmpRect.y += tmpRect.height;
                 }
+                tmpRect.y += GROUP_BORDER_WIDTH;
             }
         } else {
 
