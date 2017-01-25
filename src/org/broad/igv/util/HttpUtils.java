@@ -38,6 +38,7 @@ import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.CancellableProgressDialog;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.collections.CI;
 import org.broad.igv.util.ftp.FTPUtils;
@@ -55,6 +56,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import static org.broad.igv.util.stream.SeekableServiceStream.WEBSERVICE_URL;
 
 /**
  * Wrapper utility class... for interacting with HttpURLConnection.
@@ -717,6 +720,16 @@ public class HttpUtils {
 
             int code = conn.getResponseCode();
 
+            if (requestProperties != null && requestProperties.containsKey("Range") && code != 206 && method.equals("GET")) {
+                log.error("Range header removed by proxy or ignored by server for url: " + url.toString());
+                byteRangeTestMap.put(url.getHost(), false);
+                String[] positionString = requestProperties.get("Range").split("=")[1].split("-");
+                int length = Integer.parseInt(positionString[1]) - Integer.parseInt(positionString[0]) + 1;
+                requestProperties.remove("Range"); // < VERY IMPORTANT
+                URL wsUrl = new URL(WEBSERVICE_URL + "?file=" + url.toExternalForm() + "&position=" + positionString[0] + "&length=" + length);
+                return openConnection(wsUrl, requestProperties, "GET", redirectCount);
+            }
+
             if (log.isDebugEnabled()) {
                 //logHeaders(conn);
             }
@@ -758,6 +771,13 @@ public class HttpUtils {
         return conn;
     }
 
+
+    /**
+     * Explicitly map cnames here.  Also fix other url migration issues.
+     *
+     * @param url
+     * @return
+     */
     private URL mapCname(URL url) {
 
         String host = url.getHost();

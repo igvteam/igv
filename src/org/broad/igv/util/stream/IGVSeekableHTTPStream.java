@@ -187,15 +187,6 @@ public class IGVSeekableHTTPStream extends SeekableStream {
         //URL url = addStartEndQueryString(this.url, start, end);
 
         HttpURLConnection conn = HttpUtils.getInstance().openConnection(url, params);
-        try {
-            int contentLength = conn.getContentLength();
-            if (contentLength > 0 && (contentLength != (end - start + 1))) {
-                // We're at EOF, record
-                this.contentLength = this.position + contentLength;
-            }
-        } catch (Exception e) {
-            log.error("Error determining content length", e);
-        }
 
         try {
             InputStream input = conn.getInputStream();
