@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import static org.broad.igv.prefs.Constants.*;
+import static org.broad.igv.util.stream.SeekableServiceStream.WEBSERVICE_URL;
 
 /**
  * Wrapper utility class... for interacting with HttpURLConnection.
@@ -137,7 +138,7 @@ public class HttpUtils {
      * @throws IOException
      */
     public String getContentsAsString(URL url) throws IOException {
-       return getContentsAsString(url, null);
+        return getContentsAsString(url, null);
     }
 
 
@@ -153,7 +154,8 @@ public class HttpUtils {
             throw e;
         } finally {
             if (is != null) is.close();
-        }    }
+        }
+    }
 
 
     public String getContentsAsJSON(URL url) throws IOException {
@@ -470,15 +472,15 @@ public class HttpUtils {
                     urlDownloader.cancel(true);
                 }
             };
-          //  String permText = "Downloading " + url;
-          //  String title = dialogTitle != null ? dialogTitle : permText;
-          //  CancellableProgressDialog dialog = CancellableProgressDialog.showCancellableProgressDialog(dialogsParent, title, buttonListener, false, monitor);
-          //  dialog.setPermText(permText);
+            //  String permText = "Downloading " + url;
+            //  String title = dialogTitle != null ? dialogTitle : permText;
+            //  CancellableProgressDialog dialog = CancellableProgressDialog.showCancellableProgressDialog(dialogsParent, title, buttonListener, false, monitor);
+            //  dialog.setPermText(permText);
 
-          //  Dimension dms = new Dimension(600, 150);
-          //  dialog.setPreferredSize(dms);
-          //  dialog.setSize(dms);
-          //  dialog.validate();
+            //  Dimension dms = new Dimension(600, 150);
+            //  dialog.setPreferredSize(dms);
+            //  dialog.setSize(dms);
+            //  dialog.validate();
 
             LongRunningTask.submit(urlDownloader);
             return urlDownloader;
@@ -639,10 +641,8 @@ public class HttpUtils {
     private HttpURLConnection openConnection(
             URL url, Map<String, String> requestProperties, String method, int redirectCount) throws IOException {
 
-        if(SwingUtilities.isEventDispatchThread()) {
-            System.out.println();
-        }
-            log.info("Open connection");
+        log.info("Open connection");
+
         // Map amazon cname aliases to the full hosts -- neccessary to avoid ssl certificate errors in Java 1.8
         url = mapCname(url);
 
@@ -725,6 +725,16 @@ public class HttpUtils {
 
             int code = conn.getResponseCode();
 
+            if (requestProperties != null && requestProperties.containsKey("Range") && code != 206 && method.equals("GET")) {
+                log.error("Range header removed by client or ignored by server for url: " + url.toString());
+                byteRangeTestMap.put(url.getHost(), false);
+                String[] positionString = requestProperties.get("Range").split("=")[1].split("-");
+                int length = Integer.parseInt(positionString[1]) - Integer.parseInt(positionString[0]) + 1;
+                requestProperties.remove("Range"); // < VERY IMPORTANT
+                URL wsUrl = new URL(WEBSERVICE_URL + "?file=" + url.toExternalForm() + "&position=" + positionString[0] + "&length=" + length);
+                return openConnection(wsUrl, requestProperties, "GET", redirectCount);
+            }
+
             if (log.isDebugEnabled()) {
                 //logHeaders(conn);
             }
@@ -768,6 +778,7 @@ public class HttpUtils {
 
     /**
      * Explicitly map cnames here.  Also fix other url migration issues.
+     *
      * @param url
      * @return
      */

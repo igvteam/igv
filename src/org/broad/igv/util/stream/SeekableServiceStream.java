@@ -44,7 +44,7 @@ public class SeekableServiceStream extends SeekableStream {
 
     static Logger log = Logger.getLogger(SeekableServiceStream.class);
 
-    private static final String WEBSERVICE_URL = "https://portals.broadinstitute.org/webservices/igv/range";
+    public static final String WEBSERVICE_URL = "https://portals.broadinstitute.org/webservices/igv/range";
 
 
 
