@@ -38,6 +38,7 @@ import org.broad.igv.gs.GSUtils;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.collections.CI;
 import org.broad.igv.util.ftp.FTPUtils;
 import org.broad.igv.util.stream.IGVUrlHelper;
@@ -727,6 +728,11 @@ public class HttpUtils {
 
             if (requestProperties != null && requestProperties.containsKey("Range") && code != 206 && method.equals("GET")) {
                 log.error("Range header removed by client or ignored by server for url: " + url.toString());
+
+                if(!SwingUtilities.isEventDispatchThread()) {
+                    MessageUtils.showMessage("Warning: unsuccessful attempt to execute 'Range byte' request to host " + url.getHost());
+                }
+                
                 byteRangeTestMap.put(url.getHost(), false);
                 String[] positionString = requestProperties.get("Range").split("=")[1].split("-");
                 int length = Integer.parseInt(positionString[1]) - Integer.parseInt(positionString[0]) + 1;
