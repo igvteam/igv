@@ -903,6 +903,7 @@ public class TrackMenuUtils {
 
         final JMenuItem autoscaleItem = new JMenuItem("Group Autoscale");
 
+
         autoscaleItem.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {
@@ -910,10 +911,9 @@ public class TrackMenuUtils {
                 int nextAutoscaleGroup = IGV.getInstance().getSession().getNextAutoscaleGroup();
 
                 for (Track t : selectedTracks) {
-                    t.setAttributeValue(AttributeManager.GROUP_AUTOSCALE, String.valueOf(nextAutoscaleGroup));
+                    t.setAttributeValue(AttributeManager.GROUP_AUTOSCALE, "Group " + nextAutoscaleGroup);
                     t.setAutoScale(false);
                 }
-                IGV.getInstance().getSession().incrementNextAutoscaleGroup();
 
                 PreferencesManager.getPreferences().setShowAttributeView(true);
                 IGV.getInstance().getMainPanel().invalidate();

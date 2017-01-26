@@ -432,13 +432,8 @@ public class Session implements IGVEventObserver {
     }
 
     public int getNextAutoscaleGroup() {
-        return this.nextAutoscaleGroup;
+        return this.nextAutoscaleGroup++;
     }
-
-    public synchronized void incrementNextAutoscaleGroup() {
-        this.nextAutoscaleGroup++;
-    }
-
 
     public Set<String> getHiddenAttributes() {
 
