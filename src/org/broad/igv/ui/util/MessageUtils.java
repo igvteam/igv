@@ -74,7 +74,7 @@ public class MessageUtils {
         log.log(level, message);
         boolean showDialog = !(Globals.isHeadless() || Globals.isSuppressMessages() || Globals.isTesting() || Globals.isBatch());
         if (showDialog) {
-            UIUtilities.invokeAndWaitOnEventThread (() -> {
+            UIUtilities.invokeOnEventThread (() -> {
                 // Always use HTML for message displays, but first remove any embedded <html> tags.
                 String dlgMessage = "<html>" + message.replaceAll("<html>", "");
                 Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;

@@ -124,7 +124,7 @@ public class GenomeManager {
         }
         this.currentGenome = genome;
         if (genome != null) {
-            if(IGV.hasInstance()) {
+            if (IGV.hasInstance()) {
                 IGV.getInstance().getSession().clearHistory();
                 FrameManager.getDefaultFrame().setChromosomeName(genome.getHomeChromosome(), true);
             }
@@ -143,18 +143,12 @@ public class GenomeManager {
             return; // Already loaded
         }
 
-        try {
-            if (org.broad.igv.util.ParsingUtils.pathExists(genomeId)) {
-                loadGenome(genomeId, null);
+        if (org.broad.igv.util.ParsingUtils.pathExists(genomeId)) {
+            loadGenome(genomeId, null);
 
-            } else {
-                GenomeListItem item = findGenomeListItemById(genomeId);
-                loadGenome(item.getLocation(), null);
-
-            }
-        } catch (IOException e) {
-            log.error("Error loading genome: " + genomeId, e);
-            throw new RuntimeException("Error loading genome: " + genomeId);
+        } else {
+            GenomeListItem item = findGenomeListItemById(genomeId);
+            loadGenome(item.getLocation(), null);
         }
 
     }
@@ -202,7 +196,7 @@ public class GenomeManager {
                 monitor.fireProgress(25);
             }
 
-            if(IGV.hasInstance()) IGV.getInstance().resetSession(null);
+            if (IGV.hasInstance()) IGV.getInstance().resetSession(null);
 
             if (!genomeItemMap.containsKey(newGenome.getId())) {
                 GenomeListItem genomeListItem = new GenomeListItem(newGenome.getDisplayName(), genomePath, newGenome.getId());
@@ -212,7 +206,6 @@ public class GenomeManager {
             }
 
             setCurrentGenome(newGenome);
-
 
 
             if (IGV.hasInstance()) {
@@ -890,7 +883,7 @@ public class GenomeManager {
      * @param genomeId
      * @return
      */
-    public GenomeListItem findGenomeListItemById(String genomeId) throws IOException {
+    public GenomeListItem findGenomeListItemById(String genomeId) {
 
         GenomeListItem matchingItem = genomeItemMap.get(genomeId);
 
@@ -957,23 +950,18 @@ public class GenomeManager {
 
         try {
             List<GenomeListItem> list = getCachedGenomeArchiveList();
-            for(GenomeListItem item : list) {
+            for (GenomeListItem item : list) {
                 genomeItemMap.put(item.getId(), item);
             }
         } catch (IOException e) {
-           log.error("Error constructing hosted genome list");
+            log.error("Error constructing hosted genome list");
         }
 
-
-        try {
-            Collection<GenomeListItem> list = getUserDefinedGenomeArchiveList();
-            for(GenomeListItem item : list) {
-                genomeItemMap.put(item.getId(), item);
-            }
-
-        } catch (IOException e) {
-            log.error("Error constructing user genome list");
+        Collection<GenomeListItem> list = getUserDefinedGenomeArchiveList();
+        for (GenomeListItem item : list) {
+            genomeItemMap.put(item.getId(), item);
         }
+
 
         if (genomeItemMap.isEmpty()) {
             genomeItemMap.put(DEFAULT_GENOME.getId(), DEFAULT_GENOME);
@@ -990,7 +978,7 @@ public class GenomeManager {
      * @throws IOException
      * @see GenomeListItem
      */
-    public Collection<GenomeListItem> getUserDefinedGenomeArchiveList() throws IOException {
+    public Collection<GenomeListItem> getUserDefinedGenomeArchiveList() {
 
 
         if (userDefinedGenomeArchiveList == null) {
@@ -1042,8 +1030,14 @@ public class GenomeManager {
                 //We swallow this because the user may not have the file,
                 //which doesn't really matter
                 log.info(e);
+            } catch (IOException e) {
+                log.error(e);
+                throw new RuntimeException(e);
             } finally {
-                if (reader != null) reader.close();
+                if (reader != null) try {
+                    reader.close();
+                } catch (IOException e) {
+                }
             }
             if (updateClientGenomeListFile) {
                 updateImportedGenomePropertyFile();

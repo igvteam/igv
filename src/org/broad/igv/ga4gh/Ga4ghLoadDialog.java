@@ -80,7 +80,7 @@ public class Ga4ghLoadDialog extends JDialog {
 
                 for (Ga4ghReadset readset : dataset.getReadsets()) {
 
-                    DefaultMutableTreeNode readsetNode = new DefaultMutableTreeNode(new LeafNode(provider, readset) );
+                    DefaultMutableTreeNode readsetNode = new DefaultMutableTreeNode(new LeafNode(provider, readset));
                     datasetNode.add(readsetNode);
 
                 }
@@ -102,10 +102,10 @@ public class Ga4ghLoadDialog extends JDialog {
                     DefaultMutableTreeNode obj = (DefaultMutableTreeNode) path.getLastPathComponent();
                     Object userObject = obj.getUserObject();
                     if (userObject instanceof LeafNode) {
-                            Ga4ghProvider provider = ((LeafNode) userObject).provider;
-                            Ga4ghReadset readSet = ((LeafNode) userObject).readset;
-                            setGenome(readSet.getGenomeId());
-                            loadTrack(readSet.getId(), provider, readSet.getName());
+                        Ga4ghProvider provider = ((LeafNode) userObject).provider;
+                        Ga4ghReadset readSet = ((LeafNode) userObject).readset;
+                        setGenome(readSet.getGenomeId());
+                        loadTrack(readSet.getId(), provider, readSet.getName());
 
                     }
                 }
@@ -127,7 +127,9 @@ public class Ga4ghLoadDialog extends JDialog {
             this.readset = readset;
         }
 
-        public String toString() {return readset.getName();}
+        public String toString() {
+            return readset.getName();
+        }
     }
 
     private void loadTrack(String readsetId, Ga4ghProvider provider, String name) {
@@ -143,17 +145,11 @@ public class Ga4ghLoadDialog extends JDialog {
     private void setGenome(String genomeId) {
 
         if (genomeId != null && !genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
-            try {
-                GenomeListItem item = GenomeManager.getInstance().findGenomeListItemById(genomeId);
-                if (item != null) {
-                    GenomeManager.getInstance().loadGenomeById(genomeId);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+            GenomeListItem item = GenomeManager.getInstance().findGenomeListItemById(genomeId);
+            if (item != null) {
+                GenomeManager.getInstance().loadGenomeById(genomeId);
             }
         }
-
-
     }
 
     private void initComponents() {
@@ -195,8 +191,8 @@ public class Ga4ghLoadDialog extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
 
                 //---- loadButton ----
                 loadButton.setText("Load");
@@ -207,8 +203,8 @@ public class Ga4ghLoadDialog extends JDialog {
                     }
                 });
                 buttonBar.add(loadButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -219,8 +215,8 @@ public class Ga4ghLoadDialog extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
 

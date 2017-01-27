@@ -30,6 +30,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
@@ -392,17 +393,18 @@ public class IGVSessionReader implements SessionReader {
                     IGV.getInstance().setGenomeTracks(geneTrack);
                 }
             } else {
+
                 // Selecting a genome will actually "reset" the session so we have to
                 // save the path and restore it.
                 String sessionPath = session.getPath();
-                //Loads genome from list, or from server or cache
 
-                igv.selectGenomeFromList(genomeId);
-
-                if (!genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
+                GenomeListItem item = GenomeManager.getInstance().findGenomeListItemById(genomeId);
+                if (item != null) {
+                    GenomeManager.getInstance().loadGenome(item.getLocation(), null);
+                } else {
                     String genomePath = genomeId;
                     if (!ParsingUtils.pathExists(genomePath)) {
-                        genomePath = getAbsolutePath(genomeId, rootPath, session.getPath());
+                        genomePath = getAbsolutePath(genomeId, rootPath);
                     }
                     if (ParsingUtils.pathExists(genomePath)) {
                         try {
@@ -452,7 +454,7 @@ public class IGVSessionReader implements SessionReader {
         session.setGroupTracksBy(getAttribute(element, SessionAttribute.GROUP_TRACKS_BY.getText()));
 
         String nextAutoscaleGroup = getAttribute(element, SessionAttribute.NEXT_AUTOSCALE_GROUP.getText());
-        if(nextAutoscaleGroup != null) {
+        if (nextAutoscaleGroup != null) {
             try {
                 session.setNextAutoscaleGroup(Integer.parseInt(nextAutoscaleGroup));
             } catch (NumberFormatException e) {
@@ -738,7 +740,7 @@ public class IGVSessionReader implements SessionReader {
         }
 
         String absolutePath = "ga4gh".equals(type) ? path :
-                getAbsolutePath(path, rootPath, alternateRootPath);
+                getAbsolutePath(path, rootPath);
 
         fullToRelPathMap.put(absolutePath, path);
 
@@ -747,12 +749,12 @@ public class IGVSessionReader implements SessionReader {
         if (index != null) resourceLocator.setIndexPath(index);
 
         if (coverage != null) {
-            String absoluteCoveragePath = coverage.equals(".") ? coverage : getAbsolutePath(coverage, rootPath, alternateRootPath);
+            String absoluteCoveragePath = coverage.equals(".") ? coverage : getAbsolutePath(coverage, rootPath);
             resourceLocator.setCoverage(absoluteCoveragePath);
         }
 
         if (mapping != null) {
-            String absoluteMappingPath = mapping.equals(".") ? mapping : getAbsolutePath(mapping, rootPath, alternateRootPath);
+            String absoluteMappingPath = mapping.equals(".") ? mapping : getAbsolutePath(mapping, rootPath);
             resourceLocator.setMappingPath(absoluteMappingPath);
         }
 
@@ -803,14 +805,9 @@ public class IGVSessionReader implements SessionReader {
 
     }
 
-    private String getAbsolutePath(String path, String rootPath, String alternateRootPath) {
+    private String getAbsolutePath(String path, String rootPath) {
 
         String absolutePath = FileUtils.getAbsolutePath(path, rootPath);
-
-        // Session file might have been moved, try to correct if the path is a local file (not an http or ftp url)
-        if (alternateRootPath != null && !FileUtils.isRemote(absolutePath) && !(new File(absolutePath).exists())) {
-            absolutePath = FileUtils.getAbsolutePath(path, alternateRootPath);
-        }
 
         return absolutePath;
     }
@@ -1083,7 +1080,7 @@ public class IGVSessionReader implements SessionReader {
 
         if (matchedTracks == null) {
             //Try creating an "absolute" path for the id
-            matchedTracks = allTracks.get(getAbsolutePath(id, rootPath, alternateRootPath));
+            matchedTracks = allTracks.get(getAbsolutePath(id, rootPath));
         }
 
         if (matchedTracks == null) {
