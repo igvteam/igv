@@ -344,7 +344,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         int h = Math.max(minHeight, getNLevels() * getRowHeight() + nGroups * GROUP_MARGIN + TOP_MARGIN
                 + DS_MARGIN_0 + DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_2);
 
-        if (true) {   // TODO - replace with expand insertions preference
+        if (insertionRect != null) {   // TODO - replace with expand insertions preference
             h += INSERTION_ROW_HEIGHT + DS_MARGIN_0;
         }
 
@@ -414,14 +414,17 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         downsampleRect.height = DOWNAMPLED_ROW_HEIGHT;
         renderDownsampledIntervals(context, downsampleRect);
 
-        insertionRect = new Rectangle(rect);
-        insertionRect.y += DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_0;
-        insertionRect.height = INSERTION_ROW_HEIGHT;
-        renderInsertionIntervals(context, insertionRect);
+        if(renderOptions.drawInsertionIntervals) {
+            insertionRect = new Rectangle(rect);
+            insertionRect.y += DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_0;
+            insertionRect.height = INSERTION_ROW_HEIGHT;
+            renderInsertionIntervals(context, insertionRect);
+            insertionRect.y += 2;  // Margin
+        }
 
         alignmentsRect = new Rectangle(rect);
-        alignmentsRect.y += DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_2 + INSERTION_ROW_HEIGHT + 2;
-        alignmentsRect.height -= DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_2 + INSERTION_ROW_HEIGHT + 2;
+        alignmentsRect.y += 2;
+        alignmentsRect.height -= (alignmentsRect.y - rect.y);
         renderAlignments(context, alignmentsRect);
     }
 
@@ -1307,6 +1310,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         BisulfiteContext bisulfiteContext;
 
         private Range groupByPos = null;
+        public boolean drawInsertionIntervals = false;
 
         RenderOptions() {
             IGVPreferences prefs = PreferencesManager.getPreferences();
