@@ -75,7 +75,12 @@ public class Row implements Comparable<Row> {
                 case START:
                     return centerAlignment.getStart();
                 case STRAND:
-                    return centerAlignment.isNegativeStrand() ? -1 : 1;
+                    if(centerAlignment instanceof LinkedAlignment) {
+                           return ((LinkedAlignment) centerAlignment).getStrandAtPosition(center) == Strand.NEGATIVE ? 1 : -1;
+                    }
+                    else {
+                        return centerAlignment.isNegativeStrand() ? -1 : 1;
+                    }
                 case FIRST_OF_PAIR_STRAND:
                     Strand strand = centerAlignment.getFirstOfPairStrand();
                     int score = 2;

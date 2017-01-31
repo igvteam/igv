@@ -435,12 +435,15 @@ public class AlignmentRenderer {
         double locScale = context.getScale();
 
         Color alignmentColor = getAlignmentColor(alignment, renderOptions);
-        Graphics2D g = context.getGraphics2D("ALIGNMENT");
-        g.setColor(alignmentColor);
+     //   Graphics2D g = context.getGraphics2D("ALIGNMENT");
+     //   g.setColor(alignmentColor);
 
 
         List<Alignment> barcodedAlignments = alignment.alignments;
+
         if (barcodedAlignments.size() > 0) {
+
+            boolean mixedStrand =  (alignment instanceof LinkedAlignment && alignment.getStrand() == Strand.NONE);
             Alignment firstAlignment = barcodedAlignments.get(0);
 
             if (barcodedAlignments.size() > 1) {
@@ -458,8 +461,10 @@ public class AlignmentRenderer {
                 boolean overlapped = false;
                 Alignment al = barcodedAlignments.get(i);
                 if (al.isNegativeStrand()) {
+                    if(mixedStrand) alignmentColor = negStrandColor;
                     overlapped = (i > 0 && barcodedAlignments.get(i - 1).getAlignmentEnd() > al.getAlignmentStart());
                 } else {
+                    if(mixedStrand) alignmentColor = posStrandColor;
                     overlapped = i < barcodedAlignments.size() - 1 && al.getAlignmentEnd() > barcodedAlignments.get(i + 1).getAlignmentStart();
                 }
                 drawAlignment(al, rowRect, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames, alignmentCounts, overlapped);
@@ -1352,11 +1357,11 @@ public class AlignmentRenderer {
                     }
                 }
                 break;
-            case LINK_STRAND:
-                if (alignment instanceof LinkedAlignment && ((LinkedAlignment) alignment).getStrand() == Strand.NONE) {
-                    c = LL_COLOR;
-                }
-                break;
+       //     case LINK_STRAND:
+       //         if (alignment instanceof LinkedAlignment && ((LinkedAlignment) alignment).getStrand() == Strand.NONE) {
+       //             c = LL_COLOR;
+       //         }
+       //         break;
 
 
             default:

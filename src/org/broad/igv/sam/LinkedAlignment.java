@@ -97,6 +97,22 @@ public class LinkedAlignment implements Alignment {
         return strand;
     }
 
+    /**
+     * Return the strand of the linked alignment at the genomic position
+     * @param position
+     * @return
+     */
+    public Strand getStrandAtPosition(double position) {
+        if(strand == Strand.NONE) {
+            for (Alignment a : alignments) {
+                if (a.contains(position)) {
+                    return a.getReadStrand();
+                }
+            }
+        }
+        return strand;
+    }
+
     @Override
     public String getChr() {
         return chr;
