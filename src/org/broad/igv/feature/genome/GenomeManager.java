@@ -916,7 +916,7 @@ public class GenomeManager {
         String[] genomeIdArray = PreferenceManager.getInstance().getGenomeIdDisplayList();
 
         if (genomeIdArray.length == 0) {
-            genomeIdArray = new String[]{PreferenceManager.getInstance().getDefaultGenome(), "hg18"};
+            genomeIdArray = new String[]{PreferenceManager.getInstance().getDefaultGenome()};
         }
 
         Iterable<GenomeListItem> combinedTmp = Iterables.concat(tmpuserDefinedGenomeList, tmpcachedGenomeArchiveList);
