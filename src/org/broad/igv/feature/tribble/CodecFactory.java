@@ -125,7 +125,7 @@ public class CodecFactory {
             return new EncodePeakCodec(genome);
         } else if (fn.endsWith(".peak")) {
             return new PeakCodec(genome);
-        } else if (fn.endsWith(".snp")) {
+        } else if (fn.endsWith(".snp") || fn.endsWith(".ucscsnp")) {
             return new UCSCSnpCodec(genome);
         } else if (fn.endsWith(".eqtl")) {
             return new EQTLCodec(genome);
