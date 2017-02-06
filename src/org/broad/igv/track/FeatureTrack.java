@@ -559,9 +559,9 @@ public class FeatureTrack extends AbstractTrack {
 
         List<Feature> featureList = null;
         if (possFeatures != null) {
-            // give a 2 pixel window, otherwise very narrow features will be missed.
+            // give a minum 2 pixel or 1/2 bp window, otherwise very narrow features will be missed.
             double bpPerPixel = frame.getScale();
-            double minWidth = MINIMUM_FEATURE_SPACING * bpPerPixel;
+            double minWidth = Math.max(0.5, MINIMUM_FEATURE_SPACING * bpPerPixel);
             int maxFeatureLength = packedFeatures.getMaxFeatureLength();
             featureList = FeatureUtils.getAllFeaturesAt(position, maxFeatureLength, minWidth, possFeatures);
         }

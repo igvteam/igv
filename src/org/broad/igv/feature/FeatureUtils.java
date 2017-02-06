@@ -387,13 +387,13 @@ public class FeatureUtils {
         int startIdx = Math.max(0, getIndexBefore(adjustedPosition, features));
         for (int idx = startIdx; idx < features.size(); idx++) {
             Feature feature = features.get(idx);
-            int start = feature.getStart() - (int) (minWidth / 2);
+            double start = feature.getStart() - (minWidth / 2);
 
             if (start > position) {
                 break;
             }
 
-            int end = feature.getEnd() + (int) (minWidth / 2);
+            double end = feature.getEnd() + (minWidth / 2);
 
             if (position >= start && position <= end) {
                 if (returnList == null) returnList = new ArrayList();

@@ -156,8 +156,14 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                 // virtual pixel value can be too large for an int, so the computation is
                 // done in double precision and cast to an int only when its confirmed its
                 // within the field of view.
+
+                // Insertions have zero width (end == start), but we want to draw them with a minimum of
+                // 1/4 bp width
+
+                double effectiveEnd = Math.max(feature.getStart() + 0.25, feature.getEnd());
+
                 double virtualPixelStart = (feature.getStart() - origin) / locScale;
-                double virtualPixelEnd = (feature.getEnd() - origin) / locScale;
+                double virtualPixelEnd = (effectiveEnd - origin) / locScale;
 
                 int pixelStart = (int) Math.round(Math.max(trackRectangleX, virtualPixelStart));
                 int pixelEnd = (int) Math.round(Math.min(trackRectangleMaxX, virtualPixelEnd));
