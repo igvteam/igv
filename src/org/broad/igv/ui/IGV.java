@@ -1661,18 +1661,22 @@ public class IGV implements IGVEventObserver {
         }
 
 
-        if (filename.contains("refflat") || filename.contains("ucscgene") ||
+        if (isAnnotationFile(filename)) {
+            return getTrackPanel(FEATURE_PANEL_NAME);
+        } else {
+            return getTrackPanel(DATA_PANEL_NAME);
+        }
+    }
+
+    private boolean isAnnotationFile(String filename) {
+        return filename.contains("refflat") || filename.contains("ucscgene") ||
                 filename.contains("genepred") || filename.contains("ensgene") ||
                 filename.contains("refgene") ||
                 filename.endsWith("gff") || filename.endsWith("gtf") ||
                 filename.endsWith("gff3") || filename.endsWith("embl") ||
                 filename.endsWith("bed") || filename.endsWith("gistic") ||
                 filename.endsWith("bedz") || filename.endsWith("repmask") ||
-                filename.contains("dranger")) {
-            return getTrackPanel(FEATURE_PANEL_NAME);
-        } else {
-            return getTrackPanel(DATA_PANEL_NAME);
-        }
+                filename.contains("dranger") || filename.endsWith("ucscsnp");
     }
 
     public void reset() {
