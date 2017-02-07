@@ -178,6 +178,8 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                 }
 
             }
+            graphics2D.dispose();
+            greyGraphics.dispose();
         }
     }
 
@@ -227,7 +229,9 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                         } else {
                             graphics2D.setBackground(backgroundColor);
                         }
-                        track.renderName(graphics2D, rect, visibleRect);
+                        Graphics2D trackGraphics = (Graphics2D) graphics2D.create();
+                        track.renderName(trackGraphics, rect, visibleRect);
+                        trackGraphics.dispose();
                     }
 
                 }
