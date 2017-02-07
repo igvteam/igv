@@ -61,18 +61,18 @@
     </Category>
 
     <Category name="Variation and Repeats">
-        <Resource name="dbSNP 1.3.1"
-                  url="https://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?rs=$$"
-                  path="http://www.broadinstitute.org/igvdata/annotations/hg19/dbSnp/hg19_snp131.bed"/>
-        <Resource name="dbSNP 1.3.7"
-                  url="https://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?rs=$$"
-                  path="http://www.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz"/>
+        <!--<Resource name="dbSNP 1.3.1"-->
+                  <!--url="https://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?rs=$$"-->
+                  <!--path="http://www.broadinstitute.org/igvdata/annotations/hg19/dbSnp/hg19_snp131.bed"/>-->
+        <!--<Resource name="dbSNP 1.3.7"-->
+                  <!--url="https://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?rs=$$"-->
+                  <!--path="http://www.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz"/>-->
         <Resource name="dbSNP 1.4.7"
                   url="https://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?rs=$$"
                   path="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/snp147.hg19.ucscsnp.gz"/>
         <Resource name="Genomic Structural Variation (DGV)"  trackline='itemRgb="On"'
                   path="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/variations/dgv.bed.gz"
-                  hyperlink="http://projects.tcag.ca/variation/" 
+                  hyperlink="http://projects.tcag.ca/variation/"
                   url="http://genome.ucsc.edu/cgi-bin/hgc?g=dgv&amp;i=$$"/>
 
         <Category name="Repeat Masker" hyperlink="http://genome.ucsc.edu/cgi-bin/hgTrackUi?db=hg19&amp;g=rmsk">
@@ -88,7 +88,7 @@
                       path="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/variations/Satellite.rmask.gz"/>
             <Resource name="RC" path="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/variations/RC.rmask.gz"/>
             <Resource name="RNA" path="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/variations/RNA.rmask.gz"/>
-            <!-- 
+            <!--
 <Resource name="rRNA"
                       path="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/variations/rRNA.rmask.gz"/>
             <Resource name="scRNA"
