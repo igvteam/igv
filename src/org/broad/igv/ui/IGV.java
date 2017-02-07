@@ -470,31 +470,38 @@ public class IGV implements IGVEventObserver {
                 }
 
                 GenomeSelectionDialog dialog = new GenomeSelectionDialog(IGV.getMainFrame(), inputListItems, ListSelectionModel.SINGLE_SELECTION);
-                dialog.setVisible(true);
-                List<GenomeListItem> selectedValues = dialog.getSelectedValuesList();
+                UIUtilities.invokeAndWaitOnEventThread(() -> dialog.setVisible(true));
 
-                if (selectedValues != null && selectedValues.size() >= 1) {
+                if (dialog.isCanceled()) {
+                    // Clear the "More..."  selection in pulldown
+                    IGVEventBus.getInstance().post(new GenomeResetEvent());
+                } else {
 
-                    if (selectedValues.size() == 1 && dialog.downloadSequence()) {
+                    List<GenomeListItem> selectedValues = dialog.getSelectedValuesList();
 
-                        GenomeListItem oldItem = selectedValues.get(0);
+                    if (selectedValues != null && selectedValues.size() >= 1) {
 
-                        GenomeSelectionDialog.downloadGenome(getMainFrame(), oldItem);
+                        if (selectedValues.size() == 1 && dialog.downloadSequence()) {
 
-                        File newLocation = new File(DirectoryManager.getGenomeCacheDirectory().getAbsolutePath(), Utilities.getFileNameFromURL(oldItem.getLocation()));
+                            GenomeListItem oldItem = selectedValues.get(0);
 
-                        GenomeListItem newItem = new GenomeListItem(oldItem.getDisplayableName(), newLocation.getAbsolutePath(), oldItem.getId());
-                        //Checking to see if it has a downloaded sequence might seem redundant,
-                        //but if the user cancels a download we want to use the oldItem
-                        if (newItem.hasDownloadedSequence()) {
-                            selectedValues = Arrays.asList(newItem);
+                            GenomeSelectionDialog.downloadGenome(getMainFrame(), oldItem);
+
+                            File newLocation = new File(DirectoryManager.getGenomeCacheDirectory().getAbsolutePath(), Utilities.getFileNameFromURL(oldItem.getLocation()));
+
+                            GenomeListItem newItem = new GenomeListItem(oldItem.getDisplayableName(), newLocation.getAbsolutePath(), oldItem.getId());
+                            //Checking to see if it has a downloaded sequence might seem redundant,
+                            //but if the user cancels a download we want to use the oldItem
+                            if (newItem.hasDownloadedSequence()) {
+                                selectedValues = Arrays.asList(newItem);
+                            }
                         }
-                    }
 
-                    if (selectedValues.size() > 0) {
-                        //     GenomeManager.getInstance().addGenomeItems(selectedValues, false);
-                        GenomeManager.getInstance().loadGenome(selectedValues.get(0).getLocation(), null);
-                        //      contentPane.getCommandBar().selectGenome(selectedValues.get(0).getId());
+                        if (selectedValues.size() > 0) {
+                            GenomeManager.getInstance().addGenomeItems(selectedValues, false);
+                            GenomeManager.getInstance().loadGenome(selectedValues.get(0).getLocation(), null);
+                            //      contentPane.getCommandBar().selectGenome(selectedValues.get(0).getId());
+                        }
                     }
                 }
             }
@@ -743,7 +750,7 @@ public class IGV implements IGVEventObserver {
         boolean oldState = PreferencesManager.getPreferences().getAsBoolean(SHOW_ATTRIBUTE_VIEWS_KEY);
 
         // First store the newly requested state
-        if(oldState != enableAttributeView) {
+        if (oldState != enableAttributeView) {
             PreferencesManager.getPreferences().setShowAttributeView(enableAttributeView);
             doRefresh();
         }

@@ -49,10 +49,7 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.session.History;
 import org.broad.igv.ui.action.FitDataToWindowMenuAction;
 import org.broad.igv.ui.action.SearchCommand;
-import org.broad.igv.ui.event.GenomeChangeEvent;
-import org.broad.igv.ui.event.IGVEventBus;
-import org.broad.igv.ui.event.IGVEventObserver;
-import org.broad.igv.ui.event.ViewChange;
+import org.broad.igv.ui.event.*;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -150,6 +147,8 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
         IGVEventBus.getInstance().subscribe(ViewChange.class, this);
         IGVEventBus.getInstance().subscribe(GenomeChangeEvent.class, this);
+        IGVEventBus.getInstance().subscribe(GenomeResetEvent.class, this);
+
     }
 
     private JPopupMenu getPopupMenuToolTipBehavior() {
@@ -886,6 +885,8 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
             Genome genome = event.genome;
             refreshGenomeListComboBox();
             updateChromosFromGenome(genome);
+        }else if (e instanceof GenomeResetEvent) {
+            refreshGenomeListComboBox();
         } else {
             log.info("Unknown event class: " + e.getClass());
         }
