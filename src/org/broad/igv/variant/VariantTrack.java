@@ -222,7 +222,8 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         int sampleCount = allSamples.size();
         final int groupCount = samplesByGroups.size();
         final int margins = (groupCount - 1) * 3;
-        squishedHeight = Math.min(DEFAULT_SQUISHED_GENOTYPE_HEIGHT, Math.max(1, (height - variantBandHeight - margins) / sampleCount));
+        squishedHeight = sampleCount == 0 ? DEFAULT_SQUISHED_GENOTYPE_HEIGHT :
+                Math.min(DEFAULT_SQUISHED_GENOTYPE_HEIGHT, Math.max(1, (height - variantBandHeight - margins) / sampleCount));
 
         // Listen for "group by" events.
         if (IGV.hasInstance()) {

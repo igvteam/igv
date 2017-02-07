@@ -726,7 +726,7 @@ public class HttpUtils {
 
             int code = conn.getResponseCode();
 
-            if (requestProperties != null && requestProperties.containsKey("Range") && code != 206 && method.equals("GET")) {
+            if (requestProperties != null && requestProperties.containsKey("Range") && code == 200 && method.equals("GET")) {
                 log.error("Range header removed by client or ignored by server for url: " + url.toString());
 
                 if(!SwingUtilities.isEventDispatchThread()) {
