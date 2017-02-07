@@ -720,7 +720,7 @@ public class HttpUtils {
 
             int code = conn.getResponseCode();
 
-            if (requestProperties != null && requestProperties.containsKey("Range") && code != 206 && method.equals("GET")) {
+            if (requestProperties != null && requestProperties.containsKey("Range") && code == 200 && method.equals("GET")) {
                 log.error("Range header removed by proxy or ignored by server for url: " + url.toString());
                 byteRangeTestMap.put(url.getHost(), false);
                 String[] positionString = requestProperties.get("Range").split("=")[1].split("-");
@@ -761,7 +761,10 @@ public class HttpUtils {
                 } else if (code == 403) {
                     message = "Access forbidden";
                     throw new HttpResponseException(code, message, "");
-                } else {
+                } else if (code == 416) {
+                    throw new UnsatisfiableRangeException(conn.getResponseMessage());
+                }
+                else {
                     message = conn.getResponseMessage();
                     String details = readErrorStream(conn);
                     throw new HttpResponseException(code, message, details);
@@ -1141,4 +1144,13 @@ public class HttpUtils {
     }
 
 
+    public class UnsatisfiableRangeException extends RuntimeException {
+
+        String message;
+
+        public UnsatisfiableRangeException(String message) {
+            super(message);
+            this.message = message;
+        }
+    }
 }
