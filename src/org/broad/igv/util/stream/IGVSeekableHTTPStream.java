@@ -139,22 +139,14 @@ public class IGVSeekableHTTPStream extends SeekableStream {
             position += n;
             return n;
 
-        } catch (IOException e) {
-            // THis is a bit of a hack, but its not clear how else to handle this.  If a byte range is specified
-            // that goes past the end of the file the response code will be 416.  The MAC os translates this to
-            // an IOException with the 416 code in the message.  Windows translates the error to an EOFException.
-            //
-            //  The BAM file iterator  uses the return value to detect end of file (specifically looks for n == 0).
+        } catch (HttpUtils.UnsatisfiableRangeException e) {
+            return handleUnsatisfiableRange(n);
+        }
+
+        catch (IOException e) {
+
             if (e.getMessage().contains("416") || (e instanceof EOFException)) {
-                if (n == 0) {
-                    contentLength = position;
-                    return -1;
-                } else {
-                    position += n;
-                    // As we are at EOF, the contentLength and position are by definition =
-                    contentLength = position;
-                    return n;
-                }
+                return handleUnsatisfiableRange(n);
             } else {
                 throw e;
             }
@@ -166,6 +158,17 @@ public class IGVSeekableHTTPStream extends SeekableStream {
         }
     }
 
+    private int handleUnsatisfiableRange(int n) {
+        if (n == 0) {
+            contentLength = position;
+            return -1;
+        } else {
+            position += n;
+            // As we are at EOF, the contentLength and position are by definition =
+            contentLength = position;
+            return n;
+        }
+    }
 
 
     public void close() throws IOException {

@@ -772,7 +772,10 @@ public class HttpUtils {
                 } else if (code == 403) {
                     message = "Access forbidden";
                     throw new HttpResponseException(code, message, "");
-                } else {
+                } else if (code == 416) {
+                    throw new UnsatisfiableRangeException(conn.getResponseMessage());
+                }
+                else {
                     message = conn.getResponseMessage();
                     String details = readErrorStream(conn);
                     throw new HttpResponseException(code, message, details);
@@ -1151,4 +1154,13 @@ public class HttpUtils {
     }
 
 
+    public class UnsatisfiableRangeException extends RuntimeException {
+
+        String message;
+
+        public UnsatisfiableRangeException(String message) {
+            super(message);
+            this.message = message;
+        }
+    }
 }
