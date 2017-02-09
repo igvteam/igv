@@ -129,7 +129,7 @@ public class IndexAwareSessionReader implements SessionReader {
                 }
             } catch (Exception e) {
                 log.error("Error loading resource " + locator.getPath(), e);
-                String ms = "<b>" + locator.getPath() + "</b><br>&nbs;p&nbsp;" + e.toString() + "<br>";
+                String ms = "<b>" + locator.getPath() + "</b><br>&nbsp;&nbsp;" + e.toString() + "<br>";
                 errors.add(ms);
             }
         }
