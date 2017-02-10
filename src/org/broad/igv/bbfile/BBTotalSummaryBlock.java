@@ -27,7 +27,7 @@ package org.broad.igv.bbfile;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
-import htsjdk.tribble.util.LittleEndianInputStream;
+import org.broad.igv.util.LittleEndianInputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -74,7 +74,7 @@ public class BBTotalSummaryBlock {
 
         LittleEndianInputStream lbdis = null;
         DataInputStream bdis = null;
-        
+
         byte[] buffer = new byte[TOTAL_SUMMARY_BLOCK_SIZE];
 
         // save the seekable file handle  and B+ Tree file offset

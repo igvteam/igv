@@ -261,6 +261,10 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
     }
 
     private float getValue(ZoomDataRecord rec) {
+
+        if(rec == null) {
+            System.out.println();
+        }
         float v;
         switch (windowFunction) {
             case min:
@@ -338,7 +342,14 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
                     while (zlIter.hasNext()) {
                         ZoomDataRecord rec = zlIter.next();
 
+                        if(rec == null) {
+                            continue;
+                        }
+
                         float value = getValue(rec);
+                        if(Float.isNaN(value) || Float.isInfinite(value)) {
+                            continue;
+                        }
                         int genomeStart = genome.getGenomeCoordinate(chrName, rec.getChromStart());
                         if (genomeStart < lastGenomeEnd) {
                             continue;
