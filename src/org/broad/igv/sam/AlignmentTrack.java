@@ -193,7 +193,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public static void sortAlignmentTracks(SortOption option, String tag) {
         IGV.getInstance().sortAlignmentTracks(option, tag);
-        final IGVPreferences prefMgr = PreferencesManager.getPreferences();
+        final IGVPreferences prefMgr = getPreferences();
         prefMgr.put(SAM_SORT_OPTION, option.toString());
         prefMgr.put(SAM_SORT_BY_TAG, tag);
         refresh();
@@ -215,11 +215,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         minimumHeight = 50;
         maximumHeight = Integer.MAX_VALUE;
 
-        IGVPreferences prefs = PreferencesManager.getPreferences();
+        IGVPreferences prefs = getPreferences();
 
         renderer = new AlignmentRenderer(this);
 
-        showGroupLine = PreferencesManager.getPreferences().getAsBoolean(SAM_SHOW_GROUP_SEPARATOR);
+        showGroupLine = getPreferences().getAsBoolean(SAM_SHOW_GROUP_SEPARATOR);
         setDisplayMode(DisplayMode.EXPANDED);
 
         if (prefs.getAsBoolean(SAM_SHOW_REF_SEQ)) {
@@ -1313,7 +1313,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         public boolean drawInsertionIntervals = false;
 
         RenderOptions() {
-            IGVPreferences prefs = PreferencesManager.getPreferences();
+            IGVPreferences prefs = getPreferences();
 
             String shadeOptionString = prefs.get(SAM_SHADE_BASES);
             if (shadeOptionString.equals("false")) {
@@ -1438,7 +1438,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         public void setColorByTag(String colorByTag) {
             this.colorByTag = colorByTag;
-            PreferencesManager.getPreferences().put(SAM_COLOR_BY_TAG, colorByTag);
+            getPreferences().put(SAM_COLOR_BY_TAG, colorByTag);
         }
 
         public String getColorByTag() {
@@ -1510,6 +1510,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         public void setQuickConsensusMode(boolean quickConsensusMode) {
             this.quickConsensusMode = quickConsensusMode;
         }
+    }
+
+    private static IGVPreferences getPreferences() {
+        return PreferencesManager.getPreferences();
     }
 
     public boolean isLinkedReads() {
@@ -1736,7 +1740,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
 
             JRadioButtonMenuItem nomeESeqOption = null;
-            boolean showNomeESeq = PreferencesManager.getPreferences().getAsBoolean(SAM_NOMESEQ_ENABLED);
+            boolean showNomeESeq = getPreferences().getAsBoolean(SAM_NOMESEQ_ENABLED);
             if (showNomeESeq) {
                 nomeESeqOption = new JRadioButtonMenuItem("NOMe-seq bisulfite mode");
                 nomeESeqOption.setSelected(renderOptions.colorOption == ColorOption.NOMESEQ);
@@ -1941,12 +1945,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         private void setBisulfiteContext(BisulfiteContext option) {
             renderOptions.bisulfiteContext = option;
-            PreferencesManager.getPreferences().put(SAM_BISULFITE_CONTEXT, option.toString());
+            getPreferences().put(SAM_BISULFITE_CONTEXT, option.toString());
         }
 
         private void setColorOption(ColorOption option) {
             renderOptions.colorOption = option;
-            PreferencesManager.getPreferences().put(SAM_COLOR_BY, option.toString());
+            getPreferences().put(SAM_COLOR_BY, option.toString());
 
             // TODO Setting "color-by bisulfite"  also controls the experiment type.  This is temporary, until we
             // expose experimentType directory.
