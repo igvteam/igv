@@ -407,7 +407,7 @@ public class CoverageCounter {
                             for (AlignmentBlock insBlock : insertions) {
                                 int pos = insBlock.getStart();
                                 if (queryInterval == null || (pos >= queryInterval.getStart() && pos <= queryInterval.getEnd()))
-                                    counter.incrementInsertion(pos);
+                                    counter.incrementInsertion(pos, strand);
                             }
                         }
 
@@ -551,10 +551,10 @@ public class CoverageCounter {
             }
         }
 
-        void incrementInsertion(int position) {
+        void incrementInsertion(int position, Strand strand) {
             // Insertions are between 2 bases, we increment the counter for the position preceding the insertion
             final Counter counter = getCounterForPosition(position-1);
-            int strandNum = 0;
+            int strandNum = strand.equals(Strand.POSITIVE) ? 0 : 1;
             if (outputBases) {
                 counter.incrementNucleotide(INS, strandNum);
             }
