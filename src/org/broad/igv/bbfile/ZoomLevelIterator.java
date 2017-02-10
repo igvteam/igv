@@ -163,7 +163,7 @@ public class ZoomLevelIterator {
                 String result = String.format("Failed to find data for zoom region (%d,%d,%d,%d)\n",
                         hitRegion.getStartChromID(), hitRegion.getStartBase(),
                         hitRegion.getEndChromID(), hitRegion.getEndBase());
-                log.error(result);
+                log.info(result);
 
                 return null;
                 //throw new NoSuchElementException(result);
