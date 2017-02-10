@@ -27,7 +27,7 @@ package org.broad.igv.bbfile;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
-import htsjdk.tribble.util.LittleEndianInputStream;
+import org.broad.igv.util.LittleEndianInputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -362,7 +362,7 @@ public class BPTree {
            int nNodes = thisNode.getItemCount();
            for(int index = 0; index < nNodes; ++index){
 
-               BPTreeChildNodeItem childItem = (BPTreeChildNodeItem)thisNode.getItem(index);              
+               BPTreeChildNodeItem childItem = (BPTreeChildNodeItem)thisNode.getItem(index);
                BPTreeNode childNode =  childItem.getChildNode();
 
                // check if key is in the node range
@@ -607,11 +607,11 @@ public class BPTree {
 
            if(isLowToHigh) {
                 bval = lbdis.readByte();      // reserved - not currently used
-                itemCount = lbdis.readShort();
+                itemCount = lbdis.readUShort();
            }
            else {
                 bval = bdis.readByte();      // reserved - not currently used
-                itemCount = bdis.readShort();
+                itemCount = bdis.readUnsignedShort();
            }
 
             // Note: B+ tree node item size is the same for leaf and child items

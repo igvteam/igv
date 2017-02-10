@@ -39,7 +39,8 @@ package org.broad.igv.bbfile;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
-import htsjdk.tribble.util.*;
+import org.broad.igv.util.LittleEndianInputStream;
+
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -75,13 +76,13 @@ public class BBFileHeader {
     // 0x888FFC26 for bigWig, little endian if swapped
     // 0x8789F2EB for bigBed, little endian if swapped
     private int magic;                // 4 byte mMagic Number
-    private short version;            // 2 byte version ID; currently 3
-    private short nZoomLevels;         // 2 byte count of zoom sumary levels
+    private int version;            // 2 byte version ID; currently 3
+    private int nZoomLevels;         // 2 byte count of zoom sumary levels
     private long chromTreeOffset;     // 8 byte offset to mChromosome B+ Tree index
     private long fullDataOffset;      // 8 byte offset to unzoomed data dataCount
     private long fullIndexOffset;     // 8 byte offset to R+ Tree index of items
-    private short fieldCount;         // 2 byte number of fields in bed. (0 for bigWig)
-    private short definedFieldCount;  // 2 byte number of fields that are bed fields
+    private int fieldCount;         // 2 byte number of fields in bed. (0 for bigWig)
+    private int definedFieldCount;  // 2 byte number of fields that are bed fields
     private long autoSqlOffset;       // 8 byte offset to 0 terminated string with .as spec
     private long totalSummaryOffset;  // 8 byte offset to file summary data block
     private int uncompressBuffSize;  // 4 byte maximum size for decompressed buffer
@@ -134,11 +135,11 @@ public class BBFileHeader {
         return magic;
     }
 
-    public short getVersion() {
+    public int getVersion() {
         return version;
     }
 
-    public short getZoomLevels() {
+    public int getZoomLevels() {
         return nZoomLevels;
     }
 
@@ -154,11 +155,11 @@ public class BBFileHeader {
         return fullIndexOffset;
     }
 
-     public short getFieldCount() {
+     public int getFieldCount() {
          return fieldCount;
      }
 
-     public short getDefinedFieldCount() {
+     public int getDefinedFieldCount() {
          return definedFieldCount;
      }
 
@@ -232,13 +233,11 @@ public class BBFileHeader {
             magic = lbdis.readInt();
 
             // check for a valid bigBed or bigWig file
-            if (magic == BIGWIG_MAGIC_LTH)
+            if (magic == BIGWIG_MAGIC_LTH) {
                 isBigWig = true;
-            else if (magic == BIGBED_MAGIC_LTH)
+            } else if (magic == BIGBED_MAGIC_LTH) {
                 isBigBed = true;
-
-                // try high to low byte order
-            else {
+            } else {
                 bdis = new DataInputStream(new ByteArrayInputStream(buffer));
                 magic = bdis.readInt();
 
@@ -257,25 +256,25 @@ public class BBFileHeader {
 
             // Get header information
             if (isLowToHigh) {
-                version = lbdis.readShort();
-                nZoomLevels = lbdis.readShort();
+                version = lbdis.readUShort();
+                nZoomLevels = lbdis.readUShort();
                 chromTreeOffset = lbdis.readLong();
                 fullDataOffset = lbdis.readLong();
                 fullIndexOffset = lbdis.readLong();
-                fieldCount = lbdis.readShort();
-                definedFieldCount = lbdis.readShort();
+                fieldCount = lbdis.readUShort();
+                definedFieldCount = lbdis.readUShort();
                 autoSqlOffset = lbdis.readLong();
                 totalSummaryOffset = lbdis.readLong();
                 uncompressBuffSize = lbdis.readInt();
                 reserved = lbdis.readLong();
             } else {
-                version = bdis.readShort();
-                nZoomLevels = bdis.readShort();
+                version = (short) bdis.readUnsignedShort();
+                nZoomLevels = (short) bdis.readUnsignedShort();
                 chromTreeOffset = bdis.readLong();
                 fullDataOffset = bdis.readLong();
                 fullIndexOffset = bdis.readLong();
-                fieldCount = bdis.readShort();
-                definedFieldCount = bdis.readShort();
+                fieldCount = (short) bdis.readUnsignedShort();
+                definedFieldCount = (short) bdis.readUnsignedShort();
                 autoSqlOffset = bdis.readLong();
                 totalSummaryOffset = bdis.readLong();
                 uncompressBuffSize = bdis.readInt();

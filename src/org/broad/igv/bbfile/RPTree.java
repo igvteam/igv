@@ -27,7 +27,7 @@ package org.broad.igv.bbfile;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
-import htsjdk.tribble.util.LittleEndianInputStream;
+import org.broad.igv.util.LittleEndianInputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -467,7 +467,7 @@ public class RPTree {
     *
     *   Note: leaf hit items will be limited to leaves in the current leaf node,
     *       once the maximum number of leaf hits mMaxLeafHits is reached.
-    * 
+    *
     *   Returns:
     *       ArrayList of leaf hit items containing updated hit regions and data offsets;
     *       else an empty array if hit regions not found.
@@ -591,10 +591,10 @@ public class RPTree {
             int itemCount;
             if (isLowToHigh) {
                 lbdis.readByte();          // reserved - not currently used
-                itemCount = lbdis.readShort();
+                itemCount = lbdis.readUShort();
             } else {
                 bdis.readByte();          // reserved - not currently used
-                itemCount = bdis.readShort();
+                itemCount = bdis.readUnsignedShort();
             }
 
             int itemBlockSize = itemCount * itemSize;

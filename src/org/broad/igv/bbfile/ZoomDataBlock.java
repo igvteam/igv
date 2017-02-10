@@ -28,7 +28,7 @@ package org.broad.igv.bbfile;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
 import org.broad.igv.util.CompressionUtils;
-import htsjdk.tribble.util.LittleEndianInputStream;
+import org.broad.igv.util.LittleEndianInputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;

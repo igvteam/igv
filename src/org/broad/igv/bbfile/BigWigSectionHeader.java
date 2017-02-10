@@ -26,7 +26,7 @@
 package org.broad.igv.bbfile;
 
 import org.apache.log4j.Logger;
-import htsjdk.tribble.util.LittleEndianInputStream;
+import org.broad.igv.util.LittleEndianInputStream;
 
 import java.io.IOException;
 import java.io.DataInputStream;
@@ -67,7 +67,7 @@ public class BigWigSectionHeader {
     private int itemSpan;      // number of bases in fixed step items
     private WigItemType itemType; // type of data items: 1 = bedGraph, 2 = varStep, 3 = fixedStep
     private byte reserved;     // reserved; currently = 0
-    private short itemCount;   // number of data items in this chromosome section
+    private int itemCount;   // number of data items in this chromosome section
 
     private boolean isValidType;    // indicates a if a valid Wig item type was read
     private String itemDescription; // string representation of item type.
@@ -91,7 +91,7 @@ public class BigWigSectionHeader {
             itemSpan = lbdis.readInt();
             type = lbdis.readByte();
             reserved = lbdis.readByte();
-            itemCount = lbdis.readShort();
+            itemCount = lbdis.readUShort();
         }catch(IOException ex) {
             log.error("Error reading wig section header ", ex);
             throw new RuntimeException("Error reading wig section header", ex);
@@ -120,7 +120,7 @@ public class BigWigSectionHeader {
             itemSpan = bdis.readInt();
             type = bdis.readByte();
             reserved = bdis.readByte();
-            itemCount = bdis.readShort();
+            itemCount = (short) bdis.readUnsignedShort();
         }catch(IOException ex) {
             log.error("Error reading wig section header ", ex);
             throw new RuntimeException("Error reading wig section header", ex);
@@ -206,7 +206,7 @@ public class BigWigSectionHeader {
     *   Returns:
     *       Number of items defined for the section
     * */
-    public short getItemCount() {
+    public int getItemCount() {
         return itemCount;
     }
 

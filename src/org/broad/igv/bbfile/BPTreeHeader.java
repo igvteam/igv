@@ -27,7 +27,7 @@ package org.broad.igv.bbfile;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
-import htsjdk.tribble.util.LittleEndianInputStream;
+import org.broad.igv.util.LittleEndianInputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -57,7 +57,7 @@ public class  BPTreeHeader {
 
     private long headerOffset;     // BBFile file offset for mChromosome tree
     private boolean headerOK;      // B+ Tree header OK?
-    
+
     // Chromosome B+ Tree Header - Table E
     private int magic;        // magic number identifies it as B+ header
     private int blockSize;    // number of children per block
@@ -136,7 +136,7 @@ public class  BPTreeHeader {
         log.debug(" Item Count = " + itemCount);
         log.debug(" Reserved = " + reserved);
     }
-    
+
    /*
    * Reads in the B+ Tree Header.
    * Returns status of B+ tree header read; true if read, false if not.
@@ -148,12 +148,12 @@ public class  BPTreeHeader {
 
          byte[] buffer = new byte[BPTREE_HEADER_SIZE];
          int bytesRead;
-    
+
         try {
             // Read B+ tree header into a buffer
             fis.seek(fileOffset);
             fis.readFully(buffer);
-        
+
             // decode header
             if(isLowToHigh){
                 lbdis = new LittleEndianInputStream(new ByteArrayInputStream(buffer));
