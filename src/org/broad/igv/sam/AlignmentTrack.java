@@ -35,6 +35,7 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.lists.GeneList;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
@@ -117,10 +118,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         NONE, QUALITY
     }
 
-    public enum ExperimentType {
-        RNA, BISULFITE, OTHER
-    }
-
     public enum ColorOption {
         INSERT_SIZE, READ_STRAND, FIRST_OF_PAIR_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, LIBRARY, BISULFITE, NOMESEQ,
         TAG, NONE, UNEXPECTED_PAIR, MAPPED_SIZE, LINK_STRAND
@@ -171,7 +168,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private CoverageTrack coverageTrack;
     private SpliceJunctionTrack spliceJunctionTrack;
 
-    private RenderOptions renderOptions = new RenderOptions();
+    private RenderOptions renderOptions = new RenderOptions(AlignmentDataManager.ExperimentType.OTHER);
 
     private int expandedHeight = 14;
     private int collapsedHeight = 9;
@@ -192,10 +189,13 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private HashMap<Rectangle, String> groupNames = new HashMap<>();
 
     public static void sortAlignmentTracks(SortOption option, String tag) {
+
         IGV.getInstance().sortAlignmentTracks(option, tag);
-        final IGVPreferences prefMgr = getPreferences();
-        prefMgr.put(SAM_SORT_OPTION, option.toString());
-        prefMgr.put(SAM_SORT_BY_TAG, tag);
+        Collection<IGVPreferences> allPrefs = PreferencesManager.getAllPreferences();
+        for (IGVPreferences prefs : allPrefs) {
+            prefs.put(SAM_SORT_OPTION, option.toString());
+            prefs.put(SAM_SORT_BY_TAG, tag);
+        }
         refresh();
     }
 
@@ -227,10 +227,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             sequenceTrack.setHeight(14);
         }
 
-        if (renderOptions.getColorOption() == ColorOption.BISULFITE) {
-            setExperimentType(ExperimentType.BISULFITE);
-        }
-
         readNamePalette = new PaletteColorTable(ColorUtilities.getDefaultPalette());
 
         this.insertionIntervalsMap = Collections.synchronizedMap(new HashMap<>());
@@ -241,6 +237,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
 
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
+        IGVEventBus.getInstance().subscribe(ExperimentTypeChangeEvent.class, this);
     }
 
 
@@ -255,18 +252,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 }
             }
             insertionIntervalsMap = newMap;
+        } else if (event instanceof ExperimentTypeChangeEvent) {
+            renderOptions = new RenderOptions(((ExperimentTypeChangeEvent) event).type);
         }
     }
 
-
-    /**
-     * Set the experiment type (RNA, Bisulfite, or OTHER)
-     *
-     * @param type
-     */
-    public void setExperimentType(ExperimentType type) {
-        dataManager.setExperimentType(type);
-    }
 
     public void setCoverageTrack(CoverageTrack coverageTrack) {
         this.coverageTrack = coverageTrack;
@@ -298,9 +288,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public void setSpliceJunctionTrack(SpliceJunctionTrack spliceJunctionTrack) {
         this.spliceJunctionTrack = spliceJunctionTrack;
-        if (dataManager.getExperimentType() == ExperimentType.BISULFITE) {
-            spliceJunctionTrack.setVisible(false);
-        }
     }
 
 
@@ -344,9 +331,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         int h = Math.max(minHeight, getNLevels() * getRowHeight() + nGroups * GROUP_MARGIN + TOP_MARGIN
                 + DS_MARGIN_0 + DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_2);
 
-        if (insertionRect != null) {   // TODO - replace with expand insertions preference
-            h += INSERTION_ROW_HEIGHT + DS_MARGIN_0;
-        }
+        //if (insertionRect != null) {   // TODO - replace with expand insertions preference
+        h += INSERTION_ROW_HEIGHT + DS_MARGIN_0;
+        //}
 
 
         h = Math.min(maximumHeight, h);
@@ -414,12 +401,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         downsampleRect.height = DOWNAMPLED_ROW_HEIGHT;
         renderDownsampledIntervals(context, downsampleRect);
 
-        if(renderOptions.drawInsertionIntervals) {
+        if (renderOptions.drawInsertionIntervals) {
             insertionRect = new Rectangle(rect);
             insertionRect.y += DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_0;
             insertionRect.height = INSERTION_ROW_HEIGHT;
             renderInsertionIntervals(context, insertionRect);
-            insertionRect.y += 2;  // Margin
+            rect.y = insertionRect.y + insertionRect.height;
         }
 
         alignmentsRect = new Rectangle(rect);
@@ -476,9 +463,16 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         int w = (int) ((1.41 * rect.height) / 2);
 
-        List<InsertionInterval> insertionIntervals = getInsertionIntervals(context.getReferenceFrame());
 
+        boolean hideSmallIndex = getPreferences().getAsBoolean(SAM_HIDE_SMALL_INDEL);
+        int smallIndelThreshold = getPreferences().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
+
+        List<InsertionInterval> insertionIntervals = getInsertionIntervals(context.getReferenceFrame());
+        insertionIntervals.clear();
         for (InsertionMarker insertionMarker : intervals) {
+
+            if (hideSmallIndex && insertionMarker.size < smallIndelThreshold) continue;
+
             final double scale = context.getScale();
             final double origin = context.getOrigin();
             int midpoint = (int) ((insertionMarker.position - origin) / scale);
@@ -564,7 +558,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
                     AlignmentCounts alignmentCounts = dataManager.getLoadedInterval(context.getReferenceFrame()).getCounts();
                     renderer.renderAlignments(row.alignments, context, rowRectangle,
-                            inputRect, renderOptions, leaveMargin, selectedReadNames, alignmentCounts);
+                            inputRect, renderOptions, leaveMargin, selectedReadNames, alignmentCounts, getPreferences());
                     row.y = y;
                     row.h = h;
                 }
@@ -1054,7 +1048,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             case RELOAD:
                 clearCaches();
             case REFRESH:
-                setRenderOptions(new RenderOptions());
+                setRenderOptions(new RenderOptions(dataManager.getType()));
                 refresh();
                 break;
         }
@@ -1249,11 +1243,28 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         return removed;
     }
 
+    IGVPreferences getPreferences() {
+        return getPreferences(dataManager.getType());
+    }
+
+    private static IGVPreferences getPreferences(AlignmentDataManager.ExperimentType type) {
+
+        String prefKey = Constants.NULL_CATEGORY;
+        if (type == AlignmentDataManager.ExperimentType.THIRD_GEN) {
+            prefKey = Constants.THIRD_GEN;
+        } else if (type == AlignmentDataManager.ExperimentType.RNA) {
+            prefKey = Constants.RNA;
+        }
+
+        return PreferencesManager.getPreferences(prefKey);
+    }
+
+
     @Override
     public void dispose() {
         super.dispose();
         clearCaches();
-        if(dataManager != null) dataManager.dumpAlignments();
+        if (dataManager != null) dataManager.dumpAlignments();
         dataManager = null;
         removed = true;
         setVisible(false);
@@ -1261,9 +1272,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     @XmlType(name = RenderOptions.NAME)
     @XmlAccessorType(XmlAccessType.NONE)
+
     public static class RenderOptions implements Cloneable {
 
         public static final String NAME = "RenderOptions";
+
+        AlignmentDataManager.ExperimentType experimentType;
 
         @XmlAttribute
         ShadeBasesOption shadeBasesOption;
@@ -1312,8 +1326,16 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         private Range groupByPos = null;
         public boolean drawInsertionIntervals = false;
 
-        RenderOptions() {
-            IGVPreferences prefs = getPreferences();
+
+        public RenderOptions() {
+            this(AlignmentDataManager.ExperimentType.OTHER);
+        }
+
+        RenderOptions(AlignmentDataManager.ExperimentType experimentType) {
+
+            IGVPreferences prefs = getPreferences(experimentType);
+
+            this.experimentType = experimentType;
 
             String shadeOptionString = prefs.get(SAM_SHADE_BASES);
             if (shadeOptionString.equals("false")) {
@@ -1323,6 +1345,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             } else {
                 shadeBasesOption = ShadeBasesOption.valueOf(shadeOptionString);
             }
+            drawInsertionIntervals = prefs.getAsBoolean(SAM_SHOW_INSERTION_INTERVALS);
             shadeCenters = prefs.getAsBoolean(SAM_SHADE_CENTER);
             flagUnmappedPairs = prefs.getAsBoolean(SAM_FLAG_UNMAPPED_PAIR);
             computeIsizes = prefs.getAsBoolean(SAM_COMPUTE_ISIZES);
@@ -1438,7 +1461,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         public void setColorByTag(String colorByTag) {
             this.colorByTag = colorByTag;
-            getPreferences().put(SAM_COLOR_BY_TAG, colorByTag);
+            getPreferences(experimentType).put(SAM_COLOR_BY_TAG, colorByTag);
         }
 
         public String getColorByTag() {
@@ -1510,10 +1533,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         public void setQuickConsensusMode(boolean quickConsensusMode) {
             this.quickConsensusMode = quickConsensusMode;
         }
-    }
-
-    private static IGVPreferences getPreferences() {
-        return PreferencesManager.getPreferences();
     }
 
     public boolean isLinkedReads() {
@@ -1951,12 +1970,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         private void setColorOption(ColorOption option) {
             renderOptions.colorOption = option;
             getPreferences().put(SAM_COLOR_BY, option.toString());
-
-            // TODO Setting "color-by bisulfite"  also controls the experiment type.  This is temporary, until we
-            // expose experimentType directory.
-            ExperimentType t = (option == ColorOption.BISULFITE ? ExperimentType.BISULFITE : ExperimentType.OTHER);
-            setExperimentType(t);
-
         }
 
         private JRadioButtonMenuItem getColorMenuItem(String label, final ColorOption option) {

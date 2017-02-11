@@ -32,7 +32,7 @@ import org.broad.igv.prefs.PreferencesManager;
 
 import java.util.*;
 
-import static org.broad.igv.prefs.Constants.SAM_HIDE_SMALL_INDEL_BP;
+import static org.broad.igv.prefs.Constants.SAM_HIDE_SMALL_INDEL;
 import static org.broad.igv.prefs.Constants.SAM_SMALL_INDEL_BP_THRESHOLD;
 
 /**
@@ -117,7 +117,7 @@ public class InsertionManager {
         }
 
         int minLength = 0;
-        if (PreferencesManager.getPreferences().getAsBoolean(SAM_HIDE_SMALL_INDEL_BP)) {
+        if (PreferencesManager.getPreferences().getAsBoolean(SAM_HIDE_SMALL_INDEL)) {
             minLength = PreferencesManager.getPreferences().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
         }
 

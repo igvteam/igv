@@ -49,24 +49,23 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(AlignmentDataManager.class);
 
-    private Map<ReferenceFrame, AlignmentInterval> intervalCache;
+    public enum ExperimentType {OTHER, RNA, BISULFITE, THIRD_GEN};
 
+    private Map<ReferenceFrame, AlignmentInterval> intervalCache;
     private ResourceLocator locator;
     private HashMap<String, String> chrMappings = new HashMap();
     private volatile boolean isLoading = false;
     private AlignmentTileLoader reader;
     private CoverageTrack coverageTrack;
     private Map<String, PEStats> peStats;
-    private ReadStats readStats;
-    private AlignmentTrack.ExperimentType experimentType;
     private SpliceJunctionHelper.LoadOptions loadOptions;
     private Object loadLock = new Object();
     private boolean showAlignments = true;
+    private ExperimentType type = null;
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
         this.locator = locator;
         reader = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator));
-        readStats = new ReadStats(1000);
         peStats = new HashMap();
         initLoadOptions();
         initChrMap(genome);
@@ -114,14 +113,6 @@ public class AlignmentDataManager implements IGVEventObserver {
         }
     }
 
-    public void setExperimentType(AlignmentTrack.ExperimentType experimentType) {
-        this.experimentType = experimentType;
-    }
-
-    public AlignmentTrack.ExperimentType getExperimentType() {
-        return experimentType;
-    }
-
     public AlignmentTileLoader getReader() {
         return reader;
     }
@@ -140,6 +131,15 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     public boolean hasIndex() {
         return reader.hasIndex();
+    }
+
+    public void setType(ExperimentType type) {
+        this.type = type;
+        IGVEventBus.getInstance().post(new ExperimentTypeChangeEvent(this.type));
+    }
+
+    public ExperimentType getType() {
+        return type;
     }
 
     public void setCoverageTrack(CoverageTrack coverageTrack) {
@@ -258,26 +258,21 @@ public class AlignmentDataManager implements IGVEventObserver {
                 adjustedStart = Math.max(0, Math.min(start, center - expand));
                 adjustedEnd = Math.max(end, center + expand);
             }
-            loadAlignments(chr, adjustedStart, adjustedEnd, renderOptions, referenceFrame);
+
+
+            log.debug("Loading alignments: " + chr + ":" + adjustedStart + "-" + adjustedEnd + " for " + AlignmentDataManager.this);
+
+            AlignmentInterval loadedInterval = loadInterval(chr, adjustedStart, adjustedEnd, renderOptions);
+            intervalCache.put(referenceFrame, loadedInterval);
+
+            packAlignments(renderOptions);
+            IGVEventBus.getInstance().post(new DataLoadedEvent(referenceFrame));
+
+            isLoading = false;
         }
     }
 
-    private void loadAlignments(final String chr, final int start, final int end,
-                                final AlignmentTrack.RenderOptions renderOptions,
-                                final ReferenceFrame frame) {
 
-        log.debug("Loading alignments: " + chr + ":" + start + "-" + end + " for " + AlignmentDataManager.this);
-
-        AlignmentInterval loadedInterval = loadInterval(chr, start, end, renderOptions);
-        intervalCache.put(frame, loadedInterval);
-
-        packAlignments(renderOptions);
-        IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
-
-        isLoading = false;
-
-
-    }
 
     AlignmentInterval loadInterval(String chr, int start, int end, AlignmentTrack.RenderOptions renderOptions) {
 
@@ -290,12 +285,34 @@ public class AlignmentDataManager implements IGVEventObserver {
 
         SpliceJunctionHelper spliceJunctionHelper = new SpliceJunctionHelper(this.loadOptions);
 
+        ReadStats readStats = new ReadStats();
+
         AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, spliceJunctionHelper,
                 downsampleOptions, readStats, peStats, bisulfiteContext, showAlignments);
+
+        if(type == null) {
+            readStats.compute();
+            inferType(readStats);
+        }
 
         List<Alignment> alignments = t.getAlignments();
         List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();
         return new AlignmentInterval(chr, start, end, alignments, t.getCounts(), spliceJunctionHelper, downsampledIntervals);
+    }
+
+    /**
+     * Some empirical metrics for determining experiment type
+     * @param readStats
+     */
+    private void inferType(ReadStats readStats) {
+        if(readStats.readLengthStdDev > 100 || readStats.medianReadLength > 1000) {
+            setType(ExperimentType.THIRD_GEN);  // Could also use fracReadsWithIndels
+        }
+        else if(readStats.medianRefToReadRatio > 10) {
+            setType(ExperimentType.RNA);
+        } else {
+            setType(ExperimentType.OTHER);
+        }
     }
 
 

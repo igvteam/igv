@@ -14,7 +14,7 @@ final public class Constants {
     public static final String NULL_CATEGORY = "NULL";
     public static final String THIRD_GEN = "THIRD_GEN";
     public static final String RNA = "RNA";
-    
+
     // UI behavior
     public static final String TOOLTIP_INITIAL_DELAY = "TOOLTIP.INITIAL_DELAY";
     public static final String TOOLTIP_RESHOW_DELAY = "TOOLTIP.RESHOW_DELAY";
@@ -127,6 +127,7 @@ final public class Constants {
     public static final String SAM_SHOW_JUNCTION_TRACK = "SAM.SHOW_JUNCTION_TRACK";
     public static final String SAM_JUNCTION_MIN_FLANKING_WIDTH = "SAM.JUNCTION_MIN_FLANKING_WIDTH";
     public static final String SAM_JUNCTION_MIN_COVERAGE = "SAM.JUNCTION_MIN_COVERAGE";
+    public static final String SAM_SHOW_INSERTION_INTERVALS = "SAM.SHOW_INSERTION_INTERVALS";
     /**
      * List of keys that affect the alignments loaded.  This list is used to trigger a reload, if required.
      * Not all alignment preferences need trigger a reload, this is a subset.
@@ -167,8 +168,8 @@ final public class Constants {
     public static final String SAM_SHOW_GROUP_SEPARATOR = "SAM.SHOW_GROUP_SEPARATOR";
     public static final String SAM_COMPLETE_READS_ONLY = "SAM.COMPLETE_READS_ONLY";
     public static final String SAM_REDUCED_MEMORY_MODE = "SAM.REDUCED_MEMORY_MODE";
-    public static final String SAM_HIDE_SMALL_INDEL_BP = "SAM.HIDE_SMALL_INDEL_BP";
-    public static final String SAM_SMALL_INDEL_BP_THRESHOLD = "SAM.MIN_INDEL_BP_THRESHOLD";
+    public static final String SAM_HIDE_SMALL_INDEL = "SAM.HIDE_SMALL_INDEL";
+    public static final String SAM_SMALL_INDEL_BP_THRESHOLD = "SAM.SMALL_INDEL_BP_THRESHOLD";
     public static final String SAM_LINK_READS = "SAM.LINK_READS";
     public static final String SAM_LINK_TAG = "SAM.LINK_TAG";
     public static final String SAM_SHOW_ALIGNMENT_TRACK = "SAM.SHOW_ALIGNMENT_TRACK";
@@ -234,12 +235,12 @@ final public class Constants {
     public static final String GENOME_SPACE_DM_SERVER = "GENOME_SPACE_DM_SERVER";
     public static final String GENOME_SPACE_ATM_SERVER = "GENOME_SPACE_ATM_SERVER";
     public static final String GENOME_SPACE_IDENTITY_SERVER = "GENOME_SPACE_IDENTITY_SERVER";
-    
+
     // Google
     public static final String GOOGLE_API_KEY = "GOOGLE_API_KEY";
     public static final String ENABLE_GOOGLE_MENU = "ENABLE_GOOGLE_MENU";
     public static final String SAVE_GOOGLE_CREDENTIALS = "SAVE_GOOGLE_CREDENTIALS";
-    
+
     // CBIO connections
     public static final String CBIO_MUTATION_THRESHOLD = "CBIO_MUTATION_THRESHOLD";
     public static final String CBIO_AMPLIFICATION_THRESHOLD = "CBIO_AMPLIFICATION_THRESHOLD";
@@ -256,17 +257,17 @@ final public class Constants {
     public static final String PROXY_PW = "PROXY.PW";
     public static final String PROXY_TYPE = "PROXY.TYPE";
     public static final String PROXY_WHITELIST = "PROXY.WHITELIST";
-    
+
     // Port settings
     public static final String PORT_ENABLED = "PORT_ENABLED";
     public static final String PORT_NUMBER = "PORT_NUMBER";
-    
+
     // Database support -- never deployed
     public static final String DB_ENABLED = "DB_ENABLED";
     public static final String DB_HOST = "DB_HOST";
     public static final String DB_NAME = "DB_NAME";
     public static final String DB_PORT = "DB_PORT";
-    
+
     // Letter of support dialog
     public static final String SHOW_LOS = "showLOS";
 

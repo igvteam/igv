@@ -238,11 +238,9 @@ public class AlignmentRenderer {
     }
 
 
-    IGVPreferences prefs;
     AlignmentTrack track;
 
     public AlignmentRenderer(AlignmentTrack track) {
-        this.prefs = PreferencesManager.getPreferences();
         this.track = track;
     }
 
@@ -269,7 +267,7 @@ public class AlignmentRenderer {
 
         g = context.getGraphics2D("OUTLINE");
 
-        g = (Graphics2D) context.getGraphics2D("INDEL_LABEL");
+        g = context.getGraphics2D("INDEL_LABEL");
 
         g = context.getGraphics2D("BASE");
 
@@ -287,12 +285,13 @@ public class AlignmentRenderer {
                                  RenderOptions renderOptions,
                                  boolean leaveMargin,
                                  Map<String, Color> selectedReadNames,
-                                 AlignmentCounts alignmentCounts) {
+                                 AlignmentCounts alignmentCounts,
+                                 IGVPreferences prefs) {
 
         initializeGraphics(context);
         double origin = context.getOrigin();
         double locScale = context.getScale();
-        boolean completeReadsOnly = PreferencesManager.getPreferences().getAsBoolean(SAM_COMPLETE_READS_ONLY);
+        boolean completeReadsOnly = prefs.getAsBoolean(SAM_COMPLETE_READS_ONLY);
 
         if ((alignments != null) && (alignments.size() > 0)) {
 
@@ -338,11 +337,11 @@ public class AlignmentRenderer {
                     g.fillRect((int) pixelStart, y, w, h);
                     lastPixelDrawn = (int) pixelStart + w;
                 } else if (alignment instanceof PairedAlignment) {
-                    drawPairedAlignment((PairedAlignment) alignment, rowRect, context, renderOptions, leaveMargin, selectedReadNames, alignmentCounts);
+                    drawPairedAlignment((PairedAlignment) alignment, rowRect, context, renderOptions, leaveMargin, selectedReadNames, alignmentCounts, prefs);
                 } else if (alignment instanceof LinkedAlignment) {
-                    drawLinkedAlignment((LinkedAlignment) alignment, rowRect, context, renderOptions, leaveMargin, selectedReadNames, alignmentCounts);
+                    drawLinkedAlignment((LinkedAlignment) alignment, rowRect, context, renderOptions, leaveMargin, selectedReadNames, alignmentCounts, prefs);
                 } else {
-                    drawAlignment(alignment, rowRect, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames, alignmentCounts, false);
+                    drawAlignment(alignment, rowRect, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames, alignmentCounts, false, prefs);
                 }
             }
 
@@ -374,7 +373,6 @@ public class AlignmentRenderer {
 
         double origin = context.getOrigin();
         double locScale = context.getScale();
-        boolean completeReadsOnly = PreferencesManager.getPreferences().getAsBoolean(SAM_COMPLETE_READS_ONLY);
 
         if ((alignments != null) && (alignments.size() > 0)) {
 
@@ -429,7 +427,8 @@ public class AlignmentRenderer {
 
     private void drawLinkedAlignment(LinkedAlignment alignment, Rectangle rowRect, RenderContext context,
                                      RenderOptions renderOptions, boolean leaveMargin,
-                                     Map<String, Color> selectedReadNames, AlignmentCounts alignmentCounts) {
+                                     Map<String, Color> selectedReadNames, AlignmentCounts alignmentCounts,
+                                     IGVPreferences prefs) {
 
         double origin = context.getOrigin();
         double locScale = context.getScale();
@@ -467,7 +466,7 @@ public class AlignmentRenderer {
                     if(mixedStrand) alignmentColor = posStrandColor;
                     overlapped = i < barcodedAlignments.size() - 1 && al.getAlignmentEnd() > barcodedAlignments.get(i + 1).getAlignmentStart();
                 }
-                drawAlignment(al, rowRect, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames, alignmentCounts, overlapped);
+                drawAlignment(al, rowRect, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames, alignmentCounts, overlapped, prefs);
             }
         }
     }
@@ -557,7 +556,8 @@ public class AlignmentRenderer {
             RenderOptions renderOptions,
             boolean leaveMargin,
             Map<String, Color> selectedReadNames,
-            AlignmentCounts alignmentCounts) {
+            AlignmentCounts alignmentCounts,
+            IGVPreferences prefs) {
 
         double locScale = context.getScale();
 
@@ -570,7 +570,7 @@ public class AlignmentRenderer {
         Graphics2D g = context.getGraphics2D("ALIGNMENT");
         g.setColor(alignmentColor1);
 
-        drawAlignment(pair.firstAlignment, rowRect, context, alignmentColor1, renderOptions, leaveMargin, selectedReadNames, alignmentCounts, overlapped);
+        drawAlignment(pair.firstAlignment, rowRect, context, alignmentColor1, renderOptions, leaveMargin, selectedReadNames, alignmentCounts, overlapped, prefs);
 
         //If the paired alignment is in memory, we draw it.
         //However, we get the coordinates from the first alignment
@@ -581,7 +581,7 @@ public class AlignmentRenderer {
             }
             g.setColor(alignmentColor2);
 
-            drawAlignment(pair.secondAlignment, rowRect, context, alignmentColor2, renderOptions, leaveMargin, selectedReadNames, alignmentCounts, overlapped);
+            drawAlignment(pair.secondAlignment, rowRect, context, alignmentColor2, renderOptions, leaveMargin, selectedReadNames, alignmentCounts, overlapped, prefs);
         } else {
             return;
         }
@@ -703,7 +703,8 @@ public class AlignmentRenderer {
             boolean leaveMargin,
             Map<String, Color> selectedReadNames,
             AlignmentCounts alignmentCounts,
-            boolean overlapped) {
+            boolean overlapped,
+            IGVPreferences prefs) {
 
         AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
 
@@ -718,8 +719,8 @@ public class AlignmentRenderer {
 
         boolean flagLargeIndels = prefs.getAsBoolean(SAM_FLAG_LARGE_INDELS);
         int largeInsertionsThreshold = prefs.getAsInt(SAM_LARGE_INDELS_THRESHOLD);
-        boolean hideSmallIndelsBP = PreferencesManager.getPreferences().getAsBoolean(SAM_HIDE_SMALL_INDEL_BP);
-        int indelThresholdBP = PreferencesManager.getPreferences().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
+        boolean hideSmallIndelsBP = prefs.getAsBoolean(SAM_HIDE_SMALL_INDEL);
+        int indelThresholdBP = prefs.getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
         boolean quickConsensus = renderOptions.quickConsensusMode;
         final float snpThreshold = prefs.getAsFloat(SAM_ALLELE_THRESHOLD);
 
@@ -861,7 +862,7 @@ public class AlignmentRenderer {
                 blockPxStart, blockPxWidth, y, h, locScale, overlapped, leftClipped, rightClipped);
 
         // Draw insertions.
-        drawInsertions(rowRect, alignment, context, renderOptions, alignmentCounts, leaveMargin);
+        drawInsertions(rowRect, alignment, context, renderOptions, alignmentCounts, leaveMargin, prefs);
 
         // Draw basepairs / mismatches.
         if (locScale < 100) {
@@ -876,7 +877,7 @@ public class AlignmentRenderer {
                         break; // done examining blocks
                     }
 
-                    drawBases(context, bpGraphics, rowRect, alignment, aBlock, alignmentCounts, alignmentColor, leaveMargin, renderOptions);
+                    drawBases(context, bpGraphics, rowRect, alignment, aBlock, alignmentCounts, alignmentColor, leaveMargin, renderOptions, prefs);
                 }
             }
         }
@@ -905,7 +906,8 @@ public class AlignmentRenderer {
                            AlignmentCounts alignmentCounts,
                            Color alignmentColor,
                            boolean leaveMargin,
-                           RenderOptions renderOptions) {
+                           RenderOptions renderOptions,
+    IGVPreferences prefs) {
 
         boolean isSoftClipped = block.isSoftClipped();
 
@@ -1106,7 +1108,7 @@ public class AlignmentRenderer {
     }
 
     private void drawInsertions(Rectangle rect, Alignment alignment, RenderContext context, RenderOptions renderOptions,
-                                AlignmentCounts alignmentCounts, boolean leaveMargin) {
+                                AlignmentCounts alignmentCounts, boolean leaveMargin, IGVPreferences prefs) {
 
         AlignmentBlock[] insertions = alignment.getInsertions();
         double origin = context.getOrigin();
@@ -1124,8 +1126,8 @@ public class AlignmentRenderer {
             InsertionMarker expandedInsertion = InsertionManager.getInstance().getSelectedInsertion(context.getReferenceFrame().getChrName());
             int expandedPosition = expandedInsertion == null ? -1 : expandedInsertion.position;
 
-            boolean hideSmallIndelsBP = PreferencesManager.getPreferences().getAsBoolean(SAM_HIDE_SMALL_INDEL_BP);
-            int indelThresholdBP = PreferencesManager.getPreferences().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
+            boolean hideSmallIndelsBP = prefs.getAsBoolean(SAM_HIDE_SMALL_INDEL);
+            int indelThresholdBP = prefs.getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
 
             for (AlignmentBlock aBlock : insertions) {
 
@@ -1144,8 +1146,8 @@ public class AlignmentRenderer {
                     continue;
                 }
 
-                if ((!hideSmallIndelsBP || bpWidth >= indelThresholdBP) &&
-                        (!quickConsensus || alignmentCounts.isConsensusInsertion(aBlock.getStart(), snpThreshold))) {
+                if ((!hideSmallIndelsBP || bpWidth >= indelThresholdBP)) {
+                       // && (!quickConsensus || alignmentCounts.isConsensusInsertion(aBlock.getStart(), snpThreshold))) {
                     if (flagLargeIndels && bpWidth > largeInsertionsThreshold) {
                         drawLargeIndelLabel(context.getGraphics2D("INDEL_LABEL"),
                                 true,

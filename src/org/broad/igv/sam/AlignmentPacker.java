@@ -66,7 +66,7 @@ public class AlignmentPacker {
             AlignmentInterval interval,
             AlignmentTrack.RenderOptions renderOptions) {
 
-        if (renderOptions == null) renderOptions = new AlignmentTrack.RenderOptions();
+       // if (renderOptions == null) renderOptions = new AlignmentTrack.RenderOptions();
 
         LinkedHashMap<String, List<Row>> packedAlignments = new LinkedHashMap<String, List<Row>>();
 

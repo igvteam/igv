@@ -2817,7 +2817,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void hideIndelsBasesCBActionPerformed(ActionEvent e) {
         final boolean flagInsertions = hideIndelsBasesCB.isSelected();
-        updatedPreferenceMap.put(SAM_HIDE_SMALL_INDEL_BP, String.valueOf(flagInsertions));
+        updatedPreferenceMap.put(SAM_HIDE_SMALL_INDEL, String.valueOf(flagInsertions));
         hideIndelsBasesField.setEnabled(flagInsertions);
 
     }
@@ -3878,7 +3878,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         samFlagClippingThresholdField.setText(prefMgr.get(SAM_CLIPPING_THRESHOLD));
         samFlagClippingThresholdField.setEnabled(samFlagClippingCB.isSelected());
 
-        hideIndelsBasesCB.setSelected(prefMgr.getAsBoolean(SAM_HIDE_SMALL_INDEL_BP));
+        hideIndelsBasesCB.setSelected(prefMgr.getAsBoolean(SAM_HIDE_SMALL_INDEL));
         hideIndelsBasesField.setText(prefMgr.get(SAM_SMALL_INDEL_BP_THRESHOLD));
         hideIndelsBasesField.setEnabled(hideIndelsBasesCB.isSelected());
 

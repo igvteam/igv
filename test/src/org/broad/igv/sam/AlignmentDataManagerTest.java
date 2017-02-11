@@ -373,7 +373,7 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
      * {@link AlignmentDataManager#loadInterval(String, int, int, AlignmentTrack.RenderOptions)}
      */
     public static AlignmentInterval loadInterval(AlignmentDataManager manager, String chr, int start, int end) {
-        return manager.loadInterval(chr, start, end, new AlignmentTrack.RenderOptions());
+        return manager.loadInterval(chr, start, end, new AlignmentTrack.RenderOptions(manager.getType()));
     }
 
 

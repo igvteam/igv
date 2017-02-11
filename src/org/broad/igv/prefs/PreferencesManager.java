@@ -59,6 +59,10 @@ public class PreferencesManager implements IGVEventObserver {
         return genericPreferences;
     }
 
+    public static Collection<IGVPreferences> getAllPreferences() {
+        return preferencesMap.values();
+    }
+
 
     public static void setPrefsFile(String prefsFile) {
         prefFile = prefsFile;
@@ -82,11 +86,25 @@ public class PreferencesManager implements IGVEventObserver {
             if(thirdGenPreferences == null || thirdGenPreferences.isEmpty()) {
                 thirdGenPreferences = thirdGenDefaults;
             }
+            else {
+                for(Map.Entry<String, String> entry : thirdGenDefaults.entrySet()) {
+                    if(!thirdGenPreferences.containsKey(entry.getKey())) {
+                        thirdGenPreferences.put(entry.getKey(), entry.getValue());
+                    }
+                }
+            }
             preferencesMap.put(THIRD_GEN, new IGVPreferences(thirdGenPreferences, genericPreferences));
 
             Map<String, String> rnaPreferences = userPrefs.get(RNA);
             if(rnaPreferences == null || rnaPreferences.isEmpty()) {
                 rnaPreferences = rnaDefaults;
+            }
+            else {
+                for(Map.Entry<String, String> entry : rnaDefaults.entrySet()) {
+                    if(!rnaPreferences.containsKey(entry.getKey())) {
+                        rnaPreferences.put(entry.getKey(), entry.getValue());
+                    }
+                }
             }
             preferencesMap.put(RNA, new IGVPreferences(rnaPreferences, genericPreferences));
 
@@ -315,8 +333,9 @@ public class PreferencesManager implements IGVEventObserver {
 
         genericDefaults.put(SAM_REDUCED_MEMORY_MODE, "false");
 
-        genericDefaults.put(SAM_HIDE_SMALL_INDEL_BP, "false");
+        genericDefaults.put(SAM_HIDE_SMALL_INDEL, "false");
         genericDefaults.put(SAM_SMALL_INDEL_BP_THRESHOLD, "0");
+        genericDefaults.put(SAM_SHOW_INSERTION_INTERVALS, "false");
 
         genericDefaults.put(SAM_LINK_READS, "false");
         genericDefaults.put(SAM_LINK_TAG, "READNAME");
@@ -452,6 +471,9 @@ public class PreferencesManager implements IGVEventObserver {
         thirdGenDefaults.put(SAM_LARGE_INDELS_THRESHOLD, "1");
         thirdGenDefaults.put(SAM_FLAG_CLIPPING, "true");
         thirdGenDefaults.put(SAM_CLIPPING_THRESHOLD, "0");
+        thirdGenDefaults.put(SAM_HIDE_SMALL_INDEL, "true");
+        thirdGenDefaults.put(SAM_SMALL_INDEL_BP_THRESHOLD, "3");
+        thirdGenDefaults.put(SAM_SHOW_INSERTION_INTERVALS, "true");
 
 
         rnaDefaults.put(SAM_MAX_VISIBLE_RANGE, "300");
