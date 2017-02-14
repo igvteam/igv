@@ -62,10 +62,11 @@ public class Genome {
     private long nominalLength = -1;
     private Map<String, Long> cumulativeOffsets = new HashMap();
     private Map<String, String> chrAliasTable;
-    private Sequence sequence;
+    Sequence sequence;
     private FeatureTrack geneTrack;
     private String species;
     private String ucscID;
+    public GenomeDescriptor genomeDescriptor;
 
     /**
      * @param id

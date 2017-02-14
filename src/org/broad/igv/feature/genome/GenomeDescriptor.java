@@ -49,7 +49,7 @@ public abstract class GenomeDescriptor {
     protected String cytoBandFileName;
     protected String geneFileName;
     protected String chrAliasFileName;
-    private String geneTrackName;
+    protected String geneTrackName;
     private String url;
     private String sequenceLocation;
     private boolean hasCustomSequenceLocation;

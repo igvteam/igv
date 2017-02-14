@@ -432,6 +432,7 @@ public class GenomeManager {
         }
 
         newGenome = new Genome(id, displayName, sequence, chromosOrdered);
+        newGenome.genomeDescriptor = genomeDescriptor;
         if (cytobandMap != null) {
             newGenome.setCytobands(cytobandMap);
         }
