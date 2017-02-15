@@ -123,11 +123,10 @@ public class GenomeManager {
             PreferencesManager.getPreferences().setDefaultGenome(genome.getId());
         }
         this.currentGenome = genome;
-        if (genome != null) {
-            if (IGV.hasInstance()) {
-                IGV.getInstance().getSession().clearHistory();
-                FrameManager.getDefaultFrame().setChromosomeName(genome.getHomeChromosome(), true);
-            }
+        if (genome != null && IGV.hasInstance()) {
+            IGV.getInstance().getSession().clearHistory();
+            FrameManager.getDefaultFrame().setChromosomeName(genome.getHomeChromosome(), true);
+
             IGVEventBus.getInstance().post(new GenomeChangeEvent(genome));
         }
     }
@@ -181,28 +180,31 @@ public class GenomeManager {
                 newGenome = loadFastaFile(genomePath);
             }
 
-            // Load alias files from genome source directory, if any
-            String aliasPath = FileUtils.getParent(genomePath) + "/" + newGenome.getId() + "_alias.tab";
-            Collection<Collection<String>> aliases = loadChrAliases(aliasPath);
-            if (aliases != null) newGenome.addChrAliases(aliases);
+            if (IGV.hasInstance()) {
+
+                // Load alias files from genome source directory, if any
+                String aliasPath = FileUtils.getParent(genomePath) + "/" + newGenome.getId() + "_alias.tab";
+                Collection<Collection<String>> aliases = loadChrAliases(aliasPath);
+                if (aliases != null) newGenome.addChrAliases(aliases);
 
 
-            // Load user-defined chr aliases, if any.  This is done last so they have priority
-            aliasPath = (new File(DirectoryManager.getGenomeCacheDirectory(), newGenome.getId() + "_alias.tab")).getAbsolutePath();
-            aliases = loadChrAliases(aliasPath);
-            if (aliases != null) newGenome.addChrAliases(aliases);
+                // Load user-defined chr aliases, if any.  This is done last so they have priority
+                aliasPath = (new File(DirectoryManager.getGenomeCacheDirectory(), newGenome.getId() + "_alias.tab")).getAbsolutePath();
+                aliases = loadChrAliases(aliasPath);
+                if (aliases != null) newGenome.addChrAliases(aliases);
 
-            if (monitor != null) {
-                monitor.fireProgress(25);
-            }
+                if (monitor != null) {
+                    monitor.fireProgress(25);
+                }
 
-            if (IGV.hasInstance()) IGV.getInstance().resetSession(null);
+                if (IGV.hasInstance()) IGV.getInstance().resetSession(null);
 
-            if (!genomeItemMap.containsKey(newGenome.getId())) {
-                GenomeListItem genomeListItem = new GenomeListItem(newGenome.getDisplayName(), genomePath, newGenome.getId());
-                final Set<String> serverGenomeIDs = getServerGenomeIDs();
-                boolean userDefined = !serverGenomeIDs.contains(newGenome.getId());
-                addGenomeItem(genomeListItem, userDefined);
+                if (!genomeItemMap.containsKey(newGenome.getId())) {
+                    GenomeListItem genomeListItem = new GenomeListItem(newGenome.getDisplayName(), genomePath, newGenome.getId());
+                    final Set<String> serverGenomeIDs = getServerGenomeIDs();
+                    boolean userDefined = !serverGenomeIDs.contains(newGenome.getId());
+                    addGenomeItem(genomeListItem, userDefined);
+                }
             }
 
             setCurrentGenome(newGenome);
