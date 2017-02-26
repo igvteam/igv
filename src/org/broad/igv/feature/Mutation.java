@@ -102,7 +102,7 @@ public class Mutation implements IGVFeature {
     public String getOMAUrl() {
         if (refAllele == null) return null;
         String genome = IGV.getInstance().getGenomeManager().getGenomeId();
-        String url = "http://mutationassessor.org/v1/?cm=var&var=" + genome + "," + getOMAName();
+        String url = "http://mutationassessor.org/r3/?cm=var&var=" + genome + "," + getOMAName();
         return url;
 
     }
