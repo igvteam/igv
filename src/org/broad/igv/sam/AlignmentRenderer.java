@@ -669,17 +669,6 @@ public class AlignmentRenderer {
             }
         }
 
-        // If the block is too small for a pointed hexagon arrow, then indicate strand with a line.
-//        if (!tallEnoughForArrow) {
-//            int tH = Math.max(1, h - 1);
-//
-//            if (leftmost && isNegativeStrand) {
-//                strandGraphics.drawLine(blockPxStart, y, blockPxStart, y + tH);
-//            }
-//            if (rightmost && !isNegativeStrand) {
-//                strandGraphics.drawLine(blockPxEnd, y, blockPxEnd, y + tH);
-//            }
-//        }
     }
 
     /**

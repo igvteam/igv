@@ -88,6 +88,8 @@ false
 
 #Variants
 
+##Variant Colors
+
 HOMREF.COLOR
 Homozygous reference
 color
@@ -230,19 +232,108 @@ integer
 
 ---
 
+SAM.FLAG_LARGE_INDELS
+Label indels > label threshold
+boolean
+true
+
+SAM.LARGE_INSERTIONS_THRESOLD
+Label threshold (bases)
+integer
+1
+
+---
+
 SAM.HIDE_SMALL_INDEL
-Hide indels < small indel threshold
+Hide indels < show indel threshold
 boolean
 false
 
 SAM.SMALL_INDEL_BP_THRESHOLD
-Small indel threshold (bases)
+Show indel threshold (bases)
 integer
 0
 
-##Coverage Track Options
+---
+
+SAM.FLAG_CLIPPING
+Flag clipping > flag clipping threshold
+boolean
+false
+
+SAM.CLIPPING_THRESHOLD
+Flag clipping threshold (bases)
+integer
+0
 
 ---
+
+SAM.QUICK_CONSENSUS_MODE
+Quick consensus mode
+boolean
+false
+
+SAM.SHOW_INSERTION_MARKERS
+Show insertion markers
+boolean
+false
+
+---
+
+SAM.LINK_READS
+Link alignments by tag
+boolean
+false
+
+SAM.LINK_TAG
+Linking tag
+string
+READNAME
+
+---
+
+SAM.FILTER_DUPLICATES
+Filter duplicate reads
+boolean
+true
+
+SAM.FILTER_FAILED_READS
+Filter vendor failed reads
+boolean
+true
+
+SAM.FILTER_SECONDARY_ALIGNMENTS
+Filter secondary alignments
+boolean
+false
+
+SAM.FILTER_SUPPLEMENTARY_ALIGNMENTS
+Filter supplementary alignments
+boolean
+false
+
+SAM.FLAG_UNMAPPED_PAIR
+Flag unmapped pairs
+boolean
+false
+
+SAM.SHOW_SOFT_CLIPPED
+Show soft-clipped bases
+boolean
+false
+
+SAM.SHOW_CENTER_LINE
+Show center line
+boolean
+false
+
+SAM.HIDDEN_TAGS
+Hidden SAM tags
+string
+SA,MD,XA,RG
+
+
+##Coverage Track Options
 
 SAM.ALLELE_THRESHOLD
 Coverage allele-fraction threshold
@@ -254,53 +345,103 @@ Quality weight allele fraction
 boolean
 true
 
+##Splice Junction Track Options
+
+SAM.SHOW_JUNCTION_FLANKINGREGIONS
+Show flanking regions
+boolean
+true
+
+SAM.JUNCTION_MIN_FLANKING_WIDTH
+Minimum flanking width
+integer
+0
+
+SAM.JUNCTION_MIN_COVERAGE
+Minimum junction coverage
+integer
+1
+
+##Insert Size Options
+
+SAM.COMPUTE_ISIZES
+Compute insert size thresholds
+boolean
+true
+
+SAM.MIN_ISIZE_MIN_PERCENTILE
+Minimum (percentile)
+float
+0.5
+
+SAM.ISIZE_MAX_PERCENTILE
+Maximum (percentile)
+float
+99.5
+
+SAM.MIN_INSERT_SIZE_THRESHOLD
+Default minimum (bp)
+float
+50
+
+SAM.INSERT_SIZE_THRESHOLD
+Default maximum (bp)
+float
+1000
+
+
+#Proxy
+
+PROXY.USE
+Use proxy
+boolean
+false
+
+PROXY.HOST
+Proxy host
+string
+
+
+PROXY.PORT
+Proxy port
+integer
+0
+
+PROXY.WHITELIST
+Whitelist
+string
+
 ---
 
+PROXY.AUTHENTICATE
+Authentication required
+boolean
+false
+
+PROXY.USERNAME
+Username
+string
+
+
+PROXY.PW
+Password
+string
+
+#Advanced
+
+
+
 #Hidden
-SAM.SHOW_DUPLICATES	false
-SAM.QUICK_CONSENSUS_MODE	false
-SAM.SHOW_SOFT_CLIPPED	false
-SAM.FLAG_UNMAPPED_PAIR	false
 SAM.AUTOSORT	false
 SAM.SHADE_CENTER	true
 SAM.SHOW_REF_SEQ	false
-SAM.SHOW_CENTER_LINE	true
-SAM.SHOW_COV_TRACK	true
 SAM.SHADE_BASE_QUALITY	QUALITY
 SAM.FILTER_ALIGNMENTS	false
-SAM.FILTER_SECONDARY_ALIGNMENTS	false
-SAM.FILTER_SUPPLEMENTARY_ALIGNMENTS	false
-SAM.FILTER_FAILED_READS	true
-
-SAM.BASE_QUALITY_MIN	5
-SAM.BASE_QUALITY_MAX	20
 SAM.FILTER_URL	null
-SAM.HIDDEN_TAGS	SA,MD,XA,RG
-
-
-SAM.MIN_INSERT_SIZE_THRESHOLD	50
-SAM.INSERT_SIZE_THRESHOLD	1000
-SAM.MIN_ISIZE_MIN_PERCENTILE	0.5
-SAM.ISIZE_MAX_PERCENTILE	99.5
-
-SAM.COLOR_BY	UNEXPECTED_PAIR
-SAM.COLOR_BY_TAG	
-SAM.GROUP_BY_TAG	
-SAM.GROUP_BY_POS	
-SAM.SORT_BY_TAG	
 SAM.BISULFITE_CONTEXT	CG
-SAM.COMPUTE_ISIZES	true
 SAM.FLAG_ZERO_QUALITY	true
-
-SAM.JUNCTION_MIN_FLANKING_WIDTH	0
-SAM.JUNCTION_MIN_COVERAGE	1
-SAM.SHOW_JUNCTION_FLANKINGREGIONS	true
 SAM.NOMESEQ_ENABLED	false
 SAM.COUNT_DELETED_BASES_COVERED	false
-SAM.FLAG_LARGE_INDELS	true
-SAM.LARGE_INSERTIONS_THRESOLD	1
-SAM.FLAG_CLIPPING	false
-SAM.CLIPPING_THRESHOLD	0
 SAM.SORT_OPTION	NUCLEOTIDE
 SAM.GROUP_OPTION	NONE
 SAM.SHOW_GROUP_SEPARATOR	true
@@ -308,14 +449,6 @@ SAM.COMPLETE_READS_ONLY	false
 SAM.SHOW_ALL_BASES	false
 SAM.REDUCED_MEMORY_MODE	false
 
-SAM.SHOW_INSERTION_INTERVALS	false
-SAM.LINK_READS	false
-SAM.LINK_TAG	READNAME
-
-
-
-
-//Hidden
 SEARCH_ZOOM	true
 SAVE_GOOGLE_CREDENTIALS	true
 MAX_SEQUENCE_RESOLUTION	2
@@ -358,9 +491,7 @@ SHOW_GENOME_SERVER_WARNING	true
 IGV.genome.sequence.dir	http://igv.broadinstitute.org/genomes/genomes.txt
 OVERLAY_ATTRIBUTE_KEY	LINKING_ID
 DEFAULT_GENOME_KEY	hg19
-PROXY.USE	false
-PROXY.AUTHENTICATE	false
-PORT_NUMBER	60151
+
 IGV.track.height	15
 FLANKING_REGION	2000
 SHOW_SEQUENCE_TRANSLATION	false

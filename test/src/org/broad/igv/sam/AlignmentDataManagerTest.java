@@ -146,7 +146,7 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
             // the following filters are applied in the Caching reader, so we need to apply them here.
             boolean filterFailedReads = PreferencesManager.getPreferences().getAsBoolean(Constants.SAM_FILTER_FAILED_READS);
             ReadGroupFilter filter = ReadGroupFilter.getFilter();
-            boolean showDuplicates = PreferencesManager.getPreferences().getAsBoolean(Constants.SAM_SHOW_DUPLICATES);
+            boolean showDuplicates = !PreferencesManager.getPreferences().getAsBoolean(Constants.SAM_FILTER_DUPLICATES);
             int qualityThreshold = PreferencesManager.getPreferences().getAsInt(Constants.SAM_QUALITY_THRESHOLD);
             if (!rec.isMapped() || (!showDuplicates && rec.isDuplicate()) ||
                     (filterFailedReads && rec.isVendorFailedRead()) ||

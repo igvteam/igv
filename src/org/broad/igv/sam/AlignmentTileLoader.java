@@ -123,7 +123,7 @@ public class AlignmentTileLoader {
         boolean filterSecondaryAlignments = prefMgr.getAsBoolean(SAM_FILTER_SECONDARY_ALIGNMENTS);
         boolean filterSupplementaryAlignments = prefMgr.getAsBoolean(SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS);
         ReadGroupFilter filter = ReadGroupFilter.getFilter();
-        boolean showDuplicates = prefMgr.getAsBoolean(SAM_SHOW_DUPLICATES);
+        boolean showDuplicates = prefMgr.getAsBoolean(SAM_SHOW_DUPLICATES) || !prefMgr.getAsBoolean(SAM_FILTER_DUPLICATES);
         int qualityThreshold = prefMgr.getAsInt(SAM_QUALITY_THRESHOLD);
 
         boolean reducedMemory = prefMgr.getAsBoolean(SAM_REDUCED_MEMORY_MODE);

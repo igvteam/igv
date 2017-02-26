@@ -553,7 +553,9 @@ public class CoverageGui extends JDialog {
 
                     // Check user prefs for duplicates and min mapping quality
                     int countFlags = 0;
-                    boolean includeDuplicates = PreferencesManager.getPreferences().getAsBoolean(Constants.SAM_SHOW_DUPLICATES);
+                    boolean includeDuplicates =
+                            PreferencesManager.getPreferences().getAsBoolean(Constants.SAM_SHOW_DUPLICATES) ||
+                                    !PreferencesManager.getPreferences().getAsBoolean(Constants.SAM_FILTER_DUPLICATES);
                     int minMappingQuality = PreferencesManager.getPreferences().getAsInt(Constants.SAM_QUALITY_THRESHOLD);
                     if (includeDuplicates) {
                         countFlags += CoverageCounter.INCLUDE_DUPS;

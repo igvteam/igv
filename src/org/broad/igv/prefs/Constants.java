@@ -105,6 +105,7 @@ final public class Constants {
     public static final String SAM_FILTER_URL = "SAM.FILTER_URL";
     public static final String SAM_HIDDEN_TAGS = "SAM.HIDDEN_TAGS";
     public static final String SAM_MAX_VISIBLE_RANGE = "SAM.MAX_VISIBLE_RANGE";
+    public static final String SAM_FILTER_DUPLICATES = "SAM.FILTER_DUPLICATES";
     public static final String SAM_SHOW_DUPLICATES = "SAM.SHOW_DUPLICATES";
     public static final String SAM_QUICK_CONSENSUS_MODE = "SAM.QUICK_CONSENSUS_MODE";
     public static final String SAM_SHOW_SOFT_CLIPPED = "SAM.SHOW_SOFT_CLIPPED";
@@ -127,7 +128,7 @@ final public class Constants {
     public static final String SAM_SHOW_JUNCTION_TRACK = "SAM.SHOW_JUNCTION_TRACK";
     public static final String SAM_JUNCTION_MIN_FLANKING_WIDTH = "SAM.JUNCTION_MIN_FLANKING_WIDTH";
     public static final String SAM_JUNCTION_MIN_COVERAGE = "SAM.JUNCTION_MIN_COVERAGE";
-    public static final String SAM_SHOW_INSERTION_INTERVALS = "SAM.SHOW_INSERTION_INTERVALS";
+    public static final String SAM_SHOW_INSERTION_MARKERS = "SAM.SHOW_INSERTION_MARKERS";
     /**
      * List of keys that affect the alignments loaded.  This list is used to trigger a reload, if required.
      * Not all alignment preferences need trigger a reload, this is a subset.
