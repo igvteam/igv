@@ -27,7 +27,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.broad.igv.ui.event;
+package org.broad.igv.ui;
 
 import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
@@ -42,7 +42,6 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;

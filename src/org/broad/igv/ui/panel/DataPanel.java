@@ -48,8 +48,8 @@ import org.broad.igv.ui.AbstractDataPanelTool;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.WaitCursorManager;
-import org.broad.igv.ui.event.DataLoadedEvent;
-import org.broad.igv.ui.event.IGVEventObserver;
+import org.broad.igv.event.DataLoadedEvent;
+import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.ui.util.DataPanelTool;
 
 import javax.swing.*;

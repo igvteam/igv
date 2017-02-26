@@ -33,9 +33,9 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentTrack.SortOption;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.track.RenderContext;
-import org.broad.igv.ui.event.DataLoadedEvent;
-import org.broad.igv.ui.event.IGVEventBus;
-import org.broad.igv.ui.event.IGVEventObserver;
+import org.broad.igv.event.DataLoadedEvent;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
@@ -134,8 +134,11 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public void setType(ExperimentType type) {
-        this.type = type;
-        IGVEventBus.getInstance().post(new ExperimentTypeChangeEvent(this.type));
+        if(type != this.type) {
+            ExperimentTypeChangeEvent event = new ExperimentTypeChangeEvent(this.type, type);
+            this.type = type;
+            IGVEventBus.getInstance().post(event);
+        }
     }
 
     public ExperimentType getType() {
@@ -305,6 +308,7 @@ public class AlignmentDataManager implements IGVEventObserver {
      * @param readStats
      */
     private void inferType(ReadStats readStats) {
+
         if(readStats.readLengthStdDev > 100 || readStats.medianReadLength > 1000) {
             setType(ExperimentType.THIRD_GEN);  // Could also use fracReadsWithIndels
         }

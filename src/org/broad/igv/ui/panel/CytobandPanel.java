@@ -44,8 +44,8 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.CytobandRenderer;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.WaitCursorManager;
-import org.broad.igv.ui.event.IGVEventBus;
-import org.broad.igv.ui.event.ViewChange;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.ViewChange;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;

@@ -7,8 +7,8 @@ import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.ui.AboutDialog;
 import org.broad.igv.ui.IGVCommandBar;
 import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.igv.ui.event.IGVEventBus;
-import org.broad.igv.ui.event.IGVEventObserver;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.util.ParsingUtils;
 
 import java.awt.*;
@@ -32,6 +32,12 @@ public class PreferencesManager implements IGVEventObserver {
 
     private static String prefFile;  // User preferences file
 
+    public static void main(String [] args) {
+        for(Map.Entry<String, String> entry : genericDefaults.entrySet()) {
+            System.out.println(entry.getKey() + "\t" + entry.getValue());
+        }
+
+    }
 
     private PreferencesManager() {
     }
@@ -230,7 +236,7 @@ public class PreferencesManager implements IGVEventObserver {
     }
 
 
-    static Map<String, String> genericDefaults = new HashMap<>();
+    static Map<String, String> genericDefaults = new LinkedHashMap<>();
     static Map<String, String> thirdGenDefaults = new HashMap<>();
     static Map<String, String> rnaDefaults = new HashMap<>();
 
@@ -279,6 +285,7 @@ public class PreferencesManager implements IGVEventObserver {
         genericDefaults.put(CHART_SHOW_ALL_HEATMAP, "false");
 
         genericDefaults.put(SAM_SHOW_DUPLICATES, "false");
+        genericDefaults.put(SAM_FILTER_DUPLICATES, "true");
         genericDefaults.put(SAM_QUICK_CONSENSUS_MODE, "false");
         genericDefaults.put(SAM_SHOW_SOFT_CLIPPED, "false");
         genericDefaults.put(SAM_FLAG_UNMAPPED_PAIR, "false");
@@ -335,7 +342,7 @@ public class PreferencesManager implements IGVEventObserver {
 
         genericDefaults.put(SAM_HIDE_SMALL_INDEL, "false");
         genericDefaults.put(SAM_SMALL_INDEL_BP_THRESHOLD, "0");
-        genericDefaults.put(SAM_SHOW_INSERTION_INTERVALS, "false");
+        genericDefaults.put(SAM_SHOW_INSERTION_MARKERS, "false");
 
         genericDefaults.put(SAM_LINK_READS, "false");
         genericDefaults.put(SAM_LINK_TAG, "READNAME");
@@ -473,7 +480,7 @@ public class PreferencesManager implements IGVEventObserver {
         thirdGenDefaults.put(SAM_CLIPPING_THRESHOLD, "0");
         thirdGenDefaults.put(SAM_HIDE_SMALL_INDEL, "true");
         thirdGenDefaults.put(SAM_SMALL_INDEL_BP_THRESHOLD, "3");
-        thirdGenDefaults.put(SAM_SHOW_INSERTION_INTERVALS, "true");
+        thirdGenDefaults.put(SAM_SHOW_INSERTION_MARKERS, "true");
 
 
         rnaDefaults.put(SAM_MAX_VISIBLE_RANGE, "300");

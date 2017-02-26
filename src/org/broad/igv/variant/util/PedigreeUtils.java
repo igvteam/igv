@@ -26,7 +26,8 @@
 package org.broad.igv.variant.util;
 
 import org.broad.igv.track.AttributeManager;
-import org.broad.igv.ui.IGV;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.TrackGroupEvent;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;
@@ -75,7 +76,7 @@ public class PedigreeUtils {
                 }
             }
 
-            IGV.getInstance().notifyGroupEvent();
+            IGVEventBus.getInstance().post(new TrackGroupEvent(null));
         } finally {
             if (reader != null) reader.close();
         }

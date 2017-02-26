@@ -30,7 +30,6 @@ import org.broad.igv.Globals;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.SearchCommand;
-import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.FrameManager;
 
 import java.util.ArrayList;

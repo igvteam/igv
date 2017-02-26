@@ -51,10 +51,9 @@ import org.broad.igv.ui.SashimiPlot;
 import org.broad.igv.ui.color.ColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
-import org.broad.igv.ui.event.AlignmentTrackEvent;
-import org.broad.igv.ui.event.AlignmentTrackEventListener;
-import org.broad.igv.ui.event.IGVEventBus;
-import org.broad.igv.ui.event.IGVEventObserver;
+import org.broad.igv.event.AlignmentTrackEvent;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.ui.panel.DataPanel;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
@@ -93,7 +92,7 @@ import static org.broad.igv.prefs.Constants.*;
 @XmlType(factoryMethod = "getNextTrack")
 @XmlSeeAlso(AlignmentTrack.RenderOptions.class)
 
-public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEventListener, IGVEventObserver {
+public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(AlignmentTrack.class);
 
@@ -231,13 +230,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         this.insertionIntervalsMap = Collections.synchronizedMap(new HashMap<>());
 
-        // Register track
-        if (!Globals.isHeadless()) {
-            IGV.getInstance().addAlignmentTrackEventListener(this);
-        }
-
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
         IGVEventBus.getInstance().subscribe(ExperimentTypeChangeEvent.class, this);
+        IGVEventBus.getInstance().subscribe(AlignmentTrackEvent.class, this);
     }
 
 
@@ -253,7 +248,34 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             }
             insertionIntervalsMap = newMap;
         } else if (event instanceof ExperimentTypeChangeEvent) {
+            log.info("Experiment type = " + ((ExperimentTypeChangeEvent) event).type);
             renderOptions = new RenderOptions(((ExperimentTypeChangeEvent) event).type);
+        } else if (event instanceof AlignmentTrackEvent) {
+            AlignmentTrackEvent e = (AlignmentTrackEvent) event;
+            AlignmentTrackEvent.Type type = e.getType();
+            switch (type) {
+                case VISIBLE:
+                    dataManager.dumpAlignments();
+                    setVisible(e.getBooleanValue());
+                    IGV.getInstance().getMainPanel().revalidate();
+                    break;
+                case ALLELE_THRESHOLD:
+                    dataManager.alleleThresholdChanged();
+                    break;
+                case SPLICE_JUNCTION:
+                    if (spliceJunctionTrack != null) {
+                        spliceJunctionTrack.setVisible(e.getBooleanValue());
+                    }
+                    dataManager.initLoadOptions();
+                    break;
+                case RELOAD:
+                    clearCaches();
+                case REFRESH:
+                    setRenderOptions(new RenderOptions(dataManager.getType()));
+                    refresh();
+                    break;
+            }
+
         }
     }
 
@@ -1345,7 +1367,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             } else {
                 shadeBasesOption = ShadeBasesOption.valueOf(shadeOptionString);
             }
-            drawInsertionIntervals = prefs.getAsBoolean(SAM_SHOW_INSERTION_INTERVALS);
+            drawInsertionIntervals = prefs.getAsBoolean(SAM_SHOW_INSERTION_MARKERS);
             shadeCenters = prefs.getAsBoolean(SAM_SHADE_CENTER);
             flagUnmappedPairs = prefs.getAsBoolean(SAM_FLAG_UNMAPPED_PAIR);
             computeIsizes = prefs.getAsBoolean(SAM_COMPUTE_ISIZES);
@@ -2339,6 +2361,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             alignmentItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+
                     onAlignmentTrackEvent(new AlignmentTrackEvent(AlignmentTrack.this, AlignmentTrackEvent.Type.VISIBLE, false));
                     if (alignmentItem.isSelected()) {
                         onAlignmentTrackEvent(new AlignmentTrackEvent(AlignmentTrack.this, AlignmentTrackEvent.Type.RELOAD));

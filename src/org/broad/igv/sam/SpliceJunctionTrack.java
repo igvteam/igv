@@ -36,7 +36,7 @@ import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.SashimiPlot;
-import org.broad.igv.ui.event.AlignmentTrackEvent;
+import org.broad.igv.event.AlignmentTrackEvent;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.UIUtilities;

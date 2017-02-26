@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.ui.event;
+package org.broad.igv.event;
 
 
 import org.apache.log4j.Logger;
@@ -85,7 +85,10 @@ public class IGVEventBus {
                 observer.receiveEvent(event);
             }
         }
+    }
 
+    public void clear() {
+        observerMap.clear();
     }
 }
 

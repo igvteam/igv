@@ -23,15 +23,36 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.ui.event;
-
-import java.util.EventListener;
+package org.broad.igv.event;
 
 /**
  * @author Jim Robinson
- * @date 10/28/11
+ * @date 12/2/11
  */
-public interface TrackGroupEventListener extends EventListener {
+public class AlignmentTrackEvent {
 
-    public  void onTrackGroupEvent(TrackGroupEvent e);
+    public enum Type {SPLICE_JUNCTION, VISIBILITY_WINDOW, ALLELE_THRESHOLD, RELOAD, REFRESH, VISIBLE}
+
+    private Object source;
+    private Type type;
+    private boolean booleanValue;
+
+    public AlignmentTrackEvent(Object source, Type type) {
+        this.source = source;
+        this.type = type;
+    }
+
+    public AlignmentTrackEvent(Object source, Type type, boolean booleanValue) {
+        this.source = source;
+        this.type = type;
+        this.booleanValue = booleanValue;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public boolean getBooleanValue() {
+        return booleanValue;
+    }
 }

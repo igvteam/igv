@@ -24,7 +24,7 @@
  *
  */
 
-package org.broad.igv.ui.event;
+package org.broad.igv.event;
 
 import org.broad.igv.feature.genome.Genome;
 

@@ -1,7 +1,8 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2007-2015 Broad Institute
+ * Copyright (c) 2016 University of California San Diego
+ * Author: Jim Robinson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +24,10 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.ui.event;
-
-import org.broad.igv.track.Track;
-
-import java.util.EventObject;
+package org.broad.igv.event;
 
 /**
- * @author Jim Robinson
- * @date 10/28/11
+ * Created by jrobinson on 6/3/16.
  */
-public class TrackGroupEvent extends EventObject {
-
-
-    public TrackGroupEvent(Object source) {
-        super(source);
-    }
-
-
+public class ReferenceFrameEvent {
 }

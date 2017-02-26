@@ -1,7 +1,8 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2007-2015 Broad Institute
+ * Copyright (c) 2016 University of California San Diego
+ * Author: Jim Robinson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +24,13 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.ui.event;
-
-import java.util.EventListener;
+package org.broad.igv.event;
 
 /**
- * @author Jim Robinson
- * @date 12/2/11
+ * Created by jrobinson on 6/3/16.
  */
-public interface AlignmentTrackEventListener extends EventListener {
+public interface IGVEventObserver {
 
-    public  void onAlignmentTrackEvent(AlignmentTrackEvent e);
+    void receiveEvent(Object event);
 
 }

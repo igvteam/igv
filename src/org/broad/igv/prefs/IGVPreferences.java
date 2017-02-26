@@ -36,18 +36,14 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.renderer.ColorScaleFactory;
 import org.broad.igv.renderer.ContinuousColorScale;
-import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
 import org.broad.igv.track.TrackType;
-import org.broad.igv.ui.AboutDialog;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.IGVCommandBar;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
-import org.broad.igv.ui.event.AlignmentTrackEvent;
-import org.broad.igv.ui.event.IGVEventBus;
+import org.broad.igv.event.AlignmentTrackEvent;
+import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.ParsingUtils;
 
 import java.awt.*;
 import java.io.*;
@@ -63,6 +59,7 @@ public class IGVPreferences {
     private static Logger log = Logger.getLogger(IGVPreferences.class);
 
     IGVPreferences parent;
+
     Map<String, String> userPreferences;
     // Preferences which should persist for this session only
     Set<String> overrideKeys = new HashSet<>();
@@ -315,16 +312,16 @@ public class IGVPreferences {
 
             if (reloadSAM) {
                 if (updatedPreferenceMap.containsKey(SAM_MAX_VISIBLE_RANGE)) {
-                    igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.VISIBILITY_WINDOW);
+                    IGVEventBus.getInstance().post(new AlignmentTrackEvent(this, AlignmentTrackEvent.Type.VISIBILITY_WINDOW));
                 }
-                igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.RELOAD);
+                IGVEventBus.getInstance().post(new AlignmentTrackEvent(this, AlignmentTrackEvent.Type.RELOAD));
             }
             // A reload is harsher than a refresh; only send the weaker request if the stronger one is not sent.
             if (!reloadSAM && refreshSAM) {
-                igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.REFRESH);
+                IGVEventBus.getInstance().post(new AlignmentTrackEvent(this, AlignmentTrackEvent.Type.REFRESH));
             }
             if (updatedPreferenceMap.containsKey(SAM_ALLELE_THRESHOLD)) {
-                igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.ALLELE_THRESHOLD);
+                IGVEventBus.getInstance().post(new AlignmentTrackEvent(this, AlignmentTrackEvent.Type.ALLELE_THRESHOLD));
             }
         }
 

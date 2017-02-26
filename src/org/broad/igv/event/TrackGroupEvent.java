@@ -23,37 +23,19 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.ui.event;
-
-import java.util.EventObject;
+package org.broad.igv.event;
 
 /**
  * @author Jim Robinson
- * @date 12/2/11
+ * @date 10/28/11
  */
-public class AlignmentTrackEvent extends EventObject {
+public class TrackGroupEvent  {
 
-    public enum Type {SPLICE_JUNCTION, VISIBILITY_WINDOW, ALLELE_THRESHOLD, RELOAD, REFRESH, VISIBLE}
+    Object source;
 
-    private Type type;
-    private boolean booleanValue;
-
-    public AlignmentTrackEvent(Object source, Type type) {
-        super(source);
-        this.type = type;
+    public TrackGroupEvent(Object source) {
+        this.source = source;
     }
 
-    public AlignmentTrackEvent(Object source, Type type, boolean booleanValue) {
-        super(source);
-        this.type = type;
-        this.booleanValue = booleanValue;
-    }
 
-    public Type getType() {
-        return type;
-    }
-
-    public boolean getBooleanValue() {
-        return booleanValue;
-    }
 }

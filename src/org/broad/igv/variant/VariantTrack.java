@@ -41,8 +41,9 @@ import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.event.TrackGroupEvent;
-import org.broad.igv.ui.event.TrackGroupEventListener;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.event.TrackGroupEvent;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
@@ -64,7 +65,7 @@ import static org.broad.igv.prefs.Constants.*;
  * @author Jesse Whitworth, Jim Robinson, Fabien Campagne
  */
 @XmlType(factoryMethod = "getNextTrack")
-public class VariantTrack extends FeatureTrack implements TrackGroupEventListener {
+public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(VariantTrack.class);
 
@@ -225,11 +226,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         squishedHeight = sampleCount == 0 ? DEFAULT_SQUISHED_GENOTYPE_HEIGHT :
                 Math.min(DEFAULT_SQUISHED_GENOTYPE_HEIGHT, Math.max(1, (height - variantBandHeight - margins) / sampleCount));
 
-        // Listen for "group by" events.
-        if (IGV.hasInstance()) {
-            IGV.getInstance().addGroupEventListener(this);
-        }
-
         // If sample->bam list file is supplied enable vcfToBamMode.
         String vcfToBamMapping = locator == null ? null : locator.getMappingPath();
 
@@ -256,6 +252,8 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                 setVisibilityWindow(vw);
             }
         }
+
+        IGVEventBus.getInstance().subscribe(TrackGroupEvent.class, this);
 
     }
 
@@ -1138,8 +1136,11 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         this.squishedHeight = squishedHeight;
     }
 
-    public void onTrackGroupEvent(TrackGroupEvent e) {
-        setupGroupsFromAttributes();
+    @Override
+    public void receiveEvent(Object event) {
+        if(event instanceof  TrackGroupEvent) {
+            setupGroupsFromAttributes();
+        }
     }
 
     public boolean hasAlignmentFiles() {

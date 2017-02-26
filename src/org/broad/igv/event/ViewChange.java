@@ -23,9 +23,7 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.ui.event;
-
-import org.broad.igv.ui.panel.ReferenceFrame;
+package org.broad.igv.event;
 
 /**
  * Events corresponding to a change in viewed area (chromosome, position, and/or zoom).

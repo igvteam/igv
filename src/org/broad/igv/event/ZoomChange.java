@@ -23,24 +23,42 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.ui.event;
-
-import org.broad.igv.track.RenderContext;
-import org.broad.igv.ui.panel.ReferenceFrame;
+package org.broad.igv.event;
 
 /**
+ * Events which either cause or are the result of changes in the zoom level
  * User: jacob
- * Date: 2013-Feb-06
+ * Date: 2013-Jan-30
  */
-public class DataLoadedEvent {
+public class ZoomChange {
 
-    public final ReferenceFrame referenceFrame;
 
-    public DataLoadedEvent(ReferenceFrame referenceFrame){
-        this.referenceFrame = referenceFrame;
+    /**
+     * Event indicating that the zoom should change. This event
+     * will generally be sent by UI components which want to change
+     * the zoom
+     */
+    public static class Cause{
+        //public final int oldZoom;
+        public final int newZoom;
+        //public final Object source;
+
+        public Cause(int newZoom){
+            //this.oldZoom = oldZoom;
+            this.newZoom = newZoom;
+            //this.source = source;
+        }
     }
 
-    public ReferenceFrame getReferenceFrame() {
-        return referenceFrame;
+    /**
+     * Event dispatched after objects have changed their zoom level,
+     * generally so UI components can repaint
+     */
+    public static class Result{
+        public final int currentZoom;
+
+        public Result(int currentZoom){
+            this.currentZoom = currentZoom;
+        }
     }
 }

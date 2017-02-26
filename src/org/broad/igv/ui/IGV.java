@@ -59,7 +59,7 @@ import org.broad.igv.sam.InsertionSelectionEvent;
 import org.broad.igv.session.*;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.dnd.GhostGlassPane;
-import org.broad.igv.ui.event.*;
+import org.broad.igv.event.*;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.ui.util.ProgressMonitor;
@@ -73,7 +73,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.io.*;
-import java.lang.ref.WeakReference;
 import java.net.NoRouteToHostException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -134,13 +133,6 @@ public class IGV implements IGVEventObserver {
     // Misc state
     private LinkedList<String> recentSessionList = new LinkedList<String>();
     private boolean isExportingSnapshot = false;
-
-    // Listeners
-    Collection<WeakReference<TrackGroupEventListener>> groupListeners =
-            Collections.synchronizedCollection(new ArrayList<>());
-
-    Collection<WeakReference<AlignmentTrackEventListener>> alignmentTrackListeners =
-            Collections.synchronizedCollection(new ArrayList<>());
 
     private List<JComponent> otherToolMenus = new ArrayList<>();
 
@@ -1043,8 +1035,7 @@ public class IGV implements IGVEventObserver {
             session.reset(sessionPath);
         }
 
-        alignmentTrackListeners.clear();
-        groupListeners.clear();
+        IGVEventBus.getInstance().clear();
 
         contentPane.getMainPanel().resetPanels();
 
@@ -1571,10 +1562,6 @@ public class IGV implements IGVEventObserver {
                 track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
                 track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
 
-                // If the track listens for group events add it to the listener list
-                if (track instanceof TrackGroupEventListener) {
-                    addGroupEventListener((TrackGroupEventListener) track);
-                }
             }
         }
 
@@ -1687,7 +1674,7 @@ public class IGV implements IGVEventObserver {
                 break;
             }
         }
-        groupListeners.clear();
+        IGVEventBus.getInstance().clear();
     }
 
 
@@ -1953,11 +1940,8 @@ public class IGV implements IGVEventObserver {
         }
 
         for (Track t : tracksToRemove) {
-            if (t instanceof TrackGroupEventListener) {
-                removeGroupEventListener((TrackGroupEventListener) t);
-            }
-            if (t instanceof AlignmentTrackEventListener) {
-                removeAlignmentTrackEvent((AlignmentTrackEventListener) t);
+            if (t instanceof IGVEventObserver) {
+                IGVEventBus.getInstance().unsubscribe((IGVEventObserver) t);
             }
         }
 
@@ -2142,7 +2126,7 @@ public class IGV implements IGVEventObserver {
         groupByAttribute = attributeName;
         resetGroups();
         // Some tracks need to respond to changes in grouping, fire notification event
-        notifyGroupEvent();
+        IGVEventBus.getInstance().post(new TrackGroupEvent(this));
     }
 
 
@@ -2150,63 +2134,6 @@ public class IGV implements IGVEventObserver {
         log.debug("Resetting Groups");
         for (TrackPanel trackPanel : getTrackPanels()) {
             trackPanel.groupTracksByAttribute(groupByAttribute);
-        }
-    }
-
-    //////////////////////////////////////////////////////////////////////////////////////////////
-    // Events
-
-    public synchronized void addGroupEventListener(TrackGroupEventListener l) {
-        groupListeners.add(new WeakReference<TrackGroupEventListener>(l));
-    }
-
-    public synchronized void removeGroupEventListener(TrackGroupEventListener l) {
-
-        for (Iterator<WeakReference<TrackGroupEventListener>> it = groupListeners.iterator(); it.hasNext(); ) {
-            TrackGroupEventListener listener = it.next().get();
-            if (listener != null && listener == l) {
-                it.remove();
-                break;
-            }
-        }
-    }
-
-    public void notifyGroupEvent() {
-        TrackGroupEvent e = new TrackGroupEvent(this);
-        for (WeakReference<TrackGroupEventListener> ref : groupListeners) {
-            TrackGroupEventListener l = ref.get();
-            l.onTrackGroupEvent(e);
-        }
-    }
-
-    public synchronized void addAlignmentTrackEventListener(AlignmentTrackEventListener l) {
-        alignmentTrackListeners.add(new WeakReference<AlignmentTrackEventListener>(l));
-    }
-
-    public synchronized void removeAlignmentTrackEvent(AlignmentTrackEventListener l) {
-        for (Iterator<WeakReference<AlignmentTrackEventListener>> it = alignmentTrackListeners.iterator(); it.hasNext(); ) {
-            AlignmentTrackEventListener listener = it.next().get();
-            if (listener != null && listener == l) {
-                it.remove();
-                break;
-            }
-        }
-    }
-
-    public void notifyAlignmentTrackEvent(Object source, AlignmentTrackEvent.Type type, boolean value) {
-        AlignmentTrackEvent e = new AlignmentTrackEvent(source, type, value);
-        for (WeakReference<AlignmentTrackEventListener> ref : alignmentTrackListeners) {
-            AlignmentTrackEventListener l = ref.get();
-            l.onAlignmentTrackEvent(e);
-        }
-    }
-
-
-    public void notifyAlignmentTrackEvent(Object source, AlignmentTrackEvent.Type type) {
-        AlignmentTrackEvent e = new AlignmentTrackEvent(source, type);
-        for (WeakReference<AlignmentTrackEventListener> ref : alignmentTrackListeners) {
-            AlignmentTrackEventListener l = ref.get();
-            l.onAlignmentTrackEvent(e);
         }
     }
 

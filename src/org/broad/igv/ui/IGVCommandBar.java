@@ -49,7 +49,7 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.session.History;
 import org.broad.igv.ui.action.FitDataToWindowMenuAction;
 import org.broad.igv.ui.action.SearchCommand;
-import org.broad.igv.ui.event.*;
+import org.broad.igv.event.*;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;

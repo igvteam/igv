@@ -43,9 +43,9 @@ import org.broad.igv.tools.FeatureSearcher;
 import org.broad.igv.tools.motiffinder.MotifFinderSource;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
-import org.broad.igv.ui.event.DataLoadedEvent;
-import org.broad.igv.ui.event.IGVEventBus;
-import org.broad.igv.ui.event.IGVEventObserver;
+import org.broad.igv.event.DataLoadedEvent;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.BrowserLauncher;
@@ -858,7 +858,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             renderFeatureImpl(context, inputRect, packedFeatures);
         } catch (TribbleException e) {
             log.error("Tribble error", e);
-            //Error loading features.  We'll let the user decide if this is "fatal" or not.  
+            //Error loading features.  We'll let the user decide if this is "fatal" or not.
             if (!fatalLoadError) {
                 fatalLoadError = true;
                 boolean unload = MessageUtils.confirm("<html> Error loading features: " + e.getMessage() +
