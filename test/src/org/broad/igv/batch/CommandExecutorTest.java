@@ -36,7 +36,6 @@ import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.AbstractHeadedTest;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.IGVTestHeadless;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
@@ -56,6 +55,7 @@ import java.util.*;
 import java.util.List;
 
 import static junit.framework.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 /**
  * User: jacob
@@ -68,6 +68,41 @@ public class CommandExecutorTest extends AbstractHeadedTest {
 
     @Rule
     public TestRule testTimeout = new Timeout((int) 1800000);
+
+    public static int checkIsSorted(List<Track> tracks, RegionOfInterest roi, RegionScoreType type, int zoom, ReferenceFrame frame) {
+
+        String chr = roi.getChr();
+        int start = roi.getStart();
+        int end = roi.getEnd();
+        String frameName = frame != null ? frame.getName() : null;
+
+        Track lastTrack = null;
+        int count = 0;
+        for (int ii = 0; ii < tracks.size(); ii++) {
+            Track track = tracks.get(ii);
+            if (track.isRegionScoreType(type)) {
+                String name = track.getName().toLowerCase();
+                if (name.contains("reference")
+                        || name.contains("refseq")) {
+                    continue;
+                }
+                count++;
+                if (lastTrack == null) {
+                    lastTrack = track;
+                    continue;
+                }
+
+                // Test sort order -- by default tracks should be sorted in descending value
+                float s2 = track.getRegionScore(chr, start, end, zoom, type, frameName);
+                float s1 = lastTrack.getRegionScore(chr, start, end, zoom, type, frameName);
+                assertTrue("Track named " + track.getName() + ", " + s2 + " and " + lastTrack.getName() + ", " + s1 + " out of order type " + type, s2 <= s1);
+
+                lastTrack = track;
+            }
+        }
+
+        return count;
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -216,7 +251,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
 
                 tracks = igv.getAllTracks();
                 ReferenceFrame frame = FrameManager.getDefaultFrame();
-                IGVTestHeadless.checkIsSorted(tracks, roi, type, frame.getZoom(), frame);
+                checkIsSorted(tracks, roi, type, frame.getZoom(), frame);
                 count++;
             }
         }
