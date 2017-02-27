@@ -28,6 +28,7 @@ package org.broad.igv.sam;
 
 import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
+import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
@@ -114,9 +115,24 @@ public class SpliceJunctionTrack extends FeatureTrack {
     public void dispose() {
         super.dispose();
         removed = true;
+        if(dataManager != null) {
+            dataManager.dumpAlignments();
+            IGVEventBus.getInstance().unsubscribe(dataManager);
+        }
         dataManager = null;
         alignmentTrack = null;
         setVisible(false);
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        if(visible != isVisible()) {
+            super.setVisible(visible);
+            if (visible) {
+                dataManager.initLoadOptions();
+            }
+            IGV.getInstance().getMainPanel().revalidate();
+        }
     }
 
     /**
@@ -166,10 +182,7 @@ public class SpliceJunctionTrack extends FeatureTrack {
             alignmentItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(SpliceJunctionTrack.this, AlignmentTrackEvent.Type.VISIBLE, alignmentItem.isSelected()));
-                    if (alignmentItem.isSelected()) {
-                        alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(SpliceJunctionTrack.this, AlignmentTrackEvent.Type.RELOAD));
-                    }
+                    alignmentTrack.setVisible(alignmentItem.isSelected());
                 }
             });
             popupMenu.add(alignmentItem);
@@ -198,12 +211,8 @@ public class SpliceJunctionTrack extends FeatureTrack {
 
             final JMenuItem junctionItem = new JMenuItem("Hide Track");
             junctionItem.setEnabled(!isRemoved());
-            junctionItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(SpliceJunctionTrack.this, AlignmentTrackEvent.Type.SPLICE_JUNCTION, false));
-                    IGV.getInstance().getMainPanel().revalidate();
-                }
+            junctionItem.addActionListener(e -> {
+                setVisible(false);
             });
             popupMenu.add(junctionItem);
 

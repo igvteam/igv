@@ -32,6 +32,7 @@ package org.broad.igv.sam;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.data.CoverageDataSource;
+import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
@@ -211,6 +212,10 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     public void dispose() {
         super.dispose();
         removed = true;
+        if(dataManager != null) {
+            dataManager.dumpAlignments();
+            IGVEventBus.getInstance().unsubscribe(dataManager);
+        }
         dataManager = null;
         dataSource = null;
         alignmentTrack = null;
@@ -898,10 +903,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             alignmentItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(CoverageTrack.this, AlignmentTrackEvent.Type.VISIBLE, alignmentItem.isSelected()));
-                    if (alignmentItem.isSelected()) {
-                        alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(CoverageTrack.this, AlignmentTrackEvent.Type.RELOAD));
-                    }
+                    alignmentTrack.setVisible(alignmentItem.isSelected());
                 }
             });
             menu.add(alignmentItem);
@@ -914,8 +916,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                 junctionItem.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        alignmentTrack.onAlignmentTrackEvent(new AlignmentTrackEvent(CoverageTrack.this, AlignmentTrackEvent.Type.SPLICE_JUNCTION, junctionItem.isSelected()));
-                        IGV.getInstance().getMainPanel().revalidate();
+                        spliceJunctionTrack.setVisible(junctionItem.isSelected());
                     }
                 });
 

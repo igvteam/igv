@@ -37,6 +37,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferenceEditorFX;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.session.IGVSessionReader;
@@ -107,7 +108,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     private final AlignmentRenderer renderer;
 
-    private boolean showSpliceJunctions;
     private boolean removed = false;
     private RenderRollback renderRollback;
     private boolean showGroupLine;
@@ -117,7 +117,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         NONE, QUALITY
     }
 
-    public enum ColorOption {
+    enum ColorOption {
         INSERT_SIZE, READ_STRAND, FIRST_OF_PAIR_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, LIBRARY, BISULFITE, NOMESEQ,
         TAG, NONE, UNEXPECTED_PAIR, MAPPED_SIZE, LINK_STRAND
     }
@@ -248,25 +248,23 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
             insertionIntervalsMap = newMap;
         } else if (event instanceof ExperimentTypeChangeEvent) {
-            log.info("Experiment type = " + ((ExperimentTypeChangeEvent) event).type);
-            renderOptions = new RenderOptions(((ExperimentTypeChangeEvent) event).type);
+            if (((ExperimentTypeChangeEvent) event).source == dataManager) {
+                log.info("Experiment type = " + ((ExperimentTypeChangeEvent) event).type);
+                renderOptions = new RenderOptions(((ExperimentTypeChangeEvent) event).type);
+
+                boolean showJunction = getPreferences().getAsBoolean(Constants.SAM_SHOW_JUNCTION_TRACK);
+                if (showJunction != spliceJunctionTrack.isVisible()) {
+                    spliceJunctionTrack.setVisible(showJunction);
+                    IGV.getInstance().revalidateTrackPanels();
+                }
+            }
+
         } else if (event instanceof AlignmentTrackEvent) {
             AlignmentTrackEvent e = (AlignmentTrackEvent) event;
-            AlignmentTrackEvent.Type type = e.getType();
-            switch (type) {
-                case VISIBLE:
-                    dataManager.dumpAlignments();
-                    setVisible(e.getBooleanValue());
-                    IGV.getInstance().getMainPanel().revalidate();
-                    break;
+            AlignmentTrackEvent.Type eventType = e.getType();
+            switch (eventType) {
                 case ALLELE_THRESHOLD:
                     dataManager.alleleThresholdChanged();
-                    break;
-                case SPLICE_JUNCTION:
-                    if (spliceJunctionTrack != null) {
-                        spliceJunctionTrack.setVisible(e.getBooleanValue());
-                    }
-                    dataManager.initLoadOptions();
                     break;
                 case RELOAD:
                     clearCaches();
@@ -287,8 +285,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     @Override
     public void setVisible(boolean visible) {
-        super.setVisible(visible);
-        if (dataManager != null) dataManager.setShowAlignments(visible);
+        if (visible != this.isVisible()) {
+            super.setVisible(visible);
+            if (dataManager != null) {
+                dataManager.setShowAlignments(visible);
+            }
+            IGV.getInstance().getMainPanel().revalidate();
+        }
     }
 
     @XmlElement(name = RenderOptions.NAME)
@@ -1043,41 +1046,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         return alignment;
     }
 
-
-    /**
-     * Handle an AlignmentTrackEvent.
-     *
-     * @param e
-     */
-    public void onAlignmentTrackEvent(AlignmentTrackEvent e) {
-
-        AlignmentTrackEvent.Type type = e.getType();
-        switch (type) {
-            case VISIBLE:
-                dataManager.dumpAlignments();
-                setVisible(e.getBooleanValue());
-                IGV.getInstance().getMainPanel().revalidate();
-                break;
-            case ALLELE_THRESHOLD:
-                dataManager.alleleThresholdChanged();
-                break;
-            case SPLICE_JUNCTION:
-                if (spliceJunctionTrack != null) {
-                    spliceJunctionTrack.setVisible(e.getBooleanValue());
-                }
-                dataManager.initLoadOptions();
-                break;
-            case RELOAD:
-                clearCaches();
-            case REFRESH:
-                setRenderOptions(new RenderOptions(dataManager.getType()));
-                refresh();
-                break;
-        }
-
-    }
-
-
     @Override
     public boolean handleDataClick(TrackClickEvent te) {
 
@@ -1286,7 +1254,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     public void dispose() {
         super.dispose();
         clearCaches();
-        if (dataManager != null) dataManager.dumpAlignments();
+        if (dataManager != null) {
+            dataManager.dumpAlignments();
+            IGVEventBus.getInstance().unsubscribe(dataManager);
+        }
         dataManager = null;
         removed = true;
         setVisible(false);
@@ -2347,7 +2318,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                             public void run() {
                                 if (AlignmentTrack.this.spliceJunctionTrack != null) {
                                     AlignmentTrack.this.spliceJunctionTrack.setVisible(item.isSelected());
-                                    IGV.getInstance().getMainPanel().revalidate();
                                 }
                             }
                         });
@@ -2361,11 +2331,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             alignmentItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-
-                    onAlignmentTrackEvent(new AlignmentTrackEvent(AlignmentTrack.this, AlignmentTrackEvent.Type.VISIBLE, false));
-                    if (alignmentItem.isSelected()) {
-                        onAlignmentTrackEvent(new AlignmentTrackEvent(AlignmentTrack.this, AlignmentTrackEvent.Type.RELOAD));
-                    }
+                    AlignmentTrack.this.setVisible(false);
                 }
             });
             add(alignmentItem);

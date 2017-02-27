@@ -87,9 +87,6 @@ public class IGVEventBus {
         }
     }
 
-    public void clear() {
-        observerMap.clear();
-    }
 }
 
 

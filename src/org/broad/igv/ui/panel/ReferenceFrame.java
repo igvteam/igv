@@ -31,6 +31,7 @@ package org.broad.igv.ui.panel;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.event.ShiftEvent;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
@@ -121,7 +122,6 @@ public class ReferenceFrame {
     protected Locus initialLocus = null;
 
 
-
     public ReferenceFrame(String name) {
         this.name = name;
         Genome genome = getGenome();
@@ -173,12 +173,12 @@ public class ReferenceFrame {
 
     public void changeChromosome(String chrName, boolean recordHistory) {
         boolean changed = setChromosomeName(chrName, false);
-       // if (changed) {
-            ViewChange resultEvent = ViewChange.ChromosomeChangeResult(chrName);
-            resultEvent.setRecordHistory(recordHistory);
-            eventBus.post(resultEvent);
-            changeZoom(0);
-       // }
+        // if (changed) {
+        ViewChange resultEvent = ViewChange.ChromosomeChangeResult(chrName);
+        resultEvent.setRecordHistory(recordHistory);
+        eventBus.post(resultEvent);
+        changeZoom(0);
+        // }
     }
 
     public void changeZoom(int newZoom) {
@@ -556,10 +556,9 @@ public class ReferenceFrame {
 
         InsertionMarker i = InsertionManager.getInstance().getSelectedInsertion(chrName);
 
-        if(i == null || i.position < origin ||  i.position > chromosomePosition) {
+        if (i == null || i.position < origin || i.position > chromosomePosition) {
             return (int) ((chromosomePosition - origin) / getScale());
-        }
-        else {
+        } else {
             return (int) ((chromosomePosition + i.size - origin) / getScale());
         }
     }

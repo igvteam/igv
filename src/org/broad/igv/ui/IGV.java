@@ -288,9 +288,7 @@ public class IGV implements IGVEventObserver {
         }
         mainFrame.setBounds(applicationBounds);
 
-        IGVEventBus.getInstance().subscribe(ViewChange.class, this);
-        IGVEventBus.getInstance().subscribe(InsertionSelectionEvent.class, this);
-        IGVEventBus.getInstance().subscribe(GenomeChangeEvent.class, this);
+        subscribeToEvents();
     }
 
     private void consumeEvents(Component glassPane) {
@@ -1018,7 +1016,10 @@ public class IGV implements IGVEventObserver {
      * @param sessionPath
      */
     public void resetSession(String sessionPath) {
+
         System.gc();
+
+        List<Track> oldTracks = getAllTracks();
 
         AttributeManager.getInstance().clearAllAttributes();
 
@@ -1035,16 +1036,25 @@ public class IGV implements IGVEventObserver {
             session.reset(sessionPath);
         }
 
-        IGVEventBus.getInstance().clear();
-
         contentPane.getMainPanel().resetPanels();
 
         //TODO -- this is a very blunt and dangerous way to clean up -- change to close files associated with this session
         SeekableFileStream.closeAllInstances();
 
-        doRefresh();
+        Set<Track> newTracks = new HashSet<>(getAllTracks());
+        for(Track t : oldTracks) {
 
+        }
+
+        doRefresh();
         System.gc();
+    }
+
+    private void subscribeToEvents() {
+        IGVEventBus.getInstance().subscribe(ViewChange.class, this);
+        IGVEventBus.getInstance().subscribe(ShiftEvent.class, this);
+        IGVEventBus.getInstance().subscribe(InsertionSelectionEvent.class, this);
+        IGVEventBus.getInstance().subscribe(GenomeChangeEvent.class, this);
     }
 
     /**
@@ -1674,7 +1684,7 @@ public class IGV implements IGVEventObserver {
                 break;
             }
         }
-        IGVEventBus.getInstance().clear();
+
     }
 
 
@@ -2448,6 +2458,8 @@ public class IGV implements IGVEventObserver {
     public void receiveEvent(Object event) {
 
         if (event instanceof ViewChange || event instanceof InsertionSelectionEvent) {
+            revalidateTrackPanels();   // TODO -- this seems extreme
+        } else if (event instanceof ShiftEvent) {
             revalidateTrackPanels();
         } else if (event instanceof GenomeChangeEvent) {
             doRefresh();
@@ -2476,7 +2488,6 @@ public class IGV implements IGVEventObserver {
     }
 
     final public void doRefresh() {
-
         contentPane.getMainPanel().revalidate();
         mainFrame.repaint();
         getContentPane().repaint();
@@ -2491,7 +2502,7 @@ public class IGV implements IGVEventObserver {
      */
     public void revalidateTrackPanels() {
 
-        UIUtilities.invokeAndWaitOnEventThread(() -> {
+        UIUtilities.invokeOnEventThread(() -> {
 
             if (Globals.isBatch()) {
                 contentPane.revalidateTrackPanels();

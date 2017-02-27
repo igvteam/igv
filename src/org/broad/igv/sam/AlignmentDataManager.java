@@ -49,7 +49,9 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(AlignmentDataManager.class);
 
-    public enum ExperimentType {OTHER, RNA, BISULFITE, THIRD_GEN};
+    public enum ExperimentType {OTHER, RNA, BISULFITE, THIRD_GEN}
+
+    ;
 
     private Map<ReferenceFrame, AlignmentInterval> intervalCache;
     private ResourceLocator locator;
@@ -80,8 +82,8 @@ public class AlignmentDataManager implements IGVEventObserver {
             Collection<ReferenceFrame> frames = ((FrameManager.ChangeEvent) event).getFrames();
             Map<ReferenceFrame, AlignmentInterval> newCache = Collections.synchronizedMap(new HashMap<>());
             // Trim cache to include only current frames
-            for(ReferenceFrame f : frames) {
-                if(intervalCache.containsKey(f)) {
+            for (ReferenceFrame f : frames) {
+                if (intervalCache.containsKey(f)) {
                     newCache.put(f, intervalCache.get(f));
                 }
             }
@@ -134,8 +136,8 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public void setType(ExperimentType type) {
-        if(type != this.type) {
-            ExperimentTypeChangeEvent event = new ExperimentTypeChangeEvent(this.type, type);
+        if (type != this.type) {
+            ExperimentTypeChangeEvent event = new ExperimentTypeChangeEvent(this, type);
             this.type = type;
             IGVEventBus.getInstance().post(event);
         }
@@ -276,7 +278,6 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
 
-
     AlignmentInterval loadInterval(String chr, int start, int end, AlignmentTrack.RenderOptions renderOptions) {
 
         String sequence = chrMappings.containsKey(chr) ? chrMappings.get(chr) : chr;
@@ -293,7 +294,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, spliceJunctionHelper,
                 downsampleOptions, readStats, peStats, bisulfiteContext, showAlignments);
 
-        if(type == null) {
+        if (type == null) {
             readStats.compute();
             inferType(readStats);
         }
@@ -305,14 +306,14 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     /**
      * Some empirical metrics for determining experiment type
+     *
      * @param readStats
      */
     private void inferType(ReadStats readStats) {
 
-        if(readStats.readLengthStdDev > 100 || readStats.medianReadLength > 1000) {
+        if (readStats.readLengthStdDev > 100 || readStats.medianReadLength > 1000) {
             setType(ExperimentType.THIRD_GEN);  // Could also use fracReadsWithIndels
-        }
-        else if(readStats.medianRefToReadRatio > 10) {
+        } else if (readStats.medianRefToReadRatio > 10) {
             setType(ExperimentType.RNA);
         } else {
             setType(ExperimentType.OTHER);
@@ -321,8 +322,8 @@ public class AlignmentDataManager implements IGVEventObserver {
 
 
     public synchronized PackedAlignments getGroups(RenderContext context, AlignmentTrack.RenderOptions renderOptions) {
-     //   load(context.getReferenceFrame(), renderOptions, false);
-     //   Range range = context.getReferenceFrame().getCurrentRange();
+        //   load(context.getReferenceFrame(), renderOptions, false);
+        //   Range range = context.getReferenceFrame().getCurrentRange();
 
         AlignmentInterval interval = intervalCache.get(context.getReferenceFrame());
         if (interval != null) {
@@ -388,7 +389,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     public int getMaxGroupCount() {
         int groupCount = 0;
         for (AlignmentInterval interval : intervalCache.values()) {
-            if(interval != null) {  // Not sure how this happens but it does
+            if (interval != null) {  // Not sure how this happens but it does
                 PackedAlignments packedAlignments = interval.getPackedAlignments();
                 if (packedAlignments != null) {
                     groupCount = Math.max(groupCount, packedAlignments.size());
@@ -435,8 +436,16 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public void setShowAlignments(boolean showAlignments) {
-        this.showAlignments = showAlignments;
-        clear();
+        if (showAlignments != this.showAlignments) {
+            this.showAlignments = showAlignments;
+            if (showAlignments == false) {
+                dumpAlignments();
+            } else {
+                // Change from false => true,  need to reload
+                intervalCache.clear();
+            }
+        }
+
     }
 
     public boolean isTenX() {

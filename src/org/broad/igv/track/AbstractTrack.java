@@ -30,6 +30,8 @@ package org.broad.igv.track;
 import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.gwas.GWASTrack;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
@@ -1043,8 +1045,9 @@ public abstract class AbstractTrack implements Track {
 
     @Override
     public void dispose() {
-        // Default is to do nothing.  Override in subclasses
-
+        if(this instanceof IGVEventObserver) {
+            IGVEventBus.getInstance().unsubscribe((IGVEventObserver) this);
+        }
     }
 
 

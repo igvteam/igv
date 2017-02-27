@@ -5,11 +5,11 @@ package org.broad.igv.sam;
  */
 public class ExperimentTypeChangeEvent {
 
-    public final AlignmentDataManager.ExperimentType oldType;
+    public final Object source;
     public final AlignmentDataManager.ExperimentType type;
 
-    public ExperimentTypeChangeEvent(AlignmentDataManager.ExperimentType oldType, AlignmentDataManager.ExperimentType type) {
-        this.oldType = type;
+    public ExperimentTypeChangeEvent(Object source, AlignmentDataManager.ExperimentType type) {
+        this.source = source;
         this.type = type;
     }
 }

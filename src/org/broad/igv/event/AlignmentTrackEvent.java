@@ -31,7 +31,7 @@ package org.broad.igv.event;
  */
 public class AlignmentTrackEvent {
 
-    public enum Type {SPLICE_JUNCTION, VISIBILITY_WINDOW, ALLELE_THRESHOLD, RELOAD, REFRESH, VISIBLE}
+    public enum Type {ALLELE_THRESHOLD, RELOAD, REFRESH}
 
     private Object source;
     private Type type;

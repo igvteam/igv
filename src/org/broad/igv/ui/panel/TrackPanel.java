@@ -164,7 +164,10 @@ public class TrackPanel extends IGVPanel {
     }
 
     public void clearTracks() {
-        trackGroups.clear();
+        for(Track t : getTracks()) {
+            t.dispose();
+        }
+       trackGroups.clear();
         trackCountEstimate = 0;
     }
 

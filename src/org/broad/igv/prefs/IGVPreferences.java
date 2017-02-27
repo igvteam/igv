@@ -311,9 +311,6 @@ public class IGVPreferences {
             }
 
             if (reloadSAM) {
-                if (updatedPreferenceMap.containsKey(SAM_MAX_VISIBLE_RANGE)) {
-                    IGVEventBus.getInstance().post(new AlignmentTrackEvent(this, AlignmentTrackEvent.Type.VISIBILITY_WINDOW));
-                }
                 IGVEventBus.getInstance().post(new AlignmentTrackEvent(this, AlignmentTrackEvent.Type.RELOAD));
             }
             // A reload is harsher than a refresh; only send the weaker request if the stronger one is not sent.
