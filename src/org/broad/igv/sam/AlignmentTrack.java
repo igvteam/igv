@@ -290,7 +290,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             if (dataManager != null) {
                 dataManager.setShowAlignments(visible);
             }
-            IGV.getInstance().getMainPanel().revalidate();
+            if(IGV.hasInstance()) IGV.getInstance().getMainPanel().revalidate();
         }
     }
 

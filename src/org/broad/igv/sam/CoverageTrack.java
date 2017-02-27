@@ -932,7 +932,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
                         public void run() {
                             setVisible(false);
-                            IGV.getInstance().getMainPanel().revalidate();
+                            if(IGV.hasInstance()) IGV.getInstance().getMainPanel().revalidate();
 
                         }
                     });

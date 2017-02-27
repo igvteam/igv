@@ -131,7 +131,9 @@ public class SpliceJunctionTrack extends FeatureTrack {
             if (visible) {
                 dataManager.initLoadOptions();
             }
-            IGV.getInstance().getMainPanel().revalidate();
+            if(IGV.hasInstance()) {
+                IGV.getInstance().getMainPanel().revalidate();
+            }
         }
     }
 

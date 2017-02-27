@@ -96,36 +96,6 @@ public class HttpUtilsTest extends AbstractHeadlessTest{
         assertEquals(acceptsRanges, HttpUtils.getInstance().useByteRange(url));
     }
 
-    /**
-     * Test that when we include the Range header, {@link HttpUtils#openConnection(java.net.URL, java.util.Map, String) we detect the absence of the range response properly
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testFailedRangeRequest() throws Exception {
-        int start = 1;
-        int end = 100;
-        int numBytes = end - start + 1;
-        String byteRange = "bytes=" + start + "-" + end;
-        Map<String, String> params = new HashMap();
-        params.put("Range", byteRange);
-
-        HttpURLConnection conn = HttpUtils.getInstance().openConnection(new URL(noRangeHeaderSupportString), params);
-        boolean rangeRequestedNotReceived = HttpUtils.getInstance().isExpectedRangeMissing(conn, params);
-
-        assertTrue(rangeRequestedNotReceived);
-
-        InputStream input = conn.getInputStream();
-        byte b;
-        int count=0, cc;
-        while( (cc = input.read()) >= 0){
-            count += cc;
-            if(count > numBytes) break;
-        }
-
-        assertTrue("Read fewer than expected bytes even though range header ignored", count > numBytes);
-        input.close();
-    }
 
     @Ignore
     @Test

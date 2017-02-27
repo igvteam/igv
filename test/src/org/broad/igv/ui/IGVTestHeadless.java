@@ -62,30 +62,6 @@ public class IGVTestHeadless extends AbstractHeadlessTest{
     public IGVTestHeadless() {
     }
 
-    @Test
-    public void testSorts() throws Exception {
-        String sessionPath = TestUtils.DATA_DIR + "sessions/metabric_expression.xml";
-        List<Track> tracks = new ArrayList<Track>();
-        InputStream cbioStream = ParsingUtils.openInputStream(sessionPath);
-        Document document = Utilities.createDOMDocumentFromXmlStream(cbioStream);
-        NodeList nodeTracks = document.getElementsByTagName("Resource");
-
-        TrackLoader loader = new TrackLoader();
-
-        for (int nt = 0; nt < nodeTracks.getLength(); nt++) {
-            Node node = nodeTracks.item(nt);
-            ResourceLocator locator = new ResourceLocator(node.getAttributes().getNamedItem("path").getTextContent());
-            tracks.addAll(loader.load(locator, genome));
-        }
-
-        RegionScoreType[] types = RegionScoreType.values();
-        int count = 0;
-        for (RegionScoreType type : types) {
-            count += tstSort(tracks, type);
-
-        }
-        assertTrue("Did not check enough tracks", count > 2 * types.length);
-    }
 
     private int tstSort(List<Track> tracks, RegionScoreType type) throws Exception {
         //Sort the "sortable" tracks
