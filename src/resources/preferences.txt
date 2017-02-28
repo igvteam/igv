@@ -64,7 +64,7 @@ Background color
 color
 250,250,250
 
-#Tracks 
+#Tracks
 
 IGV.chart.track.height
 Default numeric track height (pixels)
@@ -411,6 +411,11 @@ PROXY.WHITELIST
 Whitelist
 string
 
+PROXY.TYPE
+Proxy type
+select HTTP|SOCKS|DIRECT
+HTTP
+
 ---
 
 PROXY.AUTHENTICATE
@@ -429,9 +434,58 @@ string
 
 #Advanced
 
+---
 
+PORT_ENABLED
+Enable port
+boolean
+true
+
+PORT_NUMBER
+Port number
+integer
+60161
+
+---
+
+IGV.genome.sequence.dir
+Genome server URL
+string
+http://igv.broadinstitute.org/genomes/genomes.txt
+
+MASTER_RESOURCE_FILE_KEY
+Data registry url
+string
+https://data.broadinstitute.org/igvdata/$$_dataServerRegistry.txt
+
+---
+
+BLAT_URL
+Blat url
+String
+http://genome.cse.ucsc.edu/cgi-bin/hgBlat
+
+---
+
+TOOLTIP.INITIAL_DELAY
+Tooltip inital delay (ms)
+integer
+50
+
+TOOLTIP.RESHOW_DELAY
+Tooltip reshow delay (ms)
+integer
+50
+
+TOOLTIP.DISMISS_DELAY
+Tooltip dismiss delay (ms)
+integer
+60000
+
+---
 
 #Hidden
+
 SAM.AUTOSORT	false
 SAM.SHADE_CENTER	true
 SAM.SHOW_REF_SEQ	false
@@ -453,7 +507,7 @@ SEARCH_ZOOM	true
 SAVE_GOOGLE_CREDENTIALS	true
 MAX_SEQUENCE_RESOLUTION	2
 DEFAULT_FONT_ATTRIBUTE	0
-TRACK_ATTRIBUTE_NAME_KEY		
+TRACK_ATTRIBUTE_NAME_KEY
 
 OVERLAY_TRACKS_KEY	true
 SHOW_ORPHANED_MUTATIONS	true
@@ -478,17 +532,14 @@ USE_PROBE_MAPPING_FILE	false
 CHART.SHOW_ALL_HEATMAP	false
 CHART.COLOR_TRACK_NAME	true
 
-PORT_ENABLED	true
 IGV.track.show.attribute.views	true
-
-
 
 
 BYPASS_FILE_AUTO_DISCOVERY	false
 
 SHOW_GENOME_SERVER_WARNING	true
 
-IGV.genome.sequence.dir	http://igv.broadinstitute.org/genomes/genomes.txt
+
 OVERLAY_ATTRIBUTE_KEY	LINKING_ID
 DEFAULT_GENOME_KEY	hg19
 
@@ -508,7 +559,6 @@ GWAS_PRIMARY_COLOR	69,101,183
 GWAS_SECONDARY_COLOR	250,169,10
 GWAS_SHOW_AXIS	true
 
-
 ENABLE_ANTIALIASING	true
 NAME_PANEL_WIDTH	160
 
@@ -517,21 +567,19 @@ GENOME_SPACE_DM_SERVER	https://dm.genomespace.org/datamanager/v1.0/
 GENOME_SPACE_ATM_SERVER	https://atm.genomespace.org/atm/v1.0/
 GENOME_SPACE_IDENTITY_SERVER	https://identitydev.genomespace.org:8444/identityServer/basic
 DB_ENABLED	false
-DB_HOST	
-DB_NAME	
+DB_HOST
+DB_NAME
 DB_PORT	-1
-MASTER_RESOURCE_FILE_KEY	https://data.broadinstitute.org/igvdata/$$_dataServerRegistry.txt
+
 CBIO_MUTATION_THRESHOLD	1
 CBIO_AMPLIFICATION_THRESHOLD	0.9
 CBIO_DELETION_THRESHOLD	0.9
 CBIO_EXPRESSION_UP_THRESHOLD	1.0
 CBIO_EXPRESSION_DOWN_THRESHOLD	1.0
-TOOLTIP.INITIAL_DELAY	50
-TOOLTIP.RESHOW_DELAY	50
-TOOLTIP.DISMISS_DELAY	60000
+
 DETAILS_BEHAVIOR	HOVER
 SHOW_SIZE_WARNING	true
-SKIP_VERSION	
+SKIP_VERSION
 COLOR.A	0,150,0
 COLOR.C	0,0,255
 COLOR.T	255,0,0
@@ -546,7 +594,6 @@ SAM.COLOR.N	182,182,182
 SASHIMI.SHOW_COVERAGE	true
 
 
-BLAT_URL	http://genome.cse.ucsc.edu/cgi-bin/hgBlat
 GENE_LIST_BED_FORMAT	false
 
 showLOS	true

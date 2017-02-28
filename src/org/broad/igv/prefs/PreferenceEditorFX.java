@@ -2,6 +2,7 @@ package org.broad.igv.prefs;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.embed.swing.JFXPanel;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -15,14 +16,22 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import oracle.jdbc.proxy.annotation.Pre;
 import org.apache.batik.util.PreferenceManager;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
+import org.broad.igv.ui.util.FileDialogUtils;
+import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
 public class PreferenceEditorFX {
+
+    public static final String SEPARATOR_KEY = "---";
 
     public static void main(String[] args) throws IOException {
 
@@ -50,7 +59,8 @@ public class PreferenceEditorFX {
 
         for (Map.Entry<String, List<Preference>> entry : prefMap.entrySet()) {
 
-            Tab tab = new Tab(entry.getKey());
+            final String tabLabel = entry.getKey();
+            Tab tab = new Tab(tabLabel);
             tab.setClosable(false);
 
             pane.getTabs().add(tab);
@@ -60,7 +70,7 @@ public class PreferenceEditorFX {
 
             VBox vBox = new VBox();
             vBox.setFillWidth(true);
-            vBox.prefWidthProperty().bind(scene.widthProperty());
+            //   vBox.prefWidthProperty().bind(pane.widthProperty());
             scrollPane.setContent(vBox);
 
             GridPane gridPane = new GridPane();
@@ -74,7 +84,7 @@ public class PreferenceEditorFX {
             for (Preference pref : entry.getValue()) {
 
                 try {
-                    if (pref.getKey() == null) {
+                    if (pref.getKey().equals(SEPARATOR_KEY)) {
                         Separator sep = new Separator();
                         GridPane.setColumnSpan(sep, 4);
                         gridPane.add(sep, 1, row);
@@ -109,6 +119,18 @@ public class PreferenceEditorFX {
                         });
                         GridPane.setColumnSpan(cb, 2);
                         gridPane.add(cb, 1, row);
+                    } else if (pref.getType().startsWith("select")) {
+                        Label label = new Label(pref.getLabel());
+                        String[] selections = Globals.whitespacePattern.split(pref.getType())[1].split("\\|");
+                        final ComboBox comboBox = new ComboBox(FXCollections.observableArrayList(Arrays.asList(selections)));
+                        comboBox.valueProperty().setValue(pref.getDefaultValue());
+                        comboBox.valueProperty().addListener((ov, t, t1) -> {
+                            System.out.println("Set " + pref.getLabel() + " " + comboBox.valueProperty().toString());
+                        });
+                        gridPane.add(label, 1, row);
+                        GridPane.setColumnSpan(comboBox, 3);
+                        gridPane.add(comboBox, 2, row);
+
                     } else {
                         Label label = new Label(pref.getLabel());
                         TextField field = new TextField(preferences.get(pref.getKey()));
@@ -136,6 +158,30 @@ public class PreferenceEditorFX {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+            }
+
+            if (tabLabel.equalsIgnoreCase("Advanced")) {
+                // Add IGV directory management at the end.  This is a special case
+                String currentDirectory = DirectoryManager.getIgvDirectory().getAbsolutePath();
+                final Label currentDirectoryLabel = new Label("IGV Directory: " + currentDirectory);
+                final Button moveButton = new Button("Move...");
+                row++;
+                GridPane.setColumnSpan(currentDirectoryLabel, 3);
+                gridPane.add(currentDirectoryLabel, 1, row);
+                gridPane.add(moveButton, 3, row);
+
+                moveButton.setOnAction(event -> {
+                    // Do this on the Swing thread until we port to javafx file dialog
+                    UIUtilities.invokeOnEventThread(() -> {
+                        final File igvDirectory = DirectoryManager.getIgvDirectory();
+                        final File newDirectory = FileDialogUtils.chooseDirectory("Select IGV directory", DirectoryManager.getUserDirectory());
+                        if (newDirectory != null && !newDirectory.equals(igvDirectory)) {
+                            DirectoryManager.moveIGVDirectory(newDirectory);
+                            Platform.runLater(() -> currentDirectoryLabel.setText(newDirectory.getAbsolutePath()));
+                        }
+                    });
+                });
+
             }
         }
 
@@ -166,11 +212,13 @@ public class PreferenceEditorFX {
 
         int tokenCount = 0;
         String group;
+        String key;
         String[] tokens;
 
 
-        Preference(String group) {
-            tokens = new String[6];
+        Preference(String key, String group) {
+            this.key = key;
+            tokens = new String[4];
             this.group = group;
         }
 
@@ -183,23 +231,23 @@ public class PreferenceEditorFX {
         }
 
         String getKey() {
-            return tokens[0];
+            return key;
         }
 
         String getLabel() {
-            return tokens[1];
+            return tokens[0];
         }
 
         String getType() {
-            return tokens[2];
+            return tokens[1];
         }
 
         String getDefaultValue() {
-            return tokens[3];
+            return tokens[2];
         }
 
         String getComment() {
-            return tokens[4];
+            return tokens[3];
         }
 
         String getGroup() {
@@ -227,13 +275,16 @@ public class PreferenceEditorFX {
 
             nextLine = nextLine.trim();
 
-            if (nextLine.startsWith("---")) {
-                prefList.add(new Preference(group));   // "Blank" preference
+            if (nextLine.startsWith(SEPARATOR_KEY)) {
+                prefList.add(new Preference(SEPARATOR_KEY, group));   // "Blank" preference
                 continue;
             }
 
             if (nextLine.startsWith("##")) {
-                if(prefList != null && currentPreference != null) {
+
+                // New group
+
+                if (prefList != null && currentPreference != null) {
                     prefList.add(currentPreference);
                 }
 
@@ -242,31 +293,35 @@ public class PreferenceEditorFX {
                     group = nextLine.substring(2);
                 }
 
-                currentPreference = new Preference(group);
+                currentPreference = null;
                 continue;
             }
 
             if (nextLine.startsWith("#")) {
 
+                // New tab
+
                 group = null;
 
-                if(prefList != null && currentPreference != null) {
+                if (prefList != null && currentPreference != null) {
                     prefList.add(currentPreference);
                 }
 
                 String tab = nextLine.substring(1);
                 prefList = new ArrayList<>();
                 map.put(tab, prefList);
-                currentPreference = new Preference(group);
+                currentPreference = null;
                 continue;
             }
 
-            if(nextLine.length() == 0) {
-                if(prefList != null && currentPreference != null) {
+            if (nextLine.length() == 0) {
+                if (prefList != null && currentPreference != null) {
                     prefList.add(currentPreference);
+                    currentPreference = null;
                 }
-                currentPreference = new Preference(group);
-            } else if(currentPreference != null) {
+            } else if (currentPreference == null) {
+                currentPreference = new Preference(nextLine, group);
+            } else {
                 currentPreference.pushToken(nextLine);
             }
 
