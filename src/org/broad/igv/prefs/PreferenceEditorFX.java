@@ -1,41 +1,32 @@
 package org.broad.igv.prefs;
 
-import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.embed.swing.JFXPanel;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
-import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
-import javafx.stage.Stage;
-import oracle.jdbc.proxy.annotation.Pre;
-import org.apache.batik.util.PreferenceManager;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 public class PreferenceEditorFX {
 
     public static final String SEPARATOR_KEY = "---";
+    public static final String INFO_KEY = "info";
+    public static final String CATEGORY_KEY = "category";
 
     public static void main(String[] args) throws IOException {
 
-        Map<String, List<Preference>> prefMap = loadPreferenceList();
+        List<PreferenceGroup> preferenceGroups = loadPreferenceList();
 
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Preferences");
@@ -45,21 +36,22 @@ public class PreferenceEditorFX {
             frame.setVisible(true);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-            Platform.runLater(() -> initFX(fxPanel, prefMap));
+            Platform.runLater(() -> initFX(fxPanel, preferenceGroups));
         });
     }
 
-    private static void initFX(JFXPanel fxPanel, Map<String, List<Preference>> prefMap) {
+    private static void initFX(JFXPanel fxPanel, List<PreferenceGroup> preferenceGroups) {
 
-        final IGVPreferences preferences = PreferencesManager.getPreferences();
         final Map<String, String> updatedPrefs = new HashMap<>();
 
         TabPane pane = new TabPane();
         Scene scene = new Scene(pane);
 
-        for (Map.Entry<String, List<Preference>> entry : prefMap.entrySet()) {
+        for (PreferenceGroup entry : preferenceGroups) {
 
-            final String tabLabel = entry.getKey();
+            final IGVPreferences preferences = PreferencesManager.getPreferences(entry.category);
+
+            final String tabLabel = entry.tabLabel;
             Tab tab = new Tab(tabLabel);
             tab.setClosable(false);
 
@@ -81,14 +73,27 @@ public class PreferenceEditorFX {
             String currentGroup = null;
 
             int row = 1;
-            for (Preference pref : entry.getValue()) {
+            for (Preference pref : entry.preferences) {
 
                 try {
+                    Tooltip tooltip = pref.getComment() == null ? null : new Tooltip(pref.getComment());
+
                     if (pref.getKey().equals(SEPARATOR_KEY)) {
                         Separator sep = new Separator();
                         GridPane.setColumnSpan(sep, 4);
                         gridPane.add(sep, 1, row);
                         row++;
+                        continue;
+                    }
+
+                    if (pref.getKey().equals(INFO_KEY)) {
+                        row++;
+                        Label label = new Label(pref.getLabel());
+                        label.setStyle("-fx-font-size:16");
+                        label.setStyle("-fx-font-weight: bold");
+                        GridPane.setColumnSpan(label, 4);
+                        gridPane.add(label, 1, row);
+                        row += 2;
                         continue;
                     }
 
@@ -119,6 +124,11 @@ public class PreferenceEditorFX {
                         });
                         GridPane.setColumnSpan(cb, 2);
                         gridPane.add(cb, 1, row);
+
+                        if (tooltip != null) {
+                            cb.setTooltip(tooltip);
+                        }
+
                     } else if (pref.getType().startsWith("select")) {
                         Label label = new Label(pref.getLabel());
                         String[] selections = Globals.whitespacePattern.split(pref.getType())[1].split("\\|");
@@ -131,9 +141,15 @@ public class PreferenceEditorFX {
                         GridPane.setColumnSpan(comboBox, 3);
                         gridPane.add(comboBox, 2, row);
 
+                        if (tooltip != null) {
+                            label.setTooltip(tooltip);
+                            comboBox.setTooltip(tooltip);
+                        }
+
                     } else {
                         Label label = new Label(pref.getLabel());
                         TextField field = new TextField(preferences.get(pref.getKey()));
+                        field.setPrefWidth(500);
                         field.setOnAction(event -> {
                             final String text = field.getText();
                             if (validate(text, pref.getType())) {
@@ -146,13 +162,14 @@ public class PreferenceEditorFX {
                         });
                         gridPane.add(label, 1, row);
                         gridPane.add(field, 2, row);
+
+
+                        if (tooltip != null) {
+                            label.setTooltip(tooltip);
+                            field.setTooltip(tooltip);
+                        }
                     }
 
-                    if (pref.getComment() != null) {
-                        Text label = new Text(pref.getComment());
-                        label.setStyle("-fx-font-style: italic;");  // Currently doesn't work (JavaFX bug)
-                        gridPane.add(label, 3, row);
-                    }
 
                     row++;
                 } catch (Exception e) {
@@ -166,9 +183,9 @@ public class PreferenceEditorFX {
                 final Label currentDirectoryLabel = new Label("IGV Directory: " + currentDirectory);
                 final Button moveButton = new Button("Move...");
                 row++;
-                GridPane.setColumnSpan(currentDirectoryLabel, 3);
                 gridPane.add(currentDirectoryLabel, 1, row);
-                gridPane.add(moveButton, 3, row);
+                GridPane.setHalignment(moveButton, HPos.RIGHT);
+                gridPane.add(moveButton, 2, row);
 
                 moveButton.setOnAction(event -> {
                     // Do this on the Swing thread until we port to javafx file dialog
@@ -210,124 +227,142 @@ public class PreferenceEditorFX {
 
     private static class Preference {
 
-        int tokenCount = 0;
         String group;
-        String key;
         String[] tokens;
 
-
-        Preference(String key, String group) {
-            this.key = key;
-            tokens = new String[4];
+        Preference(String [] tokens, String group) {
+            this.tokens = tokens;
             this.group = group;
         }
 
-        void pushToken(String token) {
-            try {
-                tokens[tokenCount++] = token;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        Preference (String key, String group)
+        {
+            this(new String [] {key, null, null, null}, group);
         }
+
+        Preference (String key, String label, String group)
+        {
+            this(new String [] {key, label, null, null}, group);
+        }
+
 
         String getKey() {
-            return key;
-        }
-
-        String getLabel() {
             return tokens[0];
         }
 
-        String getType() {
+        String getLabel() {
             return tokens[1];
         }
 
-        String getDefaultValue() {
+        String getType() {
             return tokens[2];
         }
 
-        String getComment() {
+        String getDefaultValue() {
             return tokens[3];
+        }
+
+        String getComment() {
+            return tokens.length > 4 ? tokens[4] : null;
         }
 
         String getGroup() {
             return group;
         }
 
+        String printString() {
+            String str = getKey() + "\t" + getLabel() + "\t" + getType() + "\t" + getDefaultValue();
+            if (getComment() != null) str += "\t" + getComment();
+            return str;
+        }
+
     }
 
 
-    static LinkedHashMap<String, List<Preference>> loadPreferenceList() throws IOException {
+    static List<PreferenceGroup> loadPreferenceList() throws IOException {
 
-        LinkedHashMap<String, List<Preference>> map = new LinkedHashMap<>();
+        List<PreferenceGroup> groupList = new ArrayList<>();
         List<Preference> prefList = null;
 
-        BufferedReader reader = new BufferedReader(new java.io.InputStreamReader(PreferenceEditorFX.class.getResourceAsStream("/resources/preferences.txt")));
+        BufferedReader reader = new BufferedReader(new java.io.InputStreamReader(PreferenceEditorFX.class.getResourceAsStream("/org/broad/igv/prefs/preferences.tab")));
         String nextLine;
         String group = null;
-        Preference currentPreference = null;
 
         while ((nextLine = reader.readLine()) != null) {
-
-            if (nextLine.startsWith("//")) continue;
-
-            if (nextLine.startsWith("#Hidden")) break;
-
             nextLine = nextLine.trim();
 
-            if (nextLine.startsWith(SEPARATOR_KEY)) {
-                prefList.add(new Preference(SEPARATOR_KEY, group));   // "Blank" preference
+            if (nextLine.startsWith("//") || nextLine.length() == 0) {
                 continue;
             }
 
-            if (nextLine.startsWith("##")) {
+            else if (nextLine.startsWith("#Hidden")) {
+                break;
+            }
 
-                // New group
+            else if (nextLine.startsWith(SEPARATOR_KEY)) {
+                prefList.add(new Preference(SEPARATOR_KEY, group));
+                continue;
+            }
 
-                if (prefList != null && currentPreference != null) {
-                    prefList.add(currentPreference);
-                }
+            else if (nextLine.startsWith(INFO_KEY)) {
+                Preference preference = new Preference(INFO_KEY, nextLine.substring(INFO_KEY.length()).trim(), group);
+                prefList.add(preference);   // "Blank" preference
+                continue;
+            }
+
+
+            else if (nextLine.startsWith("##")) {
 
                 group = null;  // End previous group
                 if (nextLine.length() > 2) {
-                    group = nextLine.substring(2);
+                    group = nextLine.substring(2);  // New group
                 }
-
-                currentPreference = null;
                 continue;
             }
 
-            if (nextLine.startsWith("#")) {
+            else if (nextLine.startsWith("#")) {
 
                 // New tab
 
+                String[] tokens = Globals.tabPattern.split(nextLine);
+                String tabLabel = tokens[0].substring(1);
+                String category = tokens.length > 1 ? tokens[1] : null;
+                prefList = new ArrayList<>();
+                PreferenceGroup preferenceGroup = new PreferenceGroup(tabLabel, category, prefList);
+                groupList.add(preferenceGroup);
+
                 group = null;
 
-                if (prefList != null && currentPreference != null) {
-                    prefList.add(currentPreference);
-                }
-
-                String tab = nextLine.substring(1);
-                prefList = new ArrayList<>();
-                map.put(tab, prefList);
-                currentPreference = null;
                 continue;
             }
 
-            if (nextLine.length() == 0) {
-                if (prefList != null && currentPreference != null) {
-                    prefList.add(currentPreference);
-                    currentPreference = null;
+            else {
+
+                String[] tokens = Globals.tabPattern.split(nextLine);
+                if(tokens.length < 4) {
+
                 }
-            } else if (currentPreference == null) {
-                currentPreference = new Preference(nextLine, group);
-            } else {
-                currentPreference.pushToken(nextLine);
+                else {
+                    prefList.add(new Preference(tokens, group));
+                }
             }
 
-
         }
-        return map;
+
+        return groupList;
+    }
+
+    static class PreferenceGroup {
+
+        String tabLabel;
+        String category;
+        List<Preference> preferences;
+
+        public PreferenceGroup(String tabLabel, String category, List<Preference> preferences) {
+            this.tabLabel = tabLabel;
+            this.category = category;
+            this.preferences = preferences;
+        }
     }
 
 }
