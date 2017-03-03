@@ -23,6 +23,7 @@ public class BasePairRenderer {
     Color ARC_COLOR_C = new Color(50, 0, 50, 250);
 
     int dir = -1; // 1 for up, -1 for down
+    boolean scaleToTrackHeight = false;
 
     // central horizontal line color
     Color COLOR_CENTERLINE = new Color(0, 0, 0, 100);
