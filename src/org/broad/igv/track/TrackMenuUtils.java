@@ -515,6 +515,30 @@ public class TrackMenuUtils {
     // stevenbusan
     public static void addBasePairItems(JPopupMenu menu, final Collection<Track> tracks) {
 
+        JCheckBoxMenuItem fitHeightBox = new JCheckBoxMenuItem("Fit arcs within track height");
+        for (Track track : tracks) {
+            if (track instanceof BasePairTrack) {
+                if (((BasePairTrack) track).getFitHeight()) {
+                    fitHeightBox.setSelected(true);
+                }
+            }
+        }
+        fitHeightBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                AbstractButton b = (AbstractButton) evt.getSource();
+                boolean isSelected = b.getModel().isSelected();
+                for (Track track : tracks) {
+                    if (track instanceof BasePairTrack) {
+                        ((BasePairTrack) track).setFitHeight(isSelected);
+                    }
+                }
+                IGV.getInstance().repaint();
+            }
+        });
+        menu.add(fitHeightBox);
+
+        menu.addSeparator();
+
         JLabel arcDirectionHeading = new JLabel(LEADING_HEADING_SPACER + "Arc direction", JLabel.LEFT);
         arcDirectionHeading.setFont(UIConstants.boldFont);
 
@@ -691,6 +715,7 @@ public class TrackMenuUtils {
      */
     public static void addSharedItems(JPopupMenu menu, final Collection<Track> tracks, boolean hasFeatureTracks, boolean hasCoverageTracks) {
 
+        //JLabel trackSettingsHeading = new JLabel(LEADING_HEADING_SPACER + "Track Settings", JLabel.LEFT);
         //JLabel trackSettingsHeading = new JLabel(LEADING_HEADING_SPACER + "Track Settings", JLabel.LEFT);
         //trackSettingsHeading.setFont(boldFont);
         //menu.add(trackSettingsHeading);

@@ -41,4 +41,9 @@ public class BasePairTrack extends AbstractTrack {
     public void setDirection(int d){
         basePairRenderer.setDirection(d);
     }
+
+    public boolean getFitHeight() { return basePairRenderer.getFitHeight(); }
+
+    public void setFitHeight(boolean b) { basePairRenderer.setFitHeight(b); }
+
 }
