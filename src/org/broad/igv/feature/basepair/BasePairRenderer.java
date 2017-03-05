@@ -5,8 +5,10 @@ package org.broad.igv.feature.basepair;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.basepair.BasePairTrack.*;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.RenderContext;
+
 
 import java.awt.*;
 import java.awt.geom.GeneralPath;
@@ -18,34 +20,16 @@ public class BasePairRenderer {
 
     private static Logger log = Logger.getLogger(BasePairRenderer.class);
 
+    // TODO: move these to BasePairTrack and pass as params to rendering funcs?
     Color ARC_COLOR_A = new Color(50, 50, 150, 140); //transparent dull blue
     Color ARC_COLOR_B = new Color(150, 50, 50, 140); //transparent dull red
     Color ARC_COLOR_C = new Color(50, 0, 50, 250);
 
-    int dir = -1; // 1 for up, -1 for down
-    boolean fitHeight = false; // scale arc heights to fit current track height
-    double heightScale = 1.0;
-
     // central horizontal line color
     Color COLOR_CENTERLINE = new Color(0, 0, 0, 100);
 
-    public int getDirection() {
-        return dir;
-    }
-
-    public void setDirection(int d) {
-        dir = d;
-    }
-
-    public boolean getFitHeight() {
-        return fitHeight;
-    }
-
-    public void setFitHeight(boolean b) {
-        fitHeight = b;
-    }
-
-    public void draw(BasePairData data, RenderContext context, Rectangle trackRectangle) {
+    public void draw(BasePairData data, RenderContext context, Rectangle trackRectangle,
+                     RenderOptions renderOptions) {
 
         double nucsPerPixel = context.getScale();
         double origin = context.getOrigin();
@@ -55,28 +39,32 @@ public class BasePairRenderer {
         int end = (int) (origin + trackRectangle.width * nucsPerPixel) + 1;
         if (end <= start) return;
 
-        // TODO: make this a function
 
         java.util.List<BasePairFeature> featureList = data.getFeatures(context.getChr());
 
         if (featureList != null) {
-
             // compute arc height scaling factor
-            if (fitHeight) {
-                // find widest arc with a center point within the current viewing window
+            double heightScale = 1f;
+            if (renderOptions.getFitHeight()) {
+                // find widest arc within the current viewing window
                 double maxHeight = 1f;
                 for (BasePairFeature feature : featureList) {
                     if (feature.startLeft > context.getEndLocation()) break;
                     else if (feature.endRight < context.getOrigin()) continue;
 
                     double height = (feature.endRight - feature.startLeft) / 2f;
-                    double center = feature.startLeft + height;
-                    if (center < context.getEndLocation() || center >= context.getOrigin()) {
+                    //double center = feature.startLeft + height;
+                    //if (center <= context.getEndLocation() && center >= context.getOrigin()) {
+                    //    if (height > maxHeight) maxHeight = height;
+                    //}
+                    if (feature.startLeft <= context.getEndLocation() && context.getOrigin() <= feature.endRight) {
                         if (height > maxHeight) maxHeight = height;
                     }
                 }
-                heightScale = (trackRectangle.getHeight()*nucsPerPixel) / maxHeight;
+                heightScale = (trackRectangle.getHeight()*nucsPerPixel-1) / maxHeight;
             }
+
+            boolean drawOutline = true;
 
             for (BasePairFeature feature : featureList) {
 
@@ -84,15 +72,17 @@ public class BasePairRenderer {
                 else if (feature.endRight < context.getOrigin()) continue;
 
                 //System.out.println("Color: "+data.colors[i]);
-                int arcCount = 0;
+                //int arcCount = 0;
 
                 double startLeftPix = (feature.startLeft - origin) / nucsPerPixel;
                 double startRightPix = (feature.startRight + 1.0 - origin) / nucsPerPixel;
                 double endLeftPix = (feature.endLeft - origin) / nucsPerPixel;
                 double endRightPix = (feature.endRight + 1.0 - origin) / nucsPerPixel;
 
-                drawArc(startLeftPix, startRightPix, endLeftPix, endRightPix, trackRectangle, context, feature.color);
-                arcCount++;
+                drawArc(startLeftPix, startRightPix, endLeftPix, endRightPix,
+                        trackRectangle, context, feature.color,
+                        renderOptions.getArcDirection(), heightScale, drawOutline);
+                //arcCount++;
 
                 //drawArc(10, 210, 50, trackRectangle, context, ARC_COLOR_B);
                 //drawArc(300, 500, 50, trackRectangle, context, ARC_COLOR_A);
@@ -123,7 +113,8 @@ public class BasePairRenderer {
      * @param featureColor   the color specified for this feature.  May be null.
      */
     protected void drawArc(double startLeft, double startRight, double endLeft, double endRight,
-                           Rectangle trackRectangle, RenderContext context, Color featureColor) {
+                           Rectangle trackRectangle, RenderContext context, Color featureColor,
+                           ArcDirection arcDirection, double heightScale, boolean drawOutline) {
 
         Color color;
         if (featureColor != null) {
@@ -146,6 +137,10 @@ public class BasePairRenderer {
 
         double arcWidth = Math.max(1.0, startRight - startLeft);
 
+        double hs = heightScale;
+        int dir  = 1; // 1 for up, -1 for down
+        if (arcDirection == ArcDirection.DOWN) dir = -1;
+
         int y = 0;
         if (dir > 0) {
             y = (int) trackRectangle.getMaxY();
@@ -153,11 +148,7 @@ public class BasePairRenderer {
             y = (int) trackRectangle.getMinY();
         }
 
-        double hs = 1f;
-        if (fitHeight) {
-            hs = heightScale;
-        }
-
+        // FIXME: float scale results in vanishing thin lines when zoomed out. May need to render outlines to fix.
 
         // Define all control points
         // Use a minimum arc width of 1 pixel
@@ -248,6 +239,8 @@ public class BasePairRenderer {
             arcPath.moveTo(outerLX, outerLY);
             arcPath.closePath();
 
+            // Draw outline so thin arcs don't vanish when zoomed out in fitHeight mode
+            if (drawOutline) g2D.draw(arcPath);
             // Draw the arc face
             g2D.fill(arcPath);
         }

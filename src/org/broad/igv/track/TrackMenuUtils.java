@@ -546,12 +546,13 @@ public class TrackMenuUtils {
 
         final String[] arcDirectionLabels = {"Up", "Down"};
 
+        // FIXME: make this a mutually exclusive combo box list
         for (int i = 0; i < arcDirectionLabels.length; i++) {
             JCheckBoxMenuItem item = new JCheckBoxMenuItem(arcDirectionLabels[i]);
-            final int n = (i == 0) ? 1 : -1;
+            final BasePairTrack.ArcDirection n = (i == 0) ? BasePairTrack.ArcDirection.UP : BasePairTrack.ArcDirection.DOWN;
             for (Track track : tracks) {
                 if (track instanceof BasePairTrack) {
-                    if (((BasePairTrack) track).getDirection() == n) {
+                    if (((BasePairTrack) track).getArcDirection() == n) {
                         item.setSelected(true);
                     }
                 }
@@ -560,7 +561,7 @@ public class TrackMenuUtils {
                 public void actionPerformed(ActionEvent evt) {
                     for (Track track : tracks) {
                         if (track instanceof BasePairTrack) {
-                            ((BasePairTrack) track).setDirection(n);
+                            ((BasePairTrack) track).setArcDirection(n);
                         }
                     }
                     IGV.getInstance().repaint();
