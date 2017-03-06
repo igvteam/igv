@@ -8,11 +8,11 @@ import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.track.AbstractTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.collections.CollUtils;
 
 import javax.xml.bind.annotation.*;
 import java.awt.*;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Show base-pairing arcs
@@ -26,17 +26,19 @@ public class BasePairTrack extends AbstractTrack {
     private static Logger log = Logger.getLogger(BasePairTrack.class);
 
     private BasePairRenderer basePairRenderer = new BasePairRenderer();
-    private BasePairData basePairData;
+    private BasePairData basePairData = new BasePairData();
 
     public enum ArcDirection {
         UP, DOWN
     }
 
     private RenderOptions renderOptions = new RenderOptions();
-    
+
     public BasePairTrack(ResourceLocator locator, String id, String name, Genome genome) {
         super(locator, id, name);
-        basePairData = BasePairFileParser.loadData(locator, genome);
+        BasePairFileParser.loadData(locator, genome,
+                                    basePairData, renderOptions);
+        // WIP: store colors and color labels in RenderOptions
     }
 
     public void render(RenderContext context, Rectangle rect) {
@@ -74,31 +76,18 @@ public class BasePairTrack extends AbstractTrack {
         @XmlAttribute
         ArcDirection arcDirection;
         @XmlAttribute
-        boolean fitHeight;
-
+        boolean fitHeight; // scale arc heights to fit current track height
+        @XmlAttribute
+        List<String> colors; // needs to be String, not Color so XML conversion works happily
+        @XmlAttribute
+        List<String> colorLabels; // menu legend labels for each color
 
         RenderOptions() {
-            // TODO: load some options from global PreferenceManager like AlignmentTrack?
+            // TODO: load some options from global PreferenceManager like AlignmentTrack does?
             arcDirection = ArcDirection.DOWN;
-            fitHeight = false; // scale arc heights to fit current track height
-            System.out.println(">>>>>>>  BasePairTrack.RenderOptions bare constructor called <<<<<<<");
-        }
-
-        // copied these from AlignmentTrack.RenderOptions, might not be used?
-        private <T extends Enum<T>> T getFromMap(Map<String, String> attributes, String key, Class<T> clazz, T defaultValue) {
-            String value = attributes.get(key);
-            if (value == null) {
-                return defaultValue;
-            }
-            return CollUtils.<T>valueOf(clazz, value, defaultValue);
-        }
-
-        private String getFromMap(Map<String, String> attributes, String key, String defaultValue) {
-            String value = attributes.get(key);
-            if (value == null) {
-                return defaultValue;
-            }
-            return value;
+            fitHeight = false;
+            colors = new ArrayList();
+            colorLabels = new ArrayList();
         }
 
         public boolean getFitHeight() { return fitHeight; }

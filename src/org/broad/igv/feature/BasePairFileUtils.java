@@ -88,7 +88,7 @@ public class BasePairFileUtils {
         LinkedList<BasePairFeature> transArcs = new LinkedList<BasePairFeature>();
         for (BasePairFeature arc : arcs) {
             String chr = arc.getChr();
-            Color color = arc.getColor();
+            int colorIndex = arc.getColorIndex();
             int startLeft, startRight, endLeft, endRight;
             if (strand == "+") {
                 startLeft = arc.getStartLeft() + newLeft - 1;
@@ -108,7 +108,7 @@ public class BasePairFileUtils {
                     startRight,
                     endLeft,
                     endRight,
-                    color);
+                    colorIndex);
             transArcs.add(transArc);
         }
         return transArcs;
@@ -264,7 +264,7 @@ public class BasePairFileUtils {
             int colorIndex = 0;
             for (LinkedList<BasePairFeature> colorGroup : groupedArcs) {
                 for (BasePairFeature arc : colorGroup) {
-                    pw.println(arc.toStringNoColor() + "\t" + colorIndex);
+                    pw.println(arc.toString(colors.get(colorIndex)));
                 }
                 colorIndex++;
             }
@@ -360,7 +360,7 @@ public class BasePairFileUtils {
                     startRight,
                     endLeft,
                     endRight,
-                    null));
+                    0));
         }
         return helices;
     }

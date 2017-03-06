@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.basepair.BasePairTrack.*;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.RenderContext;
+import org.broad.igv.ui.color.ColorUtilities;
 
 
 import java.awt.*;
@@ -21,12 +22,12 @@ public class BasePairRenderer {
     private static Logger log = Logger.getLogger(BasePairRenderer.class);
 
     // TODO: move these to BasePairTrack and pass as params to rendering funcs?
-    Color ARC_COLOR_A = new Color(50, 50, 150, 140); //transparent dull blue
-    Color ARC_COLOR_B = new Color(150, 50, 50, 140); //transparent dull red
-    Color ARC_COLOR_C = new Color(50, 0, 50, 250);
+    //Color ARC_COLOR_A = new Color(50, 50, 150, 140); //transparent dull blue
+    //Color ARC_COLOR_B = new Color(150, 50, 50, 140); //transparent dull red
+    //Color ARC_COLOR_C = new Color(50, 0, 50, 250);
 
     // central horizontal line color
-    Color COLOR_CENTERLINE = new Color(0, 0, 0, 100);
+    //Color COLOR_CENTERLINE = new Color(0, 0, 0, 100);
 
     public void draw(BasePairData data, RenderContext context, Rectangle trackRectangle,
                      RenderOptions renderOptions) {
@@ -38,7 +39,6 @@ public class BasePairRenderer {
         //The location of the last base that is loaded
         int end = (int) (origin + trackRectangle.width * nucsPerPixel) + 1;
         if (end <= start) return;
-
 
         java.util.List<BasePairFeature> featureList = data.getFeatures(context.getChr());
 
@@ -66,23 +66,28 @@ public class BasePairRenderer {
 
             boolean drawOutline = true;
 
+            //int arcCount = 0;
             for (BasePairFeature feature : featureList) {
 
                 if (feature.startLeft > context.getEndLocation()) break;
                 else if (feature.endRight < context.getOrigin()) continue;
 
                 //System.out.println("Color: "+data.colors[i]);
-                //int arcCount = 0;
+                //arcCount++;
 
                 double startLeftPix = (feature.startLeft - origin) / nucsPerPixel;
                 double startRightPix = (feature.startRight + 1.0 - origin) / nucsPerPixel;
                 double endLeftPix = (feature.endLeft - origin) / nucsPerPixel;
                 double endRightPix = (feature.endRight + 1.0 - origin) / nucsPerPixel;
 
+                //System.out.println("colorIndex: " + feature.colorIndex);
+
+                Color color = ColorUtilities.stringToColor(renderOptions.colors.get(feature.colorIndex));
+
                 drawArc(startLeftPix, startRightPix, endLeftPix, endRightPix,
-                        trackRectangle, context, feature.color,
+                        trackRectangle, context, color,
                         renderOptions.getArcDirection(), heightScale, drawOutline);
-                //arcCount++;
+
 
                 //drawArc(10, 210, 50, trackRectangle, context, ARC_COLOR_B);
                 //drawArc(300, 500, 50, trackRectangle, context, ARC_COLOR_A);
@@ -120,7 +125,7 @@ public class BasePairRenderer {
         if (featureColor != null) {
             color = featureColor;
         } else {
-            color = ARC_COLOR_A;
+            color = new Color(50, 50, 150, 140);
         }
 
         Graphics2D g2D = context.getGraphic2DForColor(color);
@@ -147,8 +152,6 @@ public class BasePairRenderer {
         } else {
             y = (int) trackRectangle.getMinY();
         }
-
-        // FIXME: float scale results in vanishing thin lines when zoomed out. May need to render outlines to fix.
 
         // Define all control points
         // Use a minimum arc width of 1 pixel
