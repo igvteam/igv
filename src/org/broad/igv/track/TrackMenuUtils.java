@@ -513,6 +513,7 @@ public class TrackMenuUtils {
      * @return
      */
     // stevenbusan
+    // FIXME: move to BasePairTrack like AlignmentTrack
     public static void addBasePairItems(JPopupMenu menu, final Collection<Track> tracks) {
 
         JCheckBoxMenuItem fitHeightBox = new JCheckBoxMenuItem("Fit arcs within track height");
