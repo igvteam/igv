@@ -52,6 +52,7 @@ import org.broad.igv.feature.genome.*;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.peaks.PeakCommandBar;
 import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferenceEditorFX;
 import org.broad.igv.prefs.PreferencesEditor;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentTrack;
@@ -658,55 +659,12 @@ public class IGV implements IGVEventObserver {
 
 
     final public void doViewPreferences() {
-        doViewPreferences(null);
-    }
 
-    /**
-     * Open the user preferences dialog
-     */
-    final public void doViewPreferences(final String tabToSelect) {
-
-        UIUtilities.invokeOnEventThread(new Runnable() {
-
-            public void run() {
-
-                boolean originalSingleTrackValue =
-                        PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY);
-
-                PreferencesEditor dialog = new PreferencesEditor(mainFrame, true);
-                if (tabToSelect != null) {
-                    dialog.selectTab(tabToSelect);
-                }
-                dialog.setVisible(true);
-
-
-                if (dialog.isCanceled()) {
-                    resetStatusMessage();
-                    return;
-
-                }
-
-
-                try {
-
-                    //Should data and feature panels be combined ?
-                    boolean singlePanel = PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY);
-                    if (originalSingleTrackValue != singlePanel) {
-                        JOptionPane.showMessageDialog(mainFrame, "Panel option change will take affect after restart.");
-                    }
-
-
-                } finally {
-
-                    // Update the state of the current tracks for drawing purposes
-                    doRefresh();
-                    resetStatusMessage();
-
-                }
-
-
-            }
-        });
+        try {
+            PreferenceEditorFX.open(this.mainFrame);
+        } catch (IOException e) {
+            log.error("Error openining preference dialog", e);
+        }
     }
 
     final public void saveStateForExit() {

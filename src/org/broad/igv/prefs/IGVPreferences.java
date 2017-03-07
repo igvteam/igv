@@ -118,6 +118,7 @@ public class IGVPreferences {
         key = key.trim();
         Boolean boolValue = booleanCache.get(key);
         if (boolValue == null) {
+
             String value = get(key);
             if (value == null) {
                 log.error("No default value for: " + key);

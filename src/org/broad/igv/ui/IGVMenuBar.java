@@ -138,7 +138,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             }
             throw new IllegalStateException("Cannot create another IGVMenuBar, use getInstance");
         }
-        UIUtilities.invokeAndWaitOnEventThread(() ->instance = new IGVMenuBar(igv));
+        UIUtilities.invokeAndWaitOnEventThread(() -> instance = new IGVMenuBar(igv));
         return instance;
     }
 
@@ -427,11 +427,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         }
 
 
-
         encodeMenuItem = MenuAndToolbarUtils.createMenuItem(new BrowseEncodeAction("Load from ENCODE (2012)...", KeyEvent.VK_E, igv));
         menuItems.add(encodeMenuItem);
         String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
-        encodeMenuItem.setVisible (EncodeFileBrowser.genomeSupported(genomeId));
+        encodeMenuItem.setVisible(EncodeFileBrowser.genomeSupported(genomeId));
 
 
         menuAction = new BrowseGa4ghAction("Load from Ga4gh...", KeyEvent.VK_G, igv);
@@ -694,11 +693,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 new MenuAction("Preferences...", null, KeyEvent.VK_P) {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        UIUtilities.invokeOnEventThread(new Runnable() {
-                            public void run() {
-                                IGV.getInstance().doViewPreferences();
-                            }
-                        });
+                        IGV.getInstance().doViewPreferences();
                     }
                 };
         menuAction.setToolTipText(PREFERENCE_TOOLTIP);
@@ -1304,8 +1299,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     @Override
     public void receiveEvent(final Object event) {
 
-        if(event instanceof GenomeChangeEvent) {
-            UIUtilities.invokeOnEventThread(() -> encodeMenuItem.setVisible (EncodeFileBrowser.genomeSupported(((GenomeChangeEvent) event).genome.getId())));
+        if (event instanceof GenomeChangeEvent) {
+            UIUtilities.invokeOnEventThread(() -> encodeMenuItem.setVisible(EncodeFileBrowser.genomeSupported(((GenomeChangeEvent) event).genome.getId())));
         }
     }
 }

@@ -1,61 +1,87 @@
 package org.broad.igv.prefs;
 
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.embed.swing.JFXPanel;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
-import javafx.scene.text.Text;
+import javafx.stage.Stage;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
+import java.awt.*;
+import java.beans.EventHandler;
 import java.io.*;
 import java.util.*;
+import java.util.List;
 
 public class PreferenceEditorFX {
 
-    public static final String SEPARATOR_KEY = "---";
-    public static final String INFO_KEY = "info";
-    public static final String CATEGORY_KEY = "category";
-
     public static void main(String[] args) throws IOException {
 
-        List<PreferenceGroup> preferenceGroups = loadPreferenceList();
+        open(null);
+
+    }
+
+    public static void open(Frame parent) throws IOException {
+        List<PreferencesManager.PreferenceGroup> preferenceGroups = PreferencesManager.loadPreferenceList();
 
         SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("Preferences");
-            final JFXPanel fxPanel = new JFXPanel();
-            frame.add(fxPanel);
-            frame.setSize(800, 600);
-            frame.setVisible(true);
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            JDialog frame = new JDialog(parent, "Preferences", true);
 
-            Platform.runLater(() -> initFX(fxPanel, preferenceGroups));
+            final JFXPanel fxPanel = new JFXPanel();
+            Platform.runLater(() -> initFX(frame, fxPanel, preferenceGroups));
+            frame.add(fxPanel);
+            frame.pack();
+            frame.setSize(800, 600);
+            frame.setLocationRelativeTo(parent);
+            frame.setVisible(true);
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
         });
     }
 
-    private static void initFX(JFXPanel fxPanel, List<PreferenceGroup> preferenceGroups) {
+    private static void initFX(final JDialog parent, JFXPanel fxPanel, List<PreferencesManager.PreferenceGroup> preferenceGroups) {
 
-        final Map<String, String> updatedPrefs = new HashMap<>();
+        // final Map<String, String> updatedPrefs = new HashMap<>();
 
-        TabPane pane = new TabPane();
-        Scene scene = new Scene(pane);
+        TabPane tabPane = new TabPane();
+        BorderPane borderPane = new BorderPane();
+        borderPane.setCenter(tabPane);
+        Scene scene = new Scene(borderPane);
 
-        for (PreferenceGroup entry : preferenceGroups) {
+        Map<String, Map<String, String>> updatedPreferencesMap = new HashMap<>();
+        for (PreferencesManager.PreferenceGroup entry : preferenceGroups) {
+
+            if(entry.tabLabel.equals("Hidden")) continue;
 
             final IGVPreferences preferences = PreferencesManager.getPreferences(entry.category);
+
+            final Map<String, String> updatedPrefs =
+                    updatedPreferencesMap.containsKey(entry.category) ? updatedPreferencesMap.get(entry.category) :
+                            new HashMap<>();
+            updatedPreferencesMap.put(entry.category, updatedPrefs);
+
 
             final String tabLabel = entry.tabLabel;
             Tab tab = new Tab(tabLabel);
             tab.setClosable(false);
 
-            pane.getTabs().add(tab);
+            tabPane.getTabs().add(tab);
 
             ScrollPane scrollPane = new ScrollPane();
             tab.setContent(scrollPane);
@@ -73,12 +99,12 @@ public class PreferenceEditorFX {
             String currentGroup = null;
 
             int row = 1;
-            for (Preference pref : entry.preferences) {
+            for (PreferencesManager.Preference pref : entry.preferences) {
 
                 try {
                     Tooltip tooltip = pref.getComment() == null ? null : new Tooltip(pref.getComment());
 
-                    if (pref.getKey().equals(SEPARATOR_KEY)) {
+                    if (pref.getKey().equals(PreferencesManager.SEPARATOR_KEY)) {
                         Separator sep = new Separator();
                         GridPane.setColumnSpan(sep, 4);
                         gridPane.add(sep, 1, row);
@@ -86,7 +112,7 @@ public class PreferenceEditorFX {
                         continue;
                     }
 
-                    if (pref.getKey().equals(INFO_KEY)) {
+                    if (pref.getKey().equals(PreferencesManager.INFO_KEY)) {
                         row++;
                         Label label = new Label(pref.getLabel());
                         label.setStyle("-fx-font-size:16");
@@ -153,13 +179,22 @@ public class PreferenceEditorFX {
                         field.setOnAction(event -> {
                             final String text = field.getText();
                             if (validate(text, pref.getType())) {
-                                System.out.println("Set " + pref.getLabel() + ": " + text);
                                 updatedPrefs.put(pref.getKey(), text);
                             } else {
                                 field.setText(preferences.get(pref.getKey()));
                             }
-
                         });
+                        field.focusedProperty().addListener((observable, oldValue, newValue) -> {
+                            if (newValue == false) {
+                                final String text = field.getText();
+                                if (validate(text, pref.getType())) {
+                                    updatedPrefs.put(pref.getKey(), text);
+                                } else {
+                                    field.setText(preferences.get(pref.getKey()));
+                                }
+                            }
+                        });
+
                         gridPane.add(label, 1, row);
                         gridPane.add(field, 2, row);
 
@@ -202,8 +237,35 @@ public class PreferenceEditorFX {
             }
         }
 
+        HBox hbox = new HBox();
+        hbox.setAlignment(Pos.CENTER_RIGHT);
+        hbox.setPadding(new Insets(15, 12, 15, 12));
+        hbox.setSpacing(5);
+        hbox.setStyle("-fx-background-color: #336699;");
+
+        Button cancelBUtton = new Button("Cancel");
+        cancelBUtton.setPrefSize(100, 20);
+        cancelBUtton.setOnAction((event) -> {
+            SwingUtilities.invokeLater(() -> parent.setVisible(false));
+        });
+
+        Button saveButton = new Button("Save");
+        saveButton.setPrefSize(100, 20);
+        saveButton.setDefaultButton(true);
+        saveButton.setOnAction((event) -> {
+            PreferencesManager.updateAll(updatedPreferencesMap);
+            SwingUtilities.invokeLater(() -> parent.setVisible(false));
+            if(IGV.hasInstance()) {
+                IGV.getInstance().doRefresh();
+            }
+        });
+        hbox.getChildren().addAll(cancelBUtton, saveButton);
+
+        borderPane.setBottom(hbox);
+
         fxPanel.setScene(scene);
     }
+
 
     private static boolean validate(String text, String type) {
 
@@ -224,145 +286,5 @@ public class PreferenceEditorFX {
         return true;
     }
 
-
-    private static class Preference {
-
-        String group;
-        String[] tokens;
-
-        Preference(String [] tokens, String group) {
-            this.tokens = tokens;
-            this.group = group;
-        }
-
-        Preference (String key, String group)
-        {
-            this(new String [] {key, null, null, null}, group);
-        }
-
-        Preference (String key, String label, String group)
-        {
-            this(new String [] {key, label, null, null}, group);
-        }
-
-
-        String getKey() {
-            return tokens[0];
-        }
-
-        String getLabel() {
-            return tokens[1];
-        }
-
-        String getType() {
-            return tokens[2];
-        }
-
-        String getDefaultValue() {
-            return tokens[3];
-        }
-
-        String getComment() {
-            return tokens.length > 4 ? tokens[4] : null;
-        }
-
-        String getGroup() {
-            return group;
-        }
-
-        String printString() {
-            String str = getKey() + "\t" + getLabel() + "\t" + getType() + "\t" + getDefaultValue();
-            if (getComment() != null) str += "\t" + getComment();
-            return str;
-        }
-
-    }
-
-
-    static List<PreferenceGroup> loadPreferenceList() throws IOException {
-
-        List<PreferenceGroup> groupList = new ArrayList<>();
-        List<Preference> prefList = null;
-
-        BufferedReader reader = new BufferedReader(new java.io.InputStreamReader(PreferenceEditorFX.class.getResourceAsStream("/org/broad/igv/prefs/preferences.tab")));
-        String nextLine;
-        String group = null;
-
-        while ((nextLine = reader.readLine()) != null) {
-            nextLine = nextLine.trim();
-
-            if (nextLine.startsWith("//") || nextLine.length() == 0) {
-                continue;
-            }
-
-            else if (nextLine.startsWith("#Hidden")) {
-                break;
-            }
-
-            else if (nextLine.startsWith(SEPARATOR_KEY)) {
-                prefList.add(new Preference(SEPARATOR_KEY, group));
-                continue;
-            }
-
-            else if (nextLine.startsWith(INFO_KEY)) {
-                Preference preference = new Preference(INFO_KEY, nextLine.substring(INFO_KEY.length()).trim(), group);
-                prefList.add(preference);   // "Blank" preference
-                continue;
-            }
-
-
-            else if (nextLine.startsWith("##")) {
-
-                group = null;  // End previous group
-                if (nextLine.length() > 2) {
-                    group = nextLine.substring(2);  // New group
-                }
-                continue;
-            }
-
-            else if (nextLine.startsWith("#")) {
-
-                // New tab
-
-                String[] tokens = Globals.tabPattern.split(nextLine);
-                String tabLabel = tokens[0].substring(1);
-                String category = tokens.length > 1 ? tokens[1] : null;
-                prefList = new ArrayList<>();
-                PreferenceGroup preferenceGroup = new PreferenceGroup(tabLabel, category, prefList);
-                groupList.add(preferenceGroup);
-
-                group = null;
-
-                continue;
-            }
-
-            else {
-
-                String[] tokens = Globals.tabPattern.split(nextLine);
-                if(tokens.length < 4) {
-
-                }
-                else {
-                    prefList.add(new Preference(tokens, group));
-                }
-            }
-
-        }
-
-        return groupList;
-    }
-
-    static class PreferenceGroup {
-
-        String tabLabel;
-        String category;
-        List<Preference> preferences;
-
-        public PreferenceGroup(String tabLabel, String category, List<Preference> preferences) {
-            this.tabLabel = tabLabel;
-            this.category = category;
-            this.preferences = preferences;
-        }
-    }
 
 }
