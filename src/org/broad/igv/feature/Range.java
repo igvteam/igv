@@ -107,4 +107,7 @@ public class Range implements Feature {
         return this.overlaps(range.getChr(), range.getStart(), range.getEnd());
     }
 
+    public boolean contains(Range range) {
+        return this.contains(range.chr, range.start, range.end);
+    }
 }

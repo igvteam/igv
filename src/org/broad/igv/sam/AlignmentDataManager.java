@@ -56,7 +56,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     private Map<ReferenceFrame, AlignmentInterval> intervalCache;
     private ResourceLocator locator;
     private HashMap<String, String> chrMappings = new HashMap();
-    private volatile boolean isLoading = false;
+    private Set<Range> isLoading = new HashSet<>();
     private AlignmentTileLoader reader;
     private CoverageTrack coverageTrack;
     private Map<String, PEStats> peStats;
@@ -234,9 +234,17 @@ public class AlignmentDataManager implements IGVEventObserver {
         } else {
 
             Range range = frame.getCurrentRange();
-
             return interval.contains(range.getChr(), range.getStart(), range.getEnd());
         }
+    }
+
+    public boolean isLoading(ReferenceFrame frame) {
+
+        Range range = frame.getCurrentRange();
+        for(Range r : isLoading) {
+            if(r.contains(range)) return true;
+        }
+        return false;
     }
 
 
@@ -245,9 +253,15 @@ public class AlignmentDataManager implements IGVEventObserver {
                      boolean expandEnds) {
 
         if (isLoaded(referenceFrame)) return;  // Already loaded
+
+        if(isLoading(referenceFrame)) return;   // Already oading
+
         synchronized (loadLock) {
-            final String chr = referenceFrame.getChrName();
             Range range = referenceFrame.getCurrentRange();
+
+            isLoading.add(range);
+
+            final String chr = referenceFrame.getChrName();
 
             final int start = (int) range.getStart();
             final int end = (int) range.getEnd();
@@ -271,9 +285,10 @@ public class AlignmentDataManager implements IGVEventObserver {
             intervalCache.put(referenceFrame, loadedInterval);
 
             packAlignments(renderOptions);
-            IGVEventBus.getInstance().post(new DataLoadedEvent(referenceFrame));
+            isLoading.remove(range);
 
-            isLoading = false;
+          //  IGVEventBus.getInstance().post(new DataLoadedEvent(referenceFrame));
+
         }
     }
 
