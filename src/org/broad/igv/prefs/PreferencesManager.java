@@ -35,7 +35,15 @@ public class PreferencesManager implements IGVEventObserver {
 
     private static String prefFile;  // User preferences file
 
+    static Hashtable<String, String> aliasTable = new Hashtable<String, String>();
+    static {
+        aliasTable.put("SAM>SORT_OPTION", "SAM.SORT_OPTION");
+        aliasTable.put("FLAKING_REGIONS", "FLANKING_REGION");
+    }
+
+
     private PreferencesManager() {
+
     }
 
     private static PreferencesManager theInstance = new PreferencesManager();
@@ -291,14 +299,6 @@ public class PreferencesManager implements IGVEventObserver {
             }
         }
 
-    }
-
-
-    static Hashtable<String, String> aliasTable = new Hashtable<String, String>();
-
-    static {
-        aliasTable.put("SAM>SORT_OPTION", "SAM.SORT_OPTION");
-        aliasTable.put("FLAKING_REGIONS", "FLANKING_REGION");
     }
 
     @Override

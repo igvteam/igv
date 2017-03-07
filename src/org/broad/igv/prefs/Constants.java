@@ -129,26 +129,6 @@ final public class Constants {
     public static final String SAM_JUNCTION_MIN_FLANKING_WIDTH = "SAM.JUNCTION_MIN_FLANKING_WIDTH";
     public static final String SAM_JUNCTION_MIN_COVERAGE = "SAM.JUNCTION_MIN_COVERAGE";
     public static final String SAM_SHOW_INSERTION_MARKERS = "SAM.SHOW_INSERTION_MARKERS";
-    /**
-     * List of keys that affect the alignments loaded.  This list is used to trigger a reload, if required.
-     * Not all alignment preferences need trigger a reload, this is a subset.
-     */
-    static java.util.List<String> SAM_RELOAD_KEYS = Arrays.asList(
-            SAM_QUALITY_THRESHOLD,
-            SAM_FILTER_ALIGNMENTS,
-            SAM_FILTER_URL,
-            SAM_MAX_VISIBLE_RANGE,
-            SAM_SHOW_DUPLICATES,
-            SAM_SHOW_SOFT_CLIPPED,
-            SAM_SAMPLING_COUNT,
-            SAM_SAMPLING_WINDOW,
-            SAM_FILTER_FAILED_READS,
-            SAM_DOWNSAMPLE_READS,
-            SAM_FILTER_SECONDARY_ALIGNMENTS,
-            SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS,
-            SAM_JUNCTION_MIN_FLANKING_WIDTH,
-            SAM_JUNCTION_MIN_COVERAGE
-    );
     public static final String SAM_SHOW_JUNCTION_FLANKINGREGIONS = "SAM.SHOW_JUNCTION_FLANKINGREGIONS";
     public static final String SAM_NOMESEQ_ENABLED = "SAM.NOMESEQ_ENABLED";
     public static final String SAM_COUNT_DELETED_BASES_COVERED = "SAM.COUNT_DELETED_BASES_COVERED";
