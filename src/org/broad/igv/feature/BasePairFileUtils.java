@@ -451,8 +451,8 @@ public class BasePairFileUtils {
         colors.add(new Color(113, 195, 209));
         colors.add(new Color(51, 114, 38));
         ArrayList<String> colorLabels = new ArrayList<String>();
-        colorLabels.add("PP <= 10%");
-        colorLabels.add("30% < PP <= 10%");
+        colorLabels.add("PP 10-30%");
+        colorLabels.add("PP 30-80%");
         colorLabels.add("Pairing probability > 80%");
         writeBasePairFile(bpFile, colors, colorLabels, groupedArcs);
     }

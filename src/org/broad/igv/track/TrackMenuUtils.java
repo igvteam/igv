@@ -516,12 +516,9 @@ public class TrackMenuUtils {
     /**
      * Return popup menu with items applicable to BasePairTrack(s)
      *
-     * @return
+     * @author stevenbusan
      */
-    // stevenbusan
     public static void addBasePairItems(JPopupMenu menu, final Collection<Track> tracks) {
-
-        // WIP: color legend with interactive color selection dialog
 
         JLabel arcColorHeading = new JLabel(LEADING_HEADING_SPACER + "Arc color", JLabel.LEFT);
         arcColorHeading.setFont(UIConstants.boldFont);
@@ -564,16 +561,13 @@ public class TrackMenuUtils {
 
             JLabel colorBox = new JLabel(LEADING_HEADING_SPACER + "██"); //, JLabel.LEFT
             colorBox.setForeground(color);
-            
-            // FIXME: fix menu selection highlight, especially for blank label entries
+
             JPanel p = new JPanel();
             p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
             p.add(colorBox);
             p.add(Box.createHorizontalStrut(1));
-            //p.add(Box.createGlue());
             p.add(new JLabel(" "+labelText));
-            //p.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
-            //p.setMinimumSize(new Dimension(p.getWidth()+10 , p.getHeight()+20));
+            p.add(Box.createGlue());
             p.setAlignmentX(Component.LEFT_ALIGNMENT);
 
             JMenuItem item = new JMenuItem();
@@ -581,7 +575,7 @@ public class TrackMenuUtils {
             double w = p.getPreferredSize().getWidth();
             double h = p.getPreferredSize().getHeight();
             Dimension size = new Dimension();
-            size.setSize(w, h+10);
+            size.setSize(w, h+8);
             item.setPreferredSize(size);
 
             final ArrayList<Pair<BasePairTrack, Integer>> selected = legendMap.get(key).getSecond();
