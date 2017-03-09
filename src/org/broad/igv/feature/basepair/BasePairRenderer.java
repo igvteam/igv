@@ -67,33 +67,38 @@ public class BasePairRenderer {
             boolean drawOutline = true;
 
             //int arcCount = 0;
-            for (BasePairFeature feature : featureList) {
 
-                if (feature.startLeft > context.getEndLocation()) break;
-                else if (feature.endRight < context.getOrigin()) continue;
+            // render in order of indexed colors
+            for (int colorIndex=0; colorIndex<renderOptions.colors.size(); ++colorIndex) {
+                for (BasePairFeature feature : featureList) {
 
-                //System.out.println("Color: "+data.colors[i]);
-                //arcCount++;
+                    if (feature.startLeft > context.getEndLocation()) break;
+                    else if (feature.endRight < context.getOrigin()) continue;
+                    else if (feature.colorIndex != colorIndex) continue;
 
-                double startLeftPix = (feature.startLeft - origin) / nucsPerPixel;
-                double startRightPix = (feature.startRight + 1.0 - origin) / nucsPerPixel;
-                double endLeftPix = (feature.endLeft - origin) / nucsPerPixel;
-                double endRightPix = (feature.endRight + 1.0 - origin) / nucsPerPixel;
+                    //System.out.println("Color: "+data.colors[i]);
+                    //arcCount++;
 
-                //System.out.println("colorIndex: " + feature.colorIndex);
+                    double startLeftPix = (feature.startLeft - origin) / nucsPerPixel;
+                    double startRightPix = (feature.startRight + 1.0 - origin) / nucsPerPixel;
+                    double endLeftPix = (feature.endLeft - origin) / nucsPerPixel;
+                    double endRightPix = (feature.endRight + 1.0 - origin) / nucsPerPixel;
 
-                Color color = ColorUtilities.stringToColor(renderOptions.colors.get(feature.colorIndex));
+                    //System.out.println("colorIndex: " + feature.colorIndex);
 
-                drawArc(startLeftPix, startRightPix, endLeftPix, endRightPix,
-                        trackRectangle, context, color,
-                        renderOptions.getArcDirection(), heightScale, drawOutline);
+                    Color color = ColorUtilities.stringToColor(renderOptions.colors.get(feature.colorIndex));
 
-
-                //drawArc(10, 210, 50, trackRectangle, context, ARC_COLOR_B);
-                //drawArc(300, 500, 50, trackRectangle, context, ARC_COLOR_A);
+                    drawArc(startLeftPix, startRightPix, endLeftPix, endRightPix,
+                            trackRectangle, context, color,
+                            renderOptions.getArcDirection(), heightScale, drawOutline);
 
 
-                //System.out.println("Drew "+arcCount+" arcs");
+                    //drawArc(10, 210, 50, trackRectangle, context, ARC_COLOR_B);
+                    //drawArc(300, 500, 50, trackRectangle, context, ARC_COLOR_A);
+
+
+                    //System.out.println("Drew "+arcCount+" arcs");
+                }
             }
         }
         //System.out.println("");

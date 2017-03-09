@@ -52,6 +52,7 @@ import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.LongRunningTask;
+import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.blat.BlatClient;
@@ -164,10 +165,12 @@ public class TrackMenuUtils {
         }
 
         boolean hasBasePairTracks = false;
+        boolean basePairTracksOnly = true;
         for (Track track : tracks) {
             if (track instanceof BasePairTrack) {
                 hasBasePairTracks = true;
-                break;
+            } else {
+                basePairTracksOnly = false;
             }
         }
         if (hasBasePairTracks) {
@@ -177,7 +180,10 @@ public class TrackMenuUtils {
         boolean featureTracksOnly = hasFeatureTracks && !hasDataTracks && !hasOtherTracks;
         boolean dataTracksOnly = !hasFeatureTracks && hasDataTracks && !hasOtherTracks;
 
-        addSharedItems(menu, tracks, hasFeatureTracks, hasCoverageTracks);
+        // don't show unusable track color changing menu option for BasePairTrack(s), which have a separate color legend
+        boolean hideTrackColor = basePairTracksOnly;
+
+        addSharedItems(menu, tracks, hasFeatureTracks, hasCoverageTracks, hideTrackColor);
         menu.addSeparator();
         if (dataTracksOnly) {
             addDataItems(menu, tracks, hasCoverageTracks);
@@ -508,18 +514,91 @@ public class TrackMenuUtils {
     }
 
     /**
-     * Return popup menu with items applicable to arc tracks
+     * Return popup menu with items applicable to BasePairTrack(s)
      *
      * @return
      */
     // stevenbusan
-    // FIXME: move to BasePairTrack like AlignmentTrack
     public static void addBasePairItems(JPopupMenu menu, final Collection<Track> tracks) {
+
+        // WIP: color legend with interactive color selection dialog
+
+        JLabel arcColorHeading = new JLabel(LEADING_HEADING_SPACER + "Arc color", JLabel.LEFT);
+        arcColorHeading.setFont(UIConstants.boldFont);
+
+        menu.add(arcColorHeading);
+
+        // Attempt to aggregate arc color legends for multiple selected tracks
+        // This is pretty ugly, sorry. should probably use a custom class for readability - stevenbusan
+        LinkedHashMap<String,
+                      Pair<String, ArrayList<Pair<BasePairTrack, Integer>>>>
+                legendMap =
+                new LinkedHashMap<String, Pair<String, ArrayList<Pair<BasePairTrack, Integer>>>>();
+        // Make list of unique color+labels, linked to lists of all matching tracks and color indices,
+        // key: color string + label
+        // value: Pair<String label, List<Pair<BasePairTrack, int colorIndex>>>
+        Color tmpColor = new Color(255,255,255);
+        for (Track track : tracks) {
+            if (track instanceof BasePairTrack) {
+                List<String> colors = ((BasePairTrack) track).getRenderOptions().getColors();
+                List<String> colorLabels = ((BasePairTrack) track).getRenderOptions().getColorLabels();
+                tmpColor = ColorUtilities.stringToColor(colors.get(0));
+                // iterate in reverse order so colors appearing first in list are the ones rendered on top
+                for (int i=colors.size()-1; i>=0; --i) {
+                    String key = colors.get(i) + ' ' + colorLabels.get(i);
+                    if (legendMap.get(key) == null) {
+                        Pair<String, ArrayList<Pair<BasePairTrack, Integer>>>
+                                pair = new Pair(colorLabels.get(i), new ArrayList());
+                        legendMap.put(key, pair);
+                    }
+                    legendMap.get(key).getSecond().add(new Pair((BasePairTrack) track, i));
+                }
+
+            }
+        }
+
+        for (String key : legendMap.keySet()) {
+            final String labelText = legendMap.get(key).getFirst();
+            Pair<BasePairTrack, Integer> pair = legendMap.get(key).getSecond().get(0);
+            BasePairTrack t = pair.getFirst();
+            int c = pair.getSecond();
+            Color color = ColorUtilities.stringToColor(t.getRenderOptions().getColor(c));
+
+            JLabel colorBox = new JLabel(LEADING_HEADING_SPACER + "██"); //, JLabel.LEFT
+            colorBox.setForeground(color);
+
+            // FIXME: fix padding so legend text is clearly visible
+            // FIXME: fix menu selection highlight, especially for blank label entries
+            JPanel p = new JPanel();
+            p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
+            p.add(colorBox);
+            p.add(Box.createHorizontalStrut(1));
+            //p.add(Box.createGlue());
+            p.add(new JLabel(" "+labelText));
+            //p.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+            //p.setMinimumSize(new Dimension(p.getWidth()+10 , p.getHeight()+20));
+            p.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+            JMenuItem item = new JMenuItem();
+            item.add(p);
+
+            final ArrayList<Pair<BasePairTrack, Integer>> selected = legendMap.get(key).getSecond();
+
+            item.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
+                    changeBasePairTrackColor(selected, labelText);
+                }
+            });
+
+            menu.add(item);
+        }
+
+        menu.addSeparator();
 
         JCheckBoxMenuItem fitHeightBox = new JCheckBoxMenuItem("Fit arcs within track height");
         for (Track track : tracks) {
             if (track instanceof BasePairTrack) {
-                if (((BasePairTrack) track).getFitHeight()) {
+                if (((BasePairTrack) track).getRenderOptions().getFitHeight()) {
                     fitHeightBox.setSelected(true);
                 }
             }
@@ -530,7 +609,7 @@ public class TrackMenuUtils {
                 boolean isSelected = b.getModel().isSelected();
                 for (Track track : tracks) {
                     if (track instanceof BasePairTrack) {
-                        ((BasePairTrack) track).setFitHeight(isSelected);
+                        ((BasePairTrack) track).getRenderOptions().setFitHeight(isSelected);
                     }
                 }
                 IGV.getInstance().repaint();
@@ -553,7 +632,7 @@ public class TrackMenuUtils {
             final BasePairTrack.ArcDirection n = (i == 0) ? BasePairTrack.ArcDirection.UP : BasePairTrack.ArcDirection.DOWN;
             for (Track track : tracks) {
                 if (track instanceof BasePairTrack) {
-                    if (((BasePairTrack) track).getArcDirection() == n) {
+                    if (((BasePairTrack) track).getRenderOptions().getArcDirection() == n) {
                         item.setSelected(true);
                     }
                 }
@@ -562,7 +641,7 @@ public class TrackMenuUtils {
                 public void actionPerformed(ActionEvent evt) {
                     for (Track track : tracks) {
                         if (track instanceof BasePairTrack) {
-                            ((BasePairTrack) track).setArcDirection(n);
+                            ((BasePairTrack) track).getRenderOptions().setArcDirection(n);
                         }
                     }
                     IGV.getInstance().repaint();
@@ -715,7 +794,9 @@ public class TrackMenuUtils {
      *
      * @return
      */
-    public static void addSharedItems(JPopupMenu menu, final Collection<Track> tracks, boolean hasFeatureTracks, boolean hasCoverageTracks) {
+    public static void addSharedItems(JPopupMenu menu, final Collection<Track> tracks,
+                                      boolean hasFeatureTracks, boolean hasCoverageTracks,
+                                      boolean hideTrackColor) {
 
         //JLabel trackSettingsHeading = new JLabel(LEADING_HEADING_SPACER + "Track Settings", JLabel.LEFT);
         //JLabel trackSettingsHeading = new JLabel(LEADING_HEADING_SPACER + "Track Settings", JLabel.LEFT);
@@ -724,34 +805,40 @@ public class TrackMenuUtils {
 
         menu.add(getTrackRenameItem(tracks));
 
-        String colorLabel = (hasFeatureTracks || hasCoverageTracks)
-                ? "Change Track Color..." : "Change Track Color (Positive Values)...";
-        JMenuItem item = new JMenuItem(colorLabel);
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                changeTrackColor(tracks);
-            }
-        });
-        menu.add(item);
-
-        if (!(hasFeatureTracks || hasCoverageTracks)) {
-
-            // Change track color by attribute
-            item = new JMenuItem("Change Track Color (Negative Values)...");
-            item.setToolTipText(
-                    "Change the alternate track color.  This color is used when graphing negative values");
+        if (!hideTrackColor) {
+            String colorLabel = (hasFeatureTracks || hasCoverageTracks)
+                    ? "Change Track Color..." : "Change Track Color (Positive Values)...";
+            JMenuItem item = new JMenuItem(colorLabel);
             item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
-                    changeAltTrackColor(tracks);
+                    changeTrackColor(tracks);
                 }
             });
             menu.add(item);
+
+            if (!(hasFeatureTracks || hasCoverageTracks)) {
+
+                // Change track color by attribute
+                item = new JMenuItem("Change Track Color (Negative Values)...");
+                item.setToolTipText(
+                        "Change the alternate track color.  This color is used when graphing negative values");
+                item.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent evt) {
+                        changeAltTrackColor(tracks);
+                    }
+                });
+                menu.add(item);
+            }
         }
 
         menu.add(getChangeTrackHeightItem(tracks));
         menu.add(getChangeFontSizeItem(tracks));
     }
 
+    public static void addSharedItems(JPopupMenu menu, final Collection<Track> tracks,
+                                      boolean hasFeatureTracks, boolean hasCoverageTracks){
+        addSharedItems(menu, tracks, hasFeatureTracks, hasCoverageTracks, false);
+    }
 
     private static void changeStatType(String statType, Collection<Track> selectedTracks) {
         for (Track track : selectedTracks) {
@@ -1281,6 +1368,38 @@ public class TrackMenuUtils {
 
         for (Track track : selectedTracks) {
             track.setAltColor(ColorUtilities.modifyAlpha(color, currentSelection.getAlpha()));
+        }
+        refresh();
+
+    }
+
+    /**
+     *
+     * @author stevenbusan
+     */
+    public static void changeBasePairTrackColor(final List<Pair<BasePairTrack, Integer>> selected,
+                                                final String colorLegend) {
+
+        if (selected.isEmpty()) {
+            return;
+        }
+
+        int colorIndex = selected.iterator().next().getSecond();
+        String colorString = selected.iterator().next().getFirst().getRenderOptions().getColor(colorIndex);
+        Color currentSelection = ColorUtilities.stringToColor(colorString);
+
+        Color color = UIUtilities.showColorChooserDialog(
+                "Select Arc Color ("+colorLegend+")",
+                currentSelection);
+
+        if (color == null) {
+            return;
+        }
+
+        for (Pair<BasePairTrack, Integer> p : selected) {
+            BasePairTrack t = p.getFirst();
+            int c = p.getSecond();
+            t.getRenderOptions().setColor(c, ColorUtilities.colorToString(color));
         }
         refresh();
 

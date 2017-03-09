@@ -49,21 +49,20 @@ public class BasePairTrack extends AbstractTrack {
         return null;
     }
 
-    public ArcDirection getArcDirection(){ return renderOptions.getArcDirection(); }
+    /*public ArcDirection getArcDirection(){ return renderOptions.getArcDirection(); }
 
     public void setArcDirection(ArcDirection d){ renderOptions.setArcDirection(d); }
 
     public boolean getFitHeight() { return renderOptions.getFitHeight(); }
 
-    public void setFitHeight(boolean b) { renderOptions.setFitHeight(b); }
+    public void setFitHeight(boolean b) { renderOptions.setFitHeight(b); }*/
 
-    @SubtlyImportant
-    private RenderOptions getRenderOptions() {
+    public RenderOptions getRenderOptions() {
         return this.renderOptions;
     }
 
     @XmlElement(name = RenderOptions.NAME)
-    private void setRenderOptions(RenderOptions renderOptions) {
+    public void setRenderOptions(RenderOptions renderOptions) {
         this.renderOptions = renderOptions;
     }
 
@@ -97,6 +96,24 @@ public class BasePairTrack extends AbstractTrack {
         public ArcDirection getArcDirection() { return arcDirection; }
 
         public void setArcDirection(ArcDirection d) { this.arcDirection = d; }
+
+        public List<String> getColors() { return this.colors; }
+
+        public void setColors(List<String> l) { this.colors = l; }
+
+        public List<String> getColorLabels() { return this.colorLabels; }
+
+        public void setColorLabels(List<String> l) { this.colorLabels = l; }
+
+        public String getColor(int i) { return this.colors.get(i); }
+
+        public void setColor(int i, String s) { this.colors.set(i, s); }
+
+        public String getColorLabel(int i) { return this.colorLabels.get(i); }
+
+        public void setColorLabel(int i, String s) { this.colorLabels.set(i, s); }
+
+
     }
 
     @SubtlyImportant

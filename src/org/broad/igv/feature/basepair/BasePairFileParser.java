@@ -7,9 +7,11 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.StringUtils;
 import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.awt.*;
+import java.util.Arrays;
 
 public class BasePairFileParser {
 
@@ -32,8 +34,14 @@ public class BasePairFileParser {
                 int r = Integer.parseInt(tokens[1]);
                 int g = Integer.parseInt(tokens[2]);
                 int b = Integer.parseInt(tokens[3]);
+                String label = "";
+                try {
+                    label = StringUtils.join(Arrays.copyOfRange(tokens, 4, tokens.length), " ");
+                } catch (IndexOutOfBoundsException e) {
+                }
                 Color color = new Color(r, g, b, 255);
                 renderOptions.colors.add(ColorUtilities.colorToString(color));
+                renderOptions.colorLabels.add(label);
                 nextLine = reader.readLine();
                 rowCounter++;
             }

@@ -85,7 +85,4 @@ public class BasePairFeature implements Feature{
         return getChr() + "\t" + startLeft + "\t" + startRight + "\t" + endLeft + "\t" + endRight;
     }
 
-    public String toString(Color color) {
-        return toString() + "\t" + color;
-    }
 }
