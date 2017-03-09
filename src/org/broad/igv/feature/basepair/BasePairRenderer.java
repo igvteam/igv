@@ -14,17 +14,11 @@ import org.broad.igv.ui.color.ColorUtilities;
 import java.awt.*;
 import java.awt.geom.GeneralPath;
 
-// TODO: add vertical scaling option so arcs fit on track, or clip arcs outside of track rect?
 // TODO: add visualization for very zoomed-out views
 
 public class BasePairRenderer {
 
     private static Logger log = Logger.getLogger(BasePairRenderer.class);
-
-    // TODO: move these to BasePairTrack and pass as params to rendering funcs?
-    //Color ARC_COLOR_A = new Color(50, 50, 150, 140); //transparent dull blue
-    //Color ARC_COLOR_B = new Color(150, 50, 50, 140); //transparent dull red
-    //Color ARC_COLOR_C = new Color(50, 0, 50, 250);
 
     // central horizontal line color
     //Color COLOR_CENTERLINE = new Color(0, 0, 0, 100);
@@ -76,7 +70,6 @@ public class BasePairRenderer {
                     else if (feature.endRight < context.getOrigin()) continue;
                     else if (feature.colorIndex != colorIndex) continue;
 
-                    //System.out.println("Color: "+data.colors[i]);
                     //arcCount++;
 
                     double startLeftPix = (feature.startLeft - origin) / nucsPerPixel;
@@ -84,18 +77,11 @@ public class BasePairRenderer {
                     double endLeftPix = (feature.endLeft - origin) / nucsPerPixel;
                     double endRightPix = (feature.endRight + 1.0 - origin) / nucsPerPixel;
 
-                    //System.out.println("colorIndex: " + feature.colorIndex);
-
                     Color color = ColorUtilities.stringToColor(renderOptions.colors.get(feature.colorIndex));
 
                     drawArc(startLeftPix, startRightPix, endLeftPix, endRightPix,
                             trackRectangle, context, color,
                             renderOptions.getArcDirection(), heightScale, drawOutline);
-
-
-                    //drawArc(10, 210, 50, trackRectangle, context, ARC_COLOR_B);
-                    //drawArc(300, 500, 50, trackRectangle, context, ARC_COLOR_A);
-
 
                     //System.out.println("Drew "+arcCount+" arcs");
                 }

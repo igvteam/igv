@@ -646,7 +646,7 @@ public class TrackMenuUtils {
             }
         });
         menu.add(fitHeightBox);
-        
+
     }
 
     private static JMenuItem getFeatureToGeneListItem(final Track t) {
