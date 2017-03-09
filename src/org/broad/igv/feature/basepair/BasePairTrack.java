@@ -7,6 +7,7 @@ import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.track.AbstractTrack;
 import org.broad.igv.track.RenderContext;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.xml.bind.annotation.*;
@@ -38,7 +39,6 @@ public class BasePairTrack extends AbstractTrack {
         super(locator, id, name);
         BasePairFileParser.loadData(locator, genome,
                                     basePairData, renderOptions);
-        // WIP: store colors and color labels in RenderOptions
     }
 
     public void render(RenderContext context, Rectangle rect) {
@@ -49,13 +49,18 @@ public class BasePairTrack extends AbstractTrack {
         return null;
     }
 
-    /*public ArcDirection getArcDirection(){ return renderOptions.getArcDirection(); }
-
-    public void setArcDirection(ArcDirection d){ renderOptions.setArcDirection(d); }
-
-    public boolean getFitHeight() { return renderOptions.getFitHeight(); }
-
-    public void setFitHeight(boolean b) { renderOptions.setFitHeight(b); }*/
+    public void changeColor(Color currentColor, String currentLabel, Color newColor) {
+        String currentColorString = ColorUtilities.colorToString(currentColor);
+        String newColorString = ColorUtilities.colorToString(newColor);
+        for (int i=0; i<renderOptions.getColors().size(); ++i) {
+            String colorString = renderOptions.getColors().get(i);
+            String label = renderOptions.getColorLabels().get(i);
+            if (!currentColorString.equals(colorString) || !currentLabel.equals(label)) {
+                continue;
+            }
+            renderOptions.setColor(i, newColorString);
+        }
+    }
 
     public RenderOptions getRenderOptions() {
         return this.renderOptions;
@@ -112,7 +117,6 @@ public class BasePairTrack extends AbstractTrack {
         public String getColorLabel(int i) { return this.colorLabels.get(i); }
 
         public void setColorLabel(int i, String s) { this.colorLabels.set(i, s); }
-
 
     }
 

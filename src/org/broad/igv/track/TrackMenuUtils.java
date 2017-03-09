@@ -173,9 +173,6 @@ public class TrackMenuUtils {
                 basePairTracksOnly = false;
             }
         }
-        if (hasBasePairTracks) {
-            addBasePairItems(menu, tracks);
-        }
 
         boolean featureTracksOnly = hasFeatureTracks && !hasDataTracks && !hasOtherTracks;
         boolean dataTracksOnly = !hasFeatureTracks && hasDataTracks && !hasOtherTracks;
@@ -189,6 +186,10 @@ public class TrackMenuUtils {
             addDataItems(menu, tracks, hasCoverageTracks);
         } else if (featureTracksOnly) {
             addFeatureItems(menu, tracks, te);
+        }
+
+        if (hasBasePairTracks) {
+            addBasePairItems(menu, tracks);
         }
 
 
@@ -520,53 +521,47 @@ public class TrackMenuUtils {
      */
     public static void addBasePairItems(JPopupMenu menu, final Collection<Track> tracks) {
 
-        JLabel arcColorHeading = new JLabel(LEADING_HEADING_SPACER + "Arc color", JLabel.LEFT);
+        final ArrayList<BasePairTrack> bpTracks = new ArrayList<BasePairTrack>();
+        for (Track track : tracks) {
+            if (track instanceof BasePairTrack) {
+                bpTracks.add((BasePairTrack) track);
+            }
+        }
+
+        JLabel arcColorHeading = new JLabel(LEADING_HEADING_SPACER + "Arc colors (click to change)", JLabel.LEFT);
         arcColorHeading.setFont(UIConstants.boldFont);
 
         menu.add(arcColorHeading);
 
-        // Attempt to aggregate arc color selector/legends for multiple selected tracks
-        // This is pretty ugly, sorry. should probably use a custom class for readability - stevenbusan
-        LinkedHashMap<String,
-                      Pair<String, ArrayList<Pair<BasePairTrack, Integer>>>>
-                legendMap =
-                new LinkedHashMap<String, Pair<String, ArrayList<Pair<BasePairTrack, Integer>>>>();
-        // Make list of unique color+labels, linked to lists of all matching tracks and color indices,
-        // key: color string + label
-        // value: Pair<String label, List<Pair<BasePairTrack, int colorIndex>>>
-        for (Track track : tracks) {
-            if (track instanceof BasePairTrack) {
-                List<String> colors = ((BasePairTrack) track).getRenderOptions().getColors();
-                List<String> colorLabels = ((BasePairTrack) track).getRenderOptions().getColorLabels();
-                // iterate in reverse order so colors appearing first in list are the ones rendered on top
-                for (int i=colors.size()-1; i>=0; --i) {
-                    String key = colors.get(i) + ' ' + colorLabels.get(i);
-                    if (legendMap.get(key) == null) {
-                        Pair<String, ArrayList<Pair<BasePairTrack, Integer>>>
-                                pair = new Pair(colorLabels.get(i), new ArrayList());
-                        legendMap.put(key, pair);
-                    }
-                    legendMap.get(key).getSecond().add(new Pair((BasePairTrack) track, i));
+        // aggregate arc color selector/legends for multiple selected tracks
+        ArrayList<Pair<Color, String>> legendList = new ArrayList<Pair<Color, String>>(); 
+        HashSet<String> keys = new HashSet<String>();       
+        for (BasePairTrack track : bpTracks) {
+            List<String> colors = track.getRenderOptions().getColors();
+            List<String> colorLabels = track.getRenderOptions().getColorLabels();
+            // iterate in reverse order so colors appearing first in list are the ones rendered on top
+            for (int i=colors.size()-1; i>=0; --i) {
+                String key = colors.get(i) + ' ' + colorLabels.get(i);
+                if (!keys.contains(key)) {
+                    keys.add(key);
+                    legendList.add(new Pair<Color, String>(ColorUtilities.stringToColor(colors.get(i)), colorLabels.get(i)));
                 }
-
             }
         }
 
-        for (String key : legendMap.keySet()) {
-            final String labelText = legendMap.get(key).getFirst();
-            Pair<BasePairTrack, Integer> pair = legendMap.get(key).getSecond().get(0);
-            BasePairTrack t = pair.getFirst();
-            int c = pair.getSecond();
-            Color color = ColorUtilities.stringToColor(t.getRenderOptions().getColor(c));
+        for (Pair<Color, String> pair : legendList) {
+            final Color color = pair.getFirst();
+            final String label = pair.getSecond();
 
-            JLabel colorBox = new JLabel(LEADING_HEADING_SPACER + "██"); //, JLabel.LEFT
+            JLabel colorBox = new JLabel(LEADING_HEADING_SPACER + "██");
+            colorBox.setFont(UIConstants.boldFont);
             colorBox.setForeground(color);
 
             JPanel p = new JPanel();
             p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
             p.add(colorBox);
             p.add(Box.createHorizontalStrut(1));
-            p.add(new JLabel(" "+labelText));
+            p.add(new JLabel(" "+label));
             p.add(Box.createGlue());
             p.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -578,11 +573,9 @@ public class TrackMenuUtils {
             size.setSize(w, h+8);
             item.setPreferredSize(size);
 
-            final ArrayList<Pair<BasePairTrack, Integer>> selected = legendMap.get(key).getSecond();
-
             item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
-                    changeBasePairTrackColor(selected, labelText);
+                    changeBasePairTrackColor(bpTracks, color, label);
                 }
             });
 
@@ -591,24 +584,25 @@ public class TrackMenuUtils {
 
         menu.addSeparator();
 
-        JCheckBoxMenuItem fitHeightBox = new JCheckBoxMenuItem("Fit arcs within track height");
-        for (Track track : tracks) {
-            if (track instanceof BasePairTrack) {
-                if (((BasePairTrack) track).getRenderOptions().getFitHeight()) {
-                    fitHeightBox.setSelected(true);
-                }
-            }
+        // preselect fit arcs option if all selected tracks have it enabled
+        int fitCount = 0;
+        int noFitCount = 0;
+        boolean fitHeight = false; // mixed fit/no fit height or all no fit
+        for (BasePairTrack track: bpTracks) {
+            if (track.getRenderOptions().getFitHeight()) ++fitCount; else ++noFitCount;
         }
+        if (noFitCount==0) fitHeight = true;
+
+        JCheckBoxMenuItem fitHeightBox = new JCheckBoxMenuItem("Fit arcs within track height");
+        fitHeightBox.setSelected(fitHeight);
         fitHeightBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                AbstractButton b = (AbstractButton) evt.getSource();
-                boolean isSelected = b.getModel().isSelected();
-                for (Track track : tracks) {
-                    if (track instanceof BasePairTrack) {
-                        ((BasePairTrack) track).getRenderOptions().setFitHeight(isSelected);
-                    }
-                }
-                IGV.getInstance().repaint();
+            AbstractButton b = (AbstractButton) evt.getSource();
+            boolean isSelected = b.getModel().isSelected();
+            for (BasePairTrack track : bpTracks) {
+                track.getRenderOptions().setFitHeight(isSelected);
+            }
+            IGV.getInstance().repaint();
             }
         });
         menu.add(fitHeightBox);
@@ -620,33 +614,39 @@ public class TrackMenuUtils {
 
         menu.add(arcDirectionHeading);
 
-        final String[] arcDirectionLabels = {"Up", "Down"};
+        // preselect up or down if all selected tracks have the same arc direction
+        int upCount = 0;
+        int downCount = 0;
+        BasePairTrack.ArcDirection currentArcDirection = null; // mixed up and down
+        for (BasePairTrack track: bpTracks) {
+            if (track.getRenderOptions().getArcDirection() == BasePairTrack.ArcDirection.UP) ++upCount;
+            if (track.getRenderOptions().getArcDirection() == BasePairTrack.ArcDirection.DOWN) ++downCount;
+        }
+        if (upCount==0) currentArcDirection = BasePairTrack.ArcDirection.DOWN;
+        if (downCount==0) currentArcDirection = BasePairTrack.ArcDirection.UP;
 
-        // FIXME: make this a mutually exclusive combo box list
-        for (int i = 0; i < arcDirectionLabels.length; i++) {
-            JCheckBoxMenuItem item = new JCheckBoxMenuItem(arcDirectionLabels[i]);
-            final BasePairTrack.ArcDirection n = (i == 0) ? BasePairTrack.ArcDirection.UP : BasePairTrack.ArcDirection.DOWN;
-            for (Track track : tracks) {
-                if (track instanceof BasePairTrack) {
-                    if (((BasePairTrack) track).getRenderOptions().getArcDirection() == n) {
-                        item.setSelected(true);
-                    }
-                }
-            }
-            item.addActionListener(new ActionListener() {
+        ButtonGroup group = new ButtonGroup();
+        Map<String, BasePairTrack.ArcDirection> arcDirections = new LinkedHashMap<String, BasePairTrack.ArcDirection>(3);
+        arcDirections.put("Up", BasePairTrack.ArcDirection.UP);
+        arcDirections.put("Down", BasePairTrack.ArcDirection.DOWN);
+        
+        for (final Map.Entry<String, BasePairTrack.ArcDirection> entry : arcDirections.entrySet()) {
+            JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
+            mm.setSelected(currentArcDirection == entry.getValue());
+            mm.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
                     for (Track track : tracks) {
                         if (track instanceof BasePairTrack) {
-                            ((BasePairTrack) track).getRenderOptions().setArcDirection(n);
+                            ((BasePairTrack) track).getRenderOptions().setArcDirection(entry.getValue());
                         }
                     }
-                    IGV.getInstance().repaint();
+                    refresh();
                 }
             });
-            menu.add(item);
+            group.add(mm);
+            menu.add(mm);
         }
 
-        menu.addSeparator();
     }
 
     private static JMenuItem getFeatureToGeneListItem(final Track t) {
@@ -1373,33 +1373,29 @@ public class TrackMenuUtils {
      *
      * @author stevenbusan
      */
-    public static void changeBasePairTrackColor(final List<Pair<BasePairTrack, Integer>> selected,
-                                                final String colorLegend) {
+    public static void changeBasePairTrackColor(final List<BasePairTrack> tracks,
+                                                final Color currentColor,
+                                                final String currentLabel) {
 
-        if (selected.isEmpty()) {
+        if (tracks.isEmpty()) {
             return;
         }
 
-        int colorIndex = selected.iterator().next().getSecond();
-        String colorString = selected.iterator().next().getFirst().getRenderOptions().getColor(colorIndex);
-        Color currentSelection = ColorUtilities.stringToColor(colorString);
+        Color newColor = UIUtilities.showColorChooserDialog(
+                "Select Arc Color ("+currentLabel+")",
+                currentColor);
 
-        Color color = UIUtilities.showColorChooserDialog(
-                "Select Arc Color ("+colorLegend+")",
-                currentSelection);
-
-        if (color == null) {
+        if (newColor == null) {
             return;
         }
 
-        for (Pair<BasePairTrack, Integer> p : selected) {
-            BasePairTrack t = p.getFirst();
-            int c = p.getSecond();
-            t.getRenderOptions().setColor(c, ColorUtilities.colorToString(color));
+        for (BasePairTrack t : tracks) {
+            t.changeColor(currentColor, currentLabel, newColor);
         }
         refresh();
 
     }
+
 
     public static void exportTrackNames(final Collection<Track> selectedTracks) {
 
