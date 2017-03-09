@@ -528,7 +528,7 @@ public class TrackMenuUtils {
 
         menu.add(arcColorHeading);
 
-        // Attempt to aggregate arc color legends for multiple selected tracks
+        // Attempt to aggregate arc color selector/legends for multiple selected tracks
         // This is pretty ugly, sorry. should probably use a custom class for readability - stevenbusan
         LinkedHashMap<String,
                       Pair<String, ArrayList<Pair<BasePairTrack, Integer>>>>
@@ -537,12 +537,10 @@ public class TrackMenuUtils {
         // Make list of unique color+labels, linked to lists of all matching tracks and color indices,
         // key: color string + label
         // value: Pair<String label, List<Pair<BasePairTrack, int colorIndex>>>
-        Color tmpColor = new Color(255,255,255);
         for (Track track : tracks) {
             if (track instanceof BasePairTrack) {
                 List<String> colors = ((BasePairTrack) track).getRenderOptions().getColors();
                 List<String> colorLabels = ((BasePairTrack) track).getRenderOptions().getColorLabels();
-                tmpColor = ColorUtilities.stringToColor(colors.get(0));
                 // iterate in reverse order so colors appearing first in list are the ones rendered on top
                 for (int i=colors.size()-1; i>=0; --i) {
                     String key = colors.get(i) + ' ' + colorLabels.get(i);
@@ -566,8 +564,7 @@ public class TrackMenuUtils {
 
             JLabel colorBox = new JLabel(LEADING_HEADING_SPACER + "██"); //, JLabel.LEFT
             colorBox.setForeground(color);
-
-            // FIXME: fix padding so legend text is clearly visible
+            
             // FIXME: fix menu selection highlight, especially for blank label entries
             JPanel p = new JPanel();
             p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
@@ -581,6 +578,11 @@ public class TrackMenuUtils {
 
             JMenuItem item = new JMenuItem();
             item.add(p);
+            double w = p.getPreferredSize().getWidth();
+            double h = p.getPreferredSize().getHeight();
+            Dimension size = new Dimension();
+            size.setSize(w, h+10);
+            item.setPreferredSize(size);
 
             final ArrayList<Pair<BasePairTrack, Integer>> selected = legendMap.get(key).getSecond();
 
