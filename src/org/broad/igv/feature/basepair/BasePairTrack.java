@@ -81,9 +81,10 @@ public class BasePairTrack extends AbstractTrack {
         ArcDirection arcDirection;
         @XmlAttribute
         boolean fitHeight; // scale arc heights to fit current track height
-        @XmlAttribute
+        @XmlElement
         List<String> colors; // needs to be String, not Color so XML conversion works happily
-        @XmlAttribute
+        // FIXME: use XmlAdapter or something to allow using Color class
+        @XmlElement
         List<String> colorLabels; // menu legend labels for each color
 
         RenderOptions() {

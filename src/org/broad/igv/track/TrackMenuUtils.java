@@ -584,31 +584,6 @@ public class TrackMenuUtils {
 
         menu.addSeparator();
 
-        // preselect fit arcs option if all selected tracks have it enabled
-        int fitCount = 0;
-        int noFitCount = 0;
-        boolean fitHeight = false; // mixed fit/no fit height or all no fit
-        for (BasePairTrack track: bpTracks) {
-            if (track.getRenderOptions().getFitHeight()) ++fitCount; else ++noFitCount;
-        }
-        if (noFitCount==0) fitHeight = true;
-
-        JCheckBoxMenuItem fitHeightBox = new JCheckBoxMenuItem("Fit arcs within track height");
-        fitHeightBox.setSelected(fitHeight);
-        fitHeightBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-            AbstractButton b = (AbstractButton) evt.getSource();
-            boolean isSelected = b.getModel().isSelected();
-            for (BasePairTrack track : bpTracks) {
-                track.getRenderOptions().setFitHeight(isSelected);
-            }
-            IGV.getInstance().repaint();
-            }
-        });
-        menu.add(fitHeightBox);
-
-        menu.addSeparator();
-
         JLabel arcDirectionHeading = new JLabel(LEADING_HEADING_SPACER + "Arc direction", JLabel.LEFT);
         arcDirectionHeading.setFont(UIConstants.boldFont);
 
@@ -647,6 +622,31 @@ public class TrackMenuUtils {
             menu.add(mm);
         }
 
+        menu.addSeparator();
+
+        // preselect fit arcs option if all selected tracks have it enabled
+        int fitCount = 0;
+        int noFitCount = 0;
+        boolean fitHeight = false; // mixed fit/no fit height or all no fit
+        for (BasePairTrack track: bpTracks) {
+            if (track.getRenderOptions().getFitHeight()) ++fitCount; else ++noFitCount;
+        }
+        if (noFitCount==0) fitHeight = true;
+
+        JCheckBoxMenuItem fitHeightBox = new JCheckBoxMenuItem("Fit arcs within track height");
+        fitHeightBox.setSelected(fitHeight);
+        fitHeightBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                AbstractButton b = (AbstractButton) evt.getSource();
+                boolean isSelected = b.getModel().isSelected();
+                for (BasePairTrack track : bpTracks) {
+                    track.getRenderOptions().setFitHeight(isSelected);
+                }
+                IGV.getInstance().repaint();
+            }
+        });
+        menu.add(fitHeightBox);
+        
     }
 
     private static JMenuItem getFeatureToGeneListItem(final Track t) {
