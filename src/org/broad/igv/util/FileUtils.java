@@ -486,4 +486,33 @@ public class FileUtils {
         return contents.toString();
 
     }
+
+    public static byte[] readFully(String aInputFileName) {
+        File file = new File(aInputFileName);
+        byte[] result = new byte[(int) file.length()];
+        try {
+            InputStream input = null;
+            try {
+                int totalBytesRead = 0;
+                input = new BufferedInputStream(new FileInputStream(file));
+                while (totalBytesRead < result.length) {
+                    int bytesRemaining = result.length - totalBytesRead;
+                    //input.read() returns -1, 0, or more :
+                    int bytesRead = input.read(result, totalBytesRead, bytesRemaining);
+                    if (bytesRead > 0) {
+                        totalBytesRead = totalBytesRead + bytesRead;
+                    }
+                }
+
+            } finally {
+
+                input.close();
+            }
+        } catch (FileNotFoundException ex) {
+
+        } catch (IOException ex) {
+
+        }
+        return result;
+    }
 }
