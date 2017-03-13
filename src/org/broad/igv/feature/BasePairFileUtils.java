@@ -88,7 +88,7 @@ public class BasePairFileUtils {
         LinkedList<BasePairFeature> transArcs = new LinkedList<BasePairFeature>();
         for (BasePairFeature arc : arcs) {
             String chr = arc.getChr();
-            Color color = arc.getColor();
+            int colorIndex = arc.getColorIndex();
             int startLeft, startRight, endLeft, endRight;
             if (strand == "+") {
                 startLeft = arc.getStartLeft() + newLeft - 1;
@@ -108,7 +108,7 @@ public class BasePairFileUtils {
                     startRight,
                     endLeft,
                     endRight,
-                    color);
+                    colorIndex);
             transArcs.add(transArc);
         }
         return transArcs;
@@ -203,7 +203,6 @@ public class BasePairFileUtils {
 
     static SeqLenAndBinnedPairs loadPairingProb(String inFile) throws
             FileNotFoundException, IOException {
-        // TODO: add probability threshold color legend to track dropdown menu
         // TODO: support alternate thresholds, interactive threshold update from track UI?
 
         ArrayList<ArrayList<Point>> binnedPairs = new ArrayList<ArrayList<Point>>();
@@ -250,21 +249,32 @@ public class BasePairFileUtils {
 
     static void writeBasePairFile(String bpFile,
                                   ArrayList<Color> colors,
+                                  ArrayList<String> colorLabels,
                                   ArrayList<LinkedList<BasePairFeature>> groupedArcs) throws IOException {
         PrintWriter pw = null;
 
         try {
             pw = new PrintWriter(new BufferedWriter(new FileWriter(bpFile)));
             // first write enumerated colors header
-            for (Color color : colors) {
-                pw.println("color:\t" + color.getRed() + "\t" + color.getGreen() + "\t" + color.getBlue());
+            for (int i=0; i<colors.size(); ++i) {
+                Color color = colors.get(i);
+                String label = "";
+                try {
+                    label = colorLabels.get(i);
+                } catch (IndexOutOfBoundsException e) {
+                } catch (NullPointerException e) {
+                }
+                pw.println("color:\t" + color.getRed() +
+                                 "\t" + color.getGreen() +
+                                 "\t" + color.getBlue() +
+                                 "\t" + label);
             }
 
-            // then write arc coordinates
+            // then write arc coordinates and color index
             int colorIndex = 0;
             for (LinkedList<BasePairFeature> colorGroup : groupedArcs) {
                 for (BasePairFeature arc : colorGroup) {
-                    pw.println(arc.toStringNoColor() + "\t" + colorIndex);
+                    pw.println(arc.toString() + "\t" + colorIndex);
                 }
                 colorIndex++;
             }
@@ -360,7 +370,7 @@ public class BasePairFileUtils {
                     startRight,
                     endLeft,
                     endRight,
-                    null));
+                    0));
         }
         return helices;
     }
@@ -386,7 +396,7 @@ public class BasePairFileUtils {
         colors.add(Color.black);
         ArrayList<LinkedList<BasePairFeature>> groupedArcs = new ArrayList<LinkedList<BasePairFeature>>();
         groupedArcs.add(arcs); // list of length 1 for this case (arcs only have 1 color)
-        writeBasePairFile(bpFile, colors, groupedArcs);
+        writeBasePairFile(bpFile, colors, null, groupedArcs);
     }
 
     /**
@@ -410,7 +420,7 @@ public class BasePairFileUtils {
         colors.add(Color.black);
         ArrayList<LinkedList<BasePairFeature>> groupedArcs = new ArrayList<LinkedList<BasePairFeature>>();
         groupedArcs.add(arcs); // list of length 1 for this case (arcs only have 1 color)
-        writeBasePairFile(bpFile, colors, groupedArcs);
+        writeBasePairFile(bpFile, colors, null, groupedArcs);
     }
 
     /**
@@ -434,10 +444,17 @@ public class BasePairFileUtils {
                     seqLen, left, strand));
         }
         ArrayList<Color> colors = new ArrayList<Color>();
-        colors.add(new Color(255, 204, 0));
-        colors.add(new Color(72, 143, 205));
-        colors.add(new Color(81, 184, 72));
-        writeBasePairFile(bpFile, colors, groupedArcs);
+        //colors.add(new Color(255, 204, 0));
+        //colors.add(new Color(72, 143, 205));
+        //colors.add(new Color(81, 184, 72));
+        colors.add(new Color(255, 218, 125));
+        colors.add(new Color(113, 195, 209));
+        colors.add(new Color(51, 114, 38));
+        ArrayList<String> colorLabels = new ArrayList<String>();
+        colorLabels.add("PP 10 - 30%");
+        colorLabels.add("PP 30 - 80%");
+        colorLabels.add("Pairing probability > 80%");
+        writeBasePairFile(bpFile, colors, colorLabels, groupedArcs);
     }
 
 

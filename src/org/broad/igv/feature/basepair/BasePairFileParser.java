@@ -4,25 +4,22 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.StringUtils;
 import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Arrays;
 
 public class BasePairFileParser {
 
     static Logger log = Logger.getLogger(BasePairFileParser.class);
 
-    public static BasePairData loadData(ResourceLocator locator, Genome genome) {
+    public static void loadData(ResourceLocator locator, Genome genome,
+                                BasePairData basePairData, BasePairTrack.RenderOptions renderOptions) {
         AsciiLineReader reader = null;
-
-        List<Color> colors = new ArrayList();
-        HashMap<Color, List<Object>> rowsByColor = new HashMap<Color, List<Object>>();
-        BasePairData basePairData = new BasePairData();
 
         String nextLine = null;
         int rowCounter = 0;
@@ -37,14 +34,16 @@ public class BasePairFileParser {
                 int r = Integer.parseInt(tokens[1]);
                 int g = Integer.parseInt(tokens[2]);
                 int b = Integer.parseInt(tokens[3]);
+                String label = "";
+                try {
+                    label = StringUtils.join(Arrays.copyOfRange(tokens, 4, tokens.length), " ");
+                } catch (IndexOutOfBoundsException e) {
+                }
                 Color color = new Color(r, g, b, 255);
-                colors.add(color);
+                renderOptions.colors.add(ColorUtilities.colorToString(color));
+                renderOptions.colorLabels.add(label);
                 nextLine = reader.readLine();
                 rowCounter++;
-            }
-
-            for (Color color : colors) {
-                rowsByColor.put(color, new ArrayList());
             }
 
             while (nextLine != null) {
@@ -57,7 +56,7 @@ public class BasePairFileParser {
                 int startRightNuc = Integer.parseInt(tokens[2]) - 1;
                 int endLeftNuc = Integer.parseInt(tokens[3]) - 1;
                 int endRightNuc = Integer.parseInt(tokens[4]) - 1;
-                Color color = colors.get(Integer.parseInt(tokens[5]));
+                int colorIndex = Integer.parseInt(tokens[5]);
 
                 BasePairFeature feature;
                 if (startLeftNuc <= endRightNuc) {
@@ -66,14 +65,14 @@ public class BasePairFileParser {
                             Math.max(startLeftNuc, startRightNuc),
                             Math.min(endLeftNuc, endRightNuc),
                             Math.max(endLeftNuc, endRightNuc),
-                            color);
+                            colorIndex);
                 } else {
                     feature = new BasePairFeature(chr,
                             Math.min(endLeftNuc, endRightNuc),
                             Math.max(endLeftNuc, endRightNuc),
                             Math.min(startLeftNuc, startRightNuc),
                             Math.max(startLeftNuc, startRightNuc),
-                            color);
+                            colorIndex);
                 }
 
                 basePairData.addFeature(feature);
@@ -102,7 +101,6 @@ public class BasePairFileParser {
         //    System.out.println(row);
         //}
 
-        return basePairData;
     }
 
 }

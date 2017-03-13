@@ -4,7 +4,6 @@ package org.broad.igv.feature.basepair;
 
 import org.broad.igv.feature.FeatureUtils;
 
-import java.awt.*; // does this have Color definition?
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
