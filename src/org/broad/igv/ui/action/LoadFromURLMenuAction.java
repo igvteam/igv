@@ -94,6 +94,29 @@ public class LoadFromURLMenuAction extends MenuAction {
                     }
 
                     if (OAuthUtils.isGoogleCloud(url)) {
+                    	
+                    	// if user is not currently logged in, attempt to 
+                    	// log in user if not logged in dwm08
+                    	if (!OAuthUtils.getInstance().isLoggedIn()) {
+                       	 try {
+                                OAuthUtils.getInstance().openAuthorizationPage();
+                            } catch (Exception ex) {
+                                MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
+                                log.error("Error fetching oAuth tokens", ex);
+                            }
+
+                        }
+                    	// wait until authentication successful or 1 minute - dwm08
+                    	int i = 0;
+                    	while (!OAuthUtils.getInstance().isLoggedIn() && i<600) {
+                    		++i;
+                    		try {
+								Thread.sleep(100);
+							} catch (InterruptedException e1) {
+								e1.printStackTrace();
+							}
+                    	}
+                    	
                         // Access a few bytes as a means to check authorization
                         if (!ping(url)) return;
                         if (url.indexOf("alt=media") < 0) {
