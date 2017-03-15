@@ -105,6 +105,12 @@ public class OAuthUtils {
     private OAuthUtils() {
         // Attempt to fetch refresh token from local store.
         restoreRefreshToken();
+        // do this early -- dwm08
+        try {
+			fetchOauthProperties();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
     }
 
     private void fetchOauthProperties() throws IOException {
@@ -160,7 +166,8 @@ public class OAuthUtils {
      */
     public void openAuthorizationPage() throws IOException, URISyntaxException {
 
-        if (clientId == null) fetchOauthProperties();
+    	// properties moved to early init dwm08
+        //if (clientId == null) fetchOauthProperties();
 
         String redirect = oobURI;
         // if the listener is active, then set the redirect URI.  dwm08
@@ -228,7 +235,8 @@ public class OAuthUtils {
 
     private void fetchTokens(String redirect) throws IOException {
 
-        if (clientId == null) fetchOauthProperties();
+    	// properties moved to early init dwm08
+        //if (clientId == null) fetchOauthProperties();
 
         URL url = new URL(tokenURI);
 
@@ -263,7 +271,8 @@ public class OAuthUtils {
      */
     private void refreshAccessToken() throws IOException {
 
-        if (clientId == null) fetchOauthProperties();
+    	// properties moved to early init dwm08
+        //if (clientId == null) fetchOauthProperties();
 
         URL url = new URL(tokenURI);
 
@@ -311,7 +320,8 @@ public class OAuthUtils {
      */
     private void fetchUserProfile() throws IOException {
 
-    	if (clientId == null) fetchOauthProperties();
+    	// properties moved to early init dwm08
+        //if (clientId == null) fetchOauthProperties();
 
         try {
             JWT jwt = JWT.decode(accessToken);
