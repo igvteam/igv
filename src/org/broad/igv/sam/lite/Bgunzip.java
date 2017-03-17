@@ -13,7 +13,7 @@ public class BGUnzip {
 
     // Uncompress data,  assumed to be series of bgzipped blocks
 
-    public static byte[] blockUnzip(byte[] data, int lim) throws DataFormatException, IOException {
+    public static byte[] blockUnzip(byte[] data, int lim) throws IOException {
 
         Inflater inflater = new Inflater(true);
 
@@ -39,7 +39,13 @@ public class BGUnzip {
             inflater.setInput(data, start, remainder);
 
             byte [] output = new byte[uncLength];
-            final int inflatedBytes = inflater.inflate(output, 0, uncLength);
+            final int inflatedBytes;
+            try {
+                inflatedBytes = inflater.inflate(output, 0, uncLength);
+            } catch (DataFormatException e) {
+                // Can happen near end of file;
+                break;
+            }
 
             outputStream.write(output, 0, inflatedBytes);
 
