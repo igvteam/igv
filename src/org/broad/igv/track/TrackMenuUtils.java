@@ -534,8 +534,8 @@ public class TrackMenuUtils {
         menu.add(arcColorHeading);
 
         // aggregate arc color selector/legends for multiple selected tracks
-        ArrayList<Pair<Color, String>> legendList = new ArrayList<Pair<Color, String>>(); 
-        HashSet<String> keys = new HashSet<String>();       
+        ArrayList<Pair<Color, String>> legendList = new ArrayList<Pair<Color, String>>();
+        HashSet<String> keys = new HashSet<String>();
         for (BasePairTrack track : bpTracks) {
             List<String> colors = track.getRenderOptions().getColors();
             List<String> colorLabels = track.getRenderOptions().getColorLabels();
@@ -553,7 +553,7 @@ public class TrackMenuUtils {
             final Color color = pair.getFirst();
             final String label = pair.getSecond();
 
-            JLabel colorBox = new JLabel(LEADING_HEADING_SPACER + "██");
+            JLabel colorBox = new JLabel(LEADING_HEADING_SPACER + "");
             colorBox.setFont(UIConstants.boldFont);
             colorBox.setForeground(color);
 
@@ -604,7 +604,7 @@ public class TrackMenuUtils {
         Map<String, BasePairTrack.ArcDirection> arcDirections = new LinkedHashMap<String, BasePairTrack.ArcDirection>(3);
         arcDirections.put("Up", BasePairTrack.ArcDirection.UP);
         arcDirections.put("Down", BasePairTrack.ArcDirection.DOWN);
-        
+
         for (final Map.Entry<String, BasePairTrack.ArcDirection> entry : arcDirections.entrySet()) {
             JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
             mm.setSelected(currentArcDirection == entry.getValue());
