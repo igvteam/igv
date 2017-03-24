@@ -1,12 +1,15 @@
 package org.broad.igv.sam.lite;
 
+import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.seekablestream.SeekableStream;
+import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.tribble.util.LittleEndianInputStream;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.*;
 import org.broad.igv.sam.ReadMate;
+import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
@@ -22,7 +25,7 @@ import java.util.zip.DataFormatException;
 /**
  * Created by jrobinso on 3/9/17.
  */
-public class BAMReader {
+public class BAMReader implements AlignmentReader<Alignment> {
 
     private static Logger log = Logger.getLogger(BAMReader.class);
     private final String path;
@@ -55,10 +58,6 @@ public class BAMReader {
     Map<String, Integer> chrToIndex;
     private String[] indexToChr;
 
-    public class BamReader {
-
-
-    }
 
     public BAMReader(String path) {
 
@@ -88,25 +87,172 @@ public class BAMReader {
 //            this.pairsSupported = config.pairsSupported == = undefined ? true : config.pairsSupported;
 //        }
 
+
+        try {
+            bamIndex = BAMIndex.loadIndex(this.indexPath, null);
+            readHeader();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
     }
+
+
+    @Override
+    public void close() throws IOException {
+
+    }
+
+    @Override
+    public List<String> getSequenceNames() throws IOException {
+        return Arrays.asList(indexToChr);
+    }
+
+    @Override
+    public SAMFileHeader getFileHeader() {
+        return null;
+    }
+
+    @Override
+    public Set<String> getPlatforms() {
+        return null;
+    }
+
+    @Override
+    public CloseableIterator<Alignment> iterator() {
+        return null;
+    }
+
+
+    @Override
+    public boolean hasIndex() {
+        return bamIndex != null;
+    }
+
+
+    @Override
+    public CloseableIterator<Alignment> query(String chr, int start, int end, boolean contained) throws IOException {
+        return new CIterator(chr, start, end);
+    }
+
+
+    class CIterator implements CloseableIterator<Alignment> {
+
+        String chr;
+        Integer chrId;
+        int start;
+        int end;
+        Iterator<BAMIndex.Chunk> chunks;
+        Iterator<Alignment> currentChunkAlignments;
+        Alignment nextAlignment;
+
+        public CIterator(String chr, int start, int end) {
+            this.chr = chr;
+            this.start = start;
+            this.end = end;
+            init();
+        }
+
+        private void init() {
+
+            Map<String, Integer> chrToIndex = BAMReader.this.chrToIndex;
+
+            chrId = chrToIndex.get(chr);
+
+            if (chrId == null) {
+                // TODO
+            } else {
+                chunks = bamIndex.chunksForRange(chrId, start, end).iterator();
+            }
+
+            advance();
+
+        }
+
+        @Override
+        public void close() {
+
+        }
+
+        @Override
+        public boolean hasNext() {
+            return nextAlignment != null;
+        }
+
+        @Override
+        public Alignment next() {
+            Alignment tmp = nextAlignment;
+            advance();
+            return tmp;
+        }
+
+        void advance() {
+            nextAlignment = null;
+            try {
+                while (nextAlignment == null) {
+                    if (currentChunkAlignments != null && currentChunkAlignments.hasNext()) {
+                        nextAlignment = currentChunkAlignments.next();
+                    } else {
+                        if (chunks.hasNext()) {
+                            BAMIndex.Chunk c = chunks.next();
+                            currentChunkAlignments = readAlignments(c, chrId, start, end).iterator();
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                nextAlignment = null;
+            }
+        }
+    }
+
+    public List<Alignment> readAlignments(BAMIndex.Chunk c, int chrId, int start, int end) throws IOException {
+
+        List<Alignment> alignmentContainer = new ArrayList<>(10000);
+
+        long fetchMin = c.start.block;
+        long fetchMax = c.end.block + 65000; // Make sure we get the whole block.
+
+        SeekableStream ss = IGVSeekableStreamFactory.getInstance().getStreamFor(this.path);
+
+        ss.seek(fetchMin);
+
+        byte[] buffer = new byte[(int) (fetchMax - fetchMin + 1)];
+
+        try {
+            ss.readFully(buffer);
+        } catch (EOFException e) {
+            // Can happen with small files
+        }
+
+        byte[] unc = BGUnzip.blockUnzip(buffer, -1);
+
+        decodeBamRecords(unc, c.start.offset, alignmentContainer, start, end, chrId); //, self.filter);
+
+
+        return alignmentContainer;
+    }
+
 
     public List<Alignment> readAlignments(String chr, int bpStart, int bpEnd) throws IOException {
 
         List<Alignment> alignmentContainer = new ArrayList<>(10000);
 
-        if (bamIndex == null) readHeader();
+        if (chrToIndex == null) {
+            readHeader();
+        }
 
         Map<String, Integer> chrToIndex = this.chrToIndex;
 
         Integer chrId = chrToIndex.get(chr);
 
-        // TODO -- downsampling
-        // alignmentContainer = new igv.AlignmentContainer(chr, bpStart, bpEnd, self.samplingWindowSize, self.samplingDepth, self.pairsSupported);
-
         if (chrId == null) {
             return alignmentContainer;
         } else {
-
 
             List<BAMIndex.Chunk> chunks = bamIndex.chunksForRange(chrId, bpStart, bpEnd);
 
@@ -272,10 +418,6 @@ public class BAMReader {
 
     void readHeader() throws IOException {
 
-        if (bamIndex == null) {
-            bamIndex = BAMIndex.loadIndex(this.indexPath, null);
-        }
-
 
         int len = (int) bamIndex.firstAlignmentBlock + MAX_GZIP_BLOCK_SIZE;   // Insure we get the complete compressed block containing the header
 
@@ -393,7 +535,9 @@ public class BAMReader {
         }
 
         alignment.alignmentBlocks = blocks.toArray(new AlignmentBlockImpl[]{});
-        if (insertions != null) alignment.insertions = insertions.toArray(new AlignmentBlockImpl[]{});
+        if (insertions != null) {
+            alignment.insertions = insertions.toArray(new AlignmentBlockImpl[]{});
+        }
 
     }
 
@@ -417,7 +561,6 @@ public class BAMReader {
     public static int readInt(byte[] ba, int offset) {
         return (ba[offset + 3] << 24) + (ba[offset + 2] << 24 >>> 8) + (ba[offset + 1] << 24 >>> 16) + (ba[offset] << 24 >>> 24);
     }
-
 
 }
 
