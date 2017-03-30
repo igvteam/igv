@@ -29,4 +29,15 @@ public class BAMIndexTest {
 
     }
 
+    @Test
+    public void loadIndex() throws Exception {
+
+        String url = "http://1000genomes.s3.amazonaws.com/phase3/data/HG01879/alignment/HG01879.mapped.ILLUMINA.bwa.ACB.low_coverage.20120522.bam.bai";
+
+        BAMIndex bamIndex = BAMIndex.loadIndex(url, null);
+
+        assertEquals(4690, bamIndex.firstAlignmentBlock);
+
+    }
+
 }

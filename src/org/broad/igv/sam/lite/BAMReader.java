@@ -229,7 +229,7 @@ public class BAMReader implements AlignmentReader<Alignment> {
             // Can happen with small files
         }
 
-        byte[] unc = BGUnzip.blockUnzip(buffer, -1);
+        byte[] unc = BGUnzip.blockUnzip(buffer);
 
         decodeBamRecords(unc, c.start.offset, alignmentContainer, start, end, chrId); //, self.filter);
 
@@ -277,7 +277,7 @@ public class BAMReader implements AlignmentReader<Alignment> {
                     // Can happen with small files
                 }
 
-                byte[] unc = BGUnzip.blockUnzip(buffer, -1);
+                byte[] unc = BGUnzip.blockUnzip(buffer);
 
                 decodeBamRecords(unc, c.start.offset, alignmentContainer, bpStart, bpEnd, chrId); //, self.filter);
 
@@ -431,7 +431,7 @@ public class BAMReader implements AlignmentReader<Alignment> {
             // This can happen with small files
         }
 
-        byte[] uncba = BGUnzip.blockUnzip(buffer, len);
+        byte[] uncba = BGUnzip.blockUnzip(buffer);
 
         int magic = readInt(uncba, 0);
         int samHeaderLen = readInt(uncba, 4);

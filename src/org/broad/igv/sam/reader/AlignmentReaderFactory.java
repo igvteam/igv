@@ -85,8 +85,8 @@ public class AlignmentReaderFactory {
             reader = new GeraldReader(samFile, requireIndex);
         } else if (typeString.endsWith(".bam") || (typeString.endsWith(".cram"))) {
             try {
-                reader = new BAMReader(locator, requireIndex);
-            } catch (IOException e) {
+                reader = new BAMReader(locator, true); //, requireIndex);
+            } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 throw new DataLoadException("Error loading BAM file: " + e.toString(), locator.getPath());
             }

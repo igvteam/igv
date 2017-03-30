@@ -13,27 +13,28 @@ public class BGUnzip {
 
     // Uncompress data,  assumed to be series of bgzipped blocks
 
-    public static byte[] blockUnzip(byte[] data, int lim) throws IOException {
+    public static byte[] blockUnzip(byte[] data) throws IOException {
 
         Inflater inflater = new Inflater(true);
 
         int ptr = 0;
 
-        if (lim <= 0) lim = data.length - BGZIP_HEADER_LENGTH;
+        int lim = data.length - BGZIP_HEADER_LENGTH;
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
 
         while (ptr < lim) {
 
-            int xlen =  unpackInt16(data, 10);
+            int xlen =  unpackInt16(data, ptr + 10);
             int si1 = data[ptr + 12];
             int si2 = data[ptr + 13];
             int slen =  unpackInt16(data, 14);
             int bsize = unpackInt16(data, ptr + 16) + 1;
-            int uncLength = unpackInt32(data, ptr + bsize - 4);
 
             int start = BGZIP_HEADER_LENGTH + ptr;    // Start of CDATA
             int remainder = data.length - start;
             if (remainder < (bsize + 8)) break;
+
+            int uncLength = unpackInt32(data, ptr + bsize - 4);
 
             inflater.reset();
             inflater.setInput(data, start, remainder);

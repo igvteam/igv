@@ -17,6 +17,9 @@ public class BAMIndex {
 
     static int BAI_MAGIC = 21578050;
     static int TABIX_MAGIC = 21578324;
+    private static final int SHIFT_AMOUNT = 16;
+    private static final int OFFSET_MASK = 0xffff;
+    private static final long ADDRESS_MASK = 0xFFFFFFFFFFFFL;
 
 
     long firstAlignmentBlock;
@@ -147,18 +150,9 @@ public class BAMIndex {
 
     static VPointer readVPointer(LittleEndianInputStream is) throws IOException {
 
-        byte byte0 = is.readByte();
-        byte byte1 = is.readByte();
-        int offset = byte1 << 8 | byte0;
-
-        int byte2 = is.readByte() & 0xff;
-        int byte3 = (is.readByte() & 0xff) * 0x100;
-        long byte4 = (is.readByte() & 0xff) * 0x10000;
-        long byte5 = (is.readByte() & 0xff) * 0x1000000;
-        long byte6 = (is.readByte() & 0xff) * 0x100000000l;
-        int byte7 = is.readByte(); // NOT USED
-
-        long block = byte6 + byte5 + byte4 + byte3 + byte2;
+        long vp = is.readLong();
+        long block =  (vp >> SHIFT_AMOUNT) & ADDRESS_MASK;
+        int offset =  (int) (vp & OFFSET_MASK);
 
         return new VPointer(block, offset);
 
@@ -208,7 +202,7 @@ public class BAMIndex {
     }
 
 
-    static BAMIndex loadIndex(String indexURL,
+    public static BAMIndex loadIndex(String indexURL,
                               Genome genome) throws IOException {
 
 
