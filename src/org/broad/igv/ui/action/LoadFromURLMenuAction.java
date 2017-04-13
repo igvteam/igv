@@ -187,7 +187,7 @@ public class LoadFromURLMenuAction extends MenuAction {
         InputStream is = null;
         try {
             Map<String, String> params = new HashMap();
-            params.put("Range", "0-10");
+            params.put("Range", "bytes=0-10");
             byte[] buffer = new byte[10];
             is = HttpUtils.getInstance().openConnectionStream(new URL(url), params);
             is.read(buffer);

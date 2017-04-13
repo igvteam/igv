@@ -99,8 +99,8 @@ public abstract class SAMAlignment implements Alignment {
     protected Color color = null;
 
     ReadMate mate;
-    AlignmentBlockImpl[] alignmentBlocks;
-    AlignmentBlockImpl[] insertions;
+    public AlignmentBlockImpl[] alignmentBlocks;
+    public AlignmentBlockImpl[] insertions;
     List<Gap> gaps;
     char[] gapTypes;
 
@@ -237,9 +237,6 @@ public abstract class SAMAlignment implements Alignment {
      * @param cigarString
      * @param readBases
      * @param readBaseQualities
-     * @param flowSignals       from the FZ tag, null if not present
-     * @param flowOrder         from the RG.FO header tag, null if not present
-     * @param flowOrderStart
      */
     protected void createAlignmentBlocks(String cigarString, byte[] readBases, byte[] readBaseQualities) {
 
