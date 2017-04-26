@@ -482,10 +482,10 @@ public abstract class SAMAlignment implements Alignment {
                         buf.append("Insertion: " + block.getLength() + " bases");
                     } else {
                         if (bases.length < 50) {
-                            buf.append("Insertion: " + new String(bases));
+                            buf.append("Insertion (" + bases.length + " bases): " + new String(bases));
                         } else {
                             int len = bases.length;
-                            buf.append("Insertion: " + new String(Arrays.copyOfRange(bases, 0, 25)) + "..." +
+                            buf.append("Insertion (" + bases.length + " bases): " + new String(Arrays.copyOfRange(bases, 0, 25)) + "..." +
                                     new String(Arrays.copyOfRange(bases, len - 25, len)));
                         }
                     }
