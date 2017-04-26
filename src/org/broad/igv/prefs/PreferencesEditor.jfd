@@ -3125,7 +3125,7 @@
                      <class>java.awt.GridLayout</class>
                      <void method="setProperty">
                       <string>rows</string>
-                      <int>6</int>
+                      <int>7</int>
                      </void>
                     </object>
                     <void property="name">

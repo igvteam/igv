@@ -1156,7 +1156,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                                 //======== panel13 ========
                                 {
-                                    panel13.setLayout(new GridLayout(6, 0));
+                                    panel13.setLayout(new GridLayout(7, 0));
 
                                     //======== panel31 ========
                                     {
