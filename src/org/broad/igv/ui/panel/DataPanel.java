@@ -151,7 +151,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
                     loadInProgress = true;
                     Preloader.load(this);
                 }
-              //  if(!Globals.isBatch()) return;
+                if(!Globals.isBatch()) return;
             }
 
             Rectangle clipBounds = g.getClipBounds();
