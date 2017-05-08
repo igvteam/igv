@@ -300,6 +300,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         if (this.coverageTrack != null) {
             this.coverageTrack.setRenderOptions(this.renderOptions);
         }
+        if(this.spliceJunctionTrack != null) {
+            this.spliceJunctionTrack.setRenderOptions(this.renderOptions);
+        }
     }
 
     @SubtlyImportant

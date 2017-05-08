@@ -60,6 +60,11 @@ import java.util.List;
 public class SpliceJunctionTrack extends FeatureTrack {
 
     private static Logger log = Logger.getLogger(SpliceJunctionTrack.class);
+    private AlignmentTrack.RenderOptions renderOptions;
+
+    public void setRenderOptions(AlignmentTrack.RenderOptions renderOptions) {
+        this.renderOptions = renderOptions;
+    }
 
     public enum StrandOption {COMBINE, FORWARD, REVERSE, BOTH}
 
@@ -235,6 +240,10 @@ public class SpliceJunctionTrack extends FeatureTrack {
     @Override
     protected String getZoomInMessage(String chr) {
         return "Zoom in to see junctions.";
+    }
+
+    public void load(ReferenceFrame referenceFrame) {
+        dataManager.load(referenceFrame, renderOptions, true);
     }
 
     @Override

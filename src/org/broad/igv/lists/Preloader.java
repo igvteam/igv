@@ -38,6 +38,7 @@ import org.broad.igv.util.LongRunningTask;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -91,21 +92,24 @@ public class Preloader {
     }
 
 
+    static HashSet<String> loading = new HashSet<>();
+
     public static synchronized void load(final DataPanel dataPanel) {
 
         ReferenceFrame frame = dataPanel.getFrame();
         Collection<Track> trackList = dataPanel.visibleTracks();
         List<CompletableFuture> futures = new ArrayList(trackList.size());
         for (Track track : trackList) {
-            if (track.isReadyToPaint(frame) == false) {
+            String e = track.getName() + " " + frame.getFormattedLocusString();
+            if (track.isReadyToPaint(frame) == false && !loading.contains(e)) {
                 final Runnable runnable = () -> {
-               //     log.info("Loading " + track.getName() + " " + frame.getFormattedLocusString());
-                    track.load(frame);
 
-               //     log.info("Loaded " + track.getName() + " " + frame.getFormattedLocusString());
+                    loading.add(e);
+                    track.load(frame);
+                 //   log.info("Loaded " + track.getName() + " " + frame.getFormattedLocusString());
                 };
 
-                if(Globals.isBatch()) {
+                if (Globals.isBatch()) {
                     runnable.run();
                 } else {
                     futures.add(CompletableFuture.runAsync(runnable, threadExecutor));
@@ -116,7 +120,7 @@ public class Preloader {
         if (futures.size() > 0) {
             CompletableFuture[] futureArray = futures.toArray(new CompletableFuture[futures.size()]);
             WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-            CompletableFuture.allOf(futureArray).thenRun(() -> {
+            CompletableFuture.allOf(futureArray).thenRunAsync(() -> {
                 List<Track> unloadedTracks = dataPanel.notloadedTracks();
                 if (unloadedTracks.size() > 0) {
                     log.info("Unloaded tracks for " + frame.getFormattedLocusString() + "  " + unloadedTracks);
@@ -135,8 +139,8 @@ public class Preloader {
 
     private static SequenceTrack findSequenceTrack(Collection<Track> trackList) {
 
-        for(Track t : trackList) {
-            if(t instanceof SequenceTrack) {
+        for (Track t : trackList) {
+            if (t instanceof SequenceTrack) {
                 return (SequenceTrack) t;
             }
         }
