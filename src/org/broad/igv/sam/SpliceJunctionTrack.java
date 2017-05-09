@@ -246,6 +246,17 @@ public class SpliceJunctionTrack extends FeatureTrack {
         dataManager.load(referenceFrame, renderOptions, true);
     }
 
+
+    @Override
+    public boolean isReadyToPaint(ReferenceFrame frame) {
+        if(this.alignmentTrack != null && this.alignmentTrack.isVisible()) {
+            return true;
+        }
+        else {
+            return dataManager.isLoaded(frame);
+        }
+    }
+
     @Override
     protected void loadFeatures(String chr, int start, int end, ReferenceFrame frame) {
 
