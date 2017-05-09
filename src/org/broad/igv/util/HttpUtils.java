@@ -644,6 +644,12 @@ public class HttpUtils {
 
         log.info("Open connection");
 
+        // if the url points to a openid location instead of a oauth2.0 location, used the fina and replace
+        // string to dynamically map url - dwm08
+        if (url.getHost().equals(OAuthUtils.GS_HOST) && OAuthUtils.findString != null && OAuthUtils.replaceString!= null) {
+        	url = new URL(url.toExternalForm().replaceFirst(OAuthUtils.findString, OAuthUtils.replaceString));
+        }
+
         // Map amazon cname aliases to the full hosts -- neccessary to avoid ssl certificate errors in Java 1.8
         url = mapCname(url);
 
