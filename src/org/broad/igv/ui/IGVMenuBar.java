@@ -48,9 +48,9 @@ import org.broad.igv.tools.IgvToolsGui;
 import org.broad.igv.tools.motiffinder.MotifFinderPlugin;
 import org.broad.igv.track.CombinedDataSourceDialog;
 import org.broad.igv.ui.action.*;
-import org.broad.igv.event.GenomeChangeEvent;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.ui.event.GenomeChangeEvent;
+import org.broad.igv.ui.event.IGVEventBus;
+import org.broad.igv.ui.event.IGVEventObserver;
 import org.broad.igv.ui.legend.LegendDialog;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.MainPanel;
@@ -138,7 +138,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             }
             throw new IllegalStateException("Cannot create another IGVMenuBar, use getInstance");
         }
-        UIUtilities.invokeAndWaitOnEventThread(() -> instance = new IGVMenuBar(igv));
+        UIUtilities.invokeAndWaitOnEventThread(() ->instance = new IGVMenuBar(igv));
         return instance;
     }
 
@@ -427,10 +427,11 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         }
 
 
+
         encodeMenuItem = MenuAndToolbarUtils.createMenuItem(new BrowseEncodeAction("Load from ENCODE (2012)...", KeyEvent.VK_E, igv));
         menuItems.add(encodeMenuItem);
         String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
-        encodeMenuItem.setVisible(EncodeFileBrowser.genomeSupported(genomeId));
+        encodeMenuItem.setVisible (EncodeFileBrowser.genomeSupported(genomeId));
 
 
         menuAction = new BrowseGa4ghAction("Load from Ga4gh...", KeyEvent.VK_G, igv);
@@ -693,7 +694,11 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 new MenuAction("Preferences...", null, KeyEvent.VK_P) {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        IGV.getInstance().doViewPreferences();
+                        UIUtilities.invokeOnEventThread(new Runnable() {
+                            public void run() {
+                                IGV.getInstance().doViewPreferences();
+                            }
+                        });
                     }
                 };
         menuAction.setToolTipText(PREFERENCE_TOOLTIP);
@@ -1139,7 +1144,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     private JMenu createGoogleMenu() {
 
-        final JMenu menu = new JMenu("Google");
+    	// Dynamically name menu - dwm08
+        JMenu menu =  new JMenu(OAuthUtils.authProvider);
 
         final JMenuItem login = new JMenuItem("Login ... ");
         login.addActionListener(new ActionListener() {
@@ -1299,8 +1305,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     @Override
     public void receiveEvent(final Object event) {
 
-        if (event instanceof GenomeChangeEvent) {
-            UIUtilities.invokeOnEventThread(() -> encodeMenuItem.setVisible(EncodeFileBrowser.genomeSupported(((GenomeChangeEvent) event).genome.getId())));
+        if(event instanceof GenomeChangeEvent) {
+            UIUtilities.invokeOnEventThread(() -> encodeMenuItem.setVisible (EncodeFileBrowser.genomeSupported(((GenomeChangeEvent) event).genome.getId())));
         }
     }
 }
