@@ -39,7 +39,6 @@ import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -56,7 +55,7 @@ public class OAuthUtils {
     private static Logger log = Logger.getLogger(OAuthUtils.class);
 
     // dwm08
-    public static String authProvider="Google";
+    public static String authProvider = "Google";
     // dwm08
     private String appIdURI = null;
     // dwm08
@@ -64,7 +63,7 @@ public class OAuthUtils {
     // dwm08
     public static String replaceString = null;
 
-  
+
     private static final String REFRESH_TOKEN_KEY = "oauth_refresh_token";
     private static final String PROPERTIES_URL = "https://igvdata.broadinstitute.org/app/oauth_native.json";
     private String genomicsScope = "https://www.googleapis.com/auth/genomics";
@@ -107,18 +106,18 @@ public class OAuthUtils {
         restoreRefreshToken();
         // do this early -- dwm08
         try {
-			fetchOauthProperties();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+            fetchOauthProperties();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void fetchOauthProperties() throws IOException {
 
         String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config.json";
-                //IGVPreferences.getInstance().get(IGVPreferences.OAUTH_CONFIG);
+        //IGVPreferences.getInstance().get(IGVPreferences.OAUTH_CONFIG);
 
-        if(oauthConfig == null || !FileUtils.resourceExists(oauthConfig)) {
+        if (oauthConfig == null || !FileUtils.resourceExists(oauthConfig)) {
             String propString = HttpUtils.getInstance().getContentsAsString(new URL(PROPERTIES_URL));
             JsonParser parser = new JsonParser();
             JsonObject obj = parser.parse(propString).getAsJsonObject().get("installed").getAsJsonObject();
@@ -126,10 +125,9 @@ public class OAuthUtils {
             clientSecret = obj.get("client_secret").getAsString();
             tokenURI = obj.get("token_uri").getAsString();
             clientId = obj.get("client_id").getAsString();
-        }
-        else {
+        } else {
             // Experimental -- this will change -- dwm08
-        	JsonParser parser = new JsonParser();
+            JsonParser parser = new JsonParser();
             String json = FileUtils.getContents(oauthConfig);
             JsonObject obj = parser.parse(json).getAsJsonObject();
             authURI = obj.get("authorization_endpoint").getAsString();
@@ -141,46 +139,47 @@ public class OAuthUtils {
             authProvider = obj.get("auth_provider").getAsString();
             String scope = obj.get("scope").getAsString();
             if (scope.equals("none")) {
-            	this.scope = null;
+                this.scope = null;
             }
             JsonElement je = obj.get("find_string");
             if (je != null) {
-            	findString = je.getAsString();
+                findString = je.getAsString();
             }
             je = obj.get("replace_string");
             if (je != null) {
-            	replaceString = je.getAsString();
+                replaceString = je.getAsString();
             }
 
         }
     }
 
     /**
-     * Send request to authorization provider to start the oauth 2.0 
+     * Send request to authorization provider to start the oauth 2.0
      * authorization process. If the listener is up, wait for a callback
      * Otherwise, provide a dialog where user can provide authentication token.
      * This method has been generalized to use any auth provider (originally google only)
      * dwm08
+     *
      * @throws IOException
      * @throws URISyntaxException
      */
     public void openAuthorizationPage() throws IOException, URISyntaxException {
 
-    	// properties moved to early init dwm08
+        // properties moved to early init dwm08
         //if (clientId == null) fetchOauthProperties();
 
         String redirect = oobURI;
         // if the listener is active, then set the redirect URI.  dwm08
         if (CommandListener.isListening()) {
-        	redirect = redirectURI;
+            redirect = redirectURI;
         }
         String url;
-        // for auth providers that need scope, 
+        // for auth providers that need scope,
         // set the scope parameter
         //if (scope != null) {
         if (appIdURI == null) {
-        	url = authURI + "?" +
-        			"scope=" + scope + "&" +
+            url = authURI + "?" +
+                    "scope=" + scope + "&" +
                     "state=" + state + "&" +
                     "redirect_uri=" + redirect + "&" +
                     "response_type=code&" +
@@ -189,10 +188,10 @@ public class OAuthUtils {
         // for auth providers that need the resource setting
         // the the resource paremeter
         //else if (appIdURI != null) {
-         else {
-        
-        	url = authURI + "?" +
-        			"scope=" + scope + "&" +
+        else {
+
+            url = authURI + "?" +
+                    "scope=" + scope + "&" +
                     "state=" + state + "&" +
                     "redirect_uri=" + redirect + "&" +
                     "response_type=code&" +
@@ -202,7 +201,7 @@ public class OAuthUtils {
 //        else {
 //        	throw new IOException("Either scope or resource must be provided to authenticate.");
 //        }
-        
+
         Desktop.getDesktop().browse(new URI(url));
 
         // if the listener is not active, prompt the user
@@ -210,7 +209,7 @@ public class OAuthUtils {
         if (!CommandListener.isListening()) {
             String ac = MessageUtils.showInputDialog("Please paste authorization code here:");
             if (ac != null) {
-            	setAuthorizationCode(ac, oobURI);
+                setAuthorizationCode(ac, oobURI);
             }
         }
 
@@ -235,7 +234,7 @@ public class OAuthUtils {
 
     private void fetchTokens(String redirect) throws IOException {
 
-    	// properties moved to early init dwm08
+        // properties moved to early init dwm08
         //if (clientId == null) fetchOauthProperties();
 
         URL url = new URL(tokenURI);
@@ -249,9 +248,9 @@ public class OAuthUtils {
 
         // set the resource if it necessary for the auth provider dwm08
         if (appIdURI != null) {
-        	params.put("resource", appIdURI);
+            params.put("resource", appIdURI);
         }
-        
+
         String response = HttpUtils.getInstance().doPost(url, params);
         JsonParser parser = new JsonParser();
         JsonObject obj = parser.parse(response).getAsJsonObject();
@@ -271,7 +270,7 @@ public class OAuthUtils {
      */
     private void refreshAccessToken() throws IOException {
 
-    	// properties moved to early init dwm08
+        // properties moved to early init dwm08
         //if (clientId == null) fetchOauthProperties();
 
         URL url = new URL(tokenURI);
@@ -283,10 +282,10 @@ public class OAuthUtils {
         params.put("grant_type", "refresh_token");
 
         // set the resource if it necessary for the auth provider dwm08
-     	if (appIdURI != null) {
-     		params.put("resource", appIdURI);
-     	}
-     			
+        if (appIdURI != null) {
+            params.put("resource", appIdURI);
+        }
+
         String response = HttpUtils.getInstance().doPost(url, params);
         JsonParser parser = new JsonParser();
         JsonObject obj = parser.parse(response).getAsJsonObject();
@@ -316,12 +315,11 @@ public class OAuthUtils {
      * Check if the username is in the claim information. If so, extract it.
      * Otherwise call out to the server to get the current user name.
      * dwm08
+     *
      * @throws IOException
      */
     private void fetchUserProfile() throws IOException {
 
-    	// properties moved to early init dwm08
-        //if (clientId == null) fetchOauthProperties();
 
         try {
             JWT jwt = JWT.decode(accessToken);
@@ -330,7 +328,7 @@ public class OAuthUtils {
             	System.out.println(claim + " = " + claims.get(claim).asString());
             }
             currentUserName = claims.get("unique_name").asString();
-            
+
         } catch (Throwable exception){
             URL url = new URL("https://www.googleapis.com/plus/v1/people/me?access_token=" + accessToken);
             String response = HttpUtils.getInstance().getContentsAsJSON(url);
@@ -338,7 +336,7 @@ public class OAuthUtils {
             JsonObject obj = parser.parse(response).getAsJsonObject();
             currentUserName = obj.get("displayName").getAsString();
         }
-        
+
     }
 
 
