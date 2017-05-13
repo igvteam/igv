@@ -254,6 +254,7 @@ public class EncodeFileBrowser extends JDialog {
             EncodeFileRecord record = allRecords.get(modelIdx);
             if (record.isSelected()) {
                 selectedRecords.add(record);
+                record.setSelected(false);   // Prevent loading twice
             }
         }
 
