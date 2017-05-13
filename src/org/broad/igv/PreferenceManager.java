@@ -77,6 +77,9 @@ public class PreferenceManager implements PropertyManager {
     public static final String CHART_AUTOSCALE = "CHART.AUTOSCALE";
     public static final String CHART_SHOW_DATA_RANGE = "CHART.SHOW_DATA_RANGE";
 
+    public static final String CN_FREQ_AMP_THRESHOLD = "CN_FREQ.AMP_THRESHOLD";
+    public static final String CN_FREQ_DEL_THRESHOLD = "CN_FREQ.DEL_THRESHOLD";
+
     public static final String UNLOAD_ON_GENOME_CHANGE = "UNLOAD_ON_GENOME_CHANGE";
 
     /**
@@ -599,7 +602,7 @@ public class PreferenceManager implements PropertyManager {
             if(width == 0 || height == 0) {
                 return null;  // Don't know bounds
             }
-            
+
             bounds = new Rectangle(x, y, width, height);
         }
         return bounds;
@@ -1056,6 +1059,9 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(CHART_COLOR_TRACK_NAME, "true");
         defaultValues.put(CHART_TRACK_HEIGHT_KEY, "40");
         defaultValues.put(CHART_SHOW_ALL_HEATMAP, "false");
+        defaultValues.put(CN_FREQ_AMP_THRESHOLD, "0.1");
+        defaultValues.put(CN_FREQ_DEL_THRESHOLD, "-0.1");
+
         defaultValues.put(UNLOAD_ON_GENOME_CHANGE, "false");
 
         defaultValues.put(SAM_SHOW_DUPLICATES, "false");

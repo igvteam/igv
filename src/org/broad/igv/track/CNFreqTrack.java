@@ -25,33 +25,60 @@
 
 package org.broad.igv.track;
 
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.seg.FreqData;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.Renderer;
+import org.broad.igv.sam.CoverageTrack;
+import org.broad.igv.session.IGVSessionReader;
+import org.broad.igv.session.SubtlyImportant;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
 
+import javax.swing.*;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlType;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jrobinso
  * @date Oct 13, 2010
  */
+
+@XmlType(factoryMethod = "getNextTrack")
+
 public class CNFreqTrack extends AbstractTrack {
 
 
     FreqData data;
     BarChartRenderer renderer;
 
+    @XmlAttribute
+    float ampThreshold;
+
+    @XmlAttribute
+    float delThreshold;
+
+    public CNFreqTrack() {
+    }
+
     public CNFreqTrack(ResourceLocator rl, String id, String name, FreqData fd) {
         super(rl, id, name);
         data = fd;
+        this.ampThreshold = PreferenceManager.getInstance().getAsFloat(PreferenceManager.CN_FREQ_AMP_THRESHOLD);
+        this.delThreshold = PreferenceManager.getInstance().getAsFloat(PreferenceManager.CN_FREQ_DEL_THRESHOLD);
 
         float nSamples = data.getNumberOfSamples();
         this.setDataRange(new DataRange(-nSamples, 0, nSamples));
@@ -66,9 +93,35 @@ public class CNFreqTrack extends AbstractTrack {
 
     }
 
+    @SubtlyImportant
+    public void setAmpThreshold(float ampThreshold) {
+        this.ampThreshold = ampThreshold;
+    }
+
+    @SubtlyImportant
+    public void setDelThreshold(float delThreshold) {
+        this.delThreshold = delThreshold;
+    }
+
+    @SubtlyImportant
+    public float getAmpThreshold() {
+        return ampThreshold;
+    }
+
+    @SubtlyImportant
+    public float getDelThreshold() {
+        return delThreshold;
+    }
+
+    public Map<String, String> getPersistentState() {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("ampThreshold", String.valueOf(ampThreshold));
+        map.put("delThreshold", String.valueOf(delThreshold));
+        return map;
+    }
 
     public void render(RenderContext context, Rectangle rect) {
-
+        data.compute(ampThreshold, delThreshold);
         renderer.render(data.getDelCounts(context.getChr()), context, rect, this);
         renderer.render(data.getAmpCounts(context.getChr()), context, rect, this);
         renderer.setMarginFraction(0);
@@ -76,7 +129,6 @@ public class CNFreqTrack extends AbstractTrack {
         context.getGraphic2DForColor(Color.black).drawRect(rect.x, rect.y, rect.width, rect.height - 1);
 
     }
-
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
@@ -87,9 +139,9 @@ public class CNFreqTrack extends AbstractTrack {
         for (int i = startIdx; i < ampScores.size(); i++) {
             LocusScore ampScore = ampScores.get(i);
             if (position >= ampScore.getStart() && position <= ampScore.getEnd()) {
-                buf.append("# of samples with log2(cn/2) &gt; &nbsp; " + data.getAmpThreshold() + ": ");
+                buf.append("# of samples with log2(cn/2) &gt; &nbsp; " + ampThreshold + ": ");
                 buf.append(ampScore.getValueString(position, null));
-                buf.append("<br># of samples with log2(cn/2) &lt;  " + data.getDelThreshold() + ":  ");
+                buf.append("<br># of samples with log2(cn/2) &lt;  " + delThreshold + ":  ");
                 buf.append(delScores.get(i).getValueString(position, null));
             }
         }
@@ -114,9 +166,49 @@ public class CNFreqTrack extends AbstractTrack {
 
         IGVPopupMenu menu = new IGVPopupMenu();
 
+        final JMenuItem ampThresholdItem = new JMenuItem("Set amplification threshold (" + ampThreshold + ")");
+        ampThresholdItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String t = MessageUtils.showInputDialog("Amplification threshold  (log2(cn)/2)", String.valueOf(ampThreshold));
+                try {
+                    float threshold = Float.parseFloat(t);
+                    setAmpThreshold(threshold);
+                    IGV.getInstance().repaintDataPanels();
+                } catch (NumberFormatException e1) {
+                    MessageUtils.showErrorMessage("Amplification threshold must be a number", e1);
+                }
+            }
+        });
+        menu.add(ampThresholdItem);
+
+        final JMenuItem delThresholdItem = new JMenuItem("Set deletion threshold (" + delThreshold + ")");
+        delThresholdItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String t = MessageUtils.showInputDialog("Deletion threshold  (log2(cn)/2)", String.valueOf(delThreshold));
+                try {
+                    float threshold = Float.parseFloat(t);
+                    setDelThreshold(threshold);
+                    IGV.getInstance().repaintDataPanels();
+                } catch (NumberFormatException e1) {
+                    MessageUtils.showErrorMessage("Deletion threshold must be a number", e1);
+                }
+            }
+        });
+
+        menu.add(delThresholdItem);
+
+        menu.addSeparator();
+
         List<Track> selfAsList = Arrays.asList((Track) this);
         TrackMenuUtils.addSharedItems(menu, selfAsList, false, false);
 
         return menu;
+    }
+
+    @SubtlyImportant
+    private static CNFreqTrack getNextTrack() {
+        return (CNFreqTrack) IGVSessionReader.getNextTrack();
     }
 }
