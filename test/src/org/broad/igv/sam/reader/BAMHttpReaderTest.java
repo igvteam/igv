@@ -31,8 +31,6 @@
 package org.broad.igv.sam.reader;
 
 import htsjdk.samtools.SAMFileHeader;
-import htsjdk.samtools.SAMFileReader;
-import htsjdk.samtools.ValidationStringency;
 import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.sam.Alignment;
@@ -59,7 +57,6 @@ public class BAMHttpReaderTest extends AbstractHeadlessTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         AbstractHeadlessTest.setUpClass();
-        SAMFileReader.setDefaultValidationStringency(ValidationStringency.SILENT);
     }
 
     @AfterClass

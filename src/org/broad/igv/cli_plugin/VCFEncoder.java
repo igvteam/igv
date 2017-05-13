@@ -26,11 +26,11 @@
 package org.broad.igv.cli_plugin;
 
 import htsjdk.samtools.SAMSequenceDictionary;
+import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.vcf.VCFVariant;
 import htsjdk.variant.variantcontext.writer.Options;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
-import htsjdk.variant.variantcontext.writer.VariantContextWriterFactory;
 import htsjdk.variant.vcf.VCFHeader;
 
 import java.io.IOException;
@@ -59,10 +59,16 @@ public class VCFEncoder implements FeatureEncoder<VCFVariant> {
     public Map<String, Object> encodeAll(OutputStream outputStream, Iterator<? extends VCFVariant> features) throws IOException {
 
         SAMSequenceDictionary seqDict = new SAMSequenceDictionary();
-        EnumSet<Options> options = VariantContextWriterFactory.DEFAULT_OPTIONS;
+        EnumSet<Options> options = VariantContextWriterBuilder.DEFAULT_OPTIONS;
         options.add(Options.ALLOW_MISSING_FIELDS_IN_HEADER);
         options.remove(Options.INDEX_ON_THE_FLY);
-        VariantContextWriter writer = VariantContextWriterFactory.create(outputStream, seqDict, options);
+
+        VariantContextWriterBuilder builder = new VariantContextWriterBuilder()
+                .setReferenceDictionary(seqDict)
+                .setOption(Options.INDEX_ON_THE_FLY)
+                .setBuffer(8192);
+
+        VariantContextWriter writer = builder.setOutputStream(outputStream).setOptions(options).build();
 
         writer.writeHeader(this.header);
 

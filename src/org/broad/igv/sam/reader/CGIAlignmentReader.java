@@ -34,6 +34,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.PicardAlignment;
 import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -58,6 +59,8 @@ public class CGIAlignmentReader implements AlignmentReader {
 
     private static Logger log = Logger.getLogger(CGIAlignmentReader.class);
 
+    private final SamReaderFactory factory;
+
     String baseURL;
     String queryScript = "query.cgi";
     String headerScript = "samHeader.cgi";
@@ -74,6 +77,9 @@ public class CGIAlignmentReader implements AlignmentReader {
         if (port > 0) baseURL += ":" + port;
         baseURL += u.getPath();
         query = u.getQuery();
+
+        factory = SamReaderFactory.makeDefault().
+                validationStringency(ValidationStringency.SILENT);
 
         loadHeader();
     }
@@ -171,8 +177,10 @@ public class CGIAlignmentReader implements AlignmentReader {
             URL url = new URL(getQueryURL());
             InputStream is = HttpUtils.getInstance().openConnectionStream(url);
 
-            SAMFileReader reader = new SAMFileReader(new BufferedInputStream(is, 500000));
-            reader.setValidationStringency(ValidationStringency.SILENT);
+            BufferedInputStream stream = new BufferedInputStream(is, 500000);
+            SamInputResource resource = SamInputResource.of(stream);
+             SamReader reader = factory.open(resource);
+
             CloseableIterator<SAMRecord> iter = reader.iterator();
             return new SAMQueryIterator(iter);
         } catch (IOException e) {
@@ -190,8 +198,10 @@ public class CGIAlignmentReader implements AlignmentReader {
             URL url = new URL(getQueryURL() + parameters);
             InputStream is = HttpUtils.getInstance().openConnectionStream(url);
 
-            SAMFileReader reader = new SAMFileReader(new BufferedInputStream(is, 500000));
-            reader.setValidationStringency(ValidationStringency.SILENT);
+            BufferedInputStream stream = new BufferedInputStream(is, 500000);
+            SamInputResource resource = SamInputResource.of(stream);
+            SamReader reader = factory.open(resource);
+            
             CloseableIterator<SAMRecord> iter = reader.iterator();
             return new SAMQueryIterator(sequence, start, end, contained, iter);
 

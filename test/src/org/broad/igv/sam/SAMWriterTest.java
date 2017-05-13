@@ -25,10 +25,7 @@
 
 package org.broad.igv.sam;
 
-import htsjdk.samtools.SAMFileHeader;
-import htsjdk.samtools.SAMFileReader;
-import htsjdk.samtools.SAMRecordIterator;
-import htsjdk.samtools.ValidationStringency;
+import htsjdk.samtools.*;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
@@ -183,8 +180,10 @@ public class SAMWriterTest extends AbstractHeadlessTest {
 
         assertEquals("Index file existence unexpected: " + indexFile.getAbsolutePath(), createIndex, indexFile.exists());
 
-        SAMFileReader writtenReader = new SAMFileReader(new File(outPath));
-        writtenReader.setValidationStringency(ValidationStringency.SILENT);
+        SamInputResource resource = SamInputResource.of(outPath);
+        SamReader writtenReader = SamReaderFactory.makeDefault().
+                validationStringency(ValidationStringency.SILENT).open(resource);
+
         SAMRecordIterator iter = null;
         if (createIndex) {
             iter = writtenReader.queryOverlapping(sequence, start + 1, end);

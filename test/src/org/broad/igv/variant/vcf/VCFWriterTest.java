@@ -26,6 +26,7 @@
 package org.broad.igv.variant.vcf;
 
 import htsjdk.samtools.SAMSequenceDictionary;
+import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.util.TestUtils;
@@ -34,7 +35,6 @@ import htsjdk.tribble.Feature;
 import htsjdk.tribble.FeatureCodec;
 import htsjdk.variant.variantcontext.writer.Options;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
-import htsjdk.variant.variantcontext.writer.VariantContextWriterFactory;
 import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFInfoHeaderLine;
 import org.junit.Test;
@@ -58,9 +58,13 @@ public class VCFWriterTest extends AbstractHeadlessTest {
 
     private VariantContextWriter getWriter() {
         SAMSequenceDictionary seqDict = new SAMSequenceDictionary();
-        EnumSet<Options> options = VariantContextWriterFactory.DEFAULT_OPTIONS;
+        EnumSet<Options> options = VariantContextWriterBuilder.DEFAULT_OPTIONS;
         options.add(Options.ALLOW_MISSING_FIELDS_IN_HEADER);
-        VariantContextWriter writer = VariantContextWriterFactory.create(outFile, seqDict, options);
+        VariantContextWriterBuilder builder = new VariantContextWriterBuilder()
+                .setReferenceDictionary(seqDict)
+                .setOptions(options);
+
+        VariantContextWriter writer = builder.setOutputFile(outFile).build();
         return writer;
     }
 
