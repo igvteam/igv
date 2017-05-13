@@ -39,12 +39,9 @@ import java.util.*;
  */
 public class FreqData {
 
-    public static float DEFAULT_AMP_THRESHOLD = 0.1f;
-    public static float DEFAULT_DEL_THRESHOLD = -0.1f;
+
     public static int DEFAULT_BIN_SIZE = 200000;
 
-    private float ampThreshold = DEFAULT_AMP_THRESHOLD;
-    private float delThreshold = DEFAULT_DEL_THRESHOLD;
     private int binSize = DEFAULT_BIN_SIZE;    // 200 kb bin size;
 
     private SegmentedDataSet dataset;
@@ -54,6 +51,8 @@ public class FreqData {
     private Map<String, List<LocusScore>> del;
     private List<String> sampleNames;
     Genome genome;
+    private float ampThreshold;
+    private float delThreshold;
 
     public FreqData(SegmentedDataSet ds, Genome genome) {
 
@@ -63,19 +62,16 @@ public class FreqData {
         amp = new HashMap();
         del = new HashMap();
         this.genome = genome;
-        compute();
 
     }
 
 
-    public void setParameters(int binSize, float delThreshold, float ampThreshold) {
-        this.binSize = binSize;
-        this.delThreshold = delThreshold;
+    public void compute(float ampThreshold, float delThreshold) {
+
+        if(this.ampThreshold == ampThreshold && this.delThreshold == delThreshold) return;
+
         this.ampThreshold = ampThreshold;
-        compute();
-    }
-
-    void compute() {
+        this.delThreshold = delThreshold;
 
         amp.clear();
         del.clear();
@@ -154,6 +150,7 @@ public class FreqData {
                 }
             }
         }
+
     }
 
     private void binCounts(String chr, int segStart, int segEnd, float segScore, int b, int binSize) {
@@ -216,15 +213,6 @@ public class FreqData {
     public List<LocusScore> getDelCounts(String chr) {
         return del.get(chr);
     }
-
-    public float getAmpThreshold() {
-        return ampThreshold;
-    }
-
-    public float getDelThreshold() {
-        return delThreshold;
-    }
-
 
     public class Bin implements LocusScore {
         String chr;
