@@ -242,37 +242,43 @@ public class SpliceJunctionTrack extends FeatureTrack {
         return "Zoom in to see junctions.";
     }
 
-    public void load(ReferenceFrame referenceFrame) {
-        dataManager.load(referenceFrame, renderOptions, true);
+    public void load(ReferenceFrame frame) {
+        dataManager.load(frame, renderOptions, true);
     }
 
 
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
-        if(this.alignmentTrack != null && this.alignmentTrack.isVisible()) {
-            return true;
-        }
-        else {
-            return dataManager.isLoaded(frame);
+        if (frame.getScale() > dataManager.getMinVisibleScale()) {
+            return true;   // Nothing to paint
+        } else {
+
+            if(!dataManager.isLoaded(frame)) {
+                packedFeaturesMap.clear();
+                return false;
+            }
+            else {
+
+                AlignmentInterval loadedInterval = dataManager.getLoadedInterval(frame);
+
+                if (packedFeaturesMap.get(frame.getChrName()) == null) {
+
+                    SpliceJunctionHelper helper = loadedInterval.getSpliceJunctionHelper();
+                    List<SpliceJunctionFeature> features = helper.getFilteredJunctions(strandOption);
+                    if (features == null) {
+                        features = Collections.emptyList();
+                    }
+                    int intervalStart = loadedInterval.getStart();
+                    int intervalEnd = loadedInterval.getEnd();
+                    PackedFeatures pf = new PackedFeaturesSpliceJunctions(frame.getChrName(), intervalStart, intervalEnd, features.iterator(), getName());
+                    packedFeaturesMap.put(frame.getName(), pf);
+                }
+
+                return true;
+            }
         }
     }
 
-    @Override
-    protected void loadFeatures(String chr, int start, int end, ReferenceFrame frame) {
-
-        AlignmentInterval loadedInterval = dataManager.getLoadedInterval(frame);
-        if (loadedInterval == null) return;
-
-        SpliceJunctionHelper helper = loadedInterval.getSpliceJunctionHelper();
-        List<SpliceJunctionFeature> features = helper.getFilteredJunctions(strandOption);
-        if (features == null) {
-            features = Collections.emptyList();
-        }
-        int intervalStart = loadedInterval.getStart();
-        int intervalEnd = loadedInterval.getEnd();
-        PackedFeatures pf = new PackedFeaturesSpliceJunctions(chr, intervalStart, intervalEnd, features.iterator(), getName());
-        packedFeaturesMap.put(frame.getName(), pf);
-    }
 
     @Override
     public String getExportTrackLine() {
@@ -288,24 +294,6 @@ public class SpliceJunctionTrack extends FeatureTrack {
         return result;
     }
 
-    /**
-     * Get all features which overlap the specified locus
-     *
-     * @return
-     */
-    @Override
-    public List<Feature> getFeatures(String chr, int start, int end) {
-        List<Feature> features = new ArrayList<Feature>();
-        try {
-            Iterator<Feature> iter = source.getFeatures(chr, start, end);
-            while (iter.hasNext()) {
-                features.add(iter.next());
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return features;
-    }
 
     // Start of Roche-Tessella modification
     private JMenuItem getChangeAutoScale() {
