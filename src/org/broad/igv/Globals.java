@@ -182,11 +182,11 @@ public class Globals {
     }
 
     public static String applicationString() {
-        return "IGV Version " + VERSION + " (" + BUILD + ")" + TIMESTAMP;
+        return "IGV Version " + VERSION + " "  + TIMESTAMP;
     }
 
     public static String versionString() {
-        return "<html>Version " + VERSION + " (" + BUILD + ")<br>" + TIMESTAMP;
+        return "<html>Version " + VERSION + " " + TIMESTAMP;
     }
 
     public static boolean isDevelopment() {
