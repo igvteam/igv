@@ -1666,7 +1666,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
             addSeparator();
             addCopySequenceItem(e);
-            addExtViewItem(e);
+
+            if(PreferencesManager.getPreferences().get(Constants.EXTVIEW_URL) != null) {
+                addExtViewItem(e);
+            }
+
             addBlatItem(e);
             addConsensusSequence(e);
 
