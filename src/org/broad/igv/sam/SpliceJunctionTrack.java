@@ -26,8 +26,8 @@
 
 package org.broad.igv.sam;
 
-import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.prefs.Constants;
@@ -37,7 +37,6 @@ import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.SashimiPlot;
-import org.broad.igv.event.AlignmentTrackEvent;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.UIUtilities;
@@ -47,10 +46,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -249,7 +246,7 @@ public class SpliceJunctionTrack extends FeatureTrack {
 
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
-        if (frame.getScale() > dataManager.getMinVisibleScale()) {
+        if (frame.getChrName().equals(Globals.CHR_ALL) ||  frame.getScale() > dataManager.getMinVisibleScale()) {
             return true;   // Nothing to paint
         } else {
 

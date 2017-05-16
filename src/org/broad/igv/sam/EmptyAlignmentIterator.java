@@ -39,7 +39,7 @@ public class EmptyAlignmentIterator implements CloseableIterator<PicardAlignment
         return instance;
     }
 
-    private EmptyAlignmentIterator() {
+    public EmptyAlignmentIterator() {
     }
 
     public void close() {
