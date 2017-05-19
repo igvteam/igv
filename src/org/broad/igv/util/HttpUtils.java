@@ -721,6 +721,9 @@ public class HttpUtils {
         }
         conn.setRequestProperty("User-Agent", Globals.applicationString());
 
+        log.info("User-Agent: " + Globals.applicationString());
+
+
         if (url.getHost().equals(OAuthUtils.GS_HOST)) {
             String token = OAuthUtils.getInstance().getAccessToken();
             if (token != null) conn.setRequestProperty("Authorization", "Bearer " + token);
@@ -738,7 +741,7 @@ public class HttpUtils {
                 if(!SwingUtilities.isEventDispatchThread()) {
                     MessageUtils.showMessage("Warning: unsuccessful attempt to execute 'Range byte' request to host " + url.getHost());
                 }
-                
+
                 byteRangeTestMap.put(url.getHost(), false);
                 String[] positionString = requestProperties.get("Range").split("=")[1].split("-");
                 int length = Integer.parseInt(positionString[1]) - Integer.parseInt(positionString[0]) + 1;

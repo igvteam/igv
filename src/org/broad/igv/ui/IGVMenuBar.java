@@ -947,33 +947,40 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         try {
             Main.Version thisVersion = Main.Version.getVersion(Globals.VERSION);
-            if (thisVersion == null) return;  // Can't compare
 
-            Globals.CONNECT_TIMEOUT = 5000;
-            Globals.READ_TIMEOUT = 1000;
-            final String serverVersionString = HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
-            // See if user has specified to skip this update
+            if (thisVersion != null) {
 
-            final String skipString = PreferencesManager.getPreferences().get(SKIP_VERSION);
-            HashSet<String> skipVersion = new HashSet<String>(Arrays.asList(skipString.split(",")));
-            if (skipVersion.contains(serverVersionString)) return;
+                Globals.CONNECT_TIMEOUT = 5000;
+                Globals.READ_TIMEOUT = 1000;
+                final String serverVersionString = HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
+                // See if user has specified to skip this update
 
-            Main.Version serverVersion = Main.Version.getVersion(serverVersionString.trim());
-            if (serverVersion == null) return;
+                final String skipString = PreferencesManager.getPreferences().get(SKIP_VERSION);
+                HashSet<String> skipVersion = new HashSet<String>(Arrays.asList(skipString.split(",")));
+                if (skipVersion.contains(serverVersionString)) return;
 
-            if (thisVersion.lessThan(serverVersion)) {
+                Main.Version serverVersion = Main.Version.getVersion(serverVersionString.trim());
+                if (serverVersion == null) return;
 
-                log.info("A later version of IGV is available (" + serverVersionString + ")");
-                final VersionUpdateDialog dlg = new VersionUpdateDialog(serverVersionString);
+                if (thisVersion.lessThan(serverVersion)) {
 
-                dlg.setVisible(true);
-                if (dlg.isSkipVersion()) {
-                    String newSkipString = skipString + "," + serverVersionString;
-                    PreferencesManager.getPreferences().put(SKIP_VERSION, newSkipString);
+                    log.info("A later version of IGV is available (" + serverVersionString + ")");
+                    final VersionUpdateDialog dlg = new VersionUpdateDialog(serverVersionString);
+
+                    dlg.setVisible(true);
+                    if (dlg.isSkipVersion()) {
+                        String newSkipString = skipString + "," + serverVersionString;
+                        PreferencesManager.getPreferences().put(SKIP_VERSION, newSkipString);
+                    }
+
+                } else {
+                    MessageUtils.showMessage("IGV is up to date");
                 }
-
-            } else {
-                MessageUtils.showMessage("IGV is up to date");
+            }
+            else {
+                if(Globals.VERSION.contains("3.0_beta") || Globals.VERSION.contains("snapshot")) {
+                    HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
+                }
             }
 
         } catch (Exception e) {

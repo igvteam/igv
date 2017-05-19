@@ -172,42 +172,40 @@ public class Main {
 
     private static void checkVersion() {
 
-        Runnable runnable = new Runnable() {
-            public void run() {
-                try {
-                    Version thisVersion = Version.getVersion(Globals.VERSION);
-                    if (thisVersion == null) return;  // Can't compare
+        Runnable runnable = () -> {
+            try {
+                Version thisVersion = Version.getVersion(Globals.VERSION);
+                if (thisVersion == null) return;  // Can't compare
 
-                    final String serverVersionString = HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
-                    // See if user has specified to skip this update
+                final String serverVersionString = HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
+                // See if user has specified to skip this update
 
-                    final String skipString = PreferencesManager.getPreferences().get(SKIP_VERSION);
-                    HashSet<String> skipVersion = new HashSet<String>(Arrays.asList(skipString.split(",")));
-                    if (skipVersion.contains(serverVersionString)) return;
+                final String skipString = PreferencesManager.getPreferences().get(SKIP_VERSION);
+                HashSet<String> skipVersion = new HashSet<String>(Arrays.asList(skipString.split(",")));
+                if (skipVersion.contains(serverVersionString)) return;
 
-                    Version serverVersion = Version.getVersion(serverVersionString.trim());
-                    if (serverVersion == null) return;
+                Version serverVersion = Version.getVersion(serverVersionString.trim());
+                if (serverVersion == null) return;
 
-                    if (thisVersion.lessThan(serverVersion)) {
+                if (thisVersion.lessThan(serverVersion)) {
 
-                        log.info("A later version of IGV is available (" + serverVersionString + ")");
-        //                final VersionUpdateDialog dlg = new VersionUpdateDialog(serverVersionString);
-        //                SwingUtilities.invokeAndWait(new Runnable() {
-        //                    public void run() {
-        //                        dlg.setVisible(true);
-        //                        if (dlg.isSkipVersion()) {
-        //                            String newSkipString = skipString + "," + serverVersionString;
-        //                            IGVPreferences.getInstance().put(IGVPreferences.SKIP_VERSION, newSkipString);
-        //                        }
-        //                    }
-        //                });
-                    }
-
-                } catch (Exception e) {
-                    log.error("Error checking version", e);
-                } finally {
-
+                    log.info("A later version of IGV is available (" + serverVersionString + ")");
+    //                final VersionUpdateDialog dlg = new VersionUpdateDialog(serverVersionString);
+    //                SwingUtilities.invokeAndWait(new Runnable() {
+    //                    public void run() {
+    //                        dlg.setVisible(true);
+    //                        if (dlg.isSkipVersion()) {
+    //                            String newSkipString = skipString + "," + serverVersionString;
+    //                            IGVPreferences.getInstance().put(IGVPreferences.SKIP_VERSION, newSkipString);
+    //                        }
+    //                    }
+    //                });
                 }
+
+            } catch (Exception e) {
+                log.error("Error checking version", e);
+            } finally {
+
             }
         };
 
