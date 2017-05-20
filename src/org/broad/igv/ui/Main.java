@@ -175,31 +175,27 @@ public class Main {
         Runnable runnable = () -> {
             try {
                 Version thisVersion = Version.getVersion(Globals.VERSION);
-                if (thisVersion == null) return;  // Can't compare
+                if (thisVersion != null) {
 
-                final String serverVersionString = HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
-                // See if user has specified to skip this update
+                    final String serverVersionString = HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
+                    // See if user has specified to skip this update
 
-                final String skipString = PreferencesManager.getPreferences().get(SKIP_VERSION);
-                HashSet<String> skipVersion = new HashSet<String>(Arrays.asList(skipString.split(",")));
-                if (skipVersion.contains(serverVersionString)) return;
+                    final String skipString = PreferencesManager.getPreferences().get(SKIP_VERSION);
+                    HashSet<String> skipVersion = new HashSet<String>(Arrays.asList(skipString.split(",")));
+                    if (skipVersion.contains(serverVersionString)) return;
 
-                Version serverVersion = Version.getVersion(serverVersionString.trim());
-                if (serverVersion == null) return;
+                    Version serverVersion = Version.getVersion(serverVersionString.trim());
+                    if (serverVersion == null) return;
 
-                if (thisVersion.lessThan(serverVersion)) {
+                    if (thisVersion.lessThan(serverVersion)) {
+                        log.info("A later version of IGV is available (" + serverVersionString + ")");
+                    }
+                }
 
-                    log.info("A later version of IGV is available (" + serverVersionString + ")");
-    //                final VersionUpdateDialog dlg = new VersionUpdateDialog(serverVersionString);
-    //                SwingUtilities.invokeAndWait(new Runnable() {
-    //                    public void run() {
-    //                        dlg.setVisible(true);
-    //                        if (dlg.isSkipVersion()) {
-    //                            String newSkipString = skipString + "," + serverVersionString;
-    //                            IGVPreferences.getInstance().put(IGVPreferences.SKIP_VERSION, newSkipString);
-    //                        }
-    //                    }
-    //                });
+                else if (Globals.VERSION.contains("3.0_beta") || Globals.VERSION.contains("snapshot")) {
+                    HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
+                } else {
+                    log.info("Unknown version: " + Globals.VERSION);
                 }
 
             } catch (Exception e) {

@@ -721,9 +721,6 @@ public class HttpUtils {
         }
         conn.setRequestProperty("User-Agent", Globals.applicationString());
 
-        log.info("User-Agent: " + Globals.applicationString());
-
-
         if (url.getHost().equals(OAuthUtils.GS_HOST)) {
             String token = OAuthUtils.getInstance().getAccessToken();
             if (token != null) conn.setRequestProperty("Authorization", "Bearer " + token);
