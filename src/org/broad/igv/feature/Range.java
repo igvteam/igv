@@ -110,4 +110,8 @@ public class Range implements Feature {
     public boolean contains(Range range) {
         return this.contains(range.chr, range.start, range.end);
     }
+
+    public String printString() {
+        return this.chr + ":" + this.start + "-" + this.end;
+    }
 }
