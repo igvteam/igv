@@ -300,7 +300,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         if (this.coverageTrack != null) {
             this.coverageTrack.setRenderOptions(this.renderOptions);
         }
-        if(this.spliceJunctionTrack != null) {
+        if (this.spliceJunctionTrack != null) {
             this.spliceJunctionTrack.setRenderOptions(this.renderOptions);
         }
     }
@@ -384,14 +384,14 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
-        if (frame.getScale() > dataManager.getMinVisibleScale()) {
+
+        if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > dataManager.getMinVisibleScale()) {
             return true;   // Nothing to paint
         } else {
-
+            List<InsertionInterval> insertionIntervals = getInsertionIntervals(frame);
+            insertionIntervals.clear();
+            return dataManager.isLoaded(frame);
         }
-        List<InsertionInterval> insertionIntervals = getInsertionIntervals(frame);
-        insertionIntervals.clear();
-        return dataManager.isLoaded(frame);
     }
 
 
@@ -1667,7 +1667,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             addSeparator();
             addCopySequenceItem(e);
 
-            if(PreferencesManager.getPreferences().get(Constants.EXTVIEW_URL) != null) {
+            if (PreferencesManager.getPreferences().get(Constants.EXTVIEW_URL) != null) {
                 addExtViewItem(e);
             }
 

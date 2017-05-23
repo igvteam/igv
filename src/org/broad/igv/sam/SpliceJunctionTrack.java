@@ -239,10 +239,34 @@ public class SpliceJunctionTrack extends FeatureTrack {
         return "Zoom in to see junctions.";
     }
 
-    public void load(ReferenceFrame frame) {
-        dataManager.load(frame, renderOptions, true);
+    @Override
+    protected void renderFeatures(RenderContext context, Rectangle inputRect) {
+
+        // Intercept renderFeatures call and create splice junctions from alignments, if needed.
+        ReferenceFrame frame = context.getReferenceFrame();
+        if(!packedFeaturesMap.containsKey(frame.getName())) {
+
+            AlignmentInterval loadedInterval = dataManager.getLoadedInterval(frame);
+            if(loadedInterval != null) {
+                SpliceJunctionHelper helper = loadedInterval.getSpliceJunctionHelper();
+                List<SpliceJunctionFeature> features = helper.getFilteredJunctions(strandOption);
+                if (features == null) {
+                    features = Collections.emptyList();
+                }
+                int intervalStart = loadedInterval.getStart();
+                int intervalEnd = loadedInterval.getEnd();
+                PackedFeatures pf = new PackedFeaturesSpliceJunctions(frame.getChrName(), intervalStart, intervalEnd, features.iterator(), getName());
+                packedFeaturesMap.put(frame.getName(), pf);
+            }
+        }
+
+        super.renderFeatures(context, inputRect);
     }
 
+    public void load(ReferenceFrame frame) {
+        dataManager.load(frame, renderOptions, true);
+
+    }
 
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
@@ -256,20 +280,20 @@ public class SpliceJunctionTrack extends FeatureTrack {
             }
             else {
 
-                AlignmentInterval loadedInterval = dataManager.getLoadedInterval(frame);
-
-                if (packedFeaturesMap.get(frame.getChrName()) == null) {
-
-                    SpliceJunctionHelper helper = loadedInterval.getSpliceJunctionHelper();
-                    List<SpliceJunctionFeature> features = helper.getFilteredJunctions(strandOption);
-                    if (features == null) {
-                        features = Collections.emptyList();
-                    }
-                    int intervalStart = loadedInterval.getStart();
-                    int intervalEnd = loadedInterval.getEnd();
-                    PackedFeatures pf = new PackedFeaturesSpliceJunctions(frame.getChrName(), intervalStart, intervalEnd, features.iterator(), getName());
-                    packedFeaturesMap.put(frame.getName(), pf);
-                }
+//                AlignmentInterval loadedInterval = dataManager.getLoadedInterval(frame);
+//
+//                if (packedFeaturesMap.get(frame.getChrName()) == null) {
+//
+//                    SpliceJunctionHelper helper = loadedInterval.getSpliceJunctionHelper();
+//                    List<SpliceJunctionFeature> features = helper.getFilteredJunctions(strandOption);
+//                    if (features == null) {
+//                        features = Collections.emptyList();
+//                    }
+//                    int intervalStart = loadedInterval.getStart();
+//                    int intervalEnd = loadedInterval.getEnd();
+//                    PackedFeatures pf = new PackedFeaturesSpliceJunctions(frame.getChrName(), intervalStart, intervalEnd, features.iterator(), getName());
+//                    packedFeaturesMap.put(frame.getName(), pf);
+//                }
 
                 return true;
             }
