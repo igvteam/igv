@@ -25,8 +25,6 @@
 
 package org.broad.igv.ga4gh;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.interfaces.Claim;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -91,6 +89,13 @@ public class OAuthUtils {
     // by default this is the google scope
     private String scope = genomicsScope + "%20" + gsScope + "%20" + profileScope;
 
+    // Construct OAuthUtils earcly so Google menu can be updated to the 
+    // correct oauth provider. dwm08
+    static {
+    	if (theInstance == null) {
+            theInstance = new OAuthUtils();
+        }
+    }
 
     public static synchronized OAuthUtils getInstance() {
 
@@ -320,21 +325,22 @@ public class OAuthUtils {
      */
     private void fetchUserProfile() throws IOException {
 
-
+// dwm08 - removing functionality to get user profile info from microsoft oauth. Just not worth the trouble
+//            JWT jwt = JWT.decode(accessToken);
+//            Map<String, Claim> claims = jwt.getClaims();
+//            for (String claim: claims.keySet()) {
+//            	System.out.println(claim + " = " + claims.get(claim).asString());
+//            }
+//            currentUserName = claims.get("unique_name").asString();
         try {
-            JWT jwt = JWT.decode(accessToken);
-            Map<String, Claim> claims = jwt.getClaims();
-            for (String claim: claims.keySet()) {
-            	System.out.println(claim + " = " + claims.get(claim).asString());
-            }
-            currentUserName = claims.get("unique_name").asString();
-
-        } catch (Throwable exception){
             URL url = new URL("https://www.googleapis.com/plus/v1/people/me?access_token=" + accessToken);
             String response = HttpUtils.getInstance().getContentsAsJSON(url);
             JsonParser parser = new JsonParser();
             JsonObject obj = parser.parse(response).getAsJsonObject();
             currentUserName = obj.get("displayName").getAsString();
+
+        } catch (Throwable exception){
+            
         }
 
     }
