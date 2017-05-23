@@ -418,8 +418,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction.setToolTipText(UIConstants.LOAD_SERVER_DATA_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_DAS, KeyEvent.VK_D, igv);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+//        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_DAS, KeyEvent.VK_D, igv);
+//        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         if (PreferencesManager.getPreferences().getAsBoolean(DB_ENABLED)) {
             menuAction = new LoadFromDatabaseAction("Load from Database...", 0, igv);
