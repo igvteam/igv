@@ -125,8 +125,6 @@ public class Preloader {
 
             });
         }
-
-        log.info("Exit load for " + frame.getFormattedLocusString());
     }
 
     private static SequenceTrack findSequenceTrack(Collection<Track> trackList) {
