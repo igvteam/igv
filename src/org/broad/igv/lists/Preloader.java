@@ -57,33 +57,6 @@ public class Preloader {
 
     private static final ExecutorService threadExecutor = Executors.newFixedThreadPool(5);
 
-    public static synchronized CompletableFuture preload() {
-
-
-        Collection<Track> trackList = visibleTracks();
-        final List<ReferenceFrame> frames = FrameManager.getFrames();
-        List<CompletableFuture> futures = new ArrayList(trackList.size() * frames.size());
-        for (ReferenceFrame frame : frames) {
-            for (Track track : trackList) {
-                if (track.isReadyToPaint(frame) == false) {
-                    futures.add(CompletableFuture.runAsync(() -> {
-                        System.out.println("Preload " + Thread.currentThread());
-                        System.out.println("Preloading" + track);
-                        track.load(frame);
-                    }));
-                }
-            }
-        }
-
-        if (futures.size() > 0) {
-            WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-            CompletableFuture[] futureArray = futures.toArray(new CompletableFuture[futures.size()]);
-            return CompletableFuture.allOf(futureArray).thenRun(() -> WaitCursorManager.removeWaitCursor(token));
-        } else {
-            return CompletableFuture.completedFuture(null);
-        }
-    }
-
     public static List<Track> visibleTracks() {
         return IGV.getInstance().getAllTracks().stream().
                 filter(Track::isVisible).
