@@ -434,23 +434,29 @@ public class TrackPanel extends IGVPanel {
         Rectangle nameRect = new Rectangle(children[0].getBounds());
         nameRect.height = h;
         if (nameRect.width > 0) {
-            g.setClip(nameRect);
-            ((Paintable) children[0]).paintOffscreen(g, nameRect);
+            Graphics2D nameGraphics = (Graphics2D) g.create();
+            nameGraphics.setClip(nameRect);
+            ((Paintable) children[0]).paintOffscreen(nameGraphics, nameRect);
+            nameGraphics.dispose();
         }
 
         int dx = mainPanel.getAttributePanelX() - mainPanel.getNamePanelX();
         g.translate(dx, 0);
         Rectangle attRect = new Rectangle(0, 0, children[1].getWidth(), h);
         if (attRect.width > 0) {
-            g.setClip(attRect);
-            ((Paintable) children[1]).paintOffscreen(g, attRect);
+            Graphics2D attGraphics = (Graphics2D) g.create();
+            attGraphics.setClip(attRect);
+            ((Paintable) children[1]).paintOffscreen(attGraphics, attRect);
+            attGraphics.dispose();
         }
 
         dx = mainPanel.getDataPanelX() - mainPanel.getAttributePanelX();
         g.translate(dx, 0);
         Rectangle dataRect = new Rectangle(0, 0, mainPanel.getDataPanelWidth(), h);
-        g.setClip(dataRect);
-        ((Paintable) children[2]).paintOffscreen(g, dataRect);
+        Graphics2D dataGraphics = (Graphics2D) g.create();
+        dataGraphics.setClip(dataRect);
+        ((Paintable) children[2]).paintOffscreen(dataGraphics, dataRect);
+        dataGraphics.dispose();
 
 
         //super.paintBorder(g);

@@ -524,9 +524,14 @@ public class MainPanel extends JPanel implements Paintable {
 
     public void paintOffscreen(Graphics2D g, Rectangle rect) {
 
-//        g.setColor(Color.lightGray);
-//        g.fill(rect);
-
+        // A hack -- we don't want to paint the background for vector graphics output (EPS and SVG)
+        String graphicsClassName = g.getClass().getName().toLowerCase();
+        if (!(graphicsClassName.contains("epd") || graphicsClassName.contains("svg"))) {
+            Graphics2D backgroundGraphics = (Graphics2D) g.create();
+            backgroundGraphics.setColor(Color.white);
+            backgroundGraphics.fill(rect);
+            backgroundGraphics.dispose();
+        }
 
         // Header
         int width = applicationHeaderPanel.getWidth();
@@ -602,6 +607,11 @@ public class MainPanel extends JPanel implements Paintable {
 
                 TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
 
+                //Skip if panel has no tracks
+                if (tsp.getTrackPanel().getTracks().size() == 0) {
+                    continue;
+                }
+
                 int panelHeight = getOffscreenImagePanelHeight(tsp);
 
                 Rectangle tspRect = new Rectangle(tsp.getBounds());
@@ -621,6 +631,7 @@ public class MainPanel extends JPanel implements Paintable {
     }
 
     private int getOffscreenImagePanelHeight(TrackPanelScrollPane tsp) {
+
         int panelHeight;
         int maxPanelHeight = SnapshotUtilities.getMaxPanelHeight();
         final int visibleHeight = tsp.getVisibleRect().height;
