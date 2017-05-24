@@ -127,7 +127,7 @@ public class TrackPanelScrollPane extends JideScrollPane implements Paintable {
     @Override
     public void doLayout() {
         log.trace("Layout");
-        super.doLayout();    //To change body of overridden methods use File | Settings | File Templates.
+        super.doLayout();
         trackPanel.revalidate();
         //trackPanel.doLayout();
     }

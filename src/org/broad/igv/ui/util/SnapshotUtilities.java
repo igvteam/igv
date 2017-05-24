@@ -25,9 +25,9 @@
 
 /**
  * SnapshotUtilities.java
- *
+ * <p>
  * Created on November 29, 2007, 2:14 PM
- *
+ * <p>
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
@@ -59,7 +59,6 @@ public class SnapshotUtilities {
     private static Logger log = Logger.getLogger(SnapshotUtilities.class);
 
 
-
     private static String EPSClassName = "net.sf.epsgraphics.EpsGraphics";
     private static String EPSColorModeClassName = "net.sf.epsgraphics.ColorMode";
 
@@ -87,7 +86,7 @@ public class SnapshotUtilities {
     }
 
 
-    public static String doComponentSnapshot(Component component, File file, SnapshotFileChooser.SnapshotFileType type, boolean paintOffscreen) throws IOException{
+    public static String doComponentSnapshot(Component component, File file, SnapshotFileChooser.SnapshotFileType type, boolean paintOffscreen) throws IOException {
 
         //TODO Should really make this work for more components
         if (paintOffscreen && !(component instanceof Paintable)) {
@@ -95,13 +94,13 @@ public class SnapshotUtilities {
             paintOffscreen = false;
         }
 
-        if(paintOffscreen){
+        if (paintOffscreen) {
 
             Rectangle rect = component.getBounds();
 
-            if(component instanceof MainPanel){
+            if (component instanceof MainPanel) {
                 rect.height = ((MainPanel) component).getOffscreenImageHeight();
-            }else{
+            } else {
                 rect.height = Math.min(component.getHeight(), getMaxPanelHeight());
             }
 
@@ -125,7 +124,7 @@ public class SnapshotUtilities {
         switch (type) {
             case SVG:
                 //log.debug("Exporting svg screenshot");
-                exportScreenshotSVG(component, file, paintOffscreen);
+                exportScreenshotSVG(component, file, width, height, paintOffscreen);
                 //exportScreenshotVector2D(component, file, paintOffscreen);
                 break;
             case JPEG:
@@ -137,11 +136,11 @@ public class SnapshotUtilities {
                 exts = new String[]{"." + format};
                 break;
             case EPS:
-                exportScreenshotEpsGraphics(component, file, paintOffscreen);
+                exportScreenshotEpsGraphics(component, file, width, height, paintOffscreen);
                 //exportScreenshotEpsGraphicsNoRef(component, file, paintOffscreen);
                 break;
         }
-        if(format != null && exts != null){
+        if (format != null && exts != null) {
             exportScreenShotBufferedImage(component, file, width, height, exts, format, paintOffscreen);
         }
         return "OK";
@@ -169,9 +168,9 @@ public class SnapshotUtilities {
 //
 //    }
 
-    private static void exportScreenshotEpsGraphics(Component target, File selectedFile, boolean paintOffscreen) throws IOException{
+    private static void exportScreenshotEpsGraphics(Component target, File selectedFile, int width, int height, boolean paintOffscreen) throws IOException {
 
-        if(!SnapshotUtilities.canExportScreenshotEps()){
+        if (!SnapshotUtilities.canExportScreenshotEps()) {
             String msg = "ERROR: EPS output requires EPSGraphics library. See https://www.broadinstitute.org/software/igv/third_party_tools#epsgraphics";
             log.error(msg);
             return;
@@ -179,7 +178,7 @@ public class SnapshotUtilities {
 
         Graphics2D g = null;
         FileOutputStream fos = null;
-        try{
+        try {
             Class colorModeClass = RuntimeUtils.loadClassForName(EPSColorModeClassName, null);
             Class graphicsClass = RuntimeUtils.loadClassForName(EPSClassName, null);
 
@@ -192,14 +191,14 @@ public class SnapshotUtilities {
             fos = new FileOutputStream(selectedFile);
             g = (Graphics2D) constructor.newInstance("eps", fos, 0, 0, target.getWidth(), target.getHeight(), colorModeValue);
 
-            choosePaint(target, g, paintOffscreen);
+            choosePaint(target, g, width, height, paintOffscreen);
 
             graphicsClass.getMethod("close").invoke(g);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
-            if(fos != null){
+            if (fos != null) {
                 fos.flush();
                 fos.close();
             }
@@ -207,7 +206,7 @@ public class SnapshotUtilities {
 
     }
 
-    public static boolean canExportScreenshotEps(){
+    public static boolean canExportScreenshotEps() {
         Constructor constr = null;
         try {
             Class colorModeClass = RuntimeUtils.loadClassForName(EPSColorModeClassName, null);
@@ -238,7 +237,7 @@ public class SnapshotUtilities {
 //
 //    }
 
-    private static void exportScreenshotSVG(Component target, File selectedFile, boolean paintOffscreen) throws IOException {
+    private static void exportScreenshotSVG(Component target, File selectedFile, int width, int height, boolean paintOffscreen) throws IOException {
 
         String format = "svg";
         selectedFile = fixFileExt(selectedFile, new String[]{format}, format);
@@ -251,14 +250,14 @@ public class SnapshotUtilities {
         // Write image data into document
         SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
 
-        choosePaint(target, svgGenerator, paintOffscreen);
+        choosePaint(target, svgGenerator, width, height, paintOffscreen);
 
         Writer out = null;
         try {
             // Finally, stream out SVG to the standard output using
             // UTF-8 encoding.
             boolean useCSS = true; // we want to use CSS style attributes
-            out = new BufferedWriter(new OutputStreamWriter( new FileOutputStream(selectedFile), "UTF-8"));
+            out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(selectedFile), "UTF-8"));
             svgGenerator.stream(out, useCSS);
         } finally {
             if (out != null) try {
@@ -270,11 +269,12 @@ public class SnapshotUtilities {
 
     }
 
-    private static void choosePaint(Component target, Graphics2D g, boolean paintOffscreen){
+    private static void choosePaint(Component target, Graphics2D g, int width, int height, boolean paintOffscreen) {
         log.debug("Painting to target " + target + " , offscreen " + paintOffscreen);
-        if(paintOffscreen){
-            ((Paintable) target).paintOffscreen(g, target.getBounds());
-        }else{
+        if (paintOffscreen) {
+            Rectangle rect = new Rectangle(0, 0, width, height);
+            ((Paintable) target).paintOffscreen(g, rect);
+        } else {
             target.paintAll(g);
         }
     }
@@ -292,11 +292,11 @@ public class SnapshotUtilities {
      * @throws IOException
      */
     private static void exportScreenShotBufferedImage(Component target, File selectedFile, int width, int height,
-                                                      String[] allowedExts, String format, boolean paintOffscreen) throws IOException{
+                                                      String[] allowedExts, String format, boolean paintOffscreen) throws IOException {
         BufferedImage image = getDeviceCompatibleImage(width, height);
         Graphics2D g = image.createGraphics();
 
-        choosePaint(target, g, paintOffscreen);
+        choosePaint(target, g, width, height, paintOffscreen);
 
         selectedFile = fixFileExt(selectedFile, allowedExts, format);
         if (selectedFile != null) {
@@ -315,16 +315,16 @@ public class SnapshotUtilities {
      * @return Either the input File, if it had an extension contained in {@code allowedExts},
      *         or a new with with {@code defExtension} appended
      */
-    private static File fixFileExt(File selectedFile, String[] allowedExts, String defExtension){
+    private static File fixFileExt(File selectedFile, String[] allowedExts, String defExtension) {
         boolean hasExt = false;
         if (selectedFile != null) {
-            for(String ext: allowedExts){
+            for (String ext : allowedExts) {
                 if (selectedFile.getName().toLowerCase().endsWith(ext)) {
                     hasExt = true;
                     break;
                 }
             }
-            if(!hasExt){
+            if (!hasExt) {
                 String addExt = defExtension.startsWith(".") ? defExtension : "." + defExtension;
                 String correctedFilename = selectedFile.getAbsolutePath() + addExt;
                 selectedFile = new File(correctedFilename);
