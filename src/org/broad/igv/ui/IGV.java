@@ -2220,7 +2220,7 @@ public class IGV implements IGVEventObserver {
                     }
                 } else if (igvArgs.getDataFileString() != null) {
                     // Not an xml file, assume its a list of data files
-                    String decodedString = URLDecoder.decode(igvArgs.getDataFileString());
+                    String decodedString = igvArgs.getDataFileString();
                     String[] dataFiles = decodedString.split(",");
                     String[] names = null;
                     if (igvArgs.getName() != null) {

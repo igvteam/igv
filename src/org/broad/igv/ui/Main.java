@@ -33,6 +33,7 @@ import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
@@ -190,9 +191,7 @@ public class Main {
                     if (thisVersion.lessThan(serverVersion)) {
                         log.info("A later version of IGV is available (" + serverVersionString + ")");
                     }
-                }
-
-                else if (Globals.VERSION.contains("3.0_beta") || Globals.VERSION.contains("snapshot")) {
+                } else if (Globals.VERSION.contains("3.0_beta") || Globals.VERSION.contains("snapshot")) {
                     HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
                 } else {
                     log.info("Unknown version: " + Globals.VERSION);
@@ -428,14 +427,30 @@ public class Main {
             genomeId = (String) parser.getOptionValue(genomeOption);
             dataServerURL = getDecodedValue(parser, dataServerOption);
             genomeServerURL = getDecodedValue(parser, genomeServerOption);
-            indexFile = getDecodedValue(parser, indexFileOption);
-            coverageFile = getDecodedValue(parser, coverageFileOption);
             name = (String) parser.getOptionValue(nameOption);
-            igvDirectory = getDecodedValue(parser, igvDirectoryOption);
+
+            String indexFilePath = (String) parser.getOptionValue(indexFileOption);
+            if (indexFilePath != null) {
+                indexFile = maybeDecodePath(indexFilePath);
+            }
+
+            String coverageFilePath = (String) parser.getOptionValue(coverageFileOption);
+            if (coverageFilePath != null) {
+                coverageFile = maybeDecodePath(coverageFilePath);
+            }
+
+
+            String igvDirectoryPath = (String) parser.getOptionValue(igvDirectoryOption);
+            if (igvDirectoryPath != null) {
+                igvDirectory = maybeDecodePath(igvDirectoryPath);
+            }
 
             String[] nonOptionArgs = parser.getRemainingArgs();
+
             if (nonOptionArgs != null && nonOptionArgs.length > 0) {
-                String firstArg = URLDecoder.decode(nonOptionArgs[0]);
+
+                String firstArg = maybeDecodePath(nonOptionArgs[0]);
+
                 if (firstArg != null && !firstArg.equals("ignore")) {
                     log.info("Loading: " + firstArg);
                     if (firstArg.endsWith(".xml") || firstArg.endsWith(".php") || firstArg.endsWith(".php3")
@@ -453,10 +468,23 @@ public class Main {
             }
         }
 
-        private String getDecodedValue(CmdLineParser parser, CmdLineParser.Option option){
+        private String maybeDecodePath(String path) {
 
-            String value =  (String) parser.getOptionValue(option);
-            if(value == null) return null;
+            if (FileUtils.isRemote(path)) {
+                return URLDecoder.decode(path);
+            } else {
+                if (FileUtils.resourceExists(path)) {
+                    return path;
+                } else {
+                    return URLDecoder.decode(path);
+                }
+            }
+        }
+
+        private String getDecodedValue(CmdLineParser parser, CmdLineParser.Option option) {
+
+            String value = (String) parser.getOptionValue(option);
+            if (value == null) return null;
 
             try {
                 return URLDecoder.decode(value, "UTF-8");
