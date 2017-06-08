@@ -874,7 +874,7 @@ public class CommandExecutor {
         }
 
         try {
-            return IGV.getInstance().createSnapshotNonInteractive(target, file, true);
+            return IGV.getInstance().createSnapshotNonInteractive(target, file, false);
         } catch (IOException e) {
             log.error(e);
             return e.getMessage();
