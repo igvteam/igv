@@ -69,6 +69,7 @@ public class Preloader {
         ReferenceFrame frame = dataPanel.getFrame();
         Collection<Track> trackList = dataPanel.visibleTracks();
         List<CompletableFuture> futures = new ArrayList(trackList.size());
+        boolean batchLoaded = false;
         for (Track track : trackList) {
             if (track.isReadyToPaint(frame) == false) {
                 final Runnable runnable = () -> {
@@ -80,13 +81,14 @@ public class Preloader {
 
                 if(Globals.isBatch()) {
                     runnable.run();
+                    batchLoaded = true;
                 } else {
                     futures.add(CompletableFuture.runAsync(runnable, threadExecutor));
                 }
             }
         }
 
-        if (futures.size() > 0) {
+        if (futures.size() > 0 || batchLoaded) {
             final CompletableFuture[] futureArray = futures.toArray(new CompletableFuture[futures.size()]);
             WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
             CompletableFuture.allOf(futureArray).thenRun(() -> {
