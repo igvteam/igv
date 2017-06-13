@@ -40,12 +40,32 @@ public class LittleEndianInputStream extends htsjdk.tribble.util.LittleEndianInp
 
     public int readUShort() throws IOException {
 
-        int byte1 = this.in.read();
-        int byte2 = this.in.read();
+        int byte1 = in.read();
+        int byte2 = in.read();
         if(byte2 < 0) {
             throw new EOFException();
         } else {
             return ((byte2 << 24 >>> 16) + (byte1 << 24 >>> 24));
+        }
+    }
+
+    public void readFully(byte[] b) throws IOException {
+        readFully(b, 0, b.length);
+    }
+
+    public void readFully(byte[] b, int off, int len) throws IOException {
+        if(len < 0) {
+            throw new IndexOutOfBoundsException("len is negative");
+        } else {
+            int total;
+            int result;
+            for(total = 0; total < len; total += result) {
+                result = in.read(b, off + total, len - total);
+                if(result == -1) {
+                    break;
+                }
+            }
+
         }
     }
 }

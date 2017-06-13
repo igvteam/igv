@@ -186,7 +186,7 @@ public class PreferencesManager implements IGVEventObserver {
                 }
             }
         } catch (IOException e) {
-            log.error("Error loading preferences", e);
+            log.info("Error loading preferences " + e.getMessage());
         } finally {
             try {
                 if (reader != null) {
