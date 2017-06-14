@@ -28,20 +28,14 @@ package org.broad.igv.util;
 
 import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.util.CloseableIterator;
-import htsjdk.tribble.FeatureCodec;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.feature.genome.FastaIndexedSequence;
-import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.sam.PicardAlignment;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
-import org.broad.igv.tools.sort.AsciiSorter;
-import org.broad.igv.tools.sort.SortableRecord;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -73,7 +67,7 @@ public class TutorialUtils {
 
             for (Region r : regions) {
 
-                byte[] sequence = inFasta.getSequence(r.chr, r.start, r.end);
+                byte[] sequence = inFasta.getSequence(r.chr, r.start, r.end, true);
 
                 outFasta.println(">" + r.name);
                 outFasta.println(new String(sequence));

@@ -44,7 +44,7 @@ import org.broad.igv.util.ObjectCache;
 
 public class IGVReferenceSource implements CRAMReferenceSource {
 
-    ObjectCache<String, byte[]> cachedSequences = new ObjectCache<String, byte[]>(2);
+    static ObjectCache<String, byte[]> cachedSequences = new ObjectCache<String, byte[]>(2);
 
     @Override
     public synchronized byte[] getReferenceBases(SAMSequenceRecord record, boolean tryNameVariants) {

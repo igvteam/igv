@@ -2,13 +2,9 @@ package org.broad.igv.feature.genome;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.broad.igv.util.LittleEndianInputStream;
-import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -99,7 +95,7 @@ public class TwoBitSequence implements Sequence {
     }
 
     @Override
-    public byte[] getSequence(String chr, int start, int end) {
+    public byte[] getSequence(String chr, int start, int end, boolean useCache) {
         return new byte[0];
     }
 

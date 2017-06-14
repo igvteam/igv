@@ -75,13 +75,13 @@ public class FastaDirectorySequence implements Sequence {
         return sequenceMap.values();
     }
 
-    public byte[] getSequence(String chr, int start, int end) {
+    public byte[] getSequence(String chr, int start, int end, boolean useCache) {
 
 
         if (!sequenceMap.containsKey(chr)) {
             return null;
         }
-        return sequenceMap.get(chr).getSequence(chr, start, end);
+        return sequenceMap.get(chr).getSequence(chr, start, end, useCache);
     }
 
 

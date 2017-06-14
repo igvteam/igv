@@ -82,11 +82,11 @@ public class SequenceWrapperTest extends AbstractHeadlessTest{
             int start = 55054464;
             int end = start + 10000;
 
-            byte[] cachedSeq = helper.getSequence(chr, start, end);
+            byte[] cachedSeq = helper.getSequence(chr, start, end, true);
 
             SequenceWrapper.setCacheSequences(false);
 
-            byte[] uncachedSeq = helper.getSequence(chr, start, end);
+            byte[] uncachedSeq = helper.getSequence(chr, start, end, true);
 
             assertEquals(uncachedSeq.length, cachedSeq.length);
 
@@ -110,7 +110,7 @@ public class SequenceWrapperTest extends AbstractHeadlessTest{
         String expSequence = "ATTGC";
         String tmp = SequenceWrapper.checkSequenceURL("http://data.broadinstitute.org/igvdata/annotations/seq/spur_2.1/");
         SequenceWrapper helper = new SequenceWrapper(new IGVSequence(tmp));
-        byte[] seq = helper.getSequence(chr, start, end);
+        byte[] seq = helper.getSequence(chr, start, end, true);
         assertEquals(expSequence, new String(seq));
 
     }
@@ -124,7 +124,7 @@ public class SequenceWrapperTest extends AbstractHeadlessTest{
         int start = 55054464;
         int end = start + 20;
         String expSequence = "ATGCGACCCTCCGGGACGGC";
-        byte[] seq = helper.getSequence(chr, start, end);
+        byte[] seq = helper.getSequence(chr, start, end, true);
         assertEquals(expSequence, new String(seq));
     }
 

@@ -51,7 +51,7 @@ public class ColorSpaceSequence   {
     public byte[] getSequence(String chr, int start, int end) {
         // We need to know the base just to the left of the start
         int csStart = (start == 0 ? 0 : start - 1);
-        byte[] baseSequence = sequence.getSequence(chr, csStart, end);
+        byte[] baseSequence = sequence.getSequence(chr, csStart, end, true);
         if (baseSequence == null || baseSequence.length == 0) {
             return baseSequence;
         }

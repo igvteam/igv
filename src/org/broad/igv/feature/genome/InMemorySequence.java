@@ -25,7 +25,6 @@
 
 package org.broad.igv.feature.genome;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -47,7 +46,7 @@ public class InMemorySequence implements Sequence {
         sequenceMap.put(chr, seq);
     }
 
-    public byte[] getSequence(String chr, int qstart, int qend) {
+    public byte[] getSequence(String chr, int qstart, int qend, boolean useCache) {
         byte[] allBytes = sequenceMap.get(chr);
         if (allBytes == null) {
             return null;

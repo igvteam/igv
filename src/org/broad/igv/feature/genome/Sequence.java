@@ -27,9 +27,7 @@ package org.broad.igv.feature.genome;
 
 import org.broad.igv.ui.panel.ReferenceFrame;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author jrobinso
@@ -39,7 +37,7 @@ import java.util.Set;
  */
 public interface Sequence {
 
-    byte[] getSequence(String chr, int start, int end);
+    byte[] getSequence(String chr, int start, int end, boolean useCache);
 
     public byte getBase(String chr, int position);
 

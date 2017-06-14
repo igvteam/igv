@@ -57,7 +57,7 @@ public class IGVSequence implements Sequence {
         this.dirPath = dirPath;
     }
 
-    public byte[] getSequence(String chr, int start, int end) {
+    public byte[] getSequence(String chr, int start, int end, boolean useCache) {
 
         String fn = getChrFileName(chr);
         String seqFile = dirPath + fn;

@@ -88,10 +88,11 @@ public class FastaIndexedSequence implements Sequence {
      * @param chr
      * @param qstart
      * @param qend
+     * @param useCache
      * @return
      */
 
-    public byte[] getSequence(String chr, int qstart, int qend) {
+    public byte[] getSequence(String chr, int qstart, int qend, boolean useCache) {
 
         FastaIndex.FastaSequenceIndexEntry idxEntry = index.getIndexEntry(chr);
         if (idxEntry == null) {
