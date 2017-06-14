@@ -158,7 +158,6 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
         return sequenceNames;
     }
 
-
     public CloseableIterator<PicardAlignment> iterator() {
         return new WrappedIterator(reader.iterator());
     }
@@ -234,11 +233,16 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
             }
 
             // Try cram
-            if(pathOrURL.endsWith(".cram")) {
+            if (pathOrURL.endsWith(".cram")) {
                 indexPath = getIndexURL(pathOrURL, ".crai");
                 if (FileUtils.resourceExists(indexPath)) {
                     pathsTried.add(indexPath);
                     return indexPath;
+                } else {
+                    indexPath = pathOrURL.substring(0, pathOrURL.length() - 5) + ".crai";
+                    if (FileUtils.resourceExists(indexPath)) {
+                        return indexPath;
+                    }
                 }
             }
 
@@ -255,6 +259,11 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
                 indexPath = pathOrURL + ".crai";
                 if (FileUtils.resourceExists(indexPath)) {
                     return indexPath;
+                } else {
+                    indexPath = pathOrURL.substring(0, pathOrURL.length() - 5) + ".crai";
+                    if (FileUtils.resourceExists(indexPath)) {
+                        return indexPath;
+                    }
                 }
             }
 
