@@ -91,9 +91,9 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
         } else {
             URL url = new URL(locator.getPath());
             if (requireIndex) {
-                resource = SamInputResource.of(new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(url), 128000));
+                resource = SamInputResource.of(IGVSeekableStreamFactory.getInstance().getStreamFor(url));
             } else {
-                resource = SamInputResource.of(HttpUtils.getInstance().openConnectionStream(url));
+                resource = SamInputResource.of(new BufferedInputStream(HttpUtils.getInstance().openConnectionStream(url)));
             }
         }
 

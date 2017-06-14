@@ -27,7 +27,6 @@ package org.broad.igv.util.stream;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
-import org.broad.igv.ui.util.Packable;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.EOFException;
