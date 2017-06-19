@@ -213,7 +213,7 @@ public class SpliceJunctionTrack extends FeatureTrack {
             }
 
 
-            final JMenuItem junctionItem = new JMenuItem("Hide Track");
+            final JMenuItem junctionItem = new JMenuItem("Hide Splice Junction Track");
             junctionItem.setEnabled(!isRemoved());
             junctionItem.addActionListener(e -> {
                 setVisible(false);

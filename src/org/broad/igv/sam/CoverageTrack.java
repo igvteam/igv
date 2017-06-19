@@ -924,7 +924,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                 menu.add(junctionItem);
             }
 
-            final JMenuItem coverageItem = new JMenuItem("Hide Track");
+            final JMenuItem coverageItem = new JMenuItem("Hide Coverage Track");
             coverageItem.setEnabled(!isRemoved());
             coverageItem.addActionListener(new ActionListener() {
                 @Override
