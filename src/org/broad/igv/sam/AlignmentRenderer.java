@@ -1071,7 +1071,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             case UNEXPECTED_PAIR:
             case PAIR_ORIENTATION:
                 c = getOrientationColor(alignment, getPEStats(alignment, renderOptions));
-                if (colorOption == ColorOption.PAIR_ORIENTATION) {
+                if (c != DEFAULT_ALIGNMENT_COLOR || colorOption == ColorOption.PAIR_ORIENTATION) {
                     break;
                 }
             case INSERT_SIZE:
