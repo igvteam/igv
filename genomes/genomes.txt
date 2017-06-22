@@ -110,6 +110,7 @@ Rat (rn5)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/rn5.genome	rn5
 Rat (rn6)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/rn6.genome	rn6
 Rhesus (rheMac2)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/rheMac2.genome	rheMac2
 Rhesus (rheMac3)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/rheMac3.genome	rheMac3
+Rhesus (rheMac8)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/rheMac8.genome	rheMac8
 S. cerevisiae (EF3 r62)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/sacCer62.genome	sacCer62
 S. cerevisiae (GSM552910)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/GSM552910.genome	GSM552910
 S. cerevisiae (Y55)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/Y55.genome	Y55

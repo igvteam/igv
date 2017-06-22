@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Global name="Annotations (mm10)" version="1">
+
+        <Resource name="db Snp 1.37"
+                  path="https://data.broadinstitute.org/igvdata/annotations/mm10/variation/snp137.bed.gz"
+                  hyperlink="http://www.ncbi.nlm.nih.gov/SNP/"
+                  url="http://www.ncbi.nlm.nih.gov/SNP/snp_ref.cgi?type=rs&amp;rs=$$"/>
+
+
+</Global>
