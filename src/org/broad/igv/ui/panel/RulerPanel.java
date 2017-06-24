@@ -465,8 +465,10 @@ public class RulerPanel extends JPanel {
 
                 s = Math.max(0.0, s);
                 String chr = null;
+                Genome genome = GenomeManager.getInstance().getCurrentGenome();
+
                 if (isWholeGenomeView()) {
-                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
+
                     ChromosomeCoordinate start = genome.getChromosomeCoordinate((int) s);
                     ChromosomeCoordinate end = genome.getChromosomeCoordinate((int) e);
 
@@ -478,6 +480,9 @@ public class RulerPanel extends JPanel {
                     }
                 } else {
                     chr = frame.getChrName();
+                    s = Math.max(0, s);
+                    e = Math.min(genome.getChromosome(chr).getLength(), e);
+
                 }
 
                 frame.jumpTo(chr, (int) Math.min(s, e), (int) Math.max(s, e));
