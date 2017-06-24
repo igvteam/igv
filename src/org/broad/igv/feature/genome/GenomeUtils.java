@@ -174,7 +174,7 @@ public class GenomeUtils {
         pw.println("   name: \"" + genome.getDisplayName() + "\",");
         pw.println("   id: \"" + genome.getId() + "\",");
         pw.println("   ucsdId: \"" + genome.getUCSCId() + "\",");
-        pw.print("   fastaURL: \"" + gd.getSequenceLocation()  + "\"");
+        pw.print("   fastaURL: \"" + gd.getSequencePath()  + "\"");
 
         if(gd.cytoBandFileName != null) {
             pw.println(",");
