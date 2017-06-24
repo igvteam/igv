@@ -79,6 +79,8 @@ public interface AlignmentReader<T extends Alignment> {
      */
     CloseableIterator<T> query(final String sequence, final int start, final int end, final boolean contained) throws IOException;
 
+    default void cancelQuery() {};
+
     boolean hasIndex();
 
 }

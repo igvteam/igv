@@ -34,10 +34,14 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.ReadGroupFilter;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.event.StopEvent;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ObjectCache;
 import org.broad.igv.util.RuntimeUtils;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
@@ -49,7 +53,7 @@ import static org.broad.igv.prefs.Constants.*;
  *
  * @author jrobinso
  */
-public class AlignmentTileLoader {
+public class AlignmentTileLoader implements IGVEventObserver{
 
     private static Logger log = Logger.getLogger(AlignmentTileLoader.class);
 
@@ -84,8 +88,6 @@ public class AlignmentTileLoader {
 
         Set<String> platforms = this.reader.getPlatforms();
         moleculo = platforms != null && platforms.contains("MOLECULO");
-
-        activeLoaders.add(new WeakReference<AlignmentTileLoader>(this));
     }
 
     public void close() throws IOException {
@@ -146,14 +148,19 @@ public class AlignmentTileLoader {
             ObjectCache<String, Alignment> mappedMates = new ObjectCache<String, Alignment>(1000);
             ObjectCache<String, Alignment> unmappedMates = new ObjectCache<String, Alignment>(1000);
 
-
             activeLoaders.add(ref);
+            IGVEventBus.getInstance().subscribe(StopEvent.class, this);
+
+            if(IGV.hasInstance()) {
+                IGV.getInstance().enableStopButton(true);
+            }
+
             iter = reader.query(chr, start, end, false);
 
             while (iter != null && iter.hasNext()) {
 
-                if (cancel) {
-                    return t;
+                if(cancel) {
+                    break;
                 }
 
                 Alignment record = iter.next();
@@ -215,13 +222,12 @@ public class AlignmentTileLoader {
                 alignmentCount++;
                 int interval = Globals.isTesting() ? 100000 : 1000;
                 if (alignmentCount % interval == 0) {
-                    if (cancel) return null;
                     String msg = "Reads loaded: " + alignmentCount;
                     MessageUtils.setStatusBarMessage(msg);
                     if (memoryTooLow()) {
                         cancelReaders();
                         t.finish();
-                        return t;        // <=  TODO need to cancel all readers
+                        return t;
                     }
                 }
 
@@ -285,7 +291,14 @@ public class AlignmentTileLoader {
             // reset cancel flag.  It doesn't matter how we got here,  the read is complete and this flag is reset
             // for the next time
             cancel = false;
+
             activeLoaders.remove(ref);
+
+            IGVEventBus.getInstance().unsubscribe(this);
+
+            if(activeLoaders.isEmpty() && IGV.hasInstance()) {
+                IGV.getInstance().enableStopButton(false);
+            }
 
             if (iter != null) {
                 iter.close();
@@ -338,6 +351,16 @@ public class AlignmentTileLoader {
 
     public boolean isMoleculo() {
         return moleculo;
+    }
+
+    @Override
+    public void receiveEvent(Object event) {
+        if(event instanceof StopEvent) {
+            System.out.println("Canceled");
+            cancel = true;
+
+            reader.cancelQuery();
+        }
     }
 
     /**

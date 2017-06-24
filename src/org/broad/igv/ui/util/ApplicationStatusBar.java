@@ -29,8 +29,9 @@ package org.broad.igv.ui.util;
 import com.jidesoft.swing.JideBoxLayout;
 import com.jidesoft.swing.JideButton;
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
 import org.broad.igv.ui.FontManager;
+import org.broad.igv.event.IGVEventBus;
+//import org.broad.igv.event.StopEvent;
 
 import javax.swing.*;
 import java.awt.*;
@@ -46,6 +47,7 @@ import java.util.TimerTask;
 public class ApplicationStatusBar extends JPanel { //StatusBar {
 
     static Logger log = Logger.getLogger(ApplicationStatusBar.class);
+    public JButton stopButton;
     private JLabel messageBox;
     private JLabel messageBox2;
     private JLabel messageBox3;
@@ -75,10 +77,23 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
         messageBox.setPreferredSize(new Dimension(135, 20));
         add(messageBox, JideBoxLayout.FIX);
 
+        stopButton = new JButton();
+        stopButton.setBorder(BorderFactory.createLineBorder(Color.black));
+        stopButton.setIcon(new javax.swing.ImageIcon(
+                getClass().getResource("/toolbarButtonGraphics/general/Stop16.gif")));
+        stopButton.setMaximumSize(new java.awt.Dimension(16, 16));
+        stopButton.setMinimumSize(new java.awt.Dimension(16, 16));
+        stopButton.setPreferredSize(new java.awt.Dimension(16, 16));
+        stopButton.setSize(new java.awt.Dimension(16, 16));
+        stopButton.setToolTipText("Cancel load");
+        stopButton.setEnabled(false);
+        add(stopButton, JideBoxLayout.FIX);
+
         messageBox2 = createMessageField(messageBG, messageFont);
         messageBox2.setMinimumSize(new Dimension(150, 10));
         messageBox2.setPreferredSize(new Dimension(150, 20));
         add(messageBox2, JideBoxLayout.FIX);
+
 
         messageBox3 = createMessageField(messageBG, messageFont);
         messageBox3.setMinimumSize(new Dimension(165, 10));
@@ -99,12 +114,18 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
     }
 
     public void setMessage(final String message) {
-        UIUtilities.invokeOnEventThread(new Runnable() {
-            public void run() {
-                messageBox.setText(message);
-                messageBox.paintImmediately(messageBox.getBounds());
-            }
+        UIUtilities.invokeOnEventThread(() -> {
+            messageBox.setText(message);
+            messageBox.paintImmediately(messageBox.getBounds());
         });
+
+        if (!SwingUtilities.isEventDispatchThread()) {
+            try {
+                Thread.currentThread().sleep(10);
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        }
     }
 
     public void setMessage2(final String message) {
@@ -128,6 +149,10 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
         messageField.setBorder(BorderFactory.createLineBorder(Color.black));
         return messageField;
 
+    }
+
+    public void enableStopButton(boolean enable) {
+        stopButton.setEnabled(enable);
     }
 
     class MemoryUpdateTask extends TimerTask {
