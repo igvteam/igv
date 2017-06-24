@@ -37,7 +37,6 @@ import com.google.common.base.Objects;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.RegionOfInterest;
-import org.broad.igv.lists.Preloader;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.RenderContext;
@@ -62,6 +61,9 @@ import java.awt.event.MouseWheelEvent;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -74,18 +76,21 @@ import java.util.stream.Collectors;
 public class DataPanel extends JComponent implements Paintable, IGVEventObserver {
 
     private static Logger log = Logger.getLogger(DataPanel.class);
+
+    // Thread pool for loading data
+    private static final ExecutorService threadExecutor = Executors.newFixedThreadPool(5);
+
     private boolean isWaitingForToolTipText = false;
 
     private DataPanelTool defaultTool;
     private DataPanelTool currentTool;
     // private Point tooltipTextPosition;
     private ReferenceFrame frame;
-    DataPanelContainer parent;
+    private DataPanelContainer parent;
     private DataPanelPainter painter;
     private String tooltipText = "";
 
-    public boolean loadInProgress = false;
-
+    private  boolean loadInProgress = false;
 
     public DataPanel(ReferenceFrame frame, DataPanelContainer parent) {
         init();
@@ -149,7 +154,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
             if (!allTracksLoaded()) {
                 if (!loadInProgress) {
                     loadInProgress = true;
-                    Preloader.load(this);
+                    load();
                 }
                 if(!Globals.isBatch()) return;
             }
@@ -201,19 +206,47 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
                 allMatch(track -> track.isReadyToPaint(frame));
     }
 
-    public List<Track> notloadedTracks() {
-        return parent.getTrackGroups().stream().
-                filter(TrackGroup::isVisible).
-                flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
-                filter(track -> track.isReadyToPaint(frame) == false).
-                collect(Collectors.toList());
-    }
 
     public List<Track> visibleTracks() {
         return parent.getTrackGroups().stream().
                 filter(TrackGroup::isVisible).
                 flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
                 collect(Collectors.toList());
+    }
+
+    private void load() {
+
+        ReferenceFrame frame = getFrame();
+        Collection<Track> trackList = visibleTracks();
+        List<CompletableFuture> futures = new ArrayList(trackList.size());
+        boolean batchLoaded = false;
+        for (Track track : trackList) {
+            if (track.isReadyToPaint(frame) == false) {
+                final Runnable runnable = () -> {
+                    track.load(frame);
+                };
+
+                if(Globals.isBatch()) {
+                    runnable.run();
+                    batchLoaded = true;
+                } else {
+                    futures.add(CompletableFuture.runAsync(runnable, threadExecutor));
+                }
+            }
+        }
+
+        if (futures.size() > 0 || batchLoaded) {
+            final CompletableFuture[] futureArray = futures.toArray(new CompletableFuture[futures.size()]);
+            WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
+            CompletableFuture.allOf(futureArray).thenRun(() -> {
+
+                //log.info("Call repaint " + dataPanel.hashCode() + " " + dataPanel.allTracksLoaded());
+                loadInProgress = false;
+                WaitCursorManager.removeWaitCursor(token);
+                repaint();
+
+            });
+        }
     }
 
     /**

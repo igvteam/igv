@@ -659,11 +659,6 @@ public class ReferenceFrame {
         this.name = name;
     }
 
-    public int getStateHash() {
-        return (chrName + origin + scale + widthInPixels).hashCode();
-    }
-
-
     /**
      * Recalculate the locationScale, based on {@link #initialLocus}, {@link #origin}, and
      * {@link #widthInPixels}
@@ -749,6 +744,20 @@ public class ReferenceFrame {
         }
     }
 
+
+    public int stateHash() {
+        int result;
+        long temp;
+        temp = Double.doubleToLongBits(origin);
+        result = (int) (temp ^ (temp >>> 32));
+        result = 31 * result + chrName.hashCode();
+        result = 31 * result + zoom;
+        result = 31 * result + pixelX;
+        result = 31 * result + widthInPixels;
+        temp = Double.doubleToLongBits(scale);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        return result;
+    }
 
     private static Genome getGenome() {
         return GenomeManager.getInstance().getCurrentGenome();
