@@ -630,7 +630,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
             if (!frame.getChrName().equals(Globals.CHR_ALL)) {
                 int location = (int) frame.getChromosomePosition(e.getX()) + 1;
                 position = frame.getChrName() + ":" + locationFormatter.format(location);
-                IGV.getInstance().setStatusBarPosition(position);
+                IGV.getInstance().setStatusBarMessag2(position);
             }
             updateTooltipText(e.getX(), e.getY());
 

@@ -108,14 +108,18 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
     }
 
     public void setMessage2(final String message) {
-        UIUtilities.invokeOnEventThread(new Runnable() {
-            public void run() {
-                messageBox2.setText(message);
-                messageBox2.paintImmediately(messageBox2.getBounds());
-            }
+        UIUtilities.invokeOnEventThread(() -> {
+            messageBox2.setText(message);
+            messageBox2.paintImmediately(messageBox2.getBounds());
         });
     }
 
+    public void setMessage3(final String message) {
+        UIUtilities.invokeOnEventThread(() -> {
+            messageBox3.setText(message);
+            messageBox3.paintImmediately(messageBox2.getBounds());
+        });
+    }
 
     private JLabel createMessageField(Color bg, Font font) {
         JLabel messageField = new JLabel();
