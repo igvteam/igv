@@ -226,25 +226,25 @@ public class GenomeImporter {
 
             propertyFileWriter.println("ordered=" + !fastaDirectory);
             if (genomeId != null) {
-                propertyFileWriter.println(Globals.GENOME_ARCHIVE_ID_KEY + "=" + genomeId);
+                propertyFileWriter.println(GenomeManager.GENOME_ARCHIVE_ID_KEY + "=" + genomeId);
             }
             if (genomeDisplayName != null) {
-                propertyFileWriter.println(Globals.GENOME_ARCHIVE_NAME_KEY + "=" + genomeDisplayName);
+                propertyFileWriter.println(GenomeManager.GENOME_ARCHIVE_NAME_KEY + "=" + genomeDisplayName);
             }
             if (cytobandFile != null) {
-                propertyFileWriter.println(Globals.GENOME_ARCHIVE_CYTOBAND_FILE_KEY + "=" + cytobandFile.getName());
+                propertyFileWriter.println(GenomeManager.GENOME_ARCHIVE_CYTOBAND_FILE_KEY + "=" + cytobandFile.getName());
             }
             if (geneAnnotFile != null) {
-                propertyFileWriter.println(Globals.GENOME_ARCHIVE_GENE_FILE_KEY + "=" + geneAnnotFile.getName());
+                propertyFileWriter.println(GenomeManager.GENOME_ARCHIVE_GENE_FILE_KEY + "=" + geneAnnotFile.getName());
             }
             if (chrAliasFile != null) {
-                propertyFileWriter.println(Globals.GENOME_CHR_ALIAS_FILE_KEY + "=" + chrAliasFile.getName());
+                propertyFileWriter.println(GenomeManager.GENOME_CHR_ALIAS_FILE_KEY + "=" + chrAliasFile.getName());
             }
             if (sequenceLocation != null) {
                 if (!HttpUtils.isRemoteURL(sequenceLocation)) {
                     sequenceLocation = sequenceLocation.replace('\\', '/');
                 }
-                propertyFileWriter.println(Globals.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY + "=" + sequenceLocation);
+                propertyFileWriter.println(GenomeManager.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY + "=" + sequenceLocation);
             }
 
             propertyFileWriter.flush();

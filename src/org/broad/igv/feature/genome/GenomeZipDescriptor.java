@@ -51,14 +51,18 @@ public class GenomeZipDescriptor extends GenomeDescriptor {
                                String geneTrackName,
                                String sequenceLocation,
                                boolean hasCustomSequenceLocation,
+                               String compressedSequencePath,
                                ZipFile genomeZipFile,
                                Map<String, ZipEntry> zipEntries,
                                boolean chromosomesAreOrdered,
                                boolean fasta,
                                boolean fastaDirectory,
                                String fastaFileNameString) {
+
         super(name, chrNamesAltered, id, cytoBandFileName, geneFileName, chrAliasFileName, geneTrackName,
-                sequenceLocation, hasCustomSequenceLocation, chromosomesAreOrdered, fasta, fastaDirectory, fastaFileNameString);
+                sequenceLocation, hasCustomSequenceLocation, compressedSequencePath,
+                chromosomesAreOrdered, fasta, fastaDirectory, fastaFileNameString);
+
         this.zipEntries = zipEntries;
         this.genomeZipFile = genomeZipFile;
 

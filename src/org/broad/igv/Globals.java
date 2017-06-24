@@ -73,23 +73,6 @@ public class Globals {
     final public static String GENOME_FILE_EXTENSION = ".genome";
     final public static String ZIP_EXTENSION = ".zip";
     final public static String GZIP_FILE_EXTENSION = ".gz";
-    final public static String GENOME_ARCHIVE_PROPERTY_FILE_NAME = "property.txt";
-    final public static String GENOME_ARCHIVE_ID_KEY = "id";
-    final public static String GENOME_ARCHIVE_NAME_KEY = "name";
-    final public static String GENOME_ARCHIVE_VERSION_KEY = "version";
-    final public static String GENOME_ORDERED_KEY = "ordered";
-    final public static String GENOME_GENETRACK_NAME = "geneTrackName";
-    final public static String GENOME_URL_KEY = "url";
-    final public static String GENOME_ARCHIVE_CYTOBAND_FILE_KEY = "cytobandFile";
-    final public static String GENOME_ARCHIVE_GENE_FILE_KEY = "geneFile";
-    final public static String GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY = "sequenceLocation";
-
-    /**
-     * Whether the sequenceLocation has been modified from the version of the .genome
-     * file on the server
-     */
-    public static final String GENOME_ARCHIVE_CUSTOM_SEQUENCE_LOCATION_KEY = "customSequenceLocation";
-    public static final String GENOME_CHR_ALIAS_FILE_KEY = "chrAliasFile";
 
     // Default user folder
 

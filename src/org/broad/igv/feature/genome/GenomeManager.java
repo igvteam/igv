@@ -74,6 +74,24 @@ import java.util.zip.*;
  */
 public class GenomeManager {
 
+    final  static String GENOME_ARCHIVE_VERSION_KEY = "version";
+    final  static String GENOME_ARCHIVE_PROPERTY_FILE_NAME = "property.txt";
+    final  static String GENOME_ARCHIVE_ID_KEY = "id";
+    final  static String GENOME_ARCHIVE_NAME_KEY = "name";
+    final  static String GENOME_ORDERED_KEY = "ordered";
+    final  static String GENOME_GENETRACK_NAME = "geneTrackName";
+    final  static String GENOME_URL_KEY = "url";
+    final  static String GENOME_ARCHIVE_CYTOBAND_FILE_KEY = "cytobandFile";
+    final  static String GENOME_ARCHIVE_GENE_FILE_KEY = "geneFile";
+    final  static String GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY = "sequenceLocation";
+    final  static String COMPRESSED_SEQUENCE_PATH = "compressedSequencePath";
+
+    /**
+     * Whether the sequenceLocation has been modified from the version of the .genome
+     * file on the server
+     */
+    public static final String GENOME_ARCHIVE_CUSTOM_SEQUENCE_LOCATION_KEY = "customSequenceLocation";
+    public static final String GENOME_CHR_ALIAS_FILE_KEY = "chrAliasFile";
     private static Logger log = Logger.getLogger(GenomeManager.class);
 
     private static final String ACT_USER_DEFINED_GENOME_LIST_FILE = "user-defined-genomes.txt";
@@ -422,7 +440,8 @@ public class GenomeManager {
         }
 
 
-        String sequencePath = genomeDescriptor.getSequenceLocation();
+        String sequencePath = genomeDescriptor.getSequencePath();
+
         Sequence sequence = null;
         boolean chromosOrdered = false;
         if (sequencePath == null) {
@@ -626,7 +645,7 @@ public class GenomeManager {
                         boolean success = true;
 
                         if (cachedDescriptor.hasCustomSequenceLocation()) {
-                            success = rewriteSequenceLocation(tmpFile, cachedDescriptor.getSequenceLocation());
+                            success = rewriteSequenceLocation(tmpFile, cachedDescriptor.getSequencePath());
                         }
 
                         if (success) {
@@ -672,52 +691,48 @@ public class GenomeManager {
                 String zipEntryName = zipEntry.getName();
                 zipEntries.put(zipEntryName, zipEntry);
 
-                if (zipEntryName.equalsIgnoreCase(Globals.GENOME_ARCHIVE_PROPERTY_FILE_NAME)) {
+                if (zipEntryName.equalsIgnoreCase(GENOME_ARCHIVE_PROPERTY_FILE_NAME)) {
                     InputStream inputStream = zipFile.getInputStream(zipEntry);
                     Properties properties = new Properties();
                     properties.load(inputStream);
 
-                    String cytobandZipEntryName = properties.getProperty(Globals.GENOME_ARCHIVE_CYTOBAND_FILE_KEY);
-                    String geneFileName = properties.getProperty(Globals.GENOME_ARCHIVE_GENE_FILE_KEY);
-                    String chrAliasFileName = properties.getProperty(Globals.GENOME_CHR_ALIAS_FILE_KEY);
-                    String sequenceLocation = properties.getProperty(Globals.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY);
+                    String cytobandZipEntryName = properties.getProperty(GENOME_ARCHIVE_CYTOBAND_FILE_KEY);
+                    String geneFileName = properties.getProperty(GENOME_ARCHIVE_GENE_FILE_KEY);
+                    String chrAliasFileName = properties.getProperty(GENOME_CHR_ALIAS_FILE_KEY);
+                    String sequencePath = properties.getProperty(GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY);
+                    String compressedSequencePath = properties.getProperty(COMPRESSED_SEQUENCE_PATH);
 
-                    if ((sequenceLocation != null) && !HttpUtils.isRemoteURL(sequenceLocation)) {
-                        File sequenceFolder = null;
-                        // Relative or absolute location? We use a few redundant methods to check,
-                        //since we don't know what platform the file was created on or is running on
-                        sequenceFolder = new File(sequenceLocation);
-                        boolean isAbsolutePath = sequenceFolder.isAbsolute() ||
-                                sequenceLocation.startsWith("/") || sequenceLocation.startsWith("\\");
-                        if (!isAbsolutePath) {
-                            sequenceFolder = new File(f.getParent(), sequenceLocation);
-                        }
-                        sequenceLocation = sequenceFolder.getCanonicalPath();
-                        sequenceLocation.replace('\\', '/');
+                    if ((sequencePath != null) && !HttpUtils.isRemoteURL(sequencePath)) {
+                        sequencePath = getFullPath(f, sequencePath);
+                    }
+
+                    if ((compressedSequencePath != null) && !HttpUtils.isRemoteURL(compressedSequencePath)) {
+                        compressedSequencePath = getFullPath(f, sequencePath);
                     }
 
                     boolean chrNamesAltered = parseBooleanPropertySafe(properties, "filenamesAltered");
                     boolean fasta = parseBooleanPropertySafe(properties, "fasta");
                     boolean fastaDirectory = parseBooleanPropertySafe(properties, "fastaDirectory");
-                    boolean chromosomesAreOrdered = parseBooleanPropertySafe(properties, Globals.GENOME_ORDERED_KEY);
-                    boolean hasCustomSequenceLocation = parseBooleanPropertySafe(properties, Globals.GENOME_ARCHIVE_CUSTOM_SEQUENCE_LOCATION_KEY);
+                    boolean chromosomesAreOrdered = parseBooleanPropertySafe(properties, GENOME_ORDERED_KEY);
+                    boolean hasCustomSequenceLocation = parseBooleanPropertySafe(properties, GENOME_ARCHIVE_CUSTOM_SEQUENCE_LOCATION_KEY);
 
 
                     String fastaFileNameString = properties.getProperty("fastaFiles");
-                    String url = properties.getProperty(Globals.GENOME_URL_KEY);
+                    String url = properties.getProperty(GENOME_URL_KEY);
 
 
                     // The new descriptor
                     genomeDescriptor = new GenomeZipDescriptor(
-                            properties.getProperty(Globals.GENOME_ARCHIVE_NAME_KEY),
+                            properties.getProperty(GENOME_ARCHIVE_NAME_KEY),
                             chrNamesAltered,
-                            properties.getProperty(Globals.GENOME_ARCHIVE_ID_KEY),
+                            properties.getProperty(GENOME_ARCHIVE_ID_KEY),
                             cytobandZipEntryName,
                             geneFileName,
                             chrAliasFileName,
-                            properties.getProperty(Globals.GENOME_GENETRACK_NAME, "Gene"),
-                            sequenceLocation,
+                            properties.getProperty(GENOME_GENETRACK_NAME, "Gene"),
+                            sequencePath,
                             hasCustomSequenceLocation,
+                            compressedSequencePath,
                             zipFile,
                             zipEntries,
                             chromosomesAreOrdered,
@@ -742,6 +757,19 @@ public class GenomeManager {
             }
         }
         return genomeDescriptor;
+    }
+
+    private static String getFullPath(File f, String sequencePath) throws IOException {
+        File sequenceFolder = null;
+        sequenceFolder = new File(sequencePath);
+        boolean isAbsolutePath = sequenceFolder.isAbsolute() ||
+                sequencePath.startsWith("/") || sequencePath.startsWith("\\");
+        if (!isAbsolutePath) {
+            sequenceFolder = new File(f.getParent(), sequencePath);
+        }
+        sequencePath = sequenceFolder.getCanonicalPath();
+        sequencePath.replace('\\', '/');
+        return sequencePath;
     }
 
     private static boolean parseBooleanPropertySafe(Properties properties, String key) {
@@ -1119,7 +1147,7 @@ public class GenomeManager {
                     fis = new FileInputStream(file);
                     zipInputStream = new ZipInputStream(new BufferedInputStream(fis));
 
-                    ZipEntry zipEntry = zipFile.getEntry(Globals.GENOME_ARCHIVE_PROPERTY_FILE_NAME);
+                    ZipEntry zipEntry = zipFile.getEntry(GENOME_ARCHIVE_PROPERTY_FILE_NAME);
                     if (zipEntry == null) {
                         continue;    // Should never happen
                     }
@@ -1129,19 +1157,19 @@ public class GenomeManager {
                     properties.load(inputStream);
 
                     int version = 0;
-                    if (properties.containsKey(Globals.GENOME_ARCHIVE_VERSION_KEY)) {
+                    if (properties.containsKey(GENOME_ARCHIVE_VERSION_KEY)) {
                         try {
                             version = Integer.parseInt(
-                                    properties.getProperty(Globals.GENOME_ARCHIVE_VERSION_KEY));
+                                    properties.getProperty(GENOME_ARCHIVE_VERSION_KEY));
                         } catch (Exception e) {
                             log.error("Error parsing genome version: " + version, e);
                         }
                     }
 
                     GenomeListItem item =
-                            new GenomeListItem(properties.getProperty(Globals.GENOME_ARCHIVE_NAME_KEY),
+                            new GenomeListItem(properties.getProperty(GENOME_ARCHIVE_NAME_KEY),
                                     file.getAbsolutePath(),
-                                    properties.getProperty(Globals.GENOME_ARCHIVE_ID_KEY));
+                                    properties.getProperty(GENOME_ARCHIVE_ID_KEY));
                     cachedGenomeArchiveList.add(item);
                 } catch (ZipException ex) {
                     log.error("\nZip error unzipping cached genome.", ex);
@@ -1326,7 +1354,7 @@ public class GenomeManager {
             GenomeDescriptor descriptor = parseGenomeArchiveFile(srcGenomeArchive);
 
             File targetGenomeFile = new File(targetDir, srcGenomeArchive.getName());
-            String sequencePath = descriptor.getSequenceLocation();
+            String sequencePath = descriptor.getSequencePath();
 
             boolean seqIsFasta = FastaUtils.isFastaPath(sequencePath);
             if (!seqIsFasta) {
@@ -1404,7 +1432,7 @@ public class GenomeManager {
     }
 
     /**
-     * Rewrite the {@link Globals#GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY} property to equal
+     * Rewrite the {@link GenomeManager#GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY} property to equal
      * the specified {@code newSequencePath}. Works by creating a temp file and renaming
      *
      * @param targetFile A .genome file, in zip format
@@ -1417,7 +1445,7 @@ public class GenomeManager {
         boolean success = false;
 
         File tmpZipFile = File.createTempFile("tmpGenome", ".zip");
-        ZipEntry propEntry = targetZipFile.getEntry(Globals.GENOME_ARCHIVE_PROPERTY_FILE_NAME);
+        ZipEntry propEntry = targetZipFile.getEntry(GENOME_ARCHIVE_PROPERTY_FILE_NAME);
 
         InputStream propertyInputStream = null;
         ZipOutputStream zipOutputStream = null;
@@ -1430,8 +1458,8 @@ public class GenomeManager {
 
             //Copy over property.txt, only replacing a few properties
             inputProperties.load(reader);
-            inputProperties.put(Globals.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY, sequenceFileName);
-            inputProperties.put(Globals.GENOME_ARCHIVE_CUSTOM_SEQUENCE_LOCATION_KEY, Boolean.TRUE.toString());
+            inputProperties.put(GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY, sequenceFileName);
+            inputProperties.put(GENOME_ARCHIVE_CUSTOM_SEQUENCE_LOCATION_KEY, Boolean.TRUE.toString());
 
 
             ByteArrayOutputStream propertyBytes = new ByteArrayOutputStream();
@@ -1448,8 +1476,8 @@ public class GenomeManager {
                 ZipEntry curEntry = entries.nextElement();
                 ZipEntry writeEntry = null;
 
-                if (curEntry.getName().equals(Globals.GENOME_ARCHIVE_PROPERTY_FILE_NAME)) {
-                    writeEntry = new ZipEntry(Globals.GENOME_ARCHIVE_PROPERTY_FILE_NAME);
+                if (curEntry.getName().equals(GENOME_ARCHIVE_PROPERTY_FILE_NAME)) {
+                    writeEntry = new ZipEntry(GENOME_ARCHIVE_PROPERTY_FILE_NAME);
                     writeEntry.setSize(newPropertyBytes.length);
                     zipOutputStream.putNextEntry(writeEntry);
                     zipOutputStream.write(newPropertyBytes);
@@ -1672,8 +1700,8 @@ public class GenomeManager {
             if (!HttpUtils.isRemoteURL(loc)) {
                 File genFile = new File(loc);
                 GenomeDescriptor descriptor = parseGenomeArchiveFile(genFile);
-                if (!HttpUtils.isRemoteURL(descriptor.getSequenceLocation())) {
-                    File seqFile = new File(descriptor.getSequenceLocation());
+                if (!HttpUtils.isRemoteURL(descriptor.getSequencePath())) {
+                    File seqFile = new File(descriptor.getSequencePath());
                     seqFile.delete();
                     File indexFile = new File(seqFile.getAbsolutePath() + ".fai");
                     indexFile.delete();

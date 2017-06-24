@@ -429,7 +429,6 @@ public class ReferenceFrame {
             this.initialLocus = locus;
             this.chrName = chr;
             if (start >= 0 && end >= 0) {
-                log.info("this.origin = " + start);
                 this.origin = start;
                 beforeScaleZoom(locus);
                 computeLocationScale();

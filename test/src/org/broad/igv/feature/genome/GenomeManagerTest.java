@@ -188,7 +188,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         File tmpOut = new File(TestUtils.TMP_OUTPUT_DIR + "t2.genome");
         FileUtils.copyFile(outGenomeFile, tmpOut);
         GenomeDescriptor descriptor = GenomeManager.parseGenomeArchiveFile(tmpOut);
-        assertEquals(fastaFile.getAbsolutePath(), descriptor.getSequenceLocation());
+        assertEquals(fastaFile.getAbsolutePath(), descriptor.getSequencePath());
         assertTrue(descriptor.hasCustomSequenceLocation());
 
         String remSequencePath = "http://igvdata.broadinstitute.org/genomes/seq/Human_immunodeficiency_virus_1_uid15476/NC_001802.fna";
@@ -213,7 +213,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         assertTrue("Rewrite of .genome failed", success);
         GenomeDescriptor descriptor = GenomeManager.parseGenomeArchiveFile(newGenomeFile);
 
-        assertEquals(newSeqLocation, descriptor.getSequenceLocation());
+        assertEquals(newSeqLocation, descriptor.getSequencePath());
         assertTrue(descriptor.hasCustomSequenceLocation());
     }
 
@@ -247,7 +247,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         GenomeDescriptor updatedDescriptor = GenomeManager.parseGenomeArchiveFile(updatedFile);
 
         GenomeDescriptor cachedDescriptor = GenomeManager.parseGenomeArchiveFile(cachedFile);
-        String targetSeqLocation = cachedDescriptor.getSequenceLocation();
+        String targetSeqLocation = cachedDescriptor.getSequencePath();
         assert (cachedDescriptor.hasCustomSequenceLocation());
 
         //TODO We could point to github instead of the Broad, only real benefit is if we ever change
@@ -260,7 +260,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         GenomeManager.getInstance().refreshCache(cachedFile, remURL);
 
         GenomeDescriptor newDescriptor = GenomeManager.parseGenomeArchiveFile(cachedFile);
-        assertEquals(targetSeqLocation, newDescriptor.getSequenceLocation());
+        assertEquals(targetSeqLocation, newDescriptor.getSequencePath());
         assertTrue(newDescriptor.hasCustomSequenceLocation());
 
         assertEquals(updatedDescriptor.getName(), newDescriptor.getName());
