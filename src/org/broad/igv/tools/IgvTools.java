@@ -40,7 +40,7 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.FeatureFileUtils;
 import org.broad.igv.feature.GFFParser;
 import org.broad.igv.feature.Mutation;
-import org.broad.igv.feature.genome.FastaUtils;
+import org.broad.igv.feature.genome.fasta.FastaUtils;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeDescriptor;
 import org.broad.igv.feature.genome.GenomeManager;

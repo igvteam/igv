@@ -23,7 +23,10 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.feature.genome;
+package org.broad.igv.feature.genome.fasta;
+
+import org.broad.igv.feature.genome.ChromosomeNameComparator;
+import org.broad.igv.feature.genome.Sequence;
 
 import java.io.IOException;
 import java.util.*;

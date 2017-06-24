@@ -41,6 +41,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * Created by jrobinso on 5/25/16.
@@ -56,20 +57,65 @@ public class IGVReferenceSourceTest {
     @Test
     public void testGetReferenceBases() throws Exception {
 
-        String genomeURL = "http://igv.broadinstitute.org/genomes/hg19.genome";
-        Genome genome = GenomeManager.getInstance().loadGenome(genomeURL, null);
+        String fastaURL = "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa";
 
-        assertEquals("chrUn_gl000229", genome.getCanonicalChrName("GL000229.1"));
-        assertEquals("chr14", genome.getCanonicalChrName("14"));
+        GenomeManager.getInstance().loadGenome(fastaURL, null);
 
         IGVReferenceSource refSource = new IGVReferenceSource();
-        SAMSequenceRecord rec = new SAMSequenceRecord("22", 51304566);
-        byte[] bases = refSource.getReferenceBases(rec, true);
+        SAMSequenceRecord rec = new SAMSequenceRecord("22", 50818468);
+        byte[] bases = refSource.getReferenceBases(rec, false);
 
-        assertEquals(51304566, bases.length);
+        assertEquals(50818468, bases.length);
 
         assertEquals('N', bases[0]);
-        assertEquals('A', bases[27198882]);
+        assertEquals('G', bases[27198882]);
     }
 
+
+    @Test
+    public void testGetReferenceBasesCompressed() throws Exception {
+
+        String fastaURL = "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa.gz";
+
+        GenomeManager.getInstance().loadGenome(fastaURL, null);
+
+        IGVReferenceSource refSource = new IGVReferenceSource();
+        SAMSequenceRecord rec = new SAMSequenceRecord("22", 50818468);
+        byte[] bases = refSource.getReferenceBases(rec, false);
+
+        assertEquals(50818468, bases.length);
+
+        assertEquals('N', bases[0]);
+        assertEquals('G', bases[27198882]);
+    }
+
+//    @Test
+//    public void testCompressedTiming() throws Exception {
+//
+//        String fastaURL = "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa";
+//        GenomeManager.getInstance().loadGenome(fastaURL, null);
+//        IGVReferenceSource refSource = new IGVReferenceSource();
+//        SAMSequenceRecord rec = new SAMSequenceRecord("1", 248956422);
+//
+//        long t = System.currentTimeMillis();
+//        byte[] bases = refSource.getReferenceBases(rec, false);
+//        assertEquals(248956422, bases.length);
+//        long dt = System.currentTimeMillis() - t;
+//
+//
+//        fastaURL = "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa.gz";
+//        GenomeManager.getInstance().loadGenome(fastaURL, null);
+//        refSource = new IGVReferenceSource();
+//        rec = new SAMSequenceRecord("1", 248956422);
+//
+//        long t1 = System.currentTimeMillis();
+//        bases = refSource.getReferenceBases(rec, false);
+//        assertEquals(248956422, bases.length);
+//        long dt1 = System.currentTimeMillis() - t1;
+//
+//        System.out.println(dt + "    " + dt1);
+//
+//        assertTrue(dt1 < dt);
+//
+//    }
 }

@@ -28,6 +28,7 @@ package org.broad.igv.feature.genome;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.Cytoband;
+import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.IOException;

@@ -30,7 +30,7 @@ import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.ChromosomeNameComparator;
-import org.broad.igv.feature.genome.FastaIndexedSequence;
+import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
 import org.broad.igv.sam.PicardAlignment;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;

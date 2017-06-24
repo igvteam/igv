@@ -31,6 +31,7 @@ package org.broad.igv.feature.genome;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.feature.genome.fasta.FastaUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 

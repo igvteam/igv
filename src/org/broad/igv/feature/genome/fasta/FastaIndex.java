@@ -23,10 +23,11 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.feature.genome;
+package org.broad.igv.feature.genome.fasta;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.feature.genome.GenomeImporter;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;
@@ -125,7 +126,7 @@ public class FastaIndex {
     /**
      * Hold an individual entry in a fasta sequence index file.
      */
-    static class FastaSequenceIndexEntry {
+    public static class FastaSequenceIndexEntry {
         private String contig;
         private long position;
         private long size;

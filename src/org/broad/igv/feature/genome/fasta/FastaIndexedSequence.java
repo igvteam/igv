@@ -23,10 +23,12 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.feature.genome;
+package org.broad.igv.feature.genome.fasta;
 
+import htsjdk.samtools.seekablestream.SeekableBufferedStream;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.genome.Sequence;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
@@ -58,14 +60,8 @@ public class FastaIndexedSequence implements Sequence {
 
         String indexPath = path + ".fai";
 
-// The check below is not useful in the files have been copied or moved, which is always the case for our hosted
-// genomes.   It causes lots of spurious warnings
-//        if(ParsingUtils.getLastModified(path) > ParsingUtils.getLastModified(indexPath)){
-//            log.warn("Index file for " + path + " is older than the file it indexes");
-//        }
-
         index = new FastaIndex(indexPath);
-        chromoNamesList = new ArrayList<String>(index.getSequenceNames());
+        chromoNamesList = new ArrayList<>(index.getSequenceNames());
     }
 
 
@@ -95,6 +91,7 @@ public class FastaIndexedSequence implements Sequence {
     public byte[] getSequence(String chr, int qstart, int qend, boolean useCache) {
 
         FastaIndex.FastaSequenceIndexEntry idxEntry = index.getIndexEntry(chr);
+
         if (idxEntry == null) {
             return null;
         }
@@ -119,7 +116,7 @@ public class FastaIndexedSequence implements Sequence {
 
             int base1 = endLine * basesPerLine;
             int offset1 = end - base1;
-            long endByte = Math.min(contentLength, position + endLine * bytesPerLine + offset1);
+            long endByte = position + endLine * bytesPerLine + offset1;
 
             if (startByte >= endByte) {
                 return null;
@@ -132,23 +129,20 @@ public class FastaIndexedSequence implements Sequence {
             ByteArrayOutputStream bos = new ByteArrayOutputStream(end - start);
 
             int srcPos = 0;
-            int desPos = 0;
+
             // Copy first line
             final int allBytesLength = allBytes.length;
             if (offset > 0) {
                 int nBases = Math.min(end - start, basesPerLine - offset);
                 bos.write(allBytes, srcPos, nBases);
                 srcPos += (nBases + nEndBytes);
-                desPos += nBases;
             }
 
             while (srcPos < allBytesLength) {
                 int nBases = Math.min(basesPerLine, allBytesLength - srcPos);
                 bos.write(allBytes, srcPos, nBases);
                 srcPos += (nBases + nEndBytes);
-                desPos += nBases;
             }
-
 
             return bos.toByteArray();
 
@@ -171,11 +165,11 @@ public class FastaIndexedSequence implements Sequence {
      *
      * @throws IOException
      */
-    private byte[] readBytes(long posStart, long posEnd) throws IOException {
+    protected byte[] readBytes(long posStart, long posEnd) throws IOException {
 
         SeekableStream ss = null;
         try {
-            ss = IGVSeekableStreamFactory.getInstance().getStreamFor(path);
+            ss =  IGVSeekableStreamFactory.getInstance().getStreamFor(path);
             int nBytes = (int) (posEnd - posStart);
             byte[] bytes = new byte[nBytes];
             ss.seek(posStart);
@@ -197,4 +191,6 @@ public class FastaIndexedSequence implements Sequence {
     public int getChromosomeLength(String chrname) {
         return index.getSequenceSize(chrname);
     }
+
+
 }

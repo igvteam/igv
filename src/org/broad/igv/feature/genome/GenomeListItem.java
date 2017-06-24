@@ -25,6 +25,7 @@
 
 package org.broad.igv.feature.genome;
 
+import org.broad.igv.feature.genome.fasta.FastaUtils;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.File;

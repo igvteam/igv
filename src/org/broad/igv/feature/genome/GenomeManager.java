@@ -39,6 +39,10 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
+import org.broad.igv.feature.genome.fasta.FastaBlockCompressedSequence;
+import org.broad.igv.feature.genome.fasta.FastaDirectorySequence;
+import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
+import org.broad.igv.feature.genome.fasta.FastaUtils;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.*;
@@ -123,8 +127,8 @@ public class GenomeManager {
             PreferencesManager.getPreferences().setDefaultGenome(genome.getId());
         }
         this.currentGenome = genome;
-        if (genome != null && IGV.hasInstance()) {
-            IGV.getInstance().getSession().clearHistory();
+        if (genome != null) {
+            if(IGV.hasInstance()) IGV.getInstance().getSession().clearHistory();
             FrameManager.getDefaultFrame().setChromosomeName(genome.getHomeChromosome(), true);
 
             IGVEventBus.getInstance().post(new GenomeChangeEvent(genome));
@@ -175,7 +179,12 @@ public class GenomeManager {
             } else {
                 // Assume a fasta file
                 if (genomePath.endsWith(Globals.GZIP_FILE_EXTENSION)) {
-                    throw new GenomeException("IGV cannot readed gzipped fasta files.");
+
+                    String gziPath = genomePath+ ".gzi";
+                    String faiPath = genomePath + ".fai";
+                    if(!(FileUtils.resourceExists(gziPath) && FileUtils.resourceExists(faiPath))) {
+                        throw new GenomeException("IGV cannot readed gzipped fasta files.");
+                    }
                 }
                 newGenome = loadFastaFile(genomePath);
             }
@@ -325,7 +334,9 @@ public class GenomeManager {
             throw new IOException(fastaPath + " does not exist, could not load genome");
         }
 
-        FastaIndexedSequence fastaSequence = new FastaIndexedSequence(fastaPath);
+        FastaIndexedSequence fastaSequence = fastaPath.endsWith(".gz") ?
+                new FastaBlockCompressedSequence(fastaPath) :
+                new FastaIndexedSequence(fastaPath);
         Sequence sequence = new SequenceWrapper(fastaSequence);
         newGenome = new Genome(item.getId(), item.getDisplayableName(), sequence, true);
         setCurrentGenome(newGenome);
@@ -428,8 +439,14 @@ public class GenomeManager {
             FastaDirectorySequence fastaDirectorySequence = new FastaDirectorySequence(sequencePath, fastaFiles);
             sequence = new SequenceWrapper(fastaDirectorySequence);
         } else {
-            FastaIndexedSequence fastaSequence = new FastaIndexedSequence(sequencePath);
-            sequence = new SequenceWrapper(fastaSequence);
+
+            if(sequencePath.endsWith(".gz")) {
+                FastaBlockCompressedSequence fastaSequence = new FastaBlockCompressedSequence(sequencePath);
+                sequence = new SequenceWrapper(fastaSequence);
+            } else {
+                FastaIndexedSequence fastaSequence = new FastaIndexedSequence(sequencePath);
+                sequence = new SequenceWrapper(fastaSequence);
+            }
             chromosOrdered = true;
         }
 

@@ -579,8 +579,31 @@ public class FeatureFileUtils {
     }
 
 
+    // Create a locus search database import script from a refGene file
+
+    static void createImports(String inputFile, String outputFile, String genome, String source, String table) throws IOException {
+
+        BufferedReader br = new BufferedReader(new FileReader(inputFile));
+        PrintWriter pw = new PrintWriter(new FileWriter(outputFile));
+
+        String nextLine;
+        while ((nextLine = br.readLine()) != null) {
+            String[] tokens = nextLine.split("\t");
+//-f3,5,6,13
+            pw.println("INSERT INTO " + table + "(GENOME, CHR, LOCUSSTART, LOCUSEND, NAME, SOURCE) VALUES(" +
+                    "'" + genome + "', '" + tokens[2] + "', " + tokens[4] + ", " + tokens[5] + ", '" + tokens[12] + "', '" + source + "');");
+        }
+
+        br.close();
+        pw.close();
+
+    }
+
+
+
+
     public static void main(String[] args) throws IOException {
-        refgeneToBed(args[0], args[1]);
+        createImports(args[0], args[1], args[2], args[3], args[4]);
     }
 
 }

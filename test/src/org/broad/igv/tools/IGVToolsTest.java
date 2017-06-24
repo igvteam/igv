@@ -29,7 +29,7 @@ import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.data.Dataset;
 import org.broad.igv.data.expression.ExpressionFileParser;
 import org.broad.igv.feature.FeatureDB;
-import org.broad.igv.feature.genome.FastaIndex;
+import org.broad.igv.feature.genome.fasta.FastaIndex;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.reader.AlignmentReader;
