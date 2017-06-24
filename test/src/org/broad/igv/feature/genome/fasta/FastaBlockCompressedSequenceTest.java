@@ -13,7 +13,7 @@ public class FastaBlockCompressedSequenceTest {
     @Test
     public void findBlockContaining() throws Exception {
 
-        String fasta = "/Users/jrobinso/Downloads/hg38/hg38.fa.gz";
+        String fasta = "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa.gz";
 
         FastaBlockCompressedSequence seq = new FastaBlockCompressedSequence(fasta);
 
