@@ -1659,21 +1659,31 @@ public class GenomeManager {
         Collection<GenomeListItem> userDefinedGenomes = getUserDefinedGenomeArchiveList();
         for (GenomeListItem item : removedValuesList) {
             if (userDefinedGenomes.contains(item)) {
-                continue;
-            }
-
-            String loc = item.getLocation();
-            if (!HttpUtils.isRemoteURL(loc)) {
-                File genFile = new File(loc);
-                GenomeDescriptor descriptor = parseGenomeArchiveFile(genFile);
-                if (!HttpUtils.isRemoteURL(descriptor.getSequencePath())) {
-                    File seqFile = new File(descriptor.getSequencePath());
-                    seqFile.delete();
-                    File indexFile = new File(seqFile.getAbsolutePath() + ".fai");
-                    indexFile.delete();
+                removeGenomeListItem(item);
+            } else {
+                String loc = item.getLocation();
+                if (!HttpUtils.isRemoteURL(loc)) {
+                    File genFile = new File(loc);
+                    GenomeDescriptor descriptor = parseGenomeArchiveFile(genFile);
+                    if (!HttpUtils.isRemoteURL(descriptor.getSequencePath())) {
+                        File seqFile = new File(descriptor.getSequencePath());
+                        seqFile.delete();
+                        File indexFile = new File(seqFile.getAbsolutePath() + ".fai");
+                        indexFile.delete();
+                    }
+                    genFile.delete();
                 }
-                genFile.delete();
             }
+        }
+    }
+
+    public void removeGenomeListItem(GenomeListItem genomeListItem) {
+
+        genomeItemMap.remove(genomeListItem.getId());
+
+        if (userDefinedGenomeArchiveList != null && userDefinedGenomeArchiveList.contains(genomeListItem)) {
+            userDefinedGenomeArchiveList.remove(genomeListItem);
+            GenomeManager.getInstance().updateImportedGenomePropertyFile();
         }
     }
 }
