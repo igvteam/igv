@@ -838,8 +838,13 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
     }
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        IGV.getInstance().doRefresh();
+
+        IGVEventBus.getInstance().post(new org.broad.igv.event.RefreshEvent());
+        if(IGV.hasInstance()) {
+            IGV.getInstance().doRefresh();
+        }
         System.gc();
+
     }
 
     private void chromosomeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
