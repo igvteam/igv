@@ -162,7 +162,7 @@ public class ManageGenomesDialog extends JDialog {
         label1 = new JTextArea();
         contentPanel = new JPanel();
         scrollPane1 = new JScrollPane();
-        genomeList = new JList7<GenomeListItem>();
+        genomeList = new JList7<>();
         label2 = new JLabel();
         panel1 = new JPanel();
         addRemBar = new JPanel();
@@ -242,23 +242,13 @@ public class ManageGenomesDialog extends JDialog {
 
                     //---- addButton ----
                     addButton.setText("Add From Server");
-                    addButton.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            addButtonActionPerformed(e);
-                        }
-                    });
+                    addButton.addActionListener(e -> addButtonActionPerformed(e));
                     addRemBar.add(addButton);
 
                     //---- removeButton ----
                     removeButton.setText("Remove");
                     removeButton.setToolTipText("Remove selected genomes from list");
-                    removeButton.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            removeButtonActionPerformed(e);
-                        }
-                    });
+                    removeButton.addActionListener(e -> removeButtonActionPerformed(e));
                     addRemBar.add(removeButton);
                 }
                 panel1.add(addRemBar);
@@ -275,12 +265,7 @@ public class ManageGenomesDialog extends JDialog {
                     okButton.setMaximumSize(new Dimension(93, 29));
                     okButton.setMinimumSize(new Dimension(93, 29));
                     okButton.setPreferredSize(new Dimension(93, 29));
-                    okButton.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            saveButtonActionPerformed(e);
-                        }
-                    });
+                    okButton.addActionListener(e -> saveButtonActionPerformed(e));
                     buttonBar.add(okButton);
 
                     //---- cancelButton ----
@@ -288,12 +273,7 @@ public class ManageGenomesDialog extends JDialog {
                     cancelButton.setMinimumSize(new Dimension(93, 29));
                     cancelButton.setPreferredSize(new Dimension(93, 29));
                     cancelButton.setMaximumSize(new Dimension(93, 29));
-                    cancelButton.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            cancelButtonActionPerformed(e);
-                        }
-                    });
+                    cancelButton.addActionListener(e -> cancelButtonActionPerformed(e));
                     buttonBar.add(cancelButton);
                 }
                 panel1.add(buttonBar);

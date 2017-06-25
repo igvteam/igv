@@ -74,17 +74,17 @@ import java.util.zip.*;
  */
 public class GenomeManager {
 
-    final  static String GENOME_ARCHIVE_VERSION_KEY = "version";
-    final  static String GENOME_ARCHIVE_PROPERTY_FILE_NAME = "property.txt";
-    final  static String GENOME_ARCHIVE_ID_KEY = "id";
-    final  static String GENOME_ARCHIVE_NAME_KEY = "name";
-    final  static String GENOME_ORDERED_KEY = "ordered";
-    final  static String GENOME_GENETRACK_NAME = "geneTrackName";
-    final  static String GENOME_URL_KEY = "url";
-    final  static String GENOME_ARCHIVE_CYTOBAND_FILE_KEY = "cytobandFile";
-    final  static String GENOME_ARCHIVE_GENE_FILE_KEY = "geneFile";
-    final  static String GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY = "sequenceLocation";
-    final  static String COMPRESSED_SEQUENCE_PATH = "compressedSequencePath";
+    final static String GENOME_ARCHIVE_VERSION_KEY = "version";
+    final static String GENOME_ARCHIVE_PROPERTY_FILE_NAME = "property.txt";
+    final static String GENOME_ARCHIVE_ID_KEY = "id";
+    final static String GENOME_ARCHIVE_NAME_KEY = "name";
+    final static String GENOME_ORDERED_KEY = "ordered";
+    final static String GENOME_GENETRACK_NAME = "geneTrackName";
+    final static String GENOME_URL_KEY = "url";
+    final static String GENOME_ARCHIVE_CYTOBAND_FILE_KEY = "cytobandFile";
+    final static String GENOME_ARCHIVE_GENE_FILE_KEY = "geneFile";
+    final static String GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY = "sequenceLocation";
+    final static String COMPRESSED_SEQUENCE_PATH = "compressedSequencePath";
 
     /**
      * Whether the sequenceLocation has been modified from the version of the .genome
@@ -198,9 +198,9 @@ public class GenomeManager {
                 // Assume a fasta file
                 if (genomePath.endsWith(Globals.GZIP_FILE_EXTENSION)) {
 
-                    String gziPath = genomePath+ ".gzi";
+                    String gziPath = genomePath + ".gzi";
                     String faiPath = genomePath + ".fai";
-                    if(!(FileUtils.resourceExists(gziPath) && FileUtils.resourceExists(faiPath))) {
+                    if (!(FileUtils.resourceExists(gziPath) && FileUtils.resourceExists(faiPath))) {
                         throw new GenomeException("IGV cannot readed gzipped fasta files.");
                     }
                 }
@@ -459,7 +459,7 @@ public class GenomeManager {
             sequence = new SequenceWrapper(fastaDirectorySequence);
         } else {
 
-            if(sequencePath.endsWith(".gz")) {
+            if (sequencePath.endsWith(".gz")) {
                 FastaBlockCompressedSequence fastaSequence = new FastaBlockCompressedSequence(sequencePath);
                 sequence = new SequenceWrapper(fastaSequence);
             } else {
@@ -1693,20 +1693,20 @@ public class GenomeManager {
         Collection<GenomeListItem> userDefinedGenomes = getUserDefinedGenomeArchiveList();
         for (GenomeListItem item : removedValuesList) {
             if (userDefinedGenomes.contains(item)) {
-                continue;
-            }
-
-            String loc = item.getLocation();
-            if (!HttpUtils.isRemoteURL(loc)) {
-                File genFile = new File(loc);
-                GenomeDescriptor descriptor = parseGenomeArchiveFile(genFile);
-                if (!HttpUtils.isRemoteURL(descriptor.getSequencePath())) {
-                    File seqFile = new File(descriptor.getSequencePath());
-                    seqFile.delete();
-                    File indexFile = new File(seqFile.getAbsolutePath() + ".fai");
-                    indexFile.delete();
+                removeGenomeListItem(item);
+            } else {
+                String loc = item.getLocation();
+                if (!HttpUtils.isRemoteURL(loc)) {
+                    File genFile = new File(loc);
+                    GenomeDescriptor descriptor = parseGenomeArchiveFile(genFile);
+                    if (!HttpUtils.isRemoteURL(descriptor.getSequencePath())) {
+                        File seqFile = new File(descriptor.getSequencePath());
+                        seqFile.delete();
+                        File indexFile = new File(seqFile.getAbsolutePath() + ".fai");
+                        indexFile.delete();
+                    }
+                    genFile.delete();
                 }
-                genFile.delete();
             }
         }
     }
