@@ -68,7 +68,7 @@ public class AlignmentRenderer implements FeatureRenderer {
     private static Color deletionColor = Color.black;
     private static Color skippedColor = new Color(150, 184, 200);
     private static Color unknownGapColor = new Color(0, 150, 0);
-    public static Color grey1 = new Color(200, 200, 200);
+    public static Color DEFAULT_ALIGNMENT_COLOR = new Color(200, 200, 200);
 
     private static Stroke thickStroke = new BasicStroke(2.0f);
 
@@ -84,7 +84,7 @@ public class AlignmentRenderer implements FeatureRenderer {
     private ColorTable sampleColors;
     private ColorTable tagValueColors;
 
-    private final Color LR_COLOR = grey1; // "Normal" alignment color
+    private final Color LR_COLOR = DEFAULT_ALIGNMENT_COLOR; // "Normal" alignment color
     //private final Color LR_COLOR_12 = new Color(190, 190, 210);
     //private final Color LR_COLOR_21 = new Color(210, 190, 190);
     private final Color RL_COLOR = new Color(0, 150, 0);
@@ -266,7 +266,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         typeToColorMap.put(AlignmentTrack.OrientationType.LR, LR_COLOR);
         typeToColorMap.put(AlignmentTrack.OrientationType.RL, RL_COLOR);
         typeToColorMap.put(AlignmentTrack.OrientationType.RR, RR_COLOR);
-        typeToColorMap.put(null, grey1);
+        typeToColorMap.put(null, DEFAULT_ALIGNMENT_COLOR);
     }
 
     /**
@@ -315,7 +315,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
                     // Optimization for really zoomed out views.  If this alignment occupies screen space already taken,
                     // and it is the default color, skip drawing.
-                    if (pixelEnd <= lastPixelDrawn && alignmentColor == grey1) {
+                    if (pixelEnd <= lastPixelDrawn && alignmentColor == DEFAULT_ALIGNMENT_COLOR) {
                         continue;
                     }
 
@@ -471,7 +471,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             return;
         }
 
-        Color lineColor = grey1;
+        Color lineColor = DEFAULT_ALIGNMENT_COLOR;
 
         if (alignmentColor1.equals(alignmentColor2) || pair.secondAlignment == null) {
             lineColor = alignmentColor1;
@@ -1049,7 +1049,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         Color color = alignment.getColor();
         if (color != null) return color;   // Color has been explicitly set
 
-        Color c = alignment.isSupplementary() ? Color.darkGray : grey1;
+        Color c = alignment.isSupplementary() ? Color.darkGray : DEFAULT_ALIGNMENT_COLOR;
 
         ColorOption colorOption = renderOptions.getColorOption();
         switch (colorOption) {
@@ -1158,7 +1158,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 //                }
 
         }
-        if (c == null) c = grey1;
+        if (c == null) c = DEFAULT_ALIGNMENT_COLOR;
 
         if (alignment.getMappingQuality() == 0 && renderOptions.flagZeroQualityAlignments) {
             // Maping Q = 0
@@ -1237,7 +1237,7 @@ public class AlignmentRenderer implements FeatureRenderer {
      */
     private static Color getColorRelDistance(PairedAlignment pair) {
         if (pair.secondAlignment == null) {
-            return grey1;
+            return DEFAULT_ALIGNMENT_COLOR;
         }
 
         int dist = Math.abs(pair.getInferredInsertSize());
@@ -1260,7 +1260,7 @@ public class AlignmentRenderer implements FeatureRenderer {
     private Color getOrientationColor(Alignment alignment, PEStats peStats) {
         AlignmentTrack.OrientationType type = getOrientationType(alignment, peStats);
         Color c = typeToColorMap.get(type);
-        return c == null ? grey1 : c;
+        return c == null ? DEFAULT_ALIGNMENT_COLOR : c;
 
     }
 
@@ -1316,7 +1316,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             return tagValueColors.get(pairOrientation);
         }
 
-        return c == null ? grey1 : c;
+        return c == null ? DEFAULT_ALIGNMENT_COLOR : c;
 
     }
 

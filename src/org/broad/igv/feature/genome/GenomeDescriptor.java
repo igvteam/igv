@@ -43,7 +43,6 @@ import java.io.InputStream;
 public abstract class GenomeDescriptor {
 
     private String name;
-    //private int version;
     private boolean chrNamesAltered;
     private String id;
     protected String cytoBandFileName;
@@ -51,8 +50,9 @@ public abstract class GenomeDescriptor {
     protected String chrAliasFileName;
     private String geneTrackName;
     private String url;
-    private String sequenceLocation;
-    private boolean hasCustomSequenceLocation;
+    private String sequencePath;
+    private String compressedSequencePath;
+    private boolean hasCustomSequencePath;
     private boolean chromosomesAreOrdered = false;
     private boolean fasta = false;
     private boolean fastaDirectory = false;
@@ -65,8 +65,9 @@ public abstract class GenomeDescriptor {
                             String geneFileName,
                             String chrAliasFileName,
                             String geneTrackName,
-                            String sequenceLocation,
-                            boolean hasCustomSequenceLocation,
+                            String sequencePath,
+                            boolean hasCustomSequencePath,
+                            String compressedSequencePath,
                             boolean chromosomesAreOrdered,
                             boolean fasta,
                             boolean fastaDirectory,
@@ -78,8 +79,9 @@ public abstract class GenomeDescriptor {
         this.geneFileName = geneFileName;
         this.chrAliasFileName = chrAliasFileName;
         this.geneTrackName = geneTrackName;
-        this.sequenceLocation = sequenceLocation;
-        this.hasCustomSequenceLocation = hasCustomSequenceLocation;
+        this.sequencePath = sequencePath;
+        this.hasCustomSequencePath = hasCustomSequencePath;
+        this.compressedSequencePath = compressedSequencePath;
         this.chromosomesAreOrdered = chromosomesAreOrdered;
         this.fasta = fasta;
         this.fastaDirectory = fastaDirectory;
@@ -89,11 +91,11 @@ public abstract class GenomeDescriptor {
         }
 
         // Fix for legacy .genome files
-        if (sequenceLocation != null && sequenceLocation.startsWith("/")) {
-            if (!(new File(sequenceLocation)).exists()) {
-                String tryThis = sequenceLocation.replaceFirst("/", "");
+        if (sequencePath != null && sequencePath.startsWith("/")) {
+            if (!(new File(sequencePath)).exists()) {
+                String tryThis = sequencePath.replaceFirst("/", "");
                 if ((new File(tryThis)).exists()) {
-                    this.sequenceLocation = tryThis;
+                    this.sequencePath = tryThis;
                 }
             }
         }
@@ -127,17 +129,8 @@ public abstract class GenomeDescriptor {
 
     public abstract InputStream getChrAliasStream() throws IOException;
 
-    /**
-     * Setter provided vor unit tests.
-     *
-     * @param sequenceLocation
-     */
-    public void setSequenceLocation(String sequenceLocation) {
-        this.sequenceLocation = sequenceLocation;
-    }
-
-    public String getSequenceLocation() {
-        return sequenceLocation;
+    public String getSequencePath() {
+        return compressedSequencePath == null ? sequencePath : compressedSequencePath;
     }
 
     @Override
@@ -145,27 +138,10 @@ public abstract class GenomeDescriptor {
         return name;
     }
 
-    private boolean isFileGZipFormat(String fileName) {
-
-        if (fileName == null) {
-            return false;
-        }
-
-        if (fileName.toLowerCase().endsWith(".gz")) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-
     public boolean isChromosomesAreOrdered() {
         return chromosomesAreOrdered;
     }
-
-    public boolean isChrNamesAltered() {
-        return chrNamesAltered;
-    }
+    
 
     public String getUrl() {
         return url;
@@ -186,6 +162,6 @@ public abstract class GenomeDescriptor {
     public abstract void close();
 
     public boolean hasCustomSequenceLocation() {
-        return hasCustomSequenceLocation;
+        return hasCustomSequencePath;
     }
 }

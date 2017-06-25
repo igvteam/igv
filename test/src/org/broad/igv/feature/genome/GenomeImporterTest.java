@@ -89,7 +89,7 @@ public class GenomeImporterTest extends AbstractHeadlessTest {
         assertEquals(cytobandFile.getName(), descriptor.cytoBandFileName);
         assertEquals(geneAnnotFile.getName(), descriptor.getGeneFileName());
         assertEquals(chrAliasFile.getName(), descriptor.chrAliasFileName);
-        assertEquals(fastaFile.getAbsolutePath(), descriptor.getSequenceLocation());
+        assertEquals(fastaFile.getAbsolutePath(), descriptor.getSequencePath());
 
         assertTrue(descriptor.hasCytobands());
         assertTrue(descriptor.isChromosomesAreOrdered());

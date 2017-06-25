@@ -138,7 +138,7 @@ public class GenomeListItem {
 
         try {
             GenomeDescriptor descriptor = GenomeManager.parseGenomeArchiveFile(new File(this.location));
-            return descriptor.hasCustomSequenceLocation() && !HttpUtils.isRemoteURL(descriptor.getSequenceLocation());
+            return descriptor.hasCustomSequenceLocation() && !HttpUtils.isRemoteURL(descriptor.getSequencePath());
         } catch (ZipException e) {
             return false;
         }
