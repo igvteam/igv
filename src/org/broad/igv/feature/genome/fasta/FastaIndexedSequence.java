@@ -29,6 +29,8 @@ import htsjdk.samtools.seekablestream.SeekableBufferedStream;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Sequence;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
@@ -190,6 +192,11 @@ public class FastaIndexedSequence implements Sequence {
     @Override
     public int getChromosomeLength(String chrname) {
         return index.getSequenceSize(chrname);
+    }
+
+    @Override
+    public boolean isRemote() {
+        return FileUtils.isRemote(path);
     }
 
 

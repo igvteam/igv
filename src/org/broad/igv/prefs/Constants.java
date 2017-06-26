@@ -52,6 +52,9 @@ final public class Constants {
     public static final String EXTVIEW_URL = "EXTVIEW_URL";
     public static final String DATA_SERVER_URL_KEY = "MASTER_RESOURCE_FILE_KEY";
 
+    public static final String CRAM_CACHE_SEQUENCES = "CRAM.CACHE_SEQUENCES";
+    public static final String CRAM_CACHE_DIRECTORY = "CRAM.CACHE_DIRECTORY";
+
     // Search ("go to") options
     public static final String SEARCH_ZOOM = "SEARCH_ZOOM";
     public static final String FLANKING_REGION = "FLANKING_REGION";
@@ -125,7 +128,6 @@ final public class Constants {
     public static final String SAM_GROUP_BY_POS = "SAM.GROUP_BY_POS";
     public static final String SAM_BISULFITE_CONTEXT = "SAM.BISULFITE_CONTEXT";
     public static final String SAM_FILTER_FAILED_READS = "SAM.FILTER_FAILED_READS";
-
     public static final String SAM_FLAG_ZERO_QUALITY = "SAM.FLAG_ZERO_QUALITY";
     public static final String SAM_SHOW_JUNCTION_TRACK = "SAM.SHOW_JUNCTION_TRACK";
     public static final String SAM_JUNCTION_MIN_FLANKING_WIDTH = "SAM.JUNCTION_MIN_FLANKING_WIDTH";
@@ -136,16 +138,6 @@ final public class Constants {
     public static final String SAM_COUNT_DELETED_BASES_COVERED = "SAM.COUNT_DELETED_BASES_COVERED";
     public static final String SAM_FLAG_LARGE_INDELS = "SAM.FLAG_LARGE_INDELS";
     public static final String SAM_LARGE_INDELS_THRESHOLD = "SAM.LARGE_INSERTIONS_THRESOLD";
-    /**
-     * List of keys that do not affect the alignments loaded but do affect how those
-     * alignments are drawn.  A refresh is softer than a reload.
-     */
-    static java.util.List<String> SAM_REFRESH_KEYS = Arrays.asList(
-            SAM_QUICK_CONSENSUS_MODE,
-            SAM_ALLELE_THRESHOLD,
-            SAM_FLAG_LARGE_INDELS,
-            SAM_LARGE_INDELS_THRESHOLD
-    );
     public static final String SAM_FLAG_CLIPPING = "SAM.FLAG_CLIPPING";
     public static final String SAM_CLIPPING_THRESHOLD = "SAM.CLIPPING_THRESHOLD";
     public static final String SAM_SHOW_GROUP_SEPARATOR = "SAM.SHOW_GROUP_SEPARATOR";
@@ -253,5 +245,37 @@ final public class Constants {
 
     // Letter of support dialog
     public static final String SHOW_LOS = "showLOS";
+
+    /**
+     * List of keys that affect the alignments loaded.  This list is used to trigger a reload, if required.
+     * Not all alignment preferences need trigger a reload, this is a subset.
+     */
+    static java.util.List<String> SAM_RELOAD_KEYS = Arrays.asList(
+            SAM_QUALITY_THRESHOLD,
+            SAM_FILTER_ALIGNMENTS,
+            SAM_FILTER_URL,
+            SAM_MAX_VISIBLE_RANGE,
+            SAM_SHOW_DUPLICATES,
+            SAM_SHOW_SOFT_CLIPPED,
+            SAM_SAMPLING_COUNT,
+            SAM_SAMPLING_WINDOW,
+            SAM_FILTER_FAILED_READS,
+            SAM_DOWNSAMPLE_READS,
+            SAM_FILTER_SECONDARY_ALIGNMENTS,
+            SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS,
+            SAM_JUNCTION_MIN_FLANKING_WIDTH,
+            SAM_JUNCTION_MIN_COVERAGE
+    );
+
+    /**
+     * List of keys that do not affect the alignments loaded but do affect how those
+     * alignments are drawn.  A refresh is softer than a reload.
+     */
+    static java.util.List<String> SAM_REFRESH_KEYS = Arrays.asList(
+            SAM_QUICK_CONSENSUS_MODE,
+            SAM_ALLELE_THRESHOLD,
+            SAM_FLAG_LARGE_INDELS,
+            SAM_LARGE_INDELS_THRESHOLD
+    );
 
 }

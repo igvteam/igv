@@ -102,6 +102,11 @@ public class SequenceWrapper implements Sequence {
         return true;
     }
 
+    @Override
+    public boolean isRemote() {
+        return sequence.isRemote();
+    }
+
     /**
      * Return the reference dna sequence for the exact interval specified.
      *

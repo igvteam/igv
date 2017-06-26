@@ -135,6 +135,9 @@ SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	TRUE
 SAM.LINK_READS	Link alignments by tag	boolean	FALSE
 SAM.LINK_TAG	Linking tag	string	READNAME
 
+#CRAM
+CRAM.CACHE_SEQUENCES	Cache reference sequences	boolean	TRUE
+
 #Proxy
 PROXY.USE	Use proxy	boolean	FALSE
 PROXY.HOST	Proxy host	string	null

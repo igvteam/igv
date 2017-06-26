@@ -49,7 +49,7 @@ public class FastaDirectorySequence implements Sequence {
     }
 
     private void readIndexes(String directoryPath, String[] fastaFiles) throws IOException {
-        sequenceMap = new LinkedHashMap<String, FastaIndexedSequence>();
+        sequenceMap = new LinkedHashMap<>();
         for (String file : fastaFiles) {
             String fastaPath = directoryPath + "/" + file;
             FastaIndexedSequence fastaSequence = new FastaIndexedSequence(fastaPath);
@@ -58,13 +58,13 @@ public class FastaDirectorySequence implements Sequence {
             }
         }
 
-        chromosomeNames = new ArrayList<String>();
+        chromosomeNames = new ArrayList<>();
         for (FastaIndexedSequence fastaSequence : getFastaSequences()) {
             chromosomeNames.addAll(fastaSequence.getChromosomeNames());
         }
         Collections.sort(chromosomeNames, ChromosomeNameComparator.get());
 
-        chrLengths = new HashMap<String, Integer>(chromosomeNames.size());
+        chrLengths = new HashMap<>(chromosomeNames.size());
         for (FastaIndexedSequence fastaSequence : getFastaSequences()) {
             for (String chr : fastaSequence.getChromosomeNames()) {
                 int length = fastaSequence.getChromosomeLength(chr);
@@ -101,5 +101,15 @@ public class FastaDirectorySequence implements Sequence {
     @Override
     public int getChromosomeLength(String chrname) {
         return chrLengths.get(chrname);
+    }
+
+    @Override
+    public boolean isRemote() {
+
+        for(FastaIndexedSequence seq : sequenceMap.values()) {
+            if(seq.isRemote()) return true;
+        }
+        return false;
+
     }
 }

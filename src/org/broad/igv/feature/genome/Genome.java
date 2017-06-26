@@ -439,6 +439,10 @@ public class Genome {
         return sequence.getSequence(chr, start, end, useCache);
     }
 
+    public boolean sequenceIsRemote() {
+        return sequence.isRemote();
+    }
+
     public String getDisplayName() {
         return displayName;
     }

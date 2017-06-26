@@ -29,6 +29,7 @@ import htsjdk.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.IOException;
@@ -102,6 +103,11 @@ public class IGVSequence implements Sequence {
     @Override
     public int getChromosomeLength(String chrname) {
         return chromosomeLengths.get(chrname);
+    }
+
+    @Override
+    public boolean isRemote() {
+        return FileUtils.isRemote(dirPath);
     }
 
     /**

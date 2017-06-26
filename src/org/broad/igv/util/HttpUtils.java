@@ -117,8 +117,7 @@ public class HttpUtils {
     }
 
     public static boolean isRemoteURL(String string) {
-        String lcString = string.toLowerCase();
-        return lcString.startsWith("http://") || lcString.startsWith("https://") || lcString.startsWith("ftp://");
+        return FileUtils.isRemote(string);
     }
 
     /**

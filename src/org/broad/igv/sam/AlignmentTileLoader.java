@@ -53,7 +53,7 @@ import static org.broad.igv.prefs.Constants.*;
  *
  * @author jrobinso
  */
-public class AlignmentTileLoader implements IGVEventObserver{
+public class AlignmentTileLoader implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(AlignmentTileLoader.class);
 
@@ -151,7 +151,7 @@ public class AlignmentTileLoader implements IGVEventObserver{
             activeLoaders.add(ref);
             IGVEventBus.getInstance().subscribe(StopEvent.class, this);
 
-            if(IGV.hasInstance()) {
+            if (IGV.hasInstance()) {
                 IGV.getInstance().enableStopButton(true);
             }
 
@@ -159,15 +159,16 @@ public class AlignmentTileLoader implements IGVEventObserver{
 
             while (iter != null && iter.hasNext()) {
 
-                if(cancel) {
+                if (cancel) {
                     break;
                 }
 
                 Alignment record = iter.next();
 
-                if(readStats != null) {
+                if (readStats != null) {
                     readStats.addAlignment(record);
-                };
+                }
+                ;
 
                 // Set mate sequence of unmapped mates
                 // Put a limit on the total size of this collection.
@@ -257,7 +258,7 @@ public class AlignmentTileLoader implements IGVEventObserver{
                 }
             }
 
-            if(readStats != null) {
+            if (readStats != null) {
                 readStats.compute();
             }
 
@@ -284,6 +285,9 @@ public class AlignmentTileLoader implements IGVEventObserver{
             MessageUtils.showMessage("<html>Error encountered querying alignments: " + e.toString() +
                     "<br>This is often caused by a corrupt index file.");
 
+        } catch (htsjdk.samtools.cram.CRAMException e) {
+            log.error("Error loading alignment data", e);
+            MessageUtils.showMessage("<html>Error - possible sequence mismatch (wrong reference for this file): " + e.toString());
         } catch (Exception e) {
             log.error("Error loading alignment data", e);
             MessageUtils.showMessage("<html>Error encountered querying alignments: " + e.toString());
@@ -296,7 +300,7 @@ public class AlignmentTileLoader implements IGVEventObserver{
 
             IGVEventBus.getInstance().unsubscribe(this);
 
-            if(activeLoaders.isEmpty() && IGV.hasInstance()) {
+            if (activeLoaders.isEmpty() && IGV.hasInstance()) {
                 IGV.getInstance().enableStopButton(false);
             }
 
@@ -355,7 +359,7 @@ public class AlignmentTileLoader implements IGVEventObserver{
 
     @Override
     public void receiveEvent(Object event) {
-        if(event instanceof StopEvent) {
+        if (event instanceof StopEvent) {
             System.out.println("Canceled");
             cancel = true;
 

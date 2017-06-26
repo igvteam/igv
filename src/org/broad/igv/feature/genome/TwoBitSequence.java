@@ -1,6 +1,7 @@
 package org.broad.igv.feature.genome;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.LittleEndianInputStream;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
@@ -112,5 +113,10 @@ public class TwoBitSequence implements Sequence {
     @Override
     public int getChromosomeLength(String chrname) {
         return 0;
+    }
+
+    @Override
+    public boolean isRemote() {
+        return FileUtils.isRemote(path);
     }
 }

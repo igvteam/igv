@@ -161,6 +161,11 @@ public class GenomeTest extends AbstractHeadlessTest {
         public int getChromosomeLength(String chrname) {
             return index.getSequenceSize(chrname);
         }
+
+        @Override
+        public boolean isRemote() {
+            return false;
+        }
     }
 
     public static void generateJunkIndex() throws Exception {

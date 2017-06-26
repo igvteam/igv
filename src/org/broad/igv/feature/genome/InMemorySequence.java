@@ -85,4 +85,9 @@ public class InMemorySequence implements Sequence {
         byte [] bytes = sequenceMap.get(chrname);
         return bytes == null ? 0 : bytes.length;
     }
+
+    @Override
+    public boolean isRemote() {
+        return false;
+    }
 }

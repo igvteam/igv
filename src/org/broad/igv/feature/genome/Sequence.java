@@ -48,5 +48,6 @@ public interface Sequence {
     default boolean isLoaded(ReferenceFrame frame) {
         return false;
     }
+
+    boolean isRemote();
 }
-                                                                    
