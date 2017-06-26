@@ -247,7 +247,9 @@ public class IGVCommandBar extends javax.swing.JPanel {
                         Genome genome;
 
                         igv.resetSession(null);
-                        genome = igv.getGenomeManager().loadGenome(genomeListItem.getLocation(), null);
+
+                        igv.getGenomeManager().checkCacheForId(genomeListItem.getId(), genomeListItem.getLocation());
+                        genome = igv.getGenomeManager().loadGenome(genomeListItem.getLocation(), monitor);
 
                         updateChromosFromGenome(genome);
                         monitor.fireProgressChange(25);
