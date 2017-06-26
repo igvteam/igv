@@ -44,7 +44,7 @@ public class LongRunningTask implements Callable {
 
     private static Logger log = Logger.getLogger(LongRunningTask.class);
 
-    private static final ExecutorService threadExecutor = Executors.newFixedThreadPool(1);
+    private static final ExecutorService threadExecutor = Executors.newFixedThreadPool(5);
 
     Runnable runnable;
 
