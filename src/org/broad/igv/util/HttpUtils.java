@@ -331,12 +331,10 @@ public class HttpUtils {
      *
      * @param file
      * @param url
-     * @param compareContentLength Whether to use the content length to compare files. If false, only
-     *                             the modified date is used
      * @return true if the files are the same or the local file is newer, false if the remote file has been modified wrt the local one.
      * @throws IOException
      */
-    public boolean remoteIsNewer(File file, URL url, boolean compareContentLength) throws IOException {
+    public boolean remoteIsNewer(File file, URL url) throws IOException {
 
         if (!file.exists()) {
             return false;
@@ -344,26 +342,10 @@ public class HttpUtils {
 
         HttpURLConnection conn = openConnection(url, null, "HEAD");
 
-        // Check content-length first
-        long contentLength = -1;
-        String contentLengthString = conn.getHeaderField("Content-Length");
-        if (contentLengthString != null) {
-            try {
-                contentLength = Long.parseLong(contentLengthString);
-            } catch (NumberFormatException e) {
-                log.error("Error parsing content-length string: " + contentLengthString + " from URL: "
-                        + url.toString());
-                contentLength = -1;
-            }
-        }
-        if (contentLength != file.length()) {
-            return true;
-        }
-
         // Compare last-modified dates
         String lastModifiedString = conn.getHeaderField("Last-Modified");
         if (lastModifiedString == null) {
-            return false;
+            return true;                    // Assume its changed
         } else {
             HttpDate date = new HttpDate();
             date.parse(lastModifiedString);

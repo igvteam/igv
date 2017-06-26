@@ -423,6 +423,7 @@ public class GenomeManager {
      * @throws IOException
      */
     private Genome loadDotGenomeFile(String genomePath) throws IOException {
+
         Genome newGenome;
         File archiveFile = getArchiveFile(genomePath);
 
@@ -611,6 +612,25 @@ public class GenomeManager {
         }
     }
 
+
+    public void checkCacheForId(String id, String cachedFile) {
+
+        try {
+            for (GenomeListItem i : GenomeManager.getInstance().getServerGenomeArchiveList()) {
+                if (i.getId().equals(id)) {
+                    String serverURL = i.getLocation();
+                    if (FileUtils.isRemote(serverURL)) {
+                        GenomeManager.getInstance().refreshCache(new File(cachedFile), new URL(serverURL));
+                    }
+                    return;
+                }
+            }
+        } catch (MalformedURLException e) {
+            log.error("Error refreshing genome cache", e);
+        }
+    }
+
+
     /**
      * Refresh a locally cached genome if appropriate (newer one on server, user set preference to enable it)
      * If it doesn't have a local cache, just downloaded
@@ -620,7 +640,7 @@ public class GenomeManager {
      * @param genomeArchiveURL
      * @throws IOException
      */
-    void refreshCache(File cachedFile, URL genomeArchiveURL) {
+    public void refreshCache(File cachedFile, URL genomeArchiveURL) {
         // Look in cache first
         try {
             if (cachedFile.exists()) {
@@ -629,8 +649,7 @@ public class GenomeManager {
                 GenomeDescriptor cachedDescriptor = parseGenomeArchiveFile(cachedFile);
 
                 //File sizes won't be the same if the local version has a different sequence location
-                boolean remoteModfied = HttpUtils.getInstance().remoteIsNewer(cachedFile, genomeArchiveURL,
-                        !cachedDescriptor.hasCustomSequenceLocation());
+                boolean remoteModfied = HttpUtils.getInstance().remoteIsNewer(cachedFile, genomeArchiveURL);
 
                 // Force an update of cached genome if file length does not equal remote content length
                 boolean forceUpdate = remoteModfied &&

@@ -70,11 +70,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.NoRouteToHostException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jrobinso
@@ -227,6 +230,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         }
 
         private void loadGenomeListItem(final GenomeListItem genomeListItem) {
+
             log.info("Enter genome combo box");
 
             // If we haven't changed genomes do nothing
@@ -241,6 +245,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
                 ProgressBar.ProgressDialog progressDialog;
 
                 public void run() {
+
                     if (genomeListItem != null && genomeListItem.getLocation() != null) {
 
                         log.info("Loading " + genomeListItem.getId());
@@ -257,6 +262,8 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
                         });
 
                         try {
+
+                            GenomeManager.getInstance().checkCacheForId(genomeListItem.getId(), genomeListItem.getLocation());
                             GenomeManager.getInstance().loadGenome(genomeListItem.getLocation(), monitor);
 
                         } catch (GenomeServerException e) {
@@ -272,7 +279,8 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
                                             "", JOptionPane.OK_CANCEL_OPTION);
 
                             if (choice == JOptionPane.OK_OPTION) {
-                                removeGenomeFromList();
+                                GenomeManager.getInstance().removeGenomeListItem(genomeListItem);
+                                refreshGenomeListComboBox();
                                 log.error("Error initializing genome", e);
                             }
                         } finally {
@@ -282,11 +290,6 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
                         }
 
                     }
-                }
-
-                private void removeGenomeFromList() {
-                    GenomeManager.getInstance().removeGenomeListItem(genomeListItem);
-                    refreshGenomeListComboBox();
                 }
             };
 
