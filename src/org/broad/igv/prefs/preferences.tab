@@ -137,6 +137,7 @@ SAM.LINK_TAG	Linking tag	string	READNAME
 
 #CRAM
 CRAM.CACHE_SEQUENCES	Cache reference sequences	boolean	TRUE
+CRAM.CACHE_SIZE	Cache size (MB)`integer	1000
 
 #Proxy
 PROXY.USE	Use proxy	boolean	FALSE

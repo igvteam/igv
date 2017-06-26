@@ -54,6 +54,7 @@ final public class Constants {
 
     public static final String CRAM_CACHE_SEQUENCES = "CRAM.CACHE_SEQUENCES";
     public static final String CRAM_CACHE_DIRECTORY = "CRAM.CACHE_DIRECTORY";
+    public static final String CRAM_CACHE_SIZE = "CRAM.CACHE_SIZE";
 
     // Search ("go to") options
     public static final String SEARCH_ZOOM = "SEARCH_ZOOM";
