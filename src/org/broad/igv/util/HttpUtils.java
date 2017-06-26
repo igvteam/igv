@@ -804,8 +804,8 @@ public class HttpUtils {
             if (host.equals("igv.broadinstitute.org")) {
                 urlString = urlString.replace("igv.broadinstitute.org", "s3.amazonaws.com/igv.broadinstitute.org");
             } else if (host.equals("igvdata.broadinstitute.org")) {
-                // Drop support for cloudfront server
-                urlString = urlString.replace("igvdata.broadinstitute.org", "s3.amazonaws.com/igv.broadinstitute.org");
+                // Cloudfront server
+                urlString = urlString.replace("igvdata.broadinstitute.org", "dn7ywbm9isq8j.cloudfront.net");
             } else if (host.equals("www.broadinstitute.org")) {
                 urlString = urlString.replace("www.broadinstitute.org/igvdata", "data.broadinstitute.org/igvdata");
             }
