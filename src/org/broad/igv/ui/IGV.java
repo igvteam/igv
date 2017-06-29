@@ -863,28 +863,15 @@ public class IGV implements IGVEventObserver {
             final Image zoomInImage = IconFactory.getInstance().getIcon(IconFactory.IconID.ZOOM_IN).getImage();
             final Image zoomOutImage = IconFactory.getInstance().getIcon(IconFactory.IconID.ZOOM_OUT).getImage();
             final Point hotspot = new Point(10, 10);
-            zoomInCursor = mainFrame.getToolkit().createCustomCursor(zoomInImage, hotspot, "Zoom in");
-            zoomOutCursor = mainFrame.getToolkit().createCustomCursor(zoomOutImage, hotspot, "Zoom out");
+            zoomInCursor = createCustomCursor(zoomInImage, hotspot, "Zoom in", Cursor.CROSSHAIR_CURSOR);
+            zoomOutCursor = createCustomCursor(zoomOutImage, hotspot, "Zoom out", Cursor.DEFAULT_CURSOR);
 
         }
 
     }
 
+
     private void createHandCursor() throws HeadlessException, IndexOutOfBoundsException {
-        /*if (handCursor == null) {
-            BufferedImage handImage = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
-
-            // Make backgroun transparent
-            Graphics2D g = handImage.createGraphics();
-            g.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR, 0.0f));
-            Rectangle2D.Double rect = new Rectangle2D.Double(0, 0, 32, 32);
-            g.fill(rect);
-
-            // Draw hand image in middle
-            g = handImage.createGraphics();
-            g.drawImage(IconFactory.getInstance().getIcon(IconFactory.IconID.OPEN_HAND).getImage(), 0, 0, null);
-            handCursor = getToolkit().createCustomCursor(handImage, new Point(8, 6), "Move");
-        }*/
 
         if (fistCursor == null) {
             final BufferedImage handImage = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
@@ -903,12 +890,7 @@ public class IGV implements IGVEventObserver {
                 public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
                     if ((infoflags & ImageObserver.ALLBITS) != 0) {
                         // Image is ready
-                        try {
-                            fistCursor = mainFrame.getToolkit().createCustomCursor(handImage, new Point(8, 6), "Move");
-                        } catch (Exception e) {
-                            log.error("Could not create fistCursor", e);
-                            fistCursor = Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
-                        }
+                        fistCursor = createCustomCursor(handImage, new Point(8, 6), "Move", Cursor.HAND_CURSOR);
                         return false;
                     } else {
                         return true;
@@ -917,7 +899,7 @@ public class IGV implements IGVEventObserver {
             });
             if (ready) {
                 try {
-                    fistCursor = mainFrame.getToolkit().createCustomCursor(handImage, new Point(8, 6), "Move");
+                    fistCursor = createCustomCursor(handImage, new Point(8, 6), "Move", Cursor.HAND_CURSOR);
                 } catch (Exception e) {
                     log.info("Warning: could not create fistCursor");
                     fistCursor = Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
@@ -955,13 +937,7 @@ public class IGV implements IGVEventObserver {
                 public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
                     if ((infoflags & ImageObserver.ALLBITS) != 0) {
                         // Image is ready
-                        try {
-                            dragNDropCursor = mainFrame.getToolkit().createCustomCursor(
-                                    dragNDropImage, new Point(0, 0), "Drag and Drop");
-                        } catch (Exception e) {
-                            log.info("Warning: could not create dragNDropCursor");
-                            dragNDropCursor = Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
-                        }
+                        dragNDropCursor = createCustomCursor(dragNDropImage, new Point(0, 0), "Drag and Drop", Cursor.CROSSHAIR_CURSOR);
                         return false;
 
                     } else {
@@ -970,14 +946,18 @@ public class IGV implements IGVEventObserver {
                 }
             });
             if (ready) {
-                try {
-                    dragNDropCursor = mainFrame.getToolkit().createCustomCursor(
-                            dragNDropImage, new Point(0, 0), "Drag and Drop");
-                } catch (Exception e) {
-                    log.info("Warning: could not create dragNDropCursor");
-                    dragNDropCursor = Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
-                }
+                dragNDropCursor = createCustomCursor(dragNDropImage, new Point(0, 0), "Drag and Drop", Cursor.DEFAULT_CURSOR);
             }
+        }
+    }
+
+
+    private Cursor createCustomCursor(Image image, Point hotspot, String name, int defaultCursor) {
+        try {
+            return mainFrame.getToolkit().createCustomCursor(image, hotspot, name);
+        } catch (Exception e) {
+            log.info("Could not create cursor: " + name);
+            return Cursor.getPredefinedCursor(defaultCursor);
         }
     }
 
