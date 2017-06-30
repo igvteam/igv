@@ -262,10 +262,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
                         });
 
                         try {
-
-                            GenomeManager.getInstance().checkCacheForId(genomeListItem.getId(), genomeListItem.getLocation());
                             GenomeManager.getInstance().loadGenome(genomeListItem.getLocation(), monitor);
-
                         } catch (GenomeServerException e) {
                             log.error("Error loading genome: " + genomeListItem.getId() + "  " + genomeListItem.getLocation(), e);
                             JOptionPane.showMessageDialog(
