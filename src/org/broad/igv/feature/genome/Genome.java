@@ -225,17 +225,18 @@ public class Genome {
             }
             if(count++ == 50) break;
         }
-        autoAliases.put("MT", "chrM");
-        autoAliases.put("chrM", "MT");
 
         // Special case for human and mouse -- for other genomes define these in the alias file.
         if (id.startsWith("hg") || id.equalsIgnoreCase("1kg_ref")) {
             autoAliases.put("23", "chrX");
             autoAliases.put("24", "chrY");
+            autoAliases.put("MT", "chrM");
         } else if (id.startsWith("mm") || id.startsWith("rheMac")) {
             autoAliases.put("21", "chrX");
             autoAliases.put("22", "chrY");
+            autoAliases.put("MT", "chrM");
         } else if (id.equals("b37")) {
+            autoAliases.put("chrM", "MT");
             autoAliases.put("chrX", "23");
             autoAliases.put("chrY", "24");
         }
