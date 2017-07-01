@@ -38,15 +38,17 @@ import static junit.framework.Assert.assertTrue;
  * @author jrobinso
  *         Date: 11/21/12
  *         Time: 9:23 PM
+ *
+ *         This test is disabled becaues it depends on an external service (Blat).  Code is kept as example usage
  */
-public class BlatClientTest extends AbstractHeadlessTest{
+public class BlatClientTest {
 
     /**
      * Test a basic "blat" query.
      *
      * @throws Exception
      */
-    @Test
+
     public void testBlat() throws Exception {
 
         String org = "Human";
