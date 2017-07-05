@@ -805,6 +805,11 @@ public class IGV implements IGVEventObserver {
 
         String extension = FileUtils.getFileExtension(file.getAbsolutePath());
 
+        if(extension == null) {
+            extension = ".png";
+            file = new File(file.getAbsolutePath() + extension);
+        }
+
         SnapshotFileChooser.SnapshotFileType type = SnapshotFileChooser.getSnapshotFileType(extension);
 
         String message;
