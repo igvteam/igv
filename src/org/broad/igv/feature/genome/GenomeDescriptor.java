@@ -58,6 +58,7 @@ public abstract class GenomeDescriptor {
     private boolean fastaDirectory = false;
     private String [] fastaFileNames;
 
+
     public GenomeDescriptor(String name,
                             boolean chrNamesAltered,
                             String id,
@@ -141,7 +142,6 @@ public abstract class GenomeDescriptor {
     public boolean isChromosomesAreOrdered() {
         return chromosomesAreOrdered;
     }
-    
 
     public String getUrl() {
         return url;
