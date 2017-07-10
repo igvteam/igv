@@ -273,7 +273,8 @@ public class ResourceLocator {
         if (name == null) {
             if (path.startsWith("http://") || path.startsWith("https://")) {
                 int idx = path.lastIndexOf('/');
-                return path.substring(idx + 1);
+                int idx2 = path.indexOf('?');
+                return idx2 > idx ? path.substring(idx + 1, idx2) : path.substring(idx + 1);
 
             } else {
                 return new File(path).getName();
