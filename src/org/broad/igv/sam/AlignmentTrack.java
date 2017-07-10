@@ -1350,6 +1350,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             minInsertSizePercentile = prefs.getAsFloat(SAM_MIN_INSERT_SIZE_PERCENTILE);
             maxInsertSizePercentile = prefs.getAsFloat(SAM_MAX_INSERT_SIZE_PERCENTILE);
             showAllBases = prefs.getAsBoolean(SAM_SHOW_ALL_BASES);
+            showMismatches = prefs.getAsBoolean(SAM_SHOW_MISMATCHES);
             quickConsensusMode = prefs.getAsBoolean(SAM_QUICK_CONSENSUS_MODE);
             colorOption = CollUtils.valueOf(ColorOption.class, prefs.get(SAM_COLOR_BY), ColorOption.NONE);
             groupByOption = CollUtils.valueOf(GroupOption.class, prefs.get(SAM_GROUP_OPTION), GroupOption.NONE);

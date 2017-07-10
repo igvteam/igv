@@ -122,6 +122,7 @@ final public class Constants {
     public static final String SAM_SORT_OPTION = "SAM.SORT_OPTION";
     public static final String SAM_GROUP_OPTION = "SAM.GROUP_OPTION";
     public static final String SAM_SHOW_ALL_BASES = "SAM.SHOW_ALL_BASES";
+    public static final String SAM_SHOW_MISMATCHES = "SAM.SHOW_MISMATCHES";
     public static final String SAM_COLOR_BY = "SAM.COLOR_BY";
     public static final String SAM_COLOR_BY_TAG = "SAM.COLOR_BY_TAG";
     public static final String SAM_SORT_BY_TAG = "SAM.SORT_BY_TAG";

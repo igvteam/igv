@@ -470,6 +470,7 @@ public class PreferencesManager implements IGVEventObserver {
 //        genericDefaults.put(SAM_SHOW_GROUP_SEPARATOR, "true");
 //        genericDefaults.put(SAM_COMPLETE_READS_ONLY, "false");
 //        genericDefaults.put(SAM_SHOW_ALL_BASES, "false");
+//        genericDefaults.put(SAM_SHOW_MISMATCHES, "true");
 //
 //        genericDefaults.put(SAM_REDUCED_MEMORY_MODE, "false");
 //
