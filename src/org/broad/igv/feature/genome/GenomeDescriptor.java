@@ -130,7 +130,7 @@ public abstract class GenomeDescriptor {
     public abstract InputStream getChrAliasStream() throws IOException;
 
     public String getSequencePath() {
-        return compressedSequencePath == null ? sequencePath : compressedSequencePath;
+        return sequencePath;
     }
 
     @Override
@@ -141,7 +141,7 @@ public abstract class GenomeDescriptor {
     public boolean isChromosomesAreOrdered() {
         return chromosomesAreOrdered;
     }
-    
+
 
     public String getUrl() {
         return url;
