@@ -219,12 +219,16 @@ public class Utilities {
      */
     static public String getFileNameFromURL(String url) {
 
-        int lastIndexOfSlash = url.lastIndexOf("/");
+        int paramIndex = url.indexOf('?');
+        if(paramIndex < 0) paramIndex = url.length();
+
+        int lastIndexOfSlash = url.substring(0, paramIndex).lastIndexOf('/');
+
 
         String fileName = null;
 
         if (lastIndexOfSlash > -1) {
-            fileName = url.substring(lastIndexOfSlash+1, url.length());
+            fileName = url.substring(lastIndexOfSlash+1, paramIndex);
         } else {
             fileName = url;
         }

@@ -31,6 +31,7 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.feature.genome.GenomeListManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
@@ -61,7 +62,6 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
@@ -398,24 +398,28 @@ public class IGVSessionReader implements SessionReader {
                 // save the path and restore it.
                 String sessionPath = session.getPath();
 
-                GenomeListItem item = GenomeManager.getInstance().findGenomeListItemById(genomeId);
-                if (item != null) {
-                    GenomeManager.getInstance().loadGenome(item.getLocation(), null);
-                } else {
-                    String genomePath = genomeId;
-                    if (!ParsingUtils.pathExists(genomePath)) {
-                        genomePath = getAbsolutePath(genomeId, rootPath);
-                    }
-                    if (ParsingUtils.pathExists(genomePath)) {
-                        try {
-                            GenomeManager.getInstance().loadGenome(genomePath, null);
-                        } catch (Exception e) {
-                            throw new RuntimeException("Error loading genome: " + genomeId);
-                        }
+                try {
+                    GenomeListItem item = GenomeListManager.getInstance().getGenomeListItem(genomeId);
+                    if (item != null) {
+                        GenomeManager.getInstance().loadGenome(item.getPath(), null);
                     } else {
-                        MessageUtils.showMessage("Warning: Could not locate genome: " + genomeId);
+                        String genomePath = genomeId;
+                        if (!ParsingUtils.pathExists(genomePath)) {
+                            genomePath = getAbsolutePath(genomeId, rootPath);
+                        }
+                        if (ParsingUtils.pathExists(genomePath)) {
+                            GenomeManager.getInstance().loadGenome(genomePath, null);
+
+                        } else {
+                            MessageUtils.showMessage("Warning: Could not locate genome: " + genomeId);
+                        }
                     }
+                } catch (IOException e) {
+                    MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
+                    log.error("Error loading genome: " + genomeId, e);
                 }
+
+
                 session.setPath(sessionPath);
             }
         }

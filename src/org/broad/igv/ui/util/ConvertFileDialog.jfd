@@ -442,7 +442,7 @@
      <object class="com.jformdesigner.model.FormLayoutConstraints">
       <null/>
       <void method="setProperty">
-       <string>location</string>
+       <string>path</string>
        <object class="java.awt.Point">
         <int>0</int>
         <int>0</int>
@@ -467,7 +467,7 @@
      <object class="com.jformdesigner.model.FormLayoutConstraints">
       <null/>
       <void method="setProperty">
-       <string>location</string>
+       <string>path</string>
        <object class="java.awt.Point">
         <int>0</int>
         <int>316</int>

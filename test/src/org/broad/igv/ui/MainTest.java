@@ -26,6 +26,7 @@
 package org.broad.igv.ui;
 
 import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.feature.genome.GenomeListManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.util.FileUtils;
@@ -152,7 +153,7 @@ public class MainTest {
     @Test
     public void testLoadGenomeById() throws Exception {
         String genomeId = "mm7";
-        Collection<GenomeListItem> genomeListItems = GenomeManager.getInstance().getGenomeListItems();
+        Collection<GenomeListItem> genomeListItems = GenomeListManager.getInstance().getGenomeListItems();
         for (GenomeListItem gen : genomeListItems) {
             assertNotSame("Bad test setup, test genome in display list", gen.getId(), genomeId);
         }

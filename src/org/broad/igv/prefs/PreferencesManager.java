@@ -3,22 +3,17 @@ package org.broad.igv.prefs;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
-import org.broad.igv.sam.AlignmentTrack;
-import org.broad.igv.ui.AboutDialog;
-import org.broad.igv.ui.IGVCommandBar;
-import org.broad.igv.ui.color.ColorUtilities;
+
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.util.ParsingUtils;
 
-import java.awt.*;
+
 import java.io.*;
 import java.util.*;
 import java.util.List;
 
 import static org.broad.igv.prefs.Constants.*;
-import static org.broad.igv.prefs.Constants.SESSION_RELATIVE_PATH;
-import static org.broad.igv.prefs.Constants.SHOW_LOS;
 
 /**
  * Created by jrobinso on 1/21/17.

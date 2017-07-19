@@ -4,27 +4,28 @@ package org.broad.igv.ui.util.download;
 import org.broad.igv.util.HttpUtils;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
 
 
 // This class downloads a file from a URL.
-class Downloader implements Runnable {
+public class Downloader implements Runnable {
 
     // Max size of download buffer.
     private static final int MAX_BUFFER_SIZE = 1000000;    // Max buffer size
 
 
     private URL url; // download URL
-    private String localFile;
+    private File localFile;
     private String tmpName;
     private int downloaded; // number of bytes downloaded
     private boolean canceled;
     private final ProgressMonitor monitor;
 
     // Constructor for Download.
-    public Downloader(URL url, String file, ProgressMonitor monitor) {
+    public Downloader(URL url, File file, ProgressMonitor monitor) {
         this.url = url;
         this.localFile = file;
         this.tmpName = file + ".download";
@@ -43,6 +44,7 @@ class Downloader implements Runnable {
         try {
 
             long contentLength = HttpUtils.getInstance().getContentLength(url);
+
 
             // Check for valid content length.
             if (contentLength < 1) {
@@ -97,13 +99,9 @@ class Downloader implements Runnable {
                         this.canceled = true;
                         break;
                     } else {
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                monitor.setProgress(percent);
-
-                                monitor.setNote("" + (downloaded / 1000) + " of " + (contentLength / 1000) + " kb");
-                            }
+                        SwingUtilities.invokeLater(() -> {
+                            monitor.setProgress(percent);
+                            monitor.setNote("" + (downloaded / 1000) + " of " + (contentLength / 1000) + " kb");
                         });
                     }
                 }
@@ -113,8 +111,9 @@ class Downloader implements Runnable {
                 (new File(tmpName)).delete();
             }
             else {
-                (new File(tmpName)).renameTo(new File(localFile));
+                (new File(tmpName)).renameTo(localFile);
             }
+
 
         } catch (Exception e) {
 
@@ -145,6 +144,19 @@ class Downloader implements Runnable {
 
     }
 
+    // Convenience method
+    public static void download(URL url, File localFile, Component frame) throws MalformedURLException {
+
+        String message = "Downloading " + url.toString();
+        int min = 0;
+        int max = 100;
+
+        final javax.swing.ProgressMonitor monitor = new javax.swing.ProgressMonitor(frame, message, "", min, max);
+        monitor.setMillisToDecideToPopup(100);
+
+        (new Downloader(url, localFile, monitor)).run();
+
+    }
 
     public static void main(String[] args) throws MalformedURLException {
 
@@ -160,7 +172,7 @@ class Downloader implements Runnable {
         monitor.setMillisToDecideToPopup(100);
 
 
-        Downloader dl = new Downloader(url, localFile, monitor);
+        Downloader dl = new Downloader(url, new File(localFile), monitor);
 
         (new Thread(dl)).start();
 

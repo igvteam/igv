@@ -364,7 +364,7 @@ public class IGV implements IGVEventObserver {
         doRefresh();
     }
 
-    void beginROI(JButton button) {
+    public void beginROI(JButton button) {
         for (TrackPanel tp : getTrackPanels()) {
             TrackPanelScrollPane tsv = tp.getScrollPane();
             DataPanelContainer dpc = tsv.getDataPanel();
@@ -462,64 +462,6 @@ public class IGV implements IGVEventObserver {
             }
         }
     }
-
-    void loadGenomeFromServer() {
-
-        Runnable showDialog = new Runnable() {
-            @Override
-            public void run() {
-
-                Collection<GenomeListItem> inputListItems = GenomeManager.getInstance().getServerGenomeArchiveList();
-                if (inputListItems == null) {
-                    //Could not reach genome server.  Not necessary to display a message, getServerGenomeArchiveList does it already
-                    return;
-                }
-
-                GenomeSelectionDialog dialog = new GenomeSelectionDialog(IGV.getMainFrame(), inputListItems, ListSelectionModel.SINGLE_SELECTION);
-                UIUtilities.invokeAndWaitOnEventThread(() -> dialog.setVisible(true));
-
-                if (dialog.isCanceled()) {
-                    // Clear the "More..."  selection in pulldown
-                    IGVEventBus.getInstance().post(new GenomeResetEvent());
-                } else {
-
-                    List<GenomeListItem> selectedValues = dialog.getSelectedValuesList();
-
-                    if (selectedValues != null && selectedValues.size() >= 1) {
-
-                        if (selectedValues.size() == 1 && dialog.downloadSequence()) {
-
-                            GenomeListItem oldItem = selectedValues.get(0);
-
-                            GenomeSelectionDialog.downloadGenome(getMainFrame(), oldItem);
-
-                            File newLocation = new File(DirectoryManager.getGenomeCacheDirectory().getAbsolutePath(), Utilities.getFileNameFromURL(oldItem.getLocation()));
-
-                            GenomeListItem newItem = new GenomeListItem(oldItem.getDisplayableName(), newLocation.getAbsolutePath(), oldItem.getId());
-                            //Checking to see if it has a downloaded sequence might seem redundant,
-                            //but if the user cancels a download we want to use the oldItem
-                            if (newItem.hasDownloadedSequence()) {
-                                selectedValues = Arrays.asList(newItem);
-                            }
-                        }
-
-                        if (selectedValues.size() > 0) {
-                            GenomeManager.getInstance().addGenomeItems(selectedValues, false);
-                            GenomeManager.getInstance().loadGenome(selectedValues.get(0).getLocation(), null);
-                            //      contentPane.getCommandBar().selectGenome(selectedValues.get(0).getId());
-                        }
-                    }
-                }
-            }
-        };
-
-        if (SwingUtilities.isEventDispatchThread()) {
-            LongRunningTask.submit(showDialog);
-        } else {
-            showDialog.run();
-        }
-    }
-
 
     public void enableExtrasMenu() {
 
@@ -1283,11 +1225,6 @@ public class IGV implements IGVEventObserver {
 
     }
 
-    public void rebuildGenomeDropdownList() {
-        GenomeManager.getInstance().buildGenomeItemList();
-        contentPane.getCommandBar().refreshGenomeListComboBox();
-    }
-
     public void showLoadedTrackCount() {
 
         final int visibleTrackCount = getVisibleTrackCount();
@@ -1403,11 +1340,11 @@ public class IGV implements IGVEventObserver {
     }
 
     public boolean isShowDetailsOnClick() {
-        return contentPane != null && contentPane.getCommandBar().getDetailsBehavior() == IGVCommandBar.SHOW_DETAILS_BEHAVIOR.CLICK;
+        return contentPane != null && contentPane.getCommandBar().getDetailsBehavior() == ShowDetailsBehavior.CLICK;
     }
 
     public boolean isShowDetailsOnHover() {
-        return contentPane != null && contentPane.getCommandBar().getDetailsBehavior() == IGVCommandBar.SHOW_DETAILS_BEHAVIOR.HOVER;
+        return contentPane != null && contentPane.getCommandBar().getDetailsBehavior() == ShowDetailsBehavior.HOVER;
     }
 
     public void openStatusWindow() {
@@ -2150,13 +2087,6 @@ public class IGV implements IGVEventObserver {
             final boolean runningBatch = igvArgs.getBatchFile() != null;
             BatchRunner.setIsBatchMode(runningBatch);
 
-            final ProgressMonitor monitor = new ProgressMonitor();
-            UIUtilities.invokeAndWaitOnEventThread(() -> {
-                progressDialog = ProgressBar.showProgressDialog(mainFrame, "Initializing...", monitor, false);
-                progressDialog.getProgressBar().setIndeterminate(true);
-                monitor.fireProgressChange(20);
-            });
-
 
             UIUtilities.invokeOnEventThread(() -> mainFrame.setIconImage(getIconImage()));
             if (Globals.IS_MAC) {
@@ -2165,24 +2095,38 @@ public class IGV implements IGVEventObserver {
 
             final IGVPreferences preferenceManager = PreferencesManager.getPreferences();
 
-            try {
-                contentPane.getCommandBar().initializeGenomeList(monitor);
-            } catch (FileNotFoundException ex) {
-                JOptionPane.showMessageDialog(mainFrame, "Error initializing genome list: " + ex.getMessage());
-                log.error("Error initializing genome list: ", ex);
-            } catch (NoRouteToHostException ex) {
-                JOptionPane.showMessageDialog(mainFrame, "Network error initializing genome list: " + ex.getMessage());
-                log.error("Network error initializing genome list: ", ex);
-            } finally {
-                UIUtilities.invokeAndWaitOnEventThread(() -> monitor.fireProgressChange(50));
-                closeWindow(progressDialog);
+            boolean genomeLoaded = false;
+            if (igvArgs.getGenomeId() != null) {
+                String genomeId = igvArgs.getGenomeId();
+                try {
+                    GenomeManager.getInstance().loadGenomeById(genomeId);
+                    genomeLoaded = true;
+                } catch (IOException e) {
+                    MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
+                    log.error("Error loading genome: " + genomeId, e);
+                }
             }
 
-            if (igvArgs.getGenomeId() != null) {
-                GenomeManager.getInstance().loadGenomeById(igvArgs.getGenomeId());
-            } else if (igvArgs.getSessionFile() == null) {
+
+            if (genomeLoaded == false && igvArgs.getSessionFile() == null) {
                 String genomeId = preferenceManager.getDefaultGenome();
-                contentPane.getCommandBar().selectGenome(genomeId);
+                try {
+                    GenomeManager.getInstance().loadGenomeById(genomeId);
+                    genomeLoaded = true;
+                } catch (Exception e) {
+                    MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
+                    log.error("Error loading genome: " + genomeId, e);
+                }
+            }
+
+            if (genomeLoaded == false && igvArgs.getSessionFile() == null) {
+                String genomeId = GenomeManager.DEFAULT_GENOME.getId();
+                try {
+                    GenomeManager.getInstance().loadGenomeById(genomeId);
+                } catch (IOException e) {
+                    MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
+                    log.error("Error loading genome: " + genomeId, e);
+                }
             }
 
             //Load plugins

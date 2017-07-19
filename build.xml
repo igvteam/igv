@@ -253,8 +253,8 @@
             <include name="fest*.jar"/>
             <include name="jcip*.jar"/>
         </fileset>
-        <pathelement location="${testtmp.dir}"/>
-        <pathelement location="${tmp.dir}"/>
+        <pathelement path="${testtmp.dir}"/>
+        <pathelement path="${tmp.dir}"/>
     </path>
 
     <property name="test.reports" value="${basedir}/reports"/>

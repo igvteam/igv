@@ -12,7 +12,7 @@ new FormModel {
 				"maximumSize": new java.awt.Dimension( 5000, 28 )
 			} )
 		}, new FormLayoutConstraints( null ) {
-			"location": new java.awt.Point( 0, 0 )
+			"path": new java.awt.Point( 0, 0 )
 			"size": new java.awt.Dimension( 400, 300 )
 		} )
 	}

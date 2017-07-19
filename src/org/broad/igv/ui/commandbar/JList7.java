@@ -23,14 +23,14 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.ui;
+package org.broad.igv.ui.commandbar;
 
 import javax.swing.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-class JList7<T> extends JList {
+public class JList7<T> extends JList {
 
     public List<T> getSelectedValuesList() {
         ArrayList<T> typedSelected = new ArrayList<T>(getSelectedValues().length);

@@ -120,13 +120,13 @@ new FormModel {
 				"value": "Center"
 			} )
 		}, new FormLayoutConstraints( null ) {
-			"location": new java.awt.Point( 0, 0 )
+			"path": new java.awt.Point( 0, 0 )
 			"size": new java.awt.Dimension( 450, 300 )
 		} )
 		add( new FormNonVisual( "javax.swing.ButtonGroup" ) {
 			name: "buttonGroup1"
 		}, new FormLayoutConstraints( null ) {
-			"location": new java.awt.Point( 0, 310 )
+			"path": new java.awt.Point( 0, 310 )
 		} )
 	}
 }

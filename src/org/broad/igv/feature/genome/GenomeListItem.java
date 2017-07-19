@@ -40,30 +40,37 @@ import java.util.zip.ZipException;
 public class GenomeListItem {
 
     private String displayableName;
-    private String location;
+    private String path;
     private String id;
-    private Boolean hasDownloadedSequence = null;
+    private boolean hasDownloadedSequence = false;
 
     public static final GenomeListItem ITEM_MORE;
 
-    static{
+    static {
         ITEM_MORE = new GenomeListItem("More...", "", "More...");
     }
 
     /**
-     *
      * @param displayableName The name that can be shown to a user.
-     * @param location        The location of the genome archive, can be a file path or URL
+     * @param path            The location of the genome archive, can be a file path or URL
      * @param id              The id of the genome.
      */
-    public GenomeListItem(String displayableName, String location, String id) {
+    public GenomeListItem(String displayableName, String path, String id) {
         this.displayableName = displayableName;
-        this.location = location;
+        this.path = path;
         this.id = id;
     }
 
+    public static GenomeListItem fromString(String str) {
+        String[] tokens = str.split("\t");
+        GenomeListItem item = new GenomeListItem(tokens[1], tokens[2], tokens[0]);
+        item.hasDownloadedSequence = Boolean.parseBoolean(tokens[3]);
+        return item;
+    }
+
+
     public String printString() {
-        return this.id + "  " +  this.displayableName + "   " + this.location;
+        return id + "\t" + displayableName + "\t" + path + "\t" + String.valueOf(hasDownloadedSequence);
     }
 
     public String getDisplayableName() {
@@ -74,15 +81,12 @@ public class GenomeListItem {
         return id;
     }
 
-    public String getLocation() {
-        if(location == null){
-            GenomeListItem newItem = GenomeManager.searchGenomeList(this.id, GenomeManager.getInstance().getServerGenomeArchiveList());
-            if(newItem != null){
-                this.displayableName = newItem.displayableName;
-                this.location = newItem.location;
-            }
-        }
-        return location;
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public String getPath() {
+        return path;
     }
 
     @Override
@@ -100,14 +104,14 @@ public class GenomeListItem {
         if (displayableName != null ? !displayableName.equals(that.displayableName) : that.displayableName != null)
             return false;
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (location != null ? !location.equals(that.location) : that.location != null) return false;
+        if (path != null ? !path.equals(that.path) : that.path != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(displayableName, location, id);
+        return Objects.hash(displayableName, path, id);
     }
 
     /**
@@ -116,30 +120,31 @@ public class GenomeListItem {
      * which points to a local fasta file will return false, but one created
      * by {@link GenomeManager#downloadWholeGenome(String, java.io.File, java.awt.Frame)}
      * will return true
+     *
      * @return
      */
-    public boolean hasDownloadedSequence(){
-        if(hasDownloadedSequence == null){
-            try {
-                hasDownloadedSequence = checkHasDownloadedSequence();
-            } catch (IOException e) {
-                e.printStackTrace();
-                hasDownloadedSequence = false;
-            }
+    public boolean hasDownloadedSequence() {
+
+        try {
+            hasDownloadedSequence = checkHasDownloadedSequence();
+        } catch (IOException e) {
+            e.printStackTrace();
+            hasDownloadedSequence = false;
         }
+
         return hasDownloadedSequence;
     }
 
-    private boolean checkHasDownloadedSequence() throws IOException{
-        if(this.location == null) return false;
-        if(HttpUtils.isRemoteURL(this.location)) return false;
+    private boolean checkHasDownloadedSequence() throws IOException {
+        if (this.path == null) return false;
+        if (HttpUtils.isRemoteURL(this.path)) return false;
 
-        if(FastaUtils.isFastaPath(this.location)){
-            return !HttpUtils.isRemoteURL(this.location);
+        if (FastaUtils.isFastaPath(this.path)) {
+            return !HttpUtils.isRemoteURL(this.path);
         }
 
         try {
-            GenomeDescriptor descriptor = GenomeManager.parseGenomeArchiveFile(new File(this.location));
+            GenomeDescriptor descriptor = GenomeManager.parseGenomeArchiveFile(new File(this.path));
             return descriptor.hasCustomSequenceLocation() && !HttpUtils.isRemoteURL(descriptor.getSequencePath());
         } catch (ZipException e) {
             return false;
@@ -147,4 +152,5 @@ public class GenomeListItem {
 
 
     }
+
 }

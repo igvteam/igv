@@ -48,7 +48,7 @@ public abstract class GenomeDescriptor {
     protected String cytoBandFileName;
     protected String geneFileName;
     protected String chrAliasFileName;
-    protected String geneTrackName;
+    private String geneTrackName;
     private String url;
     private String sequencePath;
     private String compressedSequencePath;
@@ -57,7 +57,6 @@ public abstract class GenomeDescriptor {
     private boolean fasta = false;
     private boolean fastaDirectory = false;
     private String [] fastaFileNames;
-
 
     public GenomeDescriptor(String name,
                             boolean chrNamesAltered,
@@ -142,6 +141,7 @@ public abstract class GenomeDescriptor {
     public boolean isChromosomesAreOrdered() {
         return chromosomesAreOrdered;
     }
+
 
     public String getUrl() {
         return url;

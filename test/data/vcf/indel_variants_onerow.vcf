@@ -7,7 +7,7 @@
 ##buildDate=20120108
 ##buildTime=024818
 ##FILTER=<ID=MIN-MAPQ,Description="MIN-MAPQ=2. Min. mapq for a read to be considered for variant calling.">
-##FILTER=<ID=SCORE-THRESHOLD,Description="SCORE-THRESHOLD=4. Min score required for each variant found at a location.">
+##FILTER=<ID=SCORE-THRESHOLD,Description="SCORE-THRESHOLD=4. Min score required for each variant found at a path.">
 ##FILTER=<ID=MIN-NUM-READS,Description="MIN-NUM-READS=3. Min number of reads for each variant.">
 ##FILTER=<ID=MIN-VARIANT-FREQ,Description="MIN-VARIANT-FREQ=0.15. Min read frequency for each variant.">
 ##FILTER=<ID=MAX-STRAND-BIAS,Description="MAX-STRAND-BIAS=1/4. Max strand bias for each variant.">

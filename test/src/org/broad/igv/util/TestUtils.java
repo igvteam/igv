@@ -32,6 +32,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.feature.genome.GenomeListManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.tools.IgvTools;
@@ -550,8 +551,7 @@ public class TestUtils {
         userDefinedGenomeListFile.delete();
         userDefinedGenomeListFile.deleteOnExit();
 
-        Collection<GenomeListItem> userDefined = GenomeManager.getInstance().getUserDefinedGenomeArchiveList();
-        userDefined.clear();
-        GenomeManager.getInstance().buildGenomeItemList();
+        GenomeListManager.getInstance().clearUserDefinedGenomes();
+        GenomeListManager.getInstance().rebuildGenomeItemMap();
     }
 }

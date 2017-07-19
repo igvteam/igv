@@ -210,6 +210,15 @@ public class DirectoryManager {
         return GENOME_CACHE_DIRECTORY;
     }
 
+    public static File getFastaCacheDirectory() {
+
+        File directory = new File(getGenomeCacheDirectory(), "seq");
+        if(!directory.exists()) {
+            directory.mkdir();
+        }
+        return directory;
+    }
+
     public static File getGeneListDirectory() {
         if (GENE_LIST_DIRECTORY == null) {
             GENE_LIST_DIRECTORY = new File(getIgvDirectory(), "lists");
