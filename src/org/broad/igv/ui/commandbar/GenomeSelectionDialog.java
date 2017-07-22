@@ -31,21 +31,13 @@
 
 package org.broad.igv.ui.commandbar;
 
-import org.broad.igv.DirectoryManager;
 import org.broad.igv.feature.genome.GenomeListItem;
-import org.broad.igv.feature.genome.GenomeListManager;
-import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
-import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.RunnableResult;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

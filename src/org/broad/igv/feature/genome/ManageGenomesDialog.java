@@ -36,6 +36,7 @@ import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.commandbar.GenomeSelectionDialog;
 import org.broad.igv.ui.commandbar.JList7;
 import org.broad.igv.ui.util.MessageUtils;
@@ -88,7 +89,7 @@ public class ManageGenomesDialog extends JDialog {
         addValuesList = new ArrayList<>();
 
         for (GenomeListItem item : allListItems) {
-            if (item.hasDownloadedSequence()) {
+            if (GenomeManager.getInstance().getLocalFasta(item.getId()) != null) {
                 haveLocalSequence = true;
                 break;
             }
@@ -102,11 +103,11 @@ public class ManageGenomesDialog extends JDialog {
     }
 
     private void buildList() {
-        String currentId = GenomeManager.getInstance().getGenomeId();
-        List<GenomeListItem> filteredList = allListItems.stream()
-                .filter((item) -> !item.getId().equals(currentId))
-                .collect(Collectors.toList());
-        genomeList.setListData(filteredList.toArray());
+//        String currentId = GenomeManager.getInstance().getGenomeId();
+//        List<GenomeListItem> filteredList = allListItems.stream()
+//                .filter((item) -> !item.getId().equals(currentId))
+//                .collect(Collectors.toList());
+        genomeList.setListData(allListItems.toArray());
     }
 
     private void cancelButtonActionPerformed(ActionEvent e) {
@@ -325,7 +326,7 @@ public class ManageGenomesDialog extends JDialog {
                 comp.setOpaque(isSelected);
             }
 
-            if (item.hasDownloadedSequence()) {
+            if (GenomeManager.getInstance().getLocalFasta(item.getId()) != null) {
                 displayableName += LOCAL_SEQUENCE_CHAR;
             }
 

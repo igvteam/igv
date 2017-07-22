@@ -114,43 +114,5 @@ public class GenomeListItem {
         return Objects.hash(displayableName, path, id);
     }
 
-    /**
-     * Check if the genome being referred to points to a local (on this machine)
-     * sequence, which was downloaded from a server. So a user-created genome
-     * which points to a local fasta file will return false, but one created
-     * by {@link GenomeManager#downloadWholeGenome(String, java.io.File, java.awt.Frame)}
-     * will return true
-     *
-     * @return
-     */
-    public boolean hasDownloadedSequence() {
-
-        try {
-            hasDownloadedSequence = checkHasDownloadedSequence();
-        } catch (IOException e) {
-            e.printStackTrace();
-            hasDownloadedSequence = false;
-        }
-
-        return hasDownloadedSequence;
-    }
-
-    private boolean checkHasDownloadedSequence() throws IOException {
-        if (this.path == null) return false;
-        if (HttpUtils.isRemoteURL(this.path)) return false;
-
-        if (FastaUtils.isFastaPath(this.path)) {
-            return !HttpUtils.isRemoteURL(this.path);
-        }
-
-        try {
-            GenomeDescriptor descriptor = GenomeManager.parseGenomeArchiveFile(new File(this.path));
-            return descriptor.hasCustomSequenceLocation() && !HttpUtils.isRemoteURL(descriptor.getSequencePath());
-        } catch (ZipException e) {
-            return false;
-        }
-
-
-    }
 
 }

@@ -30,15 +30,12 @@
  */
 package org.broad.igv.ui.commandbar;
 
-import com.jidesoft.hints.ListDataIntelliHints;
 import com.jidesoft.swing.JideBoxLayout;
 import com.jidesoft.swing.JideButton;
 import com.jidesoft.swing.JideToggleButton;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.event.*;
-import org.broad.igv.feature.FeatureDB;
-import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.*;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
@@ -47,32 +44,21 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.ShowDetailsBehavior;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.action.FitDataToWindowMenuAction;
-import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.ZoomSliderPanel;
 import org.broad.igv.ui.util.*;
-import org.broad.igv.ui.util.ProgressMonitor;
-import org.broad.igv.util.LongRunningTask;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Rectangle2D;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Vector;
 
 /**
  * @author jrobinso

@@ -122,7 +122,8 @@ public class Downloader implements Runnable {
         } finally {
 
             if (monitor != null) {
-                monitor.close();
+                SwingUtilities.invokeLater(() -> monitor.close());
+   //             monitor.close();
             }
 
             // Close file.

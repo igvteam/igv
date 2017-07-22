@@ -26,8 +26,7 @@
 package org.broad.igv.ui;
 
 import org.broad.igv.feature.genome.GenomeListItem;
-import org.broad.igv.feature.genome.GenomeListManager;
-import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.StringUtils;

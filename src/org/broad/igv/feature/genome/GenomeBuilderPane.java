@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.util.FileDialogUtils;
 
 import javax.swing.*;

@@ -32,11 +32,10 @@ package org.broad.igv.feature.genome;
 
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.DirectoryManager;
-import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.RunnableResult;
 import org.broad.igv.util.TestUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;

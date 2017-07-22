@@ -164,4 +164,5 @@ public abstract class GenomeDescriptor {
     public boolean hasCustomSequenceLocation() {
         return hasCustomSequencePath;
     }
+
 }

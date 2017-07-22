@@ -27,7 +27,7 @@ package org.broad.igv.ga4gh;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.GenomeListItem;
-import org.broad.igv.feature.genome.GenomeListManager;
+import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
@@ -42,7 +42,6 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 /**
