@@ -137,9 +137,9 @@ SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	TRUE
 SAM.LINK_READS	Link alignments by tag	boolean	FALSE
 SAM.LINK_TAG	Linking tag	string	READNAME
 
-#CRAM
+#Cram
 CRAM.CACHE_SEQUENCES	Cache reference sequences	boolean	TRUE
-CRAM.CACHE_SIZE	Cache size (MB)`integer	1000
+CRAM.CACHE_SIZE	Cache size (MB)	integer	500
 
 #Proxy
 PROXY.USE	Use proxy	boolean	FALSE
