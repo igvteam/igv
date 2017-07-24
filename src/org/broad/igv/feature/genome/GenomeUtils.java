@@ -45,9 +45,12 @@ public class GenomeUtils {
     public static void main(String[] args) throws IOException {
 
         String genomeListFile = args.length > 0 ? args[0] : "genomes/genomes.txt";
-        String outputDirectory = args.length > 1 ? args[1] : "genomes/sizes";
+        //String outputDirectory = args.length > 1 ? args[1] : "genomes/sizes";
+        String outputFile = args.length > 1 ? args[1] : "nonFastas.txt";
 
-        updateChromSizes(genomeListFile, new File(outputDirectory));
+        // updateChromSizes(genomeListFile, new File(outputDirectory));
+
+        findNonFastas(genomeListFile, new File(outputFile));
 
 //        mergeINCDCNames(
 //                new File("genomes/alias/hg38_alias.tab"),
@@ -215,6 +218,51 @@ public class GenomeUtils {
             pw.println(row);
         }
         pw.close();
+
+    }
+
+
+
+    public static void findNonFastas(String genomeListPath, File outputFile) throws IOException {
+
+        // http://igv.broadinstitute.org/genomes/genomes.txt
+        // <Server-Side Genome List>
+        // Human hg19	http://igv.broadinstitute.org/genomes/hg19.genome	hg19
+        BufferedReader br = null;
+        PrintWriter pw = null;
+
+        try {
+            pw = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
+            br = ParsingUtils.openBufferedReader(genomeListPath);
+            String nextLine;
+            while ((nextLine = br.readLine()) != null) {
+                String[] tokens = nextLine.split("\t");
+                if (tokens.length > 2) {
+
+                    String genomeID = tokens[2];
+                    String genomePath = tokens[1];
+                    try {
+                        Genome genome = GenomeManager.getInstance().loadGenome(genomePath, null);
+
+                        if (!genome.sequenceIsFasta()) {
+
+//                            File outputFile = new File(directory, genomeID + ".fa");
+//                            if (outputFile.exists()) {
+//                                continue;
+//                            }
+
+                            pw.println("Updating " + genomeID);
+                        }
+
+                    } catch (Exception e) {
+                        System.err.println(e.toString());
+                    }
+                }
+            }
+        } finally {
+            if (br != null) br.close();
+            if(pw != null) pw.close();
+        }
 
     }
 

@@ -447,6 +447,10 @@ public class Genome {
         return sequence.isRemote();
     }
 
+    public boolean sequenceIsFasta() {
+        return sequence.isFasta();
+    }
+
     public String getDisplayName() {
         return displayName;
     }

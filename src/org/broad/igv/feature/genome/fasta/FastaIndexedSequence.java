@@ -199,5 +199,10 @@ public class FastaIndexedSequence implements Sequence {
         return FileUtils.isRemote(path);
     }
 
+    @Override
+    public boolean isFasta() {
+        return true;
+    }
+
 
 }
