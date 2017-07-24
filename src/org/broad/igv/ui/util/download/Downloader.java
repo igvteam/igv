@@ -1,6 +1,7 @@
 package org.broad.igv.ui.util.download;
 
 
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.HttpUtils;
 
 import javax.swing.*;
@@ -152,8 +153,13 @@ public class Downloader implements Runnable {
         int min = 0;
         int max = 100;
 
-        final javax.swing.ProgressMonitor monitor = new javax.swing.ProgressMonitor(frame, message, "", min, max);
-        monitor.setMillisToDecideToPopup(100);
+        final javax.swing.ProgressMonitor monitor;
+        if(IGV.hasInstance()) {
+            monitor = new javax.swing.ProgressMonitor(frame, message, "", min, max);
+            monitor.setMillisToDecideToPopup(100);
+        } else {
+            monitor = null;
+        }
 
         (new Downloader(url, localFile, monitor)).run();
 

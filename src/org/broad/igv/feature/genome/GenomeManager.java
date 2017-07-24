@@ -647,7 +647,8 @@ public class GenomeManager {
                 }
             } else {
                 // Copy file directly from the server to local cache.
-                Downloader.download(genomeArchiveURL, cachedFile, IGV.getMainFrame());
+                Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
+                Downloader.download(genomeArchiveURL, cachedFile, parent);
             }
         } catch (Exception e) {
             MessageUtils.showErrorMessage("An error was encountered refreshing the genome cache: " + e.getMessage(), e);
