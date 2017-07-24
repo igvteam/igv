@@ -107,6 +107,11 @@ public class SequenceWrapper implements Sequence  {
         return sequence.isRemote();
     }
 
+    @Override
+    public boolean isFasta() {
+        return sequence.isFasta();
+    }
+
     /**
      * Return the reference dna sequence for the exact interval specified.
      *
@@ -378,6 +383,8 @@ public class SequenceWrapper implements Sequence  {
         return convertedURL;
 
     }
+
+
 
 
 }
