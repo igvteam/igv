@@ -173,7 +173,7 @@
                     <attribute name="Built-By" value="${user.name}"/>
                     <attribute name="Main-Class" value="${main-class}"/>
 
-                    <section name="org/broad/igv">
+                    <section name="org/broad/igv/">
                         <attribute name="Specification-Title" value="${ant.project.name}"/>
                         <attribute name="Specification-Version" value="${version}"/>
                         <attribute name="Specification-Vendor" value="${vendor}"/>
