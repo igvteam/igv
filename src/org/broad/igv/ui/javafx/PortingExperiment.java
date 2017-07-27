@@ -24,11 +24,9 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeLineCap;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -145,7 +143,10 @@ public class PortingExperiment extends Application {
     Menu helpMenu = new Menu("Help", null, userGuide, helpForum, checkForUpdates, aboutIGV);
     
     MenuBar menuBar = new MenuBar(fileMenu, genomesMenu, viewMenu, tracksMenu, regionsMenu, toolsMenu, genomeSpaceMenu, helpMenu);
-    
+    final String os = System.getProperty ("os.name");
+    if (os != null && os.startsWith ("Mac"))
+      menuBar.useSystemMenuBarProperty ().set (true);
+
     VBox root = new VBox();
     Scene scene = new Scene(root, 1000, 600, Color.WHITE);
     root.getChildren().add(menuBar);
@@ -182,17 +183,19 @@ public class PortingExperiment extends Application {
         infoSelectButton, separator, zoomLevelSlider);
     root.getChildren().add(toolbar);
 
-    GridPane gridPane1 = new GridPane();
-    gridPane1.getChildren().add(new Rectangle(50, 50));
+    ResizableCanvas resizableCanvas1 = new ResizableCanvas();
+    Canvas canvas = resizableCanvas1.getCanvas();
+    canvas.setHeight(500);
+    canvas.setWidth(1000);
     
-    Canvas canvas = new Canvas(1000, 550);
-    GridPane gridPane2 = new GridPane();
-    gridPane2.getChildren().add(new Rectangle(50, 50));
+    ResizableCanvas resizableCanvas2 = new ResizableCanvas();
+    Canvas canvas2 = resizableCanvas2.getCanvas();
+    canvas2.setHeight(200);
+    canvas2.setWidth(1000);
     
-    // SplitPane experiment - not working yet
-    SplitPane trackPane = new SplitPane(gridPane1, canvas, gridPane2);
+    SplitPane trackPane = new SplitPane(resizableCanvas1, resizableCanvas2);
     trackPane.setOrientation(Orientation.VERTICAL);
-    trackPane.setDividerPositions(0.3, 0.9);
+    trackPane.setDividerPositions(0.9);
     root.getChildren().add(trackPane);
     
     // Drawing experiment, nothing real
@@ -213,6 +216,13 @@ public class PortingExperiment extends Application {
     graphicsContext.setStroke(Color.BLUE);
     graphicsContext.setLineWidth(1);
     graphicsContext.strokeLine(10, 50, 200, 50);
+
+    GraphicsContext graphicsContext2 = canvas2.getGraphicsContext2D();
+    
+    graphicsContext2.setStroke(Color.PURPLE);
+    graphicsContext2.setLineWidth(1);
+    graphicsContext2.setLineCap(StrokeLineCap.BUTT);
+    graphicsContext2.strokeLine(10, 10, 200, 10);
 
     primaryStage.setScene(scene);
     primaryStage.show();
