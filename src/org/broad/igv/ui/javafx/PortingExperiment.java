@@ -165,14 +165,22 @@ public class PortingExperiment extends Application {
     HBox jumpToPane = new HBox(jumpToTextField, jumpToLabel);
     jumpToPane.setAlignment(Pos.CENTER);
 
-    Button homeButton = new Button("", new ImageView("/toolbarButtonGraphics/navigation/Home24.gif"));
-    Button leftArrowButton = new Button("", new ImageView("/images/left-arrow.gif"));
-    Button rightArrowButton = new Button("", new ImageView("/images/right-arrow.gif"));
-    Button refreshScreenButton = new Button("", new ImageView("toolbarButtonGraphics/general/Refresh24.gif"));
-    Button regionToolButton = new Button("", new ImageView("/images/regionTool.png"));
-    Button resizeToWindowButton = new Button("", new ImageView("/images/collapseall.gif"));
-    Button infoSelectButton = new Button("", new ImageView("/images/tooltip.png"));
-    Separator separator = new Separator(Orientation.VERTICAL);
+    Button homeButton = new Button("");
+    homeButton.setId("homeButton");
+    Button leftArrowButton = new Button("");
+    leftArrowButton.setId("leftArrowButton");
+    Button rightArrowButton = new Button("");
+    rightArrowButton.setId("rightArrowButton");
+    Button refreshScreenButton = new Button("");
+    refreshScreenButton.setId("refreshScreenButton");
+    Button regionToolButton = new Button("");
+    regionToolButton.setId("regionToolButton");
+    Button resizeToWindowButton = new Button("");
+    resizeToWindowButton.setId("resizeToWindowButton");
+    Button infoSelectButton = new Button("");
+    infoSelectButton.setId("infoSelectButton");
+    Button rulerButton = new Button("");
+    rulerButton.setId("rulerButton");
     
     Slider zoomLevelSlider = new Slider();
     zoomLevelSlider.setShowTickMarks(true);
@@ -180,7 +188,7 @@ public class PortingExperiment extends Application {
 
     ToolBar toolbar = new ToolBar(genomeSelector, chromosomeSelector, jumpToPane,
         homeButton, leftArrowButton, rightArrowButton, refreshScreenButton, regionToolButton, resizeToWindowButton,
-        infoSelectButton, separator, zoomLevelSlider);
+        infoSelectButton, rulerButton, zoomLevelSlider);
     root.getChildren().add(toolbar);
 
     ResizableCanvas resizableCanvas1 = new ResizableCanvas();
@@ -224,6 +232,8 @@ public class PortingExperiment extends Application {
     graphicsContext2.setLineCap(StrokeLineCap.BUTT);
     graphicsContext2.strokeLine(10, 10, 200, 10);
 
+    scene.getStylesheets().add(getClass().getResource("experiment.css").toExternalForm());
+    
     primaryStage.setScene(scene);
     primaryStage.show();
   }
