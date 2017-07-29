@@ -473,7 +473,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             final double colorScaleMax = getColorScale().getMaximum();
             final double scale = context.getScale();
 
-            boolean bisulfiteMode = getRenderOptions().getColorOption() == AlignmentTrack.ColorOption.BISULFITE;
+            boolean bisulfiteMode = getRenderOptions().colorOption == AlignmentTrack.ColorOption.BISULFITE;
 
 
             // First pass, coverage

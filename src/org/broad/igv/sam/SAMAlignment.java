@@ -96,7 +96,7 @@ public abstract class SAMAlignment implements Alignment {
     String chr;
     protected int start;  // <= Might differ from alignment start if soft clipping is considered
     protected int end;    // ditto
-    protected Color color = null;
+    protected Color ycColor = null;
 
     ReadMate mate;
     public AlignmentBlockImpl[] alignmentBlocks;
@@ -130,8 +130,8 @@ public abstract class SAMAlignment implements Alignment {
         return mate;
     }
 
-    public Color getColor() {
-        return color;
+    public Color getYcColor() {
+        return ycColor;
     }
 
     abstract public String getReadName();

@@ -31,6 +31,7 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
@@ -1345,6 +1346,7 @@ public class IGVSessionReader implements SessionReader {
             AbstractTrack.knownUnknownTrackClasses.add(unmarshalClass);
             return unmarshalTrack(u, node, firstClass, unmarshalClass.getSuperclass());
         }
+
         return (AbstractTrack) el.getValue();
     }
 

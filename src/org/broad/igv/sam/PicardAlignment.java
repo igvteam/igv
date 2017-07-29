@@ -113,7 +113,7 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
         Object colorTag = record.getAttribute("YC");
         if (colorTag != null) {
             try {
-                color = ColorUtilities.stringToColor(colorTag.toString(), null);
+                ycColor = ColorUtilities.stringToColor(colorTag.toString(), null);
             } catch (Exception e) {
                 log.error("Error interpreting color tag: " + colorTag, e);
             }

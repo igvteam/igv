@@ -367,8 +367,7 @@ public class LinkedAlignment implements Alignment {
         return false;
     }
 
-    @Override
-    public Color getColor() {
+    public Color getYcColor() {
         return null;
     }
 

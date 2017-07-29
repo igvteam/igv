@@ -696,7 +696,7 @@ public class GobyAlignment implements Alignment {
      *
      * @return
      */
-    public Color getColor() {
+    public Color getYcColor() {
         return null;
     }
 

@@ -66,15 +66,12 @@ public class AlignmentPacker {
             AlignmentInterval interval,
             AlignmentTrack.RenderOptions renderOptions) {
 
-       // if (renderOptions == null) renderOptions = new AlignmentTrack.RenderOptions();
-
         LinkedHashMap<String, List<Row>> packedAlignments = new LinkedHashMap<String, List<Row>>();
-
 
         List<Alignment> alList = interval.getAlignments();
         // TODO -- means to undo this
-        if (renderOptions.isLinkedReads()) {
-            alList = linkByTag(alList, renderOptions.getLinkByTag());
+        if (renderOptions.linkedReads) {
+            alList = linkByTag(alList, renderOptions.linkByTag);
         }
 
         if (renderOptions.groupByOption == null) {
@@ -124,8 +121,8 @@ public class AlignmentPacker {
 
         Map<String, PairedAlignment> pairs = null;
 
-        boolean isPairedAlignments = renderOptions.isViewPairs();
-        String linkByTag = renderOptions.getLinkByTag();
+        boolean isPairedAlignments = renderOptions.viewPairs;
+        String linkByTag = renderOptions.linkByTag;
 
         if (isPairedAlignments) {
             pairs = new HashMap<>(1000);
@@ -375,8 +372,8 @@ public class AlignmentPacker {
     private String getGroupValue(Alignment al, AlignmentTrack.RenderOptions renderOptions) {
 
         AlignmentTrack.GroupOption groupBy = renderOptions.groupByOption;
-        String tag = renderOptions.getGroupByTag();
-        Range pos = renderOptions.getGroupByPos();
+        String tag = renderOptions.groupByTag;
+        Range pos = renderOptions.groupByPos;
 
         switch (groupBy) {
             case STRAND:

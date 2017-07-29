@@ -70,6 +70,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
     private boolean tenX = false;
     private boolean phased = false;
     private boolean moleculo = false;
+    private boolean ycTags = false;
 
     static void cancelReaders() {
         for (WeakReference<AlignmentTileLoader> readerRef : activeLoaders) {
@@ -110,6 +111,9 @@ public class AlignmentTileLoader implements IGVEventObserver {
         return reader.hasIndex();
     }
 
+    public boolean hasYCTags() {
+        return ycTags;
+    }
 
     AlignmentTile loadTile(String chr,
                            int start,
@@ -199,6 +203,10 @@ public class AlignmentTileLoader implements IGVEventObserver {
                             mappedMates.remove(readName);
                         }
                     }
+                }
+
+                if (!ycTags && record.getAttribute("YC") != null) {
+                    ycTags = true;
                 }
 
                 // TODO -- this is not reliable tests for TenX.  Other platforms might use BX
