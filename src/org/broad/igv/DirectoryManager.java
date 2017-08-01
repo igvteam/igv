@@ -71,6 +71,11 @@ public class DirectoryManager {
     public static synchronized File getUserDirectory() {
         if (USER_DIRECTORY == null) {
             log.info("Fetching user directory... ");
+            
+            // NOTE: in theory we should guard this with Globals.IS_JAVAFX_UI and not use a Swing API when running
+            // the JavaFX UI.  However, it seems to be accepted practice even in the JavaFX examples
+            // (see: http://hg.openjdk.java.net/openjfx/8/master/rt/file/2f74b29d7627/apps/samples/Ensemble8/src/app/java/ensemble/samplepage/Sources.java)
+
             USER_DIRECTORY = FileSystemView.getFileSystemView().getDefaultDirectory();
             //Mostly for testing, in some environments USER_DIRECTORY can be null
             if (USER_DIRECTORY == null) {
