@@ -182,7 +182,7 @@ public class TDFDataSource implements CoverageDataSource {
 
     }
 
-    protected List<LocusScore> getSummaryScores(String querySeq, int startLocation, int endLocation, int zoom) {
+    public List<LocusScore> getSummaryScores(String querySeq, int startLocation, int endLocation, int zoom) {
 
         if (this.availableFunctions == null) {
             init();
