@@ -1,78 +1,55 @@
-/*
- * The MIT License (MIT)
- *
- * Copyright (c) 2007-2017 Broad Institute
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
 package org.broad.igv.ui.javafx;
 
-import javafx.application.Application;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Orientation;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
 import javafx.scene.control.CheckMenuItem;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.Separator;
 import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.control.Slider;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToolBar;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.StrokeLineCap;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 
-public class PortingExperiment extends Application {
+import org.broad.igv.ui.util.UIUtilities;
 
-  public PortingExperiment() {
+// Intended as the rough equivalent of the IGVMenuBar class of the Swing UI.  Work in progress.
+public class IGVMenuBarManager {
+  private static IGVMenuBarManager instance;
+
+  // TODO: decide if we need to capture this.  It's a singleton, so it's always available via its getInstance() method.
+  IGVStageManager igv;
+
+  private MenuBar menuBar;
+  
+  static IGVMenuBarManager createInstance(IGVStageManager igv) {
+      if (instance != null) {
+          if (igv == instance.igv) {
+              return instance;
+          }
+          throw new IllegalStateException("Cannot create another IGVMenuBarManager, use getInstance");
+      }
+      UIUtilities.invokeAndWaitOnEventThread(() ->instance = new IGVMenuBarManager(igv));
+      return instance;
   }
 
-  @Override
-  public void start(Stage primaryStage) throws Exception {
-    primaryStage.setTitle("JavaFX Porting Experiment");
+  public static IGVMenuBarManager getInstance() {
+      return instance;
+  }
 
+  private IGVMenuBarManager(IGVStageManager igv) {
+    // I'm leaving the creation of all of these inline for now.  Need to break them out for structural purposes and 
+    // to hold them as instance vars in order to manage enable/disable, handle events, etc.  We're not there yet so
+    // it's too early to tell what is the best structure.
+    
+    // TODO: add actions to all of these MenuItems
     MenuItem loadFromFile = new MenuItem("Load from File ...");
     loadFromFile.setOnAction(new EventHandler<ActionEvent>() {
       
       @Override
-      public void handle(ActionEvent arg0) {
+      public void handle(ActionEvent actionEvent) {
         // Testing a FileChooser but with no real action
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choose a file");
-        fileChooser.showOpenDialog(primaryStage);
+        fileChooser.showOpenDialog(igv.getMainStage());
       }
     });
     MenuItem loadFromURL = new MenuItem("Load from URL ...");
@@ -166,103 +143,15 @@ public class PortingExperiment extends Application {
     MenuItem aboutIGV = new MenuItem("About IGV");
     Menu helpMenu = new Menu("Help", null, userGuide, helpForum, checkForUpdates, aboutIGV);
     
-    MenuBar menuBar = new MenuBar(fileMenu, genomesMenu, viewMenu, tracksMenu, regionsMenu, toolsMenu, genomeSpaceMenu, helpMenu);
+    // TODO: need to add Google Menu, DB menu (?), Extras Menu, L&F (Skins) menu.  Maybe.
+    
+    menuBar = new MenuBar(fileMenu, genomesMenu, viewMenu, tracksMenu, regionsMenu, toolsMenu, genomeSpaceMenu, helpMenu);
     final String os = System.getProperty ("os.name");
     if (os != null && os.startsWith ("Mac"))
       menuBar.useSystemMenuBarProperty ().set (true);
-
-    VBox root = new VBox();
-    Scene scene = new Scene(root, 1000, 600, Color.WHITE);
-    root.getChildren().add(menuBar);
-
-    String defaultGenome = "Human hg19";
-    ObservableList<String> genomes = FXCollections.observableArrayList(defaultGenome, "chr1.fasta");
-    ComboBox<String> genomeSelector = new ComboBox<String>(genomes);
-    genomeSelector.setValue(defaultGenome);
-
-    ObservableList<String> chromosomes = FXCollections.observableArrayList("chr1, chr2, chr3");
-    ComboBox<String> chromosomeSelector = new ComboBox<String>(chromosomes);
-    
-    TextField jumpToTextField = new TextField();
-    Label jumpToLabel = new Label("Go");
-    jumpToLabel.setLabelFor(jumpToTextField);
-    HBox jumpToPane = new HBox(jumpToTextField, jumpToLabel);
-    jumpToPane.setAlignment(Pos.CENTER);
-
-    Button homeButton = new Button("");
-    homeButton.setId("homeButton");
-    Button leftArrowButton = new Button("");
-    leftArrowButton.setId("leftArrowButton");
-    Button rightArrowButton = new Button("");
-    rightArrowButton.setId("rightArrowButton");
-    Button refreshScreenButton = new Button("");
-    refreshScreenButton.setId("refreshScreenButton");
-    Button regionToolButton = new Button("");
-    regionToolButton.setId("regionToolButton");
-    Button resizeToWindowButton = new Button("");
-    resizeToWindowButton.setId("resizeToWindowButton");
-    Button infoSelectButton = new Button("");
-    infoSelectButton.setId("infoSelectButton");
-    Button rulerButton = new Button("");
-    rulerButton.setId("rulerButton");
-    
-    Slider zoomLevelSlider = new Slider();
-    zoomLevelSlider.setShowTickMarks(true);
-    zoomLevelSlider.setSnapToTicks(true);
-
-    ToolBar toolbar = new ToolBar(genomeSelector, chromosomeSelector, jumpToPane,
-        homeButton, leftArrowButton, rightArrowButton, refreshScreenButton, regionToolButton, resizeToWindowButton,
-        infoSelectButton, rulerButton, zoomLevelSlider);
-    root.getChildren().add(toolbar);
-
-    ResizableCanvas resizableCanvas1 = new ResizableCanvas();
-    Canvas canvas = resizableCanvas1.getCanvas();
-    canvas.setHeight(500);
-    canvas.setWidth(1000);
-    
-    ResizableCanvas resizableCanvas2 = new ResizableCanvas();
-    Canvas canvas2 = resizableCanvas2.getCanvas();
-    canvas2.setHeight(200);
-    canvas2.setWidth(1000);
-    
-    SplitPane trackPane = new SplitPane(resizableCanvas1, resizableCanvas2);
-    trackPane.setOrientation(Orientation.VERTICAL);
-    trackPane.setDividerPositions(0.9);
-    root.getChildren().add(trackPane);
-    
-    // Drawing experiment, nothing real
-    GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
-    
-    graphicsContext.setStroke(Color.RED);
-    graphicsContext.setLineWidth(1);
-    graphicsContext.setLineCap(StrokeLineCap.BUTT);
-    graphicsContext.setLineDashes(10d, 5d, 15d, 20d);
-    graphicsContext.setLineDashOffset(0);
-    graphicsContext.strokeLine(10, 10, 200, 10);
-    
-    graphicsContext.setStroke(Color.GREEN);
-    graphicsContext.setLineWidth(1);
-    graphicsContext.setLineCap(StrokeLineCap.ROUND);
-    graphicsContext.strokeLine(10, 30, 200, 30);
-    
-    graphicsContext.setStroke(Color.BLUE);
-    graphicsContext.setLineWidth(1);
-    graphicsContext.strokeLine(10, 50, 200, 50);
-
-    GraphicsContext graphicsContext2 = canvas2.getGraphicsContext2D();
-    
-    graphicsContext2.setStroke(Color.PURPLE);
-    graphicsContext2.setLineWidth(1);
-    graphicsContext2.setLineCap(StrokeLineCap.BUTT);
-    graphicsContext2.strokeLine(10, 10, 200, 10);
-
-    scene.getStylesheets().add(getClass().getResource("experiment.css").toExternalForm());
-    
-    primaryStage.setScene(scene);
-    primaryStage.show();
   }
 
-  public static void main(String[] args) {
-    launch(args);
+  public MenuBar getMenuBar() {
+    return menuBar;
   }
 }
