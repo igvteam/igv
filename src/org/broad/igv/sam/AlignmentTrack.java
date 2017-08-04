@@ -2624,6 +2624,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             flagZeroQualityAlignments = prefs.getAsBoolean(SAM_FLAG_ZERO_QUALITY);
             bisulfiteContext = AlignmentTrack.DEFAULT_BISULFITE_CONTEXT;
 
+            showMismatches = true;
+            viewPairs = false;
+            pairedArcView = false;
 
             colorByTag = prefs.get(SAM_COLOR_BY_TAG);
             sortByTag = prefs.get(SAM_SORT_BY_TAG);
