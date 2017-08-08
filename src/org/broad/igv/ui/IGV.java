@@ -617,10 +617,17 @@ public class IGV implements IGVEventObserver {
 
     final public void doViewPreferences() {
 
-        try {
-            PreferenceEditorFX.open(this.mainFrame);
-        } catch (IOException e) {
-            log.error("Error openining preference dialog", e);
+        // 2.x releases -- swing editor
+        if(Globals.VERSION.contains("2.4")) {
+             PreferencesEditor dialog = new PreferencesEditor(this.mainFrame, true);
+             dialog.setVisible(true);
+        }  else {
+            // 3.0 releases -- javafx
+            try {
+                PreferenceEditorFX.open(this.mainFrame);
+            } catch (IOException e) {
+                log.error("Error openining preference dialog", e);
+            }
         }
     }
 
@@ -747,7 +754,7 @@ public class IGV implements IGVEventObserver {
 
         String extension = FileUtils.getFileExtension(file.getAbsolutePath());
 
-        if(extension == null) {
+        if (extension == null) {
             extension = ".png";
             file = new File(file.getAbsolutePath() + extension);
         }
@@ -942,7 +949,7 @@ public class IGV implements IGVEventObserver {
         SeekableFileStream.closeAllInstances();
 
         Set<Track> newTracks = new HashSet<>(getAllTracks());
-        for(Track t : oldTracks) {
+        for (Track t : oldTracks) {
 
         }
 
