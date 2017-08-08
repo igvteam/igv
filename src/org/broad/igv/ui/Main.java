@@ -190,8 +190,10 @@ public class Main {
                     // See if user has specified to skip this update
 
                     final String skipString = PreferencesManager.getPreferences().get(SKIP_VERSION);
-                    HashSet<String> skipVersion = new HashSet<String>(Arrays.asList(skipString.split(",")));
-                    if (skipVersion.contains(serverVersionString)) return;
+                    if(skipString != null) {
+                        HashSet<String> skipVersion = new HashSet<>(Arrays.asList(skipString.split(",")));
+                        if (skipVersion.contains(serverVersionString)) return;
+                    }
 
                     Version serverVersion = Version.getVersion(serverVersionString.trim());
                     if (serverVersion == null) return;
@@ -398,6 +400,7 @@ public class Main {
         private String coverageFile = null;
         private String name = null;
         public String igvDirectory = null;
+        public String forceVersion = null;
 
         IGVArgs(String[] args) {
             if (args != null) {
@@ -421,6 +424,7 @@ public class Main {
             CmdLineParser.Option coverageFileOption = parser.addStringOption('c', "coverageFile");
             CmdLineParser.Option nameOption = parser.addStringOption('n', "name");
             CmdLineParser.Option igvDirectoryOption = parser.addStringOption("igvDirectory");
+            CmdLineParser.Option forceVersionOption = parser.addStringOption("forceVersion");
 
             try {
                 parser.parse(args);
@@ -451,6 +455,11 @@ public class Main {
             String igvDirectoryPath = (String) parser.getOptionValue(igvDirectoryOption);
             if (igvDirectoryPath != null) {
                 igvDirectory = maybeDecodePath(igvDirectoryPath);
+            }
+
+            String forceVersion = (String) parser.getOptionValue(forceVersionOption);
+            if(forceVersion != null) {
+                Globals.VERSION = forceVersion;
             }
 
             String[] nonOptionArgs = parser.getRemainingArgs();

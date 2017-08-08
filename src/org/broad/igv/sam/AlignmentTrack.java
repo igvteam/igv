@@ -234,7 +234,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         if (renderOptions.colorOption == ColorOption.BISULFITE) {
-            dataManager.setInferredExperimentType(ExperimentType.BISULFITE);
+            setExperimentType(ExperimentType.BISULFITE);
         }
 
         readNamePalette = new PaletteColorTable(ColorUtilities.getDefaultPalette());
@@ -1288,14 +1288,18 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     private static IGVPreferences getPreferences(ExperimentType type) {
 
-        String prefKey = Constants.NULL_CATEGORY;
-        if (type == ExperimentType.THIRD_GEN) {
-            prefKey = Constants.THIRD_GEN;
-        } else if (type == ExperimentType.RNA) {
-            prefKey = Constants.RNA;
+        // Disable experimentType preferences for 2.4
+        if (Globals.VERSION.contains("2.4")) {
+            return PreferencesManager.getPreferences(NULL_CATEGORY);
+        } else {
+            String prefKey = Constants.NULL_CATEGORY;
+            if (type == ExperimentType.THIRD_GEN) {
+                prefKey = Constants.THIRD_GEN;
+            } else if (type == ExperimentType.RNA) {
+                prefKey = Constants.RNA;
+            }
+            return PreferencesManager.getPreferences(prefKey);
         }
-
-        return PreferencesManager.getPreferences(prefKey);
     }
 
 

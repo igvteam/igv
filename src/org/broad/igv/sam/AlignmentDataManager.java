@@ -26,6 +26,7 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.event.RefreshEvent;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
@@ -318,7 +319,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, spliceJunctionHelper,
                 downsampleOptions, readStats, peStats, bisulfiteContext, showAlignments);
 
-        if (inferredExperimentType == null) {
+        if (inferredExperimentType == null && !Globals.VERSION.contains("2.4")) {
             readStats.compute();
             inferType(readStats);
         }
