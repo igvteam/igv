@@ -70,11 +70,11 @@ public class AlignmentPacker {
 
         List<Alignment> alList = interval.getAlignments();
         // TODO -- means to undo this
-        if (renderOptions.linkedReads) {
-            alList = linkByTag(alList, renderOptions.linkByTag);
+        if (renderOptions.isLinkedReads()) {
+            alList = linkByTag(alList, renderOptions.getLinkByTag());
         }
 
-        if (renderOptions.groupByOption == null) {
+        if (renderOptions.getGroupByOption() == null) {
             List<Row> alignmentRows = new ArrayList<>(10000);
             pack(alList, renderOptions, alignmentRows);
             packedAlignments.put("", alignmentRows);
@@ -100,7 +100,7 @@ public class AlignmentPacker {
 
             // Now alphabetize (sort) and pack the groups
             List<String> keys = new ArrayList<String>(groupedAlignments.keySet());
-            Comparator<String> groupComparator = getGroupComparator(renderOptions.groupByOption);
+            Comparator<String> groupComparator = getGroupComparator(renderOptions.getGroupByOption());
             Collections.sort(keys, groupComparator);
 
             for (String key : keys) {
@@ -121,8 +121,8 @@ public class AlignmentPacker {
 
         Map<String, PairedAlignment> pairs = null;
 
-        boolean isPairedAlignments = renderOptions.viewPairs;
-        String linkByTag = renderOptions.linkByTag;
+        boolean isPairedAlignments = renderOptions.isViewPairs();
+        String linkByTag = renderOptions.getLinkByTag();
 
         if (isPairedAlignments) {
             pairs = new HashMap<>(1000);
@@ -371,9 +371,9 @@ public class AlignmentPacker {
 
     private String getGroupValue(Alignment al, AlignmentTrack.RenderOptions renderOptions) {
 
-        AlignmentTrack.GroupOption groupBy = renderOptions.groupByOption;
-        String tag = renderOptions.groupByTag;
-        Range pos = renderOptions.groupByPos;
+        AlignmentTrack.GroupOption groupBy = renderOptions.getGroupByOption();
+        String tag = renderOptions.getGroupByTag();
+        Range pos = renderOptions.getGroupByPos();
 
         switch (groupBy) {
             case STRAND:

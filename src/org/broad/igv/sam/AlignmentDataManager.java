@@ -34,7 +34,6 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentTrack.SortOption;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.track.RenderContext;
-import org.broad.igv.event.DataLoadedEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.ui.panel.FrameManager;
@@ -56,8 +55,6 @@ public class AlignmentDataManager implements IGVEventObserver {
     private static Logger log = Logger.getLogger(AlignmentDataManager.class);
 
 
-    public enum ExperimentType {OTHER, RNA, BISULFITE, THIRD_GEN}
-
     private Collection<AlignmentInterval> intervalCache;
     private ResourceLocator locator;
     private HashMap<String, String> chrMappings = new HashMap();
@@ -68,8 +65,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     private SpliceJunctionHelper.LoadOptions loadOptions;
     private Object loadLock = new Object();
     private boolean showAlignments = true;
-
-    private ExperimentType type = null;
+    private AlignmentTrack.ExperimentType inferredExperimentType;
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
         this.locator = locator;
@@ -152,16 +148,12 @@ public class AlignmentDataManager implements IGVEventObserver {
         return reader.hasIndex();
     }
 
-    public void setType(ExperimentType type) {
-        if (type != this.type) {
-            ExperimentTypeChangeEvent event = new ExperimentTypeChangeEvent(this, type);
-            this.type = type;
+    public void setInferredExperimentType(AlignmentTrack.ExperimentType inferredExperimentType) {
+        if (inferredExperimentType != this.inferredExperimentType) {
+            ExperimentTypeChangeEvent event = new ExperimentTypeChangeEvent(this, inferredExperimentType);
+            this.inferredExperimentType = inferredExperimentType;
             IGVEventBus.getInstance().post(event);
         }
-    }
-
-    public ExperimentType getType() {
-        return type;
     }
 
     public void setCoverageTrack(CoverageTrack coverageTrack) {
@@ -230,7 +222,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public void setViewAsPairs(boolean option, AlignmentTrack.RenderOptions renderOptions) {
-        if (option == renderOptions.viewPairs) {
+        if (option == renderOptions.isViewPairs()) {
             return;
         }
         renderOptions.setViewPairs(option);
@@ -326,7 +318,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, spliceJunctionHelper,
                 downsampleOptions, readStats, peStats, bisulfiteContext, showAlignments);
 
-        if (type == null) {
+        if (inferredExperimentType == null) {
             readStats.compute();
             inferType(readStats);
         }
@@ -344,11 +336,11 @@ public class AlignmentDataManager implements IGVEventObserver {
     private void inferType(ReadStats readStats) {
 
         if (readStats.readLengthStdDev > 100 || readStats.medianReadLength > 1000) {
-            setType(ExperimentType.THIRD_GEN);  // Could also use fracReadsWithIndels
+            setInferredExperimentType(AlignmentTrack.ExperimentType.THIRD_GEN);  // Could also use fracReadsWithIndels
         } else if (readStats.medianRefToReadRatio > 10) {
-            setType(ExperimentType.RNA);
+            setInferredExperimentType(AlignmentTrack.ExperimentType.RNA);
         } else {
-            setType(ExperimentType.OTHER);
+            setInferredExperimentType(AlignmentTrack.ExperimentType.OTHER);
         }
     }
 
@@ -448,7 +440,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     public void updatePEStats(AlignmentTrack.RenderOptions renderOptions) {
         if (this.peStats != null) {
             for (PEStats stats : peStats.values()) {
-                stats.computeInsertSize(renderOptions.minInsertSizePercentile, renderOptions.maxInsertSizePercentile);
+                stats.computeInsertSize(renderOptions.getMinInsertSizePercentile(), renderOptions.getMaxInsertSizePercentile());
             }
         }
     }

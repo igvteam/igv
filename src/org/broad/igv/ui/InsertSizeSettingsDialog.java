@@ -60,11 +60,11 @@ public class InsertSizeSettingsDialog extends JDialog {
 
     private void initValues(AlignmentTrack.RenderOptions options) {
 
-        computeIsize = options.computeIsizes;
-        minPercentile = options.minInsertSizePercentile;
-        maxPercentile = options.maxInsertSizePercentile;
-        minThreshold = options.minInsertSize;
-        maxThreshold = options.maxInsertSize;
+        computeIsize = options.isComputeIsizes();
+        minPercentile = options.getMinInsertSizePercentile();
+        maxPercentile = options.getMaxInsertSizePercentile();
+        minThreshold = options.getMinInsertSize();
+        maxThreshold = options.getMaxInsertSize();
 
         computeIsizeCB.setSelected(computeIsize);
         minPercentileField.setText(String.valueOf(minPercentile));

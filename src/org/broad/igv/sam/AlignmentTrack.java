@@ -37,7 +37,6 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
-import org.broad.igv.prefs.PreferenceEditorFX;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.session.IGVSessionReader;
@@ -91,6 +90,7 @@ import static org.broad.igv.prefs.Constants.*;
  * @author jrobinso
  */
 @XmlType(factoryMethod = "getNextTrack")
+@XmlAccessorType(XmlAccessType.NONE)
 @XmlSeeAlso(AlignmentTrack.RenderOptions.class)
 
 public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
@@ -106,6 +106,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     static final int INSERTION_ROW_HEIGHT = 9;
     static final int DS_MARGIN_2 = 5;
 
+
+    @XmlAttribute
+    private ExperimentType experimentType;
+
     private final AlignmentRenderer renderer;
 
     private boolean removed = false;
@@ -117,7 +121,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     private CoverageTrack coverageTrack;
     private SpliceJunctionTrack spliceJunctionTrack;
 
-    private RenderOptions renderOptions = new RenderOptions(AlignmentDataManager.ExperimentType.OTHER);
+    private RenderOptions renderOptions = new RenderOptions(ExperimentType.OTHER);
 
 
     private int expandedHeight = 14;
@@ -189,8 +193,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     static final BisulfiteContext DEFAULT_BISULFITE_CONTEXT = BisulfiteContext.CG;
 
 
-
-
     public static void sortAlignmentTracks(SortOption option, String tag) {
 
         IGV.getInstance().sortAlignmentTracks(option, tag);
@@ -232,7 +234,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         if (renderOptions.colorOption == ColorOption.BISULFITE) {
-            dataManager.setType(AlignmentDataManager.ExperimentType.BISULFITE);
+            dataManager.setInferredExperimentType(ExperimentType.BISULFITE);
         }
 
         readNamePalette = new PaletteColorTable(ColorUtilities.getDefaultPalette());
@@ -247,8 +249,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     @Override
     public void receiveEvent(Object event) {
-        // Trim insertionInterval map to current frames
+
         if (event instanceof FrameManager.ChangeEvent) {
+            // Trim insertionInterval map to current frames
             Map<ReferenceFrame, List<InsertionInterval>> newMap = Collections.synchronizedMap(new HashMap<>());
             for (ReferenceFrame frame : ((FrameManager.ChangeEvent) event).getFrames()) {
                 if (insertionIntervalsMap.containsKey(frame)) {
@@ -256,16 +259,15 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 }
             }
             insertionIntervalsMap = newMap;
-        } else if (event instanceof ExperimentTypeChangeEvent) {
-            if (((ExperimentTypeChangeEvent) event).source == dataManager) {
-                log.info("Experiment type = " + ((ExperimentTypeChangeEvent) event).type);
-                renderOptions = new RenderOptions(((ExperimentTypeChangeEvent) event).type);
 
-                boolean showJunction = getPreferences().getAsBoolean(Constants.SAM_SHOW_JUNCTION_TRACK);
-                if (showJunction != spliceJunctionTrack.isVisible()) {
-                    spliceJunctionTrack.setVisible(showJunction);
-                    IGV.getInstance().revalidateTrackPanels();
-                }
+        } else if (event instanceof ExperimentTypeChangeEvent) {
+
+            if (experimentType == null) {
+
+                log.info("Experiment type = " + ((ExperimentTypeChangeEvent) event).type);
+
+                setExperimentType(((ExperimentTypeChangeEvent) event).type);
+
             }
 
         } else if (event instanceof AlignmentTrackEvent) {
@@ -278,12 +280,31 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 case RELOAD:
                     clearCaches();
                 case REFRESH:
-                    setRenderOptions(new RenderOptions(dataManager.getType()));
+                    renderOptions.refreshDefaults(getExperimentType());
                     refresh();
                     break;
             }
 
         }
+    }
+
+
+    private void setExperimentType(ExperimentType type) {
+
+        if (type != experimentType) {
+            experimentType = type;
+            renderOptions.refreshDefaults(type);
+
+            boolean showJunction = getPreferences(type).getAsBoolean(Constants.SAM_SHOW_JUNCTION_TRACK);
+            if (showJunction != spliceJunctionTrack.isVisible()) {
+                spliceJunctionTrack.setVisible(showJunction);
+                IGV.getInstance().revalidateTrackPanels();
+            }
+        }
+    }
+
+    private ExperimentType getExperimentType() {
+        return experimentType;
     }
 
 
@@ -545,7 +566,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         // Check for YC tag
-        if(!renderOptions.colorOptionSet && dataManager.hasYCTags()) {
+        if (renderOptions.colorOption == null && dataManager.hasYCTags()) {
             renderOptions.colorOption = ColorOption.YC_TAG;
         }
 
@@ -585,7 +606,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         int nGroups = groups.size();
         int groupNumber = 0;
         GroupOption groupOption = renderOptions.groupByOption;
-        String groupByTag = renderOptions.groupByTag;
 
         for (Map.Entry<String, List<Row>> entry : groups.entrySet()) {
 
@@ -1185,8 +1205,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             if (hasRenderSubTag) {
                 renderOptions.setColorOption(renderOptions.colorOption);
                 return;
-            }
-            else {
+            } else {
                 RenderOptions ro = IGVSessionReader.getJAXBContext().createUnmarshaller().unmarshal(node, RenderOptions.class).getValue();
                 ro.setColorOption(ro.colorOption);    // Set the explicit-set flag
 
@@ -1221,6 +1240,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         dataManager.setViewAsPairs(vAP, renderOptions);
         refresh();
     }
+
+    public enum ExperimentType {OTHER, RNA, BISULFITE, THIRD_GEN}
 
 
     class RenderRollback {
@@ -1262,15 +1283,15 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     IGVPreferences getPreferences() {
-        return getPreferences(dataManager.getType());
+        return getPreferences(experimentType);
     }
 
-    private static IGVPreferences getPreferences(AlignmentDataManager.ExperimentType type) {
+    private static IGVPreferences getPreferences(ExperimentType type) {
 
         String prefKey = Constants.NULL_CATEGORY;
-        if (type == AlignmentDataManager.ExperimentType.THIRD_GEN) {
+        if (type == ExperimentType.THIRD_GEN) {
             prefKey = Constants.THIRD_GEN;
-        } else if (type == AlignmentDataManager.ExperimentType.RNA) {
+        } else if (type == ExperimentType.RNA) {
             prefKey = Constants.RNA;
         }
 
@@ -1292,7 +1313,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     public boolean isLinkedReads() {
-        return renderOptions.linkedReads;
+        return renderOptions.isLinkedReads();
     }
 
     public void setLinkedReads(boolean linkedReads, String tag) {
@@ -1548,7 +1569,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             boolean showNomeESeq = getPreferences().getAsBoolean(SAM_NOMESEQ_ENABLED);
             if (showNomeESeq) {
                 nomeESeqOption = new JRadioButtonMenuItem("NOMe-seq bisulfite mode");
-                nomeESeqOption.setSelected(renderOptions.colorOption == ColorOption.NOMESEQ);
+                nomeESeqOption.setSelected(renderOptions.getColorOption() == ColorOption.NOMESEQ);
                 nomeESeqOption.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent aEvt) {
@@ -1603,9 +1624,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         private JCheckBoxMenuItem getGroupMenuItem(String label, final GroupOption option) {
             JCheckBoxMenuItem mi = new JCheckBoxMenuItem(label);
-            mi.setSelected(renderOptions.groupByOption == option);
+            mi.setSelected(renderOptions.getGroupByOption() == option);
             if (option == GroupOption.NONE) {
-                mi.setSelected(renderOptions.groupByOption == null);
+                mi.setSelected(renderOptions.getGroupByOption() == null);
             }
             mi.addActionListener(new ActionListener() {
 
@@ -1654,26 +1675,26 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             tagOption.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
-                    String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.groupByTag);
+                    String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getGroupByTag());
                     if (tag != null && tag.trim().length() > 0) {
                         IGV.getInstance().groupAlignmentTracks(GroupOption.TAG, tag, null);
                     }
 
                 }
             });
-            tagOption.setSelected(renderOptions.groupByOption == GroupOption.TAG);
+            tagOption.setSelected(renderOptions.getGroupByOption() == GroupOption.TAG);
             groupMenu.add(tagOption);
             group.add(tagOption);
 
-            Range oldGroupByPos = renderOptions.groupByPos;
-            if (renderOptions.groupByOption == GroupOption.BASE_AT_POS) { // already sorted by the base at a position
+            Range oldGroupByPos = renderOptions.getGroupByPos();
+            if (renderOptions.getGroupByOption() == GroupOption.BASE_AT_POS) { // already sorted by the base at a position
                 JCheckBoxMenuItem oldGroupByPosOption = new JCheckBoxMenuItem("base at " + oldGroupByPos.getChr() +
                         ":" + Globals.DECIMAL_FORMAT.format(1 + oldGroupByPos.getStart()));
                 groupMenu.add(oldGroupByPosOption);
                 oldGroupByPosOption.setSelected(true);
             }
 
-            if (renderOptions.groupByOption != GroupOption.BASE_AT_POS || oldGroupByPos == null ||
+            if (renderOptions.getGroupByOption() != GroupOption.BASE_AT_POS || oldGroupByPos == null ||
                     !oldGroupByPos.getChr().equals(chrom) || oldGroupByPos.getStart() != chromStart) { // not already sorted by this position
                 JCheckBoxMenuItem newGroupByPosOption = new JCheckBoxMenuItem("base at " + chrom +
                         ":" + Globals.DECIMAL_FORMAT.format(1 + chromStart));
@@ -1735,7 +1756,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             tagOption.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
-                    String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.sortByTag);
+                    String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getSortByTag());
                     if (tag != null && tag.trim().length() > 0) {
                         renderOptions.setSortByTag(tag);
                         sortAlignmentTracks(SortOption.TAG, tag);
@@ -1760,7 +1781,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         private JRadioButtonMenuItem getColorMenuItem(String label, final ColorOption option) {
             JRadioButtonMenuItem mi = new JRadioButtonMenuItem(label);
-            mi.setSelected(renderOptions.colorOption == option);
+            mi.setSelected(renderOptions.getColorOption() == option);
             mi.addActionListener(aEvt -> {
                 setColorOption(option);
                 refresh();
@@ -1808,12 +1829,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
 
             JRadioButtonMenuItem tagOption = new JRadioButtonMenuItem("tag");
-            tagOption.setSelected(renderOptions.colorOption== ColorOption.TAG);
+            tagOption.setSelected(renderOptions.getColorOption() == ColorOption.TAG);
             tagOption.addActionListener(aEvt -> {
                 setColorOption(ColorOption.TAG);
-                String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.colorByTag);
+                String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getColorByTag());
                 if (tag != null && tag.trim().length() > 0) {
                     renderOptions.setColorByTag(tag);
+                    getPreferences(experimentType).put(SAM_COLOR_BY_TAG, tag);
                     refresh();
                 }
             });
@@ -1877,7 +1899,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         public void addViewAsPairsMenuItem() {
             final JMenuItem item = new JCheckBoxMenuItem("View as pairs");
-            item.setSelected(renderOptions.viewPairs);
+            item.setSelected(renderOptions.isViewPairs());
             item.addActionListener(aEvt -> {
                 boolean viewAsPairs = item.isSelected();
                 setViewAsPairs(viewAsPairs);
@@ -1955,17 +1977,14 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             // Change track height by attribute
             final JMenuItem item = new JCheckBoxMenuItem("Show all bases");
 
-            if (renderOptions.colorOption == ColorOption.BISULFITE || renderOptions.colorOption == ColorOption.NOMESEQ) {
+            if (renderOptions.getColorOption() == ColorOption.BISULFITE || renderOptions.getColorOption() == ColorOption.NOMESEQ) {
                 //    item.setEnabled(false);
             } else {
-                item.setSelected(renderOptions.showAllBases);
+                item.setSelected(renderOptions.isShowAllBases());
             }
-            item.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent aEvt) {
-                    renderOptions.setShowAllBases(item.isSelected());
-                    refresh();
-                }
+            item.addActionListener(aEvt -> {
+                renderOptions.setShowAllBases(item.isSelected());
+                refresh();
             });
             add(item);
             return item;
@@ -1974,14 +1993,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         public JMenuItem addQuickConsensusModeItem() {
             // Change track height by attribute
             final JMenuItem item = new JCheckBoxMenuItem("Quick consensus mode");
-            item.setSelected(renderOptions.quickConsensusMode);
+            item.setSelected(renderOptions.isQuickConsensusMode());
 
-            item.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent aEvt) {
-                    renderOptions.setQuickConsensusMode(item.isSelected());
-                    refresh();
-                }
+            item.addActionListener(aEvt -> {
+                renderOptions.setQuickConsensusMode(item.isSelected());
+                refresh();
             });
             add(item);
             return item;
@@ -1992,13 +2008,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             final JMenuItem item = new JCheckBoxMenuItem("Show mismatched bases");
 
 
-            item.setSelected(renderOptions.showMismatches);
-            item.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent aEvt) {
-                    renderOptions.setShowMismatches(item.isSelected());
-                    refresh();
-                }
+            item.setSelected(renderOptions.isShowMismatches());
+            item.addActionListener(aEvt -> {
+                renderOptions.setShowMismatches(item.isSelected());
+                refresh();
             });
             add(item);
             return item;
@@ -2008,25 +2021,22 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         public void addInsertSizeMenuItem() {
             // Change track height by attribute
             final JMenuItem item = new JCheckBoxMenuItem("Set insert size options ...");
-            item.addActionListener(new ActionListener() {
+            item.addActionListener(aEvt -> {
 
-                public void actionPerformed(ActionEvent aEvt) {
-
-                    InsertSizeSettingsDialog dlg = new InsertSizeSettingsDialog(IGV.getMainFrame(), renderOptions);
-                    dlg.setModal(true);
-                    dlg.setVisible(true);
-                    if (!dlg.isCanceled()) {
-                        renderOptions.setComputeIsizes(dlg.isComputeIsize());
-                        renderOptions.setMinInsertSizePercentile(dlg.getMinPercentile());
-                        renderOptions.setMaxInsertSizePercentile(dlg.getMaxPercentile());
-                        if (renderOptions.computeIsizes) {
-                            dataManager.updatePEStats(renderOptions);
-                        }
-
-                        renderOptions.setMinInsertSize(dlg.getMinThreshold());
-                        renderOptions.setMaxInsertSize(dlg.getMaxThreshold());
-                        refresh();
+                InsertSizeSettingsDialog dlg = new InsertSizeSettingsDialog(IGV.getMainFrame(), renderOptions);
+                dlg.setModal(true);
+                dlg.setVisible(true);
+                if (!dlg.isCanceled()) {
+                    renderOptions.setComputeIsizes(dlg.isComputeIsize());
+                    renderOptions.setMinInsertSizePercentile(dlg.getMinPercentile());
+                    renderOptions.setMaxInsertSizePercentile(dlg.getMaxPercentile());
+                    if (renderOptions.computeIsizes) {
+                        dataManager.updatePEStats(renderOptions);
                     }
+
+                    renderOptions.setMinInsertSize(dlg.getMinThreshold());
+                    renderOptions.setMaxInsertSize(dlg.getMaxThreshold());
+                    refresh();
                 }
             });
 
@@ -2038,7 +2048,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         public void addShadeBaseByMenuItem() {
 
             final JMenuItem item = new JCheckBoxMenuItem("Shade base by quality");
-            item.setSelected(renderOptions.shadeBasesOption == ShadeBasesOption.QUALITY);
+            item.setSelected(renderOptions.getShadeBasesOption() == ShadeBasesOption.QUALITY);
             item.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
@@ -2205,8 +2215,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             final JMenuItem miItem = new JCheckBoxMenuItem("View linked reads (MI)");
 
             if (isLinkedReads()) {
-                bxItem.setSelected("BX".equals(renderOptions.linkByTag));
-                miItem.setSelected("MI".equals(renderOptions.linkByTag));
+                bxItem.setSelected("BX".equals(renderOptions.getLinkByTag()));
+                miItem.setSelected("MI".equals(renderOptions.getLinkByTag()));
             } else {
                 bxItem.setSelected(false);
                 miItem.setSelected(false);
@@ -2238,7 +2248,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             final JMenuItem bxItem = new JCheckBoxMenuItem("Link supplementary alignments");
 
             if (isLinkedReads()) {
-                bxItem.setSelected("READNAME".equals(renderOptions.linkByTag));
+                bxItem.setSelected("READNAME".equals(renderOptions.getLinkByTag()));
             } else {
                 bxItem.setSelected(false);
             }
@@ -2333,75 +2343,69 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         public static final String NAME = "RenderOptions";
 
         @XmlAttribute
-        private final AlignmentDataManager.ExperimentType experimentType;
+        private AlignmentTrack.ShadeBasesOption shadeBasesOption;
         @XmlAttribute
-        public AlignmentTrack.ShadeBasesOption shadeBasesOption;
+        private Boolean shadeCenters;
         @XmlAttribute
-        public boolean shadeCenters;
+        private Boolean flagUnmappedPairs;
         @XmlAttribute
-        public boolean flagUnmappedPairs;
+        private Boolean showAllBases;
         @XmlAttribute
-        public boolean showAllBases;
+        private Integer minInsertSize;
         @XmlAttribute
-        public int minInsertSize;
+        private Integer maxInsertSize;
         @XmlAttribute
-        public int maxInsertSize;
+        private AlignmentTrack.ColorOption colorOption;
         @XmlAttribute
-        public AlignmentTrack.ColorOption colorOption;
-        @XmlAttribute
-        public AlignmentTrack.GroupOption groupByOption;
+        private AlignmentTrack.GroupOption groupByOption;
         //ContinuousColorScale insertSizeColorScale;
         @XmlAttribute
-        public boolean viewPairs;
+        private Boolean viewPairs;
         @XmlAttribute
-        public String colorByTag;
+        private String colorByTag;
         @XmlAttribute
-        public String groupByTag;
+        private String groupByTag;
         @XmlAttribute
-        public String sortByTag;
+        private String sortByTag;
         @XmlAttribute
-        public String linkByTag;
+        private String linkByTag;
         @XmlAttribute
-        public boolean linkedReads;
+        private Boolean linkedReads;
         @XmlAttribute
-        public boolean quickConsensusMode;
+        private Boolean quickConsensusMode;
         @XmlAttribute
-        public boolean showMismatches;
+        private Boolean showMismatches;
         @XmlAttribute
-        public boolean computeIsizes;
+        private Boolean computeIsizes;
         @XmlAttribute
-        public double minInsertSizePercentile;
+        private Double minInsertSizePercentile;
         @XmlAttribute
-        public double maxInsertSizePercentile;
+        private Double maxInsertSizePercentile;
         @XmlAttribute
-        public boolean pairedArcView;
+        private Boolean pairedArcView;
         @XmlAttribute
-        public boolean flagZeroQualityAlignments;
+        private Boolean flagZeroQualityAlignments;
         @XmlElement
-        public Range groupByPos;
-        @XmlAttribute
-        public boolean colorOptionSet = false;
+        private Range groupByPos;
 
 
         AlignmentTrack.BisulfiteContext bisulfiteContext;
-
         Map<String, PEStats> peStats;
+        boolean drawInsertionIntervals = false;
 
-        public boolean drawInsertionIntervals = false;
+        DefaultValues defaultValues;
 
 
         public RenderOptions() {
-            this(AlignmentDataManager.ExperimentType.OTHER);
+            this(ExperimentType.OTHER);
         }
 
-        RenderOptions(AlignmentDataManager.ExperimentType experimentType) {
-
-            this.experimentType = experimentType;
+        RenderOptions(ExperimentType experimentType) {
 
             IGVPreferences prefs = getPreferences(experimentType);
             //updateColorScale();
             peStats = new HashMap<String, PEStats>();
-            setDefaultValues(prefs);
+            defaultValues = new DefaultValues(prefs);
         }
 
 
@@ -2423,12 +2427,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         public void setShowAllBases(boolean showAllBases) {
             this.showAllBases = showAllBases;
-            if (showAllBases) this.showMismatches = false;
         }
 
         public void setShowMismatches(boolean showMismatches) {
             this.showMismatches = showMismatches;
-            if (showMismatches) this.showAllBases = false;
         }
 
         public void setMinInsertSize(int minInsertSize) {
@@ -2459,13 +2461,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         public void setColorByTag(String colorByTag) {
             this.colorByTag = colorByTag;
-            getPreferences(experimentType).put(SAM_COLOR_BY_TAG, colorByTag);
-        }
-        public void setColorOption(AlignmentTrack.ColorOption colorOption) {
-            this.colorOption = colorOption;
-            this.colorOptionSet = true;
         }
 
+        public void setColorOption(AlignmentTrack.ColorOption colorOption) {
+            this.colorOption = colorOption;
+        }
 
         public void setSortByTag(String sortByTag) {
             this.sortByTag = sortByTag;
@@ -2499,157 +2499,173 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             this.linkedReads = linkedReads;
         }
 
-//        public int getMinInsertSize() {
-//            return minInsertSize;
-//        }
-//
-//        public int getMaxInsertSize() {
-//            return maxInsertSize;
-//        }
-//
-//        public boolean isFlagUnmappedPairs() {
-//            return flagUnmappedPairs;
-//        }
-//
-//        public AlignmentTrack.ShadeBasesOption getShadeBasesOption() {
-//            return shadeBasesOption;
-//        }
-//
-//        public boolean isShowMismatches() {
-//            return showMismatches;
-//        }
-//
-//        public boolean isShowAllBases() {
-//            return showAllBases;
-//        }
-//
-//        public boolean isShadeCenters() {
-//            return shadeCenters;
-//        }
-//
-//        public boolean isDrawInsertionIntervals() {
-//            return drawInsertionIntervals;
-//        }
-//
-//        public boolean isFlagZeroQualityAlignments() {
-//            return flagZeroQualityAlignments;
-//        }
-//
-//        public Map<String, PEStats> getPeStats() {
-//            return peStats;
-//        }
-//
-//        public AlignmentTrack.BisulfiteContext getBisulfiteContext() {
-//            return bisulfiteContext;
-//        }
-//
-//        public boolean isViewPairs() {
-//            return viewPairs;
-//        }
-//
-//        public boolean isComputeIsizes() {
-//            return computeIsizes;
-//        }
-//
-//        public double getMinInsertSizePercentile() {
-//            return minInsertSizePercentile;
-//        }
-//
-//        public double getMaxInsertSizePercentile() {
-//            return maxInsertSizePercentile;
-//        }
-//
-//        public AlignmentTrack.ColorOption getColorOption() {
-//            return colorOption;
-//        }
-//
-//        public boolean isColorOptionSet() {
-//            return colorOptionSet;
-//        }
-//
-//        public String getColorByTag() {
-//            return colorByTag;
-//        }
-//
-//        public String getSortByTag() {
-//            return sortByTag;
-//        }
-//
-//        public String getGroupByTag() {
-//            return groupByTag;
-//        }
-//
-//        public Range getGroupByPos() {
-//            return groupByPos;
-//        }
-//
-//        public String getLinkByTag() {
-//            return linkByTag;
-//        }
-//
-//        public AlignmentTrack.GroupOption getGroupByOption() {
-//            return groupByOption;
-//        }
-//
-//        public boolean isLinkedReads() {
-//            return linkedReads;
-//        }
-//
-//        public boolean isQuickConsensusMode() {
-//            return quickConsensusMode;
-//        }
+
+        // getters
+        public int getMinInsertSize() {
+            return minInsertSize == null ? defaultValues.minInsertSize : minInsertSize;
+        }
+
+        public int getMaxInsertSize() {
+            return maxInsertSize == null ? defaultValues.maxInsertSize : maxInsertSize;
+        }
+
+        public boolean isFlagUnmappedPairs() {
+            return flagUnmappedPairs == null ? defaultValues.flagUnmappedPairs : flagUnmappedPairs;
+        }
+
+        public AlignmentTrack.ShadeBasesOption getShadeBasesOption() {
+            return shadeBasesOption == null ? defaultValues.shadeBasesOption : shadeBasesOption;
+        }
+
+        public boolean isShowMismatches() {
+            return showMismatches == null ? defaultValues.showMismatches : showMismatches;
+        }
+
+        public boolean isShowAllBases() {
+            return showAllBases == null ? defaultValues.showAllBases : showAllBases;
+        }
+
+        public boolean isShadeCenters() {
+            return shadeCenters == null ? defaultValues.shadeCenters : shadeCenters;
+        }
+
+        public boolean isDrawInsertionIntervals() {
+            return drawInsertionIntervals;
+        }
+
+        public boolean isFlagZeroQualityAlignments() {
+            return flagZeroQualityAlignments == null ? defaultValues.flagZeroQualityAlignments : flagZeroQualityAlignments;
+        }
+
+        public boolean isViewPairs() {
+            return viewPairs == null ? defaultValues.viewPairs : viewPairs;
+        }
+
+        public boolean isComputeIsizes() {
+            return computeIsizes == null ? defaultValues.computeIsizes : computeIsizes;
+        }
+
+        public double getMinInsertSizePercentile() {
+            return minInsertSizePercentile == null ? defaultValues.minInsertSizePercentile : minInsertSizePercentile;
+        }
+
+        public double getMaxInsertSizePercentile() {
+            return maxInsertSizePercentile == null ? defaultValues.maxInsertSizePercentile : maxInsertSizePercentile;
+        }
+
+        public AlignmentTrack.ColorOption getColorOption() {
+            return colorOption == null ? defaultValues.colorOption : colorOption;
+        }
+
+        public String getColorByTag() {
+            return colorByTag == null ? defaultValues.colorByTag : colorByTag;
+        }
+
+        public String getSortByTag() {
+            return sortByTag == null ? defaultValues.sortByTag : sortByTag;
+        }
+
+        public String getGroupByTag() {
+            return groupByTag == null ? defaultValues.groupByTag : groupByTag;
+        }
+
+        public Range getGroupByPos() {
+            return groupByPos == null ? defaultValues.groupByPos : groupByPos;
+        }
+
+        public String getLinkByTag() {
+            return linkByTag == null ? defaultValues.linkByTag : linkByTag;
+        }
+
+        public AlignmentTrack.GroupOption getGroupByOption() {
+            return groupByOption == null ? defaultValues.groupByOption : groupByOption;
+        }
+
+        public boolean isLinkedReads() {
+            return linkedReads == null ? defaultValues.linkedReads : linkedReads;
+        }
+
+        public boolean isQuickConsensusMode() {
+            return quickConsensusMode == null ? defaultValues.quickConsensusMode : quickConsensusMode;
+        }
+
+        public void refreshDefaults(ExperimentType experimentType) {
+            defaultValues = new DefaultValues(getPreferences(experimentType));
+        }
 
 
-        void setDefaultValues(IGVPreferences prefs) {
+        static class DefaultValues {
+            public AlignmentTrack.ShadeBasesOption shadeBasesOption;
+            public boolean shadeCenters;
+            public boolean flagUnmappedPairs;
+            public boolean showAllBases;
+            public int minInsertSize;
+            public int maxInsertSize;
+            public AlignmentTrack.ColorOption colorOption;
+            public AlignmentTrack.GroupOption groupByOption;
+            //ContinuousColorScale insertSizeColorScale;
+            public boolean viewPairs;
+            public String colorByTag;
+            public String groupByTag;
+            public String sortByTag;
+            public String linkByTag;
+            public boolean linkedReads;
+            public boolean quickConsensusMode;
+            public boolean showMismatches;
+            public boolean computeIsizes;
+            public double minInsertSizePercentile;
+            public double maxInsertSizePercentile;
+            public boolean pairedArcView;
+            public boolean flagZeroQualityAlignments;
+            public Range groupByPos;
 
-            String shadeOptionString = prefs.get(SAM_SHADE_BASES);
-            if (shadeOptionString.equals("false")) {
-                shadeBasesOption = AlignmentTrack.ShadeBasesOption.NONE;
-            } else if (shadeOptionString.equals("true")) {
-                shadeBasesOption = AlignmentTrack.ShadeBasesOption.QUALITY;
-            } else {
-                shadeBasesOption = AlignmentTrack.ShadeBasesOption.valueOf(shadeOptionString);
-            }
-            shadeCenters = prefs.getAsBoolean(SAM_SHADE_CENTER);
-            flagUnmappedPairs = prefs.getAsBoolean(SAM_FLAG_UNMAPPED_PAIR);
-            computeIsizes = prefs.getAsBoolean(SAM_COMPUTE_ISIZES);
-            minInsertSize = prefs.getAsInt(SAM_MIN_INSERT_SIZE_THRESHOLD);
-            maxInsertSize = prefs.getAsInt(SAM_MAX_INSERT_SIZE_THRESHOLD);
-            minInsertSizePercentile = prefs.getAsFloat(SAM_MIN_INSERT_SIZE_PERCENTILE);
-            maxInsertSizePercentile = prefs.getAsFloat(SAM_MAX_INSERT_SIZE_PERCENTILE);
-            showAllBases = prefs.getAsBoolean(SAM_SHOW_ALL_BASES);
-            quickConsensusMode = prefs.getAsBoolean(SAM_QUICK_CONSENSUS_MODE);
-            colorOption = CollUtils.valueOf(AlignmentTrack.ColorOption.class, prefs.get(SAM_COLOR_BY), AlignmentTrack.ColorOption.NONE);
-            groupByOption = CollUtils.valueOf(AlignmentTrack.GroupOption.class, prefs.get(SAM_GROUP_OPTION), AlignmentTrack.GroupOption.NONE);
-            flagZeroQualityAlignments = prefs.getAsBoolean(SAM_FLAG_ZERO_QUALITY);
-            bisulfiteContext = AlignmentTrack.DEFAULT_BISULFITE_CONTEXT;
+            DefaultValues(IGVPreferences prefs) {
 
-            showMismatches = true;
-            viewPairs = false;
-            pairedArcView = false;
-
-            colorByTag = prefs.get(SAM_COLOR_BY_TAG);
-            sortByTag = prefs.get(SAM_SORT_BY_TAG);
-            groupByTag = prefs.get(SAM_GROUP_BY_TAG);
-
-            linkedReads = prefs.getAsBoolean(SAM_LINK_READS);
-            linkByTag = prefs.get(SAM_LINK_TAG);
-
-            String pos = prefs.get(SAM_GROUP_BY_POS);
-
-            if (pos == null) {
-                this.groupByPos = null;
-            } else {
-                String[] posParts = pos.split(" ");
-                if (posParts.length != 2) {
-                    this.groupByPos = null;
+                String shadeOptionString = prefs.get(SAM_SHADE_BASES);
+                if (shadeOptionString.equals("false")) {
+                    shadeBasesOption = AlignmentTrack.ShadeBasesOption.NONE;
+                } else if (shadeOptionString.equals("true")) {
+                    shadeBasesOption = AlignmentTrack.ShadeBasesOption.QUALITY;
                 } else {
-                    int posChromStart = Integer.valueOf(posParts[1]);
-                    this.groupByPos = new Range(posParts[0], posChromStart, posChromStart + 1);
+                    shadeBasesOption = AlignmentTrack.ShadeBasesOption.valueOf(shadeOptionString);
+                }
+                shadeCenters = prefs.getAsBoolean(SAM_SHADE_CENTER);
+                flagUnmappedPairs = prefs.getAsBoolean(SAM_FLAG_UNMAPPED_PAIR);
+                computeIsizes = prefs.getAsBoolean(SAM_COMPUTE_ISIZES);
+                minInsertSize = prefs.getAsInt(SAM_MIN_INSERT_SIZE_THRESHOLD);
+                maxInsertSize = prefs.getAsInt(SAM_MAX_INSERT_SIZE_THRESHOLD);
+                minInsertSizePercentile = prefs.getAsFloat(SAM_MIN_INSERT_SIZE_PERCENTILE);
+                maxInsertSizePercentile = prefs.getAsFloat(SAM_MAX_INSERT_SIZE_PERCENTILE);
+                showAllBases = prefs.getAsBoolean(SAM_SHOW_ALL_BASES);
+                quickConsensusMode = prefs.getAsBoolean(SAM_QUICK_CONSENSUS_MODE);
+                colorOption = CollUtils.valueOf(AlignmentTrack.ColorOption.class, prefs.get(SAM_COLOR_BY), AlignmentTrack.ColorOption.NONE);
+                groupByOption = CollUtils.valueOf(AlignmentTrack.GroupOption.class, prefs.get(SAM_GROUP_OPTION), AlignmentTrack.GroupOption.NONE);
+                flagZeroQualityAlignments = prefs.getAsBoolean(SAM_FLAG_ZERO_QUALITY);
+
+                showMismatches = prefs.getAsBoolean(SAM_SHOW_MISMATCHES);
+                viewPairs = false;
+                pairedArcView = false;
+
+                colorByTag = prefs.get(SAM_COLOR_BY_TAG);
+                sortByTag = prefs.get(SAM_SORT_BY_TAG);
+                groupByTag = prefs.get(SAM_GROUP_BY_TAG);
+
+                linkedReads = prefs.getAsBoolean(SAM_LINK_READS);
+                linkByTag = prefs.get(SAM_LINK_TAG);
+
+                String pos = prefs.get(SAM_GROUP_BY_POS);
+
+                if (pos != null) {
+                    String[] posParts = pos.split(" ");
+                    if (posParts.length != 2) {
+                        this.groupByPos = null;
+                    } else {
+                        int posChromStart = Integer.valueOf(posParts[1]);
+                        this.groupByPos = new Range(posParts[0], posChromStart, posChromStart + 1);
+                    }
                 }
             }
         }
-
     }
 
 }
