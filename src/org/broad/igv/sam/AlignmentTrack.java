@@ -215,6 +215,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         super(locator);
 
         this.dataManager = dataManager;
+        this.dataManager.subscribe(this);
 
         setRenderOptions(new RenderOptions());
 
@@ -1308,8 +1309,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         super.dispose();
         clearCaches();
         if (dataManager != null) {
-            dataManager.dumpAlignments();
-            IGVEventBus.getInstance().unsubscribe(dataManager);
+            dataManager.unsubscribe(this);
         }
         dataManager = null;
         removed = true;
@@ -2393,7 +2393,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         private Range groupByPos;
 
 
-        AlignmentTrack.BisulfiteContext bisulfiteContext;
+        AlignmentTrack.BisulfiteContext bisulfiteContext = BisulfiteContext.CG;
         Map<String, PEStats> peStats;
         boolean drawInsertionIntervals = false;
 

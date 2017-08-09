@@ -37,6 +37,7 @@ import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
@@ -67,6 +68,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     private Object loadLock = new Object();
     private boolean showAlignments = true;
     private AlignmentTrack.ExperimentType inferredExperimentType;
+    private Set<Track> subscribedTracks;
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
         this.locator = locator;
@@ -75,6 +77,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         initLoadOptions();
         initChrMap(genome);
         intervalCache = Collections.synchronizedList(new ArrayList<>());
+        subscribedTracks = Collections.synchronizedSet(new HashSet<>());
 
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
         IGVEventBus.getInstance().subscribe(RefreshEvent.class, this);
@@ -102,6 +105,18 @@ public class AlignmentDataManager implements IGVEventObserver {
             clear();
         } else {
             log.info("Unknown event type: " + event.getClass());
+        }
+    }
+
+    public void subscribe(Track track) {
+        subscribedTracks.add(track);
+    }
+
+    public void unsubscribe(Track track) {
+        subscribedTracks.remove(track);
+        if (subscribedTracks.isEmpty()) {
+            dumpAlignments();
+            IGVEventBus.getInstance().unsubscribe(this);
         }
     }
 

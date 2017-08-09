@@ -92,10 +92,13 @@ public class SpliceJunctionTrack extends FeatureTrack {
 
         super.setDataRange(new DataRange(0, 0, 60));
         setRendererClass(SpliceJunctionRenderer.class);
+        if(dataManager != null) {
+            dataManager.unsubscribe(this);
+        }
         this.dataManager = dataManager;
+        this.dataManager.subscribe(this);
         this.alignmentTrack = alignmentTrack;
         this.strandOption = ignoreStrand;
-        // Register track
     }
 
 
@@ -117,10 +120,6 @@ public class SpliceJunctionTrack extends FeatureTrack {
     public void dispose() {
         super.dispose();
         removed = true;
-        if(dataManager != null) {
-            dataManager.dumpAlignments();
-            IGVEventBus.getInstance().unsubscribe(dataManager);
-        }
         dataManager = null;
         alignmentTrack = null;
         setVisible(false);

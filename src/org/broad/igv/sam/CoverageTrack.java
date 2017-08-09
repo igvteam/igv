@@ -158,6 +158,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     public void setDataManager(AlignmentDataManager dataManager) {
         this.dataManager = dataManager;
+        this.dataManager.subscribe(this);
     }
 
     public void setDataSource(CoverageDataSource dataSource) {
@@ -214,8 +215,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         super.dispose();
         removed = true;
         if(dataManager != null) {
-            dataManager.dumpAlignments();
-            IGVEventBus.getInstance().unsubscribe(dataManager);
+            dataManager.unsubscribe(this);
         }
         dataManager = null;
         dataSource = null;
