@@ -146,8 +146,16 @@ public class Downloader implements Runnable {
 
     }
 
-    // Convenience method
-    public static void download(URL url, File localFile, Component frame) throws MalformedURLException {
+    /**
+     * Convenience method.  Download the resource at url to the local file.
+     *
+     * @param url
+     * @param localFile
+     * @param frame
+     * @return  true for completed download, false if canceled.
+     * @throws MalformedURLException
+     */
+    public static boolean download(URL url, File localFile, Component frame) throws MalformedURLException {
 
         String message = "Downloading " + url.toString();
         int min = 0;
@@ -161,7 +169,11 @@ public class Downloader implements Runnable {
             monitor = null;
         }
 
-        (new Downloader(url, localFile, monitor)).run();
+        final Downloader downloader = new Downloader(url, localFile, monitor);
+        downloader.run();
+
+        return downloader.canceled == false;
+
 
     }
 

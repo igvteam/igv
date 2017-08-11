@@ -35,7 +35,6 @@ import org.broad.igv.cli_plugin.PluginSpecReader;
 import org.broad.igv.cli_plugin.ui.RunPlugin;
 import org.broad.igv.cli_plugin.ui.SetPluginPathDialog;
 import org.broad.igv.dev.db.DBProfileEditor;
-import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ga4gh.Ga4ghAPIHelper;
 import org.broad.igv.ga4gh.OAuthUtils;
@@ -51,7 +50,7 @@ import org.broad.igv.ui.action.*;
 import org.broad.igv.event.GenomeChangeEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
-import org.broad.igv.feature.genome.ManageGenomesDialog;
+import org.broad.igv.feature.genome.RemoveGenomesDialog;
 import org.broad.igv.ui.commandbar.GenomeComboBox;
 import org.broad.igv.ui.legend.LegendDialog;
 import org.broad.igv.ui.panel.FrameManager;
@@ -565,6 +564,21 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         loadFromServerMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
         menuItems.add(loadFromServerMenuItem);
 
+
+        menuItems.add(new JSeparator());
+
+        // Add genome to combo box from server
+        menuAction = new MenuAction("Remove genomes ...", null) {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                RemoveGenomesDialog dialog2 = new RemoveGenomesDialog(IGV.getMainFrame());
+                dialog2.setVisible(true);
+            }
+        };
+        menuAction.setToolTipText("Remove genomes which appear in the dropdown list");
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+
         menuItems.add(new JSeparator());
 
         menuAction =
@@ -578,19 +592,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 };
 
         menuAction.setToolTipText(UIConstants.IMPORT_GENOME_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuItems.add(new JSeparator());
-
-        // Add genome to combo box from server
-        menuAction = new MenuAction("Manage Genome List...", null) {
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                ManageGenomesDialog dialog2 = new ManageGenomesDialog(IGV.getMainFrame());
-                dialog2.setVisible(true);
-            }
-        };
-        menuAction.setToolTipText("Add, remove, or reorder genomes which appear in the dropdown list");
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         MenuAction genomeMenuAction = new MenuAction("Genomes", null);

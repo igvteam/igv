@@ -217,7 +217,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                 contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
                 //---- textArea1 ----
-                textArea1.setText("Selected genomes will be added to the genome dropdown list.");
+                textArea1.setText("Selected genome will be added to the genome dropdown list.");
                 textArea1.setLineWrap(true);
                 textArea1.setWrapStyleWord(true);
                 textArea1.setBackground(UIManager.getColor("Button.background"));

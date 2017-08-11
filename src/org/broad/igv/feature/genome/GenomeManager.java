@@ -201,6 +201,11 @@ public class GenomeManager {
             String altGenomePath;
             if (genomePath.endsWith(".genome")) {
                 File archiveFile = getArchiveFile(genomePath);
+
+                if(!archiveFile.exists()) {
+                    return null;    // Happens if genome download was canceled.
+                }
+
                 altGenomePath = archiveFile.getAbsolutePath();
                 newGenome = loadDotGenomeFile(archiveFile);
             } else if (genomePath.endsWith(".gbk") || genomePath.endsWith(".gb")) {
@@ -991,7 +996,9 @@ public class GenomeManager {
     }
 
 
-    public void downloadGenomes(final List<GenomeListItem> addValuesList, boolean downloadSequence) {
+    public boolean downloadGenomes(final List<GenomeListItem> addValuesList, boolean downloadSequence) {
+
+        boolean success = false;
 
         for (GenomeListItem item : addValuesList) {
             try {
@@ -1006,20 +1013,29 @@ public class GenomeManager {
                     if (genomeDescriptor.isFasta()) {
                         String fastaPath = genomeDescriptor.getSequencePath();
                         File localFile = downloadFasta(fastaPath);
-                        addLocalFasta(item.getId(), localFile);
+                        if(localFile != null) {
+                            success = true;
+                            addLocalFasta(item.getId(), localFile);
+                        }
 
                     } else {
                         MessageUtils.showMessage("Could not download sequence for: " + genomeDescriptor.getName());
                     }
                 }
 
-
-                genomeListManager.addGenomeItem(item, false);
+                if(success) {
+                    genomeListManager.addGenomeItem(item, false);
+                }
             } catch (Exception e) {
-                log.error("Error loading genome " + item.getDisplayableName());
+                log.error("Fasta file unavailable for " + item.getDisplayableName());
             }
         }
-        IGVEventBus.getInstance().post(new GenomeResetEvent());
+
+        if(success) {
+            IGVEventBus.getInstance().post(new GenomeResetEvent());
+        }
+
+        return success;
 
     }
 
@@ -1041,21 +1057,24 @@ public class GenomeManager {
         String filename = Utilities.getFileNameFromURL(fastaPath);
 
         File localFile = new File(targetDir, filename);
-        Downloader.download(new URL(fastaPath), localFile, IGV.getMainFrame());
+        boolean downloaded = Downloader.download(new URL(fastaPath), localFile, IGV.getMainFrame());
 
-        URL indexUrl = new URL(fastaPath + ".fai");
-        File localIndexFile = new File(targetDir, filename + ".fai");
-        Downloader.download(indexUrl, localIndexFile, IGV.getMainFrame());
-
-
-        if (fastaPath.endsWith(".gz")) {
-
-            URL gziUrl = new URL(fastaPath + ".gzi");
-            File localGziPath = new File(targetDir, filename + ".gzi");
-            Downloader.download(gziUrl, localGziPath, IGV.getMainFrame());
+        if(downloaded) {
+            URL indexUrl = new URL(fastaPath + ".fai");
+            File localIndexFile = new File(targetDir, filename + ".fai");
+            downloaded = Downloader.download(indexUrl, localIndexFile, IGV.getMainFrame());
         }
 
-        return localFile;
+        if(downloaded) {
+
+            if (fastaPath.endsWith(".gz")) {
+                URL gziUrl = new URL(fastaPath + ".gzi");
+                File localGziPath = new File(targetDir, filename + ".gzi");
+                downloaded = Downloader.download(gziUrl, localGziPath, IGV.getMainFrame());
+            }
+        }
+
+        return downloaded ? localFile : null;
     }
 
 
