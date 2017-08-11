@@ -38,6 +38,18 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 // Intended as the rough equivalent of the IGV class of the Swing UI.  Work in progress.
+// Here's a general list of remaining responsibilities from the origin class which may or may not end up 
+// being re-implemented here (they will go somewhere, maybe elsewhere):
+// TODO: event handling for toolbar items
+// TODO: event handling for GlassPane (what ever that does).  See notes below.
+// TODO: event handling for various menu items
+// TODO: cursor changes; wait, zoom, hand, DnD
+// TODO: Drag and Drop handling (for ROI, I think)
+// TODO: manage overlaid tracks
+// TODO: handle save Prefs on exit
+// TODO: populate controls (e.g. Genome & Chromosome drop-downs)
+// TODO: manage Tracks
+// TODO: launch initial Task based on the cmdLine params
 public class IGVStageManager implements IGVEventObserver {
   
   private static IGVStageManager theInstance = null;
