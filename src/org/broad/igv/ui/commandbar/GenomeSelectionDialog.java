@@ -55,35 +55,26 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
     private JLabel label1;
     private JTextField genomeFilter;
     private JScrollPane scrollPane1;
-    private JList7<GenomeListItem> genomeList;
+    private JList<GenomeListItem> genomeList;
     private JCheckBox downloadSequenceCB;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;
     private boolean isCanceled = true;
 
-    private List<GenomeListItem> selectedValuesList = null;
+    private GenomeListItem selectedValue = null;
     private List<GenomeListItem> allListItems;
     private DefaultListModel genomeListModel;
 
     /**
      * @param parent
-     * @param listSelectionMode Selection mode for genome list
      */
-    public GenomeSelectionDialog(java.awt.Frame parent, Collection<GenomeListItem> inputListItems, final int listSelectionMode) {
+    public GenomeSelectionDialog(java.awt.Frame parent, Collection<GenomeListItem> inputListItems) {
         super(parent);
         initComponents();
-        UIUtilities.invokeOnEventThread(new Runnable() {
-
-            @Override
-            public void run() {
-                genomeList.setSelectionMode(listSelectionMode);
-            }
-        });
-
+        UIUtilities.invokeAndWaitOnEventThread(() -> genomeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION));
         initData(inputListItems);
-
-        downloadSequenceCB.setVisible(listSelectionMode == ListSelectionModel.SINGLE_SELECTION);
+        downloadSequenceCB.setVisible(true);
     }
 
     private void initData(Collection<GenomeListItem> inputListItems) {
@@ -159,8 +150,8 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
         rebuildGenomeList(genomeFilter.getText());
     }
 
-    public List<GenomeListItem> getSelectedValuesList() {
-        return selectedValuesList;
+    public GenomeListItem getSelectedValue() {
+        return selectedValue;
     }
 
     public boolean downloadSequence(){
@@ -173,14 +164,14 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         isCanceled = true;
-        selectedValuesList = null;
+        selectedValue = null;
         setVisible(false);
         dispose();
     }
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         isCanceled = false;
-        selectedValuesList = genomeList.getSelectedValuesList();
+        selectedValue = genomeList.getSelectedValue();
         setVisible(false);
         dispose();
     }
@@ -194,7 +185,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
         label1 = new JLabel();
         genomeFilter = new JTextField();
         scrollPane1 = new JScrollPane();
-        genomeList = new JList7<>();
+        genomeList = new JList();
         downloadSequenceCB = new JCheckBox();
         buttonBar = new JPanel();
         okButton = new JButton();

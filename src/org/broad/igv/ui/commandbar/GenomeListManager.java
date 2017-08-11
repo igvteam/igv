@@ -123,14 +123,11 @@ public class GenomeListManager {
     }
 
     /**
-     * Add a collection of server-hosted genome list items to the selectables map
+     * Add a server-hosted genome list to the selectables map
      *
-     * @param genomeListItems
      */
-    public void addServerGenomeItems(Collection<GenomeListItem> genomeListItems) {
-        for (GenomeListItem genomeListItem : genomeListItems) {
+    public void addServerGenomeItem(GenomeListItem genomeListItem) {
             addGenomeItem(genomeListItem, false);
-        }
     }
 
 

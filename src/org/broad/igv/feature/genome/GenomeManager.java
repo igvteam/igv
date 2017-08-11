@@ -202,7 +202,7 @@ public class GenomeManager {
             if (genomePath.endsWith(".genome")) {
                 File archiveFile = getArchiveFile(genomePath);
 
-                if(!archiveFile.exists()) {
+                if (!archiveFile.exists()) {
                     return null;    // Happens if genome download was canceled.
                 }
 
@@ -996,42 +996,39 @@ public class GenomeManager {
     }
 
 
-    public boolean downloadGenomes(final List<GenomeListItem> addValuesList, boolean downloadSequence) {
+    public boolean downloadGenomes(GenomeListItem item, boolean downloadSequence) {
 
         boolean success = false;
 
-        for (GenomeListItem item : addValuesList) {
-            try {
+        try {
 
+            File archiveFile = getArchiveFile(item.getPath());                  // Has side affect of downloading .genome file
 
-                File archiveFile = getArchiveFile(item.getPath());                  // Has side affect of downloading .genome file
+            if (downloadSequence && item.getPath().endsWith(".genome")) {
 
-                if (downloadSequence && item.getPath().endsWith(".genome")) {
-
-                    GenomeDescriptor genomeDescriptor = parseGenomeArchiveFile(archiveFile);
-
-                    if (genomeDescriptor.isFasta()) {
-                        String fastaPath = genomeDescriptor.getSequencePath();
-                        File localFile = downloadFasta(fastaPath);
-                        if(localFile != null) {
-                            success = true;
-                            addLocalFasta(item.getId(), localFile);
-                        }
-
-                    } else {
-                        MessageUtils.showMessage("Could not download sequence for: " + genomeDescriptor.getName());
+                GenomeDescriptor genomeDescriptor = parseGenomeArchiveFile(archiveFile);
+                if (genomeDescriptor.isFasta()) {
+                    String fastaPath = genomeDescriptor.getSequencePath();
+                    File localFile = downloadFasta(fastaPath);
+                    if (localFile != null) {
+                        addLocalFasta(item.getId(), localFile);
                     }
+                } else {
+                    MessageUtils.showMessage("Fasta file is not availble for: " + genomeDescriptor.getName());
                 }
-
-                if(success) {
-                    genomeListManager.addGenomeItem(item, false);
-                }
-            } catch (Exception e) {
-                log.error("Fasta file unavailable for " + item.getDisplayableName());
             }
+
+            success = true;
+
+        } catch (Exception e) {
+            success = false;
+            MessageUtils.showErrorMessage("Error downloading genome", e);
+            log.error("Error downloading genome " + item.getDisplayableName());
         }
 
-        if(success) {
+
+        if (success) {
+            genomeListManager.addGenomeItem(item, false);
             IGVEventBus.getInstance().post(new GenomeResetEvent());
         }
 
@@ -1059,13 +1056,13 @@ public class GenomeManager {
         File localFile = new File(targetDir, filename);
         boolean downloaded = Downloader.download(new URL(fastaPath), localFile, IGV.getMainFrame());
 
-        if(downloaded) {
+        if (downloaded) {
             URL indexUrl = new URL(fastaPath + ".fai");
             File localIndexFile = new File(targetDir, filename + ".fai");
             downloaded = Downloader.download(indexUrl, localIndexFile, IGV.getMainFrame());
         }
 
-        if(downloaded) {
+        if (downloaded) {
 
             if (fastaPath.endsWith(".gz")) {
                 URL gziUrl = new URL(fastaPath + ".gzi");
