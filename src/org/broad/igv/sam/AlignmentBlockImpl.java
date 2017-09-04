@@ -103,6 +103,11 @@ public class AlignmentBlockImpl implements AlignmentBlock {
     }
 
     @Override
+    public String getQualityString(int offset) {
+        return qualities == null || offset >= qualities.length ? "." : String.valueOf(qualities[offset]);
+    }
+
+    @Override
     public byte[] getQualities() {
         return qualities;
     }

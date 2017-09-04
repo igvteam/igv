@@ -631,7 +631,7 @@ public abstract class SAMAlignment implements Alignment {
 
                 }
 
-                byte quality = block.getQuality(offset);
+                String quality = block.getQualityString(offset);
                 buf.append("Location = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
                 buf.append("Base = " + (char) base + " @ QV " + Globals.DECIMAL_FORMAT.format(quality) + "<br>");
 
