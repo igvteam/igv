@@ -733,7 +733,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             } else {
                 PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd, iter, getName());
                 packedFeaturesMap.put(frame.getName(), pf);
-                log.info("Loaded " + chr + " " + expandedStart + "-" + expandedEnd);
+                //log.info("Loaded " + chr + " " + expandedStart + "-" + expandedEnd);
             }
 
         } catch (Exception e) {
