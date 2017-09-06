@@ -135,6 +135,9 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         this(track.getResourceLocator(), track.getName(), track.alignmentTrack, track.genome);
         if (track.dataManager != null) this.setDataManager(track.dataManager);
         if (track.dataSource != null) this.setDataSource(track.dataSource);
+        this.snpThreshold = track.snpThreshold;
+        this.prefs = track.prefs;
+        this.renderOptions = track.renderOptions;
     }
 
     public CoverageTrack(ResourceLocator locator, String name, AlignmentTrack alignmentTrack, Genome genome) {
