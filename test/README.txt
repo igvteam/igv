@@ -32,3 +32,5 @@ ant -Dfilesetpattern=IgvToolsTest tests
 
 would run only those test classes named IgvToolsTest.
 
+The build assumes that Apache BCEL is available.  If you have failing tests, add the BCEL JAR file to your
+$ANT_HOME/lib directory.

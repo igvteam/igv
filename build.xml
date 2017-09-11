@@ -310,6 +310,8 @@
         <junit haltonfailure="no" showoutput="${show.test.out}" printsummary="on" failureproperty="tests.failed"
                maxmemory="2000m">
 
+            <jvmarg value="-XX:+IgnoreUnrecognizedVMOptions"/>
+            <jvmarg line="--add-modules=java.xml.bind"/>
             <jvmarg value="-javaagent:${testlib.dir}/JavaAgent.jar"/>
             <jvmarg value="-Dfile.encoding=${java.encoding}"/>
             <jvmarg value="-Dinclude.longrunning=${include.longrunning}"/>
@@ -317,6 +319,7 @@
             <sysproperty key="LARGE_DATA_DIR" value="${LARGE_DATA_DIR}"/>
             <sysproperty key="MONGO_EXEC_PATH" value="${MONGO_EXEC_PATH}"/>
             <sysproperty key="make.fail" value="${make.fail}"/>
+        	<sysproperty key="java.awt.headless" value="true" />
 
             <classpath refid="test.classpath"/>
             <formatter type="xml" usefile="true"/>
