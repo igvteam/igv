@@ -66,10 +66,7 @@ public class AlignmentPacker {
             AlignmentInterval interval,
             AlignmentTrack.RenderOptions renderOptions) {
 
-       // if (renderOptions == null) renderOptions = new AlignmentTrack.RenderOptions();
-
         LinkedHashMap<String, List<Row>> packedAlignments = new LinkedHashMap<String, List<Row>>();
-
 
         List<Alignment> alList = interval.getAlignments();
         // TODO -- means to undo this
@@ -77,7 +74,7 @@ public class AlignmentPacker {
             alList = linkByTag(alList, renderOptions.getLinkByTag());
         }
 
-        if (renderOptions.groupByOption == null) {
+        if (renderOptions.getGroupByOption() == null) {
             List<Row> alignmentRows = new ArrayList<>(10000);
             pack(alList, renderOptions, alignmentRows);
             packedAlignments.put("", alignmentRows);
@@ -103,7 +100,7 @@ public class AlignmentPacker {
 
             // Now alphabetize (sort) and pack the groups
             List<String> keys = new ArrayList<String>(groupedAlignments.keySet());
-            Comparator<String> groupComparator = getGroupComparator(renderOptions.groupByOption);
+            Comparator<String> groupComparator = getGroupComparator(renderOptions.getGroupByOption());
             Collections.sort(keys, groupComparator);
 
             for (String key : keys) {
@@ -374,7 +371,7 @@ public class AlignmentPacker {
 
     private String getGroupValue(Alignment al, AlignmentTrack.RenderOptions renderOptions) {
 
-        AlignmentTrack.GroupOption groupBy = renderOptions.groupByOption;
+        AlignmentTrack.GroupOption groupBy = renderOptions.getGroupByOption();
         String tag = renderOptions.getGroupByTag();
         Range pos = renderOptions.getGroupByPos();
 

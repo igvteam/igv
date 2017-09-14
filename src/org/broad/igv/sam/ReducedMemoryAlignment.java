@@ -150,7 +150,7 @@ public class ReducedMemoryAlignment implements Alignment {
     }
 
 
-    public Color getColor() {
+    public Color getYcColor() {
         return null;
     }
 

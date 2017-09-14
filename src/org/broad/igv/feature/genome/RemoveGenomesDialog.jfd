@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "5.2.0.0.54" Java: "1.6.0_65" encoding: "UTF-8"
+JFDML JFormDesigner: "5.2.4.0.321" Java: "1.8.0_76-release" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -8,14 +8,13 @@ new FormModel {
 			"$sizePolicy": 0
 			"defaultCloseOperation": 2
 			"modalityType": enum java.awt.Dialog$ModalityType DOCUMENT_MODAL
-			"title": "Manage Genome List"
+			"title": "Remove Genomes"
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 				name: "dialogPane"
 				"border": new javax.swing.border.EmptyBorder( 12, 12, 12, 12 )
 				"preferredSize": new java.awt.Dimension( 270, 400 )
 				add( new FormComponent( "javax.swing.JTextArea" ) {
 					name: "label1"
-					"text": "Drag and drop genomes to change their order in the genome list. \nSelect and press delete, or click \"Remove\", to remove them."
 					"rows": 2
 					"editable": false
 					"background": new com.jformdesigner.model.SwingColor( "Button.background" )
@@ -30,7 +29,7 @@ new FormModel {
 					name: "contentPanel"
 					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 						name: "scrollPane1"
-						add( new FormComponent( "org.broad.igv.ui.JList7" ) {
+						add( new FormComponent( "javax.swing.JList" ) {
 							name: "genomeList"
 							"maximumSize": new java.awt.Dimension( 39, 5000 )
 							"dropMode": enum javax.swing.DropMode INSERT
@@ -69,11 +68,6 @@ new FormModel {
 						"border": &EmptyBorder0 new javax.swing.border.EmptyBorder( 12, 0, 0, 0 )
 						"preferredSize": new java.awt.Dimension( 196, 51 )
 						"minimumSize": new java.awt.Dimension( 201, 51 )
-						add( new FormComponent( "javax.swing.JButton" ) {
-							name: "addButton"
-							"text": "Add From Server"
-							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "addButtonActionPerformed", true ) )
-						} )
 						add( new FormComponent( "javax.swing.JButton" ) {
 							name: "removeButton"
 							"text": "Remove"

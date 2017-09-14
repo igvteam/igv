@@ -165,7 +165,9 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
     public CloseableIterator<PicardAlignment> query(String sequence, int start, int end, boolean contained) {
         CloseableIterator<SAMRecord> iter = null;
         try {
-            iter = reader.query(sequence, start + 1, end, contained);
+            synchronized (reader) {
+                iter = reader.query(sequence, start + 1, end, contained);
+            }
         } catch (IllegalArgumentException e) {
             log.error("Error querying for sequence: " + sequence, e);
             return new EmptyAlignmentIterator();

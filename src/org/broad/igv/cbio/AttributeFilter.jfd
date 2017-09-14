@@ -1,306 +1,306 @@
-<?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_31" class="java.beans.XMLDecoder"> 
- <object class="com.jformdesigner.model.FormModel"> 
-  <void property="contentType"> 
-   <string>form/swing</string> 
-  </void> 
-  <void property="root"> 
-   <object class="com.jformdesigner.model.FormRoot"> 
-    <void method="add"> 
-     <object class="com.jformdesigner.model.FormContainer"> 
-      <string>javax.swing.JPanel</string> 
-      <object class="com.jformdesigner.model.FormLayoutManager"> 
-       <class>java.awt.BorderLayout</class> 
-      </object> 
-      <void property="name"> 
-       <string>panel1</string> 
-      </void> 
-      <void method="add"> 
-       <object class="com.jformdesigner.model.FormContainer"> 
-        <string>javax.swing.JPanel</string> 
-        <object class="com.jformdesigner.model.FormLayoutManager"> 
-         <class>javax.swing.BoxLayout</class> 
-         <void method="setProperty"> 
-          <string>axis</string> 
-          <int>0</int> 
-         </void> 
-        </object> 
-        <void method="setProperty"> 
-         <string>maximumSize</string> 
-         <object class="java.awt.Dimension"> 
-          <int>100000</int> 
-          <int>29</int> 
-         </object> 
-        </void> 
-        <void method="setProperty"> 
-         <string>preferredSize</string> 
-         <object class="java.awt.Dimension"> 
-          <int>600</int> 
-          <int>29</int> 
-         </object> 
-        </void> 
-        <void property="name"> 
-         <string>filterRow</string> 
-        </void> 
-        <void method="add"> 
-         <object class="com.jformdesigner.model.FormComponent"> 
-          <string>javax.swing.JComboBox</string> 
-          <void method="setProperty"> 
-           <string>maximumRowCount</string> 
-           <int>12</int> 
-          </void> 
-          <void method="setProperty"> 
-           <string>maximumSize</string> 
-           <object class="java.awt.Dimension"> 
-            <int>300</int> 
-            <int>28</int> 
-           </object> 
-          </void> 
-          <void method="setProperty"> 
-           <string>toolTipText</string> 
-           <string>Attribute by which to filter</string> 
-          </void> 
-          <void method="setProperty"> 
-           <string>alignmentX</string> 
-           <float>0.0</float> 
-          </void> 
-          <void property="name"> 
-           <string>attrName</string> 
-          </void> 
-          <void method="auxiliary"> 
-           <void method="setProperty"> 
-            <string>JavaCodeGenerator.variableGetter</string> 
-            <boolean>true</boolean> 
-           </void> 
-          </void> 
-         </object> 
-        </void> 
-        <void method="add"> 
-         <object class="com.jformdesigner.model.FormComponent"> 
-          <string>javax.swing.JLabel</string> 
-          <void method="setProperty"> 
-           <string>text</string> 
-           <string>Min</string> 
-          </void> 
-          <void property="name"> 
-           <string>label1</string> 
-          </void> 
-         </object> 
-        </void> 
-        <void method="add"> 
-         <object class="com.jformdesigner.model.FormComponent"> 
-          <string>javax.swing.JTextField</string> 
-          <void method="setProperty"> 
-           <string>text</string> 
-           <string>0.0</string> 
-          </void> 
-          <void method="setProperty"> 
-           <string>maximumSize</string> 
-           <object class="java.awt.Dimension"> 
-            <int>80</int> 
-            <int>28</int> 
-           </object> 
-          </void> 
-          <void method="setProperty"> 
-           <string>preferredSize</string> 
-           <object class="java.awt.Dimension"> 
-            <int>50</int> 
-            <int>28</int> 
-           </object> 
-          </void> 
-          <void method="setProperty"> 
-           <string>minimumSize</string> 
-           <object class="java.awt.Dimension"> 
-            <int>50</int> 
-            <int>28</int> 
-           </object> 
-          </void> 
-          <void property="name"> 
-           <string>minVal</string> 
-          </void> 
-          <void method="auxiliary"> 
-           <void method="setProperty"> 
-            <string>JavaCodeGenerator.variableModifiers</string> 
-            <int>0</int> 
-           </void> 
-          </void> 
-         </object> 
-        </void> 
-        <void method="add"> 
-         <object class="com.jformdesigner.model.FormComponent"> 
-          <string>javax.swing.JLabel</string> 
-          <void method="setProperty"> 
-           <string>text</string> 
-           <string>Max</string> 
-          </void> 
-          <void property="name"> 
-           <string>label2</string> 
-          </void> 
-         </object> 
-        </void> 
-        <void method="add"> 
-         <object class="com.jformdesigner.model.FormComponent"> 
-          <string>javax.swing.JTextField</string> 
-          <void method="setProperty"> 
-           <string>text</string> 
-           <string>100.0</string> 
-          </void> 
-          <void method="setProperty"> 
-           <string>maximumSize</string> 
-           <object class="java.awt.Dimension"> 
-            <int>80</int> 
-            <int>28</int> 
-           </object> 
-          </void> 
-          <void method="setProperty"> 
-           <string>preferredSize</string> 
-           <object class="java.awt.Dimension"> 
-            <int>50</int> 
-            <int>28</int> 
-           </object> 
-          </void> 
-          <void method="setProperty"> 
-           <string>minimumSize</string> 
-           <object class="java.awt.Dimension"> 
-            <int>50</int> 
-            <int>28</int> 
-           </object> 
-          </void> 
-          <void property="name"> 
-           <string>maxVal</string> 
-          </void> 
-          <void method="auxiliary"> 
-           <void method="setProperty"> 
-            <string>JavaCodeGenerator.variableModifiers</string> 
-            <int>0</int> 
-           </void> 
-          </void> 
-         </object> 
-        </void> 
-        <void method="add"> 
-         <object class="com.jformdesigner.model.FormComponent"> 
-          <string>javax.swing.JButton</string> 
-          <void method="setProperty"> 
-           <string>text</string> 
-           <string>-</string> 
-          </void> 
-          <void method="setProperty"> 
-           <string>maximumSize</string> 
-           <object id="Dimension0" class="java.awt.Dimension"> 
-            <int>20</int> 
-            <int>29</int> 
-           </object> 
-          </void> 
-          <void method="setProperty"> 
-           <string>minimumSize</string> 
-           <object id="Dimension1" class="java.awt.Dimension"> 
-            <int>20</int> 
-            <int>29</int> 
-           </object> 
-          </void> 
-          <void method="setProperty"> 
-           <string>preferredSize</string> 
-           <object id="Dimension2" class="java.awt.Dimension"> 
-            <int>20</int> 
-            <int>29</int> 
-           </object> 
-          </void> 
-          <void method="setProperty"> 
-           <string>toolTipText</string> 
-           <string>Delete this filter</string> 
-          </void> 
-          <void method="setProperty"> 
-           <string>margin</string> 
-           <object class="java.awt.Insets"> 
-            <int>2</int> 
-            <int>2</int> 
-            <int>2</int> 
-            <int>2</int> 
-           </object> 
-          </void> 
-          <void property="name"> 
-           <string>delRow</string> 
-          </void> 
-          <void method="auxiliary"> 
-           <void method="setProperty"> 
-            <string>JavaCodeGenerator.variableGetter</string> 
-            <boolean>true</boolean> 
-           </void> 
-          </void> 
-         </object> 
-        </void> 
-        <void method="add"> 
-         <object class="com.jformdesigner.model.FormComponent"> 
-          <string>javax.swing.JButton</string> 
-          <void method="setProperty"> 
-           <string>text</string> 
-           <string>+</string> 
-          </void> 
-          <void method="setProperty"> 
-           <string>maximumSize</string> 
-           <object idref="Dimension0"/> 
-          </void> 
-          <void method="setProperty"> 
-           <string>minimumSize</string> 
-           <object idref="Dimension1"/> 
-          </void> 
-          <void method="setProperty"> 
-           <string>preferredSize</string> 
-           <object idref="Dimension2"/> 
-          </void> 
-          <void method="setProperty"> 
-           <string>toolTipText</string> 
-           <string>Add a new filter</string> 
-          </void> 
-          <void method="setProperty"> 
-           <string>margin</string> 
-           <object class="java.awt.Insets"> 
-            <int>2</int> 
-            <int>2</int> 
-            <int>2</int> 
-            <int>2</int> 
-           </object> 
-          </void> 
-          <void property="name"> 
-           <string>addRow</string> 
-          </void> 
-          <void method="auxiliary"> 
-           <void method="setProperty"> 
-            <string>JavaCodeGenerator.variableGetter</string> 
-            <boolean>true</boolean> 
-           </void> 
-          </void> 
-         </object> 
-        </void> 
-       </object> 
-       <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-        <class>java.lang.String</class> 
-        <void method="setProperty"> 
-         <string>value</string> 
-         <string>Center</string> 
-        </void> 
-       </object> 
-      </void> 
-     </object> 
-     <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-      <null/> 
-      <void method="setProperty"> 
-       <string>location</string> 
-       <object class="java.awt.Point"> 
-        <int>0</int> 
-        <int>0</int> 
-       </object> 
-      </void> 
-      <void method="setProperty"> 
-       <string>size</string> 
-       <object class="java.awt.Dimension"> 
-        <int>500</int> 
-        <int>300</int> 
-       </object> 
-      </void> 
-     </object> 
-    </void> 
-   </object> 
-  </void> 
- </object> 
-</java> 
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="1.6.0_31" class="java.beans.XMLDecoder">
+ <object class="com.jformdesigner.model.FormModel">
+  <void property="contentType">
+   <string>form/swing</string>
+  </void>
+  <void property="root">
+   <object class="com.jformdesigner.model.FormRoot">
+    <void method="add">
+     <object class="com.jformdesigner.model.FormContainer">
+      <string>javax.swing.JPanel</string>
+      <object class="com.jformdesigner.model.FormLayoutManager">
+       <class>java.awt.BorderLayout</class>
+      </object>
+      <void property="name">
+       <string>panel1</string>
+      </void>
+      <void method="add">
+       <object class="com.jformdesigner.model.FormContainer">
+        <string>javax.swing.JPanel</string>
+        <object class="com.jformdesigner.model.FormLayoutManager">
+         <class>javax.swing.BoxLayout</class>
+         <void method="setProperty">
+          <string>axis</string>
+          <int>0</int>
+         </void>
+        </object>
+        <void method="setProperty">
+         <string>maximumSize</string>
+         <object class="java.awt.Dimension">
+          <int>100000</int>
+          <int>29</int>
+         </object>
+        </void>
+        <void method="setProperty">
+         <string>preferredSize</string>
+         <object class="java.awt.Dimension">
+          <int>600</int>
+          <int>29</int>
+         </object>
+        </void>
+        <void property="name">
+         <string>filterRow</string>
+        </void>
+        <void method="add">
+         <object class="com.jformdesigner.model.FormComponent">
+          <string>javax.swing.JComboBox</string>
+          <void method="setProperty">
+           <string>maximumRowCount</string>
+           <int>12</int>
+          </void>
+          <void method="setProperty">
+           <string>maximumSize</string>
+           <object class="java.awt.Dimension">
+            <int>300</int>
+            <int>28</int>
+           </object>
+          </void>
+          <void method="setProperty">
+           <string>toolTipText</string>
+           <string>Attribute by which to filter</string>
+          </void>
+          <void method="setProperty">
+           <string>alignmentX</string>
+           <float>0.0</float>
+          </void>
+          <void property="name">
+           <string>attrName</string>
+          </void>
+          <void method="auxiliary">
+           <void method="setProperty">
+            <string>JavaCodeGenerator.variableGetter</string>
+            <boolean>true</boolean>
+           </void>
+          </void>
+         </object>
+        </void>
+        <void method="add">
+         <object class="com.jformdesigner.model.FormComponent">
+          <string>javax.swing.JLabel</string>
+          <void method="setProperty">
+           <string>text</string>
+           <string>Min</string>
+          </void>
+          <void property="name">
+           <string>label1</string>
+          </void>
+         </object>
+        </void>
+        <void method="add">
+         <object class="com.jformdesigner.model.FormComponent">
+          <string>javax.swing.JTextField</string>
+          <void method="setProperty">
+           <string>text</string>
+           <string>0.0</string>
+          </void>
+          <void method="setProperty">
+           <string>maximumSize</string>
+           <object class="java.awt.Dimension">
+            <int>80</int>
+            <int>28</int>
+           </object>
+          </void>
+          <void method="setProperty">
+           <string>preferredSize</string>
+           <object class="java.awt.Dimension">
+            <int>50</int>
+            <int>28</int>
+           </object>
+          </void>
+          <void method="setProperty">
+           <string>minimumSize</string>
+           <object class="java.awt.Dimension">
+            <int>50</int>
+            <int>28</int>
+           </object>
+          </void>
+          <void property="name">
+           <string>minVal</string>
+          </void>
+          <void method="auxiliary">
+           <void method="setProperty">
+            <string>JavaCodeGenerator.variableModifiers</string>
+            <int>0</int>
+           </void>
+          </void>
+         </object>
+        </void>
+        <void method="add">
+         <object class="com.jformdesigner.model.FormComponent">
+          <string>javax.swing.JLabel</string>
+          <void method="setProperty">
+           <string>text</string>
+           <string>Max</string>
+          </void>
+          <void property="name">
+           <string>label2</string>
+          </void>
+         </object>
+        </void>
+        <void method="add">
+         <object class="com.jformdesigner.model.FormComponent">
+          <string>javax.swing.JTextField</string>
+          <void method="setProperty">
+           <string>text</string>
+           <string>100.0</string>
+          </void>
+          <void method="setProperty">
+           <string>maximumSize</string>
+           <object class="java.awt.Dimension">
+            <int>80</int>
+            <int>28</int>
+           </object>
+          </void>
+          <void method="setProperty">
+           <string>preferredSize</string>
+           <object class="java.awt.Dimension">
+            <int>50</int>
+            <int>28</int>
+           </object>
+          </void>
+          <void method="setProperty">
+           <string>minimumSize</string>
+           <object class="java.awt.Dimension">
+            <int>50</int>
+            <int>28</int>
+           </object>
+          </void>
+          <void property="name">
+           <string>maxVal</string>
+          </void>
+          <void method="auxiliary">
+           <void method="setProperty">
+            <string>JavaCodeGenerator.variableModifiers</string>
+            <int>0</int>
+           </void>
+          </void>
+         </object>
+        </void>
+        <void method="add">
+         <object class="com.jformdesigner.model.FormComponent">
+          <string>javax.swing.JButton</string>
+          <void method="setProperty">
+           <string>text</string>
+           <string>-</string>
+          </void>
+          <void method="setProperty">
+           <string>maximumSize</string>
+           <object id="Dimension0" class="java.awt.Dimension">
+            <int>20</int>
+            <int>29</int>
+           </object>
+          </void>
+          <void method="setProperty">
+           <string>minimumSize</string>
+           <object id="Dimension1" class="java.awt.Dimension">
+            <int>20</int>
+            <int>29</int>
+           </object>
+          </void>
+          <void method="setProperty">
+           <string>preferredSize</string>
+           <object id="Dimension2" class="java.awt.Dimension">
+            <int>20</int>
+            <int>29</int>
+           </object>
+          </void>
+          <void method="setProperty">
+           <string>toolTipText</string>
+           <string>Delete this filter</string>
+          </void>
+          <void method="setProperty">
+           <string>margin</string>
+           <object class="java.awt.Insets">
+            <int>2</int>
+            <int>2</int>
+            <int>2</int>
+            <int>2</int>
+           </object>
+          </void>
+          <void property="name">
+           <string>delRow</string>
+          </void>
+          <void method="auxiliary">
+           <void method="setProperty">
+            <string>JavaCodeGenerator.variableGetter</string>
+            <boolean>true</boolean>
+           </void>
+          </void>
+         </object>
+        </void>
+        <void method="add">
+         <object class="com.jformdesigner.model.FormComponent">
+          <string>javax.swing.JButton</string>
+          <void method="setProperty">
+           <string>text</string>
+           <string>+</string>
+          </void>
+          <void method="setProperty">
+           <string>maximumSize</string>
+           <object idref="Dimension0"/>
+          </void>
+          <void method="setProperty">
+           <string>minimumSize</string>
+           <object idref="Dimension1"/>
+          </void>
+          <void method="setProperty">
+           <string>preferredSize</string>
+           <object idref="Dimension2"/>
+          </void>
+          <void method="setProperty">
+           <string>toolTipText</string>
+           <string>Add a new filter</string>
+          </void>
+          <void method="setProperty">
+           <string>margin</string>
+           <object class="java.awt.Insets">
+            <int>2</int>
+            <int>2</int>
+            <int>2</int>
+            <int>2</int>
+           </object>
+          </void>
+          <void property="name">
+           <string>addRow</string>
+          </void>
+          <void method="auxiliary">
+           <void method="setProperty">
+            <string>JavaCodeGenerator.variableGetter</string>
+            <boolean>true</boolean>
+           </void>
+          </void>
+         </object>
+        </void>
+       </object>
+       <object class="com.jformdesigner.model.FormLayoutConstraints">
+        <class>java.lang.String</class>
+        <void method="setProperty">
+         <string>value</string>
+         <string>Center</string>
+        </void>
+       </object>
+      </void>
+     </object>
+     <object class="com.jformdesigner.model.FormLayoutConstraints">
+      <null/>
+      <void method="setProperty">
+       <string>path</string>
+       <object class="java.awt.Point">
+        <int>0</int>
+        <int>0</int>
+       </object>
+      </void>
+      <void method="setProperty">
+       <string>size</string>
+       <object class="java.awt.Dimension">
+        <int>500</int>
+        <int>300</int>
+       </object>
+      </void>
+     </object>
+    </void>
+   </object>
+  </void>
+ </object>
+</java>

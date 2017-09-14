@@ -592,6 +592,7 @@ public class CoverageCounter {
                     // base over the window,  so for example 30x coverage remains 30x irrespective of window size.
                     int bucketStartPosition = entry.getKey() * windowSize;
                     int bucketEndPosition = bucketStartPosition + windowSize;
+
                     if (genome != null) {
                         Chromosome chromosome = genome.getChromosome(chr);
                         if (chromosome != null) {
@@ -799,7 +800,9 @@ public class CoverageCounter {
             //Start of file
             if (lastChr == null) {
                 outputHeader(chr);
-            } else if (!chr.equals(lastChr) || dataSpan != span) {
+            }
+
+            if (!chr.equals(lastChr) || dataSpan != span) {
                 //Changing chromosomes
                 span = dataSpan;
                 outputStepLine(chr);
@@ -847,7 +850,6 @@ public class CoverageCounter {
         private void outputHeader(String chr) {
             outputTrackLine();
             outputColumnLabelLine();
-            outputStepLine(chr);
         }
 
     }

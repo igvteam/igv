@@ -50,4 +50,6 @@ public interface Sequence {
     }
 
     boolean isRemote();
+
+    default boolean isFasta() {return false;}
 }

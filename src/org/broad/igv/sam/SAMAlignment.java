@@ -96,7 +96,7 @@ public abstract class SAMAlignment implements Alignment {
     String chr;
     protected int start;  // <= Might differ from alignment start if soft clipping is considered
     protected int end;    // ditto
-    protected Color color = null;
+    protected Color ycColor = null;
 
     ReadMate mate;
     public AlignmentBlockImpl[] alignmentBlocks;
@@ -130,8 +130,8 @@ public abstract class SAMAlignment implements Alignment {
         return mate;
     }
 
-    public Color getColor() {
-        return color;
+    public Color getYcColor() {
+        return ycColor;
     }
 
     abstract public String getReadName();
@@ -631,7 +631,7 @@ public abstract class SAMAlignment implements Alignment {
 
                 }
 
-                byte quality = block.getQuality(offset);
+                String quality = block.getQualityString(offset);
                 buf.append("Location = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
                 buf.append("Base = " + (char) base + " @ QV " + Globals.DECIMAL_FORMAT.format(quality) + "<br>");
 

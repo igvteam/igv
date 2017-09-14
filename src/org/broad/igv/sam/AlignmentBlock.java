@@ -44,6 +44,10 @@ public interface AlignmentBlock {
 
     byte getQuality(int offset);
 
+    default String getQualityString(int offset) {
+        return String.valueOf(getQuality(offset));
+    }
+
     byte[] getQualities();
 
     int getEnd();

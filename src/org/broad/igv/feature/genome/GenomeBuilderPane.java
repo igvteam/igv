@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.util.FileDialogUtils;
 
 import javax.swing.*;
@@ -40,6 +41,8 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author eflakes
@@ -189,7 +192,7 @@ public class GenomeBuilderPane extends javax.swing.JPanel implements Serializabl
             return false;
         }
 
-        Collection<String> inUseIds = GenomeManager.getInstance().getSelectableGenomeIDs();
+        Collection<String> inUseIds = GenomeListManager.getInstance().getSelectableGenomeIDs();
         if (inUseIds.contains(id)) {
             JOptionPane.showMessageDialog(this,
                     "The genome ID '" + id + "' is already in use - please select another!");
@@ -206,15 +209,27 @@ public class GenomeBuilderPane extends javax.swing.JPanel implements Serializabl
             return false;
         }
 
-        Collection<String> inUseDisplayNames = GenomeManager.getInstance().getGenomeDisplayNames();
+        Collection<String> inUseDisplayNames = getGenomeDisplayNames();
 
         if (inUseDisplayNames.contains(displayName)) {
             JOptionPane.showMessageDialog(this,
-                    "The genome name '" + displayName + "' is already in use - please select another!");
+                    "The genome name '" + displayName + "' is already in use - please enter another!");
             return false;
         }
         return true;
     }
+
+
+    public Collection<String> getGenomeDisplayNames() {
+
+        Set<String> displayNames = new HashSet<String>();
+        Collection<GenomeListItem> listItems = GenomeListManager.getInstance().getGenomeListItems();
+        for (GenomeListItem genomeListItem : listItems) {
+            displayNames.add(genomeListItem.getDisplayableName());
+        }
+        return displayNames;
+    }
+
 
     /**
      * This method is called from within the constructor to

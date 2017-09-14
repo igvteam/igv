@@ -13,7 +13,7 @@ This zip file is approximately 300 Mb.
 
 Unzip these files to igv/test/largedata. The unzipped size is approximately 1 Gb.
 
-If you push to put these files at a different location, this path must be passed to ant as the property LARGE_DATA_DIR.
+If you push to put these files at a different path, this path must be passed to ant as the property LARGE_DATA_DIR.
 For example, let's say you placed these data files in /user/remote/drive/largedata:
 
 ant -DLARGE_DATA_DIR="/user/remote/drive/largedata/" tests
@@ -32,3 +32,5 @@ ant -Dfilesetpattern=IgvToolsTest tests
 
 would run only those test classes named IgvToolsTest.
 
+The build assumes that Apache BCEL is available.  If you have failing tests, add the BCEL JAR file to your
+$ANT_HOME/lib directory.

@@ -28,6 +28,7 @@ package org.broad.igv;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.*;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
@@ -37,6 +38,8 @@ import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.prefs.Preferences;
 
 /**
@@ -215,6 +218,24 @@ public class DirectoryManager {
         return GENOME_CACHE_DIRECTORY;
     }
 
+    public static File getFastaCacheDirectory() {
+
+        File directory = null;
+        String cachePref = PreferencesManager.getPreferences().get(Constants.CRAM_CACHE_DIRECTORY);
+        if (cachePref != null) {
+            directory = new File(cachePref);
+        }
+
+        if(directory == null || !directory.exists() || !directory.isDirectory()) {
+
+            directory = new File(getGenomeCacheDirectory(), "seq");
+            if (!directory.exists()) {
+                directory.mkdir();
+            }
+        }
+        return directory;
+    }
+
     public static File getGeneListDirectory() {
         if (GENE_LIST_DIRECTORY == null) {
             GENE_LIST_DIRECTORY = new File(getIgvDirectory(), "lists");
@@ -357,6 +378,26 @@ public class DirectoryManager {
         GENE_LIST_DIRECTORY = null;
         BAM_CACHE_DIRECTORY = null;
         return true;
+
+    }
+
+    public static void moveDirectoryContents(File oldDirectory, File newDirectory) {
+
+        if (oldDirectory != null && oldDirectory.exists() && oldDirectory.isDirectory() &&
+                newDirectory != null && newDirectory.exists() && newDirectory.isDirectory()) {
+
+            for (File f : oldDirectory.listFiles()) {
+                Path p1 = f.toPath();
+                Path p2 = (new File(newDirectory, f.getName())).toPath();
+                try {
+                    Files.move(p1, p2);
+                } catch (IOException e) {
+                    log.error("Error moving file", e);
+                }
+            }
+
+        }
+
 
     }
 

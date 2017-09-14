@@ -41,7 +41,7 @@ import java.util.List;
  *
  * @author jrobinso
  */
-public class SequenceWrapper implements Sequence {
+public class SequenceWrapper implements Sequence  {
 
     private static Logger log = Logger.getLogger(SequenceWrapper.class);
     private static boolean cacheSequences = true;
@@ -105,6 +105,11 @@ public class SequenceWrapper implements Sequence {
     @Override
     public boolean isRemote() {
         return sequence.isRemote();
+    }
+
+    @Override
+    public boolean isFasta() {
+        return sequence.isFasta();
     }
 
     /**
@@ -230,7 +235,7 @@ public class SequenceWrapper implements Sequence {
     private void loadTiles(String chr, int startTile, SequenceTile[] tiles, TileRange toLoad) {
         int start = toLoad.startTile * tileSize;
         int end = (toLoad.endTile + 1) * tileSize;
-        byte[] seq = sequence.getSequence(chr, start, end, false);
+        byte[] seq = sequence.getSequence(chr, start, end, true);
 
         int offset = 0;
         for (int t = toLoad.startTile; t <= toLoad.endTile; t++) {
@@ -378,6 +383,8 @@ public class SequenceWrapper implements Sequence {
         return convertedURL;
 
     }
+
+
 
 
 }

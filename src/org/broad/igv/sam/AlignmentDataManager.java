@@ -26,6 +26,7 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.event.RefreshEvent;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
@@ -34,9 +35,9 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentTrack.SortOption;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.track.RenderContext;
-import org.broad.igv.event.DataLoadedEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
@@ -46,12 +47,15 @@ import java.util.*;
 
 import static org.broad.igv.prefs.Constants.*;
 
+/**
+ * Manages data loading for a single alignment file.  Shared between alignment, coverage, and junction
+ * tracks.
+ */
+
 public class AlignmentDataManager implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(AlignmentDataManager.class);
 
-
-    public enum ExperimentType {OTHER, RNA, BISULFITE, THIRD_GEN}
 
     private Collection<AlignmentInterval> intervalCache;
     private ResourceLocator locator;
@@ -63,7 +67,8 @@ public class AlignmentDataManager implements IGVEventObserver {
     private SpliceJunctionHelper.LoadOptions loadOptions;
     private Object loadLock = new Object();
     private boolean showAlignments = true;
-    private ExperimentType type = null;
+    private AlignmentTrack.ExperimentType inferredExperimentType;
+    private Set<Track> subscribedTracks;
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
         this.locator = locator;
@@ -72,6 +77,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         initLoadOptions();
         initChrMap(genome);
         intervalCache = Collections.synchronizedList(new ArrayList<>());
+        subscribedTracks = Collections.synchronizedSet(new HashSet<>());
 
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
         IGVEventBus.getInstance().subscribe(RefreshEvent.class, this);
@@ -99,6 +105,18 @@ public class AlignmentDataManager implements IGVEventObserver {
             clear();
         } else {
             log.info("Unknown event type: " + event.getClass());
+        }
+    }
+
+    public void subscribe(Track track) {
+        subscribedTracks.add(track);
+    }
+
+    public void unsubscribe(Track track) {
+        subscribedTracks.remove(track);
+        if (subscribedTracks.isEmpty()) {
+            dumpAlignments();
+            IGVEventBus.getInstance().unsubscribe(this);
         }
     }
 
@@ -138,20 +156,20 @@ public class AlignmentDataManager implements IGVEventObserver {
         return reader.isPairedEnd();
     }
 
+    public boolean hasYCTags() {
+        return reader.hasYCTags();
+    }
+
     public boolean hasIndex() {
         return reader.hasIndex();
     }
 
-    public void setType(ExperimentType type) {
-        if (type != this.type) {
-            ExperimentTypeChangeEvent event = new ExperimentTypeChangeEvent(this, type);
-            this.type = type;
+    public void setInferredExperimentType(AlignmentTrack.ExperimentType inferredExperimentType) {
+        if (inferredExperimentType != this.inferredExperimentType) {
+            ExperimentTypeChangeEvent event = new ExperimentTypeChangeEvent(this, inferredExperimentType);
+            this.inferredExperimentType = inferredExperimentType;
             IGVEventBus.getInstance().post(event);
         }
-    }
-
-    public ExperimentType getType() {
-        return type;
     }
 
     public void setCoverageTrack(CoverageTrack coverageTrack) {
@@ -316,7 +334,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, spliceJunctionHelper,
                 downsampleOptions, readStats, peStats, bisulfiteContext, showAlignments);
 
-        if (type == null) {
+        if (inferredExperimentType == null && !Globals.VERSION.contains("2.4")) {
             readStats.compute();
             inferType(readStats);
         }
@@ -334,11 +352,11 @@ public class AlignmentDataManager implements IGVEventObserver {
     private void inferType(ReadStats readStats) {
 
         if (readStats.readLengthStdDev > 100 || readStats.medianReadLength > 1000) {
-            setType(ExperimentType.THIRD_GEN);  // Could also use fracReadsWithIndels
+            setInferredExperimentType(AlignmentTrack.ExperimentType.THIRD_GEN);  // Could also use fracReadsWithIndels
         } else if (readStats.medianRefToReadRatio > 10) {
-            setType(ExperimentType.RNA);
+            setInferredExperimentType(AlignmentTrack.ExperimentType.RNA);
         } else {
-            setType(ExperimentType.OTHER);
+            setInferredExperimentType(AlignmentTrack.ExperimentType.OTHER);
         }
     }
 
@@ -486,6 +504,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     public Collection<AlignmentInterval> getLoadedIntervals() {
         return intervalCache;
     }
+
 
     public static class DownsampleOptions {
         private boolean downsample;

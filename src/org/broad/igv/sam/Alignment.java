@@ -105,7 +105,7 @@ public interface Alignment extends LocusScore {
      * Return an explicitly set color for this alignment, if any  (typically null).
      * @return
      */
-    Color getColor();
+    Color getYcColor();
 
     String getSample();
 

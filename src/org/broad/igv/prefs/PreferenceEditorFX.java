@@ -67,7 +67,7 @@ public class PreferenceEditorFX {
         Map<String, Map<String, String>> updatedPreferencesMap = new HashMap<>();
         for (PreferencesManager.PreferenceGroup entry : preferenceGroups) {
 
-            if(entry.tabLabel.equals("Hidden")) continue;
+            if (entry.tabLabel.equals("Hidden")) continue;
 
             final IGVPreferences preferences = PreferencesManager.getPreferences(entry.category);
 
@@ -212,6 +212,32 @@ public class PreferenceEditorFX {
                 }
             }
 
+            if (tabLabel.equalsIgnoreCase("Cram")) {
+                // Add Cram cache directory management at the end.  This is a special case
+
+                String currentDirectory = DirectoryManager.getFastaCacheDirectory().getAbsolutePath();
+                final Label currentDirectoryLabel = new Label("Cache directory: " + currentDirectory);
+                final Button moveButton = new Button("Move...");
+                row++;
+                gridPane.add(currentDirectoryLabel, 1, row);
+                GridPane.setHalignment(moveButton, HPos.LEFT);
+                gridPane.add(moveButton, 2, row);
+
+                moveButton.setOnAction(event -> {
+                    // Do this on the Swing thread until we port to javafx file dialog
+                    UIUtilities.invokeOnEventThread(() -> {
+                        final File directory = DirectoryManager.getFastaCacheDirectory();
+                        final File newDirectory = FileDialogUtils.chooseDirectory("Select cache directory", DirectoryManager.getUserDirectory());
+                        if (newDirectory != null && !newDirectory.equals(directory)) {
+                            DirectoryManager.moveDirectoryContents(directory, newDirectory);
+                            Platform.runLater(() -> currentDirectoryLabel.setText(newDirectory.getAbsolutePath()));
+                        }
+                    });
+                });
+
+            }
+
+
             if (tabLabel.equalsIgnoreCase("Advanced")) {
                 // Add IGV directory management at the end.  This is a special case
                 String currentDirectory = DirectoryManager.getIgvDirectory().getAbsolutePath();
@@ -255,7 +281,7 @@ public class PreferenceEditorFX {
         saveButton.setOnAction((event) -> {
             PreferencesManager.updateAll(updatedPreferencesMap);
             SwingUtilities.invokeLater(() -> parent.setVisible(false));
-            if(IGV.hasInstance()) {
+            if (IGV.hasInstance()) {
                 IGV.getInstance().doRefresh();
             }
         });

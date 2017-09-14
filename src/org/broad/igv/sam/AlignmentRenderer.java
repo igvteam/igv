@@ -36,7 +36,6 @@ import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
-import org.broad.igv.sam.AlignmentTrack.RenderOptions;
 import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
 import org.broad.igv.sam.BisulfiteBaseInfo.DisplayStatus;
 import org.broad.igv.track.RenderContext;
@@ -69,7 +68,7 @@ public class AlignmentRenderer {
     private static final Color RR_COLOR = new Color(20, 50, 200);
     private static final Color LL_COLOR = new Color(0, 150, 150);
     private static Color smallISizeColor = new Color(0, 0, 150);
-    private static Color largeISizeColor = new Color(150, 0, 0);
+    private static Color largeISizeColor = new Color(200, 0, 0);
     private static final Color OUTLINE_COLOR = new Color(185, 185, 185);
 
     // Clipping colors
@@ -282,7 +281,7 @@ public class AlignmentRenderer {
                                  RenderContext context,
                                  Rectangle rowRect,
                                  Rectangle trackRect,
-                                 RenderOptions renderOptions,
+                                 AlignmentTrack.RenderOptions renderOptions,
                                  boolean leaveMargin,
                                  Map<String, Color> selectedReadNames,
                                  AlignmentCounts alignmentCounts,
@@ -426,7 +425,7 @@ public class AlignmentRenderer {
 
 
     private void drawLinkedAlignment(LinkedAlignment alignment, Rectangle rowRect, RenderContext context,
-                                     RenderOptions renderOptions, boolean leaveMargin,
+                                     AlignmentTrack.RenderOptions renderOptions, boolean leaveMargin,
                                      Map<String, Color> selectedReadNames, AlignmentCounts alignmentCounts,
                                      IGVPreferences prefs) {
 
@@ -553,7 +552,7 @@ public class AlignmentRenderer {
             PairedAlignment pair,
             Rectangle rowRect,
             RenderContext context,
-            RenderOptions renderOptions,
+            AlignmentTrack.RenderOptions renderOptions,
             boolean leaveMargin,
             Map<String, Color> selectedReadNames,
             AlignmentCounts alignmentCounts,
@@ -702,7 +701,7 @@ public class AlignmentRenderer {
 
         // No blocks.  Note: SAM/BAM alignments always have at least 1 block
         if (blocks == null || blocks.length == 0) {
-            drawSimpleAlignment(alignment, rowRect, g, context, renderOptions.flagUnmappedPairs);
+            drawSimpleAlignment(alignment, rowRect, g, context, renderOptions.isFlagUnmappedPairs());
             return;
         }
 
@@ -710,7 +709,7 @@ public class AlignmentRenderer {
         int largeInsertionsThreshold = prefs.getAsInt(SAM_LARGE_INDELS_THRESHOLD);
         boolean hideSmallIndelsBP = prefs.getAsBoolean(SAM_HIDE_SMALL_INDEL);
         int indelThresholdBP = prefs.getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
-        boolean quickConsensus = renderOptions.quickConsensusMode;
+        boolean quickConsensus = renderOptions.isQuickConsensusMode();
         final float snpThreshold = prefs.getAsFloat(SAM_ALLELE_THRESHOLD);
 
         // Scale and position of the alignment rendering.
@@ -725,10 +724,10 @@ public class AlignmentRenderer {
             c = (c == null) ? Color.blue : c;
             outlineGraphics = context.getGraphics2D("THICK_STROKE");
             g.setColor(c);
-        } else if (renderOptions.flagUnmappedPairs && alignment.isPaired() && !alignment.getMate().isMapped()) {
+        } else if (renderOptions.isFlagUnmappedPairs() && alignment.isPaired() && !alignment.getMate().isMapped()) {
             outlineGraphics = context.getGraphics2D("OUTLINE");
             outlineGraphics.setColor(Color.red);
-        } else if (alignment.getMappingQuality() == 0 && renderOptions.flagZeroQualityAlignments) {
+        } else if (alignment.getMappingQuality() == 0 && renderOptions.isFlagZeroQualityAlignments()) {
             outlineGraphics = context.getGraphic2DForColor(OUTLINE_COLOR);
         }
 
@@ -855,10 +854,10 @@ public class AlignmentRenderer {
 
         // Draw basepairs / mismatches.
         if (locScale < 100) {
-            if (renderOptions.showMismatches || renderOptions.showAllBases) {
+            if (renderOptions.isShowMismatches() || renderOptions.isShowAllBases()) {
                 for (AlignmentBlock aBlock : alignment.getAlignmentBlocks()) {
-                    int aBlockChromStart = (int) aBlock.getStart(),
-                            aBlockChromEnd = (int) (aBlock.getStart() + aBlock.getLength());
+                    int aBlockChromStart = aBlock.getStart(),
+                            aBlockChromEnd = aBlock.getStart() + aBlock.getLength();
 
                     if (aBlockChromEnd <= contextChromStart) { // block ends before the visible context
                         continue; // move to next block
@@ -895,7 +894,7 @@ public class AlignmentRenderer {
                            AlignmentCounts alignmentCounts,
                            Color alignmentColor,
                            boolean leaveMargin,
-                           RenderOptions renderOptions,
+                           AlignmentTrack.RenderOptions renderOptions,
     IGVPreferences prefs) {
 
         boolean isSoftClipped = block.isSoftClipped();
@@ -911,14 +910,14 @@ public class AlignmentRenderer {
 
         boolean haveBases = (block.hasBases() && block.getLength() > 0);
 
-        ShadeBasesOption shadeBasesOption = renderOptions.shadeBasesOption;
+        ShadeBasesOption shadeBasesOption = renderOptions.getShadeBasesOption();
         ColorOption colorOption = renderOptions.getColorOption();
-        final boolean quickConsensus = renderOptions.quickConsensusMode;
+        final boolean quickConsensus = renderOptions.isQuickConsensusMode();
         final float snpThreshold = prefs.getAsFloat(SAM_ALLELE_THRESHOLD);
 
 
         // Disable showAllBases in bisulfite mode
-        boolean showAllBases = renderOptions.showAllBases &&
+        boolean showAllBases = renderOptions.isShowAllBases() &&
                 !(colorOption == ColorOption.BISULFITE || colorOption == ColorOption.NOMESEQ);
 
         if (!showAllBases && (!haveBases || reference == null)) {
@@ -985,10 +984,12 @@ public class AlignmentRenderer {
 
                 BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(idx);
 
-                if (isSoftClipped || bisulfiteMode ||
+                final boolean showBase =
+                        isSoftClipped ||
+                        bisulfiteMode ||
                         // In "quick consensus" mode, only show mismatches at positions with a consistent alternative basepair.
-                        (!quickConsensus || alignmentCounts.isConsensusMismatch(loc, reference[idx], chr, snpThreshold))
-                        ) {
+                        (!quickConsensus || alignmentCounts.isConsensusMismatch(loc, reference[idx], chr, snpThreshold));
+                if (showBase) {
                     drawBase(g, color, c, pX, pY, dX, dY - (leaveMargin ? 2 : 0), bisulfiteMode, bisstatus);
                 }
             }
@@ -1096,7 +1097,7 @@ public class AlignmentRenderer {
         }
     }
 
-    private void drawInsertions(Rectangle rect, Alignment alignment, RenderContext context, RenderOptions renderOptions,
+    private void drawInsertions(Rectangle rect, Alignment alignment, RenderContext context, AlignmentTrack.RenderOptions renderOptions,
                                 AlignmentCounts alignmentCounts, boolean leaveMargin, IGVPreferences prefs) {
 
         AlignmentBlock[] insertions = alignment.getInsertions();
@@ -1213,19 +1214,25 @@ public class AlignmentRenderer {
     }
 
 
-    private Color getAlignmentColor(Alignment alignment, RenderOptions renderOptions) {
+    private Color getAlignmentColor(Alignment alignment, AlignmentTrack.RenderOptions renderOptions) {
 
         // Set color used to draw the feature.  Highlight features that intersect the
         // center line.  Also restorePersistentState row "score" if alignment intersects center line
 
-
-        Color color = alignment.getColor();
-        if (color != null) return color;   // Color has been explicitly set
-
         Color c = DEFAULT_ALIGNMENT_COLOR;
 
         ColorOption colorOption = renderOptions.getColorOption();
+
         switch (colorOption) {
+
+            case YC_TAG:
+
+                Color ycColor = alignment.getYcColor();
+                if(ycColor != null) {
+                    c = ycColor;
+                }
+                break;
+
             case BISULFITE:
                 // Just a simple forward/reverse strand color scheme that won't clash with the
                 // methylation rectangles.
@@ -1365,7 +1372,7 @@ public class AlignmentRenderer {
         }
         if (c == null) c = DEFAULT_ALIGNMENT_COLOR;
 
-        if (alignment.getMappingQuality() == 0 && renderOptions.flagZeroQualityAlignments) {
+        if (alignment.getMappingQuality() == 0 && renderOptions.isFlagZeroQualityAlignments()) {
             // Maping Q = 0
             float alpha = 0.15f;
             // Assuming white background TODO -- this should probably be passed in
@@ -1389,7 +1396,7 @@ public class AlignmentRenderer {
         return ctable;
     }
 
-    public static PEStats getPEStats(Alignment alignment, RenderOptions renderOptions) {
+    public static PEStats getPEStats(Alignment alignment, AlignmentTrack.RenderOptions renderOptions) {
         String lb = alignment.getLibrary();
         if (lb == null) lb = "null";
         PEStats peStats = null;
@@ -1408,7 +1415,7 @@ public class AlignmentRenderer {
      * @return -1 if unknown (stats not computed), 0 if not
      * an outlier, 1 if outlier
      */
-    private int getOutlierStatus(Alignment alignment, RenderOptions renderOptions) {
+    private int getOutlierStatus(Alignment alignment, AlignmentTrack.RenderOptions renderOptions) {
         PEStats peStats = getPEStats(alignment, renderOptions);
         if (renderOptions.isComputeIsizes() && peStats != null) {
             int minThreshold = peStats.getMinOutlierInsertSize();
@@ -1431,7 +1438,7 @@ public class AlignmentRenderer {
      * @param alignment
      * @return
      */
-    private int compareToBounds(Alignment alignment, RenderOptions renderOptions) {
+    private int compareToBounds(Alignment alignment, AlignmentTrack.RenderOptions renderOptions) {
         int minThreshold = renderOptions.getMinInsertSize();
         int maxThreshold = renderOptions.getMaxInsertSize();
         PEStats peStats = getPEStats(alignment, renderOptions);

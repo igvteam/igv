@@ -25,9 +25,12 @@
 
 package org.broad.igv.ga4gh;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ResourceLocator;
 
@@ -39,13 +42,14 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 /**
  * @author James Robinson
  */
 public class Ga4ghLoadDialog extends JDialog {
+
+    private static Logger log = Logger.getLogger(Ga4ghLoadDialog.class);
 
     private final DefaultTreeModel treeModel;
     Ga4ghProvider[] providers;
@@ -145,9 +149,14 @@ public class Ga4ghLoadDialog extends JDialog {
     private void setGenome(String genomeId) {
 
         if (genomeId != null && !genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
-            GenomeListItem item = GenomeManager.getInstance().findGenomeListItemById(genomeId);
+            GenomeListItem item = GenomeListManager.getInstance().getGenomeListItem(genomeId);
             if (item != null) {
-                GenomeManager.getInstance().loadGenomeById(genomeId);
+                try {
+                    GenomeManager.getInstance().loadGenomeById(genomeId);
+                } catch (IOException e) {
+                    MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
+                    log.error("Error loading genome: " + genomeId, e);
+                }
             }
         }
     }

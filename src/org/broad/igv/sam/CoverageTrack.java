@@ -135,6 +135,9 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         this(track.getResourceLocator(), track.getName(), track.alignmentTrack, track.genome);
         if (track.dataManager != null) this.setDataManager(track.dataManager);
         if (track.dataSource != null) this.setDataSource(track.dataSource);
+        this.snpThreshold = track.snpThreshold;
+        this.prefs = track.prefs;
+        this.renderOptions = track.renderOptions;
     }
 
     public CoverageTrack(ResourceLocator locator, String name, AlignmentTrack alignmentTrack, Genome genome) {
@@ -158,6 +161,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     public void setDataManager(AlignmentDataManager dataManager) {
         this.dataManager = dataManager;
+        this.dataManager.subscribe(this);
     }
 
     public void setDataSource(CoverageDataSource dataSource) {
@@ -214,8 +218,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         super.dispose();
         removed = true;
         if(dataManager != null) {
-            dataManager.dumpAlignments();
-            IGVEventBus.getInstance().unsubscribe(dataManager);
+            dataManager.unsubscribe(this);
         }
         dataManager = null;
         dataSource = null;

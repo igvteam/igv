@@ -28,6 +28,7 @@ package org.broad.igv.ui;
 import junit.framework.Assert;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
@@ -157,7 +158,7 @@ public class IGVTestHeaded extends AbstractHeadedTest {
      */
     @Test
     public void testLoadNewGenomeById() throws Exception {
-        Collection<GenomeListItem> currentGenomes = GenomeManager.getInstance().getGenomeListItems();
+        Collection<GenomeListItem> currentGenomes = GenomeListManager.getInstance().getGenomeListItems();
         String genomeId = "canFam2";
         for (GenomeListItem genomeListItem : currentGenomes) {
             assertNotSame(genomeId, genomeListItem.getId());

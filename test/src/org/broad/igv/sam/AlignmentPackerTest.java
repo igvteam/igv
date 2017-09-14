@@ -81,7 +81,7 @@ public class AlignmentPackerTest extends AbstractHeadlessTest {
         */
         AlignmentInterval interval = getAlignmentInterval();
 
-        Map<String, List<Row>> result = (new AlignmentPacker()).packAlignments(interval, new AlignmentTrack.RenderOptions(AlignmentDataManager.ExperimentType.OTHER));
+        Map<String, List<Row>> result = (new AlignmentPacker()).packAlignments(interval, (new AlignmentTrack.RenderOptions()));
         assertEquals(1, result.size());
         for (List<Row> alignmentrows : result.values()) {
             for (Row alignmentrow : alignmentrows) {
@@ -104,8 +104,8 @@ public class AlignmentPackerTest extends AbstractHeadlessTest {
 
     public Map<String, List<Row>> tstGroupAlignments(AlignmentTrack.GroupOption groupOption, int expSize) throws Exception {
 
-        AlignmentTrack.RenderOptions renderOptions = new AlignmentTrack.RenderOptions(AlignmentDataManager.ExperimentType.OTHER);
-        renderOptions.groupByOption = groupOption;
+        AlignmentTrack.RenderOptions renderOptions = (new AlignmentTrack.RenderOptions());
+        renderOptions.setGroupByOption(groupOption);
 
         AlignmentInterval interval = getAlignmentInterval();
         Map<String, List<Row>> result = (new AlignmentPacker()).packAlignments(interval, renderOptions);

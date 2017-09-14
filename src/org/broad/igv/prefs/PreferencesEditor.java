@@ -26,6 +26,7 @@
 package org.broad.igv.prefs;
 
 import com.jidesoft.dialog.ButtonPanel;
+import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.batch.CommandListener;
@@ -56,6 +57,10 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -68,6 +73,8 @@ import static org.broad.igv.prefs.Constants.*;
  * @author jrobinso
  */
 public class PreferencesEditor extends javax.swing.JDialog {
+
+    static Logger log = Logger.getLogger(PreferencesEditor.class);
 
     private boolean canceled = false;
     Map<String, String> updatedPreferenceMap = Collections.synchronizedMap(new HashMap<String, String>() {
@@ -87,26 +94,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
     boolean proxySettingsChanged = false;
     boolean tooltipSettingsChanged = false;
     private File newIGVDirectory;
-
-    private void scaleFontsCBActionPerformed(ActionEvent e) {
-        PreferencesManager.getPreferences().put(SCALE_FONTS, scaleFontsCB.isSelected());
-    }
-
-    private void enableGoogleCBActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(ENABLE_GOOGLE_MENU, String.valueOf(enableGoogleCB.isSelected()));
-    }
-
-    private void saveGoogleCredentialsCBActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(SAVE_GOOGLE_CREDENTIALS, String.valueOf(saveGoogleCredentialsCB.isSelected()));
-    }
-
-    private void sessionPathsCBActionPerformed(ActionEvent e) {
-        updatedPreferenceMap.put(SESSION_RELATIVE_PATH, String.valueOf(sessionPathsCB.isSelected()));
-    }
-
-    private void coverageOnlyCBActionPerformed(ActionEvent e) {
-        // TODO add your code here
-    }
+    private File newCramCacheDirectory;
+    private File cramCacheDirectory;
 
     public PreferencesEditor(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -126,6 +115,78 @@ public class PreferencesEditor extends javax.swing.JDialog {
         setLocationRelativeTo(parent);
         //getRootPane().setDefaultButton(okButton);
     }
+
+
+
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        canceled = true;
+        setVisible(false);
+    }
+
+    private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
+        if (inputValidated) {
+
+            checkForVCFColors();
+
+            checkForProbeChanges();
+
+            lastSelectedIndex = tabbedPane.getSelectedIndex();
+
+            // Store the changed preferences
+            prefMgr.putAll(updatedPreferenceMap);
+
+            if (updatedPreferenceMap.containsKey(PORT_ENABLED) ||
+                    updatedPreferenceMap.containsKey(PORT_NUMBER)) {
+                CommandListener.halt();
+                if (enablePortCB.isSelected()) {
+                    int port = Integer.parseInt(updatedPreferenceMap.get(PORT_NUMBER));
+                    CommandListener.start(port);
+                }
+            }
+
+
+            // Overlays
+            if (updateOverlays) {
+                IGV.getInstance().resetOverlayTracks();
+            }
+
+            // Proxies
+            if (proxySettingsChanged) {
+                HttpUtils.getInstance().updateProxySettings();
+            }
+
+            // IGV directory
+            if (newIGVDirectory != null) {
+                moveIGVDirectory();
+
+            }
+
+            if(newCramCacheDirectory != null) {
+                moveCramCacheDirectory();
+            }
+
+            // Tooltip
+            if (tooltipSettingsChanged) {
+                Main.updateTooltipSettings();
+            }
+
+            if (updatedPreferenceMap.containsKey(ENABLE_GOOGLE_MENU)) {
+                IGVMenuBar.getInstance().enableGoogleMenu(Boolean.valueOf(updatedPreferenceMap.get(ENABLE_GOOGLE_MENU)));
+            }
+
+
+            if (updatedPreferenceMap.containsKey(SAVE_GOOGLE_CREDENTIALS)) {
+                OAuthUtils.getInstance().updateSaveOption(Boolean.valueOf(updatedPreferenceMap.get(SAVE_GOOGLE_CREDENTIALS)));
+            }
+
+            updatedPreferenceMap.clear();
+            IGV.getInstance().doRefresh();
+            setVisible(false);
+        } else {
+            resetValidation();
+        }
+    }
+
 
     /**
      * This method is called from within the constructor to
@@ -388,6 +449,17 @@ public class PreferencesEditor extends javax.swing.JDialog {
         vSpacer8 = new JPanel(null);
         vSpacer9 = new JPanel(null);
         vSpacer10 = new JPanel(null);
+        panel36 = new JScrollPane();
+        cramPanel = new JPanel();
+        panel28 = new JPanel();
+        panel37 = new JPanel();
+        label28 = new JLabel();
+        cramCacheSizeField = new JTextField();
+        panel38 = new JPanel();
+        label29 = new JLabel();
+        cramCacheDirectoryField = new JTextField();
+        cramCacheDirectoryButton = new JButton();
+        cramCacheReferenceCB = new JCheckBox();
         okCancelButtonPanel = new ButtonPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -2353,6 +2425,88 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         panel29.setViewportView(advancedPanel);
                     }
                     tabbedPane.addTab("Advanced", panel29);
+
+                    //======== panel36 ========
+                    {
+
+                        //======== cramPanel ========
+                        {
+                            cramPanel.setBorder(new EmptyBorder(1, 10, 1, 10));
+                            cramPanel.setLayout(null);
+
+                            //======== panel28 ========
+                            {
+                                panel28.setLayout(new FlowLayout(FlowLayout.LEFT));
+                            }
+                            cramPanel.add(panel28);
+                            panel28.setBounds(new Rectangle(new Point(15, 7), panel28.getPreferredSize()));
+
+                            //======== panel37 ========
+                            {
+                                panel37.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+                                //---- label28 ----
+                                label28.setText("Reference cache size (mb): ");
+                                panel37.add(label28);
+
+                                //---- cramCacheSizeField ----
+                                cramCacheSizeField.setPreferredSize(new Dimension(100, 26));
+                                cramCacheSizeField.addActionListener(e -> cramCacheSizeFieldActionPerformed(e));
+                                cramCacheSizeField.addFocusListener(new FocusAdapter() {
+                                    @Override
+                                    public void focusLost(FocusEvent e) {
+                                        cramCacheSizeFieldFocusLost(e);
+                                    }
+                                });
+                                panel37.add(cramCacheSizeField);
+                            }
+                            cramPanel.add(panel37);
+                            panel37.setBounds(new Rectangle(new Point(20, 93), panel37.getPreferredSize()));
+
+                            //======== panel38 ========
+                            {
+                                panel38.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+                                //---- label29 ----
+                                label29.setText("Cache directory: ");
+                                panel38.add(label29);
+
+                                //---- cramCacheDirectoryField ----
+                                cramCacheDirectoryField.setMinimumSize(new Dimension(400, 26));
+                                cramCacheDirectoryField.setPreferredSize(new Dimension(400, 26));
+                                panel38.add(cramCacheDirectoryField);
+
+                                //---- cramCacheDirectoryButton ----
+                                cramCacheDirectoryButton.setText("Change...");
+                                cramCacheDirectoryButton.addActionListener(e -> cramCacheDirectoryButtonActionPerformed(e));
+                                panel38.add(cramCacheDirectoryButton);
+                            }
+                            cramPanel.add(panel38);
+                            panel38.setBounds(new Rectangle(new Point(20, 144), panel38.getPreferredSize()));
+
+                            //---- cramCacheReferenceCB ----
+                            cramCacheReferenceCB.setText("Cache reference sequences");
+                            cramCacheReferenceCB.addActionListener(e -> cramCacheReferenceCBActionPerformed(e));
+                            cramPanel.add(cramCacheReferenceCB);
+                            cramCacheReferenceCB.setBounds(new Rectangle(new Point(20, 55), cramCacheReferenceCB.getPreferredSize()));
+
+                            { // compute preferred size
+                                Dimension preferredSize = new Dimension();
+                                for(int i = 0; i < cramPanel.getComponentCount(); i++) {
+                                    Rectangle bounds = cramPanel.getComponent(i).getBounds();
+                                    preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                                    preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                                }
+                                Insets insets = cramPanel.getInsets();
+                                preferredSize.width += insets.right;
+                                preferredSize.height += insets.bottom;
+                                cramPanel.setMinimumSize(preferredSize);
+                                cramPanel.setPreferredSize(preferredSize);
+                            }
+                        }
+                        panel36.setViewportView(cramPanel);
+                    }
+                    tabbedPane.addTab("Cram", panel36);
                 }
                 panel6.add(tabbedPane, BorderLayout.NORTH);
 
@@ -2467,111 +2621,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         this.featureVisibilityWindowFieldActionPerformed(null);
     }
 
-
-    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        canceled = true;
-        setVisible(false);
-    }
-
-    private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-        if (inputValidated) {
-
-            checkForVCFColors();
-
-            checkForProbeChanges();
-
-            lastSelectedIndex = tabbedPane.getSelectedIndex();
-
-            // Store the changed preferences
-            prefMgr.putAll(updatedPreferenceMap);
-
-            if (updatedPreferenceMap.containsKey(PORT_ENABLED) ||
-                    updatedPreferenceMap.containsKey(PORT_NUMBER)) {
-                CommandListener.halt();
-                if (enablePortCB.isSelected()) {
-                    int port = Integer.parseInt(updatedPreferenceMap.get(PORT_NUMBER));
-                    CommandListener.start(port);
-                }
-            }
-
-
-            // Overlays
-            if (updateOverlays) {
-                IGV.getInstance().resetOverlayTracks();
-            }
-
-            // Proxies
-            if (proxySettingsChanged) {
-                HttpUtils.getInstance().updateProxySettings();
-            }
-
-            // IGV directory
-            if (newIGVDirectory != null) {
-                moveIGVDirectory();
-
-            }
-
-            // Tooltip
-            if (tooltipSettingsChanged) {
-                Main.updateTooltipSettings();
-            }
-
-            if (updatedPreferenceMap.containsKey(ENABLE_GOOGLE_MENU)) {
-                IGVMenuBar.getInstance().enableGoogleMenu(Boolean.valueOf(updatedPreferenceMap.get(ENABLE_GOOGLE_MENU)));
-            }
-
-
-            if (updatedPreferenceMap.containsKey(SAVE_GOOGLE_CREDENTIALS)) {
-                OAuthUtils.getInstance().updateSaveOption(Boolean.valueOf(updatedPreferenceMap.get(SAVE_GOOGLE_CREDENTIALS)));
-            }
-
-            updatedPreferenceMap.clear();
-            IGV.getInstance().doRefresh();
-            setVisible(false);
-        } else {
-            resetValidation();
-        }
-    }
-
-    /**
-     * Move the IGV directory to a new location.
-     */
-    private void moveIGVDirectory() {
-
-        // DO this in a swing worker, so we can invoke a wait cursor.  This might take some time.
-        SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
-            @Override
-            protected Boolean doInBackground() throws Exception {
-                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                return DirectoryManager.moveIGVDirectory(newIGVDirectory);
-            }
-
-            @Override
-            protected void done() {
-                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        };
-
-
-        worker.execute();
-        try {
-            Boolean success = worker.get(30, TimeUnit.SECONDS);
-            if (success == Boolean.TRUE) {
-                MessageUtils.showMessage("<html>The IGV directory has been successfully moved to: " +
-                        newIGVDirectory.getAbsolutePath() +
-                        "<br>Some files might need to be manually removed from the previous directory." +
-                        "<br/><b><i>It is recommended that you restart IGV.");
-            }
-
-        } catch (Exception ex) {
-            MessageUtils.showMessage("<html>Unexpected error occurred while moving IGV directory:  " +
-                    newIGVDirectory.getAbsolutePath() + " " + ex.getMessage() +
-                    "<br/><b><i>It is recommended that you restart IGV.");
-
-        }
-    }
-
-
     private void fontChangeButtonActionPerformed(ActionEvent e) {
         Font defaultFont = FontManager.getDefaultFont();
         FontChooser chooser = new FontChooser(this, defaultFont);
@@ -2623,7 +2672,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
             igvDirectoryField.setText(newIGVDirectory.getAbsolutePath());
 
         }
-
     }
 
     private void dataServerURLTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataServerURLTextFieldActionPerformed
@@ -3698,6 +3746,59 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     }
 
+
+    private void scaleFontsCBActionPerformed(ActionEvent e) {
+        PreferencesManager.getPreferences().put(SCALE_FONTS, scaleFontsCB.isSelected());
+    }
+
+    private void enableGoogleCBActionPerformed(ActionEvent e) {
+        updatedPreferenceMap.put(ENABLE_GOOGLE_MENU, String.valueOf(enableGoogleCB.isSelected()));
+    }
+
+    private void saveGoogleCredentialsCBActionPerformed(ActionEvent e) {
+        updatedPreferenceMap.put(SAVE_GOOGLE_CREDENTIALS, String.valueOf(saveGoogleCredentialsCB.isSelected()));
+    }
+
+    private void sessionPathsCBActionPerformed(ActionEvent e) {
+        updatedPreferenceMap.put(SESSION_RELATIVE_PATH, String.valueOf(sessionPathsCB.isSelected()));
+    }
+
+    private void coverageOnlyCBActionPerformed(ActionEvent e) {
+        // TODO add your code here
+    }
+
+
+    private void cramCacheSizeFieldFocusLost(FocusEvent e) {
+        cramCacheSizeFieldActionPerformed(null);
+    }
+
+    private void cramCacheSizeFieldActionPerformed(ActionEvent e) {
+        try {
+            String p = cramCacheSizeField.getText();
+            Float.parseFloat(p);
+            updatedPreferenceMap.put(CRAM_CACHE_SIZE, p);
+        }
+        catch(NumberFormatException ex) {
+            MessageUtils.showMessage("Cache size must be a number");
+            cramCacheSizeField.setText(prefMgr.get(CRAM_CACHE_SIZE));
+        }
+    }
+
+
+    private void cramCacheDirectoryButtonActionPerformed(ActionEvent e) {
+        cramCacheDirectory = DirectoryManager.getFastaCacheDirectory();
+        final File newDirectory = FileDialogUtils.chooseDirectory("Select IGV directory", DirectoryManager.getUserDirectory());
+        if (newDirectory != null && !newDirectory.equals(cramCacheDirectory.getParentFile())) {
+            newCramCacheDirectory = new File(newDirectory, "igv");
+            cramCacheDirectoryField.setText(newCramCacheDirectory.getAbsolutePath());
+        }
+    }
+
+    private void cramCacheReferenceCBActionPerformed(ActionEvent e) {
+        updatedPreferenceMap.put(CRAM_CACHE_SEQUENCES, String.valueOf(cramCacheReferenceCB.isSelected()));
+    }
+
+
     /*
    *    Object selection = geneMappingFile.getSelectedItem();
   String filename = (selection == null ? null : selection.toString().trim());
@@ -3882,6 +3983,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
         hideIndelsBasesField.setText(prefMgr.get(SAM_SMALL_INDEL_BP_THRESHOLD));
         hideIndelsBasesField.setEnabled(hideIndelsBasesCB.isSelected());
 
+        cramCacheReferenceCB.setSelected(prefMgr.getAsBoolean(CRAM_CACHE_SEQUENCES));
+        final File cramCacheDirectory = DirectoryManager.getFastaCacheDirectory();
+        if (cramCacheDirectory != null) {
+            cramCacheDirectoryField.setText(cramCacheDirectory.getAbsolutePath());
+        }
+        cramCacheSizeField.setText(prefMgr.get(CRAM_CACHE_SIZE));
+
+
         resetVCFColorChoosers();
 
         updateFontField();
@@ -3910,6 +4019,71 @@ public class PreferencesEditor extends javax.swing.JDialog {
             ProbeToLocusMap.getInstance().clearProbeMappings();
         }
     }
+
+
+    /**
+     * Move the IGV directory to a new location.
+     */
+    private void moveIGVDirectory() {
+
+        // DO this in a swing worker, so we can invoke a wait cursor.  This might take some time.
+        SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
+            @Override
+            protected Boolean doInBackground() throws Exception {
+                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                return DirectoryManager.moveIGVDirectory(newIGVDirectory);
+            }
+
+            @Override
+            protected void done() {
+                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
+        };
+
+
+        worker.execute();
+        try {
+            Boolean success = worker.get(30, TimeUnit.SECONDS);
+            if (success == Boolean.TRUE) {
+                MessageUtils.showMessage("<html>The IGV directory has been successfully moved to: " +
+                        newIGVDirectory.getAbsolutePath() +
+                        "<br>Some files might need to be manually removed from the previous directory." +
+                        "<br/><b><i>It is recommended that you restart IGV.");
+            }
+
+        } catch (Exception ex) {
+            MessageUtils.showMessage("<html>Unexpected error occurred while moving IGV directory:  " +
+                    newIGVDirectory.getAbsolutePath() + " " + ex.getMessage() +
+                    "<br/><b><i>It is recommended that you restart IGV.");
+
+        }
+    }
+
+
+    /**
+     * Move the CRAM sequence cache directory to a new location.
+     */
+    private void moveCramCacheDirectory() {
+
+        if(cramCacheDirectory != null && cramCacheDirectory.exists() && cramCacheDirectory.isDirectory() &&
+                newCramCacheDirectory != null && newCramCacheDirectory.exists() && newCramCacheDirectory.isDirectory()) {
+
+            for(File f : cramCacheDirectory.listFiles()) {
+                Path p1 = f.toPath();
+                Path p2 = (new File(newCramCacheDirectory, f.getName())).toPath();
+                try {
+                    Files.move(p1, p2);
+                } catch (IOException e) {
+                    log.error("Error moving cached sequence file", e);
+                }
+            }
+
+        }
+    }
+
+
+
+
 
     /**
      * @param args the command line arguments
@@ -4195,6 +4369,17 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JPanel vSpacer8;
     private JPanel vSpacer9;
     private JPanel vSpacer10;
+    private JScrollPane panel36;
+    private JPanel cramPanel;
+    private JPanel panel28;
+    private JPanel panel37;
+    private JLabel label28;
+    private JTextField cramCacheSizeField;
+    private JPanel panel38;
+    private JLabel label29;
+    private JTextField cramCacheDirectoryField;
+    private JButton cramCacheDirectoryButton;
+    private JCheckBox cramCacheReferenceCB;
     private ButtonPanel okCancelButtonPanel;
     JButton okButton;
     private JButton cancelButton;

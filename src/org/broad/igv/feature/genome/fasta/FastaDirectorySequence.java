@@ -71,7 +71,6 @@ public class FastaDirectorySequence implements Sequence {
                 chrLengths.put(chr, length);
             }
         }
-
     }
 
     public Collection<FastaIndexedSequence> getFastaSequences() {
@@ -110,6 +109,7 @@ public class FastaDirectorySequence implements Sequence {
             if(seq.isRemote()) return true;
         }
         return false;
-
     }
+
+
 }

@@ -32,11 +32,10 @@ package org.broad.igv.feature.genome;
 
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.DirectoryManager;
-import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.RunnableResult;
 import org.broad.igv.util.TestUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -91,7 +90,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
     private String genomeId = "gmt_001";
 
     private void createDotGenomeForTest(String fastaFileName) throws IOException{
-        GenomeManager.getInstance().getUserDefinedGenomeArchiveList();
+        GenomeListManager.getInstance().getUserDefinedGenomeMap();
         GenomeListItem genomeListItem = GenomeManager.getInstance().defineGenome(
                 new File(genomeZipFile), null, null,
                 fastaFileName, null, genomeDisplayName,
@@ -161,61 +160,6 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         assertEquals(3095677412l, genome.getTotalLength());
     }
 
-    /**
-     * Test for simple downloading of .genome file,
-     * which packages up all the resources it can
-     * @throws Exception
-     */
-    @Test
-    public void testDownloadDotGenome() throws Exception{
-
-        String genId = "NC_001802";
-        String genomePath = "http://igv.broadinstitute.org/genomes/" + genId + ".genome";
-        String outDirPath = TestUtils.TMP_OUTPUT_DIR;
-        File outDirFile = new File(outDirPath);
-        File outGenomeFile = new File(outDirPath, genId + ".genome");
-        RunnableResult result = GenomeManager.getInstance().downloadWholeGenome(genomePath, outDirFile, null);
-        assertTrue("Download of genome failed", result.isSuccess());
-
-        assertTrue(outGenomeFile.exists());
-        File fastaFile = new File(TestUtils.TMP_OUTPUT_DIR, genId + ".fna");
-        assertTrue("fasta file not found: " + fastaFile.getAbsolutePath(), fastaFile.exists());
-
-        //I don't know exactly why this is necessary but it seems like there is some weird memory-buffering issue
-        //and if we try to read from the outPath again it uses the old (remote) fasta file name.
-        //This is just a unit test thing, copying the downloaded .genome file should have the same info
-        //and it makes the tests pass
-        File tmpOut = new File(TestUtils.TMP_OUTPUT_DIR + "t2.genome");
-        FileUtils.copyFile(outGenomeFile, tmpOut);
-        GenomeDescriptor descriptor = GenomeManager.parseGenomeArchiveFile(tmpOut);
-        assertEquals(fastaFile.getAbsolutePath(), descriptor.getSequencePath());
-        assertTrue(descriptor.hasCustomSequenceLocation());
-
-        String remSequencePath = "http://igvdata.broadinstitute.org/genomes/seq/Human_immunodeficiency_virus_1_uid15476/NC_001802.fna";
-        FastaIndexedSequence remSequence = new FastaIndexedSequence(remSequencePath);
-
-        TestUtils.createIndex(fastaFile.getAbsolutePath());
-        FastaIndexedSequence localSequence = new FastaIndexedSequence(fastaFile.getAbsolutePath());
-
-        assertEquals(remSequence.getChromosomeNames(), localSequence.getChromosomeNames());
-    }
-
-    @Test
-    public void testRewriteSequenceLocation() throws Exception{
-        String origGenomePath = TestUtils.DATA_DIR + "genomes/hg18.unittest.genome";
-        File newGenomeFile = File.createTempFile("hg18.unittest.testrewrite", ".genome");
-        FileUtils.copyFile(new File(origGenomePath), newGenomeFile);
-        newGenomeFile.deleteOnExit();
-
-        String newSeqLocation = (new File(TestUtils.TMP_OUTPUT_DIR + "/myseq.fa")).getAbsolutePath();
-        boolean success = GenomeManager.rewriteSequenceLocation(newGenomeFile, newSeqLocation);
-
-        assertTrue("Rewrite of .genome failed", success);
-        GenomeDescriptor descriptor = GenomeManager.parseGenomeArchiveFile(newGenomeFile);
-
-        assertEquals(newSeqLocation, descriptor.getSequencePath());
-        assertTrue(descriptor.hasCustomSequenceLocation());
-    }
 
     @Test
     public void testLoadNonCustomGenome() throws Exception{

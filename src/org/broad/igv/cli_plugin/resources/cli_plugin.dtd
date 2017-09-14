@@ -161,7 +161,7 @@ decodingCodec
 libs
     Location (relative to the directory in which the xml file is located)
     to look for the decoding_codec. Can be URLs, absolute, or
-    paths relative to the location of the XML spec file
+    paths relative to the path of the XML spec file
 -->
 <!ELEMENT libs (#PCDATA)>
 

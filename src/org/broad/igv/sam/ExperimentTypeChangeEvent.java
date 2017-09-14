@@ -6,9 +6,9 @@ package org.broad.igv.sam;
 public class ExperimentTypeChangeEvent {
 
     public final Object source;
-    public final AlignmentDataManager.ExperimentType type;
+    public final AlignmentTrack.ExperimentType type;
 
-    public ExperimentTypeChangeEvent(Object source, AlignmentDataManager.ExperimentType type) {
+    public ExperimentTypeChangeEvent(Object source, AlignmentTrack.ExperimentType type) {
         this.source = source;
         this.type = type;
     }

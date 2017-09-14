@@ -35,7 +35,6 @@ import org.broad.igv.cli_plugin.PluginSpecReader;
 import org.broad.igv.cli_plugin.ui.RunPlugin;
 import org.broad.igv.cli_plugin.ui.SetPluginPathDialog;
 import org.broad.igv.dev.db.DBProfileEditor;
-import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ga4gh.Ga4ghAPIHelper;
 import org.broad.igv.ga4gh.OAuthUtils;
@@ -51,6 +50,8 @@ import org.broad.igv.ui.action.*;
 import org.broad.igv.event.GenomeChangeEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.feature.genome.RemoveGenomesDialog;
+import org.broad.igv.ui.commandbar.GenomeComboBox;
 import org.broad.igv.ui.legend.LegendDialog;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.MainPanel;
@@ -517,25 +518,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         return fileMenu;
     }
 
-    private void notifyGenomesAddedRemoved(List<GenomeListItem> selectedValues, boolean added) {
-        if (selectedValues == null || selectedValues.size() == 0) return;
-        int size = selectedValues.size();
-        String msg = "";
-        if (size == 1) {
-            msg += selectedValues.get(0) + " genome";
-        } else {
-            msg += size + " genomes";
-        }
-        if (added) {
-            msg += " added to";
-        } else {
-            msg += " removed from";
-        }
-        msg += " list";
-
-        MessageUtils.setStatusBarMessage(msg);
-    }
-
     private JMenu createGenomesMenu() {
         List<JComponent> menuItems = new ArrayList<JComponent>();
         MenuAction menuAction = null;
@@ -575,12 +557,27 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction = new MenuAction("Load Genome From Server...", null) {
             @Override
             public void actionPerformed(ActionEvent event) {
-                IGV.getInstance().loadGenomeFromServer();
+                GenomeComboBox.loadGenomeFromServer();
             }
         };
         menuAction.setToolTipText(LOAD_GENOME_SERVER_TOOLTIP);
         loadFromServerMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
         menuItems.add(loadFromServerMenuItem);
+
+
+        menuItems.add(new JSeparator());
+
+        // Add genome to combo box from server
+        menuAction = new MenuAction("Remove genomes ...", null) {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                RemoveGenomesDialog dialog2 = new RemoveGenomesDialog(IGV.getMainFrame());
+                dialog2.setVisible(true);
+            }
+        };
+        menuAction.setToolTipText("Remove genomes which appear in the dropdown list");
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
 
         menuItems.add(new JSeparator());
 
@@ -595,47 +592,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 };
 
         menuAction.setToolTipText(UIConstants.IMPORT_GENOME_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuItems.add(new JSeparator());
-
-        // Add genome to combo box from server
-        menuAction = new MenuAction("Manage Genome List...", null) {
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                ManageGenomesDialog dialog2 = new ManageGenomesDialog(IGV.getMainFrame());
-                dialog2.setVisible(true);
-                boolean cancelled = dialog2.isCancelled();
-                List<GenomeListItem> removedValuesList = dialog2.getRemovedValuesList();
-
-                if (!cancelled) {
-
-                    if (removedValuesList != null && !removedValuesList.isEmpty()) {
-                        try {
-                            GenomeManager.getInstance().deleteDownloadedGenomes(removedValuesList);
-                        } catch (IOException e) {
-                            MessageUtils.showErrorMessage("Error deleting genome files", e);
-                        }
-                        GenomeManager.getInstance().updateImportedGenomePropertyFile();
-                        notifyGenomesAddedRemoved(removedValuesList, false);
-
-                        String defaultGenomeKey = PreferencesManager.getPreferences().get(DEFAULT_GENOME);
-                        for (GenomeListItem item : removedValuesList) {
-                            if (defaultGenomeKey.equals(item.getId())) {
-                                PreferencesManager.getPreferences().remove(DEFAULT_GENOME);
-                                break;
-                            }
-                        }
-                    }
-
-                    GenomeManager.getInstance().buildGenomeItemList();
-
-                    igv.getContentPane().getCommandBar().refreshGenomeListComboBox();
-
-                }
-            }
-        };
-        menuAction.setToolTipText("Add, remove, or reorder genomes which appear in the dropdown list");
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         MenuAction genomeMenuAction = new MenuAction("Genomes", null);
@@ -976,9 +932,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 } else {
                     MessageUtils.showMessage("IGV is up to date");
                 }
-            }
-            else {
-                if(Globals.VERSION.contains("3.0_beta") || Globals.VERSION.contains("snapshot")) {
+            } else {
+                if (Globals.VERSION.contains("3.0_beta") || Globals.VERSION.contains("snapshot")) {
                     HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
                 }
             }

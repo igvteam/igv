@@ -24,7 +24,7 @@
     ---------
     Type
     # Positions
-    Start location
+    Start path
     Span
     Data
 
@@ -38,7 +38,7 @@
 
     FeatureIndex
     ------------
-    
+
 
     Dataset
     -------

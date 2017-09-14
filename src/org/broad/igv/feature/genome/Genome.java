@@ -62,12 +62,18 @@ public class Genome {
     private long nominalLength = -1;
     private Map<String, Long> cumulativeOffsets = new HashMap();
     private Map<String, String> chrAliasTable;
-    Sequence sequence;
+    private Sequence sequence;
     private FeatureTrack geneTrack;
     private String species;
     private String ucscID;
-    public GenomeDescriptor genomeDescriptor;
+    private GenomeDescriptor descriptor;   // Can be null
 
+
+    public Genome(String id, String displayName, Sequence sequence, boolean chromosOrdered, GenomeDescriptor descriptor) {
+        this(id, displayName, sequence, chromosOrdered);
+        this.descriptor = descriptor;
+
+    }
     /**
      * @param id
      * @param displayName
@@ -144,6 +150,10 @@ public class Genome {
         }
     }
 
+    public GenomeDescriptor getDescriptor() {
+        return descriptor;
+    }
+
     public Map<String, String> getChrAliasTable() {
         return chrAliasTable;
     }
@@ -213,55 +223,49 @@ public class Genome {
             }
         }
 
-        if (chromosomeNames.size() < 10000) {
-            for (String name : chromosomeNames) {
 
-                // UCSC Conventions
-                if (name.toLowerCase().startsWith("chr")) {
-                    autoAliases.put(name.substring(3), name);
-                } else {
-                    autoAliases.put("chr" + name, name);
-                }
+        // Auto insert UCSC conventions for first 50
+        int count = 0;
+        for (String name : chromosomeNames) {
+            // UCSC Conventions
+            if (name.toLowerCase().startsWith("chr")) {
+                autoAliases.put(name.substring(3), name);
+            } else {
+                autoAliases.put("chr" + name, name);
             }
+            if(count++ == 50) break;
+        }
 
+        // Special case for human and mouse -- for other genomes define these in the alias file.
+        if (id.startsWith("hg") || id.equalsIgnoreCase("1kg_ref")) {
+            autoAliases.put("23", "chrX");
+            autoAliases.put("24", "chrY");
+            autoAliases.put("MT", "chrM");
+        } else if (id.startsWith("mm") || id.startsWith("rheMac")) {
+            autoAliases.put("21", "chrX");
+            autoAliases.put("22", "chrY");
+            autoAliases.put("MT", "chrM");
+        } else if (id.equals("b37")) {
+            autoAliases.put("chrM", "MT");
+            autoAliases.put("chrX", "23");
+            autoAliases.put("chrY", "24");
+        }
 
-            // These are legacy mappings,  these are now defined in the genomes alias file
-            if (id.startsWith("hg") || id.equalsIgnoreCase("1kg_ref"))
-
-            {
-                autoAliases.put("23", "chrX");
-                autoAliases.put("24", "chrY");
-                autoAliases.put("MT", "chrM");
-            } else if (id.startsWith("mm"))
-
-            {
-                autoAliases.put("21", "chrX");
-                autoAliases.put("22", "chrY");
-                autoAliases.put("MT", "chrM");
-            } else if (id.equals("b37"))
-
-            {
-                autoAliases.put("chrM", "MT");
-                autoAliases.put("chrX", "23");
-                autoAliases.put("chrY", "24");
-
+        Collection<Map.Entry<String, String>> aliasEntries = new ArrayList(autoAliases.entrySet());
+        for (Map.Entry<String, String> aliasEntry : aliasEntries) {
+            // Illumina conventions
+            String alias = aliasEntry.getKey();
+            String chr = aliasEntry.getValue();
+            if (!alias.endsWith(".fa")) {
+                String illuminaName = alias + ".fa";
+                autoAliases.put(illuminaName, chr);
             }
-
-            Collection<Map.Entry<String, String>> aliasEntries = new ArrayList(autoAliases.entrySet());
-            for (Map.Entry<String, String> aliasEntry : aliasEntries) {
-                // Illumina conventions
-                String alias = aliasEntry.getKey();
-                String chr = aliasEntry.getValue();
-                if (!alias.endsWith(".fa")) {
-                    String illuminaName = alias + ".fa";
-                    autoAliases.put(illuminaName, chr);
-                }
-                if (!chr.endsWith(".fa")) {
-                    String illuminaName = chr + ".fa";
-                    autoAliases.put(illuminaName, chr);
-                }
+            if (!chr.endsWith(".fa")) {
+                String illuminaName = chr + ".fa";
+                autoAliases.put(illuminaName, chr);
             }
         }
+
         return autoAliases;
     }
 
@@ -441,6 +445,10 @@ public class Genome {
 
     public boolean sequenceIsRemote() {
         return sequence.isRemote();
+    }
+
+    public boolean sequenceIsFasta() {
+        return sequence.isFasta();
     }
 
     public String getDisplayName() {

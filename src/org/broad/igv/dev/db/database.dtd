@@ -51,7 +51,7 @@ description
 
 <!--
 A database can have any number of tables within it.
-For each table, we have to specify the location
+For each table, we have to specify the path
 of certain columns to perform queries.
 
 baseQuery
