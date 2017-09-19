@@ -49,6 +49,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 
+import javafx.geometry.Rectangle2D;
 import static org.broad.igv.prefs.Constants.*;
 
 /**
@@ -503,6 +504,28 @@ public class IGVPreferences {
         return bounds;
     }
 
+    public Rectangle2D getApplicationFrameBounds_javafx() {
+        Rectangle2D bounds = null;
+
+        // Set the application's previous location and size
+        String applicationBounds = get(FRAME_BOUNDS_KEY, null);
+
+        if (applicationBounds != null) {
+            String[] values = applicationBounds.split(",");
+            int x = Integer.parseInt(values[0]);
+            int y = Integer.parseInt(values[1]);
+            int width = Integer.parseInt(values[2]);
+            int height = Integer.parseInt(values[3]);
+
+            if (width == 0 || height == 0) {
+                return null;  // Don't know bounds
+            }
+            
+            bounds = new Rectangle2D(x, y, width, height);
+        }
+        return bounds;
+    }
+    
     /**
      * @param recentSessions
      */

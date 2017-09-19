@@ -28,6 +28,7 @@ package org.broad.igv.ui;
 import com.jidesoft.plaf.LookAndFeelFactory;
 import htsjdk.samtools.seekablestream.SeekableStreamFactory;
 import jargs.gnu.CmdLineParser;
+
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
@@ -39,6 +40,7 @@ import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -47,6 +49,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 
 import static org.broad.igv.prefs.Constants.*;
@@ -113,7 +116,7 @@ public class Main {
 
     }
 
-    private static void setIgvDirectory(IGVArgs igvArgs) {
+    public static void setIgvDirectory(IGVArgs igvArgs) {
 
         File dir = new File(igvArgs.igvDirectory);
         if (!dir.exists()) {
@@ -179,7 +182,7 @@ public class Main {
 
     }
 
-    private static void checkVersion() {
+    public static void checkVersion() {
 
         Runnable runnable = () -> {
             try {
@@ -402,9 +405,15 @@ public class Main {
         public String igvDirectory = null;
         public String forceVersion = null;
 
-        IGVArgs(String[] args) {
+        public IGVArgs(String[] args) {
             if (args != null) {
                 parseArgs(args);
+            }
+        }
+        
+        public IGVArgs(java.util.List<String> args) {
+            if (args != null) {
+                parseArgs(args.toArray(new String[args.size()]));
             }
         }
 

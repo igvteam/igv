@@ -64,6 +64,12 @@ public class Globals {
     public static int READ_TIMEOUT = 1000 * 3 * 60;   // 3 minutes
 
     /**
+     * Are we running the JavaFX UI?  This is false by default. 
+     */
+    // This is a hack for now while we're porting the UI to JavaFX, to allow that code to coexist with the Swing UI code.
+    public static boolean IS_JAVAFX_UI = false;
+    
+    /**
      * Field description
      */
     final public static String SESSION_FILE_EXTENSION = ".xml";
