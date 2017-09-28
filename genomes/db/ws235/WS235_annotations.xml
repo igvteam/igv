@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Global name="Annotations (WS235)" version="1" hyperlink="http://wormbase.org/">
+    <Resource name="Coding transcripts" path="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/WS235/WS235_coding_transcripts.gff3.gz"/>
+    <Resource name="Noncoding transcripts" path="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/WS235/WS235_non_coding_transcripts.gff3.gz"/>
+</Global>
+
