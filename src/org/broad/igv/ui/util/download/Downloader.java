@@ -107,12 +107,17 @@ public class Downloader implements Runnable {
                     }
                 }
             }
+            file.close();
 
             if(canceled) {
                 (new File(tmpName)).delete();
             }
             else {
-                (new File(tmpName)).renameTo(localFile);
+            	File permFile = new File(tmpName);
+            	boolean success = permFile.renameTo(localFile);
+            	if (success == false) {
+            		throw new Exception("Failure renaming '" + tmpName + "' to '" + localFile + "'");
+            	}
             }
 
 
