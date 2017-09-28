@@ -60,6 +60,11 @@ public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
     }
 
     @Override
+    public void dispose() {
+        wrappedSource.dispose();
+    }
+
+    @Override
     public Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
 
         Iterator<Feature> rawIter = wrappedSource.getFeatures(chr, start, end);

@@ -41,10 +41,10 @@ import java.util.HashSet;
  */
 public class IGVPopupMenu extends JPopupMenu {
 
-    private static HashSet<IGVPopupMenu> instances = new HashSet();
+   // private static HashSet<IGVPopupMenu> instances = new HashSet();
 
     public IGVPopupMenu() {
-        instances.add(this);
+      //  instances.add(this);
         addPopupMenuListener(new PopupMenuListener() {
             public void popupMenuWillBecomeVisible(PopupMenuEvent popupMenuEvent) {
 
@@ -62,7 +62,7 @@ public class IGVPopupMenu extends JPopupMenu {
                 if (IGV.hasInstance()) {
                     IGV.getInstance().repaint();
                 }
-                instances.remove(IGVPopupMenu.this);
+     //           instances.remove(IGVPopupMenu.this);
             }
 
         });
@@ -73,12 +73,12 @@ public class IGVPopupMenu extends JPopupMenu {
     }
 
     public static void closeAll() {
-        synchronized (instances) {
-            for (IGVPopupMenu inst : instances) {
-                inst.setVisible(false);
-            }
-            instances.clear();
-        }
+//        synchronized (instances) {
+//            for (IGVPopupMenu inst : instances) {
+//                inst.setVisible(false);
+//            }
+//            instances.clear();
+//        }
     }
 
 

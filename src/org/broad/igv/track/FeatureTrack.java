@@ -234,6 +234,12 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     }
 
+    @Override
+    public void dispose() {
+        super.dispose();
+        source.dispose();
+    }
+
     /**
      * Called after features are finished loading, which can be asynchronous
      */
