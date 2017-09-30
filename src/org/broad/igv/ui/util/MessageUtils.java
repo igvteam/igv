@@ -176,11 +176,9 @@ public class MessageUtils {
             return val;
         } else {
             final ValueHolder returnValue = new ValueHolder();
-            Runnable runnable = new Runnable() {
-                public void run() {
-                    String val = JOptionPane.showInputDialog(parent, actMsg, defaultValue);
-                    returnValue.value = val;
-                }
+            Runnable runnable = () -> {
+                String val = JOptionPane.showInputDialog(parent, actMsg, defaultValue);
+                returnValue.value = val;
             };
             try {
                 SwingUtilities.invokeAndWait(runnable);
