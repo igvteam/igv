@@ -162,11 +162,11 @@ public class MessageUtils {
         }
     }
 
-    public static String showInputDialog(String message, final String defaultValue) {
+    public static String showInputDialog(String message, String defaultValue) {
 
         final Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
         //Pad message with spaces so it's as wide as the defaultValue
-        if(message.length() < defaultValue.length()){
+        if(defaultValue != null && message.length() < defaultValue.length()){
             message = String.format("%-" + defaultValue.length() + "s", message);
         }
         final String actMsg = message;
