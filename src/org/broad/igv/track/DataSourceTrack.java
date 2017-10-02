@@ -195,6 +195,7 @@ public class DataSourceTrack extends DataTrack {
         super.dispose();
         if(dataSource != null) {
             dataSource.dispose();
+            dataSource = null;
         }
     }
 
