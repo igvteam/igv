@@ -169,6 +169,7 @@ public class OAuthUtils {
      * @throws URISyntaxException
      */
     public void openAuthorizationPage() throws IOException, URISyntaxException {
+		Desktop desktop = Desktop.getDesktop();
 
         // properties moved to early init dwm08
         //if (clientId == null) fetchOauthProperties();
@@ -207,7 +208,13 @@ public class OAuthUtils {
 //        	throw new IOException("Either scope or resource must be provided to authenticate.");
 //        }
 
-        Desktop.getDesktop().browse(new URI(url));
+		// check if the "browse" Desktop action is suppported (many Linux DEs cannot directly 
+		// launch browsers!)
+		if(desktop.isSupported(Desktop.Action.BROWSE)) {
+			desktop.browse(new URI(url));
+		} else { // otherwise, display a dialog box for the user to copy the URL manually.
+			MessageUtils.showMessage("Copy this authorization URL into your web browser: " + url);
+		}
 
         // if the listener is not active, prompt the user
         // for the access token
