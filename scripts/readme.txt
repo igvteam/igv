@@ -4,9 +4,7 @@ IGV BINARY DISTRIBUTION
 
 Prerequisites:
 
-Java 8.0 or greater (http://www.java.com).  For MACs this generally means Leopard or Snow Leopard is required.  If
-you have "Tiger" you can try OpenJDK, although we haven't tested it:  http://landonf.bikemonkey.org/static/soylatte/.
-Alternatively you can still run IGV 1.5.
+Java 8.0 or greater (http://www.java.com).
 
 
 Instructions:

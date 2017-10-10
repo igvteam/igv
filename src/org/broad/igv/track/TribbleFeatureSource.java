@@ -329,6 +329,16 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         }
 
         @Override
+        public void dispose() {
+            super.dispose();
+            for(List<Feature> featureList : featureMap.values()) {
+                for(Feature f : featureList) {
+                    if(f instanceof NamedFeature) FeatureDB.removeFeature((NamedFeature) f, genome);
+                }
+            }
+        }
+
+        @Override
         public boolean isIndexed() {
             return false;
         }

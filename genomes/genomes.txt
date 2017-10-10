@@ -16,7 +16,8 @@ C. albicans	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/candida.genom
 C. alibcans (SC5314 A21)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/ca21.genome	ca21
 C. elegans (WS201)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/WS201.genome	WS201
 C. elegans (WS220)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/WS220.genome	WS220
-C. elegans (ws241)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/ws241.genome	ws241
+C. elegans (WS241)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/ws241.genome	ws241
+C. elegans (WS235)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/ws235.genome	ws235
 C. elegans (WS245)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/WS245.genome	WS245
 C. elegans (ce10)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/ce10.genome	ce10
 C. elegans (ce11)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/ce11.genome	ce11

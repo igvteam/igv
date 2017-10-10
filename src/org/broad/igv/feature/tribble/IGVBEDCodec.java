@@ -144,17 +144,14 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
 
         if (tokenCount > 4) {
             try {
-                float score = Float.parseFloat(tokens[4]);
+                float score = tokens[4].equals(".") ? 1000 : Float.parseFloat(tokens[4]);
                 feature.setScore(score);
                 if (featureType == FeatureType.SPLICE_JUNCTION ) {
                     ((SpliceJunctionFeature) feature).setJunctionDepth((int) score);
                 }
             } catch (NumberFormatException numberFormatException) {
-
-                // Unexpected, but does not invalidate the previous values.
-                // Stop parsing the line here but keep the feature
-                // Don't log, would just slow parsing down.
-                return feature;
+                // Interpret as missing score value, set to 1000 => max value for score according to BED spec.
+                feature.setScore(1000);
             }
         }
 

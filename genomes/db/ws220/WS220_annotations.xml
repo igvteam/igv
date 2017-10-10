@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Global name="Annotations (WS220 / CE10)" version="1" hyperlink="http://wormbase.org/">
+    <Resource name="Ensemble Genes"
+            path="http://igvdata.broadinstitute.org/annotations/WS220/ensGene.txt.gz"/>
+</Global>
+

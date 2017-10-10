@@ -401,7 +401,7 @@ public class HttpUtils {
      */
     private Proxy getSystemProxy(String uri) {
         try {
-            log.debug("Getting system proxy for " + uri);
+            if(PreferencesManager.getPreferences().getAsBoolean("DEBUG.PROXY")) log.info("Getting system proxy for " + uri);
             ProxySelector selector = ProxySelector.getDefault();
             List<Proxy> proxyList = selector.select(new URI(uri));
             return proxyList.get(0);
@@ -651,7 +651,7 @@ public class HttpUtils {
         if (!igvProxySettingsExist) {
             sysProxy = getSystemProxy(url.toExternalForm());
         }
-        boolean useProxy = sysProxy != null ||
+        boolean useProxy = (sysProxy != null && sysProxy.type() != Proxy.Type.DIRECT) ||
                 (igvProxySettingsExist && !proxySettings.getWhitelist().contains(url.getHost()));
 
         HttpURLConnection conn;
@@ -659,8 +659,15 @@ public class HttpUtils {
             Proxy proxy = sysProxy;
             if (igvProxySettingsExist) {
                 if (proxySettings.type == Proxy.Type.DIRECT) {
+
+                    if(PreferencesManager.getPreferences().getAsBoolean("DEBUG.PROXY")) {log.info("NO_PROXY");}
+
                     proxy = Proxy.NO_PROXY;
                 } else {
+                    if(PreferencesManager.getPreferences().getAsBoolean("DEBUG.PROXY")) {
+                        log.info("PROXY " + proxySettings.proxyHost + "  " + proxySettings.proxyPort);
+                    }
+
                     proxy = new Proxy(proxySettings.type, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
                 }
             }
@@ -673,6 +680,12 @@ public class HttpUtils {
                 conn.setRequestProperty("Proxy-Authorization", "Basic " + encodedUserPwd);
             }
         } else {
+            if(PreferencesManager.getPreferences().getAsBoolean("DEBUG.PROXY")) {
+                log.info("PROXY NOT USED ");
+                if(proxySettings.getWhitelist().contains(url.getHost())) {
+                    log.info(url.getHost() + " is whitelisted");
+                };
+            }
             conn = (HttpURLConnection) url.openConnection();
         }
 

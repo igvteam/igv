@@ -89,4 +89,7 @@ public interface FeatureSource<T extends Feature> {
 
     void setFeatureWindowSize(int size);
 
+    default void dispose() {
+      // Do nothing by default
+    };
 }

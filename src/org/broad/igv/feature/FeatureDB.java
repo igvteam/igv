@@ -78,12 +78,47 @@ public class FeatureDB {
         }
     }
 
+    public static void removeFeature(NamedFeature feature, Genome genome) {
+
+        final String name = feature.getName();
+        if (name != null && name.length() > 0 && !name.equals(".")) {
+            featureMap.remove(name.toUpperCase());
+        }
+        if (feature instanceof IGVFeature) {
+            final IGVFeature igvFeature = (IGVFeature) feature;
+            final String id = igvFeature.getIdentifier();
+            if (id != null && id.length() > 0) {
+                featureMap.remove(id.toUpperCase());
+            }
+
+            removeByAttributes(igvFeature, genome);
+
+            List<Exon> exons = igvFeature.getExons();
+            if (exons != null) {
+                for (Exon exon : exons) {
+                    removeByAttributes(exon, genome);
+                }
+            }
+        }
+    }
+
     private static void addByAttributes(IGVFeature igvFeature, Genome genome) {
         MultiMap<String, String> attributes = igvFeature.getAttributes();
         if (attributes != null) {
             for (String value : attributes.values()) {
                 if (value.length() < 20) {
                     put(value, igvFeature, genome);
+                }
+            }
+        }
+    }
+
+    private static void removeByAttributes(IGVFeature igvFeature, Genome genome) {
+        MultiMap<String, String> attributes = igvFeature.getAttributes();
+        if (attributes != null) {
+            for (String value : attributes.values()) {
+                if (value.length() < 20) {
+                    featureMap.remove(value.toUpperCase());
                 }
             }
         }
@@ -111,7 +146,7 @@ public class FeatureDB {
             List<NamedFeature> currentList = featureMap.get(key);
             if (currentList == null) {
                 List<NamedFeature> newList = new SortedList<NamedFeature>(
-                        new ArrayList<NamedFeature>(), FeatureComparator.get(true));
+                        new ArrayList<>(), FeatureComparator.get(true));
                 boolean added = newList.add(feature);
                 if (added) {
                     featureMap.put(key, newList);

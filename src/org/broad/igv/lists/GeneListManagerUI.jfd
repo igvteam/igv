@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<java version="1.6.0_65" class="java.beans.XMLDecoder">
+<java version="1.8.0_76-release" class="java.beans.XMLDecoder">
  <object class="com.jformdesigner.model.FormModel">
   <void property="contentType">
    <string>form/swing</string>
@@ -266,7 +266,7 @@
                 </object>
                 <void method="setProperty">
                  <string>border</string>
-                 <object id="LineBorder0" class="javax.swing.border.LineBorder">
+                 <object class="javax.swing.border.LineBorder" id="LineBorder0">
                   <object class="java.awt.Color" field="black"/>
                   <int>1</int>
                   <boolean>false</boolean>
@@ -500,7 +500,7 @@
                    <string>scrollPane2</string>
                   </void>
                   <void method="add">
-                   <object class="com.jformdesigner.model.FormComponent">
+                   <object class="com.jformdesigner.model.FormComponent" id="FormComponent0">
                     <string>javax.swing.JList</string>
                     <void method="setProperty">
                      <string>selectionMode</string>
@@ -843,26 +843,6 @@
             <string>javax.swing.JButton</string>
             <void method="setProperty">
              <string>text</string>
-             <string>Retrieve Network</string>
-            </void>
-            <void property="name">
-             <string>viewNetworkButton</string>
-            </void>
-            <void method="addEvent">
-             <object class="com.jformdesigner.model.FormEvent">
-              <string>java.awt.event.ActionListener</string>
-              <string>actionPerformed</string>
-              <string>retrieveNetworkButtonActionPerformed</string>
-              <boolean>true</boolean>
-             </object>
-            </void>
-           </object>
-          </void>
-          <void method="add">
-           <object class="com.jformdesigner.model.FormComponent">
-            <string>javax.swing.JButton</string>
-            <void method="setProperty">
-             <string>text</string>
              <string>View</string>
             </void>
             <void method="setProperty">
@@ -938,6 +918,13 @@
        <object class="java.awt.Dimension">
         <int>845</int>
         <int>580</int>
+       </object>
+      </void>
+      <void method="setProperty">
+       <string>location</string>
+       <object class="java.awt.Point">
+        <int>0</int>
+        <int>0</int>
        </object>
       </void>
      </object>

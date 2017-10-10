@@ -122,10 +122,6 @@ public class GeneListManagerUI extends JDialog {
         instance.actionButton.setText(actionText);
         instance.listener = listener;
 
-        if (listener != DEFAULT_ACTION_LISTENER) {
-            instance.viewNetworkButton.setVisible(false);
-        }
-
         return instance;
     }
 
@@ -537,7 +533,7 @@ public class GeneListManagerUI extends JDialog {
         panel3 = new JPanel();
         label3 = new JLabel();
         scrollPane1 = new JScrollPane();
-        groupJList = new JList();
+        groupJList = new JList<>();
         panel7 = new JPanel();
         importButton = new JButton();
         exportButton = new JButton();
@@ -557,7 +553,6 @@ public class GeneListManagerUI extends JDialog {
         panel9 = new JPanel();
         buttonBar = new JPanel();
         exportTDMButton = new JButton();
-        viewNetworkButton = new JButton();
         actionButton = new JButton();
         closeButton = new JButton();
 
@@ -648,22 +643,17 @@ public class GeneListManagerUI extends JDialog {
                                 scrollPane1.setPreferredSize(new Dimension(80, 140));
 
                                 //---- groupJList ----
-                                groupJList.setModel(new AbstractListModel() {
+                                groupJList.setModel(new AbstractListModel<String>() {
                                     String[] values = {
                                         "All"
                                     };
                                     @Override
                                     public int getSize() { return values.length; }
                                     @Override
-                                    public Object getElementAt(int i) { return values[i]; }
+                                    public String getElementAt(int i) { return values[i]; }
                                 });
                                 groupJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-                                groupJList.addListSelectionListener(new ListSelectionListener() {
-                                    @Override
-                                    public void valueChanged(ListSelectionEvent e) {
-                                        groupsValueChanged(e);
-                                    }
-                                });
+                                groupJList.addListSelectionListener(e -> groupsValueChanged(e));
                                 scrollPane1.setViewportView(groupJList);
                             }
                             panel3.add(scrollPane1, BorderLayout.CENTER);
@@ -676,33 +666,18 @@ public class GeneListManagerUI extends JDialog {
                                 importButton.setIcon(null);
                                 importButton.setText("Import");
                                 importButton.setToolTipText("Import a .gmt file, .grp, or .bed file");
-                                importButton.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        importButtonActionPerformed(e);
-                                    }
-                                });
+                                importButton.addActionListener(e -> importButtonActionPerformed(e));
                                 panel7.add(importButton);
 
                                 //---- exportButton ----
                                 exportButton.setText("Export");
-                                exportButton.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        exportButtonActionPerformed(e);
-                                    }
-                                });
+                                exportButton.addActionListener(e -> exportButtonActionPerformed(e));
                                 panel7.add(exportButton);
 
                                 //---- deleteGroupButton ----
                                 deleteGroupButton.setText("Delete");
                                 deleteGroupButton.setEnabled(false);
-                                deleteGroupButton.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        deleteGroupButtonActionPerformed(e);
-                                    }
-                                });
+                                deleteGroupButton.addActionListener(e -> deleteGroupButtonActionPerformed(e));
                                 panel7.add(deleteGroupButton);
                             }
                             panel3.add(panel7, BorderLayout.SOUTH);
@@ -729,12 +704,7 @@ public class GeneListManagerUI extends JDialog {
 
                                 //---- glJList ----
                                 glJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-                                glJList.addListSelectionListener(new ListSelectionListener() {
-                                    @Override
-                                    public void valueChanged(ListSelectionEvent e) {
-                                        listsValueChanged(e);
-                                    }
-                                });
+                                glJList.addListSelectionListener(e -> listsValueChanged(e));
                                 glJList.addMouseListener(new MouseAdapter() {
                                     @Override
                                     public void mouseClicked(MouseEvent e) {
@@ -752,44 +722,24 @@ public class GeneListManagerUI extends JDialog {
                                 //---- newList ----
                                 newList.setIcon(null);
                                 newList.setText("New");
-                                newList.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        newListActionPerformed(e);
-                                    }
-                                });
+                                newList.addActionListener(e -> newListActionPerformed(e));
                                 panel8.add(newList);
 
                                 //---- copyListButton ----
                                 copyListButton.setText("Copy");
-                                copyListButton.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        copyListButtonActionPerformed(e);
-                                    }
-                                });
+                                copyListButton.addActionListener(e -> copyListButtonActionPerformed(e));
                                 panel8.add(copyListButton);
 
                                 //---- editButton ----
                                 editButton.setText("Edit");
                                 editButton.setEnabled(false);
-                                editButton.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        editButtonActionPerformed(e);
-                                    }
-                                });
+                                editButton.addActionListener(e -> editButtonActionPerformed(e));
                                 panel8.add(editButton);
 
                                 //---- deleteButton ----
                                 deleteButton.setIcon(null);
                                 deleteButton.setText("Delete");
-                                deleteButton.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        deleteButtonActionPerformed(e);
-                                    }
-                                });
+                                deleteButton.addActionListener(e -> deleteButtonActionPerformed(e));
                                 panel8.add(deleteButton);
                             }
                             panel4.add(panel8, BorderLayout.PAGE_END);
@@ -839,43 +789,18 @@ public class GeneListManagerUI extends JDialog {
                 //---- exportTDMButton ----
                 exportTDMButton.setText("Export TDM");
                 exportTDMButton.setVisible(false);
-                exportTDMButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        exportTDMButtonActionPerformed_deleteme(e);
-                    }
-                });
+                exportTDMButton.addActionListener(e -> exportTDMButtonActionPerformed_deleteme(e));
                 buttonBar.add(exportTDMButton);
-
-                //---- viewNetworkButton ----
-                viewNetworkButton.setText("Retrieve Network");
-                viewNetworkButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        retrieveNetworkButtonActionPerformed(e);
-                    }
-                });
-                buttonBar.add(viewNetworkButton);
 
                 //---- actionButton ----
                 actionButton.setText("View");
                 actionButton.setEnabled(false);
-                actionButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        actionButtonActionPerformed(e);
-                    }
-                });
+                actionButton.addActionListener(e -> actionButtonActionPerformed(e));
                 buttonBar.add(actionButton);
 
                 //---- closeButton ----
                 closeButton.setText("Close");
-                closeButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        closeButtonActionPerformed(e);
-                    }
-                });
+                closeButton.addActionListener(e -> closeButtonActionPerformed(e));
                 buttonBar.add(closeButton);
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
@@ -901,7 +826,7 @@ public class GeneListManagerUI extends JDialog {
     private JPanel panel3;
     private JLabel label3;
     private JScrollPane scrollPane1;
-    private JList groupJList;
+    private JList<String> groupJList;
     private JPanel panel7;
     private JButton importButton;
     private JButton exportButton;
@@ -922,7 +847,6 @@ public class GeneListManagerUI extends JDialog {
     private JPanel panel9;
     private JPanel buttonBar;
     private JButton exportTDMButton;
-    private JButton viewNetworkButton;
     private JButton actionButton;
     private JButton closeButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
