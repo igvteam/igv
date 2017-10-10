@@ -24,43 +24,43 @@
  */
 
 .button {
-  -fx-min-height: 40;
-  -fx-min-width: 40;
-  -fx-max-height: 40;
-  -fx-max-width: 40;
-}   
+    -fx-min-height: 40;
+    -fx-min-width: 40;
+    -fx-max-height: 40;
+    -fx-max-width: 40;
+}
 
 .button:hover {
-}   
+}
 
 #homeButton {
-  -fx-graphic: url('/toolbarButtonGraphics/navigation/Home24.gif');
+    -fx-graphic: url('/toolbarButtonGraphics/navigation/Home24.gif');
 }
 
 #leftArrowButton {
-  -fx-graphic: url('/images/left-arrow.gif');
+    -fx-graphic: url('/images/left-arrow.gif');
 }
 
 #rightArrowButton {
-  -fx-graphic: url('/images/right-arrow.gif');
+    -fx-graphic: url('/images/right-arrow.gif');
 }
 
 #refreshScreenButton {
-  -fx-graphic: url('/toolbarButtonGraphics/general/Refresh24.gif');
+    -fx-graphic: url('/toolbarButtonGraphics/general/Refresh24.gif');
 }
 
 #regionToolButton {
-  -fx-graphic: url('/images/regionTool.png');
+    -fx-graphic: url('/images/regionTool.png');
 }
 
 #resizeToWindowButton {
-  -fx-graphic: url('/images/collapseall.gif');
+    -fx-graphic: url('/images/collapseall.gif');
 }
 
 #infoSelectButton {
-  -fx-graphic: url('/images/tooltip.png');
+    -fx-graphic: url('/images/tooltip.png');
 }
 
 #rulerButton {
-  -fx-graphic: url('/images/vertical-line.gif');
+    -fx-graphic: url('/images/vertical-line.gif');
 }

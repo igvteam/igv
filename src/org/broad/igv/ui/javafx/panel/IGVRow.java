@@ -22,45 +22,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package org.broad.igv.ui.javafx.panel;
 
-.button {
-    -fx-min-height: 40;
-    -fx-min-width: 40;
-    -fx-max-height: 40;
-    -fx-max-width: 40;
-}
+import javafx.scene.layout.Pane;
 
-.button:hover {
-}
+// Intended as the rough equivalent of the IGVPanel class of the Swing UI.  Work in progress.
+// May be unnecessary - we might just work with TrackRows & Header Rows directly everywhere.
+public interface IGVRow {
 
-#homeButton {
-    -fx-graphic: url('/toolbarButtonGraphics/navigation/Home24.gif');
-}
+    public MainContentPane getMainContentPane();
 
-#leftArrowButton {
-    -fx-graphic: url('/images/left-arrow.gif');
-}
+    public Pane getNamePane();
 
-#rightArrowButton {
-    -fx-graphic: url('/images/right-arrow.gif');
-}
+    public Pane getAttributePane();
 
-#refreshScreenButton {
-    -fx-graphic: url('/toolbarButtonGraphics/general/Refresh24.gif');
-}
-
-#regionToolButton {
-    -fx-graphic: url('/images/regionTool.png');
-}
-
-#resizeToWindowButton {
-    -fx-graphic: url('/images/collapseall.gif');
-}
-
-#infoSelectButton {
-    -fx-graphic: url('/images/tooltip.png');
-}
-
-#rulerButton {
-    -fx-graphic: url('/images/vertical-line.gif');
+    public Pane getContentContainer();
 }
