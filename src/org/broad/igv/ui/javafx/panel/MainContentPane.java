@@ -31,7 +31,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.BorderPane;
-import org.apache.log4j.Logger;
 import org.broad.igv.prefs.PreferencesManager;
 
 import static org.broad.igv.prefs.Constants.NAME_PANEL_WIDTH;
@@ -39,21 +38,20 @@ import static org.broad.igv.prefs.Constants.SHOW_SINGLE_TRACK_PANE_KEY;
 
 // Intended as the rough equivalent of the MainPanel class of the Swing UI.  Work in progress.
 public class MainContentPane extends BorderPane {
-    private static Logger log = Logger.getLogger(MainContentPane.class);
 
-    // Probably most/all components belong here
+    // Probably most/all components should be instance vars.  Will migrate as need arises.
     private TrackScrollPane featureTrackScrollPane;
     private SplitPane centerSplitPane;
 
-    // This should be attached directly to the PreferencesManager somehow
     private DoubleProperty namePaneWidthProp = new SimpleDoubleProperty(
             PreferencesManager.getPreferences().getAsFloat(NAME_PANEL_WIDTH));
-    private DoubleProperty namePaneHiddenProp = new SimpleDoubleProperty(0);
     private DoubleProperty attributePaneWidthProp = new SimpleDoubleProperty(20);
 
     public MainContentPane() {
         HeaderRow headerRowContainer = new HeaderRow(this);
         ScrollPane headerScrollPane = new ScrollPane(headerRowContainer);
+        headerScrollPane.setFitToHeight(true);
+        headerScrollPane.setFitToWidth(true);
         this.setTop(headerScrollPane);
 
         // Mimic the SB policy of the Swing UI
@@ -64,7 +62,12 @@ public class MainContentPane extends BorderPane {
         centerSplitPane.setOrientation(Orientation.VERTICAL);
 
         this.setCenter(centerSplitPane);
+    }
 
+    // Used by the callback method of IGVStageBuilder to finish setting up this UI, after Stage init is done.
+    public void addInitialTrackRows() {
+
+        // Need guard to prevent repeat call
 
         TrackRow dataTrackRowContainer = new TrackRow(this);
         TrackScrollPane dataTrackScrollPane = new TrackScrollPane(dataTrackRowContainer);
@@ -72,7 +75,9 @@ public class MainContentPane extends BorderPane {
         dataTrackScrollPane.setFitToWidth(true);
 
         // Temporary, to show pane location
-        dataTrackRowContainer.getNamePane().setStyle("-fx-background-color: green");
+        dataTrackRowContainer.getNamePane().setStyle("-fx-border-style: dashed; -fx-border-insets: 2; -fx-border-color: green");
+        dataTrackRowContainer.getAttributePane().setStyle("-fx-border-style: dashed; -fx-border-insets: 2; -fx-border-color: orange");
+        dataTrackRowContainer.getContentContainer().setStyle("-fx-border-style: dashed; -fx-border-insets: 2; -fx-border-color: green");
 
         // Mimic the SB policy of the Swing UI
         dataTrackScrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
@@ -88,7 +93,9 @@ public class MainContentPane extends BorderPane {
             featureTrackScrollPane.setFitToWidth(true);
 
             // Temporary, to show pane location
-            featureTrackRowContainer.getNamePane().setStyle("-fx-background-color: yellow");
+            featureTrackRowContainer.getNamePane().setStyle("-fx-border-style: dashed; -fx-border-insets: 2; -fx-border-color: orange");
+            featureTrackRowContainer.getAttributePane().setStyle("-fx-border-style: dashed; -fx-border-insets: 2; -fx-border-color: black");
+            featureTrackRowContainer.getContentContainer().setStyle("-fx-border-style: dashed; -fx-border-insets: 2; -fx-border-color: orange");
 
             // Mimic the SB policy of the Swing UI
             featureTrackScrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
@@ -96,33 +103,36 @@ public class MainContentPane extends BorderPane {
 
             centerSplitPane.getItems().add(featureTrackScrollPane);
 
-            centerSplitPane.setDividerPositions(0.8);
+            centerSplitPane.setDividerPositions(0.9);
         }
     }
 
-    public void addInitialTrackRows() {
-        // Guard to prevent repeat call
-
-
-        if (!PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
-
-            centerSplitPane.setDividerPositions(0.8);
-        }
+    public DoubleProperty namePaneWidthProperty() {
+        return namePaneWidthProp;
     }
 
+    public DoubleProperty attributePaneWidthProperty() {
+        return attributePaneWidthProp;
+    }
+
+    public void hideNamePanel() {
+        namePaneWidthProp.set(0);
+    }
+
+    public void showNamePanel() {
+        namePaneWidthProp.set(PreferencesManager.getPreferences().getAsFloat(NAME_PANEL_WIDTH));
+    }
+
+    public boolean isNamePanelHidden() {
+        return namePaneWidthProp.get() <= 0;
+    }
+
+    // Not yet used; anticipated...
     public void setDividerLocations(double[] fractions) {
         centerSplitPane.setDividerPositions(fractions);
     }
 
     public double[] getDividerLocations() {
         return centerSplitPane.getDividerPositions();
-    }
-
-    public DoubleProperty getNamePaneWidthProp() {
-        return namePaneWidthProp;
-    }
-
-    public DoubleProperty getAttributePaneWidthProp() {
-        return attributePaneWidthProp;
     }
 }

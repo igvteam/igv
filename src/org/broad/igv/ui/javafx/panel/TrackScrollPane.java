@@ -28,6 +28,7 @@ import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 
 // Intended as the rough equivalent of the HeaderPaneler class of the Swing UI.  Work in progress.
+// As it is, there's nothing here that couldn't be handled by a normal ScrollPane straight out of the toolbox.  It's here in anticipation of specialized scroll-handling needs (as in the Swing UI).
 public class TrackScrollPane extends ScrollPane {
 
     public TrackScrollPane() {

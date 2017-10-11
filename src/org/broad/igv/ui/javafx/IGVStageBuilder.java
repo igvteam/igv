@@ -27,16 +27,11 @@ package org.broad.igv.ui.javafx;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.geometry.Orientation;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.SplitPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.StrokeLineCap;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import org.broad.igv.prefs.IGVPreferences;
@@ -107,19 +102,18 @@ public class IGVStageBuilder {
         Scene contentScene = new Scene(contentContainer, stage.getHeight(), stage.getWidth(), Color.WHITE);
         contentScene.getStylesheets().add(IGVStageBuilder.class.getResource("igv.css").toExternalForm());
 
-        IGVMenuBarManager igvMenuBarBuilder = new IGVMenuBarManager(stage);
-        contentContainer.getChildren().add(igvMenuBarBuilder.getMenuBar());
-
-        IGVToolBarManager igvToolBar = new IGVToolBarManager();
-        contentContainer.getChildren().add(igvToolBar.getToolBar());
-
         MainContentPane mainContentPane = new MainContentPane();
+        IGVMenuBarManager igvMenuBarBuilder = new IGVMenuBarManager(stage, mainContentPane);
+        IGVToolBarManager igvToolBar = new IGVToolBarManager();
+
+        contentContainer.getChildren().add(igvMenuBarBuilder.getMenuBar());
+        contentContainer.getChildren().add(igvToolBar.getToolBar());
         contentContainer.getChildren().add(mainContentPane);
         VBox.setVgrow(mainContentPane, Priority.ALWAYS);
         mainContentPane.prefWidthProperty().bind(contentContainer.widthProperty());
-        // Replace with actual content grid
-        //drawPlaceholderContent(contentContainer);
 
+        // Set up callback to properly initialize the MainContentPane.  The issue at hand is that the centerSplitPane
+        // divider position is reset if it is set too early, before the Stage is fully initialized.
         stage.showingProperty().addListener(new ChangeListener<Boolean>() {
 
             @Override
@@ -133,49 +127,5 @@ public class IGVStageBuilder {
         });
 
         return contentScene;
-    }
-
-    private static void drawPlaceholderContent(VBox mainPanel) {
-        // TODO: move the canvases to dedicated components dealing with real content
-        ResizableCanvas resizableCanvas1 = new ResizableCanvas();
-        Canvas canvas = resizableCanvas1.getCanvas();
-        canvas.setHeight(500);
-        canvas.setWidth(1000);
-
-        ResizableCanvas resizableCanvas2 = new ResizableCanvas();
-        Canvas canvas2 = resizableCanvas2.getCanvas();
-        canvas2.setHeight(200);
-        canvas2.setWidth(1000);
-
-        SplitPane trackPane = new SplitPane(resizableCanvas1, resizableCanvas2);
-        trackPane.setOrientation(Orientation.VERTICAL);
-        trackPane.setDividerPositions(0.9);
-        mainPanel.getChildren().add(trackPane);
-
-        // Drawing placeholder content for now, nothing real
-        GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
-
-        graphicsContext.setStroke(Color.RED);
-        graphicsContext.setLineWidth(1);
-        graphicsContext.setLineCap(StrokeLineCap.BUTT);
-        graphicsContext.setLineDashes(10d, 5d, 15d, 20d);
-        graphicsContext.setLineDashOffset(0);
-        graphicsContext.strokeLine(10, 10, 200, 10);
-
-        graphicsContext.setStroke(Color.GREEN);
-        graphicsContext.setLineWidth(1);
-        graphicsContext.setLineCap(StrokeLineCap.ROUND);
-        graphicsContext.strokeLine(10, 30, 200, 30);
-
-        graphicsContext.setStroke(Color.BLUE);
-        graphicsContext.setLineWidth(1);
-        graphicsContext.strokeLine(10, 50, 200, 50);
-
-        GraphicsContext graphicsContext2 = canvas2.getGraphicsContext2D();
-
-        graphicsContext2.setStroke(Color.PURPLE);
-        graphicsContext2.setLineWidth(1);
-        graphicsContext2.setLineCap(StrokeLineCap.BUTT);
-        graphicsContext2.strokeLine(10, 10, 200, 10);
     }
 }

@@ -5,6 +5,7 @@ import javafx.event.EventHandler;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.broad.igv.ui.javafx.panel.MainContentPane;
 
 // Intended as the rough equivalent of the IGVMenuBar class of the Swing UI.  Work in progress.
 // Will add event handlers (or at least stubs) for all of the included controls.
@@ -12,7 +13,12 @@ public class IGVMenuBarManager {
 
     private MenuBar menuBar;
 
-    public IGVMenuBarManager(Stage stage) {
+    // Keep as instance var for later break-out of actions, etc from constructor.
+    private MainContentPane mainContentPane;
+
+    public IGVMenuBarManager(Stage stage, MainContentPane mainContentPane) {
+        this.mainContentPane = mainContentPane;
+
         // I'm leaving the creation of all of these inline for now. Need to break them
         // out for structural purposes and
         // to hold them as instance vars in order to manage enable/disable, handle
@@ -54,6 +60,20 @@ public class IGVMenuBarManager {
         MenuItem preferences = new MenuItem("Preferences");
         MenuItem colorLegends = new MenuItem("Color Legends ...");
         CheckMenuItem showNamePanel = new CheckMenuItem("Show Name Panel");
+        showNamePanel.setSelected(true);
+        showNamePanel.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                if (mainContentPane != null) {
+                    if (mainContentPane.isNamePanelHidden()) {
+                        mainContentPane.showNamePanel();
+                    } else {
+                        mainContentPane.hideNamePanel();
+                    }
+                }
+            }
+        });
         MenuItem setNamePanelWidth = new MenuItem("Set Name Panel Width ...");
         CheckMenuItem showAttribsDisplay = new CheckMenuItem("Show Attributes Display");
         MenuItem selectAttribsToShow = new MenuItem("Select Attributes to Show ...");

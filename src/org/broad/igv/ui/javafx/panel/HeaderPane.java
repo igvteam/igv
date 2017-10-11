@@ -26,7 +26,9 @@ package org.broad.igv.ui.javafx.panel;
 
 import javafx.scene.layout.VBox;
 
-// Intended as the rough equivalent of the HeaderPaneler class of the Swing UI.  Work in progress.
+// Intended as the rough equivalent of the HeaderPanel class of the Swing UI.  Work in progress.
+// TODO: Need to add equivalents of CytobandPanel, RulerPanel, RegionOfInterestPanel, GeneListPanel, etc.
+// TODO: DnD handling
 public class HeaderPane extends VBox {
 
     public HeaderPane() {

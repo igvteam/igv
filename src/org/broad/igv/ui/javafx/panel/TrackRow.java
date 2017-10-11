@@ -24,64 +24,10 @@
  */
 package org.broad.igv.ui.javafx.panel;
 
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-
 // Intended as the rough equivalent of the TrackPanel class of the Swing UI.  Work in progress.
-public class TrackRow extends HBox implements IGVRow {
-
-    private MainContentPane mainContentPane;
-    private TrackNamePane trackNamePane = new TrackNamePane();
-    private AttributePane attributePane = new AttributePane();
-    private DataPaneContainer dataPaneContainer = new DataPaneContainer();
+public class TrackRow extends IGVRow<TrackNamePane, AttributePane, DataPaneContainer> {
 
     public TrackRow(MainContentPane mainContentPane) {
-        super(5);
-        this.mainContentPane = mainContentPane;
-
-        attributePane.setStyle("-fx-background-color: black");
-        dataPaneContainer.setStyle("-fx-background-color: green");
-        trackNamePane.prefWidthProperty().bind(mainContentPane.getNamePaneWidthProp());
-        attributePane.prefWidthProperty().bind(mainContentPane.getAttributePaneWidthProp());
-        getChildren().add(trackNamePane);
-        getChildren().add(attributePane);
-        getChildren().add(dataPaneContainer);
-
-        // Set the dataPaneContainer to fill out the content width.
-        HBox.setHgrow(dataPaneContainer, Priority.ALWAYS);
-
-        prefWidthProperty().bind(mainContentPane.prefWidthProperty());
-        minWidthProperty().bind(mainContentPane.minWidthProperty());
-        maxWidthProperty().bind(mainContentPane.maxWidthProperty());
+        super(mainContentPane, new TrackNamePane(), new AttributePane(), new DataPaneContainer());
     }
-
-    @Override
-    public MainContentPane getMainContentPane() {
-        return mainContentPane;
-    }
-
-    public TrackNamePane getTrackNamePane() {
-        return trackNamePane;
-    }
-
-    @Override
-    public AttributePane getAttributePane() {
-        return attributePane;
-    }
-
-    public DataPaneContainer getDataPaneContainer() {
-        return dataPaneContainer;
-    }
-
-    @Override
-    public Pane getNamePane() {
-        return trackNamePane;
-    }
-
-    @Override
-    public Pane getContentContainer() {
-        return dataPaneContainer;
-    }
-
 }

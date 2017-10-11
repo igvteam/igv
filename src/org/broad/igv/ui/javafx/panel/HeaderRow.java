@@ -24,76 +24,21 @@
  */
 package org.broad.igv.ui.javafx.panel;
 
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-
-// Intended as the rough equivalent of the IGVPanel class of the Swing UI.  Work in progress.
-public class HeaderRow extends HBox implements IGVRow {
-    // Back-pointer to parent for coordinated management of rows
-    private MainContentPane mainContentPane;
-
-    // Do these need parent classes / interfaces above them? Perhaps all
-    // IGVRowComponents (instead of TrackRowComponents)
-    private NameHeaderPane nameHeaderPane = new NameHeaderPane();
-    private AttributeHeaderPane attributeHeaderPane = new AttributeHeaderPane();
-    private HeaderPaneContainer headerPaneContainer = new HeaderPaneContainer();
+// Intended as the rough equivalent of the IGVPanel class of the Swing UI, subclassed for handling the Header.  Work in progress.
+public class HeaderRow extends IGVRow<NameHeaderPane, AttributeHeaderPane, HeaderPaneContainer> {
 
     public HeaderRow(MainContentPane mainContentPane) {
-        super(5);
-        this.mainContentPane = mainContentPane;
-        getChildren().add(nameHeaderPane);
-        getChildren().add(attributeHeaderPane);
-        getChildren().add(headerPaneContainer);
+        super(mainContentPane, new NameHeaderPane(), new AttributeHeaderPane(), new HeaderPaneContainer());
 
         // Temporarily hard-coding the height since we have no header contents yet.
         int headerHeight = 100;
-        nameHeaderPane.prefHeightProperty().set(headerHeight);
-        nameHeaderPane.prefWidthProperty().bind(mainContentPane.getNamePaneWidthProp());
-        attributeHeaderPane.prefWidthProperty().bind(mainContentPane.getAttributePaneWidthProp());
+        getNamePane().prefHeightProperty().set(headerHeight);
+        getAttributePane().prefHeightProperty().set(headerHeight);
+        getContentContainer().prefHeightProperty().set(headerHeight);
 
-        // Set the headerPaneContainer to fill out the content width.
-        HBox.setHgrow(headerPaneContainer, Priority.ALWAYS);
-
-        // Temporary, to show pane location
-        headerPaneContainer.setStyle("-fx-background-color: red");
-        nameHeaderPane.setStyle("-fx-background-color: red");
-        attributeHeaderPane.setStyle("-fx-background-color: blue");
-
-        prefWidthProperty().bind(mainContentPane.prefWidthProperty());
-        minWidthProperty().bind(mainContentPane.minWidthProperty());
-        maxWidthProperty().bind(mainContentPane.maxWidthProperty());
-    }
-
-    @Override
-    public MainContentPane getMainContentPane() {
-        return mainContentPane;
-    }
-
-    @Override
-    public Pane getNamePane() {
-        return nameHeaderPane;
-    }
-
-    @Override
-    public Pane getAttributePane() {
-        return attributeHeaderPane;
-    }
-
-    @Override
-    public Pane getContentContainer() {
-        return headerPaneContainer;
-    }
-
-    public NameHeaderPane getNameHeaderPane() {
-        return nameHeaderPane;
-    }
-
-    public AttributeHeaderPane getAttributeHeaderPane() {
-        return attributeHeaderPane;
-    }
-
-    public HeaderPaneContainer getHeaderPaneContainer() {
-        return headerPaneContainer;
+        // Temporary, to show pane locations
+        getNamePane().setStyle("-fx-border-style: dashed; -fx-border-insets: 2; -fx-border-color: red");
+        getAttributePane().setStyle("-fx-border-style: dashed; -fx-border-insets: 2; -fx-border-color: blue");
+        getContentContainer().setStyle("-fx-border-style: dashed; -fx-border-insets: 2; -fx-border-color: red");
     }
 }
