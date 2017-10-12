@@ -32,6 +32,7 @@
 	<string>org.broad.igv.ui.Main</string>
 	<key>JVMOptions</key>
 	<array>
+	    <string>-XX:+IgnoreUnrecognizedVMOptions</string>
 	    <string>--illegal-access=permit</string>
 	    <string>--add-modules=java.xml.bind</string>
 		<string>-Dapple.laf.useScreenMenuBar=true</string>
