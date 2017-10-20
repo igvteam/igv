@@ -1135,7 +1135,7 @@ public class IGVSessionReader implements SessionReader {
 
                     // Special case for sequence & gene tracks, they need to be removed before being placed.
                     if (igv != null && version >= 4 && (track == geneTrack || track == seqTrack)) {
-                        igv.removeTracks(Arrays.asList(track));
+                        igv.removeTracks(Arrays.asList(track), false);
                     }
                     unmarshalTrackElement(u, element, (AbstractTrack) track);
                 }

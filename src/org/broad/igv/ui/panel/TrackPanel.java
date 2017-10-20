@@ -28,6 +28,8 @@ package org.broad.igv.ui.panel;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackGroup;
@@ -164,10 +166,16 @@ public class TrackPanel extends IGVPanel {
     }
 
     public void clearTracks() {
-        for(Track t : getTracks()) {
-            t.dispose();
+
+        final Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
+        Track geneTrack = currentGenome == null ? null : currentGenome.getGeneTrack();
+
+        for (Track t : getTracks()) {
+            if (t != geneTrack) {
+                t.dispose();
+            }
         }
-       trackGroups.clear();
+        trackGroups.clear();
         trackCountEstimate = 0;
     }
 
@@ -471,9 +479,9 @@ public class TrackPanel extends IGVPanel {
     }
 
     public static TrackPanel getParentPanel(Track track) {
-        for(TrackPanel panel: IGV.getInstance().getTrackPanels()){
-            for(TrackGroup group: panel.getGroups()){
-                if(group.contains(track)){
+        for (TrackPanel panel : IGV.getInstance().getTrackPanels()) {
+            for (TrackGroup group : panel.getGroups()) {
+                if (group.contains(track)) {
                     return panel;
                 }
             }
