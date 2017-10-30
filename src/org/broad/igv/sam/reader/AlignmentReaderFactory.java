@@ -103,7 +103,7 @@ public class AlignmentReaderFactory {
             Ga4ghProvider provider = (Ga4ghProvider) locator.getAttribute("provider");
             return new Ga4ghAlignmentReader(provider, locator.getPath());
         } else {
-            throw new RuntimeException("Cannot find reader for aligment file: " + locator.getPath());
+            throw new RuntimeException("Cannot determine file format: " + locator.getPath());
         }
 
         return reader;
