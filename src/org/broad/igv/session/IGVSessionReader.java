@@ -1090,7 +1090,6 @@ public class IGVSessionReader implements SessionReader {
 
         if (matchedTracks == null) {
 
-            log.info("Warning.  No tracks were found with id: " + id + " in session file");
             String className = getAttribute(element, "clazz");
 
             //We try anyway, some tracks can be reconstructed without a resource element
@@ -1118,6 +1117,8 @@ public class IGVSessionReader implements SessionReader {
                     }
                     if (track != null) {
                         allTracks.put(track.getId(), matchedTracks);
+                    } else {
+                        log.info("Warning.  No tracks were found with id: " + id + " in session file");
                     }
                 }
             } catch (JAXBException e) {
