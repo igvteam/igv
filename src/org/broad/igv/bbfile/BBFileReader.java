@@ -510,4 +510,7 @@ public class BBFileReader {
     }
 
 
+    public String getChromsomeFromId(int chromId) {
+        return chromosomeIDTree.getChromosomeName(chromId);
+    }
 } // end of BBFileReader
