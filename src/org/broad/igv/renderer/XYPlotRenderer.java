@@ -108,7 +108,6 @@ public abstract class XYPlotRenderer extends DataRenderer {
             baseY = adjustedRect.y + adjustedRect.height;
         }
 
-        int lastPx = 0;
         for (LocusScore score : locusScores) {
 
             // Note -- don't cast these to an int until the range is checked.
@@ -128,7 +127,6 @@ public abstract class XYPlotRenderer extends DataRenderer {
 
             if (!Float.isNaN(dataY)) {
 
-
                 // Compute the pixel y location.  Clip to bounds of rectangle.
                 double dy = isLog ? Math.log10(dataY) - baseValue : (dataY - baseValue);
                 int pY = baseY - (int) (dy * yScaleFactor);
@@ -142,11 +140,7 @@ public abstract class XYPlotRenderer extends DataRenderer {
                 drawDataPoint(color, (int) dx, (int) pX, baseY, pY, context);
 
             }
-            if (!Float.isNaN(dataY)) {
 
-                lastPx = (int) pX + (int) dx;
-
-            }
         }
 
 

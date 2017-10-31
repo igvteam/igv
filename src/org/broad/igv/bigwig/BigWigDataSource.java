@@ -357,10 +357,10 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
                         int genomeStart = genome.getGenomeCoordinate(chr, rec.getChromStart());
                         int genomeEnd = genome.getGenomeCoordinate(chr, rec.getChromEnd());
                         scores.add(new BasicScore(genomeStart, genomeEnd, value));
-
                     }
                 }
 
+                scores.sort((o1, o2) -> o1.getStart() - o2.getStart());
 
             }
             return wholeGenomeScores.get(windowFunction);
