@@ -135,6 +135,8 @@ public class CodecFactory {
             //    return new ExpDiffCodec(path);
         } else if (fn.endsWith(".dsi")) {
             return new DSICodec(genome);
+        } else if (fn.endsWith(".paf")) {
+            return new PAFCodec(path, genome);
         } else {
             return null;
         }
