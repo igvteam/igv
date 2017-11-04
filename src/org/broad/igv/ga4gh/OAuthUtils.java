@@ -65,7 +65,7 @@ public class OAuthUtils {
     private static final String REFRESH_TOKEN_KEY = "oauth_refresh_token";
     private static final String PROPERTIES_URL = "https://igvdata.broadinstitute.org/app/oauth_native.json";
     private String genomicsScope = "https://www.googleapis.com/auth/genomics";
-    private String gsScope = "https://www.googleapis.com/auth/devstorage.read_only";
+    private String gsScope = "https://www.googleapis.com/auth/devstorage.read_write";
     private String profileScope = "https://www.googleapis.com/auth/userinfo.profile";
     private String state = "%2Fprofile";
     private String redirectURI = "http%3A%2F%2Flocalhost%3A60151%2FoauthCallback";
