@@ -25,8 +25,8 @@
 
 package org.broad.igv.tools.sort;
 
-import htsjdk.samtools.util.SortingCollection;
 import org.apache.log4j.Logger;
+import org.broad.igv.util.collections.SortingCollection;
 
 import java.io.*;
 

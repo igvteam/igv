@@ -26,7 +26,7 @@
 package org.broad.igv.tools.sort;
 
 import htsjdk.samtools.util.CloseableIterator;
-import htsjdk.samtools.util.SortingCollection;
+import org.broad.igv.util.collections.SortingCollection;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.feature.tribble.MUTCodec;
