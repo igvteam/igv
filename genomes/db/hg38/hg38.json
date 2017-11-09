@@ -1,0 +1,16 @@
+{
+  "id": "hg38",
+  "ucscID": "hg38",
+  "name": "Human (hg38)",
+  "fastaURL": "http://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa",
+  "indexURL": "http://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa.fai",
+  "cytobandURL": "http://hgdownload.cse.ucsc.edu/goldenPath/hg38/database/cytoBandIdeo.txt.gz",
+  "aliasURL": "https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/hg38_alias.tab",
+  "annotations": [
+    {
+      "name": "Refseq Genes",
+      "url": "http://hgdownload.cse.ucsc.edu/goldenPath/hg38/database/refGene.txt.gz",
+      "indexed": false
+    }
+  ]
+}

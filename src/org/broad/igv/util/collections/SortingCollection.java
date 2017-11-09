@@ -23,7 +23,7 @@
  */
 package org.broad.igv.util.collections;
 
-import htsjdk.samtools.Defaults;
+
 import htsjdk.samtools.util.*;
 
 import java.io.File;
@@ -58,6 +58,8 @@ import java.util.TreeSet;
  * to compress temporary files.
  */
 public class SortingCollection<T> implements Iterable<T> {
+
+    private static final int BUFFER_SIZE = 1024 * 128;
 
     /**
      * Client must implement this class, which defines the way in which records are written to and
@@ -221,7 +223,7 @@ public class SortingCollection<T> implements Iterable<T> {
             final File f = newTempFile();
             OutputStream os = null;
             try {
-                os = tempStreamFactory.wrapTempOutputStream(new FileOutputStream(f), Defaults.BUFFER_SIZE);
+                os = tempStreamFactory.wrapTempOutputStream(new FileOutputStream(f), BUFFER_SIZE);
                 this.codec.setOutputStream(os);
                 for (int i = 0; i < this.numRecordsInRam; ++i) {
                     this.codec.encode(ramRecords[i]);
@@ -457,7 +459,7 @@ public class SortingCollection<T> implements Iterable<T> {
             try {
                 this.is = new FileInputStream(file);
                 this.codec = SortingCollection.this.codec.clone();
-                this.codec.setInputStream(tempStreamFactory.wrapTempInputStream(this.is, Defaults.BUFFER_SIZE));
+                this.codec.setInputStream(tempStreamFactory.wrapTempInputStream(this.is, BUFFER_SIZE));
                 advance();
             }
             catch (FileNotFoundException e) {

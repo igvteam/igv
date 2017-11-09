@@ -26,6 +26,7 @@
 package org.broad.igv.sam.reader;
 
 import htsjdk.tribble.readers.AsciiLineReader;
+import org.apache.log4j.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
@@ -49,8 +50,13 @@ import java.util.Set;
 
 public class ReadGroupFilter {
 
+    private static Logger log = Logger.getLogger(ReadGroupFilter.class);
 
     private Set<String> filteredReadGroups;
+
+    static Map<String, ReadGroupFilter> filterCache = new HashMap();
+
+    static int errorCount = 0;
 
     private ReadGroupFilter(Set<String> filteredReadGroups) {
         this.filteredReadGroups = filteredReadGroups;
@@ -61,8 +67,6 @@ public class ReadGroupFilter {
     }
 
 
-    static Map<String, ReadGroupFilter> filterCache = new HashMap();
-
     public static synchronized ReadGroupFilter getFilter() {
 
         IGVPreferences samPrefs = PreferencesManager.getPreferences();
@@ -71,9 +75,11 @@ public class ReadGroupFilter {
 
             String filterURL = samPrefs.get(Constants.SAM_FILTER_URL);
 
-            ReadGroupFilter filter = filterURL == null ? null : filterCache.get(filterURL);
+            if (filterURL == null || filterURL.trim().length() == 0) return null;
 
-            if (filter == null && filterURL != null && filterURL.trim().length() > 0) {
+            ReadGroupFilter filter = filterCache.get(filterURL);
+
+            if (filter == null) {
                 Set<String> readGroups = new HashSet();
                 AsciiLineReader reader = null;
                 try {
@@ -84,9 +90,13 @@ public class ReadGroupFilter {
                     }
                     filter = new ReadGroupFilter(readGroups);
                     filterCache.put(filterURL, filter);
-                }
-                catch (Exception e) {
-                    MessageUtils.showMessage("Error reading read filter list: " + e.getMessage());
+                } catch (Exception e) {
+                    if (errorCount == 0) {
+                        MessageUtils.showErrorMessage("Error reading read filter list: " + filterURL, e);
+                    } else {
+                        log.error("Error reading read filter list: " + filterURL, e);
+                    }
+                    errorCount++;
                 }
             }
             return filter;

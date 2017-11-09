@@ -45,13 +45,13 @@ public class GenomeDescriptorTest {
 
         // Test for a directory that does exist
         String seqLocation = TestUtils.DATA_DIR;
-        GenomeDescriptor desc = new GenomeZipDescriptor("", false, "", "", "", "", "", seqLocation, false, null, null, null,
-                false, false, false, null);
+        GenomeDescriptor desc = new GenomeZipDescriptor("", "", "", "", "", "", seqLocation, false, null, null, null,
+                false, false, null);
         assertEquals(TestUtils.DATA_DIR, desc.getSequencePath());
 
         // Test for a directory that does not exist
         seqLocation = "/foo/bar";
-        desc = new GenomeZipDescriptor("", false, "", "", "", "", "", seqLocation, false, null, null, null, false, false, false, null);
+        desc = new GenomeZipDescriptor("", "", "", "", "", "", seqLocation, false, null, null, null, false, false, null);
         assertEquals("/foo/bar", desc.getSequencePath());
     }
 }

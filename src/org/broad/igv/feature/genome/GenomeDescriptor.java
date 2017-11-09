@@ -43,7 +43,6 @@ import java.io.InputStream;
 public abstract class GenomeDescriptor {
 
     private String name;
-    private boolean chrNamesAltered;
     private String id;
     protected String cytoBandFileName;
     protected String geneFileName;
@@ -55,11 +54,9 @@ public abstract class GenomeDescriptor {
     private boolean hasCustomSequencePath;
     private boolean chromosomesAreOrdered = false;
     private boolean fasta = false;
-    private boolean fastaDirectory = false;
     private String [] fastaFileNames;
 
     public GenomeDescriptor(String name,
-                            boolean chrNamesAltered,
                             String id,
                             String cytoBandFileName,
                             String geneFileName,
@@ -70,9 +67,7 @@ public abstract class GenomeDescriptor {
                             String compressedSequencePath,
                             boolean chromosomesAreOrdered,
                             boolean fasta,
-                            boolean fastaDirectory,
                             String fastaFileNameString) {
-        this.chrNamesAltered = chrNamesAltered;
         this.name = name;
         this.id = id;
         this.cytoBandFileName = cytoBandFileName;
@@ -84,7 +79,6 @@ public abstract class GenomeDescriptor {
         this.compressedSequencePath = compressedSequencePath;
         this.chromosomesAreOrdered = chromosomesAreOrdered;
         this.fasta = fasta;
-        this.fastaDirectory = fastaDirectory;
 
         if(fastaFileNameString != null) {
             fastaFileNames = fastaFileNameString.split(",");
@@ -109,8 +103,6 @@ public abstract class GenomeDescriptor {
         return id;
     }
 
-    // Used to determine feature file type, really only extension is needed
-
     public String getGeneFileName() {
         return geneFileName;
     }
@@ -122,12 +114,6 @@ public abstract class GenomeDescriptor {
     public String[] getFastaFileNames() {
         return fastaFileNames;
     }
-
-    public abstract InputStream getCytoBandStream() throws IOException;
-
-    public abstract InputStream getGeneStream() throws IOException;
-
-    public abstract InputStream getChrAliasStream() throws IOException;
 
     public String getSequencePath() {
         return compressedSequencePath == null ? sequencePath : compressedSequencePath;
@@ -164,5 +150,11 @@ public abstract class GenomeDescriptor {
     public boolean hasCustomSequenceLocation() {
         return hasCustomSequencePath;
     }
+
+    public abstract InputStream getCytoBandStream() throws IOException;
+
+    public abstract InputStream getGeneStream() throws IOException;
+
+    public abstract InputStream getChrAliasStream() throws IOException;
 
 }
