@@ -26,16 +26,21 @@ package org.broad.igv.ui.javafx.panel;
 
 import javafx.scene.layout.Pane;
 import org.broad.igv.ui.javafx.ResizableCanvas;
+import org.broad.igv.ui.panel.ReferenceFrame;
 
 // Intended as the rough equivalent of the HeaderPanel class of the Swing UI.  Work in progress.
 // TODO: Need to add equivalents of CytobandPanel, RulerPanel, RegionOfInterestPanel, GeneListPanel, etc.
 // TODO: DnD handling
 public class HeaderPane extends Pane {
 
+    private ReferenceFrame frame;
+    
     // This is a starting point; may need to be its own subclass
     private ResizableCanvas cytobandPane = new ResizableCanvas();
 
-    public HeaderPane() {
+    public HeaderPane(ReferenceFrame frame) {
+        this.frame = frame;
+        
         this.getChildren().add(cytobandPane);
 
         cytobandPane.prefHeightProperty().bind(prefHeightProperty());

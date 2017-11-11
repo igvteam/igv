@@ -24,11 +24,11 @@
  */
 package org.broad.igv.ui.javafx.panel;
 
+import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
-import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.SplitPane;
@@ -37,27 +37,33 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
-import org.apache.commons.lang.StringUtils;
+
+import org.apache.log4j.Logger;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 import static org.broad.igv.prefs.Constants.*;
 
 // Intended as the rough equivalent of the MainPanel class of the Swing UI.  Work in progress.
 public class MainContentPane extends BorderPane {
-
+    private static Logger log = Logger.getLogger(MainContentPane.class);
+    
     // Probably most/all components should be instance vars.  Will migrate as need arises.
-    private TrackRow featureTrackRowContainer = null;
+    private TrackRow featureTrackRow = null;
     private TrackScrollPane featureTrackScrollPane = null;
     private SplitPane centerSplitPane;
 
     private DoubleProperty namePaneWidthProp = new SimpleDoubleProperty(
             PreferencesManager.getPreferences().getAsFloat(NAME_PANEL_WIDTH));
     private DoubleProperty attributePaneWidthProp = new SimpleDoubleProperty(20);
-
+    private final Map<String, TrackRow> trackRowByName = new HashMap<String, TrackRow>();
 
     public MainContentPane() {
     }
@@ -90,14 +96,19 @@ public class MainContentPane extends BorderPane {
 
         this.backgroundProperty().set(background);
 
+        // We explicitly create and add the first data TrackRow and the feature TrackRow.  Others
+        // will be added using addTrackRow().
+        // TODO: might be able to simplify here and always use addTrackRow()
         TrackRow dataTrackRow = new TrackRow(IGV.DATA_PANEL_NAME, this);
         TrackScrollPane dataTrackScrollPane = new TrackScrollPane(dataTrackRow);
+        trackRowByName.put(IGV.DATA_PANEL_NAME, dataTrackRow);
 
         centerSplitPane.getItems().add(dataTrackScrollPane);
 
         if (!PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
-            featureTrackRowContainer = new TrackRow(IGV.FEATURE_PANEL_NAME, this);
-            featureTrackScrollPane = new TrackScrollPane(featureTrackRowContainer);
+            featureTrackRow = new TrackRow(IGV.FEATURE_PANEL_NAME, this);
+            featureTrackScrollPane = new TrackScrollPane(featureTrackRow);
+            trackRowByName.put(IGV.FEATURE_PANEL_NAME, featureTrackRow);
 
             centerSplitPane.getItems().add(featureTrackScrollPane);
 
@@ -105,10 +116,11 @@ public class MainContentPane extends BorderPane {
         }
     }
 
-    // The following should be called within Platform.runLater()
+    // The following should only be called within Platform.runLater()
     public TrackScrollPane addTrackRow(String name) {
-        TrackRow dataTrackRow = new TrackRow(name, this);
-        TrackScrollPane dataTrackScrollPane = new TrackScrollPane(dataTrackRow);
+        TrackRow trackRow = new TrackRow(name, this);
+        TrackScrollPane trackScrollPane = new TrackScrollPane(trackRow);
+        trackRowByName.put(name, trackRow);
 
         int featurePaneIdx = -1;
         if (featureTrackScrollPane != null) {
@@ -116,12 +128,12 @@ public class MainContentPane extends BorderPane {
         }
 
         if (featurePaneIdx > 0) {
-            centerSplitPane.getItems().add(featurePaneIdx, dataTrackScrollPane);
+            centerSplitPane.getItems().add(featurePaneIdx, trackScrollPane);
         } else {
-            centerSplitPane.getItems().add(dataTrackScrollPane);
+            centerSplitPane.getItems().add(trackScrollPane);
         }
 
-        return dataTrackScrollPane;
+        return trackScrollPane;
     }
     
     
@@ -140,33 +152,35 @@ public class MainContentPane extends BorderPane {
     public void showNamePanel() {
         namePaneWidthProp.set(PreferencesManager.getPreferences().getAsFloat(NAME_PANEL_WIDTH));
     }
-
-    public List<TrackRow> getAllTrackRows() {
-        // Just porting Swing code for now; seems clumsy to build this every time and query via instanceof
-        // TODO: consider keeping an instance var list that we manage during addTrackRow() etc.
-        // May need to synchronize access.  Maybe should be a Map to help out with getTrackRow(name)
-        // Or just keep a List of Tracks?  Have to find what exactly is needed.
-        List<TrackRow> trackRows = new ArrayList<TrackRow>();
-        for (Node child : centerSplitPane.getChildrenUnmodifiable()) {
-            if (child instanceof TrackScrollPane) {
-                trackRows.add(((TrackScrollPane) child).getTrackRow());
-            }
-        }
-
-        return trackRows;
+    
+    public Collection<TrackRow> getAllTrackRows() {
+        return trackRowByName.values();
     }
 
     public TrackRow getTrackRow(String name) {
-        List<TrackRow> trackRows = getAllTrackRows();
-        for (TrackRow row : trackRows) {
-            if (StringUtils.equals(name, row.getName())) {
-                return row;
-            }
+        TrackRow row = trackRowByName.get(name);
+        if (row != null) {
+            return row;
         }
 
         // If we get this far this is a new row
-        TrackScrollPane trackScrollPane = addTrackRow(name);
-        return trackScrollPane.getTrackRow();
+        FutureTask<TrackRow> trackRowCreator = new FutureTask<TrackRow>(new Callable<TrackRow>() {
+            @Override
+            public TrackRow call() throws Exception {
+                TrackScrollPane trackScrollPane = addTrackRow(name);
+                return trackScrollPane.getTrackRow();
+            }
+        });
+        
+        Platform.runLater(trackRowCreator);
+        try {
+            return trackRowCreator.get();
+        }
+        catch (ExecutionException | InterruptedException e) {
+            // TODO: better error handling.  Prob need equivalent of MessageUtils.showMessage() 
+            log.error(e);
+            return null;
+        }
     }
     
     public boolean isNamePanelHidden() {
