@@ -204,7 +204,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
             }
             endIdx = Math.max(startIdx + 1, endIdx);
 
-            return startIdx == 0 && endIdx == inViewScores.size() - 1 ?
+            return startIdx == 0 && endIdx == inViewScores.size() ?
                     inViewScores :
                     inViewScores.subList(startIdx, endIdx);
         }

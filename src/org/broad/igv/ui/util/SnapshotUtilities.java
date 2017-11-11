@@ -36,6 +36,7 @@ package org.broad.igv.ui.util;
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.log4j.Logger;
+import org.broad.igv.google.GoogleCloudStorageHelper;
 import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.Paintable;
 import org.broad.igv.util.RuntimeUtils;
@@ -303,6 +304,11 @@ public class SnapshotUtilities {
             log.debug("Writing image to " + selectedFile.getAbsolutePath());
             ImageIO.write(image, format, selectedFile);
         }
+
+        if(selectedFile.getName().endsWith(".jpeg") || selectedFile.getName().endsWith(".jpg")) {
+            GoogleCloudStorageHelper.uploadJpeg(image);
+        }
+
     }
 
     /**

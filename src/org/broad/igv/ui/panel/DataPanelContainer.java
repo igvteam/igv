@@ -277,9 +277,9 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
             } else if (track.getAutoScale()) {
 
                 if (track instanceof MergedTracks) {
-                    for (Track mt : ((MergedTracks) track).getMemberTracks()) {
-                        autoscaleGroup(Arrays.asList(mt));
-                    }
+                    List<Track> memberTracks = new ArrayList(((MergedTracks) track).getMemberTracks());
+                    autoscaleGroup(memberTracks);
+
                 } else {
                     autoscaleGroup(Arrays.asList(track));
                 }

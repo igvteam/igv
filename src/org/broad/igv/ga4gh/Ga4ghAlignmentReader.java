@@ -174,7 +174,7 @@ public class Ga4ghAlignmentReader implements AlignmentReader<Alignment> {
     }
 
     public static boolean supportsFileType(String type) {
-        return type.equals(Ga4ghAPIHelper.RESOURCE_TYPE);
+        return Ga4ghAPIHelper.RESOURCE_TYPE.equals(type);
     }
 
     class MIterator implements CloseableIterator<Alignment> {

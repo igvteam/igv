@@ -1961,8 +1961,11 @@ public class IGV implements IGVEventObserver {
 
     }
 
-
     public void removeTracks(Collection<? extends Track> tracksToRemove) {
+        removeTracks(tracksToRemove, true);
+    }
+
+    public void removeTracks(Collection<? extends Track> tracksToRemove, boolean dispose) {
 
         if (Globals.IS_JAVAFX_UI) {
             // TODO: handle the equivalent for the JavaFX UI
@@ -1984,8 +1987,10 @@ public class IGV implements IGVEventObserver {
             }
         }
 
-        for (Track t : tracksToRemove) {
-            t.dispose();
+        if(dispose) {
+            for (Track t : tracksToRemove) {
+                t.dispose();
+            }
         }
     }
 

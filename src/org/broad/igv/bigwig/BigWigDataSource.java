@@ -204,15 +204,14 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         if (levels == null) return null;
 
         final ArrayList<BBZoomLevelHeader> headers = levels.getZoomLevelHeaders();
-        BBZoomLevelHeader lastLevel = null;
-        for (BBZoomLevelHeader zlHeader : headers) {
+        for (int i = headers.size() - 1; i >= 0; i--) {
+            BBZoomLevelHeader zlHeader = headers.get(i);
             int reductionLevel = zlHeader.getReductionLevel();
-            if (reductionLevel > resolution) {
-                return lastLevel == null ? zlHeader : lastLevel;
+            if (reductionLevel < resolution) {
+                return zlHeader;
             }
-            lastLevel = zlHeader;
         }
-        return headers.get(headers.size() - 1);
+        return headers.get(0);
 
     }
 
@@ -262,7 +261,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
     private float getValue(ZoomDataRecord rec) {
 
-        if(rec == null) {
+        if (rec == null) {
             System.out.println();
         }
         float v;
@@ -319,48 +318,49 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
     private List<LocusScore> getWholeGenomeScores() {
 
         if (genome.getHomeChromosome().equals(Globals.CHR_ALL) && windowFunction != WindowFunction.none) {
+
             if (wholeGenomeScores.get(windowFunction) == null) {
+
                 double scale = genome.getNominalLength() / screenWidth;
+
+                int maxChromId = reader.getChromosomeNames().size() - 1;
+                String firstChr = reader.getChromsomeFromId(0);
+                String lastChr = reader.getChromsomeFromId(maxChromId);
+
                 ArrayList<LocusScore> scores = new ArrayList<LocusScore>();
                 wholeGenomeScores.put(windowFunction, scores);
 
-                for (String chrName : genome.getLongChromosomeNames()) {
-                    Chromosome chr = genome.getChromosome(chrName);
+                BBZoomLevelHeader lowestResHeader = this.getZoomLevelForScale(scale);
+                if (lowestResHeader == null) return null;
 
-                    BBZoomLevelHeader lowestResHeader = this.getZoomLevelForScale(scale);
-                    if (lowestResHeader == null) return null;
+                Set<String> wgChrNames = new HashSet<>(genome.getLongChromosomeNames());
 
-                    int lastGenomeEnd = -1;
-                    int end = chr.getLength();
+                ZoomLevelIterator zlIter = reader.getZoomLevelIterator(
+                        lowestResHeader.getZoomLevel(), firstChr, 0, lastChr, Integer.MAX_VALUE, false);
 
-                    String tmp = chrNameMap.get(chrName);
-                    String querySeq = tmp == null ? chrName : tmp;
+                while (zlIter.hasNext()) {
+                    ZoomDataRecord rec = zlIter.next();
 
-                    ZoomLevelIterator zlIter = reader.getZoomLevelIterator(
-                            lowestResHeader.getZoomLevel(), querySeq, 0, querySeq, end, false);
+                    if (rec == null) {
+                        continue;
+                    }
 
-                    while (zlIter.hasNext()) {
-                        ZoomDataRecord rec = zlIter.next();
+                    float value = getValue(rec);
+                    if (Float.isNaN(value) || Float.isInfinite(value)) {
+                        continue;
+                    }
 
-                        if(rec == null) {
-                            continue;
-                        }
+                    String chr = genome.getCanonicalChrName(rec.getChromName());
 
-                        float value = getValue(rec);
-                        if(Float.isNaN(value) || Float.isInfinite(value)) {
-                            continue;
-                        }
-                        int genomeStart = genome.getGenomeCoordinate(chrName, rec.getChromStart());
-                        if (genomeStart < lastGenomeEnd) {
-                            continue;
-                        }
+                    if (wgChrNames.contains(chr)) {
 
-                        int genomeEnd = genome.getGenomeCoordinate(chrName, rec.getChromEnd());
+                        int genomeStart = genome.getGenomeCoordinate(chr, rec.getChromStart());
+                        int genomeEnd = genome.getGenomeCoordinate(chr, rec.getChromEnd());
                         scores.add(new BasicScore(genomeStart, genomeEnd, value));
-                        lastGenomeEnd = genomeEnd;
                     }
                 }
 
+                scores.sort((o1, o2) -> o1.getStart() - o2.getStart());
 
             }
             return wholeGenomeScores.get(windowFunction);

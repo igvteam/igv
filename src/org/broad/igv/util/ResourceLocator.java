@@ -118,6 +118,7 @@ public class ResourceLocator {
     String password;
 
     private HashMap attributes = new HashMap();
+    private boolean indexed;
 
     /**
      * Constructor for local files
@@ -468,6 +469,14 @@ public class ResourceLocator {
 
     public Object getAttribute(String key) {
         return attributes.get(key);
+    }
+
+    public void setIndexed(boolean indexed) {
+        this.indexed = indexed;
+    }
+
+    public boolean isIndexed() {
+        return indexed;
     }
 
 

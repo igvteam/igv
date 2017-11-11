@@ -29,8 +29,8 @@
  */
 package org.broad.igv.sam.reader;
 
-import htsjdk.samtools.util.SortingCollection;
-import htsjdk.samtools.util.SortingCollection.Codec;
+import org.broad.igv.util.collections.SortingCollection;
+import org.broad.igv.util.collections.SortingCollection.Codec;
 import org.apache.log4j.Logger;
 import org.broad.igv.sam.DotAlignedAlignment;
 

@@ -40,6 +40,7 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.util.ResourceLocator;
 
 import java.io.*;
 import java.util.*;
@@ -67,6 +68,7 @@ public class Genome {
     private String species;
     private String ucscID;
     private GenomeDescriptor descriptor;   // Can be null
+    private ArrayList<ResourceLocator> annotationResources;
 
 
     public Genome(String id, String displayName, Sequence sequence, boolean chromosOrdered, GenomeDescriptor descriptor) {
@@ -600,5 +602,13 @@ public class Genome {
 
     public boolean sequenceIsLoaded(ReferenceFrame frame) {
         return sequence.isLoaded(frame);
+    }
+
+    public void setAnnotationResources(ArrayList<ResourceLocator> annotationResources) {
+        this.annotationResources = annotationResources;
+    }
+
+    public ArrayList<ResourceLocator> getAnnotationResources() {
+        return annotationResources;
     }
 }
