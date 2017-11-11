@@ -24,10 +24,151 @@
  */
 package org.broad.igv.ui.javafx.panel;
 
-// Intended as the rough equivalent of the DataPanelContainer class of the Swing UI.  Work in progress.
-public class DataPaneContainer extends TrackRowComponent {
+import javafx.scene.layout.Pane;
+import org.broad.igv.renderer.DataRange;
+import org.broad.igv.track.*;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.ReferenceFrame;
 
-    public DataPaneContainer() {
+import java.util.*;
+
+// Intended as the rough equivalent of the DataPanelContainer class of the Swing UI.  Work in progress.
+// Note: Not dealing with DnD yet.
+public class DataPaneContainer extends Pane {
+    private TrackRow trackRow = null;
+
+    public DataPaneContainer(TrackRow trackRow) {
+        this.trackRow = trackRow;
+        createDataPanes();
     }
 
+    public void createDataPanes() {
+        getChildren().removeAll();
+
+        for (ReferenceFrame f : FrameManager.getFrames()) {
+            if (f.isVisible()) {
+                DataPane dp = new DataPane(f, this);
+                getChildren().add(dp);
+            }
+        }
+    }
+
+    public Collection<TrackGroup> getTrackGroups() {
+        return trackRow.getGroups();
+    }
+
+    // *** The following methods below this point copied over from TrackPanel as the functionality is the same. ***
+
+    private void autoscale() {
+
+
+        final Collection<Track> trackList = IGV.getInstance().getAllTracks();
+
+        Map<String, List<Track>> autoscaleGroups = new HashMap<String, List<Track>>();
+
+        for (Track track : trackList) {
+
+            if (!track.isVisible()) continue;
+
+            String asGroup = track.getAttributeValue(AttributeManager.GROUP_AUTOSCALE);
+            if (asGroup != null) {
+                if (!autoscaleGroups.containsKey(asGroup)) {
+                    autoscaleGroups.put(asGroup, new ArrayList<Track>());
+                }
+
+                if (track instanceof MergedTracks) {
+                    for (Track mt : ((MergedTracks) track).getMemberTracks()) {
+                        // TODO: Is this a bug? Copied the code over like this, but seems it should be .add(mt)
+                        autoscaleGroups.get(asGroup).add(track);
+                    }
+                } else {
+                    autoscaleGroups.get(asGroup).add(track);
+                }
+            } else if (track.getAutoScale()) {
+
+                if (track instanceof MergedTracks) {
+                    for (Track mt : ((MergedTracks) track).getMemberTracks()) {
+                        autoscaleGroup(Arrays.asList(mt));
+                    }
+                } else {
+                    autoscaleGroup(Arrays.asList(track));
+                }
+            }
+
+        }
+
+        if (autoscaleGroups.size() > 0) {
+            for (List<Track> tracks : autoscaleGroups.values()) {
+                autoscaleGroup(tracks);
+            }
+        }
+    }
+
+    private void autoscaleGroup(List<Track> trackList) {
+
+
+        List<ReferenceFrame> frames =
+                FrameManager.isGeneListMode() ? FrameManager.getFrames() :
+                        Arrays.asList(FrameManager.getDefaultFrame());
+
+
+        List<Range> inViewRanges = new ArrayList<Range>();
+
+        synchronized (trackList) {
+            for (Track track : trackList) {
+                if (track instanceof ScalableTrack) {
+                    for (ReferenceFrame frame : frames) {
+                        Range range = ((ScalableTrack) track).getInViewRange(frame);
+                        if (range != null) {
+                            inViewRanges.add(range);
+                        }
+                    }
+                }
+            }
+
+            if (inViewRanges.size() > 0) {
+
+                Range inter = computeScale(inViewRanges);
+
+                for (Track track : trackList) {
+
+                    DataRange dr = track.getDataRange();
+                    float min = Math.min(0, inter.min);
+                    float base = Math.max(min, dr.getBaseline());
+                    float max = inter.max;
+                    // Pathological case where min ~= max  (no data in view)
+                    if (max - min <= (2 * Float.MIN_VALUE)) {
+                        max = min + 1;
+                    }
+
+                    DataRange newDR = new DataRange(min, base, max, dr.isDrawBaseline());
+                    newDR.setType(dr.getType());
+                    track.setDataRange(newDR);
+
+                }
+            }
+        }
+    }
+
+    public static Range computeScale(List<Range> ranges) {
+
+        float min = 0;
+        float max = 0;
+
+        if (ranges.size() > 0) {
+            max = ranges.get(0).max;
+            min = ranges.get(0).min;
+
+            for (int i = 1; i < ranges.size(); i++) {
+
+                Range r = ranges.get(i);
+                max = Math.max(r.max, max);
+                min = Math.min(r.min, min);
+
+            }
+        }
+
+        return new Range(min, max);
+    }
 }

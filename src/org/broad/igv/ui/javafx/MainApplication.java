@@ -33,12 +33,12 @@ import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.session.Session;
 import org.broad.igv.ui.DefaultExceptionHandler;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.Main;
 import org.broad.igv.ui.ShutdownThread;
+import org.broad.igv.ui.javafx.panel.MainContentPane;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
@@ -150,14 +150,22 @@ public class MainApplication extends Application {
     public void start(Stage primaryStage) throws Exception {
         checkLowMemory();
 
-        // TODO: port these to JavaFX (Swing refs)
-        // These may more properly belong elsewhere...
-        GenomeManager genomeManager = GenomeManager.getInstance();
-        Session session = new Session(null);
-
         // Here, launch a JavaFX version of the ui.IGV class.
-        // TODO: working on a JavaFX version of this
-        IGVStageBuilder.buildStage(primaryStage);
+        MainContentPane mainContentPane = IGVStageBuilder.buildStage(primaryStage);
+
+        // Create the IGV instance and make it available to the JavaFX UI.
+        // This is not the optimal way to do this, but the IGV class is heavily tied into the existing Swing UI,
+        // but many necessary non-UI components are tied into it as well (e.g. IGVSessionReader etc).
+        // Need to refactor away those dependencies so the JavaFX UI can use those components as well.
+        // For now, we'll hack around those to get the new UI off the ground.  Doing this knowingly, so we need
+        // to circle back and fix it later.
+        // Also, may need to have a JavaFX-modified version of the startUp() method.  It's mostly not UI-oriented
+        // but it looks like there are some bits and pieces of that in there.
+        log.info("About to init and start-up non-JavaFX IGV instance");
+        IGV.createInstance(mainContentPane).startUp(igvArgs);
+        log.info("IGV initialized");
+
+        primaryStage.setTitle("IGV JavaFX port");
 
         primaryStage.show();
     }
@@ -167,10 +175,17 @@ public class MainApplication extends Application {
         super.stop();
 
         // Application clean-up
-        // Big question here is, how much can this take the place of ShutdownThread?
+        // One question here is, how much can this take the place of ShutdownThread?
         // - I suspect that we still want that since it hooks into the JVM at a more
         // basic level and doesn't rely on JavaFX
         // - Maybe we can handle basic stuff here, though
+
+
+        // TODO: sort out proper shutdown handling.
+        // The Application.stop() method is called when all the windows are closed, but it only terminates
+        // the JavaFX application thread.  There are a number of other threads left running: in thread pool(s),
+        // port listener, etc.  We need to signal to all of those to shut down as well.
+        // As-is, the JVM is left running after close and requires manual termination.
 
     }
 

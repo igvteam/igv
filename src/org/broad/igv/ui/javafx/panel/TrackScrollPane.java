@@ -24,19 +24,32 @@
  */
 package org.broad.igv.ui.javafx.panel;
 
-import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 
-// Intended as the rough equivalent of the HeaderPaneler class of the Swing UI.  Work in progress.
-// As it is, there's nothing here that couldn't be handled by a normal ScrollPane straight out of the toolbox.  It's here in anticipation of specialized scroll-handling needs (as in the Swing UI).
+// Intended as the rough equivalent of the TrackPanelScrollPane class of the Swing UI.  Work in progress.
 public class TrackScrollPane extends ScrollPane {
+    private TrackRow trackRow;
 
     public TrackScrollPane() {
         // Set up Track-oriented defaults & mouse handling code.
+
     }
 
-    public TrackScrollPane(Node content) {
-        super(content);
+    public TrackScrollPane(TrackRow trackRow) {
+        super(trackRow);
+        this.trackRow = trackRow;
+        setFitToHeight(true);
+        setFitToWidth(true);
+
+        // TODO: move to CSS file
+        setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: rgb(102, 102, 102)");
+
+        // Mimic the SB policy of the Swing UI
+        setHbarPolicy(ScrollBarPolicy.NEVER);
+        setVbarPolicy(ScrollBarPolicy.ALWAYS);
     }
 
+    public TrackRow getTrackRow() {
+        return trackRow;
+    }
 }

@@ -24,12 +24,18 @@
  */
 package org.broad.igv.ui.javafx.panel;
 
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.Pane;
 
 // Intended as the rough equivalent of the HeaderPanelContainer class of the Swing UI.  Work in progress.
-public class HeaderPaneContainer extends VBox {
+public class HeaderPaneContainer extends Pane {
+    private HeaderPane headerPane = new HeaderPane();
 
     public HeaderPaneContainer() {
+        getChildren().add(headerPane);
+
+        headerPane.prefHeightProperty().bind(prefHeightProperty());
+        headerPane.prefWidthProperty().bind(prefWidthProperty());
+        headerPane.backgroundProperty().bind(backgroundProperty());
     }
 
 }

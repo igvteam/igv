@@ -24,8 +24,10 @@
  */
 package org.broad.igv.ui.javafx.panel;
 
+import org.broad.igv.ui.javafx.ResizableCanvas;
+
 // Intended as the rough equivalent of the AttributePanel class of the Swing UI.  Work in progress.
-public class AttributePane extends TrackRowComponent {
+public class AttributePane extends ResizableCanvas {
 
     public AttributePane() {
     }

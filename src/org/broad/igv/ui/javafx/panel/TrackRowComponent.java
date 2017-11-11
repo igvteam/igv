@@ -24,10 +24,11 @@
  */
 package org.broad.igv.ui.javafx.panel;
 
-import org.broad.igv.ui.javafx.ResizableCanvas;
+import javafx.scene.layout.Pane;
 
 // Intended as the rough equivalent of the TrackPanelComponent class of the Swing UI.  Work in progress.
-public class TrackRowComponent extends ResizableCanvas {
+// Unused at this time; may not be needed
+public class TrackRowComponent extends Pane {
 
     public TrackRowComponent() {
     }

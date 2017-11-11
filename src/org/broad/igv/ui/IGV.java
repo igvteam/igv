@@ -45,6 +45,7 @@ import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.dev.api.IGVPlugin;
+import org.broad.igv.event.*;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.Range;
@@ -60,10 +61,10 @@ import org.broad.igv.sam.InsertionSelectionEvent;
 import org.broad.igv.session.*;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.dnd.GhostGlassPane;
-import org.broad.igv.event.*;
+import org.broad.igv.ui.javafx.panel.MainContentPane;
+import org.broad.igv.ui.javafx.panel.TrackRow;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.*;
-import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.*;
 import org.broad.igv.variant.VariantTrack;
 
@@ -74,9 +75,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.io.*;
-import java.net.NoRouteToHostException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -90,6 +89,8 @@ import static org.broad.igv.ui.WaitCursorManager.CursorToken;
  *
  * @author jrobinso
  */
+// NOTE: this is modified to support the JavaFX UI, where the java.awt.Frame argument will be null.
+// This is an awkward hack and should be refactored at some point.
 public class IGV implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(IGV.class);
@@ -101,6 +102,9 @@ public class IGV implements IGVEventObserver {
     private IGVContentPane contentPane;
     private IGVMenuBar menuBar;
 
+    // JavaFX window components
+    private MainContentPane mainContentPane;
+    
     private StatusWindow statusWindow;
 
     // Glass panes
@@ -156,10 +160,23 @@ public class IGV implements IGVEventObserver {
         return otherToolMenus;
     }
 
+    public static IGV createInstance(MainContentPane mainContentPane) {
+        if (theInstance != null) {
+            throw new RuntimeException("Only a single instance is allowed.");
+        }
+        if (mainContentPane == null || !Globals.IS_JAVAFX_UI) {
+            throw new RuntimeException("Error initializing JavaFX UI.");
+        }
+        theInstance = new IGV(mainContentPane);
+        return theInstance;
+    }
 
     public static IGV createInstance(Frame frame) {
         if (theInstance != null) {
             throw new RuntimeException("Only a single instance is allowed.");
+        }
+        if (frame == null || Globals.IS_JAVAFX_UI) {
+            throw new RuntimeException("Error initializing Swing UI.");
         }
         theInstance = new IGV(frame);
         return theInstance;
@@ -197,6 +214,15 @@ public class IGV implements IGVEventObserver {
         return getInstance().mainFrame;
     }
 
+    private IGV(MainContentPane mainContentPane) {
+        theInstance = this;
+        this.mainContentPane = mainContentPane;
+
+        genomeManager = GenomeManager.getInstance();
+        session = new Session(null);
+        return;
+    }
+    
 
     /**
      * Creates new IGV
@@ -208,6 +234,7 @@ public class IGV implements IGVEventObserver {
         final IGVPreferences preferences = PreferencesManager.getPreferences();
 
         genomeManager = GenomeManager.getInstance();
+
         mainFrame = frame;
         mainFrame.addWindowListener(new WindowAdapter() {
 
@@ -957,6 +984,44 @@ public class IGV implements IGVEventObserver {
         System.gc();
     }
 
+    /**
+     * Set the session to the file specified by {@code sessionPath}
+     * If you want to create a new session, consider {@link #newSession()}
+     * as that preserves the gene track.
+     * JavaFX version of the method, skipping Swing-specific stuff
+     *
+     * @param sessionPath
+     */
+    public void resetSession_javaFx(String sessionPath) {
+
+        System.gc();
+
+        AttributeManager.getInstance().clearAllAttributes();
+
+        //String tile = sessionPath == null ? UIConstants.APPLICATION_NAME : sessionPath;
+
+        // Need to create a JavaFX equivalent
+        //menuBar.resetSessionActions();
+
+        AttributeManager.getInstance().clearAllAttributes();
+
+        if (session == null) {
+            session = new Session(sessionPath);
+        } else {
+            session.reset(sessionPath);
+        }
+
+        // Need to create a JavaFX equivalent
+        //contentPane.getMainPanel().resetPanels();
+
+        //TODO -- this is a very blunt and dangerous way to clean up -- change to close files associated with this session
+        SeekableFileStream.closeAllInstances();
+
+        // Need to create a JavaFX equivalent
+        //doRefresh();
+        System.gc();
+    }
+
     private void subscribeToEvents() {
         IGVEventBus.getInstance().subscribe(ViewChange.class, this);
         IGVEventBus.getInstance().subscribe(ShiftEvent.class, this);
@@ -1067,6 +1132,27 @@ public class IGV implements IGVEventObserver {
         return sp.getTrackPanel();
     }
 
+    // May want to add a special proxy object to handle proper action depending on whether it's the JavaFX or Swing UI.
+    // Trying to clean up stuff like this...
+    public void addTracks(Collection<Track> tracks, String panelName) {
+        if (Globals.IS_JAVAFX_UI) {
+            TrackRow pane = mainContentPane.getTrackRow(panelName);
+            pane.addTracks(tracks);
+        } else {
+            TrackPanel panel = getTrackPanel(panelName);
+            panel.addTracks(tracks);
+        }
+    }
+
+    public void revalidateUI() {
+        if (Globals.IS_JAVAFX_UI) {
+            // TODO: JavaFX equivalent
+        } else {
+            getMainPanel().revalidate();
+        }
+    }
+
+    // end UI proxy method section
 
     /**
      * Return an ordered list of track panels.  This method is provided primarily for storing sessions, where
@@ -1143,10 +1229,17 @@ public class IGV implements IGVEventObserver {
         try {
             if (!merge) {
                 // Do this first, it closes all open SeekableFileStreams.
-                resetSession(sessionPath);
+                if (Globals.IS_JAVAFX_UI) {
+                    resetSession_javaFx(sessionPath);
+                } else {
+                    resetSession(sessionPath);
+                }
             }
 
-            setStatusBarMessage("Opening session...");
+            if (!Globals.IS_JAVAFX_UI) {
+                // JavaFX UI has no status bar yet.
+                setStatusBarMessage("Opening session...");
+            }
             inputStream = new BufferedInputStream(ParsingUtils.openInputStreamGZ(new ResourceLocator(sessionPath)));
 
             boolean isUCSC = sessionPath.endsWith(".session") || sessionPath.endsWith(".session.txt");
@@ -1166,24 +1259,36 @@ public class IGV implements IGVEventObserver {
             }
 
 
-            mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
+            if (Globals.IS_JAVAFX_UI) {
+                // TODO: JavaFX equivalent
+            } else {
+                mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
+            }
             System.gc();
 
 
-            double[] dividerFractions = session.getDividerFractions();
-            if (dividerFractions != null) {
-                contentPane.getMainPanel().setDividerFractions(dividerFractions);
+            if (Globals.IS_JAVAFX_UI) {
+                // TODO: JavaFX equivalent
+            } else {
+                double[] dividerFractions = session.getDividerFractions();
+                if (dividerFractions != null) {
+                    contentPane.getMainPanel().setDividerFractions(dividerFractions);
+                }
+                session.clearDividerLocations();
             }
-            session.clearDividerLocations();
-
+            
             //If there's a RegionNavigatorDialog, kill it.
             //this could be done through the Observer that RND uses, I suppose.  Not sure that's cleaner
             RegionNavigatorDialog.destroyInstance();
 
-            if (!getRecentSessionList().contains(sessionPath)) {
-                getRecentSessionList().addFirst(sessionPath);
+            if (Globals.IS_JAVAFX_UI) {
+                // TODO: JavaFX equivalent
+            } else {
+                if (!getRecentSessionList().contains(sessionPath)) {
+                    getRecentSessionList().addFirst(sessionPath);
+                }
+                doRefresh();
             }
-            doRefresh();
             return true;
 
         } catch (Exception e) {
@@ -1198,7 +1303,10 @@ public class IGV implements IGVEventObserver {
                 } catch (IOException iOException) {
                     log.error("Error closing session stream", iOException);
                 }
-                resetStatusMessage();
+                if (!Globals.IS_JAVAFX_UI) {
+                    // JavaFX UI has no status bar yet.
+                    resetStatusMessage();
+                }
             }
         }
     }
@@ -1256,7 +1364,11 @@ public class IGV implements IGVEventObserver {
      * @api
      */
     public void goToLocus(String locus) {
-        contentPane.getCommandBar().searchByLocus(locus);
+        if (Globals.IS_JAVAFX_UI) {
+            // TODO: Add JavaFX equivalent
+        } else {
+            contentPane.getCommandBar().searchByLocus(locus);
+        }
     }
 
     /**
@@ -1741,8 +1853,15 @@ public class IGV implements IGVEventObserver {
      */
     public List<Track> getAllTracks() {
         List<Track> allTracks = new ArrayList<Track>();
-        for (TrackPanel tp : getTrackPanels()) {
-            allTracks.addAll(tp.getTracks());
+
+        if (Globals.IS_JAVAFX_UI) {
+            for (TrackRow trackRow : mainContentPane.getAllTrackRows()) {
+                allTracks.addAll(trackRow.getTracks());
+            }
+        } else {
+            for (TrackPanel tp : getTrackPanels()) {
+                allTracks.addAll(tp.getTracks());
+            }
         }
         return allTracks;
     }
@@ -1845,13 +1964,17 @@ public class IGV implements IGVEventObserver {
 
     public void removeTracks(Collection<? extends Track> tracksToRemove) {
 
-        // Make copy of list as we will be modifying the original in the loop
-        List<TrackPanel> panels = getTrackPanels();
-        for (TrackPanel trackPanel : panels) {
-            trackPanel.removeTracks(tracksToRemove);
+        if (Globals.IS_JAVAFX_UI) {
+            // TODO: handle the equivalent for the JavaFX UI
+        } else {
+            // Make copy of list as we will be modifying the original in the loop
+            List<TrackPanel> panels = getTrackPanels();
+            for (TrackPanel trackPanel : panels) {
+                trackPanel.removeTracks(tracksToRemove);
 
-            if (!trackPanel.hasTracks()) {
-                removeDataPanel(trackPanel.getName());
+                if (!trackPanel.hasTracks()) {
+                    removeDataPanel(trackPanel.getName());
+                }
             }
         }
 
@@ -1874,15 +1997,18 @@ public class IGV implements IGVEventObserver {
      */
     public void setGenomeTracks(FeatureTrack newGeneTrack) {
 
-        TrackPanel panel = PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY) ?
-                getTrackPanel(DATA_PANEL_NAME) : getTrackPanel(FEATURE_PANEL_NAME);
-        SequenceTrack newSeqTrack = new SequenceTrack("Reference sequence");
+        if (Globals.IS_JAVAFX_UI) {
+            // TODO: Set the genome track for the JavaFX UI (actions are undefined ATM)
+        } else {
+            TrackPanel panel = PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY) ?
+                    getTrackPanel(DATA_PANEL_NAME) : getTrackPanel(FEATURE_PANEL_NAME);
+            SequenceTrack newSeqTrack = new SequenceTrack("Reference sequence");
 
-        panel.addTrack(newSeqTrack);
-        if (newGeneTrack != null) {
-            panel.addTrack(newGeneTrack);
+            panel.addTrack(newSeqTrack);
+            if (newGeneTrack != null) {
+                panel.addTrack(newGeneTrack);
+            }
         }
-
     }
 
     public boolean hasGeneTrack() {
@@ -2094,8 +2220,9 @@ public class IGV implements IGVEventObserver {
             final boolean runningBatch = igvArgs.getBatchFile() != null;
             BatchRunner.setIsBatchMode(runningBatch);
 
-
-            UIUtilities.invokeOnEventThread(() -> mainFrame.setIconImage(getIconImage()));
+            if (!Globals.IS_JAVAFX_UI) {
+                UIUtilities.invokeOnEventThread(() -> mainFrame.setIconImage(getIconImage()));
+            }
             if (Globals.IS_MAC) {
                 setAppleDockIcon();
             }
@@ -2259,7 +2386,9 @@ public class IGV implements IGVEventObserver {
 
             UIUtilities.invokeOnEventThread(new Runnable() {
                 public void run() {
-                    mainFrame.setVisible(true);
+                    if (mainFrame != null) {
+                        mainFrame.setVisible(true);
+                    }
                     if (igvArgs.getLocusString() != null) {
                         goToLocus(igvArgs.getLocusString());
                     }

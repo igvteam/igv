@@ -1,16 +1,23 @@
 package org.broad.igv.ui.javafx;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.apache.log4j.Logger;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.javafx.panel.MainContentPane;
+import org.broad.igv.util.FileUtils;
+
+import java.io.File;
 
 // Intended as the rough equivalent of the IGVMenuBar class of the Swing UI.  Work in progress.
 // Will add event handlers (or at least stubs) for all of the included controls.
 public class IGVMenuBarManager {
-
+    private static Logger log = Logger.getLogger(IGVMenuBarManager.class);
+    
     private MenuBar menuBar;
 
     // Keep as instance var for later break-out of actions, etc from constructor.
@@ -42,9 +49,34 @@ public class IGVMenuBarManager {
         MenuItem loadFromGa4gh = new MenuItem("Load from Ga4gh ...");
         MenuItem newSession = new MenuItem("New Session ...");
         MenuItem openSession = new MenuItem("Open Session ...");
+        openSession.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                // TODO: file filtering?
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Choose a session file");
+                File selected = fileChooser.showOpenDialog(stage);
+                if (selected != null) {
+                    String sessionFile = selected.getAbsolutePath();
+                    log.info("About to load session");
+                    if (sessionFile != null) {
+                        if (FileUtils.isRemote(sessionFile)) {
+                            boolean merge = false;
+                            IGV.getInstance().doRestoreSession(sessionFile, null, merge);
+                        } else {
+                            File f = new File(sessionFile);
+                            IGV.getInstance().doRestoreSession(f, null);
+                        }
+                    }
+                    log.info("Session loading underway");
+                }
+            }
+        });
         MenuItem saveSession = new MenuItem("Save Session ...");
         MenuItem saveImage = new MenuItem("Save Image ...");
         MenuItem exit = new MenuItem("Exit");
+        exit.setOnAction(e -> Platform.exit());
+        
         Menu fileMenu = new Menu("File", null, loadFromFile, loadFromURL, loadFromServer, loadFromGa4gh,
                 new SeparatorMenuItem(), newSession, openSession, saveSession, new SeparatorMenuItem(), saveImage,
                 new SeparatorMenuItem(), exit);
@@ -84,10 +116,26 @@ public class IGVMenuBarManager {
         MenuItem gotoFwd = new MenuItem("Forward");
         MenuItem clearAll = new MenuItem("Clear All");
         Menu gotoSubMenu = new Menu("Go to", null, gotoBack, gotoFwd, new SeparatorMenuItem(), clearAll);
+        MenuItem addDataPanel = new MenuItem("Add Empty Data Panel (test)");
+        addDataPanel.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                if (mainContentPane != null) {
+                    // Just for example.  Would also do any Track loading & drawing within the Runnable.
+                    Platform.runLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            mainContentPane.addTrackRow("Temp");
+                        }
+                    });
+                }
+            }
+        });
 
         Menu viewMenu = new Menu("View", null, preferences, colorLegends, new SeparatorMenuItem(), showNamePanel,
                 setNamePanelWidth, showAttribsDisplay, selectAttribsToShow, showHeaderPanel, new SeparatorMenuItem(),
-                reorderPanels, new SeparatorMenuItem(), gotoSubMenu);
+                reorderPanels, new SeparatorMenuItem(), gotoSubMenu, new SeparatorMenuItem(), addDataPanel);
 
         MenuItem sortTracks = new MenuItem("Sort Tracks ...");
         MenuItem groupTracks = new MenuItem("Group Tracks ...");
@@ -120,7 +168,7 @@ public class IGVMenuBarManager {
         MenuItem closest = new MenuItem("Closest");
         MenuItem window = new MenuItem("Windows");
         MenuItem coverage = new MenuItem("Coverage");
-        MenuItem multiIntersect = new MenuItem("Multi-interesect");
+        MenuItem multiIntersect = new MenuItem("Multi-intersect");
         MenuItem setPathToBEDTools = new MenuItem("Set Path to BEDTools ...");
         Menu bedTools = new Menu("BEDTools", null, intersect, removeSubtract, closest, window, coverage, multiIntersect,
                 setPathToBEDTools);

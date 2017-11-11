@@ -35,11 +35,11 @@ public class DataLoadException extends RuntimeException {
     private String fileName;
 
     public DataLoadException(String message) {
-        this.message = message.replace("<html>", "");
+        this.message = (message == null) ? "" : message.replace("<html>", "");
     }
 
     public DataLoadException(String message, String fileName) {
-        if(message != null) this.message = message.replace("<html>", "");
+        this.message = (message == null) ? "" : message.replace("<html>", "");
         this.fileName = fileName;
     }
 

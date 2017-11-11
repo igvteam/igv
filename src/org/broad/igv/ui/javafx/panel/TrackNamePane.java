@@ -24,8 +24,10 @@
  */
 package org.broad.igv.ui.javafx.panel;
 
+import org.broad.igv.ui.javafx.ResizableCanvas;
+
 // Intended as the rough equivalent of the TrackNamePanel class of the Swing UI.  Work in progress.
-public class TrackNamePane extends TrackRowComponent {
+public class TrackNamePane extends ResizableCanvas {
 
     public TrackNamePane() {
     }

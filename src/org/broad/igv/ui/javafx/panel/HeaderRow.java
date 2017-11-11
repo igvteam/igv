@@ -28,7 +28,7 @@ package org.broad.igv.ui.javafx.panel;
 public class HeaderRow extends IGVRow<NameHeaderPane, AttributeHeaderPane, HeaderPaneContainer> {
 
     public HeaderRow(MainContentPane mainContentPane) {
-        super(mainContentPane, new NameHeaderPane(), new AttributeHeaderPane(), new HeaderPaneContainer());
+        init(mainContentPane, new NameHeaderPane(), new AttributeHeaderPane(), new HeaderPaneContainer());
 
         // Temporarily hard-coding the height since we have no header contents yet.
         int headerHeight = 100;
@@ -36,9 +36,8 @@ public class HeaderRow extends IGVRow<NameHeaderPane, AttributeHeaderPane, Heade
         getAttributePane().prefHeightProperty().set(headerHeight);
         getContentContainer().prefHeightProperty().set(headerHeight);
 
-        // Temporary, to show pane locations
-        getNamePane().setStyle("-fx-border-style: dashed; -fx-border-insets: 2; -fx-border-color: red");
-        getAttributePane().setStyle("-fx-border-style: dashed; -fx-border-insets: 2; -fx-border-color: blue");
-        getContentContainer().setStyle("-fx-border-style: dashed; -fx-border-insets: 2; -fx-border-color: red");
+        // TODO: move to CSS file
+        getNamePane().setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: rgb(0, 0, 0)");
+        getAttributePane().setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: rgb(0, 0, 0)");
     }
 }

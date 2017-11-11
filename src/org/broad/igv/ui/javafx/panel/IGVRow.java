@@ -39,8 +39,11 @@ public class IGVRow<N extends Pane, A extends Pane, C extends Pane> extends HBox
     private A attributePane;
     private C contentContainer;
 
-    protected IGVRow(MainContentPane mainContentPane, N namePane, A attributePane, C contentContainer) {
+    protected IGVRow() {
         super(INSET_SPACING);
+    }
+
+    protected void init(MainContentPane mainContentPane, N namePane, A attributePane, C contentContainer) {
 
         this.mainContentPane = mainContentPane;
         this.namePane = namePane;
@@ -59,6 +62,11 @@ public class IGVRow<N extends Pane, A extends Pane, C extends Pane> extends HBox
         prefWidthProperty().bind(mainContentPane.prefWidthProperty());
         minWidthProperty().bind(mainContentPane.minWidthProperty());
         maxWidthProperty().bind(mainContentPane.maxWidthProperty());
+
+        backgroundProperty().bind(mainContentPane.backgroundProperty());
+        namePane.backgroundProperty().bind(mainContentPane.backgroundProperty());
+        attributePane.backgroundProperty().bind(mainContentPane.backgroundProperty());
+        contentContainer.backgroundProperty().bind(mainContentPane.backgroundProperty());
     }
 
     public MainContentPane getMainContentPane() {

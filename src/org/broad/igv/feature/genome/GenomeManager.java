@@ -51,10 +51,15 @@ import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.panel.FrameManager;
-import org.broad.igv.ui.util.*;
+import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.ProgressBar;
 import org.broad.igv.ui.util.ProgressMonitor;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.ui.util.download.Downloader;
-import org.broad.igv.util.*;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.Utilities;
 
 import java.awt.*;
 import java.io.*;
@@ -249,7 +254,13 @@ public class GenomeManager {
                 monitor.fireProgress(25);
             }
 
-            if (IGV.hasInstance()) IGV.getInstance().resetSession(null);
+            if (IGV.hasInstance()) {
+                if (Globals.IS_JAVAFX_UI) {
+                    IGV.getInstance().resetSession_javaFx(null);
+                } else {
+                    IGV.getInstance().resetSession(null);
+                }
+            }
 
 
             GenomeListItem genomeListItem = new GenomeListItem(newGenome.getDisplayName(), altGenomePath, newGenome.getId());

@@ -25,6 +25,7 @@
 
 package org.broad.igv.ui.javafx;
 
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Rectangle2D;
@@ -55,8 +56,7 @@ import org.broad.igv.ui.javafx.panel.MainContentPane;
 // TODO: manage Tracks
 // TODO: launch initial Task based on the cmdLine params
 public class IGVStageBuilder {
-
-    public static void buildStage(Stage stage) {
+    public static MainContentPane buildStage(Stage stage) {
         // TODO: port this to JavaFX (AWT refs)
         final IGVPreferences preferences = PreferencesManager.getPreferences();
 
@@ -92,11 +92,15 @@ public class IGVStageBuilder {
         // Note: we can use an EventFilter on the Scene instead of doing it as a
         // GlassPane. Suggested here:
         // https://stackoverflow.com/questions/18758803/javafx-best-practice-to-implement-glasspane-like-mouse-touch-event-receiver-whi
-        Scene contentScene = buildContent(stage);
-        stage.setScene(contentScene);
+
+        Platform.setImplicitExit(true);
+        stage.setOnCloseRequest(e -> Platform.exit());
+
+        MainContentPane mainContentPane = buildContent(stage);
+        return mainContentPane;
     }
 
-    private static Scene buildContent(Stage stage) {
+    private static MainContentPane buildContent(Stage stage) {
 
         VBox contentContainer = new VBox();
         Scene contentScene = new Scene(contentContainer, stage.getHeight(), stage.getWidth(), Color.WHITE);
@@ -119,13 +123,14 @@ public class IGVStageBuilder {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
                 if (newValue) {
-                    mainContentPane.addInitialTrackRows();
+                    mainContentPane.initializeUI();
 
                     observable.removeListener(this);
                 }
             }
         });
 
-        return contentScene;
+        stage.setScene(contentScene);
+        return mainContentPane;
     }
 }
