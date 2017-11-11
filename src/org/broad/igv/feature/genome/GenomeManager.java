@@ -62,6 +62,7 @@ import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.ui.util.download.Downloader;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.Utilities;
 
