@@ -38,14 +38,17 @@ import java.util.*;
 public class TrackRow extends IGVRow<TrackNamePane, AttributePane, DataPaneContainer> {
     private static Logger log = Logger.getLogger(TrackRow.class);
 
+    private TrackScrollPane trackScrollPane;
+
     private String name;
     private List<TrackGroup> trackGroups;
     private String groupAttribute;
     int trackCountEstimate = 0;  // <= used to size array list, not necessarily precise
 
     public TrackRow(String name, MainContentPane mainContentPane) {
-        init(mainContentPane, new TrackNamePane(), new AttributePane(), new DataPaneContainer(this));
         this.name = name;
+        this.trackScrollPane = new TrackScrollPane(this);
+        init(mainContentPane, new TrackNamePane(), new AttributePane(), new DataPaneContainer(this));
 
         TrackGroup nullGroup = new TrackGroup();
         nullGroup.setDrawBorder(false);
@@ -59,6 +62,10 @@ public class TrackRow extends IGVRow<TrackNamePane, AttributePane, DataPaneConta
 
     public String getName() {
         return name;
+    }
+
+    public TrackScrollPane getTrackScrollPane() {
+        return trackScrollPane;
     }
 
     public List<TrackGroup> getGroups() {

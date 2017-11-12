@@ -24,28 +24,46 @@
  */
 package org.broad.igv.ui.javafx.panel;
 
-import javafx.scene.layout.Pane;
-import org.broad.igv.ui.javafx.ResizableCanvas;
+import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
 // Intended as the rough equivalent of the HeaderPanel class of the Swing UI.  Work in progress.
 // TODO: Need to add equivalents of CytobandPanel, RulerPanel, RegionOfInterestPanel, GeneListPanel, etc.
 // TODO: DnD handling
-public class HeaderPane extends Pane {
+public class HeaderPane extends BorderPane {
 
     private ReferenceFrame frame;
-    
-    // This is a starting point; may need to be its own subclass
-    private ResizableCanvas cytobandPane = new ResizableCanvas();
+    private BorderPane geneListPane;
+    private Label label;
+
+    private CytobandPane cytobandPane;
 
     public HeaderPane(ReferenceFrame frame) {
-        this.frame = frame;
-        
-        this.getChildren().add(cytobandPane);
+        // TODO: Set background, sizing, etc on all components
 
-        cytobandPane.prefHeightProperty().bind(prefHeightProperty());
-        cytobandPane.prefWidthProperty().bind(prefWidthProperty());
-        cytobandPane.backgroundProperty().bind(backgroundProperty());
+        this.frame = frame;
+
+//        cytobandPane.prefHeightProperty().bind(prefHeightProperty());
+//        cytobandPane.prefWidthProperty().bind(prefWidthProperty());
+//        cytobandPane.backgroundProperty().bind(backgroundProperty());
+
+        if (FrameManager.isGeneListMode()) {
+            this.label = new Label(this.frame.getName());
+            this.geneListPane = new BorderPane();
+            setPrefSize(400, 100);
+            cytobandPane = new CytobandPane(frame);
+            geneListPane.setCenter(cytobandPane);
+            geneListPane.setBottom(label);
+            this.getChildren().add(geneListPane);
+        } else {
+            BorderPane pane = new BorderPane();
+            cytobandPane = new CytobandPane(frame);
+            pane.setTop(cytobandPane);
+            this.getChildren().add(pane);
+        }
+        
     }
 
 }

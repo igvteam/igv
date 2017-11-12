@@ -1011,8 +1011,8 @@ public class IGV implements IGVEventObserver {
             session.reset(sessionPath);
         }
 
-        // Need to create a JavaFX equivalent
-        //contentPane.getMainPanel().resetPanels();
+        mainContentPane.resetTrackRows();
+        groupByAttribute = null;
 
         //TODO -- this is a very blunt and dangerous way to clean up -- change to close files associated with this session
         SeekableFileStream.closeAllInstances();
@@ -1283,6 +1283,7 @@ public class IGV implements IGVEventObserver {
 
             if (Globals.IS_JAVAFX_UI) {
                 // TODO: JavaFX equivalent
+                log.info("Session open completed");
             } else {
                 if (!getRecentSessionList().contains(sessionPath)) {
                     getRecentSessionList().addFirst(sessionPath);

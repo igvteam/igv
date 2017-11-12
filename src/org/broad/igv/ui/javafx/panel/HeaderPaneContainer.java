@@ -24,19 +24,19 @@
  */
 package org.broad.igv.ui.javafx.panel;
 
+import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
-import javafx.scene.control.Label;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-
 // Intended as the rough equivalent of the HeaderPanelContainer class of the Swing UI.  Work in progress.
 public class HeaderPaneContainer extends BorderPane {
 
     public HeaderPaneContainer() {
+        //setStyle("-fx-background-color: purple; -fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: rgb(0, 0, 0); -fx-backgound-color: red");
         createHeaderPanes();
     }
 
@@ -44,23 +44,36 @@ public class HeaderPaneContainer extends BorderPane {
         getChildren().removeAll();
 
         HBox contentPane = new HBox(6);
+        contentPane.setStyle("-fx-background-color: purple");
         for (ReferenceFrame f : FrameManager.getFrames()) {
             if (f.isVisible()) {
                 HeaderPane headerPane = new HeaderPane(f);
-                headerPane.prefHeightProperty().bind(prefHeightProperty());
-                headerPane.prefWidthProperty().bind(prefWidthProperty());
-                headerPane.backgroundProperty().bind(backgroundProperty());
+//                headerPane.prefHeightProperty().bind(prefHeightProperty());
+//                headerPane.prefWidthProperty().bind(prefWidthProperty());
+//                headerPane.backgroundProperty().bind(backgroundProperty());
+                headerPane.setStyle("-fx-background-color: green");
                 contentPane.getChildren().add(headerPane);
             }
         }
-        setCenter(contentPane);
-
+        contentPane.prefWidthProperty().bind(prefWidthProperty());
+        
         if (FrameManager.isGeneListMode()) {
             GeneList gl = IGV.getInstance().getSession().getCurrentGeneList();
             String name = gl.getDisplayName();
             Label label = new Label(name);
             label.setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: lightgray");
+            contentPane.prefHeightProperty().bind(prefHeightProperty().subtract(label.heightProperty()));
+            setTop(label);
+        } else {
+            // Display label for testing
+            String name = "Test";
+            Label label = new Label(name);
+            label.setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: lightgray");
+            // Normally will not subtract here
+            contentPane.prefHeightProperty().bind(prefHeightProperty().subtract(label.heightProperty()));
             setTop(label);
         }
+
+        setCenter(contentPane);
     }
 }

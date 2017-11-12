@@ -66,7 +66,7 @@ public class IGVRow<N extends Pane, A extends Pane, C extends Pane> extends HBox
         backgroundProperty().bind(mainContentPane.backgroundProperty());
         namePane.backgroundProperty().bind(mainContentPane.backgroundProperty());
         attributePane.backgroundProperty().bind(mainContentPane.backgroundProperty());
-        contentContainer.backgroundProperty().bind(mainContentPane.backgroundProperty());
+        //contentContainer.backgroundProperty().bind(mainContentPane.backgroundProperty());
     }
 
     public MainContentPane getMainContentPane() {

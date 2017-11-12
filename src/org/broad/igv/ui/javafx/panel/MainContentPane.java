@@ -37,7 +37,6 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
-
 import org.apache.log4j.Logger;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
@@ -58,6 +57,8 @@ public class MainContentPane extends BorderPane {
     // Probably most/all components should be instance vars.  Will migrate as need arises.
     private TrackRow featureTrackRow = null;
     private TrackScrollPane featureTrackScrollPane = null;
+    private TrackRow dataTrackRow = null;
+    private TrackScrollPane dataTrackScrollPane = null;
     private SplitPane centerSplitPane;
 
     private DoubleProperty namePaneWidthProp = new SimpleDoubleProperty(
@@ -96,28 +97,19 @@ public class MainContentPane extends BorderPane {
 
         this.backgroundProperty().set(background);
 
-        // We explicitly create and add the first data TrackRow and the feature TrackRow.  Others
-        // will be added using addTrackRow().
-        // TODO: might be able to simplify here and always use addTrackRow()
-        TrackRow dataTrackRow = new TrackRow(IGV.DATA_PANEL_NAME, this);
-        TrackScrollPane dataTrackScrollPane = new TrackScrollPane(dataTrackRow);
-        trackRowByName.put(IGV.DATA_PANEL_NAME, dataTrackRow);
-
-        centerSplitPane.getItems().add(dataTrackScrollPane);
+        dataTrackRow = addTrackRow(IGV.DATA_PANEL_NAME);
+        dataTrackScrollPane = dataTrackRow.getTrackScrollPane();
 
         if (!PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
-            featureTrackRow = new TrackRow(IGV.FEATURE_PANEL_NAME, this);
-            featureTrackScrollPane = new TrackScrollPane(featureTrackRow);
-            trackRowByName.put(IGV.FEATURE_PANEL_NAME, featureTrackRow);
-
-            centerSplitPane.getItems().add(featureTrackScrollPane);
+            featureTrackRow = addTrackRow(IGV.FEATURE_PANEL_NAME);
+            featureTrackScrollPane = featureTrackRow.getTrackScrollPane();
 
             centerSplitPane.setDividerPositions(0.9);
         }
     }
 
-    // The following should only be called within Platform.runLater()
-    public TrackScrollPane addTrackRow(String name) {
+    // The following should only be called within Platform.runLater() or otherwise on the Application thread
+    public TrackRow addTrackRow(String name) {
         TrackRow trackRow = new TrackRow(name, this);
         TrackScrollPane trackScrollPane = new TrackScrollPane(trackRow);
         trackRowByName.put(name, trackRow);
@@ -133,7 +125,9 @@ public class MainContentPane extends BorderPane {
             centerSplitPane.getItems().add(trackScrollPane);
         }
 
-        return trackScrollPane;
+        // Probably need to deal with centerSplitPane divider positions here.
+
+        return trackRow;
     }
     
     
@@ -152,11 +146,26 @@ public class MainContentPane extends BorderPane {
     public void showNamePanel() {
         namePaneWidthProp.set(PreferencesManager.getPreferences().getAsFloat(NAME_PANEL_WIDTH));
     }
-    
+
+    public boolean isNamePanelHidden() {
+        return namePaneWidthProp.get() <= 0;
+    }
+
     public Collection<TrackRow> getAllTrackRows() {
         return trackRowByName.values();
     }
 
+    public void resetTrackRows() {
+        for (TrackRow trackRow : getAllTrackRows()) {
+            trackRow.clearTracks();
+            if (trackRow != featureTrackRow && trackRow != dataTrackRow) {
+                centerSplitPane.getItems().remove(trackRow.getTrackScrollPane());
+            }
+        }
+
+        dataTrackRow.reset();
+    }
+    
     public TrackRow getTrackRow(String name) {
         TrackRow row = trackRowByName.get(name);
         if (row != null) {
@@ -167,8 +176,7 @@ public class MainContentPane extends BorderPane {
         FutureTask<TrackRow> trackRowCreator = new FutureTask<TrackRow>(new Callable<TrackRow>() {
             @Override
             public TrackRow call() throws Exception {
-                TrackScrollPane trackScrollPane = addTrackRow(name);
-                return trackScrollPane.getTrackRow();
+                return addTrackRow(name);
             }
         });
         
@@ -179,14 +187,10 @@ public class MainContentPane extends BorderPane {
         catch (ExecutionException | InterruptedException e) {
             // TODO: better error handling.  Prob need equivalent of MessageUtils.showMessage() 
             log.error(e);
-            return null;
+            throw new RuntimeException(e);
         }
     }
     
-    public boolean isNamePanelHidden() {
-        return namePaneWidthProp.get() <= 0;
-    }
-
     // Not yet used; anticipated...
     public void setDividerLocations(double[] fractions) {
         centerSplitPane.setDividerPositions(fractions);

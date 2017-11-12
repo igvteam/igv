@@ -39,5 +39,6 @@ public class HeaderRow extends IGVRow<NameHeaderPane, AttributeHeaderPane, Heade
         // TODO: move to CSS file
         getNamePane().setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: rgb(0, 0, 0)");
         getAttributePane().setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: rgb(0, 0, 0)");
+        //getContentContainer().setStyle("-fx-background-color: purple; -fx-border-style: dotted; -fx-border-insets: 2; -fx-border-color: green");
     }
 }

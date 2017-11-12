@@ -30,23 +30,32 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import org.apache.log4j.Logger;
+import org.broad.igv.event.GenomeChangeEvent;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.commandbar.GenomeListManager;
+import org.broad.igv.ui.util.MessageUtils;
+
+import java.io.IOException;
 
 // Intended as the rough equivalent of the IGVCommandBar class of the Swing UI.  Work in progress.
 // Will add event handlers (or at least stubs) for all of the included controls.
-public class IGVToolBarManager {
-
+public class IGVToolBarManager implements IGVEventObserver {
+    private static Logger log = Logger.getLogger(IGVToolBarManager.class);
+    
     private ToolBar toolBar;
+    private ComboBox<GenomeListItem> genomeSelector;
 
     public IGVToolBarManager() {
 
         // TODO: populate ToolBar controls with actual content.
         // TODO: add event handlers to all ToolBar components, including enable/disable.
-        // Do these need to be held as instance vars for better access from event handlers?  Not sure of the
-        // best structure here yet.
         String defaultGenome = "Human hg19";
         ObservableList<String> genomes = FXCollections.observableArrayList(defaultGenome, "chr1.fasta");
-        ComboBox<String> genomeSelector = new ComboBox<String>(genomes);
-        genomeSelector.setValue(defaultGenome);
+        genomeSelector = new ComboBox<GenomeListItem>();
 
         ObservableList<String> chromosomes = FXCollections.observableArrayList("chr1, chr2, chr3");
         ComboBox<String> chromosomeSelector = new ComboBox<String>(chromosomes);
@@ -81,9 +90,43 @@ public class IGVToolBarManager {
         toolBar = new ToolBar(genomeSelector, chromosomeSelector, jumpToPane,
                 homeButton, leftArrowButton, rightArrowButton, refreshScreenButton, regionToolButton, resizeToWindowButton,
                 infoSelectButton, rulerButton, zoomLevelSlider);
+
+        IGVEventBus.getInstance().subscribe(GenomeChangeEvent.class, this);
+    }
+
+    /**
+     * Selects the first genome from the list which matches this genomeId.
+     * If not found, checks genomes from the server/user-defined list
+     *
+     * @param genomeId
+     */
+    public void selectGenome(String genomeId) {
+
+        log.info("Selecting genome " + genomeId);
+
+        GenomeListItem selectedItem = GenomeListManager.getInstance().getGenomeListItem(genomeId);
+
+        if (selectedItem == null) {
+
+            try {
+                GenomeManager.getInstance().loadGenomeById(genomeId);
+            } catch (IOException e) {
+                MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
+                log.error("Error loading genome: " + genomeId, e);
+            }
+        }
+
+        if (selectedItem != null) {
+        }
     }
 
     public ToolBar getToolBar() {
         return toolBar;
+    }
+
+    @Override
+    public void receiveEvent(Object event) {
+        // TODO Auto-generated method stub
+
     }
 }
