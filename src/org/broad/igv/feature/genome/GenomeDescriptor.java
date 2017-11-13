@@ -145,6 +145,12 @@ public abstract class GenomeDescriptor {
         return cytoBandFileName != null && cytoBandFileName.length() > 0;
     }
 
+    // NOTE: added for the use of the JavaFX port's copy of GenomeManager.
+    // TODO: remove this when these are merged back together (or otherwise refactor)
+    public String getCytoBandFileName() {
+        return this.cytoBandFileName;
+    }
+    
     public abstract void close();
 
     public boolean hasCustomSequenceLocation() {

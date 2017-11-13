@@ -132,8 +132,7 @@ public class SpliceJunctionTrack extends FeatureTrack {
                 dataManager.initLoadOptions();
             }
             if(IGV.hasInstance()) {
-                // TODO: replace with UI proxy?
-                IGV.getInstance().revalidateUI();
+                IGV.getInstance().getMainPanel().revalidate();
             }
         }
     }

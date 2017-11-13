@@ -162,6 +162,13 @@ public class MainContentPane extends BorderPane {
                 centerSplitPane.getItems().remove(trackRow.getTrackScrollPane());
             }
         }
+        trackRowByName.clear();
+        if (featureTrackRow != null) {
+            trackRowByName.put(IGV.FEATURE_PANEL_NAME, featureTrackRow);
+        }
+        if (dataTrackRow != null) {
+            trackRowByName.put(IGV.DATA_PANEL_NAME, dataTrackRow);
+        }
 
         dataTrackRow.reset();
     }

@@ -35,7 +35,6 @@ import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.DefaultExceptionHandler;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.Main;
 import org.broad.igv.ui.ShutdownThread;
 import org.broad.igv.ui.javafx.panel.MainContentPane;
@@ -192,7 +191,7 @@ public class MainApplication extends Application {
     public static void main(String[] args) {
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
 
-        // Signal that we're running the JavaFX UI.
+        // Signal that we're running the JavaFX UI.  We shouldn't need this in the long term
         Globals.IS_JAVAFX_UI = true;
 
         launch(args);

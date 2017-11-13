@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.session;
+package org.broad.igv.ui.javafx.session;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
@@ -31,18 +31,20 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.ColorScaleFactory;
 import org.broad.igv.renderer.ContinuousColorScale;
+import org.broad.igv.session.Session;
+import org.broad.igv.session.SessionReader;
 import org.broad.igv.track.*;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
 import org.broad.igv.ui.TrackFilterElement;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.commandbar.GenomeListManager;
+import org.broad.igv.ui.javafx.IGV;
+import org.broad.igv.ui.javafx.feature.genome.GenomeManager;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.TrackPanel;
@@ -1039,8 +1041,7 @@ public class IGVSessionReader implements SessionReader {
             }
         }
 
-        TrackPanel panel = IGV.getInstance().getTrackPanel(panelName);
-        panel.addTracks(panelTracks);
+        IGV.getInstance().addTracks(panelTracks, panelName);
     }
 
     private void processPanelLayout(Session session, Element element, HashMap additionalInformation) {

@@ -31,7 +31,7 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-package org.broad.igv.feature.genome;
+package org.broad.igv.ui.javafx.feature.genome;
 
 
 import com.google.gson.JsonArray;
@@ -45,6 +45,7 @@ import org.broad.igv.event.GenomeChangeEvent;
 import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.*;
+import org.broad.igv.feature.genome.*;
 import org.broad.igv.feature.genome.fasta.FastaBlockCompressedSequence;
 import org.broad.igv.feature.genome.fasta.FastaDirectorySequence;
 import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
@@ -245,7 +246,9 @@ public class GenomeManager {
                 monitor.fireProgress(25);
             }
 
-            if (IGV.hasInstance()) IGV.getInstance().resetSession(null);
+            if (IGV.hasInstance()) {
+                IGV.getInstance().resetSession(null);
+            }
 
 
             GenomeListItem genomeListItem = new GenomeListItem(newGenome.getDisplayName(), altGenomePath, newGenome.getId());
@@ -611,7 +614,7 @@ public class GenomeManager {
 
         } catch (IOException ex) {
             log.warn("Error loading cytoband file", ex);
-            throw new RuntimeException("Error loading cytoband file" + genomeDescriptor.cytoBandFileName);
+            throw new RuntimeException("Error loading cytoband file" + genomeDescriptor.getCytoBandFileName());
         } finally {
             try {
                 if (is != null) {

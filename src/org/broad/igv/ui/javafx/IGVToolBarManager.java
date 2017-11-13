@@ -35,8 +35,8 @@ import org.broad.igv.event.GenomeChangeEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.genome.GenomeListItem;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.commandbar.GenomeListManager;
+import org.broad.igv.ui.javafx.feature.genome.GenomeManager;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.io.IOException;
