@@ -53,8 +53,8 @@ import org.broad.igv.feature.genome.fasta.FastaUtils;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.*;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.commandbar.GenomeListManager;
+import org.broad.igv.ui.javafx.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressBar;
@@ -160,17 +160,18 @@ public class GenomeManager {
 
             final ProgressMonitor[] monitor = {new ProgressMonitor()};
             final ProgressBar.ProgressDialog[] progressDialog = new ProgressBar.ProgressDialog[1];
-            UIUtilities.invokeAndWaitOnEventThread(() -> {
-                progressDialog[0] = ProgressBar.showProgressDialog(IGV.getMainFrame(), "Loading Genome...", monitor[0], false);
-            });
+//            UIUtilities.invokeAndWaitOnEventThread(() -> {
+//                progressDialog[0] = ProgressBar.showProgressDialog(IGV.getMainFrame(), "Loading Genome...", monitor[0], false);
+//            });
 
             try {
                 GenomeListItem item = genomeListManager.getGenomeListItem(genomeId);
-                loadGenome(item.getPath(), monitor[0]);
+//                loadGenome(item.getPath(), monitor[0]);
+                loadGenome(item.getPath(), null);
             } finally {
-                UIUtilities.invokeOnEventThread(() -> {
-                    progressDialog[0].setVisible(false);
-                });
+//                UIUtilities.invokeOnEventThread(() -> {
+//                    progressDialog[0].setVisible(false);
+//                });
             }
 
 
@@ -262,7 +263,8 @@ public class GenomeManager {
 
             if (IGV.hasInstance()) {
                 FeatureTrack geneFeatureTrack = newGenome.getGeneTrack();   // Can be null
-                IGV.getInstance().setGenomeTracks(geneFeatureTrack);
+                // TODO: JavaFX equiv
+//                IGV.getInstance().setGenomeTracks(geneFeatureTrack);
 
                 List<ResourceLocator> resources = newGenome.getAnnotationResources();
                 if (resources != null) {
@@ -700,12 +702,14 @@ public class GenomeManager {
 
                     log.info("Refreshing genome: " + genomeArchiveURL.toString());
 
-                    Downloader.download(genomeArchiveURL, cachedFile, IGV.getMainFrame());
+                    Frame parent = null;
+                    Downloader.download(genomeArchiveURL, cachedFile, parent);
 
                 }
             } else {
                 // Copy file directly from the server to local cache.
-                Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
+//                Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
+                Frame parent = null;
                 Downloader.download(genomeArchiveURL, cachedFile, parent);
             }
         } catch (Exception e) {
@@ -1105,12 +1109,14 @@ public class GenomeManager {
         String filename = Utilities.getFileNameFromURL(fastaPath);
 
         File localFile = new File(targetDir, filename);
-        boolean downloaded = Downloader.download(new URL(fastaPath), localFile, IGV.getMainFrame());
+        // TODO: switch these java.awt.Frame refs to JavaFX equiv; mod the Downloader as well
+        Frame parent = null;
+        boolean downloaded = Downloader.download(new URL(fastaPath), localFile, parent);
 
         if (downloaded) {
             URL indexUrl = new URL(fastaPath + ".fai");
             File localIndexFile = new File(targetDir, filename + ".fai");
-            downloaded = Downloader.download(indexUrl, localIndexFile, IGV.getMainFrame());
+            downloaded = Downloader.download(indexUrl, localIndexFile, parent);
         }
 
         if (downloaded) {
@@ -1118,7 +1124,7 @@ public class GenomeManager {
             if (fastaPath.endsWith(".gz")) {
                 URL gziUrl = new URL(fastaPath + ".gzi");
                 File localGziPath = new File(targetDir, filename + ".gzi");
-                downloaded = Downloader.download(gziUrl, localGziPath, IGV.getMainFrame());
+                downloaded = Downloader.download(gziUrl, localGziPath, parent);
             }
         }
 

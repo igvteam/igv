@@ -43,7 +43,6 @@ import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.batch.BatchRunner;
-import org.broad.igv.batch.CommandListener;
 import org.broad.igv.dev.api.IGVPlugin;
 import org.broad.igv.event.*;
 import org.broad.igv.exceptions.DataLoadException;
@@ -64,12 +63,10 @@ import org.broad.igv.sam.InsertionSelectionEvent;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionReader;
 import org.broad.igv.track.*;
-import org.broad.igv.ui.Main;
-import org.broad.igv.ui.MessageCollection;
-import org.broad.igv.ui.PanelName;
-import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.*;
+import org.broad.igv.ui.WaitCursorManager.CursorToken;
 import org.broad.igv.ui.dnd.GhostGlassPane;
-import org.broad.igv.ui.javafx.WaitCursorManager.CursorToken;
+import org.broad.igv.ui.javafx.batch.CommandListener;
 import org.broad.igv.ui.javafx.feature.genome.GenomeManager;
 import org.broad.igv.ui.javafx.panel.MainContentPane;
 import org.broad.igv.ui.javafx.panel.TrackRow;
@@ -136,6 +133,7 @@ public class IGV implements IGVEventObserver {
 
     // JavaFX window components
     private MainContentPane mainContentPane;
+    private IGVToolBarManager igvToolBar;
 
     //Session session;
     Session session;
@@ -180,14 +178,14 @@ public class IGV implements IGVEventObserver {
         return otherToolMenus;
     }
 
-    public static IGV createInstance(MainContentPane mainContentPane) {
+    public static IGV createInstance(MainContentPane mainContentPane, IGVToolBarManager igvToolBar) {
         if (theInstance != null) {
             throw new RuntimeException("Only a single instance is allowed.");
         }
-        if (mainContentPane == null) {
+        if (mainContentPane == null || igvToolBar == null) {
             throw new RuntimeException("Error initializing JavaFX UI.");
         }
-        theInstance = new IGV(mainContentPane);
+        theInstance = new IGV(mainContentPane, igvToolBar);
         return theInstance;
     }
 
@@ -210,9 +208,10 @@ public class IGV implements IGVEventObserver {
 
     // Maybe need to have this constructor keep a ref to the JavaFX Application and/or Stage as well.
     // Then, should have getters for some all of these.
-    private IGV(MainContentPane mainContentPane) {
+    private IGV(MainContentPane mainContentPane, IGVToolBarManager igvToolBar) {
         theInstance = this;
         this.mainContentPane = mainContentPane;
+        this.igvToolBar = igvToolBar;
 
         genomeManager = GenomeManager.getInstance();
         session = new Session(null);
@@ -1283,6 +1282,11 @@ public class IGV implements IGVEventObserver {
         return null;
     }
 
+    public IGVContentPane getContentPane() {
+//      return contentPane;
+        return null;
+    }
+    
     public void setExportingSnapshot(boolean exportingSnapshot) {
         isExportingSnapshot = exportingSnapshot;
         if (isExportingSnapshot) {
@@ -1870,22 +1874,22 @@ public class IGV implements IGVEventObserver {
     public void setGenomeTracks(FeatureTrack newGeneTrack) {
 
         // TODO: Set the genome track for the JavaFX UI (actions are undefined ATM)
-        TrackPanel panel = PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY) ?
-                getTrackPanel(DATA_PANEL_NAME) : getTrackPanel(FEATURE_PANEL_NAME);
-        SequenceTrack newSeqTrack = new SequenceTrack("Reference sequence");
-
-        panel.addTrack(newSeqTrack);
-        if (newGeneTrack != null) {
-            panel.addTrack(newGeneTrack);
-        }
+//        TrackPanel panel = PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY) ?
+//                getTrackPanel(DATA_PANEL_NAME) : getTrackPanel(FEATURE_PANEL_NAME);
+//        SequenceTrack newSeqTrack = new SequenceTrack("Reference sequence");
+//
+//        panel.addTrack(newSeqTrack);
+//        if (newGeneTrack != null) {
+//            panel.addTrack(newGeneTrack);
+//        }
     }
 
     public boolean hasGeneTrack() {
-        FeatureTrack geneTrack = GenomeManager.getInstance().getCurrentGenome().getGeneTrack();
-        if (geneTrack == null) return false;
-        for (Track t : getFeatureTracks()) {
-            if (geneTrack == t) return true;
-        }
+//        FeatureTrack geneTrack = GenomeManager.getInstance().getCurrentGenome().getGeneTrack();
+//        if (geneTrack == null) return false;
+//        for (Track t : getFeatureTracks()) {
+//            if (geneTrack == t) return true;
+//        }
         return false;
     }
 

@@ -31,12 +31,12 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import org.apache.log4j.Logger;
-import org.broad.igv.event.GenomeChangeEvent;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.event.*;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.javafx.feature.genome.GenomeManager;
+import org.broad.igv.ui.javafx.toolbar.ChromosomeComboBox;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.io.IOException;
@@ -47,7 +47,8 @@ public class IGVToolBarManager implements IGVEventObserver {
     private static Logger log = Logger.getLogger(IGVToolBarManager.class);
     
     private ToolBar toolBar;
-    private ComboBox<GenomeListItem> genomeSelector;
+    private ComboBox<String> genomeSelector;
+    private ChromosomeComboBox chromosomeSelector = new ChromosomeComboBox();
 
     public IGVToolBarManager() {
 
@@ -55,10 +56,10 @@ public class IGVToolBarManager implements IGVEventObserver {
         // TODO: add event handlers to all ToolBar components, including enable/disable.
         String defaultGenome = "Human hg19";
         ObservableList<String> genomes = FXCollections.observableArrayList(defaultGenome, "chr1.fasta");
-        genomeSelector = new ComboBox<GenomeListItem>();
+        genomeSelector = new ComboBox<String>(genomes);
 
-        ObservableList<String> chromosomes = FXCollections.observableArrayList("chr1, chr2, chr3");
-        ComboBox<String> chromosomeSelector = new ComboBox<String>(chromosomes);
+//        ObservableList<String> chromosomes = FXCollections.observableArrayList("chr1, chr2, chr3");
+        
 
         TextField jumpToTextField = new TextField();
         Label jumpToLabel = new Label("Go");
@@ -91,7 +92,11 @@ public class IGVToolBarManager implements IGVEventObserver {
                 homeButton, leftArrowButton, rightArrowButton, refreshScreenButton, regionToolButton, resizeToWindowButton,
                 infoSelectButton, rulerButton, zoomLevelSlider);
 
+        log.info("About to register with eventBus");
+        IGVEventBus.getInstance().subscribe(ViewChange.class, this);
         IGVEventBus.getInstance().subscribe(GenomeChangeEvent.class, this);
+        IGVEventBus.getInstance().subscribe(GenomeResetEvent.class, this);
+        log.info("Done registering with eventBus");
     }
 
     /**
@@ -125,8 +130,23 @@ public class IGVToolBarManager implements IGVEventObserver {
     }
 
     @Override
-    public void receiveEvent(Object event) {
-        // TODO Auto-generated method stub
-
+    public void receiveEvent(Object e) {
+        if (e instanceof ViewChange) {
+            // Not yet implemented
+        } else if (e instanceof GenomeChangeEvent) {
+            GenomeChangeEvent event = (GenomeChangeEvent) e;
+            Genome genome = event.genome;
+            refreshGenomeListComboBox();
+            chromosomeSelector.updateChromosFromGenome(genome);
+        } else if (e instanceof GenomeResetEvent) {
+            refreshGenomeListComboBox();
+        } else {
+            log.info("Unknown event class: " + e.getClass());
+        }
     }
+
+    public void refreshGenomeListComboBox() {
+        // Not yet implemented
+    }
+
 }

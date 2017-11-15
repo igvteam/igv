@@ -35,6 +35,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import org.apache.log4j.Logger;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.UIConstants;
@@ -56,6 +57,8 @@ import org.broad.igv.ui.javafx.panel.MainContentPane;
 // TODO: manage Tracks
 // TODO: launch initial Task based on the cmdLine params
 public class IGVStageBuilder {
+    private static Logger log = Logger.getLogger(IGVStageBuilder.class);
+    
     public static MainContentPane buildStage(Stage stage) {
         // TODO: port this to JavaFX (AWT refs)
         final IGVPreferences preferences = PreferencesManager.getPreferences();
@@ -97,6 +100,7 @@ public class IGVStageBuilder {
         stage.setOnCloseRequest(e -> Platform.exit());
 
         MainContentPane mainContentPane = buildContent(stage);
+
         return mainContentPane;
     }
 
@@ -110,6 +114,18 @@ public class IGVStageBuilder {
         IGVMenuBarManager igvMenuBarBuilder = new IGVMenuBarManager(stage, mainContentPane);
         IGVToolBarManager igvToolBar = new IGVToolBarManager();
 
+        // Create the IGV instance and make it available to the JavaFX UI.
+        // This is not the optimal way to do this, but the IGV class is heavily tied into the existing Swing UI,
+        // but many necessary non-UI components are tied into it as well (e.g. IGVSessionReader etc).
+        // Need to refactor away those dependencies so the JavaFX UI can use those components as well.
+        // For now, we'll hack around those to get the new UI off the ground.  Doing this knowingly, so we need
+        // to circle back and fix it later.
+        // Also, may need to have a JavaFX-modified version of the startUp() method.  It's mostly not UI-oriented
+        // but it looks like there are some bits and pieces of that in there.
+        log.info("About to init and start-up non-JavaFX IGV instance");
+        IGV.createInstance(mainContentPane, igvToolBar);
+        log.info("IGV initialized");
+        
         contentContainer.getChildren().add(igvMenuBarBuilder.getMenuBar());
         contentContainer.getChildren().add(igvToolBar.getToolBar());
         contentContainer.getChildren().add(mainContentPane);
