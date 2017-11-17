@@ -148,6 +148,12 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
             int start = MouseInfo.getPointerInfo().getLocation().x - getLocationOnScreen().x;
             g.setColor(Color.BLACK);
             g.drawLine(start, 0, start, getHeight());
+
+            if (!FrameManager.isGeneListMode()) {
+                ReferenceFrame frame = FrameManager.getDefaultFrame();
+                int pos = (int) frame.getChromosomePosition(start) + 1;
+                IGV.getInstance().setStatusBarMessage3(" " + Integer.toString(pos));
+            }
         }
     }
 
