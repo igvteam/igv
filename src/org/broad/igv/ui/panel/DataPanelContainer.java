@@ -25,6 +25,8 @@
 
 package org.broad.igv.ui.panel;
 
+import org.broad.igv.ui.FontManager;
+
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.renderer.DataRange;
@@ -152,7 +154,9 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
             if (!FrameManager.isGeneListMode()) {
                 ReferenceFrame frame = FrameManager.getDefaultFrame();
                 int pos = (int) frame.getChromosomePosition(start) + 1;
-                IGV.getInstance().setStatusBarMessage3(" " + Integer.toString(pos));
+                int y = MouseInfo.getPointerInfo().getLocation().y - getLocationOnScreen().y;
+                g.setFont(FontManager.getDefaultFont());
+                g.drawString(Integer.toString(pos), start+10, y+30);
             }
         }
     }

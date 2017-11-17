@@ -2073,9 +2073,6 @@ public class IGV implements IGVEventObserver {
     }
 
     public void setRulerEnabled(boolean rulerEnabled) {
-        if (!rulerEnabled){
-            setStatusBarMessage3("");
-        }
         this.rulerEnabled = rulerEnabled;
     }
 
