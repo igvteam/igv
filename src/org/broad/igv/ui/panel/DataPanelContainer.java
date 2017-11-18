@@ -36,6 +36,7 @@ import org.broad.igv.ui.MessageCollection;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.Globals;
 
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -151,8 +152,10 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
             g.setColor(Color.BLACK);
             g.drawLine(start, 0, start, getHeight());
 
-            if (!FrameManager.isGeneListMode()) {
-                ReferenceFrame frame = FrameManager.getDefaultFrame();
+            ReferenceFrame frame = FrameManager.getDefaultFrame();
+            boolean all_chr_mode = frame.getChrName().equals(Globals.CHR_ALL);
+
+            if (!FrameManager.isGeneListMode() && !all_chr_mode) {
                 int pos = (int) frame.getChromosomePosition(start) + 1;
                 int y = MouseInfo.getPointerInfo().getLocation().y - getLocationOnScreen().y;
                 g.setFont(FontManager.getDefaultFont());
