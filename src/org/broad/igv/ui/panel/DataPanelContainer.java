@@ -25,8 +25,6 @@
 
 package org.broad.igv.ui.panel;
 
-import org.broad.igv.ui.FontManager;
-
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.renderer.DataRange;
@@ -36,7 +34,9 @@ import org.broad.igv.ui.MessageCollection;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.ui.FontManager;
 import org.broad.igv.Globals;
+import java.text.DecimalFormat;
 
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -153,13 +153,14 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
             g.drawLine(start, 0, start, getHeight());
 
             ReferenceFrame frame = FrameManager.getDefaultFrame();
-            boolean all_chr_mode = frame.getChrName().equals(Globals.CHR_ALL);
+            boolean allChrMode = frame.getChrName().equals(Globals.CHR_ALL);
 
-            if (!FrameManager.isGeneListMode() && !all_chr_mode) {
-                int pos = (int) frame.getChromosomePosition(start) + 1;
+            if (!FrameManager.isGeneListMode() && !allChrMode) {
                 int y = MouseInfo.getPointerInfo().getLocation().y - getLocationOnScreen().y;
+                int pos = (int) frame.getChromosomePosition(start) + 1;
+
                 g.setFont(FontManager.getDefaultFont());
-                g.drawString(Integer.toString(pos), start+10, y+30);
+                g.drawString(Globals.DECIMAL_FORMAT.format((double) pos), start + 10, y + 30);
             }
         }
     }
