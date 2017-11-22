@@ -119,10 +119,11 @@ public class DataPaneContainer extends Pane {
             for (Track track : trackList) {
                 if (track instanceof ScalableTrack) {
                     for (ReferenceFrame frame : frames) {
-                        Range range = ((ScalableTrack) track).getInViewRange(frame);
-                        if (range != null) {
-                            inViewRanges.add(range);
-                        }
+                        // TODO: port to JavaFX
+//                        Range range = ((ScalableTrack) track).getInViewRange(frame);
+//                        if (range != null) {
+//                            inViewRanges.add(range);
+//                        }
                     }
                 }
             }

@@ -7,7 +7,6 @@ import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.javafx.panel.MainContentPane;
 import org.broad.igv.util.FileUtils;
 
@@ -61,11 +60,12 @@ public class IGVMenuBarManager {
                     log.info("About to load session");
                     if (sessionFile != null) {
                         if (FileUtils.isRemote(sessionFile)) {
-                            boolean merge = false;
-                            IGV.getInstance().doRestoreSession(sessionFile, null, merge);
+                            // TODO: we are not really dealing with the Session yet, so this is a placeholder for now.
+                            //boolean merge = false;
+                            //IGV.getInstance().doRestoreSession(sessionFile, null, merge);
                         } else {
                             File f = new File(sessionFile);
-                            IGV.getInstance().doRestoreSession(f, null);
+                            //IGV.getInstance().doRestoreSession(f, null);
                         }
                     }
                     log.info("Session loading underway");
@@ -116,26 +116,10 @@ public class IGVMenuBarManager {
         MenuItem gotoFwd = new MenuItem("Forward");
         MenuItem clearAll = new MenuItem("Clear All");
         Menu gotoSubMenu = new Menu("Go to", null, gotoBack, gotoFwd, new SeparatorMenuItem(), clearAll);
-        MenuItem addDataPanel = new MenuItem("Add Empty Data Panel (test)");
-        addDataPanel.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                if (mainContentPane != null) {
-                    // Just for example.  Would also do any Track loading & drawing within the Runnable.
-                    Platform.runLater(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            mainContentPane.addTrackRow("Temp");
-                        }
-                    });
-                }
-            }
-        });
 
         Menu viewMenu = new Menu("View", null, preferences, colorLegends, new SeparatorMenuItem(), showNamePanel,
                 setNamePanelWidth, showAttribsDisplay, selectAttribsToShow, showHeaderPanel, new SeparatorMenuItem(),
-                reorderPanels, new SeparatorMenuItem(), gotoSubMenu, new SeparatorMenuItem(), addDataPanel);
+                reorderPanels, new SeparatorMenuItem(), gotoSubMenu, new SeparatorMenuItem());
 
         MenuItem sortTracks = new MenuItem("Sort Tracks ...");
         MenuItem groupTracks = new MenuItem("Group Tracks ...");

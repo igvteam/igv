@@ -29,8 +29,6 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -40,6 +38,7 @@ import javafx.scene.paint.Color;
 import org.apache.log4j.Logger;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.javafx.IGVToolBarManager;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -55,38 +54,44 @@ public class MainContentPane extends BorderPane {
     private static Logger log = Logger.getLogger(MainContentPane.class);
     
     // Probably most/all components should be instance vars.  Will migrate as need arises.
+    private HeaderRow headerRow = null;
     private TrackRow featureTrackRow = null;
     private TrackScrollPane featureTrackScrollPane = null;
     private TrackRow dataTrackRow = null;
-    private TrackScrollPane dataTrackScrollPane = null;
     private SplitPane centerSplitPane;
 
     private DoubleProperty namePaneWidthProp = new SimpleDoubleProperty(
             PreferencesManager.getPreferences().getAsFloat(NAME_PANEL_WIDTH));
+    // TODO: find the proper sizing for the attribute panels
     private DoubleProperty attributePaneWidthProp = new SimpleDoubleProperty(20);
+    private DoubleProperty dataPaneWidthProp = new SimpleDoubleProperty();
     private final Map<String, TrackRow> trackRowByName = new HashMap<String, TrackRow>();
 
+    private IGVToolBarManager igvToolBarManager;
+    
     public MainContentPane() {
+    }
+
+    public IGVToolBarManager getIgvToolBarManager() {
+        return igvToolBarManager;
+    }
+
+    public void setIgvToolBarManager(IGVToolBarManager igvToolBarManager) {
+        this.igvToolBarManager = igvToolBarManager;
     }
 
     // Used by the callback method of IGVStageBuilder to finish setting up this UI, after Stage init is done.
     public void initializeUI() {
+        // Guard to prevent repeat call
+        if (headerRow != null) {
+            return;
+        }
 
-        // Need guard to prevent repeat call
+        dataPaneWidthProp.bind(this.prefWidthProperty().subtract(namePaneWidthProp).subtract(attributePaneWidthProp));
 
-        HeaderRow headerRow = new HeaderRow(this);
-        ScrollPane headerScrollPane = new ScrollPane(headerRow);
-        headerScrollPane.setFitToHeight(true);
-        headerScrollPane.setFitToWidth(true);
-
-        // TODO: move to CSS file
-        headerScrollPane.setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: rgb(102, 102, 102)");
-        this.setTop(headerScrollPane);
-
-        // Mimic the SB policy of the Swing UI
-        headerScrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
-        headerScrollPane.setVbarPolicy(ScrollBarPolicy.ALWAYS);
-
+        headerRow = new HeaderRow(this);
+        this.setTop(headerRow.getScrollPane());
+        
         centerSplitPane = new SplitPane();
         centerSplitPane.setOrientation(Orientation.VERTICAL);
 
@@ -98,15 +103,15 @@ public class MainContentPane extends BorderPane {
         this.backgroundProperty().set(background);
 
         dataTrackRow = addTrackRow(IGV.DATA_PANEL_NAME);
-        dataTrackScrollPane = dataTrackRow.getTrackScrollPane();
 
         if (!PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
             featureTrackRow = addTrackRow(IGV.FEATURE_PANEL_NAME);
-            featureTrackScrollPane = featureTrackRow.getTrackScrollPane();
+            featureTrackScrollPane = featureTrackRow.getScrollPane();
 
             centerSplitPane.setDividerPositions(0.9);
         }
     }
+
 
     // The following should only be called within Platform.runLater() or otherwise on the Application thread
     public TrackRow addTrackRow(String name) {
@@ -139,6 +144,10 @@ public class MainContentPane extends BorderPane {
         return attributePaneWidthProp;
     }
 
+    public DoubleProperty dataPaneWidthProperty() {
+        return dataPaneWidthProp;
+    }
+
     public void hideNamePanel() {
         namePaneWidthProp.set(0);
     }
@@ -155,11 +164,15 @@ public class MainContentPane extends BorderPane {
         return trackRowByName.values();
     }
 
+    public HeaderRow getHeaderRow() {
+        return headerRow;
+    }
+    
     public void resetTrackRows() {
         for (TrackRow trackRow : getAllTrackRows()) {
             trackRow.clearTracks();
             if (trackRow != featureTrackRow && trackRow != dataTrackRow) {
-                centerSplitPane.getItems().remove(trackRow.getTrackScrollPane());
+                centerSplitPane.getItems().remove(trackRow.getScrollPane());
             }
         }
         trackRowByName.clear();
@@ -168,9 +181,8 @@ public class MainContentPane extends BorderPane {
         }
         if (dataTrackRow != null) {
             trackRowByName.put(IGV.DATA_PANEL_NAME, dataTrackRow);
+            dataTrackRow.reset();
         }
-
-        dataTrackRow.reset();
     }
     
     public TrackRow getTrackRow(String name) {

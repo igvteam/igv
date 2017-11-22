@@ -29,9 +29,14 @@
  */
 package org.broad.igv.ui.panel;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.event.ShiftEvent;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.ViewChange;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
@@ -42,8 +47,6 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.InsertionManager;
 import org.broad.igv.sam.InsertionMarker;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.ViewChange;
 import org.broad.igv.ui.util.MessageUtils;
 
 
@@ -126,7 +129,14 @@ public class ReferenceFrame {
         this.name = name;
         Genome genome = getGenome();
         this.chrName = genome == null ? "" : genome.getHomeChromosome();
+        chromosomeNameProperty.set(chrName);
         this.eventBus = IGVEventBus.getInstance();
+        chromosomeNameProperty.addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                changeChromosome(newValue, true);
+            }
+        });
     }
 
     public ReferenceFrame(ReferenceFrame otherFrame) {
@@ -140,6 +150,7 @@ public class ReferenceFrame {
      */
     public ReferenceFrame(ReferenceFrame otherFrame, IGVEventBus eventBus) {
         this.chrName = otherFrame.chrName;
+        chromosomeNameProperty.set(chrName);
         this.initialLocus = otherFrame.initialLocus;
         this.scale = otherFrame.scale;
         this.minZoom = otherFrame.minZoom;
@@ -151,6 +162,12 @@ public class ReferenceFrame {
         this.zoom = otherFrame.zoom;
         this.maxZoom = otherFrame.maxZoom;
         this.eventBus = eventBus;
+        chromosomeNameProperty.addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                changeChromosome(newValue, true);
+            }
+        });
     }
 
     public boolean isVisible() {
@@ -295,6 +312,7 @@ public class ReferenceFrame {
 
         if (chrName.equals(Globals.CHR_ALL)) {
             chrName = getGenome().getHomeChromosome();
+            chromosomeNameProperty.set(chrName);
         }
 
         if (!chrName.equals(Globals.CHR_ALL)) {
@@ -345,6 +363,7 @@ public class ReferenceFrame {
 
         if (shouldChangeChromosome(name) || force) {
             chrName = name;
+            chromosomeNameProperty.set(chrName);
             origin = 0;
             this.scale = -1;
             this.calculateMaxZoom();
@@ -428,6 +447,7 @@ public class ReferenceFrame {
         synchronized (this) {
             this.initialLocus = locus;
             this.chrName = chr;
+            chromosomeNameProperty.set(chrName);
             if (start >= 0 && end >= 0) {
                 this.origin = start;
                 beforeScaleZoom(locus);
@@ -763,6 +783,13 @@ public class ReferenceFrame {
         return GenomeManager.getInstance().getCurrentGenome();
     }
 
+    // Might be better to have the Chromosome itself be held in the property.
+    // Should move this up to the top of the class.
+    private ObjectProperty<String> chromosomeNameProperty = new SimpleObjectProperty<String>("chrAll");
 
+    public ObjectProperty<String> chromosomeNameProperty() {
+        return chromosomeNameProperty;
+    }
+    
 }
 

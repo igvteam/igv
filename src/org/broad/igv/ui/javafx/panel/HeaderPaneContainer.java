@@ -27,35 +27,60 @@ package org.broad.igv.ui.javafx.panel;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import org.apache.log4j.Logger;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
+import java.util.ArrayList;
+import java.util.List;
+
 // Intended as the rough equivalent of the HeaderPanelContainer class of the Swing UI.  Work in progress.
 public class HeaderPaneContainer extends BorderPane {
-
+    private static Logger log = Logger.getLogger(HeaderPaneContainer.class);
+    private List<HeaderPane> headerPanes = new ArrayList<HeaderPane>();
+    
     public HeaderPaneContainer() {
-        //setStyle("-fx-background-color: purple; -fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: rgb(0, 0, 0); -fx-backgound-color: red");
-        createHeaderPanes();
+        //createHeaderPanes();
     }
 
     public void createHeaderPanes() {
         getChildren().removeAll();
+        headerPanes.clear();
 
         HBox contentPane = new HBox(6);
-        contentPane.setStyle("-fx-background-color: purple");
-        for (ReferenceFrame f : FrameManager.getFrames()) {
+
+        List<ReferenceFrame> frames = FrameManager.getFrames();
+        if (frames.size() == 1) {
+            // TODO: convert bounds to double or DoubleProperty for JavaFX.
+            double width = prefWidthProperty().get();
+            frames.get(0).setBounds(0, (int) width);
+        }
+
+        for (ReferenceFrame f : frames) {
             if (f.isVisible()) {
+                log.info("creating HeaderPane for " + f.getChrName());
                 HeaderPane headerPane = new HeaderPane(f);
-//                headerPane.prefHeightProperty().bind(prefHeightProperty());
-//                headerPane.prefWidthProperty().bind(prefWidthProperty());
-//                headerPane.backgroundProperty().bind(backgroundProperty());
-                headerPane.setStyle("-fx-background-color: green");
+                headerPanes.add(headerPane);
+                // Not correct; we need to split the width among all HPs
+                // TODO: Need to account for multiple frames in width.  The following is wrong.
+                headerPane.prefWidthProperty().bind(prefWidthProperty());
+                headerPane.minWidthProperty().bind(minWidthProperty());
+                headerPane.maxWidthProperty().bind(maxWidthProperty());
+                headerPane.backgroundProperty().bind(backgroundProperty());
+                headerPane.prefHeightProperty().bind(prefHeightProperty());
+                headerPane.minHeightProperty().bind(minHeightProperty());
+                headerPane.maxHeightProperty().bind(maxHeightProperty());
                 contentPane.getChildren().add(headerPane);
             }
         }
         contentPane.prefWidthProperty().bind(prefWidthProperty());
+
+        // Here's a thought on splitting the width equally:
+        // Create a contentPrefWidthProperty to bind to each of the headerPane's prefWidthProps.
+        // It would be bound as: prop.bind(this.prefWidthProperty().divide(frames.size());
+        // For the usual case of size == 1, just bind directly for better perf.
         
         if (FrameManager.isGeneListMode()) {
             GeneList gl = IGV.getInstance().getSession().getCurrentGeneList();
@@ -65,13 +90,7 @@ public class HeaderPaneContainer extends BorderPane {
             contentPane.prefHeightProperty().bind(prefHeightProperty().subtract(label.heightProperty()));
             setTop(label);
         } else {
-            // Display label for testing
-            String name = "Test";
-            Label label = new Label(name);
-            label.setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: lightgray");
-            // Normally will not subtract here
-            contentPane.prefHeightProperty().bind(prefHeightProperty().subtract(label.heightProperty()));
-            setTop(label);
+            contentPane.prefHeightProperty().bind(prefHeightProperty());
         }
 
         setCenter(contentPane);

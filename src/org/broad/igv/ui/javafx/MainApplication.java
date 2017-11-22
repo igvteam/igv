@@ -37,7 +37,6 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.DefaultExceptionHandler;
 import org.broad.igv.ui.Main;
 import org.broad.igv.ui.ShutdownThread;
-import org.broad.igv.ui.javafx.panel.MainContentPane;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
@@ -149,18 +148,17 @@ public class MainApplication extends Application {
     public void start(Stage primaryStage) throws Exception {
         checkLowMemory();
 
-        // Here, launch a JavaFX version of the ui.IGV class.
-        MainContentPane mainContentPane = IGVStageBuilder.buildStage(primaryStage);
+        IGVStageBuilder.buildStage(primaryStage);
 
-        // May need to have a JavaFX-modified version of the startUp() method.  It's mostly not UI-oriented
-        // but it looks like there are some bits and pieces of that in there.
-        log.info("About to start-up non-JavaFX IGV instance");
-        IGV.getInstance().startUp(igvArgs);
-        log.info("IGV started");
+        log.info("About to init JavaFX IGV backend placeholder");
+        IGVBackendPlaceholder.startupInit(igvArgs);
+        log.info("IGV backend init done.");
 
         primaryStage.setTitle("IGV JavaFX port");
 
+        log.info("Showing IGV UI");
         primaryStage.show();
+        log.info("IGV UI shown");
     }
 
     @Override

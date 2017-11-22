@@ -30,16 +30,13 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.event.*;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeListItem;
-import org.broad.igv.ui.commandbar.GenomeListManager;
-import org.broad.igv.ui.javafx.feature.genome.GenomeManager;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.javafx.toolbar.ChromosomeComboBox;
-import org.broad.igv.ui.util.MessageUtils;
-
-import java.io.IOException;
+import org.broad.igv.ui.panel.FrameManager;
 
 // Intended as the rough equivalent of the IGVCommandBar class of the Swing UI.  Work in progress.
 // Will add event handlers (or at least stubs) for all of the included controls.
@@ -48,19 +45,19 @@ public class IGVToolBarManager implements IGVEventObserver {
     
     private ToolBar toolBar;
     private ComboBox<String> genomeSelector;
-    private ChromosomeComboBox chromosomeSelector = new ChromosomeComboBox();
+    private ChromosomeComboBox chromosomeSelector;
 
     public IGVToolBarManager() {
 
         // TODO: populate ToolBar controls with actual content.
         // TODO: add event handlers to all ToolBar components, including enable/disable.
+        // Probably need to migrate most controls to instance variables.
         String defaultGenome = "Human hg19";
         ObservableList<String> genomes = FXCollections.observableArrayList(defaultGenome, "chr1.fasta");
         genomeSelector = new ComboBox<String>(genomes);
 
-//        ObservableList<String> chromosomes = FXCollections.observableArrayList("chr1, chr2, chr3");
+        chromosomeSelector = new ChromosomeComboBox(GenomeManager.getInstance().getCurrentGenome());
         
-
         TextField jumpToTextField = new TextField();
         Label jumpToLabel = new Label("Go");
         jumpToLabel.setLabelFor(jumpToTextField);
@@ -99,32 +96,6 @@ public class IGVToolBarManager implements IGVEventObserver {
         log.info("Done registering with eventBus");
     }
 
-    /**
-     * Selects the first genome from the list which matches this genomeId.
-     * If not found, checks genomes from the server/user-defined list
-     *
-     * @param genomeId
-     */
-    public void selectGenome(String genomeId) {
-
-        log.info("Selecting genome " + genomeId);
-
-        GenomeListItem selectedItem = GenomeListManager.getInstance().getGenomeListItem(genomeId);
-
-        if (selectedItem == null) {
-
-            try {
-                GenomeManager.getInstance().loadGenomeById(genomeId);
-            } catch (IOException e) {
-                MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
-                log.error("Error loading genome: " + genomeId, e);
-            }
-        }
-
-        if (selectedItem != null) {
-        }
-    }
-
     public ToolBar getToolBar() {
         return toolBar;
     }
@@ -132,7 +103,19 @@ public class IGVToolBarManager implements IGVEventObserver {
     @Override
     public void receiveEvent(Object e) {
         if (e instanceof ViewChange) {
-            // Not yet implemented
+            ViewChange event = (ViewChange) e;
+            log.info("View Change event: " + event.type);
+            if (event.type == ViewChange.Type.ChromosomeChange || event.type == ViewChange.Type.LocusChange) {
+                String chrName = FrameManager.getDefaultFrame().getChrName();
+                log.info("change chr to: " + chrName);
+                // TODO: enable ROI toggle & zoom control
+                if (StringUtils.isNotBlank(chrName) && !chrName.equals(chromosomeSelector.getSelectionModel().getSelectedItem())) {
+                    log.info("change chrSelector to: " + chrName);
+                    chromosomeSelector.getSelectionModel().select(chrName);
+                }
+
+                updateCurrentCoordinates();
+            }
         } else if (e instanceof GenomeChangeEvent) {
             GenomeChangeEvent event = (GenomeChangeEvent) e;
             Genome genome = event.genome;
@@ -149,4 +132,7 @@ public class IGVToolBarManager implements IGVEventObserver {
         // Not yet implemented
     }
 
+    public void updateCurrentCoordinates() {
+        // Not yet implemented
+    }
 }

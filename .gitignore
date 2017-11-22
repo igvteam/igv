@@ -1,4 +1,10 @@
 # Created by .gitignore support plugin (hsz.mobi)
-.idea/workspace.xml
+.idea/*
 *.jar
 igv.sh
+bin/*
+reports/*
+igv.iml
+.project
+.classpath
+igv.log

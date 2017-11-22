@@ -35,10 +35,8 @@ import java.util.*;
 
 // Intended as the rough equivalent of the TrackPanel class of the Swing UI.  Work in progress.
 // Note: not dealing with Track sorting yet.
-public class TrackRow extends IGVRow<TrackNamePane, AttributePane, DataPaneContainer> {
+public class TrackRow extends IGVRow<TrackNamePane, AttributePane, DataPaneContainer, TrackScrollPane> {
     private static Logger log = Logger.getLogger(TrackRow.class);
-
-    private TrackScrollPane trackScrollPane;
 
     private String name;
     private List<TrackGroup> trackGroups;
@@ -47,8 +45,8 @@ public class TrackRow extends IGVRow<TrackNamePane, AttributePane, DataPaneConta
 
     public TrackRow(String name, MainContentPane mainContentPane) {
         this.name = name;
-        this.trackScrollPane = new TrackScrollPane(this);
-        init(mainContentPane, new TrackNamePane(), new AttributePane(), new DataPaneContainer(this));
+        TrackScrollPane trackScrollPane = new TrackScrollPane(this);
+        init(mainContentPane, new TrackNamePane(), new AttributePane(), new DataPaneContainer(this), trackScrollPane);
 
         TrackGroup nullGroup = new TrackGroup();
         nullGroup.setDrawBorder(false);
@@ -62,10 +60,6 @@ public class TrackRow extends IGVRow<TrackNamePane, AttributePane, DataPaneConta
 
     public String getName() {
         return name;
-    }
-
-    public TrackScrollPane getTrackScrollPane() {
-        return trackScrollPane;
     }
 
     public List<TrackGroup> getGroups() {

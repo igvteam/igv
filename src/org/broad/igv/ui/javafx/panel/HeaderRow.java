@@ -24,21 +24,27 @@
  */
 package org.broad.igv.ui.javafx.panel;
 
+import javafx.scene.control.ScrollPane;
+
 // Intended as the rough equivalent of the IGVPanel class of the Swing UI, subclassed for handling the Header.  Work in progress.
-public class HeaderRow extends IGVRow<NameHeaderPane, AttributeHeaderPane, HeaderPaneContainer> {
+public class HeaderRow extends IGVRow<NameHeaderPane, AttributeHeaderPane, HeaderPaneContainer, ScrollPane> {
 
     public HeaderRow(MainContentPane mainContentPane) {
-        init(mainContentPane, new NameHeaderPane(), new AttributeHeaderPane(), new HeaderPaneContainer());
-
-        // Temporarily hard-coding the height since we have no header contents yet.
-        int headerHeight = 100;
-        getNamePane().prefHeightProperty().set(headerHeight);
-        getAttributePane().prefHeightProperty().set(headerHeight);
-        getContentContainer().prefHeightProperty().set(headerHeight);
+        // TODO: determine correct header height setting
+        double headerHeight = 100.0;
+        this.prefHeightProperty().set(headerHeight);
+        ScrollPane scrollPane = new ScrollPane(this);
+        NameHeaderPane namePane = new NameHeaderPane();
+        AttributeHeaderPane attributePane = new AttributeHeaderPane();
+        HeaderPaneContainer headerPaneContainer = new HeaderPaneContainer();
+        init(mainContentPane, namePane, attributePane, headerPaneContainer, scrollPane);
 
         // TODO: move to CSS file
+        scrollPane.setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: rgb(102, 102, 102)");
         getNamePane().setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: rgb(0, 0, 0)");
         getAttributePane().setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: rgb(0, 0, 0)");
-        //getContentContainer().setStyle("-fx-background-color: purple; -fx-border-style: dotted; -fx-border-insets: 2; -fx-border-color: green");
+
+        // Wait to create the headerPaneContainer content until after layout & sizing is complete.
+        headerPaneContainer.createHeaderPanes();
     }
 }

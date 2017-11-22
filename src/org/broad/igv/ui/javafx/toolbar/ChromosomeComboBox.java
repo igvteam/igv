@@ -3,7 +3,6 @@ package org.broad.igv.ui.javafx.toolbar;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.event.ActionEvent;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -27,25 +26,16 @@ public class ChromosomeComboBox extends ComboBox<String> {
 
     private DoubleProperty controlWidthProperty = new SimpleDoubleProperty(DEFAULT_CHROMOSOME_DROPDOWN_WIDTH);
 
-    public ChromosomeComboBox() {
-        setOnAction(evt -> chromosomeComboBoxActionPerformed(evt));
-
-        setPrefHeight(16);
-        setMinHeight(27);
-        setMaxHeight(35);
-
+    public ChromosomeComboBox(Genome genome) {
         prefWidthProperty().bind(controlWidthProperty);
         minWidthProperty().bind(controlWidthProperty);
         maxWidthProperty().bind(controlWidthProperty);
+
+        valueProperty().bindBidirectional(FrameManager.getDefaultFrame().chromosomeNameProperty());
+        updateChromosFromGenome(genome);
     }
 
-    private void chromosomeComboBoxActionPerformed(ActionEvent evt) {
-        final String chrName = this.getSelectionModel().getSelectedItem().toString();
-        if (chrName != null & !chrName.equals(FrameManager.getDefaultFrame().getChrName())) {
-            FrameManager.getDefaultFrame().changeChromosome(chrName, true);
-        }
-    }
-
+    // Should be able to replace this with binding to an ObjectProperty<Genome>
     public void updateChromosFromGenome(Genome genome) {
 
         if (genome == null) return;
@@ -96,38 +86,5 @@ public class ChromosomeComboBox extends ComboBox<String> {
                 controlWidthProperty.set(w);
             }
         });
-    }
-
-    class AutoWidthResizeListCell extends ListCell<String> {
-        public AutoWidthResizeListCell(List<String> items, DoubleProperty controlWidthProperty, double defaultWidth) {
-            // Reset the whole control to default width
-            controlWidthProperty.set(defaultWidth);
-            double w = defaultWidth;
-
-            // Bind this ListCell's width to that of the parent control
-            prefWidthProperty().bind(controlWidthProperty);
-            maxWidthProperty().bind(controlWidthProperty);
-            minWidthProperty().bind(controlWidthProperty);
-
-            Text sizer = new Text("");
-            sizer.setFont(getFont());
-            for (String item : items) {
-                double width = FontMetrics.getTextWidthInFont(item, sizer) + 50;
-                if (width > w) {
-                    w = width;
-                    controlWidthProperty.set(w);
-                }
-            }
-        }
-
-        @Override
-        protected void updateItem(String item, boolean empty) {
-            super.updateItem(item, empty);
-            if (!empty && item != null) {
-                setText(item);
-            }
-        }
-
-
     }
 }

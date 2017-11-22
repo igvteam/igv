@@ -26,6 +26,7 @@ package org.broad.igv.ui.javafx.panel;
 
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
+import org.apache.log4j.Logger;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
@@ -33,37 +34,37 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 // TODO: Need to add equivalents of CytobandPanel, RulerPanel, RegionOfInterestPanel, GeneListPanel, etc.
 // TODO: DnD handling
 public class HeaderPane extends BorderPane {
-
+    private static Logger log = Logger.getLogger(HeaderPane.class);
+    
     private ReferenceFrame frame;
     private BorderPane geneListPane;
-    private Label label;
 
     private CytobandPane cytobandPane;
 
     public HeaderPane(ReferenceFrame frame) {
-        // TODO: Set background, sizing, etc on all components
 
         this.frame = frame;
 
-//        cytobandPane.prefHeightProperty().bind(prefHeightProperty());
-//        cytobandPane.prefWidthProperty().bind(prefWidthProperty());
-//        cytobandPane.backgroundProperty().bind(backgroundProperty());
-
         if (FrameManager.isGeneListMode()) {
-            this.label = new Label(this.frame.getName());
+            Label label = new Label(this.frame.getName());
             this.geneListPane = new BorderPane();
-            setPrefSize(400, 100);
-            cytobandPane = new CytobandPane(frame);
+            cytobandPane = new CytobandPane(frame, false);
             geneListPane.setCenter(cytobandPane);
             geneListPane.setBottom(label);
             this.getChildren().add(geneListPane);
+
         } else {
             BorderPane pane = new BorderPane();
             cytobandPane = new CytobandPane(frame);
             pane.setTop(cytobandPane);
             this.getChildren().add(pane);
-        }
-        
-    }
 
+        }
+
+        cytobandPane.prefWidthProperty().bind(prefWidthProperty());
+        cytobandPane.maxWidthProperty().bind(maxWidthProperty());
+        cytobandPane.minWidthProperty().bind(minWidthProperty());
+
+        cytobandPane.backgroundProperty().bind(backgroundProperty());
+    }
 }

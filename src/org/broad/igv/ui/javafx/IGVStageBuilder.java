@@ -113,18 +113,13 @@ public class IGVStageBuilder {
         MainContentPane mainContentPane = new MainContentPane();
         IGVMenuBarManager igvMenuBarBuilder = new IGVMenuBarManager(stage, mainContentPane);
         IGVToolBarManager igvToolBar = new IGVToolBarManager();
+        mainContentPane.setIgvToolBarManager(igvToolBar);
 
-        // Create the IGV instance and make it available to the JavaFX UI.
-        // This is not the optimal way to do this, but the IGV class is heavily tied into the existing Swing UI,
-        // but many necessary non-UI components are tied into it as well (e.g. IGVSessionReader etc).
-        // Need to refactor away those dependencies so the JavaFX UI can use those components as well.
-        // For now, we'll hack around those to get the new UI off the ground.  Doing this knowingly, so we need
-        // to circle back and fix it later.
-        // Also, may need to have a JavaFX-modified version of the startUp() method.  It's mostly not UI-oriented
-        // but it looks like there are some bits and pieces of that in there.
-        log.info("About to init and start-up non-JavaFX IGV instance");
-        IGV.createInstance(mainContentPane, igvToolBar);
-        log.info("IGV initialized");
+        // Create the IGV instance and make it available to the JavaFX UI.  Not dealing with this for now.
+        // Note that this may not survive: JR thinks the IGV class needs to be restructured.
+        //log.info("About to init and start-up non-JavaFX IGV instance");
+        //IGV.createInstance(mainContentPane, igvToolBar);
+        //log.info("IGV initialized");
         
         contentContainer.getChildren().add(igvMenuBarBuilder.getMenuBar());
         contentContainer.getChildren().add(igvToolBar.getToolBar());
@@ -140,7 +135,6 @@ public class IGVStageBuilder {
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
                 if (newValue) {
                     mainContentPane.initializeUI();
-
                     observable.removeListener(this);
                 }
             }

@@ -37,8 +37,8 @@ public class ResizableCanvas extends Pane {
 
     public ResizableCanvas() {
         getChildren().add(canvas);
-        canvas.widthProperty().bind(this.widthProperty());
-        canvas.heightProperty().bind(this.heightProperty());
+        canvas.widthProperty().bind(this.prefWidthProperty());
+        canvas.heightProperty().bind(this.prefHeightProperty());
     }
 
     public Canvas getCanvas() {

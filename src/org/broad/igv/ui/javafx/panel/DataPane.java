@@ -50,10 +50,12 @@ public class DataPane extends ResizableCanvas {
     // *** The following methods below this point copied over from TrackPanel as the functionality is the same. ***
 
     public boolean allTracksLoaded() {
-        return parent.getTrackGroups().stream().
-                filter(TrackGroup::isVisible).
-                flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
-                allMatch(track -> track.isReadyToPaint(frame));
+        return true;
+        // TODO: port to JavaFX
+//        return parent.getTrackGroups().stream().
+//                filter(TrackGroup::isVisible).
+//                flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
+//                allMatch(track -> track.isReadyToPaint(frame));
     }
 
 
