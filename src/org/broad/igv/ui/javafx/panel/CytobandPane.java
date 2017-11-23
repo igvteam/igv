@@ -256,7 +256,8 @@ public class CytobandPane extends ResizableCanvas {
                 double stringWidth = FontMetrics.getTextWidthInFont(cytoband.getName(), sizer);
                 double x = s + (e - s - stringWidth) / 2;
                 if (x > (prevEnd + minSpacing)) {
-                    graphicsContext.strokeText(cytoband.getName(), x, adjustedY);
+                    graphicsContext.setFill(Color.BLACK);
+                    graphicsContext.fillText(cytoband.getName(), x, adjustedY);
                     prevEnd = x + stringWidth;
                 }
             }

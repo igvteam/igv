@@ -40,6 +40,7 @@ public class HeaderPane extends BorderPane {
     private BorderPane geneListPane;
 
     private CytobandPane cytobandPane;
+    private RulerPane rulerPane;
 
     public HeaderPane(ReferenceFrame frame) {
 
@@ -56,15 +57,20 @@ public class HeaderPane extends BorderPane {
         } else {
             BorderPane pane = new BorderPane();
             cytobandPane = new CytobandPane(frame);
+            rulerPane = new RulerPane(frame);
             pane.setTop(cytobandPane);
+            pane.setCenter(rulerPane);
             this.getChildren().add(pane);
 
+            rulerPane.prefWidthProperty().bind(prefWidthProperty());
+            rulerPane.maxWidthProperty().bind(maxWidthProperty());
+            rulerPane.minWidthProperty().bind(minWidthProperty());
+            rulerPane.backgroundProperty().bind(backgroundProperty());
         }
 
         cytobandPane.prefWidthProperty().bind(prefWidthProperty());
         cytobandPane.maxWidthProperty().bind(maxWidthProperty());
         cytobandPane.minWidthProperty().bind(minWidthProperty());
-
         cytobandPane.backgroundProperty().bind(backgroundProperty());
     }
 }

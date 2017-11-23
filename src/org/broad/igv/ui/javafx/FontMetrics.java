@@ -25,6 +25,7 @@
 
 package org.broad.igv.ui.javafx;
 
+import javafx.geometry.Bounds;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
@@ -66,6 +67,36 @@ public class FontMetrics {
     public static double getTextWidthInFont(String textString, Text text) {
         text.setText(textString);
         return text.getBoundsInLocal().getWidth();
+    }
+
+    /**
+     * Get the Bounds of a text String with the given Font applied.
+     * This is based on https://stackoverflow.com/questions/13015698/how-to-calculate-the-pixel-width-of-a-string-in-javafx
+     * Note: for now, this code takes the simple form of working with the font ONLY.  It may need to be more complex for
+     * dealing with CSS.
+     *
+     * @param textString
+     * @param font
+     * @return
+     */
+    public static Bounds getBoundsInFont(String textString, Font font) {
+        // We might consider caching these Text objects if it's too expensive to create them. 
+        Text text = new Text(textString);
+        text.setFont(font);
+        return text.getBoundsInLocal();
+    }
+
+    /**
+     * Get the Bounds of a text String with the Font of the given Text instance.  This is an optimization for where it's
+     * necessary to calculate Bounds for many Strings.
+     *
+     * @param textString
+     * @param text
+     * @return
+     */
+    public static Bounds getBoundsInFont(String textString, Text text) {
+        text.setText(textString);
+        return text.getBoundsInLocal();
     }
 
 }

@@ -25,6 +25,8 @@
 
 package org.broad.igv.ui.javafx;
 
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import org.apache.log4j.Logger;
 import org.broad.igv.event.GenomeChangeEvent;
 import org.broad.igv.event.IGVEventBus;
@@ -35,6 +37,8 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.Main.IGVArgs;
 
 import java.io.IOException;
+
+import static org.broad.igv.prefs.Constants.DEFAULT_FONT_FAMILY;
 
 public class IGVBackendPlaceholder {
     private static Logger log = Logger.getLogger(IGVBackendPlaceholder.class);
@@ -64,5 +68,19 @@ public class IGVBackendPlaceholder {
         if (genome != null) {
             IGVEventBus.getInstance().post(new GenomeChangeEvent(genome));
         }
+    }
+
+    public static final Font getFont(FontWeight fontWeight, double size) {
+        final IGVPreferences prefManager = PreferencesManager.getPreferences();
+        String fontFamily = prefManager.get(DEFAULT_FONT_FAMILY);
+
+        return Font.font(fontFamily, fontWeight, size);
+    }
+
+    public static final Font getFont(double size) {
+        final IGVPreferences prefManager = PreferencesManager.getPreferences();
+        String fontFamily = prefManager.get(DEFAULT_FONT_FAMILY);
+
+        return Font.font(fontFamily, size);
     }
 }
