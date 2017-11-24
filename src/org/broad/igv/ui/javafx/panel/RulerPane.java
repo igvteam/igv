@@ -33,8 +33,6 @@
  */
 package org.broad.igv.ui.javafx.panel;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
@@ -98,17 +96,11 @@ public class RulerPane extends ResizableCanvas {
 
     public RulerPane(ReferenceFrame frame) {
         this.frame = frame;
-        setMinHeight(60);
-        setMaxHeight(60);
-        setPrefHeight(60);
+        setMinHeight(80);
+        setMaxHeight(80);
+        setPrefHeight(80);
         init();
-        frame.chromosomeNameProperty().addListener(new ChangeListener<String>() {
-
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                render();
-            }
-        });
+        frame.chromosomeNameProperty().addListener((observable, oldValue, newValue) -> render());
         render();
     }
 
@@ -197,7 +189,7 @@ public class RulerPane extends ResizableCanvas {
 
         Text sizer = new Text("");
         sizer.setFont(graphicsContext.getFont());
-        while (x < getWidth()) {
+        while (x < getPrefWidth()) {
             l = (int) (nTick * spacing);
             x = frame.getScreenPosition(l - 1 + 0.5);
             String chrPosition = formatNumber((double) l / ts.getUnitMultiplier()) +

@@ -34,8 +34,6 @@
 */
 package org.broad.igv.ui.javafx.panel;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -91,17 +89,11 @@ public class CytobandPane extends ResizableCanvas {
 
         Font font = Font.font(fontFamilyName, FontWeight.BOLD, fontHeight);
         getCanvas().getGraphicsContext2D().setFont(font);
-        setMinHeight(60);
-        setMaxHeight(60);
-        setPrefHeight(60);
+        setMinHeight(40);
+        setMaxHeight(40);
+        setPrefHeight(40);
 
-        frame.chromosomeNameProperty().addListener(new ChangeListener<String>() {
-
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                render();
-            }
-        });
+        frame.chromosomeNameProperty().addListener((observable, oldValue, newValue) -> render());
         render();
     }
 

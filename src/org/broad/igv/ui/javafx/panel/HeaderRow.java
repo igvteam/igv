@@ -31,7 +31,7 @@ public class HeaderRow extends IGVRow<NameHeaderPane, AttributeHeaderPane, Heade
 
     public HeaderRow(MainContentPane mainContentPane) {
         // TODO: determine correct header height setting
-        double headerHeight = 100.0;
+        double headerHeight = 140.0;
         this.prefHeightProperty().set(headerHeight);
         ScrollPane scrollPane = new ScrollPane(this);
         NameHeaderPane namePane = new NameHeaderPane();

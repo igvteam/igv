@@ -134,7 +134,9 @@ public class ReferenceFrame {
         chromosomeNameProperty.addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                changeChromosome(newValue, true);
+                if (newValue != null) {
+                    changeChromosome(newValue, true);
+                }
             }
         });
     }
@@ -165,7 +167,9 @@ public class ReferenceFrame {
         chromosomeNameProperty.addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                changeChromosome(newValue, true);
+                if (newValue != null) {
+                    changeChromosome(newValue, true);
+                }
             }
         });
     }

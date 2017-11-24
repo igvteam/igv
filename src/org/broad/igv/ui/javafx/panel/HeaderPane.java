@@ -26,6 +26,7 @@ package org.broad.igv.ui.javafx.panel;
 
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import org.apache.log4j.Logger;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -60,12 +61,16 @@ public class HeaderPane extends BorderPane {
             rulerPane = new RulerPane(frame);
             pane.setTop(cytobandPane);
             pane.setCenter(rulerPane);
-            this.getChildren().add(pane);
 
             rulerPane.prefWidthProperty().bind(prefWidthProperty());
             rulerPane.maxWidthProperty().bind(maxWidthProperty());
             rulerPane.minWidthProperty().bind(minWidthProperty());
             rulerPane.backgroundProperty().bind(backgroundProperty());
+
+            Pane roiDummy = new Pane();
+            roiDummy.setMinSize(15.0, 15.0);
+            pane.setBottom(roiDummy);
+            this.getChildren().add(pane);
         }
 
         cytobandPane.prefWidthProperty().bind(prefWidthProperty());
