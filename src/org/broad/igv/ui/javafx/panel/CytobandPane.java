@@ -99,11 +99,15 @@ public class CytobandPane extends ResizableCanvas {
 
     private void render() {
         log.info("rendering " + frame.getChrName());
+        log.info("cytoband HW: " + getWidth() + ":" + getHeight());
+        log.info("cytoband pHW: " + getPrefWidth() + ":" + getPrefHeight());
 
         Canvas canvas = getCanvas();
         GraphicsContext graphicContext = canvas.getGraphicsContext2D();
         graphicContext.clearRect(0.0, 0.0, canvas.getWidth(), canvas.getHeight());
 
+        log.info("cytoband canvas HW: " + canvas.getWidth() + ":" + canvas.getHeight());
+        
         if (frame.getChrName().equals(Globals.CHR_ALL)) {
             log.info("Frame set at ALL; exiting layoutChildren");
             return;

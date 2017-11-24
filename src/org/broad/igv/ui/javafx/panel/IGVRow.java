@@ -28,7 +28,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
 
 // Intended as the rough equivalent of the IGVPanel class of the Swing UI.  Work in progress.
 // Note: N, A, C might need to become more specific types later (e.g. RowComponent).  Pane is general enough for now.
@@ -57,6 +56,10 @@ public class IGVRow<N extends Pane, A extends Pane, C extends Pane, S extends Sc
         scrollPane.setFitToHeight(true);
         scrollPane.setFitToWidth(true);
 
+        scrollPane.prefWidthProperty().bind(mainContentPane.prefWidthProperty());
+        scrollPane.minWidthProperty().bind(mainContentPane.minWidthProperty());
+        scrollPane.maxWidthProperty().bind(mainContentPane.maxWidthProperty());
+
         // Mimic the SB policy of the Swing UI
         scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
         scrollPane.setVbarPolicy(ScrollBarPolicy.ALWAYS);
@@ -75,16 +78,18 @@ public class IGVRow<N extends Pane, A extends Pane, C extends Pane, S extends Sc
         attributePane.minHeightProperty().bind(this.minHeightProperty());
         attributePane.maxHeightProperty().bind(this.maxHeightProperty());
 
+        // The contentContainer should take the rest of the space.  That is:
+        // total width - (name pane width + attr pane width + (2 * insets) + scrollbar width)
         contentContainer.prefWidthProperty().bind(this.prefWidthProperty()
-                .subtract(mainContentPane.namePaneWidthProperty())
-                .subtract(mainContentPane.attributePaneWidthProperty()));
+                .subtract(mainContentPane.namePaneWidthProperty()
+                        .add(mainContentPane.attributePaneWidthProperty()).add(2 * INSET_SPACING + 30)));
+        contentContainer.prefHeightProperty().bind(this.prefHeightProperty());
+        contentContainer.minHeightProperty().bind(this.minHeightProperty());
+        contentContainer.maxHeightProperty().bind(this.maxHeightProperty());
         
         getChildren().add(namePane);
         getChildren().add(attributePane);
         getChildren().add(contentContainer);
-
-        // Set the contentContainer to fill out the content width.
-        HBox.setHgrow(contentContainer, Priority.ALWAYS);
 
         prefWidthProperty().bind(mainContentPane.prefWidthProperty());
         minWidthProperty().bind(mainContentPane.minWidthProperty());

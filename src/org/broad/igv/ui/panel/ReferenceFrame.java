@@ -789,7 +789,7 @@ public class ReferenceFrame {
 
     // Might be better to have the Chromosome itself be held in the property.
     // Should move this up to the top of the class.
-    private ObjectProperty<String> chromosomeNameProperty = new SimpleObjectProperty<String>("chrAll");
+    private ObjectProperty<String> chromosomeNameProperty = new SimpleObjectProperty<String>();
 
     public ObjectProperty<String> chromosomeNameProperty() {
         return chromosomeNameProperty;

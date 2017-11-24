@@ -23,14 +23,6 @@
  * THE SOFTWARE.
  */
 
-/*
- * TrackPanel.java
- *
- * Created on Sep 5, 2007, 4:09:39 PM
- *
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.broad.igv.ui.javafx.panel;
 
 import javafx.geometry.Bounds;
@@ -109,10 +101,18 @@ public class RulerPane extends ResizableCanvas {
     }
 
     private void render() {
+        log.info("rendering " + frame.getChrName());
+        log.info("ruler HW: " + getWidth() + ":" + getHeight());
+        log.info("ruler pHW: " + getPrefWidth() + ":" + getPrefHeight());
 
         Canvas canvas = getCanvas();
         GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
         graphicsContext.clearRect(0.0, 0.0, canvas.getWidth(), canvas.getHeight());
+
+        log.info("ruler canvas HW: " + canvas.getWidth() + ":" + canvas.getHeight());
+
+        graphicsContext.setStroke(Color.rgb(200, 200, 210));
+        graphicsContext.strokeRect(0.0, 0.0, canvas.getWidth(), canvas.getHeight());
 
         graphicsContext.setFill(Color.BLACK);
         graphicsContext.setStroke(Color.BLACK);

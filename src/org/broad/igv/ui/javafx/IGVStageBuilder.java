@@ -36,10 +36,13 @@ import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.javafx.panel.HeaderRow;
 import org.broad.igv.ui.javafx.panel.MainContentPane;
+import org.broad.igv.ui.panel.FrameManager;
 
 // Builds the Stage content.  This was originally intended as the rough equivalent of the IGV class of the Swing UI,
 // but for now is just populating the Stage.  In the long run the other IGV-equivalent responsibilities may land here,
@@ -82,14 +85,15 @@ public class IGVStageBuilder {
         if (applicationBounds == null || applicationBounds.getMaxX() > screenBounds.getWidth()
                 || applicationBounds.getMaxY() > screenBounds.getHeight() || applicationBounds.getWidth() == 0
                 || applicationBounds.getHeight() == 0) {
-            int width = Math.min(1150, (int) screenBounds.getWidth());
-            int height = Math.min(800, (int) screenBounds.getHeight());
+            double width = Math.min(1150.0, screenBounds.getWidth());
+            double height = Math.min(800.0, screenBounds.getHeight());
             applicationBounds = new Rectangle2D(0, 0, width, height);
         }
-        stage.setX(applicationBounds.getMaxX());
-        stage.setY(applicationBounds.getMaxY());
+        stage.setX(applicationBounds.getMinX());
+        stage.setY(applicationBounds.getMinY());
         stage.setWidth(applicationBounds.getWidth());
         stage.setHeight(applicationBounds.getHeight());
+        log.info("stage Bounds xywh: " + stage.getX() + ":" + stage.getY() + ":" + stage.getWidth() + ":" + stage.getHeight());
 
         // TODO: Need equivalent of GlassPane for the Scene
         // Note: we can use an EventFilter on the Scene instead of doing it as a
@@ -106,8 +110,8 @@ public class IGVStageBuilder {
 
     private static MainContentPane buildContent(Stage stage) {
 
-        VBox contentContainer = new VBox();
-        Scene contentScene = new Scene(contentContainer, stage.getHeight(), stage.getWidth(), Color.WHITE);
+        VBox sceneContainer = new VBox();
+        Scene contentScene = new Scene(sceneContainer, stage.getWidth(), stage.getHeight(), Color.WHITE);
         contentScene.getStylesheets().add(IGVStageBuilder.class.getResource("igv.css").toExternalForm());
 
         MainContentPane mainContentPane = new MainContentPane();
@@ -120,13 +124,13 @@ public class IGVStageBuilder {
         //log.info("About to init and start-up non-JavaFX IGV instance");
         //IGV.createInstance(mainContentPane, igvToolBar);
         //log.info("IGV initialized");
-        
-        contentContainer.getChildren().add(igvMenuBarBuilder.getMenuBar());
-        contentContainer.getChildren().add(igvToolBar.getToolBar());
-        contentContainer.getChildren().add(mainContentPane);
-        VBox.setVgrow(mainContentPane, Priority.ALWAYS);
-        mainContentPane.prefWidthProperty().bind(contentContainer.widthProperty());
 
+        sceneContainer.getChildren().add(igvMenuBarBuilder.getMenuBar());
+        sceneContainer.getChildren().add(igvToolBar.getToolBar());
+        sceneContainer.getChildren().add(mainContentPane);
+        VBox.setVgrow(mainContentPane, Priority.ALWAYS);
+        mainContentPane.prefWidthProperty().bind(sceneContainer.widthProperty());
+        
         // Set up callback to properly initialize the MainContentPane.  The issue at hand is that the centerSplitPane
         // divider position is reset if it is set too early, before the Stage is fully initialized.
         stage.showingProperty().addListener(new ChangeListener<Boolean>() {
@@ -135,6 +139,17 @@ public class IGVStageBuilder {
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
                 if (newValue) {
                     mainContentPane.initializeUI();
+                    FrameManager.getDefaultFrame().chromosomeNameProperty().set(Globals.CHR_ALL);
+
+                    HeaderRow hr = mainContentPane.getHeaderRow();
+
+                    log.info("HeaderRow HW: " + hr.getWidth() + ":" + hr.getHeight());
+                    log.info("HeaderRow pHW: " + hr.getPrefWidth() + ":" + hr.getPrefHeight());
+
+                    log.info("HeaderRow SP HW: " + hr.getScrollPane().getWidth() + ":" + hr.getScrollPane().getHeight());
+                    log.info("HeaderRow SP pHW: " + hr.getScrollPane().getPrefWidth() + ":" + hr.getScrollPane().getPrefHeight());
+                    log.info("HeaderRow SP vpHW: " + hr.getScrollPane().getViewportBounds().getWidth() + ":" + hr.getScrollPane().getViewportBounds().getHeight());
+                    
                     observable.removeListener(this);
                 }
             }

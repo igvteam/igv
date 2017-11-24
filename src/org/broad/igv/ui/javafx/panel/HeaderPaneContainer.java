@@ -42,7 +42,6 @@ public class HeaderPaneContainer extends BorderPane {
     private List<HeaderPane> headerPanes = new ArrayList<HeaderPane>();
     
     public HeaderPaneContainer() {
-        //createHeaderPanes();
     }
 
     public void createHeaderPanes() {
@@ -72,6 +71,9 @@ public class HeaderPaneContainer extends BorderPane {
                 headerPane.prefHeightProperty().bind(prefHeightProperty());
                 headerPane.minHeightProperty().bind(minHeightProperty());
                 headerPane.maxHeightProperty().bind(maxHeightProperty());
+
+                log.info("HP HW: " + headerPane.getWidth() + ":" + headerPane.getHeight());
+                log.info("HP pHW: " + headerPane.getPrefWidth() + ":" + headerPane.getPrefHeight());
                 contentPane.getChildren().add(headerPane);
             }
         }
@@ -94,5 +96,9 @@ public class HeaderPaneContainer extends BorderPane {
         }
 
         setCenter(contentPane);
+        log.info("HPC HW: " + getWidth() + ":" + getHeight());
+        log.info("HPC pHW: " + getPrefWidth() + ":" + getPrefHeight());
+        log.info("HPC content HW: " + contentPane.getWidth() + ":" + contentPane.getHeight());
+        log.info("HPC content pHW: " + contentPane.getPrefWidth() + ":" + contentPane.getPrefHeight());
     }
 }

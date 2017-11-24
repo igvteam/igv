@@ -528,10 +528,10 @@ public class IGVPreferences {
 
         if (applicationBounds != null) {
             String[] values = applicationBounds.split(",");
-            int x = Integer.parseInt(values[0]);
-            int y = Integer.parseInt(values[1]);
-            int width = Integer.parseInt(values[2]);
-            int height = Integer.parseInt(values[3]);
+            double x = Double.parseDouble(values[0]);
+            double y = Double.parseDouble(values[1]);
+            double width = Double.parseDouble(values[2]);
+            double height = Double.parseDouble(values[3]);
 
             if (width == 0 || height == 0) {
                 return null;  // Don't know bounds
