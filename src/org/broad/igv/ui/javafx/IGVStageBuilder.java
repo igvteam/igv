@@ -36,13 +36,10 @@ import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.UIConstants;
-import org.broad.igv.ui.javafx.panel.HeaderRow;
 import org.broad.igv.ui.javafx.panel.MainContentPane;
-import org.broad.igv.ui.panel.FrameManager;
 
 // Builds the Stage content.  This was originally intended as the rough equivalent of the IGV class of the Swing UI,
 // but for now is just populating the Stage.  In the long run the other IGV-equivalent responsibilities may land here,
@@ -139,17 +136,6 @@ public class IGVStageBuilder {
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
                 if (newValue) {
                     mainContentPane.initializeUI();
-                    FrameManager.getDefaultFrame().chromosomeNameProperty().set(Globals.CHR_ALL);
-
-                    HeaderRow hr = mainContentPane.getHeaderRow();
-
-                    log.info("HeaderRow HW: " + hr.getWidth() + ":" + hr.getHeight());
-                    log.info("HeaderRow pHW: " + hr.getPrefWidth() + ":" + hr.getPrefHeight());
-
-                    log.info("HeaderRow SP HW: " + hr.getScrollPane().getWidth() + ":" + hr.getScrollPane().getHeight());
-                    log.info("HeaderRow SP pHW: " + hr.getScrollPane().getPrefWidth() + ":" + hr.getScrollPane().getPrefHeight());
-                    log.info("HeaderRow SP vpHW: " + hr.getScrollPane().getViewportBounds().getWidth() + ":" + hr.getScrollPane().getViewportBounds().getHeight());
-                    
                     observable.removeListener(this);
                 }
             }

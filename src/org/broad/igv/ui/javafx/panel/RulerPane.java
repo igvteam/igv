@@ -107,16 +107,12 @@ public class RulerPane extends ResizableCanvas {
         return frame.getChrName().equals(Globals.CHR_ALL);
     }
 
-    private void render() {
-        log.info("rendering " + frame.getChrName());
-        log.info("ruler HW: " + getWidth() + ":" + getHeight());
-        log.info("ruler pHW: " + getPrefWidth() + ":" + getPrefHeight());
+    public void render() {
+        log.info("rendering chr: " + frame.getChrName());
 
         Canvas canvas = getCanvas();
         GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
         graphicsContext.clearRect(0.0, 0.0, canvas.getWidth(), canvas.getHeight());
-
-        log.info("ruler canvas HW: " + canvas.getWidth() + ":" + canvas.getHeight());
 
         graphicsContext.setStroke(Color.rgb(200, 200, 210));
         graphicsContext.strokeRect(0.0, 0.0, canvas.getWidth(), canvas.getHeight());
@@ -157,7 +153,7 @@ public class RulerPane extends ResizableCanvas {
         double strHeight = bounds.getHeight();
         double strPosition = (w - strWidth) / 2;
 
-        double lineY = getHeight() - 35 - strHeight / 2;
+        double lineY = getPrefHeight() - 35 - strHeight / 2;
 
         graphicsContext.strokeLine(0, lineY, (w - strWidth) / 2 - 10, lineY);
         double[] arrowX = {0.0, 10.0, 10.0};
@@ -168,7 +164,7 @@ public class RulerPane extends ResizableCanvas {
         arrowX = new double[]{w, w - 10, w - 10};
         graphicsContext.fillPolygon(arrowX, arrowY, arrowX.length);
 
-        graphicsContext.fillText(rangeString, strPosition, getHeight() - 35);
+        graphicsContext.fillText(rangeString, strPosition, getPrefHeight() - 35);
 
     }
 
@@ -205,7 +201,7 @@ public class RulerPane extends ResizableCanvas {
             double strPosition = x - strWidth / 2;
             //if (strPosition > strEnd) {
 
-            final double height = getHeight();
+            final double height = getPrefHeight();
             if (nTick % 2 == 0) {
                 graphicsContext.fillText(chrPosition, strPosition, height - 15);
             }
@@ -257,7 +253,7 @@ public class RulerPane extends ResizableCanvas {
             double dw = chrLength / (locationUnit * scale);
 
 
-            graphicsContext.strokeLine(x, getHeight() - 10, x, getHeight() - 2);
+            graphicsContext.strokeLine(x, getPrefHeight() - 10, x, getPrefHeight() - 2);
 
             // Don't label chromosome if its width is < 5 pixels
             if (dw > 5) {
@@ -273,7 +269,7 @@ public class RulerPane extends ResizableCanvas {
                 double strPosition = center - strWidth / 2;
 
 
-                double y = (even ? getHeight() - 35 : getHeight() - 25);
+                double y = (even ? getPrefHeight() - 35 : getPrefHeight() - 25);
                 graphicsContext.fillText(displayName, strPosition, y);
                 Rectangle2D clickRect = new Rectangle2D(strPosition, y - 15, strWidth, 15);
                 String tooltipText = "Jump to chromosome: " + chrName;

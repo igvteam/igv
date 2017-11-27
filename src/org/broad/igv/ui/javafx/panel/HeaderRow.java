@@ -48,21 +48,5 @@ public class HeaderRow extends IGVRow<NameHeaderPane, AttributeHeaderPane, Heade
 
         // Wait to create the headerPaneContainer content until after layout & sizing is complete.
         headerPaneContainer.createHeaderPanes();
-
-        log.info("HeaderRow HW: " + getWidth() + ":" + getHeight());
-        log.info("HeaderRow pHW: " + getPrefWidth() + ":" + getPrefHeight());
-
-        log.info("HeaderRow SP HW: " + scrollPane.getWidth() + ":" + scrollPane.getHeight());
-        log.info("HeaderRow SP pHW: " + scrollPane.getPrefWidth() + ":" + scrollPane.getPrefHeight());
-        log.info("HeaderRow SP vpHW: " + scrollPane.getViewportBounds().getWidth() + ":" + scrollPane.getViewportBounds().getHeight());
-
-        log.info("NamePane HW: " + namePane.getWidth() + ":" + namePane.getHeight());
-        log.info("NamePane pHW: " + namePane.getPrefWidth() + ":" + namePane.getPrefHeight());
-
-        log.info("AttrPane HW: " + attributePane.getWidth() + ":" + attributePane.getHeight());
-        log.info("AttrPane pHW: " + attributePane.getPrefWidth() + ":" + attributePane.getPrefHeight());
-
-        log.info("ContentPane HW: " + headerPaneContainer.getWidth() + ":" + headerPaneContainer.getHeight());
-        log.info("ContentPane pHW: " + headerPaneContainer.getPrefWidth() + ":" + headerPaneContainer.getPrefHeight());
     }
 }

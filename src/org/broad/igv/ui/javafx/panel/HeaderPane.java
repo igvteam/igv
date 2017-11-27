@@ -32,7 +32,7 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
 // Intended as the rough equivalent of the HeaderPanel class of the Swing UI.  Work in progress.
-// TODO: Need to add equivalents of CytobandPanel, RulerPanel, RegionOfInterestPanel, GeneListPanel, etc.
+// TODO: Need to add equivalents of RegionOfInterestPanel, GeneListPanel, etc.
 // TODO: DnD handling
 public class HeaderPane extends BorderPane {
     private static Logger log = Logger.getLogger(HeaderPane.class);

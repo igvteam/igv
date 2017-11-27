@@ -103,31 +103,24 @@ public class CytobandPane extends ResizableCanvas {
         render();
     }
 
-    private void render() {
-        log.info("rendering " + frame.getChrName());
-        log.info("cytoband HW: " + getWidth() + ":" + getHeight());
-        log.info("cytoband pHW: " + getPrefWidth() + ":" + getPrefHeight());
+    public void render() {
+        log.info("rendering chr: " + frame.getChrName());
 
         Canvas canvas = getCanvas();
         GraphicsContext graphicContext = canvas.getGraphicsContext2D();
         graphicContext.clearRect(0.0, 0.0, canvas.getWidth(), canvas.getHeight());
-
-        log.info("cytoband canvas HW: " + canvas.getWidth() + ":" + canvas.getHeight());
         
         if (frame.getChrName().equals(Globals.CHR_ALL)) {
-            log.info("Frame set at ALL; exiting layoutChildren");
             return;
         }
 
         Chromosome chromosome = getReferenceFrame().getChromosome();
         if (chromosome == null) {
-            log.info("No chromosome; exiting layoutChildren");
             return;
         }
 
         currentCytobands = chromosome.getCytobands();
         if (currentCytobands == null) {
-            log.info("No cytobands; exiting layoutChildren");
             return;
         }
 
@@ -137,9 +130,7 @@ public class CytobandPane extends ResizableCanvas {
         double dataPanelWidth = this.getPrefWidth();
         Rectangle2D cytoRect = new Rectangle2D(0.0, 10.0, dataPanelWidth, bandHeight);
 
-        log.info("drawing cytoband");
         draw(currentCytobands, graphicContext, cytoRect, frame);
-        log.info("done drawing cytoband");
 
         int chromosomeLength = getReferenceFrame().getMaxCoordinate();
         cytobandScale = ((double) chromosomeLength) / dataPanelWidth;
