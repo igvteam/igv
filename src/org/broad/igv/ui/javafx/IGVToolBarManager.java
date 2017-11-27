@@ -36,6 +36,7 @@ import org.broad.igv.event.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.javafx.toolbar.ChromosomeComboBox;
+import org.broad.igv.ui.javafx.toolbar.ZoomSlider;
 import org.broad.igv.ui.panel.FrameManager;
 
 // Intended as the rough equivalent of the IGVCommandBar class of the Swing UI.  Work in progress.
@@ -46,6 +47,7 @@ public class IGVToolBarManager implements IGVEventObserver {
     private ToolBar toolBar;
     private ComboBox<String> genomeSelector;
     private ChromosomeComboBox chromosomeSelector;
+    private ZoomSlider zoomSlider;
 
     public IGVToolBarManager() {
 
@@ -81,13 +83,11 @@ public class IGVToolBarManager implements IGVEventObserver {
         Button rulerButton = new Button("");
         rulerButton.setId("rulerButton");
 
-        Slider zoomLevelSlider = new Slider();
-        zoomLevelSlider.setShowTickMarks(true);
-        zoomLevelSlider.setSnapToTicks(true);
-
+        zoomSlider = new ZoomSlider();
+        zoomSlider.setPrefWidth(200.0);
         toolBar = new ToolBar(genomeSelector, chromosomeSelector, jumpToPane,
                 homeButton, leftArrowButton, rightArrowButton, refreshScreenButton, regionToolButton, resizeToWindowButton,
-                infoSelectButton, rulerButton, zoomLevelSlider);
+                infoSelectButton, rulerButton, zoomSlider);
 
         log.info("About to register with eventBus");
         IGVEventBus.getInstance().subscribe(ViewChange.class, this);

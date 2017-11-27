@@ -97,6 +97,7 @@ public class CytobandPane extends ResizableCanvas {
         // so that listener should never execute.  However, leaving this in place as a pattern
         // and also because it may not be fixed in the long run.
         frame.chromosomeNameProperty().addListener((observable, oldValue, newValue) -> render());
+        frame.zoomProperty().addListener((observable, oldValue, newValue) -> render());
         this.prefWidthProperty().addListener((observable, oldValue, newValue) -> render());
         this.prefHeightProperty().addListener((observable, oldValue, newValue) -> render());
         

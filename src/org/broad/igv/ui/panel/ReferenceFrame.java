@@ -29,10 +29,10 @@
  */
 package org.broad.igv.ui.panel;
 
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
@@ -131,12 +131,14 @@ public class ReferenceFrame {
         this.chrName = genome == null ? "" : genome.getHomeChromosome();
         chromosomeNameProperty.set(chrName);
         this.eventBus = IGVEventBus.getInstance();
-        chromosomeNameProperty.addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                if (newValue != null) {
-                    changeChromosome(newValue, true);
-                }
+        chromosomeNameProperty.addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                changeChromosome(newValue, true);
+            }
+        });
+        zoomProperty.addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                setZoom(newValue.intValue());
             }
         });
     }
@@ -162,14 +164,18 @@ public class ReferenceFrame {
         this.pixelX = otherFrame.pixelX;
         this.widthInPixels = otherFrame.widthInPixels;
         this.zoom = otherFrame.zoom;
+        zoomProperty.set(this.zoom);
         this.maxZoom = otherFrame.maxZoom;
+        maxZoomProperty.set(this.maxZoom);
         this.eventBus = eventBus;
-        chromosomeNameProperty.addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                if (newValue != null) {
-                    changeChromosome(newValue, true);
-                }
+        chromosomeNameProperty.addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                changeChromosome(newValue, true);
+            }
+        });
+        zoomProperty.addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                setZoom(newValue.intValue());
             }
         });
     }
@@ -275,6 +281,7 @@ public class ReferenceFrame {
     protected synchronized void setZoomWithinLimits(int newZoom) {
         zoom = Math.max(minZoom, Math.min(maxZoom, newZoom));
         nTiles = Math.pow(2, zoom);
+        zoomProperty().set(this.zoom);
     }
 
     /**
@@ -516,6 +523,7 @@ public class ReferenceFrame {
     protected void calculateMaxZoom() {
         this.maxZoom = Globals.CHR_ALL.equals(this.chrName) ? 0 :
                 (int) Math.ceil(Math.log(getChromosomeLength() / minBP) / Globals.log2);
+        maxZoomProperty.set(this.maxZoom);
     }
 
     public String getChrName() {
@@ -794,6 +802,17 @@ public class ReferenceFrame {
     public ObjectProperty<String> chromosomeNameProperty() {
         return chromosomeNameProperty;
     }
-    
+
+    private IntegerProperty maxZoomProperty = new SimpleIntegerProperty();
+
+    public IntegerProperty maxZoomProperty() {
+        return maxZoomProperty;
+    }
+
+    private IntegerProperty zoomProperty = new SimpleIntegerProperty();
+
+    public IntegerProperty zoomProperty() {
+        return zoomProperty;
+    }
 }
 
