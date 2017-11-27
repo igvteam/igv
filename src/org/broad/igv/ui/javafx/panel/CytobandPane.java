@@ -93,7 +93,13 @@ public class CytobandPane extends ResizableCanvas {
         setMaxHeight(40);
         setPrefHeight(40);
 
+        // Re-render on change of width/height or chromosome.  Note that the height is fixed and
+        // so that listener should never execute.  However, leaving this in place as a pattern
+        // and also because it may not be fixed in the long run.
         frame.chromosomeNameProperty().addListener((observable, oldValue, newValue) -> render());
+        this.prefWidthProperty().addListener((observable, oldValue, newValue) -> render());
+        this.prefHeightProperty().addListener((observable, oldValue, newValue) -> render());
+        
         render();
     }
 
