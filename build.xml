@@ -13,7 +13,7 @@
     <import file="build_macros.xml"/>
 
     <property name="jar.name" value="igv.jar"/>
-    <property name="main-class" value="org.broad.igv.ui.Main"/>
+    <property name="main-class" value="org.broad.igv.ui.javafx.MainApplication"/>
 
     <!-- Source and lib directories -->
     <property name="src.dir" value="${basedir}/src/"/>
