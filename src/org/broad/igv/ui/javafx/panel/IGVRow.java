@@ -24,6 +24,8 @@
  */
 package org.broad.igv.ui.javafx.panel;
 
+import org.broad.igv.ui.javafx.JavaFXUIUtilities;
+
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.layout.HBox;
@@ -55,45 +57,29 @@ public class IGVRow<N extends Pane, A extends Pane, C extends Pane, S extends Sc
 
         scrollPane.setFitToHeight(true);
         scrollPane.setFitToWidth(true);
-
-        scrollPane.prefWidthProperty().bind(mainContentPane.prefWidthProperty());
-        scrollPane.minWidthProperty().bind(mainContentPane.minWidthProperty());
-        scrollPane.maxWidthProperty().bind(mainContentPane.maxWidthProperty());
-
-        // Mimic the SB policy of the Swing UI
         scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
         scrollPane.setVbarPolicy(ScrollBarPolicy.ALWAYS);
-        
-        namePane.prefWidthProperty().bind(mainContentPane.namePaneWidthProperty());
-        namePane.minWidthProperty().bind(mainContentPane.namePaneWidthProperty());
-        namePane.maxWidthProperty().bind(mainContentPane.namePaneWidthProperty());
-        namePane.prefHeightProperty().bind(this.prefHeightProperty());
-        namePane.minHeightProperty().bind(this.minHeightProperty());
-        namePane.maxHeightProperty().bind(this.maxHeightProperty());
 
-        attributePane.prefWidthProperty().bind(mainContentPane.attributePaneWidthProperty());
-        attributePane.minWidthProperty().bind(mainContentPane.attributePaneWidthProperty());
-        attributePane.maxWidthProperty().bind(mainContentPane.attributePaneWidthProperty());
-        attributePane.prefHeightProperty().bind(this.prefHeightProperty());
-        attributePane.minHeightProperty().bind(this.minHeightProperty());
-        attributePane.maxHeightProperty().bind(this.maxHeightProperty());
+        JavaFXUIUtilities.bindWidthToContainer(mainContentPane, scrollPane);
+        
+        JavaFXUIUtilities.bindWidthToProperty(namePane, mainContentPane.namePaneWidthProperty());
+        JavaFXUIUtilities.bindHeightToContainer(this, namePane);
+
+        JavaFXUIUtilities.bindWidthToProperty(attributePane, mainContentPane.attributePaneWidthProperty());
+        JavaFXUIUtilities.bindHeightToContainer(this, attributePane);
 
         // The contentContainer should take the rest of the space.  That is:
         // total width - (name pane width + attr pane width + (2 * insets) + scrollbar width)
         contentContainer.prefWidthProperty().bind(this.prefWidthProperty()
                 .subtract(mainContentPane.namePaneWidthProperty()
                         .add(mainContentPane.attributePaneWidthProperty()).add(2 * INSET_SPACING + 30)));
-        contentContainer.prefHeightProperty().bind(this.prefHeightProperty());
-        contentContainer.minHeightProperty().bind(this.minHeightProperty());
-        contentContainer.maxHeightProperty().bind(this.maxHeightProperty());
+        JavaFXUIUtilities.bindHeightToContainer(this, contentContainer);
         
         getChildren().add(namePane);
         getChildren().add(attributePane);
         getChildren().add(contentContainer);
 
-        prefWidthProperty().bind(mainContentPane.prefWidthProperty());
-        minWidthProperty().bind(mainContentPane.minWidthProperty());
-        maxWidthProperty().bind(mainContentPane.maxWidthProperty());
+        JavaFXUIUtilities.bindWidthToContainer(mainContentPane, this);
 
         backgroundProperty().bind(mainContentPane.backgroundProperty());
         namePane.backgroundProperty().bind(mainContentPane.backgroundProperty());

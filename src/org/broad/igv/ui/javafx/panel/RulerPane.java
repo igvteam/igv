@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2007-2015 Broad Institute
+ * Copyright (c) 2007-2017 Broad Institute
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -142,7 +142,9 @@ public class RulerPane extends ResizableCanvas {
 
         graphicsContext.setFont(spanFont);
 
-        double range = (frame.getScale() * w) + 1;
+        // TODO: lift range & rangeString as instance vars to be computed only when the chromosome changes.
+        // Performance tweak: no need to recompute this on every render.  Likewise for bounds.
+        int range = (int)(frame.getScale() * w) + 1;
 
         // TODO -- hack, assumes location unit for whole genome is kilo-base
         boolean scaleInKB = frame.getChrName().equals(Globals.CHR_ALL);
@@ -295,7 +297,7 @@ public class RulerPane extends ResizableCanvas {
         }
 
 
-        // Now man zeroes?
+        // How many zeroes?
         int nZeroes = (int) Math.log10(maxValue);
         String majorUnit = scaleInKB ? "kb" : "bp";
         int unitMultiplier = 1;

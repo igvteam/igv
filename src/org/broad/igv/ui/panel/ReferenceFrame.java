@@ -138,7 +138,7 @@ public class ReferenceFrame {
         });
         zoomProperty.addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                setZoom(newValue.intValue());
+                doSetZoom(newValue.intValue());
             }
         });
     }
@@ -175,7 +175,7 @@ public class ReferenceFrame {
         });
         zoomProperty.addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                setZoom(newValue.intValue());
+                doSetZoom(newValue.intValue());
             }
         });
     }

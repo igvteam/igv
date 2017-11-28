@@ -51,12 +51,7 @@ public class HeaderPaneContainer extends BorderPane {
         HBox contentPane = new HBox(6);
 
         List<ReferenceFrame> frames = FrameManager.getFrames();
-        if (frames.size() == 1) {
-            // TODO: convert bounds to double or DoubleProperty for JavaFX.
-            double width = prefWidthProperty().get();
-            frames.get(0).setBounds(0, (int) width);
-        }
-
+        computeFrameBounds();
         for (ReferenceFrame f : frames) {
             if (f.isVisible()) {
                 log.info("creating HeaderPane for " + f.getChrName());
@@ -75,11 +70,6 @@ public class HeaderPaneContainer extends BorderPane {
             }
         }
         contentPane.prefWidthProperty().bind(prefWidthProperty());
-
-        // Here's a thought on splitting the width equally:
-        // Create a contentPrefWidthProperty to bind to each of the headerPane's prefWidthProps.
-        // It would be bound as: prop.bind(this.prefWidthProperty().divide(frames.size());
-        // For the usual case of size == 1, just bind directly for better perf.
         
         if (FrameManager.isGeneListMode()) {
             GeneList gl = IGV.getInstance().getSession().getCurrentGeneList();
@@ -93,5 +83,29 @@ public class HeaderPaneContainer extends BorderPane {
         }
 
         setCenter(contentPane);
+
+        this.prefWidthProperty().addListener((observable, oldValue, newValue) -> computeFrameBounds());
+    }
+    
+    private void computeFrameBounds() {
+        List<ReferenceFrame> frames = FrameManager.getFrames();
+        Double width = prefWidthProperty().get();
+        if (frames.size() == 1) {
+            // TODO: convert bounds to double or DoubleProperty for JavaFX?
+            frames.get(0).setBounds(0, width.intValue());
+        }
+        else {
+            // Not yet...
+        }
+
+        // Here's a thought on splitting the width equally:
+        // Create a contentPrefWidthProperty to bind to each of the headerPane's prefWidthProps.
+        // It would be bound as: prop.bind(this.prefWidthProperty().divide(frames.size());
+        // For the usual case of size == 1, just bind directly for better perf.
+        // Then we would just need to set the pixelX value for each RefFrame.
+        // Perhaps the RefFrame could just work based on the origin?  Seems like we can get the
+        // pixelX from the HeaderPane (again as a property).
+        // 
+        // In any case, we'll go this route for now to prove it out.
     }
 }
