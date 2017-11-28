@@ -192,7 +192,7 @@ public class SnapshotUtilities {
             fos = new FileOutputStream(selectedFile);
             g = (Graphics2D) constructor.newInstance("eps", fos, 0, 0, target.getWidth(), target.getHeight(), colorModeValue);
 
-            choosePaint(target, g, width, height, paintOffscreen);
+            paintImage(target, g, width, height, paintOffscreen);
 
             graphicsClass.getMethod("close").invoke(g);
 
@@ -227,7 +227,7 @@ public class SnapshotUtilities {
 //            // EpsGraphics stores directly in a file
 //            fos = new FileOutputStream(selectedFile);
 //            Graphics2D g = new EpsGraphics("eps", fos, 0, 0, target.getWidth(), target.getHeight(), ColorMode.COLOR_RGB);
-//            choosePaint(target, g, paintOffscreen);
+//            paintImage(target, g, paintOffscreen);
 //
 //        } finally {
 //            if(fos != null){
@@ -251,7 +251,7 @@ public class SnapshotUtilities {
         // Write image data into document
         SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
 
-        choosePaint(target, svgGenerator, width, height, paintOffscreen);
+        paintImage(target, svgGenerator, width, height, paintOffscreen);
 
         Writer out = null;
         try {
@@ -270,7 +270,7 @@ public class SnapshotUtilities {
 
     }
 
-    private static void choosePaint(Component target, Graphics2D g, int width, int height, boolean paintOffscreen) {
+    private static void paintImage(Component target, Graphics2D g, int width, int height, boolean paintOffscreen) {
         log.debug("Painting to target " + target + " , offscreen " + paintOffscreen);
         if (paintOffscreen) {
             Rectangle rect = new Rectangle(0, 0, width, height);
@@ -281,14 +281,14 @@ public class SnapshotUtilities {
     }
 
     /**
-     *
      * Export the specified {@code target} component as a {@code BufferedImage} to the given file.
+     *
      * @param target
      * @param selectedFile
      * @param width
      * @param height
      * @param allowedExts
-     * @param format Format, also appended as an extension if the file doesn't end with anything in {@code allowedExts}
+     * @param format         Format, also appended as an extension if the file doesn't end with anything in {@code allowedExts}
      * @param paintOffscreen
      * @throws IOException
      */
@@ -297,29 +297,50 @@ public class SnapshotUtilities {
         BufferedImage image = getDeviceCompatibleImage(width, height);
         Graphics2D g = image.createGraphics();
 
-        choosePaint(target, g, width, height, paintOffscreen);
+        paintImage(target, g, width, height, paintOffscreen);
 
         selectedFile = fixFileExt(selectedFile, allowedExts, format);
         if (selectedFile != null) {
             log.debug("Writing image to " + selectedFile.getAbsolutePath());
             ImageIO.write(image, format, selectedFile);
         }
+    }
 
-        if(selectedFile.getName().endsWith(".jpeg") || selectedFile.getName().endsWith(".jpg")) {
-            GoogleCloudStorageHelper.uploadJpeg(image);
-        }
+    public static BufferedImage createBufferedImage(Component target, Rectangle clipRect,  int maxHeight) throws IOException {
+
+        int width = clipRect.width;
+        int height = Math.min(clipRect.height, 1000);
+
+        BufferedImage image = getDeviceCompatibleImage(width, height);
+        Graphics2D g = image.createGraphics();
+
+       // clipRect.x += 5;
+       // clipRect.width -=5;
+
+       // g.setClip(clipRect);
+        g.translate(0, -clipRect.y);
+        height += clipRect.y;
+
+        Rectangle rect = new Rectangle(0, 0, width, height);
+        ((Paintable) target).paintOffscreen(g, rect);
+
+        g.setBackground(Color.WHITE);
+        g.clearRect(0, 0, 5, height);
+
+        return image;
 
     }
 
     /**
      * Add a file extension to the file if it doesn't already
      * have an acceptable one
+     *
      * @param selectedFile
      * @param allowedExts  Strings which qualify as extensions
      * @param defExtension Default extension. A period be inserted in between the file path iff {@code defExtension}
      *                     does not already have it
      * @return Either the input File, if it had an extension contained in {@code allowedExts},
-     *         or a new with with {@code defExtension} appended
+     * or a new with with {@code defExtension} appended
      */
     private static File fixFileExt(File selectedFile, String[] allowedExts, String defExtension) {
         boolean hasExt = false;

@@ -31,12 +31,26 @@ package org.broad.igv.ui.panel;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.batch.CommandExecutor;
+import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ga4gh.OAuthUtils;
+import org.broad.igv.sam.Alignment;
+import org.broad.igv.sam.AlignmentCounts;
+import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.sam.mutreview.BaseCounts;
+import org.broad.igv.sam.mutreview.VariantReviewAction;
+import org.broad.igv.sam.mutreview.VariantReviewFX;
+import org.broad.igv.sam.mutreview.VariantReviewMetadata;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.SnapshotUtilities;
 
 import javax.swing.*;
 import java.awt.*;
@@ -44,9 +58,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -211,7 +228,7 @@ abstract public class TrackPanelComponent extends JPanel {
             }
         }
 
-        if(menu.includeStandardItems()) {
+        if (menu.includeStandardItems()) {
 
             TrackMenuUtils.addPluginItems(menu, selectedTracks, te);
 
@@ -233,6 +250,12 @@ abstract public class TrackPanelComponent extends JPanel {
             menu.addSeparator();
             menu.add(TrackMenuUtils.getRemoveMenuItem(selectedTracks));
         }
+
+        // if variant review
+        menu.addSeparator();
+        JMenuItem mi = new JMenuItem("Score variant");
+        mi.addActionListener(e13 -> scoreMutationItem(te));
+        menu.add(mi);
 
         menu.show(e.getComponent(), e.getX(), e.getY());
 
@@ -277,6 +300,37 @@ abstract public class TrackPanelComponent extends JPanel {
 
     public void saveImage() {
         IGV.getInstance().saveImage(getTrackPanel().getScrollPane(), "igv_panel");
+    }
+
+
+    /**
+     * /*
+     * public String userID;
+     * public String userEmail;
+     * public String chrom;
+     * public int pos;
+     * public int windowSize;
+     * public int readDepth;
+     * public char ref;
+     * public int refCount;
+     * public String alt;
+     * public String altCount;
+     *
+     * @param te
+     */
+    public void scoreMutationItem(final TrackClickEvent te) {
+
+
+        Optional<Track> opt = getAllTracks().stream().filter(t -> t instanceof AlignmentTrack).findFirst();
+
+        if (opt.isPresent()) {
+
+            AlignmentTrack alignmentTrack = (AlignmentTrack) opt.get();
+
+            VariantReviewAction.scoreMutationItem(this, alignmentTrack, te);
+        }
+
+
     }
 
 

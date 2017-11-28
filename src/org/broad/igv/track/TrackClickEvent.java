@@ -37,10 +37,12 @@ public class TrackClickEvent {
 
     private MouseEvent mouseEvent;
     private ReferenceFrame frame;
+    private double chromosomePosition;
 
     public TrackClickEvent(MouseEvent mouseEvent, ReferenceFrame frame) {
         this.mouseEvent = mouseEvent;
         this.frame = frame;
+        this.chromosomePosition = frame == null ? 0 :  frame.getChromosomePosition(mouseEvent.getX());
     }
 
 
@@ -53,7 +55,7 @@ public class TrackClickEvent {
     }
 
     public double getChromosomePosition() {
-        return frame == null ? 0 :  frame.getChromosomePosition(mouseEvent.getX());
+        return chromosomePosition;
 
     }
 }

@@ -71,7 +71,7 @@ public class OAuthUtils {
     private static final String PROPERTIES_URL = "https://igvdata.broadinstitute.org/app/oauth_native.json";
     private String genomicsScope = "https://www.googleapis.com/auth/genomics";
     private String gsScope = "https://www.googleapis.com/auth/devstorage.read_write";
-    private String profileScope = "https://www.googleapis.com/auth/userinfo.profile";
+    private String emailScope = "https://www.googleapis.com/auth/userinfo.email";
     private String state = "%2Fprofile";
     private String redirectURI = "http%3A%2F%2Flocalhost%3A60151%2FoauthCallback";
     private String oobURI = "urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob";
@@ -89,18 +89,22 @@ public class OAuthUtils {
 
     private static OAuthUtils theInstance;
     private String currentUserName;
+    private String currentUserEmail;
+    private String currentUserID;
+
 
     // dwm08
     // by default this is the google scope
-    private String scope = genomicsScope + "%20" + gsScope + "%20" + profileScope;
+    private String scope = genomicsScope + "%20" + gsScope  + "%20" + emailScope;
 
-    // Construct OAuthUtils earcly so Google menu can be updated to the 
+    // Construct OAuthUtils earcly so Google menu can be updated to the
     // correct oauth provider. dwm08
     static {
-    	if (theInstance == null) {
+        if (theInstance == null) {
             theInstance = new OAuthUtils();
         }
     }
+
 
     public static synchronized OAuthUtils getInstance() {
 
@@ -174,7 +178,7 @@ public class OAuthUtils {
      * @throws URISyntaxException
      */
     public void openAuthorizationPage() throws IOException, URISyntaxException {
-		Desktop desktop = Desktop.getDesktop();
+        Desktop desktop = Desktop.getDesktop();
 
         // properties moved to early init dwm08
         //if (clientId == null) fetchOauthProperties();
@@ -213,13 +217,13 @@ public class OAuthUtils {
 //        	throw new IOException("Either scope or resource must be provided to authenticate.");
 //        }
 
-		// check if the "browse" Desktop action is suppported (many Linux DEs cannot directly 
-		// launch browsers!)
-		if(desktop.isSupported(Desktop.Action.BROWSE)) {
-			desktop.browse(new URI(url));
-		} else { // otherwise, display a dialog box for the user to copy the URL manually.
-			MessageUtils.showMessage("Copy this authorization URL into your web browser: " + url);
-		}
+        // check if the "browse" Desktop action is suppported (many Linux DEs cannot directly
+        // launch browsers!)
+        if (desktop.isSupported(Desktop.Action.BROWSE)) {
+            desktop.browse(new URI(url));
+        } else { // otherwise, display a dialog box for the user to copy the URL manually.
+            MessageUtils.showMessage("Copy this authorization URL into your web browser: " + url);
+        }
 
         // if the listener is not active, prompt the user
         // for the access token
@@ -335,28 +339,25 @@ public class OAuthUtils {
      *
      * @throws IOException
      */
-    private void fetchUserProfile() throws IOException {
+    public JsonObject fetchUserProfile() throws IOException {
 
-// dwm08 - removing functionality to get user profile info from microsoft oauth. Just not worth the trouble
-//            JWT jwt = JWT.decode(accessToken);
-//            Map<String, Claim> claims = jwt.getClaims();
-//            for (String claim: claims.keySet()) {
-//            	System.out.println(claim + " = " + claims.get(claim).asString());
-//            }
-//            currentUserName = claims.get("unique_name").asString();
         try {
-            URL url = new URL("https://www.googleapis.com/plus/v1/people/me?access_token=" + accessToken);
+
+            URL url = new URL("https://www.googleapis.com/oauth2/v1/userinfo?access_token=" + accessToken);
             String response = HttpUtils.getInstance().getContentsAsJSON(url);
             JsonParser parser = new JsonParser();
             JsonObject obj = parser.parse(response).getAsJsonObject();
-            currentUserName = obj.get("displayName").getAsString();
 
-        } catch (Throwable exception){
-            
+            currentUserName = obj.get("name").getAsString();
+            currentUserEmail = obj.get("email").getAsString();
+            currentUserID = obj.get("id").getAsString();
+
+            return obj;
+        } catch (Throwable exception) {
+            log.error(exception);
+            return null;
         }
-
     }
-
 
     public String getAccessToken() {
 

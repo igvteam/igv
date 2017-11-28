@@ -132,7 +132,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     private int minHeight = 50;
     private AlignmentDataManager dataManager;
-    private Rectangle alignmentsRect;
+    public Rectangle alignmentsRect;
     private Rectangle downsampleRect;
     private Rectangle insertionRect;
     private ColorTable readNamePalette;
@@ -1501,8 +1501,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 addExtViewItem(e);
             }
 
-            addScoreMutationItem(e);
-
 
         }
 
@@ -2244,24 +2242,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
         }
 
-        public void addScoreMutationItem(final TrackClickEvent te) {
-            // Change track height by attribute
-            final JMenuItem item = new JMenuItem("Score mutation");
-            add(item);
 
-
-            item.addActionListener(aEvt -> {
-                CommandExecutor cmdExe = new CommandExecutor();
-                cmdExe.setSleepInterval("0");
-
-                int chrPosition = (int) Math.round(te.getChromosomePosition()) + 1;  // Convert to "1" base coords
-                System.out.println(chrPosition);
-                cmdExe.execute("goto " + te.getFrame().getChrName() + ":" + chrPosition);
-                cmdExe.execute("sort base " + chrPosition);
-
-            });
-
-        }
 
     }
 

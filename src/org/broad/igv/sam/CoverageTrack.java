@@ -174,10 +174,9 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
 
-        if (frame.getChrName().equals(Globals.CHR_ALL) ||  frame.getScale() > dataManager.getMinVisibleScale()) {
+        if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > dataManager.getMinVisibleScale()) {
             return true;   // Nothing to paint
-     }
-        else {
+        } else {
             return dataManager.isLoaded(frame);
         }
     }
@@ -217,7 +216,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     public void dispose() {
         super.dispose();
         removed = true;
-        if(dataManager != null) {
+        if (dataManager != null) {
             dataManager.unsubscribe(this);
         }
         dataManager = null;
@@ -303,13 +302,12 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             }
             endIdx = Math.max(startIdx + 1, endIdx);
 
-            if(inViewScores.size() > 1) {
+            if (inViewScores.size() > 1) {
                 return startIdx == 0 && endIdx == inViewScores.size() - 1 ?
                         inViewScores :
                         inViewScores.subList(startIdx, endIdx);
-            }
-            else {
-                return  inViewScores;
+            } else {
+                return inViewScores;
             }
         }
         return inViewScores;
@@ -397,6 +395,15 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             buf.append(getPrecomputedValueString(chr, position, frame));
         }
         return buf.toString();
+    }
+
+    public AlignmentCounts getCounts(String chr, double position, ReferenceFrame frame) {
+        AlignmentInterval interval = dataManager.getLoadedInterval(frame);
+        if (interval != null && interval.contains(chr, (int) position, (int) position)) {
+            return interval.getCounts();
+        } else {
+            return null;
+        }
     }
 
     private String getPrecomputedValueString(String chr, double position, ReferenceFrame frame) {
@@ -936,7 +943,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
                         public void run() {
                             setVisible(false);
-                            if(IGV.hasInstance()) IGV.getInstance().getMainPanel().revalidate();
+                            if (IGV.hasInstance()) IGV.getInstance().getMainPanel().revalidate();
 
                         }
                     });

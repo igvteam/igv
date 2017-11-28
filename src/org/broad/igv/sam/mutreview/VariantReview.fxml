@@ -12,60 +12,57 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0"
-            prefWidth="950.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.broad.igv.sam.mutreview.VariantReviewFX">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="675.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.broad.igv.sam.mutreview.VariantReviewFX">
     <top>
 
         <HBox prefWidth="200.0">
             <children>
                 <Label text="Variant is an artifact ?">
                     <HBox.margin>
-                        <Insets right="20.0"/>
+                        <Insets right="20.0" />
                     </HBox.margin>
                     <font>
-                        <Font name="System Bold" size="24.0"/>
+                        <Font name="System Bold" size="24.0" />
                     </font>
                 </Label>
                 <VBox prefWidth="100.0" spacing="10.0">
                     <children>
                         <RadioButton mnemonicParsing="false" text="Yes">
                             <toggleGroup>
-                                <ToggleGroup fx:id="artifactGroup"/>
+                                <ToggleGroup fx:id="artifactGroup" />
                             </toggleGroup>
                         </RadioButton>
-                        <RadioButton mnemonicParsing="false" text="No" toggleGroup="$artifactGroup"/>
-                        <RadioButton mnemonicParsing="false" text="Unknown" toggleGroup="$artifactGroup"/>
+                        <RadioButton mnemonicParsing="false" text="No" toggleGroup="$artifactGroup" />
+                        <RadioButton mnemonicParsing="false" text="Unknown" toggleGroup="$artifactGroup" />
                     </children>
                 </VBox>
             </children>
             <BorderPane.margin>
-                <Insets left="20.0" top="10.0"/>
+                <Insets left="20.0" top="10.0" />
             </BorderPane.margin>
             <padding>
-                <Insets bottom="10.0" left="10.0" right="1.0" top="10.0"/>
+                <Insets bottom="10.0" left="10.0" right="1.0" top="10.0" />
             </padding>
         </HBox>
     </top>
     <bottom>
         <ButtonBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
             <buttons>
-                <Button mnemonicParsing="false" text="Cancel"/>
-                <Button mnemonicParsing="false" onAction="#submit" text="Submit"/>
+                <Button mnemonicParsing="false" text="Cancel" />
+                <Button mnemonicParsing="false" onAction="#submit" text="Submit" />
             </buttons>
             <BorderPane.margin>
-                <Insets/>
+                <Insets />
             </BorderPane.margin>
             <padding>
-                <Insets bottom="10.0" right="20.0" top="10.0"/>
+                <Insets bottom="10.0" right="20.0" top="10.0" />
             </padding>
         </ButtonBar>
     </bottom>
     <center>
-        <ImageView fitHeight="500.0" fitWidth="800.0" pickOnBounds="true" preserveRatio="true"
-                   style="-fx-border-color: black; -fx-border-width: 3;" BorderPane.alignment="CENTER">
+        <ImageView fx:id="imageView" fitHeight="500.0" fitWidth="800.0" pickOnBounds="true" preserveRatio="true" style="-fx-border-color: black; -fx-border-width: 3;" BorderPane.alignment="CENTER">
             <BorderPane.margin>
-                <Insets/>
+                <Insets />
             </BorderPane.margin>
         </ImageView>
     </center>

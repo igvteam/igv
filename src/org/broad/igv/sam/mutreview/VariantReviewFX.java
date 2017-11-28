@@ -1,20 +1,27 @@
 package org.broad.igv.sam.mutreview;
 
 import javafx.embed.swing.JFXPanel;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.image.*;
 import javafx.scene.layout.BorderPane;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 public class VariantReviewFX {
+
+    private BufferedImage image;
+
+    private VariantReviewMetadata metadata;
 
     @FXML // ResourceBundle that was given to the FXMLLoader
     private ResourceBundle resources;
@@ -25,26 +32,45 @@ public class VariantReviewFX {
     @FXML // fx:id="artifactGroup"
     private ToggleGroup artifactGroup; // Value injected by FXMLLoader
 
-    @FXML // This method is called by the FXMLLoader when initialization is complete
+    @FXML // fx:id="imageView"
+    private ImageView imageView; // Value injected by FXMLLoader
+
+    @FXML
+        // This method is called by the FXMLLoader when initialization is complete
     void initialize() {
         assert artifactGroup != null : "fx:id=\"artifactGroup\" was not injected: check your FXML file 'VariantReview.fxml'.";
     }
 
     @FXML
     void submit() {
+
         Toggle selectedButton = artifactGroup.getSelectedToggle();
+
+        //metadata.score =
+        //metatdata.scoreString =
+        System.out.println();
 
     }
 
 
-    public static void open(Frame parent) throws IOException {
+    public static void open(Frame parent, BufferedImage bufferedImage, VariantReviewMetadata metadata) throws IOException {
 
         SwingUtilities.invokeLater(() -> {
             try {
 
                 JDialog frame = new JDialog(parent, "Preferences", true);
                 JFXPanel fxPanel = new JFXPanel();
-                BorderPane pane = FXMLLoader.load(VariantReviewFX.class.getResource("VariantReview.fxml"));
+                FXMLLoader loader = new FXMLLoader(VariantReviewFX.class.getResource("VariantReview.fxml"));
+                BorderPane pane = loader.load();
+
+                VariantReviewFX controller = loader.getController();
+
+                controller.image = bufferedImage;
+                controller.metadata = metadata;
+
+                javafx.scene.image.Image image = SwingFXUtils.toFXImage(bufferedImage, null);
+                controller.imageView.setImage(image);
+
 
                 fxPanel.setScene(new Scene(pane));
 
@@ -61,9 +87,4 @@ public class VariantReviewFX {
         });
     }
 
-    public static void main(String[] args) throws IOException {
-
-        open(null);
-
-    }
 }

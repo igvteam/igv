@@ -713,7 +713,7 @@ public class HttpUtils {
         }
         conn.setRequestProperty("User-Agent", Globals.applicationString());
 
-        if (url.getHost().equals(OAuthUtils.GS_HOST)) {
+        if (url.getHost().equals(OAuthUtils.GS_HOST) || url.getHost().startsWith("igvweb02")) {
             String token = OAuthUtils.getInstance().getAccessToken();
             if (token != null) conn.setRequestProperty("Authorization", "Bearer " + token);
         }
