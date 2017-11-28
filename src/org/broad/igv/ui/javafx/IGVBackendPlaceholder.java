@@ -59,15 +59,15 @@ public class IGVBackendPlaceholder {
         if (genome == null) { // && igvArgs.getSessionFile() == null) {
             String genomeId = preferenceManager.getDefaultGenome();
             try {
-                genome = GenomeManager.getInstance().loadGenome(genomeId, null);
+                GenomeManager.getInstance().loadGenomeById(genomeId);
             } catch (Exception e) {
                 log.error("Error loading genome: " + genomeId, e);
             }
         }
 
-        if (genome != null) {
-            IGVEventBus.getInstance().post(new GenomeChangeEvent(genome));
-        }
+//        if (genome != null) {
+//            IGVEventBus.getInstance().post(new GenomeChangeEvent(genome));
+//        }
     }
 
     public static final Font getFont(FontWeight fontWeight, double size) {
