@@ -335,7 +335,7 @@ public class CommandExecutor {
         }
     }
 
-    private String setSleepInterval(String param1) {
+    public String setSleepInterval(String param1) {
         try {
             sleepInterval = Integer.parseInt(param1.trim());
             return "OK";

@@ -7,25 +7,31 @@ import org.broad.igv.util.LittleEndianInputStream;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.BufferedInputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created by jrobinso on 6/23/17.
  */
 public class FastaBlockCompressedSequence extends FastaIndexedSequence {
 
-    Mapping [] gziMappings;
+    Mapping[] gziMappings;
     Mapping zeroMapping = new Mapping(0, 0);
 
     public FastaBlockCompressedSequence(String path) throws IOException {
+
+        this(path, null);
+    }
+
+    public FastaBlockCompressedSequence(String path, String indexPath) throws IOException {
+
         super(path);
 
-        String gziPath = path + ".gzi";
+        if(indexPath == null) indexPath = path + ".gzi";
 
-        readGziMappings(gziPath);
-
+        readGziMappings(indexPath);
     }
 
     @Override
@@ -44,7 +50,7 @@ public class FastaBlockCompressedSequence extends FastaIndexedSequence {
         try {
             int nBytes = (int) (posEnd - posStart);
 
-            int bufferSize = Math.max(512000, nBytes/8);
+            int bufferSize = Math.max(512000, nBytes / 8);
 
             ss = new SeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(path), bufferSize);
 
@@ -66,16 +72,15 @@ public class FastaBlockCompressedSequence extends FastaIndexedSequence {
     protected Mapping findBlockContaining(long uoffset) {
 
         int ilo = 0, ihi = gziMappings.length - 1;
-        while ( ilo<=ihi )
-        {
-            int i = (ilo+ihi) / 2;
+        while (ilo <= ihi) {
+            int i = (ilo + ihi) / 2;
             Mapping mapping = gziMappings[i];
-            if ( uoffset < mapping.uncompressedOffset ) ihi = i - 1;
-            else if ( uoffset >= mapping.uncompressedOffset ) ilo = i + 1;
+            if (uoffset < mapping.uncompressedOffset) ihi = i - 1;
+            else if (uoffset >= mapping.uncompressedOffset) ilo = i + 1;
             else break;
         }
 
-        return ilo == 0 ? zeroMapping : gziMappings[ilo-1];
+        return ilo == 0 ? zeroMapping : gziMappings[ilo - 1];
     }
 
 
@@ -99,13 +104,13 @@ public class FastaBlockCompressedSequence extends FastaIndexedSequence {
 
     private void readFully(byte[] b, InputStream is) throws IOException {
         int len = b.length;
-        if(len < 0) {
+        if (len < 0) {
             throw new IndexOutOfBoundsException();
         } else {
             int count;
-            for(int n = 0; n < len; n += count) {
+            for (int n = 0; n < len; n += count) {
                 count = is.read(b, n, len - n);
-                if(count < 0) {
+                if (count < 0) {
                     throw new EOFException();
                 }
             }

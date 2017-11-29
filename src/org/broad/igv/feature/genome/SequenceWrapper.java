@@ -237,6 +237,11 @@ public class SequenceWrapper implements Sequence  {
         int end = (toLoad.endTile + 1) * tileSize;
         byte[] seq = sequence.getSequence(chr, start, end, true);
 
+        if(seq == null) {
+            log.warn("Null sequence for " + chr + ":" + start + "-" + end);
+            seq = new byte[end-start];
+        }
+
         int offset = 0;
         for (int t = toLoad.startTile; t <= toLoad.endTile; t++) {
 

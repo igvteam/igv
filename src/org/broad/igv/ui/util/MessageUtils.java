@@ -162,11 +162,11 @@ public class MessageUtils {
         }
     }
 
-    public static String showInputDialog(String message, final String defaultValue) {
+    public static String showInputDialog(String message, String defaultValue) {
 
         final Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
         //Pad message with spaces so it's as wide as the defaultValue
-        if(message.length() < defaultValue.length()){
+        if(defaultValue != null && message.length() < defaultValue.length()){
             message = String.format("%-" + defaultValue.length() + "s", message);
         }
         final String actMsg = message;
@@ -176,11 +176,9 @@ public class MessageUtils {
             return val;
         } else {
             final ValueHolder returnValue = new ValueHolder();
-            Runnable runnable = new Runnable() {
-                public void run() {
-                    String val = JOptionPane.showInputDialog(parent, actMsg, defaultValue);
-                    returnValue.value = val;
-                }
+            Runnable runnable = () -> {
+                String val = JOptionPane.showInputDialog(parent, actMsg, defaultValue);
+                returnValue.value = val;
             };
             try {
                 SwingUtilities.invokeAndWait(runnable);

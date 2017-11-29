@@ -141,7 +141,7 @@ public class IGVToolsTest extends AbstractHeadlessTest {
 
         List<Block> blocks = idx.getBlocks("chr1", 100, 200);
         Block block = blocks.get(0);
-        assertEquals("Unexpected start position ", 0, block.getStartPosition());
+        assertEquals("Unexpected start position ", 46, block.getStartPosition());
 
     }
 

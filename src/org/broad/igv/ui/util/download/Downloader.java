@@ -1,6 +1,7 @@
 package org.broad.igv.ui.util.download;
 
 
+import org.apache.log4j.Logger;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.HttpUtils;
 
@@ -8,11 +9,17 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.net.*;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
 import java.util.*;
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 
 // This class downloads a file from a URL.
 public class Downloader implements Runnable {
+
+    private static final Logger log = Logger.getLogger(Downloader.class);
 
     // Max size of download buffer.
     private static final int MAX_BUFFER_SIZE = 1000000;    // Max buffer size
@@ -120,10 +127,8 @@ public class Downloader implements Runnable {
             	}
             }
 
-
         } catch (Exception e) {
-
-            e.printStackTrace();
+            log.error("Error downloading " + url, e);
 
         } finally {
 
@@ -147,6 +152,19 @@ public class Downloader implements Runnable {
                 } catch (Exception e) {
                 }
             }
+
+
+            if(canceled) {
+                (new File(tmpName)).delete();
+            }
+            else {
+                try {
+                    Files.move(new File(tmpName).toPath(), localFile.toPath(), REPLACE_EXISTING);
+                } catch (IOException e) {
+                    log.error("Error renaming download file " + tmpName, e);
+                }
+            }
+
         }
 
     }

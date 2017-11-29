@@ -26,7 +26,7 @@
 package org.broad.igv.tools.converters;
 
 import htsjdk.samtools.util.CloseableIterator;
-import htsjdk.samtools.util.SortingCollection;
+import org.broad.igv.util.collections.SortingCollection;
 import org.apache.log4j.Logger;
 import org.broad.igv.data.expression.GeneToLocusHelper;
 import org.broad.igv.feature.Locus;

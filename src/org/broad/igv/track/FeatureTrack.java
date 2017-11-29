@@ -237,7 +237,10 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     @Override
     public void dispose() {
         super.dispose();
-        source.dispose();
+        if(source != null) {
+            source.dispose();
+            source = null;
+        }
     }
 
     /**

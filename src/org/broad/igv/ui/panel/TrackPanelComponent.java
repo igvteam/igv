@@ -218,11 +218,7 @@ abstract public class TrackPanelComponent extends JPanel {
             // Add saveImage
             menu.addSeparator();
             JMenuItem item = new JMenuItem("Save image...");
-            item.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    saveImage();
-                }
-            });
+            item.addActionListener(e1 -> saveImage());
             menu.add(item);
 
             // Add export features
@@ -231,12 +227,7 @@ abstract public class TrackPanelComponent extends JPanel {
             if (exportFeats != null) menu.add(exportFeats);
 
             JMenuItem exportNames = new JMenuItem("Export track names...");
-            exportNames.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    TrackMenuUtils.exportTrackNames(selectedTracks);
-                }
-            });
+            exportNames.addActionListener(e12 -> TrackMenuUtils.exportTrackNames(selectedTracks));
             menu.add(exportNames);
 
             menu.addSeparator();

@@ -209,6 +209,7 @@ public class IGVSessionReader implements SessionReader {
         FILTER_MATCH("match"),
         FILTER_SHOW_ALL_TRACKS("showTracks"),
         GENOME("genome"),
+        UCSC_ID("ucscID"),
         GROUP_TRACKS_BY("groupTracksBy"),
         NEXT_AUTOSCALE_GROUP("nextAutoscaleGroup"),
         HEIGHT("height"),
@@ -318,9 +319,9 @@ public class IGVSessionReader implements SessionReader {
         HashMap additionalInformation = new HashMap();
         additionalInformation.put(INPUT_FILE_KEY, sessionPath);
 
-        NodeList nodes = document.getElementsByTagName(SessionElement.GLOBAL.getText());
+        NodeList nodes = document.getElementsByTagName(SessionElement.SESSION.getText());
         if (nodes == null || nodes.getLength() == 0) {
-            nodes = document.getElementsByTagName(SessionElement.SESSION.getText());
+            nodes = document.getElementsByTagName(SessionElement.GLOBAL.getText());
         }
 
         this.rootPath = sessionPath;
@@ -373,7 +374,9 @@ public class IGVSessionReader implements SessionReader {
 
         // Load the genome, which can be an ID, or a path or URL to a .genome or indexed fasta file.
         String genomeId = getAttribute(element, SessionAttribute.GENOME.getText());
+
         String hasGeneTrackStr = getAttribute(element, SessionAttribute.HAS_GENE_TRACK.getText());
+
         boolean hasGeneTrack = true;
         if (hasGeneTrackStr != null) {
             hasGeneTrack = Boolean.parseBoolean(hasGeneTrackStr);
@@ -455,6 +458,7 @@ public class IGVSessionReader implements SessionReader {
             }
         }
 
+        session.setUcscId(getAttribute(element, SessionAttribute.UCSC_ID.getText()));
         session.setLocus(getAttribute(element, SessionAttribute.LOCUS.getText()));
         session.setGroupTracksBy(getAttribute(element, SessionAttribute.GROUP_TRACKS_BY.getText()));
 
@@ -1090,7 +1094,6 @@ public class IGVSessionReader implements SessionReader {
 
         if (matchedTracks == null) {
 
-            log.info("Warning.  No tracks were found with id: " + id + " in session file");
             String className = getAttribute(element, "clazz");
 
             //We try anyway, some tracks can be reconstructed without a resource element
@@ -1118,6 +1121,8 @@ public class IGVSessionReader implements SessionReader {
                     }
                     if (track != null) {
                         allTracks.put(track.getId(), matchedTracks);
+                    } else {
+                        log.info("Warning.  No tracks were found with id: " + id + " in session file");
                     }
                 }
             } catch (JAXBException e) {
@@ -1135,7 +1140,7 @@ public class IGVSessionReader implements SessionReader {
 
                     // Special case for sequence & gene tracks, they need to be removed before being placed.
                     if (igv != null && version >= 4 && (track == geneTrack || track == seqTrack)) {
-                        igv.removeTracks(Arrays.asList(track));
+                        igv.removeTracks(Arrays.asList(track), false);
                     }
                     unmarshalTrackElement(u, element, (AbstractTrack) track);
                 }

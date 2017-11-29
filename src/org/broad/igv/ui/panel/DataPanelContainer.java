@@ -34,6 +34,9 @@ import org.broad.igv.ui.MessageCollection;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.ui.FontManager;
+import org.broad.igv.Globals;
+import java.text.DecimalFormat;
 
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -148,6 +151,17 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
             int start = MouseInfo.getPointerInfo().getLocation().x - getLocationOnScreen().x;
             g.setColor(Color.BLACK);
             g.drawLine(start, 0, start, getHeight());
+
+            ReferenceFrame frame = FrameManager.getDefaultFrame();
+            boolean allChrMode = frame.getChrName().equals(Globals.CHR_ALL);
+
+            if (!FrameManager.isGeneListMode() && !allChrMode) {
+                int y = MouseInfo.getPointerInfo().getLocation().y - getLocationOnScreen().y;
+                int pos = (int) frame.getChromosomePosition(start) + 1;
+
+                g.setFont(FontManager.getDefaultFont());
+                g.drawString(Globals.DECIMAL_FORMAT.format((double) pos), start + 10, y + 30);
+            }
         }
     }
 
@@ -277,9 +291,9 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
             } else if (track.getAutoScale()) {
 
                 if (track instanceof MergedTracks) {
-                    for (Track mt : ((MergedTracks) track).getMemberTracks()) {
-                        autoscaleGroup(Arrays.asList(mt));
-                    }
+                    List<Track> memberTracks = new ArrayList(((MergedTracks) track).getMemberTracks());
+                    autoscaleGroup(memberTracks);
+
                 } else {
                     autoscaleGroup(Arrays.asList(track));
                 }

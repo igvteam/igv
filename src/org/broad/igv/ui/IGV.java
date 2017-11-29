@@ -1946,8 +1946,11 @@ public class IGV implements IGVEventObserver {
 
     }
 
-
     public void removeTracks(Collection<? extends Track> tracksToRemove) {
+        removeTracks(tracksToRemove, true);
+    }
+
+    public void removeTracks(Collection<? extends Track> tracksToRemove, boolean dispose) {
 
         // Make copy of list as we will be modifying the original in the loop
         List<TrackPanel> panels = getTrackPanels();
@@ -1965,8 +1968,10 @@ public class IGV implements IGVEventObserver {
             }
         }
 
-        for (Track t : tracksToRemove) {
-            t.dispose();
+        if(dispose) {
+            for (Track t : tracksToRemove) {
+                t.dispose();
+            }
         }
     }
 

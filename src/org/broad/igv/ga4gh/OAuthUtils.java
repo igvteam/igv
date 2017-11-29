@@ -70,7 +70,7 @@ public class OAuthUtils {
     private static final String REFRESH_TOKEN_KEY = "oauth_refresh_token";
     private static final String PROPERTIES_URL = "https://igvdata.broadinstitute.org/app/oauth_native.json";
     private String genomicsScope = "https://www.googleapis.com/auth/genomics";
-    private String gsScope = "https://www.googleapis.com/auth/devstorage.read_only";
+    private String gsScope = "https://www.googleapis.com/auth/devstorage.read_write";
     private String profileScope = "https://www.googleapis.com/auth/userinfo.profile";
     private String state = "%2Fprofile";
     private String redirectURI = "http%3A%2F%2Flocalhost%3A60151%2FoauthCallback";
@@ -174,6 +174,7 @@ public class OAuthUtils {
      * @throws URISyntaxException
      */
     public void openAuthorizationPage() throws IOException, URISyntaxException {
+		Desktop desktop = Desktop.getDesktop();
 
         // properties moved to early init dwm08
         //if (clientId == null) fetchOauthProperties();
@@ -212,7 +213,13 @@ public class OAuthUtils {
 //        	throw new IOException("Either scope or resource must be provided to authenticate.");
 //        }
 
-        Desktop.getDesktop().browse(new URI(url));
+		// check if the "browse" Desktop action is suppported (many Linux DEs cannot directly 
+		// launch browsers!)
+		if(desktop.isSupported(Desktop.Action.BROWSE)) {
+			desktop.browse(new URI(url));
+		} else { // otherwise, display a dialog box for the user to copy the URL manually.
+			MessageUtils.showMessage("Copy this authorization URL into your web browser: " + url);
+		}
 
         // if the listener is not active, prompt the user
         // for the access token

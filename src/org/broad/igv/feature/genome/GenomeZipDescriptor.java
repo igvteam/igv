@@ -43,7 +43,6 @@ public class GenomeZipDescriptor extends GenomeDescriptor {
     private ZipFile genomeZipFile;
 
     public GenomeZipDescriptor(String name,
-                               boolean chrNamesAltered,
                                String id,
                                String cytoBandFileName,
                                String geneFileName,
@@ -56,12 +55,11 @@ public class GenomeZipDescriptor extends GenomeDescriptor {
                                Map<String, ZipEntry> zipEntries,
                                boolean chromosomesAreOrdered,
                                boolean fasta,
-                               boolean fastaDirectory,
                                String fastaFileNameString) {
 
-        super(name, chrNamesAltered, id, cytoBandFileName, geneFileName, chrAliasFileName, geneTrackName,
+        super(name, id, cytoBandFileName, geneFileName, chrAliasFileName, geneTrackName,
                 sequenceLocation, hasCustomSequenceLocation, compressedSequencePath,
-                chromosomesAreOrdered, fasta, fastaDirectory, fastaFileNameString);
+                chromosomesAreOrdered, fasta, fastaFileNameString);
 
         this.zipEntries = zipEntries;
         this.genomeZipFile = genomeZipFile;

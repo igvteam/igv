@@ -55,6 +55,15 @@ import static org.broad.igv.prefs.Constants.*;
 public class Session implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(Session.class);
+    private String ucscId;
+
+    public void setUcscId(String ucscId) {
+        this.ucscId = ucscId;
+    }
+
+    public String getUcscId() {
+        return ucscId;
+    }
 
 
     //This doesn't mean genelist or not, the same way it does in FrameManager

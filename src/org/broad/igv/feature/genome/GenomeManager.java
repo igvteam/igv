@@ -34,6 +34,10 @@
 package org.broad.igv.feature.genome;
 
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
@@ -51,8 +55,10 @@ import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.panel.FrameManager;
-import org.broad.igv.ui.util.*;
+import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.ProgressBar;
 import org.broad.igv.ui.util.ProgressMonitor;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.ui.util.download.Downloader;
 import org.broad.igv.util.*;
 
@@ -101,20 +107,9 @@ public class GenomeManager {
 
     private GenomeListManager genomeListManager;
 
-//    public static String getUserDefinedGenomeListFile() {
-//        if (Globals.isTesting()) {
-//            return TEST_USER_DEFINED_GENOME_LIST_FILE;
-//        } else {
-//            return ACT_USER_DEFINED_GENOME_LIST_FILE;
-//        }
-//
-//    }
-
     private static GenomeManager theInstance;
 
     private Genome currentGenome;
-
-    boolean serverGenomeListUnreachable = false;
 
     private Map<String, File> localSequenceMap;
 
@@ -149,9 +144,6 @@ public class GenomeManager {
         }
     }
 
-    public boolean isServerGenomeListUnreachable() {
-        return serverGenomeListUnreachable;
-    }
 
     public void loadGenomeById(String genomeId) throws IOException {
 
@@ -214,7 +206,11 @@ public class GenomeManager {
             } else if (genomePath.endsWith(".chrom.sizes")) {
                 altGenomePath = genomePath;
                 newGenome = loadChromSizes(genomePath);
+            } else if (genomePath.endsWith(".json")) {
+                altGenomePath = genomePath;
+                newGenome = loadJsonFile(genomePath);
             } else {
+
                 // Assume a fasta file
                 altGenomePath = genomePath;
                 if (genomePath.endsWith(Globals.GZIP_FILE_EXTENSION)) {
@@ -262,8 +258,13 @@ public class GenomeManager {
             setCurrentGenome(newGenome);
 
             if (IGV.hasInstance()) {
-                FeatureTrack geneFeatureTrack = newGenome.getGeneTrack();
+                FeatureTrack geneFeatureTrack = newGenome.getGeneTrack();   // Can be null
                 IGV.getInstance().setGenomeTracks(geneFeatureTrack);
+
+                List<ResourceLocator> resources = newGenome.getAnnotationResources();
+                if (resources != null) {
+                    IGV.getInstance().loadResources(resources);
+                }
             }
 
 
@@ -382,6 +383,55 @@ public class GenomeManager {
         newGenome = new Genome(item.getId(), item.getDisplayableName(), sequence, true);
         setCurrentGenome(newGenome);
         return newGenome;
+    }
+
+    private Genome loadJsonFile(String genomePath) throws IOException {
+
+        Genome newGenome = null;
+
+        BufferedReader reader = ParsingUtils.openBufferedReader(genomePath);
+        JsonParser parser = new JsonParser();
+        JsonObject json = parser.parse(reader).getAsJsonObject();
+
+        String id = json.get("id").getAsString();
+        String name = json.get("name").getAsString();
+        String fastaPath = json.get("fastaURL").getAsString();
+        JsonElement indexPathObject = json.get("indexURL");
+        String indexPath = indexPathObject == null ? null : indexPathObject.getAsString();
+
+        FastaIndexedSequence sequence = fastaPath.endsWith(".gz") ?
+                new FastaBlockCompressedSequence(fastaPath, indexPath) :
+                new FastaIndexedSequence(fastaPath, indexPath);
+
+
+        ArrayList<ResourceLocator> tracks = new ArrayList<>();
+        JsonArray annotations = json.getAsJsonArray("annotations");
+        if (annotations != null) {
+            annotations.forEach((JsonElement jsonElement) -> {
+                JsonObject obj = jsonElement.getAsJsonObject();
+                String trackPath = obj.get("url").getAsString();
+                JsonElement trackName = obj.get("name");
+                JsonElement trackIndexPath = obj.get("indexURL");
+                JsonElement indexed = obj.get("indexed");
+                JsonElement aliasURL = obj.get("aliasURL");
+
+                ResourceLocator res = new ResourceLocator(trackPath);
+                if (trackName != null) res.setName(trackName.getAsString());
+                if (trackIndexPath != null) res.setIndexPath(trackIndexPath.getAsString());
+                if (indexed != null) res.setIndexed(indexed.getAsBoolean());
+                tracks.add(res);
+            });
+        }
+
+
+        newGenome = new Genome(id, name, sequence, true);
+
+        newGenome.setAnnotationResources(tracks);
+
+        // TODO -- set aliases
+
+        return newGenome;
+
     }
 
     private Collection<Collection<String>> loadChrAliases(String path) {
@@ -720,7 +770,6 @@ public class GenomeManager {
                     // The new descriptor
                     genomeDescriptor = new GenomeZipDescriptor(
                             properties.getProperty(GENOME_ARCHIVE_NAME_KEY),
-                            chrNamesAltered,
                             properties.getProperty(GENOME_ARCHIVE_ID_KEY),
                             cytobandZipEntryName,
                             geneFileName,
@@ -733,7 +782,6 @@ public class GenomeManager {
                             zipEntries,
                             chromosomesAreOrdered,
                             fasta,
-                            fastaDirectory,
                             fastaFileNameString);
 
                     if (url != null) {

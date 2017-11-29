@@ -25,12 +25,10 @@
 
 package org.broad.igv.feature.genome.fasta;
 
-import htsjdk.samtools.seekablestream.SeekableBufferedStream;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Sequence;
 import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
@@ -56,11 +54,15 @@ public class FastaIndexedSequence implements Sequence {
     private final ArrayList<String> chromoNamesList;
 
     public FastaIndexedSequence(String path) throws IOException {
+        this(path, null);
+    }
+
+    public FastaIndexedSequence(String path, String indexPath) throws IOException {
 
         this.path = path;
         contentLength = ParsingUtils.getContentLength(path);
 
-        String indexPath = path + ".fai";
+        if (indexPath == null) indexPath = path + ".fai";
 
         index = new FastaIndex(indexPath);
         chromoNamesList = new ArrayList<>(index.getSequenceNames());
@@ -95,6 +97,7 @@ public class FastaIndexedSequence implements Sequence {
         FastaIndex.FastaSequenceIndexEntry idxEntry = index.getIndexEntry(chr);
 
         if (idxEntry == null) {
+            log.info("No fasta sequence entry for: " + chr);
             return null;
         }
 
@@ -149,8 +152,7 @@ public class FastaIndexedSequence implements Sequence {
             return bos.toByteArray();
 
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-
+            log.error("Error loading sequence " + chr + ":" + qstart + "-" + qend, e);
             return null;
         }
     }
@@ -171,7 +173,7 @@ public class FastaIndexedSequence implements Sequence {
 
         SeekableStream ss = null;
         try {
-            ss =  IGVSeekableStreamFactory.getInstance().getStreamFor(path);
+            ss = IGVSeekableStreamFactory.getInstance().getStreamFor(path);
             int nBytes = (int) (posEnd - posStart);
             byte[] bytes = new byte[nBytes];
             ss.seek(posStart);
