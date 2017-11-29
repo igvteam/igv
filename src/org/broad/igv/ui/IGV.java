@@ -33,11 +33,72 @@
  */
 package org.broad.igv.ui;
 
-import apple.dts.samplecode.osxadapter.OSXAdapter;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.jidesoft.swing.JideSplitPane;
-import htsjdk.samtools.seekablestream.SeekableFileStream;
+import static org.broad.igv.prefs.Constants.PORT_ENABLED;
+import static org.broad.igv.prefs.Constants.PORT_NUMBER;
+import static org.broad.igv.prefs.Constants.RECENT_SESSIONS;
+import static org.broad.igv.prefs.Constants.SAM_GROUP_BY_POS;
+import static org.broad.igv.prefs.Constants.SAM_GROUP_BY_TAG;
+import static org.broad.igv.prefs.Constants.SAM_GROUP_OPTION;
+import static org.broad.igv.prefs.Constants.SHOW_ATTRIBUTE_VIEWS_KEY;
+import static org.broad.igv.prefs.Constants.SHOW_DEFAULT_TRACK_ATTRIBUTES;
+import static org.broad.igv.prefs.Constants.SHOW_SINGLE_TRACK_PANE_KEY;
+
+import java.awt.AlphaComposite;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Graphics2D;
+import java.awt.HeadlessException;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.ImageObserver;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.prefs.Preferences;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JRootPane;
+import javax.swing.RepaintManager;
+import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
+
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
@@ -45,10 +106,25 @@ import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.dev.api.IGVPlugin;
+import org.broad.igv.event.GenomeChangeEvent;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.event.ShiftEvent;
+import org.broad.igv.event.StopEvent;
+import org.broad.igv.event.TrackGroupEvent;
+import org.broad.igv.event.ViewChange;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.Locus;
+import org.broad.igv.feature.MaximumContigGenomeException;
 import org.broad.igv.feature.Range;
-import org.broad.igv.feature.genome.*;
+import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.feature.Strand;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeBuilderDialog;
+import org.broad.igv.feature.genome.GenomeException;
+import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.peaks.PeakCommandBar;
 import org.broad.igv.prefs.IGVPreferences;
@@ -57,33 +133,56 @@ import org.broad.igv.prefs.PreferencesEditor;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.InsertionSelectionEvent;
-import org.broad.igv.session.*;
-import org.broad.igv.track.*;
+import org.broad.igv.session.IGVSessionReader;
+import org.broad.igv.session.IndexAwareSessionReader;
+import org.broad.igv.session.Session;
+import org.broad.igv.session.SessionReader;
+import org.broad.igv.session.UCSCSessionReader;
+import org.broad.igv.track.AttributeManager;
+import org.broad.igv.track.DataTrack;
+import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.track.RegionScoreType;
+import org.broad.igv.track.SequenceTrack;
+import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackLoader;
+import org.broad.igv.track.TrackType;
+import org.broad.igv.ui.WaitCursorManager.CursorToken;
 import org.broad.igv.ui.dnd.GhostGlassPane;
-import org.broad.igv.event.*;
-import org.broad.igv.ui.panel.*;
-import org.broad.igv.ui.util.*;
-import org.broad.igv.ui.util.ProgressMonitor;
-import org.broad.igv.util.*;
+import org.broad.igv.ui.panel.DataPanel;
+import org.broad.igv.ui.panel.DataPanelContainer;
+import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.IGVPopupMenu;
+import org.broad.igv.ui.panel.MainPanel;
+import org.broad.igv.ui.panel.Paintable;
+import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.panel.RegionNavigatorDialog;
+import org.broad.igv.ui.panel.RegionOfInterestPanel;
+import org.broad.igv.ui.panel.RegionOfInterestTool;
+import org.broad.igv.ui.panel.TrackPanel;
+import org.broad.igv.ui.panel.TrackPanelScrollPane;
+import org.broad.igv.ui.util.CheckListDialog;
+import org.broad.igv.ui.util.IconFactory;
+import org.broad.igv.ui.util.IndefiniteProgressMonitor;
+import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.ProgressBar;
+import org.broad.igv.ui.util.SnapshotFileChooser;
+import org.broad.igv.ui.util.SnapshotUtilities;
+import org.broad.igv.ui.util.UIUtilities;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.LongRunningTask;
+import org.broad.igv.util.NamedRunnable;
+import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.StringUtils;
 import org.broad.igv.variant.VariantTrack;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
-import java.io.*;
-import java.net.NoRouteToHostException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.util.*;
-import java.util.List;
-import java.util.concurrent.Future;
-import java.util.prefs.Preferences;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.jidesoft.swing.JideSplitPane;
 
-import static org.broad.igv.prefs.Constants.*;
-import static org.broad.igv.ui.WaitCursorManager.CursorToken;
+import apple.dts.samplecode.osxadapter.OSXAdapter;
+import htsjdk.samtools.seekablestream.SeekableFileStream;
 
 /**
  * Represents an IGV instance, consisting of a main window and associated model.
@@ -1122,6 +1221,11 @@ public class IGV implements IGVEventObserver {
                                  final String locus,
                                  final boolean merge) {
 
+    		// check to see if any files in session file are on protected (oauth) server. If
+    		// so, make sure user is logged into
+    		// server before -proceeding
+    		OAuthUtils.checkServerLogin(sessionPath);
+    			
         Runnable runnable = new Runnable() {
             public void run() {
                 restoreSessionSynchronous(sessionPath, locus, merge);
