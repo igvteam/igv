@@ -28,8 +28,6 @@ package org.broad.igv.ui.javafx;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import org.apache.log4j.Logger;
-import org.broad.igv.event.GenomeChangeEvent;
-import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.IGVPreferences;
@@ -65,9 +63,7 @@ public class IGVBackendPlaceholder {
             }
         }
 
-//        if (genome != null) {
-//            IGVEventBus.getInstance().post(new GenomeChangeEvent(genome));
-//        }
+        JavaFXUIUtilities.setTooltipTimers(50, 60000, 50, false);
     }
 
     public static final Font getFont(FontWeight fontWeight, double size) {

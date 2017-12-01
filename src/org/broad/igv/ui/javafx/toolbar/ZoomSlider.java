@@ -29,6 +29,9 @@ import javafx.scene.control.Slider;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
+// As it stands this custom class may be unnecessary; all of this could be done
+// with a stock instance modified by its owner.  May need to add to it later or
+// further customize, though.
 public class ZoomSlider extends Slider {
 
     private ReferenceFrame frame;

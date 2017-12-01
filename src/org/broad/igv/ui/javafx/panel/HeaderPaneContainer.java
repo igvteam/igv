@@ -57,8 +57,8 @@ public class HeaderPaneContainer extends BorderPane {
                 log.info("creating HeaderPane for " + f.getChrName());
                 HeaderPane headerPane = new HeaderPane(f);
                 headerPanes.add(headerPane);
-                // Not correct; we need to split the width among all HPs
                 // TODO: Need to account for multiple frames in width.  The following is wrong.
+                // We need to split the width among all HPs.  Prob extract from the RefFrame?
                 headerPane.prefWidthProperty().bind(prefWidthProperty());
                 headerPane.minWidthProperty().bind(minWidthProperty());
                 headerPane.maxWidthProperty().bind(maxWidthProperty());

@@ -25,15 +25,20 @@
 
 package org.broad.igv.ui.javafx.panel;
 
+import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Tooltip;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
@@ -63,6 +68,9 @@ public class RulerPane extends ResizableCanvas {
     private static Logger log = Logger.getLogger(RulerPane.class);
 
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
+    public static final String WHOLE_GENOME_TOOLTIP = "Click on a chromosome number to jump to that chromosome,\n" +
+            "or click and drag to zoom in.";
+    public static final String CHROM_TOOLTIP = "Click and drag to zoom in.";
 
     // TODO -- get from preferences
     boolean drawSpan = true;
@@ -73,6 +81,8 @@ public class RulerPane extends ResizableCanvas {
     private List<ClickLink> chromosomeRects = new ArrayList<ClickLink>();
     private List<MouseRect> mouseRects = new ArrayList<MouseRect>();
 
+    private Tooltip tooltip = new Tooltip(WHOLE_GENOME_TOOLTIP);
+
 
     private static Color dragColor = Color.color(.5f, .5f, 1f, .3f);
     private static Color zoomBoundColor = Color.color(0.5f, 0.5f, 0.5f);
@@ -80,18 +90,16 @@ public class RulerPane extends ResizableCanvas {
     boolean dragging = false;
     int dragStart;
     int dragEnd;
-    public static final String WHOLE_GENOME_TOOLTIP = "<html>Click on a chromosome number to jump to that chromosome," +
-            "<br>or click and drag to zoom in.";
-    public static final String CHROM_TOOLTIP = "Click and drag to zoom in.";
 
-    ReferenceFrame frame;
+    private ReferenceFrame frame;
 
     public RulerPane(ReferenceFrame frame) {
         this.frame = frame;
         setMinHeight(80);
         setMaxHeight(80);
         setPrefHeight(80);
-        init();
+
+        Tooltip.install(this, tooltip);
 
         // Re-render on change of width/height or chromosome.  Note that the height is fixed and
         // so that listener should never execute.  However, leaving this in place as a pattern
@@ -110,6 +118,8 @@ public class RulerPane extends ResizableCanvas {
 
     public void render() {
         log.info("rendering chr: " + frame.getChrName());
+
+        resetTooltipHandlers();
 
         Canvas canvas = getCanvas();
         GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
@@ -142,9 +152,7 @@ public class RulerPane extends ResizableCanvas {
 
         graphicsContext.setFont(spanFont);
 
-        // TODO: lift range & rangeString as instance vars to be computed only when the chromosome changes.
-        // Performance tweak: no need to recompute this on every render.  Likewise for bounds.
-        int range = (int)(frame.getScale() * w) + 1;
+        int range = (int) (frame.getScale() * (int) w) + 1;
 
         // TODO -- hack, assumes location unit for whole genome is kilo-base
         boolean scaleInKB = frame.getChrName().equals(Globals.CHR_ALL);
@@ -229,7 +237,6 @@ public class RulerPane extends ResizableCanvas {
         }
 
         boolean even = true;
-        long offset = 0;
         chromosomeRects.clear();
         List<String> chrNames = genome.getLongChromosomeNames();
         if (chrNames == null) {
@@ -271,18 +278,15 @@ public class RulerPane extends ResizableCanvas {
                 double strWidth = FontMetrics.getTextWidthInFont(displayName, sizer);
                 double strPosition = center - strWidth / 2;
 
-
                 double y = (even ? getPrefHeight() - 35 : getPrefHeight() - 25);
+                String tooltipText = "Jump to chromosome: " + chrName;
+                
                 graphicsContext.fillText(displayName, strPosition, y);
                 Rectangle2D clickRect = new Rectangle2D(strPosition, y - 15, strWidth, 15);
-                String tooltipText = "Jump to chromosome: " + chrName;
                 chromosomeRects.add(new ClickLink(clickRect, chrName, tooltipText));
 
                 even = !even;
-
             }
-
-            offset += chrLength;
         }
     }
 
@@ -321,11 +325,62 @@ public class RulerPane extends ResizableCanvas {
         }
     }
 
-    private void init() {
-        // TODO: for now not dealing with Mouse events, cursors, DnD, tooltips, etc
-
+    private void resetTooltipHandlers() {
+        if (isWholeGenomeView()) {
+            tooltip.setText(WHOLE_GENOME_TOOLTIP);
+            this.setOnMouseClicked(wgViewMouseClickedHandler);
+            this.setOnMouseMoved(wgViewMouseMovedHandler);
+        } else {
+            tooltip.setText(CHROM_TOOLTIP);
+            this.setOnMouseClicked(chrViewMouseClickedHandler);
+            this.setOnMouseMoved(chrViewMouseMovedHandler);
+        }
     }
 
+    private final EventHandler<MouseEvent> wgViewMouseClickedHandler = (event) -> {
+        for (final ClickLink link : chromosomeRects) {
+            if (link.region.contains(event.getX(), event.getY())) {
+                final String chrName = link.value;
+                frame.changeChromosome(chrName, true);
+            }
+        }
+    };
+
+    private final EventHandler<MouseEvent> wgViewMouseMovedHandler = (event) -> {
+        for (ClickLink link : chromosomeRects) {
+            if (link.region.contains(event.getX(), event.getY())) {
+                // Don't make any changes if the tooltip text is already set for this link.region
+                if (!StringUtils.equals(link.tooltipText, tooltip.getText())) {
+                    tooltip.setText(link.tooltipText);
+                    tooltip.show(this, event.getScreenX(), event.getScreenY());
+                    this.setCursor(Cursor.HAND);
+                }
+                return;
+            }
+        }
+        tooltip.setText(WHOLE_GENOME_TOOLTIP);
+        this.setCursor(Cursor.DEFAULT);
+    };
+
+    private final EventHandler<MouseEvent> chrViewMouseClickedHandler = (event) -> {
+        double newLocation = frame.getChromosomePosition(event.getX());
+        frame.centerOnLocation(newLocation);
+    };
+
+    private final EventHandler<MouseEvent> chrViewMouseMovedHandler = (event) -> {
+        for (MouseRect mr : mouseRects) {
+            if (mr.contains(event.getX(), event.getY())) {
+                // Don't make any changes if the tooltip text is already set for this link.region
+                if (!StringUtils.equals(mr.getText(), tooltip.getText())) {
+                    tooltip.setText(mr.getText());
+                    tooltip.show(this, event.getScreenX(), event.getScreenY());
+                }
+                return;
+            }
+        }
+        tooltip.setText(CHROM_TOOLTIP);
+    };
+    
     public static class TickSpacing {
 
         private double majorTick;
@@ -388,6 +443,10 @@ public class RulerPane extends ResizableCanvas {
         MouseRect(Rectangle2D bounds, String text) {
             this.bounds = bounds;
             this.text = text;
+        }
+
+        boolean contains(double x, double y) {
+            return bounds.contains(x, y);
         }
 
         boolean containsPoint(Point2D p) {

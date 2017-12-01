@@ -544,7 +544,7 @@ public class ReferenceFrame {
      * @param screenPosition
      * @return
      */
-    public double getChromosomePosition(int screenPosition) {
+    public double getChromosomePosition(double screenPosition) {
 
         InsertionMarker i = InsertionManager.getInstance().getSelectedInsertion(getChrName());
 
