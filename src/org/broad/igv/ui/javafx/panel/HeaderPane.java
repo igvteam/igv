@@ -28,6 +28,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import org.apache.log4j.Logger;
+import org.broad.igv.ui.javafx.JavaFXUIUtilities;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
@@ -62,9 +63,7 @@ public class HeaderPane extends BorderPane {
             pane.setTop(cytobandPane);
             pane.setCenter(rulerPane);
 
-            rulerPane.prefWidthProperty().bind(prefWidthProperty());
-            rulerPane.maxWidthProperty().bind(maxWidthProperty());
-            rulerPane.minWidthProperty().bind(minWidthProperty());
+            JavaFXUIUtilities.bindWidthToContainer(this, rulerPane);
             rulerPane.backgroundProperty().bind(backgroundProperty());
 
             Pane roiDummy = new Pane();
@@ -73,9 +72,7 @@ public class HeaderPane extends BorderPane {
             this.getChildren().add(pane);
         }
 
-        cytobandPane.prefWidthProperty().bind(prefWidthProperty());
-        cytobandPane.maxWidthProperty().bind(maxWidthProperty());
-        cytobandPane.minWidthProperty().bind(minWidthProperty());
+        JavaFXUIUtilities.bindWidthToContainer(this, cytobandPane);
         cytobandPane.backgroundProperty().bind(backgroundProperty());
     }
 }

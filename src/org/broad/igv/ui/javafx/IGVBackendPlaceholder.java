@@ -63,7 +63,10 @@ public class IGVBackendPlaceholder {
             }
         }
 
-        JavaFXUIUtilities.setTooltipTimers(50, 60000, 50, false);
+        // Uncomment the following to experiment with the global Tooltip duration setting hack.
+        // Be sure to *also* comment out the MouseEnter/Exit handling code in the RulerPane for
+        // comparison.
+        //JavaFXUIUtilities.setTooltipTimers(50, 60000, 50, false);
     }
 
     public static final Font getFont(FontWeight fontWeight, double size) {

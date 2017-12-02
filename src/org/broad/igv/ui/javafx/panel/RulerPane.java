@@ -117,8 +117,6 @@ public class RulerPane extends ResizableCanvas {
     }
 
     public void render() {
-        log.info("rendering chr: " + frame.getChrName());
-
         resetTooltipHandlers();
 
         Canvas canvas = getCanvas();
@@ -326,15 +324,20 @@ public class RulerPane extends ResizableCanvas {
     }
 
     private void resetTooltipHandlers() {
+        // Comment out the setOnMouseEntered() and setOnMouseExited calls below to compare
+        // with the cursor timing hack in IGVBackendPlaceholder.
         if (isWholeGenomeView()) {
             tooltip.setText(WHOLE_GENOME_TOOLTIP);
+            this.setOnMouseEntered(wgViewMouseEnteredHandler);
             this.setOnMouseClicked(wgViewMouseClickedHandler);
             this.setOnMouseMoved(wgViewMouseMovedHandler);
         } else {
             tooltip.setText(CHROM_TOOLTIP);
+            this.setOnMouseEntered(chrViewMouseEnteredHandler);
             this.setOnMouseClicked(chrViewMouseClickedHandler);
             this.setOnMouseMoved(chrViewMouseMovedHandler);
         }
+        this.setOnMouseExited(mouseExitedHandler);
     }
 
     private final EventHandler<MouseEvent> wgViewMouseClickedHandler = (event) -> {
@@ -346,10 +349,20 @@ public class RulerPane extends ResizableCanvas {
         }
     };
 
+    private final EventHandler<MouseEvent> wgViewMouseEnteredHandler = (event) -> {
+        tooltip.setText(WHOLE_GENOME_TOOLTIP);
+        tooltip.show(this, event.getScreenX(), event.getScreenY());
+        this.setCursor(Cursor.DEFAULT);
+    };
+
     private final EventHandler<MouseEvent> wgViewMouseMovedHandler = (event) -> {
         for (ClickLink link : chromosomeRects) {
             if (link.region.contains(event.getX(), event.getY())) {
                 // Don't make any changes if the tooltip text is already set for this link.region
+                //
+                // Comment out the tooltip.show() call in order to see the normal JavaFX framework
+                // behavior (which doesn't match IGV-Swing).  The conditional becomes unnecessary
+                // in that case as well.
                 if (!StringUtils.equals(link.tooltipText, tooltip.getText())) {
                     tooltip.setText(link.tooltipText);
                     tooltip.show(this, event.getScreenX(), event.getScreenY());
@@ -367,6 +380,12 @@ public class RulerPane extends ResizableCanvas {
         frame.centerOnLocation(newLocation);
     };
 
+
+    private final EventHandler<MouseEvent> chrViewMouseEnteredHandler = (event) -> {
+        tooltip.setText(CHROM_TOOLTIP);
+        tooltip.show(this, event.getScreenX(), event.getScreenY());
+    };
+
     private final EventHandler<MouseEvent> chrViewMouseMovedHandler = (event) -> {
         for (MouseRect mr : mouseRects) {
             if (mr.contains(event.getX(), event.getY())) {
@@ -379,6 +398,14 @@ public class RulerPane extends ResizableCanvas {
             }
         }
         tooltip.setText(CHROM_TOOLTIP);
+    };
+
+    private final EventHandler<MouseEvent> mouseExitedHandler = (event) -> {
+        Bounds bounds = this.getBoundsInLocal();
+        if (!bounds.contains(event.getX(), event.getY())) {
+            tooltip.hide();
+            this.setCursor(Cursor.DEFAULT);
+        }
     };
     
     public static class TickSpacing {

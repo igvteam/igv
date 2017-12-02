@@ -58,7 +58,7 @@ public class JavaFXUIUtilities {
 
     // Inspired by https://gist.github.com/darmbrust/9559744d1b1dada434a3
     // Current defaults are 1000, 5000, 200, false.
-    // For IGV, we use 50, 60000, 50, false.
+    // For IGV, we use 50, 60000, 50, true.
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static boolean setTooltipTimers(long openDelay, long visibleDuration, long closeDelay, boolean hideOnExit) {
         try {

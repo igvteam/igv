@@ -89,11 +89,9 @@ public class IGVToolBarManager implements IGVEventObserver {
                 homeButton, leftArrowButton, rightArrowButton, refreshScreenButton, regionToolButton, resizeToWindowButton,
                 infoSelectButton, rulerButton, zoomSlider);
 
-        log.info("About to register with eventBus");
         IGVEventBus.getInstance().subscribe(ViewChange.class, this);
         IGVEventBus.getInstance().subscribe(GenomeChangeEvent.class, this);
         IGVEventBus.getInstance().subscribe(GenomeResetEvent.class, this);
-        log.info("Done registering with eventBus");
     }
 
     public ToolBar getToolBar() {
@@ -104,13 +102,10 @@ public class IGVToolBarManager implements IGVEventObserver {
     public void receiveEvent(Object e) {
         if (e instanceof ViewChange) {
             ViewChange event = (ViewChange) e;
-            log.info("View Change event: " + event.type);
             if (event.type == ViewChange.Type.ChromosomeChange || event.type == ViewChange.Type.LocusChange) {
                 String chrName = FrameManager.getDefaultFrame().getChrName();
-                log.info("change chr to: " + chrName);
                 // TODO: enable ROI toggle & zoom control
                 if (StringUtils.isNotBlank(chrName) && !chrName.equals(chromosomeSelector.getSelectionModel().getSelectedItem())) {
-                    log.info("change chrSelector to: " + chrName);
                     chromosomeSelector.getSelectionModel().select(chrName);
                 }
 

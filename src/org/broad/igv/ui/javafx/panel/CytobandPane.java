@@ -35,14 +35,18 @@
 package org.broad.igv.ui.javafx.panel;
 
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Tooltip;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.ViewChange;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.ui.javafx.FontMetrics;
@@ -64,6 +68,7 @@ public class CytobandPane extends ResizableCanvas {
     private static String fontFamilyName = "Lucida Sans";
     static final public double CYTOBAND_Y_OFFSET = 5.0;
     static final public double LABEL_OFFSET = 25.0;
+    private static Map<Integer, Color> stainColors = new HashMap<Integer, Color>();
 
     private boolean isDragging = false;
 
@@ -73,9 +78,9 @@ public class CytobandPane extends ResizableCanvas {
     private double cytobandScale;
     private ReferenceFrame frame;
     private List<Cytoband> currentCytobands;
-
+    private Tooltip tooltip = new Tooltip("Click anywhere on the chromosome\nto center view at that location.");
+            
     private boolean drawLabels = true;
-    private static Map<Integer, Color> stainColors = new HashMap<Integer, Color>();
 
     public CytobandPane(ReferenceFrame frame) {
         this(frame, true);
@@ -93,6 +98,9 @@ public class CytobandPane extends ResizableCanvas {
         setMaxHeight(40);
         setPrefHeight(40);
 
+        Tooltip.install(this, tooltip);
+        this.setCursor(Cursor.HAND);
+
         // Re-render on change of width/height or chromosome.  Note that the height is fixed and
         // so that listener should never execute.  However, leaving this in place as a pattern
         // and also because it may not be fixed in the long run.
@@ -102,11 +110,25 @@ public class CytobandPane extends ResizableCanvas {
         this.prefHeightProperty().addListener((observable, oldValue, newValue) -> render());
         
         render();
+
+        this.setOnMouseClicked((event) -> {
+            final double mouseX = event.getX();
+            final int clickCount = event.getClickCount();
+            double newLocation = cytobandScale * mouseX;
+            if (clickCount > 1) {
+                final int newZoom = getReferenceFrame().getZoom() + 1;
+                getReferenceFrame().doSetZoomCenter(newZoom, newLocation);
+            } else {
+                getReferenceFrame().centerOnLocation(newLocation);
+            }
+
+            ViewChange result = ViewChange.Result();
+            result.setRecordHistory(true);
+            IGVEventBus.getInstance().post(result);
+        });
     }
 
     public void render() {
-        log.info("rendering chr: " + frame.getChrName());
-
         Canvas canvas = getCanvas();
         GraphicsContext graphicContext = canvas.getGraphicsContext2D();
         graphicContext.clearRect(0.0, 0.0, canvas.getWidth(), canvas.getHeight());
